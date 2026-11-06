@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopTasks
 public import Chazelle.Core.SweepIoBrute
 public import Chazelle.Core.SweepEvWinArcs
@@ -66,29 +68,21 @@ theorem stbPre_val (m f : ℕ → ℕ) :
     regB m stbPre f accA = 0 ∧
     (∀ q, ¬ StbPreW q → regB m stbPre f q = f q) := by
   refine ⟨fun i hi => ?_, ?_, ?_, ?_, ?_, ?_, fun q hq => ?_⟩
-  · interval_cases i <;> simp [stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw]
-  · simp [stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw]
-  · simp [stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw]
-  · simp [stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw]
-  · simp [stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw]
-  · simp [stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw]
+  · interval_cases i <;> aesop
+  · aesop
+  · aesop
+  · aesop
+  · aesop
+  · aesop
   refine regB_other _ _ _ (fun i hi => ?_)
   simp only [stbPre, List.mem_cons, List.not_mem_nil, or_false] at hi
-  unfold StbPreW at hq
-  simp only [qD, accA, sw] at hq
-  rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-    simp only [dstI, stbSv, sO, qD, accA, sw] <;> omega
+  grind [StbPreW, qD, accA, sw, dstI, stbSv, sO]
 
 theorem stbPre_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m stbPre f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw (by omega_nf) (by omega_nf)
   simp only [stbPre, okB, okI]
-  refine ⟨s 3990 (by norm_num) (by norm_num), s 3991 (by norm_num) (by norm_num),
-    s 3992 (by norm_num) (by norm_num), s 3993 (by norm_num) (by norm_num),
-    s 3994 (by norm_num) (by norm_num), s 3231 (by norm_num) (by norm_num),
-    s 3232 (by norm_num) (by norm_num), s 3233 (by norm_num) (by norm_num),
-    s 3212 (by norm_num) (by norm_num), ⟨s 2000 (by norm_num) (by norm_num), Nat.zero_le _⟩,
-    trivial⟩
+  ram_grind
 
 /-- The registers written by `stbPost`. -/
 def StbPostW (q : ℕ) : Prop := (sw 4001 ≤ q ∧ q ≤ sw 4005) ∨ (brF ≤ q ∧ q ≤ brF + 6)
@@ -100,28 +94,23 @@ theorem stbPost_val (m f : ℕ → ℕ) :
     (∀ j, j < 4 → regB m stbPost f (brF + 3 + j) = f (accA + 4 + j)) ∧
     (∀ q, ¬ StbPostW q → regB m stbPost f q = f q) := by
   refine ⟨fun i hi => ?_, ?_, ?_, ?_, fun j hj => ?_, fun q hq => ?_⟩
-  · interval_cases i <;> simp [stbPost, regB, regI, upd, stbSv, accA, brF, sw]
-  · simp [stbPost, regB, regI, upd, stbSv, accA, brF, sw]
-  · simp [stbPost, regB, regI, upd, stbSv, accA, brF, sw]
-  · simp [stbPost, regB, regI, upd, stbSv, accA, brF, sw]
-  · interval_cases j <;> simp [stbPost, regB, regI, upd, stbSv, accA, brF, sw]
+  · interval_cases i <;> aesop
+  · aesop
+  · aesop
+  · aesop
+  · interval_cases j <;> aesop
   refine regB_other _ _ _ (fun i hi => ?_)
   simp only [stbPost, List.mem_cons, List.not_mem_nil, or_false] at hi
   unfold StbPostW at hq
   simp only [brF, sw] at hq
   rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-    simp only [dstI, brF, sw] <;> omega
+    core_grind <;> omega
 
 theorem stbPost_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m stbPost f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw (by omega_nf) (by omega_nf)
   simp only [stbPost, okB, okI]
-  refine ⟨s 4001 (by norm_num) (by norm_num), s 4002 (by norm_num) (by norm_num),
-    s 4003 (by norm_num) (by norm_num), s 4004 (by norm_num) (by norm_num),
-    s 4005 (by norm_num) (by norm_num), s 4084 (by norm_num) (by norm_num),
-    s 4085 (by norm_num) (by norm_num), s 4086 (by norm_num) (by norm_num),
-    s 4087 (by norm_num) (by norm_num), s 4088 (by norm_num) (by norm_num),
-    s 4089 (by norm_num) (by norm_num), s 4090 (by norm_num) (by norm_num), trivial⟩
+  ram_grind
 
 /-- The cost bound. -/
 theorem stb_cost (A K Fg : ℕ) (hA : A ≤ 3 * K + 1) :

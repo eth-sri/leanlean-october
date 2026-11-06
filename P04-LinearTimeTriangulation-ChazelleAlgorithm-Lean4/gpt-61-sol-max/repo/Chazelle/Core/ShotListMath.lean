@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.WalkEmbed
 
 /-!
@@ -49,12 +51,15 @@ noncomputable def cutK {α : Type} (ka kb kx ky : ℝ) (a b x y : α) : List (α
       (if sideInArc ka kb ky then [(y, b)] else [])
     else [(a, b)]
 
+section
+variable {α : Type} (key : α → ℝ) (a b x y : α)
+include α key a b x y
 /-- **The pieces of the arc `[a, b]` outside the open hole `(x, y)`.** -/
-noncomputable def cut1 {α : Type} (key : α → ℝ) (a b x y : α) : List (α × α) :=
+noncomputable def cut1 : List (α × α) :=
   cutK (key a) (key b) (key x) (key y) a b x y
 
 /-- The pieces of `cut1`, as key pairs. -/
-theorem cut1_cases {α : Type} (key : α → ℝ) (a b x y : α) {u v : α}
+theorem cut1_cases {u v : α}
     (h : (u, v) ∈ cut1 key a b x y) :
     (sideInArc (key x) (key y) (key a) ∧ sideInArc (key a) (key b) (key y) ∧
         sideInArc (key y) (key b) (key x) ∧ u = y ∧ v = x) ∨
@@ -84,6 +89,9 @@ theorem cut1_cases {α : Type} (key : α → ℝ) (a b x y : α) {u v : α}
 A statement built from order comparisons of five reals holds as soon as it holds for their ranks
 (naturals below `5`), where it is decided. -/
 
+
+end
+
 /-- The cyclic interval test on naturals. -/
 def siaN (a b k : ℕ) : Bool := if a < b then a < k && k < b else a < k || k < b
 
@@ -93,7 +101,10 @@ def CInN (a b k : ℕ) : Bool := siaN a b k || k == a || k == b
 /-- The rank of `v` among the elements of `L`. -/
 noncomputable def rank (L : List ℝ) (v : ℝ) : ℕ := (L.filter (fun w => decide (w < v))).length
 
-theorem rank_lt_of_lt {L : List ℝ} {v w : ℝ} (hv : v ∈ L) (h : v < w) : rank L v < rank L w := by
+section
+variable {L : List ℝ} {v w : ℝ} (hv : v ∈ L)
+include hv
+theorem rank_lt_of_lt (h : v < w) : rank L v < rank L w := by
   unfold rank
   induction L with
   | nil => simp at hv
@@ -105,18 +116,14 @@ theorem rank_lt_of_lt {L : List ℝ} {v w : ℝ} (hv : v ∈ L) (h : v < w) : ra
       have : (L.filter (fun u => decide (u < v))).length ≤
           (L.filter (fun u => decide (u < w))).length :=
         List.Sublist.length_le (List.monotone_filter_right L (fun u hu => by
-          simp only [decide_eq_true_eq] at hu ⊢; exact hu.trans h))
+          grind))
       omega
-    · have := ih hv'
-      by_cases h1 : z < v
-      · have h2 : z < w := h1.trans h
-        simp only [h1, h2, decide_true, ↓reduceIte, List.length_cons]; omega
-      · by_cases h2 : z < w
-        · simp only [h1, h2, decide_true, decide_false, Bool.false_eq_true, ↓reduceIte,
-            List.length_cons]; omega
-        · simp only [h1, h2, decide_false, Bool.false_eq_true, ↓reduceIte]; exact this
+    grind
 
-theorem rank_lt_iff {L : List ℝ} {v w : ℝ} (hv : v ∈ L) (hw : w ∈ L) :
+section
+variable (hw : w ∈ L)
+include hw
+theorem rank_lt_iff :
     v < w ↔ rank L v < rank L w := by
   constructor
   · exact rank_lt_of_lt hv
@@ -124,40 +131,48 @@ theorem rank_lt_iff {L : List ℝ} {v w : ℝ} (hv : v ∈ L) (hw : w ∈ L) :
     by_contra h'
     rcases (not_lt.1 h').lt_or_eq with h'' | h''
     · exact absurd (rank_lt_of_lt hw h'') (by omega)
-    · rw [h''] at h; exact lt_irrefl _ h
+    simp_all
 
-theorem rank_eq_iff {L : List ℝ} {v w : ℝ} (hv : v ∈ L) (hw : w ∈ L) :
+theorem rank_eq_iff :
     v = w ↔ rank L v = rank L w := by
   constructor
-  · rintro rfl; rfl
+  · simp_all
   · intro h
     rcases lt_trichotomy v w with h' | h' | h'
     · exact absurd h ((rank_lt_of_lt hv h').ne)
     · exact h'
     · exact absurd h ((rank_lt_of_lt hw h').ne')
 
+
+
+end
+
+end
+
 theorem rank_lt_length (L : List ℝ) (v : ℝ) : rank L v ≤ L.length :=
   List.length_filter_le _ _
 
-theorem sideInArc_rank {L : List ℝ} {a b k : ℝ} (ha : a ∈ L) (hb : b ∈ L) (hk : k ∈ L) :
+section
+variable {L : List ℝ} {a b k : ℝ} (ha : a ∈ L) (hb : b ∈ L) (hk : k ∈ L)
+include ha hb hk
+theorem sideInArc_rank :
     sideInArc a b k ↔ siaN (rank L a) (rank L b) (rank L k) = true := by
   unfold sideInArc siaN
   have e1 := rank_lt_iff ha hb
   have e2 := rank_lt_iff ha hk
   have e3 := rank_lt_iff hk hb
-  by_cases h : a < b
-  · have h' := e1.1 h
-    simp only [h, h', ↓reduceIte, e2, e3, Bool.and_eq_true, decide_eq_true_eq]
-  · have h' : ¬ rank L a < rank L b := fun h' => h (e1.2 h')
-    simp only [h, h', ↓reduceIte, e2, e3, Bool.or_eq_true, decide_eq_true_eq]
+  simp_all
 
-theorem cIn_rank {L : List ℝ} {a b k : ℝ} (ha : a ∈ L) (hb : b ∈ L) (hk : k ∈ L) :
+theorem cIn_rank :
     CIn a b k ↔ CInN (rank L a) (rank L b) (rank L k) = true := by
   unfold CIn CInN
   rw [sideInArc_rank ha hb hk, rank_eq_iff hk ha, rank_eq_iff hk hb]
-  simp [Bool.or_eq_true, or_assoc]
+  grind
 
 /-! ## The order facts, decided on ranks -/
+
+
+end
 
 /-- Boolean implication. -/
 def imp (p q : Bool) : Bool := !p || q
@@ -251,7 +266,7 @@ theorem p1R (a b x y k : ℝ) (hxy : x ≠ y) :
   generalize siaN X B Y = s10 at *
   generalize (X == A) = e1 at *
   generalize (X == Y) = e2 at *
-  have he2 : e2 = false := by simpa using hxy
+  have he2 : e2 = false := by simp_all
   subst he2
   revert hP
   revert s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 e1
@@ -261,8 +276,7 @@ theorem p1R (a b x y k : ℝ) (hxy : x ≠ y) :
 theorem ranks5 (a b x y k : ℝ) : ∃ L : List ℝ, a ∈ L ∧ b ∈ L ∧ x ∈ L ∧ y ∈ L ∧ k ∈ L ∧
     rank L a < 6 ∧ rank L b < 6 ∧ rank L x < 6 ∧ rank L y < 6 ∧ rank L k < 6 := by
   refine ⟨[a, b, x, y, k], by simp, by simp, by simp, by simp, by simp, ?_, ?_, ?_, ?_, ?_⟩ <;>
-  · have := rank_lt_length [a, b, x, y, k]; simp only [List.length_cons, List.length_nil] at this
-    exact Nat.lt_of_le_of_lt (this _) (by norm_num)
+  · have := rank_lt_length [a, b, x, y, k]; simp_all +arith
 
 set_option synthInstance.maxSize 100000 in
 set_option synthInstance.maxHeartbeats 1000000 in
@@ -282,28 +296,7 @@ theorem p0R (a b x y k : ℝ) (hxy : x ≠ y) :
   rw [sideInArc_rank mx my ma, sideInArc_rank ma mb my, sideInArc_rank my mb mx,
     sideInArc_rank my mx mk, sideInArc_rank ma mb mk, sideInArc_rank my mb mk,
     sideInArc_rank ma mb mx, sideInArc_rank ma mx mk, sideInArc_rank mx mb my]
-  generalize rank L a = A at *
-  generalize rank L b = B at *
-  generalize rank L x = X at *
-  generalize rank L y = Y at *
-  generalize rank L k = K at *
-  rw [show (X = Y) = ((X == Y) = true) from propext beq_iff_eq.symm] at hxy
-  simp only [P0N, imp, bne] at hP
-  generalize siaN X Y A = s1 at *
-  generalize siaN A B Y = s2 at *
-  generalize siaN Y B X = s3 at *
-  generalize siaN Y X K = s4 at *
-  generalize siaN A B K = s5 at *
-  generalize siaN Y B K = s6 at *
-  generalize siaN A B X = s7 at *
-  generalize siaN A X K = s8 at *
-  generalize siaN X B Y = s9 at *
-  generalize (X == Y) = e2 at *
-  have he2 : e2 = false := by simpa using hxy
-  subst he2
-  revert hP
-  revert s1 s2 s3 s4 s5 s6 s7 s8 s9
-  decide
+  grind [P0N, imp, bne]
 
 set_option synthInstance.maxSize 100000 in
 set_option synthInstance.maxHeartbeats 1000000 in
@@ -322,31 +315,7 @@ theorem p2R (a b x y k : ℝ) (hxy : x ≠ y) (hk : CIn a b k) (hk' : ¬ CIn x y
   rw [sideInArc_rank mx my ma, sideInArc_rank ma mb my, sideInArc_rank my mb mx,
     cIn_rank my mx mk, cIn_rank my mb mk, sideInArc_rank ma mb mx, cIn_rank ma mx mk,
     sideInArc_rank mx mb my, rank_eq_iff mx ma]
-  generalize rank L a = A at *
-  generalize rank L b = B at *
-  generalize rank L x = X at *
-  generalize rank L y = Y at *
-  generalize rank L k = K at *
-  rw [show (X = A) = ((X == A) = true) from propext beq_iff_eq.symm] at *
-  rw [show (X = Y) = ((X == Y) = true) from propext beq_iff_eq.symm] at hxy
-  simp only [P2N, imp, bne] at hP
-  generalize siaN X Y A = s1 at *
-  generalize siaN A B Y = s2 at *
-  generalize siaN Y B X = s3 at *
-  generalize CInN Y X K = s4 at *
-  generalize CInN Y B K = s5 at *
-  generalize siaN A B X = s6 at *
-  generalize CInN A X K = s7 at *
-  generalize siaN X B Y = s8 at *
-  generalize CInN A B K = s9 at *
-  generalize CInN X Y K = s10 at *
-  generalize (X == A) = e1 at *
-  generalize (X == Y) = e2 at *
-  have he2 : e2 = false := by simpa using hxy
-  subst he2
-  revert hP hk hk'
-  revert s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 e1
-  decide
+  grind [P2N, imp, bne]
 
 /-! ## The pieces of one hole -/
 
@@ -354,35 +323,30 @@ section Generic
 
 variable {α : Type} (key : α → ℝ)
 
+section
+variable {a b x y : α} (hxy : key x ≠ key y) {u v : α} (h : (u, v) ∈ cut1 key a b x y) {k : ℝ}
+include x y hxy h
 /-- **P0**: the open interval of a piece lies in the open interval of the arc. -/
-theorem cut1_open {a b x y : α} (hxy : key x ≠ key y) {u v : α}
-    (h : (u, v) ∈ cut1 key a b x y) {k : ℝ} (hk : sideInArc (key u) (key v) k) :
+theorem cut1_open (hk : sideInArc (key u) (key v) k) :
     sideInArc (key a) (key b) k := by
   obtain ⟨q1, q2, q3, q4, q5⟩ := p0R (key a) (key b) (key x) (key y) k hxy
   rcases cut1_cases key a b x y h with
     ⟨h1, h2, h3, rfl, rfl⟩ | ⟨h1, h2, h3, rfl, rfl⟩ | ⟨h1, h2, rfl, rfl⟩ |
     ⟨h1, h2, h3, rfl, rfl⟩ | ⟨h1, h2, h3, h4, rfl, rfl⟩ | ⟨h1, h2, h3, rfl, rfl⟩
-  · exact q1 h1 h2 h3 hk
-  · exact q2 h1 h2 hk
-  · exact q3 h1 h2 hk
-  · exact q4 h1 h2 h3 hk
-  · exact q5 h1 h2 h4 hk
-  · exact hk
+  all_goals grind
 
 /-- **P1**: a piece lies in the arc and outside the open hole. -/
-theorem cut1_sub {a b x y : α} (hxy : key x ≠ key y) {u v : α}
-    (h : (u, v) ∈ cut1 key a b x y) {k : ℝ} (hk : CIn (key u) (key v) k) :
+theorem cut1_sub (hk : CIn (key u) (key v) k) :
     CIn (key a) (key b) k ∧ ¬ sideInArc (key x) (key y) k := by
   obtain ⟨q1, q2, q3, q4, q5, q6⟩ := p1R (key a) (key b) (key x) (key y) k hxy
   rcases cut1_cases key a b x y h with
     ⟨h1, h2, h3, rfl, rfl⟩ | ⟨h1, h2, h3, rfl, rfl⟩ | ⟨h1, h2, rfl, rfl⟩ |
     ⟨h1, h2, h3, rfl, rfl⟩ | ⟨h1, h2, h3, h4, rfl, rfl⟩ | ⟨h1, h2, h3, rfl, rfl⟩
-  · exact q1 h1 h2 h3 hk
-  · exact q2 h1 h2 h3 hk
-  · exact q3 h1 h2 hk
-  · exact q4 h1 h2 h3 hk
-  · exact q5 h1 h2 h3 h4 hk
-  · exact ⟨hk, q6 h1 h2 h3 hk⟩
+  · simp_all
+  all_goals grind
+
+
+end
 
 /-- **P2**: a key of the arc outside the closed hole lies in a piece. -/
 theorem cut1_cover {a b x y : α} (hxy : key x ≠ key y) {k : ℝ} (hk : CIn (key a) (key b) k)
@@ -391,18 +355,14 @@ theorem cut1_cover {a b x y : α} (hxy : key x ≠ key y) {k : ℝ} (hk : CIn (k
   obtain ⟨q1, q2, q3⟩ := p2R (key a) (key b) (key x) (key y) k hxy hk hk'
   unfold cut1 cutK
   split_ifs with h1 h2 h3 h4 h5 h6 h7
-  · exact ⟨(y, x), by simp, (q1 h1).2.1 h3⟩
-  · exact ⟨(y, b), by simp, (q1 h1).2.2 h3⟩
-  · exact absurd (q1 h1).1 h2
-  · rcases q2 h1 h4 with h | ⟨-, h⟩
-    · exact ⟨(a, x), by simp, h⟩
-    · exact ⟨(y, b), by simp, h⟩
-  · rcases q2 h1 h4 with h | ⟨h', -⟩
-    · exact ⟨(a, x), by simp, h⟩
-    · exact absurd h' h5
-  · exact ⟨(y, b), by simp, (q3 h1 h4 h6).2⟩
-  · exact absurd (q3 h1 h4 h6).1 h7
-  · exact ⟨(a, b), by simp, hk⟩
+  · simp_all +arith
+  · simp_all
+  · simp_all
+  · simp_all
+  · simp_all
+  · simp_all
+  · simp_all
+  simp_all +arith
 
 /-! ## Several holes -/
 
@@ -414,12 +374,14 @@ noncomputable def leaves : List (α × α) → α × α → List (α × α)
 /-- The holes are proper (distinct end keys). -/
 def HolesOK (hs : List (α × α)) : Prop := ∀ h ∈ hs, key h.1 ≠ key h.2
 
+section
+variable {hs : List (α × α)} (hh : HolesOK key hs) {p uv : α × α} (h : uv ∈ leaves key hs p) {k : ℝ}
+include hs hh h
 /-- **P0 for several holes.** -/
-theorem leaves_open {hs : List (α × α)} (hh : HolesOK key hs) {p uv : α × α}
-    (h : uv ∈ leaves key hs p) {k : ℝ} (hk : sideInArc (key uv.1) (key uv.2) k) :
+theorem leaves_open (hk : sideInArc (key uv.1) (key uv.2) k) :
     sideInArc (key p.1) (key p.2) k := by
   induction hs generalizing p with
-  | nil => simp only [leaves, List.mem_singleton] at h; subst h; exact hk
+  | nil => simp_all [leaves, List.mem_singleton] 
   | cons g hs ih =>
     simp only [leaves, List.mem_flatMap] at h
     obtain ⟨q, hq, hq'⟩ := h
@@ -427,34 +389,32 @@ theorem leaves_open {hs : List (α × α)} (hh : HolesOK key hs) {p uv : α × �
       (ih (fun h' hm => hh h' (List.mem_cons_of_mem _ hm)) hq')
 
 /-- **P1 for several holes.** -/
-theorem leaves_sub {hs : List (α × α)} (hh : HolesOK key hs) {p uv : α × α}
-    (h : uv ∈ leaves key hs p) {k : ℝ} (hk : CIn (key uv.1) (key uv.2) k) :
+theorem leaves_sub (hk : CIn (key uv.1) (key uv.2) k) :
     CIn (key p.1) (key p.2) k ∧ ∀ g ∈ hs, ¬ sideInArc (key g.1) (key g.2) k := by
   induction hs generalizing p with
   | nil =>
-    simp only [leaves, List.mem_singleton] at h; subst h
-    exact ⟨hk, fun _ hg => absurd hg List.not_mem_nil⟩
+    simp_all [leaves, List.mem_singleton] 
   | cons g hs ih =>
     simp only [leaves, List.mem_flatMap] at h
     obtain ⟨q, hq, hq'⟩ := h
     obtain ⟨h1, h2⟩ := ih (fun h' hm => hh h' (List.mem_cons_of_mem _ hm)) hq'
     obtain ⟨h3, h4⟩ := cut1_sub key (hh g (by simp)) hq h1
-    refine ⟨h3, fun g' hg' => ?_⟩
-    rcases List.mem_cons.1 hg' with rfl | hg'
-    · exact h4
-    · exact h2 g' hg'
+    grind
+
+
+end
 
 /-- **P2 for several holes.** -/
 theorem leaves_cover {hs : List (α × α)} (hh : HolesOK key hs) {p : α × α} {k : ℝ}
     (hk : CIn (key p.1) (key p.2) k) (hk' : ∀ g ∈ hs, ¬ CIn (key g.1) (key g.2) k) :
     ∃ uv ∈ leaves key hs p, CIn (key uv.1) (key uv.2) k := by
   induction hs generalizing p with
-  | nil => exact ⟨p, by simp [leaves], hk⟩
+  | nil => core_grind
   | cons g hs ih =>
     obtain ⟨q, hq, hq'⟩ := cut1_cover key (hh g (by simp)) hk (hk' g (by simp))
     obtain ⟨uv, huv, huv'⟩ := ih (fun h' hm => hh h' (List.mem_cons_of_mem _ hm)) hq'
       (fun g' hg' => hk' g' (List.mem_cons_of_mem _ hg'))
-    exact ⟨uv, by simp only [leaves, List.mem_flatMap]; exact ⟨q, hq, huv⟩, huv'⟩
+    core_grind
 
 end Generic
 

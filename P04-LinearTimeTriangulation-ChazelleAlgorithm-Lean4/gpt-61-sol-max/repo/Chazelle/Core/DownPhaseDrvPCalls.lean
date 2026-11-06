@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvPCost
 
 /-!
@@ -11,9 +13,6 @@ given program and constant), the program `pieceS sL sB sBd sG` of a piece, and t
 `clogS` (`218019 := ⌈log₂ m⌉`, `clogS_exec`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -149,20 +148,18 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
       c₁.nreg 218023 = 1 ∧ (∀ r, r ≠ 218019 → r ≠ 218023 → c₁.nreg r = c.nreg r) ∧
       c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     exec_block
-    all_goals first | omega | skip
-    refine ⟨rfl, by config_simp, by config_simp, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2]
+    all_goals (aesop (add simp [Config.nreg_mk, upd]) (add safe (by omega)))
   let I : Config → Prop := fun d => WordsBounded W d ∧ d.nreg 218023 = 2 ^ d.nreg 218019 ∧
     (1 ≤ d.nreg 218019 → 2 ^ (d.nreg 218019 - 1) < m) ∧
     (∀ r, r ≠ 218019 → r ≠ 218023 → d.nreg r = c.nreg r) ∧ d.nmem = c.nmem ∧
     d.rreg = c.rreg ∧ d.rmem = c.rmem ∧ d.output = c.output
-  have hI₁ : I c₁ := ⟨e₁.wb_right, by rw [v23, v19]; rfl, by rw [v19]; omega, r₁, m₁⟩
+  have hI₁ : I c₁ := ⟨e₁.wb_right, by ram_simp, by omega, r₁, m₁⟩
   obtain ⟨c₂, k₂, e₂, ⟨w₂, p₂, l₂, r₂, m₂, rr₂, rm₂, o₂⟩, hx₂, hk₂⟩ :=
     Exec.whileLtN_bounded (P := P) (W := W) (a := 218023) (b := 218002)
     (body := block [.addN 218023 218023 218023, .addN 218019 218019 218021]) I
     (fun d => Nat.clog 2 m - d.nreg 218019) 2 (fun d hd => hd.1) (fun d ⟨wd, pd, ld, rd', md, rrd, rmd, od⟩ ht => by
-      have h2 : d.nreg 218002 = m := by rw [rd' _ (by norm_num) (by norm_num), h02]
-      have h21' : d.nreg 218021 = 1 := by rw [rd' _ (by norm_num) (by norm_num), h21]
+      have h2 : d.nreg 218002 = m := by ram_simp
+      have h21' : d.nreg 218021 = 1 := by ram_simp
       rw [h2] at ht
       have hw := wd
       obtain ⟨d', k, e, hk, v23', v19', r', m'⟩ : ∃ d' k, Exec P W
@@ -171,18 +168,18 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
           (∀ r, r ≠ 218019 → r ≠ 218023 → d'.nreg r = d.nreg r) ∧
           (d'.nmem = d.nmem ∧ d'.rreg = d.rreg ∧ d'.rmem = d.rmem ∧ d'.output = d.output) := by
         exec_block
-        · config_simp; omega
+        · omega
         · config_simp; rw [h21']
           have : d.nreg 218019 < 2 ^ d.nreg 218019 := Nat.lt_two_pow_self
           omega
-        refine ⟨rfl, by config_simp; ring, by config_simp; rw [h21'], fun r h1 h2 => ?_,
+        refine ⟨rfl, by omega_nf, by omega_nf, fun r h1 h2 => ?_,
           rfl, rfl, rfl, rfl⟩
-        simp only [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2]
+        ram_simp <;> omega_nf
       obtain ⟨m'', rr'', rm'', o''⟩ := m'
       refine ⟨d', k, e, ⟨e.wb_right, ?_, ?_, fun r h1 h2 => (r' r h1 h2).trans (rd' r h1 h2),
         m''.trans md, rr''.trans rrd, rm''.trans rmd, o''.trans od⟩, by omega, ?_⟩
-      · rw [v23', v19', pd, pow_succ]; ring
-      · intro _; rw [v19', Nat.add_sub_cancel, ← pd]; exact ht
+      · omega_nf
+      · ram_grind
       · rw [v19']
         rw [pd] at ht
         have : d.nreg 218019 < Nat.clog 2 m := by
@@ -192,7 +189,7 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
           have h4 : 2 ^ Nat.clog 2 m ≤ 2 ^ d.nreg 218019 := Nat.pow_le_pow_right (by norm_num) hc
           omega
         omega) hI₁
-  have h2 : c₂.nreg 218002 = m := by rw [r₂ _ (by norm_num) (by norm_num), h02]
+  have h2 : c₂.nreg 218002 = m := by ram_simp
   rw [h2, p₂] at hx₂
   have hg : c₂.nreg 218019 = Nat.clog 2 m := by
     apply le_antisymm
@@ -205,7 +202,7 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
       omega
     · exact Nat.clog_le_of_le_pow (by omega)
   have hk₂' : k₂ ≤ 4 * Nat.clog 2 m + 2 := by
-    rw [v19, Nat.sub_zero] at hk₂; omega
+    omega
   refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by omega, hg, r₂, m₂, rr₂, rm₂, o₂⟩
 
 end exec

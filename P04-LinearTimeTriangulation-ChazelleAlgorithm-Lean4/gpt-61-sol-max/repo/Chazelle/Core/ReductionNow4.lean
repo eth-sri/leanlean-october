@@ -31,35 +31,47 @@ namespace Chazelle.Core
 
 public section
 
+section
+variable (hStop : SweepEv.StopTask)
+include hStop
 /-- **Reduction of the main theorem** to the open pieces of the sweep. -/
-theorem linear_of_open (hStop : SweepEv.StopTask) (hWin : SweepEv.WinTask)
+theorem linear_of_open (hWin : SweepEv.WinTask)
     (hKey : SweepEv.KeyTask) (hL0 : SweepEv.LoopStartTask) (hL1 : SweepEv.StepTask)
     (h0 : SweepIo.Cand0Spec) : LinearTimeTriangulation :=
   linear_of_sweep (SweepIo.sweepSpecH_of (SweepEv.sweepEvSpec_of_rest hStop hWin hKey hL0 hL1) h0
     (SweepIo.cand1Spec SweepIo.bruteSpec))
 
+section
+variable (hL0 : SweepEv.LoopStartTask)
+include hL0
 /-- **Reduction of the main theorem** after the window (`SweepEv.winTask`) and the next key
 (`SweepEv.keyTask`): the stops, the start of the loop, one iteration and the side-0 candidates. -/
-theorem linear_of_rest (hStop : SweepEv.StopTask) (hL0 : SweepEv.LoopStartTask)
+theorem linear_of_rest
     (hL1 : SweepEv.StepTask) (h0 : SweepIo.Cand0Spec) : LinearTimeTriangulation :=
   linear_of_open hStop SweepEv.winTask SweepEv.keyTask hL0 hL1 h0
 
 /-- **Reduction of the main theorem** after one iteration (`SweepEv.stepTask`): the stops, the
 start of the loop and the side-0 candidates. -/
-theorem linear_of_three (hStop : SweepEv.StopTask) (hL0 : SweepEv.LoopStartTask)
+theorem linear_of_three
     (h0 : SweepIo.Cand0Spec) : LinearTimeTriangulation :=
   linear_of_rest hStop hL0 SweepEv.stepTask h0
 
 /-- **Reduction of the main theorem** after the side-0 candidates (`SweepIo.cand0Spec_of` with
 `SweepIo.s0CandSpec` and `SweepIo.lab0`): the stops and the start of the loop. -/
-theorem linear_of_two (hStop : SweepEv.StopTask) (hL0 : SweepEv.LoopStartTask) :
+theorem linear_of_two :
     LinearTimeTriangulation :=
   linear_of_three hStop hL0 (SweepIo.cand0Spec_of SweepIo.s0CandSpec SweepIo.lab0)
 
+
+end
+
 /-- **Reduction of the main theorem to the stops** (`SweepEv.StopTask`), the last open piece
 of the sweep. -/
-theorem linear_of_stops (hStop : SweepEv.StopTask) : LinearTimeTriangulation :=
+theorem linear_of_stops : LinearTimeTriangulation :=
   linear_of_two hStop SweepEv.loopStartTask
+
+
+end
 
 /-- **Reduction of the main theorem** to the per-origin step of the stops and their sort. -/
 theorem linear_of_org_sort (hO : SweepEv.OrgTask) (hS : SweepEv.SortTask) :

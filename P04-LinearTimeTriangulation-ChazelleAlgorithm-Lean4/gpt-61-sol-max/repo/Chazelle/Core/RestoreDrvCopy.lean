@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreDrvProg
 
 /-!
@@ -48,16 +50,11 @@ theorem copyBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h31, hA', h20, h22, ALLOC]; omega)
   refine ⟨rfl, ?_, ?_, ?_, ?_, fun r a1 a2 a3 a4 => ?_, rfl, rfl, rfl⟩
-  · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, h31, hA',
-      h20, h22, ALLOC]
-  · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, h31, hA',
-      h20, h22, ALLOC]
-  · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, h31, hA',
-      h20, h22, ALLOC]
-  · simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, h31, hA', h20, ALLOC]
-  · have a4' : r ≠ 9999 := a4
-    simp (disch := omega) only [Machine.upd_other]
+  · grind [Machine.upd_same, Machine.upd_other, ALLOC]
+  · grind [Machine.upd_same, Machine.upd_other, ALLOC]
+  · omega_nf
+  · grind [Machine.upd_same, Machine.upd_other, ALLOC]
+  · ram_simp
 
 set_option maxHeartbeats 2000000 in
 theorem copyBody_step {P : Polygon} {W K CB LB : ℕ} {c₀ c : Config}
@@ -76,7 +73,7 @@ theorem copyBody_step {P : Polygon} {W K CB LB : ℕ} {c₀ c : Config}
     (by rw [hI.regs _ (by decide) (by decide) (by decide) (by decide), h22])
     (by omega) (by omega) (by omega) (by omega)
   rw [hi] at r30
-  refine ⟨c', k, e, ⟨e.wb_right, by omega, by rw [r31, r30]; ring, by rw [rA, r30]; ring,
+  refine ⟨c', k, e, ⟨e.wb_right, by omega, by omega, by omega,
     fun r a1 a2 a3 a4 => ?_, fun a ha => ?_, fun i' hi' j hj => ?_, by rw [rr, hI.rr],
     by rw [rm, hI.rm], by rw [ro, hI.out]⟩, hk, by rw [r30, hi]⟩
   · rw [R r a1 a2 a3 a4, hI.regs r a1 a2 a3 a4]
@@ -93,15 +90,13 @@ theorem copyBody_step {P : Polygon} {W K CB LB : ℕ} {c₀ c : Config}
       subst hii
       have e0 := hs 0 (by omega)
       have e1 := hs 1 (by omega)
-      have e2 := hs 2 (by omega)
+      
       simp only [add_zero] at e0
       rw [hm]
       interval_cases j
-      · simp only [add_zero]
-        rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-          Machine.upd_same, e0]
-      · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_same, e1]
-      · rw [Machine.upd_same, e2]
+      · omega_nf
+      · omega_nf
+      · ram_simp
 
 /-- **The copy loop.** -/
 theorem copy_exec {P : Polygon} {W K CB LB A₀ : ℕ} {c₀ : Config} (hw : WordsBounded W c₀)
@@ -115,9 +110,9 @@ theorem copy_exec {P : Polygon} {W K CB LB A₀ : ℕ} {c₀ : Config} (hw : Wor
       (∀ a, a < LB → c'.nmem a = c₀.nmem a) ∧
       (∀ i, i < K → ∀ j, j < 3 → c'.nmem (LB + 3 * i + j) = c₀.nmem (CB + 5 * i + j)) ∧
       RF dBands A₀ c₀ c' k := by
-  have I0 : CopyI W K CB LB c₀ c₀ := ⟨hw, by omega, by rw [h31, h30]; ring,
-    by rw [hA, h30]; ring, fun _ _ _ _ _ => rfl, fun _ _ => rfl,
-    fun i hi => by rw [h30] at hi; omega, rfl, rfl, rfl⟩
+  have I0 : CopyI W K CB LB c₀ c₀ := ⟨hw, by omega, by omega,
+    by omega, fun _ _ _ _ _ => rfl, fun _ _ => rfl,
+    fun i hi => by omega, rfl, rfl, rfl⟩
   obtain ⟨c', k, e, I', hx, RFl, hk⟩ := whileLtN_frame (P := P) (W := W) (a := 80030)
     (b := 80013) (body := copyBody) (B := dBands) (A₀ := A₀)
     (CopyI W K CB LB c₀) (fun c => K - c.nreg 80030) 13
@@ -144,7 +139,6 @@ theorem copy_exec {P : Polygon} {W K CB LB A₀ : ℕ} {c₀ : Config} (hw : Wor
     have := I'.i_le; omega
   refine ⟨c', k, e, ?_, by rw [I'.alloc, hK'], hK', I'.regs, I'.low,
     fun i hi j hj => I'.copied i (by omega) j hj, RFl⟩
-  rw [h30] at hk
   omega
 
 /-- The reservation-loop invariant. -/
@@ -166,17 +160,10 @@ theorem resBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       c'.nreg 80034 = c.nreg 80034 + 1 ∧
       (∀ r, r ≠ 80034 → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  have hA' : c.nreg 9999 = a := hA
+  
   unfold resBody
   exec_block
-  all_goals try (simp (disch := omega) only [Machine.upd_same,
-    Machine.upd_other, hA', h20, ALLOC]; omega)
-  refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
-  · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hA', h20,
-      ALLOC]
-  · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, h20, ALLOC]
-  · have a2' : r ≠ 9999 := a2
-    simp (disch := omega) only [Machine.upd_other]
+  all_goals (grind [Machine.upd_same, Machine.upd_other, ALLOC])
 
 /-- **The reservation loop.** -/
 theorem res_exec {P : Polygon} {W R A A₀ : ℕ} {c₀ : Config} (hw : WordsBounded W c₀)
@@ -185,7 +172,7 @@ theorem res_exec {P : Polygon} {W R A A₀ : ℕ} {c₀ : Config} (hw : WordsBou
     ∃ c' k, Exec P W resS c₀ c' k ∧ k ≤ 6 * R + 2 ∧ c'.nreg ALLOC = A + 3 * R ∧
       (∀ r, r ≠ 80034 → r ≠ ALLOC → c'.nreg r = c₀.nreg r) ∧ c'.nmem = c₀.nmem ∧
       RF dBands A₀ c₀ c' k := by
-  have I0 : ResI W R A c₀ c₀ := ⟨hw, by omega, by rw [hA, h34]; ring, fun _ _ _ => rfl, rfl,
+  have I0 : ResI W R A c₀ c₀ := ⟨hw, by omega, by omega, fun _ _ _ => rfl, rfl,
     rfl, rfl, rfl⟩
   obtain ⟨c', k, e, I', hx, RFl, hk⟩ := whileLtN_frame (P := P) (W := W) (a := 80034)
     (b := 80014) (body := resBody) (B := dBands) (A₀ := A₀)
@@ -199,7 +186,7 @@ theorem res_exec {P : Polygon} {W R A A₀ : ℕ} {c₀ : Config} (hw : WordsBou
         I.alloc c20 (by omega) (by omega)
       have b34 : bandOf 80034 ∈ dBands := by
         rw [band8 (by norm_num) (by norm_num)]; exact mem_dBands_8
-      refine ⟨c', k, e, ⟨e.wb_right, by omega, by rw [qa, qj]; ring,
+      refine ⟨c', k, e, ⟨e.wb_right, by omega, by omega,
         fun r a1 a2 => by rw [qr r a1 a2, I.regs r a1 a2], by rw [qm, I.mem],
         by rw [qrr, I.rr], by rw [qrm, I.rm], by rw [qo, I.out]⟩,
         ⟨fun r hr hra => qr r (fun h => hr (h ▸ b34)) hra, fun r _ => by rw [qrr],
@@ -210,7 +197,6 @@ theorem res_exec {P : Polygon} {W R A A₀ : ℕ} {c₀ : Config} (hw : WordsBou
     rw [I'.regs 80014 (by decide) (by decide), h14] at hx
     have := I'.j_le; omega
   refine ⟨c', k, e, ?_, by rw [I'.alloc, hR'], I'.regs, I'.mem, RFl⟩
-  rw [h34] at hk
   omega
 
 end

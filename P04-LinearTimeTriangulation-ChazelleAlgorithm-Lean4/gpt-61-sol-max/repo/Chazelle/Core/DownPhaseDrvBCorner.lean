@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvBSig
 public import Chazelle.Core.DownPhaseDrvBGeo
 
@@ -112,11 +114,7 @@ variable {P : Polygon} {W : ℕ}
 
 theorem bt_cor {d : ℕ} (hd : 212071 ≤ d ∧ d ≤ 212085) (r : ℕ) (h : Brute.Bt d r = true) :
     Bcor r = true := by
-  unfold Brute.Bt at h; unfold Bcor
-  simp only [Bool.or_eq_true, decide_eq_true_eq] at h ⊢
-  rcases h with h | h
-  · exact Or.inl h
-  · subst h; exact Or.inr hd
+  aesop (add simp [Brute.Bt, Bcor, Bool.or_eq_true, decide_eq_true_eq]) (add safe (by omega))
 
 theorem wr_decideS : wr (fun r => decide (212082 ≤ r ∧ r ≤ 212085)) decideS = true := by decide
 
@@ -144,7 +142,7 @@ theorem testsS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wor
       ∀ r, (r < 10000 ∨ 10500 ≤ r) → r ≠ d → c₂.nreg r = c₁.nreg r := by
     intro d c₁ c₂ _ _ f r hr hrd
     refine f.1 r ?_
-    unfold Brute.Bt Bk; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+    core_grind
   have tr : ∀ {c₁ c₂ : Config} {x : ℕ} {s : SymPt}, SymPtIn c₁ x s → x = 212060 ∨ x = 212063 ∨
       x = 212066 → (∀ r, 212060 ≤ r → r < 212069 → c₂.nreg r = c₁.nreg r) → SymPtIn c₂ x s := by
     intro c₁ c₂ x s h hx hr
@@ -228,7 +226,7 @@ theorem testsS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wor
   have v7 : c₉.nreg 212077 = c₇.nreg 212077 := by
     rw [g₉ _ (by norm_num) (by norm_num), g₈ _ (by norm_num) (by norm_num)]
   have v8 : c₉.nreg 212078 = c₈.nreg 212078 := by
-    rw [g₉ _ (by norm_num) (by norm_num)]
+    grind
   have hf : FrameB Bcor c c₉ := by
     have hh : ∀ {d : ℕ} {c₁ c₂ : Config}, 212071 ≤ d ∧ d ≤ 212085 → FrameB (Brute.Bt d) c₁ c₂ →
         FrameB Bcor c₁ c₂ := fun hd f => fbMono f (bt_cor hd)
@@ -243,22 +241,24 @@ theorem testsS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wor
     by rw [v8]; exact t₈, t₉⟩
   intro r h1 h2
   interval_cases r
-  · rw [v1]; exact b₁
-  · rw [v2]; exact b₂
-  · rw [v3]; exact b₃
-  · rw [v4]; exact b₄
-  · rw [v5]; exact b₅
-  · rw [v6]; exact b₆
-  · rw [v7]; exact b₇
-  · rw [v8]; exact b₈
-  · exact b₉
+  · omega
+  · omega
+  · omega
+  · omega
+  all_goals omega
 
+section
+variable (b : Bool)
+include b
 /-- The value of a bit. -/
-def bv (b : Bool) : ℕ := if b then 1 else 0
+def bv : ℕ := if b then 1 else 0
 
-theorem bv_le (b : Bool) : bv b ≤ 1 := by unfold bv; split_ifs <;> omega
+theorem bv_le : bv b ≤ 1 := by core_grind
 
-theorem bv_eq_one (b : Bool) : bv b = 1 ↔ b = true := by unfold bv; cases b <;> simp
+theorem bv_eq_one : bv b = 1 ↔ b = true := by simp_all [bv] <;> omega_nf
+
+
+end
 
 /-- A test bit as a Boolean. -/
 theorem bv_of_bit {n : ℕ} (h : n ≤ 1) : n = bv (decide (n = 1)) := by
@@ -296,7 +296,7 @@ theorem decideS_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W)
   exact ⟨c', k, ex, hk, q1, q2, exec_frameB ex wr_decideS⟩
 
 theorem bcor_dec (r : ℕ) (h : decide (212082 ≤ r ∧ r ≤ 212085) = true) : Bcor r = true := by
-  simp only [Bcor, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  simp_all [Bcor, Bool.or_eq_true, decide_eq_true_eq] <;> omega_nf
 
 set_option maxHeartbeats 2000000 in
 /-- **The corner test** (at most `2300` steps). -/
@@ -328,15 +328,14 @@ theorem cornerS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wo
     (D := decide (c₁.nreg 212075 = 1)) (X1 := decide (c₁.nreg 212076 = 1))
     (X2 := decide (c₁.nreg 212077 = 1)) (X3 := decide (c₁.nreg 212078 = 1))
     (X4 := decide (c₁.nreg 212079 = 1))
-    (by rw [decide_eq_true_iff]; exact t1) (by rw [decide_eq_true_iff]; exact t2)
-    (by rw [decide_eq_true_iff]; exact t3) (by rw [decide_eq_true_iff]; exact t4)
-    (by rw [decide_eq_true_iff]; exact t5) (by rw [decide_eq_true_iff]; exact t6)
-    (by rw [decide_eq_true_iff]; exact t7) (by rw [decide_eq_true_iff]; exact t8)
-    (by rw [decide_eq_true_iff]; exact t9)
+    (by simp_all) (by simp_all)
+    (by simp_all) (by simp_all)
+    (by simp_all) (by simp_all)
+    (by simp_all) (by simp_all)
+    (by simp_all)
   refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by omega, fbTrans f₁ (fbMono f₂ bcor_dec),
     by rw [q1]; exact bv_le _, by rw [q2]; exact bv_le _, ?_, ?_⟩
-  · rw [q1, bv_eq_one]; exact m1
-  · rw [q2, bv_eq_one]; exact m2
+  all_goals (grind [bv_eq_one])
 
 end exec
 

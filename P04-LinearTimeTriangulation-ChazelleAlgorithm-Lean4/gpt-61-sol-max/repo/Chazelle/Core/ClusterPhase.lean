@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterBfsRam
 
 /-!
@@ -27,40 +29,43 @@ namespace PFr
 
 variable {Rg Am : ℕ → Prop}
 
-theorem refl (c : Config) : PFr Rg Am c c := ⟨fun _ _ => rfl, rfl, rfl, rfl, fun _ _ => rfl⟩
+theorem refl (c : Config) : PFr Rg Am c c := by core_grind
 
 theorem trans {c0 c1 c2 : Config} (h1 : PFr Rg Am c0 c1) (h2 : PFr Rg Am c1 c2) :
     PFr Rg Am c0 c2 :=
-  ⟨fun r hr => (h2.1 r hr).trans (h1.1 r hr), h2.2.1.trans h1.2.1, h2.2.2.1.trans h1.2.2.1,
-    h2.2.2.2.1.trans h1.2.2.2.1, fun a ha => (h2.2.2.2.2 a ha).trans (h1.2.2.2.2 a ha)⟩
+  by core_grind
 
 theorem mono {Rg' Am' : ℕ → Prop} {c0 c : Config} (h : PFr Rg Am c0 c)
     (hR : ∀ r, Rg r → Rg' r) (hA : ∀ a, Am a → Am' a) : PFr Rg' Am' c0 c :=
-  ⟨fun r hr => h.1 r (fun h' => hr (hR r h')), h.2.1, h.2.2.1, h.2.2.2.1,
-    fun a ha => h.2.2.2.2 a (fun h' => ha (hA a h'))⟩
+  by core_grind
 
-theorem nreg {c0 c : Config} (h : PFr Rg Am c0 c) {f : ℕ → ℕ}
+section
+variable {c0 c : Config} (h : PFr Rg Am c0 c)
+include h
+theorem nreg {f : ℕ → ℕ}
     (hf : ∀ r, ¬ Rg r → f r = c.nreg r) : PFr Rg Am c0 { c with nreg := f } :=
-  ⟨fun r hr => (hf r hr).trans (h.1 r hr), h.2.1, h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
+  by ram_grind
 
-theorem nmem {c0 c : Config} (h : PFr Rg Am c0 c) {a x : ℕ} (ha : Am a) :
+theorem nmem {a x : ℕ} (ha : Am a) :
     PFr Rg Am c0 { c with nmem := upd c.nmem a x } :=
   ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1, fun b hb => by
     show upd c.nmem a x b = c0.nmem b
-    rw [Machine.upd_other _ _ _ (fun e => hb (by rw [e]; exact ha))]; exact h.2.2.2.2 b hb⟩
+    rw [Machine.upd_other _ _ _ (fun e => hb (by simp_all))]; ram_grind⟩
 
-theorem nreg_nmem {c0 c : Config} (h : PFr Rg Am c0 c) {f : ℕ → ℕ}
+theorem nreg_nmem {f : ℕ → ℕ}
     (hf : ∀ r, ¬ Rg r → f r = c.nreg r) {a x : ℕ} (ha : Am a) :
     PFr Rg Am c0 { c with nreg := f, nmem := upd c.nmem a x } :=
   ⟨fun r hr => (hf r hr).trans (h.1 r hr), h.2.1, h.2.2.1, h.2.2.2.1, fun b hb => by
     show upd c.nmem a x b = c0.nmem b
-    rw [Machine.upd_other _ _ _ (fun e => hb (by rw [e]; exact ha))]; exact h.2.2.2.2 b hb⟩
+    rw [Machine.upd_other _ _ _ (fun e => hb (by simp_all))]; ram_grind⟩
 
-theorem of_eq {c0 c : Config} (h : PFr Rg Am c0 c) {f g : ℕ → ℕ}
+theorem of_eq {f g : ℕ → ℕ}
     (hf : ∀ r, ¬ Rg r → f r = c.nreg r) (hg : ∀ a, ¬ Am a → g a = c.nmem a) :
     PFr Rg Am c0 { c with nreg := f, nmem := g } :=
-  ⟨fun r hr => (hf r hr).trans (h.1 r hr), h.2.1, h.2.2.1, h.2.2.2.1,
-    fun a ha => (hg a ha).trans (h.2.2.2.2 a ha)⟩
+  by ram_grind
+
+
+end
 
 end PFr
 
@@ -96,26 +101,14 @@ theorem fillStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001
       ∀ i, i < j → c'.nmem (c.nreg 130150 + i) = c.nreg 130152)
     (c.nreg 130151) 3 (fun j c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c2 hj ⟨hw2, hi2, hn2, hf2, hm2⟩ => by
-      have r1 : c2.nreg 130150 = c.nreg 130150 := hf2.1 _ (by unfold FillScr; omega)
-      have r2 : c2.nreg 130152 = c.nreg 130152 := hf2.1 _ (by unfold FillScr; omega)
-      have r3 : c2.nreg 130001 = 1 := (hf2.1 _ (by unfold FillScr; omega)).trans hone
+      have r1 : c2.nreg 130150 = c.nreg 130150 := hf2.1 _ (by omega_nf)
+      have r2 : c2.nreg 130152 = c.nreg 130152 := hf2.1 _ (by omega_nf)
+      have r3 : c2.nreg 130001 = 1 := (hf2.1 _ (by omega_nf)).trans hone
       unfold fillCell
       exec_block
-      · rw [r1, hi2]; omega
-      · config_simp; rw [hi2, r3]; omega
-      · refine ⟨le_refl _, ‹_›, by config_simp; rw [hi2, r3], by config_simp; exact hn2, ?_,
-          fun i hi => ?_⟩
-        · refine PFr.nreg_nmem hf2 (fun r hr => ?_) ?_
-          · simp only [Machine.upd_apply]; unfold FillScr at hr; split_ifs <;> omega
-          · rw [r1, hi2]; omega
-        · config_simp
-          rw [r1, hi2, r2]
-          rw [Machine.upd_apply]
-          split_ifs with h
-          · rfl
-          · exact hm2 i (by omega))
+      all_goals (grind [Chazelle.Core.Cluster.PFr.nreg_nmem, Machine.upd_apply, FillScr]))
     (j₀ := 0) ⟨e0.wb_right, by simp [c1], by simp [c1], PFr.nreg (PFr.refl c) (fun r hr => by
-      simp only [Machine.upd_apply]; unfold FillScr at hr; split_ifs <;> omega),
+      ram_simp),
       fun i hi => by omega⟩ (Nat.zero_le _)
   exact ⟨c', 1 + k, .seq e0 e, by omega, hI.2.2.2.1, hI.2.2.2.2⟩
 

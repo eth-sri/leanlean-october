@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleCand
 
 /-!
@@ -51,10 +53,10 @@ theorem mem_nodeScan (hN : IsNF (chainModel C) Q N) {reg : ℕ → Set Point}
   obtain ⟨p, hp, hpj⟩ := NFLoc.seq_surj hN hj
   have hsk : sk (chainModel C) Q N p = a := by
     show (chainModel C).key Q (N.arc (N.seq.getD p 0)).s = a
-    rw [hpj, hja]
+    simp_all
   have hek : ek (chainModel C) Q N p = b := by
     show (chainModel C).key Q (N.arc (N.seq.getD p 0)).e = b
-    rw [hpj, hjb]
+    simp_all
   refine ⟨hv, p, hp, ?_, ?_⟩
   · show (N.arc (N.seq.getD p 0)).reg = rgi N v
     rw [hpj, hjr]; rfl
@@ -66,9 +68,8 @@ theorem mem_nodeScan (hN : IsNF (chainModel C) Q N) {reg : ℕ → Set Point}
       intro w hw hk
       have : (w.edge : ℝ) < (chainModel C).W.n := by
         have := hw.1
-        unfold Model.key at hk
-        linarith
-      exact_mod_cast this
+        grind [Model.key]
+      simp_all
     have hsk' : (chainModel C).key Q (N.arc (sj N p)).s < (chainModel C).W.n := by
       have e : (chainModel C).key Q (N.arc (sj N p)).s = sk (chainModel C) Q N p := rfl
       rw [e, hsk]; exact harc.2.1
@@ -77,30 +78,28 @@ theorem mem_nodeScan (hN : IsNF (chainModel C) Q N) {reg : ℕ → Set Point}
       rw [e, hek]; exact harc.2.2.2.1
     have hsn := hkey _ hs hsk'
     have hen := hkey _ he hek'
-    exact mem_scan C Q N hs he hsn hen hxC (by rw [hsk, hek]; exact hmem)
+    exact mem_scan C Q N hs he hsn hen hxC (by simp_all +arith)
 
 /-- A ray point in the open box at height at most the top that lies on an arc is on the chain. -/
 theorem mem_set_of_arcSet {x : Point} (hbox : x ∈ Chain.box C.radius) (hy : x.2 ≤ C.top.2)
     {a b : ℝ} (hx : x ∈ (chainModel C).arcSet a b) (hP : C.P.Simple) : x ∈ C.set := by
   have hnd : x ∉ C.dom := Sweep.arcSet_subset_compl_dom C hP a b hx
   rcases (Merge.not_mem_dom_iff C hy).1 hnd with h | h
-  · exact absurd hbox h
-  · exact h
+  all_goals simp_all
 
 /-- Near `0`, the points of a finite set are only `0`. -/
 theorem eventually_not_mem_of_finite {X : Set ℝ} (hX : X.Finite) : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∉ X := by
   have hc : IsClosed (X \ {0}) := (hX.sdiff).isClosed
   have ho : (X \ {0})ᶜ ∈ 𝓝 (0 : ℝ) := hc.isOpen_compl.mem_nhds (by simp)
   filter_upwards [nhdsWithin_le_nhds ho, self_mem_nhdsWithin] with t h1 h2
-  intro ht
-  exact h1 ⟨ht, by simp only [Set.mem_singleton_iff]; exact ne_of_gt h2⟩
+  grind
 
 /-- No point lies on an arc of the empty set (arcs face their region at their inner keys). -/
 theorem not_arcHit_empty {F : Set (Set Point)} {x : Point} : ¬ ArcHit C F ∅ x := by
   rintro ⟨a, b, harc, -⟩
   obtain ⟨ha0, han, -, -, hends, -, hfac⟩ := harc
   -- a non-vertex key inside the arc
-  have hn : 0 < (chainModel C).W.n := by rw [walk_n]; omega
+  have hn : 0 < (chainModel C).W.n := by grind [walk_n]
   obtain ⟨p, t, hp, ht0, ht1, hin⟩ : ∃ p : ℕ, ∃ t : ℝ, p < (chainModel C).W.n ∧ 0 < t ∧ t < 1 ∧
       sideInArc a b (p + t) := by
     rcases hends with ⟨-, -, hab⟩ | ⟨-, rfl, rfl⟩
@@ -108,24 +107,14 @@ theorem not_arcHit_empty {F : Set (Set Point)} {x : Point} : ¬ ArcHit C F ∅ x
       obtain ⟨q, hq, hqa⟩ : ∃ q : ℕ, q < (chainModel C).W.n ∧ (q : ℝ) ≤ a ∧ a < q + 1 := by
         refine ⟨⌊a⌋₊, ?_, Nat.floor_le ha0, Nat.lt_floor_add_one a⟩
         have : (⌊a⌋₊ : ℝ) < (chainModel C).W.n := lt_of_le_of_lt (Nat.floor_le ha0) han
-        exact_mod_cast this
+        simp_all
       set ε := (if a < b then min (q + 1 - a) (b - a) else q + 1 - a) / 2 with hε
       have hε0 : 0 < ε := by
-        rw [hε]; split_ifs with h
-        · have := lt_min (show 0 < (q : ℝ) + 1 - a by linarith [hqa.2]) (sub_pos.2 h); linarith
-        · linarith [hqa.2]
+        grind
       have hεq : a + ε < q + 1 := by
-        rw [hε]; split_ifs with h
-        · have := min_le_left ((q : ℝ) + 1 - a) (b - a); linarith
-        · linarith [hqa.2]
-      refine ⟨q, a + ε - q, hq, by linarith [hqa.1], by linarith, ?_⟩
-      rw [show (q : ℝ) + (a + ε - q) = a + ε by ring]
-      unfold sideInArc
-      split_ifs with h
-      · have := min_le_right ((q : ℝ) + 1 - a) (b - a)
-        have e : ε = min ((q : ℝ) + 1 - a) (b - a) / 2 := by rw [hε, BookData.ite_t h]
-        constructor <;> linarith
-      · left; linarith
+        grind
+      refine ⟨q, a + ε - q, hq, by linarith, by linarith, ?_⟩
+      core_grind
     · refine ⟨0, 1 / 2, hn, by norm_num, by norm_num, ?_⟩
       unfold sideInArc; norm_num
   have := hfac p t hp ht0 ht1 hin
@@ -189,21 +178,20 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
     have hpN : p < B.N := lt_of_lt_of_le hp hB.arcs_le
     have hrp : rgi N p = r := by
       show (N.arc (N.seq.getD p 0)).reg = r
-      rw [hpj, hjr]
+      grind
     let iR : Fin B.N := ⟨p, hpN⟩
     have hrgR : rgNode reg N B iR = reg r := by
       show (if p < N.arcs.length then reg (rgi N p) else ∅) = reg r
-      rw [BookData.ite_t hp, hrp]
+      grind
     have hcandR : Cand iR := by
       refine hcand iR hp ?_
       have hsk : sk (chainModel C) Q N p = a := by
         show (chainModel C).key Q (N.arc (N.seq.getD p 0)).s = a
-        rw [hpj, hja]
+        grind
       have hek : ek (chainModel C) Q N p = b := by
         show (chainModel C).key Q (N.arc (N.seq.getD p 0)).e = b
-        rw [hpj, hjb]
-      show rayPt z σ T ∈ (chainModel C).arcSet (sk (chainModel C) Q N p) (ek (chainModel C) Q N p)
-      rw [hsk, hek]; exact hmem
+        grind
+      grind
     -- no node of `D*` is hit before `T`
     have hDh : ∀ i, Dm i → ∀ s, 0 < s → s < T →
         ¬ ArcHit C F (rgNode reg N B i) (rayPt z σ s) := by
@@ -211,39 +199,37 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
       by_cases hiA : i.1 < N.arcs.length
       · have e : rgNode reg N B i = reg (rgi N i) := by
           show (if i.1 < N.arcs.length then reg (rgi N i) else ∅) = _
-          rw [BookData.ite_t hiA]
+          grind
         rw [e] at hh
         obtain ⟨a', b', harc', hmem'⟩ := hh
         have hxC := mem_set_of_arcSet (hbox s hs0 hsT) (by simpa using hz) hmem' hP
         exact hnoD i hi s hs0 hsT (mem_nodeScan hN hR hA hiA hxC ⟨a', b', harc', hmem'⟩)
       · have e : rgNode reg N B i = ∅ := by
           show (if i.1 < N.arcs.length then reg (rgi N i) else ∅) = _
-          rw [BookData.ite_f hiA]
+          grind
         rw [e] at hh
         exact not_arcHit_empty hh
     obtain ⟨iU, hiU, hsel⟩ := cluster_query_nodes C hP hFam (rgNode reg N B) (bookGraph B)
       (conn_of_graphOK hN hR hA hB) (cross_of_graphOK hP hN hR hA hB) Dm ℓ hlab hz hσ hT hbox
-      hfin hnoF hDh hU hUi (iR := iR) (by rw [hrgR]; exact hR.1 r hr) (by rw [hrgR]; exact hRi)
+      hfin hnoF hDh hU hUi (iR := iR) (by grind) (by grind)
     have hSN : SN iU := hSN iU (by
-      rcases hsel with h | ⟨-, h⟩
-      · exact Or.inl h
-      · exact Or.inr ⟨iR, hcandR, h⟩)
+      grind)
     -- the true hit is on an arc of `U`, hence scanned
     obtain ⟨a₁, b₁, harc₁, hmem₁⟩ := Sweep.local_shoot C hP hFam hU hz hσ hUi
     have hiUA : iU.1 < N.arcs.length := by
       by_contra hc
       have e : rgNode reg N B iU = ∅ := by
         show (if iU.1 < N.arcs.length then reg (rgi N iU) else ∅) = _
-        rw [BookData.ite_f hc]
+        grind
       rw [e] at hiU
       rw [← hiU] at hU
       exact (Chazelle.Chain.regionsIn_nonempty (D := C.dom) hU).ne_empty rfl
     have hiU' : reg (rgi N iU) = U := by
       rw [← hiU]
       show reg (rgi N iU) = (if iU.1 < N.arcs.length then reg (rgi N iU) else ∅)
-      rw [BookData.ite_t hiUA]
+      grind
     have hinS : rayPt z σ t₀ ∈ S :=
-      hS1 iU hSN (mem_nodeScan hN hR hA hiUA hon (by rw [hiU']; exact ⟨a₁, b₁, harc₁, hmem₁⟩))
+      hS1 iU hSN (mem_nodeScan hN hR hA hiUA hon (by grind [Chazelle.Core.OracleQ.ArcHit]))
     have hSfirst : FirstHit S z σ t₀ := Sweep.firstHit_of_subset hSC hfirst hinS
     refine ⟨fun t ht => ?_, fun hn => ?_⟩
     · subst ht

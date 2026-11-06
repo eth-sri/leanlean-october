@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SpecNF
 
 /-!
@@ -50,79 +52,62 @@ theorem mem_arcEdges_iff (a b : ℝ) (p : ℕ) :
   unfold sideInArc
   split_ifs with h
   · constructor
-    · rintro ⟨t, ht0, ht1, h1, h2⟩
-      exact ⟨by linarith, by linarith⟩
+    · ram_grind
     · rintro ⟨h1, h2⟩
       -- a point of `(max a p, min b (p + 1))`
       refine ⟨(max a p + min b (p + 1)) / 2 - p, ?_, ?_, ?_, ?_⟩
-      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
-        have : (p : ℝ) ≤ max a p := le_max_right _ _
-        linarith
-      · have : min b (p + 1) ≤ (p : ℝ) + 1 := min_le_right _ _
-        have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
-        linarith
-      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
-        have : a ≤ max a p := le_max_left _ _
-        linarith
-      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
-        have : min b (p + 1) ≤ b := min_le_left _ _
-        linarith
+      · grind
+      · grind
+      all_goals grind
   · constructor
-    · rintro ⟨t, ht0, ht1, h1 | h1⟩
-      · right; linarith
-      · left; linarith
+    · ram_grind
     · rintro (h1 | h1)
       · refine ⟨(min b (p + 1) - p) / 2, ?_, ?_, Or.inr ?_⟩
-        · have : (p : ℝ) < min b (p + 1) := lt_min h1 (by linarith)
-          linarith
-        · have : min b (p + 1) ≤ (p : ℝ) + 1 := min_le_right _ _
-          linarith
-        · have : (p : ℝ) < min b (p + 1) := lt_min h1 (by linarith)
-          have : min b (p + 1) ≤ b := min_le_left _ _
-          linarith
+        all_goals grind
       · refine ⟨(max a p + (p + 1)) / 2 - p, ?_, ?_, Or.inl ?_⟩
-        · have : max a p < (p : ℝ) + 1 := max_lt h1 (by linarith)
-          have : (p : ℝ) ≤ max a p := le_max_right _ _
-          linarith
-        · have : max a p < (p : ℝ) + 1 := max_lt h1 (by linarith)
-          have : (p : ℝ) ≤ max a p := le_max_right _ _
-          linarith
-        · have : max a p < (p : ℝ) + 1 := max_lt h1 (by linarith)
-          have : a ≤ max a p := le_max_left _ _
-          linarith
+        all_goals grind
 
+section
+variable {p e : ℕ} {f : ℝ} (hf : 0 ≤ f ∧ f < 1)
+include hf
 /-- For a key `e + f` with `0 ≤ f < 1`: `p < e + f ↔ p < ceil`. -/
-theorem lt_key_iff {p e : ℕ} {f : ℝ} (hf : 0 ≤ f ∧ f < 1) :
+theorem lt_key_iff :
     (p : ℝ) < e + f ↔ p < keyCeil e f := by
   unfold keyCeil
   split_ifs with h
-  · rw [h, add_zero]; exact Nat.cast_lt
+  · simp_all
   · have hf0 : 0 < f := lt_of_le_of_ne hf.1 (Ne.symm h)
     constructor
     · intro h1
-      have : (p : ℝ) < e + 1 := by linarith [hf.2]
+      have : (p : ℝ) < e + 1 := by linarith
       exact_mod_cast this
     · intro h1
       have : p ≤ e := by omega
-      have : (p : ℝ) ≤ e := by exact_mod_cast this
+      have : (p : ℝ) ≤ e := by simp_all
       linarith
 
 /-- For a key `e + f` with `0 ≤ f < 1`: `e + f < p + 1 ↔ e ≤ p`. -/
-theorem key_lt_succ_iff {p e : ℕ} {f : ℝ} (hf : 0 ≤ f ∧ f < 1) :
+theorem key_lt_succ_iff :
     (e : ℝ) + f < p + 1 ↔ e ≤ p := by
   constructor
   · intro h
-    have : (e : ℝ) < p + 1 := by linarith [hf.1]
+    have : (e : ℝ) < p + 1 := by linarith
     have : e < p + 1 := by exact_mod_cast this
     omega
   · intro h
-    have : (e : ℝ) ≤ p := by exact_mod_cast h
-    linarith [hf.2]
+    have : (e : ℝ) ≤ p := by simp_all
+    linarith
 
+
+end
+
+section
+variable {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ lo ≤ p ∧ p < hi)) (hhi : hi ≤ M.W.n)
+include hc hhi
 /-- **The weight of an arc in closed form.**  If the counted walk edges are exactly `[lo, hi)`
 with `hi ≤ n`, the weight of the open cyclic key interval from `ea + fa` to `eb + fb` (fractional
 parts in `[0, 1)`) is `arcWtNat lo hi ea fa eb fb`. -/
-theorem arcWt_closed {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ lo ≤ p ∧ p < hi)) (hhi : hi ≤ M.W.n)
+theorem arcWt_closed
     {ea eb : ℕ} {fa fb : ℝ} (hfa : 0 ≤ fa ∧ fa < 1) (hfb : 0 ≤ fb ∧ fb < 1) :
     M.arcWt (ea + fa) (eb + fb) = arcWtNat lo hi ea fa eb fb := by
   unfold arcWt arcWtNat
@@ -133,13 +118,8 @@ theorem arcWt_closed {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ l
       ext p
       simp only [mem_ofPred_eq, Finset.coe_Ico, mem_Ico, mem_arcEdges_iff, ite_eq_left h,
         lt_key_iff hfb, key_lt_succ_iff hfa, max_le_iff, lt_min_iff]
-      constructor
-      · rintro ⟨hp, hcp, h3, h4⟩
-        obtain ⟨h1, h2⟩ := (hc p hp).1 hcp
-        exact ⟨⟨h4, h1⟩, h3, h2⟩
-      · rintro ⟨⟨h4, h1⟩, h3, h2⟩
-        exact ⟨by omega, (hc p (by omega)).2 ⟨h1, h2⟩, h3, h4⟩
-    rw [hset, ncard_coe_finset, Nat.card_Ico]
+      grind
+    grind [ncard_coe_finset, Nat.card_Ico]
   · have hset : {p : ℕ | p < M.W.n ∧ M.counted p ∧ ∃ t : ℝ, 0 < t ∧ t < 1 ∧
         sideInArc (ea + fa) (eb + fb) (p + t)} =
         ↑(Finset.Ico lo hi \ Finset.Ico (max (keyCeil eb fb) lo) (min ea hi)) := by
@@ -147,26 +127,22 @@ theorem arcWt_closed {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ l
       simp only [mem_ofPred_eq, Finset.coe_sdiff, Finset.coe_Ico, mem_sdiff, mem_Ico,
         mem_arcEdges_iff, ite_eq_right h, lt_key_iff hfb, key_lt_succ_iff hfa, max_le_iff,
         lt_min_iff]
-      constructor
-      · rintro ⟨hp, hcp, h3⟩
-        obtain ⟨h1, h2⟩ := (hc p hp).1 hcp
-        refine ⟨⟨h1, h2⟩, ?_⟩; omega
-      · rintro ⟨⟨h1, h2⟩, h3⟩
-        refine ⟨by omega, (hc p (by omega)).2 ⟨h1, h2⟩, ?_⟩; omega
+      grind
     rw [hset, ncard_coe_finset, Finset.card_sdiff_of_subset, Nat.card_Ico, Nat.card_Ico]
-    intro p
-    simp only [Finset.mem_Ico, max_le_iff, lt_min_iff]
-    omega
+    grind
 
 /-- **The weight of an arc between two walk positions** of the walk proper (parameters in
 `[0, 1)`), over counted edges `[lo, hi)`: the closed form of `arcWt_closed` with the edges and
 parameters of the two positions. -/
-theorem arcWt_key {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ lo ≤ p ∧ p < hi)) (hhi : hi ≤ M.W.n)
+theorem arcWt_key
     (Q : Polygon) {x y : WPos} (hx : 0 ≤ M.param Q x ∧ M.param Q x < 1)
     (hy : 0 ≤ M.param Q y ∧ M.param Q y < 1) :
     M.arcWt (M.key Q x) (M.key Q y) =
       arcWtNat lo hi x.edge (M.param Q x) y.edge (M.param Q y) :=
   M.arcWt_closed hc hhi hx hy
+
+
+end
 
 end Model
 
@@ -182,8 +158,7 @@ theorem chainModel_n (C : Chain) : (chainModel C).W.n = 2 * C.m + 7 :=
 
 /-- The walk of the interior model has `n` edges. -/
 theorem interiorModel_n (Q : Polygon) : (interiorModel Q).W.n = Q.n := by
-  simp only [interiorModel, interiorWalk]
-  split_ifs <;> simp [Polygon.n]
+  grind [interiorModel, interiorWalk, Polygon.n]
 
 /-- The interior model counts every walk edge. -/
 theorem interiorModel_counted_iff (Q : Polygon) (p : ℕ) (hp : p < (interiorModel Q).W.n) :

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Separator.Clusters
 public import Mathlib.Data.Nat.Size
 
@@ -37,27 +39,23 @@ def items (act : ℕ → ℕ) (p : ℕ × ℕ) : Finset ℕ := (Finset.Ico p.1 p
 /-- The length of a segment. -/
 def len (p : ℕ × ℕ) : ℕ := p.2 - p.1
 
-theorem items_card {act : ℕ → ℕ} {p : ℕ × ℕ} (h : Set.InjOn act (Finset.Ico p.1 p.2)) :
+section
+variable {act : ℕ → ℕ} {p : ℕ × ℕ}
+theorem items_card (h : Set.InjOn act (Finset.Ico p.1 p.2)) :
     (items act p).card = len p := by
-  unfold items len
-  rw [Finset.card_image_of_injOn h, Nat.card_Ico]
+  core_grind [Nat.card_Ico]
 
-theorem mem_items {act : ℕ → ℕ} {p : ℕ × ℕ} {v : ℕ} :
+theorem mem_items {v : ℕ} :
     v ∈ items act p ↔ ∃ i, p.1 ≤ i ∧ i < p.2 ∧ act i = v := by
-  unfold items
-  simp only [Finset.mem_image, Finset.mem_Ico]
-  constructor
-  · rintro ⟨i, ⟨a, b⟩, c⟩; exact ⟨i, a, b, c⟩
-  · rintro ⟨i, a, b, c⟩; exact ⟨i, ⟨a, b⟩, c⟩
+  core_grind
+
+
+end
 
 /-- Items only depend on the array inside the segment. -/
 theorem items_congr {act act' : ℕ → ℕ} {p : ℕ × ℕ}
     (h : ∀ i, p.1 ≤ i → i < p.2 → act' i = act i) : items act' p = items act p := by
-  ext v
-  simp only [mem_items]
-  constructor
-  · rintro ⟨i, a, b, c⟩; exact ⟨i, a, b, by rw [← h i a b]; exact c⟩
-  · rintro ⟨i, a, b, c⟩; exact ⟨i, a, b, by rw [h i a b]; exact c⟩
+  core_grind
 
 section stack
 
@@ -114,35 +112,40 @@ structure SplitOK (act act' : ℕ → ℕ) (p : ℕ × ℕ) (e : ℕ → ℕ) (s
 /-- The class `t` of a split. -/
 def scls (e : ℕ → ℕ) (t : ℕ) : ℕ × ℕ := (e t, e (t + 1))
 
-theorem SplitOK.e_mono {act act' : ℕ → ℕ} {p : ℕ × ℕ} {e : ℕ → ℕ} {sep : Finset ℕ}
-    (hS : SplitOK (μ := μ) (k := k) (Adj := Adj) act act' p e sep) {t t' : ℕ} (htt : t ≤ t')
+section
+variable {act act' : ℕ → ℕ} {p : ℕ × ℕ} {e : ℕ → ℕ} {sep : Finset ℕ} (hS : SplitOK (μ := μ) (k := k) (Adj := Adj) act act' p e sep)
+include act act' p sep hS
+theorem SplitOK.e_mono {t t' : ℕ} (htt : t ≤ t')
     (ht' : t' ≤ 3) : e t ≤ e t' := by
   induction t' with
-  | zero => rw [show t = 0 by omega]
+  | zero => simp_all
   | succ n ih =>
     rcases Nat.lt_or_ge t (n + 1) with h | h
     · exact le_trans (ih (by omega) (by omega)) (hS.mono n (by omega))
-    · rw [show t = n + 1 by omega]
+    grind
 
-theorem SplitOK.scls_in {act act' : ℕ → ℕ} {p : ℕ × ℕ} {e : ℕ → ℕ} {sep : Finset ℕ}
-    (hS : SplitOK (μ := μ) (k := k) (Adj := Adj) act act' p e sep) {t : ℕ} (ht : t < 3) :
+section
+variable {t : ℕ} (ht : t < 3)
+include t ht
+theorem SplitOK.scls_in :
     p.1 ≤ e t ∧ e t ≤ e (t + 1) ∧ e (t + 1) ≤ p.2 := by
   refine ⟨le_trans hS.e0 (hS.e_mono (Nat.zero_le _) (by omega)), hS.mono t ht,
     le_trans (hS.e_mono (by omega) le_rfl) hS.e3⟩
 
-theorem SplitOK.scls_inj {act act' : ℕ → ℕ} {p : ℕ × ℕ} {e : ℕ → ℕ} {sep : Finset ℕ}
-    (hS : SplitOK (μ := μ) (k := k) (Adj := Adj) act act' p e sep) {t : ℕ} (ht : t < 3) :
+theorem SplitOK.scls_inj :
     Set.InjOn act' (Finset.Ico (e t) (e (t + 1))) := by
   have a := hS.e_mono (Nat.zero_le t) (by omega)
   have b := hS.e_mono (show t + 1 ≤ 3 by omega) le_rfl
   intro x hx y hy hxy
   simp only [Finset.coe_Ico, Set.mem_Ico] at hx hy
-  exact hS.inj (by simp only [Finset.coe_Ico, Set.mem_Ico]; omega)
-    (by simp only [Finset.coe_Ico, Set.mem_Ico]; omega) hxy
+  exact hS.inj (by grind)
+    (by grind) hxy
+
+
+end
 
 /-- Distinct classes are disjoint. -/
-theorem SplitOK.scls_disj {act act' : ℕ → ℕ} {p : ℕ × ℕ} {e : ℕ → ℕ} {sep : Finset ℕ}
-    (hS : SplitOK (μ := μ) (k := k) (Adj := Adj) act act' p e sep) {t t' : ℕ} (ht : t < 3) (ht' : t' < 3)
+theorem SplitOK.scls_disj {t t' : ℕ} (ht : t < 3) (ht' : t' < 3)
     (hne : t ≠ t') : Disjoint (items act' (scls e t)) (items act' (scls e t')) := by
   rw [Finset.disjoint_left]
   intro v hv hv'
@@ -153,12 +156,15 @@ theorem SplitOK.scls_disj {act act' : ℕ → ℕ} {p : ℕ × ℕ} {e : ℕ →
   have h0' := hS.e_mono (Nat.zero_le t') (by omega)
   have h3 := hS.e_mono (show t + 1 ≤ 3 by omega) le_rfl
   have h3' := hS.e_mono (show t' + 1 ≤ 3 by omega) le_rfl
-  have := hS.inj (by simp only [Finset.coe_Ico, Set.mem_Ico]; omega)
-    (by simp only [Finset.coe_Ico, Set.mem_Ico]; omega) (c.trans c'.symm)
+  have := hS.inj (by grind)
+    (by grind) (c.trans c'.symm)
   subst this
   rcases Nat.lt_or_gt_of_ne hne with h | h
   · have := hS.e_mono (show t + 1 ≤ t' by omega) (by omega); omega
   · have := hS.e_mono (show t' + 1 ≤ t by omega) (by omega); omega
+
+
+end
 
 /-- **Split the top segment.**  The large classes are pushed (`news`), the small nonempty ones
 finished. -/
@@ -180,29 +186,23 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
   -- the old live segments other than `p` are untouched
   have hold : ∀ q, Lv (p :: rest) fin q → q ≠ p → items act' q = items act q := by
     intro q hq hqp
-    refine items_congr (fun i a b => hS.out i ?_ (by have := hrng q hq; omega))
+    refine items_congr (fun i a b => hS.out i ?_ (by grind))
     rcases hI.rdisj q p hq hLp hqp with h | h | h | h
-    · left; omega
-    · right; omega
-    · omega
-    · unfold len at hbig; omega
+    all_goals omega
   -- classification of the new live segments
   have hlive : ∀ q, Lv (news ++ rest) fin' q →
       (Lv (p :: rest) fin q ∧ q ≠ p) ∨ (∃ t, t < 3 ∧ q = scls e t ∧ 0 < len q) := by
     intro q hq
     rcases hq with hq | hq
     · rcases List.mem_append.mp hq with hq | hq
-      · obtain ⟨t, ht, rfl, hb⟩ := (hnews q).mp hq
-        exact Or.inr ⟨t, ht, rfl, by omega⟩
+      · grind
       · refine Or.inl ⟨Or.inl (List.mem_cons_of_mem _ hq), fun h => ?_⟩
         subst h
         exact (List.nodup_cons.mp hI.nodup).1 hq
     · rcases Finset.mem_union.mp hq with hq | hq
       · refine Or.inl ⟨Or.inr hq, fun h => ?_⟩
         subst h; exact hI.sf q List.mem_cons_self hq
-      · obtain ⟨hq1, hq2⟩ := Finset.mem_filter.mp hq
-        obtain ⟨t, ht, rfl⟩ := Finset.mem_image.mp hq1
-        exact Or.inr ⟨t, Finset.mem_range.mp ht, rfl, hq2.1⟩
+      grind
   have hcls_live : ∀ t, t < 3 → 0 < len (scls e t) → Lv (news ++ rest) fin' (scls e t) := by
     intro t ht hpos
     by_cases hb : s < len (scls e t)
@@ -213,14 +213,13 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
     intro q hq hqp
     rcases hq with hq | hq
     · rcases List.mem_cons.mp hq with h | h
-      · exact absurd h hqp
+      · grind
       · exact Or.inl (List.mem_append_right _ h)
     · exact Or.inr (Finset.mem_union_left _ hq)
   have hclsp : ∀ t, t < 3 → scls e t ≠ p ∧ len (scls e t) < len p := by
     intro t ht
     have := hS.half t ht
-    have hl : len (scls e t) < len p := by unfold len at *; simp only [scls] at *; omega
-    exact ⟨fun h => by rw [h] at hl; omega, hl⟩
+    grind [len, scls]
   have hnew_items : ∀ t, t < 3 → ∀ v ∈ items act' (scls e t), v ∈ items act p ∧ v ∉ sep :=
     fun t ht => hS.inparts t ht
   have hsep_off : ∀ v ∈ sep, v ∉ D ∧ v ∉ H := fun v hv => hoffp v (hS.sub hv)
@@ -229,10 +228,10 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
     intro t ht q hq hqp
     obtain ⟨a, b, c⟩ := hS.scls_in ht
     rcases hI.rdisj q p hq hLp hqp with h | h | h | h
-    · right; left; simp only [scls]; omega
-    · left; simp only [scls]; omega
-    · right; right; right; omega
-    · unfold len at hbig; omega
+    · right; core_grind
+    · left; core_grind
+    · right; omega
+    grind [len]
   refine ⟨fun q hq => ?_, fun q hq => ?_, fun q hq v hv => ?_, ?_, fun q hq hqf => ?_,
     fun q q' hq hq' hne => ?_, fun q q' hq hq' hne => ?_, fun q hq => ?_, fun q hq => ?_,
     fun v hv h1 h2 => ?_, fun q hq v hv => ?_, fun q hq v hv w hw => ?_,
@@ -247,14 +246,11 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
       simp only [Finset.coe_Ico, Set.mem_Ico] at hi hj
       have ho : ∀ i, q.1 ≤ i → i < q.2 → act' i = act i := by
         intro i a b
-        refine hS.out i ?_ (by have := hrng q h1; omega)
+        refine hS.out i ?_ (by grind)
         rcases hI.rdisj q p h1 hLp h2 with h | h | h | h
-        · left; omega
-        · right; omega
-        · omega
-        · unfold len at hbig; omega
+        all_goals omega
       rw [ho i hi.1 hi.2, ho j hj.1 hj.2] at hij
-      exact hI.inj q h1 (by simp [hi.1, hi.2]) (by simp [hj.1, hj.2]) hij
+      exact hI.inj q h1 (by grind) (by grind) hij
     · exact hS.scls_inj ht
   · -- vertices
     rcases hlive q hq with ⟨h1, h2⟩ | ⟨t, ht, rfl, _⟩
@@ -282,7 +278,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
         unfold len at hb hbig
         simp only [scls] at hrd hb
         rcases hrd with h | h | h | h <;> omega
-      · have := (Finset.mem_filter.mp h).2.2; omega
+      grind
     · rcases Finset.mem_union.mp hqf with h | h
       · exact hI.sf q (List.mem_cons_of_mem _ hq) h
       · obtain ⟨hq1, hq2⟩ := Finset.mem_filter.mp h
@@ -298,9 +294,8 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
     rcases hlive q hq with ⟨h1, h2⟩ | ⟨t, ht, rfl, _⟩ <;>
       rcases hlive q' hq' with ⟨h1', h2'⟩ | ⟨t', ht', rfl, _⟩
     · exact hI.rdisj q q' h1 h1' hne
-    · have := hrd_cls_old t' ht' q h1 h2
-      unfold RDisj at this ⊢; omega
-    · exact hrd_cls_old t ht q' h1' h2'
+    · grind [RDisj]
+    · grind
     · have htt : t ≠ t' := fun h => hne (by rw [h])
       simp only [RDisj, scls]
       rcases Nat.lt_or_gt_of_ne htt with h | h
@@ -319,12 +314,12 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
     · exact hS.scls_disj ht ht' (fun h => hne (by rw [h]))
   · -- large on the stack
     rcases List.mem_append.mp hq with hq | hq
-    · obtain ⟨t, ht, rfl, hb⟩ := (hnews q).mp hq; exact hb
+    · grind
     · exact hI.big q (List.mem_cons_of_mem _ hq)
   · -- small finished
     rcases Finset.mem_union.mp hq with h | h
     · exact hI.small q h
-    · exact (Finset.mem_filter.mp h).2.2
+    grind
   · -- cover
     rw [Finset.mem_union, not_or] at h2
     obtain ⟨q, hq, hvq⟩ := hI.cover v hv h1 h2.1
@@ -333,9 +328,9 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
       obtain ⟨t, ht, hvt⟩ := hS.parts v hvq h2.2
       have hpos : 0 < len (scls e t) := by
         obtain ⟨i, a, b, _⟩ := mem_items.mp hvt
-        unfold len scls; simp only at a b; omega
+        grind [len, scls]
       exact ⟨scls e t, hcls_live t ht hpos, hvt⟩
-    · exact ⟨q, hold_live q hq hqp, by rw [hold q hq hqp]; exact hvq⟩
+    grind
   · -- off
     rcases hlive q hq with ⟨h1, h2⟩ | ⟨t, ht, rfl, _⟩
     · rw [hold q h1 h2] at hv
@@ -344,9 +339,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
       rw [Finset.mem_union, not_or]
       refine ⟨a, fun hs => ?_⟩
       exact Finset.disjoint_left.mp (hI.disj q p h1 hLp h2) hv (hS.sub hs)
-    · obtain ⟨a, b⟩ := hnew_items t ht v hv
-      obtain ⟨c, d⟩ := hoffp v a
-      exact ⟨by rw [Finset.mem_union, not_or]; exact ⟨c, b⟩, d⟩
+    grind
   · -- slabs
     rcases hlive q hq with ⟨h1, h2⟩ | ⟨t, ht, rfl, _⟩
     · rw [hold q h1 h2] at hv hw; exact hI.inslab q h1 v hv w hw
@@ -362,10 +355,9 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
       subst this
       have hpos : 0 < len (scls e t) := by
         obtain ⟨i, a, b, _⟩ := mem_items.mp hxt
-        unfold len scls; simp only at a b; omega
+        grind [len, scls]
       exact ⟨scls e t, hcls_live t ht hpos, hxt, hyt⟩
-    · exact ⟨q, hold_live q hq hqp, by rw [hold q hq hqp]; exact hxq,
-        by rw [hold q hq hqp]; exact hyq⟩
+    grind
   · -- `D ∪ sep` stays off `H`
     rw [Finset.disjoint_union_left]
     exact ⟨hI.hD, Finset.disjoint_left.mpr (fun v hv => (hsep_off v hv).2)⟩
@@ -395,7 +387,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
     have hsub : news.toFinset ⊆ (Finset.range 3).image (scls e) := by
       intro q hq
       obtain ⟨t, ht, rfl, _⟩ := (hnews q).mp (List.mem_toFinset.mp hq)
-      exact Finset.mem_image.mpr ⟨t, Finset.mem_range.mpr ht, rfl⟩
+      grind
     have hnewsum : ∑ q ∈ news.toFinset, 3 * k * (2 * len q - s) ≤
         ∑ t ∈ Finset.range 3, 3 * k * (2 * len (scls e t) - s) :=
       le_trans (Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _ => Nat.zero_le _))
@@ -409,17 +401,14 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
           (Finset.mem_range.mp ht') htt')]
       rw [← items_card (hI.inj p hLp)]
       refine Finset.card_le_card (fun v hv => ?_)
-      obtain ⟨t, ht, hvt⟩ := Finset.mem_biUnion.mp hv
-      exact (hnew_items t (Finset.mem_range.mp ht) v hvt).1
+      grind
     have hb := Chazelle.Separator.sum_split_bound (Finset.range 3) (fun t => len (scls e t))
       (len p) s hsizes (fun t ht => hS.half t (Finset.mem_range.mp ht)) hbig
     have hb3 : 3 * k * (s + ∑ t ∈ Finset.range 3, (2 * len (scls e t) - s)) ≤
         3 * k * (2 * len p - s) := Nat.mul_le_mul_left _ hb
     rw [Nat.mul_add, Finset.mul_sum] at hb3
     have hsc : s * sep.card ≤ s * (3 * k) := Nat.mul_le_mul_left _ hS.card
-    have : s * (3 * k) = 3 * k * s := by ring
-    rw [Nat.mul_add]
-    omega
+    grind
   · -- the split counter
     have hpot := hI.pot2
     have hpr : p ∉ rest := (List.nodup_cons.mp hI.nodup).1
@@ -440,7 +429,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
     have hsub : news.toFinset ⊆ (Finset.range 3).image (scls e) := by
       intro q hq
       obtain ⟨t, ht, rfl, _⟩ := (hnews q).mp (List.mem_toFinset.mp hq)
-      exact Finset.mem_image.mpr ⟨t, Finset.mem_range.mpr ht, rfl⟩
+      grind
     have hnewsum : ∑ q ∈ news.toFinset, (2 * len q - s) ≤
         ∑ t ∈ Finset.range 3, (2 * len (scls e t) - s) :=
       le_trans (Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _ => Nat.zero_le _))
@@ -453,12 +442,10 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
           (Finset.mem_range.mp ht') htt')]
       rw [← items_card (hI.inj p hLp)]
       refine Finset.card_le_card (fun v hv => ?_)
-      obtain ⟨t, ht, hvt⟩ := Finset.mem_biUnion.mp hv
-      exact (hnew_items t (Finset.mem_range.mp ht) v hvt).1
+      grind
     have hb := Chazelle.Separator.sum_split_bound (Finset.range 3) (fun t => len (scls e t))
       (len p) s hsizes (fun t ht => hS.half t (Finset.mem_range.mp ht)) hbig
-    rw [Nat.add_mul, one_mul]
-    omega
+    grind
 
 /-- **The size potential of a split**: `Σ_{classes} |C| · size |C| + |P| ≤ |P| · size |P|`
 when the classes have at most half of `|P|` items each and at most `|P|` in total. -/
@@ -468,10 +455,10 @@ theorem split_size_pot (m : ℕ → ℕ) (M : ℕ) (hsum : ∑ t ∈ Finset.rang
   have hsz : ∀ t, t < 3 → m t * Nat.size (m t) + m t ≤ m t * Nat.size M := by
     intro t ht
     rcases Nat.eq_zero_or_pos (m t) with h0 | hpos
-    · rw [h0]; simp
+    · simp_all
     · have h2 : Nat.size (2 * m t) ≤ Nat.size M := Nat.size_le_size (hhalf t ht)
       have h3 : Nat.size (2 * m t) = Nat.size (m t) + 1 := by
-        rw [show 2 * m t = m t <<< 1 by rw [Nat.shiftLeft_eq_mul_pow]; ring]
+        rw [show 2 * m t = m t <<< 1 by omega]
         exact Nat.size_shiftLeft (by omega) 1
       calc m t * Nat.size (m t) + m t = m t * (Nat.size (m t) + 1) := by ring
         _ ≤ m t * Nat.size M := Nat.mul_le_mul_left _ (by omega)
@@ -483,11 +470,7 @@ theorem split_size_pot (m : ℕ → ℕ) (M : ℕ) (hsum : ∑ t ∈ Finset.rang
     Nat.mul_le_mul_right _ hsum
   -- `M ≤ |P| size |P| - Σ |C| size |C|` needs `M ≤ (M - Σ) size M + Σ`: fine when `size M ≥ 1`
   rcases Nat.eq_zero_or_pos M with hM | hM
-  · subst hM
-    have : ∀ t ∈ Finset.range 3, m t = 0 := fun t ht => by
-      have := hhalf t (Finset.mem_range.mp ht); omega
-    rw [Finset.sum_congr rfl (fun t ht => by rw [this t ht])]
-    simp
+  · omega
   · have hs1 : 1 ≤ Nat.size M := Nat.size_pos.mpr hM
     have h3 : (M - ∑ t ∈ Finset.range 3, m t) ≤ (M - ∑ t ∈ Finset.range 3, m t) * Nat.size M :=
       Nat.le_mul_of_pos_right _ hs1

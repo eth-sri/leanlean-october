@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.BruteList
 
 /-!
@@ -27,15 +29,21 @@ variable {C : Chain}
 def sig (d : ℕ) : ℝ := if d = 0 then 1 else -1
 
 theorem sig_cases (d : ℕ) : sig d = 1 ∨ sig d = -1 := by
-  unfold sig; split_ifs <;> simp
+  core_grind
 
+section
+variable (C : Chain) (i d : ℕ)
+include C i d
 /-- The direction of code `d` is emitted at tour position `i`. -/
-def Emit (C : Chain) (i d : ℕ) : Prop := emitR (prevPt C i) (vPt C i) (nextPt C i) (sig d)
+def Emit : Prop := emitR (prevPt C i) (vPt C i) (nextPt C i) (sig d)
 
 /-- The chord triple of the entry `(i, d)`. -/
-noncomputable def trip (C : Chain) (i d : ℕ) : ℕ × ℕ × ℕ :=
+noncomputable def trip : ℕ × ℕ × ℕ :=
   if d = 0 then (C.edgeIdx (C.sideIdx C.sideBeta i), i + 6, farEdge C (C.sideIdx C.sideBeta i) 1)
   else (C.edgeIdx (C.sideIdx C.sideBeta i), farEdge C (C.sideIdx C.sideBeta i) (-1), i + 6)
+
+
+end
 
 /-- The entries `(i, d)`, `i ≤ 2m`, in the order of the tour, east before west. -/
 def entries (m : ℕ) : List (ℕ × ℕ) := (List.range (2 * m + 1)).flatMap fun i => [(i, 0), (i, 1)]
@@ -48,33 +56,28 @@ noncomputable def bruteList (C : Chain) : List (ℕ × ℕ × ℕ) :=
 theorem mem_entries {m : ℕ} {e : ℕ × ℕ} : e ∈ entries m ↔ e.1 ≤ 2 * m ∧ e.2 ≤ 1 := by
   unfold entries
   simp only [List.mem_flatMap, List.mem_range, List.mem_cons, List.not_mem_nil, or_false]
-  constructor
-  · rintro ⟨i, hi, rfl | rfl⟩ <;> simp <;> omega
-  · rintro ⟨h1, h2⟩
-    refine ⟨e.1, by omega, ?_⟩
-    rcases Nat.le_one_iff_eq_zero_or_eq_one.1 h2 with h | h
-    · left; ext <;> simp [h]
-    · right; ext <;> simp [h]
+  grind
 
 theorem entries_nodup (m : ℕ) : (entries m).Nodup := by
   unfold entries
   rw [List.nodup_flatMap]
   refine ⟨fun i _ => by simp, List.nodup_range.pairwise_of_forall_ne fun a _ b _ hab => ?_⟩
-  refine List.disjoint_left.2 fun x hx hx' => hab ?_
-  simp only [List.mem_cons, List.not_mem_nil, or_false] at hx hx'
-  rcases hx with rfl | rfl <;> rcases hx' with h | h <;> simp only [Prod.mk.injEq] at h <;> omega
+  simp_all [List.mem_cons, List.not_mem_nil, or_false, Prod.mk.injEq] <;> omega_nf
 
+section
+variable (hP : C.P.Simple) (hDH : DistinctHeights C.P)
+include hP hDH
 /-- The vertex chord attached at the walk vertex of an emitted entry (parameter `0`). -/
-theorem vert_attach0 (hP : C.P.Simple) (hDH : DistinctHeights C.P) {i : ℕ} (hi : i ≤ 2 * C.m)
+theorem vert_attach0 {i : ℕ} (hi : i ≤ 2 * C.m)
     {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (he : emitR (prevPt C i) (vPt C i) (nextPt C i) σ) :
     SideAttach (chainModel C).W (C.chordSet (C.sideIdx C.sideBeta i) σ) (i + 6) 0 := by
   have hpt : sidePt (chainModel C).W (i + 6) 0 = C.vertex (C.sideIdx C.sideBeta i) := by
     rw [Chain.sidePt_zero]; exact walk_vtx_tour hi
   have hl := (corner_iff hDH hi hσ).2 he
-  exact (FuseMath.sideAttach_chordSet hP (by rw [walk_n]; omega) (C.sideIdx_le _ _) hpt hσ hl).2
+  exact (FuseMath.sideAttach_chordSet hP (by grind [walk_n]) (C.sideIdx_le _ _) hpt hσ hl).2
 
 /-- **An emitted entry describes the vertex chord**, attached at both ends. -/
-theorem entry_ok (hP : C.P.Simple) (hDH : DistinctHeights C.P) {i d : ℕ} (hi : i ≤ 2 * C.m)
+theorem entry_ok {i d : ℕ} (hi : i ≤ 2 * C.m)
     (he : Emit C i d) :
     (recOf (trip C i d)).toSet (chainModel C) C.P = C.chordSet (C.sideIdx C.sideBeta i) (sig d) ∧
       (recOf (trip C i d)).Attached (chainModel C) C.P ∧ (trip C i d).1 < C.P.n ∧
@@ -97,25 +100,28 @@ theorem entry_ok (hP : C.P.Simple) (hDH : DistinctHeights C.P) {i d : ℕ} (hi :
       unfold CRec.toSet recOf CRec.lpos CRec.rpos
       simp only
       rw [hvpos, hfpos, hvk, hh, C.chordSet_eq_hseg, min_eq_left, max_eq_right] <;>
-        simp only [Chain.chordEnd_fst] <;> linarith
+        grind [Chain.chordEnd_fst] <;> linarith
     refine ⟨hset, ?_, hn, hf⟩
     unfold CRec.Attached
     rw [hset, ht]
     exact ⟨hvA, hfA⟩
-  · have hs : sig d = -1 := by unfold sig; rw [ite_eq_right hd]
+  · have hs : sig d = -1 := by core_grind
     rw [hs] at hf hfpos hfA hvA hpos ⊢
     have ht : trip C i d = (C.edgeIdx k, farEdge C k (-1), i + 6) := by
-      unfold trip; rw [ite_eq_right hd]
+      grind [trip]
     have hset : (recOf (trip C i d)).toSet (chainModel C) C.P = C.chordSet k (-1) := by
       rw [ht]
       unfold CRec.toSet recOf CRec.lpos CRec.rpos
       simp only
       rw [hvpos, hfpos, hvk, hh, C.chordSet_eq_hseg, min_eq_right, max_eq_left] <;>
-        simp only [Chain.chordEnd_fst] <;> linarith
+        grind [Chain.chordEnd_fst] <;> linarith
     refine ⟨hset, ?_, hn, hf⟩
     unfold CRec.Attached
     rw [hset, ht]
     exact ⟨hfA, hvA⟩
+
+
+end
 
 theorem mem_bruteList {x : ℕ × ℕ × ℕ} :
     x ∈ bruteList C ↔ ∃ i d, i ≤ 2 * C.m ∧ d ≤ 1 ∧ Emit C i d ∧ x = trip C i d := by
@@ -123,8 +129,7 @@ theorem mem_bruteList {x : ℕ × ℕ × ℕ} :
   unfold bruteList
   simp only [List.mem_map, List.mem_filter, decide_eq_true_eq, mem_entries]
   constructor
-  · rintro ⟨e, ⟨⟨h1, h2⟩, h3⟩, rfl⟩
-    exact ⟨e.1, e.2, h1, h2, h3, rfl⟩
+  · grind
   · rintro ⟨i, d, h1, h2, h3, rfl⟩
     exact ⟨(i, d), ⟨⟨h1, h2⟩, h3⟩, rfl⟩
 
@@ -132,10 +137,13 @@ theorem mem_bruteList {x : ℕ × ℕ × ℕ} :
 theorem chordSet_snd {k : ℕ} {σ : ℝ} {p : Point} (hp : p ∈ C.chordSet k σ) :
     p.2 = (C.vertex k).2 := by
   obtain ⟨t, -, -, rfl⟩ := hp
-  simp [Chain.chordEnd_snd]
+  simp_all
 
+section
+variable (hP : C.P.Simple) (hDH : DistinctHeights C.P)
+include hP hDH
 /-- **Distinct emitted entries give distinct chords.** -/
-theorem chord_inj (hP : C.P.Simple) (hDH : DistinctHeights C.P) {i d i' d' : ℕ}
+theorem chord_inj {i d i' d' : ℕ}
     (hi : i ≤ 2 * C.m) (hd : d ≤ 1) (hi' : i' ≤ 2 * C.m) (hd' : d' ≤ 1) (he : Emit C i d)
     (he' : Emit C i' d')
     (heq : C.chordSet (C.sideIdx C.sideBeta i) (sig d) =
@@ -168,7 +176,7 @@ theorem chord_inj (hP : C.P.Simple) (hDH : DistinctHeights C.P) {i d i' d' : ℕ
   have hf := (entry_ok hP hDH hi he).2.2.2
   have hf' := (entry_ok hP hDH hi he').2.2.2
   have hsd : sig d ≠ sig d' := by
-    unfold sig; split_ifs <;> first | omega | norm_num
+    core_grind
   -- the east chord has a point east of the vertex, the west chord none
   have key : ∀ σ σ' : ℝ, (σ = 1 ∨ σ = -1) → (σ' = 1 ∨ σ' = -1) → σ ≠ σ' → C.DirFree k σ →
       C.DirFree k σ' → C.chordSet k σ ≠ C.chordSet k σ' := by
@@ -181,14 +189,14 @@ theorem chord_inj (hP : C.P.Simple) (hDH : DistinctHeights C.P) {i d i' d' : ℕ
     have h1 := congrArg Prod.fst hpt
     simp only [Chain.chordEnd_fst] at h1
     rcases hσ with rfl | rfl <;> rcases hσ' with rfl | rfl
-    · exact hne' rfl
+    · simp_all
     · nlinarith
     · nlinarith
-    · exact hne' rfl
+    simp_all
   exact key _ _ (sig_cases d) (sig_cases d') hsd hf hf' heq
 
 /-- Every chord of the list is a vertex chord. -/
-theorem bruteList_sub (hP : C.P.Simple) (hDH : DistinctHeights C.P) {x : ℕ × ℕ × ℕ}
+theorem bruteList_sub {x : ℕ × ℕ × ℕ}
     (hx : x ∈ bruteList C) : (recOf x).toSet (chainModel C) C.P ∈ C.chords := by
   obtain ⟨i, d, hi, -, he, rfl⟩ := mem_bruteList.1 hx
   obtain ⟨hset, -, -, hf⟩ := entry_ok hP hDH hi he
@@ -196,13 +204,12 @@ theorem bruteList_sub (hP : C.P.Simple) (hDH : DistinctHeights C.P) {x : ℕ × 
   exact ⟨_, _, C.sideIdx_le _ _, sig_cases d, hf, rfl⟩
 
 /-- **The chord list is valid** (`ChordTriplesOK`). -/
-theorem bruteList_ok (hP : C.P.Simple) (hDH : DistinctHeights C.P) :
+theorem bruteList_ok :
     ChordTriplesOK (chainModel C) C.P (bruteList C) := by
   classical
   refine ⟨⟨?_, ?_, ?_⟩, ?_, ?_, ?_⟩
   · refine ((bruteList C).finite_toSet.image fun x => (recOf x).toSet (chainModel C) C.P).subset ?_
-    rintro c ⟨x, hx, rfl⟩
-    exact ⟨x, hx, rfl⟩
+    grind
   · rintro c ⟨x, hx, rfl⟩
     exact Merge.chords_subset_augChords C (bruteList_sub hP hDH hx)
   · rintro c ⟨x, hx, rfl⟩
@@ -211,12 +218,7 @@ theorem bruteList_ok (hP : C.P.Simple) (hDH : DistinctHeights C.P) :
   · unfold bruteList
     rw [List.map_map]
     refine List.Nodup.map_on ?_ ((entries_nodup C.m).filter _)
-    rintro ⟨i, d⟩ he ⟨i', d'⟩ he' heq
-    simp only [List.mem_filter, decide_eq_true_eq, mem_entries] at he he'
-    simp only [Function.comp] at heq
-    rw [(entry_ok hP hDH he.1.1 he.2).1, (entry_ok hP hDH he'.1.1 he'.2).1] at heq
-    obtain ⟨h1, h2⟩ := chord_inj hP hDH he.1.1 he.1.2 he'.1.1 he'.1.2 he.2 he'.2 heq
-    rw [h1, h2]
+    grind [Chazelle.Core.Brute.mem_entries, Chazelle.Core.Brute.entry_ok, Chazelle.Core.Brute.chord_inj]
   · intro x hx
     obtain ⟨i, d, hi, -, he, rfl⟩ := mem_bruteList.1 hx
     exact (entry_ok hP hDH hi he).2.1
@@ -225,7 +227,7 @@ theorem bruteList_ok (hP : C.P.Simple) (hDH : DistinctHeights C.P) :
     exact (entry_ok hP hDH hi he).2.2.1
 
 /-- **The chords of the list are exactly the full map.** -/
-theorem bruteList_set (hP : C.P.Simple) (hDH : DistinctHeights C.P) :
+theorem bruteList_set :
     {c | ∃ x ∈ bruteList C, c = (recOf x).toSet (chainModel C) C.P} = C.chords := by
   ext c
   constructor
@@ -245,10 +247,10 @@ theorem bruteList_set (hP : C.P.Simple) (hDH : DistinctHeights C.P) :
       rcases hs0.lt_or_eq with hs0 | hs0
       · rcases hs1.lt_or_eq with hs1 | hs1
         · exact absurd (hs ▸ hopen s ⟨hs0, hs1⟩) hvD
-        · right; rw [hs, hs1, Geometry.lerp_one]
-      · left; rw [hs, ← hs0, Geometry.lerp_zero]
+        simp_all
+      grind [Geometry.lerp_zero]
     have hWv : WalkEnd (chainModel C).W (C.chordSet k σ) (C.vertex k) := by
-      rcases hvab with h | h <;> rw [h] <;> assumption
+      grind
     obtain ⟨p, t, hA, hpt⟩ := hWv.1
     obtain ⟨hp, ht0, ht1, -, r, hr, hloc⟩ := hA
     obtain ⟨rfl, i, hi, rfl, hik⟩ := pos_of_vertex hP hp ht0 ht1 hk hpt
@@ -258,18 +260,15 @@ theorem bruteList_set (hP : C.P.Simple) (hDH : DistinctHeights C.P) :
     have hε0 : 0 < ε := lt_min (by linarith) hpos
     have hmem : rayPt (C.vertex k) σ ε ∈ C.chordSet k σ := by
       rw [C.chordSet_eq_image hk hσ hf]
-      exact ⟨ε, ⟨hε0.le, min_le_right _ _⟩, rfl⟩
+      grind
     have hne : rayPt (C.vertex k) σ ε ≠ C.vertex k := by
-      intro e
-      have := congrArg Prod.fst e
-      simp only [Visibility.rayPt_fst] at this
-      rcases hσ with rfl | rfl <;> linarith
+      grind [Visibility.rayPt_fst]
     have hdist : dist (rayPt (C.vertex k) σ ε) (C.vertex k) < r := by
       rw [FuseMath.dist_rayPt _ hσ hε0.le]
-      exact lt_of_le_of_lt (min_le_left _ _) (by linarith)
-    have hl := hloc _ hmem (by rw [hpt]; exact hne) (by rw [hpt]; exact hdist)
+      grind
+    have hl := hloc _ hmem (by grind) (by grind)
     rw [← hpt, FuseMath.sideLeft_rayPt hε0, hpt] at hl
-    have hvi : C.vertex k = vPt C i := by unfold vPt; rw [hik]
+    have hvi : C.vertex k = vPt C i := by grind [vPt]
     rw [hvi] at hl
     have hemit := (corner_iff hDH hi hσ).1 hl
     -- the entry
@@ -277,9 +276,12 @@ theorem bruteList_set (hP : C.P.Simple) (hDH : DistinctHeights C.P) :
       rcases hσ with rfl | rfl
       · exact ⟨0, by omega, rfl⟩
       · exact ⟨1, le_rfl, rfl⟩
-    have he : Emit C i d := by unfold Emit; rw [hsd]; exact hemit
+    have he : Emit C i d := by grind [Emit]
     refine ⟨trip C i d, mem_bruteList.2 ⟨i, d, hi, hd, he, rfl⟩, ?_⟩
     rw [(entry_ok hP hDH hi he).1, hsd, hik]
+
+
+end
 
 end Brute
 

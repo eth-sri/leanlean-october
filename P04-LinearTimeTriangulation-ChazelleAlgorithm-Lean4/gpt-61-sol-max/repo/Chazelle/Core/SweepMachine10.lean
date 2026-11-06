@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepMachine9
 
 /-!
@@ -29,17 +31,19 @@ namespace Sweep
 
 variable {M : Model}
 
+section
+variable {F : Set (Set Point)} {U : Set Point}
 /-- **An arc faces its region just after a key inside it** (or at its start). -/
-theorem afterFaces_of_arc {F : Set (Set Point)} {U : Set Point} {l r : ℝ}
+theorem afterFaces_of_arc {l r : ℝ}
     (harc : M.IsArc F U l r) {p : ℕ} (hp : p < M.W.n) {t : ℝ} (ht0 : 0 ≤ t)
     (hin : ∀ᶠ s in 𝓝[>] (0 : ℝ), sideInArc l r ((p : ℝ) + t + s)) : AfterFaces M p t U := by
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hin
   refine ⟨δ, hδ, fun s hs0 hs1 hs2 => ?_⟩
   have := hsub ⟨hs0, hs1⟩
-  exact harc.2.2.2.2.2.2 p (t + s) hp (by linarith) hs2 (by rw [← add_assoc]; exact this)
+  exact harc.2.2.2.2.2.2 p (t + s) hp (by linarith) hs2 (by grind)
 
 /-- **An arc faces its region just before its end at a walk vertex.** -/
-theorem beforeFaces_of_arc_end {F : Set (Set Point)} {U : Set Point} {l : ℝ} {p : ℕ}
+theorem beforeFaces_of_arc_end {l : ℝ} {p : ℕ}
     (hp : p < M.W.n) (hp1 : 1 ≤ p) (harc : M.IsArc F U l (p + 0)) (hlr : l ≠ (p : ℝ) + 0) :
     BeforeFaces M p 0 U := by
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 (sideInArc_before_end hlr)
@@ -50,9 +54,10 @@ theorem beforeFaces_of_arc_end {F : Set (Set Point)} {U : Set Point} {l : ℝ} {
   have := hsub ⟨hs0, hs1'⟩
   rw [prev_mod hp hp1]
   refine harc.2.2.2.2.2.2 (p - 1) (1 - s) (by omega) (by linarith) (by linarith) ?_
-  have hc : ((p - 1 : ℕ) : ℝ) + (1 - s) = (p : ℝ) + 0 - s := by
-    rw [Nat.cast_sub hp1]; push_cast; ring
-  rw [hc]; exact this
+  simp_all
+
+
+end
 
 section ChainModel
 
@@ -80,19 +85,19 @@ theorem leave_region (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
   have hF : F ⊆ (chainModel C).Adm := hFam.2.1
   have hfin : F.Finite := hFam.1
   have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
-    rw [hpt]; exact hsec
+    simp_all
   by_cases hcut : (chainModel C).IsCut F (p + t)
   · rcases leave_cases C hP hFam hσ hp ht ht1 hpt hsec hzR with ⟨e, he, -, hev⟩ | hnc |
         ⟨rfl, hp1, hnot, hcr⟩
-    · exact absurd hev (hno e he)
-    · exact absurd hcut hnc
+    · ram_grind
+    · simp_all
     · obtain ⟨c, hc, p', t', hAc, hkey⟩ := hcut
       obtain ⟨rfl, rfl⟩ := Chazelle.Chain.sideKey_inj hAc.2.1 hAc.2.2.1 le_rfl one_pos hkey.symm
       obtain ⟨U, V, l, r, hU, hV, -, harcU, harcV, -⟩ := hM.attach_face hF hfin hc hAc
       have hne : F.Nonempty := ⟨c, hc⟩
       have hnot' : ∀ c ∈ F, SideAttach (chainModel C).W c p' 0 →
           ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt (chainModel C).W p' 0) σ s ∉ c := by
-        intro c hc hA; rw [hpt]; exact hnot c hc hA
+        intro c hc hA; rw [hpt]; grind
       rcases hcr with hcr | hcr
       · have hray := ray_mem_region_after hGM hFam hU hp harcU hc hAc hσ hsec' hnot' hcr
         rw [hpt] at hray
@@ -110,19 +115,13 @@ theorem leave_region (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
       push Not at hle
       have hp0 : p = 0 := by
         have : (p : ℝ) ≤ 0 := by linarith
-        exact_mod_cast le_antisymm (by exact_mod_cast this) (Nat.zero_le p)
+        simp_all
       have ht0 : t = 0 := by
-        have : (0 : ℝ) ≤ p := Nat.cast_nonneg p
         linarith
       subst hp0 ht0
       have h0 : sidePt (chainModel C).W 0 0 = C.slitTop := by
         rw [Chazelle.Chain.sidePt_zero]; rfl
-      have := congrArg Prod.snd (hpt.symm.trans h0)
-      simp only [Chain.slitTop] at this
-      rw [this] at hzR
-      have hR := C.radius_pos
-      rw [abs_of_pos hR] at hzR
-      exact lt_irrefl _ hzR
+      grind [Chain.slitTop]
     obtain ⟨U, hU, l, r, harc, hin⟩ := exists_arc_around hGM hFam hkey hnc
     have hray := ray_mem_region_of_arc hGM hFam hU hp ht ht1 harc hin hσ hsec'
     rw [hpt] at hray

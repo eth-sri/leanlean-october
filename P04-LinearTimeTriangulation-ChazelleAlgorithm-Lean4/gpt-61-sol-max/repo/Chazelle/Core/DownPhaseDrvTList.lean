@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvTPiece
 public import Chazelle.Core.NFBuildValid
 public import Chazelle.Core.DownPhaseMathLevel
@@ -35,13 +37,19 @@ open BuildRegions (famOf)
 /-- The triples `(h, lp, rp)` of the chord records of a normal form. -/
 def triplesOf (N : NF) : List (ℕ × ℕ × ℕ) := N.chords.map fun r => (r.h, r.lp, r.rp)
 
+section
+variable (li : Bool) (n c₀ : ℕ) (L₀ : List (ℕ × ℕ × ℕ))
+include li n c₀ L₀
 /-- **The output of the filter.** -/
-def transL (li : Bool) (n c₀ : ℕ) (L₀ : List (ℕ × ℕ × ℕ)) : List (ℕ × ℕ × ℕ) :=
+def transL : List (ℕ × ℕ × ℕ) :=
   (L₀.filter (keepT li n c₀)).map (trT n c₀)
 
-theorem transL_length_le (li : Bool) (n c₀ : ℕ) (L₀ : List (ℕ × ℕ × ℕ)) :
+theorem transL_length_le :
     (transL li n c₀ L₀).length ≤ L₀.length := by
-  unfold transL; rw [List.length_map]; exact List.length_filter_le _ _
+  core_grind
+
+
+end
 
 /-- The chords of the computed normal form are the chords of the list. -/
 theorem F_buildNF (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) :
@@ -54,11 +62,7 @@ theorem F_buildNF (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : 
   · rintro ⟨x, hx, rfl⟩
     obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hx
     refine ⟨_, ⟨i, hi, rfl⟩, ?_⟩
-    have : L.getD i (0, 0, 0) = L[i] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
-    unfold BuildNF.chordRec
-    rw [this]
-    rfl
+    aesop (add simp [List.getD_eq_getElem?_getD, Option.getD_some, BuildNF.chordRec]) (add safe (by omega))
 
 /-- **Two chords of a domain containing the same nondegenerate segment are equal.** -/
 theorem chord_eq_of_sub {D : Set Point} {y₁ a₁ b₁ y₂ a₂ b₂ y a b : ℝ}
@@ -67,13 +71,7 @@ theorem chord_eq_of_sub {D : Set Point} {y₁ a₁ b₁ y₂ a₂ b₂ y a b : �
     hseg y₁ a₁ b₁ = hseg y₂ a₂ b₂ := by
   obtain ⟨ey₁, ha₁, hb₁⟩ := hseg_sub hab.le s₁
   obtain ⟨ey₂, ha₂, hb₂⟩ := hseg_sub hab.le s₂
-  have hm : (((a + b) / 2, y) : Point) ∈ hseg y a b := ⟨rfl, by linarith, by linarith⟩
-  rcases Chazelle.Chain.hchordIn_inter h₁ h₂ (s₁ hm) (s₂ hm) with ⟨e1, e2, e3⟩ | ⟨hp, -⟩
-  · rw [e1, e2, e3]
-  · exfalso
-    rcases hp with hp | hp
-    · have := congrArg Prod.fst hp; simp only at this; linarith
-    · have := congrArg Prod.fst hp; simp only at this; linarith
+  ram_grind
 
 variable {P : Polygon} {C : Chain} {N : NF}
 
@@ -81,8 +79,11 @@ variable {P : Polygon} {C : Chain} {N : NF}
 theorem recOf_triple (M : Model) (Q : Polygon) (r : CRec) :
     (recOf (r.h, r.lp, r.rp)).toSet M Q = r.toSet M Q := rfl
 
+section
+variable {Q : Polygon} (hN : IsNF (chainModel C) Q N)
+include hN
 /-- **The records of a valid chain normal form.** -/
-theorem triples_props {Q : Polygon} (hN : IsNF (chainModel C) Q N) {x : ℕ × ℕ × ℕ}
+theorem triples_props {x : ℕ × ℕ × ℕ}
     (hx : x ∈ triplesOf N) :
     x.1 < Q.n ∧ (recOf x).toSet (chainModel C) Q ∈ (chainModel C).Adm ∧
       (recOf x).Attached (chainModel C) Q ∧
@@ -92,16 +93,15 @@ theorem triples_props {Q : Polygon} (hN : IsNF (chainModel C) Q N) {x : ℕ × �
   obtain ⟨r, hr, rfl⟩ := List.mem_map.1 hx
   obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hr
   have hci : N.chord i = N.chords[i] := by
-    unfold NF.chord
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+    grind [NF.chord, List.getD_eq_getElem?_getD, Option.getD_some]
   have hmem : N.chords[i].toSet (chainModel C) Q ∈ N.F (chainModel C) Q :=
     ⟨_, List.getElem_mem hi, rfl⟩
   refine ⟨?_, hFam.2.1 hmem, ?_, hmem⟩
-  · have := hh i hi; rw [hci] at this; exact this
+  · have := hh i hi; simp_all
   · have := hatt i hi; rw [hci] at this; exact this
 
 /-- The chain chords of the records are pairwise distinct. -/
-theorem nodup_triples_toSet {Q : Polygon} (hN : IsNF (chainModel C) Q N) :
+theorem nodup_triples_toSet :
     ((triplesOf N).map fun x => (recOf x).toSet (chainModel C) Q).Nodup := by
   obtain ⟨-, hdist, -⟩ := hN
   unfold triplesOf
@@ -109,15 +109,18 @@ theorem nodup_triples_toSet {Q : Polygon} (hN : IsNF (chainModel C) Q N) :
   rw [List.nodup_iff_injective_getElem]
   intro i j hij
   simp only [List.getElem_map, Function.comp] at hij
-  have e1 : N.chord i.1 = N.chords[i.1]'(by simpa using i.2) := by
+  have e1 : N.chord i.1 = N.chords[i.1]'(by ram_grind) := by
     unfold NF.chord
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
-  have e2 : N.chord j.1 = N.chords[j.1]'(by simpa using j.2) := by
+    ram_grind
+  have e2 : N.chord j.1 = N.chords[j.1]'(by ram_grind) := by
     unfold NF.chord
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
-  have := hdist i.1 j.1 (by unfold NF.nChords; simpa using i.2)
-    (by unfold NF.nChords; simpa using j.2) (by rw [e1, e2]; exact hij)
-  exact Fin.ext this
+    ram_grind
+  have := hdist i.1 j.1 (by grind [NF.nChords])
+    (by grind [NF.nChords]) (by rw [e1, e2]; exact hij)
+  omega
+
+
+end
 
 /-- **The number of chords** of a valid normal form is its number of records. -/
 theorem ncard_F {M : Model} {Q : Polygon} {N : NF}
@@ -125,23 +128,11 @@ theorem ncard_F {M : Model} {Q : Polygon} {N : NF}
       (N.chord i).toSet M Q = (N.chord i').toSet M Q → i = i') :
     (N.F M Q).ncard = N.chords.length := by
   have hF : N.F M Q = {c | c ∈ N.chords.map fun r => r.toSet M Q} := by
-    ext c
-    simp only [NF.F, mem_ofPred_eq, List.mem_map]
-    constructor
-    · rintro ⟨r, hr, rfl⟩; exact ⟨r, hr, rfl⟩
-    · rintro ⟨r, hr, rfl⟩; exact ⟨r, hr, rfl⟩
+    grind [NF.F, mem_ofPred_eq, List.mem_map]
   have hnd : (N.chords.map fun r => r.toSet M Q).Nodup := by
     rw [List.nodup_iff_injective_getElem]
     intro i j hij
-    simp only [List.getElem_map] at hij
-    have e1 : N.chord i.1 = N.chords[i.1]'(by simpa using i.2) := by
-      unfold NF.chord
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
-    have e2 : N.chord j.1 = N.chords[j.1]'(by simpa using j.2) := by
-      unfold NF.chord
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
-    exact Fin.ext (hdist i.1 j.1 (by unfold NF.nChords; simpa using i.2)
-      (by unfold NF.nChords; simpa using j.2) (by rw [e1, e2]; exact hij))
+    grind [List.getElem_map, NF.chord, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some, NF.nChords]
   rw [hF, show {c | c ∈ N.chords.map fun r => r.toSet M Q} =
       ((N.chords.map fun r => r.toSet M Q).toFinset : Set (Set Point)) by
     ext c; simp, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd, List.length_map]
@@ -153,8 +144,11 @@ variable (hQ : Q.Simple) (T : Trans.Top Q C) (hD : Trans.DistinctH Q) {li : Bool
   (hli : li = true ↔ Mountain.LeftInside Q)
 include hQ T hD hli
 
+section
+variable (hN : IsNF (chainModel C) Q N)
+include hN
 /-- **(T-R1) The chords of the filtered list are the pieces.** -/
-theorem famOf_transL (hN : IsNF (chainModel C) Q N) :
+theorem famOf_transL :
     famOf (interiorModel Q) Q (transL li Q.n (c0 C li) (triplesOf N)) =
       Trans.pieces Q (N.F (chainModel C) Q) := by
   have hmn := T.hm
@@ -181,19 +175,17 @@ theorem famOf_transL (hN : IsNF (chainModel C) Q N) :
       rw [hcab] at hsub hdc
       have := Trans.one_piece hQ T hh' hch hdA hA hdc hsub
       refine ⟨_, ?_, this⟩
-      unfold transL
-      exact List.mem_map.2 ⟨_, List.mem_filter.2 ⟨hxm, hk⟩, rfl⟩
+      grind [transL]
 
 /-- **(T-R2) The filtered list is a valid chord list of the interior model.** -/
-theorem chordTriplesOK_transL (hN : IsNF (chainModel C) Q N)
+theorem chordTriplesOK_transL
     (hFam : (interiorModel Q).ChordFamily Q (Trans.pieces Q (N.F (chainModel C) Q))) :
     ChordTriplesOK (interiorModel Q) Q (transL li Q.n (c0 C li) (triplesOf N)) := by
-  have hmn := T.hm
-  have hm1 := C.one_le
+  
+  
   refine ⟨?_, ?_, ?_, ?_⟩
   · have := famOf_transL hQ T hD hli hN
-    unfold famOf at this
-    rw [this]; exact hFam
+    grind [famOf]
   · unfold transL
     rw [List.map_map]
     refine List.Nodup.map_on (fun x hx x' hx' hxx => ?_)
@@ -214,7 +206,7 @@ theorem chordTriplesOK_transL (hN : IsNF (chainModel C) Q N)
     rw [hcab'] at hsub'
     have heq := chord_eq_of_sub hch hch' hch''.lt hsub hsub'
     refine List.inj_on_of_nodup_map (nodup_triples_toSet hN) hxm hxm' ?_
-    rw [hcab, hcab', heq]
+    simp_all
   · intro x' hx'
     unfold transL at hx'
     obtain ⟨x, hx, rfl⟩ := List.mem_map.1 hx'
@@ -226,6 +218,9 @@ theorem chordTriplesOK_transL (hN : IsNF (chainModel C) Q N)
     obtain ⟨x, hx, rfl⟩ := List.mem_map.1 hx'
     obtain ⟨hxm, -⟩ := List.mem_filter.1 hx
     exact (triples_props hN hxm).1
+
+
+end
 
 end filt
 
@@ -249,34 +244,28 @@ theorem trans_math (hG : GoodEnv P) (hC : TopChain P C)
         840 * (2 * (P.n - 1) + 1) := by
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
   have hn : (Qof P).n = P.n := shear_n _ _
-  have T : Trans.Top (Qof P) C := ⟨hC.1, hC.2.1, by rw [hn]; exact hC.2.2⟩
+  have T : Trans.Top (Qof P) C := ⟨hC.1, hC.2.1, by ram_grind⟩
   have hD : Trans.DistinctH (Qof P) := (goodShear_epsOf hG.2).2.1
-  have hP : C.P.Simple := by rw [hC.1]; exact hQ
+  have hP : C.P.Simple := by ram_grind
   obtain ⟨hNF, hdeg, hgran, hdec⟩ := hN
   have hFam0 : (chainModel C).ChordFamily C.P (N.F (chainModel C) (Qof P)) := by
-    rw [hC.1]; exact hNF.1
+    ram_grind
   obtain ⟨hFam, hdegP, hwtP, -⟩ := Trans.transition hQ T hD hFam0 hgran.1 hdeg
   have hfam := famOf_transL hQ T hD hli hNF
   rw [← hn]
-  refine ⟨chordTriplesOK_transL hQ T hD hli hNF hFam, by rw [hfam]; exact hdegP, ?_, ?_, ?_⟩
+  refine ⟨chordTriplesOK_transL hQ T hD hli hNF hFam, by simp_all, ?_, ?_, ?_⟩
   · rw [hfam]
     intro U hU
     refine (hwtP U hU).trans ?_
     have := DownStep.gamma1_le (topGrade P.n)
-    unfold DownStep.gamma1 at this
-    unfold topGran
-    rw [hn]
-    omega
+    core_grind [DownStep.gamma1]
   · rw [ncard_F hNF.2.1]
     have := transL_length_le li (Qof P).n (c0 C li) (triplesOf N)
-    unfold triplesOf at this; rw [List.length_map] at this
-    exact this
+    simp_all [triplesOf, List.length_map] 
   · have := DownMath.trans_count hP ⟨hNF, hdeg, hgran, hdec⟩
     rw [hn]
     unfold topGran at this
-    have hm : C.m = P.n - 1 := by have := hC.2.2; omega
-    rw [hm] at this
-    exact this
+    ram_grind
 
 end
 

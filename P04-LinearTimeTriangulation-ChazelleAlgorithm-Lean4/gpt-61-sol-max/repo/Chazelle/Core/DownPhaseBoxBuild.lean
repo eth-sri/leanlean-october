@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildCmp
 
 /-!
@@ -49,19 +51,13 @@ theorem idxOf_map_of_inj {α β : Type*} [BEq α] [LawfulBEq α] [BEq β] [Lawfu
   induction l with
   | nil => rfl
   | cons x xs ih =>
-    rw [map_cons, idxOf_cons, idxOf_cons]
-    by_cases hx : x = a
-    · subst hx; simp
-    · have hfx : f x ≠ f a := fun e => hx (h x (mem_cons_self ..) e)
-      rw [ite_eq_right (by simpa using hfx), ite_eq_right (by simpa using hx),
-        ih (fun y hy => h y (mem_cons_of_mem _ hy))]
+    grind
 
 theorem wposOf_even (L : List (ℕ × ℕ × ℕ)) (i : ℕ) : wposOf L (2 * i) = (crec L i).lpos := by
   simp [wposOf]
 
 theorem wposOf_odd (L : List (ℕ × ℕ × ℕ)) (i : ℕ) : wposOf L (2 * i + 1) = (crec L i).rpos := by
-  simp only [wposOf]
-  rw [ite_eq_right (by omega), show (2 * i + 1) / 2 = i by omega]
+  grind [wposOf]
 
 theorem kl_eq (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (i : ℕ) :
     kl M Q L i = M.key Q (wposOf L (2 * i)) := by
@@ -91,17 +87,7 @@ include hK
 theorem eq_iff {c c' : ℕ} (hc : c < 2 * L.length) (hc' : c' < 2 * L.length) :
     M'.key Q (wposOf L c) = M'.key Q (wposOf L c') ↔
       M.key Q (wposOf L c) = M.key Q (wposOf L c') := by
-  have h1 := hK.lt c c' hc hc'
-  have h2 := hK.lt c' c hc' hc
-  constructor <;> intro e
-  · rcases lt_trichotomy (M.key Q (wposOf L c)) (M.key Q (wposOf L c')) with l | l | l
-    · exact absurd (h1.2 l) (by rw [e]; exact lt_irrefl _)
-    · exact l
-    · exact absurd (h2.2 l) (by rw [e]; exact lt_irrefl _)
-  · rcases lt_trichotomy (M'.key Q (wposOf L c)) (M'.key Q (wposOf L c')) with l | l | l
-    · exact absurd (h1.1 l) (by rw [e]; exact lt_irrefl _)
-    · exact l
-    · exact absurd (h2.1 l) (by rw [e]; exact lt_irrefl _)
+  core_grind
 
 theorem gmap_key {c : ℕ} (hc : c < 2 * L.length) :
     gmap M M' Q L (M.key Q (wposOf L c)) = M'.key Q (wposOf L c) := by
@@ -110,19 +96,25 @@ theorem gmap_key {c : ℕ} (hc : c < 2 * L.length) :
   rw [dite_eq_left h]
   exact (hK.eq_iff h.choose_spec.1 hc).2 h.choose_spec.2
 
-theorem gmap_lt {x y : ℝ} (hx : InS M Q L x) (hy : InS M Q L y) :
+section
+variable {x y : ℝ} (hx : InS M Q L x) (hy : InS M Q L y)
+include hx hy
+theorem gmap_lt :
     gmap M M' Q L x < gmap M M' Q L y ↔ x < y := by
   obtain ⟨c, hc, rfl⟩ := hx
   obtain ⟨c', hc', rfl⟩ := hy
   rw [hK.gmap_key hc, hK.gmap_key hc']
   exact hK.lt c c' hc hc'
 
-theorem gmap_inj {x y : ℝ} (hx : InS M Q L x) (hy : InS M Q L y)
+theorem gmap_inj
     (e : gmap M M' Q L x = gmap M M' Q L y) : x = y := by
   rcases lt_trichotomy x y with l | l | l
   · exact absurd e ((hK.gmap_lt hx hy).2 l).ne
   · exact l
   · exact absurd e ((hK.gmap_lt hy hx).2 l).ne'
+
+
+end
 
 omit hK in
 theorem inS_kl {i : ℕ} (hi : i < L.length) : InS M Q L (kl M Q L i) :=
@@ -132,33 +124,27 @@ omit hK in
 theorem inS_kr {i : ℕ} (hi : i < L.length) : InS M Q L (kr M Q L i) :=
   ⟨2 * i + 1, by omega, (kr_eq M Q L i).symm⟩
 
-theorem kl' {i : ℕ} (hi : i < L.length) : kl M' Q L i = gmap M M' Q L (kl M Q L i) := by
+section
+variable {i : ℕ} (hi : i < L.length)
+include hi
+theorem kl' : kl M' Q L i = gmap M M' Q L (kl M Q L i) := by
   rw [kl_eq, kl_eq, hK.gmap_key (by omega)]
 
-theorem kr' {i : ℕ} (hi : i < L.length) : kr M' Q L i = gmap M M' Q L (kr M Q L i) := by
+theorem kr' : kr M' Q L i = gmap M M' Q L (kr M Q L i) := by
   rw [kr_eq, kr_eq, hK.gmap_key (by omega)]
 
-theorem klr_lt_iff {i : ℕ} (hi : i < L.length) : kl M' Q L i < kr M' Q L i ↔ kl M Q L i < kr M Q L i := by
+theorem klr_lt_iff : kl M' Q L i < kr M' Q L i ↔ kl M Q L i < kr M Q L i := by
   rw [hK.kl' hi, hK.kr' hi, hK.gmap_lt (inS_kl hi) (inS_kr hi)]
+
+
+end
 
 theorem evOf_eq {c : ℕ} (hc : c < 2 * L.length) :
     evOf M' Q L c = mapEv (gmap M M' Q L) (evOf M Q L c) := by
-  have hi : c / 2 < L.length := by omega
-  unfold evOf
-  split_ifs
-  · simp only [eL, mapEv, hK.kl' hi, hK.kr' hi]
-  · simp only [eR, mapEv, hK.kl' hi, hK.kr' hi]
+  grind [Chazelle.Core.BoxT.KeyCongr.kl', Chazelle.Core.BoxT.KeyCongr.kr', evOf, eL, mapEv, eR]
 
 theorem e1_eq {i : ℕ} (hi : i < L.length) : e1 M' Q L i = mapEv (gmap M M' Q L) (e1 M Q L i) := by
-  have hlt := hK.klr_lt_iff hi
-  have hgt : kr M' Q L i < kl M' Q L i ↔ kr M Q L i < kl M Q L i := by
-    rw [hK.kl' hi, hK.kr' hi, hK.gmap_lt (inS_kr hi) (inS_kl hi)]
-  simp only [e1, mapEv, lo, BuildRegions.hi]
-  rcases le_total (kl M Q L i) (kr M Q L i) with h | h
-  · have h' : kl M' Q L i ≤ kr M' Q L i := not_lt.1 (fun l => absurd (hgt.1 l) (not_lt.2 h))
-    rw [min_eq_left h, max_eq_right h, min_eq_left h', max_eq_right h', hK.kl' hi, hK.kr' hi]
-  · have h' : kr M' Q L i ≤ kl M' Q L i := not_lt.1 (fun l => absurd (hlt.1 l) (not_lt.2 h))
-    rw [min_eq_right h, max_eq_left h, min_eq_right h', max_eq_left h', hK.kl' hi, hK.kr' hi]
+  grind [Chazelle.Core.BoxT.KeyCongr.klr_lt_iff, Chazelle.Core.BoxT.KeyCongr.gmap_lt, Chazelle.Core.BoxT.KeyCongr.inS_kl, Chazelle.Core.BoxT.KeyCongr.inS_kr, Chazelle.Core.BoxT.KeyCongr.kl', Chazelle.Core.BoxT.KeyCongr.kr', e1, mapEv, lo, BuildRegions.hi]
 
 omit hK in
 /-- The keys of the events of codes. -/
@@ -173,10 +159,7 @@ theorem evOf_inS {c : ℕ} (hc : c < 2 * L.length) :
 omit hK in
 theorem e1_inS {i : ℕ} (hi : i < L.length) :
     InS M Q L (e1 M Q L i).2.1 ∧ InS M Q L (e1 M Q L i).2.2 := by
-  simp only [e1, lo, BuildRegions.hi]
-  rcases le_total (kl M Q L i) (kr M Q L i) with h | h
-  · rw [min_eq_left h, max_eq_right h]; exact ⟨inS_kl hi, inS_kr hi⟩
-  · rw [min_eq_right h, max_eq_left h]; exact ⟨inS_kr hi, inS_kl hi⟩
+  grind [Chazelle.Core.BoxT.KeyCongr.inS_kl, Chazelle.Core.BoxT.KeyCongr.inS_kr, e1, lo, BuildRegions.hi]
 
 variable {E : List ℕ} (hE : ∀ c ∈ E, c < 2 * L.length)
 include hE
@@ -191,45 +174,36 @@ theorem word_eq : word M' Q L E = word M Q L E := by
   rw [hK.evs_eq hE, map_map]
   rfl
 
-theorem outside_eq {i : ℕ} (hi : i < L.length) : outside M' Q L E i = outside M Q L E i := by
+section
+variable {i : ℕ} (hi : i < L.length)
+include hi
+theorem outside_eq : outside M' Q L E i = outside M Q L E i := by
   unfold outside
   rw [hK.word_eq hE, hK.evs_eq hE, hK.e1_eq hi, idxOf_map_of_inj]
   intro x hx e
   unfold evs at hx
-  obtain ⟨c, hc, rfl⟩ := mem_map.1 hx
-  have h1 := evOf_inS (M := M) (Q := Q) (hE c hc)
-  have h2 := e1_inS (M := M) (Q := Q) hi
-  simp only [mapEv, Prod.mk.injEq] at e
-  obtain ⟨e1', e2', e3'⟩ := e
-  exact Prod.ext e1' (Prod.ext (hK.gmap_inj h1.1 h2.1 e2') (hK.gmap_inj h1.2 h2.2 e3'))
+  grind [Chazelle.Core.BoxT.KeyCongr.evOf_inS, Chazelle.Core.BoxT.KeyCongr.e1_inS, Chazelle.Core.BoxT.KeyCongr.gmap_inj, mapEv, Prod.mk.injEq]
 
-theorem chordRec_eq {i : ℕ} (hi : i < L.length) : chordRec M' Q L E i = chordRec M Q L E i := by
+theorem chordRec_eq : chordRec M' Q L E i = chordRec M Q L E i := by
   unfold chordRec
   rw [hK.outside_eq hE hi]
   simp only [hK.klr_lt_iff hi]
 
+
+end
+
 theorem kap_eq' {m : ℕ} (hm : m < E.length) :
     kap (evs M' Q L E) m = gmap M M' Q L (kap (evs M Q L E) m) ∧
       InS M Q L (kap (evs M Q L E) m) := by
-  have hm' : m < (evs M Q L E).length := by simpa [evs] using hm
-  have hm'' : m < (evs M' Q L E).length := by simpa [evs] using hm
+  have hm' : m < (evs M Q L E).length := by grind [evs]
+  have hm'' : m < (evs M' Q L E).length := by grind [evs]
   rw [BuildSort.kap_eq hm'', BuildSort.kap_eq hm']
-  constructor
-  · simp only [hK.evs_eq hE, getElem_map, mapEv]
-  · simp only [evs, getElem_map]
-    exact (evOf_inS (M := M) (Q := Q) (hE _ (getElem_mem _))).1
+  grind [Chazelle.Core.BoxT.KeyCongr.evs_eq, Chazelle.Core.BoxT.KeyCongr.evOf_inS, getElem_map, mapEv, evs]
 
 theorem gapStarts_eq : gapStarts M' Q L E = gapStarts M Q L E := by
   unfold gapStarts
   apply filter_congr
-  intro m hm
-  rw [mem_range] at hm
-  by_cases hl : m + 1 = E.length
-  · simp [hl]
-  · have hm1 : m + 1 < E.length := by omega
-    obtain ⟨a1, a2⟩ := hK.kap_eq' hE hm
-    obtain ⟨b1, b2⟩ := hK.kap_eq' hE hm1
-    simp only [hl, false_or, a1, b1, hK.gmap_lt a2 b2]
+  grind [Chazelle.Core.BoxT.KeyCongr.kap_eq', Chazelle.Core.BoxT.KeyCongr.gmap_lt]
 
 theorem arcList_eq : arcList M' Q L E = arcList M Q L E := by
   unfold arcList arcRec
@@ -254,9 +228,9 @@ theorem arcW_eq {a : ARec} (ha : a ∈ arcList M Q L E) : arcW M' Q a = arcW M Q
     have hmE : m < E.length := mem_range.1 (mem_filter.1 hm).1
     have hpos : 0 < E.length := by omega
     have hs : E.getD m 0 < 2 * L.length := by
-      rw [getD_eq_getElem _ _ hmE]; exact hE _ (getElem_mem _)
+      simp_all
     have he : E.getD ((m + 1) % E.length) 0 < 2 * L.length := by
-      rw [getD_eq_getElem _ _ (Nat.mod_lt _ hpos)]; exact hE _ (getElem_mem _)
+      rw [getD_eq_getElem _ _ (Nat.mod_lt _ hpos)]; simp_all
     exact hK.wt _ _ hs he
 
 theorem regWt_eq (r : ℕ) : regWt M' Q L E r = regWt M Q L E r := by
@@ -295,10 +269,7 @@ theorem codeLe_iff {c c' : ℕ} (hc : c < 2 * L.length) (hc' : c' < 2 * L.length
 theorem sorted {E : List ℕ} (hperm : E.Perm (List.range (2 * L.length)))
     (hsort : E.Pairwise (codeLe M Q L)) : E.Pairwise (codeLe M' Q L) := by
   apply hsort.imp_of_mem
-  intro a b ha hb h
-  have ha' : a < 2 * L.length := mem_range.1 (hperm.subset ha)
-  have hb' : b < 2 * L.length := mem_range.1 (hperm.subset hb)
-  exact (hK.codeLe_iff ha' hb').2 h
+  grind [Chazelle.Core.BoxT.KeyCongr.codeLe_iff]
 
 end KeyCongr
 
@@ -322,14 +293,13 @@ theorem exits_eq {reg : ℕ → Set Point} (hN : ∀ i i', i < N.nChords → i' 
     · rintro ⟨⟨x, hx, rfl⟩, ht⟩
       obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hx
       have hc : N.chord i = N.chords[i] := by
-        unfold NF.chord; rw [getD_eq_getElem _ _ hi]
+        grind [NF.chord]
       refine ⟨i, (hmem i).2 ⟨hi, ?_⟩, ?_⟩
-      · rw [hc]; exact ht
-      · simp only [hc]
+      all_goals grind
     · rintro ⟨i, hi, rfl⟩
       obtain ⟨hi', ht⟩ := (hmem i).1 hi
       refine ⟨⟨N.chord i, ?_, rfl⟩, ht⟩
-      unfold NF.chord; rw [getD_eq_getElem _ _ hi']; exact getElem_mem _
+      unfold NF.chord; rw [getD_eq_getElem _ _ hi']; grind
   have hinj : Set.InjOn (fun i => (N.chord i).toSet M Q) {i | i ∈ (N.region r).chords} :=
     fun i hi i' hi' e => hN i i' ((hmem i).1 hi).1 ((hmem i').1 hi').1 e
   rw [hset, hinj.ncard_image]
@@ -337,8 +307,11 @@ theorem exits_eq {reg : ℕ → Set Point} (hN : ∀ i i', i < N.nChords → i' 
     ext; simp
   rw [this, Set.ncard_coe_finset, toFinset_card_of_nodup hnd]
 
+section
+variable (h : IsNF M Q N)
+include h
 /-- **Bounded degree from the records.** -/
-theorem degLe_iff (h : IsNF M Q N) (d : ℕ) :
+theorem degLe_iff (d : ℕ) :
     M.DegLe (N.F M Q) d ↔ ∀ r, r < N.nRegions → (N.region r).chords.length ≤ d := by
   obtain ⟨-, hinj, -, reg, hC, -, -, hR, -⟩ := h
   constructor
@@ -349,10 +322,10 @@ theorem degLe_iff (h : IsNF M Q N) (d : ℕ) :
     obtain ⟨r, hr, rfl⟩ := hC.2.2 U hU
     unfold Model.deg
     rw [exits_eq hinj hR hr]
-    exact hD r hr
+    simp_all
 
 /-- **Semigranularity from the records.** -/
-theorem semigranular_iff (h : IsNF M Q N) (γ : ℕ) :
+theorem semigranular_iff (γ : ℕ) :
     M.Semigranular (N.F M Q) γ ↔ ∀ r, r < N.nRegions → (N.region r).wt ≤ γ := by
   obtain ⟨-, -, -, reg, hC, -, -, hR, -⟩ := h
   constructor
@@ -362,7 +335,10 @@ theorem semigranular_iff (h : IsNF M Q N) (γ : ℕ) :
   · intro hS U hU
     obtain ⟨r, hr, rfl⟩ := hC.2.2 U hU
     rw [← (hR r hr).2.2.2]
-    exact hS r hr
+    simp_all
+
+
+end
 
 /-- **Transfer of degree and weight bounds** between two models in which the same record is a
 valid normal form. -/

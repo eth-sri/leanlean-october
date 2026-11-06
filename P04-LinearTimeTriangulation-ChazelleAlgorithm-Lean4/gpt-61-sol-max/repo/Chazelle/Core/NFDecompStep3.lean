@@ -15,7 +15,6 @@ namespace Chazelle.Core.Dec
 
 open Relation Finset
 
-set_option linter.unusedSectionVars false
 
 section step3
 
@@ -66,12 +65,12 @@ theorem next_i1 : ∀ e, e < K → (σ').rem e = 1 →
     have hdpar : (σ').dpar e = σ.dpar e := by
       simp only [next, ite_eq_left he, ite_eq_right hnc]
       by_cases hp : σ.pend e = 1
-      · rw [ite_eq_left hp]
-      · rw [ite_eq_right hp]
+      · grind
+      grind
     refine ⟨g1, g2, g3, by omega, g5, ?_⟩
     rw [hdpar, root_next_pos h hch hT hB hI (by omega)]
     rcases g6 with ⟨a1, a2, a3, a4⟩ | ⟨p, hp, hrp, a1, a2, a3⟩
-    · exact Or.inl ⟨a1, a2, a3, a4⟩
+    · grind
     · refine Or.inr ⟨p, hp, rem_mono h hch hT hB hI hrp, a1, ?_, ?_⟩
       · rw [cr_old h hch hT hB hI hrp]; exact a2
       · rw [gc_old h hch hT hB hI hrp]; exact a3
@@ -83,25 +82,24 @@ theorem next_i1 : ∀ e, e < K → (σ').rem e = 1 →
     have hj : j < rounds D K := lt_rounds (by omega)
     have hprg : AncX R prg pch σ.rem (top (chOf e)) (prg (chOf e)) := by
       rcases (AncX.back_iff h).1 t7 with e' | ⟨-, -, -, hh⟩
-      · exact absurd e'.symm t5
-      · exact hh
-    refine ⟨fun v hv => by rw [mem_sub] at hv; exact Finset.mem_range.2 hv.1,
+      all_goals omega
+    refine ⟨fun v hv => by grind [mem_sub],
       (mem_sub).2 ⟨c1, t7⟩, (mem_sub).2 ⟨h.prg_lt _ c1 c2, hprg⟩, by omega, hj, ?_⟩
     have hdpar : (σ').dpar e = (if σ.side (top (chOf e)) = 2 then 2 * e
         else 2 * σ.cpar (top (chOf e))) := by
-      simp only [next, ite_eq_left he, ite_eq_right c4, ite_eq_left hc]
+      grind [next]
     rcases hI.i4 _ t1 t2 t3 with ⟨s2, s0, sj⟩ | ⟨s1, s2, s3, s4⟩
     · left
       rw [hdpar, ite_eq_left s2]
       refine ⟨rfl, sj, ?_, by rw [s0]; exact sub_root0 h hch hT hB hI sj⟩
       have ⟨a0, s0'⟩ := (hI.i7 sj).2
       simp only [next, ite_eq_left a0, ite_eq_left s0', code]
-      rw [← s0, t4, ite_eq_right t5, c3]
+      grind
     · right
       have hs2 : σ.side (top (chOf e)) ≠ 2 := by omega
       set p := σ.cpar (top (chOf e)) with hpdef
       have hrp := hI.i0 p s2 s3
-      refine ⟨p, s2, rem_mono h hch hT hB hI hrp, by rw [hdpar, ite_eq_right hs2], ?_, ?_⟩
+      refine ⟨p, s2, rem_mono h hch hT hB hI hrp, by grind, ?_, ?_⟩
       · rw [cr_old h hch hT hB hI hrp]; exact (hI.i3 p s2 s3).1
       · rw [gc_old h hch hT hB hI hrp, s4]; exact Finset.inter_subset_left
 
@@ -130,7 +128,7 @@ theorem next_i2 : ∀ e, e < K → (σ').rem e = 1 → (σ').pend e ≠ 1 → �
         rw [hiTop_eq h hch hT hB hI, hpc]
     rw [hx]
     obtain ⟨v1, v2, v3⟩ := code_next h hch hT hB hI ht htop hact
-    refine ⟨v1, by rw [v2, hsub], ?_⟩
+    refine ⟨v1, by grind, ?_⟩
     rw [v3, ite_eq_right (by omega), hcpar]
   · -- the slots were filled earlier
     have hx : (if s = 0 then (σ').dlo e else (σ').dhi e) =
@@ -141,7 +139,7 @@ theorem next_i2 : ∀ e, e < K → (σ').rem e = 1 → (σ').pend e ≠ 1 → �
     rw [hx]
     obtain ⟨o1, o2, o3⟩ := hI.i2 e he hr hp s hs
     obtain ⟨v1, v2, v3⟩ := valid_next h hch hT hB hI o1
-    exact ⟨v1, v2.trans o2, v3.trans o3⟩
+    grind
 
 theorem next_i3 : ∀ e, e < K → (σ').pend e = 1 → cr' e + 1 = j + 1 ∧ ∀ s, s ≤ 1 → ∃ t, t < R ∧
     IsTop pch (σ').rem t ∧ (σ').act t = 1 ∧ (σ').cpar t = e ∧ (σ').side t = s ∧
@@ -153,26 +151,20 @@ theorem next_i3 : ∀ e, e < K → (σ').pend e = 1 → cr' e + 1 = j + 1 ∧ �
   obtain ⟨sc, sp⟩ := sub_new_sides h hch hT hB hI (s := s) he hc
   obtain ⟨n1, n2, n3⟩ := new_top_facts h hch hT hB hI he hc
   by_cases hcond : (isdn (chOf e) = 1 ↔ s = 0)
-  · refine ⟨chOf e, c1, (istop_next h hch hT hB hI c1).2 (Or.inr ⟨c2, by rw [c3]; exact hc⟩),
+  · refine ⟨chOf e, c1, (istop_next h hch hT hB hI c1).2 (Or.inr ⟨c2, by grind⟩),
       n1, n2, ?_, sc hcond⟩
     rw [n3]
     by_cases hd : isdn (chOf e) = 1
-    · rw [ite_eq_left hd]; exact (hcond.1 hd).symm
-    · rw [ite_eq_right hd]
-      have : s ≠ 0 := fun h0 => hd (hcond.2 h0)
-      omega
-  · have hbt : best (top (chOf e)) ≠ top (chOf e) := by rw [t4]; exact t5
+    · grind
+    grind
+  · have hbt : best (top (chOf e)) ≠ top (chOf e) := by omega
     refine ⟨top (chOf e), t1, (istop_next h hch hT hB hI t1).2 (Or.inl t2), ?_, ?_, ?_, sp hcond⟩
     · rw [act_top h hch hT hB hI t1 t2, ite_eq_left t3, ite_eq_right hbt]; exact t3
     · rw [cpar_top h hch hT hB hI t1 t2, ite_eq_left t3, ite_eq_right hbt, t4, c3]
     · rw [side_top h hch hT hB hI t1 t2, ite_eq_left t3, ite_eq_right hbt, t4]
       by_cases hd : isdn (chOf e) = 1
-      · rw [ite_eq_left hd]
-        have : s ≠ 0 := fun h0 => hcond ⟨fun _ => h0, fun _ => hd⟩
-        omega
-      · rw [ite_eq_right hd]
-        by_contra hs0
-        exact hcond ⟨fun hh => absurd hh hd, fun hh => absurd hh (Ne.symm hs0)⟩
+      · grind
+      grind
 
 theorem next_i4 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t = 1 →
     ((σ').side t = 2 ∧ t = 0 ∧ j + 1 = 0) ∨
@@ -185,10 +177,10 @@ theorem next_i4 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t = 1 →
   · -- an old top: it must be a cut component
     rw [act_top h hch hT hB hI ht htop] at hact'
     have hact : σ.act t = 1 := by
-      by_contra hh; rw [ite_eq_right hh] at hact'; exact hh hact'
+      grind
     rw [ite_eq_left hact] at hact'
     have hbt : best t ≠ t := by
-      intro hh; rw [ite_eq_left hh] at hact'; exact absurd hact' (by norm_num)
+      grind
     obtain ⟨b1, b2, b3, b4, b5, b6, b7, b8⟩ := cut_chosen h hch hT hB hI ht htop hact hbt
     have hcp : (σ').cpar t = pch (best t) := by
       rw [cpar_top h hch hT hB hI ht htop, ite_eq_left hact, ite_eq_right hbt]
@@ -200,8 +192,8 @@ theorem next_i4 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t = 1 →
     rw [b5, b6] at this
     apply this
     by_cases hd : isdn (best t) = 1
-    · rw [ite_eq_left hd]; exact fun hh => absurd (hh.1 hd) (by norm_num)
-    · rw [ite_eq_right hd]; exact fun hh => hd (hh.2 rfl)
+    · grind
+    grind
   · -- a new top
     obtain ⟨ht0, hc⟩ := ((istop_next h hch hT hB hI ht).1 htop').resolve_left htop
     have hpk := h.pch_lt t ht ht0
@@ -214,8 +206,8 @@ theorem next_i4 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t = 1 →
     rw [hco] at this
     apply this
     by_cases hd : isdn t = 1
-    · rw [ite_eq_left hd]; exact ⟨fun _ => rfl, fun _ => hd⟩
-    · rw [ite_eq_right hd]; exact ⟨fun hh => absurd hh hd, fun hh => absurd hh (by norm_num)⟩
+    · grind
+    grind
 
 theorem next_i5 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t ≠ 1 →
     sub R prg pch (σ').rem t = {t} ∧
@@ -229,15 +221,12 @@ theorem next_i5 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t ≠ 1 �
     · -- a singleton finished now
       rw [ite_eq_left hact] at hact'
       have hbt : best t = t := by
-        by_contra hh; rw [ite_eq_right hh] at hact'; exact hact' hact
+        grind
       have hsing : sub R prg pch σ.rem t = {t} := by
         ext v
         rw [mem_sub, Finset.mem_singleton]
         constructor
-        · rintro ⟨hv, htv⟩
-          rcases (hB t ht htop).2 with ⟨-, b2⟩ | ⟨-, -, b3, -⟩
-          · exact b2 v hv htv
-          · exact absurd hbt b3
+        · grind
         · rintro rfl; exact ⟨ht, ReflTransGen.refl⟩
       refine ⟨by rw [sub_uncut h hch hT hB hI ht htop (fun _ => hbt), hsing], ?_⟩
       have hlp : (σ').lpar t = (if σ.side t = 2 then 2 * t + 1 else 2 * σ.cpar t) := by
@@ -247,10 +236,9 @@ theorem next_i5 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t ≠ 1 �
         subst s0
         have hR1 : R = 1 := by
           have := congrArg Finset.card (sub_root0 h hch hT hB hI sj)
-          rw [hsing, Finset.card_singleton, Finset.card_range] at this
-          omega
-        refine ⟨by rw [hlp, ite_eq_left s2], ?_, by have := h.hR; omega⟩
-        simp only [next, ite_eq_left hact, ite_eq_left s2, code, ite_eq_left hbt]
+          grind
+        refine ⟨by simp_all, ?_, by have := h.hR; omega⟩
+        grind [next, code]
       · right
         have hrp := hI.i0 _ s2 s3
         refine ⟨σ.cpar t, s2, rem_mono h hch hT hB hI hrp, by rw [hlp, ite_eq_right (by omega)],
@@ -261,8 +249,7 @@ theorem next_i5 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t ≠ 1 �
           omega
         · rw [gc_old h hch hT hB hI hrp]
           have : t ∈ sub R prg pch σ.rem t := (mem_sub).2 ⟨ht, ReflTransGen.refl⟩
-          rw [s4] at this
-          exact (Finset.mem_inter.1 this).1
+          grind
     · -- an old finished leaf
       obtain ⟨l1, l2⟩ := hI.i5 t ht htop hact
       refine ⟨by rw [sub_uncut h hch hT hB hI ht htop (fun hh => absurd hh hact), l1], ?_⟩
@@ -276,8 +263,7 @@ theorem next_i5 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t ≠ 1 �
         · -- at round `0` the only top is the active root
           have := (hI.i7 hj).2.1
           have hR := h.hR
-          have ht0 : t = 0 := by omega
-          rw [ht0] at hact; exact absurd this hact
+          simp_all +arith
         · rw [root_next_pos h hch hT hB hI hj]; exact a2
       · right
         refine ⟨p, hp, rem_mono h hch hT hB hI hrp, a1, ?_, ?_⟩
@@ -287,8 +273,7 @@ theorem next_i5 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t ≠ 1 �
     have hpk := h.pch_lt t ht ht0
     have hco := chOf_pch h hch hT hB hI ht ht0
     obtain ⟨n1, -, -⟩ := new_top_facts h hch hT hB hI hpk hc
-    rw [hco] at n1
-    exact absurd n1 hact'
+    grind
 
 theorem next_i6 (hdeg : ∀ v, v < R → (kids R prg pch rem0 v).card + (if v = 0 then 0 else 1) ≤ D) :
     ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t = 1 →
@@ -304,13 +289,11 @@ theorem next_i6 (hdeg : ∀ v, v < R → (kids R prg pch rem0 v).card + (if v = 
     have hlt := sz_lt h b2 (Ne.symm hbt) b1
     have h6 := (hI.i6 t ht htop hact).1
     have hD : 1 ≤ D := by
-      have := hdeg _ b1
-      rw [ite_eq_right b3] at this
-      omega
+      grind
     obtain ⟨c, hc, htc, hct, hgood⟩ := exists_good h hdeg ht htop hn
     have hmax := (hB t ht htop).1 c hc htc hct
     rcases (hB t ht htop).2 with ⟨e, -⟩ | ⟨-, -, -, hbv⟩
-    · exact absurd e hbt
+    · omega
     rw [hbv] at hmax
     have hm : sz R prg pch σ.rem (best t) + (sz R prg pch σ.rem t - sz R prg pch σ.rem (best t)) - 1 ≤
         D * min (sz R prg pch σ.rem (best t)) (sz R prg pch σ.rem t - sz R prg pch σ.rem (best t)) := by
@@ -327,29 +310,22 @@ theorem next_i6 (hdeg : ∀ v, v < R → (kids R prg pch rem0 v).card + (if v = 
     have m2 := le_hstep hD s2
     have m3 := hstep_mono D (show sz R prg pch σ.rem t - 1 ≤ (hstep D)^[j] K by omega)
     have m4 : hstep D (sz R prg pch σ.rem t - 1) ≤ (hstep D)^[j + 1] K := by
-      rw [Function.iterate_succ_apply']; exact m3
-    refine ⟨?_, ?_, by omega⟩
-    · omega
-    · omega
+      grind [Function.iterate_succ_apply']
+    omega
   intro t ht htop' hact'
   by_cases htop : IsTop pch σ.rem t
   · rw [act_top h hch hT hB hI ht htop] at hact'
     have hact : σ.act t = 1 := by
-      by_contra hh; rw [ite_eq_right hh] at hact'; exact hh hact'
+      grind
     rw [ite_eq_left hact] at hact'
     have hbt : best t ≠ t := by
-      intro hh; rw [ite_eq_left hh] at hact'; exact absurd hact' (by norm_num)
-    obtain ⟨k1, -, k3⟩ := key t ht htop hact hbt
-    exact ⟨k1, Or.inr (by simpa using k3)⟩
+      grind
+    grind
   · obtain ⟨ht0, hc⟩ := ((istop_next h hch hT hB hI ht).1 htop').resolve_left htop
     have hpk := h.pch_lt t ht ht0
     have hco := chOf_pch h hch hT hB hI ht ht0
     obtain ⟨t1, t2, t3, t4, t5, -, -, -, -, -, -⟩ := chosen_facts h hch hT hB hI hpk hc
-    rw [hco] at t1 t2 t3 t4 t5
-    have hbt : best (top t) ≠ top t := by rw [t4]; exact t5
-    obtain ⟨-, k2, k3⟩ := key (top t) t1 t2 t3 hbt
-    rw [t4] at k2
-    exact ⟨k2, Or.inr (by simpa using k3)⟩
+    grind
 
 theorem next_i8 : 1 ≤ j + 1 → ValidC R K pch (σ') (σ').root ∧ compOf gc' (σ').root = range R ∧
     pcode (σ') (σ').root = (σ').root := by
@@ -357,14 +333,14 @@ theorem next_i8 : 1 ≤ j + 1 → ValidC R K pch (σ') (σ').root ∧ compOf gc'
   rcases Nat.eq_zero_or_pos j with hj | hj
   · obtain ⟨-, a0, s0⟩ := hI.i7 hj
     have hroot : (σ').root = code best pch 0 := by
-      simp only [next, ite_eq_left a0, ite_eq_left s0]
+      grind [next]
     rw [hroot]
     obtain ⟨v1, v2, v3⟩ := code_next h hch hT hB hI h.R_pos (Or.inl rfl) a0
-    refine ⟨v1, by rw [v2]; exact sub_root0 h hch hT hB hI hj, by rw [v3, ite_eq_left s0]⟩
+    refine ⟨v1, by rw [v2]; exact sub_root0 h hch hT hB hI hj, by grind⟩
   · rw [root_next_pos h hch hT hB hI hj]
     obtain ⟨o1, o2, o3⟩ := hI.i8 hj
     obtain ⟨v1, v2, v3⟩ := valid_next h hch hT hB hI o1
-    exact ⟨v1, v2.trans o2, v3.trans o3⟩
+    grind
 
 theorem next_i9 : (σ').fin =
     ((range R).filter (fun t => IsTop pch (σ').rem t ∧ (σ').act t ≠ 1)).card := by
@@ -380,15 +356,14 @@ theorem next_i9 : (σ').fin =
         by_cases hact : σ.act t = 1
         · rw [ite_eq_left hact] at hact'
           have hbt : best t = t := by
-            by_contra hh; rw [ite_eq_right hh] at hact'; exact hact' hact
+            grind
           exact Or.inr ⟨ht, top_self h hch hT hB hI ht htop, hact, hbt⟩
-        · exact Or.inl ⟨ht, htop, hact⟩
+        grind
       · obtain ⟨ht0, hc⟩ := ((istop_next h hch hT hB hI ht).1 htop').resolve_left htop
         have hpk := h.pch_lt t ht ht0
         have hco := chOf_pch h hch hT hB hI ht ht0
         obtain ⟨n1, -, -⟩ := new_top_facts h hch hT hB hI hpk hc
-        rw [hco] at n1
-        exact absurd n1 hact'
+        grind
     · rintro (⟨ht, htop, hact⟩ | ⟨ht, htt, hact, hbt⟩)
       · refine ⟨ht, (istop_next h hch hT hB hI ht).2 (Or.inl htop), ?_⟩
         rw [act_top h hch hT hB hI ht htop, ite_eq_right hact]; exact hact
@@ -397,9 +372,7 @@ theorem next_i9 : (σ').fin =
         rw [act_top h hch hT hB hI ht htop, ite_eq_left hact, ite_eq_left hbt]; norm_num
   have hdisj : Disjoint ((range R).filter (fun t => IsTop pch σ.rem t ∧ σ.act t ≠ 1))
       ((range R).filter (fun r => top r = r ∧ σ.act r = 1 ∧ best r = r)) := by
-    rw [Finset.disjoint_filter]
-    intro t _ h1 h2
-    exact h1.2 h2.2.1
+    grind [Finset.disjoint_filter]
   rw [hsplit, Finset.card_union_of_disjoint hdisj, ← hI.i9]
   rfl
 

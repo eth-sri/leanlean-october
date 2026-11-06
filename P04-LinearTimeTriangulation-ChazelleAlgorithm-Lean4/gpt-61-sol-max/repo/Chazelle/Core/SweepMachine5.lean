@@ -48,9 +48,9 @@ theorem sideAttach_of_along (hP : C.P.Simple) {e : Set Point} (he : e ∈ Merge.
   have hsec' : ∀ s > 0, sideLeft (chainModel C).W p t (rayPt z τ' s) :=
     fun s hs => (sideLeft_rayPt_iff _ p t τ' one_pos hs).1 hsec
   obtain ⟨y, l, r, hH, -, rfl, -, -⟩ := Merge.augChords_spec he
-  have hlr := hH.lt
+  
   obtain ⟨s₁, hs₁, hs₁0⟩ := (hev.and self_mem_nhdsWithin).exists
-  have hs₁0' : (0 : ℝ) < s₁ := hs₁0
+  
   have hzy : z.2 = y := by simpa [rayPt] using hs₁.1
   have hzpt : ((z.1, y) : Point) = z := Prod.ext rfl hzy.symm
   refine ⟨hp, ht, ht1, ?_, 1, one_pos, fun x hx hxz _ => ?_⟩
@@ -60,18 +60,18 @@ theorem sideAttach_of_along (hP : C.P.Simple) {e : Set Point} (he : e ∈ Merge.
         push Not at h
         obtain ⟨s, hs, hs'⟩ :=
           (hev.and (Ioo_mem_nhdsGT (show (0 : ℝ) < l - z.1 by linarith))).exists
-        have := hs.2.1; simp [rayPt] at this; linarith [hs'.2]
+        have := hs.2.1; grind [rayPt]
       have hzr : z.1 ≤ r := by
-        have := hs₁.2.2; simp [rayPt] at this; linarith
+        have := hs₁.2.2; grind [rayPt]
       exact ⟨hzy, hzl, hzr⟩
     · have hzr : z.1 ≤ r := by
         by_contra h
         push Not at h
         obtain ⟨s, hs, hs'⟩ :=
           (hev.and (Ioo_mem_nhdsGT (show (0 : ℝ) < z.1 - r by linarith))).exists
-        have := hs.2.2; simp [rayPt] at this; linarith [hs'.2]
+        have := hs.2.2; grind [rayPt]
       have hzl : l ≤ z.1 := by
-        have := hs₁.2.1; simp [rayPt] at this; linarith
+        have := hs₁.2.1; grind [rayPt]
       exact ⟨hzy, hzl, hzr⟩
   · obtain ⟨hxy, hxl, hxr⟩ := hx
     rcases hτ' with rfl | rfl
@@ -81,38 +81,34 @@ theorem sideAttach_of_along (hP : C.P.Simple) {e : Set Point} (he : e ∈ Merge.
           push Not at h
           obtain ⟨s, hs, hs'⟩ :=
             (hev.and (Ioo_mem_nhdsGT (show (0 : ℝ) < l - z.1 by linarith))).exists
-          have := hs.2.1; simp [rayPt] at this; linarith [hs'.2]
+          have := hs.2.1; grind [rayPt]
         have h2 : z.1 < r := by
-          have := hs₁.2.2; simp [rayPt] at this; linarith
+          have := hs₁.2.2; grind [rayPt]
         rcases h1.lt_or_eq with h | h
         · exact absurd (by rw [← hzpt]; exact hH.open_mem _ h h2) hzD
-        · exact h.symm
+        simp_all
       have hxl' : l < x.1 := by
-        rcases hxl.lt_or_eq with h | h
-        · exact h
-        · exfalso; apply hxz; exact Prod.ext (by rw [← h, hzl]) (by rw [hxy, hzy])
+        grind
       have e : x = rayPt z 1 (x.1 - l) :=
-        point_ext (by simp [rayPt, hzl]) (by simp [rayPt, hxy, hzy])
-      rw [e]; exact hsec' _ (by linarith)
+        point_ext (by simp_all) (by simp_all)
+      grind
     · have hzr : z.1 = r := by
         have h1 : z.1 ≤ r := by
           by_contra h
           push Not at h
           obtain ⟨s, hs, hs'⟩ :=
             (hev.and (Ioo_mem_nhdsGT (show (0 : ℝ) < z.1 - r by linarith))).exists
-          have := hs.2.2; simp [rayPt] at this; linarith [hs'.2]
+          have := hs.2.2; grind [rayPt]
         have h2 : l < z.1 := by
-          have := hs₁.2.1; simp [rayPt] at this; linarith
+          have := hs₁.2.1; grind [rayPt]
         rcases h1.lt_or_eq with h | h
         · exact absurd (by rw [← hzpt]; exact hH.open_mem _ h2 h) hzD
         · exact h
       have hxr' : x.1 < r := by
-        rcases hxr.lt_or_eq with h | h
-        · exact h
-        · exfalso; apply hxz; exact Prod.ext (by rw [h, hzr]) (by rw [hxy, hzy])
+        grind
       have e : x = rayPt z (-1) (r - x.1) :=
-        point_ext (by simp [rayPt, hzr]) (by simp [rayPt, hxy, hzy])
-      rw [e]; exact hsec' _ (by linarith)
+        point_ext (by simp_all) (by simp_all)
+      grind
 
 end ChainModel
 

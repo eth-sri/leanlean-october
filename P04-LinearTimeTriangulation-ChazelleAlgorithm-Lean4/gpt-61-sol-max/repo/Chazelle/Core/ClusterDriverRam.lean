@@ -27,8 +27,7 @@ section body
 
 variable {μ N : ℕ} {F : Type} [Fintype F] [DecidableEq F] {M : CombMap (Fin μ) F (Fin N)}
   {T : SpanTree M} {a : F → Fin N} {ha : ∀ g, M.face (a g) = g}
-  {C : CoTree (starTree T a ha)} {R : BTree} {first : Fin μ → Fin N} {preE slot : ℕ → ℕ}
-  {upT : ℕ → ℕ} {k c : ℕ} {P : Polygon} {W : ℕ}
+  {C : CoTree (starTree T a ha)} {R : BTree} {first : Fin μ → Fin N} {preE slot upT : ℕ → ℕ} {k c : ℕ} {P : Polygon} {W : ℕ}
 
 omit [Fintype F] [DecidableEq F] in
 /-- The number of splits is at most `2 μ / s`. -/
@@ -84,11 +83,11 @@ theorem driver_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W cf)
       rw [hR1.zero, htp1] at htest
       obtain ⟨⟨lo, hi⟩, rest, rfl⟩ : ∃ p rest, stk1 = p :: rest := by
         cases stk1 with
-        | nil => simp at htest
-        | cons p rest => exact ⟨p, rest, rfl⟩
+        | nil => grind
+        | cons p rest => grind
       obtain ⟨c2, K2, e2, hK2, hw2, hR2, ⟨news, fin2, D2, hD2, htp2, hpot2⟩, hnsp2, hst2, hfr2,
           hrr2, hrm2, ho2⟩ := splitBody_exec (P := P) hw1 hR1 hSF1 hD1
-        (by rw [htp1]; simp; ring) hnsp1 hk hs
+        (by omega) hnsp1 hk hs
       refine ⟨c2, K2, e2, ⟨hw2, hR2, hst1.trans hst2, fun r a b d => (hfr2 r a b d).trans
         (hfr1 r a b d), hrr2.trans hrr1, hrm2.trans hrm1, ho2.trans ho1, news ++ rest, fin2, D2,
         nsp1 + 1, hD2, htp2, hnsp2⟩, ?_⟩
@@ -102,20 +101,18 @@ theorem driver_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W cf)
           splitC S.L k * (2 * μ / S.s - (nsp1 + 1)) + splitC S.L k := by
         rw [show 2 * μ / S.s - nsp1 = (2 * μ / S.s - (nsp1 + 1)) + 1 by omega, Nat.mul_add,
           Nat.mul_one]
-      rw [hmul]
-      nlinarith)
+      omega)
     ⟨hw, hR, StaticEq.refl _ _ _, fun _ _ _ _ => rfl, rfl, rfl, rfl, stk, fin, D, nsp, hD, htp,
       hnsp⟩
   rw [hR'.zero, htp'] at htest
   have hnil : stk' = [] := by
     cases stk' with
     | nil => rfl
-    | cons p rest => simp at htest
+    | cons p rest => grind
   subst hnil
-  refine ⟨cf', K, e, ?_, hw', hR', ⟨fin', D', nsp', hD'⟩, by rw [htp']; rfl, hst', hfr', hrr',
+  refine ⟨cf', K, e, ?_, hw', hR', ⟨fin', D', nsp', hD'⟩, by omega, hst', hfr', hrr',
     hrm', ho'⟩
-  rw [hΦ cf _ _ _ _ hD htp hnsp] at hK
-  exact hK
+  grind
 
 end body
 

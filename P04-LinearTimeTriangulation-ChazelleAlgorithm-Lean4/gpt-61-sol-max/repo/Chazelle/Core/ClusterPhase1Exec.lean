@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterPhase1
 
 /-!
@@ -38,14 +40,12 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
         (preE slot : ℕ → ℕ) (ρ : ℕ), PostD g M T a ha C R first preE slot ρ W c'.nmem := by
   have hU := g.U_ge; have hE := g.END_eq; have hLU := g.L_le_U; have hP := g.two_pow_L
   have hL : 0 < g.L := by
-    by_contra h0
-    have : g.L = 0 := by omega
-    rw [this] at hP; simp at hP; omega
+    grind
   have hk' : 0 < g.k' := by show 0 < min g.k g.μ; omega
   have hkμ : g.k' ≤ g.μ := min_le_right _ _
   have hN : 0 < g.N := by omega
   have b37 := g.base_eq 37; have b38 := g.base_eq 38; have b39 := g.base_eq 39
-  have b40 := g.base_eq 40; have b0 := g.base_eq 0; have b1 := g.base_eq 1; have b2 := g.base_eq 2; have b3 := g.base_eq 3; have b5 := g.base_eq 5; have b6 := g.base_eq 6; have b7 := g.base_eq 7; have b24 := g.base_eq 24; have b26 := g.base_eq 26; have b29 := g.base_eq 29
+  have b40 := g.base_eq 40; have b0 := g.base_eq 0;   have b3 := g.base_eq 3; have b5 := g.base_eq 5;  have b7 := g.base_eq 7; have b24 := g.base_eq 24;  have b29 := g.base_eq 29
   have b30 := g.base_eq 30; have b32 := g.base_eq 32; have b33 := g.base_eq 33; have b35 := g.base_eq 35; have b36 := g.base_eq 36; have b41 := g.base_eq 41; have b42 := g.base_eq 42; have b45 := g.base_eq 45; have b48 := g.base_eq 48; have b49 := g.base_eq 49
   unfold phase1
   -- setup
@@ -54,29 +54,29 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
   rw [hg] at hk1 hG1
   -- stage A
   obtain ⟨c2, k2, e2, hk2, hw2, hG2, hf2, T, hA2⟩ := stageA_exec (P := P) hw1 hG1
-    (by rw [hm1]; exact hmap) hpl.1 hμ hμN hO hR hV hL hEND
+    (by ram_grind) hpl.1 hμ hμN hO hR hV hL hEND
   -- stage B1
   obtain ⟨c3, k3, e3, hk3, hw3, hf3, a, ha, hB3⟩ := stageB1_exec (P := P) hw2 hG2 hA2 hμ hO hR
     hV hEND
-  have hG3 : GR g c3 := hG2.frame (fun r hr => hf3.1 r (by unfold GRReg at hr; unfold StBRG; omega))
+  have hG3 : GR g c3 := hG2.frame (fun r hr => hf3.1 r (by grind [GRReg, StBRG]))
   have hA3 : AF g M T c3.nmem := hA2.congr ⟨hO, hR, hV⟩ (fun x hx => hf3.2.2.2.2 x (by
-    unfold KeepA at hx; omega))
+    grind [KeepA]))
   -- stage B2
   obtain ⟨c4, k4, e4, hk4, hw4, hf4, C, R, preE, slot, hB4⟩ := stageB2_exec (P := P) hw3 hG3 hA3
     hB3 hpl.1 hN hL hO hR hV hEND
-  have hG4 : GR g c4 := hG3.frame (fun r hr => hf4.1 r (by unfold GRReg at hr; unfold StBRG; omega))
-  have hLU' : g.L * g.U ≥ 0 := Nat.zero_le _
+  have hG4 : GR g c4 := hG3.frame (fun r hr => hf4.1 r (by grind [GRReg, StBRG]))
+  
   have hA4 : AF g M T c4.nmem := hA3.congr ⟨hO, hR, hV⟩ (fun x hx => hf4.2.2.2.2 x (by
-    unfold KeepA at hx; omega))
+    grind [KeepA]))
   have hB14 : B1F g M T a ha c4.nmem := hB3.congr (fun x h1 h2 => hf4.2.2.2.2 x (by omega))
   -- stage C
   obtain ⟨c5, k5, e5, hk5, hw5, hf5, hhalf5, hpow5, ρ, hρ, hlv5, hmin5⟩ := stageC_exec (P := P)
     hw4 hG4 hk' hkμ (lev := fun v => c4.nmem (g.base 3 + v)) (fun v hv => rfl)
     (fun v hv => by have := hA4.lev ⟨v, hv⟩; have := hA4.lev_lt ⟨v, hv⟩; simp_all) hEND
-  have hG5 : GR g c5 := hG4.frame (fun r hr => hf5.1 r (by unfold GRReg at hr; unfold StCRG; omega))
+  have hG5 : GR g c5 := hG4.frame (fun r hr => hf5.1 r (by grind [GRReg, StCRG]))
   have k45 : ∀ x, ¬ CMem g x → c5.nmem x = c4.nmem x := fun x hx => hf5.2.2.2.2 x hx
   have hA5 : AF g M T c5.nmem := hA4.congr ⟨hO, hR, hV⟩ (fun x hx => k45 x (by
-    unfold KeepA at hx; unfold CMem; omega))
+    grind [KeepA, CMem]))
   have hB15 : B1F g M T a ha c5.nmem := hB14.congr (fun x h1 h2 => k45 x (by unfold CMem; omega))
   have hB25 : B2F g C R preE slot c5.nmem := hB4.congr (fun x hx => k45 x (by
     unfold CMem; omega))
@@ -85,17 +85,17 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
   -- stage D
   have hRn := hB25.R_n
   have hpre_lt : ∀ i, i < g.N → c5.nmem (g.base 29 + i) < g.N := fun i hi => by
-    rw [hB25.pre i hi, ← hRn]; exact hB25.R_pre.pre_lt hB25.R_ok (by rw [hRn]; exact hi)
+    rw [hB25.pre i hi, ← hRn]; exact hB25.R_pre.pre_lt hB25.R_ok (by omega)
   have hpre_inj : ∀ i j, i < g.N → j < g.N → c5.nmem (g.base 29 + i) = c5.nmem (g.base 29 + j) →
       i = j := fun i j hi hj h => by
     rw [hB25.pre i hi, hB25.pre j hj] at h
-    exact BTree.PreInv.pre_inj hB25.R_ok hB25.R_pre (by rw [hRn]; exact hi) (by rw [hRn]; exact hj) h
+    exact BTree.PreInv.pre_inj hB25.R_ok hB25.R_pre (by omega) (by omega) h
   have hlvx : ∀ l, l < g.μ → LvOK g c5.nmem (g.k' - 1 - ρ) l := hlv5
   obtain ⟨c6, k6, e6, hk6, hw6, hf6, hcnt6, hpos6, hact6, hdf6⟩ := stageD_exec (P := P) hw5 hG5
     (lev := fun v => c5.nmem (g.base 3 + v)) (hl := fun l => c5.nmem (g.base 36 + l))
     (blk := fun l => c5.nmem (g.base 35 + l)) hpre_lt hpre_inj
     (fun v hv => hA5.first_lt v hv) (fun v hv => hA5.first_v v hv)
-    (fun i hi => by rw [(hA5.map ⟨i, hi⟩).2.2]; exact (M.vert ⟨i, hi⟩).2) hV
+    (fun i hi => by rw [(hA5.map ⟨i, hi⟩).2.2]; omega) hV
     (fun v hv => rfl) (fun v hv => by have := hA5.lev ⟨v, hv⟩; have := hA5.lev_lt ⟨v, hv⟩; simp_all)
     (fun l hl => rfl)
     (fun l hl => by obtain ⟨-, -, -, h36⟩ := hlvx l hl; rw [h36]; split_ifs <;> omega)
@@ -127,7 +127,7 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
       boOf g c6.nmem w := fun w hw => by
     have hl := hA5.lev_lt ⟨w, hw⟩; have e := hA5.lev ⟨w, hw⟩
     simp only at e
-    have hlw : c5.nmem (g.base 3 + w) < g.μ := by rw [e]; exact hl
+    
     simp only [boOf, blkOf]
     rw [k56 (g.base 3 + w) (by unfold DMem; omega), k56 (g.base 36 + c5.nmem (g.base 3 + w))
       (by unfold DMem; omega), k56 (g.base 35 + c5.nmem (g.base 3 + w)) (by unfold DMem; omega)]

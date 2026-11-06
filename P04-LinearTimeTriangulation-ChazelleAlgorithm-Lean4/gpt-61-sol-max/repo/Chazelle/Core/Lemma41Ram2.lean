@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.Lemma41Ram1
 public import Mathlib.Tactic.IntervalCases
 public import Mathlib.Data.List.GetD
@@ -99,21 +101,15 @@ theorem recB_exec {c : Config} (hw : WordsBounded W c) {rp d nf hp : ℕ}
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold recB
   exec_block
-  all_goals try (config_simp; simp only [h15, h17, h18, h27, h24]; omega)
+  all_goals try (config_simp; omega)
   refine ⟨rfl, ‹_›, ?_, fun j hj1 hj4 => ?_, ?_, fun a ha => ?_, ?_, fun r a1 a2 a3 => ?_, rfl, rfl,
     rfl⟩
+  · grind [Machine.upd_apply]
+  · grind [Machine.upd_apply]
+  · ram_simp <;> omega_nf
   · config_simp; simp only [h15, h17, h18, h27, h24, Machine.upd_apply]
-    split_ifs <;> first | omega
-  · interval_cases j <;>
-    · config_simp; simp only [h15, h17, h18, h27, h24, Machine.upd_apply]
-      split_ifs <;> first | omega | rfl
-  · config_simp; simp only [h15, h17, h18, h27, h24, Machine.upd_apply]
-    split_ifs <;> first | omega
-  · config_simp; simp only [h15, h17, h18, h27, h24, Machine.upd_apply]
-    split_ifs <;> first | omega
-  · config_simp; simp only [h15, h24]
-  · simp only [Machine.upd_apply]
-    split_ifs <;> first | omega
+    grind
+  all_goals (ram_simp <;> omega_nf)
 
 set_option maxHeartbeats 4000000 in
 /-- The advance. -/

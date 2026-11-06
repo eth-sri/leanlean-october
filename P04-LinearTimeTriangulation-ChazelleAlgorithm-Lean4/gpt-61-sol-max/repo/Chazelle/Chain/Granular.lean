@@ -114,8 +114,7 @@ theorem sum_dart_snd (f : V → ℕ) :
 theorem card_dart_fst_filter (s : Finset V) :
     #((univ : Finset G.Dart).filter (fun d => d.fst ∈ s)) = ∑ v ∈ s, G.degree v := by
   have h := sum_dart_fst_filter G s (fun _ => 1)
-  simp only [mul_one, sum_const, smul_eq_mul] at h
-  simpa using h
+  simp_all +arith
 
 omit [DecidableEq V] in
 /-- **Many low-degree incidences.**  In a finite tree with `N` vertices whose degrees are at
@@ -138,14 +137,13 @@ theorem card_sub_one_le_two_mul_sum_low (hG : G.IsTree) :
   have hsplit : ∑ v ∈ L, G.degree v + ∑ v ∈ H, G.degree v = ∑ v, G.degree v :=
     sum_filter_add_sum_filter_not _ _ _
   have hcard : #L + #H = Fintype.card V := by
-    rw [hL, hH, card_filter_add_card_filter_not, card_univ]
+    grind [card_filter_add_card_filter_not, card_univ]
   have hLlow : #L ≤ ∑ v ∈ L, G.degree v := by
     rw [card_eq_sum_ones]; exact sum_le_sum fun v _ => hpos v
   have hHhigh : 3 * #H ≤ ∑ v ∈ H, G.degree v := by
     rw [card_eq_sum_ones, mul_sum, mul_one]
     exact sum_le_sum fun v hv => by
-      have := (mem_filter.1 hv).2
-      omega
+      grind
   omega
 
 end Abstract

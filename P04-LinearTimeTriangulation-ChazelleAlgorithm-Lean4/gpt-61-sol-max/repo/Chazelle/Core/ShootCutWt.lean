@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutPiece
 
 /-!
@@ -34,22 +36,24 @@ theorem wt_within (M : Model) {e : ℕ} {a b : ℝ} (hab : a < b) (ha : (e : ℝ
 theorem key_bounds {M : Model} {Q : Polygon} {n : ℕ} {x : WPos} (hx : ProperPos M Q n x) :
     (x.edge : ℝ) ≤ M.key Q x ∧ M.key Q x < x.edge + 1 := by
   unfold Model.key
-  exact ⟨by linarith [hx.1], by linarith [hx.2.1]⟩
+  ram_grind
 
+section
+variable (M : Model) (Q : Polygon) {n : ℕ}
 /-- **From a position to the end of its edge** (a walk vertex). -/
-theorem wt_to_next (M : Model) (Q : Polygon) {n : ℕ} {x : WPos} (hx : ProperPos M Q n x) :
+theorem wt_to_next {x : WPos} (hx : ProperPos M Q n x) :
     M.arcWt (M.key Q x) ((x.edge + 1 : ℕ) : ℝ) ≤ 1 := by
   have := key_bounds hx
-  exact wt_within M (e := x.edge) (by push_cast; linarith) this.1 (by push_cast; linarith)
+  exact wt_within M (e := x.edge) (by simp_all) this.1 (by simp_all)
 
 /-- **From the start vertex of an edge to a position strictly inside it.** -/
-theorem wt_from_start (M : Model) (Q : Polygon) {n : ℕ} {y : WPos} (hy : ProperPos M Q n y)
+theorem wt_from_start {y : WPos} (hy : ProperPos M Q n y)
     (hpos : 0 < M.param Q y) : M.arcWt (y.edge : ℝ) (M.key Q y) ≤ 1 := by
   have := key_bounds hy
   exact wt_within M (e := y.edge) (by unfold Model.key; linarith) le_rfl this.2.le
 
 /-- **Two positions of one edge, in order.** -/
-theorem wt_same (M : Model) (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos M Q n x)
+theorem wt_same {x y : WPos} (hx : ProperPos M Q n x)
     (hy : ProperPos M Q n y) (he : x.edge = y.edge) (hlt : M.key Q x < M.key Q y) :
     M.arcWt (M.key Q x) (M.key Q y) ≤ 1 := by
   have h1 := key_bounds hx
@@ -58,6 +62,9 @@ theorem wt_same (M : Model) (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos
   exact wt_within M (e := x.edge) hlt h1.1 h2.2.le
 
 /-! ## The uncounted block -/
+
+
+end
 
 variable (C : Chain)
 
@@ -71,28 +78,35 @@ theorem arcWt_chain (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos (chainM
       arcWtNat 6 (2 * C.m + 6) x.edge ((chainModel C).param Q x) y.edge
         ((chainModel C).param Q y) :=
   (chainModel C).arcWt_key (fun p hp => chainModel_counted_iff C p hp)
-    (by rw [chainModel_n]; omega) Q ⟨hx.1, hx.2.1⟩ ⟨hy.1, hy.2.1⟩
+    (by grind [chainModel_n]) Q ⟨hx.1, hx.2.1⟩ ⟨hy.1, hy.2.1⟩
 
-theorem keyCeil_le (e : ℕ) (f : ℝ) : keyCeil e f ≤ e + 1 := by
-  unfold keyCeil; split_ifs <;> omega
+section
+variable (e : ℕ) (f : ℝ)
+theorem keyCeil_le : keyCeil e f ≤ e + 1 := by
+  core_grind
 
-theorem le_keyCeil (e : ℕ) (f : ℝ) : e ≤ keyCeil e f := by
-  unfold keyCeil; split_ifs <;> omega
+theorem le_keyCeil : e ≤ keyCeil e f := by
+  core_grind
+
+
+end
 
 /-- The vertex position `⟨p, 0⟩` is proper. -/
 theorem proper_vtx (M : Model) (Q : Polygon) (n p : ℕ) : ProperPos M Q n ⟨p, 0⟩ :=
   ⟨le_rfl, by simp, Nat.zero_le _⟩
 
+section
+variable (Q : Polygon) {n : ℕ}
 /-- **From a position of `U` to the walk vertex `6`**: weight `0`. -/
-theorem wt_U_to_six (Q : Polygon) {n : ℕ} {x : WPos} (hx : ProperPos (chainModel C) Q n x)
+theorem wt_U_to_six {x : WPos} (hx : ProperPos (chainModel C) Q n x)
     (hU : InU C x.edge) :
     (chainModel C).arcWt ((chainModel C).key Q x) (6 : ℕ) = 0 := by
   have e6 : ((6 : ℕ) : ℝ) = (chainModel C).key Q ⟨6, 0⟩ := by simp
   rw [e6, arcWt_chain C Q hx (proper_vtx _ Q n 6)]
-  have hc := le_keyCeil 6 ((chainModel C).param Q ⟨6, 0⟩)
-  have hc' := keyCeil_le 6 ((chainModel C).param Q ⟨6, 0⟩)
+  
+  
   have hk : keyCeil 6 ((chainModel C).param Q ⟨6, 0⟩) = 6 := by
-    unfold keyCeil; rw [ite_eq_left (by simp)]
+    simp_all [keyCeil] <;> omega_nf
   unfold arcWtNat
   rw [hk]
   split_ifs with h
@@ -104,11 +118,10 @@ theorem wt_U_to_six (Q : Polygon) {n : ℕ} {x : WPos} (hx : ProperPos (chainMod
       simp only [param_hgt0, add_zero]
       push_cast
       linarith [hx.2.1]
-    · simp only [hU]
-      omega
+    omega
 
 /-- **From the walk vertex `2m + 5` to a position of `U`**: weight at most `1`. -/
-theorem wt_last_to_U (Q : Polygon) {n : ℕ} {y : WPos} (hy : ProperPos (chainModel C) Q n y)
+theorem wt_last_to_U {y : WPos} (hy : ProperPos (chainModel C) Q n y)
     (hU : InU C y.edge) :
     (chainModel C).arcWt ((2 * C.m + 5 : ℕ) : ℝ) ((chainModel C).key Q y) ≤ 1 := by
   have e5 : ((2 * C.m + 5 : ℕ) : ℝ) = (chainModel C).key Q ⟨2 * C.m + 5, 0⟩ := by simp
@@ -119,13 +132,7 @@ theorem wt_last_to_U (Q : Polygon) {n : ℕ} {y : WPos} (hy : ProperPos (chainMo
   unfold arcWtNat
   dsimp only
   split_ifs with h
-  · rcases hU with hU | hU
-    · exfalso
-      simp only [param_hgt0, add_zero] at h
-      have : (y.edge : ℝ) + 1 ≤ 2 * C.m + 5 := by exact_mod_cast (by omega : y.edge + 1 ≤ 2 * C.m + 5)
-      push_cast at h
-      linarith [hy.2.1]
-    · omega
+  · omega
   · rcases hU with hU | hU
     · omega
     · exfalso
@@ -134,6 +141,9 @@ theorem wt_last_to_U (Q : Polygon) {n : ℕ} {y : WPos} (hy : ProperPos (chainMo
       rw [hU]
       push_cast
       linarith [hy.1]
+
+
+end
 
 /-- The order of the uncounted block: `2m + 6` first, then `0, …, 5`. -/
 def uIdx (p : ℕ) : ℕ := if p = 2 * C.m + 6 then 0 else p + 1
@@ -145,7 +155,7 @@ theorem wt_U_U (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel 
     (hlt : uIdx C x.edge < uIdx C y.edge) :
     (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) = 0 := by
   rw [arcWt_chain C Q hx hy]
-  have hc := le_keyCeil y.edge ((chainModel C).param Q y)
+  
   have hc' := keyCeil_le y.edge ((chainModel C).param Q y)
   have hm := C.one_le
   have hx1 := hx.2.1
@@ -155,13 +165,8 @@ theorem wt_U_U (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel 
   rcases hxU with hxU | hxU <;> rcases hyU with hyU | hyU
   · rw [ite_eq_right (by omega : x.edge ≠ 2 * C.m + 6), ite_eq_right (by omega : y.edge ≠ 2 * C.m + 6)] at hlt
     have : (x.edge : ℝ) + 1 ≤ y.edge := by exact_mod_cast (by omega : x.edge + 1 ≤ y.edge)
-    rw [ite_eq_left (by linarith)]
-    omega
-  · rw [ite_eq_left hyU] at hlt; omega
-  · have : (y.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast (by omega : y.edge + 1 ≤ x.edge)
-    rw [ite_eq_right (by linarith [hx.1, hy.2.1])]
-    omega
-  · rw [ite_eq_left hyU] at hlt; omega
+    grind
+  all_goals grind
 
 end ShootCut
 

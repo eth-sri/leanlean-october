@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopM4
 
 /-!
@@ -31,8 +33,11 @@ def tH : ℕ := sw 4093
 def tL : ℕ := sw 4094
 def tR : ℕ := sw 4095
 
+section
+variable (P : Polygon) (J : Merge.Junction) (N : NF)
+include P J N
 /-- **The position of the origin** of the code `(kind, k, b)` in the walk of `C₂`. -/
-def OrgPos (P : Polygon) (J : Merge.Junction) (N : NF) (kind k b e h : ℕ) : Prop :=
+def OrgPos (kind k b e h : ℕ) : Prop :=
   e < (chainModel J.right).W.n ∧ ProperPos (chainModel J.right) (Qof P) P.n ⟨e, h⟩ ∧
     PosClass J.right (Qof P) ⟨e, h⟩ ∧
     (chainModel J.right).pos (Qof P) ⟨e, h⟩ = stOrig J (Qof P) N kind k b ∧
@@ -40,9 +45,12 @@ def OrgPos (P : Polygon) (J : Merge.Junction) (N : NF) (kind k b e h : ℕ) : Pr
     (kind = 1 → (⟨e, h⟩ : WPos) = endPos N k (1 - b))
 
 /-- The post of `stLoad`. -/
-def LdOK (P : Polygon) (J : Merge.Junction) (N : NF) (kind k b : ℕ) (c : Config) : Prop :=
+def LdOK (kind k b : ℕ) (c : Config) : Prop :=
   c.nreg oNB = 1 - b ∧ c.nreg oAd ≤ 1 ∧ (c.nreg oAd = 1 ↔ StOK P J N kind k b) ∧
     (c.nreg oAd = 1 → OrgPos P J N kind k b (c.nreg oPE) (c.nreg oPH))
+
+
+end
 
 /-- The registers the branches of `stLoad` write. -/
 def LdW₀ (r : ℕ) : Prop := r = oPE ∨ r = oPH ∨ r = oAd ∨ (tX ≤ r ∧ r ≤ tR)
@@ -73,21 +81,25 @@ def stLoad : Stmt :=
 
 /-! ## A one-register assignment -/
 
-theorem set1_irs (hI : IInv W c₀ c) {r v : ℕ} (hr : 240700 ≤ r ∧ r < 250000) (hv : v ≤ W) :
+section
+variable (hI : IInv W c₀ c)
+include hI
+theorem set1_irs {r v : ℕ} (hr : 240700 ≤ r ∧ r < 250000) (hv : v ≤ W) :
     IRS P W c₀ (.instr (.constN r v)) c 1 (fun c' => c'.nreg r = v ∧
       (∀ q, q ≠ r → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
   refine (IRS.instr1 (i := .constN r v) hI ⟨iscr_sw hr.1 hr.2, hv⟩).mono le_rfl ?_
-  rintro c' rfl
-  refine ⟨by simp [regI, upd], fun q hq => by simp [regI, upd, hq], rfl⟩
+  simp_all [regI, upd] <;> omega_nf
 
-theorem copy1_irs (hI : IInv W c₀ c) {r a : ℕ} (hr : 240700 ≤ r ∧ r < 250000) :
+theorem copy1_irs {r a : ℕ} (hr : 240700 ≤ r ∧ r < 250000) :
     IRS P W c₀ (.instr (.copyN r a)) c 1 (fun c' => c'.nreg r = c.nreg a ∧
       (∀ q, q ≠ r → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
   refine (IRS.instr1 (i := .copyN r a) hI (iscr_sw hr.1 hr.2)).mono le_rfl ?_
-  rintro c' rfl
-  refine ⟨by simp [regI, upd], fun q hq => by simp [regI, upd, hq], rfl⟩
+  simp_all [regI, upd] <;> omega_nf
 
 /-! ## The branches -/
+
+
+end
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {J : Merge.Junction} {N₁ N₂ : NF}
@@ -97,19 +109,19 @@ theorem orgPos_v (P : Polygon) (N : NF) (k b : ℕ) :
   have hτ := tpos_lt J.right 0
   have hn := cm_n J.right
   have hp0 : (chainModel J.right).param (Qof P) ⟨6 + tpos J.right 0, 0⟩ = 0 := rfl
-  refine ⟨by rw [hn]; omega, ⟨by rw [hp0], by rw [hp0]; norm_num, Nat.zero_le _⟩,
-    Or.inr (Or.inl ⟨by simp only; omega, by simp only; omega⟩), ?_, fun _ => ⟨rfl, by omega,
+  refine ⟨by omega, ⟨by rw [hp0], by simp_all, Nat.zero_le _⟩,
+    Or.inr (Or.inl ⟨by simp_all, by grind⟩), ?_, fun _ => ⟨rfl, by omega,
     by omega⟩, fun h => absurd h (by norm_num)⟩
-  rw [right_v_pos]; unfold stOrig; rw [ite_eq_left rfl]
+  simp_all [right_v_pos, stOrig] 
 
 theorem orgPos_t (P : Polygon) (N : NF) (k b : ℕ) : OrgPos P J N 2 k b 6 0 := by
   have hn := cm_n J.right
   have h1 := J.right.one_le
   have hp0 : (chainModel J.right).param (Qof P) ⟨6, 0⟩ = 0 := rfl
-  refine ⟨by rw [hn]; omega, ⟨by rw [hp0], by rw [hp0]; norm_num, Nat.zero_le _⟩,
-    Or.inr (Or.inl ⟨by simp only; omega, by simp only; omega⟩), ?_, fun _ => ⟨rfl, le_rfl,
+  refine ⟨by omega, ⟨by rw [hp0], by simp_all, Nat.zero_le _⟩,
+    Or.inr (Or.inl ⟨by simp_all, by grind⟩), ?_, fun _ => ⟨rfl, le_rfl,
     by omega⟩, fun h => absurd h (by norm_num)⟩
-  rw [right_top_pos]; unfold stOrig; rw [ite_eq_right (by norm_num), ite_eq_right (by norm_num)]
+  simp_all [right_top_pos, stOrig] 
 
 theorem orgPos_w (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂) {k b : ℕ}
     (hk : k < N₂.nChords) (hb : b ≤ 1) :
@@ -119,12 +131,14 @@ theorem orgPos_w (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
   have hhn := (regOf_spec hN).2.2.2.2.2.1 k hk
   have hQn : (Qof P).n = P.n := shear_n _ _
   refine ⟨hA.1, ⟨hA.2.1, hA.2.2.1, ?_⟩, hcl, ?_, fun h => absurd rfl h, fun _ => rfl⟩
-  · unfold endPos; split_ifs <;> show (N₂.chord k).h + 1 ≤ P.n <;> omega
+  · unfold endPos; split_ifs <;> aesop 
   · exact (stOrig_wall hN hk hb).1.symm
 
 /-! ## The read of the chord record -/
 
-theorem ldRd_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) :
+section
+variable (m f : ℕ → ℕ)
+theorem ldRd_val (hk1 : f K1 = 1) (hk3 : f K3 = 3) :
     regB m ldRd f tH = m (m (f (sw 4) + 3) + 5 * f oKk) ∧
     regB m ldRd f tL = m (m (f (sw 4) + 3) + 5 * f oKk + 1) ∧
     regB m ldRd f tR = m (m (f (sw 4) + 3) + 5 * f oKk + 2) ∧
@@ -132,17 +146,16 @@ theorem ldRd_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) :
   have e1 : f 240611 = 1 := hk1
   have e3 : f 240616 = 3 := hk3
   simp only [ldRd, regB, regI, upd, tX, oKk, tH, tL, tR, oPH, K1, K3, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e3]
-  refine ⟨congrArg m (by ring), congrArg m (by ring), congrArg m (by ring), congrArg m (by ring)⟩
+  simp_all +arith
 
-theorem ldRd_other (m f : ℕ → ℕ) {q : ℕ} (h : q ≠ tX ∧ q ≠ tH ∧ q ≠ tL ∧ q ≠ tR ∧ q ≠ oPH) :
+theorem ldRd_other {q : ℕ} (h : q ≠ tX ∧ q ≠ tH ∧ q ≠ tL ∧ q ≠ tR ∧ q ≠ oPH) :
     regB m ldRd f q = f q :=
   regB_other m ldRd f (fun i hi => by
     simp only [ldRd, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp only [dstI] <;> intro he <;> subst he <;> simp at h)
+      core_grind <;> intro he <;> subst he <;> simp at h)
 
-theorem ldRd_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) (hb : f (sw 4) + 3 ≤ W)
+theorem ldRd_ok (hk1 : f K1 = 1) (hk3 : f K3 = 3) (hb : f (sw 4) + 3 ≤ W)
     (hb2 : m (f (sw 4) + 3) + 5 * f oKk + 4 ≤ W) (hh : m (m (f (sw 4) + 3) + 5 * f oKk) + 1 ≤ W) :
     okB W m ldRd f := by
   have e1 : f 240611 = 1 := hk1
@@ -157,16 +170,12 @@ theorem ldRd_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) (hb : f (s
       m (f 240004 + 3) + 5 * f 244011 := by ring
     rw [this]; exact hh
   simp only [ldRd, okB, okI, regI, upd, tX, oKk, tH, tL, tR, oPH, K1, K3, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e3]
-  refine ⟨⟨s 4092 (by norm_num) (by norm_num), by omega⟩, s 4092 (by norm_num) (by norm_num),
-    ⟨s 4092 (by norm_num) (by norm_num), by omega⟩, ⟨s 4092 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4092 (by norm_num) (by norm_num), by omega⟩, ⟨s 4092 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4092 (by norm_num) (by norm_num), by omega⟩, s 4093 (by norm_num) (by norm_num),
-    ⟨s 4092 (by norm_num) (by norm_num), by omega⟩, s 4094 (by norm_num) (by norm_num),
-    ⟨s 4092 (by norm_num) (by norm_num), by omega⟩, s 4095 (by norm_num) (by norm_num),
-    ⟨sH, by omega⟩, trivial⟩
+  grind
 
 /-! ## The main lemma -/
+
+
+end
 
 /-- The post of a branch of `stLoad`. -/
 def LdBr (P : Polygon) (J : Merge.Junction) (N : NF) (kind k b : ℕ) (c₁ c' : Config) : Prop :=
@@ -174,75 +183,72 @@ def LdBr (P : Polygon) (J : Merge.Junction) (N : NF) (kind k b : ℕ) (c₁ c' :
     (c'.nreg oAd = 1 ↔ StOK P J N kind k b) ∧
     (c'.nreg oAd = 1 → OrgPos P J N kind k b (c'.nreg oPE) (c'.nreg oPH))
 
-theorem ldV_irs (hI : IInv W c₀ c) (hfx : Fx P W J c) {k b : ℕ} (hb : b ≤ 1) (hW : 1 ≤ W) :
+section
+variable (hI : IInv W c₀ c)
+include hI
+theorem ldV_irs (hfx : Fx P W J c) {k b : ℕ} (hb : b ≤ 1) (hW : 1 ≤ W) :
     IRS P W c₀ (block ldV) c 3 (LdBr P J N₂ 0 k b c) := by
   refine (IRS.block ldV hI ?_).mono (by simp [ldV]) ?_
   · simp only [ldV, okB, okI]
-    exact ⟨iscr_sw (by unfold oPE sw; omega) (by unfold oPE sw; omega),
-      ⟨iscr_sw (by unfold oPH sw; omega) (by unfold oPH sw; omega), Nat.zero_le _⟩,
-      ⟨iscr_sw (by unfold oAd sw; omega) (by unfold oAd sw; omega), hW⟩, trivial⟩
+    exact ⟨iscr_sw (by omega_nf) (by omega_nf),
+      ⟨iscr_sw (by omega_nf) (by omega_nf), Nat.zero_le _⟩,
+      ⟨iscr_sw (by omega_nf) (by omega_nf), hW⟩, trivial⟩
   · rintro c' rfl
     have g1 := hfx.r40 1 (by norm_num)
     simp only [cstR, List.getD_cons_zero, List.getD_cons_succ] at g1
     have vE : regB c.nmem ldV c.nreg oPE = 6 + tpos J.right 0 := by
-      simp only [ldV, regB, regI, upd, oPE, oPH, oAd, sw]
-      simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-      exact g1
+      simp_all [ldV, regB, regI, upd, oPE, oPH, oAd, sw, Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false] <;> omega_nf
     have vH : regB c.nmem ldV c.nreg oPH = 0 := by
-      simp only [ldV, regB, regI, upd, oPE, oPH, oAd, sw]
-      simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
+      simp_all [ldV, regB, regI, upd, oPE, oPH, oAd, sw, Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false] <;> omega_nf
     have vA : regB c.nmem ldV c.nreg oAd = 1 := by
-      simp only [ldV, regB, regI, upd, oPE, oPH, oAd, sw]
-      simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-    refine ⟨fun q hq => ?_, rfl, by simp only; rw [vA], ⟨fun _ => ⟨by norm_num, hb,
+      simp_all [ldV, regB, regI, upd, oPE, oPH, oAd, sw, Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false] <;> omega_nf
+    refine ⟨fun q hq => ?_, rfl, by simp_all, ⟨fun _ => ⟨by norm_num, hb,
       fun h => absurd h (by norm_num), fun h => absurd h (by norm_num)⟩, fun _ => by
-        simp only; rw [vA]⟩, fun _ => by simp only; rw [vE, vH]; exact orgPos_v P N₂ k b⟩
+        omega⟩, fun _ => by simp only; rw [vE, vH]; exact orgPos_v P N₂ k b⟩
     simp only
     refine regB_other _ _ _ (fun i hi => ?_)
     simp only [ldV, List.mem_cons, List.not_mem_nil, or_false] at hi
-    unfold LdW₀ at hq
-    rcases hi with rfl | rfl | rfl <;> simp only [dstI] <;> intro he <;> subst he <;> tauto
+    core_grind [LdW₀]
 
-theorem ldT_irs (hI : IInv W c₀ c) (hO : OrgK P J c) (hK : Consts c) {k b : ℕ} (hb : b ≤ 1)
+theorem ldT_irs (hO : OrgK P J c) (hK : Consts c) {k b : ℕ} (hb : b ≤ 1)
     (hW : 6 ≤ W) :
     IRS P W c₀ ldT c 7 (LdBr P J N₂ 2 k b c) := by
   unfold ldT
   refine IRS.seq (K₁ := 2) (K₂ := 5) (IRS.block _ hI ?_) ?_
   · simp only [okB, okI]
-    exact ⟨⟨iscr_sw (by unfold oPE sw; omega) (by unfold oPE sw; omega), hW⟩,
-      ⟨iscr_sw (by unfold oPH sw; omega) (by unfold oPH sw; omega), Nat.zero_le _⟩, trivial⟩
+    exact ⟨⟨iscr_sw (by omega_nf) (by omega_nf), hW⟩,
+      ⟨iscr_sw (by omega_nf) (by omega_nf), Nat.zero_le _⟩, trivial⟩
   rintro c₁ hI₁ - - rfl
   set c₁ : Config := { c with nreg := regB c.nmem [.constN oPE 6, .constN oPH 0] c.nreg } with hc₁
   have vE : c₁.nreg oPE = 6 := by
-    simp only [hc₁, regB, regI, upd, oPE, oPH, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
+    simp_all [regB, regI, upd, oPE, oPH, sw, Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false] <;> omega_nf
   have vH : c₁.nreg oPH = 0 := by
-    simp only [hc₁, regB, regI, upd, oPE, oPH, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
+    simp_all [regB, regI, upd, oPE, oPH, sw, Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false] <;> omega_nf
   have ko : ∀ q, q ≠ oPE → q ≠ oPH → c₁.nreg q = c.nreg q := fun q h1 h2 => by
-    simp only [hc₁, regB, regI, upd, ite_eq_right h1, ite_eq_right h2]
-  have k0 : c₁.nreg K0 = 0 := by rw [ko _ (by unfold K0 oPE sw; omega) (by unfold K0 oPH sw; omega)]; exact hK.1
+    simp_all [regB, regI, upd] 
+  have k0 : c₁.nreg K0 = 0 := by simp_all [K0, oPE, sw, oPH] <;> omega_nf
   have kT : c₁.nreg cTop = J.right.topIdx := by
-    rw [ko _ (by unfold cTop oPE sw; omega) (by unfold cTop oPH sw; omega)]; exact hO.top
+    rw [ko _ (by omega_nf) (by omega_nf)]; exact hO.top
   have post : ∀ v, v ≤ 1 → (v = 1 ↔ J.right.topIdx ≠ 0) → ∀ c', c'.nreg oAd = v ∧
       (∀ q, q ≠ oAd → c'.nreg q = c₁.nreg q) ∧ c'.nmem = c₁.nmem → LdBr P J N₂ 2 k b c c' := by
     rintro v hv hiff c' ⟨a1, a2, a3⟩
-    have e1 : c'.nreg oPE = 6 := by rw [a2 _ (by unfold oPE oAd sw; omega), vE]
-    have e2 : c'.nreg oPH = 0 := by rw [a2 _ (by unfold oPH oAd sw; omega), vH]
-    refine ⟨fun q hq => ?_, a3, by rw [a1]; exact hv, ?_, fun _ => by
+    have e1 : c'.nreg oPE = 6 := by simp_all [oPE, oAd, sw] 
+    have e2 : c'.nreg oPH = 0 := by simp_all [oPH, oAd, sw] 
+    refine ⟨fun q hq => ?_, a3, by omega, ?_, fun _ => by
       rw [e1, e2]; exact orgPos_t P N₂ k b⟩
-    · unfold LdW₀ at hq
-      rw [a2 q (fun h => hq ((Or.inr (Or.inr (Or.inl h))))),
-        ko q (fun h => hq ((Or.inl h))) (fun h => hq ((Or.inr (Or.inl h))))]
+    · simp_all [LdW₀] 
     · rw [a1, hiff]
       exact ⟨fun h => ⟨by norm_num, hb, fun h' => absurd h' (by norm_num), fun _ => h⟩,
         fun h => h.2.2.2 rfl⟩
   refine IRS.ite (fun h => ?_) (fun h => ?_)
-  · refine (set1_irs (v := 1) hI₁ ⟨by unfold oAd sw; omega, by unfold oAd sw; omega⟩
+  · refine (set1_irs (v := 1) hI₁ ⟨by omega_nf, by omega_nf⟩
       (by omega)).mono (by norm_num) (post 1 le_rfl ⟨fun _ => by omega, fun _ => rfl⟩)
-  · refine (set1_irs (v := 0) hI₁ ⟨by unfold oAd sw; omega, by unfold oAd sw; omega⟩
+  · refine (set1_irs (v := 0) hI₁ ⟨by omega_nf, by omega_nf⟩
       (by omega)).mono (by norm_num) (post 0 (by norm_num) ⟨fun h => absurd h (by norm_num),
         fun h => absurd (by omega) h⟩)
+
+
+end
 
 set_option maxHeartbeats 1000000 in
 theorem ldW_irs (hI : IInv W c₀ c) (hK : Consts c) (hP : J.P.Simple)
@@ -261,8 +267,8 @@ theorem ldW_irs (hI : IInv W c₀ c) (hK : Consts c) (hP : J.P.Simple)
   have k6 : c.nreg K6 = 6 := hK.2.2.1
   unfold ldW
   refine IRS.seq (K₁ := 13) (K₂ := 8) (IRS.block ldRd hI (ldRd_ok c.nmem c.nreg k1 k3
-    (by omega) (by rw [hkk]; have := hb2 k hk; omega) (by
-      rw [hkk]; unfold NF.nChords at hk; rw [r0]; omega))) ?_
+    (by omega) (by grind) (by
+      grind))) ?_
   rintro c₁ hI₁ - - rfl
   obtain ⟨vH, vL, vR, vPH⟩ := ldRd_val c.nmem c.nreg k1 k3
   set c₁ : Config := { c with nreg := regB c.nmem ldRd c.nreg } with hc₁
@@ -270,14 +276,12 @@ theorem ldW_irs (hI : IInv W c₀ c) (hK : Consts c) (hP : J.P.Simple)
   have ko : ∀ q, q ≠ tX → q ≠ tH → q ≠ tL → q ≠ tR → q ≠ oPH → c₁.nreg q = c.nreg q :=
     fun q a1 a2 a3 a4 a5 => ldRd_other _ _ ⟨a1, a2, a3, a4, a5⟩
   have c1NB : c₁.nreg oNB = 1 - b := by
-    rw [ko _ (by unfold oNB tX sw; omega) (by unfold oNB tH sw; omega) (by unfold oNB tL sw; omega)
-      (by unfold oNB tR sw; omega) (by unfold oNB oPH sw; omega)]; exact hNB
+    grind [oNB, tX, sw, tH, tL, tR, oPH]
   have c1K1 : c₁.nreg K1 = 1 := by
-    rw [ko _ (by unfold K1 tX sw; omega) (by unfold K1 tH sw; omega) (by unfold K1 tL sw; omega)
-      (by unfold K1 tR sw; omega) (by unfold K1 oPH sw; omega)]; exact k1
+    grind [K1, tX, sw, tH, tL, tR, oPH]
   have c1K6 : c₁.nreg K6 = 6 := by
-    rw [ko _ (by unfold K6 tX sw; omega) (by unfold K6 tH sw; omega) (by unfold K6 tL sw; omega)
-      (by unfold K6 tR sw; omega) (by unfold K6 oPH sw; omega)]; exact k6
+    rw [ko _ (by omega_nf) (by omega_nf) (by omega_nf)
+      (by omega_nf) (by omega_nf)]; exact k6
   have c1PH : c₁.nreg oPH = (endPos N₂ k (1 - b)).hgt := by
     show regB c.nmem ldRd c.nreg oPH = _
     rw [vPH, r0]; unfold endPos; split_ifs <;> rfl
@@ -286,13 +290,13 @@ theorem ldW_irs (hI : IInv W c₀ c) (hK : Consts c) (hP : J.P.Simple)
       (fun c₂ => c₂.nreg oPE = (endPos N₂ k (1 - b)).edge ∧
         (∀ q, q ≠ oPE → c₂.nreg q = c₁.nreg q) ∧ c₂.nmem = c₁.nmem) := by
     refine IRS.ite (fun h => ?_) (fun h => ?_)
-    · refine (copy1_irs hI₁ ⟨by unfold oPE sw; omega, by unfold oPE sw; omega⟩).mono le_rfl ?_
+    · refine (copy1_irs hI₁ ⟨by omega_nf, by omega_nf⟩).mono le_rfl ?_
       rintro c₂ ⟨a1, a2, a3⟩
       refine ⟨?_, a2, a3⟩
       rw [a1]
       show regB c.nmem ldRd c.nreg tL = _
       rw [vL, r1]; unfold endPos; rw [ite_eq_left (by omega)]; rfl
-    · refine (copy1_irs hI₁ ⟨by unfold oPE sw; omega, by unfold oPE sw; omega⟩).mono le_rfl ?_
+    · refine (copy1_irs hI₁ ⟨by omega_nf, by omega_nf⟩).mono le_rfl ?_
       rintro c₂ ⟨a1, a2, a3⟩
       refine ⟨?_, a2, a3⟩
       rw [a1]
@@ -300,34 +304,34 @@ theorem ldW_irs (hI : IInv W c₀ c) (hK : Consts c) (hP : J.P.Simple)
       rw [vR, r2]; unfold endPos; rw [ite_eq_right (by omega)]; rfl
   refine (IRS.seq (K₁ := 3) (K₂ := 3) hpick ?_).mono (by norm_num) (fun _ h => h)
   rintro c₂ hI₂ - - ⟨e2, k2, m2⟩
-  have c2K6 : c₂.nreg K6 = 6 := by rw [k2 _ (by unfold K6 oPE sw; omega), c1K6]
+  have c2K6 : c₂.nreg K6 = 6 := by grind [K6, oPE, sw]
   have hwp := orgPos_w (P := P) hP hN hk hb
   have post : ∀ v, v ≤ 1 → (v = 1 ↔ (endPos N₂ k (1 - b)).edge < 6) → ∀ c', c'.nreg oAd = v ∧
       (∀ q, q ≠ oAd → c'.nreg q = c₂.nreg q) ∧ c'.nmem = c₂.nmem → LdBr P J N₂ 1 k b c c' := by
     rintro v hv hiff c' ⟨a1, a2, a3⟩
     have eE : c'.nreg oPE = (endPos N₂ k (1 - b)).edge := by
-      rw [a2 _ (by unfold oPE oAd sw; omega), e2]
+      grind [oPE, oAd, sw]
     have eH : c'.nreg oPH = (endPos N₂ k (1 - b)).hgt := by
-      rw [a2 _ (by unfold oPH oAd sw; omega), k2 _ (by unfold oPH oPE sw; omega), c1PH]
-    refine ⟨fun q hq => ?_, by rw [a3, m2], by rw [a1]; exact hv, ?_, fun _ => by
-      rw [eE, eH]; exact hwp⟩
+      grind [oPH, oAd, sw, oPE]
+    refine ⟨fun q hq => ?_, by rw [a3, m2], by omega, ?_, fun _ => by
+      grind⟩
     · unfold LdW₀ at hq
       rw [a2 q (fun h => hq ((Or.inr (Or.inr (Or.inl h))))),
         k2 q (fun h => hq ((Or.inl h))),
-        ko q (fun h => hq ((Or.inr (Or.inr (Or.inr ⟨by rw [h], by rw [h]; unfold tX tR sw; omega⟩)))))
-          (fun h => hq ((Or.inr (Or.inr (Or.inr ⟨by rw [h]; unfold tX tH sw; omega, by rw [h]; unfold tH tR sw; omega⟩)))))
-          (fun h => hq ((Or.inr (Or.inr (Or.inr ⟨by rw [h]; unfold tX tL sw; omega, by rw [h]; unfold tL tR sw; omega⟩)))))
-          (fun h => hq ((Or.inr (Or.inr (Or.inr ⟨by rw [h]; unfold tX tR sw; omega, by rw [h]⟩)))))
+        ko q (fun h => hq ((Or.inr (Or.inr (Or.inr ⟨by rw [h], by grind [tX, tR, sw]⟩)))))
+          (fun h => hq ((Or.inr (Or.inr (Or.inr ⟨by grind [tX, tH, sw], by grind [tH, tR, sw]⟩)))))
+          (fun h => hq ((Or.inr (Or.inr (Or.inr ⟨by grind [tX, tL, sw], by grind [tL, tR, sw]⟩)))))
+          (fun h => hq ((Or.inr (Or.inr (Or.inr ⟨by grind [tX, tR, sw], by rw [h]⟩)))))
           (fun h => hq ((Or.inr (Or.inl h))))]
     · rw [a1, hiff]
       exact ⟨fun h => ⟨by norm_num, hb, fun _ => ⟨hk, h⟩, fun h' => absurd h' (by norm_num)⟩,
         fun h => (h.2.2.1 rfl).2⟩
   refine IRS.ite (fun h => ?_) (fun h => ?_)
-  · refine (set1_irs (v := 1) hI₂ ⟨by unfold oAd sw; omega, by unfold oAd sw; omega⟩
-      (by omega)).mono le_rfl (post 1 le_rfl ⟨fun _ => by rw [← e2]; omega, fun _ => rfl⟩)
-  · refine (set1_irs (v := 0) hI₂ ⟨by unfold oAd sw; omega, by unfold oAd sw; omega⟩
+  · refine (set1_irs (v := 1) hI₂ ⟨by omega_nf, by omega_nf⟩
+      (by omega)).mono le_rfl (post 1 le_rfl ⟨fun _ => by omega, fun _ => rfl⟩)
+  · refine (set1_irs (v := 0) hI₂ ⟨by omega_nf, by omega_nf⟩
       (by omega)).mono le_rfl (post 0 (by norm_num) ⟨fun h => absurd h (by norm_num),
-        fun h' => absurd (by rw [c2K6, e2]; exact h') h⟩)
+        fun h' => absurd (by omega) h⟩)
 
 /-- **The origin of a code** as a run step. -/
 theorem stLoad_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
@@ -339,38 +343,37 @@ theorem stLoad_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have k1 : c.nreg K1 = 1 := hK.2.1
   unfold stLoad
   refine IRS.seq (K₁ := 1) (K₂ := 29) (IRS.instr1 (i := .subN oNB K1 oB) hI
-    (iscr_sw (by unfold oNB sw; omega) (by unfold oNB sw; omega))) ?_
+    (iscr_sw (by omega_nf) (by omega_nf))) ?_
   rintro c₁ hI₁ - hA₁ rfl
   set c₁ : Config := { c with nreg := regI c.nmem (.subN oNB K1 oB) c.nreg } with hc₁
   have vNB : c₁.nreg oNB = 1 - c.nreg oB := by simp [hc₁, regI, upd, k1]
   have ko : ∀ q, q ≠ oNB → c₁.nreg q = c.nreg q := fun q hq => by simp [hc₁, regI, upd, hq]
-  have kKd : c₁.nreg oKd = c.nreg oKd := ko _ (by unfold oKd oNB sw; omega)
-  have kKk : c₁.nreg oKk = c.nreg oKk := ko _ (by unfold oKk oNB sw; omega)
-  have kK1 : c₁.nreg K1 = 1 := (ko _ (by unfold K1 oNB sw; omega)).trans k1
-  have hW : c.nreg ALLOC + 30 ≤ W := hroom
+  have kKd : c₁.nreg oKd = c.nreg oKd := ko _ (by omega_nf)
+  have kKk : c₁.nreg oKk = c.nreg oKk := ko _ (by omega_nf)
+  have kK1 : c₁.nreg K1 = 1 := (ko _ (by omega_nf)).trans k1
+  
   have post : ∀ kind, kind = c.nreg oKd → ∀ c', LdBr P J N₂ kind (c.nreg oKk) (c.nreg oB) c₁ c' →
       LdOK P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB) c' ∧ EFr LdW c c' := by
     rintro kind rfl c' ⟨a1, a2, a3, a4, a5⟩
-    have hnb : c'.nreg oNB = c₁.nreg oNB := a1 _ (by unfold LdW₀ oNB oPE oPH oAd tX tR sw; omega)
+    have hnb : c'.nreg oNB = c₁.nreg oNB := a1 _ (by omega_nf)
     have hA : c'.nreg ALLOC = c.nreg ALLOC := by
-      rw [a1 _ (by unfold LdW₀ ALLOC oPE oPH oAd tX tR sw; omega), ko _ (by unfold ALLOC oNB sw; omega)]
-    refine ⟨⟨by rw [hnb, vNB], a3, a4, a5⟩, fun r _ h2 _ => ?_, by rw [hA], fun a _ => by rw [a2]⟩
-    unfold LdW at h2
-    rw [a1 r (fun h => h2 (Or.inr h)), ko r (fun h => h2 (Or.inl h))]
+      grind [LdW₀, ALLOC, oPE, oPH, oAd, tX, tR, sw, oNB]
+    refine ⟨⟨by omega, a3, a4, a5⟩, fun r _ h2 _ => ?_, by rw [hA], fun a _ => by rw [a2]⟩
+    simp_all [LdW] 
   refine IRS.ite (fun h0 => ?_) (fun h0 => ?_)
-  · have hk0 : c.nreg oKd = 0 := by rw [kKd, kK1] at h0; omega
+  · have hk0 : c.nreg oKd = 0 := by omega
     refine (ldV_irs (N₂ := N₂) (k := c.nreg oKk) hI₁ (E.fx hI₁) hb (by omega)).mono (by norm_num)
       (post 0 hk0.symm)
   refine IRS.ite (fun h2 => ?_) (fun h2 => ?_)
-  · have hk2 : c.nreg oKd = 2 := by rw [kKd, kK1] at h2; omega
+  · have hk2 : c.nreg oKd = 2 := by omega
     refine (ldT_irs (N₂ := N₂) (k := c.nreg oKk) hI₁ (E.hO.fix hI₁) (E.hK.fix hI₁) hb
       (by omega)).mono (by norm_num) (post 2 hk2.symm)
-  · have hk1 : c.nreg oKd = 1 := by rw [kKd, kK1] at h0 h2; omega
+  · have hk1 : c.nreg oKd = 1 := by omega
     have hNW : NFWithin c₁.nmem (c₁.nreg (sw 4)) (c₀.nreg ALLOC) N₂ := by
-      have h4 : c₁.nreg (sw 4) = c₀.nreg (sw 4) := hI₁.hin _ (by unfold IFix sw; omega)
+      have h4 : c₁.nreg (sw 4) = c₀.nreg (sw 4) := hI₁.hin _ (by omega_nf)
       rw [h4]
       exact E.hNW₂.transport fun a ha => hI₁.hm a ha
-    have hPn : P.n ≤ W := by have := E.hWh; unfold hostWords at this; omega
+    have hPn : P.n ≤ W := by have := E.hWh; grind [hostWords]
     refine (ldW_irs (b := c.nreg oB) hI₁ (E.hK.fix hI₁) E.hP E.hNF₂ hNW (by have := hI₁.hA; omega)
       hPn kKk (hk hk1) hb vNB).mono (by norm_num) (post 1 hk1.symm)
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseOracleHit
 
 /-!
@@ -48,7 +50,7 @@ theorem oset_sub_set {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q
   have hQ1 : 1 ≤ Q.n := by omega
   have hd : d ≤ L := by
     have : (d : ℝ) ≤ L := by linarith
-    exact_mod_cast this
+    simp_all
   have tv : ∀ k, k ≤ L → (interiorWalk Q).vtx ((u + k) % (interiorWalk Q).n) =
       WalkEmbed.tourV (ch Q u L h1 h2) (jStart Q L) k := fun k hk => by
     have e1 := iw_tour (a := cStart Q u L) (m := L) (hm1 := h1) (hm := h2) hQ1 (d := k) hk
@@ -56,21 +58,19 @@ theorem oset_sub_set {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q
     exact e1
   rcases ht0.lt_or_eq with htp | rfl
   · have hd1 : d + 1 ≤ L := by
-      have : (d : ℝ) < L := by linarith
-      have : d < L := by exact_mod_cast this
-      omega
+      grind
     rw [tv d hd, show u + d + 1 = u + (d + 1) by ring, tv (d + 1) hd1]
     unfold jStart
     split_ifs
     · rw [ShootCut.tourV_up _ hd, ShootCut.tourV_up _ hd1]
-      exact ShootCut.segment_mem_set _ (show d < (ch Q u L h1 h2).m by rw [ch_m]; omega)
+      exact ShootCut.segment_mem_set _ (show d < (ch Q u L h1 h2).m by grind [ch_m])
         (ShootCut.lerp_mem_segment ht0 ht1)
     · have e1 : WalkEmbed.tourV (ch Q u L h1 h2) L d = (ch Q u L h1 h2).vertex (L - d) :=
         ShootCut.tourV_down (ch Q u L h1 h2) hd
       have e2 : WalkEmbed.tourV (ch Q u L h1 h2) L (d + 1) =
           (ch Q u L h1 h2).vertex (L - (d + 1)) := ShootCut.tourV_down (ch Q u L h1 h2) hd1
       rw [e1, e2]
-      refine ShootCut.segment_mem_set _ (k := L - (d + 1)) (by rw [ch_m]; omega) ?_
+      refine ShootCut.segment_mem_set _ (k := L - (d + 1)) (by grind [ch_m]) ?_
       rw [show L - (d + 1) + 1 = L - d by omega, Chazelle.Geometry.segment_comm]
       exact ShootCut.lerp_mem_segment ht0 ht1
   · rw [lerp_zero, tv d hd]
@@ -79,7 +79,7 @@ theorem oset_sub_set {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q
 
 /-! ## Points of the interior walk are within the coordinate bound -/
 
-theorem abs_lerp_le {a b : ℝ} {B t : ℝ} (ha : |a| ≤ B) (hb : |b| ≤ B) (ht0 : 0 ≤ t)
+theorem abs_lerp_le {a b B t : ℝ} (ha : |a| ≤ B) (hb : |b| ≤ B) (ht0 : 0 ≤ t)
     (ht1 : t ≤ 1) : |a + t * (b - a)| ≤ B := by
   rw [abs_le] at *
   constructor <;> nlinarith
@@ -109,7 +109,9 @@ noncomputable def nh (Q : Polygon) (e h : ℕ) : ℕ := by
   classical
   exact if h ≠ 0 ∧ h - 1 = iv Q e then 0 else h
 
-theorem param_nh {e h : ℕ} (he : e < Q.n) :
+section
+variable {e h : ℕ}
+theorem param_nh (he : e < Q.n) :
     (interiorModel Q).param Q ⟨e, nh Q e h⟩ = (interiorModel Q).param Q ⟨e, h⟩ := by
   unfold nh
   split_ifs with hc
@@ -120,14 +122,17 @@ theorem param_nh {e h : ℕ} (he : e < Q.n) :
     unfold Model.param
     simp only
     rw [mi_wa he, ← h1]
-    split_ifs <;> simp
+    simp_all
   · rfl
 
-theorem nh_le {e h : ℕ} : nh Q e h ≤ h := by
-  unfold nh; split_ifs <;> omega
+theorem nh_le : nh Q e h ≤ h := by
+  grind [nh]
 
-theorem nh_zero_or {e h : ℕ} : nh Q e h = 0 ∨ nh Q e h = h := by
-  unfold nh; split_ifs <;> simp
+theorem nh_zero_or : nh Q e h = 0 ∨ nh Q e h = h := by
+  grind [nh]
+
+
+end
 
 /-- A nonzero normalized code has a positive parameter. -/
 theorem param_pos_nh (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e h : ℕ} (he : e < Q.n)
@@ -136,9 +141,9 @@ theorem param_pos_nh (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e h : ℕ} (he :
   have hnh : nh Q e h = h := nh_zero_or.resolve_left h0
   rw [hnh] at h0 ⊢
   have hc : ¬ (h ≠ 0 ∧ h - 1 = iv Q e) := by
-    intro hc; unfold nh at hnh; rw [ite_eq_left hc] at hnh; exact h0 hnh.symm
+    simp_all [nh] <;> omega_nf
   obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
-  have hne : h' ≠ iv Q e := fun hc' => hc ⟨h0, by simpa using hc'⟩
+  have hne : h' ≠ iv Q e := fun hc' => hc ⟨h0, by omega⟩
   rcases hp0.lt_or_eq with hlt | heq
   · exact hlt
   · exfalso
@@ -156,16 +161,16 @@ theorem param_pos_nh (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e h : ℕ} (he :
       · intro hc2
         rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h3 | h3
         · rw [Nat.mod_eq_of_lt h3] at hc2; omega
-        · rw [h3, Nat.mod_self] at hc2; omega
+        grind [Nat.mod_self]
       · intro hc2
         rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h3 | h3
         · rw [Nat.mod_eq_of_lt h3] at hc2; omega
-        · rw [h3, Nat.mod_self] at hc2; omega
+        grind [Nat.mod_self]
     rw [ite_eq_right hnh', eq_comm, div_eq_zero_iff] at heq
     rcases heq with heq | heq
     · rw [hwa] at heq
       exact hD _ _ (by omega) (iv_lt he) hne (by linarith)
-    · exact hnh' (by linarith)
+    grind
 
 /-! ## The plan of a query -/
 
@@ -187,12 +192,9 @@ theorem arcWt_around {e₁ : ℕ} (he₁ : e₁ < Q.n) {x t₂ : ℝ} (hx : x < 
     (htx : t₂ ≤ x) : (interiorModel Q).arcWt ((e₁ : ℝ) + x) ((e₁ : ℝ) + t₂) = Q.n := by
   have hc : ∀ p, p < (interiorModel Q).W.n →
       ((interiorModel Q).counted p ↔ 0 ≤ p ∧ p < (interiorModel Q).W.n) := fun p hp => by
-    rw [mi_n] at hp ⊢; exact interiorModel_counted_iff Q p (by rw [mi_n]; exact hp)
+    rw [mi_n] at hp ⊢; exact interiorModel_counted_iff Q p (by grind [mi_n])
   rw [(interiorModel Q).arcWt_closed hc le_rfl ⟨by linarith, hx⟩ ⟨ht0.le, by linarith⟩, mi_n]
-  unfold arcWtNat keyCeil
-  rw [ite_eq_right (by linarith), ite_eq_right ht0.ne']
-  simp only [min_eq_left he₁.le]
-  omega
+  grind [arcWtNat, keyCeil]
 
 /-- **The plan of an interior query** (with the normalized end). -/
 theorem plan_arc (hn : 3 ≤ Q.n) {e₁ h₁ e₂ h₂ : ℕ} (he₁ : e₁ < Q.n) (he₂ : e₂ < Q.n)
@@ -230,55 +232,49 @@ theorem plan_arc (hn : 3 ≤ Q.n) {e₁ h₁ e₂ h₂ : ℕ} (he₁ : e₁ < Q.
       rw [h0, Nat.add_zero, Nat.mod_eq_of_lt he₁] at hd
       by_cases hlt : x < t₂
       · rw [ite_eq_left hlt]
-        have h3 : (3 : ℝ) ≤ Q.n := by exact_mod_cast hn
-        refine ⟨⟨by push_cast; linarith, by push_cast; linarith [hy.2, hx.1]⟩, by
+        have h3 : (3 : ℝ) ≤ Q.n := by simp_all
+        refine ⟨⟨by simp_all, by grind⟩, by
           rw [Nat.add_zero, Nat.mod_eq_of_lt he₁, hd], by omega, fun _ hz => ?_⟩
         rw [hz] at ht₂
-        have : t₂ = 0 := by rw [ht₂]; rfl
-        linarith [hx.1]
+        have : t₂ = 0 := by simp_all
+        linarith
       · rw [ite_eq_right hlt]
         push Not at hlt
-        refine ⟨⟨by linarith [hy.1, hx.2, (show (1 : ℝ) ≤ Q.n by exact_mod_cast (show 1 ≤ Q.n by
-          omega))], by linarith⟩, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt he₁, hd], le_rfl,
+        refine ⟨⟨by linarith [hy.1, hx.2, (show (1 : ℝ) ≤ Q.n by simp_all +arith)], by linarith⟩, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt he₁, hd], le_rfl,
           fun h => by omega⟩
     · rw [ite_eq_right h0]
-      have h1 : (1 : ℝ) ≤ WalkEmbed.dOf Q.n e₁ e₂ := by exact_mod_cast (show 1 ≤ _ by omega)
+      have h1 : (1 : ℝ) ≤ WalkEmbed.dOf Q.n e₁ e₂ := by simp_all +zetaDelta <;> omega
       have h2 : ((WalkEmbed.dOf Q.n e₁ e₂ : ℕ) : ℝ) + 1 ≤ Q.n := by exact_mod_cast hdl
-      exact ⟨⟨by linarith [hx.2, hy.1], by linarith [hx.1, hy.2]⟩, hd, hdl.le, fun h => absurd h h0⟩
+      grind
   obtain ⟨⟨hxy, hlap⟩, hmod, heen, hee0⟩ := hE
   have hsp : ((h₂ = 0 ∧ ee = spanL ee h₂) ∨ (h₂ ≠ 0 ∧ ee + 1 = spanL ee h₂ ∧ 0 < t₂)) := by
-    unfold spanL
-    by_cases h0 : h₂ = 0
-    · left; exact ⟨h0, by rw [ite_eq_left h0]; rfl⟩
-    · right; exact ⟨h0, by rw [ite_eq_right h0], hnz.resolve_left h0⟩
+    grind [spanL]
   have hkc : keyCeil ee t₂ = spanL ee h₂ := by
     unfold keyCeil
     rcases hsp with ⟨h0, h1⟩ | ⟨h0, h1, h2⟩
-    · have : t₂ = 0 := by rw [ht₂, h0]; rfl
-      rw [ite_eq_left this]; exact h1
-    · rw [ite_eq_right h2.ne']; exact h1
+    · have : t₂ = 0 := by aesop
+      grind
+    grind
   have hb : (interiorModel Q).key Q ⟨e₂, h₂⟩ = (((e₁ + ee) % Q.n : ℕ) : ℝ) + t₂ := by
     rw [hmod]; rfl
-  have hu' : e₁ < (interiorModel Q).W.n := by rw [mi_n]; exact he₁
+  have hu' : e₁ < (interiorModel Q).W.n := by grind [mi_n]
   refine ⟨?_, hxy, hmod, heen, hsp, ?_, fun hle => ?_, fun hlt => ?_⟩
   · rw [key_eq, hb]
-    have hb0 : (0 : ℝ) ≤ (((e₁ + ee) % Q.n : ℕ) : ℝ) + t₂ := by have := hy.1; positivity
+    have hb0 : (0 : ℝ) ≤ (((e₁ + ee) % Q.n : ℕ) : ℝ) + t₂ := by grind
     have hbn : (((e₁ + ee) % Q.n : ℕ) : ℝ) + t₂ < (interiorModel Q).W.n := by
       rw [mi_n]
       have : ((e₁ + ee) % Q.n : ℕ) + 1 ≤ Q.n := Nat.mod_lt _ hn0
       have : (((e₁ + ee) % Q.n : ℕ) : ℝ) + 1 ≤ Q.n := by exact_mod_cast this
-      linarith [hy.2]
+      grind
     rw [arcSet_eq_oset _ hu' hx.1 hx.2 hb0 hbn, mi_n, len_key he₁ hx.2 hy.1 hxy hlap]
     congr 1; ring
-  · rcases hsp with ⟨h0, h1⟩ | ⟨h0, h1, -⟩
-    · rw [← h1]; by_contra hc; exact hee0 (by omega) h0
-    · omega
+  · omega
   · have hc : ∀ p, p < (interiorModel Q).W.n →
         ((interiorModel Q).counted p ↔ 0 ≤ p ∧ p < (interiorModel Q).W.n) := fun p hp => by
-      rw [mi_n] at hp ⊢; exact interiorModel_counted_iff Q p (by rw [mi_n]; exact hp)
+      rw [mi_n] at hp ⊢; exact interiorModel_counted_iff Q p (by grind [mi_n])
     rw [key_eq, hb, ← hkc]
     have := arcWt_off (interiorModel Q) hc le_rfl hu' (Nat.zero_le _) hx.1 hx.2 hy.1 hy.2 hxy
-      (Or.inl ⟨rfl, rfl, by rw [hkc, mi_n]; exact hle⟩)
+      (Or.inl ⟨rfl, rfl, by grind [mi_n]⟩)
     rw [mi_n] at this
     exact this
   · -- once around: `ee = n`, the end on the start edge, before the start
@@ -286,12 +282,7 @@ theorem plan_arc (hn : 3 ≤ Q.n) {e₁ h₁ e₂ h₂ : ℕ} (he₁ : e₁ < Q.
     · omega
     · have hen : ee = Q.n := by omega
       rw [hen, Nat.add_mod_right, Nat.mod_eq_of_lt he₁] at hmod
-      have htx : t₂ ≤ x := by
-        rw [hen] at hlap; linarith
-      rw [key_eq, key_eq]
-      show (interiorModel Q).arcWt ((e₁ : ℝ) + x) ((e₂ : ℝ) + t₂) = Q.n
-      rw [← hmod]
-      exact arcWt_around he₁ hx.2 ht0 htx
+      grind [Chazelle.Core.IOrc.arcWt_around, key_eq]
 
 end
 

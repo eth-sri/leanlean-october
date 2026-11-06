@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreLink
 
 /-!
@@ -25,10 +27,13 @@ open Chazelle.Chain (ChordSystem SideAttach sideInArc sidePt SideSectorIn)
 
 variable {M : Model}
 
+section
+variable (hM : WalkAx M)
+include hM
 /-- **The pruning lemma.**  Two distinct admissible chords do not cross on the walk: if `s` is
 attached strictly inside the key interval `(ka, kb)` cut by the attachments of `e`, it is not
 attached strictly inside `(kb, ka)`. -/
-theorem same_side (hM : WalkAx M) {e s : Set Point} (he : e ∈ M.Adm) (hs : s ∈ M.Adm)
+theorem same_side {e s : Set Point} (he : e ∈ M.Adm) (hs : s ∈ M.Adm)
     (hes : s ≠ e) {pa pb : ℕ} {ta tb : ℝ} (hA : SideAttach M.W e pa ta)
     (hB : SideAttach M.W e pb tb) (hAB : sidePt M.W pa ta ≠ sidePt M.W pb tb)
     {pv pw : ℕ} {tv tw : ℝ} (hv : SideAttach M.W s pv tv) (hw : SideAttach M.W s pw tw)
@@ -52,7 +57,7 @@ theorem same_side (hM : WalkAx M) {e s : Set Point} (he : e ∈ M.Adm) (hs : s �
 
 /-- **An admissible chord has one attachment per endpoint**: two attachments of `e` with the
 same point are the same position. -/
-theorem attach_unique (hM : WalkAx M) {e : Set Point} (he : e ∈ M.Adm) {p p' : ℕ} {t t' : ℝ}
+theorem attach_unique {e : Set Point} (he : e ∈ M.Adm) {p p' : ℕ} {t t' : ℝ}
     (hA : SideAttach M.W e p t) (hA' : SideAttach M.W e p' t')
     (hpt : sidePt M.W p t = sidePt M.W p' t') : p = p' ∧ t = t' := by
   obtain ⟨a, b, hab, rfl, -, hopen, hEa, hEb⟩ := hM.ends e he
@@ -68,31 +73,27 @@ theorem attach_unique (hM : WalkAx M) {e : Set Point} (he : e ∈ M.Adm) {p p' :
     obtain ⟨s, hs0, hs1, hsne, hsd⟩ := exists_lerp_near huv (lt_min hρ (lt_min hr hr'))
     have hx : Geometry.lerp u v s ∈ Chazelle.segment a b := by
       rw [← hseg]; exact Geometry.lerp_mem_segment _ _ hs0.le hs1.le
-    have h1 := hsec _ hx (by rw [hu]; exact hsne)
-      (by rw [hu]; exact lt_of_lt_of_le hsd ((min_le_right _ _).trans (min_le_left _ _)))
-    have h2 := hsec' _ hx (by rw [← hpt, hu]; exact hsne)
-      (by rw [← hpt, hu]; exact lt_of_lt_of_le hsd ((min_le_right _ _).trans (min_le_right _ _)))
-    exact hdisj _ (by rw [Metric.mem_ball]; exact lt_of_lt_of_le hsd (min_le_left _ _)) h1 h2
+    have h1 := hsec _ hx (by grind)
+      (by grind)
+    grind [Metric.mem_ball]
   rcases hM.attach_endpoint hopen ⟨hp, ht0, ht1, hmem, r, hr, hsec⟩ with h | h
-  · exact key a b hab hopen rfl hEa h
+  · grind
   · exact key b a hab.symm (WalkAx.open_rev hopen) (Geometry.segment_comm _ _) hEb h
 
+
+end
+
 theorem not_sideInArc_left (a b : ℝ) : ¬ sideInArc a b a := by
-  unfold sideInArc; split_ifs with hab
-  · intro h; linarith [h.1]
-  · intro h; rcases h with h | h
-    · linarith
-    · exact hab h
+  simp_all [sideInArc] <;> omega_nf
 
 theorem not_sideInArc_right (a b : ℝ) : ¬ sideInArc a b b := by
-  unfold sideInArc; split_ifs with hab
-  · intro h; linarith [h.2]
-  · intro h; rcases h with h | h
-    · exact hab h
-    · linarith
+  simp_all [sideInArc] <;> omega_nf
 
+section
+variable (hM : WalkAx M)
+include hM
 /-- An admissible chord is attached strictly inside a side of itself at no position. -/
-theorem not_attach_strict (hM : WalkAx M) {e : Set Point} (he : e ∈ M.Adm) {pa pb : ℕ}
+theorem not_attach_strict {e : Set Point} (he : e ∈ M.Adm) {pa pb : ℕ}
     {ta tb : ℝ} (hA : SideAttach M.W e pa ta) (hB : SideAttach M.W e pb tb)
     (hAB : sidePt M.W pa ta ≠ sidePt M.W pb tb) {p : ℕ} {t : ℝ} (hat : SideAttach M.W e p t)
     (hin : sideInArc (pa + ta) (pb + tb) (p + t) ∨ sideInArc (pb + tb) (pa + ta) (p + t)) :
@@ -113,7 +114,7 @@ theorem not_attach_strict (hM : WalkAx M) {e : Set Point} (he : e ∈ M.Adm) {pa
 /-- **Counting decides a good split.**  An admissible chord `e`, attached at two positions with
 distinct points, with at least two exit chords of the region `R` attached strictly on each side,
 is not a chord of `S`, lies in `R`, and splits `R` well. -/
-theorem splitsWell_of_counts (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm)
+theorem splitsWell_of_counts {S : Set (Set Point)} (hS : S ⊆ M.Adm)
     (hfin : S.Finite) {R : Set Point} (hR : R ∈ Chazelle.Chain.regionsIn M.D S) {e : Set Point}
     (he : e ∈ M.Adm) {pa pb : ℕ} {ta tb : ℝ}
     (hA : SideAttach M.W e pa ta) (hB : SideAttach M.W e pb tb)
@@ -134,9 +135,7 @@ theorem splitsWell_of_counts (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
     have hdne : d ≠ e := by
       rintro rfl
       refine not_attach_strict hM he hA hB hAB hat ?_
-      rcases hk with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      · exact Or.inl hin
-      · exact Or.inr hin
+      grind
     obtain ⟨hp, ht0, ht1, -⟩ := id hat
     exact ⟨hdne, exists_near_attach hM (hS hdS) hat (hsec p hp t ht0 ht1 hin)⟩
   obtain ⟨hne1, x₁, hx₁, hxK₁⟩ := side c₁' _ _ (Or.inl ⟨rfl, rfl⟩) hsec₁ d₁ hd₁
@@ -156,8 +155,7 @@ theorem splitsWell_of_counts (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
         have hRR : R = R' := by
           rw [Chazelle.Chain.regionsIn_eq_component hR hz,
             Chazelle.Chain.regionsIn_eq_component hR' (heR' ⟨hze, (Chazelle.Chain.regionsIn_subset hR hz).1⟩)]
-        subst hRR
-        exact hcon ⟨heS, heR'⟩
+        grind
     have hF₁ := hM.sys {d₁, e} (insert_subset (hS hd₁.1.1) (singleton_subset_iff.2 he)) (toFinite _)
     have hF₂ := hM.sys {d₂, e} (insert_subset (hS hd₂.1.1) (singleton_subset_iff.2 he)) (toFinite _)
     have hR1 := subset_component_of_touches hM.isOpen hF₁ (Or.inl rfl) (Or.inr rfl) hne1 hx₁ hxK₁
@@ -167,6 +165,9 @@ theorem splitsWell_of_counts (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
     obtain ⟨z, hz⟩ := Chazelle.Chain.regionsIn_nonempty hR
     exact hdisj.notMem_of_mem_left (hR1 hz) (hR2 hz)
   exact splitsWell_of_sideExits hM hS hfin hR he key.1 key.2 hA hB hAB h1 h2
+
+
+end
 
 end
 

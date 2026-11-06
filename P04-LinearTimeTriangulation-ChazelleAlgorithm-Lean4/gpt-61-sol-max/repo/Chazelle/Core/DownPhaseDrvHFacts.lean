@@ -59,7 +59,7 @@ theorem region_arcs_le_of {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hN
     rintro _ ⟨j, hj, rfl⟩
     obtain ⟨h1, h2⟩ := hmem j hj
     have := (hA.1 j h1).2
-    rw [h2] at this; exact this
+    grind
   obtain ⟨hfin, hcard⟩ := hM.arcs_bound hF.2.1 hF.1 hU
   have hdg := hdeg _ hU
   have hL : L.length = ({j | j ∈ L} : Set ℕ).ncard := by
@@ -94,11 +94,11 @@ theorem hfacts_of {Q : Polygon} (hQ : Q.Simple) {L : List (ℕ × ℕ × ℕ)} {
     exact hdeg _ (hRC.1 r hr)
   · have hj' := ((hAO.2.2.2 r hr j).1 hj).1
     obtain ⟨hs, he⟩ := DownMath.arc_pos hQ hL hperm hsort hK hj'
-    exact ⟨hj', (hpos _ hs).1, (hpos _ hs).2, (hpos _ he).1, (hpos _ he).2⟩
+    simp_all
   · have hi' := ((hRO r hr).1 i).1 hi |>.1
     have h1 := hpos _ ⟨i, hi', Or.inl rfl⟩
     have h2 := hpos _ ⟨i, hi', Or.inr rfl⟩
-    exact ⟨hi', h1.1, h2.1, by have := hh i hi'; omega⟩
+    exact ⟨hi', h1.1, h2.1, by simp_all⟩
 
 end
 

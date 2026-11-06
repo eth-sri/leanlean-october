@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.UpPhase9
 
 /-!
@@ -61,70 +63,66 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-theorem kept_of {r : ℕ} (h : bandOf r = bUp)
+section
+variable {r : ℕ}
+theorem kept_of (h : bandOf r = bUp)
     (h' : r < 170030 ∨ (170035 ≤ r ∧ r ≤ 170037) ∨ 170080 ≤ r) : Kept r :=
   Or.inr ⟨h, h'⟩
 
-theorem Kept.ne_alloc {r : ℕ} (h : Kept r) : r ≠ ALLOC := by
-  rcases h with ⟨-, h⟩ | ⟨h, -⟩
-  · exact h
-  · intro e; rw [e] at h; revert h; decide
+theorem Kept.ne_alloc (h : Kept r) : r ≠ ALLOC := by
+  aesop (add safe (by omega_nf))
 
+section
+variable {B : Finset ℕ}
+include B
 /-- A kept register is outside a set of phase bands without `bCore` and `bUp`. -/
-theorem Kept.not_mem {r : ℕ} {B : Finset ℕ} (h : Kept r) (hsub : ∀ b ∈ B, 1 ≤ b ∧ b ≤ 24)
+theorem Kept.not_mem (h : Kept r) (hsub : ∀ b ∈ B, 1 ≤ b ∧ b ≤ 24)
     (h23 : bCore ∉ B) (h17 : bUp ∉ B) : bandOf r ∉ B := by
   rcases h with ⟨h1 | h1, -⟩ | ⟨h, -⟩
-  · intro hm; have := hsub _ hm; unfold OutB at h1; omega
-  · rw [h1]; exact h23
-  · rw [h]; exact h17
+  · core_grind
+  all_goals aesop
 
 /-- A register of an outside band is outside a set of phase bands. -/
-theorem OutB.not_mem {r : ℕ} {B : Finset ℕ} (h : OutB (bandOf r))
+theorem OutB.not_mem (h : OutB (bandOf r))
     (hsub : ∀ b ∈ B, 1 ≤ b ∧ b ≤ 24) : bandOf r ∉ B := by
-  intro hm; have := hsub _ hm; unfold OutB at h; omega
+  core_grind
+
+
+end
 
 /-- A kept register is in one of the listed ranges. -/
-theorem Kept.range {r : ℕ} (h : Kept r) :
+theorem Kept.range (h : Kept r) :
     r < 10000 ∨ r = 230000 ∨ 250000 ≤ r ∨ (170000 ≤ r ∧ r < 170030) ∨
       (170035 ≤ r ∧ r ≤ 170037) ∨ (170080 ≤ r ∧ r < 180000) := by
-  rcases h with ⟨h1 | h1, -⟩ | ⟨h, h'⟩
-  · unfold OutB bandOf at h1; omega
-  · omega
-  · unfold bandOf bUp at h; omega
+  ram_grind
+
+
+end
 
 /-- The registers of `URegs`. -/
 def URegR (r : ℕ) : Prop := (170000 ≤ r ∧ r < 170015) ∨ (170019 ≤ r ∧ r < 170030) ∨ r = 170037
 
 theorem URegR.kept {r : ℕ} (h : URegR r) : Kept r :=
-  kept_of (by unfold URegR at h; unfold bandOf bUp; omega) (by unfold URegR at h; omega)
+  kept_of (by omega_nf) (by omega_nf)
 
-theorem URegs.of_frame {c c' : Config} {n hp h g cnt γ cntP R : ℕ}
-    (hu : URegs c n hp h g cnt γ cntP R) (hk : ∀ r, URegR r → c'.nreg r = c.nreg r) :
+section
+variable {c c' : Config} {n hp h g cnt γ cntP R : ℕ} (hu : URegs c n hp h g cnt γ cntP R)
+include hu
+theorem URegs.of_frame (hk : ∀ r, URegR r → c'.nreg r = c.nreg r) :
     URegs c' n hp h g cnt γ cntP R := by
-  have k : ∀ r, 170000 ≤ r → r < 170015 → c'.nreg r = c.nreg r := fun r a b =>
-    hk r (Or.inl ⟨a, b⟩)
-  have k' : ∀ r, 170019 ≤ r → r < 170030 → c'.nreg r = c.nreg r := fun r a b =>
-    hk r (Or.inr (Or.inl ⟨a, b⟩))
-  exact ⟨(k _ (by omega) (by omega)).trans hu.r01, (k _ (by omega) (by omega)).trans hu.r04,
-    (k _ (by omega) (by omega)).trans hu.r05, (k _ (by omega) (by omega)).trans hu.r07,
-    (k _ (by omega) (by omega)).trans hu.r08, (k _ (by omega) (by omega)).trans hu.r10,
-    (k _ (by omega) (by omega)).trans hu.r11, (k _ (by omega) (by omega)).trans hu.r12,
-    (k _ (by omega) (by omega)).trans hu.r14, (k' _ (by omega) (by omega)).trans hu.r19,
-    (k' _ (by omega) (by omega)).trans hu.r20, (k' _ (by omega) (by omega)).trans hu.r21,
-    (k' _ (by omega) (by omega)).trans hu.r22, (k' _ (by omega) (by omega)).trans hu.r23,
-    (k' _ (by omega) (by omega)).trans hu.r25, (k' _ (by omega) (by omega)).trans hu.r26,
-    (k' _ (by omega) (by omega)).trans hu.r28, (k' _ (by omega) (by omega)).trans hu.r29,
-    (hk _ (Or.inr (Or.inr rfl))).trans hu.r37⟩
+  ram_grind
 
-theorem URegs.of_kept {c c' : Config} {n hp h g cnt γ cntP R : ℕ}
-    (hu : URegs c n hp h g cnt γ cntP R) (hk : ∀ r, Kept r → c'.nreg r = c.nreg r) :
+theorem URegs.of_kept (hk : ∀ r, Kept r → c'.nreg r = c.nreg r) :
     URegs c' n hp h g cnt γ cntP R :=
   hu.of_frame fun r hr => hk r hr.kept
+
+
+end
 
 /-- A chain is determined by its polygon, start and length. -/
 theorem chain_eq {C C' : Chain} (h1 : C.P = C'.P) (h2 : C.s = C'.s) (h3 : C.m = C'.m) :
     C = C' := by
-  cases C; cases C'; simp only at h1 h2 h3; subst h1 h2 h3; rfl
+  cases C; simp_all
 
 set_option maxHeartbeats 16000000 in
 /-- **The cell of a chain.** -/
@@ -147,8 +145,7 @@ theorem cellB_exec {c : Config} (hw : WordsBounded W c) {A d f o x i s pg q t : 
   rw [hAl] at hA ⊢
   unfold cellB
   exec_block
-  all_goals try (config_simp; (try simp only [hA, h30, h31, h32, h18, h15, h16, h10, h35, h36,
-    h20, h21, h25, h26]); omega)
+  all_goals try (config_simp; omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun a h1 => ?_,
     fun r a1 a2 a3 a4 a5 a6 a7 => ?_, rfl, rfl, rfl⟩
   · config_simp; simp only [hA, h25]

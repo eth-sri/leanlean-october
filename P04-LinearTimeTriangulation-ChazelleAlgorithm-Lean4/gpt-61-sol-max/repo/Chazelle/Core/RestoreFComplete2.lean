@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFComplete
 
 /-!
@@ -28,60 +30,40 @@ theorem faced_after {M : Model} (hGM : GoodModel M) {Q : Polygon} {F : Set (Set 
   simp only [add_zero] at hfree
   set x : ℝ := p + t' / 2 with hx
   have hxc : ¬ M.IsCut F x := fun h => hfree x h ⟨by linarith, by linarith⟩
-  have hx0 : 0 < x := by have : (0 : ℝ) ≤ p := Nat.cast_nonneg p; linarith
+  have hx0 : 0 < x := by linarith
   obtain ⟨U, hU, l, r, harc, hin⟩ := WalkEmbed.exists_arc_around hGM hF hx0 hxc
   refine ⟨U, hU, ?_⟩
   -- the ends of the arc are not in `(p, p + t']`
   have hlr : (l ≤ p ∨ (p : ℝ) + t' < l) ∧ (r ≤ p ∨ (p : ℝ) + t' < r) := by
-    obtain ⟨-, -, -, -, hc, -⟩ := harc
-    rcases hc with ⟨hl, hr, -⟩ | ⟨-, rfl, rfl⟩
-    · constructor
-      · by_contra h; push Not at h; exact hfree l hl ⟨h.1, h.2⟩
-      · by_contra h; push Not at h; exact hfree r hr ⟨h.1, h.2⟩
-    · have : (0 : ℝ) ≤ p := Nat.cast_nonneg p
-      exact ⟨Or.inl this, Or.inl this⟩
+    ram_grind
   have hconst : ∀ z : ℝ, (p : ℝ) < z → z ≤ p + t' → sideInArc l r z := by
-    intro z hz1 hz2
-    have e1 : l < z ↔ l < x := by
-      rcases hlr.1 with h | h
-      · exact ⟨fun _ => by linarith, fun _ => by linarith⟩
-      · exact ⟨fun h' => by linarith, fun h' => by linarith⟩
-    have e2 : z < r ↔ x < r := by
-      rcases hlr.2 with h | h
-      · exact ⟨fun h' => by linarith, fun h' => by linarith⟩
-      · exact ⟨fun _ => by linarith, fun _ => by linarith⟩
-    unfold sideInArc at hin ⊢
-    split_ifs at hin ⊢
-    · exact ⟨e1.2 hin.1, e2.2 hin.2⟩
-    · rcases hin with h | h
-      · exact Or.inl (e1.2 h)
-      · exact Or.inr (e2.2 h)
+    core_grind
   filter_upwards [Ioo_mem_nhdsGT ht0] with ε hε
-  exact harc.2.2.2.2.2.2 p ε hp hε.1 (by linarith [hε.2]) (hconst _ (by linarith [hε.1])
-    (by linarith [hε.2]))
+  exact harc.2.2.2.2.2.2 p ε hp hε.1 (by grind) (hconst _ (by grind)
+    (by grind))
 
 /-- **Unwrapped offsets**: from the walk vertex `s`, the key `k` steps and `t` further on. -/
 theorem unwrap_off {n s k : ℕ} {t : ℝ} (hs : s < n) (ht0 : 0 ≤ t) (hkn : (k : ℝ) + t < n) :
     unwrapK n s ((((s + k) % n : ℕ) : ℝ) + t) = s + k + t := by
   have hk : k < n := by
     have : (k : ℝ) < n := by linarith
-    exact_mod_cast this
+    simp_all
   unfold unwrapK
   by_cases h : s + k < n
-  · rw [Nat.mod_eq_of_lt h, ite_eq_left (by push_cast; linarith)]; push_cast; ring
+  · rw [Nat.mod_eq_of_lt h, ite_eq_left (by grind)]; simp_all
   · have e : (s + k) % n = s + k - n := by
       rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
     rw [e, ite_eq_right (by
-      have : ((s + k - n : ℕ) : ℝ) = (s : ℝ) + k - n := by rw [Nat.cast_sub (by omega)]; push_cast; ring
-      rw [this]; linarith)]
-    rw [Nat.cast_sub (by omega)]; push_cast; ring
+      have : ((s + k - n : ℕ) : ℝ) = (s : ℝ) + k - n := by simp_all
+      linarith)]
+    rw [Nat.cast_sub (by omega)]; grind
 
 /-- **A key strictly inside a piece's walk.** -/
 theorem off_sideInArc {n s m k : ℕ} {t : ℝ} (hs : s < n) (hmn : m < n) (ht0 : 0 ≤ t) (ht1 : t < 1)
     (h0 : 0 < (k : ℝ) + t) (hm : (k : ℝ) + t < m) :
     sideInArc (s : ℝ) (((s + m) % n : ℕ) : ℝ) ((((s + k) % n : ℕ) : ℝ) + t) := by
-  have hnR : (m : ℝ) < n := by exact_mod_cast hmn
-  have hsR : (s : ℝ) < n := by exact_mod_cast hs
+  have hnR : (m : ℝ) < n := by simp_all
+  have hsR : (s : ℝ) < n := by simp_all
   have hs0 : 0 ≤ (s : ℝ) ∧ (s : ℝ) < n := ⟨Nat.cast_nonneg s, hsR⟩
   have he := unwrap_off (k := m) (t := 0) hs le_rfl (by linarith)
   have hy := unwrap_off (k := k) (t := t) hs ht0 (by linarith)
@@ -89,27 +71,25 @@ theorem off_sideInArc {n s m k : ℕ} {t : ℝ} (hs : s < n) (hmn : m < n) (ht0 
   have hb : 0 ≤ (((s + m) % n : ℕ) : ℝ) ∧ (((s + m) % n : ℕ) : ℝ) < n :=
     ⟨Nat.cast_nonneg _, by exact_mod_cast Nat.mod_lt _ (by omega)⟩
   have hyb : 0 ≤ (((s + k) % n : ℕ) : ℝ) + t ∧ (((s + k) % n : ℕ) : ℝ) + t < n := by
-    have hkn : k < n := by
-      have : (k : ℝ) < n := by linarith
-      exact_mod_cast this
+    
     have h1 : ((s + k) % n : ℕ) + 1 ≤ n := Nat.mod_lt _ (by omega)
     have h1' : (((s + k) % n : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast h1
-    exact ⟨by positivity, by linarith⟩
-  have hm0 : (0 : ℝ) < m := by linarith
-  exact (cyc_unwrap hs0 hs0 hb hyb (by rw [unwrapK_self, he]; linarith)).2
-    ⟨by rw [unwrapK_self, hy]; linarith, by rw [hy, he]; linarith⟩
+    ram_grind
+  
+  exact (cyc_unwrap hs0 hs0 hb hyb (by grind [unwrapK_self])).2
+    ⟨by grind [unwrapK_self], by linarith⟩
 
 /-- **A walk vertex in the closed key interval of a piece** is `d ≤ m` steps from its start. -/
 theorem closed_offset {n s m p : ℕ} (hs : s < n) (hmn : m < n) (hm : 0 < m) (hp : p < n)
     (h : ClosedArc (s : ℝ) (((s + m) % n : ℕ) : ℝ) (p : ℝ)) :
     ∃ d, d ≤ m ∧ (s + d) % n = p := by
-  have hsR : (s : ℝ) < n := by exact_mod_cast hs
+  have hsR : (s : ℝ) < n := by simp_all
   have hs0 : 0 ≤ (s : ℝ) ∧ (s : ℝ) < n := ⟨Nat.cast_nonneg s, hsR⟩
-  have he := unwrap_off (k := m) (t := 0) hs le_rfl (by simp only [add_zero]; exact_mod_cast hmn)
+  have he := unwrap_off (k := m) (t := 0) hs le_rfl (by simp_all)
   simp only [add_zero] at he
   have hb : 0 ≤ (((s + m) % n : ℕ) : ℝ) ∧ (((s + m) % n : ℕ) : ℝ) < n :=
     ⟨Nat.cast_nonneg _, by exact_mod_cast Nat.mod_lt _ (by omega)⟩
-  have hpb : 0 ≤ (p : ℝ) ∧ (p : ℝ) < n := ⟨Nat.cast_nonneg p, by exact_mod_cast hp⟩
+  have hpb : 0 ≤ (p : ℝ) ∧ (p : ℝ) < n := ⟨Nat.cast_nonneg p, by simp_all⟩
   have hne : (s : ℝ) ≠ (((s + m) % n : ℕ) : ℝ) := by
     intro h'
     have h'' : s = (s + m) % n := by exact_mod_cast h'
@@ -123,11 +103,11 @@ theorem closed_offset {n s m p : ℕ} (hs : s < n) (hmn : m < n) (hm : 0 < m) (h
     unfold unwrapK
     split_ifs
     · exact ⟨p, rfl, Nat.mod_eq_of_lt hp⟩
-    · exact ⟨p + n, by push_cast; ring, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt hp]⟩
+    · exact ⟨p + n, by simp_all, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt hp]⟩
   rw [← hPn] at h1 h2
   have h1' : s ≤ Pn := by exact_mod_cast h1
-  have h2' : Pn ≤ s + m := by exact_mod_cast (by push_cast; linarith : (Pn : ℝ) ≤ ((s + m : ℕ) : ℝ))
-  exact ⟨Pn - s, by omega, by rw [show s + (Pn - s) = Pn by omega, hPm]⟩
+  have h2' : Pn ≤ s + m := by exact_mod_cast (by simp_all : (Pn : ℝ) ≤ ((s + m : ℕ) : ℝ))
+  exact ⟨Pn - s, by omega, by simp_all⟩
 
 
 /-! ## The descent's facts for a stretch of a kind-1 piece -/
@@ -163,19 +143,19 @@ theorem descGood_mk (hE : FGood E c₀) {reg : ℕ → Set Point}
   have hGα : GoodModel (chainModel Cα) :=
     Or.inl ⟨Cα, by rw [hK.hQ]; exact qof_simple hE, rfl⟩
   have hn7 : (chainModel Cα).W.n = 2 * Cα.m + 7 := chainModel_n Cα
-  obtain ⟨U, hU, hfU⟩ := faced_after hGα hcan.1.1 (p := g' + dX) (by rw [hn7]; exact hg')
+  obtain ⟨U, hU, hfU⟩ := faced_after hGα hcan.1.1 (p := g' + dX) (by omega)
   obtain ⟨Tα, hTα, hTU⟩ := hRC.2.2 U hU
   have hsn : ∀ d', (g + d') % E.M.W.n = (s + (d0 + d')) % E.M.W.n := fun d' => by
     rw [hg, Nat.mod_add_mod, Nat.add_assoc]
   refine ⟨regα, Tα, ⟨hregs, hch, hAi, hAj, hij, fun d' hd' t ht0 ht1 hpos => ?_,
-    fun d' hd' => ?_, hsetD, hinB, hX0, hXL, ⟨σb, hσb, T, by rw [hdσ]; exact hgc⟩,
+    fun d' hd' => ?_, hsetD, hinB, hX0, hXL, ⟨σb, hσb, T, by grind⟩,
     ⟨_, po, tq, hgc.2.2.2.2.2.2.2.1, hXA, hOA, hne, hXi, hXj, hcount⟩,
     ⟨hRC, hCS, hArcs, hRg⟩, ⟨4, Dec.recTree_of hGα hcan.1 hcan.2.1⟩, hTα,
     by rw [hTU]; exact hfU⟩⟩
   · rw [hsn]
-    exact hin _ t ht0 ht1 (by push_cast; linarith [(Nat.cast_nonneg d0 : (0 : ℝ) ≤ d0)])
+    exact hin _ t ht0 ht1 (by grind)
       (by have : ((d0 + d' : ℕ) : ℝ) + 1 ≤ Cα.m := by exact_mod_cast (by omega)
-          push_cast at this ⊢; linarith)
+          linarith)
   · rw [hsn]
     exact hE.ehc _ (Nat.mod_lt _ (by have := hK.hs; omega)) (hcnt _ (by omega))
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepPrimAbs
 public import Chazelle.Core.ShootCutBox
 
@@ -21,10 +23,6 @@ The input may be a vertex of the box (height code `0`), or any position of the w
 strictly inside the height range of the box.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -43,13 +41,19 @@ def HRec (P : Polygon) (c : Config) (r : ℕ) (y R : ℝ) : Prop :=
   (c.nreg r = 0 ∧ y = -R) ∨ (c.nreg r = 2 ∧ y = R) ∨
     (c.nreg r = 1 ∧ |y| < R ∧ c.nreg (r + 1) < P.n ∧ y = ((Qof P).vtx (c.nreg (r + 1))).2)
 
+section
+variable (P : Polygon) (c : Config)
+include P c
 /-- **A symbolic record** at `r`: flag `1` and a symbolic point of `Q` whose point is `z`. -/
-def FRec (P : Polygon) (c : Config) (r : ℕ) (z : Point) : Prop :=
+def FRec (r : ℕ) (z : Point) : Prop :=
   c.nreg r = 1 → ∃ s : SymPt, SymPtIn c (r + 1) s ∧ s.Lt P.n ∧ s.eval (Qof P) = z
 
 /-- The point record of `z` at `50210`. -/
-def PtRec (P : Polygon) (c : Config) (z : Point) (R : ℝ) : Prop :=
+def PtRec (z : Point) (R : ℝ) : Prop :=
   AbsRec P c 50210 z.1 R ∧ HRec P c 50214 z.2 R ∧ FRec P c 50216 z
+
+
+end
 
 theorem absRec_copy' {P : Polygon} {c c' : Config} {r r' : ℕ} {x R : ℝ} (h : AbsRec P c r x R)
     (h0 : c'.nreg r' = c.nreg r) (h1 : c'.nreg (r' + 1) = c.nreg (r + 1))
@@ -58,14 +62,14 @@ theorem absRec_copy' {P : Polygon} {c c' : Config} {r r' : ℕ} {x R : ℝ} (h :
   obtain ⟨hR, hk⟩ := h
   refine ⟨hR, ?_⟩
   rcases hk with ⟨k, hx⟩ | ⟨k, hx⟩ | ⟨k, hx, s, hs, hl, he⟩
-  · exact Or.inl ⟨h0.trans k, hx⟩
-  · exact Or.inr (Or.inl ⟨h0.trans k, hx⟩)
+  · simp_all
+  · simp_all
   · refine Or.inr (Or.inr ⟨h0.trans k, hx, s, ?_, hl, he⟩)
-    have e1 : r' + 1 + 1 = r' + 2 := by omega
-    have e2 : r + 1 + 1 = r + 2 := by omega
-    have e3 : r' + 1 + 2 = r' + 3 := by omega
-    have e4 : r + 1 + 2 = r + 3 := by omega
-    exact NFLoc.symPtIn_copy hs h1 (by rw [e1, e2]; exact h2) (by rw [e3, e4]; exact h3)
+    
+    
+    
+    
+    exact NFLoc.symPtIn_copy hs h1 (by omega) (by omega)
 
 /-! ## The machine -/
 
@@ -127,9 +131,7 @@ theorem hyV_exec (c : Config) (hw : WordsBounded W c) (hW : 3 ≤ W) {k : ℕ} (
       ∀ r, r ≠ 50214 → r ≠ 50216 → c'.nreg r = c.nreg r := by
   unfold hyV
   exec_block
-  all_goals first | omega | skip
-  refine ⟨rfl, by config_simp, by config_simp, fun r h1 h2 => ?_⟩
-  simp only [upd]; split_ifs <;> first | rfl | omega
+  all_goals (grind [upd])
 
 theorem abs_top_lt (C : Chain) : |C.top.1| < C.radius :=
   lt_of_le_of_lt (C.abs_le_coordBound_of_mem_set C.top_mem_set).1 C.coordBound_lt_radius
@@ -137,10 +139,11 @@ theorem abs_top_lt (C : Chain) : |C.top.1| < C.radius :=
 /-- The point of a box vertex. -/
 theorem pos_box_vtx (C : Chain) (Q : Polygon) (e : ℕ) :
     (chainModel C).pos Q ⟨e, 0⟩ = (C.sideWalk C.sideBeta).vtx e := by
-  rw [pos_eq_sidePt, show (chainModel C).param Q ⟨e, 0⟩ = 0 from rfl,
-    Chazelle.Chain.sidePt_zero]; rfl
+  aesop (add simp [pos_eq_sidePt, Chazelle.Chain.sidePt_zero]) (add safe (by omega))
 
-theorem ptTopV_exec (c : Config) (hE : CEnv P W H C c) :
+section
+variable (c : Config)
+theorem ptTopV_exec (hE : CEnv P W H C c) :
     ∃ c' k, Exec P W ptTopV c c' k ∧ k ≤ 27 * H.length + 47 ∧
       PtRec P c' (C.top.1, C.radius) C.radius := by
   obtain ⟨c₁, k₁, e₁, hk₁, a₁⟩ := absTop_exec c hE
@@ -148,9 +151,9 @@ theorem ptTopV_exec (c : Config) (hE : CEnv P W H C c) :
     (k := 2) (by norm_num)
   refine ⟨c₂, _, .seq e₁ e₂, by omega, absRec_copy' a₁ (r₂ _ (by decide) (by decide))
     (r₂ _ (by decide) (by decide)) (r₂ _ (by decide) (by decide)) (r₂ _ (by decide) (by decide)),
-    Or.inr (Or.inl ⟨y₂, rfl⟩), fun h => by rw [f₂] at h; exact absurd h (by norm_num)⟩
+    Or.inr (Or.inl ⟨y₂, rfl⟩), fun h => by omega⟩
 
-theorem hxy_exec (c : Config) (hw : WordsBounded W c) (hW : 3 ≤ W) {x y : ℕ} (hx : x = 0 ∨ x = 2)
+theorem hxy_exec (hw : WordsBounded W c) (hW : 3 ≤ W) {x y : ℕ} (hx : x = 0 ∨ x = 2)
     (hy : y = 0 ∨ y = 2) {pt : Point} (hR : 0 < C.radius) (px0 : x = 0 → pt.1 = -C.radius)
     (px2 : x = 2 → pt.1 = C.radius) (py0 : y = 0 → pt.2 = -C.radius)
     (py2 : y = 2 → pt.2 = C.radius) :
@@ -161,15 +164,10 @@ theorem hxy_exec (c : Config) (hw : WordsBounded W c) (hW : 3 ≤ W) {x y : ℕ}
     exec_block
     all_goals first | omega | skip
     exact ⟨rfl, by config_simp, by config_simp, by config_simp⟩
-  refine ⟨c', k, ex, hk, ⟨hR, ?_⟩, ?_, fun h => by rw [v6] at h; exact absurd h (by norm_num)⟩
-  · rcases hx with rfl | rfl
-    · exact Or.inl ⟨v0, px0 rfl⟩
-    · exact Or.inr (Or.inl ⟨v0, px2 rfl⟩)
-  · rcases hy with rfl | rfl
-    · exact Or.inl ⟨v4, py0 rfl⟩
-    · exact Or.inr (Or.inl ⟨v4, py2 rfl⟩)
+  refine ⟨c', k, ex, hk, ⟨hR, ?_⟩, ?_, fun h => by omega⟩
+  all_goals ram_grind
 
-theorem ptBoxV_exec (c : Config) (hE : CEnv P W H C c) {e : ℕ} (h01 : c.nreg 50201 = e)
+theorem ptBoxV_exec (hE : CEnv P W H C c) {e : ℕ} (h01 : c.nreg 50201 = e)
     (he : e < 6) :
     ∃ c' k, Exec P W ptBoxV c c' k ∧ k ≤ 27 * H.length + 60 ∧
       PtRec P c' ((C.sideWalk C.sideBeta).vtx e) C.radius := by
@@ -185,46 +183,49 @@ theorem ptBoxV_exec (c : Config) (hE : CEnv P W H C c) {e : ℕ} (h01 : c.nreg 5
   by_cases h0 : e < 1
   · obtain rfl : e = 0 := by omega
     obtain ⟨c', k, ex, hk, pr⟩ := ptTopV_exec c hE
-    exact ⟨c', _, .ifLtN_true (by rw [h01, hE.r32]; omega) ex, by omega, by
-      rw [C.sideWalk_vtx_zero]; exact pr⟩
-  have t0 : ¬ c.nreg 50201 < c.nreg 50032 := by rw [h01, hE.r32]; omega
+    exact ⟨c', _, .ifLtN_true (by ram_grind) ex, by omega, by
+      aesop⟩
+  have t0 : ¬ c.nreg 50201 < c.nreg 50032 := by ram_grind
   by_cases h2 : e < 2
   · obtain rfl : e = 1 := by omega
     obtain ⟨c', k, ex, hk, pr⟩ := hxy_exec (P := P) (C := C) c hw W3 (x := 0) (y := 2) (Or.inl rfl)
       (Or.inr rfl) (pt := (C.sideWalk C.sideBeta).vtx 1) hR (fun _ => by rw [v1])
       (fun h => absurd h (by norm_num)) (fun h => absurd h (by norm_num)) (fun _ => by rw [v1])
-    exact ⟨c', _, .ifLtN_false t0 (.ifLtN_true (by rw [h01, hE.r82]; omega) ex), by omega, pr⟩
-  have t1 : ¬ c.nreg 50201 < c.nreg 50082 := by rw [h01, hE.r82]; omega
+    exact ⟨c', _, .ifLtN_false t0 (.ifLtN_true (by ram_grind) ex), by omega, pr⟩
+  have t1 : ¬ c.nreg 50201 < c.nreg 50082 := by ram_grind
   by_cases h3 : e < 3
   · obtain rfl : e = 2 := by omega
     obtain ⟨c', k, ex, hk, pr⟩ := hxy_exec (P := P) (C := C) c hw W3 (x := 0) (y := 0) (Or.inl rfl)
       (Or.inl rfl) (pt := (C.sideWalk C.sideBeta).vtx 2) hR (fun _ => by rw [v2])
       (fun h => absurd h (by norm_num)) (fun _ => by rw [v2]) (fun h => absurd h (by norm_num))
-    exact ⟨c', _, .ifLtN_false t0 (.ifLtN_false t1 (.ifLtN_true (by rw [h01, hE.r83]; omega)
+    exact ⟨c', _, .ifLtN_false t0 (.ifLtN_false t1 (.ifLtN_true (by ram_grind)
       ex)), by omega, pr⟩
-  have t2 : ¬ c.nreg 50201 < c.nreg 50083 := by rw [h01, hE.r83]; omega
+  have t2 : ¬ c.nreg 50201 < c.nreg 50083 := by ram_grind
   by_cases h4 : e < 4
   · obtain rfl : e = 3 := by omega
     obtain ⟨c', k, ex, hk, pr⟩ := hxy_exec (P := P) (C := C) c hw W3 (x := 2) (y := 0) (Or.inr rfl)
       (Or.inl rfl) (pt := (C.sideWalk C.sideBeta).vtx 3) hR (fun h => absurd h (by norm_num))
       (fun _ => by rw [v3]) (fun _ => by rw [v3]) (fun h => absurd h (by norm_num))
     exact ⟨c', _, .ifLtN_false t0 (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_true
-      (by rw [h01, hE.r84]; omega) ex))), by omega, pr⟩
-  have t3 : ¬ c.nreg 50201 < c.nreg 50084 := by rw [h01, hE.r84]; omega
+      (by ram_grind) ex))), by omega, pr⟩
+  have t3 : ¬ c.nreg 50201 < c.nreg 50084 := by ram_grind
   by_cases h5 : e < 5
   · obtain rfl : e = 4 := by omega
     obtain ⟨c', k, ex, hk, pr⟩ := hxy_exec (P := P) (C := C) c hw W3 (x := 2) (y := 2) (Or.inr rfl)
       (Or.inr rfl) (pt := (C.sideWalk C.sideBeta).vtx 4) hR (fun h => absurd h (by norm_num))
       (fun _ => by rw [v4]) (fun h => absurd h (by norm_num)) (fun _ => by rw [v4])
     exact ⟨c', _, .ifLtN_false t0 (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
-      (.ifLtN_true (by rw [h01, hE.r85]; omega) ex)))), by omega, pr⟩
-  have t4 : ¬ c.nreg 50201 < c.nreg 50085 := by rw [h01, hE.r85]; omega
+      (.ifLtN_true (by ram_grind) ex)))), by omega, pr⟩
+  have t4 : ¬ c.nreg 50201 < c.nreg 50085 := by ram_grind
   obtain rfl : e = 5 := by omega
   obtain ⟨c', k, ex, hk, pr⟩ := ptTopV_exec c hE
   exact ⟨c', _, .ifLtN_false t0 (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
     (.ifLtN_false t4 ex)))), by omega, by rw [C.sideWalk_vtx_five]; exact pr⟩
 
 /-! ## Positions inside a vertical edge of the box block -/
+
+
+end
 
 /-- A positive parameter: the point is not a box vertex. -/
 theorem box_param_pos' (C : Chain) (Q : Polygon) {e hc : ℕ} (he : e < 6)
@@ -264,18 +265,18 @@ theorem ptBoxS_exec (c : Config) (hE : CEnv P W H C c) {e hc : ℕ} (h01 : c.nre
     exec_block
     all_goals first | omega | skip
     refine ⟨rfl, by config_simp, ?_, by config_simp, fun r h1 h2 h3 => ?_⟩
-    · config_simp; rw [h02, hE.r32]
-    · simp only [upd]; split_ifs <;> first | rfl | omega
+    · config_simp; ram_grind
+    simp_all
   have hE₁ : CEnv P W H C c₁ := hE.frame (exec_frameB e₁ (B := fun r => r == 50214 ||
     r == 50215 || r == 50216) (by decide)) e₁.wb_right (by decide)
-  have q01 : c₁.nreg 50201 = e := by rw [r₁ _ (by decide) (by decide) (by decide), h01]
+  have q01 : c₁.nreg 50201 = e := by simp_all
   have hHR : ∀ c' : Config, (∀ r, 50214 ≤ r → r < 50217 → c'.nreg r = c₁.nreg r) →
       HRec P c' 50214 ((chainModel C).pos (Qof P) ⟨e, hc⟩).2 C.radius ∧
         FRec P c' 50216 ((chainModel C).pos (Qof P) ⟨e, hc⟩) := fun c' hk =>
-    ⟨Or.inr (Or.inr ⟨by rw [hk _ le_rfl (by norm_num), o14], hy,
-      by rw [hk _ (by norm_num) (by norm_num), o15]; omega,
-      by rw [hk _ (by norm_num) (by norm_num), o15, hY]⟩),
-     fun h => by rw [hk _ (by norm_num) (by norm_num), o16] at h; exact absurd h (by norm_num)⟩
+    ⟨Or.inr (Or.inr ⟨by grind, hy,
+      by grind,
+      by grind⟩),
+     fun h => by grind⟩
   obtain ⟨-, b1, -, b3, -, b5, -⟩ := C.sidePt_box C.sideBeta
     ((chainModel C).param (Qof P) ⟨e, hc⟩)
   have hpt : (chainModel C).pos (Qof P) ⟨e, hc⟩ =
@@ -286,20 +287,20 @@ theorem ptBoxS_exec (c : Config) (hE : CEnv P W H C c) {e hc : ℕ} (h01 : c.nre
   by_cases h2 : e < 2
   · obtain rfl : e = 1 := by omega
     have e₂ := Exec.constN (P := P) e₁.wb_right 50210 0 (by omega)
-    refine ⟨_, _, .seq e₁ (.ifLtN_true (by rw [q01, hE₁.r82]; omega) e₂), by omega,
+    refine ⟨_, _, .seq e₁ (.ifLtN_true (by ram_grind) e₂), by omega,
       ⟨hR, Or.inl ⟨by simp, by rw [hpt, b1]⟩⟩, hHR _ fun r h1 h2 => by simp only [Config.nreg_mk]; rw [upd_other _ _ _ (by omega)]⟩
   by_cases h4 : e < 4
   · obtain rfl : e = 3 := by omega
     have e₂ := Exec.constN (P := P) e₁.wb_right 50210 2 (by omega)
-    refine ⟨_, _, .seq e₁ (.ifLtN_false (by rw [q01, hE₁.r82]; omega)
-      (.ifLtN_true (by rw [q01, hE₁.r84]; omega) e₂)), by omega,
+    refine ⟨_, _, .seq e₁ (.ifLtN_false (by ram_grind)
+      (.ifLtN_true (by ram_grind) e₂)), by omega,
       ⟨hR, Or.inr (Or.inl ⟨by simp, by rw [hpt, b3]⟩)⟩, hHR _ fun r h1 h2 => by simp only [Config.nreg_mk]; rw [upd_other _ _ _ (by omega)]⟩
   obtain rfl : e = 5 := by omega
   obtain ⟨c₂, k₂, e₂, hk₂, a₂⟩ := absTop_exec c₁ hE₁
   have f₂ := exec_frameB e₂ (B := fun r => Btv 50211 r || r == 50120 || r == 50210)
     (by decide)
   refine ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [q01, hE₁.r82]; omega)
-    (.ifLtN_false (by rw [q01, hE₁.r84]; omega) e₂)), by omega, by rw [hpt, b5]; exact a₂,
+    (.ifLtN_false (by rw [q01, hE₁.r84]; omega) e₂)), by omega, by grind,
     hHR _ fun r h1 h2 => f₂.1 r (by interval_cases r <;> decide)⟩
 
 /-! ## Tour vertices -/
@@ -327,7 +328,7 @@ theorem ptVtx_exec (c : Config) (hE : CEnv P W H C c) {e hc : ℕ} (h01 : c.nreg
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := e - 6)
     (by simp [h01, hE.r81]) (by omega) (dst := 50211) (by norm_num)
   have hv : (chainModel C).pos (Qof P) ⟨e, hc⟩ = (chainModel C).W.vtx (e - 6 + 6) := by
-    rw [pos_eq_sidePt, hpar, Chazelle.Chain.sidePt_zero, show e - 6 + 6 = e by omega]
+    grind [pos_eq_sidePt, Chazelle.Chain.sidePt_zero]
   have hmem : (chainModel C).W.vtx (e - 6 + 6) ∈ C.set := by
     rw [walk_vtx_tour C (by omega)]; exact C.vertex_mem_set (C.sideIdx_le _ _)
   have hb := C.abs_le_coordBound_of_mem_set hmem
@@ -343,15 +344,12 @@ theorem ptVtx_exec (c : Config) (hE : CEnv P W H C c) {e hc : ℕ} (h01 : c.nreg
     have hw₂ := e₂.wb_right
     exec_block
     all_goals first | omega | skip
-    refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
-      by config_simp, fun r h1 h2 h3 h4 h5 h6 => ?_⟩
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    ram_simp
   have g : ∀ r, 50211 ≤ r → r < 50214 → c₃.nreg r = c₂.nreg r := fun r h1 h2 =>
     r₃ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
   have isp₃ : SymPtIn c₃ 50211 sp := symPtIn_of_eq isp fun j h1 h2 => g j h1 h2
   have fsp₃ : SymPtIn c₃ 50217 sp := NFLoc.symPtIn_copy isp q17 q18 q19
-  have c32 : c₃.nreg 50032 = 1 := by rw [r₃ _ (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide), s32]
+  have c32 : c₃.nreg 50032 = 1 := by grind
   have hw₃ := e₃.wb_right
   -- the height index
   obtain ⟨c₄, k₄, e₄, hk₄, q15, r₄⟩ : ∃ c₄ k₄, Exec P W (.ifLtN 50211 50032
@@ -360,19 +358,19 @@ theorem ptVtx_exec (c : Config) (hE : CEnv P W H C c) {e hc : ℕ} (h01 : c.nreg
     cases sp with
     | vtx k =>
       obtain ⟨i0, i1⟩ := isp₃
-      exact ⟨_, _, .ifLtN_true (by rw [i0, c32]; omega) (Exec.copyN hw₃ _ _), by norm_num,
+      exact ⟨_, _, .ifLtN_true (by omega) (Exec.copyN hw₃ _ _), by norm_num,
         by simp [i1, hIdx], fun r hr => by simp [hr]⟩
     | onEdge e' h' =>
       obtain ⟨i0, i1, i2⟩ := isp₃
-      exact ⟨_, _, .ifLtN_false (by rw [i0, c32]; omega) (Exec.copyN hw₃ _ _), by norm_num,
+      exact ⟨_, _, .ifLtN_false (by omega) (Exec.copyN hw₃ _ _), by norm_num,
         by simp [i2, hIdx], fun r hr => by simp [hr]⟩
   refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, ⟨⟨C.radius_pos, Or.inr (Or.inr
-    ⟨by rw [r₄ _ (by decide), q10], by rw [hv]; exact lt_of_le_of_lt hb.1 hlt, sp,
+    ⟨by grind, by grind, sp,
       symPtIn_of_eq isp₃ fun j h1 h2 => r₄ j (by omega), lsp, by rw [vsp, hv]⟩)⟩,
-    Or.inr (Or.inr ⟨by rw [r₄ _ (by decide), q14], by rw [hv]; exact lt_of_le_of_lt hb.2 hlt,
-      by rw [q15]; exact hIdx_lt lsp, by rw [q15, hv, ← vsp, hIdx_snd]⟩),
+    Or.inr (Or.inr ⟨by grind, by grind,
+      by rw [q15]; exact hIdx_lt lsp, by grind [hIdx_snd]⟩),
     fun _ => ⟨sp, symPtIn_of_eq fsp₃ fun j h1 h2 => r₄ j (by omega), lsp, by rw [vsp, hv]⟩⟩,
-    by rw [r₄ _ (by decide), q16]⟩
+    by grind⟩
 
 /-! ## Positions inside a tour edge or the up-slit edge -/
 
@@ -383,13 +381,13 @@ theorem hyI_exec (c : Config) (hw : WordsBounded W c) (hW : 3 ≤ W) (h32 : c.nr
       ∀ r, r ≠ 50214 → r ≠ 50215 → r ≠ 50216 → c'.nreg r = c.nreg r := by
   unfold hyI
   exec_block
-  all_goals first | omega | skip
-  refine ⟨rfl, by config_simp, ?_, by config_simp, fun r h1 h2 h3 => ?_⟩
-  · config_simp; rw [h32]
-  · simp only [upd]; split_ifs <;> first | rfl | omega
+  all_goals (grind [upd])
 
+section
+variable (c : Config) (hE : CEnv P W H C c) (hreg : HostRegular P.n H)
+include hE hreg
 /-- **The symbolic point inside a tour edge.** -/
-theorem absTour_exec' (c : Config) (hE : CEnv P W H C c) (hreg : HostRegular P.n H) {i hc : ℕ}
+theorem absTour_exec' {i hc : ℕ}
     (h20 : c.nreg 50120 = i) (h02 : c.nreg 50202 = hc) (hi : i < 2 * C.m)
     (ht : 0 < (chainModel C).param (Qof P) ⟨i + 6, hc⟩) (hhn : hc ≤ P.n) :
     ∃ c' k, Exec P W absTour c c' k ∧ k ≤ 60 * H.length + 150 ∧ c'.nreg 50210 = 1 ∧
@@ -425,7 +423,7 @@ theorem absTour_exec' (c : Config) (hE : CEnv P W H C c) (hreg : HostRegular P.n
   obtain ⟨hEi, hx⟩ := tour_abs hE.hG hE.hP hreg hNn hi x₁ x₂ l₁ l₂ v₁ v₂ (hc := hc) ht
   have hc1 : 1 ≤ hc := by
     rcases Nat.eq_zero_or_pos hc with rfl | h
-    · exact absurd (show (chainModel C).param (Qof P) ⟨i + 6, 0⟩ = 0 from rfl) (ne_of_gt ht)
+    · simp_all
     · exact h
   obtain ⟨c₆, k₆, e₆, hk₆, q⟩ : ∃ c₆ k₆, Exec P W outE c₅ c₆ k₆ ∧ k₆ = 4 ∧
       (c₆.nreg 50210 = 1 ∧ SymPtIn c₆ 50211 (.onEdge (hostEdgeIdx P.n s₁ s₂) (hc - 1)) ∧
@@ -434,8 +432,8 @@ theorem absTour_exec' (c : Config) (hE : CEnv P W H C c) (hreg : HostRegular P.n
     have hw₅ := e₅.wb_right
     exec_block
     all_goals try omega
-    refine ⟨rfl, by config_simp, ⟨by config_simp, by config_simp; exact v₅, ?_⟩, ?_, ?_⟩
-    · config_simp; rw [q02, q32]
+    refine ⟨rfl, by config_simp, ⟨by config_simp, by ram_simp, ?_⟩, ?_, ?_⟩
+    · config_simp; omega
     · config_simp; exact q02
     · config_simp; exact q32
   obtain ⟨q10, q11, q02', q32'⟩ := q
@@ -448,10 +446,10 @@ theorem absTour_exec' (c : Config) (hE : CEnv P W H C c) (hreg : HostRegular P.n
   refine ⟨c₆, _, .seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))), by omega, q10, q02', q32', _, hEi,
     q11, ?_⟩
   ext
-  · exact hx.symm
+  · grind
   · rw [hY]; rfl
 
-theorem ptInt_exec (c : Config) (hE : CEnv P W H C c) (hreg : HostRegular P.n H) {e hc : ℕ}
+theorem ptInt_exec {e hc : ℕ}
     (h01 : c.nreg 50201 = e) (h02 : c.nreg 50202 = hc) (he6 : 6 ≤ e) (hen : e < 2 * C.m + 7)
     (ht : 0 < (chainModel C).param (Qof P) ⟨e, hc⟩) (ht1 : (chainModel C).param (Qof P) ⟨e, hc⟩ < 1)
     (hhn : hc ≤ P.n) :
@@ -459,7 +457,7 @@ theorem ptInt_exec (c : Config) (hE : CEnv P W H C c) (hreg : HostRegular P.n H)
       PtRec P c' ((chainModel C).pos (Qof P) ⟨e, hc⟩) C.radius ∧
       (e < 2 * C.m + 6 → c'.nreg 50216 = 1) := by
   have hW := hE.hW
-  have hm1 := C.one_le
+  
   have hR := C.radius_pos
   have hNW := hE.NW
   have hNn := hE.n_eq
@@ -467,8 +465,7 @@ theorem ptInt_exec (c : Config) (hE : CEnv P W H C c) (hreg : HostRegular P.n H)
   have hne := ne_of_param_pos ht
   have hc1 : 1 ≤ hc := by
     rcases Nat.eq_zero_or_pos hc with rfl | h
-    · exact absurd (show (chainModel C).param (Qof P) ⟨e, 0⟩ = 0 from rfl) (ne_of_gt ht)
-    · exact h
+    all_goals (simp_all +arith)
   have hY : ((chainModel C).pos (Qof P) ⟨e, hc⟩).2 = ((Qof P).vtx (hc - 1)).2 := by
     rw [Model.pos_snd hne]
     obtain ⟨h', rfl⟩ : ∃ h', hc = h' + 1 := ⟨hc - 1, by omega⟩
@@ -480,15 +477,15 @@ theorem ptInt_exec (c : Config) (hE : CEnv P W H C c) (hreg : HostRegular P.n H)
     exec_block
     · config_simp; rw [hE.r53]; omega
     · refine ⟨rfl, by config_simp; rw [h01, hE.r81], by config_simp; rw [hE.r53]; ring,
-        fun r h1 h2 => by simp [h1, h2]⟩
+        fun r h1 h2 => by simp_all⟩
   obtain ⟨q20, q43, r₁⟩ := q
   have hE₁ : CEnv P W H C c₁ := hE.keep e₁.wb_right
     (exec_frameB e₁ (B := fun r => r == 50120 || r == 50143) (by decide)).2.2.1
     (fun r hr => r₁ r (ne_of_mem_of_not_mem hr (by decide)) (ne_of_mem_of_not_mem hr (by decide)))
-  have q02 : c₁.nreg 50202 = hc := by rw [r₁ _ (by decide) (by decide), h02]
+  have q02 : c₁.nreg 50202 = hc := by simp_all
   by_cases hlt : e - 6 < 2 * C.m
   · obtain ⟨c₂, k₂, e₂, hk₂, o10, o02, o32, E, hE', o11, hv⟩ := absTour_exec' c₁ hE₁ hreg
-      (i := e - 6) q20 q02 hlt (by rw [show e - 6 + 6 = e by omega]; exact ht) hhn
+      (i := e - 6) q20 q02 hlt (by simp_all) hhn
     rw [show e - 6 + 6 = e by omega] at hv
     obtain ⟨c₃, k₃, e₃, hk₃, y14, y15, y16, r₃⟩ := hyI_exec (P := P) c₂ e₂.wb_right (by omega)
       o32 (f := 1) le_rfl
@@ -510,16 +507,15 @@ theorem ptInt_exec (c : Config) (hE : CEnv P W H C c) (hreg : HostRegular P.n H)
     have o11'' : SymPtIn c₄ 50211 (.onEdge E (hc - 1)) :=
       symPtIn_of_eq o11' fun j h1 h2 => k₄ j (by omega) (by omega) (by omega)
     have lt : (SymPt.onEdge E (hc - 1)).Lt P.n := ⟨hE', by omega⟩
-    refine ⟨c₄, _, .seq e₁ (.ifLtN_true (by rw [q20, q43]; exact hlt) (.seq e₂ (.seq e₃ e₄))),
-      by simp only [List.length_cons, List.length_nil]; omega,
-      ⟨⟨hR, Or.inr (Or.inr ⟨by rw [k₄ _ (by decide) (by decide) (by decide),
-        r₃ _ (by decide) (by decide) (by decide), o10], lt_of_le_of_lt hb.1 hl, _, o11'', lt,
+    refine ⟨c₄, _, .seq e₁ (.ifLtN_true (by omega) (.seq e₂ (.seq e₃ e₄))),
+      by grind [List.length_cons, List.length_nil],
+      ⟨⟨hR, Or.inr (Or.inr ⟨by grind, lt_of_le_of_lt hb.1 hl, _, o11'', lt,
         by rw [hv]⟩)⟩,
-      Or.inr (Or.inr ⟨by rw [k₄ _ (by decide) (by decide) (by decide), y14],
-        lt_of_le_of_lt hb.2 hl, by rw [k₄ _ (by decide) (by decide) (by decide), y15, o02]; omega,
-        by rw [k₄ _ (by decide) (by decide) (by decide), y15, o02, hY]⟩),
+      Or.inr (Or.inr ⟨by grind,
+        lt_of_le_of_lt hb.2 hl, by grind,
+        by grind⟩),
       fun _ => ⟨_, NFLoc.symPtIn_copy o11' v17 v18 v19, lt, hv⟩⟩,
-      fun _ => by rw [k₄ _ (by decide) (by decide) (by decide), y16]⟩
+      fun _ => by grind⟩
   · have he' : e = 2 * C.m + 6 := by omega
     obtain ⟨c₂, k₂, e₂, hk₂, hrec⟩ := absTop_exec c₁ hE₁
     have f₂ := exec_frameB e₂ (B := fun r => Btv 50211 r || r == 50120 || r == 50210)
@@ -542,15 +538,15 @@ theorem ptInt_exec (c : Config) (hE : CEnv P W H C c) (hreg : HostRegular P.n H)
     have hy : |((chainModel C).pos (Qof P) ⟨2 * C.m + 6, hc⟩).2| < C.radius := by
       rw [hpt, abs_lt]
       constructor <;> nlinarith
-    refine ⟨c₃, _, .seq e₁ (.ifLtN_false (by rw [q20, q43]; exact hlt) (.seq e₂ e₃)),
-      by omega, ⟨?_, Or.inr (Or.inr ⟨y14, hy, by rw [y15, o02]; omega, by rw [y15, o02, hY]⟩),
-      fun h => by rw [y16] at h; exact absurd h (by norm_num)⟩, fun h => absurd h (by omega)⟩
-    rw [hpt]
-    exact absRec_copy' hrec (r₃ _ (by decide) (by decide) (by decide))
-      (r₃ _ (by decide) (by decide) (by decide)) (r₃ _ (by decide) (by decide) (by decide))
-      (r₃ _ (by decide) (by decide) (by decide))
+    refine ⟨c₃, _, .seq e₁ (.ifLtN_false (by omega) (.seq e₂ e₃)),
+      by omega, ⟨?_, Or.inr (Or.inr ⟨y14, hy, by grind, by grind⟩),
+      fun h => by omega⟩, fun h => absurd h (by omega)⟩
+    grind [Chazelle.Core.ShootCut.absRec_copy']
 
 /-! ## The contract -/
+
+
+end
 
 /-- The input condition of `ptKey`: a position of the walk proper, a box vertex or strictly inside
 the height range of the box, and a regular host. -/
@@ -582,21 +578,17 @@ theorem ptKey_meets : Meets ptKey primBands (PrimPre PtIn) (PrimPost PtOut)
   by_cases h6 : e < 6
   · have t0 : c.nreg 50201 < c.nreg 50081 := by rw [i01, hE.r81]; exact h6
     by_cases hh : hc < 1
-    · have hc0 : hc = 0 := by omega
+    · 
       obtain ⟨c', k, ex, hk, pr⟩ := ptBoxV_exec c hE i01 h6
       refine ⟨c', _, .ifLtN_true t0 (.ifLtN_true (by rw [i02, hE.r32]; exact hh) ex), by omega, ?_⟩
-      refine ⟨?_, fun h => absurd h (by omega)⟩
-      show PtRec P c' ((chainModel C).pos (Qof P) ⟨e, hc⟩) C.radius
-      rw [hc0, pos_box_vtx]; exact pr
+      core_grind [pos_box_vtx]
     · have hy' : |((chainModel C).pos (Qof P) ⟨e, hc⟩).2| < C.radius := by
-        rcases hy with h | h
-        · exact absurd h (by omega)
-        · exact h
+        grind
       obtain ⟨c', k, ex, hk, pr⟩ := ptBoxS_exec c hE i01 i02 h6 (by omega) hhn hp0 hy'
       exact ⟨c', _, .ifLtN_true t0 (.ifLtN_false (by rw [i02, hE.r32]; exact hh) ex), by omega,
         pr, fun h => absurd h (by omega)⟩
   · have t0 : ¬ c.nreg 50201 < c.nreg 50081 := by rw [i01, hE.r81]; exact h6
-    have hen' : e < 2 * C.m + 7 := by rw [← hn]; exact hen
+    have hen' : e < 2 * C.m + 7 := by omega
     -- the ordinate is inside the box
     have hy' : |((chainModel C).pos (Qof P) ⟨e, hc⟩).2| < C.radius := by
       rcases hy with h | h
@@ -624,9 +616,7 @@ theorem ptKey_meets : Meets ptKey primBands (PrimPre PtIn) (PrimPost PtOut)
           (g₂ 50201 (by norm_num) (by norm_num)) (g₂ 50202 (by norm_num) (by norm_num)) h6' hen'
           hpos hp1 hhn
         refine ⟨c', k, ex, hk, pr, fun _ h => fl ?_⟩
-        rcases h with h | h
-        · exact h
-        · exact absurd h (ne_of_gt hpos))
+        grind)
     exact ⟨c', _, .ifLtN_false t0 ex, by omega, pr⟩
 
 end

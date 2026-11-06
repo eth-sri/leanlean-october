@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmBuild
 public import Chazelle.Core.FuseAsmCost
 public import Chazelle.Core.FuseAsmDedupRun
@@ -35,16 +37,12 @@ theorem bside_of_band {S r : ℕ} (hS : S = 70150 ∨ S = 70151) (hr : bandOf r 
 
 theorem bside_lo {S r : ℕ} (hS : S = 70150 ∨ S = 70151) (h1 : 70000 ≤ r) (h2 : r < 70100) :
     Bside S r = false := by
-  simp only [Bside, Bend, Bpt, Bcs, Bprim, ALLOC, Bool.or_eq_false_iff, decide_eq_false_iff_not,
-    beq_eq_false_iff_ne]
-  omega
+  core_grind
 
 theorem br_of_band {r : ℕ} (hr : bandOf r ∉ FB) : BR r = false := by
   have h1 : bandOf r ≠ 1 := fun h => hr (by rw [h]; decide)
   have h5 : bandOf r ≠ 5 := fun h => hr (by rw [h]; decide)
-  unfold bandOf at h1 h5
-  simp only [BR, Btp, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
-  omega
+  core_grind
 
 /-- **The frame of a side stage.** -/
 theorem frame_side {S : ℕ} (hS : S = 70150 ∨ S = 70151) {c c' : Config} {k x : ℕ}
@@ -56,19 +54,17 @@ theorem frame_side {S : ℕ} (hS : S = 70150 ∨ S = 70151) {c c' : Config} {k x
   ⟨fun r h1 h2 => hr r (bside_of_band hS h1 h2), fun r h1 => hrr r (br_of_band h1), hm,
     fun a _ => by rw [hrm], ho, by omega, by omega⟩
 
-theorem junction_eq {m : ℕ → ℕ} {bl br bw : ℕ} {Q : Polygon} {H H' : Host}
+section
+variable {m : ℕ → ℕ}
+theorem junction_eq {bl br bw : ℕ} {Q : Polygon} {H H' : Host}
     {J J' : Merge.Junction} (h : JunctionAt m bl br bw Q H J) (h' : JunctionAt m bl br bw Q H' J') :
     J = J' := by
   have e1 := NFLoc.chain_eq_of_desc h.1 h'.1
   have e2 := NFLoc.chain_eq_of_desc h.2.1 h'.2.1
   obtain ⟨P, s, m₁, m₂, a1, a2, a3⟩ := J
-  obtain ⟨P', s', m₁', m₂', b1, b2, b3⟩ := J'
-  simp only [Merge.Junction.left, Merge.Junction.right, Chain.mk.injEq] at e1 e2
-  obtain ⟨rfl, rfl, rfl⟩ := e1
-  obtain ⟨-, -, rfl⟩ := e2
-  rfl
+  simp_all [Merge.Junction.left, Merge.Junction.right, Chain.mk.injEq] <;> omega_nf
 
-theorem chords_eq_of_nfAt {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
+theorem chords_eq_of_nfAt {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
     N.chords = N'.chords := by
   obtain ⟨hl, -, -, -, -, hc, -⟩ := h
   obtain ⟨hl', -, -, -, -, hc', -⟩ := h'
@@ -76,25 +72,22 @@ theorem chords_eq_of_nfAt {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B 
       r.dn = r'.dn → r = r' := by
     rintro ⟨⟩ ⟨⟩ h1 h2 h3 h4 h5; simp_all
   apply List.ext_getElem (by omega)
-  intro i hi hi'
-  obtain ⟨a0, a1, a2, a3, a4⟩ := hc i hi
-  obtain ⟨b0, b1, b2, b3, b4⟩ := hc' i hi'
-  have e := hext _ _ (a0.symm.trans b0) (a1.symm.trans b1) (a2.symm.trans b2)
-    (a3.symm.trans b3) (a4.symm.trans b4)
-  unfold NF.chord at e
-  rw [getD_lt hi, getD_lt hi'] at e
-  exact e
+  grind [NF.chord]
 
-theorem tlist_eq {m : ℕ → ℕ} {T : ℕ} {C : List (ℕ × ℕ × ℕ)} (h : ChordListAt m T C) :
+theorem tlist_eq {T : ℕ} {C : List (ℕ × ℕ × ℕ)} (h : ChordListAt m T C) :
     tlist m T C.length = C := by
   apply List.ext_getElem (by simp [tlist])
   intro j h1 h2
   simp only [tlist, List.getElem_map, List.getElem_range, trip]
   obtain ⟨a, b, c⟩ := h j h2
-  rw [getD_lt h2] at a b c
-  rw [a, b, c]
+  simp_all
 
-theorem side₀_ok (J : Merge.Junction) (Q : Polygon) {N : NF}
+
+end
+
+section
+variable (J : Merge.Junction) (Q : Polygon)
+theorem side₀_ok {N : NF}
     (hN : IsNF (chainModel J.left) Q N) {v₁ v₀ t₁ t₀ k₀ : List (ℕ × ℕ × ℕ)}
     (pv₁ : PtAns J Q 0 (J.whole.vertex J.m₁) 1 v₁)
     (pv₀ : PtAns J Q 0 (J.whole.vertex J.m₁) (-1) v₀)
@@ -114,9 +107,9 @@ theorem side₀_ok (J : Merge.Junction) (Q : Polygon) {N : NF}
   · exact ok_ptAns J Q pt₀ q h
   · by_cases hx : SharedExtremum J ∧ ¬ NearU J
     · exact ok_ptAns J Q (pk hx.1 hx.2) q h
-    · rw [nk hx] at h; simp at h
+    simp_all
 
-theorem side₁_ok (J : Merge.Junction) (Q : Polygon) {N : NF}
+theorem side₁_ok {N : NF}
     (hN : IsNF (chainModel J.right) Q N) {t₁ t₀ k₁ : List (ℕ × ℕ × ℕ)}
     (pt₁ : PtAns J Q 1 (J.whole.vertex (J.m₁ + J.right.topIdx)) 1 t₁)
     (pt₀ : PtAns J Q 1 (J.whole.vertex (J.m₁ + J.right.topIdx)) (-1) t₀)
@@ -132,9 +125,9 @@ theorem side₁_ok (J : Merge.Junction) (Q : Polygon) {N : NF}
   · exact ok_ptAns J Q pt₀ q h
   · by_cases hx : SharedExtremum J ∧ NearU J
     · exact ok_ptAns J Q (pk hx.1 hx.2) q h
-    · rw [nk hx] at h; simp at h
+    simp_all
 
-theorem capAns_of (J : Merge.Junction) (Q : Polygon) {k₀ k₁ : List (ℕ × ℕ × ℕ)}
+theorem capAns_of {k₀ k₁ : List (ℕ × ℕ × ℕ)}
     (pk₀ : SharedExtremum J → ¬ NearU J → PtAns J Q 0 (capOrigin J) (capDir J) k₀)
     (nk₀ : ¬ (SharedExtremum J ∧ ¬ NearU J) → k₀ = [])
     (pk₁ : SharedExtremum J → NearU J → PtAns J Q 1 (capOrigin J) (capDir J) k₁)
@@ -145,8 +138,10 @@ theorem capAns_of (J : Merge.Junction) (Q : Polygon) {k₀ k₁ : List (ℕ × �
     fun hu => ⟨nk₀ fun h => h.2 hu, pk₁ hx hu⟩⟩, fun hx => ⟨nk₀ fun h => hx h.1,
     nk₁ fun h => hx h.1⟩⟩, ?_⟩
   by_cases hu : NearU J
-  · rw [nk₀ fun h => h.2 hu]; simpa using h₁
-  · rw [nk₁ fun h => hu h.2]; simpa using h₀
+  all_goals simp_all
+
+
+end
 
 end
 

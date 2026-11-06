@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreTCall
 
 /-!
@@ -32,20 +34,20 @@ open Machine Machine.Stmt Programs SweepPrim WalkEmbed
 theorem chainModel_ne_interior (C : Chain) (Q : Polygon) : chainModel C ≠ interiorModel Q := by
   intro h
   have := congrArg (fun M : Model => M.counted 0) h
-  simp [chainModel, interiorModel] at this
+  core_grind
 
 /-- The model descriptor of a chain model holds a chain descriptor after its header. -/
 theorem chainDesc_of {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {M : Model} {C : Chain}
     (h : ModelDescAt m B Q M) (hM : M = chainModel C) :
     m B = 0 ∧ ∃ H C', ChainDescAt m (B + 1) Q H C' ∧ M = chainModel C' := by
   rcases h with ⟨h0, H, C', hC, hM'⟩ | ⟨-, -, hI⟩
-  · exact ⟨h0, H, C', hC, hM'⟩
+  · ram_grind
   · exact absurd (hM.symm.trans hI) (chainModel_ne_interior C Q)
 
 /-! ## Keys as offsets from vertex `0` -/
 
 theorem off_zero {n k : ℝ} (hk : 0 ≤ k) : off n 0 k = k := by
-  unfold off; simp [hk]
+  core_grind
 
 theorem key_nonneg {M : Model} {Q : Polygon} {n : ℕ} {x : WPos} (hx : ProperPos M Q n x) :
     0 ≤ M.key Q x := by
@@ -64,10 +66,7 @@ theorem posOK_of {C : Chain} {Q : Polygon} {n : ℕ} {x : WPos} (he : x.edge < (
   refine ⟨he, hx, fun h0 => ?_⟩
   by_contra h6
   have hp := box_param_pos C (by omega) hx.1 hy
-  rcases x with ⟨e, h⟩
-  simp only at h0
-  subst h0
-  simp [Model.param] at hp
+  simp_all [Model.param] <;> omega_nf
 
 /-! ## The comparison call -/
 
@@ -81,7 +80,10 @@ def keyCmp (a b d e : ℕ) : Stmt := .seq (block (copies (kcL a b d e))) offCmp
 /-- A register of band `bRestore`. -/
 def InR (r : ℕ) : Prop := 80000 ≤ r ∧ r < 90000
 
-theorem kcL_hd {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he : InR e) :
+section
+variable {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he : InR e)
+include ha hb hd he
+theorem kcL_hd :
     ∀ q ∈ kcL a b d e, ∀ r ∈ kcL a b d e, q.1 ≠ r.2 := by
   unfold InR at *
   simp only [kcL, List.mem_cons, List.not_mem_nil, or_false]
@@ -89,7 +91,7 @@ theorem kcL_hd {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he : InR 
     simp only <;> omega
 
 /-- **Contract of a key comparison** (at most `11006` steps). -/
-theorem keyCmp_exec {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he : InR e)
+theorem keyCmp_exec
     {P : Polygon} {W : ℕ} {c : Config} {H : Host} {C : Chain} (hw : WordsBounded W c)
     (hG : GoodEnv P) (hW : hostWords P.n ≤ W)
     (hwf : ChainWF P (c.nreg ALLOC) c.nmem (c.nreg 83020))
@@ -111,13 +113,7 @@ theorem keyCmp_exec {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he :
       have q3 := h1 (50203, d) (by simp [kcL])
       have q4 := h1 (50204, e) (by simp [kcL])
       have q5 := h1 (50205, 83022) (by simp [kcL])
-      simp only at q1 q2 q3 q4 q5
-      obtain ⟨hx1, hx2, hx3⟩ := hx
-      obtain ⟨hy1, hy2, hy3⟩ := hy
-      refine ⟨by rw [q1]; exact hx1, by rw [q3]; exact hy1, by rw [q5, h0]; omega,
-        by rw [q1, q2]; exact hx2, by rw [q3, q4]; exact hy2, fun h => ?_, fun h => ?_, hWm⟩
-      · rw [q1]; rw [q2] at h; exact hx3 h
-      · rw [q3]; rw [q4] at h; exact hy3 h) hroom
+      grind [Chazelle.Core.SweepPrim.OffIn, Chazelle.Core.Restore.InR, Chazelle.WordsBounded, Chazelle.Core.GoodEnv, Chazelle.Core.ChainWF, Chazelle.Core.ChainDescAt, Chazelle.Core.Restore.PosOK]) hroom
   have q1 := h1 (50201, a) (by simp [kcL])
   have q2 := h1 (50202, b) (by simp [kcL])
   have q3 := h1 (50203, d) (by simp [kcL])
@@ -128,6 +124,9 @@ theorem keyCmp_exec {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he :
   rw [q1, q2, q3, q4, q5, h0, Nat.cast_zero, off_zero (key_nonneg hx.2.1),
     off_zero (key_nonneg hy.2.1)] at o1 o2
   exact ⟨c', k, ex, by simp [kcL] at hk; omega, o1, o2, hf⟩
+
+
+end
 
 end
 

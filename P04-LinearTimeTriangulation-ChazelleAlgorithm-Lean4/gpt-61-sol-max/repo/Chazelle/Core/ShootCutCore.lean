@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutItem
 public import Chazelle.Core.ShootCutStep
 public import Chazelle.Core.ShootCutBreak
@@ -55,7 +57,7 @@ def Chained : WPos → List Pc → WPos → Prop
 
 theorem Chained.append {s v : WPos} : ∀ {ps : List Pc}, Chained s ps v → ∀ pc : Pc, pc.s = v →
     Chained s (ps ++ [pc]) pc.e
-  | [], h, pc, hpc => by simp only [Chained] at h; subst h; exact ⟨hpc, rfl⟩
+  | [], h, pc, hpc => by simp_all [Chained] <;> omega_nf
   | _ :: _, h, pc, hpc => ⟨h.1, Chained.append h.2 pc hpc⟩
 
 /-- The fixed registers of the core (after `cPre`). -/

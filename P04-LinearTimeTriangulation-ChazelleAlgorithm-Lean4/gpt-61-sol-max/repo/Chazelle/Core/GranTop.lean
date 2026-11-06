@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranMain
 public import Chazelle.Core.NFDecompMain
 
@@ -35,40 +37,35 @@ theorem GF.frame {c c' : Config} {k : ℕ} (h : GF (c.nreg ALLOC) c c' k) :
 theorem gran_ne_alloc : bandOf ALLOC ∉ ({bGran} : Finset ℕ) := by decide
 
 theorem band9_not {r : ℕ} (h1 : 90000 ≤ r) (h2 : r < 100000) : ¬ bandOf r ∉ ({bGran} : Finset ℕ) := by
-  unfold bandOf bGran; simp; omega
+  omega_nf
 
-theorem pre_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) :
+section
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include hw
+theorem pre_exec (hW : 1 ≤ W) :
     ∃ c' k, Exec P W (block [.constN 90019 1, .loadN 90010 90001]) c c' k ∧ k = 2 ∧
       c'.nreg 90019 = 1 ∧ c'.nreg 90010 = c.nmem (c.nreg 90001) ∧
       (∀ r, r ≠ 90019 → r ≠ 90010 → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
       c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   exec_block
-  · exact hW
-  · refine ⟨rfl, ?_, ?_, fun r x1 x2 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-      simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+  all_goals simp_all
 
-theorem empty_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
+theorem empty_exec :
     ∃ c' k, Exec P W emptyS c c' k ∧ k = 2 ∧
       c'.nreg 90095 = 0 ∧ c'.nreg 90028 = 0 ∧
       (∀ r, r ≠ 90095 → r ≠ 90028 → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
       c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold emptyS
   exec_block
-  · omega
-  · omega
-  · refine ⟨rfl, ?_, ?_, fun r x1 x2 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-      simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+  all_goals simp_all
+
+
+end
 
 theorem granular_empty {M : Model} {F : Set (Set Point)} {γ : ℕ} (hF : F = ∅)
     (h : M.Semigranular F γ) : M.Granular F γ := by
   refine ⟨h, ?_⟩
-  have : Merge.ContractionCondIn M.D M.weight F γ := by
-    rw [Merge.contractionCondIn_iff]
-    intro c hc
-    have := hc.1
-    rw [hF] at this
-    exact this
-  exact this
+  core_grind
 
 set_option maxHeartbeats 4000000 in
 /-- **WP-F: granularity enforcement**, from the construction of normal forms and the
@@ -116,10 +113,9 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
     have hch := NFLoc.nfAt_chords_eq hNW.nfAt hN₀
     refine ⟨N', hA, hW, ?_, hN, ?_, ?_, hdec⟩
     · rw [F_congr hch, hF]; exact hsub
-    · rw [hF]; exact hdg
-    · rw [hF]; exact hgr
+    all_goals grind
   obtain ⟨c₁, k₁, e₁, hk₁, p19, p10, R₁, rr₁, m₁, rm₁, o₁⟩ :=
-    pre_exec (P := P) c hw (le_trans (by unfold hostWords; omega) hWh)
+    pre_exec (P := P) c hw (le_trans (by omega_nf) hWh)
   have w₁ := e₁.wb_right
   have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := R₁ _ (by decide) (by decide)
   have F₁ : Frame {bGran} c c₁ k₁ := frame_of (fun r hr => R₁ r
@@ -135,30 +131,30 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
     have hnil : N.chords = [] :=
       List.eq_nil_of_length_eq_zero (by have h' : N.chords.length = K := rfl; omega)
     have hFe : N.F M (Qof P) = ∅ := by
-      ext x; simp [NF.F, hnil]
+      grind [NF.F]
     have hl : lset M (Qof P) [] = N.F M (Qof P) := by
-      rw [hFe]; ext x; simp [lset]
+      grind [lset]
     obtain ⟨c₂, k₂, e₂, hk₂, s95, s28, R₂, rr₂, m₂, rm₂, o₂⟩ := empty_exec (P := P) c₁ w₁
     have F₂ : Frame {bGran} c₁ c₂ k₂ := frame_of (fun r hr => R₂ r
       (fun h => band9_not (by omega) (by omega) hr) (fun h => band9_not (by omega) (by omega) hr))
       rr₂ m₂ rm₂ o₂ gran_ne_alloc
     have A₂ : c₂.nreg ALLOC = c.nreg ALLOC := by rw [R₂ _ (by decide) (by decide), A₁]
-    have hm₂ : c₂.nmem = c.nmem := by rw [m₂, m₁]
+    
     obtain ⟨c₃, k₃, e₃, hk₃, ⟨N', hA', hW', hN', hF', hdec'⟩, F₃⟩ := bd_exec (L := []) hsB hsD
       e₂.wb_right hG hWh (by rw [R₂ _ (by decide) (by decide), q0])
-      (by rw [R₂ _ (by decide) (by decide), q2]) s28 s95 (by rw [A₂, hm₂]; exact hwf)
-      (by rw [hm₂]; exact hMD) hGM (fun i hi => by simp at hi) (by rw [A₂]; simp)
+      (by rw [R₂ _ (by decide) (by decide), q2]) s28 s95 (by ram_grind)
+      (by ram_grind) hGM (fun i hi => by simp at hi) (by grind)
       ⟨by rw [show {c | ∃ x ∈ ([] : List (ℕ × ℕ × ℕ)), c = (recOf x).toSet M (Qof P)} =
           N.F M (Qof P) from hl]; exact hNF.1, List.nodup_nil, fun x hx => by simp at hx,
         fun x hx => by simp at hx⟩
-      (by rw [hl]; exact hdeg)
+      (by grind)
       (by rw [A₂]; unfold costBD; simp; omega)
     have e₁₂ : Exec P W (.ifLtN 90010 90019 emptyS mainStmt) c₁ c₂ (k₂ + 1) :=
-      .ifLtN_true (by rw [p10, p19]; omega) e₂
+      .ifLtN_true (by omega) e₂
     refine ⟨c₃, _, .seq e₁ (.seq e₁₂ e₃), ?_, ?_, ?_⟩
     · unfold costBD at hk₃; simp at hk₃; omega
     · rw [A₂] at hA'
-      exact post c₃ [] N' (by rw [hl]) (by rw [hl]; exact hdeg)
+      exact post c₃ [] N' (by rw [hl]) (by grind)
         (by rw [hl]; exact granular_empty hFe hsemi) hA' hW' hN' hF' hdec'
     · exact ((F₁.trans (F₂.mono (le_refl _) (by omega : k₂ ≤ k₂ + 1))).trans F₃).mono
         (by decide) (by omega)
@@ -171,9 +167,9 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
     have hct := cost_total (κB := κB) (κD := κD) (D := D) hAr hRr (le_refl K)
     rw [← hXd] at hct
     obtain ⟨c₂, k₂, L, e₂, hk₂, s00, s02, s95, hLK, hlist, hLB, hok, hsub, hdg, hgr, G₂⟩ :=
-      main_exec (P := P) w₁ q0 q1 q2 q3 hG hWh (by rw [A₁, m₁]; exact hwf)
-        (by rw [m₁]; exact hMD) hGM (by rw [A₁, m₁]; exact hNW) hNF hne hdeg hsemi
-        (by rw [A₁]; nlinarith)
+      main_exec (P := P) w₁ q0 q1 q2 q3 hG hWh (by ram_grind)
+        (by ram_grind) hGM (by ram_grind) hNF hne hdeg hsemi
+        (by omega)
     have hmono : costBD κB κD D L.length ≤ costBD κB κD D K := costBD_mono hLK
     have A₂ := G₂.2.2.2.2.2.2
     have hlow : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
@@ -181,9 +177,9 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
     obtain ⟨hMD₂, hwf₂⟩ := desc_agree' hwf hMD hlow
     obtain ⟨c₃, k₃, e₃, hk₃, ⟨N', hA', hW', hN', hF', hdec'⟩, F₃⟩ := bd_exec hsB hsD
       e₂.wb_right hG hWh s00 s02 rfl s95 (hwf₂.mono (by rw [← A₁]; exact G₂.2.2.2.2.2.1))
-      hMD₂ hGM hlist hLB hok hdg (by rw [A₁] at A₂; nlinarith)
+      hMD₂ hGM hlist hLB hok hdg (by omega)
     have e₁₂ : Exec P W (.ifLtN 90010 90019 emptyS mainStmt) c₁ c₂ (k₂ + 2) :=
-      .ifLtN_false (by rw [p10, p19]; omega) e₂
+      .ifLtN_false (by omega) e₂
     have hA₂ : c.nreg ALLOC ≤ c₂.nreg ALLOC := by rw [← A₁]; exact G₂.2.2.2.2.2.1
     refine ⟨c₃, _, .seq e₁ (.seq e₁₂ e₃), ?_, ?_, ?_⟩
     · omega

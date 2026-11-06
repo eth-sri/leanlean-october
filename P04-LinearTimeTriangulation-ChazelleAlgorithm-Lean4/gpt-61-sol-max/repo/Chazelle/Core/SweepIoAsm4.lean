@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoAsm3
 public import Chazelle.Core.SweepEvWinArcs
 public import Chazelle.Core.MergeAsmDesc
@@ -30,9 +32,7 @@ variable {P : Polygon} {W : ℕ}
 /-- A chord list below a bound survives a change of the memory above it. -/
 theorem chordList_keep {m m' : ℕ → ℕ} {A E : ℕ} {L : List (ℕ × ℕ × ℕ)} (h : ChordListAt m A L)
     (hb : A + 3 * L.length ≤ E) (he : ∀ a, a < E → m' a = m a) : ChordListAt m' A L := by
-  intro i hi
-  rw [he _ (by omega), he (A + 3 * i + 1) (by omega), he (A + 3 * i + 2) (by omega)]
-  exact h i hi
+  core_grind
 
 theorem bands_sub {r : ℕ} (hr : bandOf r ∉ sweepBands ∪ oracleBands) :
     bandOf r ∉ ({bSweep, bLocate} : Finset ℕ) := by
@@ -102,7 +102,7 @@ theorem asm_aenv {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junct
   -- the stage-0 state with the new model descriptors
   have hst₃' := hst₃
   obtain ⟨-, -, -, -, -, -, d20, w20, d21, w21, -⟩ := hst₃'
-  have hn₂ : (chainModel J.right).W.n = 2 * J.right.m + 7 := WalkEmbed.cm_n J.right
+  
   obtain ⟨md30, mw30, -⟩ := modelDesc_of_copy (P := P) (A := A₃) (E' := c₄.nreg ALLOC) w20 d20
     le_rfl m₄ z0 zq (by omega)
   obtain ⟨md31, mw31, -⟩ := modelDesc_of_copy (P := P) (A := A₃ + 6) (E' := c₄.nreg ALLOC) w21 d21
@@ -110,10 +110,10 @@ theorem asm_aenv {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junct
   have hst₄ : SweepEv.St0S P c₄ H J := by
     refine st0S_md hst₃ (fun j hj h11 h30 h31 => r₄ j (by omega) h30 h31 (by omega) (by omega)
       (by omega) (by omega) (by omega) (Or.inl (by omega))) m₄ (by omega) ?_ ?_ ?_ ?_
-    · rw [z30]; exact md30
-    · rw [z30]; exact mw30
-    · rw [z31]; exact md31
-    · rw [z31]; exact mw31
+    · grind
+    · grind
+    · grind
+    grind
   have h20 := w20.1
   have h21 := w21.1
   have hnar₁ := SweepEv.arcsTask J.left (Qof P) N₁ hP hNF₁
@@ -130,10 +130,10 @@ theorem asm_aenv {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junct
       hN₂ := by rw [e4]; exact Robust.transport hNW₂ m
       hNF₁ := hNF₁
       hNF₂ := hNF₂
-      hdeg₁ := by rw [e6]; exact hdeg₁
-      hdeg₂ := by rw [e6]; exact hdeg₂
-      hsg₁ := by rw [e5]; exact hsg₁
-      hsg₂ := by rw [e5]; exact hsg₂
+      hdeg₁ := by grind
+      hdeg₂ := by grind
+      hsg₁ := by grind
+      hsg₂ := by grind
       hst := hst₄
       hE := by omega
       hWm := hWm
@@ -148,8 +148,8 @@ theorem asm_aenv {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junct
       hstops := ?_
       hlog := ?_
       htabw := ?_
-      hK₁ := by rw [e3, m _ (by omega)]; exact hK₁
-      hK₂ := by rw [e4, m _ (by omega)]; exact hK₂
+      hK₁ := by grind
+      hK₂ := by grind
       hmd₁ := fun j hj => by
         rw [z30, zq j hj, r 20 (by omega), m₄ _ (by omega)]
       hmd₂ := fun j hj => by

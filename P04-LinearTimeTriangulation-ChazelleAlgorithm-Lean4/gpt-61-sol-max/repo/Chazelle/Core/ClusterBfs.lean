@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterMap
 
 /-!
@@ -80,11 +82,7 @@ variable {G}
 theorem Done.mono {lev q lev' q' : ℕ → ℕ} {t t' u e : ℕ} (h : G.Done lev q t u e)
     (htt : t ≤ t') (hq : ∀ i, i < t → q' i = q i) (hlev : ∀ i, i < t → lev' (q i) = lev (q i))
     (hu : lev' u = lev u) : G.Done lev' q' t' u e := by
-  intro h1 h2
-  obtain ⟨⟨j, hj, hqj⟩, hl⟩ := h h1 h2
-  refine ⟨⟨j, by omega, by rw [hq j hj, hqj]⟩, ?_⟩
-  rw [hu, ← hqj, hlev j hj, hqj]
-  exact hl
+  grind [Chazelle.Core.Cluster.Env.Done]
 
 /-- A dart leaving a reached vertex through an unblocked dart to an unblocked vertex is a step. -/
 theorem step_of_dart {u e : ℕ} (he : e < G.N) (hdb : G.db e ≠ 1) (hve : G.vert e = u)
@@ -93,32 +91,34 @@ theorem step_of_dart {u e : ℕ} (he : e < G.N) (hdb : G.db e ≠ 1) (hve : G.ve
 
 /-! ## The transitions -/
 
+section
+variable {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ}
 /-- **Start**: the queue holds the source only. -/
-theorem Inv.init {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} (hp : G.Pre s L lab0)
+theorem Inv.init (hp : G.Pre s L lab0)
     (hq : q 0 = s) (hlab : ∀ v, v < G.nv → lab v = if v = s then L else lab0 v)
     (hlev : lev s = 0) : G.Inv s L lab0 lab lev par q 0 1 := by
   refine ⟨by omega, by have := hp.s_lt; omega, by omega, hq, ?_, ?_, ?_, ?_, ?_, ?_, ?_, hlev,
     ?_, ?_⟩
   · intro i hi; rw [show i = 0 by omega, hq]; exact hp.s_lt
-  · intro i hi j hj _; omega
+  · omega
   · intro i hi; rw [show i = 0 by omega, hq, hlab s hp.s_lt, ite_eq_left rfl]
-  · intro v hv hne; rw [hlab v hv, ite_eq_right (fun h => hne 0 (by omega) (by rw [hq, h]))]
-  · intro i j hij hj; rw [show i = 0 by omega, show j = 0 by omega]
-  · intro i hi _; rw [show i = 0 by omega]; omega
-  · intro i hi; rw [show i = 0 by omega, hq]; exact ⟨Relation.ReflTransGen.refl, hp.s_vb⟩
-  · intro i hi hi0; omega
-  · intro i hi; omega
+  · grind
+  · grind
+  · simp_all
+  · ram_grind
+  all_goals omega
 
+section
+variable {h t : ℕ} (hI : G.Inv s L lab0 lab lev par q h t)
+include h t hI
 /-- Entering the inner loop at an unprocessed entry. -/
-theorem Inv.start {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t : ℕ}
-    (hI : G.Inv s L lab0 lab lev par q h t) (hht : h < t) :
+theorem Inv.start (hht : h < t) :
     G.InvIn s L lab0 lab lev par q h t 0 :=
-  ⟨hI, hht, Nat.zero_le _, fun i hi => absurd hi (Nat.not_lt_zero i)⟩
+  by ram_grind
 
 /-- The pigeonhole principle for the queue: a vertex outside a full-length queue is impossible,
 so there is room for one more entry. -/
-theorem Inv.t_lt_of_notMem {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t : ℕ}
-    (hI : G.Inv s L lab0 lab lev par q h t) {w : ℕ} (hw : w < G.nv)
+theorem Inv.t_lt_of_notMem {w : ℕ} (hw : w < G.nv)
     (hnot : ∀ i, i < t → q i ≠ w) : t < G.nv := by
   classical
   by_contra hge
@@ -132,15 +132,18 @@ theorem Inv.t_lt_of_notMem {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t :
     intro i hi j hj hij
     exact hI.qinj i (Finset.mem_range.mp hi) j (Finset.mem_range.mp hj) hij
   have heq : (Finset.range t).image q = Finset.range G.nv :=
-    Finset.eq_of_subset_of_card_le hsub (by rw [hcard, Finset.card_range, ht])
-  have : w ∈ (Finset.range t).image q := by rw [heq]; exact Finset.mem_range.mpr hw
-  obtain ⟨i, hi, hqi⟩ := Finset.mem_image.mp this
-  exact hnot i (Finset.mem_range.mp hi) hqi
+    Finset.eq_of_subset_of_card_le hsub (by simp_all)
+  grind
 
+
+end
+
+section
+variable {h t j : ℕ} (hI : G.InvIn s L lab0 lab lev par q h t j)
+include h t j hI
 /-- **The visited test.**  For an unblocked dart `e` at the head entry leading to an unblocked
 vertex `w`, `lab w < nv` holds exactly when `w` is in the queue. -/
-theorem InvIn.visited_iff {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
-    (hI : G.InvIn s L lab0 lab lev par q h t j) (hp : G.Pre s L lab0) {e : ℕ} (he : e < G.N)
+theorem InvIn.visited_iff (hp : G.Pre s L lab0) {e : ℕ} (he : e < G.N)
     (hdb : G.db e ≠ 1) (hve : G.vert e = q h) (hw : G.vb (G.head e) ≠ 1) :
     lab (G.head e) < G.nv ↔ ∃ i, i < t ∧ q i = G.head e := by
   classical
@@ -153,14 +156,13 @@ theorem InvIn.visited_iff {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j 
       Relation.ReflTransGen.tail (hI.inv.reach h hI.hlt).1
         (step_of_dart he hdb hve (hI.inv.reach h hI.hlt).2 hw)
     rw [hI.inv.lab_out _ hwn hnot, hp.fresh _ hwn hreach] at hlt
-    exact lt_irrefl _ hlt
+    omega
   · rintro ⟨i, hi, hqi⟩
     rw [← hqi, hI.inv.lab_in i hi]
     exact hp.L_lt
 
 /-- **Skip** a dart that is blocked, leads to a blocked vertex, or to a vertex already queued. -/
-theorem InvIn.skip {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
-    (hI : G.InvIn s L lab0 lab lev par q h t j) (hj : j < per G.rot G.N (G.first (q h)))
+theorem InvIn.skip (hj : j < per G.rot G.N (G.first (q h)))
     (hcase : G.db (G.rot^[j] (G.first (q h))) = 1 ∨
       G.vb (G.head (G.rot^[j] (G.first (q h)))) = 1 ∨
       ∃ i, i < t ∧ q i = G.head (G.rot^[j] (G.first (q h)))) :
@@ -170,16 +172,15 @@ theorem InvIn.skip {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
   · exact hI.cur i hi
   · intro h1 h2
     rcases hcase with hc | hc | ⟨i', hi', hq⟩
-    · exact absurd hc h1
-    · exact absurd hc h2
+    · omega
+    · omega
     · refine ⟨⟨i', hi', hq⟩, ?_⟩
       rw [← hq]
       exact hI.inv.span i' hi' hI.hlt
 
 /-- **Push** the head `w` of an unblocked dart `e` (the `j`-th dart at the head entry) to an
 unblocked, unqueued vertex: label, level `lev (q h) + 1`, parent dart `e`, queue entry `t`. -/
-theorem InvIn.push {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
-    (hI : G.InvIn s L lab0 lab lev par q h t j) (hp : G.Pre s L lab0)
+theorem InvIn.push (hp : G.Pre s L lab0)
     (hj : j < per G.rot G.N (G.first (q h)))
     (hdb : G.db (G.rot^[j] (G.first (q h))) ≠ 1)
     (hw : G.vb (G.head (G.rot^[j] (G.first (q h)))) ≠ 1)
@@ -212,7 +213,7 @@ theorem InvIn.push {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
   have hlab' : ∀ v, v ≠ w → Function.update lab w L v = lab v := fun v hv =>
     Function.update_of_ne hv _ _
   have hreach_u := hI0.reach h hht
-  refine ⟨⟨by have := hI0.ht; omega, by omega, by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
+  refine ⟨⟨by  omega, by omega, by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     ?_⟩, by omega, by rw [hq' h hht]; exact hj, ?_⟩
   · rw [hq' 0 hI0.t0]; exact hI0.q0
   · intro i hi
@@ -229,7 +230,7 @@ theorem InvIn.push {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
   · intro i hi
     rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi | rfl
     · rw [hq' i hi, hlab' _ (hne i hi)]; exact hI0.lab_in i hi
-    · rw [hqt]; exact Function.update_self _ _ _
+    · ram_simp
   · intro v hv hvn
     have hvw : v ≠ w := fun h => hvn t (by omega) (by rw [hqt, h])
     rw [hlab' v hvw]
@@ -259,27 +260,26 @@ theorem InvIn.push {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
     · obtain ⟨p1, p2, p3, k, hk, p4, p5⟩ := hI0.par i hi hi0
       unfold ParOK
       rw [hq' i hi, hpar' i hi, hlev' i hi]
-      exact ⟨p1, p2, p3, k, hk, by rw [hq' k (by omega)]; exact p4,
-        by rw [hq' k (by omega), hlev' k (by omega)]; exact p5⟩
+      ram_grind
     · unfold ParOK
       rw [hqt, Function.update_self, hlevw]
-      refine ⟨he, hdb, rfl, h, hht, ?_, ?_⟩
-      · rw [hq' h hht]; exact hve
-      · rw [hq' h hht, hlev' h hht]
+      ram_grind
   · intro i hi e' he' hve'
-    rw [hq' i (by have := hI0.ht; omega)] at hve' ⊢
+    rw [hq' i (by  omega)] at hve' ⊢
     exact (hI0.done i hi e' he' hve').mono (by omega) hq' hlev'
-      (hlev' i (by have := hI0.ht; omega))
+      (hlev' i (by  omega))
   · intro i hi
     rw [hq' h hht]
     rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi | rfl
     · exact (hcur i hi).mono (by omega) hq' hlev' hlevu
     · intro _ _
-      refine ⟨⟨t, by omega, hqt⟩, ?_⟩
-      rw [hlevw, hlevu]
+      ram_grind
+
+
+end
 
 /-- `InvIn.skip` with the dart named. -/
-theorem InvIn.skip' {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j e : ℕ}
+theorem InvIn.skip' {h t j e : ℕ}
     (hI : G.InvIn s L lab0 lab lev par q h t j) (hj : j < per G.rot G.N (G.first (q h)))
     (he : G.rot^[j] (G.first (q h)) = e)
     (hcase : G.db e = 1 ∨ G.vb (G.head e) = 1 ∨ ∃ i, i < t ∧ q i = G.head e) :
@@ -287,7 +287,7 @@ theorem InvIn.skip' {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j e : �
   subst he; exact hI.skip hj hcase
 
 /-- `InvIn.push` with the dart, its head and the new level named. -/
-theorem InvIn.push' {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j e w lu : ℕ}
+theorem InvIn.push' {h t j e w lu : ℕ}
     (hI : G.InvIn s L lab0 lab lev par q h t j) (hp : G.Pre s L lab0)
     (hj : j < per G.rot G.N (G.first (q h))) (he : G.rot^[j] (G.first (q h)) = e)
     (hwe : G.head e = w) (hlu : lev (q h) + 1 = lu) (hdb : G.db e ≠ 1) (hw : G.vb w ≠ 1)
@@ -297,7 +297,7 @@ theorem InvIn.push' {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j e w lu
   subst he hwe hlu; exact hI.push hp hj hdb hw hnot
 
 /-- **Finish** the head entry: all its darts are processed. -/
-theorem InvIn.finish {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
+theorem InvIn.finish {h t j : ℕ}
     (hI : G.InvIn s L lab0 lab lev par q h t j) (hp : G.Pre s L lab0)
     (hj : j = per G.rot G.N (G.first (q h))) :
     G.Inv s L lab0 lab lev par q (h + 1) t := by
@@ -309,11 +309,13 @@ theorem InvIn.finish {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ
     rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi | rfl
     · exact hI0.done i hi e he hve
     · obtain ⟨k, hk, rfl⟩ := (hp.ok.orbit_iff (hI0.qlt i hht)).mp ⟨he, hve⟩
-      exact hcur k (by omega)
+      simp_all
 
+section
+variable {h t : ℕ} (hI : G.Inv s L lab0 lab lev par q h t)
+include h t hI
 /-- Levels are bounded by queue positions. -/
-theorem Inv.lev_le {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t : ℕ}
-    (hI : G.Inv s L lab0 lab lev par q h t) : ∀ i, i < t → lev (q i) ≤ i := by
+theorem Inv.lev_le : ∀ i, i < t → lev (q i) ≤ i := by
   intro i
   induction i using Nat.strong_induction_on with
   | _ i ih =>
@@ -321,52 +323,58 @@ theorem Inv.lev_le {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t : ℕ}
     rcases Nat.eq_zero_or_pos i with rfl | hpos
     · rw [hI.q0, hI.lev0]
     · obtain ⟨-, -, -, j, hj, -, hl⟩ := hI.par i hi hpos
-      have := ih j hj (by omega)
-      omega
+      grind
 
 /-- The degree sum of the processed queue entries is at most `N`. -/
-theorem Inv.sum_deg_le {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t : ℕ}
-    (hI : G.Inv s L lab0 lab lev par q h t) (hok : G.OK) {n : ℕ} (hn : n ≤ t) :
+theorem Inv.sum_deg_le (hok : G.OK) {n : ℕ} (hn : n ≤ t) :
     ∑ i ∈ Finset.range n, G.deg (q i) ≤ G.N := by
   classical
   rw [← Finset.sum_image (f := G.deg) (g := q) (s := Finset.range n)]
   · refine hok.sum_deg_le _ (fun u hu => ?_)
     obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hu
-    exact hI.qlt i (by rw [Finset.mem_range] at hi; omega)
+    exact hI.qlt i (by grind)
   · intro i hi j hj hij
     simp only [Finset.coe_range, Set.mem_Iio] at hi hj
     exact hI.qinj i (by omega) j (by omega) hij
 
 /-! ## The end of the search -/
 
+
+
+end
+
+end
+
+section
+variable {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {t : ℕ} (hI : G.Inv s L lab0 lab lev par q t t)
+include s L lab0 lab lev par hI
 /-- At the end (`h = t`), every step from a queued vertex leads to a queued vertex. -/
-theorem Inv.closed {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {t : ℕ}
-    (hI : G.Inv s L lab0 lab lev par q t t) {i w : ℕ} (hi : i < t) (hs : G.Step (q i) w) :
+theorem Inv.closed {i w : ℕ} (hi : i < t) (hs : G.Step (q i) w) :
     ∃ j, j < t ∧ q j = w := by
   obtain ⟨e, he, hdb, hve, rfl, _, hw⟩ := hs
   exact (hI.done i hi e he hve hdb hw).1
 
 /-- **The queue holds the component**: at the end, a vertex is queued iff it is reachable. -/
-theorem Inv.reach_iff {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {t : ℕ}
-    (hI : G.Inv s L lab0 lab lev par q t t) (w : ℕ) :
+theorem Inv.reach_iff (w : ℕ) :
     G.Reach s w ↔ ∃ j, j < t ∧ q j = w := by
   constructor
   · intro h
     induction h with
-    | refl => exact ⟨0, hI.t0, hI.q0⟩
+    | refl => ram_grind
     | tail _ hs ih =>
       obtain ⟨j, hj, rfl⟩ := ih
       exact hI.closed hj hs
-  · rintro ⟨j, hj, rfl⟩
-    exact (hI.reach j hj).1
+  · ram_grind
 
 /-- **Levels across darts**: at the end, an unblocked dart from a reached vertex to an unblocked
 vertex raises the level by at most one. -/
-theorem Inv.lev_head_le {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {t : ℕ}
-    (hI : G.Inv s L lab0 lab lev par q t t) {i e : ℕ} (hi : i < t) (he : e < G.N)
+theorem Inv.lev_head_le {i e : ℕ} (hi : i < t) (he : e < G.N)
     (hve : G.vert e = q i) (hdb : G.db e ≠ 1) (hw : G.vb (G.head e) ≠ 1) :
     lev (G.head e) ≤ lev (q i) + 1 :=
   (hI.done i hi e he hve hdb hw).2
+
+
+end
 
 end Env
 

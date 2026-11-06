@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseOracleTop
 public import Chazelle.Core.BruteCorner
 
@@ -34,19 +36,23 @@ variable {Q : Polygon}
 
 /-! ## The chain of a stretch -/
 
-theorem ch_vertex {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 1 ≤ Q.n} (k : ℕ) :
-    (ch Q u L h1 h2).vertex k = Q.vtx ((cStart Q u L + k) % Q.n) := rfl
 
 /-! ## The vertex ranges of a chain -/
 
+section
+variable (n cs L : ℕ)
+include n cs L
 /-- The end of the first index range. -/
-def rY1 (n cs L : ℕ) : ℕ := if cs + L < n then cs + L else n - 1
+def rY1 : ℕ := if cs + L < n then cs + L else n - 1
 
 /-- The start of the second index range. -/
-def rX2 (n cs L : ℕ) : ℕ := if cs + L < n then cs else 0
+def rX2 : ℕ := if cs + L < n then cs else 0
 
 /-- The end of the second index range. -/
-def rY2 (n cs L : ℕ) : ℕ := if cs + L < n then cs else cs + L - n
+def rY2 : ℕ := if cs + L < n then cs else cs + L - n
+
+
+end
 
 /-- The vertex indices of a chain of `L ≤ n - 1` edges from `cs`. -/
 def InCh (n cs L v : ℕ) : Prop := ∃ k, k ≤ L ∧ v = (cs + k) % n
@@ -56,18 +62,21 @@ theorem rng_of {n cs L k : ℕ} (hcs : cs < n) (hL : L < n) (hk : k ≤ L) :
       (rX2 n cs L ≤ (cs + k) % n ∧ (cs + k) % n ≤ rY2 n cs L) := by
   unfold rY1 rX2 rY2
   by_cases h : cs + k < n
-  · left; rw [Nat.mod_eq_of_lt h]; split_ifs <;> omega
+  · left; rw [Nat.mod_eq_of_lt h]; ram_grind
   · right
     rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-    split_ifs <;> omega
+    ram_grind
 
-theorem of_rng1 {n cs L v : ℕ} (hcs : cs < n) (h1 : cs ≤ v) (h2 : v ≤ rY1 n cs L) :
+section
+variable {n cs L v : ℕ} (hcs : cs < n)
+include hcs
+theorem of_rng1 (h1 : cs ≤ v) (h2 : v ≤ rY1 n cs L) :
     InCh n cs L v := by
   unfold rY1 at h2
-  refine ⟨v - cs, by split_ifs at h2 <;> omega, ?_⟩
-  rw [show cs + (v - cs) = v by omega, Nat.mod_eq_of_lt (by split_ifs at h2 <;> omega)]
+  refine ⟨v - cs, by grind, ?_⟩
+  rw [show cs + (v - cs) = v by omega, Nat.mod_eq_of_lt (by grind)]
 
-theorem of_rng2 {n cs L v : ℕ} (hcs : cs < n) (hL : L < n) (h1 : rX2 n cs L ≤ v)
+theorem of_rng2 (hL : L < n) (h1 : rX2 n cs L ≤ v)
     (h2 : v ≤ rY2 n cs L) : InCh n cs L v := by
   unfold rX2 rY2 at *
   by_cases h : cs + L < n
@@ -77,25 +86,39 @@ theorem of_rng2 {n cs L v : ℕ} (hcs : cs < n) (hL : L < n) (h1 : rX2 n cs L �
     refine ⟨v + n - cs, by omega, ?_⟩
     rw [show cs + (v + n - cs) = v + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
 
-theorem rY1_lt {n cs L : ℕ} (hcs : cs < n) : rY1 n cs L < n := by
-  unfold rY1; split_ifs <;> omega
 
-theorem rY2_lt {n cs L : ℕ} (hcs : cs < n) (hL : L < n) : rY2 n cs L < n := by
-  unfold rY2; split_ifs <;> omega
+end
 
-theorem rX2_le {n cs L : ℕ} (_hcs : cs < n) (_hL : L < n) : rX2 n cs L ≤ rY2 n cs L := by
-  unfold rX2 rY2; split_ifs <;> omega
+section
+variable {n cs L : ℕ}
+section
+variable (hcs : cs < n)
+include hcs
+theorem rY1_lt : rY1 n cs L < n := by
+  core_grind
 
-theorem cs_le_rY1 {n cs L : ℕ} (hcs : cs < n) : cs ≤ rY1 n cs L := by
-  unfold rY1; split_ifs <;> omega
+theorem rY2_lt (hL : L < n) : rY2 n cs L < n := by
+  core_grind
 
-theorem rY1_sub {n cs L : ℕ} : rY1 n cs L - cs ≤ L := by
-  unfold rY1; split_ifs <;> omega
 
-theorem rY2_sub {n cs L : ℕ} (hcs : cs < n) : rY2 n cs L - rX2 n cs L ≤ L := by
-  unfold rX2 rY2; split_ifs <;> omega
+end
+
+theorem rX2_le (_hcs : cs < n) (_hL : L < n) : rX2 n cs L ≤ rY2 n cs L := by
+  core_grind
+
+theorem cs_le_rY1 (hcs : cs < n) : cs ≤ rY1 n cs L := by
+  core_grind
+
+theorem rY1_sub : rY1 n cs L - cs ≤ L := by
+  core_grind
+
+theorem rY2_sub (hcs : cs < n) : rY2 n cs L - rX2 n cs L ≤ L := by
+  core_grind
 
 /-! ## The top of the chain -/
+
+
+end
 
 /-- **The top index of the chain of a stretch** from its highest vertex `v` (distinct heights). -/
 theorem topIdx_ch (hD : DistinctHeights Q) {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 1 ≤ Q.n}
@@ -107,7 +130,7 @@ theorem topIdx_ch (hD : DistinctHeights Q) {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 
   obtain ⟨j, hj, rfl⟩ := hv
   have hT : (ch Q u L h1 h2).topIdx = j :=
     topIdx_of_max (C := ch Q u L h1 h2) hD hj (fun k hk => by
-      rw [ch_vertex, ch_vertex]; exact hmax k hk)
+      aesop)
   refine ⟨?_, by rw [hT]⟩
   rw [hT]
   have hjn : j < Q.n := by omega
@@ -136,8 +159,8 @@ of `Q` taken modulo `n`. -/
 theorem sideBeta_ch {C : Chain} (hC : C.P = Q) (hD : DistinctHeights Q) (hT0 : 0 < C.topIdx)
     {v : ℕ} (hv : v = (C.s + C.topIdx) % Q.n) :
     C.sideBeta = true ↔ BetaF (Q.vtx ((v + Q.n - 1) % Q.n)) (Q.vtx v) (Q.vtx ((v + 1) % Q.n)) := by
-  have hDH : DistinctHeights C.P := by rw [hC]; exact hD
-  have hn : 1 < Q.n := by have := C.add_one_le; have := C.one_le; rw [hC] at *; omega
+  have hDH : DistinctHeights C.P := by simp_all
+  have hn : 1 < Q.n := by have := C.add_one_le; have := C.one_le; grind
   have eA : C.vertex (C.topIdx - 1) = Q.vtx ((v + Q.n - 1) % Q.n) := by
     show C.P.vtx ((C.s + (C.topIdx - 1)) % C.P.n) = _
     rw [hC, prev_idx hn hT0, hv]
@@ -146,20 +169,10 @@ theorem sideBeta_ch {C : Chain} (hC : C.P = Q) (hD : DistinctHeights Q) (hT0 : 0
     rw [hC, hv]
   have eB : C.vertex (C.topIdx + 1) = Q.vtx ((v + 1) % Q.n) := by
     show C.P.vtx ((C.s + (C.topIdx + 1)) % C.P.n) = _
-    rw [hC, hv, Nat.mod_add_mod, Nat.add_assoc]
+    simp_all +arith
   rw [Brute.sideBeta_iff (C := C) hDH hT0, eA, eT, eB]
   unfold BetaF
-  constructor
-  · rintro (h | ⟨h1, h3⟩ | h | h)
-    · exact Or.inl h
-    · exact Or.inr (Or.inl ⟨not_lt.2 h1.le, h1.ne, h3⟩)
-    · exact Or.inr (Or.inr (Or.inl h))
-    · exact Or.inr (Or.inr (Or.inr h))
-  · rintro (h | ⟨h1, h2, h3⟩ | h | h)
-    · exact Or.inl h
-    · exact Or.inr (Or.inl ⟨lt_of_le_of_ne (not_lt.1 h1) h2, h3⟩)
-    · exact Or.inr (Or.inr (Or.inl h))
-    · exact Or.inr (Or.inr (Or.inr h))
+  grind
 
 /-! ## The boundary symbolic point of a hit, in closed form -/
 
@@ -190,8 +203,8 @@ theorem cVtx_ch {C : Chain} {i : ℕ} (hi : i ≤ 2 * C.m) :
   have hT := C.topIdx_le
   have hm := C.one_le
   have hS : C.sideS C.sideBeta = sSV C.sideBeta C.topIdx C.m := by
-    unfold Chain.sideS sSV; rfl
-  rw [show i + 6 - 6 = i by omega, hS, mod2_eq hm (by unfold sSV; split_ifs <;> omega)]
+    aesop
+  rw [show i + 6 - 6 = i by omega, hS, mod2_eq hm (by grind [sSV])]
 
 /-- **The boundary symbolic point of a chain-model position**, in closed form (`v` the top vertex
 of `Q`, `S` the tour start). -/
@@ -207,7 +220,7 @@ theorem hitSym_ch {C : Chain} {v : ℕ} (hv : v = (C.s + C.topIdx) % C.P.n) {e h
     hitSym C e h = hitSymV C.P.n C.s C.m (sSV C.sideBeta C.topIdx C.m) v e h := by
   unfold hitSym hitSymV
   by_cases h6 : e < 6 ∨ 2 * C.m + 6 ≤ e
-  · rw [ite_eq_left h6, ite_eq_left h6, hv]
+  · simp_all
   · rw [ite_eq_right h6, ite_eq_right h6]
     have e1 : cVtx C e = cVtxV C.P.n C.s C.m (sSV C.sideBeta C.topIdx C.m) (e - 6) := by
       rw [← cVtx_ch (by omega), show e - 6 + 6 = e by omega]
@@ -217,29 +230,40 @@ theorem hitSym_ch {C : Chain} {v : ℕ} (hv : v = (C.s + C.topIdx) % C.P.n) {e h
 
 /-! ## First hits on a union -/
 
-theorem firstHit_union_l {A B : Set Point} {z : Point} {σ t : ℝ} (hA : FirstHit A z σ t)
+section
+variable {A B : Set Point} {z : Point}
+section
+variable {σ t : ℝ}
+include σ t
+theorem firstHit_union_l (hA : FirstHit A z σ t)
     (hB : ∀ t', 0 < t' → t' < t → rayPt z σ t' ∉ B) : FirstHit (A ∪ B) z σ t :=
-  ⟨hA.1, Or.inl hA.2.1, fun t' h0 h1 hm => hm.elim (hA.2.2 t' h0 h1) (hB t' h0 h1)⟩
+  by grind [Chazelle.Core.FirstHit]
 
-theorem firstHit_union_r {A B : Set Point} {z : Point} {σ t : ℝ} (hB : FirstHit B z σ t)
+theorem firstHit_union_r (hB : FirstHit B z σ t)
     (hA : ∀ t', 0 < t' → t' < t → rayPt z σ t' ∉ A) : FirstHit (A ∪ B) z σ t := by
-  rw [Set.union_comm]; exact firstHit_union_l hB hA
+  grind [Chazelle.Core.FirstHit, Set.union_comm]
 
-theorem firstHit_noHit {A B : Set Point} {z : Point} {σ t : ℝ} (hA : FirstHit A z σ t)
+theorem firstHit_noHit (hA : FirstHit A z σ t)
     (hB : NoHit B z σ) : FirstHit (A ∪ B) z σ t :=
   firstHit_union_l hA fun t' h0 _ => hB t' h0
 
-theorem noHit_firstHit {A B : Set Point} {z : Point} {σ t : ℝ} (hA : NoHit A z σ)
+theorem noHit_firstHit (hA : NoHit A z σ)
     (hB : FirstHit B z σ t) : FirstHit (A ∪ B) z σ t :=
   firstHit_union_r hB fun t' h0 _ => hA t' h0
 
-theorem noHit_union {A B : Set Point} {z : Point} {σ : ℝ} (hA : NoHit A z σ) (hB : NoHit B z σ) :
+
+end
+
+theorem noHit_union {σ : ℝ} (hA : NoHit A z σ) (hB : NoHit B z σ) :
     NoHit (A ∪ B) z σ := fun t h0 hm => hm.elim (hA t h0) (hB t h0)
 
 /-- Two first hits: the nearer one. -/
-theorem firstHit_min {A B : Set Point} {z : Point} {σ t₁ t₂ : ℝ} (hA : FirstHit A z σ t₁)
+theorem firstHit_min {σ t₁ t₂ : ℝ} (hA : FirstHit A z σ t₁)
     (hB : FirstHit B z σ t₂) (h : t₁ ≤ t₂) : FirstHit (A ∪ B) z σ t₁ :=
   firstHit_union_l hA fun t' h0 h1 => hB.2.2 t' h0 (lt_of_lt_of_le h1 h)
+
+
+end
 
 end
 

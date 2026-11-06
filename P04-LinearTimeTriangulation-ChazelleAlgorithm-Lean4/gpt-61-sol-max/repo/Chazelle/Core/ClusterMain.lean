@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterCost
 
 /-!
@@ -27,7 +29,7 @@ theorem card_fin_filter {n : ℕ} (p : ℕ → Prop) [DecidablePred p] :
   simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and, Fin.valEmbedding_apply,
     Finset.mem_range]
   constructor
-  · rintro ⟨v, hv, rfl⟩; exact ⟨v.2, hv⟩
+  · ram_grind
   · rintro ⟨hx, hp⟩; exact ⟨⟨x, hx⟩, hp, rfl⟩
 
 end

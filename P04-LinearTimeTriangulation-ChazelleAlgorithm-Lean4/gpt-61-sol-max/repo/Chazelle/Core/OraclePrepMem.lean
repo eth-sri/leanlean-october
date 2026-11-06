@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepPhB
 
 /-!
@@ -24,37 +26,31 @@ theorem robust_addrF {E : ℕ} {m : ℕ → ℕ} {f : (ℕ → ℕ) → ℕ} {v 
     (h : Robust E m fun m' => m' (f m') = v) : f m < E := by
   by_contra hge
   have hm' : ∀ a, a < E → Function.update m (f m) (v + 1) a = m a := fun a ha => by
-    rw [Function.update_of_ne (by omega)]
+    ram_simp <;> omega_nf
   have := h _ hm'
-  dsimp only at this
-  rw [hf _ hm', Function.update_self] at this
-  omega
+  simp_all
 
+section
+variable {m m' : ℕ → ℕ}
 /-- A host layout depends only on the memory below its end. -/
-theorem hostAt_agree {m m' : ℕ → ℕ} {B E : ℕ} {H : Host} (h : HostAt m B H)
+theorem hostAt_agree {B E : ℕ} {H : Host} (h : HostAt m B H)
     (hE : B + 3 * H.length + 4 ≤ E) (hm : ∀ a, a < E → m' a = m a) : HostAt m' B H := by
   refine ⟨by rw [hm _ (by omega)]; exact h.1, fun i hi => ?_⟩
   have hh := h.2 i hi
-  have e1 := hm (B + 1 + 3 * i) (by omega)
-  have e2 := hm (B + 2 + 3 * i) (by omega)
-  have e3 := hm (B + 3 + 3 * i) (by omega)
-  generalize H.getD i (.run 0 0) = it at hh ⊢
-  cases it with
-  | run a l => obtain ⟨h1, h2, h3⟩ := hh; exact ⟨e1.trans h1, e2.trans h2, e3.trans h3⟩
-  | pt x =>
-    cases x with
-    | vtx j => obtain ⟨h1, h2⟩ := hh; exact ⟨e1.trans h1, e2.trans h2⟩
-    | onEdge e hh' => obtain ⟨h1, h2, h3⟩ := hh; exact ⟨e1.trans h1, e2.trans h2, e3.trans h3⟩
+  ram_grind
 
 /-- A chain descriptor depends only on the memory below its end. -/
-theorem chainDescAt_agree {m m' : ℕ → ℕ} {D X : ℕ} {Q : Polygon} {H : Host} {C : Chain}
+theorem chainDescAt_agree {D X : ℕ} {Q : Polygon} {H : Host} {C : Chain}
     (h : ChainDescAt m D Q H C) (hD : D + 5 ≤ X) (hH : m D + 3 * H.length + 4 ≤ X)
     (hm : ∀ a, a < X → m' a = m a) : ChainDescAt m' D Q H C := by
   obtain ⟨h0, h1, h2, h3, h4, h5⟩ := h
-  refine ⟨?_, h1, by rw [hm _ (by omega)]; exact h2, by rw [hm _ (by omega)]; exact h3,
-    by rw [hm _ (by omega)]; exact h4, by rw [hm _ (by omega)]; exact h5⟩
+  refine ⟨?_, h1, by grind, by grind,
+    by grind, by simp_all +arith⟩
   rw [hm _ (by omega)]
   exact hostAt_agree h0 hH hm
+
+
+end
 
 /-- A copy of a chain descriptor describes the same chain. -/
 theorem chainDescAt_copy {m : ℕ → ℕ} {D D' : ℕ} {Q : Polygon} {H : Host} {C : Chain}
@@ -62,10 +58,10 @@ theorem chainDescAt_copy {m : ℕ → ℕ} {D D' : ℕ} {Q : Polygon} {H : Host}
     ChainDescAt m D' Q H C := by
   obtain ⟨h0, h1, h2, h3, h4, h5⟩ := h
   have e0 := hc 0 (by omega); have e1 := hc 1 (by omega); have e2 := hc 2 (by omega)
-  have e3 := hc 3 (by omega); have e4 := hc 4 (by omega)
+  have e3 := hc 3 (by omega); 
   simp only [Nat.add_zero] at e0
-  exact ⟨by rw [e0]; exact h0, h1, by rw [e1]; exact h2, by rw [e2]; exact h3, by rw [e3]; exact h4,
-    by rw [e4]; exact h5⟩
+  exact ⟨by simp_all, h1, by omega, by omega, by omega,
+    by simp_all⟩
 
 /-- A well-formed chain descriptor stays well formed under a change above the bound. -/
 theorem chainWF_agree {P : Polygon} {m m' : ℕ → ℕ} {D X : ℕ} {H : Host} {C : Chain}
@@ -76,10 +72,7 @@ theorem chainWF_agree {P : Polygon} {m m' : ℕ → ℕ} {D X : ℕ} {H : Host} 
   refine ⟨hDX, fun H' C' hC' => ?_⟩
   have hD' := chainDescAt_agree hD hDX h3 hm
   have hH : H' = H := NFLoc.hostAt_unique hC'.1 hD'.1
-  have hC : C' = C := NFLoc.chain_eq_of_desc hC' hD'
-  subst hH hC
-  rw [hm _ (by omega)]
-  exact ⟨h1, h2, h3, h4⟩
+  ram_grind
 
 /-- **The model descriptor** made of `0` and a copy of a well-formed chain descriptor. -/
 theorem modelDesc_of {P : Polygon} {m : ℕ → ℕ} {D MD X : ℕ} {H : Host} {C : Chain}
@@ -91,9 +84,8 @@ theorem modelDesc_of {P : Polygon} {m : ℕ → ℕ} {D MD X : ℕ} {H : Host} {
   have hH : H' = H := NFLoc.hostAt_unique hC'.1 hD'.1
   have hC : C' = C := NFLoc.chain_eq_of_desc hC' hD'
   subst hH hC
-  have e0 : m (MD + 1) = m D := by have := hc 0 (by omega); simpa using this
-  obtain ⟨h1, h2, h3, h4⟩ := hwf.2 H' C' hD
-  exact ⟨h1, h2, by rw [e0]; exact h3, h4⟩
+  have e0 : m (MD + 1) = m D := by have := hc 0 (by omega); omega
+  ram_grind
 
 /-- The region table of the star chords from the normal form. -/
 theorem rgMem_of {m : ℕ → ℕ} {B : ℕ} {M : Model} {Q : Polygon} {N : NF} (hNF : NFAt m B N)
@@ -120,7 +112,7 @@ theorem zloc_of {P : Polygon} {W : ℕ} {m₀ m : ℕ → ℕ} {D NB MD TB L A�
   intro m' hm'
   have hQn : (Qof P).n = P.n := shear_n _ _
   have agree0 : ∀ a, a < A₀ → m' a = m₀ a := fun a ha => by
-    rw [hm' a (by omega), hagree a ha]
+    grind
   have hA0 := OracleR.arcs_pos hsimp hN
   obtain ⟨hNB7, hABb, hSBb⟩ := NFLoc.nfWithin_bounds hNFw hN hA0
   have hNF' : NFAt m' NB N := hNFw m' agree0
@@ -130,21 +122,20 @@ theorem zloc_of {P : Polygon} {W : ℕ} {m₀ m : ℕ → ℕ} {D NB MD TB L A�
   have hwf' : ChainWF P X m' D :=
     ChainWF.mono (chainWF_agree ⟨hDA, hall⟩ hD agree0) (by omega)
   obtain ⟨hmd, hmdwf⟩ := modelDesc_of (m := m') (MD := MD) hD' hwf'
-    (by rw [hm' _ (by omega), hmd0])
-    (fun i hi => by rw [hm' _ (by omega), hmdc i hi, agree0 _ (by omega)]) (by omega)
+    (by grind)
+    (fun i hi => by grind) (by omega)
   obtain ⟨hMDW, hlwf⟩ := NFLoc.locChainWF_of hmdwf hXW hHW
   have e4 : m' (NB + 4) = m₀ (NB + 4) := agree0 _ (by omega)
   have e6 : m' (NB + 6) = m₀ (NB + 6) := agree0 _ (by omega)
-  refine ⟨⟨by rw [hVMD]; exact hmd, Or.inl ⟨C, hsimp, rfl⟩, by rw [hVMD]; exact hMDW,
-    by rw [hVMD]; exact hlwf, by rw [hVNB]; exact hNF', hN, hVA, fun j hj => ?_,
-    fun j hj => by rw [hVTB, hm' _ (by omega)]; rw [hVL] at hj; exact htab j hj,
-    by rw [hVA, hVL]; exact hAlt, by rw [hVNB, hVTB]; omega,
-    by rw [hVNB, hVTB, hVA, e4]; omega, by rw [hVNB, hVTB, hVA, e6]; omega,
-    by rw [hVTB, hVL]; omega, by rw [hVA]; exact hVμ⟩, by rw [hVNB, hVAB, e4],
-    by rw [hVNB, hVSB, e6]⟩
+  refine ⟨⟨by grind, Or.inl ⟨C, hsimp, rfl⟩, by omega,
+    by grind, by grind, hN, hVA, fun j hj => ?_,
+    fun j hj => by grind,
+    by grind, by omega,
+    by grind, by grind,
+    by omega, by omega⟩, by grind,
+    by grind⟩
   obtain ⟨-, -, -, reg, -, -, -, -, -, -, hpp⟩ := hN
-  have := (hpp j hj).1
-  rwa [hQn] at this
+  grind
 
 end
 

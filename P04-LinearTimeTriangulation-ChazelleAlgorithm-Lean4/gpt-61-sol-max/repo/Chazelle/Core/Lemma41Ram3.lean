@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.Lemma41Ram2
 
 /-!
@@ -31,9 +33,7 @@ structure CovRegs (c : Config) (lam b D PW T hp : ℕ) : Prop where
 
 theorem CovRegs.frame {c c' : Config} {lam b D PW T hp : ℕ} (h : CovRegs c lam b D PW T hp)
     (hr : ∀ r, ¬ CovRG r → c'.nreg r = c.nreg r) : CovRegs c' lam b D PW T hp := by
-  obtain ⟨h1, h2, h3, h4, h5, h6, h7⟩ := h
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hr _ (by unfold CovRG AscRG; omega)]; assumption)
+  ram_grind
 
 /-- The table facts read by the cover loop (in the memory `m0`, below `R₀`). -/
 structure CovTab (m0 : ℕ → ℕ) (lam b D PW T R0 W : ℕ) : Prop where
@@ -65,8 +65,8 @@ theorem coverBody_exec {c : Config} (hw : WordsBounded W c) {lam b D PW T hp R0 
   have hpl := Nat.one_le_two_pow (n := lam)
   -- the greedy grade
   obtain ⟨c1, k1, e1, hk1, hw1, h12, h13, fr1, hm1, hrr1, hrm1, ho1⟩ := ascS_exec (P := P) hw
-    h10 r11 r26 r24 r20 r21 hl hx (fun y hy => by rw [hm _ (by have := hT.hD; omega)]; exact hT.half y hy)
-    (fun i hi => by rw [hm _ (by have := hT.hP; omega)]; exact hT.pow i hi)
+    h10 r11 r26 r24 r20 r21 hl hx (fun y hy => by ram_grind)
+    (fun i hi => by ram_grind)
     (by have := hT.hD; have := hT.wR; omega) (by have := hT.hP; have := hT.wR; omega) hT.wb
   set g := nextG lam b x with hg
   have hok := nextG_spec (lam := lam) hx
@@ -74,61 +74,56 @@ theorem coverBody_exec {c : Config} (hw : WordsBounded W c) {lam b D PW T hp R0 
   have hgl : g ≤ lam - 1 := nextG_le _ _ _
   obtain ⟨i, hi⟩ := hok.1
   have hq : x / 2 ^ g = i := by rw [hi, Nat.mul_div_cancel_left _ (by positivity)]
-  have hib : (i + 1) * 2 ^ g ≤ b := by have := hok.2; rw [hi] at this; nlinarith
+  have hib : (i + 1) * 2 ^ g ≤ b := by have := hok.2; grind
   obtain ⟨he1, he2⟩ := hT.ent g hgl i hib
   have g1 : ∀ r, ¬ AscRG r → c1.nreg r = c.nreg r := fr1
   -- the entry
   obtain ⟨c2, k2, e2, hk2, hw2, h17, h18, fr2, hm2, hrr2, hrm2, ho2⟩ := entB_exec (P := P) hw1
     (T := T) (g := g) (q := i)
-    (by rw [g1 _ (by unfold AscRG; omega)]; exact r22) h12 (by rw [h13, hq])
-    (by rw [g1 _ (by unfold AscRG; omega)]; exact r24)
+    (by ram_grind) h12 (by rw [h13, hq])
+    (by ram_grind)
     (by have := hT.hT; have := hT.wR; omega)
     (by rw [hm1, hm _ (by have := hT.hT; omega)]; have := hT.wR; omega)
-  have eT : c1.nmem (T + g) = m0 (T + g) := by rw [hm1]; exact hm _ (by have := hT.hT; omega)
+  have eT : c1.nmem (T + g) = m0 (T + g) := by ram_grind
   have eE : c1.nmem (m0 (T + g) + 3 * i) = m0 (m0 (T + g) + 3 * i) := by
-    rw [hm1]; exact hm _ (by omega)
+    ram_grind
   have eF : c1.nmem (m0 (T + g) + 3 * i + 1) = m0 (m0 (T + g) + 3 * i + 1) := by
-    rw [hm1]; exact hm _ (by omega)
+    ram_grind
   rw [eT, eE] at h17; rw [eT, eF] at h18
   -- the record
   obtain ⟨c3, k3, e3, hk3, hw3, s0, sj, s5, sout, h19, fr3, hrr3, hrm3, ho3⟩ := recB_exec (P := P)
     hw2 (rp := R0 + 6 * cnt) (d := m0 (m0 (T + g) + 3 * i))
     (nf := m0 (m0 (T + g) + 3 * i + 1)) (hp := hp)
-    (by rw [fr2 _ (by omega) (by omega) (by omega), g1 _ (by unfold AscRG; omega)]; exact h15) h17 h18
-    (by rw [fr2 _ (by omega) (by omega) (by omega), g1 _ (by unfold AscRG; omega)]; exact r27)
-    (by rw [fr2 _ (by omega) (by omega) (by omega), g1 _ (by unfold AscRG; omega)]; exact r24)
+    (by ram_grind) h17 h18
+    (by ram_grind)
+    (by ram_grind)
     (by omega) (by have := hT.wR; omega)
   -- the advance
   obtain ⟨c4, k4, e4, hk4, hw4, a15, a14, a10, fr4, hm4, hrr4, hrm4, ho4⟩ := advB_exec (P := P)
     hw3 (rp := R0 + 6 * cnt + 5) (cnt := cnt) (PW := PW) (g := g) (x := x) h19
-    (by rw [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega),
-      g1 _ (by unfold AscRG; omega)]; exact h14)
-    (by rw [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega),
-      g1 _ (by unfold AscRG; omega)]; exact r21)
-    (by rw [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega)]
-        exact h12)
-    (by rw [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega),
-      g1 _ (by unfold AscRG; omega)]; exact h10)
-    (by rw [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega),
-      g1 _ (by unfold AscRG; omega)]; exact r24)
+    (by ram_simp)
+    (by ram_simp)
+    (by ram_grind)
+    (by grind [AscRG])
+    (by ram_simp)
     (by rw [sout _ (by have := hT.hP; omega), hm2, hm1, hm _ (by have := hT.hP; omega)]
         exact hT.pow g (by omega))
     (by have := hT.wR; omega) (by have := hT.wR; omega) (by have := hT.hP; have := hT.wR; omega)
     (by have := hok.2; have := hT.wb; omega)
   refine ⟨c4, k1 + (k2 + (k3 + k4)), .seq e1 (.seq e2 (.seq e3 e4)), by omega, hw4, a10, a14,
-    by rw [a15]; ring, ⟨?_, fun j h1 h2 => ?_, ?_⟩, fun a ha => ?_, fun r hr => ?_,
-    by rw [hrr4, hrr3, hrr2, hrr1], by rw [hrm4, hrm3, hrm2, hrm1],
-    by rw [ho4, ho3, ho2, ho1]⟩
-  · rw [hm4]; exact s0
+    by omega, ⟨?_, fun j h1 h2 => ?_, ?_⟩, fun a ha => ?_, fun r hr => ?_,
+    by ram_grind, by ram_grind,
+    by ram_grind⟩
+  · ram_grind
   · simp only; rw [hq, hm4, sj j h1 h2, hm2, hm1, hm _ (by omega)]
   · simp only; rw [hq, hm4]; exact s5
-  · rw [hm4, sout a (by omega), hm2, hm1]
+  · ram_grind
   · unfold CovRG at hr
-    rw [fr4 r (by omega) (by omega) (by unfold AscRG at hr; omega) (by omega),
-      fr3 r (by unfold AscRG at hr; omega) (by unfold AscRG at hr; omega)
-        (by unfold AscRG at hr; omega),
-      fr2 r (by unfold AscRG at hr; omega) (by unfold AscRG at hr; omega)
-        (by unfold AscRG at hr; omega), g1 r (by tauto)]
+    rw [fr4 r (by omega) (by omega) (by grind [AscRG]) (by omega),
+      fr3 r (by grind [AscRG]) (by grind [AscRG])
+        (by grind [AscRG]),
+      fr2 r (by grind [AscRG]) (by grind [AscRG])
+        (by grind [AscRG]), g1 r (by tauto)]
 
 set_option maxHeartbeats 8000000 in
 /-- **The cover loop.** -/
@@ -166,28 +161,26 @@ theorem coverS_exec {c : Config} (hw : WordsBounded W c) {lam b D PW T hp R0 a :
       obtain ⟨c3, k3, e3, hk3, hw3, a10, a14, a15, hr3, hout3, fr3, hrr3, hrm3, ho3⟩ :=
         coverBody_exec (P := P) hw2 hR2 hT hl hx htest h14 h15 hWl
           (fun y hy => hout y (Or.inl hy))
-      refine ⟨c3, k3, e3, ⟨hw3, fun r hr => by rw [fr3 r hr, hr2 r hr], by rw [hrr3, hrr2],
-        by rw [hrm3, hrm2], by rw [ho3, ho2], x + 2 ^ nextG lam b x,
-        Wd ++ [(nextG lam b x, x)], a10, ?_, by rw [a14]; simp, by rw [a15]; simp,
+      refine ⟨c3, k3, e3, ⟨hw3, fun r hr => by ram_grind, by ram_grind,
+        by ram_grind, by ram_grind, x + 2 ^ nextG lam b x,
+        Wd ++ [(nextG lam b x, x)], a10, ?_, by grind, by grind,
         fun k hk => ?_, fun y hy => ?_⟩, ?_⟩
       · rw [List.append_assoc, List.singleton_append, ← cover_of_lt htest]; exact hWd
       · simp only [List.length_append, List.length_singleton] at hk
         rcases Nat.lt_or_ge k Wd.length with h | h
         · obtain ⟨b0, b1, b2⟩ := hrec k h
           rw [List.getD_append _ _ _ _ h]
-          refine ⟨by rw [hout3 _ (by omega)]; exact b0, fun j h1 h2 => ?_, ?_⟩
-          · rw [hout3 _ (by omega)]; exact b1 j h1 h2
-          · rw [hout3 _ (by omega)]; exact b2
+          refine ⟨by ram_grind, fun j h1 h2 => ?_, ?_⟩
+          · grind
+          ram_grind
         · have hk' : k = Wd.length := by omega
           subst hk'
-          rw [List.getD_append_right _ _ _ _ le_rfl, Nat.sub_self]
-          simpa using hr3
-      · simp only [List.length_append, List.length_singleton] at hy
-        rw [hout3 y (by omega)]; exact hout y (by omega)
+          grind
+      · grind
       · rw [a10, hx]
         have e := cover_of_lt (lam := lam) htest
         have hl2 : (cover lam b x).length = (cover lam b (x + 2 ^ nextG lam b x)).length + 1 := by
-          rw [e, List.length_cons]
+          grind
         rw [hl2, Nat.mul_add, Nat.mul_one]
         omega)
     ⟨hw, fun r _ => rfl, rfl, rfl, rfl, a, [], h10, by simp [hL], by simp [h14], by simp [h15],
@@ -200,7 +193,6 @@ theorem coverS_exec {c : Config} (hw : WordsBounded W c) {lam b D PW T hp R0 a :
   rw [h10] at hk
   have : (20 * lam + 80) * (cover lam b a).length ≤ (20 * lam + 80) * (2 * lam) :=
     Nat.mul_le_mul_left _ hlen
-  rw [← hL] at hk this
   omega
 
 end proofs

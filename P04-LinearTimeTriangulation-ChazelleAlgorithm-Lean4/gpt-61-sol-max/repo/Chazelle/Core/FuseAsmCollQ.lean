@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmColl
 public import Chazelle.Core.FuseAsmHt
 
@@ -103,16 +105,11 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
   have hjL : j < L.length := by omega
   have hreg : ∀ r, r ≠ 70110 → r ≠ 70112 → r ≠ 70113 → r ≠ 70114 → r ≠ 70115 → r ≠ 70119 →
       r ≠ ALLOC → c.nreg r = c₀.nreg r := hI.regs
-  have r05 : c.nreg 70105 = 1 := by rw [hreg _ (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide), h05]
-  have r08 : c.nreg 70108 = 0 := by rw [hreg _ (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide), h08]
-  have r16 : c.nreg 70116 = 3 := by rw [hreg _ (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide), h16]
-  have r17 : c.nreg 70117 = 4 := by rw [hreg _ (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide), h17]
-  have r18 : c.nreg 70118 = 2 := by rw [hreg _ (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide), h18]
+  have r05 : c.nreg 70105 = 1 := by ram_grind
+  have r08 : c.nreg 70108 = 0 := by ram_grind
+  have r16 : c.nreg 70116 = 3 := by ram_grind
+  have r17 : c.nreg 70117 = 4 := by ram_grind
+  have r18 : c.nreg 70118 = 2 := by ram_grind
   have hcur : c.nreg 70113 = RB + 4 * j := by rw [hI.cur, hj]
   have hqcur : c.nreg 70115 = QB + 3 * j := by rw [hI.qcur, hj]
   obtain ⟨q0, q1, q2, q3⟩ := hR j ht
@@ -157,60 +154,58 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
     by_cases hf : r.1 = 1
     · rw [ite_eq_left hf] at hc0
       have hlt1 : c₁.nreg 70108 < c₁.nreg 70114 := by
-        rw [v14, q₁ _ (by decide), r08, hf]; omega
+        ram_grind
       have hlt2 : c₁.nreg 70114 < c₁.nreg 70118 := by
-        rw [v14, q₁ _ (by decide), r18, hf]; omega
+        ram_grind
       set a := LB + 3 * C0.length
       obtain ⟨c₂, k₂, e₂, hk₂, a₂, mo, m0, m1, m2, n10, R₂, rr₂, rm₂, o₂⟩ := clqCopy_exec (P := P)
         c₁ hw₁ (s := RB + 4 * j) (t := QB + 3 * j) (a := a) (K := C0.length)
-        (by rw [q₁ _ (by decide), hcur]) (by rw [q₁ _ (by decide), hqcur])
-        (by rw [q₁ _ (by decide), hA0]) (by rw [q₁ _ (by decide), r05])
-        (by rw [q₁ _ (by decide), r18]) (by rw [q₁ _ (by decide), h10]) (by omega) (by omega)
+        (by ram_grind) (by ram_grind)
+        (by ram_grind) (by ram_simp)
+        (by ram_simp) (by ram_grind) (by omega) (by omega)
         (by omega) (by omega) (by omega) (by omega)
       refine ⟨c₂, _, .ifLtN_true hlt1 (.ifLtN_true hlt2 e₂), by omega, ?_, ?_, fun x hx => ?_,
         ?_, fun x a1 a2 a3 a4 => ?_, by rw [rr₂], by rw [rm₂], by rw [o₂]⟩
       · rw [a₂, hc0, List.length_append, List.length_singleton]; simp only [a]; ring
       · rw [n10, hc0]; simp only [hC0, List.length_append, List.length_singleton]
-      · rw [mo x (Or.inl hx)]
+      · ram_grind
       · rw [hc0]
         have hlist := hI.list
         rw [hj] at hlist
         have hl : ChordListAt c₂.nmem LB C0 := fun i hi => by
           obtain ⟨b0, b1, b2⟩ := hlist i hi
           refine ⟨?_, ?_, ?_⟩
-          · rw [mo _ (Or.inl (by omega))]; exact b0
-          · rw [mo _ (Or.inl (by omega))]; exact b1
-          · rw [mo _ (Or.inl (by omega))]; exact b2
+          · ram_grind
+          · ram_grind
+          · ram_grind
         refine chordListAt_append hl ?_ ?_ ?_
-        · rw [m0, hqmem, p1]
-        · rw [m1, hmem 2 (by omega)]; exact q2
-        · rw [m2, hmem 3 (by omega)]; exact q3
-      · rw [R₂ x a1 a2 a3 a4]
-        exact q₁ x a2
+        · ram_grind
+        · ram_grind
+        · ram_grind
+      · ram_grind
     · rw [ite_eq_right hf, List.append_nil] at hc0
       have hsk : Exec P W (.ifLtN 70108 70114 (.ifLtN 70114 70118 clqCopy .skip) .skip) c₁ c₁
           (if c₁.nreg 70108 < c₁.nreg 70114 then 0 + 2 + 1 else 0 + 2) := by
         by_cases hlt1 : c₁.nreg 70108 < c₁.nreg 70114
         · rw [ite_eq_left hlt1]
           have hlt2 : ¬ c₁.nreg 70114 < c₁.nreg 70118 := by
-            rw [v14, q₁ _ (by decide), r18]
-            rw [v14, q₁ _ (by decide), r08] at hlt1; omega
+            ram_grind
           exact .ifLtN_true hlt1 (.ifLtN_false hlt2 (.skip hw₁))
         · rw [ite_eq_right hlt1]; exact .ifLtN_false hlt1 (.skip hw₁)
       refine ⟨c₁, _, hsk, by split_ifs <;> omega, ?_, ?_, fun x _ => rfl, ?_,
         fun x _ a2 _ _ => q₁ x a2, rfl, rfl, rfl⟩
-      · rw [q₁ _ (by decide), hA0, hc0]
-      · rw [q₁ _ (by decide), h10, hc0]
+      · ram_grind
+      · ram_grind
       · rw [hc0]; have := hI.list; rw [hj] at this; exact this
   have hw₂ := e₂.wb_right
   have c205 : c₂.nreg 70105 = 1 := (q₂ _ (by decide) (by decide) (by decide) (by decide)).trans r05
   have c216 : c₂.nreg 70116 = 3 := (q₂ _ (by decide) (by decide) (by decide) (by decide)).trans r16
   have c217 : c₂.nreg 70117 = 4 := (q₂ _ (by decide) (by decide) (by decide) (by decide)).trans r17
   have r13 : c₂.nreg 70113 = RB + 4 * j := by
-    rw [q₂ _ (by decide) (by decide) (by decide) (by decide), hcur]
+    ram_grind
   have r15 : c₂.nreg 70115 = QB + 3 * j := by
-    rw [q₂ _ (by decide) (by decide) (by decide) (by decide), hqcur]
-  have r12 : c₂.nreg 70112 = j := by rw [q₂ _ (by decide) (by decide) (by decide) (by decide), hj]
+    ram_grind
+  have r12 : c₂.nreg 70112 = j := by ram_grind
   obtain ⟨c₃, k₃, e₃, hk₃, u13, u15, u12, u₃, um₃, urr₃, urm₃, uo₃⟩ : ∃ c₃ k₃, Exec P W
       (block [.addN 70113 70113 70117, .addN 70115 70115 70116, .addN 70112 70112 70105]) c₂ c₃ k₃ ∧
       k₃ = 3 ∧ c₃.nreg 70113 = RB + 4 * (j + 1) ∧ c₃.nreg 70115 = QB + 3 * (j + 1) ∧
@@ -221,18 +216,17 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
     all_goals try (simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, r13, r15, r12, c205, c216, c217]; omega)
     refine ⟨rfl, ?_, ?_, ?_, fun r a1 a2 a3 => ?_, rfl, rfl, rfl, rfl⟩
-    all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other,
-      r13, r15, r12, c205, c216, c217]
+    all_goals ram_simp
     all_goals ring
   have ex : Exec P W clqBody c c₃ ((1 + 0) + (k₂ + k₃)) :=
     .seq (.seq e₁ (.skip hw₁)) (.seq e₂ e₃)
-  refine ⟨c₃, _, ex, ⟨e₃.wb_right, by rw [u12]; omega, by rw [u13, u12], by rw [u15, u12],
+  refine ⟨c₃, _, ex, ⟨e₃.wb_right, by omega_nf, by ram_simp, by ram_simp,
     by rw [u12, u₃ _ (by decide) (by decide) (by decide)]; exact a₂,
-    by rw [u12, u₃ _ (by decide) (by decide) (by decide)]; exact n₂,
-    fun x a1 a2 a3 a4 a5 a6 a7 => ?_, fun a ha => ?_, by rw [um₃, u12]; exact l₂,
+    by ram_grind,
+    fun x a1 a2 a3 a4 a5 a6 a7 => ?_, fun a ha => ?_, by ram_grind,
     by rw [urr₃, rr₂, hI.rr], by rw [urm₃, rm₂, hI.rm], by rw [uo₃, o₂, hI.out]⟩,
     by omega, by omega, by rw [u12, hj]⟩
-  · rw [u₃ x a2 a3 a5, q₂ x a1 a4 a6 a7, hreg x a1 a2 a3 a4 a5 a6 a7]
+  · ram_simp
   · have : pre.length ≤ C0.length := by rw [hC0, List.length_append]; omega
     rw [um₃, m₂ a (by omega), hI.low a ha]
 
@@ -253,7 +247,7 @@ theorem clqLoop_exec {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
     have h11' : c.nreg 70111 = R.length := by
       rw [hI.regs 70111 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
         (by decide), h11]
-    exact ⟨c, 2, .whileLtN_false (by rw [h11']; omega) hI.wb, by omega, by omega, hI, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by omega) hI.wb, by omega, by omega, hI, by omega⟩
   | n + 1, c, hI, hn => by
     have ht : c.nreg 70112 < R.length := by omega
     obtain ⟨c', k, e, hI', hk, hk4, hc'⟩ := clqBody_step (P := P) hI ht h05 h08 h16 h17 h18 hLR hR hQ
@@ -263,7 +257,7 @@ theorem clqLoop_exec {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
     have h11' : c.nreg 70111 = R.length := by
       rw [hI.regs 70111 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
         (by decide), h11]
-    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [h11']; exact ht) e e₂, by omega, by omega,
+    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by omega) e e₂, by omega, by omega,
       hI'', hK⟩
 
 end

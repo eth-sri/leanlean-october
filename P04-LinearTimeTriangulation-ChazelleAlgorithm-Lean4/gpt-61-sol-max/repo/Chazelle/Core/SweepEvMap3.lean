@@ -71,7 +71,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
     rw [hp'] at hA hend
     obtain ⟨hg', hArr⟩ := genuine_of_attach J hP ha₁ hσ hfree (by rw [lL1_add_lL2]; exact hr')
       hsec hA hend
-    exact ⟨hg', d, hvd, hmd, by rw [hd]; exact hArr⟩
+    exact ⟨hg', d, hvd, hmd, by grind⟩
   -- the box block of `C`
   have viaBox : ∀ (hv : ¬ VNotTop J) (r'' : ℕ), r'' < 7 →
       p = (2 * J.whole.m + 6 + r'') % (chainModel J.whole).W.n → (t = 0 → 1 ≤ r'') →
@@ -84,7 +84,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
     intro hv r'' hr'' hp' hsec d hd hvd hmd
     rw [hp'] at hA hend
     obtain ⟨hg', hArr⟩ := genuine_of_attach_box J hP hv ha₁ hσ hfree hr'' hsec hA hend
-    exact ⟨hg', d, hvd, hmd, by rw [hd]; exact hArr⟩
+    exact ⟨hg', d, hvd, hmd, by grind⟩
   -- the point of the arrival position is the point of `p`
   have hpt₁ : ∀ e₁, Sweep.Arrival (chainModel J.left).W (rayPt a σ (J.whole.hitParam a σ)) σ e₁ t →
       sidePt (chainModel J.left).W e₁ t ≠ J.shared := by
@@ -98,7 +98,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
   · have hlOff : lOff J = Lst J := by rw [lOff_of_vnt J hVNT, Lst_rlen]
     have hlen : Lst J + llen J = (chainModel J.whole).W.n := by
       rw [Lst_rlen]; exact rlen_add_llen J hVNT
-    have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; rw [ite_eq_right (by omega)]
+    have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; grind
     have hE₁ : E₁ J = llen J + lδ J := by unfold E₁; omega
     have hL := lL1_add_lL2 J
     have hrl : r < llen J := by omega
@@ -113,9 +113,9 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
       have htop : sidePt (chainModel J.whole).W p t = J.left.top := by
         rw [hpL, hrl1, ht]
         exact sidePt_splitL0 J hP (S₁ := ∅) (empty_subset _) finite_empty (by omega)
-      obtain ⟨hgen, hA1, hA2⟩ := genuine_of_split J hP ha₁ hσ hfree (by rw [← hend, htop])
+      obtain ⟨hgen, hA1, hA2⟩ := genuine_of_split J hP ha₁ hσ hfree (by grind)
       obtain ⟨hp6, hp26⟩ := sidePt_top_copies J.left
-      have hψ1 : ψ J (lL1 J) = lL1 J := by unfold ψ; rw [ite_eq_right (by omega)]
+      have hψ1 : ψ J (lL1 J) = lL1 J := by unfold ψ; grind
       have hψ2 : ψ J (lL1 J + 7) = lL1 J := by
         unfold ψ; rw [ite_eq_left ⟨hδ, by omega⟩, ite_eq_right (by omega), h7]; omega
       have hvtop : J.left.top ≠ J.shared := fun h => hnv (htop.trans h)
@@ -129,17 +129,16 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
         · rw [hb, hl1, hn₁, hm1, Nat.mod_eq_of_lt (by omega),
             show 6 + tpos J.left J.m₁ + (2 * J.m₁ - tpos J.left J.m₁) = 2 * J.left.m + 6 by omega,
             ht]
-          exact hA1 hσ1
+          grind
       · refine ⟨hgen, lL1 J + 7, ⟨by omega, by omega, by omega, fun _ => ?_⟩, ?_, ?_⟩
         · have e6 : (b₁ J + (lL1 J + 7)) % (chainModel J.left).W.n = 6 := by
             rw [hb, hl1, hn₁, hm1, show 6 + tpos J.left J.m₁ + (2 * J.m₁ - tpos J.left J.m₁ + 7) =
               6 + (2 * J.m₁ + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-          rw [e6, hp6]
-          exact hvtop
+          grind
         · rw [mEdge_def, hψ2, hpD, hrl1]
         · rw [hb, hl1, hn₁, hm1, show 6 + tpos J.left J.m₁ + (2 * J.m₁ - tpos J.left J.m₁ + 7) =
             6 + (2 * J.m₁ + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega), ht]
-          exact hA2 hσ1
+          grind
     · have hsec : t = 0 → r ≠ 0 ∧ r ≠ lL1 J := by
         intro ht
         refine ⟨fun h0 => hnv ?_, fun h => hsp ⟨ht, h, by omega⟩⟩
@@ -151,7 +150,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
       have hψ : ψ J (dq (lL1 J) (lδ J) r) = r := by
         unfold ψ dq
         by_cases hr1 : r < lL1 J
-        · rw [ite_eq_left hr1, ite_eq_right (by omega)]
+        · grind
         · rw [ite_eq_right hr1]
           by_cases hδ : lδ J = 0
           · rw [ite_eq_right (by omega)]; omega
@@ -160,10 +159,10 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
       · unfold dq; split_ifs <;> omega
       · unfold dq; split_ifs <;> omega
       · intro ht h
-        have hArr := (genuine_of_attach J hP ha₁ hσ hfree (by rw [lL1_add_lL2]; exact hrl) hsec
+        have hArr := (genuine_of_attach J hP ha₁ hσ hfree (by omega) hsec
           (hpL ▸ hA) (hpL ▸ hend)).2
         rw [← hb] at hArr
-        exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rw [ht]; exact h)
+        exact hpt₁ _ (by omega) (by grind)
       · rw [mEdge_def, hψ, ← hpD]
   · obtain ⟨hτ0, hδ0, hl1, hl2, hll⟩ := nvt_left J hP hVNT
     have hψ : ∀ d, ψ J d = d := fun d => by unfold ψ; rw [ite_eq_right (by omega)]
@@ -173,8 +172,8 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
     have hgap : ∀ d, ¬ (0 < lδ J ∧ lL1 J < d ∧ d < lL1 J + lδ J) := fun d h => by omega
     by_cases hbox : Lst J < lOff J
     · obtain ⟨-, hlo, hτs, hLst⟩ := caseB_facts J hbox
-      have hb : b₁ J = 2 * J.left.m + 6 := by unfold b₁; rw [ite_eq_left hbox]
-      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; rw [hn, hδ0]; omega
+      have hb : b₁ J = 2 * J.left.m + 6 := by unfold b₁; grind
+      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; omega
       have hrn : r < 2 * J.m₁ + 7 := by omega
       by_cases hr7 : r < 7
       · have hpB : p = (2 * J.whole.m + 6 + r) % (chainModel J.whole).W.n := by
@@ -189,7 +188,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
           have hArr := (genuine_of_attach_box J hP hVNT ha₁ hσ hfree hr7 hsec (hpB ▸ hA)
             (hpB ▸ hend)).2
           rw [← hb] at hArr
-          exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rw [ht]; exact h)
+          exact hpt₁ _ (by omega) (by grind)
         · rw [mEdge_def, hψ, ← hpD]
       · have hpL : p = (6 + tpos J.whole (J.m₁ + 2 * J.m₂) + (r - 7)) % (chainModel J.whole).W.n := by
           rw [left_edge_eq, hlo, hpD]; congr 1; omega
@@ -204,18 +203,18 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
             Nat.add_mod_right]
         · intro ht h
           have hArr := (genuine_of_attach J hP ha₁ hσ hfree
-            (by rw [lL1_add_lL2]; omega) hsec (hpL ▸ hA) (hpL ▸ hend)).2
+            (by omega) hsec (hpL ▸ hA) (hpL ▸ hend)).2
           have e : (6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) (r - 7)) %
               (chainModel J.left).W.n = (b₁ J + r) % (chainModel J.left).W.n := by
             unfold dq; rw [ite_eq_left (by omega), hb, hτ0, hn₁]
             rw [show 2 * J.left.m + 6 + r = (6 + 0 + (r - 7)) + (2 * J.left.m + 7) by omega,
               Nat.add_mod_right]
           rw [e] at hArr
-          exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rw [ht]; exact h)
+          exact hpt₁ _ (by omega) (by grind)
         · rw [mEdge_def, hψ, ← hpD]
     · obtain ⟨hτs, hlo, hLst⟩ := caseC_facts J hVNT hbox
-      have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; rw [ite_eq_right hbox]
-      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; rw [hn, hδ0]; omega
+      have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; grind
+      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; omega
       have hrn : r < 2 * J.m₁ + 7 := by omega
       by_cases hr2 : r < 2 * J.m₁
       · have hpL : p = (6 + tpos J.whole (J.m₁ + 2 * J.m₂) + r) % (chainModel J.whole).W.n := by
@@ -229,12 +228,12 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
         · unfold dq; rw [ite_eq_left (by omega), hb]
         · intro ht h
           have hArr := (genuine_of_attach J hP ha₁ hσ hfree
-            (by rw [lL1_add_lL2]; omega) hsec (hpL ▸ hA) (hpL ▸ hend)).2
+            (by omega) hsec (hpL ▸ hA) (hpL ▸ hend)).2
           have e : (6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) r) % (chainModel J.left).W.n =
               (b₁ J + r) % (chainModel J.left).W.n := by
             unfold dq; rw [ite_eq_left (by omega), hb]
           rw [e] at hArr
-          exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rw [ht]; exact h)
+          exact hpt₁ _ (by omega) (by grind)
         · rw [mEdge_def, hψ, ← hpD]
       · have hpB : p = (2 * J.whole.m + 6 + (r - 2 * J.m₁)) % (chainModel J.whole).W.n := by
           rw [hpD]; congr 1; unfold gW; omega
@@ -252,7 +251,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
           have hArr := (genuine_of_attach_box J hP hVNT ha₁ hσ hfree (by omega) hsec (hpB ▸ hA)
             (hpB ▸ hend)).2
           rw [← e] at hArr
-          exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rw [ht]; exact h)
+          exact hpt₁ _ (by omega) (by grind)
         · rw [mEdge_def, hψ, ← hpD]
 
 end MapComplete

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepHdr
 
 /-!
@@ -29,15 +31,17 @@ def phB : Stmt := .seq starStage (.seq zipStage (.seq dedupStage setB))
 /-- The bands of phase B. -/
 def bBands : Finset ℕ := {bSign, bSort, bLocate, bDecomp, bOPrep, bOQuery}
 
-theorem BZS_const {r : ℕ} (h1 : 120010 ≤ r) (h2 : r ≤ 120049) : BZS r = false := by
-  simp only [BZS, BZB, BPR, BLS, BL, NFLoc.Bdir, NFLoc.Bloc, Bcmp, Bk, Bool.or_eq_false_iff,
-    decide_eq_false_iff_not]
-  omega
+section
+variable {r : ℕ} (h1 : 120010 ≤ r) (h2 : r ≤ 120049)
+include h1 h2
+theorem BZS_const : BZS r = false := by
+  core_grind
 
-theorem BSP_const {r : ℕ} (h1 : 120010 ≤ r) (h2 : r ≤ 120049) : BSP r = false := by
-  simp only [BSP, BSA, BKI, BLZ, BTS, BL, NFLoc.Bdir, NFLoc.Bloc, Bcmp, Bk, BEm, BG, Bool.or_eq_false_iff,
-    decide_eq_false_iff_not]
-  omega
+theorem BSP_const : BSP r = false := by
+  core_grind
+
+
+end
 
 theorem sortCost_mono (κ : ℕ) {a b : ℕ} (h : a ≤ b) : SortR.sortCost κ a ≤ SortR.sortCost κ b := by
   unfold SortR.sortCost
@@ -86,9 +90,9 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   have hA0 := arcs_pos hsimp hN
   obtain ⟨hNB7, hABb, hSBb⟩ := NFLoc.nfWithin_bounds hNFw hN hA0
   have hNFc : NFAt c.nmem NB N := hNFw c.nmem hagree
-  have hmn : C.m < P.n := by have := C.m_lt; rw [hCQ, hQn] at this; exact this
+  have hmn : C.m < P.n := by have := C.m_lt; simp_all
   have hm1 := C.one_le
-  have hW8 : 8 * P.n + 32 ≤ W := by unfold hostWords at hHW; omega
+  have hW8 : 8 * P.n + 32 ≤ W := by omega_nf
   set MD := c.nreg 120040 with hMDdef
   set L := c.nreg 120042 with hLdef
   -- 1. the star chords
@@ -103,21 +107,21 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     exact (hA.1 _ (NFLoc.seq_lt hN hp)).1
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, a9₁, b72, b73, b74, pairs₁⟩ := starStage_exec (P := P) hw hM PL.rNB
     PL.two hNFc.2.2.1 PL.rAB PL.rSB PL.rA PL.one hAl (by omega) (by omega) (by omega) hρR
-    (by unfold chCap; omega)
+    (by omega_nf)
   have hstar : starList (fun q => (fun j => (N.arc j).reg) ((fun p => N.seq.getD p 0) q))
       N.arcs.length = starList (OracleQ.rgi N) N.arcs.length := rfl
   rw [hstar] at b74 pairs₁
   have K₁ : ∀ r, (BFR r || BIS r) = false → c₁.nreg r = c.nreg r := F₁.1
   have k12₁ : ∀ r, 120010 ≤ r → r ≤ 120049 → c₁.nreg r = c.nreg r := fun r a b => K₁ r (by
-    simp only [BFR, BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
-  have PL₁ := PL.congr fun r hr => k12₁ r (by unfold PLReg at hr; omega)
-    (by unfold PLReg at hr; omega)
+    grind [BFR, BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not])
+  have PL₁ := PL.congr fun r hr => k12₁ r (by grind [PLReg])
+    (by grind [PLReg])
   -- 2. the zipper
   have mem₁ : ∀ a, a < A₁ → c₁.nmem a = c.nmem a := F₁.2.2.1
   set V : QV := { qvOf c₁ with μ := N.arcs.length + 3 } with hV
   have hVMD : V.MD = MD := k12₁ _ (by norm_num) (by norm_num)
   have hVTB : V.TB = MD + 6 := by
-    show c₁.nreg 120041 = _; rw [k12₁ _ (by norm_num) (by norm_num), hTB]
+    show c₁.nreg 120041 = _; grind
   have hVL : V.L = L := k12₁ _ (by norm_num) (by norm_num)
   have hVA : V.A = N.arcs.length := PL₁.rA
   have hZ : ZEnv P W A₁ C N V c₁ :=
@@ -125,16 +129,16 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       hW := hW8
       CQ := hCQ
       simple := hsimp
-      s_lt := by rw [hCQ, hQn] at hsl; exact hsl
+      s_lt := by grind
       isNF := hN
       loc := zloc_of (m := c₁.nmem) (MD := MD) (TB := MD + 6) (L := L) hHW hsimp hD hwf hNFw hN
-        (fun a ha => by rw [mem₁ a (by omega), hagree a ha])
-        (by rw [mem₁ _ (by omega)]; exact hMD0)
-        (fun i hi => by rw [mem₁ _ (by omega)]; exact hmdc i hi) hA₀MD le_rfl
-        (fun j hj => by rw [mem₁ _ (by omega), ← hTB]; exact htab j hj) hAlt
-        (by rw [← hTB]; exact hTBA) (by omega) hVMD PL₁.rNB hVTB hVL hVA PL₁.rAB PL₁.rSB (by simp [hV])
+        (fun a ha => by grind)
+        (by grind)
+        (fun i hi => by grind) hA₀MD le_rfl
+        (fun j hj => by rw [mem₁ _ (by omega), ← hTB]; grind) hAlt
+        (by omega) (by omega) hVMD PL₁.rNB hVTB hVL hVA PL₁.rAB PL₁.rSB (by simp [hV])
       pk := hpk.congr fun r hr => K₁ r (by
-        simp only [BFR, BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+        grind [BFR, BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not])
       rMD := rfl
       rNB := rfl
       rTB := rfl
@@ -142,10 +146,10 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       rA := rfl
       rAB := rfl
       rSB := rfl
-      r3 := by rw [K₁ _ (by decide)]; exact h205 }
+      r3 := by ram_simp }
   set A₃ := A₁ + N.regions.length + 2 * chCap N.arcs.length with hA₃
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, a9₂, z93, z94, z95, pairsZ, -⟩ := zipStage_exec (P := P)
-    e₁.wb_right hZ a9₁ (by omega) (by rw [hVA]; unfold zCap chCap at *; omega)
+    e₁.wb_right hZ a9₁ (by omega) (by grind [zCap, chCap])
   rw [hVA] at a9₂ z94 pairsZ hk₂
   rw [hVL] at hk₂
   have K₂ : ∀ r, (BZS r || BSP r) = false → c₂.nreg r = c₁.nreg r := F₂.1
@@ -158,7 +162,7 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     have : (OracleQ.zipSp C (Qof P) N).length ≤ 5 := by
       unfold OracleQ.zipSp OracleQ.zipSpO
       exact (List.length_filterMap_le _ _).trans (by simp)
-    simp only [List.length_append]; omega
+    grind [List.length_append]
   have hnI : (starList (OracleQ.rgi N) N.arcs.length).length ≤ N.arcs.length := starList_length _ _
   -- 3. the deduplication
   set n := (OracleQ.zipRaw C (Qof P) N).length with hn
@@ -178,7 +182,7 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     (by omega) (by omega)
     (by omega)
   have k12₃ : ∀ r, 120010 ≤ r → r ≤ 120049 → c₃.nreg r = c.nreg r := fun r a b => by
-    rw [r₃ r (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]; omega) (by rw [hAL]; omega),
+    rw [r₃ r (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]; omega) (by omega),
       k12₂ r a b, k12₁ r a b]
   -- 4. the numbers of the book
   obtain ⟨c₄, k₄, e₄, hk₄, F₄, w34, w37⟩ : ∃ c₄ k₄, Exec P W setB c₃ c₄ k₄ ∧ k₄ = 3 ∧
@@ -195,20 +199,20 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     have g11 : c₃.nreg 120011 = 1 := by rw [k12₃ _ (by norm_num) (by norm_num), PL.one]
     unfold setB
     exec_block
-    · rw [g30, g48]; omega
-    · config_simp; rw [g30, g48, g11]; omega
-    · config_simp; rw [g30, g48, g11, cnt]; omega
-    · exact ⟨rfl, by config_simp; rw [g30, g48, g11], by config_simp; rw [g30, g48, g11, cnt]⟩
+    · grind
+    · config_simp; grind
+    · config_simp; grind
+    · exact ⟨rfl, by omega_nf, by config_simp; omega⟩
   have ex : Exec P W phB c c₄ _ := .seq e₁ (.seq e₂ (.seq e₃ e₄))
-  have hA₄ : A₃ + 2 * zCap N.arcs.length = A₃ + 4 * N.arcs.length + 10 := by rw [hzc]; ring
+  
   have k12₄ : ∀ r, 120010 ≤ r → r ≤ 120049 → c₄.nreg r = c.nreg r := fun r a b => by
     have h4 : (decide (r = 60034 ∨ r = 60037)) = false := by
       simp only [decide_eq_false_iff_not]; omega
     rw [F₄.1 r h4, k12₃ r a b]
   refine ⟨c₄, _, ex, ?_, ?_, k12₄, ?_, ?_, CH1, CH2, Dl, by omega, by rw [F₄.1 _ (by decide), v1],
     by rw [F₄.1 _ (by decide), v2], by rw [F₄.1 _ (by decide), v8], w34,
-    by rw [w37, List.length_append], ?_, ?_, ?_, hnd, fun x => ?_, by omega⟩
-  · have := hk₃; omega
+    by ram_simp, ?_, ?_, ?_, hnd, fun x => ?_, by omega⟩
+  ·  omega
   · -- the frame
     have hband : ∀ r, (110000 ≤ r ∧ r < 130000) → bandOf r ∈ bBands := by
       intro r h; simp only [bBands, Finset.mem_insert, Finset.mem_singleton, bOPrep, bOQuery,
@@ -216,7 +220,7 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     have G₁ : GF bBands A₁ c c₁ := PF.gf F₁ (fun r hr => by
         simp only [BFR, BIS, Bool.or_eq_true, decide_eq_true_eq] at hr
         by_cases h9 : r = 9999
-        · exact Or.inr h9
+        · omega
         · left; exact hband r (by omega))
       (fun r => exec_rframeS e₁ (B := fun _ => false) (by decide) r rfl) le_rfl
     have hrr₂ : ∀ r, Bk r = false → c₂.rreg r = c₁.rreg r := exec_rframeS e₂ (by decide)

@@ -25,7 +25,7 @@ theorem piece_edges {s m n : ℕ} (hs : s < n) (hm : 0 < m) (hmn : m < n) {p : �
   rw [Model.mem_arcEdges_iff]
   by_cases hw : s + m < n
   · rw [Nat.mod_eq_of_lt hw]
-    have h1 : (s : ℝ) < ((s + m : ℕ) : ℝ) := by exact_mod_cast (by omega : s < s + m)
+    have h1 : (s : ℝ) < ((s + m : ℕ) : ℝ) := by simp_all
     rw [ite_eq_left h1]
     constructor
     · rintro ⟨a, b⟩
@@ -34,7 +34,7 @@ theorem piece_edges {s m n : ℕ} (hs : s < n) (hm : 0 < m) (hmn : m < n) {p : �
       exact ⟨p - s, by omega, by rw [Nat.mod_eq_of_lt (by omega)]; omega⟩
     · rintro ⟨d, hd, e⟩
       rw [Nat.mod_eq_of_lt (by omega)] at e
-      exact ⟨by exact_mod_cast (by omega : p < s + m), by exact_mod_cast (by omega : s < p + 1)⟩
+      exact ⟨by aesop, by exact_mod_cast (by omega : s < p + 1)⟩
   · have e1 : (s + m) % n = s + m - n := by
       rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
     rw [e1]
@@ -85,23 +85,19 @@ theorem counted_of_wt {M : Model} {s m : ℕ} (hs : s < M.W.n) (hm : 0 < m) (hmn
       have h2 := (Nat.modEq_iff_dvd' h.le).1 this
       obtain ⟨k, hk⟩ := h2
       rcases k with _ | k
-      · omega
-      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (by omega)
-        omega
+      all_goals grind
     · have := Nat.ModEq.add_left_cancel' s hxy
       have h2 := (Nat.modEq_iff_dvd' h.le).1 this.symm
       obtain ⟨k, hk⟩ := h2
       rcases k with _ | k
-      · omega
-      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (by omega)
-        omega
+      all_goals grind
   have hcS : S.ncard = m := by
     rw [hSe, hinj.ncard_image, Set.ncard_eq_toFinset_card' , Set.toFinset_Iio]
     simp
   have hTS : T ⊆ S := fun p hp => ⟨hp.1, hp.2.2⟩
   have hSf : S.Finite := by rw [hSe]; exact (Set.finite_Iio m).image _
   have hcT : T.ncard = m := hwt
-  have hTeq : T = S := Set.eq_of_subset_of_ncard_le hTS (by rw [hcS, hcT]) hSf
+  have hTeq : T = S := Set.eq_of_subset_of_ncard_le hTS (by omega) hSf
   intro d hd
   have hmem : (s + d) % n ∈ S := by rw [hSe]; exact ⟨d, hd, rfl⟩
   rw [← hTeq] at hmem
@@ -124,10 +120,7 @@ theorem counted_pt_mem (C : Chain) {p : ℕ} (hp : (chainModel C).counted p) {t 
   · have := C.sideWalk_tour_pt_mem C.sideBeta (i := p + 1 - 6) (t := 0) (by omega)
       (fun _ => rfl) le_rfl one_pos
     rw [show p + 1 - 6 + 6 = p + 1 by omega, Chazelle.Chain.sidePt_zero] at this
-    have e : Geometry.lerp ((chainModel C).W.vtx p) ((chainModel C).W.vtx (p + 1)) 1 =
-        (chainModel C).W.vtx (p + 1) := by
-      simp only [Geometry.lerp, one_mul, add_sub_cancel]
-    rw [e]; exact this
+    aesop (add simp [Geometry.lerp, one_mul, add_sub_cancel]) (add safe (by omega))
 
 /-- **The chain of a piece over counted edges of a chain model lies on the model's chain.** -/
 theorem piece_set_sub {C Cα : Chain} {s : ℕ}
@@ -138,22 +131,19 @@ theorem piece_set_sub {C Cα : Chain} {s : ℕ}
     Cα.set ⊆ C.set := by
   set n := (chainModel C).W.n
   have hsucc : ∀ d, ((s + d) % n + 1) % n = (s + (d + 1)) % n := fun d => by
-    rw [Nat.add_mod, Nat.mod_mod, ← Nat.add_mod, Nat.add_assoc]
+    simp_all +arith
   intro x hx
   obtain ⟨k, hk, hx⟩ := hx
   rw [Cα.chainEdge_eq] at hx
   obtain ⟨t, t0, t1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hx
   rcases hdir with hu | hd
   · have := counted_pt_mem C (hc k hk) t0 t1
-    rwa [hsucc, hu k hk.le, hu (k + 1) hk] at this
+    grind
   · have := counted_pt_mem C (hc (Cα.m - k - 1) (by omega)) (t := 1 - t) (by linarith)
       (by linarith)
     rw [hsucc, hd _ (by omega), hd _ (by omega), show Cα.m - (Cα.m - k - 1) = k + 1 by omega,
       show Cα.m - (Cα.m - k - 1 + 1) = k by omega] at this
-    have e : Geometry.lerp (Cα.vertex (k + 1)) (Cα.vertex k) (1 - t) =
-        Geometry.lerp (Cα.vertex k) (Cα.vertex (k + 1)) t := by
-      simp only [Geometry.lerp, Prod.mk.injEq]; constructor <;> ring
-    rwa [e] at this
+    grind [Geometry.lerp, Prod.mk.injEq]
 
 end
 

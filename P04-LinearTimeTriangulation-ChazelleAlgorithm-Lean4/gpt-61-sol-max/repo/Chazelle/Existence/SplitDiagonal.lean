@@ -43,16 +43,12 @@ theorem vtx_eq_chord_endpoint_of_common {P : Polygon} (hP : P.Simple) {s L : ℕ
   have hn : 0 < P.n := by have := hP.1; omega
   have hidx := hP.2.1 _ _ (Nat.mod_lt _ hn) (Nat.mod_lt _ hn) h
   by_cases hkL : k = L
-  · exact Or.inr (by rw [hkL])
+  · simp_all
   rcases Nat.lt_or_ge m P.n with hm | hm
   · have := rot_index_inj (n := P.n) (s := s) (i := k) (j := m) (by omega) hm hidx
     omega
   · have hmn : m = P.n := by omega
-    rw [hmn, Nat.add_mod_right] at hidx
-    have := rot_index_inj (n := P.n) (s := s) (i := k) (j := 0) (by omega) hn
-      (by rw [hidx, Nat.add_zero])
-    subst this
-    exact Or.inl (by rw [Nat.add_zero])
+    simp_all
 
 /-- **The boundaries of the two arcs meet only on the chord.** -/
 theorem boundary_arc_inter {P : Polygon} (hP : P.Simple) {s L : ℕ} (hL : L ≤ P.n) :
@@ -91,7 +87,7 @@ theorem boundary_arc_inter {P : Polygon} (hP : P.Simple) {s L : ℕ} (hL : L ≤
       · exact key (i + 1) (L + j) (by omega) (by omega) (by omega) h₁ h₂
       · exact key (i + 1) (L + (j + 1)) (by omega) (by omega) (by omega) h₁ h₂
     · exact hpc
-  · rw [segment_comm]; exact hpc
+  grind [segment_comm]
 
 /-! ### The hypotheses of the splitting lemma -/
 
@@ -102,7 +98,7 @@ theorem boundary_arcs_subset_filled (hn : 0 < P.n) (hL : L ≤ P.n)
   rintro p (hp | hp)
   · rcases boundary_arc_subset P s L hn hp with h | h
     · exact boundary_subset_filled P h
-    · rw [segment_comm] at h; exact hin h
+    grind [segment_comm]
   · rcases boundary_arc_subset P _ _ hn hp with h | h
     · exact boundary_subset_filled P h
     · rw [compl_arc_last_index P s L hL, Nat.mod_mod] at h
@@ -117,13 +113,13 @@ theorem filled_xor_arcs (hP : P.Simple) (hd : IsDiagonal P s L) (z : Point)
   have hL : L ≤ P.n := by have := hd.2.1; omega
   rw [mem_filled_iff hP hzP, mem_filled_iff (simple_arc P s L hP hd) hz₁,
     mem_filled_iff (simple_arc_compl P s L hP hd) hz₂, parity_split P s L hL z]
-  generalize parity (P.arc s L) z = a
-  generalize parity (P.arc ((s + L) % P.n) (P.n - L)) z = b
-  cases a <;> cases b <;> simp
+  grind
 
+section
+variable (hP : P.Simple) (hd : IsDiagonal P s L) (hin : segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled)
+include hP hd hin
 /-- **The filled region of `P` is the union of the filled regions of the two arcs.** -/
-theorem filled_eq_union_arcs (hP : P.Simple) (hd : IsDiagonal P s L)
-    (hin : segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled) :
+theorem filled_eq_union_arcs :
     P.filled = (P.arc s L).filled ∪ (P.arc ((s + L) % P.n) (P.n - L)).filled := by
   have hn : 0 < P.n := by have := hd.2.1; omega
   have hL : L ≤ P.n := by have := hd.2.1; omega
@@ -132,8 +128,7 @@ theorem filled_eq_union_arcs (hP : P.Simple) (hd : IsDiagonal P s L)
     (filled_xor_arcs P s L hP hd)
 
 /-- **The interiors of the filled regions of the two arcs are disjoint.** -/
-theorem interior_arcs_disjoint (hP : P.Simple) (hd : IsDiagonal P s L)
-    (hin : segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled) :
+theorem interior_arcs_disjoint :
     Disjoint (interior (P.arc s L).filled)
       (interior (P.arc ((s + L) % P.n) (P.n - L)).filled) := by
   have hn : 0 < P.n := by have := hd.2.1; omega
@@ -143,8 +138,7 @@ theorem interior_arcs_disjoint (hP : P.Simple) (hd : IsDiagonal P s L)
     (filled_xor_arcs P s L hP hd)
 
 /-- **The filled regions of the two arcs meet only on the chord.** -/
-theorem filled_arcs_meet_on_chord (hP : P.Simple) (hd : IsDiagonal P s L)
-    (hin : segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled) :
+theorem filled_arcs_meet_on_chord :
     ∀ p, p ∈ (P.arc s L).filled → p ∈ (P.arc ((s + L) % P.n) (P.n - L)).filled →
       p ∈ segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) := by
   have hn : 0 < P.n := by have := hd.2.1; omega
@@ -156,6 +150,9 @@ theorem filled_arcs_meet_on_chord (hP : P.Simple) (hd : IsDiagonal P s L)
       (filled_xor_arcs P s L hP hd) ⟨hp₁, hp₂⟩)
 
 /-! ### Combining along an interior diagonal -/
+
+
+end
 
 /-- **Weak triangulations of the two arcs of an interior diagonal combine to a weak
 triangulation of `P`.** -/

@@ -89,11 +89,10 @@ theorem side_bdry_vtx {z : Point} {ε : ℝ} (hε : ε = 1 ∨ ε = -1) (hz : z 
   -- move along the edge towards the `ε` side
   set d : ℝ := ε * (b.2 - a.2) with hd
   have hd0 : d ≠ 0 := by
-    rw [hd]
-    exact mul_ne_zero (by rcases hε with rfl | rfl <;> norm_num) (sub_ne_zero.2 hab.symm)
+    grind
   set g : ℝ → Point := fun s => lerp a b (t + s * d) with hg
   have hgc : Continuous g := (continuous_lerp a b).comp (by fun_prop)
-  have hg0 : g 0 = z := by simp [hg, hzt]
+  have hg0 : g 0 = z := by grind
   have htend : Tendsto g (𝓝[>] 0) (𝓝 z) := by
     rw [← hg0]; exact (hgc.tendsto 0).mono_left nhdsWithin_le_nhds
   have hev1 := htend.eventually hnear
@@ -106,10 +105,10 @@ theorem side_bdry_vtx {z : Point} {ε : ℝ} (hε : ε = 1 ∨ ε = -1) (hz : z 
   obtain ⟨s, ⟨h1, h2⟩, hs⟩ := ((hev1.and hev2).and self_mem_nhdsWithin).exists
   have hs0 : (0 : ℝ) < s := hs
   have hy : (g s).2 - z.2 = s * d * (b.2 - a.2) := by
-    simp only [hg, lerp_snd]; rw [hzt, lerp_snd]; ring
+    simp only [hg, lerp_snd]; grind [lerp_snd]
   have hpos : 0 < ε * ((g s).2 - z.2) := by
     rw [hy]
-    have : ε * (s * d * (b.2 - a.2)) = s * (d * d) := by rw [hd]; ring
+    have : ε * (s * d * (b.2 - a.2)) = s * (d * d) := by grind
     rw [this]
     exact mul_pos hs0 (mul_self_pos.2 hd0)
   have hreg := h1 hpos
@@ -122,7 +121,7 @@ theorem top_bdry {x : ℝ} (hx1 : edgeX Q D.i D.y₂ < x) (hx2 : x < edgeX Q D.j
     (hb : ((x, D.y₂) : Point) ∈ Q.boundary) : ((x, D.y₂) : Point) = Q.vtx D.top := by
   obtain ⟨m, hm, hmz⟩ := side_bdry_vtx hQ D (Or.inr rfl) hb hdh (D.isTrap.near_top hx1 hx2)
   have : m = D.top := vtx_eq_top hdh D hQ hm (by rw [hmz])
-  rw [← hmz, this]
+  simp_all
 
 include hQ hdh in
 /-- **The only boundary point of the open bottom side is the bottom vertex.** -/
@@ -130,7 +129,7 @@ theorem bot_bdry {x : ℝ} (hx1 : edgeX Q D.i D.y₁ < x) (hx2 : x < edgeX Q D.j
     (hb : ((x, D.y₁) : Point) ∈ Q.boundary) : ((x, D.y₁) : Point) = Q.vtx D.bot := by
   obtain ⟨m, hm, hmz⟩ := side_bdry_vtx hQ D (Or.inl rfl) hb hdh (D.isTrap.near_bot hx1 hx2)
   have : m = D.bot := vtx_eq_bot hdh D hQ hm (by rw [hmz])
-  rw [← hmz, this]
+  simp_all
 
 include hQ hdh in
 /-- A point of the open top side other than the top vertex is an interior point of the closure
@@ -142,7 +141,7 @@ theorem top_chord_pt {x : ℝ} (hx1 : edgeX Q D.i D.y₂ < x) (hx2 : x < edgeX Q
   have hc := D.isTrap.top_mem_closure hx1 hx2
   have hnb : ((x, D.y₂) : Point) ∉ Q.boundary := fun hb => hne (top_bdry hQ hdh D hx1 hx2 hb)
   rcases D.isTrap.top_side hQ D.free hx1 hx2 with hb | ⟨c, hc', hmem⟩
-  · exact absurd hb hnb
+  · simp_all
   · exact ⟨c, hc', hmem, ⟨D.isTrap.closure_subset_filled hQ D.free hc, hnb⟩, hc⟩
 
 include hQ hdh in
@@ -155,7 +154,7 @@ theorem bot_chord_pt {x : ℝ} (hx1 : edgeX Q D.i D.y₁ < x) (hx2 : x < edgeX Q
   have hc := D.isTrap.bot_mem_closure hx1 hx2
   have hnb : ((x, D.y₁) : Point) ∉ Q.boundary := fun hb => hne (bot_bdry hQ hdh D hx1 hx2 hb)
   rcases D.isTrap.bot_side hQ D.free hx1 hx2 with hb | ⟨c, hc', hmem⟩
-  · exact absurd hb hnb
+  · simp_all
   · exact ⟨c, hc', hmem, ⟨D.isTrap.closure_subset_filled hQ D.free hc, hnb⟩, hc⟩
 
 include hQ in
@@ -176,8 +175,8 @@ theorem touch_cases {c : Set Point} (hc : c ∈ chords Q) {z : Point} (hzc : z �
   rcases h1.lt_or_eq with h1 | h1
   · rcases h2.lt_or_eq with h2 | h2
     · exact absurd ⟨h1, h2, h3', h4'⟩ hnotU
-    · left; rw [h2] at h3' h4'; exact ⟨h2, h3', h4'⟩
-  · right; rw [← h1] at h3' h4'; exact ⟨h1.symm, h3', h4'⟩
+    simp_all
+  simp_all
 
 include hQ hdh in
 /-- **The ends of a chord through the open top side**: its left end is the left corner or the
@@ -216,12 +215,12 @@ theorem top_chord_ends {a b : ℝ} (hch : IsHChord Q D.y₂ a b) {z : Point}
     · right
       have := top_bdry hQ hdh D h (by linarith) hch.left_mem
       rw [← this]
-    · left; exact h.symm
+    simp_all
   · rcases hb1.lt_or_eq with h | h
     · right
       have := top_bdry hQ hdh D (by linarith) h hch.right_mem
       rw [← this]
-    · left; exact h
+    simp_all
 
 include hQ hdh in
 /-- **The ends of a chord through the open bottom side.** -/
@@ -259,12 +258,12 @@ theorem bot_chord_ends {a b : ℝ} (hch : IsHChord Q D.y₁ a b) {z : Point}
     · right
       have := bot_bdry hQ hdh D h (by linarith) hch.left_mem
       rw [← this]
-    · left; exact h.symm
+    simp_all
   · rcases hb1.lt_or_eq with h | h
     · right
       have := bot_bdry hQ hdh D (by linarith) h hch.right_mem
       rw [← this]
-    · left; exact h
+    simp_all
 
 
 include hQ hdh in
@@ -280,8 +279,7 @@ theorem top_empty (h : edgeX Q D.j D.y₂ ≤ edgeX Q D.i D.y₂) :
   obtain ⟨m, hm, hmp⟩ := Final.exists_vtx_of_mem_two_edges hQ D.isTrap.hi D.isTrap.hj
     (D.isTrap.ne hQ D.free.1) h1 h2
   have hmt : m = D.top := vtx_eq_top hdh D hQ hm (by rw [hmp])
-  rw [← hmt, hmp]
-  exact ⟨rfl, by rw [heq]⟩
+  simp_all
 
 include hQ hdh in
 /-- **An empty bottom side**: the bottom vertex is at both lower corners. -/
@@ -296,8 +294,7 @@ theorem bot_empty (h : edgeX Q D.j D.y₁ ≤ edgeX Q D.i D.y₁) :
   obtain ⟨m, hm, hmp⟩ := Final.exists_vtx_of_mem_two_edges hQ D.isTrap.hi D.isTrap.hj
     (D.isTrap.ne hQ D.free.1) h1 h2
   have hmt : m = D.bot := vtx_eq_bot hdh D hQ hm (by rw [hmp])
-  rw [← hmt, hmp]
-  exact ⟨rfl, by rw [heq]⟩
+  simp_all
 
 /-- A chord of `Q` through a point of height `y`, as a horizontal chord at height `y`. -/
 theorem chord_hseg (hQ : Q.Simple) {c : Set Point} (hc : c ∈ chords Q) {z : Point} (hz : z ∈ c) :
@@ -306,7 +303,7 @@ theorem chord_hseg (hQ : Q.Simple) {c : Set Point} (hc : c ∈ chords Q) {z : Po
   have hz' := hz
   rw [chordSet_eq_hseg] at hz'
   rw [hz'.1, chordSet_eq_hseg]
-  exact ⟨_, _, hch, rfl⟩
+  grind
 
 include hQ hdh in
 /-- **Left top corner**: if the top vertex is not at the left upper corner, some chord through
@@ -318,21 +315,16 @@ theorem exists_top_chord_left (hne : (Q.vtx D.top).1 ≠ edgeX Q D.i D.y₂) :
   obtain ⟨hx1, hx2⟩ := top_x_mem hQ D
   have hlt : edgeX Q D.i D.y₂ < (Q.vtx D.top).1 := lt_of_le_of_ne hx1 (Ne.symm hne)
   set x := (edgeX Q D.i D.y₂ + (Q.vtx D.top).1) / 2 with hx
-  have hxa : edgeX Q D.i D.y₂ < x := by rw [hx]; linarith
-  have hxb : x < (Q.vtx D.top).1 := by rw [hx]; linarith
+  have hxa : edgeX Q D.i D.y₂ < x := by linarith
+  have hxb : x < (Q.vtx D.top).1 := by linarith
   have hxne : ((x, D.y₂) : Point) ≠ Q.vtx D.top := fun h => by
-    have := congrArg Prod.fst h; simp only at this; linarith
+    grind
   obtain ⟨c, hc, hzc, hzD, hzU⟩ := top_chord_pt hQ hdh D hxa (by linarith) hxne
   obtain ⟨a, b, hch, rfl⟩ := chord_hseg hQ hc hzc
   simp only at hch hzc ⊢
   obtain ⟨-, ha, -, -⟩ := top_chord_ends hQ hdh D hch hzc hzD hxa (by linarith)
   have hax : a ≤ x := hzc.2.1
-  have ha' : a = edgeX Q D.i D.y₂ := by
-    rcases ha with ha | ha
-    · exact ha
-    · exfalso; rw [ha] at hax; linarith
-  subst ha'
-  exact ⟨_, hc, b, hch, rfl, _, hzc, hzD, hzU⟩
+  grind
 
 include hQ hdh in
 /-- **Right top corner**: if the top vertex is not at the right upper corner, some chord through
@@ -344,21 +336,16 @@ theorem exists_top_chord_right (hne : (Q.vtx D.top).1 ≠ edgeX Q D.j D.y₂) :
   obtain ⟨hx1, hx2⟩ := top_x_mem hQ D
   have hlt : (Q.vtx D.top).1 < edgeX Q D.j D.y₂ := lt_of_le_of_ne hx2 hne
   set x := ((Q.vtx D.top).1 + edgeX Q D.j D.y₂) / 2 with hx
-  have hxa : (Q.vtx D.top).1 < x := by rw [hx]; linarith
-  have hxb : x < edgeX Q D.j D.y₂ := by rw [hx]; linarith
+  have hxa : (Q.vtx D.top).1 < x := by linarith
+  have hxb : x < edgeX Q D.j D.y₂ := by linarith
   have hxne : ((x, D.y₂) : Point) ≠ Q.vtx D.top := fun h => by
-    have := congrArg Prod.fst h; simp only at this; linarith
+    grind
   obtain ⟨c, hc, hzc, hzD, hzU⟩ := top_chord_pt hQ hdh D (by linarith) hxb hxne
   obtain ⟨a, b, hch, rfl⟩ := chord_hseg hQ hc hzc
   simp only at hch hzc hc ⊢
   obtain ⟨-, -, -, hb⟩ := top_chord_ends hQ hdh D hch hzc hzD (by linarith) hxb
   have hbx : x ≤ b := hzc.2.2
-  have hb' : b = edgeX Q D.j D.y₂ := by
-    rcases hb with hb | hb
-    · exact hb
-    · exfalso; rw [hb] at hbx; linarith
-  subst hb'
-  exact ⟨_, hc, a, hch, rfl, _, hzc, hzD, hzU⟩
+  grind
 
 include hQ hdh in
 /-- **Left bottom corner.** -/
@@ -369,21 +356,16 @@ theorem exists_bot_chord_left (hne : (Q.vtx D.bot).1 ≠ edgeX Q D.i D.y₁) :
   obtain ⟨hx1, hx2⟩ := bot_x_mem hQ D
   have hlt : edgeX Q D.i D.y₁ < (Q.vtx D.bot).1 := lt_of_le_of_ne hx1 (Ne.symm hne)
   set x := (edgeX Q D.i D.y₁ + (Q.vtx D.bot).1) / 2 with hx
-  have hxa : edgeX Q D.i D.y₁ < x := by rw [hx]; linarith
-  have hxb : x < (Q.vtx D.bot).1 := by rw [hx]; linarith
+  have hxa : edgeX Q D.i D.y₁ < x := by linarith
+  have hxb : x < (Q.vtx D.bot).1 := by linarith
   have hxne : ((x, D.y₁) : Point) ≠ Q.vtx D.bot := fun h => by
-    have := congrArg Prod.fst h; simp only at this; linarith
+    grind
   obtain ⟨c, hc, hzc, hzD, hzU⟩ := bot_chord_pt hQ hdh D hxa (by linarith) hxne
   obtain ⟨a, b, hch, rfl⟩ := chord_hseg hQ hc hzc
   simp only at hch hzc hc ⊢
   obtain ⟨-, ha, -, -⟩ := bot_chord_ends hQ hdh D hch hzc hzD hxa (by linarith)
   have hax : a ≤ x := hzc.2.1
-  have ha' : a = edgeX Q D.i D.y₁ := by
-    rcases ha with ha | ha
-    · exact ha
-    · exfalso; rw [ha] at hax; linarith
-  subst ha'
-  exact ⟨_, hc, b, hch, rfl, _, hzc, hzD, hzU⟩
+  grind
 
 include hQ hdh in
 /-- **Right bottom corner.** -/
@@ -394,63 +376,50 @@ theorem exists_bot_chord_right (hne : (Q.vtx D.bot).1 ≠ edgeX Q D.j D.y₁) :
   obtain ⟨hx1, hx2⟩ := bot_x_mem hQ D
   have hlt : (Q.vtx D.bot).1 < edgeX Q D.j D.y₁ := lt_of_le_of_ne hx2 hne
   set x := ((Q.vtx D.bot).1 + edgeX Q D.j D.y₁) / 2 with hx
-  have hxa : (Q.vtx D.bot).1 < x := by rw [hx]; linarith
-  have hxb : x < edgeX Q D.j D.y₁ := by rw [hx]; linarith
+  have hxa : (Q.vtx D.bot).1 < x := by linarith
+  have hxb : x < edgeX Q D.j D.y₁ := by linarith
   have hxne : ((x, D.y₁) : Point) ≠ Q.vtx D.bot := fun h => by
-    have := congrArg Prod.fst h; simp only at this; linarith
+    grind
   obtain ⟨c, hc, hzc, hzD, hzU⟩ := bot_chord_pt hQ hdh D (by linarith) hxb hxne
   obtain ⟨a, b, hch, rfl⟩ := chord_hseg hQ hc hzc
   simp only at hch hzc hc ⊢
   obtain ⟨-, -, -, hb⟩ := bot_chord_ends hQ hdh D hch hzc hzD (by linarith) hxb
   have hbx : x ≤ b := hzc.2.2
-  have hb' : b = edgeX Q D.j D.y₁ := by
-    rcases hb with hb | hb
-    · exact hb
-    · exfalso; rw [hb] at hbx; linarith
-  subst hb'
-  exact ⟨_, hc, a, hch, rfl, _, hzc, hzD, hzU⟩
+  grind
 
 /-! ## Vertices at the corners are ends of the side edges -/
 
+section
+variable (hQ : Q.Simple) {e v : ℕ} (he : e < Q.n) (hv : v < Q.n) (hmem : Q.vtx v ∈ Q.edge e)
+include hQ he hv hmem
 /-- A vertex on an edge, above the lower end of the edge, is its upper end. -/
-theorem endpoint_upper (hQ : Q.Simple) {e v : ℕ} (he : e < Q.n) (hv : v < Q.n)
-    (hmem : Q.vtx v ∈ Q.edge e) (hbot : edgeBot Q e < (Q.vtx v).2) :
+theorem endpoint_upper (hbot : edgeBot Q e < (Q.vtx v).2) :
     (v = e ∧ (Q.vtx ((e + 1) % Q.n)).2 < (Q.vtx v).2) ∨
       (v = (e + 1) % Q.n ∧ (Q.vtx e).2 < (Q.vtx v).2) := by
   unfold edgeBot at hbot
   rcases Chazelle.Existence.eq_endpoint_of_vtx_mem_edge hQ hv he hmem with h | h
   · left
     refine ⟨simple_vtx_inj hQ hv he h, ?_⟩
-    rw [h] at hbot ⊢
-    rcases min_choice (Q.vtx e).2 (Q.vtx ((e + 1) % Q.n)).2 with hm | hm <;> rw [hm] at hbot
-    · exact absurd hbot (lt_irrefl _)
-    · exact hbot
+    simp_all
   · right
     refine ⟨simple_vtx_inj hQ hv (succIdx_lt Q he) h, ?_⟩
-    rw [h] at hbot ⊢
-    rcases min_choice (Q.vtx e).2 (Q.vtx ((e + 1) % Q.n)).2 with hm | hm <;> rw [hm] at hbot
-    · exact hbot
-    · exact absurd hbot (lt_irrefl _)
+    simp_all
 
 /-- A vertex on an edge, below the upper end of the edge, is its lower end. -/
-theorem endpoint_lower (hQ : Q.Simple) {e v : ℕ} (he : e < Q.n) (hv : v < Q.n)
-    (hmem : Q.vtx v ∈ Q.edge e) (htop : (Q.vtx v).2 < edgeTop Q e) :
+theorem endpoint_lower (htop : (Q.vtx v).2 < edgeTop Q e) :
     (v = e ∧ (Q.vtx v).2 < (Q.vtx ((e + 1) % Q.n)).2) ∨
       (v = (e + 1) % Q.n ∧ (Q.vtx v).2 < (Q.vtx e).2) := by
   unfold edgeTop at htop
   rcases Chazelle.Existence.eq_endpoint_of_vtx_mem_edge hQ hv he hmem with h | h
   · left
     refine ⟨simple_vtx_inj hQ hv he h, ?_⟩
-    rw [h] at htop ⊢
-    rcases max_choice (Q.vtx e).2 (Q.vtx ((e + 1) % Q.n)).2 with hm | hm <;> rw [hm] at htop
-    · exact absurd htop (lt_irrefl _)
-    · exact htop
+    simp_all
   · right
     refine ⟨simple_vtx_inj hQ hv (succIdx_lt Q he) h, ?_⟩
-    rw [h] at htop ⊢
-    rcases max_choice (Q.vtx e).2 (Q.vtx ((e + 1) % Q.n)).2 with hm | hm <;> rw [hm] at htop
-    · exact htop
-    · exact absurd htop (lt_irrefl _)
+    simp_all
+
+
+end
 
 include hQ in
 /-- The top vertex at the left upper corner is an end of the left edge, above the other end. -/

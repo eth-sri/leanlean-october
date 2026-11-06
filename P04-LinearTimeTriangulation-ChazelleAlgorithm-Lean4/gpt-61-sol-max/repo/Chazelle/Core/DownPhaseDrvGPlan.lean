@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRPlD
 
 /-!
@@ -94,7 +96,7 @@ theorem runLeaves_gaps {n C p a ℓ : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (hℓ :
         lastEnd (runLeaves n C p a ℓ) e ≤ p + ℓ - 1) := by
   have hu : (a + 1) % n < n := Nat.mod_lt _ (by omega)
   by_cases h3 : ℓ < 3
-  · left; exact ⟨by unfold runLeaves; rw [ite_eq_left h3], Or.inl h3⟩
+  · grind [runLeaves]
   by_cases hdg : Degen n a ℓ
   · left
     refine ⟨?_, Or.inr hdg⟩
@@ -111,8 +113,7 @@ theorem runLeaves_gaps {n C p a ℓ : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (hℓ :
   split_ifs with hw
   · obtain ⟨g1, g2⟩ := chunks_gaps hC (ℓ - 2) (p + 1) ((a + 1) % n) e (p + 2 - e) (by omega) he
       (by omega)
-    rw [g2]
-    exact ⟨g1, by omega, by omega⟩
+    grind
   · by_cases h1 : n - 1 - (a + 1) % n = 0
     · have h2 : 1 ≤ ℓ - 2 - (n - (a + 1) % n) := by omega
       rw [h1, chunks_zero, List.nil_append]
@@ -124,16 +125,10 @@ theorem runLeaves_gaps {n C p a ℓ : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (hℓ :
         (by omega) he (by omega)
       by_cases h2 : ℓ - 2 - (n - (a + 1) % n) = 0
       · rw [h2, chunks_zero, List.append_nil, g2]
-        exact ⟨g1, by omega, by omega⟩
+        grind
       · obtain ⟨k1, k2⟩ := chunks_gaps hC (ℓ - 2 - (n - (a + 1) % n)) (p + 1 + (n - (a + 1) % n)) 0
           (p + 1 + (n - 1 - (a + 1) % n)) (p + 2 - e) (by omega) (by omega) (by omega)
-        have hl : lastEnd (chunks C (p + 1) ((a + 1) % n) (n - 1 - (a + 1) % n) ++
-            chunks C (p + 1 + (n - (a + 1) % n)) 0 (ℓ - 2 - (n - (a + 1) % n))) e =
-            p + 1 + (n - (a + 1) % n) + (ℓ - 2 - (n - (a + 1) % n)) := by
-          rw [lastEnd_append, g2, k2]
-        rw [hl]
-        refine ⟨gapsLe_append _ _ e _ _ g1 ?_, by omega, by omega⟩
-        rw [g2]; exact k1
+        grind [Chazelle.Core.DrvG.lastEnd_append, Chazelle.Core.DrvG.gapsLe_append]
 
 /-! ## The gaps of a host -/
 
@@ -149,12 +144,11 @@ theorem hostLeaves_gapsG {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) : ∀ (H : Ho
     GapsLe 64 (hostLeaves n C p H) e (p + (H.pts n).length - 1)
   | [], p, e, k, d, _, h1, h2, h3, h4, h5 => by
     simp only [hostLeaves, Host.pts, List.flatMap_nil, List.length_nil, Nat.add_zero] at h5 ⊢
-    simp only [List.length_nil] at h3
-    exact ⟨by omega, by omega⟩
+    core_grind
   | .pt x :: H, p, e, k, d, hwf, h1, h2, h3, h4, h5 => by
     have hwf' : HostWF n H := fun it h => hwf it (List.mem_cons_of_mem _ h)
     have hl : (Host.pts n (HostItem.pt x :: H)).length = (Host.pts n H).length + 1 := by
-      rw [DownMath.pts_cons, List.length_append]; simp [HostItem.pts]; omega
+      simp_all [DownMath.pts_cons, List.length_append, HostItem.pts] 
     rw [hl] at h5 ⊢
     simp only [List.length_cons] at h3
     simp only [degCount] at h4
@@ -167,7 +161,7 @@ theorem hostLeaves_gapsG {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) : ∀ (H : Ho
     have hit := hwf (.run a ℓ) (List.mem_cons_self ..)
     simp only at hit
     have hl : (Host.pts n (HostItem.run a ℓ :: H)).length = (Host.pts n H).length + ℓ + 1 := by
-      rw [DownMath.pts_cons, List.length_append, DownMath.run_pts_length]; omega
+      grind [DownMath.pts_cons, List.length_append, DownMath.run_pts_length]
     rw [hl] at h5 ⊢
     simp only [List.length_cons] at h3
     simp only [degCount] at h4
@@ -177,7 +171,7 @@ theorem hostLeaves_gapsG {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) : ∀ (H : Ho
     · rw [he, List.nil_append]
       have hd : ℓ + 1 ≤ 3 + (if Degen n a ℓ then 1 else 0) := by
         rcases hsh with h | hdg'
-        · split_ifs <;> omega
+        · omega
         · rw [ite_eq_left hdg']; have := hdg'.1; omega
       exact hostLeaves_gapsG hC hn H (p + ℓ + 1) e (k + 1) (d + if Degen n a ℓ then 1 else 0)
         hwf' (by omega) (by omega) (by omega) (by omega) (by omega)
@@ -194,25 +188,25 @@ theorem hostLeaves_gaps {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) {H : Host} (hw
     GapsLe 64 (hostLeaves n C 0 H) 0 ((H.pts n).length - 1) := by
   have := hostLeaves_gapsG hC hn H 0 0 0 0 hwf (le_refl _) (by omega) (by omega) (by omega)
     (by omega)
-  simpa using this
+  simp_all
 
 /-! ## At most one degenerate run -/
 
 theorem degCount_first (n : ℕ) : ∀ H : Host, 1 ≤ degCount n H →
     ∃ H₁ a ℓ H₂, H = H₁ ++ HostItem.run a ℓ :: H₂ ∧ Degen n a ℓ ∧
       degCount n H₂ + 1 = degCount n H
-  | [], h => by simp [degCount] at h
+  | [], h => by grind [degCount]
   | .pt x :: H, h => by
     simp only [degCount] at h
     obtain ⟨H₁, a, ℓ, H₂, e, hd, hc⟩ := degCount_first n H h
-    exact ⟨.pt x :: H₁, a, ℓ, H₂, by rw [e]; rfl, hd, by simp only [degCount]; omega⟩
+    grind [degCount]
   | .run a ℓ :: H, h => by
     simp only [degCount] at h ⊢
     by_cases hd : Degen n a ℓ
-    · exact ⟨[], a, ℓ, H, rfl, hd, by rw [ite_eq_left hd]; omega⟩
+    · exact ⟨[], a, ℓ, H, rfl, hd, by simp_all +arith⟩
     · rw [ite_eq_right hd] at h
       obtain ⟨H₁, a', ℓ', H₂, e, hd', hc⟩ := degCount_first n H (by omega)
-      exact ⟨.run a ℓ :: H₁, a', ℓ', H₂, by rw [e]; rfl, hd', by rw [ite_eq_right hd]; omega⟩
+      grind
 
 /-- **A simple host polygon has at most one degenerate run** (two would both contain the vertex
 `v_{n-1}`). -/
@@ -228,7 +222,7 @@ theorem degCount_le_one {Q : Polygon} {H : Host} (hS : (H.poly Q).Simple) :
   subst hl hl'
   set G := H₁ ++ HostItem.run a 3 :: (H₃ ++ HostItem.run a' 3 :: H₄) with hG
   have hG' : G = (H₁ ++ HostItem.run a 3 :: H₃) ++ HostItem.run a' 3 :: H₄ := by
-    rw [hG]; simp
+    simp_all
   have p1 := DownMath.pts_append_run Q.n H₁ (H₃ ++ HostItem.run a' 3 :: H₄) a 3
     (k := 1) (by omega)
   have p2 := DownMath.pts_append_run Q.n (H₁ ++ HostItem.run a 3 :: H₃) H₄ a' 3
@@ -245,7 +239,7 @@ theorem degCount_le_one {Q : Polygon} {H : Host} (hS : (H.poly Q).Simple) :
     (i := ((H₁ ++ HostItem.run a 3 :: H₃).pts Q.n).length + 1) (by omega)
   rw [p1, hm] at v1
   rw [p2, hm'] at v2
-  have := hS.2.1 _ _ (by rw [DownMath.host_poly_n]; omega) (by rw [DownMath.host_poly_n]; omega)
+  have := hS.2.1 _ _ (by grind [DownMath.host_poly_n]) (by grind [DownMath.host_poly_n])
     (v1.trans v2.symm)
   omega
 
@@ -258,21 +252,20 @@ theorem runLeaves_length_le {n C p a ℓ : ℕ} (hC : 1 ≤ C) (hℓ : ℓ ≤ 2
   · simp
   · have := chunks_length hC (ℓ - 2) (p + 1) ((a + 1) % n)
     have h : (chunks C (p + 1) ((a + 1) % n) (ℓ - 2)).length * C < 4 * C := by omega
-    have := Nat.lt_of_mul_lt_mul_right h
-    omega
+    simp_all +arith
   · rw [List.length_append]
     have h1 := chunks_length hC (n - 1 - (a + 1) % n) (p + 1) ((a + 1) % n)
     have h2 := chunks_length hC (ℓ - 2 - (n - (a + 1) % n)) (p + 1 + (n - (a + 1) % n)) 0
     have h : ((chunks C (p + 1) ((a + 1) % n) (n - 1 - (a + 1) % n)).length +
         (chunks C (p + 1 + (n - (a + 1) % n)) 0 (ℓ - 2 - (n - (a + 1) % n))).length) * C <
-        4 * C := by rw [Nat.add_mul]; omega
+        4 * C := by grind [Nat.add_mul]
     have := Nat.lt_of_mul_lt_mul_right h
     omega
 
 /-- **At most three leaves per run** of at most `2 C` edges. -/
 theorem hostLeaves_length_le {n C : ℕ} (hC : 1 ≤ C) : ∀ (H : Host) (p : ℕ),
     (∀ a ℓ, HostItem.run a ℓ ∈ H → ℓ ≤ 2 * C) → (hostLeaves n C p H).length ≤ 3 * H.length
-  | [], _, _ => by simp [hostLeaves]
+  | [], _, _ => by aesop
   | .pt x :: H, p, h => by
     rw [hostLeaves, List.length_cons]
     have := hostLeaves_length_le (n := n) hC H (p + 1)

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleRamEdge
 
 /-!
@@ -39,13 +41,10 @@ variable {Q s hz σ z}
 
 theorem vOf_of_spans {ci : ℕ} (h : Spans Q (eIdx Q.n s ci) hz) :
     vOf Q s hz σ z ci = σ * (xe Q (eIdx Q.n s ci) hz - z.1) := by
-  classical
-  unfold vOf; rw [ite_eq_left h]
+  simp_all [vOf] <;> omega_nf
 
 theorem spans_of_vOf_pos {ci : ℕ} (h : 0 < vOf Q s hz σ z ci) : Spans Q (eIdx Q.n s ci) hz := by
-  classical
-  by_contra hn
-  unfold vOf at h; rw [ite_eq_right hn] at h; norm_num at h
+  grind [vOf]
 
 /-- **The origin data of the scan**: a symbolic origin `z` (`some z`), or a box origin on the
 side the ray comes from (`none`). -/
@@ -60,9 +59,9 @@ theorem hit_chainEdge {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctH
     Sweep.FirstHitOpt (C.chainEdge ci) z σ
       (if HitC Q s hz σ zo ci then some (vOf Q s hz σ z ci) else none) := by
   classical
-  have hn2 : 2 ≤ Q.n := by rw [← hCQ]; have := C.add_one_le; have := C.one_le; omega
+  have hn2 : 2 ≤ Q.n := by rw [← hCQ]; have := C.add_one_le; omega
   have he : C.chainEdge ci = Q.edge (eIdx Q.n s ci) := by
-    unfold Chain.chainEdge Chain.edgeIdx eIdx; rw [hCQ, hs]
+    aesop
   set e := eIdx Q.n s ci with he_def
   have hen : e < Q.n := Nat.mod_lt _ (by omega)
   have hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2 := by
@@ -70,14 +69,11 @@ theorem hit_chainEdge {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctH
     intro h
     rcases Nat.lt_or_ge (e + 1) Q.n with h' | h'
     · rw [Nat.mod_eq_of_lt h'] at h; omega
-    · rw [show e + 1 = Q.n by omega, Nat.mod_self] at h; omega
+    grind [Nat.mod_self]
   have hspec := edgeHit_spec Q hne hzy hσ
   rw [he]
   suffices hiff : (Spans Q e hz ∧ 0 < σ * (xe Q e hz - z.1)) ↔ HitC Q s hz σ zo ci by
-    unfold edgeHit at hspec
-    by_cases h : HitC Q s hz σ zo ci
-    · rw [ite_eq_left h, vOf_of_spans h.1]; rw [ite_eq_left (hiff.2 h)] at hspec; exact hspec
-    · rw [ite_eq_right h]; rw [ite_eq_right (fun h' => h (hiff.1 h'))] at hspec; exact hspec
+    grind [Chazelle.Core.OracleQ.vOf_of_spans, edgeHit]
   unfold HitC
   rw [← he_def]
   rcases hzo with rfl | ⟨rfl, hz1⟩
@@ -85,7 +81,7 @@ theorem hit_chainEdge {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctH
     rw [ahead_iff hσ]
   · simp only [Ahead, and_true]
     constructor
-    · exact fun h => h.1
+    · simp_all
     · intro hsp
       refine ⟨hsp, ?_⟩
       -- the point is on the chain, hence in the box
@@ -93,14 +89,13 @@ theorem hit_chainEdge {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctH
         rw [he]
         have := (rayPt_mem_edge_iff Q hne (z := ((xe Q e hz, (Q.vtx hz).2) : Point)) rfl
           (Or.inl rfl) 0).2 ⟨hsp, by simp⟩
-        simpa [rayPt] using this
+        simp_all
       have hbox := C.set_subset_box ⟨ci, hci, hmem⟩
       have hx := (abs_lt.1 hbox.1)
       simp only at hx
       rw [hz1]
       rcases hσ with rfl | rfl
-      · linarith [hx.1]
-      · linarith [hx.2]
+      all_goals linarith
 
 open Classical in
 /-- **One step of the scan.** -/
@@ -125,7 +120,7 @@ theorem fold_step {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctHeigh
         have hlt : vOf Q s hz σ z ci < vOf Q s hz σ z cb := by
           rw [vOf_of_spans hh.1, vOf_of_spans hcb, better_iff hσ]; exact hb
         show some (vOf Q s hz σ z ci) = some (min (vOf Q s hz σ z cb) (vOf Q s hz σ z ci))
-        rw [min_eq_right hlt.le]
+        grind
     · rw [ite_eq_right (fun h => hall h.2)]
       push Not at hall
       obtain ⟨cb, rfl, hnb⟩ := hall
@@ -136,7 +131,7 @@ theorem fold_step {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctHeigh
         rw [vOf_of_spans hh.1, vOf_of_spans hcb] at hc
         exact hnb (by rwa [better_iff hσ] at hc)
       show some (vOf Q s hz σ z cb) = some (min (vOf Q s hz σ z cb) (vOf Q s hz σ z ci))
-      rw [min_eq_left hle]
+      simp_all
   · rw [ite_eq_right hh, ite_eq_right (fun h => hh h.1)]
     rcases best with _ | cb <;> rfl
 

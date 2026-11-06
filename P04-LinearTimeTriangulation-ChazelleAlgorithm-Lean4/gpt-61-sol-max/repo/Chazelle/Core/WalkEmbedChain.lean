@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.WalkEmbed
 
 /-!
@@ -116,9 +118,7 @@ theorem walk_after (J e : ℕ) (he : e ≤ 2 * C.m) :
   have h2 : J + (2 * C.m - tpos C J) ≡ bS C [MOD 2 * C.m] := by
     apply Nat.ModEq.add_right_cancel' (tpos C J)
     rw [show J + (2 * C.m - tpos C J) + tpos C J = J + 2 * C.m by omega]
-    calc J + 2 * C.m ≡ J + 0 [MOD 2 * C.m] := Nat.ModEq.add_left J (by simp [Nat.ModEq])
-      _ = J := by rw [add_zero]
-      _ ≡ bS C + tpos C J [MOD 2 * C.m] := h1.symm
+    simp_all [Nat.ModEq, add_zero] 
   have h3 := h2.add_right e
   unfold Nat.ModEq at h3
   rw [← Nat.add_assoc]
@@ -127,16 +127,12 @@ theorem walk_after (J e : ℕ) (he : e ≤ 2 * C.m) :
 /-- The top of the slit is not in the open box. -/
 theorem slitTop_not_mem_box : C.slitTop ∉ Chain.box C.radius := fun h => by
   have := h.2
-  simp only [Chain.slitTop, abs_of_pos C.radius_pos] at this
-  exact lt_irrefl _ this
+  grind [Chain.slitTop]
 
 theorem corner_not_mem_box {a b : ℝ} (h : a = C.radius ∨ a = -C.radius) :
     ((a, b) : Point) ∉ Chain.box C.radius := fun hb => by
   have := hb.1
-  simp only at this
-  rcases h with rfl | rfl
-  · rw [abs_of_pos C.radius_pos] at this; exact lt_irrefl _ this
-  · rw [abs_neg, abs_of_pos C.radius_pos] at this; exact lt_irrefl _ this
+  grind
 
 /-- **Counted walk edges are the edges joining two points of the open box.** -/
 theorem counted_iff_box {p : ℕ} (hp : p < (chainModel C).W.n) :
@@ -155,7 +151,7 @@ theorem counted_iff_box {p : ℕ} (hp : p < (chainModel C).W.n) :
       C.set_subset_box (C.vertex_mem_set (C.sideIdx_le _ _))⟩
   · rintro ⟨h1, h2⟩
     by_contra hc
-    have hR := C.radius_pos
+    
     rcases (show p ≤ 5 ∨ p = 2 * C.m + 6 by omega) with hp5 | rfl
     · interval_cases p
       · exact slitTop_not_mem_box C h1
@@ -184,8 +180,11 @@ section TwoChains
 
 variable {C C' : Chain} {J J' ℓ : ℕ}
 
+section
+variable (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
+include hT
 /-- **Case N** (no box inside the stretch in either walk): the walks agree along the tour. -/
-theorem agree_N (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
+theorem agree_N
     (hs : ℓ ≤ 2 * C.m - tpos C J) (hs' : ℓ ≤ 2 * C'.m - tpos C' J') :
     Agree (chainModel C).W (chainModel C').W (6 + tpos C J) (6 + tpos C' J') ℓ := by
   intro d hd
@@ -194,7 +193,7 @@ theorem agree_N (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
   exact hT d hd
 
 /-- The top vertices agree when the boxes sit at the same offset of the stretch. -/
-theorem top_eq_of_box (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
+theorem top_eq_of_box
     (hss : 2 * C.m - tpos C J = 2 * C'.m - tpos C' J') (hsl : 2 * C.m - tpos C J ≤ ℓ) :
     C.top = C'.top := by
   have h1 := walk_box C J 0 (by omega)
@@ -208,7 +207,7 @@ theorem top_eq_of_box (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
 
 /-- **Case Sh** (the box at the same offset strictly inside the stretch of both walks): the walks
 agree along the tour and the box. -/
-theorem agree_Sh (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e) (hR : C.radius = C'.radius)
+theorem agree_Sh (hR : C.radius = C'.radius)
     (hℓ : ℓ ≤ 2 * C.m) (hℓ' : ℓ ≤ 2 * C'.m)
     (hss : 2 * C.m - tpos C J = 2 * C'.m - tpos C' J') (hsl : 2 * C.m - tpos C J < ℓ) :
     Agree (chainModel C).W (chainModel C').W (6 + tpos C J) (6 + tpos C' J') (ℓ + 7) := by
@@ -237,7 +236,7 @@ theorem agree_Sh (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e) (hR : C
 
 /-- **Case G, first piece** (the box strictly inside the stretch of the second walk only): the
 walks agree up to the box of the second walk. -/
-theorem agree_G1 (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
+theorem agree_G1
     (hs : ℓ ≤ 2 * C.m - tpos C J) (hs' : 2 * C'.m - tpos C' J' < ℓ) :
     Agree (chainModel C).W (chainModel C').W (6 + tpos C J) (6 + tpos C' J')
       (2 * C'.m - tpos C' J') := by
@@ -248,7 +247,7 @@ theorem agree_G1 (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
 
 /-- **Case G, second piece**: the walks agree from the box of the second walk (skipped) to the
 end of the stretch. -/
-theorem agree_G2 (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e) (hℓ' : ℓ ≤ 2 * C'.m)
+theorem agree_G2 (hℓ' : ℓ ≤ 2 * C'.m)
     (hs : ℓ ≤ 2 * C.m - tpos C J) (hs' : 2 * C'.m - tpos C' J' < ℓ) :
     Agree (chainModel C).W (chainModel C').W
       ((6 + tpos C J + (2 * C'.m - tpos C' J')) % (chainModel C).W.n)
@@ -260,6 +259,9 @@ theorem agree_G2 (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e) (hℓ' 
   rw [Nat.mod_add_mod, Nat.mod_add_mod, Nat.add_assoc (6 + tpos C J),
     walk_tour C J _ (by omega), walk_after C' J' d (by omega)]
   exact hT _ (by omega)
+
+
+end
 
 end TwoChains
 
@@ -348,7 +350,7 @@ theorem tourV_right_end : tourV J.right 0 (2 * J.m₂) = J.shared := by
 
 /-- If the top of `C` lies strictly inside `C₁`, it is the top of `C₁`. -/
 theorem left_topIdx_eq (h : J.whole.topIdx < J.m₁) : J.left.topIdx = J.whole.topIdx := by
-  have hT := J.whole.topIdx_le
+  
   apply le_antisymm
   · refine J.left.topIdx_min (by rw [Merge.Junction.left_m]; omega) fun i hi => ?_
     rw [Merge.Junction.left_m] at hi
@@ -446,7 +448,7 @@ theorem left_box_eq (h : 2 * J.whole.m - tpos J.whole (J.m₁ + 2 * J.m₂) < 2 
 theorem right_box_eq (h : 2 * J.whole.m - tpos J.whole J.m₁ < 2 * J.m₂) :
     2 * J.right.m - tpos J.right 0 = 2 * J.whole.m - tpos J.whole J.m₁ := by
   have h1 := J.one_le_m₁
-  have h2 := J.one_le_m₂
+  
   have hT := J.whole.topIdx_le
   simp only [Merge.Junction.whole_m, Merge.Junction.right_m] at hT h ⊢
   unfold tpos bS Chain.sideS at *

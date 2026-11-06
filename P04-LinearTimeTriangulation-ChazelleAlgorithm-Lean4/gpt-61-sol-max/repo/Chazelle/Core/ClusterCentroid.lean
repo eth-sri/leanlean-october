@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterSep
 
 /-!
@@ -26,13 +28,19 @@ open Chazelle.Separator Chazelle.Separator.CombMap Equiv Relation
 variable {V F D : Type*} [Fintype V] [DecidableEq V] [Fintype D] [DecidableEq D] [Fintype F]
   [DecidableEq F] {M : CombMap V F D} {T : SpanTree M} (C : CoTree T) (δ : V → D)
 
+section
+variable (P : Finset V) (x : F)
+include P x
 /-- The vertices of `P` whose chosen face lies in the subtree of `x`. -/
-noncomputable def cnt (P : Finset V) (x : F) : ℕ :=
+noncomputable def cnt : ℕ :=
   haveI := Classical.decPred (fun v => C.IsDesc (M.face (δ v)) x)
   (P.filter (fun v => C.IsDesc (M.face (δ v)) x)).card
 
 /-- More than half of the piece lies in the subtree of `x`. -/
-def Good (P : Finset V) (x : F) : Prop := P.card < 2 * cnt C δ P x
+def Good : Prop := P.card < 2 * cnt C δ P x
+
+
+end
 
 variable {C δ}
 
@@ -52,8 +60,7 @@ theorem centroid_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f
     have : P.filter (fun v => M.face (δ v) ∈ T.cross (C.fpar g)) =
         P.filter (fun v => C.IsDesc (M.face (δ v)) g) := by
       ext v; simp only [Finset.mem_filter, C.cross_fpar hM hg]
-    rw [this]
-    convert hng using 3
+    simp_all
   · -- the parent side of `f`
     have hgf : g = f := (C.head g hg).symm.trans hdf
     subst hgf
@@ -63,12 +70,7 @@ theorem centroid_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f
     have : P.filter (fun v => M.face (δ v) ∈ T.cross (M.opp (C.fpar g))) =
         P.filter (fun v => ¬ C.IsDesc (M.face (δ v)) g) := by
       ext v; simp only [Finset.mem_filter, C.cross_opp_fpar hM hg]
-    rw [this]
-    have e : (P.filter (fun v => C.IsDesc (M.face (δ v)) g)).card =
-        (haveI := Classical.decPred (fun v => C.IsDesc (M.face (δ v)) g);
-          (P.filter (fun v => C.IsDesc (M.face (δ v)) g)).card) := by
-      congr 1
-    omega
+    grind
 
 /-- The class of the dart `x t` of the face `f`: the vertices of `P` off `sepSet f` whose face lies
 beyond the non-tree dart `x t`. -/
@@ -82,8 +84,7 @@ omit [DecidableEq F] in
 theorem mem_cls {P : Finset V} {f : F} {x : ℕ → D} {t : ℕ} {v : V} :
     v ∈ cls T δ P f x t ↔
       v ∈ P ∧ v ∉ T.sepSet f ∧ x t ∈ T.coDarts ∧ M.face (δ v) ∈ T.cross (x t) := by
-  unfold cls
-  exact @Finset.mem_filter _ _ (Classical.decPred _) _ _
+  simp_all [cls] <;> omega_nf
 
 omit [DecidableEq F] in
 /-- **The classes of a split.**  With the darts of `f` enumerated as `x 0, x 1, x 2`: every vertex
@@ -122,10 +123,10 @@ theorem cls_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f)
   · refine le_trans (Nat.mul_le_mul_left 2 (Finset.card_le_card (fun v hv => ?_)))
       (centroid_half hM hf hch hco ((hx (x t)).mpr ⟨t, ht, rfl⟩))
     obtain ⟨a, -, -, b⟩ := mem_cls.mp hv
-    exact Finset.mem_filter.mpr ⟨a, b⟩
+    simp_all +arith
   · have : cls T δ P f x t = ∅ := by
       ext v; simp only [mem_cls, Finset.notMem_empty, iff_false]; tauto
-    rw [this]; simp
+    simp_all
 
 end
 

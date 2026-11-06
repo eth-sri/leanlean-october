@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreDrvCopy
 
 /-!
@@ -32,16 +34,17 @@ def degOf (N : NF) (r : ℕ) : ℕ := (N.region r).chords.length
 /-- The regions below `r` with more than `D` exit chords. -/
 def highList (N : NF) (D r : ℕ) : List ℕ := (List.range r).filter fun r' => D < degOf N r'
 
-theorem highList_succ (N : NF) (D r : ℕ) :
+section
+variable (N : NF) (D r : ℕ)
+theorem highList_succ :
     highList N D (r + 1) = highList N D r ++ (if D < degOf N r then [r] else []) := by
-  unfold highList
-  rw [List.range_succ, List.filter_append]
-  congr 1
-  by_cases h : D < degOf N r <;> simp [h]
+  core_grind [List.range_succ, List.filter_append]
 
-theorem highList_length_le (N : NF) (D r : ℕ) : (highList N D r).length ≤ r := by
-  unfold highList
-  exact (List.length_filter_le _ _).trans (by simp)
+theorem highList_length_le : (highList N D r).length ≤ r := by
+  core_grind
+
+
+end
 
 /-- A chord triple found for region `r`: attached, at a vertex height, admissible, splitting the
 region well. -/
@@ -99,42 +102,45 @@ def Bf : ℕ := costF E.κf E.F E.G E.Hc E.dcap E.γ + 20
 
 end RegEnv
 
+section
+variable {P : Polygon} {m m' : ℕ → ℕ} {D E : ℕ} {M : Model} (hwf : ModelDescWF P E m D) (hMD : ModelDescAt m D (Qof P) M)
+include M hwf hMD
 /-- **Host regularity of a descriptor** survives a change of the memory at or above the bound of
 a well-formed descriptor (G10/G11). -/
-theorem hregKeep {P : Polygon} {m m' : ℕ → ℕ} {D E : ℕ} {M : Model}
-    (hwf : ModelDescWF P E m D) (hMD : ModelDescAt m D (Qof P) M)
+theorem hregKeep
     (h : m D = 0 → ∀ H C, ChainDescAt m (D + 1) (Qof P) H C → HostRegular (Qof P).n H)
     (he : ∀ a, a < E → m' a = m a) :
     m' D = 0 → ∀ H C, ChainDescAt m' (D + 1) (Qof P) H C → HostRegular (Qof P).n H := by
   intro h0 H C hC
   have hD := hwf.1
-  have h0' : m D = 0 := by rw [← he D (by omega)]; exact h0
+  have h0' : m D = 0 := by grind
   rcases hMD with ⟨-, H₀, C₀, hC₀, -⟩ | ⟨h1, -, -⟩
   · obtain ⟨-, -, hEb, -⟩ := (hwf.2 h0').2 H₀ C₀ hC₀
     have hH : HostAt m' (m (D + 1)) H₀ := Gran.hostAt_agree' hC₀.1 hEb he
     have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
     have : H = H₀ := NFLoc.hostAt_unique (by rw [← e1]; exact hC.1) hH
-    subst this
-    exact h h0' H C₀ hC₀
-  · rw [h0'] at h1; exact absurd h1 (by norm_num)
+    grind
+  omega
 
 /-- A chain descriptor's polygon stays simple when the memory changes above its bound. -/
-theorem simpKeep {P : Polygon} {m m' : ℕ → ℕ} {D E : ℕ} {M : Model}
-    (hwf : ModelDescWF P E m D) (hMD : ModelDescAt m D (Qof P) M)
+theorem simpKeep
     (h : m D = 0 → ∀ H C, ChainDescAt m (D + 1) (Qof P) H C → C.P.Simple)
     (he : ∀ a, a < E → m' a = m a) :
     m' D = 0 → ∀ H C, ChainDescAt m' (D + 1) (Qof P) H C → C.P.Simple := by
   intro h0 H C hC
   have hD := hwf.1
-  have h0' : m D = 0 := by rw [← he D (by omega)]; exact h0
+  have h0' : m D = 0 := by grind
   rcases hMD with ⟨-, H₀, C₀, hC₀, -⟩ | ⟨h1, -, -⟩
   · obtain ⟨-, -, hEb, -⟩ := (hwf.2 h0').2 H₀ C₀ hC₀
     have hH : HostAt m' (m (D + 1)) H₀ := Gran.hostAt_agree' hC₀.1 hEb he
     have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
     have hHH : H = H₀ := NFLoc.hostAt_unique (by rw [← e1]; exact hC.1) hH
     have hPP : C.P = C₀.P := by rw [hC.2.1, hC₀.2.1, hHH]
-    rw [hPP]; exact h h0' H₀ C₀ hC₀
-  · rw [h0'] at h1; exact absurd h1 (by norm_num)
+    grind
+  omega
+
+
+end
 
 /-- The facts about the region-loop data and the configuration `c₀` at the start of the loop. -/
 structure RegGood (E : RegEnv) (c₀ : Config) : Prop where
@@ -196,16 +202,17 @@ structure RegI (E : RegEnv) (c₀ : Config) (newL : List (ℕ × (ℕ × ℕ × 
 
 /-! ## Straight-line pieces -/
 
-theorem load42_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
+section
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include hw
+theorem load42_exec :
     ∃ c' k, Exec P W (block [.loadN 80042 80041]) c c' k ∧ k = 1 ∧
       c'.nreg 80042 = c.nmem (c.nreg 80041) ∧ (∀ r, r ≠ 80042 → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   exec_block
-  refine ⟨rfl, ?_, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-    simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other]
+  simp_all
 
-theorem argS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
+theorem argS_exec :
     ∃ c' k, Exec P W argS c c' k ∧ k = 7 ∧
       c'.nreg 81000 = c.nreg 80000 ∧ c'.nreg 81001 = c.nreg 80012 ∧
       c'.nreg 81002 = c.nreg 80040 ∧ c'.nreg 81003 = c.nreg 80004 ∧
@@ -215,10 +222,9 @@ theorem argS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
       c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold argS
   exec_block
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-    simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+  grind [Machine.upd_same, Machine.upd_other]
 
-theorem appS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {d : ℕ}
+theorem appS_exec {d : ℕ}
     (h43 : c.nreg 80043 = d) (h20 : c.nreg 80020 = 1) (hd : d + 3 ≤ W)
     (hn : c.nreg 80018 + 1 ≤ W) :
     ∃ c' k, Exec P W appS c c' k ∧ k = 7 ∧ c'.nreg 80043 = d + 3 ∧
@@ -235,7 +241,7 @@ theorem appS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
     simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, h43, h20]
 
-theorem tail_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+theorem tail_exec
     (h1 : c.nreg 80041 + c.nreg 80023 ≤ W) (h2 : c.nreg 80040 + c.nreg 80020 ≤ W) :
     ∃ c' k, Exec P W (block [.addN 80041 80041 80023, .addN 80040 80040 80020]) c c' k ∧
       k = 2 ∧ c'.nreg 80041 = c.nreg 80041 + c.nreg 80023 ∧
@@ -243,25 +249,29 @@ theorem tail_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       (∀ r, r ≠ 80041 → r ≠ 80040 → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   exec_block
-  · exact h1
-  · simp (disch := omega) only [Machine.upd_other]; exact h2
-  · refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-      simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+  all_goals simp_all
 
 /-! ## The call of the splitting step -/
 
+
+end
+
+section
+variable {E : RegEnv} {c₀ c : Config} {newL : List (ℕ × (ℕ × ℕ × ℕ))} (hE : RegGood E c₀) (hI : RegI E c₀ newL c)
+include c₀ newL hE hI
 /-- The memory of the loop agrees with the initial memory below `A₀`. -/
-theorem RegI.agree {E : RegEnv} {c₀ c : Config} {newL : List (ℕ × (ℕ × ℕ × ℕ))}
-    (hE : RegGood E c₀) (hI : RegI E c₀ newL c) : ∀ a, a < E.A₀ → c.nmem a = E.m₀ a :=
+theorem RegI.agree : ∀ a, a < E.A₀ → c.nmem a = E.m₀ a :=
   fun a ha => (hI.low a (lt_of_lt_of_le ha hE.hA₀)).trans (hE.hlow a ha)
 
-theorem RegI.nfWithin {E : RegEnv} {c₀ c : Config} {newL : List (ℕ × (ℕ × ℕ × ℕ))}
-    (hE : RegGood E c₀) (hI : RegI E c₀ newL c) {A : ℕ} (hA : E.LB ≤ A) :
+theorem RegI.nfWithin {A : ℕ} (hA : E.LB ≤ A) :
     NFWithin c.nmem E.H A E.N :=
   (hE.hNW.transport hI.low).mono hA
 
+
+end
+
 theorem RegGood.lb_le {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀) :
-    E.LB ≤ c₀.nreg ALLOC := by have := hE.alloc; omega
+    E.LB ≤ c₀.nreg ALLOC := by ram_grind
 
 /-- The degree word of region `r`. -/
 theorem RegI.deg_word {E : RegEnv} {c₀ c : Config} {newL : List (ℕ × (ℕ × ℕ × ℕ))}
@@ -272,10 +282,7 @@ theorem RegI.deg_word {E : RegEnv} {c₀ c : Config} {newL : List (ℕ × (ℕ �
   have h5 : c.nmem (E.H + 5) = c₀.nmem (E.H + 5) := hI.low _ (by omega)
   have hreg := (hNWc.nfAt.2.2.2.2.2.2.2.1 (c.nreg 80040) hr).2.1
   rw [hI.ptr, ← h5]
-  unfold degOf
-  rw [← hreg]
-  congr 1
-  ring
+  grind [degOf]
 
 set_option maxHeartbeats 4000000 in
 /-- **One call of the splitting step** on a region with more than `D` exit chords: a sound chord
@@ -300,30 +307,30 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   have reg8 : ∀ q, 80000 ≤ q → q < 81000 → q ≠ 80040 → q ≠ 80041 → q ≠ 80042 → q ≠ 80018 →
       q ≠ 80043 → c.nreg q = c₀.nreg q := hI.regs
   have c00 : c.nreg 80000 = E.MD := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r00]
+    grind
   have c03 : c.nreg 80003 = E.D := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r03]
+    grind
   have c04 : c.nreg 80004 = E.γ := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r04]
+    grind
   have c06 : c.nreg 80006 = E.ctx := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r06]
+    grind
   have c12 : c.nreg 80012 = E.H := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r12]
+    grind
   have c19 : c.nreg 80019 = E.dcap := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r19]
+    grind
   have c20 : c.nreg 80020 = 1 := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r20]
+    grind
   have c24 : c.nreg 80024 = 0 := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r24]
+    grind
   have hagree := hI.agree hE'
-  have hA0c : E.A₀ ≤ c.nreg ALLOC := by have := hI.alloc; have := hE'.lb_le; omega
-  have hLBc : E.LB ≤ c.nreg ALLOC := by have := hI.alloc; have := hE'.lb_le; omega
+  have hA0c : E.A₀ ≤ c.nreg ALLOC := by have := hI.alloc; omega
+  have hLBc : E.LB ≤ c.nreg ALLOC := by have := hI.alloc; omega
   -- arguments
   obtain ⟨c₁, k₁, e₁, hk₁, a0, a1, a2, a3, a4, a5, a6, R₁, rr₁, m₁, rm₁, o₁⟩ :=
     argS_exec (P := E.P) c hI.wb
   have w₁ := e₁.wb_right
   have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := R₁ _ (by left; decide)
-  have hag₁ : ∀ a, a < E.A₀ → c₁.nmem a = E.m₀ a := fun a ha => by rw [m₁, hagree a ha]
+  have hag₁ : ∀ a, a < E.A₀ → c₁.nmem a = E.m₀ a := fun a ha => by grind
   obtain ⟨hMD₁, hwf₁⟩ := Gran.desc_agree' hwf hMD hag₁
   have hNW₁ : NFWithin c₁.nmem E.H (c₁.nreg ALLOC) E.N := by
     rw [m₁, A₁]; exact hI.nfWithin hE' hLBc
@@ -342,10 +349,10 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
         M.DegLe (N.F M (Qof E.P)) (c₁.nreg 81005) ∧
         M.Semigranular (N.F M (Qof E.P)) (c₁.nreg 81003) ∧ c₁.nreg 81002 < N.nRegions := by
     rw [a0, a1, a2, a3, a4, a5, c00, c12, c04, c06, c19]
-    refine ⟨hG, hWh, ?_, hcap _ hag₁, hwf₁.mono (by rw [A₁]; exact hA0c),
+    refine ⟨hG, hWh, ?_, hcap _ hag₁, hwf₁.mono (by omega),
       hregKeep hwf hMD hreg hag₁, simpKeep hwf hMD hsimp hag₁, E.M, E.N, hMD₁, hGM,
-      hOk, hNW₁, hNF, hdeg, hsg, by rw [← hR]; exact hr⟩
-    exact E.X.mono _ _ _ _ _ (by rw [A₁]; exact hA0c)
+      hOk, hNW₁, hNF, hdeg, hsg, by omega⟩
+    exact E.X.mono _ _ _ _ _ (by omega)
       (E.X.local_ _ _ _ _ _ (fun a ha => (hag₁ a ha).symm) hX)
   have hcostle : costF E.κf E.F E.G E.Hc E.dcap E.γ + 20 = E.Bf := rfl
   have hroomF : c₁.nreg ALLOC + E.κf (c₁.nreg 81005) * E.F (c₁.nreg 81003) *
@@ -353,9 +360,7 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
     rw [a5, a3, c19, c04, A₁]
     have h1 := hI.room
     have h2 : (E.Bf + 2) * 1 ≤ (E.Bf + 2) * (E.R - r) := Nat.mul_le_mul_left _ (by omega)
-    unfold costF at hcostle
-    have := hroom₀
-    nlinarith
+    grind [costF]
   obtain ⟨c₂, k₂, e₂, hk₂, ⟨P₂8, P₂fl, P₂⟩, F₂⟩ := hF E.P E.W c₁ w₁ pre hroomF
   beta_reduce at hk₂
   rw [a5, a3, c19, c04] at hk₂
@@ -366,7 +371,7 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   obtain ⟨hsnd, hcpl⟩ := P₂ E.M E.N E.reg hMD₁' hNAt₁ hNF hregs
   obtain ⟨hRC, -, -, hRO⟩ := hregs
   have hdegr : E.M.deg (E.N.F E.M (Qof E.P)) (E.reg r) = degOf E.N r :=
-    Gran.deg_region hNF hRC hRO (by rw [← hR]; exact hr)
+    Gran.deg_region hNF hRC hRO (by omega)
   have hflag : c₂.nreg 81007 = 1 := hcpl (by rw [a6, c03]; exact hfull)
     (by rw [a6, c03, a2, hdegr]; exact hhigh)
   obtain ⟨s1, s2, s3, s4⟩ := hsnd hflag
@@ -389,11 +394,11 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
     rw [A₁]; have := hI.alloc; omega
   have hWW : c₂.nreg ALLOC ≤ E.W := w₂.1 _
   obtain ⟨c₃, k₃, e₃, hk₃, t43, t18, m₃, R₃, rr₃, rm₃, o₃⟩ := appS_exec (P := E.P) c₂ w₂ d43 d20
-    (by omega) (by have := w₂.1 80018; omega)
+    (by omega) (by omega)
   have f24 : c₂.nreg 80024 = 0 := by
     rw [P₂8 _ (band8 (by omega) (by omega)) (by omega), R₁ _ (Or.inl (by decide)), c24]
   have e₂₃ : Exec E.P E.W (.ifLtN 80024 81007 appS .skip) c₂ c₃ (k₃ + 1) :=
-    .ifLtN_true (by rw [f24, hflag]; omega) e₃
+    .ifLtN_true (by omega) e₃
   -- memory facts
   have hm₂low : ∀ a, a < c₁.nreg ALLOC → c₂.nmem a = c₁.nmem a := F₂.2.2.1
   have hmem : ∀ a, a < E.LB + 3 * (E.K + newL.length) → c₃.nmem a = c.nmem a := by
@@ -405,8 +410,8 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   · unfold costF; omega
   · -- the frame
     have RF₁ : RF dBands E.A₀ c c₁ k₁ := rf_of_regs (fun q hq => R₁ q (by
-      rcases hq with hq | hq <;> [left; right] <;> omega)) rr₁ m₁ rm₁ o₁
-    have RF₂ : RF dBands E.A₀ c₁ c₂ k₂ := RF.of_frame F₂ (by rw [A₁]; exact hA0c)
+      omega)) rr₁ m₁ rm₁ o₁
+    have RF₂ : RF dBands E.A₀ c₁ c₂ k₂ := RF.of_frame F₂ (by omega)
     have RF₃ : RF dBands E.A₀ c₂ c₃ (k₃ + 1) := by
       have hA₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := R₃ _ (by decide) (by decide)
       have b43 : bandOf 80043 ∈ dBands := by rw [band8 (by norm_num) (by norm_num)]; exact mem_dBands_8
@@ -429,7 +434,7 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
         Machine.upd_same]
     · rw [hlen', m₃, Machine.upd_other _ _ _ (by omega), Machine.upd_same]
     · rw [hlen', m₃, Machine.upd_same]
-  · rw [R₃ q q4 q3, P₂8 q (band8 q1 (by omega)) q2, R₁ q (by left; exact q2)]
+  · rw [R₃ q q4 q3, P₂8 q (band8 q1 (by omega)) q2, R₁ q (by omega)]
 
 /-! ## One region, and the loop -/
 
@@ -459,15 +464,15 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   have hroom₁ : c₁.nreg ALLOC + (E.Bf + 2) * (E.R - c₁.nreg 80040) ≤
       c₀.nreg ALLOC + (E.Bf + 2) * E.R := by
     rw [R₁ _ (by decide), R₁ _ (by decide)]; exact hI.room
-  have hI₁ : RegI E c₀ newL c₁ := ⟨w₁, by rw [R₁ _ (by decide)]; exact hI.r_le,
+  have hI₁ : RegI E c₀ newL c₁ := ⟨w₁, by grind,
     by rw [R₁ _ (by decide), R₁ _ (by decide)]; exact hI.ptr,
     by rw [R₁ _ (by decide)]; exact hI.hfst, hI.hgood, by rw [R₁ _ (by decide)]; exact hI.cnt,
     by rw [R₁ _ (by decide)]; exact hI.dst, by rw [m₁]; exact hI.list,
     fun a ha => by rw [m₁]; exact hI.low a ha,
-    fun q q1 q2 q3 q4 q5 q6 q7 => by rw [R₁ q q5]; exact hI.regs q q1 q2 q3 q4 q5 q6 q7,
+    fun q q1 q2 q3 q4 q5 q6 q7 => by grind,
     by rw [R₁ _ (by decide)]; exact hI.alloc, hroom₁⟩
   have RF₁ : RF dBands E.A₀ c c₁ k₁ := rf_of_regs (fun q hq => R₁ q (by omega)) rr₁ m₁ rm₁ o₁
-  have r1 : c₁.nreg 80040 = r := by rw [R₁ _ (by decide), hrdef]
+  have r1 : c₁.nreg 80040 = r := by grind
   -- the conditional call
   obtain ⟨c₂, k₂, newL', e₂, hk₂, RF₂, w₂, hfst₂, hgood₂, cnt₂, dst₂, list₂, low₂, reg₂⟩ :
       ∃ (c₂ : Config) (k₂ : ℕ) (newL' : List (ℕ × (ℕ × ℕ × ℕ))),
@@ -481,35 +486,31 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
       (∀ q, 80000 ≤ q → q < 81000 → q ≠ 80018 → q ≠ 80043 → c₂.nreg q = c₁.nreg q) := by
     by_cases hhigh : E.D < degOf E.N r
     · obtain ⟨c₂, k₂, t, e₂, hk₂, RF₂, w₂, hgood, t18, t43, tlist, tlow, treg⟩ :=
-        call_step hE hI₁ (by rw [r1]; exact hr) (by rw [r1]; exact hhigh)
+        call_step hE hI₁ (by omega) (by grind)
       rw [r1] at hgood
       refine ⟨c₂, k₂ + 1, newL ++ [(r, t)],
-        .ifLtN_true (by rw [R₁ _ (by decide), c03, l42]; exact hhigh) e₂, by omega,
+        .ifLtN_true (by grind) e₂, by omega,
         RF₂.mono subset_rfl (by omega), w₂, ?_, ?_, ?_, ?_, ?_, tlow, treg⟩
       · rw [List.map_append, hI.hfst, hrdef, highList_succ, ite_eq_left hhigh]; rfl
       · intro p hp
         rcases List.mem_append.1 hp with hp | hp
         · exact hI.hgood p hp
-        · simp only [List.mem_singleton] at hp; subst hp; exact hgood
+        grind
       · rw [t18, hI₁.cnt, List.length_append, List.length_singleton]; ring
       · rw [t43, hI₁.dst, List.length_append, List.length_singleton]; ring
-      · rw [List.map_append, ← List.append_assoc]; exact tlist
-    · refine ⟨c₁, 2, newL, .ifLtN_false (by rw [R₁ _ (by decide), c03, l42]; exact hhigh)
+      grind
+    · refine ⟨c₁, 2, newL, .ifLtN_false (by grind)
         (.skip w₁), by omega, RF.refl _ _, w₁, ?_, hI.hgood, hI₁.cnt, hI₁.dst, hI₁.list,
         fun _ _ => rfl, fun _ _ _ _ _ => rfl⟩
       rw [hI.hfst, hrdef, highList_succ, ite_eq_right hhigh, List.append_nil]
   -- the tail
-  have k40 : c₂.nreg 80040 = r := by rw [reg₂ _ (by omega) (by omega) (by omega) (by omega), r1]
+  have k40 : c₂.nreg 80040 = r := by grind
   have k41 : c₂.nreg 80041 = c₀.nmem (E.H + 5) + 2 + 5 * r := by
     rw [reg₂ _ (by omega) (by omega) (by omega) (by omega), hI₁.ptr, r1]
   have k20 : c₂.nreg 80020 = 1 := by
-    rw [reg₂ _ (by omega) (by omega) (by omega) (by omega),
-      hI₁.regs _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
-      hE.r20]
+    grind
   have k23 : c₂.nreg 80023 = 5 := by
-    rw [reg₂ _ (by omega) (by omega) (by omega) (by omega),
-      hI₁.regs _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
-      hE.r23]
+    grind
   -- the pointer stays below the allocator
   have hNWc : NFWithin c.nmem E.H E.LB E.N := hI.nfWithin hE le_rfl
   have hareas := (Gran.nf_areas hNWc).2.2.1 r hr
@@ -519,12 +520,11 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   have hLBW : E.LB ≤ E.W := le_trans (hE.lb_le) (hE.wb.1 ALLOC)
   have hRW : E.R + 1 ≤ E.W := by
     have := hE.room
-    have : E.R ≤ (E.Bf + 2) * E.R := Nat.le_mul_of_pos_left _ (by omega)
-    omega
+    grind
   have hLB3 : E.LB + 3 ≤ E.W := by
     have := hE.alloc; have := hE.wb.1 ALLOC; omega
   obtain ⟨c₃, k₃, e₃, hk₃, t41, t40, R₃, rr₃, m₃, rm₃, o₃⟩ := tail_exec (P := E.P) c₂ w₂
-    (by rw [k41, k23]; omega) (by rw [k40, k20]; omega)
+    (by omega) (by omega)
   rw [k41, k23] at t41
   rw [k40, k20] at t40
   have RF₃ : RF dBands E.A₀ c₂ c₃ k₃ := rf_of_regs (fun q hq => R₃ q (by omega) (by omega))
@@ -532,12 +532,12 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   have RFall : RF dBands E.A₀ c c₃ (k₁ + (k₂ + k₃)) := RF₁.trans (RF₂.trans RF₃)
   have hBf : costF E.κf E.F E.G E.Hc E.dcap E.γ + 20 = E.Bf := rfl
   refine ⟨c₃, k₁ + (k₂ + k₃), newL', .seq e₁ (.seq e₂ e₃), ⟨e₃.wb_right, by omega,
-    by rw [t41, t40]; ring, by rw [t40]; exact hfst₂, hgood₂,
-    by rw [R₃ _ (by decide) (by decide)]; exact cnt₂,
-    by rw [R₃ _ (by decide) (by decide)]; exact dst₂, by rw [m₃]; exact list₂,
+    by omega, by grind, hgood₂,
+    by grind,
+    by grind, by grind,
     fun a ha => by rw [m₃, low₂ a ha, m₁]; exact hI.low a ha,
-    fun q q1 q2 q3 q4 q5 q6 q7 => ?_, ?_, ?_⟩, RFall, by omega, by rw [t40, hrdef]⟩
-  · rw [R₃ q q4 q3, reg₂ q q1 q2 q6 q7]; exact hI₁.regs q q1 q2 q3 q4 q5 q6 q7
+    fun q q1 q2 q3 q4 q5 q6 q7 => ?_, ?_, ?_⟩, RFall, by omega, by omega⟩
+  · grind
   · exact le_trans hI.alloc RFall.2.2.2.2.2.1
   · have h1 := hI.room
     have h2 := RFall.2.2.2.2.2.2
@@ -551,10 +551,10 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
 theorem reg_exec {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀) :
     ∃ c' k newL, Exec E.P E.W (regS E.sF) c₀ c' k ∧ RegI E c₀ newL c' ∧
       c'.nreg 80040 = E.R ∧ RF dBands E.A₀ c₀ c' k ∧ k ≤ (E.Bf + 2) * E.R + 2 := by
-  have I0 : RegI E c₀ [] c₀ := ⟨hE.wb, by rw [hE.r40]; omega, by rw [hE.r40, hE.r41],
-    by rw [hE.r40]; rfl, fun p hp => by simp at hp, by rw [hE.r18]; simp,
-    by rw [hE.r43]; simp, by simpa using hE.list, fun _ _ => rfl,
-    fun _ _ _ _ _ _ _ _ => rfl, le_rfl, by rw [hE.r40]; simp⟩
+  have I0 : RegI E c₀ [] c₀ := ⟨hE.wb, by ram_grind, by ram_grind,
+    by rw [hE.r40]; rfl, fun p hp => by simp at hp, by ram_grind,
+    by ram_grind, by ram_grind, fun _ _ => rfl,
+    fun _ _ _ _ _ _ _ _ => rfl, le_rfl, by simp_all⟩
   obtain ⟨c', k, e, ⟨newL, I'⟩, hx, RFl, hk⟩ := whileLtN_frame (P := E.P) (W := E.W)
     (a := 80040) (b := 80014) (body := regBody E.sF) (B := dBands) (A₀ := E.A₀)
     (fun c => ∃ newL, RegI E c₀ newL c) (fun c => E.R - c.nreg 80040) E.Bf
@@ -564,15 +564,14 @@ theorem reg_exec {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀) :
         rw [I.regs 80014 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
           (by omega), hE.r14] at ht
         exact ht
-      obtain ⟨c', k, newL', e, I', RF', hk, h40⟩ := regBody_step hE I t
-      exact ⟨c', k, e, ⟨newL', I'⟩, RF', hk, by omega⟩) ⟨[], I0⟩
+      grind [Chazelle.Core.Restore.regBody_step]) ⟨[], I0⟩
   have hR' : c'.nreg 80040 = E.R := by
     rw [I'.regs 80014 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
       (by omega), hE.r14] at hx
     have := I'.r_le; omega
   refine ⟨c', k, newL, e, I', hR', RFl, ?_⟩
   rw [hE.r40] at hk
-  simpa using hk
+  omega
 
 end
 

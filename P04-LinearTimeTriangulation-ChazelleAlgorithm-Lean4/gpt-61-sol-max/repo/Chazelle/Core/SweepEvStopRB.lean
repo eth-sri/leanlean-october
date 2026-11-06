@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopRA
 
 /-!
@@ -41,7 +43,7 @@ theorem ResOK.transport {C : Chain} {a : Point} {σ : ℝ} {G : Prop} {F : ℕ} 
     ResOK P C a σ G F c' := by
   obtain ⟨h1, h2, h3⟩ := h
   have e0 : c'.nreg F = c.nreg F := hr 0 (by norm_num)
-  refine ⟨by rw [e0]; exact h1, fun hf => ?_, fun hg => by rw [e0]; exact h3 hg⟩
+  refine ⟨by omega, fun hf => ?_, fun hg => by simp_all⟩
   rw [e0] at hf
   obtain ⟨τ, a1, a2, a3, a4, a5, a6, a7⟩ := h2 hf
   rw [hr 1 (by norm_num), hr 2 (by norm_num)]
@@ -65,7 +67,7 @@ theorem save_val (m f : ℕ → ℕ) {F : ℕ} (hF : 244000 ≤ F ∧ F + 6 < 25
   have eA : accA = 242000 := rfl
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, fun q hq => ?_⟩ <;>
     simp only [saveL, regB, regI, upd, eA] <;>
-    simp (disch := omega) only [ite_true, ite_eq_right]
+    grind
 
 /-- **Saving a local hit**: a candidate of the first hit. -/
 theorem save_irs (hI : IInv W c₀ c) {F : ℕ} (hF : 244000 ≤ F ∧ F + 6 < 250000) {C : Chain}
@@ -78,9 +80,7 @@ theorem save_irs (hI : IInv W c₀ c) {F : ℕ} (hF : 244000 ≤ F ∧ F + 6 < 2
       (∀ q, (q < F ∨ F + 6 < q) → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
   have hok : okB W c.nmem (saveL F) c.nreg := by
     simp only [saveL, okB, okI]
-    exact ⟨iscr_sw (by omega) (by omega), iscr_sw (by omega) (by omega),
-      iscr_sw (by omega) (by omega), iscr_sw (by omega) (by omega), iscr_sw (by omega) (by omega),
-      iscr_sw (by omega) (by omega), iscr_sw (by omega) (by omega), trivial⟩
+    ram_grind
   refine (IRS.block _ hI hok).mono (by simp [saveL]) ?_
   rintro c' hc'
   obtain ⟨v0, v1, v2, v3, v4, v5, v6, vo⟩ := save_val c.nmem c.nreg hF
@@ -89,24 +89,18 @@ theorem save_irs (hI : IInv W c₀ c) {F : ℕ} (hF : 244000 ≤ F ∧ F + 6 < 2
   have hm : c'.nmem = c.nmem := by rw [hc']
   refine ⟨?_, fun q hq => e q _ (vo q hq), hm⟩
   obtain ⟨hf1, hf0, hf⟩ := hacc
-  refine ⟨by rw [e _ _ v0]; exact hf1, fun h1 => ?_, fun hg => ?_⟩
+  refine ⟨by ram_grind, fun h1 => ?_, fun hg => ?_⟩
   · rw [e _ _ v0] at h1
     obtain ⟨τ, hτ, hmin, -, hpp, hen, hpos, hrec⟩ := hf h1
     obtain ⟨hτ0, hon⟩ := hL τ hτ
-    refine ⟨τ, hτ0, hon, by rw [e _ _ v1]; exact hen, by rw [e _ _ v1, e _ _ v2]; exact hpp,
-      by rw [e _ _ v1, e _ _ v2]; exact hpos, ?_, fun hg => ?_⟩
+    refine ⟨τ, hτ0, hon, by ram_grind, by ram_grind,
+      by ram_grind, ?_, fun hg => ?_⟩
     · refine absRec_transport (c := c) hrec (e _ _ v3) ?_ ?_ ?_
-      · rw [show F + 3 + 1 = F + 4 by omega]; exact e _ _ v4
-      · rw [show F + 3 + 2 = F + 5 by omega]; exact e _ _ v5
-      · rw [show F + 3 + 3 = F + 6 by omega]; exact e _ _ v6
+      · ram_grind
+      all_goals grind
     · obtain ⟨hfree, hmem⟩ := hG hg
       exact lh_min hσ (ha hg) hL hfree hmem hτ hmin
-  · rw [e _ _ v0]
-    obtain ⟨-, hmem⟩ := hG hg
-    by_contra hne
-    have h0 : c.nreg accA = 0 := by omega
-    rw [hf0 h0] at hmem
-    exact hmem
+  ram_grind
 
 end
 

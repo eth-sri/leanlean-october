@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStepL1
 
 /-!
@@ -38,14 +40,17 @@ theorem stp_pre_frame (hW : WinOut P J N₁ c cw) (hR : ResetRel cw cs) :
     (∀ x, x < c.nreg ALLOC → cs.nmem x = c.nmem x) ∧
     cs.nreg wGB = cw.nreg wGB ∧ cs.nreg wGK = cw.nreg wGK := by
   obtain ⟨rs₁, -, -, -, -, -, -, -, -, -, hmW, hregW⟩ := hW
-  refine ⟨fun k hk => ?_, fun x hx => by rw [hR.1, hmW x hx], ?_, ?_⟩
-  · rw [hR.2.2.2 _ (by unfold bF sw; omega) (by unfold bN sw; omega)]
+  refine ⟨fun k hk => ?_, fun x hx => by omega_nf, ?_, ?_⟩
+  · rw [hR.2.2.2 _ (by omega_nf) (by omega_nf)]
     exact stp_win_keep hregW hk
-  · exact hR.2.2.2 _ (by unfold bF wGB sw; omega) (by unfold bN wGB sw; omega)
-  · exact hR.2.2.2 _ (by unfold bF wGK sw; omega) (by unfold bN wGK sw; omega)
+  · ram_grind
+  · ram_grind
 
+section
+variable (L : LoopInv P J N₁ N₂ c₀ c)
+include L
 /-- **A stop chord attached on the `C₁` part is a stop record.** -/
-theorem stp_stop_at (L : LoopInv P J N₁ N₂ c₀ c) {s : Set Point}
+theorem stp_stop_at {s : Set Point}
     (hs : s ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)))
     (hss : StopChord2 J (N₂.F (chainModel J.right) (Qof P)) s) {p : ℕ} {t : ℝ}
     (hsA : SideAttach (chainModel J.whole).W s p t) (hL : (Lst J : ℝ) ≤ oW J (p + t)) :
@@ -67,17 +72,17 @@ theorem stp_stop_at (L : LoopInv P J N₁ N₂ c₀ c) {s : Set Point}
     rw [e0, e1]
     show oW J ((rs[i].1 : ℝ) + (chainModel J.whole).param (Qof P) ⟨rs[i].1, rs[i].2.1⟩) = _
     rw [h2, h1]
-  exact ⟨rs, ax, hD, i, hi, h1, h2, h3, hlen ▸ hi, hoff⟩
+  grind
 
 /-- **Every stop record is a cut** of `F₂⁺` on the `C₁` part. -/
-theorem stp_stop_cut (L : LoopInv P J N₁ N₂ c₀ c) {i : ℕ} (hi : i < c.nreg sC) :
+theorem stp_stop_cut {i : ℕ} (hi : i < c.nreg sC) :
     ∃ e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)), ∃ (p : ℕ) (t : ℝ),
       SideAttach (chainModel J.whole).W e p t ∧ stopOff P J c i = oW J (p + t) ∧
       StopChord2 J (N₂.F (chainModel J.right) (Qof P)) e := by
   obtain ⟨rs, ax, hD⟩ := L.stops
   obtain ⟨hlen, -, hrec, -, hok, -⟩ := hD
   have hi' : i < rs.length := hlen ▸ hi
-  have hmem : (stopsOf J (Qof P) N₂ rs)[i]'(by simpa [stopsOf] using hi') ∈
+  have hmem : (stopsOf J (Qof P) N₂ rs)[i]'(by grind [stopsOf]) ∈
       stopsOf J (Qof P) N₂ rs := List.getElem_mem _
   obtain ⟨h1, h2, h3, -⟩ := hok.1 _ hmem
   obtain ⟨e0, e1, -⟩ := hrec i hi'
@@ -89,15 +94,13 @@ theorem stp_stop_cut (L : LoopInv P J N₁ N₂ c₀ c) {i : ℕ} (hi : i < c.nr
   rfl
 
 /-- **The stops at the first cut beyond the key** are the stops `sP` and `sP + 1`. -/
-theorem stp_stop_near (L : LoopInv P J N₁ N₂ c₀ c) {o : ℝ} (ho : keyOff P J c < o)
+theorem stp_stop_near {o : ℝ} (ho : keyOff P J c < o)
     (hgap : ∀ e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)), ∀ (q : ℕ) (s : ℝ),
       SideAttach (chainModel J.whole).W e q s → ¬ (keyOff P J c < oW J (q + s) ∧ oW J (q + s) < o))
     {i : ℕ} (hi : i < c.nreg sC) (hio : stopOff P J c i = o) :
     i = c.nreg sP ∨ i = c.nreg sP + 1 := by
   have hpi : c.nreg sP ≤ i := by
-    by_contra h
-    have := (L.ptrL i hi).1 (by omega)
-    linarith
+    ram_grind
   -- every stop from `sP` to `i` is at `o`
   have hat : ∀ i', c.nreg sP ≤ i' → i' ≤ i → stopOff P J c i' = o := by
     intro i' h1 h2
@@ -107,22 +110,22 @@ theorem stp_stop_near (L : LoopInv P J N₁ N₂ c₀ c) {o : ℝ} (ho : keyOff 
       have := (L.ptrL i' hi').2 (not_lt.1 h)
       omega
     have hle : stopOff P J c i' ≤ o := hio ▸ L.sorted i' i h2 hi
-    obtain ⟨e, he, q, s, hA, hq, -⟩ := stp_stop_cut L hi'
-    rcases hle.lt_or_eq with h | h
-    · rw [hq] at hgt h
-      exact absurd ⟨hgt, h⟩ (hgap e he q s hA)
-    · exact h
+    grind [Chazelle.Core.SweepEv.stp_stop_cut]
   by_contra hne
   have h2 : c.nreg sP + 2 ≤ i := by omega
   have := L.two (c.nreg sP) (by omega)
-  rw [hat _ le_rfl (by omega), hat _ (by omega) h2] at this
-  exact lt_irrefl _ this
+  grind
 
+
+end
+
+section
+variable (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P J N₁ N₂ c₀ c) (hW : WinOut P J N₁ c cw) (hR : ResetRel cw cs)
+include E L hW hR
 /-- **The chord of `S₂` of a non-stop chord at the first cut beyond the key is tried** in the
 iteration: it touches a region of the label set or a gap region (`regO`), or contains a stop chord
 at the cut, the stop `sP` or `sP + 1` (`parO`). -/
-theorem stp_query_tried (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P J N₁ N₂ c₀ c)
-    (hW : WinOut P J N₁ c cw) (hR : ResetRel cw cs) {o : ℝ} (ho : keyOff P J c < o)
+theorem stp_query_tried {o : ℝ} (ho : keyOff P J c < o)
     (hgap : ∀ e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)), ∀ (q : ℕ) (s : ℝ),
       SideAttach (chainModel J.whole).W e q s → ¬ (keyOff P J c < oW J (q + s) ∧ oW J (q + s) < o))
     {pK : ℕ} {tK : ℝ} (hoK : oW J (pK + tK) = o) {ch : Set Point}
@@ -139,11 +142,11 @@ theorem stp_query_tried (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopI
   have ekN : cs.nreg kN = c.nreg kN := hkp 2402 (by omega)
   have ekL : ∀ u, u < 4 → cs.nreg (kL + u) = c.nreg (kL + u) := fun u hu => by
     have := hkp (2403 + u) (by omega)
-    rwa [show sw (2403 + u) = kL + u by unfold kL sw; omega] at this
+    grind [kL, sw]
   have egN : cs.nreg gN = c.nreg gN := hkp 2440 (by omega)
   have egR : ∀ u, u < 2 → cs.nreg (gR + u) = c.nreg (gR + u) := fun u hu => by
     have := hkp (2441 + u) (by omega)
-    rwa [show sw (2441 + u) = gR + u by unfold gR sw; omega] at this
+    grind [gR, sw]
   rcases hsrc with ⟨V, -, hVΛ, hT⟩ | ⟨s₀, hs₀, hsA, hss, hsub⟩
   · obtain ⟨k, hk, hci⟩ := Restore.mem_F_iff hch
     refine ⟨k, hk, hci.symm, fun s hs => ?_⟩
@@ -152,20 +155,20 @@ theorem stp_query_tried (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopI
         2 * k + s ∈ regO N₂ l := by
       intro l hl hlV
       refine ⟨k, ((hRO l hl).1 k).2 ⟨hk, ?_⟩, s, hs, rfl⟩
-      rw [← hci, hlV]; exact hT
+      grind
     rcases hVΛ with ⟨l, hl, hlV⟩ | hg
     · obtain ⟨u, hu, hu4, rfl⟩ : ∃ u, u < c.nreg kN ∧ u < 4 ∧ l = c.nreg (kL + u) := by
         rcases hl with h | h | h | h
-        · exact ⟨0, h.1, by norm_num, by rw [add_zero]; exact h.2⟩
+        · exact ⟨0, h.1, by norm_num, by grind⟩
         · exact ⟨1, h.1, by norm_num, h.2⟩
         · exact ⟨2, h.1, by norm_num, h.2⟩
         · exact ⟨3, h.1, by norm_num, h.2⟩
-      refine Or.inl (Or.inl ⟨u, by rw [ekN]; omega, ?_⟩)
+      refine Or.inl (Or.inl ⟨u, by omega, ?_⟩)
       rw [ekL u hu4]
       exact hreg _ (L.labR u hu) hlV
     · obtain ⟨u, hu, hlV⟩ := L.gap V hg
       have hu2 : u < 2 := by have := L.gapN; omega
-      refine Or.inl (Or.inr ⟨u, by rw [egN]; have := L.gapN; omega, ?_⟩)
+      refine Or.inl (Or.inr ⟨u, by omega, ?_⟩)
       rw [egR u hu2]
       exact hreg _ (L.gapR u hu) hlV
   · -- the parent of a stop at the cut
@@ -185,15 +188,13 @@ theorem stp_query_tried (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopI
     have eaB : cs.nreg aB = c.nreg aB := hkp 2602 (by omega)
     have hlay5 := L.lay5
     have hpo : parOf cs i = ax[i].2.2.2.2 := by
-      unfold parOf
-      rw [eaB, hmem _ (by omega), e4]
-    refine ⟨ax[i].2.2.2.2 - 1, by omega, hpch, fun s hs => Or.inr ⟨i, by rw [esP]; exact hnear,
-      by rw [esC]; exact hic, by rw [hpo]; exact hpar0, s, hs, by rw [hpo]⟩⟩
+      grind [parOf]
+    refine ⟨ax[i].2.2.2.2 - 1, by omega, hpch, fun s hs => Or.inr ⟨i, by omega,
+      by omega, by omega, s, hs, by rw [hpo]⟩⟩
 
 /-- **A non-stop chord at the first cut beyond the key, not beyond the window end, is accepted**
 by the batch of origins (at its far end, from a valid origin). -/
-theorem stp_accepted_of_found (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P J N₁ N₂ c₀ c)
-    (hW : WinOut P J N₁ c cw) (hR : ResetRel cw cs) {A : Set (ℕ × ℕ × ℕ)}
+theorem stp_accepted_of_found {A : Set (ℕ × ℕ × ℕ)}
     (hBA : BatchA P J N₂ cs
       (ShotList.loSet (chainModel J.left) (Qof P) cs.nmem (cs.nreg wGB) (cs.nreg wGK) [])
       (iterO N₂ cs) co A)
@@ -221,7 +222,7 @@ theorem stp_accepted_of_found (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L :
   obtain ⟨ch, hch, a, σ, ha, haR, hav, hat, hfree, rfl, hsrc⟩ :=
     nonstop_found hP hS₂ hF L.keyL L.inv hA.1 hA.2.1 hA.2.2.1 hlt hgap he hA hst
   obtain ⟨k, hk, hkch, htried⟩ := stp_query_tried E L hW hR hlt hgap rfl hch hsrc
-  have hσ : σ = 1 ∨ σ = -1 := by rcases ha with ⟨h, -⟩ | ⟨h, -⟩ <;> simp [h]
+  have hσ : σ = 1 ∨ σ = -1 := by grind
   have hlt' := whole_lt_right hP hS₂a hch ha haR hav hfree hst hA hLst
   have hpt := attach_far hP hσ haR hav hfree hA hLst.le
   have hnv : sidePt (chainModel J.whole).W p t ≠ J.shared := by
@@ -233,8 +234,7 @@ theorem stp_accepted_of_found (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L :
     exact hst (Or.inl (Or.inl ⟨σ', hσ', hfr, he'⟩))
   have ha₁ : a.2 ≤ J.left.top.2 := by
     rcases SweepStop.hit_cases (J := J) (right_hit_end (hS₂a hch) ha).2.1 hσ with h | h
-    · exact absurd h hlt'.ne
-    · exact h.1
+    all_goals grind
   obtain ⟨-, -, d, hMV, hmE, hArr⟩ := cand_prep hP hS₂a hch ha haR hav ha₁ hA hpt hLst hnv hlt'
   rw [← hkch] at ha
   -- the endpoint query
@@ -250,7 +250,7 @@ theorem stp_accepted_of_found (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L :
       · rw [ite_eq_right (by omega)]
   have hjO' : j ∈ iterO N₂ cs := by
     obtain ⟨s, hs, rfl⟩ := hji
-    exact htried s hs
+    grind
   -- the hit is on the gathered arcs
   obtain ⟨-, -, eGB, eGK⟩ := stp_pre_frame hW hR
   obtain ⟨rs₁, -, -, hgk, -, -, -, -, -, hcov, -, -⟩ := hW
@@ -258,18 +258,21 @@ theorem stp_accepted_of_found (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L :
     rw [oW_def, off_key' stp_gW_lt hA.1 hA.2.1 hA.2.2.1, ← hmE]
     unfold mEdge
     rw [dOf_add_mod stp_gW_lt (Lst_ψ_lt hP hMV.1)]
-    push_cast; ring
+    grind
   have hlo : rayPt a σ (J.whole.hitParam a σ) ∈
       ShotList.loSet (chainModel J.left) (Qof P) cs.nmem (cs.nreg wGB) (cs.nreg wGK) [] := by
     have hin := hcov d t hMV hA.2.1 hA.2.2.1 (by rw [hoffd]; exact hlt) (fun h0 => by
-      rw [hoffd]; exact hwin h0)
+      grind)
     rw [hArr.2.2.2.1, ← hgk] at hin
     rw [hR.1, eGB, eGK]
     exact hin
-  obtain ⟨h, hh, hmA⟩ := hBA.comp j hjO' hj ⟨by rw [hjO]; exact haR, by rw [hjO]; exact hav,
-    by rw [hjO]; exact hat⟩ p t (by rw [hjO, hjD]; exact hA) (by rw [hjO, hjD]; exact hpt) hLst
-    hnv (by rw [hjO, hjD]; exact hlt') (by rw [hjO, hjD]; exact hlo)
+  obtain ⟨h, hh, hmA⟩ := hBA.comp j hjO' hj ⟨by grind, by grind,
+    by grind⟩ p t (by grind) (by grind) hLst
+    hnv (by grind) (by grind)
   exact ⟨k, hk, a, σ, ha, haR, hav, hat, hfree, rfl, hlt', j, hj, hjk, hjO, hjD, h, hh, hmA⟩
+
+
+end
 
 end
 

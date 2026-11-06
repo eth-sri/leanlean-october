@@ -33,7 +33,7 @@ variable {D : Set Point} {F : Set (Set Point)}
 /-! ### Touching -/
 
 /-- A chord `c` *touches* a set `U`: some interior point of `c` lies in the closure of `U`. -/
-def TouchesIn (D : Set Point) (c U : Set Point) : Prop := ∃ z ∈ c ∩ D, z ∈ closure U
+def TouchesIn (D c U : Set Point) : Prop := ∃ z ∈ c ∩ D, z ∈ closure U
 
 /-- The centre of a half-disk is in its closure. -/
 theorem mem_closure_halfDisk {w : Point} {r τ : ℝ} (hτ : τ = 1 ∨ τ = -1) (hr : 0 < r) :
@@ -41,19 +41,20 @@ theorem mem_closure_halfDisk {w : Point} {r τ : ℝ} (hτ : τ = 1 ∨ τ = -1)
   rw [Metric.mem_closure_iff]
   intro ε hε
   set s := min ε r / 2 with hs
-  have hs0 : 0 < s := by rw [hs]; exact half_pos (lt_min hε hr)
-  have hsε : s < ε := by rw [hs]; linarith [min_le_left ε r]
-  have hsr : s < r := by rw [hs]; linarith [min_le_right ε r]
+  have hs0 : 0 < s := by simp_all
+  have hsε : s < ε := by grind
+  have hsr : s < r := by grind
   refine ⟨(w.1, w.2 + τ * s), vert_mem_halfDisk hτ hs0 hsr, ?_⟩
   rw [dist_comm, dist_eq_norm, Prod.norm_def]
   simp only [Geometry.sub_fst, Geometry.sub_snd, sub_self, norm_zero, add_sub_cancel_left,
     Real.norm_eq_abs, abs_mul, abs_of_pos hs0]
-  rcases hτ with rfl | rfl <;> simp [hsε, hε]
+  rcases hτ with rfl | rfl <;> simp_all
 
+section
+variable (hF : ChordSystem D F) {S : Set (Set Point)} (hS : S ⊆ F) {c : Set Point} (hc : c ∈ F) (hcS : c ∉ S) {R : Set Point} (hR : R ∈ regionsIn D S) (hcR : c ∩ D ⊆ R)
+include hF hS hc hcS hR hcR
 /-- Both regions produced by splitting along `c` are touched by `c`. -/
-theorem ChordSystem.touches_of_subset_split (hF : ChordSystem D F) {S : Set (Set Point)}
-    (hS : S ⊆ F) {c : Set Point} (hc : c ∈ F) (hcS : c ∉ S) {R : Set Point}
-    (hR : R ∈ regionsIn D S) (hcR : c ∩ D ⊆ R) {U : Set Point}
+theorem ChordSystem.touches_of_subset_split {U : Set Point}
     (hU : U ∈ regionsIn D (insert c S)) (hUR : U ⊆ R) : TouchesIn D c U := by
   obtain ⟨z₀, hz₀⟩ := (hF.chord_inter_nonempty_isPreconnected hc).1
   obtain ⟨u, hu⟩ := regionsIn_nonempty hU
@@ -64,44 +65,40 @@ theorem ChordSystem.touches_of_subset_split (hF : ChordSystem D F) {S : Set (Set
 
 /-- **A chord touches exactly the two regions it separates.**  With the data of
 `regionsIn_insert`, a region of `insert c S` is touched by `c` iff it is `R₁` or `R₂`. -/
-theorem ChordSystem.touches_iff_of_split (hF : ChordSystem D F) {S : Set (Set Point)}
-    (hS : S ⊆ F) {c : Set Point} (hc : c ∈ F) (hcS : c ∉ S) {R : Set Point}
-    (hR : R ∈ regionsIn D S) (hcR : c ∩ D ⊆ R) {R₁ R₂ : Set Point}
+theorem ChordSystem.touches_iff_of_split {R₁ R₂ : Set Point}
     (hunion : R₁ ∪ R₂ = R \ c) (hR₁ : R₁ ∈ regionsIn D (insert c S))
     (hR₂ : R₂ ∈ regionsIn D (insert c S))
     (heq : regionsIn D (insert c S) = (regionsIn D S \ {R}) ∪ {R₁, R₂}) :
     ∀ W ∈ regionsIn D (insert c S), TouchesIn D c W ↔ W = R₁ ∨ W = R₂ := by
   have hR₁R : R₁ ⊆ R := fun p hp => by
     have : p ∈ R₁ ∪ R₂ := Or.inl hp
-    rw [hunion] at this
-    exact this.1
+    simp_all
   have hR₂R : R₂ ⊆ R := fun p hp => by
     have : p ∈ R₁ ∪ R₂ := Or.inr hp
-    rw [hunion] at this
-    exact this.1
+    simp_all
   intro W hW
   constructor
   · rintro ⟨z, hz, hzW⟩
     by_contra hnot
     push Not at hnot
     have hW' : W ∈ regionsIn D S \ {R} := by
-      rw [heq] at hW
-      rcases hW with h | h
-      · exact h
-      · simp only [mem_insert_iff, mem_singleton_iff] at h
-        rcases h with rfl | rfl
-        · exact absurd rfl hnot.1
-        · exact absurd rfl hnot.2
+      grind
     rw [Set.mem_sdiff, mem_singleton_iff] at hW'
     have hdisj : Disjoint (closure W) R :=
       (regionsIn_disjoint_of_ne hW'.1 hR hW'.2).closure_left (hF.regionsIn_open hS hR)
-    exact hdisj.notMem_of_mem_left hzW (hcR hz)
+    grind
   · rintro (rfl | rfl)
     · exact hF.touches_of_subset_split hS hc hcS hR hcR hR₁ hR₁R
     · exact hF.touches_of_subset_split hS hc hcS hR hcR hR₂ hR₂R
 
+
+end
+
+section
+variable (hF : ChordSystem D F)
+include hF
 /-- Every chord of a submap touches exactly two regions of it, and they are distinct. -/
-theorem ChordSystem.touches_iff (hF : ChordSystem D F) {S : Set (Set Point)} (hS : S ⊆ F)
+theorem ChordSystem.touches_iff {S : Set (Set Point)} (hS : S ⊆ F)
     {c : Set Point} (hc : c ∈ S) :
     ∃ R₁ R₂ : Set Point, R₁ ≠ R₂ ∧ ∀ W ∈ regionsIn D S, TouchesIn D c W ↔ W = R₁ ∨ W = R₂ := by
   have hS' : S \ {c} ⊆ F := fun _ h => hS h.1
@@ -111,20 +108,15 @@ theorem ChordSystem.touches_iff (hF : ChordSystem D F) {S : Set (Set Point)} (hS
     hF.regionsIn_insert hS' (hS hc) hcS'
   refine ⟨R₁, R₂, hne, ?_⟩
   have := hF.touches_iff_of_split hS' (hS hc) hcS' hR hcR hunion hR₁ hR₂ heq
-  rwa [hins] at this
+  grind
 
 /-- If a chord `c' ≠ c` touches `R` and `R₁ ∪ R₂ = R \ c`, then it touches `R₁` or `R₂`. -/
-theorem ChordSystem.touches_split_or (hF : ChordSystem D F) {c c' : Set Point} (hc : c ∈ F)
+theorem ChordSystem.touches_split_or {c c' : Set Point} (hc : c ∈ F)
     (hc' : c' ∈ F) (hne : c ≠ c') {R R₁ R₂ : Set Point} (hunion : R₁ ∪ R₂ = R \ c)
     (h : TouchesIn D c' R) : TouchesIn D c' R₁ ∨ TouchesIn D c' R₂ := by
   obtain ⟨z, hz, hzR⟩ := h
   have hsub : R ⊆ R₁ ∪ R₂ ∪ c := by
-    intro p hp
-    by_cases hpc : p ∈ c
-    · exact Or.inr hpc
-    · left
-      rw [hunion]
-      exact ⟨hp, hpc⟩
+    simp_all
   have hcl : closure R ⊆ closure R₁ ∪ closure R₂ ∪ c := by
     refine (closure_mono hsub).trans ?_
     rw [closure_union, closure_union, (hF.isClosed_chord hc).closure_eq]
@@ -135,6 +127,9 @@ theorem ChordSystem.touches_split_or (hF : ChordSystem D F) {c c' : Set Point} (
 
 /-! ### The dual graph -/
 
+
+end
+
 /-- Adjacency of the dual graph of `S`: two distinct regions of `S` touched by a common chord
 of `S`. -/
 def DualAdjIn (D : Set Point) (S : Set (Set Point)) (U V : Set Point) : Prop :=
@@ -142,20 +137,25 @@ def DualAdjIn (D : Set Point) (S : Set (Set Point)) (U V : Set Point) : Prop :=
 
 theorem DualAdjIn.symm {S : Set (Set Point)} {U V : Set Point} (h : DualAdjIn D S U V) :
     DualAdjIn D S V U := by
-  obtain ⟨hU, hV, hne, c, hc, h1, h2⟩ := h
-  exact ⟨hV, hU, hne.symm, c, hc, h2, h1⟩
+  grind [Chazelle.Chain.DualAdjIn]
 
+section
+variable (D : Set Point) (S : Set (Set Point))
+include D S
 /-- The dual graph of the submap `S`, on the ambient type `Set Point`: vertices outside
 `regionsIn D S` are isolated. -/
-def dualGraphIn (D : Set Point) (S : Set (Set Point)) : SimpleGraph (Set Point) where
+def dualGraphIn : SimpleGraph (Set Point) where
   Adj := DualAdjIn D S
   symm := ⟨fun _ _ (h : DualAdjIn D S _ _) => h.symm⟩
   loopless := ⟨fun _ (h : DualAdjIn D S _ _) => h.2.2.1 rfl⟩
 
 /-- The dual graph on the regions of `S`: the induced subgraph of `dualGraphIn D S` on
 `regionsIn D S`. -/
-abbrev dualTreeIn (D : Set Point) (S : Set (Set Point)) : SimpleGraph (regionsIn D S) :=
+abbrev dualTreeIn : SimpleGraph (regionsIn D S) :=
   (dualGraphIn D S).induce (regionsIn D S)
+
+
+end
 
 /-- The two regions touched by a chord are adjacent in the dual graph. -/
 theorem dualGraphIn_adj_of_touches {S : Set (Set Point)} {c : Set Point} (hc : c ∈ S)
@@ -177,12 +177,10 @@ theorem ChordSystem.dualGraph_reachable_insert (hF : ChordSystem D F) {S : Set (
   set G' := dualGraphIn D (insert c S) with hG'
   have hR₁R : R₁ ⊆ R := fun p hp => by
     have : p ∈ R₁ ∪ R₂ := Or.inl hp
-    rw [hunion] at this
-    exact this.1
+    grind
   have hR₂R : R₂ ⊆ R := fun p hp => by
     have : p ∈ R₁ ∪ R₂ := Or.inr hp
-    rw [hunion] at this
-    exact this.1
+    grind
   have hadj12 : G'.Adj R₁ R₂ :=
     dualGraphIn_adj_of_touches (mem_insert c S) hR₁ hR₂ hne ((htouch R₁ hR₁).2 (Or.inl rfl))
       ((htouch R₂ hR₂).2 (Or.inr rfl))
@@ -193,14 +191,12 @@ theorem ChordSystem.dualGraph_reachable_insert (hF : ChordSystem D F) {S : Set (
     constructor
     · rintro rfl
       obtain ⟨p, hp⟩ := regionsIn_nonempty hR₁
-      exact hdisj.notMem_of_mem_left hp (hR₁R hp)
+      grind
     · rintro rfl
       obtain ⟨p, hp⟩ := regionsIn_nonempty hR₂
-      exact hdisj.notMem_of_mem_left hp (hR₂R hp)
+      grind
   have hold : ∀ V ∈ regionsIn D S, V ≠ R → V ∈ regionsIn D (insert c S) := by
-    intro V hV hVR
-    rw [heq]
-    exact Or.inl ⟨hV, hVR⟩
+    grind
   -- the map from old regions to new regions
   let φ : Set Point → Set Point := fun U => if U = R then R₁ else U
   have hφR : φ R = R₁ := by simp [φ]
@@ -221,10 +217,7 @@ theorem ChordSystem.dualGraph_reachable_insert (hF : ChordSystem D F) {S : Set (
     intro U V hUV
     obtain ⟨hU, hV, hUV', c', hc', hU', hV'⟩ := hUV
     by_cases hUR : U = R
-    · subst hUR
-      have hVR : V ≠ U := Ne.symm hUV'
-      rw [hφR, hφ V hVR]
-      exact hedgeR V hV hVR c' hc' hU' hV'
+    · grind
     · by_cases hVR : V = R
       · subst hVR
         rw [hφR, hφ U hUR]
@@ -243,19 +236,19 @@ theorem ChordSystem.dualGraph_reachable_insert (hF : ChordSystem D F) {S : Set (
     intro U hU
     rw [heq] at hU
     rcases hU with ⟨hU, hUR⟩ | hU
-    · rw [mem_singleton_iff] at hUR
-      have := hreach U R (ih U hU R hR)
-      rwa [hφ U hUR, hφR] at this
+    · grind
     · simp only [mem_insert_iff, mem_singleton_iff] at hU
       rcases hU with rfl | rfl
-      · exact SimpleGraph.Reachable.refl _
+      · grind
       · exact hadj12.reachable.symm
   intro U hU V hV
   exact (hcover U hU).trans (hcover V hV).symm
 
+section
+variable (hF : ChordSystem D F) (hD : IsPreconnected D) (hne : D.Nonempty) {S : Set (Set Point)} (hS : S ⊆ F)
+include hF hD hne hS
 /-- **The dual graph is connected**: any two regions of a submap are joined by a walk. -/
-theorem ChordSystem.dualGraph_reachable (hF : ChordSystem D F) (hD : IsPreconnected D)
-    (hne : D.Nonempty) {S : Set (Set Point)} (hS : S ⊆ F) :
+theorem ChordSystem.dualGraph_reachable :
     ∀ U ∈ regionsIn D S, ∀ V ∈ regionsIn D S, (dualGraphIn D S).Reachable U V := by
   have hfin : S.Finite := hF.finite.subset hS
   induction S, hfin using Set.Finite.induction_on with
@@ -268,13 +261,11 @@ theorem ChordSystem.dualGraph_reachable (hF : ChordSystem D F) (hD : IsPreconnec
     exact hF.dualGraph_reachable_insert hS' (hS (mem_insert c S)) hcS (ih hS')
 
 /-- The regions of a submap form a nonempty set. -/
-theorem ChordSystem.regionsIn_nonempty_set (hF : ChordSystem D F) (hD : IsPreconnected D)
-    (hne : D.Nonempty) {S : Set (Set Point)} (hS : S ⊆ F) : (regionsIn D S).Nonempty :=
+theorem ChordSystem.regionsIn_nonempty_set : (regionsIn D S).Nonempty :=
   nonempty_of_ncard_ne_zero (by rw [hF.ncard_regionsIn hD hne hS]; omega)
 
 /-- The dual graph on the regions is connected. -/
-theorem ChordSystem.dualTree_connected (hF : ChordSystem D F) (hD : IsPreconnected D)
-    (hne : D.Nonempty) {S : Set (Set Point)} (hS : S ⊆ F) : (dualTreeIn D S).Connected := by
+theorem ChordSystem.dualTree_connected : (dualTreeIn D S).Connected := by
   have : Nonempty (regionsIn D S) := (hF.regionsIn_nonempty_set hD hne hS).to_subtype
   refine ⟨fun u v => ?_⟩
   have h := hF.dualGraph_reachable hD hne hS u u.2 v v.2
@@ -283,15 +274,18 @@ theorem ChordSystem.dualTree_connected (hF : ChordSystem D F) (hD : IsPreconnect
       ∀ hW : W ∈ regionsIn D S, (dualTreeIn D S).Reachable u ⟨W, hW⟩ := by
     intro W h
     induction h with
-    | refl => intro hW; exact SimpleGraph.Reachable.refl _
+    | refl => simp_all
     | @tail W V _ hWV ih =>
       intro hV
       have hW : W ∈ regionsIn D S := hWV.1
       have hadj : (dualTreeIn D S).Adj ⟨W, hW⟩ ⟨V, hV⟩ := hWV
       exact (ih hW).trans hadj.reachable
-  exact key v h v.2
+  simp_all
 
 /-! ### Counting edges -/
+
+
+end
 
 open Classical in
 /-- The edge of the dual graph contributed by a chord `c ∈ S`: the (unordered) pair of the two
@@ -302,34 +296,30 @@ noncomputable def edgeOfIn (D : Set Point) (S : Set (Set Point)) (c : Set Point)
   then s(Classical.choose h, Classical.choose (Classical.choose_spec h))
   else s(∅, ∅)
 
+section
+variable (hF : ChordSystem D F) {S : Set (Set Point)} (hS : S ⊆ F)
+include hF hS
 /-- Every edge of the dual graph is the edge of one of its chords. -/
-theorem ChordSystem.edge_eq_edgeOf (hF : ChordSystem D F) {S : Set (Set Point)} (hS : S ⊆ F)
+theorem ChordSystem.edge_eq_edgeOf
     {U V : Set Point} (hUV : (dualGraphIn D S).Adj U V) : ∃ c ∈ S, s(U, V) = edgeOfIn D S c := by
   obtain ⟨hU, hV, hne, c, hc, hU', hV'⟩ := hUV
   refine ⟨c, hc, ?_⟩
   have h := hF.touches_iff hS hc
   unfold edgeOfIn
   rw [dite_eq_left h]
-  obtain ⟨hne', hspec⟩ := Classical.choose_spec (Classical.choose_spec h)
-  rcases (hspec U hU).1 hU' with rfl | rfl <;> rcases (hspec V hV).1 hV' with rfl | rfl
-  · exact absurd rfl hne
-  · rfl
-  · exact Sym2.eq_swap
-  · exact absurd rfl hne
+  grind
 
 /-- The edge set of the dual graph is contained in the image of `S` under `edgeOf`. -/
-theorem ChordSystem.dualGraph_edgeSet_subset (hF : ChordSystem D F) {S : Set (Set Point)}
-    (hS : S ⊆ F) : (dualGraphIn D S).edgeSet ⊆ edgeOfIn D S '' S := by
+theorem ChordSystem.dualGraph_edgeSet_subset : (dualGraphIn D S).edgeSet ⊆ edgeOfIn D S '' S := by
   intro e he
   induction e using Sym2.ind with
   | h U V =>
     rw [SimpleGraph.mem_edgeSet] at he
     obtain ⟨c, hc, heq⟩ := hF.edge_eq_edgeOf hS he
-    exact ⟨c, hc, heq.symm⟩
+    grind
 
 /-- The dual graph has at most `S.ncard` edges. -/
-theorem ChordSystem.dualGraph_card_edgeSet_le (hF : ChordSystem D F) {S : Set (Set Point)}
-    (hS : S ⊆ F) : Nat.card (dualGraphIn D S).edgeSet ≤ S.ncard := by
+theorem ChordSystem.dualGraph_card_edgeSet_le : Nat.card (dualGraphIn D S).edgeSet ≤ S.ncard := by
   have hfin : S.Finite := hF.finite.subset hS
   rw [Nat.card_coe_set_eq]
   calc (dualGraphIn D S).edgeSet.ncard
@@ -337,8 +327,7 @@ theorem ChordSystem.dualGraph_card_edgeSet_le (hF : ChordSystem D F) {S : Set (S
     _ ≤ S.ncard := ncard_image_le hfin
 
 /-- The dual graph on the regions has at most `S.ncard` edges. -/
-theorem ChordSystem.dualTree_card_edgeSet_le (hF : ChordSystem D F) {S : Set (Set Point)}
-    (hS : S ⊆ F) : Nat.card (dualTreeIn D S).edgeSet ≤ S.ncard := by
+theorem ChordSystem.dualTree_card_edgeSet_le : Nat.card (dualTreeIn D S).edgeSet ≤ S.ncard := by
   have hfin : S.Finite := hF.finite.subset hS
   have : Finite (dualGraphIn D S).edgeSet :=
     ((hfin.image _).subset (hF.dualGraph_edgeSet_subset hS)).to_subtype
@@ -350,11 +339,16 @@ theorem ChordSystem.dualTree_card_edgeSet_le (hF : ChordSystem D F) {S : Set (Se
 
 /-! ### The tree -/
 
+
+end
+
+section
+variable (hF : ChordSystem D F) (hD : IsPreconnected D) (hne : D.Nonempty) {S : Set (Set Point)} (hS : S ⊆ F)
+include hF hD hne hS
 /-- **The dual graph of a submap is a tree** (Chazelle's Lemma 2.2, interior version): the graph
 on the regions of `S ⊆ chords P` in which two regions are adjacent when a chord of `S` touches
 both is connected and acyclic. -/
-theorem ChordSystem.dual_isTree (hF : ChordSystem D F) (hD : IsPreconnected D)
-    (hne : D.Nonempty) {S : Set (Set Point)} (hS : S ⊆ F) :
+theorem ChordSystem.dual_isTree :
     (dualTreeIn D S).IsTree := by
   have : Finite (regionsIn D S) := (hF.regionsIn_finite hD hne hS).to_subtype
   rw [SimpleGraph.isTree_iff_connected_and_card]
@@ -367,9 +361,8 @@ theorem ChordSystem.dual_isTree (hF : ChordSystem D F) (hD : IsPreconnected D)
   omega
 
 /-- The dual tree has exactly `S.ncard` edges. -/
-theorem ChordSystem.dualTree_card_edgeSet (hF : ChordSystem D F) (hD : IsPreconnected D)
-    (hne : D.Nonempty) {S : Set (Set Point)} (hS : S ⊆ F) : Nat.card (dualTreeIn D S).edgeSet = S.ncard := by
-  have : Finite (regionsIn D S) := (hF.regionsIn_finite hD hne hS).to_subtype
+theorem ChordSystem.dualTree_card_edgeSet : Nat.card (dualTreeIn D S).edgeSet = S.ncard := by
+  
   have h1 := (hF.dualTree_connected hD hne hS).card_vert_le_card_edgeSet_add_one
   have h2 := hF.dualTree_card_edgeSet_le hS
   have h3 : Nat.card (regionsIn D S) = S.ncard + 1 := by
@@ -377,6 +370,9 @@ theorem ChordSystem.dualTree_card_edgeSet (hF : ChordSystem D F) (hD : IsPreconn
   omega
 
 /-! ### The chain instance -/
+
+
+end
 
 variable (C : Chain)
 

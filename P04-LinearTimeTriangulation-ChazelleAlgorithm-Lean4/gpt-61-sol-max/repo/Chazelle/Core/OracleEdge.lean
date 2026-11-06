@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleQuery
 
 /-!
@@ -49,12 +51,14 @@ noncomputable def edgeHit (z : Point) (σ : ℝ) (e h : ℕ) : Option ℝ :=
   if Spans Q e h ∧ 0 < σ * (xe Q e h - z.1) then some (σ * (xe Q e h - z.1)) else none
 
 theorem sigma_sq {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) : σ * σ = 1 := by
-  rcases hσ with rfl | rfl <;> norm_num
+  grind
 
+section
+variable {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2) {z : Point} (hz : z.2 = (Q.vtx h).2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
+include hne hz hσ
 /-- A ray point at the height of the ray lies on a non-horizontal edge iff the height is in range
 and the abscissa is the edge's. -/
-theorem rayPt_mem_edge_iff {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2)
-    {z : Point} (hz : z.2 = (Q.vtx h).2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (t : ℝ) :
+theorem rayPt_mem_edge_iff (t : ℝ) :
     rayPt z σ t ∈ Q.edge e ↔ Spans Q e h ∧ t = σ * (xe Q e h - z.1) := by
   unfold Polygon.edge
   rw [Chazelle.Visibility.mem_segment_iff_xAt hne]
@@ -63,20 +67,11 @@ theorem rayPt_mem_edge_iff {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % 
   rw [hx]
   have hs := sigma_sq hσ
   constructor
-  · rintro ⟨hsp, hx'⟩
-    refine ⟨hsp, ?_⟩
-    have : σ * (z.1 + σ * t) = σ * xe Q e h := by rw [hx']
-    have e2 : σ * (z.1 + σ * t) = σ * z.1 + (σ * σ) * t := by ring
-    rw [e2, hs] at this
-    linarith
-  · rintro ⟨hsp, rfl⟩
-    refine ⟨hsp, ?_⟩
-    have e2 : z.1 + σ * (σ * (xe Q e h - z.1)) = z.1 + (σ * σ) * (xe Q e h - z.1) := by ring
-    rw [e2, hs]; ring
+  · ram_grind
+  ram_grind
 
 /-- **The answer for one edge.** -/
-theorem edgeHit_spec {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2)
-    {z : Point} (hz : z.2 = (Q.vtx h).2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
+theorem edgeHit_spec :
     Sweep.FirstHitOpt (Q.edge e) z σ (edgeHit Q z σ e h) := by
   unfold edgeHit
   split_ifs with hc
@@ -85,7 +80,10 @@ theorem edgeHit_spec {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).
     linarith
   · intro t ht hm
     obtain ⟨hsp, rfl⟩ := (rayPt_mem_edge_iff Q hne hz hσ _).1 hm
-    exact hc ⟨hsp, ht⟩
+    simp_all
+
+
+end
 
 /-- **The height range by sign tests** (distinct heights, indices in range). -/
 theorem spans_iff (hD : DistinctHeights Q) {e h : ℕ} (he : e < Q.n) (hh : h < Q.n) :
@@ -94,56 +92,25 @@ theorem spans_iff (hD : DistinctHeights Q) {e h : ℕ} (he : e < Q.n) (hh : h < 
       ((Q.vtx ((e + 1) % Q.n)).2 < (Q.vtx h).2 ∧ (Q.vtx h).2 < (Q.vtx e).2) := by
   have hn : 0 < Q.n := by omega
   have he1 : (e + 1) % Q.n < Q.n := Nat.mod_lt _ hn
-  unfold Spans
-  constructor
-  · rintro ⟨h1, h2⟩
-    by_cases hhe : h = e
-    · exact Or.inl (Or.inl hhe)
-    by_cases hhe1 : h = (e + 1) % Q.n
-    · exact Or.inl (Or.inr hhe1)
-    have n1 := hD h e hh he hhe
-    have n2 := hD h _ hh he1 hhe1
-    right
-    rcases le_total (Q.vtx e).2 (Q.vtx ((e + 1) % Q.n)).2 with hle | hle
-    · rw [min_eq_left hle] at h1; rw [max_eq_right hle] at h2
-      exact Or.inl ⟨lt_of_le_of_ne h1 (Ne.symm n1), lt_of_le_of_ne h2 n2⟩
-    · rw [min_eq_right hle] at h1; rw [max_eq_left hle] at h2
-      exact Or.inr ⟨lt_of_le_of_ne h1 (Ne.symm n2), lt_of_le_of_ne h2 n1⟩
-  · rintro ((rfl | rfl) | ⟨h1, h2⟩ | ⟨h1, h2⟩)
-    · exact ⟨min_le_left _ _, le_max_left _ _⟩
-    · exact ⟨min_le_right _ _, le_max_right _ _⟩
-    · exact ⟨(min_le_left _ _).trans h1.le, h2.le.trans (le_max_right _ _)⟩
-    · exact ⟨(min_le_right _ _).trans h1.le, h2.le.trans (le_max_left _ _)⟩
+  ram_grind
 
+section
+variable {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
+include hσ
 /-- **Ahead of the origin, by a sign test.** -/
-theorem ahead_iff {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (x z : ℝ) :
+theorem ahead_iff (x z : ℝ) :
     0 < σ * (x - z) ↔ (σ = 1 ∧ z < x) ∨ (σ = -1 ∧ x < z) := by
   rcases hσ with rfl | rfl
-  · constructor
-    · intro h; left; exact ⟨rfl, by linarith⟩
-    · rintro (⟨-, h⟩ | ⟨h, -⟩)
-      · linarith
-      · norm_num at h
-  · constructor
-    · intro h; right; exact ⟨rfl, by linarith⟩
-    · rintro (⟨h, -⟩ | ⟨-, h⟩)
-      · norm_num at h
-      · linarith
+  all_goals ram_grind
 
 /-- **Comparing two hits, by a sign test.** -/
-theorem better_iff {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (x x' z : ℝ) :
+theorem better_iff (x x' z : ℝ) :
     σ * (x - z) < σ * (x' - z) ↔ (σ = 1 ∧ x < x') ∨ (σ = -1 ∧ x' < x) := by
   rcases hσ with rfl | rfl
-  · constructor
-    · intro h; left; exact ⟨rfl, by linarith⟩
-    · rintro (⟨-, h⟩ | ⟨h, -⟩)
-      · linarith
-      · norm_num at h
-  · constructor
-    · intro h; right; exact ⟨rfl, by linarith⟩
-    · rintro (⟨h, -⟩ | ⟨-, h⟩)
-      · norm_num at h
-      · linarith
+  all_goals ram_grind
+
+
+end
 
 end Edge
 
@@ -155,16 +122,18 @@ section Tour
 
 variable (C : Chain)
 
+section
+variable (i : ℕ)
+include i
 /-- **The chain edge of tour position `i`.** -/
-noncomputable def tci (i : ℕ) : ℕ := if tj C i < C.m then tj C i else 2 * C.m - 1 - tj C i
+noncomputable def tci : ℕ := if tj C i < C.m then tj C i else 2 * C.m - 1 - tj C i
 
-theorem tci_lt (i : ℕ) : tci C i < C.m := by
+theorem tci_lt : tci C i < C.m := by
   have := tj_lt C i
-  have := C.one_le
-  unfold tci; split_ifs <;> omega
+  grind [tci]
 
 /-- **The segment of tour position `i` is the chain edge `tci i`.** -/
-theorem tour_seg (i : ℕ) :
+theorem tour_seg :
     Chazelle.segment (C.sideTour C.sideBeta i) (C.sideTour C.sideBeta (i + 1)) =
       C.chainEdge (tci C i) := by
   rw [C.chainEdge_eq]
@@ -175,17 +144,14 @@ theorem tour_seg (i : ℕ) :
   rw [e1, e2]
   unfold tci
   generalize tj C i = j at hj ⊢
-  have sE1 : ∀ x, x ≤ C.m → sideE C.m x = x := fun x hx => by unfold sideE; simp [hx]
+  have sE1 : ∀ x, x ≤ C.m → sideE C.m x = x := fun x hx => by grind [sideE]
   have sE3 : ∀ x, C.m ≤ x → sideE C.m x = 2 * C.m - x := fun x hx => by
     unfold sideE
-    rcases eq_or_lt_of_le hx with e | e
-    · subst e; simp only [le_refl, ↓reduceIte]; omega
-    · simp [show ¬ x ≤ C.m by omega]
-  split_ifs with h1
-  · rw [sE1 j h1.le, sE1 (j + 1) (by omega)]
-  · rw [sE3 j (by omega), sE3 (j + 1) (by omega), Geometry.segment_comm,
-      show 2 * C.m - (j + 1) = 2 * C.m - 1 - j by omega,
-      show 2 * C.m - j = 2 * C.m - 1 - j + 1 by omega]
+    grind
+  grind [Geometry.segment_comm]
+
+
+end
 
 /-- **The points of a walk edge that the scan looks at**: the chain edge of a tour edge, nothing
 on the box and the slit. -/
@@ -198,16 +164,13 @@ theorem mem_scanSet_iff (Q : Polygon) (N : NF) (p : ℕ) (x : Point) :
       x ∈ wseg C (scanIdx (chainModel C).W.n N p k) := by
   constructor
   · rintro ⟨k, hk, i, hi, hidx, hx⟩
-    refine ⟨k, hk, ?_⟩
-    unfold wseg
-    rw [hidx, ite_eq_left (show 6 ≤ i + 6 ∧ i + 6 < 2 * C.m + 6 by omega), show i + 6 - 6 = i by omega, ← tour_seg]
-    exact hx
+    grind [wseg, tour_seg]
   · rintro ⟨k, hk, hx⟩
     unfold wseg at hx
     split_ifs at hx with hw
     · refine ⟨k, hk, scanIdx (chainModel C).W.n N p k - 6, by omega, by omega, ?_⟩
-      rw [tour_seg]; exact hx
-    · exact absurd hx (Set.notMem_empty x)
+      grind [tour_seg]
+    simp_all
 
 end Tour
 

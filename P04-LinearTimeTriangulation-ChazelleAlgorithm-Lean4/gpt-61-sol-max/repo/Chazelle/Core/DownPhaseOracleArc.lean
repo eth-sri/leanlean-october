@@ -40,14 +40,20 @@ noncomputable def iv (Q : Polygon) (p : ℕ) : ℕ := by
   classical
   exact if Mountain.LeftInside Q then p else Q.n - 1 - p
 
-theorem iv_lt {p : ℕ} (hp : p < Q.n) : iv Q p < Q.n := by
-  unfold iv; split_ifs <;> omega
+section
+variable {p : ℕ} (hp : p < Q.n)
+include hp
+theorem iv_lt : iv Q p < Q.n := by
+  grind [iv]
 
-theorem iw_vtx {p : ℕ} (hp : p < Q.n) : (interiorWalk Q).vtx p = Q.vtx (iv Q p) := by
+theorem iw_vtx : (interiorWalk Q).vtx p = Q.vtx (iv Q p) := by
   unfold iv
   by_cases hL : Mountain.LeftInside Q
   · simp only [hL, ↓reduceIte]; exact Trans.iw_vtx_left hL p
   · simp only [hL, ↓reduceIte]; exact Trans.iw_vtx_right hL hp
+
+
+end
 
 theorem mi_n : (interiorModel Q).W.n = Q.n := interiorModel_n Q
 
@@ -59,12 +65,15 @@ noncomputable def cStart (Q : Polygon) (u L : ℕ) : ℕ := by
   classical
   exact if Mountain.LeftInside Q then u else (Q.n - 1 - u + (Q.n - L)) % Q.n
 
-theorem cStart_lt {u L : ℕ} (hu : u < Q.n) : cStart Q u L < Q.n := by
+section
+variable {u L : ℕ} (hu : u < Q.n)
+include hu
+theorem cStart_lt : cStart Q u L < Q.n := by
   unfold cStart; split_ifs
   · exact hu
   · exact Nat.mod_lt _ (by omega)
 
-theorem uStart_cStart {u L : ℕ} (hu : u < Q.n) (hL : L < Q.n) : uStart Q (cStart Q u L) L = u := by
+theorem uStart_cStart (hL : L < Q.n) : uStart Q (cStart Q u L) L = u := by
   unfold uStart cStart
   by_cases hl : Mountain.LeftInside Q
   · simp only [hl, ↓reduceIte]; exact Nat.mod_eq_of_lt hu
@@ -72,29 +81,45 @@ theorem uStart_cStart {u L : ℕ} (hu : u < Q.n) (hL : L < Q.n) : uStart Q (cSta
     have e : ((Q.n - 1 - u + (Q.n - L)) % Q.n + L) % Q.n = Q.n - 1 - u := by
       rw [Nat.mod_add_mod, show Q.n - 1 - u + (Q.n - L) + L = (Q.n - 1 - u) + Q.n by omega,
         Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-    rw [e]; omega
+    omega
+
+
+end
 
 /-- **The chain of the stretch** of `L` edges of the interior walk from `u`. -/
 noncomputable def ch (Q : Polygon) (u L : ℕ) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n) : Chain :=
   subChain Q (cStart Q u L) L h1 h2
 
-theorem ch_m {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 1 ≤ Q.n} : (ch Q u L h1 h2).m = L := rfl
+section
+variable {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 1 ≤ Q.n}
+theorem ch_m : (ch Q u L h1 h2).m = L := rfl
 
-theorem ch_P {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 1 ≤ Q.n} : (ch Q u L h1 h2).P = Q := rfl
+theorem ch_P : (ch Q u L h1 h2).P = Q := rfl
+
+
+end
 
 /-- The tour offset of the chain read along the interior walk. -/
 noncomputable def tau (Q : Polygon) (u L : ℕ) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n) : ℕ :=
   WalkEmbed.tpos (ch Q u L h1 h2) (jStart Q L)
 
-theorem tau_lt {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 1 ≤ Q.n} : tau Q u L h1 h2 < 2 * L :=
+section
+variable {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 1 ≤ Q.n}
+theorem tau_lt : tau Q u L h1 h2 < 2 * L :=
   WalkEmbed.tpos_lt _ _
 
-theorem cm_n' {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 1 ≤ Q.n} :
+theorem cm_n' :
     (chainModel (ch Q u L h1 h2)).W.n = 2 * L + 7 := WalkEmbed.cm_n _
 
+
+end
+
+section
+variable {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n)
+include hu
 /-- **The interior walk agrees with the chain model walk** from `u`, resp. `6 + τ`, up to the top
 of the chain or the end of the stretch. -/
-theorem agree_pre {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n) :
+theorem agree_pre :
     WalkEmbed.Agree (interiorWalk Q) (chainModel (ch Q u L h1 h2)).W u
       (6 + tau Q u L h1 h2) (min L (2 * L - tau Q u L h1 h2)) := by
   intro d hd
@@ -109,7 +134,7 @@ theorem agree_pre {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n)
 
 /-- **After the top** (when the tour passes the box inside the stretch): the interior walk from
 `u + L₁` agrees with the chain model walk from its vertex `6`. -/
-theorem agree_post {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n)
+theorem agree_post
     (hs : L < tau Q u L h1 h2) :
     WalkEmbed.Agree (interiorWalk Q) (chainModel (ch Q u L h1 h2)).W
       (u + (2 * L - tau Q u L h1 h2)) 6 (L - (2 * L - tau Q u L h1 h2)) := by
@@ -136,6 +161,9 @@ theorem agree_post {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n
 
 /-! ## The point set of the interior subarc -/
 
+
+end
+
 theorem key_eq (M : Model) (Q : Polygon) (x : WPos) : M.key Q x = x.edge + M.param Q x := rfl
 
 /-! ## Chain arcs -/
@@ -158,7 +186,7 @@ theorem param_start (h₁ : ℕ) :
   have := param_agree (M := interiorModel Q) (M' := MC Q u L h1 h2) hA Q h0 h₁
   rw [Nat.add_zero, Nat.add_zero, mi_n, Nat.mod_eq_of_lt hu, cm_n',
     Nat.mod_eq_of_lt (by omega)] at this
-  exact this.symm
+  simp_all
 
 include hu in
 /-- The end parameter is the same in both models (no split). -/
@@ -171,7 +199,7 @@ theorem param_end_one {e h₂ : ℕ} (hs : tau Q u L h1 h2 ≤ L) (he : e < L �
       (d := e) (by omega) h₂
     rw [mi_n, cm_n', Nat.mod_eq_of_lt (show 6 + tau Q u L h1 h2 + e < 2 * L + 7 by omega)]
       at this
-    exact this.symm
+    simp_all
   · rfl
 
 include hu in
@@ -184,11 +212,11 @@ theorem param_end_two {e h₂ : ℕ} (hs : L < tau Q u L h1 h2)
   · have hA := agree_post hu h1 h2 hs
     have := param_agree (M := interiorModel Q) (M' := MC Q u L h1 h2) hA Q
       (d := e - (2 * L - tau Q u L h1 h2)) (by omega) h₂
-    have ht : tau Q u L h1 h2 < 2 * L := tau_lt
+    
     rw [mi_n, cm_n', Nat.mod_eq_of_lt (show 6 + (e - (2 * L - tau Q u L h1 h2)) < 2 * L + 7 by
       omega), show u + (2 * L - tau Q u L h1 h2) + (e - (2 * L - tau Q u L h1 h2)) = u + e by
       omega] at this
-    exact this.symm
+    simp_all
   · rfl
 
 include hu in
@@ -210,19 +238,17 @@ theorem chain_arcSet_one {e h₁ h₂ : ℕ} (hs : tau Q u L h1 h2 ≤ L)
   have hn : (MC Q u L h1 h2).W.n = 2 * L + 7 := cm_n'
   have hge : e ≤ L := by omega
   rw [key_eq, key_eq, param_start hu h1 h2, param_end_one hu h1 h2 hs he]
-  have hg' : g < (MC Q u L h1 h2).W.n := by rw [hn]; omega
-  have hb0 : (0 : ℝ) ≤ ((g + e : ℕ) : ℝ) + t₂ := by have := hy.1; positivity
+  have hg' : g < (MC Q u L h1 h2).W.n := by omega
+  have hb0 : (0 : ℝ) ≤ ((g + e : ℕ) : ℝ) + t₂ := by grind
   have hbn : ((g + e : ℕ) : ℝ) + t₂ < (MC Q u L h1 h2).W.n := by
     have : ((g + e : ℕ) : ℝ) + 1 ≤ (MC Q u L h1 h2).W.n := by
       rw [hn]; exact_mod_cast (show g + e + 1 ≤ 2 * L + 7 by omega)
-    linarith [hy.2]
+    linarith
   show (MC Q u L h1 h2).arcSet ((g : ℝ) + x) (((g + e : ℕ) : ℝ) + t₂) = _
   rw [arcSet_eq_oset _ hg' hx.1 hx.2 hb0 hbn]
-  have hmod : (g + e) % (MC Q u L h1 h2).W.n = g + e := Nat.mod_eq_of_lt (by rw [hn]; omega)
+  have hmod : (g + e) % (MC Q u L h1 h2).W.n = g + e := Nat.mod_eq_of_lt (by omega)
   have hlap : (e : ℝ) + t₂ ≤ x + (MC Q u L h1 h2).W.n := by
-    rw [hn]
-    have : (e : ℝ) + 1 ≤ ((2 * L + 7 : ℕ) : ℝ) := by exact_mod_cast (show e + 1 ≤ 2 * L + 7 by omega)
-    linarith [hx.1, hy.2]
+    grind
   have hl := len_key (n := (MC Q u L h1 h2).W.n) hg' hx.2 hy.1 hxy hlap
   rw [hmod] at hl
   rw [hl, show x + (e + t₂ - x) = e + t₂ by ring]
@@ -230,9 +256,9 @@ theorem chain_arcSet_one {e h₁ h₂ : ℕ} (hs : tau Q u L h1 h2 ≤ L)
     rw [min_eq_left (by omega)]
     rcases he with he | ⟨he, h0⟩
     · have : (e : ℝ) + 1 ≤ L := by exact_mod_cast he
-      linarith [hy.2]
+      linarith
     · have : t₂ = 0 := by rw [ht₂, h0]; rfl
-      rw [this, add_zero, he]
+      grind
   exact (oset_congr (agree_pre hu h1 h2) hyL).symm
 
 include hu in
@@ -264,12 +290,12 @@ theorem chain_arcSet_two {e h₁ h₂ : ℕ} (hs : L < tau Q u L h1 h2)
   have hL₁L : L₁ < L := by omega
   constructor
   · rw [key_eq, key_eq, param_start hu h1 h2, param_zero, add_zero]
-    have hg' : g < (MC Q u L h1 h2).W.n := by rw [hn]; omega
+    have hg' : g < (MC Q u L h1 h2).W.n := by omega
     have hb0 : (0 : ℝ) ≤ ((2 * L + 6 : ℕ) : ℝ) := by positivity
     have hbn : ((2 * L + 6 : ℕ) : ℝ) < (MC Q u L h1 h2).W.n := by
-      rw [hn]; exact_mod_cast (show 2 * L + 6 < 2 * L + 7 by omega)
+      rw [hn]; grind
     have hb' : ((2 * L + 6 : ℕ) : ℝ) = (((g + L₁) % (MC Q u L h1 h2).W.n : ℕ) : ℝ) + 0 := by
-      rw [add_zero, Nat.mod_eq_of_lt (by rw [hn]; omega)]
+      rw [add_zero, Nat.mod_eq_of_lt (by omega)]
       congr 1; omega
     show (MC Q u L h1 h2).arcSet ((g : ℝ) + x) ((2 * L + 6 : ℕ) : ℝ) = _
     rw [arcSet_eq_oset _ hg' hx.1 hx.2 hb0 hbn, hb']
@@ -277,31 +303,28 @@ theorem chain_arcSet_two {e h₁ h₂ : ℕ} (hs : L < tau Q u L h1 h2)
     have hlap : (L₁ : ℝ) + 0 ≤ x + (MC Q u L h1 h2).W.n := by
       rw [hn]
       have : (L₁ : ℝ) ≤ ((2 * L + 7 : ℕ) : ℝ) := by exact_mod_cast (show L₁ ≤ 2 * L + 7 by omega)
-      linarith [hx.1]
-    rw [len_key (n := (MC Q u L h1 h2).W.n) hg' hx.2 le_rfl (by linarith [hx.2]) hlap,
+      grind
+    rw [len_key (n := (MC Q u L h1 h2).W.n) hg' hx.2 le_rfl (by grind) hlap,
       show x + (L₁ + 0 - x) = L₁ by ring]
     exact (oset_congr (agree_pre hu h1 h2) (by rw [min_eq_right (by omega)])).symm
   · have hA := agree_post hu h1 h2 hs
     rw [key_eq, key_eq, param_zero, param_end_two hu h1 h2 hs hle he, add_zero]
-    have h6 : (6 : ℕ) < (MC Q u L h1 h2).W.n := by rw [hn]; omega
-    have hb0 : (0 : ℝ) ≤ ((6 + (e - L₁) : ℕ) : ℝ) + t₂ := by have := hy.1; positivity
+    have h6 : (6 : ℕ) < (MC Q u L h1 h2).W.n := by omega
+    have hb0 : (0 : ℝ) ≤ ((6 + (e - L₁) : ℕ) : ℝ) + t₂ := by grind
     have hbn : ((6 + (e - L₁) : ℕ) : ℝ) + t₂ < (MC Q u L h1 h2).W.n := by
       have : ((6 + (e - L₁) : ℕ) : ℝ) + 1 ≤ (MC Q u L h1 h2).W.n := by
         rw [hn]; exact_mod_cast (show 6 + (e - L₁) + 1 ≤ 2 * L + 7 by omega)
-      linarith [hy.2]
+      grind
     have ha : (((6 : ℕ) : ℝ)) = ((6 : ℕ) : ℝ) + 0 := by ring
     show (MC Q u L h1 h2).arcSet ((6 : ℕ) : ℝ) (((6 + (e - L₁) : ℕ) : ℝ) + t₂) = _
     rw [ha, arcSet_eq_oset _ h6 le_rfl zero_lt_one hb0 hbn]
     have hmod : (6 + (e - L₁)) % (MC Q u L h1 h2).W.n = 6 + (e - L₁) :=
-      Nat.mod_eq_of_lt (by rw [hn]; omega)
+      Nat.mod_eq_of_lt (by omega)
     have hpos : (0 : ℝ) < (e - L₁ : ℕ) + t₂ := by
       have e1 : ((e - L₁ : ℕ) : ℝ) = e - L₁ := Nat.cast_sub hle
-      rw [e1]; linarith
+      grind
     have hlap : ((e - L₁ : ℕ) : ℝ) + t₂ ≤ 0 + (MC Q u L h1 h2).W.n := by
-      rw [hn]
-      have : ((e - L₁ : ℕ) : ℝ) + 1 ≤ ((2 * L + 7 : ℕ) : ℝ) := by
-        exact_mod_cast (show e - L₁ + 1 ≤ 2 * L + 7 by omega)
-      linarith [hy.2]
+      grind
     have hl := len_key (n := (MC Q u L h1 h2).W.n) (u := 6) (e := e - L₁) h6 zero_lt_one hy.1
       hpos hlap
     rw [hmod] at hl
@@ -310,14 +333,14 @@ theorem chain_arcSet_two {e h₁ h₂ : ℕ} (hs : L < tau Q u L h1 h2)
       rcases he with he | ⟨he, h0⟩
       · have : ((e - L₁ : ℕ) : ℝ) + 1 ≤ ((L - L₁ : ℕ) : ℝ) := by
           exact_mod_cast (show e - L₁ + 1 ≤ L - L₁ by omega)
-        linarith [hy.2]
+        grind
       · have : t₂ = 0 := by rw [ht₂, h0]; rfl
-        rw [this, add_zero, he]
+        grind
     rw [← oset_congr hA hy', ← oset_shift _ _ L₁ le_rfl]
     congr 1
     · ring
     · have e1 : ((e - L₁ : ℕ) : ℝ) = e - L₁ := Nat.cast_sub hle
-      rw [e1]; ring
+      grind
 
 end chainArc
 

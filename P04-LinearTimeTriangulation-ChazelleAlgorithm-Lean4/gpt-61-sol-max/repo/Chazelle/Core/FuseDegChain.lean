@@ -51,31 +51,20 @@ theorem halfIn_side (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
     rcases hcol with hc | ⟨hτ1, hc⟩ | hc
     · refine ⟨C'.top.2 - h, by linarith, fun y hy _ hys => ?_⟩
       have h1 := (C'.mem_slit_iff.1 hys).2.1
-      rw [mem_ball, Prod.dist_eq, max_lt_iff, Real.dist_eq, Real.dist_eq] at hy
-      have := (abs_lt.1 hy.2).2
-      simp only at this
-      linarith
+      grind [mem_ball, Prod.dist_eq, max_lt_iff, Real.dist_eq]
     · refine ⟨1, one_pos, fun y _ hy hys => ?_⟩
       have h1 := (C'.mem_slit_iff.1 hys).2.1
-      rw [hτ1] at hy
-      linarith
+      nlinarith
     · refine ⟨|x - C'.top.1|, abs_pos.2 (sub_ne_zero.2 hc), fun y hy _ hys => ?_⟩
       have h1 := (C'.mem_slit_iff.1 hys).1
-      rw [mem_ball, Prod.dist_eq, max_lt_iff, Real.dist_eq, Real.dist_eq] at hy
-      have h2 := hy.1
-      simp only at h2
-      rw [h1, abs_sub_comm] at h2
-      exact lt_irrefl _ h2
+      grind [mem_ball, Prod.dist_eq, max_lt_iff, Real.dist_eq, abs_sub_comm]
   refine ⟨min r (min r₂ r₃), lt_min hr (lt_min hr₂ hr₃), fun y hy hpos => ?_⟩
   have hy1 := ball_subset_ball (min_le_left _ _) hy
   have hy2 := ball_subset_ball ((min_le_right _ _).trans (min_le_left _ _)) hy
   have hy3 := ball_subset_ball ((min_le_right _ _).trans (min_le_right _ _)) hy
   have hyD := hsub y hy1 hpos
   refine ⟨mem_side_dom J hC'P hset hyD (hsl y hy3 hpos), fun hyS => hch y hy2 ?_ hyS⟩
-  intro heq
-  simp only at heq hpos
-  rw [heq, sub_self, mul_zero] at hpos
-  exact lt_irrefl _ hpos
+  grind
 
 /-- The points of the domain between two points of the domain on an admissible chord. -/
 theorem between_open {M : Model} (hM : WalkAx M) {f : Set Point} (hf : f ∈ M.Adm) {z z' : Point}
@@ -90,25 +79,13 @@ theorem between_open {M : Model} (hM : WalkAx M) {f : Set Point} (hf : f ∈ M.A
   have hstrict : ∀ {y : Point}, y ∈ f → y ∈ M.D → y.2 = w.2 ∧ q.1 < y.1 ∧ y.1 < w.1 := by
     intro y hy hyD
     rw [hce] at hy
-    obtain ⟨h1, h2, h3⟩ := mem_seg_sigma hqy (Or.inl rfl) (by simpa using hqw) hy
-    simp only [one_mul] at h2 h3
-    refine ⟨h1, lt_of_le_of_ne h2 fun h => ?_, lt_of_le_of_ne h3 fun h => ?_⟩
-    · have : y = q := Geometry.point_ext h.symm (h1.trans hqy.symm)
-      exact hqD (this ▸ hyD)
-    · have : y = w := Geometry.point_ext h h1
-      exact hwD (this ▸ hyD)
+    obtain ⟨h1, h2, h3⟩ := mem_seg_sigma hqy (Or.inl rfl) (by simp_all) hy
+    grind
   obtain ⟨hz2, hzq, hzw⟩ := hstrict hz hzD
   obtain ⟨-, hz'q, hz'w⟩ := hstrict hz' hz'D
   rw [hz2]
   refine (open_pt hqy (Or.inl rfl) hop ?_ ?_).2
-  · simp only [one_mul]
-    rcases le_total z.1 z'.1 with h | h
-    · rw [min_eq_left h] at hx1; linarith
-    · rw [min_eq_right h] at hx1; linarith
-  · simp only [one_mul]
-    rcases le_total z.1 z'.1 with h | h
-    · rw [max_eq_right h] at hx2; linarith
-    · rw [max_eq_left h] at hx2; linarith
+  all_goals grind
 
 /-! ## The region of `Sᵢ` on the side of `R` of a chord -/
 
@@ -134,8 +111,7 @@ theorem phi_mem_or_empty (M M' : Model) (Si : Set (Set Point)) (R f : Set Point)
     Phi M M' Si R f ∈ M'.regions Si ∨ Phi M M' Si R f = ∅ := by
   unfold Phi
   split_ifs with h
-  · exact Or.inl (Classical.choose_spec h).1
-  · exact Or.inr rfl
+  all_goals grind
 
 
 /-- The points of an admissible chord have its height. -/
@@ -145,9 +121,12 @@ theorem snd_eq_of_mem {M : Model} (hM : WalkAx M) {f : Set Point} (hf : f ∈ M.
   rw [hce] at hz hz'
   exact (mem_seg_sigma hqy (Or.inl rfl) hqw hz').1.trans (mem_seg_sigma hqy (Or.inl rfl) hqw hz).1.symm
 
+section
+variable (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set ⊆ J.whole.set)
+include hP hC'P hset
 /-- **`Phi` is the region of `Sᵢ` just on the side of `R` of any point of `f`** (below the top of
 `Cᵢ`). -/
-theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set ⊆ J.whole.set)
+theorem phi_eq
     {Si : Set (Set Point)} (hSiA : Si ⊆ (chainModel C').Adm) (hSifin : Si.Finite)
     {F : Set (Set Point)} (hF : F ⊆ (chainModel J.whole).Adm) (hfin : F.Finite) {R : Set Point}
     (hR : R ∈ (chainModel J.whole).regions F) {f : Set Point} (hf : f ∈ F) {τ : ℝ}
@@ -162,15 +141,15 @@ theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set
   have hso : sideOf M R f = τ := by
     unfold sideOf
     rcases hτ with rfl | rfl
-    · rw [ite_eq_left hside]
+    · simp_all
     · rw [ite_eq_right]
       intro h1
       have := side_unique hM hF hfin hf hR hz₁ hz₁D (Or.inl rfl) (Or.inr rfl) (h1 z₁ hz₁ hz₁D)
         (hside z₁ hz₁ hz₁D)
-      norm_num at this
+      grind
   have hex : ∃ z ∈ f, z ∈ M.D := ⟨z₁, hz₁, hz₁D⟩
   have hm : midOf M f ∈ f ∧ midOf M f ∈ M.D := by
-    unfold midOf; rw [dite_eq_left hex]; exact Classical.choose_spec hex
+    grind [midOf]
   set m := midOf M f with hmdef
   have hm2 : m.2 = z₁.2 := snd_eq_of_mem hM (hF hf) hz₁ hm.1
   have hgood : ∀ x ∈ Icc (min z₁.1 m.1) (max z₁.1 m.1),
@@ -179,7 +158,7 @@ theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set
     have hxD : ((x, z₁.2) : Point) ∈ M.D := between_open hM (hF hf) hz₁ hz₁D hm.1 hm.2 hx.1 hx.2
     refine halfIn_side J hP hC'P hset hSiA hSifin (halfIn_of_mem J.whole.isOpen_dom τ hxD) ?_
     rcases hh.lt_or_eq with hlt | heq
-    · exact Or.inl hlt
+    · grind
     · right; right
       intro hx1
       apply (J.whole.mem_dom_iff.1 hxD).2.1
@@ -190,7 +169,7 @@ theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set
   have hW₀r : W₀ ∈ M'.regions Si := ⟨w, hw, rfl⟩
   have hz₁W : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z₁.1, z₁.2 + τ * δ) : Point) ∈ W₀ := by
     rcases le_total z₁.1 m.1 with h | h
-    · rw [min_eq_left h] at h1; exact h1
+    · grind
     · rw [max_eq_left h] at h2; exact h2
   have hmW : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((m.1, m.2 + τ * δ) : Point) ∈ W₀ := by
     rw [hm2]
@@ -212,14 +191,13 @@ theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set
   rw [dite_eq_left hPhi]
   obtain ⟨hU, hUm⟩ := Classical.choose_spec hPhi
   have hUm' : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((m.1, m.2 + τ * δ) : Point) ∈ Classical.choose hPhi :=
-    hUm.mono fun δ h => by rw [show τ * δ = sideOf M R f * δ by rw [hso]]; exact h
+    hUm.mono fun δ h => by grind
   rw [← hWV]
   exact hmeet hU hW₀r hUm' hmW
 
 /-- **The parent of an exit chord of `R` in `Sᵢ` is an exit chord of `Phi f`** for an exit chord
 `f` of `R` faced next to an attachment (the end of the chain of wedges of `R`). -/
-theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
-    (hset : C'.set ⊆ J.whole.set) {Q : Polygon} {Si : Set (Set Point)}
+theorem parent_touch {Q : Polygon} {Si : Set (Set Point)}
     (hSi : (chainModel C').ChordFamily Q Si) {F : Set (Set Point)}
     (hF : F ⊆ (chainModel J.whole).Adm) (hfin : F.Finite)
     (hends : ∀ c ∈ Si, Merge.lend c ∉ J.whole.dom ∧ Merge.rend c ∉ J.whole.dom) {R : Set Point}
@@ -232,7 +210,7 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
   set M := chainModel J.whole with hMdef
   set M' := chainModel C' with hM'def
   have hM : WalkAx M := walkAx_chainModel hP
-  have hP' : C'.P.Simple := hC'P ▸ hP
+  
   obtain ⟨y, a, b, hH, hy, hceq, hl, hr⟩ := Merge.augChords_spec (hSi.2.1 hc)
   -- the side of `R`
   obtain ⟨τ, hτ, hsideE⟩ : ∃ τ : ℝ, (τ = 1 ∨ τ = -1) ∧ SideIn M R e τ := by
@@ -240,10 +218,10 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
     rcases (hiff R hR).1 hRe with rfl | rfl
     · refine ⟨1, Or.inl rfl, fun z hz hzD => ?_⟩
       filter_upwards [hside z hz hzD] with δ hδ
-      rw [one_mul]; exact hδ.1
+      grind
     · refine ⟨-1, Or.inr rfl, fun z hz hzD => ?_⟩
       filter_upwards [hside z hz hzD] with δ hδ
-      rw [show z.2 + -1 * δ = z.2 - δ by ring]; exact hδ.2
+      grind
   -- points of `e` in the domain are open points of `c`
   have hopen : ∀ z ∈ e, z ∈ M.D → z.2 = y ∧ a < z.1 ∧ z.1 < b := by
     intro z hz hzD
@@ -251,18 +229,16 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
     rw [hceq] at hzc
     obtain ⟨hz2, hza, hzb⟩ := hzc
     refine ⟨hz2, lt_of_le_of_ne hza fun h => ?_, lt_of_le_of_ne hzb fun h => ?_⟩
-    · have : z = Merge.lend c := by rw [hl]; exact Prod.ext h.symm hz2
+    · have : z = Merge.lend c := by grind
       exact (hends c hc).1 (this ▸ hzD)
-    · have : z = Merge.rend c := by rw [hr]; exact Prod.ext h hz2
+    · have : z = Merge.rend c := by grind
       exact (hends c hc).2 (this ▸ hzD)
   -- a direction away from the slit of `Cᵢ`
   obtain ⟨σ, hσ, hcol⟩ : ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ ∀ z ∈ e, z ∈ M.D → ∀ x : ℝ,
       σ * z.1 ≤ σ * x → (y < C'.top.2 ∨ (τ = -1 ∧ y ≤ C'.top.2) ∨ x ≠ C'.top.1) := by
     by_cases hcase : y < C'.top.2 ∨ τ = -1
     · refine ⟨1, Or.inl rfl, fun z _ _ x _ => ?_⟩
-      rcases hcase with h | h
-      · exact Or.inl h
-      · exact Or.inr (Or.inl ⟨h, hy⟩)
+      grind
     · push Not at hcase
       have hyt : y = C'.top.2 := le_antisymm hy hcase.1
       have htop : C'.top.1 ≤ a ∨ b ≤ C'.top.1 := by
@@ -273,11 +249,9 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
         exact C'.not_mem_set_of_mem_dom hmem C'.top_mem_set
       rcases htop with ht | ht
       · refine ⟨1, Or.inl rfl, fun z hz hzD x hx => Or.inr (Or.inr ?_)⟩
-        have := (hopen z hz hzD).2.1
-        intro h; simp only [one_mul] at hx; linarith
+        grind
       · refine ⟨-1, Or.inr rfl, fun z hz hzD x hx => Or.inr (Or.inr ?_)⟩
-        have := (hopen z hz hzD).2.2
-        intro h; linarith
+        grind
   obtain ⟨f, hf, hRf, hadjf, hsidef, z₀, hz₀e, hz₀D, z₁, hz₁f, hz₁D, hz₁y, hσ01, hgood⟩ :=
     chain_end hM hF hfin hR hτ hσ _ e he hRe hsideE le_rfl
   obtain ⟨hz₀y, hz₀a, hz₀b⟩ := hopen z₀ hz₀e hz₀D
@@ -286,8 +260,7 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
       HalfIn (freeIn C'.dom Si) τ ((x, z₀.2) : Point) := by
     intro x h1 h2
     refine halfIn_side J hP hC'P hset hSi.2.1 hSi.1 (hgood x h1 h2) ?_
-    rw [hz₀y]
-    exact hcol z₀ hz₀e hz₀D x h1
+    grind
   obtain ⟨V, hV, hV₀, hV₁⟩ : ∃ V ∈ M'.regions Si,
       (∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z₀.1, z₀.2 + τ * δ) : Point) ∈ V) ∧
       (∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z₁.1, z₀.2 + τ * δ) : Point) ∈ V) := by
@@ -300,7 +273,7 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
       exact ⟨_, ⟨w, hw, rfl⟩, h2, h1⟩
   have hPhi : Phi M M' Si R f = V := by
     refine phi_eq J hP hC'P hset hSi.2.1 hSi.1 hF hfin hR hf hτ hsidef hz₁f hz₁D
-      (by rw [hz₁y, hz₀y]; exact hy) hV ?_
+      (by grind) hV ?_
     rw [hz₁y]; exact hV₁
   refine ⟨f, hf, hRf, hadjf, hc, z₀, ⟨hec hz₀e, ?_⟩, ?_⟩
   · show z₀ ∈ C'.dom
@@ -316,6 +289,9 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
       exact this.mono_left nhdsWithin_le_nhds
     exact mem_closure_of_tendsto htend hV₀
 
+
+
+end
 
 /-- The exit chords of `R` next to one of whose attachments `R` is faced. -/
 def adjExits (M : Model) (F : Set (Set Point)) (R : Set Point) : Set (Set Point) :=
@@ -353,9 +329,8 @@ theorem parents_ncard_le (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
         ext c
         simp only [exits, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and]
         rintro - ⟨z, -, hz⟩
-        rw [closure_empty] at hz
-        exact hz
-      rw [this, Set.ncard_empty]; omega
+        simp_all
+      simp_all
 
 end FuseDeg
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvTasks4
 public import Chazelle.Core.SweepEvOrigin
 public import Chazelle.Core.SweepEvCount
@@ -39,33 +41,37 @@ theorem fin_rd (c : Config) : rd (finCfg c) bSweep 200 = c.nreg sB ∧
     rd (finCfg c) bSweep 201 = c.nreg sC ∧ rd (finCfg c) bSweep 300 = c.nreg lB ∧
     rd (finCfg c) bSweep 301 = c.nreg lC ∧ rd (finCfg c) bSweep 302 = c.nreg cTB ∧
     (finCfg c).nmem = c.nmem := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, rfl⟩ <;>
-    simp [rd, finCfg, finL, SweepIo.regB, SweepIo.regI, bandReg, bSweep, SweepRam.sw, sB, sC, lB,
-      lC, cTB]
+  simp_all [rd, finCfg, finL, SweepIo.regB, SweepIo.regI, bandReg, bSweep, SweepRam.sw, sB, sC, lB, lC, cTB] <;> omega_nf
 
 section done
 
 variable {P : Polygon} {J : Merge.Junction} {N₁ N₂ : NF} {c₀ c cw cs co c' : Config}
 
+section
+variable (hIt : IterRel P J N₁ N₂ c cw cs co c')
+include hIt
 /-- **The registers kept by the iteration** (window, reset, batch; the next key in its
 no-candidate case is handled by the caller). -/
-theorem done_iter_keep (hIt : IterRel P J N₁ N₂ c cw cs co c') {r : ℕ} (hr : 240000 ≤ r ∧ r < 250000)
+theorem done_iter_keep {r : ℕ} (hr : 240000 ≤ r ∧ r < 250000)
     (hW : ¬ WR r) (hb : r ≠ bF ∧ r ≠ bN) (hO : ¬ OrgR r) (hL : ¬ LR r) :
     co.nreg r = c.nreg r := by
   obtain ⟨⟨rs, -, -, -, -, -, -, -, -, -, -, hWr⟩, -, ⟨-, -, -, hRr⟩, ⟨hBr, -, -⟩, -⟩ := hIt
-  have hA : r ≠ ALLOC := by unfold ALLOC; omega
+  have hA : r ≠ ALLOC := by omega_nf
   rw [hBr r (band_sw_not hr) hO hL hA, hRr r hb.1 hb.2, hWr r (band_sw_not hr) hW hA]
 
 /-- **The memory kept by the iteration**, below the allocator of `c` and outside the table. -/
-theorem done_iter_mem (hIt : IterRel P J N₁ N₂ c cw cs co c')
+theorem done_iter_mem
     (hT : c.nreg cTB = c₀.nreg cTB) (hT' : cs.nreg cTB = c₀.nreg cTB) {x : ℕ}
     (hx : x < c.nreg ALLOC) (hxT : x < c.nreg cTB ∨ c.nreg cTB + 6 * N₂.nChords ≤ x) :
     co.nmem x = c.nmem x := by
   obtain ⟨⟨rs, -, -, -, -, -, -, -, -, -, hWm, hWr⟩, hAw, ⟨hRm, -, -, hRr⟩, ⟨-, -, A, hB⟩, -⟩ :=
     hIt
-  have hAs : cs.nreg ALLOC = cw.nreg ALLOC := hRr ALLOC (by unfold ALLOC bF sw; omega)
-    (by unfold ALLOC bN sw; omega)
-  rw [hB.memT x (by omega) (by rw [hT', ← hT]; exact hxT), hRm, hWm x hx]
+  have hAs : cs.nreg ALLOC = cw.nreg ALLOC := hRr ALLOC (by omega_nf)
+    (by omega_nf)
+  rw [hB.memT x (by omega) (by omega), hRm, hWm x hx]
+
+
+end
 
 end done
 

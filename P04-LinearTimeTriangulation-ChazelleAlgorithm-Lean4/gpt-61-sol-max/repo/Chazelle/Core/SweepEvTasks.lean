@@ -65,11 +65,14 @@ def AuxRecsAt (m : ℕ → ℕ) (A : ℕ) (ax : List (ℕ × ℕ × ℕ × ℕ �
     m (A + 5 * i + 3) = (ax.getD i (0, 0, 0, 0, 0)).2.2.2.1 ∧
     m (A + 5 * i + 4) = (ax.getD i (0, 0, 0, 0, 0)).2.2.2.2
 
+section
+variable (P : Polygon) (J : Merge.Junction)
+include P J
 /-- **The auxiliary data of a stop chord `e`**: `anc = 1` iff `e` is not a bracket (it has an
 attachment with offset `< Lst`); then, unless `e` is a pocket (attached at offset `0`), the
 `nl ≤ 2` labels `l₀, l₁` (region indices of `N₂`) are side labels of `e` (`EvSideLab`); `par` is
 `k + 1` for the chord `k` of `N₂` containing `e`, if any (`0` if none). -/
-def AuxOK (P : Polygon) (J : Merge.Junction) (N₂ : NF) (e : Set Point)
+def AuxOK (N₂ : NF) (e : Set Point)
     (x : ℕ × ℕ × ℕ × ℕ × ℕ) : Prop :=
   x.1 ≤ 1 ∧ (x.1 = 1 ↔ ¬ EvBrk J e) ∧ x.2.1 ≤ 2 ∧
     (0 < x.2.1 → x.2.2.1 < N₂.nRegions) ∧ (1 < x.2.1 → x.2.2.2.1 < N₂.nRegions) ∧
@@ -88,7 +91,7 @@ chords, sorted by offset, without duplicates) and the word facts of `Out`; the a
 stop chords has at most two attachments); both arrays are fresh
 (between the allocators of `c` and `c'`); the memory below the allocator of `c` and the registers
 outside `S2R` (and the oracle bands, the allocator) are unchanged. -/
-def StopOut (P : Polygon) (J : Merge.Junction) (_N₁ N₂ : NF) (c c' : Config) : Prop :=
+def StopOut (_N₁ N₂ : NF) (c c' : Config) : Prop :=
   ∃ (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)) (ax : List (ℕ × ℕ × ℕ × ℕ × ℕ)),
     rs.length = c'.nreg sC ∧ ax.length = rs.length ∧
     StopRecsAt c'.nmem (c'.nreg sB) rs ∧ AuxRecsAt c'.nmem (c'.nreg aB) ax ∧
@@ -103,6 +106,9 @@ def StopOut (P : Polygon) (J : Merge.Junction) (_N₁ N₂ : NF) (c c' : Config)
     c.nreg ALLOC ≤ c'.nreg aB ∧ c'.nreg aB + 5 * rs.length ≤ c'.nreg ALLOC ∧
     (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
     (∀ r, bandOf r ∉ oracleBands → ¬ S2R r → r ≠ ALLOC → c'.nreg r = c.nreg r)
+
+
+end
 
 /-- **Task B: stage 2**, for every shooter, at cost
 `κS D · (K₁ + K₂ + 1) · (F γ + ⌈log₂ (K₁ + K₂ + 1)⌉ + 1)`. -/

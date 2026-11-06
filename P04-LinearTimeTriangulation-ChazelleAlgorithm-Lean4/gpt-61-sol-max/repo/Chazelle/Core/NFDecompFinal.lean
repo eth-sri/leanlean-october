@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFDecompStep3
 
 /-!
@@ -20,7 +22,6 @@ namespace Chazelle.Core.Dec
 
 open Relation Finset
 
-set_option linter.unusedSectionVars false
 
 section init
 
@@ -47,8 +48,7 @@ theorem fin_lt_iff : σ.fin < R ↔ ∃ t, t < R ∧ IsTop pch σ.rem t ∧ σ.a
     have hne : ¬ (range R ⊆ (range R).filter (fun t => IsTop pch σ.rem t ∧ σ.act t ≠ 1)) := by
       intro hsub
       have := Finset.card_le_card hsub
-      rw [Finset.card_range] at this
-      omega
+      grind
     rw [Finset.not_subset] at hne
     obtain ⟨u, hu, hnu⟩ := hne
     rw [Finset.mem_range] at hu
@@ -56,23 +56,17 @@ theorem fin_lt_iff : σ.fin < R ↔ ∃ t, t < R ∧ IsTop pch σ.rem t ∧ σ.a
     obtain ⟨t, htop, htu⟩ := exists_top h (rem := σ.rem) hu
     have ht := (AncX.pos_le h htu hu).1
     by_cases htu' : t = u
-    · subst htu'
-      exact ⟨t, ht, htop, hnu hu htop⟩
+    · grind
     · refine ⟨t, ht, htop, ?_⟩
       by_contra hact
       have := (hI.i5 t ht htop hact).1
       have hmem : u ∈ sub R prg pch σ.rem t := (mem_sub).2 ⟨hu, htu⟩
-      rw [this, Finset.mem_singleton] at hmem
-      exact htu' hmem.symm
+      simp_all
   · rintro ⟨t, ht, htop, hact⟩
     have hsub : (range R).filter (fun t => IsTop pch σ.rem t ∧ σ.act t ≠ 1) ⊂ range R := by
-      refine Finset.ssubset_iff_subset_ne.2 ⟨Finset.filter_subset _ _, fun e => ?_⟩
-      have : t ∈ (range R).filter (fun t => IsTop pch σ.rem t ∧ σ.act t ≠ 1) := by
-        rw [e]; exact Finset.mem_range.2 ht
-      rw [Finset.mem_filter] at this
-      exact this.2.2 hact
+      grind
     have := Finset.card_lt_card hsub
-    rwa [Finset.card_range] at this
+    simp_all
 
 /-- While a component is active, the round index is at most `rounds D K`. -/
 theorem le_rounds_of_active {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.act t = 1) :
@@ -98,13 +92,12 @@ def AdjAv (K : ℕ) (up dn : ℕ → ℕ) (k r r' : ℕ) : Prop :=
   ∃ i, i < K ∧ i ≠ k ∧ (up i = r ∧ dn i = r' ∨ up i = r' ∧ dn i = r)
 
 theorem adjAv_symm {k r r' : ℕ} (hh : AdjAv K up dn k r r') : AdjAv K up dn k r' r := by
-  obtain ⟨i, hi, hik, hh⟩ := hh
-  exact ⟨i, hi, hik, hh.symm⟩
+  core_grind
 
 theorem rtg_adjAv_symm {k r r' : ℕ} (hh : ReflTransGen (AdjAv K up dn k) r r') :
     ReflTransGen (AdjAv K up dn k) r' r := by
   induction hh with
-  | refl => exact ReflTransGen.refl
+  | refl => grind
   | tail _ hbc ih => exact ReflTransGen.head (adjAv_symm h hch hbc) ih
 
 theorem chOf_pch' {s : ℕ} (hs : s < R) (h0 : s ≠ 0) : chOf (pch s) = s := by
@@ -117,15 +110,14 @@ theorem adjAv_of_child {k y s : ℕ} (_hk : k < K) (hs : s < R) (hs0 : s ≠ 0) 
   refine ⟨pch s, h.pch_lt s hs hs0, fun e => hne ?_, ?_⟩
   · rw [← e]; exact (chOf_pch' h hch hs hs0).symm
   · rcases h.ends s hs hs0 with ⟨a1, a2⟩ | ⟨a1, a2⟩
-    · exact Or.inl ⟨by rw [a1, hy], a2⟩
-    · exact Or.inr ⟨a1, by rw [a2, hy]⟩
+    all_goals omega
 
 /-- Below `a`, the tree path to `r` avoids chord `k` if it does not pass through `chOf k`. -/
 theorem rtg_of_anc {k a r : ℕ} (hk : k < K) (har : AncX R prg pch rem0 a r)
     (hav : ∀ w, AncX R prg pch rem0 a w → AncX R prg pch rem0 w r → w ≠ a → w ≠ chOf k) :
     ReflTransGen (AdjAv K up dn k) a r := by
   induction har with
-  | refl => exact ReflTransGen.refl
+  | refl => grind
   | tail hay hyr ih =>
     rename_i y s
     obtain ⟨hs, hs0, hps, -⟩ := hyr
@@ -136,8 +128,7 @@ theorem rtg_of_anc {k a r : ℕ} (hk : k < K) (har : AncX R prg pch rem0 a r)
     rw [← e] at hay
     have := (AncX.pos_le h hay (hps ▸ h.prg_lt s hs hs0)).2.1
     have := h.pos_prg s hs hs0
-    rw [hps] at this
-    omega
+    grind
 
 /-- **Reachability avoiding a chord**: from `x`, the regions reachable without chord `k` are
 those on the same side of `k` (inside or outside the subtree of its child endpoint). -/
@@ -214,15 +205,15 @@ include hK hRR h hch hisdn hI hna
 
 theorem withDec_dnode {k : ℕ} (hk : k < K) :
     (withDec N K R σ).dnode k = ⟨σ.dpar k, σ.dlo k, σ.dhi k⟩ := by
-  simp [withDec, NF.dnode, List.getD_eq_getElem?_getD, hk]
+  grind [withDec, NF.dnode, List.getD_eq_getElem?_getD]
 
 theorem withDec_lpar {r : ℕ} (hr : r < R) : (withDec N K R σ).lpar.getD r (withDec N K R σ).root =
     σ.lpar r := by
-  simp [withDec, List.getD_eq_getElem?_getD, hr]
+  grind [withDec, List.getD_eq_getElem?_getD]
 
 theorem withDec_lpar_out {r : ℕ} (hr : R ≤ r) :
     (withDec N K R σ).lpar.getD r (withDec N K R σ).root = σ.root := by
-  simp [withDec, List.getD_eq_getElem?_getD, hr]
+  grind [withDec, List.getD_eq_getElem?_getD]
 
 /-- All chords are removed and nothing is pending. -/
 theorem final_cut {e : ℕ} (he : e < K) : σ.rem e = 1 ∧ σ.pend e ≠ 1 := by
@@ -235,25 +226,25 @@ theorem final_cut {e : ℕ} (he : e < K) : σ.rem e = 1 ∧ σ.pend e ≠ 1 := b
   rw [← hmem] at htop
   have hr : σ.rem e = 1 := by
     rcases htop with h0 | h1
-    · exact absurd h0 c2
-    · rwa [c3] at h1
+    all_goals grind
   refine ⟨hr, fun hp => ?_⟩
   obtain ⟨t', ht', htop', hact', -⟩ := (hI.i3 e he hp).2 0 (by norm_num)
-  exact hna t' ht' htop' hact'
+  simp_all
 
 theorem final_j : 1 ≤ j := by
   by_contra hj
   have := (hI.i7 (by omega)).2.1
   exact hna 0 h.R_pos (Or.inl rfl) this
 
+section
+variable {x : ℕ}
 /-- A placed code is in range. -/
-theorem valid_range {x : ℕ} (hx : ValidC R K pch σ x) :
+theorem valid_range (hx : ValidC R K pch σ x) :
     (x % 2 = 0 ∧ x / 2 < K) ∨ (x % 2 = 1 ∧ x / 2 < R) := by
   rcases hx with ⟨a, b, -⟩ | ⟨a, b, -⟩
-  · exact Or.inl ⟨a, b⟩
-  · exact Or.inr ⟨a, b⟩
+  all_goals omega
 
-theorem valid_of_range {x : ℕ} (hx : (x % 2 = 0 ∧ x / 2 < K) ∨ (x % 2 = 1 ∧ x / 2 < R)) :
+theorem valid_of_range (hx : (x % 2 = 0 ∧ x / 2 < K) ∨ (x % 2 = 1 ∧ x / 2 < R)) :
     ValidC R K pch σ x := by
   rcases hx with ⟨a, b⟩ | ⟨a, b⟩
   · exact Or.inl ⟨a, b, (final_cut hK hRR h hch hisdn hI hna b).1⟩
@@ -264,8 +255,11 @@ theorem valid_of_range {x : ℕ} (hx : (x % 2 = 0 ∧ x / 2 < K) ∨ (x % 2 = 1 
         exact (final_cut hK hRR h hch hisdn hI hna (h.pch_lt _ b h0)).1
     exact Or.inr ⟨a, b, htop, hna _ b htop⟩
 
+section
+variable (hx : ValidC R K pch σ x)
+include hx
 /-- The parent code of the decomposition is `pcode` on placed codes. -/
-theorem parentCode_eq {x : ℕ} (hx : ValidC R K pch σ x) :
+theorem parentCode_eq :
     (withDec N K R σ).parentCode x = pcode σ x := by
   unfold NF.parentCode pcode
   rcases valid_range hK hRR h hch hisdn hI hna hx with ⟨a, b⟩ | ⟨a, b⟩
@@ -274,34 +268,36 @@ theorem parentCode_eq {x : ℕ} (hx : ValidC R K pch σ x) :
     rw [ite_eq_right a', ite_eq_right a', withDec_lpar hK hRR h hch hisdn hI hna b]
 
 /-- Parents of placed codes are placed codes containing them. -/
-theorem up_step {x : ℕ} (hx : ValidC R K pch σ x) :
+theorem up_step :
     ValidC R K pch σ (pcode σ x) ∧ compOf gc x ⊆ compOf gc (pcode σ x) := by
   rcases hx with ⟨a, b, c⟩ | ⟨a, b, c, d⟩
   · obtain ⟨-, -, -, -, -, h6⟩ := hI.i1 _ b c
-    have hp : pcode σ x = σ.dpar (x / 2) := by unfold pcode; rw [ite_eq_left a]
+    have hp : pcode σ x = σ.dpar (x / 2) := by grind [pcode]
     rcases h6 with ⟨e1, -, -, -⟩ | ⟨p, hp', hrp, e1, -, e3⟩
-    · have : pcode σ x = x := by rw [hp, e1]; omega
+    · have : pcode σ x = x := by omega
       rw [this]; exact ⟨Or.inl ⟨a, b, c⟩, le_rfl⟩
     · rw [hp, e1]
       have h2 : 2 * p % 2 = 0 := by omega
       have h3 : 2 * p / 2 = p := by omega
-      refine ⟨Or.inl ⟨h2, by rw [h3]; exact hp', by rw [h3]; exact hrp⟩, ?_⟩
-      simp only [compOf, ite_eq_left a, ite_eq_left h2, h3]
-      exact e3
+      refine ⟨Or.inl ⟨h2, by omega, by grind⟩, ?_⟩
+      grind [compOf]
   · obtain ⟨-, h2⟩ := hI.i5 _ b c d
     have a' : x % 2 ≠ 0 := by omega
-    have hp : pcode σ x = σ.lpar (x / 2) := by unfold pcode; rw [ite_eq_right a']
+    have hp : pcode σ x = σ.lpar (x / 2) := by grind [pcode]
     rcases h2 with ⟨e1, -, -⟩ | ⟨p, hp', hrp, e1, -, e3⟩
-    · have : pcode σ x = x := by rw [hp, e1]; omega
+    · have : pcode σ x = x := by omega
       rw [this]; exact ⟨Or.inr ⟨a, b, c, d⟩, le_rfl⟩
     · rw [hp, e1]
       have h2 : 2 * p % 2 = 0 := by omega
       have h3 : 2 * p / 2 = p := by omega
-      refine ⟨Or.inl ⟨h2, by rw [h3]; exact hp', by rw [h3]; exact hrp⟩, ?_⟩
-      simp only [compOf, ite_eq_right a', ite_eq_left h2, h3]
-      intro v hv
-      rw [Finset.mem_singleton] at hv
-      rw [hv]; exact e3
+      refine ⟨Or.inl ⟨h2, by omega, by grind⟩, ?_⟩
+      grind [compOf, Finset.mem_singleton]
+
+
+
+end
+
+end
 
 /-- The chain of parents from a leaf stays among placed codes containing the leaf. -/
 theorem chain_mem {r : ℕ} (hr : r < R) (i : ℕ) :
@@ -310,15 +306,11 @@ theorem chain_mem {r : ℕ} (hr : r < R) (i : ℕ) :
   induction i with
   | zero =>
     simp only [Function.iterate_zero, id]
-    have a : (2 * r + 1) % 2 = 1 := by omega
-    have b : (2 * r + 1) / 2 = r := by omega
-    refine ⟨valid_of_range hK hRR h hch hisdn hI hna (Or.inr ⟨a, by rw [b]; exact hr⟩), ?_⟩
-    simp only [compOf, ite_eq_right (show (2 * r + 1) % 2 ≠ 0 by omega), b,
-      Finset.mem_singleton]
+    grind [Chazelle.Core.Dec.valid_of_range, compOf, Finset.mem_singleton]
   | succ i ih =>
     rw [Function.iterate_succ_apply', parentCode_eq hK hRR h hch hisdn hI hna ih.1]
     obtain ⟨u1, u2⟩ := up_step hK hRR h hch hisdn hI hna ih.1
-    exact ⟨u1, u2 ih.2⟩
+    grind
 
 /-- The slots of a chord split its component. -/
 theorem slot_facts {k s : ℕ} (hk : k < K) (hs : s ≤ 1) :

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepRamStage0
 
 /-!
@@ -54,7 +56,7 @@ def dstI : Instr → ℕ
 
 theorem regI_other (m f : ℕ → ℕ) (i : Instr) {q : ℕ} (hq : dstI i ≠ q) :
     regI m i f q = f q := by
-  cases i <;> simp only [regI, dstI] at hq ⊢ <;> exact upd_other _ _ _ (Ne.symm hq)
+  cases i <;> aesop <;> exact upd_other _ _ _ (Ne.symm hq)
 
 /-- **A block leaves the registers it does not write.** -/
 theorem regB_other (m : ℕ → ℕ) : ∀ (l : List Instr) (f : ℕ → ℕ) {q : ℕ},
@@ -76,7 +78,7 @@ def IFix (q : ℕ) : Prop := 240000 ≤ q ∧ q < 240700
 def IScr (r : ℕ) : Prop := (240700 ≤ r ∧ r < 250000) ∨ bandOf r ∈ oracleBands
 
 theorem band_sw {r : ℕ} (h1 : 240000 ≤ r) (h2 : r < 250000) : bandOf r = bSweep := by
-  unfold bandOf bSweep; omega
+  omega_nf
 
 theorem bSweep_mem : bSweep ∈ ioBands := by decide
 
@@ -86,14 +88,14 @@ theorem alloc_not_io : bandOf ALLOC ∉ ioBands := by decide
 
 theorem fix_not_scr {q : ℕ} (h : IFix q) : ¬ IScr q := by
   rintro (h' | h')
-  · unfold IFix at h; omega
+  · omega_nf
   · unfold IFix at h
     rw [band_sw (by omega) (by omega)] at h'
     exact absurd h' (by decide)
 
 theorem alloc_not_scr : ¬ IScr ALLOC := by
   rintro (h | h)
-  · unfold ALLOC at h; omega
+  · omega_nf
   · exact absurd h (by decide)
 
 theorem scr_band {r : ℕ} (h : IScr r) : bandOf r ∈ ioBands := by
@@ -119,17 +121,14 @@ def IFr (c c' : Config) (k : ℕ) : Prop :=
     c.nreg ALLOC ≤ c'.nreg ALLOC ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k
 
 theorem IFr.refl (c : Config) (k : ℕ) : IFr c c k :=
-  ⟨fun _ _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, by omega⟩
+  by core_grind
 
 theorem IFr.trans {c c₁ c₂ : Config} {k₁ k₂ : ℕ} (h₁ : IFr c c₁ k₁) (h₂ : IFr c₁ c₂ k₂) :
     IFr c c₂ (k₁ + k₂) := by
-  obtain ⟨r₁, rr₁, o₁, a₁, b₁⟩ := h₁
-  obtain ⟨r₂, rr₂, o₂, a₂, b₂⟩ := h₂
-  exact ⟨fun r hr hra => (r₂ r hr hra).trans (r₁ r hr hra), fun r hr => (rr₂ r hr).trans (rr₁ r hr),
-    o₂.trans o₁, a₁.trans a₂, by omega⟩
+  core_grind
 
 theorem IFr.mono {c c' : Config} {k k' : ℕ} (h : IFr c c' k) (hk : k ≤ k') : IFr c c' k' :=
-  ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1, by have := h.2.2.2.2; omega⟩
+  by core_grind
 
 theorem IFr.of_frame {B : Finset ℕ} {c c' : Config} {k : ℕ} (h : Frame B c c' k)
     (hB : B ⊆ ioBands) : IFr c c' k :=
@@ -145,36 +144,40 @@ variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
 theorem IRS.mono {s : Stmt} {K K' : ℕ} {Q Q' : Config → Prop} (h : IRS P W c₀ s c K Q)
     (hK : K ≤ K') (hQ : ∀ c', Q c' → Q' c') : IRS P W c₀ s c K' Q' := by
-  obtain ⟨c', k, ex, hk, hI, hfr, hq⟩ := h
-  exact ⟨c', k, ex, by omega, hI, hfr, hQ c' hq⟩
+  core_grind
 
 theorem IRS.seq {s t : Stmt} {K₁ K₂ : ℕ} {Q₁ Q₂ : Config → Prop} (h₁ : IRS P W c₀ s c K₁ Q₁)
     (h₂ : ∀ c₁, IInv W c₀ c₁ → c.nreg ALLOC ≤ c₁.nreg ALLOC → c₁.nreg ALLOC ≤ c.nreg ALLOC + K₁ →
       Q₁ c₁ → IRS P W c₀ t c₁ K₂ Q₂) : IRS P W c₀ (.seq s t) c (K₁ + K₂) Q₂ := by
   obtain ⟨c₁, k₁, e₁, hk₁, hI₁, hfr₁, hq₁⟩ := h₁
   obtain ⟨c', k₂, e₂, hk₂, hI', hfr₂, hq⟩ := h₂ c₁ hI₁ hfr₁.2.2.2.1
-    (by have := hfr₁.2.2.2.2; omega) hq₁
+    (by ram_grind) hq₁
   exact ⟨c', k₁ + k₂, .seq e₁ e₂, by omega, hI', hfr₁.trans hfr₂, hq⟩
 
-theorem IRS.ifT {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
+section
+variable {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
+theorem IRS.ifT
     (ht : c.nreg a < c.nreg b) (h : IRS P W c₀ t c K Q) :
     IRS P W c₀ (.ifLtN a b t e) c (K + 2) Q := by
   obtain ⟨c', k, ex, hk, hI, hfr, hq⟩ := h
   exact ⟨c', k + 1, .ifLtN_true ht ex, by omega, hI, hfr.mono (by omega), hq⟩
 
-theorem IRS.ifF {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
+theorem IRS.ifF
     (ht : ¬ c.nreg a < c.nreg b) (h : IRS P W c₀ e c K Q) :
     IRS P W c₀ (.ifLtN a b t e) c (K + 2) Q := by
   obtain ⟨c', k, ex, hk, hI, hfr, hq⟩ := h
   exact ⟨c', k + 2, .ifLtN_false ht ex, by omega, hI, hfr.mono (by omega), hq⟩
 
-theorem IRS.ite {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
+theorem IRS.ite
     (ht : c.nreg a < c.nreg b → IRS P W c₀ t c K Q)
     (he : ¬ c.nreg a < c.nreg b → IRS P W c₀ e c K Q) :
     IRS P W c₀ (.ifLtN a b t e) c (K + 2) Q := by
   by_cases h : c.nreg a < c.nreg b
   · exact IRS.ifT h (ht h)
   · exact IRS.ifF h (he h)
+
+
+end
 
 theorem IRS.skip {K : ℕ} {Q : Config → Prop} (hI : IInv W c₀ c) (hq : Q c) :
     IRS P W c₀ .skip c K Q :=
@@ -186,8 +189,8 @@ theorem IInv.regs {c' : Config} {k : ℕ} (hI : IInv W c₀ c) (hw : WordsBounde
     (hrr : c'.rreg = c.rreg) (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem)
     (ho : c'.output = c.output) : IInv W c₀ c' ∧ IFr c c' k := by
   have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC alloc_not_scr
-  refine ⟨⟨hw, fun q hq => (hr q (fix_not_scr hq)).trans (hI.hin q hq), by rw [hA]; exact hI.hA,
-    fun a ha => by rw [hm]; exact hI.hm a ha, fun a ha => by rw [hrm]; exact hI.hrm a ha⟩,
+  refine ⟨⟨hw, fun q hq => (hr q (fix_not_scr hq)).trans (hI.hin q hq), by ram_grind,
+    fun a ha => by ram_grind, fun a ha => by ram_grind⟩,
     fun r hr' _ => hr r (fun h => hr' (scr_band h)), fun r _ => by rw [hrr], ho, by omega,
     by omega⟩
 
@@ -197,11 +200,8 @@ theorem IRS.reg {i : Instr} {r v : ℕ} (hI : IInv W c₀ c) (hr : IScr r)
     IRS P W c₀ (.instr i) c 1 (fun c' => c' = { c with nreg := upd c.nreg r v }) := by
   obtain ⟨hI', hfr⟩ := hI.regs (c' := { c with nreg := upd c.nreg r v }) (k := 1) hex.wb_right
     (fun q h => by
-      simp only [upd]
-      split_ifs with h'
-      · subst h'; exact absurd hr h
-      · rfl) rfl rfl rfl rfl
-  exact ⟨_, 1, hex, le_rfl, hI', hfr, rfl⟩
+      ram_all <;> ram_grind) rfl rfl rfl rfl
+  ram_grind
 
 /-- An instruction the block lemma covers: a register instruction writing a scratch register,
 with its value within the word bound. -/
@@ -227,7 +227,7 @@ theorem IRS.instr1 {i : Instr} (hI : IInv W c₀ c) (hi : okI W c.nreg i) :
   | addN r a b => exact IRS.reg hI hi.1 (Exec.addN hI.hw r a b hi.2)
   | subN r a b => exact IRS.reg hI hi (Exec.subN hI.hw r a b)
   | loadN r a => exact IRS.reg hI hi (Exec.loadN hI.hw r a)
-  | _ => exact absurd hi (by simp [okI])
+  | _ => ram_grind
 
 /-- **A straight-line block** of register instructions. -/
 theorem IRS.block : ∀ (l : List Instr) {c : Config}, IInv W c₀ c →
@@ -242,7 +242,7 @@ theorem IRS.block : ∀ (l : List Instr) {c : Config}, IInv W c₀ c →
       exact IRS.block l hI₁ hl)
     simp only [List.length_cons]
     rw [Nat.add_comm]
-    exact h.mono le_rfl (fun c' h' => h')
+    ram_all
 
 /-- **A store** at an address at or above `c₀`'s allocator. -/
 theorem IRS.store {a v : ℕ} (hI : IInv W c₀ c) (ha : c₀.nreg ALLOC ≤ c.nreg a) :
@@ -253,7 +253,7 @@ theorem IRS.store {a v : ℕ} (hI : IInv W c₀ c) (ha : c₀.nreg ALLOC ≤ c.n
     ⟨fun _ _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, Nat.le_add_right _ _⟩, rfl⟩
   simp only [upd]
   rw [ite_eq_right (by omega)]
-  exact hI.hm b hb
+  ram_grind
 
 /-- **A loop**: an invariant `I` and a measure `μ`; each iteration costs at most `Kb` and lowers
 `μ`.  The allocator must leave room for all iterations. -/
@@ -274,14 +274,12 @@ theorem IRS.while {a b : ℕ} {body : Stmt} (I : Config → Prop) (μ : Config �
       have hA₁ := hfr₁.2.2.2.2
       have hroom₁ : c₁.nreg ALLOC + (Kb + 2) * μ c₁ ≤ W := by
         have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * μ c := Nat.mul_le_mul_left _ hμ₁
-        rw [Nat.mul_add, Nat.mul_one] at this
-        omega
+        grind
       obtain ⟨c', k₂, e₂, hk₂, hI', hfr₂, hq⟩ := ih (μ c₁) (by omega) hI₁ hc₁ hroom₁ rfl
       refine ⟨c', k₁ + 2 + k₂, .whileLtN_true ht e₁ e₂, ?_, hI',
         (hfr₁.trans hfr₂).mono (by omega), hq⟩
       have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * n := Nat.mul_le_mul_left _ (by omega)
-      rw [Nat.mul_add, Nat.mul_one] at this
-      omega
+      grind
     · exact ⟨c, 2, .whileLtN_false ht hI.hw, by omega, hI, IFr.refl c 2, hc, ht⟩
 
 /-- **A call of a statement with a `Meets` contract in the oracle bands**: the fixed registers
@@ -297,7 +295,7 @@ theorem IRS.callO {s : Stmt} {B' : Finset ℕ} {Pre : Polygon → ℕ → Config
   have hkeep : ∀ r, bandOf r ∉ oracleBands → r ≠ ALLOC → c'.nreg r = c.nreg r :=
     fun r hr hra => hfr.1 r (fun h => hr (hB h)) hra
   have hfix : ∀ q, IFix q → c'.nreg q = c.nreg q := fun q hq => hkeep q (by
-    unfold IFix at hq; rw [band_sw (by omega) (by omega)]; decide) (by unfold IFix at hq; unfold ALLOC; omega)
+    unfold IFix at hq; rw [band_sw (by omega) (by omega)]; decide) (by omega_nf)
   exact ⟨c', k, ex, hk, ⟨ex.wb_right, fun q hq => (hfix q hq).trans (hI.hin q hq),
     le_trans hI.hA hfr.2.2.2.2.2.1,
     fun a ha => (hfr.2.2.1 a (lt_of_lt_of_le ha hI.hA)).trans (hI.hm a ha),
@@ -313,8 +311,8 @@ theorem IRS.ofExec {s : Stmt} {c' : Config} {k K : ℕ} {Q : Config → Prop} (h
     (ho : c'.output = c.output) (hA1 : c.nreg ALLOC ≤ c'.nreg ALLOC)
     (hA2 : c'.nreg ALLOC ≤ c.nreg ALLOC + k) (hq : Q c') : IRS P W c₀ s c K Q :=
   ⟨c', k, ex, hk, ⟨ex.wb_right, fun q hq' => (hr q (fix_not_scr hq') (by
-      unfold IFix at hq'; unfold ALLOC; omega)).trans (hI.hin q hq'), le_trans hI.hA hA1,
-      fun a ha => (hm a ha).trans (hI.hm a ha), fun a ha => by rw [hrm]; exact hI.hrm a ha⟩,
+      omega_nf)).trans (hI.hin q hq'), le_trans hI.hA hA1,
+      fun a ha => (hm a ha).trans (hI.hm a ha), fun a ha => by ram_grind⟩,
     ⟨fun r hr' hra => hr r (fun h => hr' (scr_band h)) hra, fun r _ => by rw [hrr], ho, hA1, hA2⟩,
     hq⟩
 

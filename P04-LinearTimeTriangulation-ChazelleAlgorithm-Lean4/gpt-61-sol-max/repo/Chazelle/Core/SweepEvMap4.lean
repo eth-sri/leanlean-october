@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvMap2
 
 /-!
@@ -24,8 +26,11 @@ section EdgeCorr
 
 variable {J : Merge.Junction}
 
+section
+variable (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (htp : 0 < t)
+include hP t hv htp
 /-- **The walk edges agree** at a valid offset with a positive parameter. -/
-theorem edge_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (htp : 0 < t) (s : ℝ) :
+theorem edge_corr (s : ℝ) :
     sidePt (chainModel J.whole).W (mEdge J d) s =
       sidePt (chainModel J.left).W ((b₁ J + d) % (chainModel J.left).W.n) s := by
   have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
@@ -34,7 +39,7 @@ theorem edge_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (htp
   have hm1 : J.left.m = J.m₁ := rfl
   have h1 := J.one_le_m₁
   have hτ₁ := tpos_lt J.left J.m₁
-  have hτw := tpos_lt J.whole J.m₁
+  
   obtain ⟨hdE, hgap, hsplit, -⟩ := hv
   have ht0 : t ≠ 0 := htp.ne'
   have viaGen : ∀ d' : ℕ, d' < lL1 J + lL2 J →
@@ -62,14 +67,14 @@ theorem edge_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (htp
   · have hlOff : lOff J = Lst J := by rw [lOff_of_vnt J hVNT, Lst_rlen]
     have hlen : Lst J + llen J = (chainModel J.whole).W.n := by
       rw [Lst_rlen]; exact rlen_add_llen J hVNT
-    have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; rw [ite_eq_right (by omega)]
+    have hb : b₁ J = 6 + tpos J.left J.m₁ := by grind [b₁]
     have hE₁ : E₁ J = llen J + lδ J := by unfold E₁; omega
     have hL := lL1_add_lL2 J
     rw [hE₁] at hdE
     rw [hb] at viaGen ⊢
     by_cases hdl : d < lL1 J
-    · have hψ : ψ J d = d := by unfold ψ; rw [ite_eq_right (by omega)]
-      refine viaGen d (by omega) ?_ (by rw [hψ, hlOff])
+    · have hψ : ψ J d = d := by grind [ψ]
+      refine viaGen d (by omega) ?_ (by omega)
       unfold dq; rw [ite_eq_left hdl]
     · by_cases hδ : lδ J = 0
       · have := lL2_of_lδ hδ; omega
@@ -78,43 +83,43 @@ theorem edge_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (htp
         rw [h7] at hgap hsplit hdE
         have hd1 : d ≠ lL1 J := fun hd1 => hsplit ⟨by omega, hd1, ht0⟩
         have hd2 : lL1 J + 7 ≤ d := by
-          by_contra h; exact hgap ⟨by omega, by omega, by omega⟩
+          omega
         have hψ : ψ J d = d - 7 := by
-          unfold ψ; rw [ite_eq_left ⟨hδ', by omega⟩, ite_eq_right (by omega), h7]
-        refine viaGen (d - 7) (by omega) ?_ (by rw [hψ, hlOff])
+          grind [ψ]
+        refine viaGen (d - 7) (by omega) ?_ (by omega)
         unfold dq; rw [ite_eq_right (by omega), h7, show d - 7 + 7 = d by omega]
   · obtain ⟨hτ0, hδ0, hl1, hl2, hll⟩ := nvt_left J hP hVNT
-    have hψ : ψ J d = d := by unfold ψ; rw [ite_eq_right (by omega)]
+    have hψ : ψ J d = d := by grind [ψ]
     by_cases hbox : Lst J < lOff J
     · obtain ⟨-, hlo, hτs, hLst⟩ := caseB_facts J hbox
-      have hb : b₁ J = 2 * J.left.m + 6 := by unfold b₁; rw [ite_eq_left hbox]
-      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; rw [hn, hδ0]; omega
+      have hb : b₁ J = 2 * J.left.m + 6 := by grind [b₁]
+      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by grind [E₁]
       rw [hE₁] at hdE
       rw [hb] at viaGen ⊢
       by_cases hd7 : d < 7
-      · have := viaBox d hVNT hd7 (by rw [hb]) (by rw [hψ]; unfold gW; omega)
+      · have := viaBox d hVNT hd7 (by rw [hb]) (by grind [gW])
         rwa [hb] at this
-      · refine viaGen (d - 7) (by omega) ?_ (by rw [hψ]; omega)
+      · refine viaGen (d - 7) (by omega) ?_ (by omega)
         unfold dq; rw [ite_eq_left (by omega), hτ0, hn₁]
         rw [show 2 * J.left.m + 6 + d = (6 + 0 + (d - 7)) + (2 * J.left.m + 7) by omega,
           Nat.add_mod_right]
     · obtain ⟨hτs, hlo, hLst⟩ := caseC_facts J hVNT hbox
-      have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; rw [ite_eq_right hbox]
-      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; rw [hn, hδ0]; omega
+      have hb : b₁ J = 6 + tpos J.left J.m₁ := by grind [b₁]
+      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by grind [E₁]
       rw [hE₁] at hdE
       rw [hb, hτ0] at viaGen ⊢
       by_cases hd2 : d < 2 * J.m₁
       · refine viaGen d (by omega) ?_ (by rw [hψ, hlo])
-        unfold dq; rw [ite_eq_left (by omega)]
+        grind [dq]
       · have := viaBox (d - 2 * J.m₁) hVNT (by omega) (by
           rw [hb, hτ0]
           congr 1
-          omega) (by rw [hψ]; unfold gW; omega)
+          omega) (by grind [gW])
         rwa [hb, hτ0] at this
 
 /-- **A height code has the same parameter** in `M` at `mEdge d` and in `M₁` at `(b₁ + d) % n₁`
 (valid offset, positive parameter). -/
-theorem param_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (htp : 0 < t)
+theorem param_corr
     (Q : Polygon) (h : ℕ) :
     (chainModel J.whole).param Q ⟨mEdge J d, h⟩ =
       (chainModel J.left).param Q ⟨(b₁ J + d) % (chainModel J.left).W.n, h⟩ := by
@@ -125,12 +130,12 @@ theorem param_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (ht
       (chainModel J.left).wa ((b₁ J + d) % (chainModel J.left).W.n) := e0
   have hwb : (chainModel J.whole).wb (mEdge J d) =
       (chainModel J.left).wb ((b₁ J + d) % (chainModel J.left).W.n) := by
-    unfold Model.wb
-    rw [Nat.mod_add_mod]
-    unfold Chazelle.Chain.sidePt at e1
-    simpa [Geometry.lerp_one] using e1
+    simp_all [Model.wb, Nat.mod_add_mod, Chazelle.Chain.sidePt, Geometry.lerp_one] <;> omega_nf
   unfold Model.param
-  rw [hwa, hwb]
+  simp_all
+
+
+end
 
 end EdgeCorr
 

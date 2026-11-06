@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDropDeg
 public import Chazelle.Core.DownPhaseBoxFilter
 
@@ -30,24 +32,32 @@ open BuildRegions (famOf)
 
 /-! ## The chain above a line -/
 
-theorem mem_set_lerp (C : Chain) {z : Point} (hz : z ∈ C.set) :
+section
+variable (C : Chain) {z : Point} (hz : z ∈ C.set)
+include hz
+theorem mem_set_lerp :
     ∃ k, k < C.m ∧ ∃ t : ℝ, 0 ≤ t ∧ t ≤ 1 ∧
       z.2 = (C.vertex k).2 + t * ((C.vertex (k + 1)).2 - (C.vertex k).2) := by
   obtain ⟨k, hk, hzk⟩ := hz
   rw [C.chainEdge_eq] at hzk
   obtain ⟨t, ht0, ht1, rfl⟩ := hzk
-  exact ⟨k, hk, t, ht0, ht1, rfl⟩
+  grind
 
 /-- Every chain point is at least as high as some vertex. -/
-theorem vertex_below (C : Chain) {z : Point} (hz : z ∈ C.set) :
+theorem vertex_below :
     ∃ k, k ≤ C.m ∧ (C.vertex k).2 ≤ z.2 := by
   obtain ⟨k, hk, t, ht0, ht1, e⟩ := mem_set_lerp C hz
   rcases le_total (C.vertex k).2 (C.vertex (k + 1)).2 with h | h
-  · exact ⟨k, hk.le, by rw [e]; nlinarith⟩
-  · exact ⟨k + 1, hk, by rw [e]; nlinarith⟩
+  · exact ⟨k, hk.le, by nlinarith⟩
+  · exact ⟨k + 1, hk, by nlinarith⟩
 
+
+end
+
+section
+variable (C : Chain)
 /-- **A line missing the chain, not above the top, lies below the chain.** -/
-theorem chain_above (C : Chain) {y : ℝ} (hno : ∀ z ∈ C.set, z.2 ≠ y) (htop : y < C.top.2) :
+theorem chain_above {y : ℝ} (hno : ∀ z ∈ C.set, z.2 ≠ y) (htop : y < C.top.2) :
     ∀ z ∈ C.set, y < z.2 := by
   have step : ∀ k, k < C.m → (y < (C.vertex k).2 ↔ y < (C.vertex (k + 1)).2) := by
     intro k hk
@@ -61,27 +71,21 @@ theorem chain_above (C : Chain) {y : ℝ} (hno : ∀ z ∈ C.set, z.2 ≠ y) (ht
     set b := (C.vertex (k + 1)).2
     by_contra hne
     have hcross : (y < a ∧ b < y) ∨ (a < y ∧ y < b) := by
-      rcases lt_or_gt_of_ne ha with h1 | h1 <;> rcases lt_or_gt_of_ne hb with h2 | h2
-      · exact absurd (iff_of_false (not_lt.2 h1.le) (not_lt.2 h2.le)) hne
-      · exact Or.inr ⟨h1, h2⟩
-      · exact Or.inl ⟨h1, h2⟩
-      · exact absurd (iff_of_true h1 h2) hne
+      grind
     rcases hcross with ⟨h1, h2⟩ | ⟨h1, h2⟩
     · have hpos : 0 < a - b := by linarith
       refine hno _ (hseg ((a - y) / (a - b)) (div_nonneg (by linarith) hpos.le)
         ((div_le_one hpos).2 (by linarith))) ?_
-      show a + (a - y) / (a - b) * (b - a) = y
-      field_simp; ring
+      grind
     · have hpos : 0 < b - a := by linarith
       refine hno _ (hseg ((y - a) / (b - a)) (div_nonneg (by linarith) hpos.le)
         ((div_le_one hpos).2 (by linarith))) ?_
-      show a + (y - a) / (b - a) * (b - a) = y
-      field_simp; ring
+      grind
   have hall : ∀ k, k ≤ C.m → (y < (C.vertex k).2 ↔ y < (C.vertex 0).2) := by
     intro k hk
     induction k with
-    | zero => exact Iff.rfl
-    | succ k ih => exact (step k (by omega)).symm.trans (ih (by omega))
+    | zero => simp_all
+    | succ k ih => grind
   have h0 : y < (C.vertex 0).2 := (hall _ C.topIdx_le).1 htop
   have hv : ∀ k, k ≤ C.m → y < (C.vertex k).2 := fun k hk => (hall k hk).2 h0
   intro z hz
@@ -95,14 +99,14 @@ theorem chain_above (C : Chain) {y : ℝ} (hno : ∀ z ∈ C.set, z.2 ≠ y) (ht
 
 /-! ## Cuts of augmented chords -/
 
-theorem sidePt_small (C : Chain) {p : ℕ} (hp : p < 6) (t : ℝ) :
+theorem sidePt_small {p : ℕ} (hp : p < 6) (t : ℝ) :
     sidePt (C.sideWalk C.sideBeta) p t =
       Geometry.lerp ((C.sideWalk C.sideBeta).vtx p) ((C.sideWalk C.sideBeta).vtx (p + 1)) t := by
   unfold sidePt
   rw [C.sideWalk_n, Nat.mod_eq_of_lt (by omega)]
 
 /-- **The cuts of an augmented chord.** -/
-theorem cut_cases (C : Chain) {e : Set Point} {y : ℝ} (hey : ∀ z ∈ e, z.2 = y)
+theorem cut_cases {e : Set Point} {y : ℝ} (hey : ∀ z ∈ e, z.2 = y)
     (hyR : |y| < C.radius) (hyt : y ≤ C.top.2) {p : ℕ} {t : ℝ}
     (hA : SideAttach (C.sideWalk C.sideBeta) e p t) :
     (p = 1 ∧ y = C.radius - 2 * C.radius * t) ∨ (p = 3 ∧ y = -C.radius + 2 * C.radius * t) ∨
@@ -116,15 +120,15 @@ theorem cut_cases (C : Chain) {e : Set Point} {y : ℝ} (hey : ∀ z ∈ e, z.2 
   · rw [sidePt_small C h6, Geometry.lerp_snd] at hpy
     interval_cases p
     · rw [C.sideWalk_vtx_zero, C.sideWalk_vtx_one] at hpy
-      simp only [Chain.slitTop] at hpy; linarith
+      grind [Chain.slitTop]
     · rw [C.sideWalk_vtx_one, C.sideWalk_vtx_two] at hpy
-      left; exact ⟨rfl, by simp only at hpy; linarith⟩
+      grind
     · rw [C.sideWalk_vtx_two, C.sideWalk_vtx_three] at hpy
-      simp only at hpy; linarith
+      linarith
     · rw [C.sideWalk_vtx_three, C.sideWalk_vtx_four] at hpy
-      right; left; exact ⟨rfl, by simp only at hpy; linarith⟩
+      grind
     · rw [C.sideWalk_vtx_four, C.sideWalk_vtx_five] at hpy
-      simp only [Chain.slitTop] at hpy; linarith
+      grind [Chain.slitTop]
     · rw [C.sideWalk_vtx_five, C.sideWalk_vtx_six] at hpy
       simp only [Chain.slitTop] at hpy; nlinarith
   · right; right
@@ -144,6 +148,9 @@ theorem cut_cases (C : Chain) {e : Set Point} {y : ℝ} (hey : ∀ z ∈ e, z.2 
       rw [← hpy]; nlinarith
 
 /-! ## Records -/
+
+
+end
 
 variable {C : Chain} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)}
 
@@ -202,20 +209,13 @@ theorem wall_shape (hL : ChordTriplesOK (chainModel C) Q L) {x : ℕ × ℕ × �
   have h1 := wall_x (C := C) hw.1 ((chainModel C).param Q (recOf x).lpos)
   have h2 := wall_x (C := C) hw.2 ((chainModel C).param Q (recOf x).rpos)
   have hlt := hh.lt
-  have hu' : ((chainModel C).pos Q (recOf x).lpos).1 = a := hu
-  have hv' : ((chainModel C).pos Q (recOf x).rpos).1 = b := hv
+  
+  
   have hpl : (chainModel C).pos Q (recOf x).lpos =
       sidePt (C.sideWalk C.sideBeta) x.2.1 ((chainModel C).param Q (recOf x).lpos) := rfl
   have hpr : (chainModel C).pos Q (recOf x).rpos =
       sidePt (C.sideWalk C.sideBeta) x.2.2 ((chainModel C).param Q (recOf x).rpos) := rfl
-  rw [hpl] at hu'
-  rw [hpr] at hv'
-  have ha : a = -C.radius := by
-    rcases h1 with h1 | h1 <;> rcases h2 with h2 | h2 <;> linarith
-  have hb : b = C.radius := by
-    rcases h1 with h1 | h1 <;> rcases h2 with h2 | h2 <;> linarith
-  subst ha hb
-  exact ⟨e, hh⟩
+  grind
 
 /-- A full-width chord lies below the chain. -/
 theorem wall_below {y : ℝ} (hh : IsHChordIn C.dom y (-C.radius) C.radius) (hyt : y ≤ C.top.2) :
@@ -252,10 +252,8 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
   swap
   · push Not at hwall
     have hLL : dropWalls L = L := by
-      unfold dropWalls
-      rw [filter_eq_self]
-      intro x hx; simp [hwall x hx]
-    have hFF : F' = F := by simp only [F', F, hLL]
+      simp_all [dropWalls, filter_eq_self] 
+    have hFF : F' = F := by grind
     rw [hFF]
     exact ⟨hd, fun U hU => (hγ U hU).trans (by omega)⟩
   -- the highest wall-to-wall chord
@@ -275,9 +273,8 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
         ((recOf x).toSet M Q) p t → p ≠ 1 → p ≠ 3 → ys < (Q.vtx x.1).2 := by
       intro p t hA h1 h3
       rcases cut_cases C hey hyR hyt hA with ⟨h, -⟩ | ⟨h, -⟩ | ⟨-, h⟩
-      · exact absurd h h1
-      · exact absurd h h3
-      · exact h ys hbelow
+      · omega
+      all_goals grind
     unfold WallRec at hxw
     by_cases hlw : x.2.1 = 1 ∨ x.2.1 = 3
     · have hrw : ¬ (x.2.2 = 1 ∨ x.2.2 = 3) := fun h => hxw ⟨hlw, h⟩
@@ -301,9 +298,9 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
     rw [← e]
     rcases Finset.mem_union.1 hmem with h1 | h1
     · obtain ⟨k, hk, rfl⟩ := Finset.mem_image.1 h1
-      exact hbelow _ (C.vertex_mem_set (by have := Finset.mem_range.1 hk; omega))
+      exact hbelow _ (C.vertex_mem_set (by grind))
     · obtain ⟨x, hx, rfl⟩ := List.mem_map.1 (List.mem_toFinset.1 h1)
-      exact hkept x hx
+      grind
   have hypt : yp ≤ C.top.2 := hyp_v _ C.topIdx_le
   have htR := C.top_snd_lt_radius
   have hysR' := abs_lt.1 hysR
@@ -314,16 +311,16 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
     · intro z h1 h2 h3 h4
       refine (C.mem_dom_iff).2 ⟨⟨abs_lt.2 ⟨h1, h2⟩, abs_lt.2 ⟨h3, by linarith⟩⟩, fun hz => ?_, fun hz => ?_⟩
       · obtain ⟨k, hk, hkz⟩ := vertex_below C hz
-        linarith [hyp_v k hk]
+        grind
       · have := (C.mem_slit_iff.1 hz).2.1
         linarith
     · rintro c ⟨x, hx, rfl⟩ z hz
       rw [(rec_facts hL (mem_dropWalls.1 hx).1).1 z hz]
-      exact hyp_k x hx
+      grind
     · rintro c ⟨x, hx, rfl⟩ hc' z hz
       rw [(rec_facts hL hx).1 z hz]
       by_cases hw : WallRec x
-      · exact hxsmax x ⟨hx, hw⟩
+      · grind
       · exact absurd ⟨x, mem_dropWalls.2 ⟨hx, hw⟩, rfl⟩ hc'
   · -- weights
     set R := C.radius
@@ -339,12 +336,11 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
         have hbx := wall_below (wall_shape hL hx hw).2 hyt
         rcases cut_cases C hey hyR hyt hA with ⟨rfl, e⟩ | ⟨rfl, e⟩ | ⟨-, h⟩
         · have : (R - ys) / (2 * R) ≤ t := by rw [div_le_iff₀ h2R]; linarith
-          have : (ys + R) / (2 * R) ≥ 0 := div_nonneg (by linarith) h2R.le
-          push_cast; constructor <;> linarith
+          grind
         · have : t ≤ (ys + R) / (2 * R) := by rw [le_div_iff₀ h2R]; linarith
           have : (R - ys) / (2 * R) ≤ 1 := by rw [div_le_iff₀ h2R]; linarith
           have := hA.2.1
-          push_cast; constructor <;> linarith
+          grind
         · exact absurd (h _ hbx) (lt_irrefl _)
       · left
         exact ⟨_, ⟨x, mem_dropWalls.2 ⟨hx, hw⟩, rfl⟩, p, t, hA, rfl⟩
@@ -356,10 +352,10 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
       rcases cut_cases C hey hyR hyt hA with ⟨rfl, e⟩ | ⟨rfl, e⟩ | ⟨h6, -⟩
       · left
         have : t < (R - ys) / (2 * R) := by rw [lt_div_iff₀ h2R]; linarith
-        push_cast; linarith
+        linarith
       · right
         have : (ys + R) / (2 * R) < t := by rw [div_lt_iff₀ h2R]; linarith
-        push_cast; linarith
+        linarith
       · right
         have : (6 : ℝ) ≤ p := by exact_mod_cast h6
         linarith
@@ -391,7 +387,7 @@ theorem chordTriplesOK_of_isNF {M : Model} {N : NF} (hN : IsNF M Q N) :
   have hF := F_eq_famOf (M := M) (Q := Q) (N := N) (L := N.chords.map fun r => (r.h, r.lp, r.rp))
     rfl
   have hget : ∀ i (hi : i < N.chords.length), N.chord i = N.chords[i] := fun i hi => by
-    unfold NF.chord; rw [getD_eq_getElem _ _ hi]
+    grind [NF.chord]
   refine ⟨by have := hF ▸ hfam; exact this, ?_, ?_, ?_⟩
   · rw [map_map]
     rw [List.nodup_iff_injective_get]
@@ -400,7 +396,7 @@ theorem chordTriplesOK_of_isNF {M : Model} {N : NF} (hN : IsNF M Q N) :
     have hi := i.2; have hj := j.2
     simp only [length_map] at hi hj
     have := hinj i j hi hj (by rw [hget i hi, hget j hj]; exact e)
-    exact Fin.ext this
+    omega
   · intro x hx
     obtain ⟨r, hr, rfl⟩ := mem_map.1 hx
     obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
@@ -411,8 +407,7 @@ theorem chordTriplesOK_of_isNF {M : Model} {N : NF} (hN : IsNF M Q N) :
     obtain ⟨r, hr, rfl⟩ := mem_map.1 hx
     obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
     have := hh i hi
-    rw [hget i hi] at this
-    exact this
+    grind
 
 /-- **Box transport of a normal form** (B3′, record form): the chord triples of a valid normal
 form of `C` of degree `≤ d` that is `γ`-semigranular, without the wall-to-wall chords, are a

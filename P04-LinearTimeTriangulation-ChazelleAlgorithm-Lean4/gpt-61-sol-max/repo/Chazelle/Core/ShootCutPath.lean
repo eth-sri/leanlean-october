@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutCStep2
 
 /-!
@@ -30,7 +32,7 @@ def UPath (n : ℕ) : ℕ → List Pc → ℕ → Prop
 
 theorem UPath.append {n : ℕ} : ∀ {u : ℕ} {ps : List Pc} {v : ℕ}, UPath n u ps v →
     ∀ (qs : List Pc) {w : ℕ}, UPath n v qs w → UPath n u (ps ++ qs) w
-  | _, [], _, h, _, _, hq => by simp only [UPath] at h; subst h; exact hq
+  | _, [], _, h, _, _, hq => by simp_all [UPath] 
   | _, _ :: _, _, ⟨h1, u₁, h2, h3, h4⟩, qs, _, hq => ⟨h1, u₁, h2, h3, UPath.append h4 qs hq⟩
 
 theorem mod_shift {n U c x : ℕ} (hU : U % n = c) (hcx : c ≤ x) (hx : x < n) :
@@ -42,21 +44,20 @@ theorem mod_shift {n U c x : ℕ} (hU : U % n = c) (hcx : c ≤ x) (hx : x < n) 
 theorem chained_le : ∀ {ps : List Pc} {c c' : ℕ}, Chained ⟨c, 0⟩ ps ⟨c', 0⟩ →
     (∀ pc ∈ ps, pc.s.hgt = 0 ∧ pc.e.hgt = 0 ∧ pc.s.edge < pc.e.edge) → c ≤ c'
   | [], c, c', h, _ => by
-    simp only [Chained, WPos.mk.injEq, and_true] at h; omega
+    simp_all [Chained, WPos.mk.injEq, and_true] 
   | pc :: ps, c, c', ⟨h1, h2⟩, hv => by
     obtain ⟨-, he0, hlt⟩ := hv pc (by simp)
     have hpe : pc.e = ⟨pc.e.edge, 0⟩ := by rw [← he0]
     rw [hpe] at h2
     have := chained_le h2 (fun q hq => hv q (by simp [hq]))
-    rw [h1] at hlt; simp only at hlt; omega
+    grind
 
 /-- **A chained list of vertex pieces** without wrap is a path. -/
 theorem chained_upath {n : ℕ} : ∀ {ps : List Pc} {c c' : ℕ}, Chained ⟨c, 0⟩ ps ⟨c', 0⟩ →
     (∀ pc ∈ ps, pc.s.hgt = 0 ∧ pc.e.hgt = 0 ∧ pc.s.edge < pc.e.edge) → c' < n →
     ∀ U, U % n = c → UPath n U ps (U + (c' - c))
   | [], c, c', h, _, _, U, _ => by
-    simp only [Chained, WPos.mk.injEq, and_true] at h
-    subst h; simp [UPath]
+    simp_all [Chained, WPos.mk.injEq, and_true, UPath] 
   | pc :: ps, c, c', ⟨h1, h2⟩, hv, hc', U, hU => by
     obtain ⟨-, he0, hlt⟩ := hv pc (by simp)
     have hpe : pc.e = ⟨pc.e.edge, 0⟩ := by rw [← he0]
@@ -69,8 +70,7 @@ theorem chained_upath {n : ℕ} : ∀ {ps : List Pc} {c c' : ℕ}, Chained ⟨c,
     have hm := mod_shift hU hlt.le (show pc.e.edge < n by omega)
     have hp := chained_upath h2 hv' hc' (U + (pc.e.edge - c)) hm
     refine ⟨by rw [h1, hU], U + (pc.e.edge - c), by omega, by rw [hpe, hm], ?_⟩
-    rw [show U + (c' - c) = U + (pc.e.edge - c) + (c' - pc.e.edge) by omega]
-    exact hp
+    grind
 
 /-! ## Breakpoints and the potential -/
 
@@ -95,23 +95,17 @@ theorem card_Ico_sub {U U' F : ℕ} (h : U ≤ U') :
     ((Finset.Ico U' F).filter (BrkU C nQ H)).card ≤
       ((Finset.Ico U F).filter (BrkU C nQ H)).card :=
   Finset.card_le_card fun x hx => by
-    simp only [Finset.mem_filter, Finset.mem_Ico] at hx ⊢; exact ⟨⟨by omega, hx.1.2⟩, hx.2⟩
+    grind
 
 theorem card_Ico_succ {U U' F : ℕ} (h : U < U') (hU : U < F) (hb : BrkU C nQ H U) :
     ((Finset.Ico U' F).filter (BrkU C nQ H)).card + 1 ≤
       ((Finset.Ico U F).filter (BrkU C nQ H)).card := by
   have hsub : insert U ((Finset.Ico U' F).filter (BrkU C nQ H)) ⊆
       (Finset.Ico U F).filter (BrkU C nQ H) := by
-    intro x hx
-    simp only [Finset.mem_insert, Finset.mem_filter, Finset.mem_Ico] at hx ⊢
-    rcases hx with rfl | hx
-    · exact ⟨⟨le_rfl, hU⟩, hb⟩
-    · exact ⟨⟨by omega, hx.1.2⟩, hx.2⟩
-  have hnot : U ∉ (Finset.Ico U' F).filter (BrkU C nQ H) := by
-    simp only [Finset.mem_filter, Finset.mem_Ico]; omega
+    grind
+  
   have := Finset.card_le_card hsub
-  rw [Finset.card_insert_of_notMem hnot] at this
-  exact this
+  simp_all
 
 /-- **The potential decreases** along a step `U → U'` that starts or stops at a breakpoint or
 stops at `F`. -/
@@ -121,7 +115,7 @@ theorem mu_lt {F U U' : ℕ} (h : U < U') (hF : U' ≤ F)
   rcases hb with hb | hb | hb
   · unfold mu
     have := card_Ico_succ (F := F) h (by omega) hb
-    split_ifs <;> omega
+    ram_grind
   · subst hb
     have hz : mu C nQ H U' U' = 0 := by unfold mu; simp
     rw [hz]
@@ -129,19 +123,17 @@ theorem mu_lt {F U U' : ℕ} (h : U < U') (hF : U' ≤ F)
     by_cases hU : BrkU C nQ H U
     · have := card_Ico_succ (F := U') h h hU
       omega
-    · have : (if U < U' ∧ ¬ BrkU C nQ H U then 1 else 0) = 1 := ite_eq_left ⟨h, hU⟩
-      omega
+    simp_all
   · unfold mu
     by_cases hU : BrkU C nQ H U
     · have := card_Ico_succ (F := F) h (by omega) hU
-      split_ifs <;> omega
-    · rw [ite_eq_right (fun h' => h'.2 hb), ite_eq_left ⟨by omega, hU⟩]
-      omega
+      simp_all
+    ram_grind
 
 /-- The potential is at most `2 · #breakpoints + 1`. -/
 theorem mu_le (F U : ℕ) :
     mu C nQ H F U ≤ 2 * ((Finset.Ico U F).filter (BrkU C nQ H)).card + 1 := by
-  unfold mu; split_ifs <;> omega
+  grind [mu]
 
 /-- **Few breakpoints within one lap.** -/
 theorem card_brkU_le (hn : 0 < nQ) (hwf : HostWF nQ H) {U F : ℕ}
@@ -152,7 +144,7 @@ theorem card_brkU_le (hn : 0 < nQ) (hwf : HostWF nQ H) {U F : ℕ}
     intro x hx y hy hxy
     simp only [Finset.coe_filter, Finset.mem_Ico, Set.mem_ofPred_eq] at hx hy
     simp only at hxy
-    have hN : 0 < 2 * C.m + 7 := by omega
+    
     rcases Nat.lt_or_ge x y with h | h
     · exfalso
       have : (2 * C.m + 7) ∣ y - x := (Nat.modEq_iff_dvd' h.le).1 hxy
@@ -163,18 +155,17 @@ theorem card_brkU_le (hn : 0 < nQ) (hwf : HostWF nQ H) {U F : ℕ}
         have : (2 * C.m + 7) ∣ x - y := (Nat.modEq_iff_dvd' h.le).1 hxy.symm
         have := Nat.le_of_dvd (by omega) this
         omega
-      · exact h.symm
+      omega
   have himg : ((Finset.Ico U F).filter (BrkU C nQ H)).image (fun x => x % (2 * C.m + 7)) ⊆
       insert (2 * C.m + 6) (((Finset.range (2 * C.m)).filter (Brk C nQ H)).image (· + 6)) := by
     intro ρ hρ
     obtain ⟨x, hx, rfl⟩ := Finset.mem_image.1 hρ
     simp only [Finset.mem_filter] at hx
     rcases hx.2 with h | ⟨h6, hlt, hb⟩
-    · exact Finset.mem_insert.2 (Or.inl h)
+    · grind
     · refine Finset.mem_insert.2 (Or.inr (Finset.mem_image.2 ⟨x % (2 * C.m + 7) - 6, ?_,
         by omega⟩))
-      simp only [Finset.mem_filter, Finset.mem_range]
-      exact ⟨by omega, hb⟩
+      grind
   have h1 := Finset.card_le_card himg
   rw [Finset.card_image_of_injOn hinj] at h1
   have h2 := Finset.card_insert_le (2 * C.m + 6)
@@ -184,7 +175,7 @@ theorem card_brkU_le (hn : 0 < nQ) (hwf : HostWF nQ H) {U F : ℕ}
   have h4 := card_brk_le C hn hwf
   have h4' : ((Finset.range (2 * C.m)).filter (Brk C nQ H)).card ≤ 2 + 8 * H.length :=
     le_trans (Finset.card_le_card fun i hi => by
-      simp only [Finset.mem_filter] at hi ⊢; exact ⟨hi.1, hi.2⟩) h4
+      simp only [Finset.mem_filter] at hi ⊢; ram_grind) h4
   omega
 
 end ShootCut

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepLocal
 public import Chazelle.Core.GranNF
 public import Chazelle.Core.SpecMerge
@@ -67,12 +69,12 @@ theorem queryOK_ends (J : Merge.Junction) (Q : Polygon) (i : ℕ) (r : CRec)
     have hs : 0 < s := lt_min (by linarith) (by linarith)
     have hx : rayPt (M.pos Q r.lpos) 1 s ∈ r.toSet M Q := by
       rw [hc, pl]; refine ⟨rfl, ?_, ?_⟩ <;> simp [rayPt] <;>
-        (have := min_le_right (rl / 2) ((b - a) / 2); linarith)
+        grind
     have hne : rayPt (M.pos Q r.lpos) 1 s ≠ M.pos Q r.lpos := by
-      intro h; have := congrArg Prod.fst h; simp [rayPt] at this; linarith
+      grind [rayPt]
     have hd : dist (rayPt (M.pos Q r.lpos) 1 s) (M.pos Q r.lpos) < rl := by
       rw [Prod.dist_eq]; simp [rayPt, abs_of_pos hs]
-      have := min_le_left (rl / 2) ((b - a) / 2); constructor <;> linarith
+      ram_grind
     have h := hsl _ hx hne hd
     rw [el] at h ⊢
     exact (Sweep.sideLeft_rayPt_iff _ _ _ 1 hs one_pos).1 h
@@ -83,24 +85,24 @@ theorem queryOK_ends (J : Merge.Junction) (Q : Polygon) (i : ℕ) (r : CRec)
       rw [hc, pr]; refine ⟨rfl, ?_, ?_⟩ <;> simp [rayPt] <;>
         (have := min_le_right (rr / 2) ((b - a) / 2); linarith)
     have hne : rayPt (M.pos Q r.rpos) (-1) s ≠ M.pos Q r.rpos := by
-      intro h; have := congrArg Prod.fst h; simp [rayPt] at this; linarith
+      grind [rayPt]
     have hd : dist (rayPt (M.pos Q r.rpos) (-1) s) (M.pos Q r.rpos) < rr := by
       rw [Prod.dist_eq]; simp [rayPt, abs_of_pos hs]
-      have := min_le_left (rr / 2) ((b - a) / 2); constructor <;> linarith
+      ram_grind
     have h := hsr _ hx hne hd
     rw [er] at h ⊢
     exact (Sweep.sideLeft_rayPt_iff _ _ _ (-1) hs one_pos).1 h
-  refine ⟨⟨hpl, by show 1 ≤ r.h + 1; omega, by show r.h + 1 ≤ Q.n; omega, htl0, htl1, ?_, ?_⟩,
-    ⟨hpr, by show 1 ≤ r.h + 1; omega, by show r.h + 1 ≤ Q.n; omega, htr0, htr1, ?_, ?_⟩,
+  refine ⟨⟨hpl, by grind, by grind, htl0, htl1, ?_, ?_⟩,
+    ⟨hpr, by grind, by grind, htr0, htr1, ?_, ?_⟩,
     by rw [pl, hL], by rw [pr, hR]⟩
   · show (M.pos Q r.lpos).2 ≤ C.top.2
-    rw [pl]; exact hytop
+    grind
   · show sideLeft M.W r.lp (M.param Q r.lpos) ((M.pos Q r.lpos).1 + dirOf 1, (M.pos Q r.lpos).2)
-    rw [ray_one]; simpa [dirOf] using secL
+    grind [ray_one, dirOf]
   · show (M.pos Q r.rpos).2 ≤ C.top.2
-    rw [pr]; exact hytop
+    grind
   · show sideLeft M.W r.rp (M.param Q r.rpos) ((M.pos Q r.rpos).1 + dirOf 0, (M.pos Q r.rpos).2)
-    rw [ray_one]; simpa [dirOf] using secR
+    grind [ray_one, dirOf]
 
 /-- **Equal chords have equal records** (for attached records of a model with the walk axioms and
 a height polygon with distinct vertex heights): the heights fix `h`, the ends fix the points of
@@ -127,28 +129,33 @@ theorem rec_eq_of_toSet {M : Model} (hM : WalkAx M) {Q : Polygon} (hQ : Distinct
   have hhh : r.h = r'.h := by
     by_contra hne'; exact hQ _ _ hh hh' hne' hy
   have ptl : sidePt M.W r.lp (M.param Q r.lpos) = sidePt M.W r'.lp (M.param Q r'.lpos) := by
-    rw [← el, ← el]; exact Prod.ext hl (by rw [pyl, pyl', hhh])
+    grind
   have ptr : sidePt M.W r.rp (M.param Q r.rpos) = sidePt M.W r'.rp (M.param Q r'.rpos) := by
-    rw [← er, ← er]; exact Prod.ext hr (by rw [pyr, pyr', hhh])
+    grind
   have hA'l : SideAttach M.W (r.toSet M Q) r'.lp (M.param Q r'.lpos) := he ▸ hA'.1
   have hA'r : SideAttach M.W (r.toSet M Q) r'.rp (M.param Q r'.rpos) := he ▸ hA'.2
   exact ⟨hhh, (hM.attach_unique hadm hA.1 hA'l ptl).1, (hM.attach_unique hadm hA.2 hA'r ptr).1⟩
 
+section
+variable (J : Merge.Junction) (i : ℕ)
 /-- The side chains share the ambient polygon of the junction. -/
-theorem sideChain_P (J : Merge.Junction) (i : ℕ) : (sideChain J i).P = J.P := by
-  unfold sideChain; split_ifs <;> rfl
+theorem sideChain_P : (sideChain J i).P = J.P := by
+  unfold sideChain; aesop
 
 /-- The domain of `C` at heights `≤ top(Cᵢ)` lies in the domain of `Cᵢ`. -/
-theorem dom_side (J : Merge.Junction) (i : ℕ) {x : Point} (hx : x ∈ J.whole.dom)
+theorem dom_side {x : Point} (hx : x ∈ J.whole.dom)
     (hx2 : x.2 ≤ (sideChain J i).top.2) : x ∈ (sideChain J i).dom := by
   unfold sideChain at hx2 ⊢
   split_ifs at hx2 ⊢
   · exact Sweep.dom_left J hx hx2
   · exact Sweep.dom_right J hx hx2
 
+
+end
+
 theorem lerp_rayPt (z : Point) (σ T s : ℝ) :
     Geometry.lerp z (rayPt z σ T) s = rayPt z σ (s * T) := by
-  apply Geometry.point_ext <;> simp [Geometry.lerp, rayPt]; ring
+  grind [Geometry.lerp, rayPt]
 
 /-- **A free direction at a point of `Cᵢ` has a departure position** in the walk of `Cᵢ`
 (`arrivalPos` finds it): some position at the point has the direction in its left sector. -/
@@ -157,27 +164,21 @@ theorem arrival_of_free (J : Merge.Junction) (hP : J.P.Simple) (i : ℕ) {z : Po
     (hf : Merge.FreeAt J.whole z σ) :
     ∃ p t, Sweep.Arrival (chainModel (sideChain J i)).W z (-σ) p t := by
   set C := sideChain J i
-  have hPC : C.P.Simple := by rw [sideChain_P]; exact hP
+  have hPC : C.P.Simple := by grind [sideChain_P]
   obtain ⟨u, hu, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hf
   have hu0 : (0 : ℝ) < u := hu
   set T := u / 2
   have hT : 0 < T := by positivity
-  have hσ0 : σ ≠ 0 := by rcases hσ with h | h <;> rw [h] <;> norm_num
+  have hσ0 : σ ≠ 0 := by grind
   have hee : z ≠ rayPt z σ T := by
-    intro h
-    have h' := congrArg Prod.fst h
-    simp only [rayPt] at h'
-    have hm0 : σ * T = 0 := by linarith
-    rcases mul_eq_zero.1 hm0 with h1 | h1
-    · exact hσ0 h1
-    · linarith
+    grind [rayPt]
   have hopen : ∀ s ∈ Set.Ioo (0 : ℝ) 1, Geometry.lerp z (rayPt z σ T) s ∈ C.dom := by
     intro s hs
     rw [lerp_rayPt]
     have hTu : T = u / 2 := rfl
     have hm : rayPt z σ (s * T) ∈ J.whole.dom := hsub ⟨mul_pos hs.1 hT, by
-      have := hs.2; rw [hTu]; nlinarith⟩
-    exact dom_side J i hm (by simpa [rayPt] using hz2)
+      have := hs.2; nlinarith⟩
+    exact dom_side J i hm (by core_grind)
   obtain ⟨p, t, hp, ht0, ht1, hpt, hl⟩ :=
     C.sideSees_chordEnd hPC C.sideBeta hee (by simp [rayPt]) hopen (Or.inl hz)
   have hpt' : sidePt (chainModel C).W p t = z := hpt
@@ -185,20 +186,12 @@ theorem arrival_of_free (J : Merge.Junction) (hP : J.P.Simple) (i : ℕ) {z : Po
   refine ⟨p, t, hp, ht0, ht1, hpt', ?_⟩
   rw [neg_neg]
   have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ T) := by
-    rw [hpt']; exact hl'
+    simp_all
   have := (Sweep.sideLeft_rayPt_iff _ p t σ hT one_pos).1 h1
-  rwa [hpt'] at this
+  simp_all
 
 /-! ## Queries at points found by `arrivalPos` -/
 
-/-- The parameter of the height code of the start vertex of a walk edge is `0`. -/
-theorem param_of_vertex (M : Model) (Q : Polygon) (p h : ℕ) (hy : (Q.vtx h).2 = (M.wa p).2) :
-    M.param Q ⟨p, h + 1⟩ = 0 := by
-  unfold Model.param
-  simp only
-  split_ifs
-  · rfl
-  · rw [hy, sub_self, zero_div]
 
 /-- **A query from a departure position**: a position with the direction `dirOf ρ` in its left
 sector (`Sweep.Arrival` for `-dirOf ρ`, as `arrivalPos` reports it), written with the height code
@@ -208,14 +201,7 @@ theorem queryOK_of_arrival (J : Merge.Junction) (Q : Polygon) (i : ℕ) {p h ρ 
     (hpar : (chainModel (sideChain J i)).param Q ⟨p, h + 1⟩ = t) (hh : h + 1 ≤ Q.n)
     (hz2 : z.2 ≤ (sideChain J i).top.2) :
     QueryOK J Q i (p, h + 1, ρ) ∧ (chainModel (sideChain J i)).pos Q ⟨p, h + 1⟩ = z := by
-  obtain ⟨hp, ht0, ht1, hpt, hl⟩ := hA
-  have hpos : (chainModel (sideChain J i)).pos Q ⟨p, h + 1⟩ = z := by
-    rw [Gran.pos_eq_sidePt]; simp only; rw [hpar, hpt]
-  refine ⟨⟨hp, by show 1 ≤ h + 1; omega, hh, by simp only; rw [hpar]; exact ht0, by simp only; rw [hpar]; exact ht1,
-    by simp only; rw [hpos]; exact hz2, ?_⟩, hpos⟩
-  simp only
-  rw [hpos, hpar, ray_one]
-  simpa using hl
+  grind [Chazelle.Core.QueryOK, Chazelle.Core.Sweep.Arrival, Gran.pos_eq_sidePt, ray_one]
 
 end
 

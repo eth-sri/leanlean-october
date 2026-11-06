@@ -27,18 +27,7 @@ theorem qPt_end {J : Merge.Junction} {P : Polygon} {N₂ : NF} (hN : IsNF (chain
   rw [(endOrigin_eq J hN hj).1]
   have hlen : (sweepEndQ N₂.chords).length = 2 * N₂.nChords := by
     simp [sweepEndQ, NF.nChords]
-  have hget : (sweepEndQ N₂.chords ++ L₁).getD j (0, 0, 0) =
-      (let r := N₂.chords.getD (j / 2) ⟨0, 0, 0, 0, 0⟩
-       if j % 2 = 0 then (r.lp, r.h + 1, 1) else (r.rp, r.h + 1, 0)) := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_append_left (by rw [hlen]; exact hj)]
-    simp only [sweepEndQ, List.getElem?_map, List.getElem?_range (show j < 2 * N₂.chords.length
-      from hj), Option.map_some, Option.getD_some]
-  unfold qPt
-  rw [hget]
-  have hsc : sideChain J 1 = J.right := by unfold sideChain; rw [ite_eq_right (by norm_num)]
-  rw [hsc]
-  unfold endPos NF.chord CRec.lpos CRec.rpos
-  by_cases h : j % 2 = 0 <;> simp [h]
+  grind [List.getD_eq_getElem?_getD, sweepEndQ, List.getElem?_map, Option.map_some, Option.getD_some, qPt, sideChain, endPos, NF.chord, CRec.lpos, CRec.rpos]
 
 open Classical in
 /-- **At most five brute-force queries.** -/
@@ -50,7 +39,7 @@ theorem brute_card (hT : TopCountSpec) {P : Polygon} {J : Merge.Junction} {N₂ 
       (fun j => i = 1 ∧ BruteQ J N₂ j (qPt J P i L j))).card ≤ 5 := by
   by_cases hi : i = 1
   swap
-  · rw [Finset.filter_false_of_mem (fun j _ h => hi h.1)]; simp
+  · simp_all
   obtain ⟨L₁, rfl, hL₁⟩ := hend hi
   subst hi
   have hlen : (sweepEndQ N₂.chords ++ L₁).length = 2 * N₂.nChords + L₁.length := by
@@ -65,12 +54,7 @@ theorem brute_card (hT : TopCountSpec) {P : Polygon} {J : Merge.Junction} {N₂ 
     obtain ⟨hjL, -, hb⟩ := hj
     rw [Finset.mem_union, Finset.mem_Ico, Finset.mem_filter, Finset.mem_range]
     rcases hb with hb | hb
-    · exact Or.inl ⟨hb, hjL⟩
-    · by_cases hjK : K ≤ j
-      · exact Or.inl ⟨hjK, hjL⟩
-      · push Not at hjK
-        refine Or.inr ⟨hjK, ?_⟩
-        rw [← qPt_end hN L₁ hjK]; exact hb
+    all_goals (grind [Chazelle.Core.SweepIo.qPt_end])
   have h2 : ((Finset.range K).filter (fun j => endOrigin J (Qof P) N₂ j = J.right.top)).card ≤ 2 := by
     have := hT P J N₂ hG hP hN
     refine le_trans (le_of_eq ?_) this
@@ -82,11 +66,11 @@ theorem brute_card (hT : TopCountSpec) {P : Polygon} {J : Merge.Junction} {N₂ 
     _ ≤ (Finset.Ico K (K + L₁.length)).card +
         ((Finset.range K).filter (fun j => endOrigin J (Qof P) N₂ j = J.right.top)).card :=
       Finset.card_union_le _ _
-    _ ≤ 5 := by rw [Nat.card_Ico]; omega
+    _ ≤ 5 := by grind [Nat.card_Ico]
 
 open Classical in
 /-- **The sum of the query costs.** -/
-theorem qCost_sum (hT : TopCountSpec) {κ : ℕ → ℕ} {F : ℕ → ℕ} {c₀ : Config} {P : Polygon}
+theorem qCost_sum (hT : TopCountSpec) {κ F : ℕ → ℕ} {c₀ : Config} {P : Polygon}
     {J : Merge.Junction} {N₁ N₂ : NF} (hG : GoodEnv P) (hP : J.P.Simple)
     (hN : IsNF (chainModel J.right) (Qof P) N₂) {L : List (ℕ × ℕ × ℕ)} {i : ℕ}
     (hend : i = 1 → ∃ L₁ : List (ℕ × ℕ × ℕ), L = sweepEndQ N₂.chords ++ L₁ ∧ L₁.length ≤ 3) :

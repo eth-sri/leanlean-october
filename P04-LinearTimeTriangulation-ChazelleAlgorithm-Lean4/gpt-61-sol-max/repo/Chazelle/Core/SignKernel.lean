@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SignKernelRam
 
 /-!
@@ -35,12 +37,18 @@ open Machine Machine.Stmt Programs
 def Bpre (r : ℕ) : Bool := decide (10020 ≤ r ∧ r < 10024)
 /-- Registers written by `loadPt _ ob`. -/
 def Bload (ob r : ℕ) : Bool := decide (10040 ≤ r ∧ r < 10051) || decide (ob ≤ r ∧ r < ob + 6)
+section
+variable (r : ℕ)
+include r
 /-- Registers written by `polyStmt`. -/
-def Bpoly (r : ℕ) : Bool := decide (10200 ≤ r ∧ r < 10302)
+def Bpoly : Bool := decide (10200 ≤ r ∧ r < 10302)
 /-- Registers written by `selStmt`. -/
-def Bsel (r : ℕ) : Bool := decide (10400 ≤ r ∧ r < 10405)
+def Bsel : Bool := decide (10400 ≤ r ∧ r < 10405)
 /-- Registers written by `lexStmt`. -/
-def Blex (r : ℕ) : Bool := decide (10410 ≤ r ∧ r < 10412)
+def Blex : Bool := decide (10410 ≤ r ∧ r < 10412)
+
+
+end
 
 /-- **The sign kernel.** -/
 def signProg : Stmt :=
@@ -51,34 +59,21 @@ def signProg : Stmt :=
 /-- A symbolic point is determined by its registers. -/
 theorem symPtIn_unique {c : Config} {r : ℕ} {s s' : SymPt} (h : SymPtIn c r s)
     (h' : SymPtIn c r s') : s = s' := by
-  cases s with
-  | vtx i =>
-    cases s' with
-    | vtx i' => simp only [SymPtIn] at h h'; rw [← h.2, ← h'.2]
-    | onEdge e' h'' => simp only [SymPtIn] at h h'; omega
-  | onEdge e hh =>
-    cases s' with
-    | vtx i' => simp only [SymPtIn] at h h'; omega
-    | onEdge e' h'' => simp only [SymPtIn] at h h'; rw [← h.2.1, ← h'.2.1, ← h.2.2, ← h'.2.2]
+  aesop (add simp [SymPtIn]) (add safe (by omega))
 
 /-- A symbolic point in registers survives when its three registers do. -/
 theorem symPtIn_of_eq {c c' : Config} {r : ℕ} {s : SymPt} (h : SymPtIn c r s)
     (he : ∀ j, r ≤ j → j < r + 3 → c'.nreg j = c.nreg j) : SymPtIn c' r s := by
   cases s with
   | vtx i =>
-    exact ⟨(he r le_rfl (by omega)).trans h.1, (he (r + 1) (by omega) (by omega)).trans h.2⟩
+    core_grind
   | onEdge e hh =>
-    exact ⟨(he r le_rfl (by omega)).trans h.1, (he (r + 1) (by omega) (by omega)).trans h.2.1,
-      (he (r + 2) (by omega) (by omega)).trans h.2.2⟩
+    core_grind
 
 /-- A representation in registers survives when its six registers do. -/
 theorem repAt_of_eq {c c' : Config} {ob : ℕ} {r : Rep} (h : RepAt c ob r)
     (he : ∀ j, ob ≤ j → j < ob + 6 → c'.rreg j = c.rreg j) : RepAt c' ob r :=
-  ⟨(he ob le_rfl (by omega)).trans h.1, (he (ob + 1) (by omega) (by omega)).trans h.2.1,
-    (he (ob + 2) (by omega) (by omega)).trans h.2.2.1,
-    (he (ob + 3) (by omega) (by omega)).trans h.2.2.2.1,
-    (he (ob + 4) (by omega) (by omega)).trans h.2.2.2.2.1,
-    (he (ob + 5) (by omega) (by omega)).trans h.2.2.2.2.2⟩
+  by core_grind
 
 end
 

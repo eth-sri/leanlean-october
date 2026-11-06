@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepLoop
 
 /-!
@@ -30,8 +32,7 @@ namespace Sweep
 theorem off_sub {n g k y s : ℝ} (hg0 : 0 ≤ g) (hgn : g < n) (_hk0 : 0 ≤ k) (_hkn : k < n)
     (hy : y = k - s ∨ y = k - s + n) (hy0 : 0 ≤ y) (hyn : y < n) (hs : 0 < s)
     (hso : s < off n g k) : off n g y = off n g k - s := by
-  unfold off at *
-  rcases hy with rfl | rfl <;> split_ifs at * <;> first | linarith
+  core_grind
 
 /-- **The positions just before the next cut key face the current region**: if `x₀` (non-cut,
 inside a walk edge) faces `G` and no cut lies strictly between `x₀` and the key `K` (in offsets
@@ -62,8 +63,7 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
     have hoy : o ((q : ℝ) + u) = o ((pK : ℝ) + tK) - s :=
       off_sub hg0 hgn k0 k1 hqu y0 y1 hs0 (by linarith)
     have hnc : ¬ M.IsCut F ((q : ℝ) + u) := by
-      intro hc
-      exact hgap _ hc y0 y1 ⟨by rw [hoy]; linarith, by rw [hoy]; linarith⟩
+      grind
     obtain ⟨U, hU, hfU⟩ := hM.exists_faces_of_not_cut hF hfin hq hu hnc
     have heq : G = U := by
       refine (hM.eq_iff_not_separates hF hfin hG hU hp₀ hq ht₀ hu hnc₀ hnc hfG₀ hfU).2
@@ -75,7 +75,7 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
       have hya : (q : ℝ) + u ≠ qa + sa := fun h => hnc ⟨c, hc, qa, sa, hQA, h⟩
       have hyb : (q : ℝ) + u ≠ qb + sb := fun h => hnc ⟨c, hc, qb, sb, hQB, h⟩
       have hxy : (p₀ : ℝ) + t₀ ≠ q + u := by
-        intro h; have := congrArg o h; rw [hoy] at this; linarith
+        grind
       have hkab := WalkAx.key_ne_of_pt_ne hQA hQB hQAB
       have hsep' := (sep_iff_btw hg0 hgn a0 a1 b0 b1 x0 x1 y0 y1 hkab hxy hxa hxb hya hyb).1 hsep
       have hnot : ∀ {r : ℕ} {v : ℝ}, SideAttach M.W c r v →
@@ -84,11 +84,9 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
         obtain ⟨r0, r1⟩ := Corr.key_mem hR.1 hR.2.1 hR.2.2.1
         have hcut : M.IsCut F ((r : ℝ) + v) := ⟨c, hc, r, v, hR, rfl⟩
         unfold Btw at hb
-        rcases hb with ⟨h1, h2⟩ | ⟨h1, h2⟩
-        · exact hgap _ hcut r0 r1 ⟨h1, by rw [hoy] at h2; linarith⟩
-        · rw [hoy] at h1; linarith
-      exact hnot hQA (hsep'.2 (hnot hQB))
-    rw [heq]; exact hfU
+        grind
+      grind
+    grind
   refine ⟨min δ 1, lt_min hδ0 one_pos, fun htp s hs0 hs1 hs2 => ?_, fun ht s hs0 hs1 => ?_⟩
   · refine key pK (tK - s) s hpK ⟨by linarith, by linarith⟩ hs0
       (lt_of_lt_of_le hs1 (min_le_left _ _)) (Or.inl (by ring))
@@ -101,12 +99,12 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
       right
       rw [show (0 + n - 1) % n = n - 1 by rw [Nat.mod_eq_of_lt (by omega)]; omega,
         Nat.cast_sub (by omega)]
-      push_cast; ring
+      grind
     · left
       rw [show (pK + n - 1) % n = pK - 1 by
         rw [show pK + n - 1 = (pK - 1) + n by omega, Nat.add_mod_right,
           Nat.mod_eq_of_lt (by omega)], Nat.cast_sub (by omega)]
-      push_cast; ring
+      grind
 
 section Cand
 
@@ -120,9 +118,11 @@ def Cand (S₂ : Set (Set Point)) (L : Set Point) : Set (Set Point) :=
   {h | h ∈ F₂plus J S₂ ∧ ((∃ c ∈ S₂, h ⊆ c ∧ ∃ V, LabS J S₂ L V ∧
     Chazelle.Chain.TouchesIn (chainModel J.right).D c V) ∨ J.shared ∈ h ∨ J.right.top ∈ h)}
 
+section
+variable (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite)
+include hP S₂ hS₂ hS₂f
 /-- The attachment at offset `0` of the stretch is the shared vertex. -/
-theorem sidePt_off_zero (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {p : ℕ} {t : ℝ}
+theorem sidePt_off_zero {p : ℕ} {t : ℝ}
     (hp : p < (chainModel J.whole).W.n) (ht0 : 0 ≤ t) (ht1 : t < 1)
     (h0 : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) = 0) :
     sidePt (chainModel J.whole).W p t = J.shared := by
@@ -133,7 +133,7 @@ theorem sidePt_off_zero (hP : J.P.Simple) {S₂ : Set (Set Point)}
   obtain ⟨k0, k1⟩ := Corr.key_mem hp ht0 ht1
   have hk := off_inj hg0 hgn k0 k1 hg0 hgn (by rw [h0, off_self])
   obtain ⟨rfl, rfl⟩ := sideKey_inj ht0 ht1 le_rfl zero_lt_one
-    (show (p : ℝ) + t = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) + 0 by rw [add_zero]; exact hk)
+    (show (p : ℝ) + t = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) + 0 by simp_all)
   rw [Chazelle.Chain.sidePt_zero]
   have := hC.A1 0 (Nat.zero_le _)
   rw [add_zero, add_zero, Nat.mod_eq_of_lt hC.hg, Nat.mod_eq_of_lt hC.hg'] at this
@@ -141,8 +141,7 @@ theorem sidePt_off_zero (hP : J.P.Simple) {S₂ : Set (Set Point)}
   exact right_vtx0 J
 
 /-- The split vertex (offset `rL1` inside the stretch, case G) is the top of `C₂`. -/
-theorem sidePt_split (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) (hlt : rL1 J < rL1 J + rL2 J) :
+theorem sidePt_split (hlt : rL1 J < rL1 J + rL2 J) :
     sidePt (chainModel J.whole).W
       ((6 + tpos J.whole J.m₁ + rL1 J) % (chainModel J.whole).W.n) 0 = J.right.top := by
   have hC := corr_right0 J hP hS₂ hS₂f
@@ -156,10 +155,16 @@ theorem sidePt_split (hP : J.P.Simple) {S₂ : Set (Set Point)}
   rw [this, show 6 + tpos J.right 0 + rL1 J + rδ J = 6 + tpos J.right 0 + (rL1 J + rδ J) by ring]
   exact right_split_top J hδ
 
+
+end
+
+section
+variable (hP : J.P.Simple)
+include hP
 /-- **A chord of `F₂⁺` bounding a labelled region, with an attachment in the stretch, is a
 candidate**: if `G` has a label and is on the side `σ` of `h`, and `h` has an attachment at an
 offset below the length of the stretch, then `h ∈ Cand λ` for a valid `λ`. -/
-theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
+theorem cand_of_side {Q : Polygon}
     {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
     (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {G L : Set Point}
     (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
@@ -195,7 +200,7 @@ theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
       · have hsec : tB = 0 → dB ≠ 0 ∧ dB ≠ rL1 J := by
           intro ht0
           refine ⟨fun h0 => ?_, fun h1 => hsplit ⟨ht0, h1⟩⟩
-          rw [h0, ht0] at hpos; simp at hpos
+          simp_all +zetaDelta 
         obtain ⟨V', hV', hVs'⟩ := side_region_exists hC.hM₂ hC.hS hC.hSfin hc hσ
         obtain ⟨V₀, hV₀, hR⟩ := hlab
         have h1 := hvalid.1 V₀ hV₀ hR
@@ -210,7 +215,7 @@ theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
   · exact ⟨hh, Or.inr (Or.inr ht)⟩
 
 /-- **A labelled region has a label among the regions of `S₂`.** -/
-theorem rlabel_region (hP : J.P.Simple) {S₂ : Set (Set Point)}
+theorem rlabel_region {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {G V : Set Point}
     (hR : RLabel J S₂ G V) : ∃ V' ∈ (chainModel J.right).regions S₂, RLabel J S₂ G V' := by
   have hC := corr_right0 J hP hS₂ hS₂f
@@ -231,7 +236,7 @@ position `x₀` of the `C₁` part facing `G`, with a valid label `λ`, and let 
 attachment inside the stretch) and some chord has an attachment strictly inside the stretch at
 positive offset.  Then a candidate chord of `λ` is attached at `K`: the sweep's lazy test finds
 the event. -/
-theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
+theorem next_event_detected {Q : Polygon}
     {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
     (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {G L : Set Point}
     (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
@@ -292,22 +297,16 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
         rcases hM.tie_pair hFs he he' (Ne.symm hne) heK hA' with ⟨h1, h2⟩ | ⟨h1, h2⟩
         · obtain ⟨-, hhor, -⟩ := hM.tie_shape hFs he he' heK hA' h1 h2
           have hs := after_side_tie hGM hF he he' hne heK hA' h1 h2 hG
-          rcases lt_or_gt_of_ne hhor with hdn | hup
-          · exact ⟨e', he', hA', -1, Or.inr rfl, hs.2.1 hdn hW⟩
-          · exact ⟨e, he, heK, 1, Or.inl rfl, hs.2.2.2 hup hW⟩
+          grind
         · obtain ⟨-, hhor, -⟩ := hM.tie_shape hFs he' he hA' heK h2 h1
           have hs := after_side_tie hGM hF he' he (Ne.symm hne) hA' heK h2 h1 hG
-          rcases lt_or_gt_of_ne hhor with hdn | hup
-          · exact ⟨e, he, heK, -1, Or.inr rfl, hs.2.1 hdn hW⟩
-          · exact ⟨e', he', hA', 1, Or.inl rfl, hs.2.2.2 hup hW⟩
+          grind
       obtain ⟨h, hh, hhK, σ, hσ, hS⟩ := hside
       obtain ⟨pb, tb, hb, hbL⟩ := hnobr h hh hhK
       exact ⟨h, cand_of_side J hP hS₂ hF hG hL hvalid hlab hh hσ hS hb hbL, hhK⟩
     · push Not at htie
       have huniq : ∀ e' ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e' pK tK → e' = e := by
-        intro e' he' hA'
-        by_contra hne
-        exact htie e' he' hne hA'
+        grind
       have hS : ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ SideOf (chainModel J.whole) σ e G := by
         rcases hM.attach_dir (hFs he) heK with hd | hd
         · exact ⟨1, Or.inl rfl, before_side hGM hF he heK huniq (Or.inl ⟨rfl, hd⟩) hG hW⟩
@@ -325,7 +324,7 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
       push Not at hnot
       obtain ⟨hz0, hzK⟩ := hnot
       rcases hzpos with h | ⟨-, hz⟩
-      · exact absurd h hz0
+      · grind
       have hZK := hatK hhZ hZA hz hzK
       refine ⟨hZ, ⟨hhZ, ?_⟩, hZK⟩
       rcases htrack with ⟨c, hc, hZc, V', -, hrel, hVs⟩ | hk | hk
@@ -333,8 +332,8 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
         rcases hrel with rfl | ⟨-, h⟩
         · exact Or.inl rfl
         · exact Or.inr h
-      · exact Or.inr (Or.inl hk)
-      · exact Or.inr (Or.inr hk)
+      · grind
+      grind
     · obtain ⟨e₁, e₂, d, pb, pb', tb, tb', ρ, he₁, he₂, hne, hd0, hd, hA₁, hA₂, hB₁, hB₂, hBne₁,
         hBne₂, hout₁, hout₂, hρ, hS₁, hS₂', ht₁, ht₂⟩ := hT
       set W := (chainModel J.whole).W with hWdef
@@ -390,10 +389,13 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
       push Not at hnot
       obtain ⟨hz0, hzK⟩ := hnot
       rcases hfe with h | ⟨-, hz⟩
-      · exact absurd h hz0
+      · grind
       exact ⟨ff, ⟨hff, Or.inr (Or.inr htf)⟩, hatK hff hfF hz hzK⟩
 
 /-! ## The loop invariant of the RAM -/
+
+
+end
 
 omit J in
 /-- **No cut between two positions**: two non-cut positions inside walk edges with no cut strictly
@@ -418,7 +420,7 @@ theorem same_region_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF
   have hya : (p' : ℝ) + t' ≠ qa + sa := fun h => hc' ⟨c, hcF, qa, sa, hQA, h⟩
   have hyb : (p' : ℝ) + t' ≠ qb + sb := fun h => hc' ⟨c, hcF, qb, sb, hQB, h⟩
   have hxy : (p : ℝ) + t ≠ p' + t' := by
-    intro h; rw [h] at hlt; exact lt_irrefl _ hlt
+    grind
   have hkab := WalkAx.key_ne_of_pt_ne hQA hQB hQAB
   have hsep' := (sep_iff_btw hg0 hgn a0 a1 b0 b1 x0 x1 y0 y1 hkab hxy hxa hxb hya hyb).1 hsep
   have hnot : ∀ {r : ℕ} {v : ℝ}, SideAttach M.W c r v →
@@ -426,11 +428,8 @@ theorem same_region_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF
     intro r v hR hb
     obtain ⟨r0, r1⟩ := Corr.key_mem hR.1 hR.2.1 hR.2.2.1
     have hcut : M.IsCut F ((r : ℝ) + v) := ⟨c, hcF, r, v, hR, rfl⟩
-    unfold Btw at hb
-    rcases hb with ⟨h1, h2⟩ | ⟨h1, h2⟩
-    · exact hgap _ hcut r0 r1 ⟨h1, h2⟩
-    · linarith
-  exact hnot hQA (hsep'.2 (hnot hQB))
+    grind [Btw]
+  grind
 
 end Cand
 

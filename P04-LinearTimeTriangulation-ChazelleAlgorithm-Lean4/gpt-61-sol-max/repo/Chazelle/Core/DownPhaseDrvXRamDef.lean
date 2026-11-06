@@ -52,13 +52,16 @@ def hltS : Stmt :=
 
 /-! ## Walk vertex and walk edge indices -/
 
+section
+variable (src dst : ℕ)
+include src dst
 /-- `dst := ivB li n src`. -/
-def ivBS (src dst : ℕ) : Stmt :=
+def ivBS : Stmt :=
   .ifLtN 217026 217027 (block [.subN dst 217020 217027, .subN dst dst src])
     (block [.copyN dst src])
 
 /-- `dst := qE li n src` (scratch `217104`). -/
-def qES (src dst : ℕ) : Stmt :=
+def qES : Stmt :=
   .ifLtN 217026 217027
     (.seq (block [.addN 217104 src 217027])
       (.ifLtN 217104 217020 (block [.subN dst 217020 217027, .subN dst dst 217027, .subN dst dst src])
@@ -66,10 +69,13 @@ def qES (src dst : ℕ) : Stmt :=
     (block [.copyN dst src])
 
 /-- `dst := (src + 1) mod n` for `src < n`. -/
-def succS (src dst : ℕ) : Stmt :=
+def succS : Stmt :=
   .seq (block [.addN dst src 217027]) (.ifLtN dst 217020 .skip (block [.constN dst 0]))
 
 /-! ## Key order of interior positions -/
+
+
+end
 
 /-- The core of `posLtS` (equal edges, different heights). -/
 def posLtCore : Stmt :=

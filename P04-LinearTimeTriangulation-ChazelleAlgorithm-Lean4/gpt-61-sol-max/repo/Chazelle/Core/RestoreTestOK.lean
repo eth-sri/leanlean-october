@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreTestMath
 public import Chazelle.Core.NFDecompGlue
 
@@ -78,12 +80,12 @@ theorem record_ok {Q : Polygon} {x f : WPos} {h σb lp rp : ℕ} {T : ℝ} (_hσ
     (hlr : (σb = 1 → lp = x.edge ∧ rp = f.edge) ∧ (σb ≠ 1 → lp = f.edge ∧ rp = x.edge)) :
     (recOf (h, lp, rp)).toSet M Q = chordOf (M.pos Q x) (dirOf σb) T ∧
       (recOf (h, lp, rp)).Attached M Q := by
-  have hfy : (M.pos Q f).2 = (Q.vtx h).2 := by rw [hf, rayPt_snd, hy]
+  have hfy : (M.pos Q f).2 = (Q.vtx h).2 := by simp_all
   have px := pos_code M Q hy
   have pf := pos_code M Q hfy
   have qx := param_code M Q hy
   have qf := param_code M Q hfy
-  have hfx : (M.pos Q f).1 = (M.pos Q x).1 + dirOf σb * T := by rw [hf, rayPt_fst]
+  have hfx : (M.pos Q f).1 = (M.pos Q x).1 + dirOf σb * T := by simp_all
   by_cases h1 : σb = 1
   · obtain ⟨rfl, rfl⟩ := hlr.1 h1
     have hd : dirOf σb = 1 := by rw [h1]; rfl
@@ -92,19 +94,19 @@ theorem record_ok {Q : Polygon} {x f : WPos} {h σb lp rp : ℕ} {T : ℝ} (_hσ
       rw [px, pf, chordOf, hfx, hd, hy, min_eq_left (by linarith), max_eq_right (by linarith)]
     refine ⟨e, ?_, ?_⟩
     · show SideAttach M.W _ x.edge (M.param Q ⟨x.edge, h + 1⟩)
-      rw [qx, e]; exact hA
+      simp_all
     · show SideAttach M.W _ f.edge (M.param Q ⟨f.edge, h + 1⟩)
-      rw [qf, e]; exact hB
+      simp_all
   · obtain ⟨rfl, rfl⟩ := hlr.2 h1
-    have hd : dirOf σb = -1 := by unfold dirOf; rw [ite_eq_right h1]
+    have hd : dirOf σb = -1 := by core_grind
     have e : (recOf (h, f.edge, x.edge)).toSet M Q = chordOf (M.pos Q x) (dirOf σb) T := by
       show Visibility.hseg (Q.vtx h).2 (M.pos Q ⟨f.edge, h + 1⟩).1 (M.pos Q ⟨x.edge, h + 1⟩).1 = _
       rw [px, pf, chordOf, hfx, hd, hy, min_eq_right (by linarith), max_eq_left (by linarith)]
     refine ⟨e, ?_, ?_⟩
     · show SideAttach M.W _ f.edge (M.param Q ⟨f.edge, h + 1⟩)
-      rw [qf, e]; exact hB
+      simp_all
     · show SideAttach M.W _ x.edge (M.param Q ⟨x.edge, h + 1⟩)
-      rw [qx, e]; exact hA
+      simp_all
 
 
 /-- The candidate and a point of its ray at a positive parameter differ. -/
@@ -176,7 +178,7 @@ theorem test_post {W : ℕ} {c₀ c' : Config} (hE : TGood P W M N c₀)
       hA hB ⟨t1, t2⟩
     rw [t15]
     have hQn : (Qof P).n = P.n := shear_n _ _
-    refine ⟨hat, by rw [hQn]; exact hE.hh, by rw [he]; exact hadm, ?_⟩
+    refine ⟨hat, by rw [hQn]; exact hE.hh, by grind, ?_⟩
     rw [he]
     have hAB : sidePt M.W (xOf c₀).edge (M.param (Qof P) (xOf c₀)) ≠
         sidePt M.W (c'.nreg 83012) (M.param (Qof P) ⟨c'.nreg 83012, c'.nreg 83013⟩) := by
@@ -204,8 +206,7 @@ theorem test_post {W : ℕ} {c₀ c' : Config} (hE : TGood P W M N c₀)
 def testκ (d : ℕ) : ℕ := testK (d + 1) d 0 + 16 * (d + 2)
 
 theorem testK_split (A D Fg : ℕ) : testK A D Fg = testK A D 0 + (A + 1) * (16 * Fg) := by
-  simp only [testK, shotAK, shotCostG, nodeG]
-  ring
+  core_grind
 
 theorem testK_mono {A D A' D' : ℕ} (hA : A ≤ A') (hD : D ≤ D') : testK A D 0 ≤ testK A' D' 0 := by
   simp only [testK, shotAK, shotCostG, nodeG, validK, arcScanK, arcKB, vertexK, exitScanK,
@@ -234,8 +235,7 @@ theorem nf_patch {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : 
   have hc := NFLoc.nfAt_chords_eq h h'
   have ha := NFLoc.nfAt_arcs_eq h h'
   have hr := DecR.nfAt_regions_eq' h h'
-  unfold patch
-  rw [hc, ha, hr]
+  simp_all [patch] 
 
 /-- **The candidate test meets its contract.** -/
 theorem testOK {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs Bo : Finset ℕ}
@@ -258,15 +258,10 @@ theorem testOK {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs Bo
   obtain ⟨c', k, ex, hk, hI, hrf, hTF⟩ := testS_rsb hsh hBs hXl hB8 hBo hw hE hX hcap hOk hsg
     (by omega)
   have hsub : dBands ∪ Bo ⊆ restoreBands ∪ Bo := by
-    intro b hb
-    simp only [dBands, Finset.mem_union] at hb ⊢
-    rcases hb with (h | h) | h
-    · exact Or.inl h
-    · exact Or.inr (hBo h)
-    · exact Or.inr h
+    core_grind
   refine ⟨c', k, ex, le_trans hk hK, ?_, (RF.to_frame hrf).mono hsub le_rfl⟩
   obtain ⟨b10, hiv, b11, b14, i11, i14, h5⟩ := hTF
-  refine ⟨fun q hq hq' => hI.hin q (by unfold bandOf bRestore at hq; omega) (by omega), b10, b11,
+  refine ⟨fun q hq hq' => hI.hin q (by grind [bandOf, bRestore]) (by omega), b10, b11,
     b14, fun M' N' reg hMD' hNA' hNF' hregs' => ?_⟩
   have eM : M = M' := (NFLoc.modelDesc_unique hMD' hMD).symm
   subst eM

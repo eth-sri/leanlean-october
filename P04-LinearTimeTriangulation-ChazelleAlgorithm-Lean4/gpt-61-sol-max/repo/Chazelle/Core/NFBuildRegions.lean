@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildOrder
 public import Chazelle.Core.NFBuildGap
 public import Chazelle.Core.NFBuildGeom
@@ -97,18 +99,24 @@ noncomputable def e2 (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (i
 noncomputable def gapLabel (S : List Ev) (y : ℝ) : Option ℕ :=
   BuildStack.label (S.map Prod.fst) (cntBelow S y)
 
+section
+variable (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ))
+include M Q L
 /-- Chord `j` is nested in chord `i`'s closed key interval... reversed: `i` lies within `j`. -/
-def Within (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (i j : ℕ) : Prop :=
+def Within (i j : ℕ) : Prop :=
   lo M Q L j ≤ lo M Q L i ∧ hi M Q L i ≤ hi M Q L j
 
 /-- **The region of a label**: the region faced at the non-cut keys with that gap label (the
 empty set for a label that no non-cut key has). -/
-noncomputable def reg (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (S : List Ev)
+noncomputable def reg (S : List Ev)
     (ℓ : Option ℕ) : Set Point := by
   classical
   exact if hh : ∃ U ∈ M.regions (famOf M Q L), ∃ (p : ℕ) (t : ℝ), p < M.W.n ∧ 0 < t ∧ t < 1 ∧
       ¬ M.IsCut (famOf M Q L) (p + t) ∧ gapLabel S (p + t) = ℓ ∧ M.Faces p t U
     then hh.choose else ∅
+
+
+end
 
 /-- The labels of the stack pass over `K` chords: the root `none` and `some i`, `i < K`. -/
 def LabelOK (K : ℕ) (ℓ : Option ℕ) : Prop := ∀ i, ℓ = some i → i < K
@@ -124,59 +132,69 @@ theorem finite : (famOf M Q L).Finite := h.valid.1.1
 
 theorem adm : famOf M Q L ⊆ M.Adm := h.valid.1.2.1
 
+section
+variable {i : ℕ} (hi : i < L.length)
+include hi
 /-- The attachment of the left endpoint of chord `i`. -/
-theorem attL {i : ℕ} (hi : i < L.length) :
+theorem attL :
     SideAttach M.W (chordSet M Q L i) (crec L i).lp (M.param Q (crec L i).lpos) := by
   have := h.valid.2.2.1 (L.getD i (0, 0, 0)) (getD_mem hi)
   exact this.1
 
 /-- The attachment of the right endpoint of chord `i`. -/
-theorem attR {i : ℕ} (hi : i < L.length) :
+theorem attR :
     SideAttach M.W (chordSet M Q L i) (crec L i).rp (M.param Q (crec L i).rpos) := by
   have := h.valid.2.2.1 (L.getD i (0, 0, 0)) (getD_mem hi)
   exact this.2
 
 /-- The left endpoint is left of the right endpoint. -/
-theorem pos_lt {i : ℕ} (hi : i < L.length) :
+theorem pos_lt :
     (M.pos Q (crec L i).lpos).1 < (M.pos Q (crec L i).rpos).1 := by
   have := h.valid.2.2.1 (L.getD i (0, 0, 0)) (getD_mem hi)
   exact BuildOrder.endpoints h.walk (h.adm (chordSet_mem hi)) this
 
-theorem pts_ne {i : ℕ} (hi : i < L.length) :
+theorem pts_ne :
     sidePt M.W (crec L i).lp (M.param Q (crec L i).lpos) ≠
       sidePt M.W (crec L i).rp (M.param Q (crec L i).rpos) := by
   intro heq
   have hlt := h.pos_lt hi
   have : M.pos Q (crec L i).lpos = M.pos Q (crec L i).rpos := heq
-  rw [this] at hlt
-  exact lt_irrefl _ hlt
+  simp_all
 
-theorem kl_ne_kr {i : ℕ} (hi : i < L.length) : kl M Q L i ≠ kr M Q L i :=
+theorem kl_ne_kr : kl M Q L i ≠ kr M Q L i :=
   WalkAx.key_ne_of_pt_ne (h.attL hi) (h.attR hi) (h.pts_ne hi)
+
+
+end
 
 omit h in
 theorem key_bounds {pa : ℕ} {ta : ℝ} {c : Set Point} (hA : SideAttach M.W c pa ta) :
     0 ≤ (pa : ℝ) + ta ∧ (pa : ℝ) + ta < M.W.n := by
   have : (pa : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hA.1
-  exact ⟨by have := hA.2.1; positivity, by linarith [hA.2.2.1]⟩
+  ram_grind
 
-theorem kl_bounds {i : ℕ} (hi : i < L.length) : 0 ≤ kl M Q L i ∧ kl M Q L i < M.W.n :=
+section
+variable {i : ℕ} (hi : i < L.length)
+include hi
+theorem kl_bounds : 0 ≤ kl M Q L i ∧ kl M Q L i < M.W.n :=
   key_bounds (h.attL hi)
 
-theorem kr_bounds {i : ℕ} (hi : i < L.length) : 0 ≤ kr M Q L i ∧ kr M Q L i < M.W.n :=
+theorem kr_bounds : 0 ≤ kr M Q L i ∧ kr M Q L i < M.W.n :=
   key_bounds (h.attR hi)
 
-theorem eL_mem {i : ℕ} (hi : i < L.length) : eL M Q L i ∈ S :=
-  (h.mem_iff _).2 (mem_events.2 ⟨i, hi, by rw [evPair_eq]; simp⟩)
+theorem eL_mem : eL M Q L i ∈ S :=
+  (h.mem_iff _).2 (mem_events.2 ⟨i, hi, by grind [evPair_eq]⟩)
 
-theorem eR_mem {i : ℕ} (hi : i < L.length) : eR M Q L i ∈ S :=
-  (h.mem_iff _).2 (mem_events.2 ⟨i, hi, by rw [evPair_eq]; simp⟩)
+theorem eR_mem : eR M Q L i ∈ S :=
+  (h.mem_iff _).2 (mem_events.2 ⟨i, hi, by grind [evPair_eq]⟩)
 
-theorem eL_ne_eR {i : ℕ} (hi : i < L.length) : eL M Q L i ≠ eR M Q L i := by
+theorem eL_ne_eR : eL M Q L i ≠ eR M Q L i := by
   intro heq
   apply h.kl_ne_kr hi
-  have := congrArg (fun e : Ev => e.2.1) heq
-  simpa [eL, eR] using this
+  grind [eL, eR]
+
+
+end
 
 /-- Every event is the left or the right event of its chord. -/
 theorem mem_cases {e : Ev} (he : e ∈ S) :
@@ -184,8 +202,7 @@ theorem mem_cases {e : Ev} (he : e ∈ S) :
   obtain ⟨i, hi, he⟩ := mem_events.1 ((h.mem_iff e).1 he)
   rw [evPair_eq] at he
   rcases mem_cons.1 he with rfl | he
-  · exact ⟨hi, Or.inl rfl⟩
-  · rw [List.mem_singleton] at he; subst he; exact ⟨hi, Or.inr rfl⟩
+  all_goals (aesop (add simp [List.mem_singleton]) (add safe (by omega)))
 
 theorem events_nodup : (events M Q L).Nodup := by
   unfold events
@@ -202,53 +219,57 @@ theorem events_nodup : (events M Q L).Nodup := by
       intro k x hx
       simp only [List.mem_cons, List.not_mem_nil, or_false] at hx
       rcases hx with rfl | rfl <;> rfl
-    have h1 : a.1 = i := hfst i a ha
-    have h2 : b.1 = j := hfst j b hb
-    exact hij (h1.symm.trans ((congrArg Prod.fst hab).trans h2))
+    grind
 
 theorem nodup : S.Nodup := h.perm.nodup_iff.2 h.events_nodup
 
-theorem lo_lt_hi {i : ℕ} (hi' : i < L.length) : lo M Q L i < hi M Q L i := by
-  unfold lo hi
-  rcases lt_or_gt_of_ne (h.kl_ne_kr hi') with h1 | h1
-  · rw [min_eq_left h1.le, max_eq_right h1.le]; exact h1
-  · rw [min_eq_right h1.le, max_eq_left h1.le]; exact h1
+section
+variable {i : ℕ} (hi' : i < L.length)
+include hi'
+theorem lo_lt_hi : lo M Q L i < hi M Q L i := by
+  grind [Chazelle.Core.BuildRegions.Ctx.kl_ne_kr, lo, hi]
 
-theorem lo_bounds {i : ℕ} (hi' : i < L.length) : 0 ≤ lo M Q L i ∧ lo M Q L i < M.W.n := by
+theorem lo_bounds : 0 ≤ lo M Q L i ∧ lo M Q L i < M.W.n := by
   unfold lo
   exact ⟨le_min (h.kl_bounds hi').1 (h.kr_bounds hi').1,
     (min_le_left _ _).trans_lt (h.kl_bounds hi').2⟩
 
-theorem hi_bounds {i : ℕ} (hi' : i < L.length) : 0 ≤ hi M Q L i ∧ hi M Q L i < M.W.n := by
+theorem hi_bounds : 0 ≤ hi M Q L i ∧ hi M Q L i < M.W.n := by
   unfold hi
   exact ⟨(h.kl_bounds hi').1.trans (le_max_left _ _),
     max_lt (h.kl_bounds hi').2 (h.kr_bounds hi').2⟩
+
+
+end
 
 omit h in
 /-- The first and second events are the left and right events, in key order. -/
 theorem e1_e2_cases (_h : Ctx M Q L S) (i : ℕ) :
     (kl M Q L i < kr M Q L i ∧ e1 M Q L i = eL M Q L i ∧ e2 M Q L i = eR M Q L i) ∨
       (kr M Q L i ≤ kl M Q L i ∧ e1 M Q L i = eR M Q L i ∧ e2 M Q L i = eL M Q L i) := by
-  unfold e1 e2 eL eR lo hi
-  rcases lt_or_ge (kl M Q L i) (kr M Q L i) with h1 | h1
-  · left; rw [min_eq_left h1.le, max_eq_right h1.le]; exact ⟨h1, rfl, rfl⟩
-  · right; rw [min_eq_right h1, max_eq_left h1]; exact ⟨h1, rfl, rfl⟩
+  grind [e1, e2, eL, eR, lo, hi]
 
-theorem e1_mem {i : ℕ} (hi' : i < L.length) : e1 M Q L i ∈ S := by
+section
+variable {i : ℕ} (hi' : i < L.length)
+include hi'
+theorem e1_mem : e1 M Q L i ∈ S := by
   rcases h.e1_e2_cases i with ⟨-, h1, -⟩ | ⟨-, h1, -⟩ <;> rw [h1]
   · exact h.eL_mem hi'
   · exact h.eR_mem hi'
 
-theorem e2_mem {i : ℕ} (hi' : i < L.length) : e2 M Q L i ∈ S := by
+theorem e2_mem : e2 M Q L i ∈ S := by
   rcases h.e1_e2_cases i with ⟨-, -, h1⟩ | ⟨-, -, h1⟩ <;> rw [h1]
   · exact h.eR_mem hi'
   · exact h.eL_mem hi'
 
-theorem e1_ne_e2 {i : ℕ} (hi' : i < L.length) : e1 M Q L i ≠ e2 M Q L i := by
+theorem e1_ne_e2 : e1 M Q L i ≠ e2 M Q L i := by
   intro heq
   have := congrArg (fun e : Ev => e.2.1) heq
   simp only [e1, e2] at this
   exact (h.lo_lt_hi hi').ne this
+
+
+end
 
 /-- Every event of chord `j` is its first or its second event. -/
 theorem mem_cases' {f : Ev} (hf : f ∈ S) :
@@ -256,8 +277,7 @@ theorem mem_cases' {f : Ev} (hf : f ∈ S) :
   obtain ⟨hlt, hc⟩ := h.mem_cases hf
   refine ⟨hlt, ?_⟩
   rcases h.e1_e2_cases f.1 with ⟨-, h1, h2⟩ | ⟨-, h1, h2⟩
-  · rw [h1, h2]; exact hc
-  · rw [h1, h2]; exact hc.symm
+  all_goals grind
 
 /-- The attachments of chord `i` at its two keys, in key order. -/
 theorem att_lo_hi {i : ℕ} (hi' : i < L.length) :
@@ -267,28 +287,27 @@ theorem att_lo_hi {i : ℕ} (hi' : i < L.length) :
   rcases h.e1_e2_cases i with ⟨h0, h1, h2⟩ | ⟨h0, h1, h2⟩
   · have hlo : lo M Q L i = kl M Q L i := min_eq_left h0.le
     have hhi : hi M Q L i = kr M Q L i := max_eq_right h0.le
-    exact ⟨_, _, _, _, h.attL hi', h.attR hi', h.pts_ne hi', by rw [hlo]; rfl, by rw [hhi]; rfl⟩
+    exact ⟨_, _, _, _, h.attL hi', h.attR hi', h.pts_ne hi', by aesop, by aesop⟩
   · have hlo : lo M Q L i = kr M Q L i := min_eq_right h0
     have hhi : hi M Q L i = kl M Q L i := max_eq_left h0
-    exact ⟨_, _, _, _, h.attR hi', h.attL hi', Ne.symm (h.pts_ne hi'), by rw [hlo]; rfl,
-      by rw [hhi]; rfl⟩
+    exact ⟨_, _, _, _, h.attR hi', h.attL hi', Ne.symm (h.pts_ne hi'), by aesop,
+      by aesop⟩
 
+section
+variable {i j : ℕ} (hi' : i < L.length) (hj : j < L.length) (hij : i ≠ j)
+include hi' hj hij
 /-- **No crossing**, in key order. -/
-theorem no_cross_keys {i j : ℕ} (hi' : i < L.length) (hj : j < L.length) (hij : i ≠ j) :
+theorem no_cross_keys :
     ¬ (lo M Q L i < lo M Q L j ∧ lo M Q L j < hi M Q L i ∧ hi M Q L i < hi M Q L j) := by
   rintro ⟨h1, h2, h3⟩
   obtain ⟨pa, pb, ta, tb, hA, hB, hAB, ka, kb⟩ := h.att_lo_hi hi'
   obtain ⟨pc, pd, tc, td, hC, hD, -, kc, kd⟩ := h.att_lo_hi hj
   have hne : chordSet M Q L i ≠ chordSet M Q L j := fun e => hij (chordSet_inj h.valid hi' hj e)
   apply h.walk.no_cross h.adm h.finite (chordSet_mem hi') (chordSet_mem hj) hne hA hB hAB hC hD
-  rw [ka, kb, kc, kd]
-  have hlh := h.lo_lt_hi hi'
-  unfold sideInArc
-  rw [ite_eq_left hlh, ite_eq_right (not_lt.2 hlh.le)]
-  exact ⟨⟨h1, h2⟩, Or.inl h3⟩
+  ram_grind
 
 /-- **Distinct chords have distinct key pairs.** -/
-theorem keys_ne {i j : ℕ} (hi' : i < L.length) (hj : j < L.length) (hij : i ≠ j) :
+theorem keys_ne :
     ¬ (lo M Q L i = lo M Q L j ∧ hi M Q L i = hi M Q L j) := by
   rintro ⟨h1, h2⟩
   obtain ⟨pa, pb, ta, tb, hA, hB, hAB, ka, kb⟩ := h.att_lo_hi hi'
@@ -298,6 +317,9 @@ theorem keys_ne {i j : ℕ} (hi' : i < L.length) (hj : j < L.length) (hij : i �
   have e1 := (h.walk.attach_seg (h.adm (chordSet_mem hi')) hA hB hAB).1
   have e2 := (h.walk.attach_seg (h.adm (chordSet_mem hj)) hC hD hCD).1
   exact hij (chordSet_inj h.valid hi' hj (e1.trans e2.symm))
+
+
+end
 
 /-- The keys of the events are cut keys: a non-cut key is no event key. -/
 theorem key_ne_of_not_cut {y : ℝ} (hy : ¬ M.IsCut (famOf M Q L) y) : ∀ e ∈ S, e.2.1 ≠ y := by
@@ -315,8 +337,7 @@ theorem fam_cases (_h : Ctx M Q L S) {c : Set Point} (hc : c ∈ famOf M Q L) :
   obtain ⟨x, hx, rfl⟩ := hc
   obtain ⟨j, hj, rfl⟩ := List.mem_iff_getElem.1 hx
   refine ⟨j, hj, ?_⟩
-  unfold chordSet
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some]
+  grind [chordSet, List.getD_eq_getElem?_getD, Option.getD_some]
 
 /-! ## Open chords at a key -/
 
@@ -327,25 +348,12 @@ theorem open_iff {y : ℝ} (hy : ∀ e ∈ S, e.2.1 ≠ y) {j : ℕ} (hj : j < L
   rw [BuildSort.count_two (j := j) (h.nodup.filter _) (h.e1_ne_e2 hj) rfl rfl
     (fun f hf hfj => by
       have := (h.mem_cases' (mem_of_mem_filter hf)).2
-      rw [hfj] at this; exact this)]
+      simp_all)]
   have m1 : (j, lo M Q L j, hi M Q L j) ∈ S := h.e1_mem hj
   have m2 : (j, hi M Q L j, lo M Q L j) ∈ S := h.e2_mem hj
   simp only [e1, e2, mem_filter, decide_eq_true_eq, m1, m2, true_and]
   have hlh := h.lo_lt_hi hj
-  have h1 := hy _ (h.e1_mem hj)
-  have h2 := hy _ (h.e2_mem hj)
-  simp only [e1, e2] at h1 h2
-  constructor
-  · intro hc
-    by_cases hlo : lo M Q L j < y
-    · refine ⟨hlo, lt_of_le_of_ne (not_lt.1 fun hh => ?_) (Ne.symm h2)⟩
-      rw [ite_eq_left hlo, ite_eq_left hh] at hc; omega
-    · rw [ite_eq_right hlo] at hc
-      by_cases hh : hi M Q L j < y
-      · exfalso; linarith [not_lt.1 hlo]
-      · rw [ite_eq_right hh] at hc; omega
-  · rintro ⟨h3, h4⟩
-    rw [ite_eq_left h3, ite_eq_right (not_lt.2 h4.le)]
+  grind
 
 /-- A chord index beyond the list is never open. -/
 theorem count_ge {y : ℝ} {j : ℕ} (hj : L.length ≤ j) :
@@ -378,15 +386,21 @@ theorem gapLabel_eq_iff {y y' : ℝ} (hy : ∀ e ∈ S, e.2.1 ≠ y) (hy' : ∀ 
     · rw [h.open_iff hy hj, h.open_iff hy' hj]; exact H j hj
     · rw [h.count_ge hj, h.count_ge hj]
 
+section
+variable {j : ℕ} (hj : j < L.length)
+include hj
 /-- A key strictly inside a chord's arc from its smaller to its larger key. -/
-theorem sideInArc_lo_hi {j : ℕ} (hj : j < L.length) (y : ℝ) :
+theorem sideInArc_lo_hi (y : ℝ) :
     sideInArc (lo M Q L j) (hi M Q L j) y ↔ lo M Q L j < y ∧ y < hi M Q L j := by
   unfold sideInArc; rw [ite_eq_left (h.lo_lt_hi hj)]
 
 /-- A key outside a chord's closed key interval is in its arc from the larger to the smaller key. -/
-theorem sideInArc_hi_lo {j : ℕ} (hj : j < L.length) {y : ℝ} (h1 : y < lo M Q L j ∨ hi M Q L j < y) :
+theorem sideInArc_hi_lo {y : ℝ} (h1 : y < lo M Q L j ∨ hi M Q L j < y) :
     sideInArc (hi M Q L j) (lo M Q L j) y := by
   unfold sideInArc; rw [ite_eq_right (not_lt.2 (h.lo_lt_hi hj).le)]; tauto
+
+
+end
 
 /-- **Two non-cut positions face the same region iff their keys have the same gap label.** -/
 theorem faces_same_iff {p p' : ℕ} {t t' : ℝ} {U U' : Set Point}
@@ -409,19 +423,17 @@ theorem faces_same_iff {p p' : ℕ} {t t' : ℝ} {U U' : Set Point}
     have n3 := hy' _ (h.e1_mem hj)
     have n4 := hy' _ (h.e2_mem hj)
     simp only [e1, e2] at n1 n2 n3 n4
-    rw [h.walk.separates_iff (h.adm (chordSet_mem hj)) hA hB hAB (by rw [ka]; exact Ne.symm n1)
-      (by rw [kb]; exact Ne.symm n2) (by rw [ka]; exact Ne.symm n3) (by rw [kb]; exact Ne.symm n4),
+    rw [h.walk.separates_iff (h.adm (chordSet_mem hj)) hA hB hAB (by grind)
+      (by grind) (by grind) (by grind),
       ka, kb, h.sideInArc_lo_hi hj, h.sideInArc_lo_hi hj]
     tauto
   constructor
   · intro H j hj
     have := H _ (chordSet_mem hj)
-    rw [hsep j hj] at this
-    tauto
+    grind
   · intro H c hc
     obtain ⟨j, hj, rfl⟩ := h.fam_cases hc
-    rw [hsep j hj]
-    exact not_not.2 (H j hj)
+    grind
 
 /-! ## Nesting: the prefix before a chord's first event -/
 
@@ -437,13 +449,12 @@ theorem prefix_open {u v : List Ev} {i j : ℕ} (hsplit : S = u ++ e1 M Q L i ::
   rw [BuildSort.count_two (j := j) hnd.1 (h.e1_ne_e2 hj) rfl rfl
     (fun f hf hfj => by
       have := (h.mem_cases' (hsplit ▸ mem_append_left _ hf)).2
-      rw [hfj] at this; exact this)]
+      grind)]
   have hne1 : e1 M Q L j ≠ e1 M Q L i := fun he => hij (congrArg Prod.fst he)
   have hne2 : e2 M Q L j ≠ e1 M Q L i := fun he => hij (congrArg Prod.fst he)
   have hsp1 := BuildSort.mem_split_of_ne (hmemS _ (h.e1_mem hj)) hne1
   have hsp2 := BuildSort.mem_split_of_ne (hmemS _ (h.e2_mem hj)) hne2
-  have hdisj : ∀ f, f ∈ u → f ∉ v := fun f hfu hfv =>
-    hnd.2.2 f hfu f (mem_cons_of_mem _ hfv) rfl
+  
   have hlh := h.lo_lt_hi hi'
   have hlhj := h.lo_lt_hi hj
   have hbi := (h.hi_bounds hi').2
@@ -453,12 +464,12 @@ theorem prefix_open {u v : List Ev} {i j : ℕ} (hsplit : S = u ++ e1 M Q L i ::
     unfold cycDist; rw [ite_eq_left (h.lo_lt_hi hx)]
   have hcyc2 : ∀ x : ℕ, x < L.length → cycDist M.W.n (hi M Q L x) (lo M Q L x) =
       lo M Q L x - hi M Q L x + M.W.n := fun x hx => by
-    unfold cycDist; rw [ite_eq_right (not_lt.2 (h.lo_lt_hi hx).le)]
+    grind [cycDist]
   constructor
   · intro hc
     by_cases h1 : e1 M Q L j ∈ u
     · have h2 : e2 M Q L j ∉ u := by
-        intro h2; rw [ite_eq_left h1, ite_eq_left h2] at hc; omega
+        grind
       have h2v := hsp2.resolve_left h2
       have le1 := BuildSort.evLe_of_mem_left hs h1
       have le2 := BuildSort.evLe_of_mem_right hs h2v
@@ -466,37 +477,25 @@ theorem prefix_open {u v : List Ev} {i j : ℕ} (hsplit : S = u ++ e1 M Q L i ::
       simp only [e1, e2] at le1 le2
       rw [hcyc1 i hi', hcyc1 j hj] at le1
       rw [hcyc2 j hj, hcyc1 i hi'] at le2
-      refine ⟨by rcases le1 with h3 | h3; exact h3.le; exact h3.1.le, ?_⟩
-      rcases le1 with h3 | ⟨h3, h4⟩
-      · rcases le2 with h5 | ⟨h5, h6⟩
-        · by_contra h7
-          exact h.no_cross_keys hj hi' hij ⟨h3, h5, lt_of_not_ge h7⟩
-        · exfalso; rw [← h5] at h6; linarith
-      · linarith
+      refine ⟨by grind, ?_⟩
+      grind [Chazelle.Core.BuildRegions.Ctx.no_cross_keys]
     · have h2 : e2 M Q L j ∈ u := by
-        by_contra h2; rw [ite_eq_right h1, ite_eq_right h2] at hc; omega
+        grind
       have h1v := hsp1.resolve_left h1
       have le1 := BuildSort.key_le_of_evLe (BuildSort.evLe_of_mem_left hs h2)
       have le2 := BuildSort.key_le_of_evLe (BuildSort.evLe_of_mem_right hs h1v)
-      simp only [e1, e2] at le1 le2
-      exfalso; linarith
+      grind [e1, e2]
   · rintro ⟨hw1, hw2⟩
     have h2 : e2 M Q L j ∉ u := by
       intro h2
       have := BuildSort.key_le_of_evLe (BuildSort.evLe_of_mem_left hs h2)
-      simp only [e1, e2] at this
-      linarith
+      grind [e1, e2]
     have h1 : e1 M Q L j ∈ u := by
       by_contra h1
       have h1v := hsp1.resolve_left h1
       have le := BuildSort.evLe_of_mem_right hs h1v
-      unfold EvLe at le
-      simp only [e1] at le
-      rw [hcyc1 i hi', hcyc1 j hj] at le
-      rcases le with h3 | ⟨h3, h4⟩
-      · linarith
-      · exact h.keys_ne hi' hj (Ne.symm hij) ⟨h3, by linarith⟩
-    rw [ite_eq_left h1, ite_eq_right h2]
+      grind [Chazelle.Core.BuildRegions.Ctx.keys_ne, EvLe, e1]
+    grind
 
 /-- **A region touching chord `i`, faced at a non-cut key `y`**: for every other chord `j`, `y` is
 strictly inside `j` iff `i` lies within `j`. -/
@@ -521,36 +520,31 @@ theorem touch_within {U : Set Point} (hU : U ∈ M.regions (famOf M Q L)) {p : �
         sideInArc (pb + tb) (pa + ta) (q + τ) := by
       rw [ka, kb]
       by_cases h1 : lo M Q L j ≤ lo M Q L i
-      · have h2 : hi M Q L j < hi M Q L i := lt_of_not_ge fun h2 => hw ⟨h1, h2⟩
-        exact ⟨pd, td, hD, by rw [kd]; exact h.sideInArc_hi_lo hj (Or.inr h2)⟩
-      · exact ⟨pc, tc, hC, by rw [kc]; exact h.sideInArc_hi_lo hj (Or.inl (lt_of_not_ge h1))⟩
+      all_goals (grind [Chazelle.Core.BuildRegions.Ctx.sideInArc_hi_lo])
     obtain ⟨q, τ, hQ, hq⟩ := hout
     exact h.walk.not_touches_of_split h.adm h.finite (chordSet_mem hi') (chordSet_mem hj) hne
-      hA hB hAB hU hp ht (by rw [ka, kb, h.sideInArc_lo_hi hj]; exact hin) hf hQ hq htouch
+      hA hB hAB hU hp ht (by grind [Chazelle.Chain.sideInArc]) hf hQ hq htouch
   · rintro ⟨hw1, hw2⟩
     by_contra hin
     have hy' : sideInArc (hi M Q L j) (lo M Q L j) (p + t) := by
-      apply h.sideInArc_hi_lo hj
-      by_contra h3
-      push Not at h3
-      exact hin ⟨lt_of_le_of_ne h3.1 n1, lt_of_le_of_ne h3.2 (Ne.symm n2)⟩
+      grind [Chazelle.Chain.sideInArc]
     have hin2 : ∃ (q : ℕ) (τ : ℝ), SideAttach M.W (chordSet M Q L i) q τ ∧
         sideInArc (pa + ta) (pb + tb) (q + τ) := by
       rw [ka, kb]
       rcases hw1.lt_or_eq with h1 | h1
-      · exact ⟨pc, tc, hC, by rw [kc, h.sideInArc_lo_hi hj]; exact ⟨h1, by linarith⟩⟩
-      · have h2 : hi M Q L i < hi M Q L j :=
-          lt_of_le_of_ne hw2 fun h2 => h.keys_ne hi' hj (Ne.symm hij) ⟨h1.symm, h2⟩
-        exact ⟨pd, td, hD, by rw [kd, h.sideInArc_lo_hi hj]; exact ⟨by linarith, h2⟩⟩
+      · ram_grind
+      grind [Chazelle.Core.BuildRegions.Ctx.keys_ne, Chazelle.Core.BuildRegions.Ctx.sideInArc_lo_hi]
     obtain ⟨q, τ, hQ, hq⟩ := hin2
     exact h.walk.not_touches_of_split h.adm h.finite (chordSet_mem hi') (chordSet_mem hj) hne
-      hB hA (Ne.symm hAB) hU hp ht (by rw [ka, kb]; exact hy') hf hQ hq htouch
+      hB hA (Ne.symm hAB) hU hp ht (by grind) hf hQ hq htouch
 
 /-! ## The region of a label -/
 
+section
+variable {p : ℕ} {t : ℝ} (hp : p < M.W.n) (ht : t ∈ Ioo (0 : ℝ) 1) (hcut : ¬ M.IsCut (famOf M Q L) (p + t))
+include hp ht hcut
 /-- **Every non-cut position faces the region of its gap label.** -/
-theorem faces_reg {p : ℕ} {t : ℝ} (hp : p < M.W.n) (ht : t ∈ Ioo (0 : ℝ) 1)
-    (hcut : ¬ M.IsCut (famOf M Q L) (p + t)) :
+theorem faces_reg :
     reg M Q L S (gapLabel S (p + t)) ∈ M.regions (famOf M Q L) ∧
       M.Faces p t (reg M Q L S (gapLabel S (p + t))) := by
   classical
@@ -559,34 +553,33 @@ theorem faces_reg {p : ℕ} {t : ℝ} (hp : p < M.W.n) (ht : t ∈ Ioo (0 : ℝ)
       ¬ M.IsCut (famOf M Q L) (p' + t') ∧ gapLabel S (p' + t') = gapLabel S (p + t) ∧
         M.Faces p' t' U := ⟨U, hU, p, t, hp, ht.1, ht.2, hcut, rfl, hf⟩
   have hreg : reg M Q L S (gapLabel S (p + t)) = hh.choose := by
-    unfold reg; rw [dite_eq_left hh]
-  obtain ⟨hU', p', t', hp', ht0', ht1', hcut', hlab, hf'⟩ := hh.choose_spec
-  have heq : hh.choose = U :=
-    (h.faces_same_iff hU' hU hp' hp ⟨ht0', ht1'⟩ ht hcut' hcut hf' hf).2 hlab
-  rw [hreg, heq]
-  exact ⟨hU, hf⟩
+    grind [reg]
+  grind [Chazelle.Core.BuildRegions.Ctx.faces_same_iff]
 
 /-- The region faced at a non-cut position is the region of its gap label. -/
-theorem reg_eq_of_faces {p : ℕ} {t : ℝ} (hp : p < M.W.n) (ht : t ∈ Ioo (0 : ℝ) 1)
-    (hcut : ¬ M.IsCut (famOf M Q L) (p + t)) {U : Set Point} (hU : U ∈ M.regions (famOf M Q L))
+theorem reg_eq_of_faces {U : Set Point} (hU : U ∈ M.regions (famOf M Q L))
     (hf : M.Faces p t U) : reg M Q L S (gapLabel S (p + t)) = U := by
   obtain ⟨hR, hfR⟩ := h.faces_reg hp ht hcut
   exact WalkAx.faces_unique hR hU hfR hf
+
+
+end
 
 omit h in
 /-- The prefix of the chord word before the event at the end of `u`. -/
 theorem take_word (_h : Ctx M Q L S) {u v : List Ev} {e : Ev} (hsplit : S = u ++ e :: v) :
     (S.map Prod.fst).take u.length = u.map Prod.fst := by
-  rw [← map_take, hsplit, take_left' rfl]
+  simp_all
 
 omit h in
 theorem take_word_succ (_h : Ctx M Q L S) {u v : List Ev} {e : Ev} (hsplit : S = u ++ e :: v) :
     (S.map Prod.fst).take (u.length + 1) = u.map Prod.fst ++ [e.1] := by
-  rw [← map_take, hsplit, show u ++ e :: v = (u ++ [e]) ++ v by simp,
-    take_left' (by simp), map_append, map_singleton]
+  grind
 
+section
+variable {u v : List Ev}
 /-- The first event of a chord is not in the prefix before it, nor is its second event. -/
-theorem count_prefix_self {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: v)
+theorem count_prefix_self {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: v)
     (hi' : i < L.length) : (u.map Prod.fst).count i = 0 := by
   have hs := h.sorted
   rw [hsplit] at hs
@@ -595,17 +588,17 @@ theorem count_prefix_self {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L 
   rw [BuildSort.count_two (j := i) hnd.1 (h.e1_ne_e2 hi') rfl rfl
     (fun f hf hfj => by
       have := (h.mem_cases' (hsplit ▸ mem_append_left _ hf)).2
-      rw [hfj] at this; exact this)]
+      grind)]
   have h1 : e1 M Q L i ∉ u := fun h1 => hnd.2.2 _ h1 _ mem_cons_self rfl
   have h2 : e2 M Q L i ∉ u := by
     intro h2
     have := BuildSort.key_le_of_evLe (BuildSort.evLe_of_mem_left hs h2)
     simp only [e1, e2] at this
     linarith [h.lo_lt_hi hi']
-  rw [ite_eq_right h1, ite_eq_right h2]
+  grind
 
 /-- The chord indices of the prefix are chords of the list. -/
-theorem count_prefix_ge {u v : List Ev} {e : Ev} (hsplit : S = u ++ e :: v) {j : ℕ}
+theorem count_prefix_ge {e : Ev} (hsplit : S = u ++ e :: v) {j : ℕ}
     (hj : L.length ≤ j) : (u.map Prod.fst).count j = 0 := by
   rw [count_eq_zero, mem_map]
   rintro ⟨f, hf, rfl⟩
@@ -613,18 +606,21 @@ theorem count_prefix_ge {u v : List Ev} {e : Ev} (hsplit : S = u ++ e :: v) {j :
   omega
 
 /-- **The label right after the first event of chord `i` is `some i`.** -/
-theorem label_first {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: v)
+theorem label_first {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: v)
     (hi' : i < L.length) : BuildStack.label (S.map Prod.fst) (u.length + 1) = some i := by
   obtain ⟨hnc, htw⟩ := h.word
   rw [BuildStack.label_eq htw hnc, h.take_word_succ hsplit, show (e1 M Q L i).1 = i from rfl,
     BuildStack.openList_snoc_open (h.count_prefix_self hsplit hi')]
   rfl
 
+
+end
+
+section
+variable {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: v) (hi' : i < L.length) {U : Set Point} (hU : U ∈ M.regions (famOf M Q L)) {p : ℕ} {t : ℝ} (hp : p < M.W.n) (ht : t ∈ Ioo (0 : ℝ) 1) (hcut : ¬ M.IsCut (famOf M Q L) (p + t)) (hf : M.Faces p t U) (htouch : TouchesIn M.D (chordSet M Q L i) U)
+include v hsplit hi' U hU hp ht hcut hf htouch
 /-- **A region touching chord `i` on the outside** has the label before the first event of `i`. -/
-theorem label_outside {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: v)
-    (hi' : i < L.length) {U : Set Point} (hU : U ∈ M.regions (famOf M Q L)) {p : ℕ} {t : ℝ}
-    (hp : p < M.W.n) (ht : t ∈ Ioo (0 : ℝ) 1) (hcut : ¬ M.IsCut (famOf M Q L) (p + t))
-    (hf : M.Faces p t U) (htouch : TouchesIn M.D (chordSet M Q L i) U)
+theorem label_outside
     (hout : ¬ (lo M Q L i < p + t ∧ p + t < hi M Q L i)) :
     gapLabel S (p + t) = BuildStack.label (S.map Prod.fst) u.length := by
   obtain ⟨hnc, htw⟩ := h.word
@@ -638,16 +634,13 @@ theorem label_outside {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i ::
     by_cases hji : j = i
     · subst hji
       rw [h.count_prefix_self hsplit hi']
-      exact ⟨fun h' => absurd h' hout, fun h' => absurd h' (by omega)⟩
+      ram_grind
     · rw [h.prefix_open hsplit hi' hj hji]
       exact h.touch_within hU hp ht hcut hf hi' hj hji htouch
   · rw [h.count_ge hj, h.count_prefix_ge hsplit hj]
 
 /-- **A region touching chord `i` on the inside** has the label `some i`. -/
-theorem label_inside {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: v)
-    (hi' : i < L.length) {U : Set Point} (hU : U ∈ M.regions (famOf M Q L)) {p : ℕ} {t : ℝ}
-    (hp : p < M.W.n) (ht : t ∈ Ioo (0 : ℝ) 1) (hcut : ¬ M.IsCut (famOf M Q L) (p + t))
-    (hf : M.Faces p t U) (htouch : TouchesIn M.D (chordSet M Q L i) U)
+theorem label_inside
     (hin : lo M Q L i < p + t ∧ p + t < hi M Q L i) :
     gapLabel S (p + t) = BuildStack.label (S.map Prod.fst) (u.length + 1) := by
   obtain ⟨hnc, htw⟩ := h.word
@@ -669,6 +662,9 @@ theorem label_inside {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: 
     rw [h.count_ge hj, h.count_prefix_ge hsplit hj, ite_eq_right hji]
 
 /-! ## The two sides of a chord -/
+
+
+end
 
 /-- **The two sides of chord `i`** are the regions of the labels right after (inside) and right
 before (outside) its first event: if its first event is its left endpoint, the inside is below
@@ -720,7 +716,7 @@ theorem sides {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: v)
     refine h.walk.not_left_of_after h.adm hcF hB hA (Ne.symm hAB) hDn hpd ⟨htd0, htd1⟩ hin hfd ?_
     refine (eventually_mul_pos (hBelow _ hmid' hmidD') (sub_pos.2 hlt)).mono fun δ hδ => ?_
     rw [Chazelle.Core.offset_mid_ab hy.symm]
-    convert hδ using 2; ring
+    grind
   -- the keys differ from the non-cut keys
   have nU1 := h.key_ne_of_not_cut hcu _ (h.eL_mem hi')
   have nU2 := h.key_ne_of_not_cut hcu _ (h.eR_mem hi')
@@ -734,12 +730,9 @@ theorem sides {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: v)
     have hhi : hi M Q L i = kr M Q L i := max_eq_right hk.le
     -- `Up` outside, `Dn` inside
     have hUout : ¬ (lo M Q L i < pu + tu ∧ pu + tu < hi M Q L i) := by
-      rw [hlo, hhi]; intro h'; apply hnU; unfold sideInArc; rw [ite_eq_left hk]; exact h'
+      ram_grind
     have hDin : lo M Q L i < pd + td ∧ pd + td < hi M Q L i := by
-      rw [hlo, hhi]
-      unfold sideInArc at hnD; rw [ite_eq_right (not_lt.2 hk.le)] at hnD
-      push Not at hnD
-      exact ⟨lt_of_le_of_ne hnD.2 nD1, lt_of_le_of_ne hnD.1 (Ne.symm nD2)⟩
+      grind [sideInArc]
     have e1' := h.label_outside hsplit hi' hUp hpu ⟨htu0, htu1⟩ hcu hfu htU hUout
     have e2' := h.label_inside hsplit hi' hDn hpd ⟨htd0, htd1⟩ hcd hfd htD hDin
     rw [e1'] at hregU
@@ -750,12 +743,9 @@ theorem sides {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: v)
     have hhi : hi M Q L i = kl M Q L i := max_eq_left hk.le
     -- `Up` inside, `Dn` outside
     have hUin : lo M Q L i < pu + tu ∧ pu + tu < hi M Q L i := by
-      rw [hlo, hhi]
-      unfold sideInArc at hnU; rw [ite_eq_right (not_lt.2 hk.le)] at hnU
-      push Not at hnU
-      exact ⟨lt_of_le_of_ne hnU.2 nU2, lt_of_le_of_ne hnU.1 (Ne.symm nU1)⟩
+      grind [sideInArc]
     have hDout : ¬ (lo M Q L i < pd + td ∧ pd + td < hi M Q L i) := by
-      rw [hlo, hhi]; intro h'; apply hnD; unfold sideInArc; rw [ite_eq_left hk]; exact h'
+      ram_grind
     have e1' := h.label_inside hsplit hi' hUp hpu ⟨htu0, htu1⟩ hcu hfu htU hUin
     have e2' := h.label_outside hsplit hi' hDn hpd ⟨htd0, htd1⟩ hcd hfd htD hDout
     rw [e1'] at hregU
@@ -772,7 +762,7 @@ theorem label_ok (m : ℕ) : LabelOK L.length (BuildStack.label (S.map Prod.fst)
   rw [BuildStack.label_eq htw hnc] at hl
   have hi := BuildStack.mem_openList.1 (mem_of_mem_head? hl)
   have hmem : i ∈ S.map Prod.fst :=
-    mem_of_mem_take (count_pos_iff.1 (by rw [hi]; norm_num : 0 < ((S.map Prod.fst).take m).count i))
+    mem_of_mem_take (count_pos_iff.1 (by omega : 0 < ((S.map Prod.fst).take m).count i))
   obtain ⟨f, hf, rfl⟩ := mem_map.1 hmem
   exact (h.mem_cases hf).1
 
@@ -784,24 +774,22 @@ theorem reg_realized {ℓ : Option ℕ} (hr : reg M Q L S ℓ ∈ M.regions (fam
   classical
   by_cases hh : ∃ U ∈ M.regions (famOf M Q L), ∃ (p : ℕ) (t : ℝ), p < M.W.n ∧ 0 < t ∧ t < 1 ∧
       ¬ M.IsCut (famOf M Q L) (p + t) ∧ gapLabel S (p + t) = ℓ ∧ M.Faces p t U
-  · have hreg : reg M Q L S ℓ = hh.choose := by unfold reg; rw [dite_eq_left hh]
-    obtain ⟨-, p, t, hp, ht0, ht1, hcut, hlab, hf⟩ := hh.choose_spec
-    exact ⟨p, t, hp, ht0, ht1, hcut, hlab, hreg ▸ hf⟩
-  · have hreg : reg M Q L S ℓ = ∅ := by unfold reg; rw [dite_eq_right hh]
+  · grind [reg]
+  · have hreg : reg M Q L S ℓ = ∅ := by grind [reg]
     rw [hreg] at hr
     obtain ⟨x, hx⟩ := Chazelle.Chain.regionsIn_nonempty hr
-    exact absurd hx (Set.notMem_empty x)
+    grind
 
 /-- The first event of the sorted list is the first event of its chord. -/
 theorem first_split (hK : 0 < L.length) :
     ∃ i < L.length, ∃ v, S = [] ++ e1 M Q L i :: v := by
   rcases hS : S with _ | ⟨f, v⟩
   · exact absurd (hS ▸ h.e1_mem hK) (List.not_mem_nil)
-  · have hf : f ∈ S := by rw [hS]; exact mem_cons_self
+  · have hf : f ∈ S := by simp_all
     obtain ⟨hi, hc⟩ := h.mem_cases' hf
     refine ⟨f.1, hi, v, ?_⟩
     rcases hc with hc | hc
-    · rw [← hc]; rfl
+    · grind
     · exfalso
       have hs := h.sorted
       rw [hS, pairwise_cons] at hs
@@ -838,27 +826,20 @@ theorem regions_corr :
         have hS : S = [] := by
           rcases hS : S with _ | ⟨f, v⟩
           · rfl
-          · have := (h.mem_cases (by rw [hS]; exact mem_cons_self : f ∈ S)).1; omega
+          · have := (h.mem_cases (by simp_all : f ∈ S)).1; omega
         have hlab : gapLabel S (p + t) = none := by
-          unfold gapLabel; rw [hS]; rfl
+          aesop
         have := (h.faces_reg hp ⟨ht0, ht1⟩ hcut).1
-        rwa [hlab] at this
+        simp_all
       · obtain ⟨i, hi, v, hsplit⟩ := h.first_split hK
         have := (h.sides hsplit hi).2.1
-        have h0 : BuildStack.label (S.map Prod.fst) ([] : List Ev).length = none := by
-          simp only [List.length_nil]
-          unfold BuildStack.label; simp [BuildStack.run]
-        rwa [h0] at this
+        simp_all [List.length_nil, BuildStack.label, BuildStack.run]
     · have hi : i < L.length := hℓ i rfl
       obtain ⟨u, v, hsplit⟩ := List.append_of_mem (h.e1_mem hi)
       have := (h.sides hsplit hi).1
       rwa [h.label_first hsplit hi] at this
   refine ⟨hmemR, fun ℓ ℓ' hℓ hℓ' heq => ?_, fun U hU => ?_⟩
-  · obtain ⟨p, t, hp, ht0, ht1, hcut, hlab, hf⟩ := reg_realized (hmemR ℓ hℓ)
-    obtain ⟨p', t', hp', ht0', ht1', hcut', hlab', hf'⟩ := reg_realized (hmemR ℓ' hℓ')
-    rw [← hlab, ← hlab']
-    exact (h.faces_same_iff (hmemR ℓ hℓ) (hmemR ℓ' hℓ') hp hp' ⟨ht0, ht1⟩ ⟨ht0', ht1'⟩ hcut hcut'
-      hf hf').1 heq
+  · grind [Chazelle.Core.BuildRegions.Ctx.reg_realized, Chazelle.Core.BuildRegions.Ctx.faces_same_iff]
   · obtain ⟨p, t, hp, ht0, ht1, hcut, hf⟩ := h.walk.exists_faces_nc h.adm h.finite hU
     refine ⟨gapLabel S (p + t), h.label_ok _, h.reg_eq_of_faces hp ⟨ht0, ht1⟩ hcut hU hf⟩
 

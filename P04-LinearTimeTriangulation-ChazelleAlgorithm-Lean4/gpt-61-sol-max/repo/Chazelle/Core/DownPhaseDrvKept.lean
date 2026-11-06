@@ -57,12 +57,8 @@ theorem left_end_of_segment {a' b' : Point} {y a b : ℝ} (hab : a < b) (hy : a'
     (h : hseg y a b = Chazelle.segment a' b') : ((a, y) : Point) = a' ∨ ((a, y) : Point) = b' := by
   rw [Visibility.segment_horizontal_eq_hseg hy] at h
   obtain ⟨h1, h2, -⟩ := Merge.hseg_inj hab.le h
-  rcases le_total a'.1 b'.1 with hl | hl
-  · left; rw [min_eq_left hl] at h2; exact Prod.ext h2 h1
-  · right; rw [min_eq_right hl] at h2; exact Prod.ext h2 (h1.trans hy)
+  grind
 
-/-- The horizontal direction to the right. -/
-def eX : Point := (1, 0)
 
 end
 

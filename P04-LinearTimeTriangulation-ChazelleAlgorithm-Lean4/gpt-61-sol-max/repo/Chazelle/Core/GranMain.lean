@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranCost
 public import Chazelle.Core.GranRamLoop
 
@@ -23,7 +25,7 @@ open Machine Machine.Stmt Programs SignK
 def mainStmt : Stmt := .seq initStmt (.seq loopStmt outStmt)
 
 theorem wrS_loop : wrS Bbody loopStmt = true := by
-  simp only [loopStmt, wrS]; exact wrS_body
+  aesop
 
 theorem natOnly_loop : natOnly loopStmt = true := by decide
 
@@ -55,14 +57,14 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have hroomI := room_le N.nChords N.arcs.length N.nRegions D
   obtain ⟨c₈, k₈, e₈, hk₈, hMS, hI, hE, hDim, r52, r00, -, r02, -, r10, r13, r28, hal, G₈⟩ :=
     init_exec (P := P) hw h0 h1 h2 h3 hG hWh hwf hMD hGM hNW hNF hRC hCS hRO hne hdeg hsemi
-      (by unfold costMain at hroom; omega)
+      (by grind [costMain])
   set E := envOf M P N reg γ D (c.nmem MD) (c.nmem (MD + 3)) with hEd
   set d := dmOf N.nChords N.arcs.length N.nRegions D (c.nreg ALLOC) with hd
   set K := N.nChords with hKd
   -- the worklist
   obtain ⟨c₉, k₉, st', e₉, hk₉, hMS', hI', htop, hR₉⟩ := loop_exec (P := P) hE hMS hI hDim
     le_rfl r52
-  have FS₉ := exec_frameS e₉ wrS_loop
+  
   have G₉ : GF (c.nreg ALLOC) c₈ c₉ k₉ := GF.of_nat e₉ natOnly_loop wrS_loop
     (fun r hr => by
       simp only [Bbody, Bool.or_eq_true, decide_eq_true_eq] at hr
@@ -73,15 +75,12 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   set CB := c.nmem (NFH + 3) with hCBd
   have hCB : CB + 5 * K ≤ c.nreg ALLOC := by
     have := hNA.2.1 (K - 1) (by omega)
-    have e5 : 5 * (K - 1) + 5 = 5 * K := by omega
     omega
   have hd0 : d.b0 = c.nreg ALLOC := rfl
   have hdK : d.K = K := rfl
   have hLB : d.oList + 3 * K = d.oEnd := rfl
   have hoL : K ≤ d.oList := by
-    simp only [hd, dmOf, Dm.oList, Dm.oTmp, Dm.oStk, Dm.oPz, Dm.oEg, Dm.oPrv, Dm.oNxt, Dm.oCnt,
-      Dm.oEx]
-    omega
+    omega_nf
   have hbase := hDim.base
   have hOE : OutEnv W K CB (c.nreg ALLOC + d.oList) (c.nreg ALLOC) N st'.live c₉ :=
     { r30 := hMS'.cst.bLive
@@ -96,13 +95,13 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
         refine ⟨?_, ?_, ?_⟩
         · rw [hMS'.low _ (by omega)]; exact hr.1
         · rw [hMS'.low _ (by omega)]; exact hr.2.1
-        · rw [hMS'.low _ (by omega)]; exact hr.2.2.1
+        · rw [hMS'.low _ (by omega)]; ram_grind
       hCB := by omega
       hb0 := by omega
       hW := by omega }
   obtain ⟨c₁₀, k₁₀, e₁₀, hk₁₀, r95, hlist, hmem, FS₁₀⟩ := out_exec (P := P) hMS'.wb hOE
     (by rw [hR₉ _ (by decide), r13]) (by rw [hR₉ _ (by decide), r28])
-    (by unfold costMain at hroom; have := dmOf_oEnd N.nChords N.arcs.length N.nRegions D 0; omega)
+    (by omega)
   have G₁₀ : GF (c.nreg ALLOC) c₉ c₁₀ k₁₀ := GF.of_nat e₁₀ natOnly_out wrS_outStmt
     (fun r hr => by
       simp only [Binit, decide_eq_true_eq] at hr
@@ -117,9 +116,9 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have hlset : lset M (Qof P) (outList N st'.live K) = st'.F E := hFeq
   have hlen := outList_length_le N st'.live K
   refine ⟨c₁₀, _, outList N st'.live K, .seq e₈ (.seq e₉ e₁₀), ?_, ?_, ?_, r95, hlen,
-    by rw [q28]; exact hlist, by rw [q28, qA]; omega, hok, ?_, ?_, ?_,
+    by ram_grind, by omega, hok, ?_, ?_, ?_,
     (G₈.trans (G₉.trans G₁₀)).mono le_rfl⟩
-  · have hm : st0 E d c₈.nmem = initSt E _ _ _ _ := rfl
+  · 
     have hmeas : (st0 E d c₈.nmem).meas E = K + (D + 1) * K := by
       simp only [St.meas, st0, initSt]; rfl
     have hED : E.D = D := rfl

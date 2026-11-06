@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStepL8
 
 /-!
@@ -74,10 +76,10 @@ theorem tab' : TabInv P J N₂ c' (keyOff P J c') := by
   have l2 := S.L.lay2
   have l4 := S.L.lay4
   have hTc : ∀ x, x < c.nreg cTB + 6 * N₂.nChords → c'.nmem x = co.nmem x := fun x hx =>
-    hmK x (by omega) (Or.inl (by rw [elB, elC]; omega))
+    hmK x (by omega) (Or.inl (by omega))
   have hTs : ∀ x, x < c.nreg cTB + 6 * N₂.nChords → cs.nmem x = c.nmem x := fun x hx =>
     hmemS x (by omega)
-  have hlt := (stp_next_key S.E S.L S.hI S.hd).1
+  
   intro j hj
   rw [eTB']
   obtain ⟨o0, o1, o2⟩ := S.L.tab j hj
@@ -91,10 +93,7 @@ theorem tab' : TabInv P J N₂ c' (keyOff P J c') := by
   rw [hT0, hT1, hT2]
   -- a flag of the key stays
   have hkeep : c.nmem (c.nreg cTB + 3 * j) = 1 → co.nmem (c.nreg cTB + 3 * j) = 1 := by
-    intro h
-    rcases hslot with ⟨s0, -, -⟩ | ⟨e, h', -, f0, -⟩
-    · rw [s0, hTs _ (by omega), h]
-    · exact f0
+    grind
   refine ⟨?_, ?_, fun hv hlt' p t hA hpt hL hle => ?_⟩
   · rcases hslot with ⟨s0, -, -⟩ | ⟨e, h', -, f0, -⟩
     · rw [s0, hTs _ (by omega)]; exact o0
@@ -107,10 +106,10 @@ theorem tab' : TabInv P J N₂ c' (keyOff P J c') := by
     · rw [f1, f2]
       exact (S.hBA.acc _ hmA).2.2
   · by_cases hc : oW J (p + t) ≤ keyOff P J c
-    · exact hkeep (o2 hv hlt' p t hA hpt hL hc)
+    · grind
     · obtain ⟨t', ht', rfl⟩ := S.comp_new hj hv hlt' hA (not_le.1 hc) hle
       have := S.hBA.flag t' ht'
-      rwa [eTBs] at this
+      ram_grind
 
 end SCtx
 

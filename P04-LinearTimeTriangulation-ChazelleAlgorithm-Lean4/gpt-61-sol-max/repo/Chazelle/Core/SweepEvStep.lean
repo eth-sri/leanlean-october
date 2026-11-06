@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvDet
 public import Chazelle.Core.SweepEvNoTie
 
@@ -34,8 +36,10 @@ section Step
 
 variable {J : Merge.Junction}
 
+section
+variable {S₂ : Set (Set Point)}
 /-- **The three kinds of chords of `F₂⁺`.** -/
-theorem f2_cases {S₂ : Set (Set Point)} (_hS₂ : S₂ ⊆ Merge.augChords J.right) {e : Set Point}
+theorem f2_cases (_hS₂ : S₂ ⊆ Merge.augChords J.right) {e : Set Point}
     (he : e ∈ F₂plus J S₂) :
     (∃ c ∈ S₂, ∃ (a : Point) (σ : ℝ), ((σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c)) ∧
       FreeAt J.whole a σ ∧ e = Merge.shoot J.whole a σ) ∨
@@ -43,10 +47,8 @@ theorem f2_cases {S₂ : Set (Set Point)} (_hS₂ : S₂ ⊆ Merge.augChords J.r
     (∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ FreeAt J.whole J.right.top σ ∧
       e = Merge.shoot J.whole J.right.top σ) := by
   rcases he with ((⟨c', hc', hfree, rfl⟩ | ⟨c', hc', hfree, rfl⟩) | hsh) | htop
-  · have hc'S : c' ∈ S₂ := by simpa using hc'
-    exact Or.inl ⟨c', hc'S, _, 1, Or.inl ⟨rfl, rfl⟩, hfree, rfl⟩
-  · have hc'S : c' ∈ S₂ := by simpa using hc'
-    exact Or.inl ⟨c', hc'S, _, -1, Or.inr ⟨rfl, rfl⟩, hfree, rfl⟩
+  · ram_grind
+  · ram_grind
   · obtain ⟨σ, hσ, hfree, rfl⟩ := hsh
     exact Or.inr (Or.inl ⟨σ, hσ, (Merge.freeAt_vertex _ _ _).2 hfree, rfl⟩)
   · obtain ⟨σ, hσ, hfree, rfl⟩ := htop
@@ -56,8 +58,11 @@ theorem f2_cases {S₂ : Set (Set Point)} (_hS₂ : S₂ ⊆ Merge.augChords J.r
     · rw [← hv]; exact (Merge.freeAt_vertex _ _ _).2 hfree
     · rw [← hv]; rfl
 
+section
+variable (hS₂ : S₂ ⊆ Merge.augChords J.right)
+include hS₂
 /-- A chord seen from an end of a chord of `S₂` along it lies in it. -/
-theorem shoot_sub_end {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) {c : Set Point}
+theorem shoot_sub_end {c : Set Point}
     (hc : c ∈ S₂) {a : Point} {σ : ℝ}
     (ha : (σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c)) :
     Merge.shoot J.whole a σ ⊆ c := by
@@ -69,7 +74,7 @@ theorem shoot_sub_end {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords
     exact Merge.shoot_subset_neg J.whole hH.lt (fun hd => hH.left_not (dom_right J hd hy))
 
 /-- **A non-stop chord is an endpoint-query chord.** -/
-theorem nonstop_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) {e : Set Point}
+theorem nonstop_cases {e : Set Point}
     (he : e ∈ F₂plus J S₂) (hns : ¬ StopChord2 J S₂ e) :
     ∃ c ∈ S₂, ∃ (a : Point) (σ : ℝ), ((σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c)) ∧
       a ∈ J.right.set ∧ a ≠ J.shared ∧ a ≠ J.right.top ∧ FreeAt J.whole a σ ∧
@@ -80,13 +85,19 @@ theorem nonstop_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords
     · by_contra hn
       exact hns (Or.inl (Or.inr ⟨c, hc, a, σ, ha, hn, hfree, rfl⟩))
     · rintro rfl
-      have hσ : σ = 1 ∨ σ = -1 := by rcases ha with ⟨h, -⟩ | ⟨h, -⟩ <;> simp [h]
+      have hσ : σ = 1 ∨ σ = -1 := by grind
       exact hns (Or.inl (Or.inl ⟨σ, hσ, hfree, rfl⟩))
     · rintro rfl
-      have hσ : σ = 1 ∨ σ = -1 := by rcases ha with ⟨h, -⟩ | ⟨h, -⟩ <;> simp [h]
+      have hσ : σ = 1 ∨ σ = -1 := by grind
       exact hns (Or.inr ⟨σ, hσ, hfree, rfl⟩)
   · exact absurd (Or.inl (Or.inl ⟨σ, hσ, hfree, rfl⟩)) hns
-  · exact absurd (Or.inr ⟨σ, hσ, hfree, rfl⟩) hns
+  ram_grind
+
+
+
+end
+
+end
 
 /-- **Every non-stop chord at the next key is found** from the label set, the gap regions, or
 the chord of `S₂` containing a stop chord at the key. -/
@@ -124,8 +135,7 @@ theorem nonstop_found (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     · exact shoot_sub_end hS₂a hc (Or.inl ⟨rfl, rfl⟩)
     · exact shoot_sub_end hS₂a hc (Or.inr ⟨rfl, rfl⟩)
   · by_cases hhe : Merge.shoot J.whole a' σ' = Merge.shoot J.whole a σ
-    · rw [← hhe]
-      exact ⟨c', hc', a', σ', ha', ha'R, ha'v, ha't, hfree', rfl, Or.inl ⟨V, hV, hVΛ, hT⟩⟩
+    · grind
     · -- the other piece of `c'`
       have hsub' := shoot_sub_end hS₂a hc' ha'
       have hpar := partner_of_parent hP hS₂a hS₂f hNTV hh he hhe hc' hsub' hhK heK hLt
@@ -142,7 +152,7 @@ theorem nonstop_found (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
         have ht : Merge.lend c' ≠ J.right.top := by
           intro ht; rw [ht] at hf₁ hns
           exact hns (Or.inr ⟨1, Or.inl rfl, hf₁, rfl⟩)
-        exact ⟨c', hc', _, 1, Or.inl ⟨rfl, rfl⟩, hR, hv, ht, hf₁, rfl, Or.inl ⟨V, hV, hVΛ, hT⟩⟩
+        grind
       · rw [he₁] at hns ⊢
         have hR : Merge.rend c' ∈ J.right.set := by
           by_contra hn
@@ -153,16 +163,15 @@ theorem nonstop_found (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
         have ht : Merge.rend c' ≠ J.right.top := by
           intro ht; rw [ht] at hf₁ hns
           exact hns (Or.inr ⟨-1, Or.inr rfl, hf₁, rfl⟩)
-        exact ⟨c', hc', _, -1, Or.inr ⟨rfl, rfl⟩, hR, hv, ht, hf₁, rfl, Or.inl ⟨V, hV, hVΛ, hT⟩⟩
+        grind
 
 /-- The right stretch is not empty. -/
 theorem Lst_pos (J : Merge.Junction) : (0 : ℝ) < Lst J := by
   have h1 := J.right.one_le
   have h2 : J.right.m = J.m₂ := rfl
   have : 0 < Lst J := by
-    unfold Lst; rw [rL1_add_rL2]; unfold rlen
-    split_ifs <;> omega
-  exact_mod_cast this
+    core_grind [rL1_add_rL2, rlen]
+  simp_all
 
 /-- **The label rule at a key.**  From the invariant at `oL`, at the next key `K` (no cut in
 between): if a chord at `K` is attached at offset `0` (a pocket), any label set; if some chord at
@@ -198,8 +207,7 @@ theorem evInv_step (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     exact evInv_pocket he heK hQ hne hLst hQ0 Λ'
   push Not at hpock
   rcases hrule with h | ⟨⟨Z, hZ, hZK, hZb⟩, hlab⟩ | ⟨hbr, rfl⟩
-  · obtain ⟨e, he, heK, q, s, hQ, hQ0⟩ := h
-    exact absurd hQ0 (hpock e he heK q s hQ)
+  · grind
   · unfold EvBrk at hZb
     push Not at hZb
     obtain ⟨pz, tz, hZz, hzL⟩ := hZb
@@ -208,9 +216,9 @@ theorem evInv_step (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       (fun e he heK hnb _ => hlab e he heK hnb)
   · refine evInv_mono hInv hoL fun e he q s hQ h1 h2 => ?_
     rcases h2.lt_or_eq with h2 | h2
-    · exact absurd ⟨h1, h2⟩ (hgap e he q s hQ)
+    · grind
     · obtain ⟨rfl, rfl⟩ := pos_eq_of_oW hP hS₂a hS₂f hQ.1 hpK hQ.2.1 hQ.2.2.1 htK0 htK1 h2
-      exact hbr e he hQ
+      grind
 
 end Step
 

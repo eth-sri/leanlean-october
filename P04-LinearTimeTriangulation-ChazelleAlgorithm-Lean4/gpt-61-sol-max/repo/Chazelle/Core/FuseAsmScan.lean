@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmDedup
 
 /-!
@@ -77,14 +79,9 @@ theorem neqS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
         rfl, rfl⟩
   obtain ⟨c₁, k₁, e₁, hk₁, v₁, r₁, m₁, rr₁, rm₁, o₁⟩ := step a b c hw ha hb
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, r₂, m₂, rr₂, rm₂, o₂⟩ := step b a c₁ e₁.wb_right hb ha
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_, fun r hr => by rw [r₂ r hr, r₁ r hr],
-    by rw [m₂, m₁], by rw [rr₂, rr₁], by rw [rm₂, rm₁], by rw [o₂, o₁]⟩
-  rw [v₂, v₁, r₁ a ha, r₁ b hb]
-  by_cases h1 : c.nreg a < c.nreg b
-  · simp [h1, show c.nreg a ≠ c.nreg b by omega]
-  · by_cases h2 : c.nreg b < c.nreg a
-    · simp [h2, show c.nreg a ≠ c.nreg b by omega]
-    · simp [show c.nreg a = c.nreg b by omega]
+  refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_, fun r hr => by grind,
+    by rw [m₂, m₁], by grind, by grind, by rw [o₂, o₁]⟩
+  grind
 
 set_option maxHeartbeats 4000000 in
 theorem dsLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {T x : ℕ}
@@ -122,12 +119,7 @@ theorem dsPrev_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       c₁.nreg 70229 = T + 3 * p ∧ (∀ r, r ≠ 70227 → r ≠ 70229 → c₁.nreg r = c.nreg r) ∧
       c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     exec_block
-    all_goals try (simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, hT, hp]; omega)
-    refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
-    all_goals simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, hT, hp]
-    all_goals first | rfl | ring
+    all_goals (grind [Machine.upd_same, Machine.upd_other])
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, r₂, m₂, rr₂, rm₂, o₂⟩ :=
     neqS_exec (P := P) c₁ e₁.wb_right hW 70224 70227 (by decide) (by decide)
   -- second component
@@ -138,47 +130,28 @@ theorem dsPrev_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
         d'.rreg = d.rreg ∧ d'.rmem = d.rmem ∧ d'.output = d.output := by
     intro d v hwd hv h1 hvW
     exec_block
-    all_goals try (simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, hv, h1]; omega)
-    refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
-    all_goals simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, hv, h1]
+    all_goals (grind [Machine.upd_same, Machine.upd_other])
   have g2 : ∀ r, r ≠ 70227 → r ≠ 70228 → r ≠ 70229 → c₂.nreg r = c.nreg r := fun r a b d => by
-    rw [r₂ r b, r₁ r a d]
+    ram_grind
   obtain ⟨c₃, k₃, e₃, hk₃, u27, u29, r₃, m₃, rr₃, rm₃, o₃⟩ := load c₂ (T + 3 * p) e₂.wb_right
-    (by rw [r₂ _ (by decide), v29]) (by rw [g2 _ (by decide) (by decide) (by decide), h05])
+    (by ram_grind) (by ram_grind)
     (by omega)
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, r₄, m₄, rr₄, rm₄, o₄⟩ :=
     neqS_exec (P := P) c₃ e₃.wb_right hW 70225 70227 (by decide) (by decide)
   have g4 : ∀ r, r ≠ 70227 → r ≠ 70228 → r ≠ 70229 → c₄.nreg r = c.nreg r := fun r a b d => by
     rw [r₄ r b, r₃ r a d, g2 r a b d]
   obtain ⟨c₅, k₅, e₅, hk₅, w27, w29, r₅, m₅, rr₅, rm₅, o₅⟩ := load c₄ (T + 3 * p + 1)
-    e₄.wb_right (by rw [r₄ _ (by decide), u29]) (by rw [g4 _ (by decide) (by decide) (by decide),
-      h05]) (by omega)
+    e₄.wb_right (by ram_grind) (by ram_grind) (by omega)
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, r₆, m₆, rr₆, rm₆, o₆⟩ :=
     neqS_exec (P := P) c₅ e₅.wb_right hW 70226 70227 (by decide) (by decide)
   have ex : Exec P W dsPrev c c₆ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k₆))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
   refine ⟨c₆, _, ex, by omega, ?_, fun r a b d => by rw [r₆ r b, r₅ r a d, g4 r a b d], ?_, ?_,
     ?_, ?_⟩
-  · have mm : ∀ x, c₅.nmem x = c.nmem x := fun x => by rw [m₅, m₄, m₃, m₂, m₁]
-    have A2 : c₂.nreg 70228 = if c.nreg 70224 ≠ c.nmem (T + 3 * p) then 1 else 0 := by
-      rw [f₂, r₁ _ (by decide) (by decide), v27, h28.symm.trans (r₁ _ (by decide) (by decide)).symm]
-    have A4 : c₄.nreg 70228 = if c.nreg 70225 ≠ c.nmem (T + 3 * p + 1) then 1
-        else c₂.nreg 70228 := by
-      rw [f₄, r₃ _ (by decide) (by decide), u27, g2 _ (by decide) (by decide) (by decide),
-        r₃ _ (by decide) (by decide), m₂, m₁]
-    have A6 : c₆.nreg 70228 = if c.nreg 70226 ≠ c.nmem (T + 3 * p + 2) then 1
-        else c₄.nreg 70228 := by
-      rw [f₆, r₅ _ (by decide) (by decide), w27, g4 _ (by decide) (by decide) (by decide),
-        r₅ _ (by decide) (by decide), m₄, m₃, m₂, m₁]
-    rw [A6, A4, A2]
-    simp only [ne_eq, Prod.mk.injEq, not_and_or]
-    split_ifs <;> tauto
-  · rw [m₆, m₅, m₄, m₃, m₂, m₁]
-  · rw [rr₆, rr₅, rr₄, rr₃, rr₂, rr₁]
-  · rw [rm₆, rm₅, rm₄, rm₃, rm₂, rm₁]
-  · rw [o₆, o₅, o₄, o₃, o₂, o₁]
+  · ram_grind
+  · ram_grind
+  · ram_grind
+  all_goals ram_grind
 
 set_option maxHeartbeats 4000000 in
 theorem dsCopy_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {a : ℕ}
@@ -207,7 +180,7 @@ def stl (m₀ : ℕ → ℕ) (T B K : ℕ) : List (ℕ × ℕ × ℕ) := (SortL.
 
 theorem stl_getD {m₀ : ℕ → ℕ} {T B K j : ℕ} (hj : j < K) :
     (stl m₀ T B K).getD j (0, 0, 0) = trip m₀ T (m₀ (B + j)) := by
-  simp [stl, SortL.seg, List.getD_eq_getElem?_getD, hj]
+  simp_all [stl, SortL.seg, List.getD_eq_getElem?_getD]
 
 /-- The invariant of the scan. -/
 structure DSI (W K T B LB : ℕ) (m₀ : ℕ → ℕ) (c₀ c : Config) : Prop where
@@ -226,8 +199,7 @@ structure DSI (W K T B LB : ℕ) (m₀ : ℕ → ℕ) (c₀ c : Config) : Prop w
 
 theorem ddp_length_le {α : Type*} [DecidableEq α] (l : List α) (d : α) (n : ℕ) :
     (ddp l d n).length ≤ n := by
-  unfold ddp; rw [List.length_map]
-  exact (List.length_filter_le _ _).trans (by simp)
+  grind [ddp, List.length_map]
 
 set_option maxHeartbeats 8000000 in
 theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ c : Config}
@@ -385,14 +357,14 @@ theorem dsLoop_exec {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
         c'.nreg 70220 = K
   | 0, c, hI, hn => by
     have h30' : c.nreg 70230 = K := by rw [hI.regs 70230 (by norm_num) (by decide), h30]
-    exact ⟨c, 2, .whileLtN_false (by rw [h30']; omega) hI.wb, by omega, by omega, hI, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by omega) hI.wb, by omega, by omega, hI, by omega⟩
   | n + 1, c, hI, hn => by
     have h30' : c.nreg 70230 = K := by rw [hI.regs 70230 (by norm_num) (by decide), h30]
     have ht : c.nreg 70220 < K := by omega
     obtain ⟨c', k, e, hI', hk, hk3, hc'⟩ := dsBody_step (P := P) hI ht h05 h08 h16 hitems hTB hBL hW
     obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := dsLoop_exec h05 h08 h16 h30 hitems hTB hBL hW n c' hI'
       (by omega)
-    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [h30']; exact ht) e e₂, by omega, by omega, hI'', hK⟩
+    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by omega) e e₂, by omega, by omega, hI'', hK⟩
 
 end
 

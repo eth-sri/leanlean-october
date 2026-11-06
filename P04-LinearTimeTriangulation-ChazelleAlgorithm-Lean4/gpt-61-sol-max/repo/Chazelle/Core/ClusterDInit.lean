@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterRegsRam
 
 /-!
@@ -30,7 +32,7 @@ theorem div_succ_eq {a k : ℕ} (hk : 0 < k) (h : a % k ≠ k - 1) : (a + 1) / k
   apply Nat.succ_div_of_not_dvd
   rw [Nat.dvd_iff_mod_eq_zero, Nat.add_mod]
   have := Nat.mod_lt a hk
-  have hk1 : k ≠ 1 := by rintro rfl; exact h (Nat.mod_one a)
+  have hk1 : k ≠ 1 := by omega
   rw [Nat.one_mod_eq_one.mpr hk1, Nat.mod_eq_of_lt (by omega)]
   omega
 
@@ -49,7 +51,7 @@ set_option maxHeartbeats 8000000 in
 theorem dinv_init {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     {M : CombMap (Fin g.μ) F (Fin g.N)} {T : SpanTree M} {a : F → Fin g.N}
     {ha : ∀ f, M.face (a f) = f} {C : CoTree (starTree T a ha)} {R : BTree} {first : Fin g.μ → Fin g.N}
-    {preE slot : ℕ → ℕ} {upT : ℕ → ℕ} {cs : ℕ} {m : ℕ → ℕ}
+    {preE slot upT : ℕ → ℕ} {cs : ℕ} {m : ℕ → ℕ}
     (hSF : SFacts M T a ha C R first preE slot upT g.k' cs (ssOf g) g.A0 g.U W m)
     (hhead : ∀ d : Fin g.N, T.level (M.head d) ≤ T.level (M.vert d) + 1)
     (hk : 0 < g.k') (hcs : cs < g.k') (_hkμ : g.k' ≤ g.μ)
@@ -75,7 +77,7 @@ theorem dinv_init {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   set bo := blkOf g.μ (fun v => m (g.base 3 + v)) (fun l => m (g.base 36 + l))
     (fun l => m (g.base 35 + l)) with hbo
   set key : ℕ → ℕ := fun v => m (g.base 29 + m (g.base 0 + v)) with hkey
-  have hN : (ssOf g).N = g.N := rfl
+  
   -- the key is the preorder of the first dart
   have hkeyv : ∀ v : Fin g.μ, key v = preE (first v) := fun v => by
     simp only [hkey]
@@ -84,12 +86,12 @@ theorem dinv_init {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have hinj : ∀ v w, v < g.μ → w < g.μ → key v = key w → v = w := fun v w hv hw h => by
     have e := (hkeyv ⟨v, hv⟩).symm.trans (h.trans (hkeyv ⟨w, hw⟩))
     have hn := hSF.R_n
-    have := BTree.PreInv.pre_inj hSF.R_ok hSF.R_pre (by rw [hn]; exact (first ⟨v, hv⟩).2)
-      (by rw [hn]; exact (first ⟨w, hw⟩).2) e
+    have := BTree.PreInv.pre_inj hSF.R_ok hSF.R_pre (by omega)
+      (by omega) e
     have hf : first ⟨v, hv⟩ = first ⟨w, hw⟩ := Fin.ext this
     have := congrArg M.vert hf
     rw [hSF.vert_first, hSF.vert_first] at this
-    exact congrArg Fin.val this
+    grind
   -- the blocks
   have hlev : ∀ v (hv : v < g.μ), m (g.base 3 + v) = T.level ⟨v, hv⟩ := fun v hv => hSF.lev ⟨v, hv⟩
   have hbo_eq : ∀ v (hv : v < g.μ), bo v = if (T.level ⟨v, hv⟩ + cs) % g.k' < g.k' - 1 then
@@ -108,24 +110,19 @@ theorem dinv_init {g : GV} {F : Type} [Fintype F] [DecidableEq F]
       rw [hbo_eq v hv]
       split_ifs with h
       · exact ⟨fun _ => h, fun _ => hdivlt _ (by have := hSF.lev_lt ⟨v, hv⟩; omega)⟩
-      · exact ⟨fun h' => by omega, fun h' => absurd h' h⟩
+      omega
   have hH : ∀ v, v < g.μ → (v ∈ Hset T cs g.k' ↔ ¬ bo v < g.μ) := fun v hv => by
     rw [hbo_lt v hv]
     simp only [Hset, Finset.mem_filter, Finset.mem_range]
     have := Nat.mod_lt (T.level ⟨v, hv⟩ + cs) hk
     constructor
-    · rintro ⟨-, h, h'⟩; omega
-    · intro h; exact ⟨hv, hv, by omega⟩
+    · omega
+    ram_grind
   have hHμ : ∀ v ∈ Hset T cs g.k', v < g.μ := fun v h => by
     simp only [Hset, Finset.mem_filter, Finset.mem_range] at h; exact h.1
   have hslab : ∀ v w, v < g.μ → w < g.μ → bo v < g.μ → bo v = bo w →
       slabN T cs g.k' v = slabN T cs g.k' w := fun v w hv hw hb he => by
-    have hb' := hb; rw [he] at hb'
-    have e1 := hbo_eq v hv; have e2 := hbo_eq w hw
-    rw [ite_eq_left ((hbo_lt v hv).mp hb)] at e1
-    rw [ite_eq_left ((hbo_lt w hw).mp hb')] at e2
-    simp only [slabN, dite_eq_left hv, dite_eq_left hw]
-    rw [← e1, ← e2, he]
+    grind [slabN]
   have hedge : ∀ x y, AdjN M x y → x ∉ Hset T cs g.k' → y ∉ Hset T cs g.k' →
       x < g.μ ∧ y < g.μ ∧ bo x = bo y := fun x y hxy hx hy => by
     obtain ⟨d, rfl, rfl⟩ := hxy
@@ -147,11 +144,11 @@ theorem dinv_init {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   refine ⟨hsinv, fun v hv => ?_, fun v hv => by simp at hv, fun p hp i h1 h2 => ?_,
     fun w hw => ?_, fun p hp => ?_, hstk, fun p hp => ?_⟩
   · show m (g.base 48 + v) = 1 ↔ v ∈ (∅ : Finset ℕ)
-    rw [hdf v hv]; simp
+    grind
   · obtain ⟨b, hb, rfl⟩ := lv_iff.mp hp
     obtain ⟨v, hv, hbv, rfl⟩ := exists_plPos (key := key) hinj h1 h2
     show m (g.base 44 + m (g.base 43 + plPos g.μ bo key v)) = plPos g.μ bo key v
-    rw [hact v hv (by omega), hpos v hv, ite_eq_left (by omega)]
+    grind
   · show m (g.base 44 + w) = g.μ ∨ _
     by_cases hb : bo w < g.μ
     · right
@@ -159,7 +156,7 @@ theorem dinv_init {g : GV} {F : Type} [Fintype F] [DecidableEq F]
       rw [show (ssOf g).bPOS = g.base 44 from rfl, show (ssOf g).bACT = g.base 43 from rfl, e]
       exact ⟨seg g.μ bo (bo w), lv_iff.mpr ⟨bo w, hb, rfl⟩, plPos_ge w, plPos_lt hw,
         hact w hw hb⟩
-    · left; rw [hpos w hw, ite_eq_right hb]
+    ram_grind
   · obtain ⟨b, hb, -, rfl⟩ := mem_segL.mp hp
     intro i i' h1 h2 h3
     simp only [seg] at h1 h3
@@ -168,7 +165,7 @@ theorem dinv_init {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     show m (g.base 29 + m (g.base 0 + m (g.base 43 + plPos g.μ bo key v))) ≤
       m (g.base 29 + m (g.base 0 + m (g.base 43 + plPos g.μ bo key v')))
     rw [hact v hv (by omega), hact v' hv' (by omega)]
-    exact key_le_of_plPos (bo := bo) (key := key) hv' (by rw [hbv, hbv']) h2
+    exact key_le_of_plPos (bo := bo) (key := key) hv' (by omega) h2
   · obtain ⟨b, hb, rfl⟩ := lv_iff.mp hp
     exact cntLt_le bo g.μ (b + 1)
 

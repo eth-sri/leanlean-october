@@ -74,21 +74,18 @@ theorem arcLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
     ⟨by rw [h.hin _ (by unfold FFix; omega), hE.k5], by rw [h.hin _ (by unfold FFix; omega), hE.k7],
       by rw [h.hin _ (by unfold FFix; omega), hE.k3], by rw [h.hin _ (by unfold FFix; omega), hE.k1]⟩
   obtain ⟨k5, k7, k3, k1⟩ := fx c hI
-  have e5 : c.nmem (c.nreg 81134 + 5) + c.nreg 81121 + c.nreg 81121 + c.nreg 81121 +
-      c.nreg 81121 + c.nreg 81121 + 1 = c.nmem (c.nreg 81134 + 5) + 5 * c.nreg 81121 + 1 := by ring
+  
   -- stage 1
   have ok1 : okB E.W c.nmem arcL1 c.nreg := by
     simp only [arcL1, okB, okI, regI, upd]
     simp only [FScr, FOut, k5, k7, k1]
-    norm_num
-    try rw [e5]
-    (repeat' apply And.intro) <;> omega
+    grind
   refine FRS.seq (K₂ := 16) (FRS.block hB _ hI ok1) (fun c₁ hI₁ hA₁ h₁ => ?_)
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem arcL1 c.nreg q := fun q => by rw [h₁]
   have m₁ : c₁.nmem = c.nmem := by rw [h₁]
   have v02 : c₁.nreg 81102 = (N.region (c.nreg 81121)).arcs.getD (c.nreg 81100) 0 := by
     rw [e₁]; simp [arcL1, regB, regI, upd, k5, k7, k1]
-    rw [e5]; rw [List.getD_eq_getElem?_getD] at rj; exact rj
+    grind
   have f₁ : ∀ q, q ≠ 81102 → q ≠ 81114 → q ≠ 81115 → c₁.nreg q = c.nreg q := fun q h1 h2 h3 => by
     rw [e₁]; refine regB_other _ _ _ (fun i hi => ?_)
     simp only [arcL1, List.mem_cons, List.not_mem_nil, or_false] at hi
@@ -104,7 +101,7 @@ theorem arcLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
     simp only [FScr, FOut, k3₁, k1₁, w34, v02, m₁]
     norm_num
     rw [e4]
-    (repeat' apply And.intro) <;> omega
+    omega
   refine (FRS.block hB _ hI₁ ok2).mono (by simp [arcL2]) (fun c₂ h₂ => ?_)
   have e₂ : ∀ q, c₂.nreg q = regB c₁.nmem arcL2 c₁.nreg q := fun q => by rw [h₂]
   have ea : c.nmem (c.nreg 81134 + 4) + j + j + j + j + j + 1 =
@@ -116,14 +113,11 @@ theorem arcLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
       rfl | rfl | rfl <;> simp only [dstI] <;> omega
   · rw [e₂]; simp [arcL2, regB, regI, upd, k3₁, k1₁, w34, v02, m₁, e4]; rw [ea, s1]
   · rw [e₂]; simp [arcL2, regB, regI, upd, k3₁, k1₁, w34, v02, m₁, e4]
-    rw [ea, show c.nmem (c.nreg 81134 + 4) + 5 * j + 1 + 1 = c.nmem (c.nreg 81134 + 4) + 5 * j + 2
-      by ring, s2]
+    grind
   · rw [e₂]; simp [arcL2, regB, regI, upd, k3₁, k1₁, w34, v02, m₁, e4]
-    rw [ea, show c.nmem (c.nreg 81134 + 4) + 5 * j + 1 + 1 + 1 =
-      c.nmem (c.nreg 81134 + 4) + 5 * j + 3 by ring, s3]
+    grind
   · rw [e₂]; simp [arcL2, regB, regI, upd, k3₁, k1₁, w34, v02, m₁, e4]
-    rw [ea, show c.nmem (c.nreg 81134 + 4) + 5 * j + 1 + 1 + 1 + 1 =
-      c.nmem (c.nreg 81134 + 4) + 5 * j + 4 by ring, s4]
+    grind
   · rw [e₂, regB_other _ _ _ (fun i hi => ?_), f₁ q h1 h6 h7]
     simp only [arcL2, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
@@ -132,18 +126,21 @@ theorem arcLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
 /-- Run `S` if `a = b`. -/
 def ifEq (a b : ℕ) (S : Stmt) : Stmt := .ifLtN a b .skip (.ifLtN b a .skip S)
 
-theorem FRS.ifEq_eq {B : Finset ℕ} {P : Polygon} {W : ℕ} {a b : ℕ} {S : Stmt} {K : ℕ}
-    {Q : Config → Prop} (h : c.nreg a = c.nreg b) (hS : FRS B P W c₀ S c K Q) :
+section
+variable {B : Finset ℕ} {P : Polygon} {W a b : ℕ} {S : Stmt} {K : ℕ} {Q : Config → Prop}
+theorem FRS.ifEq_eq (h : c.nreg a = c.nreg b) (hS : FRS B P W c₀ S c K Q) :
     FRS B P W c₀ (ifEq a b S) c (K + 4) Q :=
   (FRS.ifF (by omega) (FRS.ifF (by omega) hS)).mono (by omega) (fun _ h => h)
 
-theorem FRS.ifEq_ne {B : Finset ℕ} {P : Polygon} {W : ℕ} {a b : ℕ} {S : Stmt} {K : ℕ}
-    {Q : Config → Prop} (hI : FInv W c₀ c) (h : c.nreg a ≠ c.nreg b) (hq : Q c) :
+theorem FRS.ifEq_ne (hI : FInv W c₀ c) (h : c.nreg a ≠ c.nreg b) (hq : Q c) :
     FRS B P W c₀ (ifEq a b S) c (K + 4) Q := by
   by_cases h1 : c.nreg a < c.nreg b
   · exact (FRS.ifT h1 (FRS.skip (K := 0) hI hq)).mono (by omega) (fun _ h => h)
   · exact (FRS.ifF h1 (FRS.ifT (by omega) (FRS.skip (K := 0) hI hq))).mono (by omega)
       (fun _ h => h)
+
+
+end
 
 /-- **The count of an arc**: `w` (`81110`), the count (`81104`), the next arc index. -/
 def cntS : Stmt :=
@@ -169,9 +166,7 @@ noncomputable def wBit (Cα : Chain) (Q : Polygon) (nc se sh ee eh : ℕ) : ℕ 
 theorem wBit_spec {Cα : Chain} {Q : Polygon} {nc se sh ee eh : ℕ} :
     wBit Cα Q nc se sh ee eh = 0 ∨
       (chainModel Cα).key Q ⟨se, sh⟩ < (chainModel Cα).key Q ⟨ee, eh⟩ := by
-  unfold wBit; split_ifs with h
-  · exact Or.inr h.2.2
-  · exact Or.inl rfl
+  unfold wBit; grind
 
 /-- The registers `cntS` writes. -/
 def CsW (q : ℕ) : Prop := KeyW q ∨ q = 81100 ∨ q = 81104 ∨ (81110 ≤ q ∧ q ≤ 81113)
@@ -193,8 +188,8 @@ theorem cntS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
         (c.nreg 81108) ∧
       c'.nreg 81100 = c.nreg 81100 + 1 ∧
       ∀ q, 80000 ≤ q → q < 90000 → ¬ CsW q → c'.nreg q = c.nreg q) := by
-  have k0 := k0_of hE hI
-  have k1 : c.nreg 81012 = 1 := by rw [hI.hin _ (by unfold FFix; omega), hE.k1]
+  
+  
   have hN' : NFWithin c.nmem (c.nreg 81134) (c₀.nreg ALLOC) N :=
     Robust.transport hN (fun a ha => hI.hm a ha)
   have hNA := hN'.nfAt
@@ -205,7 +200,7 @@ theorem cntS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
     (by simp [csK]) (fun _ h => h)
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem [.constN 81110 0, .loadN 81111 81134] c.nreg q :=
     fun q => by rw [h₁]
-  have v10 : c₁.nreg 81110 = 0 := by rw [e₁]; simp [regB, regI, upd]
+  have v10 : c₁.nreg 81110 = 0 := by aesop
   have v11 : c₁.nreg 81111 = N.nChords := by rw [e₁]; simp [regB, regI, upd]; exact hNA.1
   have f₁ : ∀ q, q ≠ 81110 → q ≠ 81111 → c₁.nreg q = c.nreg q := fun q h1 h2 => by
     rw [e₁]; simp [regB, regI, upd, h1, h2]
@@ -224,22 +219,20 @@ theorem cntS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
     swap
     · refine (FRS.ifF a1 (FRS.skip (K := 0) hI₁ ⟨?_, fun _ _ _ _ _ _ _ => rfl⟩)).mono
         (by omega) (fun _ h => h)
-      rw [v10]; unfold wBit; rw [ite_eq_right (fun h => a1 (by rw [k0₁, v11]; exact h.1))]
+      aesop (add simp [wBit]) (add safe (by omega))
     refine (FRS.ifT a1 ?_).mono (K := 11017) (by omega) (fun _ h => h)
-    have hpos' := hpos (by rw [v11, k0₁] at a1; exact a1)
+    have hpos' := hpos (by omega)
     by_cases e : c₁.nreg 81103 = c₁.nreg 81107
     swap
     · refine FRS.ifEq_ne hI₁ e ⟨?_, fun _ _ _ _ _ _ _ => rfl⟩
-      rw [v10]; unfold wBit
-      rw [ite_eq_right (fun h => e (by rw [r 81103 ⟨by norm_num, by norm_num⟩,
-        r 81107 ⟨by norm_num, by norm_num⟩]; exact h.2.1))]
+      aesop (add simp [wBit]) (add safe (by omega))
     refine FRS.ifEq_eq e ((FRS.seq (K₂ := 1) (cmpA_fs₀ hE hB hI₁ (r := 81112) (a := 81103) (b := 81106) (d := 81107) (e := 81108) ⟨by norm_num, by norm_num⟩
       ⟨by norm_num, by norm_num⟩ ⟨by norm_num, by norm_num⟩ ⟨by norm_num, by norm_num⟩
       ⟨by norm_num, by norm_num⟩ (by unfold KeyW; omega) (by unfold KeyW; omega)
       (by unfold KeyW; omega) (by unfold KeyW; omega) (by rw [w33]; exact hwf)
       (by rw [w33]; exact hC) hWm
-      (by rw [r 81103 ⟨by norm_num, by norm_num⟩, r 81106 ⟨by norm_num, by norm_num⟩]; exact hpos'.1)
-      (by rw [r 81107 ⟨by norm_num, by norm_num⟩, r 81108 ⟨by norm_num, by norm_num⟩]; exact hpos'.2)
+      (by grind)
+      (by simp_all)
       (by rw [hA₁']; unfold csK at hroom; omega)) (fun c' hI' _ ⟨b12, _, f'⟩ => ?_)).mono (by norm_num) (fun _ h => h))
     have okc : okB E.W c'.nmem [.copyN 81110 81112] c'.nreg := by
       simp only [okB, okI, FScr, FOut]; norm_num
@@ -250,22 +243,22 @@ theorem cntS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
       have hb := b12
       rw [r 81103 ⟨by norm_num, by norm_num⟩, r 81106 ⟨by norm_num, by norm_num⟩,
         r 81107 ⟨by norm_num, by norm_num⟩, r 81108 ⟨by norm_num, by norm_num⟩] at hb
-      have hpc : 0 < N.nChords := by rw [v11, k0₁] at a1; exact a1
+      have hpc : 0 < N.nChords := by omega
       have he : c.nreg 81103 = c.nreg 81107 := by
-        rw [r 81103 ⟨by norm_num, by norm_num⟩, r 81107 ⟨by norm_num, by norm_num⟩] at e; exact e
+        grind
       unfold wBit
       by_cases hk : (chainModel Cα).key (Qof E.P) ⟨c.nreg 81103, c.nreg 81106⟩ <
           (chainModel Cα).key (Qof E.P) ⟨c.nreg 81107, c.nreg 81108⟩
       · rw [ite_eq_left ⟨hpc, he, hk⟩]; exact hb.2.2 hk
       · rw [ite_eq_right (fun h => hk h.2.2)]
         have := hb.1; have h2 : c'.nreg 81112 ≠ 1 := fun h => hk (hb.2.1 h); omega
-    · rw [e']; simp only [regB, regI, upd, ite_eq_right h1]; exact f' q a b hk h2 h3
+    · rw [e']; simp only [regB, regI, upd, ite_eq_right h1]; grind
   -- stage 3 on: the count
   have r₂ : ∀ q, 81100 ≤ q → q ≤ 81109 → c₂.nreg q = c.nreg q := fun q a b => by
     rw [f₂ q (by omega) (by omega) (by unfold KeyW; omega) (by omega) (by omega) (by omega),
       f₁ q (by omega) (by omega)]
-  have k1₂ : c₂.nreg 81012 = 1 := by rw [hI₂.hin _ (by unfold FFix; omega), hE.k1]
-  have k0₂ := k0_of hE hI₂
+  
+  
   have x03 := r₂ 81103 (by norm_num) (by norm_num)
   have x05 := r₂ 81105 (by norm_num) (by norm_num)
   have x07 := r₂ 81107 (by norm_num) (by norm_num)
@@ -280,7 +273,7 @@ theorem cntS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
     rw [e₃]; simp [regB, regI, upd, x03, x05, x07]
   have f₃ : ∀ q, q ≠ 81104 → c₃.nreg q = c₂.nreg q := fun q h => by
     rw [e₃]; simp [regB, regI, upd, h]
-  have u05 : c₃.nreg 81105 = c.nreg 81105 := by rw [f₃ _ (by norm_num), x05]
+  have u05 : c₃.nreg 81105 = c.nreg 81105 := by grind
   -- the modulus
   refine FRS.seq (K₁ := 3) (K₂ := 13) (Q₁ := fun c' =>
       c'.nreg 81104 = (c.nreg 81107 + c.nreg 81105 - c.nreg 81103) % c.nreg 81105 ∧
@@ -331,7 +324,7 @@ theorem cntS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
       by_cases a : c₅.nreg 81011 < c₅.nreg 81110
       · refine (FRS.ifT a (FRS.skip (K := 0) hI₅ ⟨?_, fun _ _ => rfl⟩)).mono (by omega)
           (fun _ h => h)
-        rw [v₅, ite_eq_right (by rw [k0₅, y10] at a; omega)]
+        rw [v₅, ite_eq_right (by omega)]
       · have oka : okB E.W c₅.nmem [.addN 81104 81104 81105] c₅.nreg := by
           simp only [okB, okI, FScr, FOut, v₅, y05]; norm_num; omega
         refine (FRS.ifF a (FRS.block hB _ hI₅ oka)).mono (by simp) (fun c' h' => ?_)
@@ -339,9 +332,9 @@ theorem cntS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
           fun q => by rw [h']
         refine ⟨?_, fun q hq => by rw [e']; simp [regB, regI, upd, hq]⟩
         rw [e']; simp only [regB, regI, upd, ite_true]
-        rw [v₅, y05, ite_eq_left ⟨e, by rw [k0₅, y10] at a; omega⟩]
+        rw [v₅, y05, ite_eq_left ⟨e, by omega⟩]
     · refine FRS.ifEq_ne (K := 3) hI₅ e ⟨?_, fun _ _ => rfl⟩
-      rw [v₅, ite_eq_right (fun h => e (by rw [y03, y07]; exact h.1))]
+      grind
   have k1₆ : c₆.nreg 81012 = 1 := by rw [hI₆.hin _ (by unfold FFix; omega), hE.k1]
   have z00 : c₆.nreg 81100 = c.nreg 81100 := by rw [f₆ _ (by norm_num), f₅ _ (by norm_num), x00]
   have ok7 : okB E.W c₆.nmem [.addN 81100 81100 81012] c₆.nreg := by
@@ -412,15 +405,15 @@ theorem vStep_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     have ok1 : okB E.W c.nmem [.subN 81071 81103 81131, .addN 81071 81071 81130] c.nreg := by
       simp only [okB, okI, regI, upd, FScr, FOut]; norm_num; omega
     refine FRS.seq (K₂ := tvK E + 9) (FRS.block hB _ hI ok1) (fun c₁ hI₁ hA₁ h₁ => ?_) |>.mono
-      (by simp only [List.length_cons, List.length_nil]; omega) (fun _ h => h)
+      (by grind) (fun _ h => h)
     simp only [List.length_cons, List.length_nil] at hA₁
     have e₁ : ∀ q, c₁.nreg q = regB c.nmem [.subN 81071 81103 81131, .addN 81071 81071 81130]
         c.nreg q := fun q => by rw [h₁]
     have v71 : c₁.nreg 81071 = c.nreg 81103 - c.nreg 81131 + c.nreg 81130 := by
-      rw [e₁]; simp [regB, regI, upd]
+      aesop
     have f₁ : ∀ q, q ≠ 81071 → c₁.nreg q = c.nreg q := fun q h => by
       rw [e₁]; simp [regB, regI, upd, h]
-    have n17₁ : c₁.nreg 81017 = E.M.W.n := by rw [f₁ _ (by norm_num), n17]
+    have n17₁ : c₁.nreg 81017 = E.M.W.n := by simp_all
     have hlt : c.nreg 81103 - c.nreg 81131 + c.nreg 81130 < 2 * E.M.W.n := by omega
     refine FRS.seq (K₁ := 3) (K₂ := tvK E + 4) (Q₁ := fun c' =>
         c'.nreg 81071 = (c.nreg 81130 + (c.nreg 81103 - c.nreg 81131)) % E.M.W.n ∧
@@ -461,7 +454,7 @@ theorem vStep_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have v04 : c₂.nreg 81104 = c.nreg 81104 - 1 := by rw [e₂]; simp [regB, regI, upd, k1₁, z04]
   have f₂ : ∀ q, q ≠ 81103 → q ≠ 81104 → c₂.nreg q = c₁.nreg q := fun q h1 h2 => by
     rw [e₂]; simp [regB, regI, upd, h1, h2]
-  have v05 : c₂.nreg 81105 = c.nreg 81105 := by rw [f₂ _ (by norm_num) (by norm_num), z05]
+  have v05 : c₂.nreg 81105 = c.nreg 81105 := by grind
   have hw₂ : FWin E c₂ := hw₁.congr' (fun q a b => f₂ q (by omega) (by omega))
   have fin : ∀ c' : Config, (∀ q, q ≠ 81103 → c'.nreg q = c₂.nreg q) →
       c'.nreg 81103 = (c.nreg 81103 + 1) % c.nreg 81105 →
@@ -477,8 +470,8 @@ theorem vStep_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
           c'.nreg 81007 = 1) := by
     intro c' hf h3
     have e07 : c'.nreg 81007 = c₁.nreg 81007 := by
-      rw [hf _ (by norm_num), f₂ _ (by norm_num) (by norm_num)]
-    refine ⟨hw₂.congr' (fun q a b => hf q (by omega)), h3, by rw [hf _ (by norm_num), v04],
+      grind
+    refine ⟨hw₂.congr' (fun q a b => hf q (by omega)), h3, by grind,
       fun q a b h1 h2 h3 h4 => by rw [hf q h3, f₂ q h3 h4, f₁ q a b h1 h2], fun h => by
         rw [e07]; exact m₁ h, fun a b reg hr hch hs σb hσb hg => by
         rw [e07]; exact g₁ a b reg hr hch hs σb hσb hg⟩
@@ -500,18 +493,24 @@ theorem vStep_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
 /-- The arc of index `t` of the region `r`. -/
 def lj (N : NF) (r t : ℕ) : ℕ := (N.region r).arcs.getD t 0
 
+section
+variable (Cα : Chain) (Q : Polygon) (N : NF)
+include Cα Q N
 /-- The count of the arc of index `t` of the region `r`. -/
-noncomputable def lcnt (Cα : Chain) (Q : Polygon) (N : NF) (r nα t : ℕ) : ℕ :=
+noncomputable def lcnt (r nα t : ℕ) : ℕ :=
   arcCnt nα (N.arc (lj N r t)).s.edge (N.arc (lj N r t)).e.edge
     (wBit Cα Q N.nChords (N.arc (lj N r t)).s.edge (N.arc (lj N r t)).s.hgt
       (N.arc (lj N r t)).e.edge (N.arc (lj N r t)).e.hgt)
 
 /-- The arc of index `t` covers `x₀` (for every admissible bit). -/
-def Covered (Cα : Chain) (Q : Polygon) (N : NF) (r nα t x₀ : ℕ) : Prop :=
+def Covered (r nα t x₀ : ℕ) : Prop :=
   ∀ w, (w = 0 ∨ (chainModel Cα).key Q (N.arc (lj N r t)).s <
       (chainModel Cα).key Q (N.arc (lj N r t)).e) →
     ∃ i, i < arcCnt nα (N.arc (lj N r t)).s.edge (N.arc (lj N r t)).e.edge w ∧
       ((N.arc (lj N r t)).s.edge + i) % nα = x₀
+
+
+end
 
 /-- A good vertex of the stretch for the leaf: strictly inside, with a good host candidate. -/
 def LGood (E : FEnv) (g g' L x₀ : ℕ) : Prop :=
@@ -554,7 +553,7 @@ theorem arc_edges {Cα : Chain} {Q : Polygon} {N : NF} (hNF : IsNF (chainModel C
   have h2 : ((N.arc j).e.edge : ℝ) < (chainModel Cα).W.n := by
     have := harc.2.2.2.1; have := he.1
     unfold Model.key at *; linarith
-  exact ⟨by exact_mod_cast h1, by exact_mod_cast h2⟩
+  simp_all
 
 theorem leafInit_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FInv E.W c₀ c)
     {N : NF} (hN : NFWithin c₀.nmem (c.nreg 81134) (c₀.nreg ALLOC) N)
@@ -587,10 +586,7 @@ theorem leafInit_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI
   have ok : okB E.W c.nmem leafInitL c.nreg := by
     simp only [leafInitL, okB, okI, regI, upd]
     simp only [FScr, FOut, k5, k7, k2]
-    norm_num
-    try rw [e5]
-    try rw [hm]
-    (repeat' apply And.intro) <;> omega
+    grind
   refine (FRS.block hB _ hI ok).mono (by simp [leafInitL]) (fun c' h' => ?_)
   have e' : ∀ q, c'.nreg q = regB c.nmem leafInitL c.nreg q := fun q => by rw [h']
   refine ⟨?_, ?_, ?_, ?_, ?_, fun q h1 h2 h3 h4 h5 h6 h7 => ?_⟩
@@ -604,13 +600,19 @@ theorem leafInit_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
       rfl | rfl <;> simp only [dstI] <;> omega
 
+section
+variable (Cα : Chain) (Q : Polygon) (N : NF) (r nα : ℕ)
+include Cα Q N r nα
 /-- The total number of loop steps of the leaf. -/
-noncomputable def lmu (Cα : Chain) (Q : Polygon) (N : NF) (r nα : ℕ) : ℕ :=
+noncomputable def lmu : ℕ :=
   ∑ t ∈ Finset.range (N.region r).arcs.length, (lcnt Cα Q N r nα t + 1)
 
 /-- The remaining loop steps of the leaf in the configuration `d`. -/
-noncomputable def lmuAt (Cα : Chain) (Q : Polygon) (N : NF) (r nα : ℕ) (d : Config) : ℕ :=
+noncomputable def lmuAt (d : Config) : ℕ :=
   d.nreg 81104 + ∑ t ∈ Finset.Ico (d.nreg 81100) (N.region r).arcs.length, (lcnt Cα Q N r nα t + 1)
+
+
+end
 
 theorem arcCnt_pos {N se ee w : ℕ} : 1 ≤ arcCnt N se ee w := by unfold arcCnt; omega
 
@@ -619,8 +621,11 @@ theorem arcCnt_le {N se ee w : ℕ} (hN : 0 < N) : arcCnt N se ee w ≤ 2 * N :=
   have := Nat.mod_lt (ee + N - se) hN
   split_ifs <;> omega
 
+section
+variable (E : FEnv) (c : Config) (Cα : Chain) (Nα : NF) (r g g' L : ℕ) (d : Config)
+include E c Cα Nα r g g' L d
 /-- **The invariant of the leaf loop** without the guard (from the leaf's start `c`). -/
-def LInv0 (E : FEnv) (c : Config) (Cα : Chain) (Nα : NF) (r g g' L : ℕ) (d : Config) : Prop :=
+def LInv0 : Prop :=
   FWin E d ∧ (∀ q, 81011 ≤ q → q < 83000 → ¬ LeafW q → d.nreg q = c.nreg q) ∧
   (c.nreg 81007 = 1 → d.nreg 81007 = 1) ∧
   d.nreg 81101 = (Nα.region r).arcs.length ∧ d.nreg 81105 = 2 * Cα.m + 7 ∧
@@ -640,9 +645,12 @@ def LInv0 (E : FEnv) (c : Config) (Cα : Chain) (Nα : NF) (r g g' L : ℕ) (d :
       d.nreg 81007 = 1)
 
 /-- **The invariant of the leaf loop.** -/
-def LInv (E : FEnv) (c : Config) (Cα : Chain) (Nα : NF) (r g g' L : ℕ) (d : Config) : Prop :=
+def LInv : Prop :=
   LInv0 E c Cα Nα r g g' L d ∧
     d.nreg 81109 = d.nreg 81104 + ((Nα.region r).arcs.length - d.nreg 81100)
+
+
+end
 
 theorem LInv0.congr {cs d d' : Config} {Cα : Chain} {Nα : NF} {r g g' L : ℕ}
     (h : LInv0 E cs Cα Nα r g g' L d) (he : ∀ q, q ≠ 81109 → d'.nreg q = d.nreg q) :
@@ -657,7 +665,7 @@ theorem LInv0.congr {cs d d' : Config} {Cα : Chain} {Nα : NF} {r g g' L : ℕ}
   refine ⟨hw.congr' (fun q a b => he q (by omega)), fun q a b hq => by
     rw [he q (fun e => hq (Or.inr (Or.inr (Or.inr (by omega))))), fr q a b hq],
     fun h => by rw [e07]; exact mo h, by rw [e01]; exact l01, by rw [e05]; exact l05,
-    by rw [e00]; exact l00, by rw [e00, e04]; exact l0, by rw [e00, e04, e03]; exact lc,
+    by rw [e00]; exact l00, by omega, by grind,
     by rw [e00, e04, e07]; exact ldone, by rw [e00, e04, e07]; exact lcur⟩
 
 /-- The guard keeps the invariant. -/
@@ -674,17 +682,18 @@ theorem guard_fs {B : Finset ℕ} (hB : dBands ⊆ B) {cs : Config} {Cα : Chain
   have f' : ∀ q, q ≠ 81109 → c'.nreg q = c.nreg q := fun q hq => by
     rw [e']; simp [guardL, regB, regI, upd, hq]
   refine ⟨⟨h.congr f', ?_⟩, ?_⟩
-  · rw [f' 81104 (by norm_num), f' 81100 (by norm_num), e']
-    simp [guardL, regB, regI, upd, l01]; omega
-  · unfold lmuAt; rw [f' _ (by norm_num), f' _ (by norm_num)]
+  · aesop (add simp [guardL, regB, regI, upd]) (add safe (by omega))
+  aesop (add simp [lmuAt]) (add safe (by omega))
 
 /-- The body of the leaf loop. -/
 def leafBody (sT : Stmt) : Stmt :=
   .seq (.ifLtN 81011 81104 (vStep sT) (.seq arcLoad cntS)) (Stmt.block guardL)
 
+section
+variable (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hBT : restoreBands ∪ E.Bo ⊆ B)
+include hE hB hBT
 /-- **One step of the leaf loop** keeps the invariant and decreases the remaining steps. -/
-theorem leaf_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
-    (hBT : restoreBands ∪ E.Bo ⊆ B) {cs : Config}
+theorem leaf_body {cs : Config}
     {Cα : Chain} {Hα : Host} {Nα : NF} {g g' L Dα Bα : ℕ}
     (hP : PCtx E c₀ Cα Hα Nα g g' L Dα Bα) (hR : SRegs cs g g' L Dα Bα) {r : ℕ}
     (hr : cs.nreg 81121 = r) (hrn : r < Nα.nRegions) (hnW : 2 * E.M.W.n ≤ E.W)
@@ -711,8 +720,7 @@ theorem leaf_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       rcases h with h | h | h | h
       · exact e h
       · exact d h
-      · exact b h
-      · exact a h
+      all_goals omega
   have rg : ∀ q, 81116 ≤ q → q < 82000 → c.nreg q = cs.nreg q := fun q a b =>
     fr q (by omega) (by omega) (nl q (by omega) (by omega) (by unfold VertW; omega)
       (by unfold KeyW; omega))
@@ -722,7 +730,7 @@ theorem leaf_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have x34 : c.nreg 81134 = Bα := by rw [rg _ (by norm_num) (by norm_num), r34]
   have x35 : c.nreg 81135 = g' + L := by rw [rg _ (by norm_num) (by norm_num), r35]
   have x21 : c.nreg 81121 = r := by rw [rg _ (by norm_num) (by norm_num), hr]
-  have hna : (Nα.region r).arcs.length ≤ E.W := by rw [← l01]; exact hI.hw.1 81101
+  have hna : (Nα.region r).arcs.length ≤ E.W := by omega
   refine FRS.seq (K₁ := vsK E + csK + 32) (K₂ := 2) (Q₁ := fun d =>
       LInv0 E cs Cα Nα r g g' L d ∧ d.nreg 81104 ≤ 2 * (2 * Cα.m + 7) ∧
       lmuAt Cα (Qof E.P) Nα r (2 * Cα.m + 7) d < lmuAt Cα (Qof E.P) Nα r (2 * Cα.m + 7) c) ?_
@@ -730,9 +738,9 @@ theorem leaf_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       (fun d' ⟨h1, h2⟩ => ⟨h1, h2 ▸ hμ⟩)) |>.mono (by unfold lbK; omega) (fun _ h => h)
   by_cases hcnt : c.nreg 81011 < c.nreg 81104
   · -- a vertex step
-    have hc0 : 0 < c.nreg 81104 := by rw [k0] at hcnt; exact hcnt
+    
     have ht0 : 0 < c.nreg 81100 := by
-      by_contra h; have := l0 (by omega); omega
+      omega
     obtain ⟨lcle, lv⟩ := lc ht0
     have hnα0 : 0 < 2 * Cα.m + 7 := by omega
     have hv : c.nreg 81103 < c.nreg 81105 := by rw [lv, l05]; exact Nat.mod_lt _ hnα0
@@ -788,7 +796,7 @@ theorem leaf_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   · -- an arc step
     have hc0 : c.nreg 81104 = 0 := by rw [k0] at hcnt; omega
     have htn : c.nreg 81100 < (Nα.region r).arcs.length := by
-      rw [k0, l09, hc0] at hg; omega
+      grind
     have hjt := hj _ htn
     obtain ⟨ese, eee⟩ := arc_edges hNα hjt
     rw [hnα] at ese eee
@@ -865,8 +873,7 @@ theorem leaf_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
 
 /-- **The leaf**: every good vertex of the stretch covered by an arc of the leaf region sets the
 success flag. -/
-theorem leaf_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
-    (hBT : restoreBands ∪ E.Bo ⊆ B) (hI : FInv E.W c₀ c) (hw : FWin E c)
+theorem leaf_fs (hI : FInv E.W c₀ c) (hw : FWin E c)
     {Cα : Chain} {Hα : Host} {Nα : NF} {g g' L Dα Bα : ℕ}
     (hP : PCtx E c₀ Cα Hα Nα g g' L Dα Bα) (hR : SRegs c g g' L Dα Bα) {r : ℕ}
     (hr : c.nreg 81121 = r) (hrn : r < Nα.nRegions) (hnW : 2 * E.M.W.n ≤ E.W)
@@ -899,10 +906,10 @@ theorem leaf_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     refine ⟨⟨hw.congr' (fun q a b => fi q (by omega) (by omega) (by omega) (by omega) (by omega)
       (by omega) (by omega)), fr₁, fun h => by rw [e07]; exact h, i01, i05,
       by rw [i00]; omega, fun _ => i04, fun h => by omega, fun t' h => by omega,
-      fun h => by omega⟩, by rw [i09, i04, i00]; simp⟩
+      fun h => by omega⟩, by omega⟩
   have hμ₁ : lmuAt Cα (Qof E.P) Nα r (2 * Cα.m + 7) c₁ = lmu Cα (Qof E.P) Nα r (2 * Cα.m + 7) := by
     unfold lmuAt lmu; rw [i04, i00, Finset.range_eq_Ico]; simp
-  have k0 := k0_of hE hI₁
+  
   refine (FRS.while (a := 81011) (b := 81109) (body := leafBody E.sT) (LInv E c Cα Nα r g g' L)
     (lmuAt Cα (Qof E.P) Nα r (2 * Cα.m + 7)) (lbK E) (fun d hd hgd => ?_)
     (fun d hId hd hgd hroomd => leaf_body hE hB hBT hP hR' hr hrn hnW h2α hWa hId hd hgd hroomd)
@@ -921,6 +928,9 @@ theorem leaf_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     refine ⟨hw', fr', mo', fun t' ht' x₀ hx hcov => ldone t' ?_ x₀ hx hcov⟩
     rw [z11] at hex
     omega
+
+
+end
 
 end
 

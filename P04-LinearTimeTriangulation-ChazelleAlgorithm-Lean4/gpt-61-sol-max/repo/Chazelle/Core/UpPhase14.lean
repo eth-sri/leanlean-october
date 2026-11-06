@@ -89,8 +89,8 @@ theorem chainsL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
     (∀ r, Kept r → r ≠ 170015 → r ≠ 170016 → r ≠ 170017 → r ≠ 170018 → r ≠ 170035 →
       r ≠ 170036 → c'.nreg r = c.nreg r) ∧
     (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r)
-  have hI0 : I c := ⟨0, by omega, hw, hu, h15, by rw [h16]; unfold gradeStart; ring,
-    by rw [h35], by rw [h36], by omega, by omega, by rw [h18, hA]; exact hM,
+  have hI0 : I c := ⟨0, by omega, hw, hu, h15, by grind [gradeStart],
+    by rw [h35], by rw [h36], by omega, by omega, by grind,
     fun _ _ => rfl, fun _ _ => rfl, rfl, fun _ _ _ _ _ _ _ _ => rfl, fun _ _ => rfl⟩
   obtain ⟨c', k, e, ⟨i, hic, hw', hu', i15, i16, i35, i36, a1, a2, hM', mm, mr, mo, fr, frr⟩,
       htest, hk, hψ⟩ :=
@@ -102,25 +102,24 @@ theorem chainsL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
         have hKm : i * (K + 2) + (K + 2) ≤ cnt * (K + 2) := by
           rw [← Nat.succ_mul]; exact Nat.mul_le_mul_right _ htest
         have hW2 : c2.nreg ALLOC + K + 6 ≤ W := by
-          have : (cnt + 1) * (K + 8) = cnt * (K + 2) + 6 * cnt + K + 8 := by ring
-          omega
+          grind
         obtain ⟨c3, k3, e3, hk3, hw3, b1, b2, hu3, j15, j16, j35, j36, hM3, m3, r3, o3, f3,
             ff3⟩ :=
           chainS_exec (O := O) (sB := sB) (sL := sL) (sG := sG) hB hL hGr hV hG hWh hn hw2 hu2
             rfl i15 i16 rfl i35 i36 htest h2g hM2 hW2
         refine ⟨c3, k3, e3, ⟨i + 1, by omega, hw3, hu3, j15, j16, j35, j36, by omega, ?_, hM3,
-          fun a ha => by rw [m3 a (by omega), mm a ha],
-          fun a ha => by rw [r3 a (by omega), mr a ha], by rw [o3, mo],
-          fun r hr a1 a2 a3 a4 a5 a6 => by rw [f3 r hr a1 a2 a3 a4 a5 a6, fr r hr a1 a2 a3 a4 a5 a6],
-          fun r hr => by rw [ff3 r hr, frr r hr]⟩, ?_, by omega⟩
-        · rw [Nat.succ_mul]; omega
+          fun a ha => by grind,
+          fun a ha => by grind, by rw [o3, mo],
+          fun r hr a1 a2 a3 a4 a5 a6 => by grind,
+          fun r hr => by grind⟩, ?_, by omega⟩
+        · grind
         · rw [j15, i15]
           have : (cnt - i) * (K + 2) = (cnt - (i + 1)) * (K + 2) + (K + 2) := by
-            rw [← Nat.succ_mul]; congr 1; omega
+            rw [← Nat.succ_mul]; grind
           omega) hI0
   have hic' : i = cnt := by rw [i15, hu'.r08] at htest; omega
   subst hic'
-  refine ⟨c', k, e, by rw [h15] at hk; simpa using hk, hw', a1, by omega, hu', hM', mm, mr, mo,
+  refine ⟨c', k, e, by grind, hw', a1, by omega, hu', hM', mm, mr, mo,
     fr, frr⟩
 
 end proofs

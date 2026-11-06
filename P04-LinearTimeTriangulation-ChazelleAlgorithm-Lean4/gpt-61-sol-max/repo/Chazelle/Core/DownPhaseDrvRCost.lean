@@ -33,12 +33,17 @@ noncomputable def pot (f : ℕ → ℕ) (lam : ℕ) : ℕ :=
 termination_by lam
 decreasing_by exact nextLvl_lt _h
 
-theorem pot_of_le {f : ℕ → ℕ} {lam : ℕ} (h : 16 ≤ lam) :
+section
+variable {f : ℕ → ℕ} {lam : ℕ}
+theorem pot_of_le (h : 16 ≤ lam) :
     pot f lam = f lam + pot f (nextLvl lam) := by
-  rw [pot, dite_eq_left h]
+  grind [pot]
 
-theorem pot_of_lt {f : ℕ → ℕ} {lam : ℕ} (h : lam < 16) : pot f lam = 0 := by
-  rw [pot, dite_eq_right (by omega)]
+theorem pot_of_lt (h : lam < 16) : pot f lam = 0 := by
+  grind [pot]
+
+
+end
 
 /-- **The potential is at most the sum of the per-level bounds** over `j ≤ λ`. -/
 theorem pot_le_sum (f : ℕ → ℕ) (B : ℕ → ℝ) (hB : ∀ j, 0 ≤ B j) (L₀ : ℕ)
@@ -55,10 +60,7 @@ theorem pot_le_sum (f : ℕ → ℕ) (B : ℕ → ℝ) (hB : ∀ j, 0 ≤ B j) (
       have hsub : ∑ j ∈ range (nextLvl lam + 1), B j ≤ ∑ j ∈ range lam, B j :=
         Finset.sum_le_sum_of_subset_of_nonneg (Finset.range_subset_range.mpr (by omega))
           (fun j _ _ => hB j)
-      rw [Finset.sum_range_succ]
-      push_cast
-      have := hf lam h16 hl
-      linarith
+      grind [Finset.sum_range_succ]
     · rw [pot_of_lt (by omega)]
       push_cast
       exact Finset.sum_nonneg (fun j _ => hB j)
@@ -82,8 +84,8 @@ theorem lemma41Nat_add_one_le {g : ℕ} (hg : 2 ≤ g) :
   rw [Cost.lemma41Bound_eq]
   have hc : (1 : ℝ) ≤ Nat.clog 2 g := by
     have : 1 ≤ Nat.clog 2 g := Nat.clog_pos (by norm_num) (by omega)
-    exact_mod_cast this
-  have hg' : (2 : ℝ) ≤ g := by exact_mod_cast hg
+    simp_all
+  have hg' : (2 : ℝ) ≤ g := by simp_all
   have hq : (1 : ℝ) ≤ (2 : ℝ) ^ ((74 / 75 : ℝ) * g) :=
     Real.one_le_rpow (by norm_num) (by positivity)
   have e : (74 : ℝ) / 75 * g = (74 / 75 : ℝ) * g := by norm_num
@@ -94,10 +96,10 @@ theorem lemma41Nat_add_one_le {g : ℕ} (hg : 2 ≤ g) :
   have hg2 : (4 : ℝ) ≤ (g : ℝ) ^ 2 := by nlinarith
   have h1 : (g : ℝ) ^ 2 * ((Nat.clog 2 g : ℝ) + 1) * x ≤
       2 * ((g : ℝ) ^ 2 * (Nat.clog 2 g : ℝ) * x) := by
-    have : (g : ℝ) ^ 2 * x ≥ 0 := by positivity
+    
     nlinarith
   have h2 : (1 : ℝ) ≤ (g : ℝ) ^ 2 * (Nat.clog 2 g : ℝ) * x := by
-    have h3 : (1 : ℝ) ≤ (g : ℝ) ^ 2 * (Nat.clog 2 g : ℝ) := by nlinarith
+    
     nlinarith
   linarith
 
@@ -106,7 +108,7 @@ theorem kBound_add_one_le {cnt : ℕ → ℕ} {C p lam : ℕ} (hc : cnt lam ≤ 
     (kBound cnt p lam : ℝ) + 1 ≤
       ((C : ℝ) + 1) * ((2 : ℝ) ^ p / (2 : ℝ) ^ Cost.ceilBeta lam + 1) := by
   unfold kBound
-  have h2 : (0 : ℝ) < (2 : ℝ) ^ Cost.ceilBeta lam := by positivity
+  
   have hdiv := Nat.cast_div_le (α := ℝ) (m := cnt lam * (2 ^ p + 2 ^ Cost.ceilBeta lam))
     (n := 2 ^ Cost.ceilBeta lam)
   push_cast at hdiv
@@ -114,7 +116,7 @@ theorem kBound_add_one_le {cnt : ℕ → ℕ} {C p lam : ℕ} (hc : cnt lam ≤ 
       (2 : ℝ) ^ Cost.ceilBeta lam = (cnt lam : ℝ) * ((2 : ℝ) ^ p / (2 : ℝ) ^ Cost.ceilBeta lam + 1) := by
     field_simp
   rw [e] at hdiv
-  have hC : (cnt lam : ℝ) ≤ C := by exact_mod_cast hc
+  have hC : (cnt lam : ℝ) ≤ C := by simp_all
   have hy : (1 : ℝ) ≤ (2 : ℝ) ^ p / (2 : ℝ) ^ Cost.ceilBeta lam + 1 := by
     have : (0 : ℝ) ≤ (2 : ℝ) ^ p / (2 : ℝ) ^ Cost.ceilBeta lam := by positivity
     linarith
@@ -145,15 +147,7 @@ theorem lvlBudget_le {cnt : ℕ → ℕ} {C K₁ p lam : ℕ} (hc : cnt lam ≤ 
       ((lemma41Nat (Cost.ceilBeta lam + 11) : ℝ) + 1)) ≤
       ((kBound cnt p lam : ℝ) + 1) * (4 * (K₁ : ℝ) * Cost.lemma41Bound (Cost.ceilBeta lam + 11)) := by
     have := mul_le_mul_of_nonneg_left hl (mul_nonneg hK1 hR0)
-    calc (K₁ : ℝ) * (((kBound cnt p lam : ℝ) + 1) * ((lemma41Nat (Cost.ceilBeta lam + 11) : ℝ) + 1))
-        = ((K₁ : ℝ) * ((kBound cnt p lam : ℝ) + 1)) *
-            ((lemma41Nat (Cost.ceilBeta lam + 11) : ℝ) + 1) := by ring
-      _ ≤ ((K₁ : ℝ) * ((kBound cnt p lam : ℝ) + 1)) *
-            (4 * Cost.lemma41Bound (Cost.ceilBeta lam + 11)) := this
-      _ = ((kBound cnt p lam : ℝ) + 1) *
-            (4 * (K₁ : ℝ) * Cost.lemma41Bound (Cost.ceilBeta lam + 11)) := by ring
-  have e : (4096 : ℝ) * ((C : ℝ) + 1) * (4 * (K₁ : ℝ)) * ((2 : ℝ) ^ p * Cost.downOverhead lam) =
-      4096 * ((C : ℝ) + 1) * (4 * (K₁ : ℝ)) * ((2 : ℝ) ^ p * Cost.downOverhead lam) := rfl
+    grind
   linarith
 
 /-- The constant of the whole level loop: `4500³ · 3000 · lvlConst C K₁`. -/
@@ -173,7 +167,6 @@ theorem pot_lvlBudget_le {cnt : ℕ → ℕ} {C : ℕ} (hc : ∀ l, cnt l ≤ C)
     unfold potConst
     push_cast
     have h0 : (0 : ℝ) ≤ (lvlConst C K₁ : ℝ) * (2 : ℝ) ^ p := by positivity
-    have := mul_le_mul_of_nonneg_left h2 h0
     nlinarith
   exact_mod_cast h3
 

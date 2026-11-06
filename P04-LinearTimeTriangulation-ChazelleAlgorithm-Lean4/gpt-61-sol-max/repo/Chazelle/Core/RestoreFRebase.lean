@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFTest
 
 /-!
@@ -49,43 +51,40 @@ theorem FGood.rebase (hE : FGood E c₀) (hI : FInv E.W c₀ c₀') : FGood (E.r
     hMD := hMD', hGM := hE.hGM, hOk := hE.hOk,
     hNW := (Robust.transport hE.hNW hag).mono hA
     hNF := hE.hNF, hdeg := hE.hdeg, hsg := hE.hsg, hr := hE.hr, a0 := rfl, m0 := rfl,
-    i0 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i0
-    i1 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i1
-    i2 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i2
-    i3 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i3
-    i4 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i4
-    i5 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i5
-    i6 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i6
-    k0 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k0
-    k1 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k1
-    k2 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k2
-    k3 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k3
-    k5 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k5
-    k7 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k7
-    pn := by rw [hfx _ (by unfold FFix; omega)]; exact hE.pn
-    nE := by rw [hfx _ (by unfold FFix; omega)]; exact hE.nE
-    hE2 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.hE2
-    wn := by rw [hfx _ (by unfold FFix; omega)]; exact hE.wn
-    k10 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k10
+    i0 := by rw [hfx _ (by omega_nf)]; exact hE.i0
+    i1 := by rw [hfx _ (by omega_nf)]; exact hE.i1
+    i2 := by rw [hfx _ (by omega_nf)]; exact hE.i2
+    i3 := by rw [hfx _ (by omega_nf)]; exact hE.i3
+    i4 := by rw [hfx _ (by omega_nf)]; exact hE.i4
+    i5 := by rw [hfx _ (by omega_nf)]; exact hE.i5
+    i6 := by rw [hfx _ (by omega_nf)]; exact hE.i6
+    k0 := by rw [hfx _ (by omega_nf)]; exact hE.k0
+    k1 := by rw [hfx _ (by omega_nf)]; exact hE.k1
+    k2 := by rw [hfx _ (by omega_nf)]; exact hE.k2
+    k3 := by rw [hfx _ (by omega_nf)]; exact hE.k3
+    k5 := by rw [hfx _ (by omega_nf)]; exact hE.k5
+    k7 := by rw [hfx _ (by omega_nf)]; exact hE.k7
+    pn := by rw [hfx _ (by omega_nf)]; exact hE.pn
+    nE := by rw [hfx _ (by omega_nf)]; exact hE.nE
+    hE2 := by rw [hfx _ (by omega_nf)]; exact hE.hE2
+    wn := by rw [hfx _ (by omega_nf)]; exact hE.wn
+    k10 := by rw [hfx _ (by omega_nf)]; exact hE.k10
     hvr := by
-      rw [hfx 81021 (by unfold FFix; omega), hfx 81019 (by unfold FFix; omega)]; exact hE.hvr
+      rw [hfx 81021 (by omega_nf), hfx 81019 (by omega_nf)]; exact hE.hvr
     hvc := by
-      rw [hfx 81021 (by unfold FFix; omega), hfx 81019 (by unfold FFix; omega)]; exact hE.hvc
-    vlo6 := by rw [hfx 81021 (by unfold FFix; omega)]; exact hE.vlo6
+      rw [hfx 81021 (by omega_nf), hfx 81019 (by omega_nf)]; exact hE.hvc
+    vlo6 := by rw [hfx 81021 (by omega_nf)]; exact hE.vlo6
     ehr := by
-      rw [hfx 81021 (by unfold FFix; omega), hfx 81025 (by unfold FFix; omega)]; exact hE.ehr
+      rw [hfx 81021 (by omega_nf), hfx 81025 (by omega_nf)]; exact hE.ehr
     ehc := by
-      rw [hfx 81021 (by unfold FFix; omega), hfx 81025 (by unfold FFix; omega)]; exact hE.ehc }
+      rw [hfx 81021 (by omega_nf), hfx 81025 (by omega_nf)]; exact hE.ehc }
 
 /-- **A run step from a later base** is a run step from the earlier one. -/
 theorem FRS.restrict {B : Finset ℕ} {P : Polygon} {W : ℕ} {s : Stmt} {c : Config} {K : ℕ}
     {Q : Config → Prop} (hI : FInv W c₀ c₀') (h : FRS B P W c₀' s c K Q)
     (hc : c₀.nreg ALLOC ≤ c₀'.nreg ALLOC) : FRS B P W c₀ s c K Q := by
   obtain ⟨c', k, ex, hk, hI', hrf, hq⟩ := h
-  refine ⟨c', k, ex, hk, ⟨hI'.hw, fun q hq => (hI'.hin q hq).trans (hI.hin q hq), le_trans hI.hA hI'.hA,
-    fun a ha => (hI'.hm a (by omega)).trans (hI.hm a ha)⟩, ?_, hq⟩
-  obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := hrf
-  exact ⟨r₁, rr₁, fun a ha => m₁ a (by omega), fun a ha => rm₁ a (by omega), o₁, a₁, b₁⟩
+  grind [Chazelle.Core.Restore.FRS, Chazelle.Core.Restore.FInv, Chazelle.Core.Restore.RF]
 
 end
 

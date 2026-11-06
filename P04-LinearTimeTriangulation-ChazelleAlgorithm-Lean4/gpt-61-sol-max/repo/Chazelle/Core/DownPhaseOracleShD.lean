@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseOracleShC
 
 /-!
@@ -13,9 +15,6 @@ A sub-query serves a subarc of `L ≤ n - 1` walk edges of the interior walk fro
 `oset (interiorWalk Q) u x (ee + t₂)` of the subarc.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -63,7 +62,7 @@ theorem wr_arcTwoA : wr Barc arcTwoA = true := by decide
 theorem wr_arcTwoB : wr Barc arcTwoB = true := by decide
 
 theorem barc_io {r : ℕ} (h : Barc r = true) : bandOf r ∈ ioBands ∧ r ≠ ALLOC :=
-  io_of_band (by simp only [Barc, Bool.or_eq_true, decide_eq_true_eq] at h; omega)
+  io_of_band (by ram_grind)
 
 /-! ## Execution -/
 
@@ -71,7 +70,10 @@ section exec
 
 variable {P : Polygon} {W : ℕ} {O : OracleIface} {s : Stat}
 
-theorem arcOne_exec (c : Config) (hw : WordsBounded W c) {τ sh ee eh : ℕ}
+section
+variable (c : Config) (hw : WordsBounded W c)
+include hw
+theorem arcOne_exec {τ sh ee eh : ℕ}
     (h77 : c.nreg 170077 = τ) (h34 : c.nreg 170034 = sh) (h35 : c.nreg 170035 = ee)
     (h36 : c.nreg 170036 = eh) (hW : 6 + τ + ee ≤ W) :
     ∃ c' k, Exec P W arcOne c c' k ∧ k = 5 ∧ c'.nreg 140001 = 6 + τ ∧ c'.nreg 140002 = sh ∧
@@ -83,11 +85,11 @@ theorem arcOne_exec (c : Config) (hw : WordsBounded W c) {τ sh ee eh : ℕ}
   unfold arcOne
   exec_block
   · omega
-  · config_simp; rw [h77]; omega
-  · config_simp; rw [h77, h35]; omega
-  refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h77, h34, h35, h36]
+  · omega_nf
+  · omega_nf
+  ram_simp
 
-theorem arcTwoA_exec (c : Config) (hw : WordsBounded W c) {τ sh L : ℕ}
+theorem arcTwoA_exec {τ sh L : ℕ}
     (h77 : c.nreg 170077 = τ) (h34 : c.nreg 170034 = sh) (h89 : c.nreg 170089 = 2 * L)
     (hW : 2 * L + 6 ≤ W) (hτ : 6 + τ ≤ W) :
     ∃ c' k, Exec P W arcTwoA c c' k ∧ k = 5 ∧ c'.nreg 140001 = 6 + τ ∧ c'.nreg 140002 = sh ∧
@@ -99,12 +101,9 @@ theorem arcTwoA_exec (c : Config) (hw : WordsBounded W c) {τ sh L : ℕ}
   unfold arcTwoA
   exec_block
   · omega
-  · config_simp; rw [h77]; omega
-  · config_simp; rw [h89]; omega
-  · omega
-  refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h77, h34, h89]
+  all_goals simp_all
 
-theorem arcTwoB_exec (c : Config) (hw : WordsBounded W c) {τ ee eh L : ℕ}
+theorem arcTwoB_exec {τ ee eh L : ℕ}
     (h77 : c.nreg 170077 = τ) (h35 : c.nreg 170035 = ee) (h36 : c.nreg 170036 = eh)
     (h89 : c.nreg 170089 = 2 * L) (hW : 6 + ee ≤ W) :
     ∃ c' k, Exec P W arcTwoB c c' k ∧ k = 7 ∧ c'.nreg 140001 = 6 ∧ c'.nreg 140002 = 0 ∧
@@ -117,8 +116,11 @@ theorem arcTwoB_exec (c : Config) (hw : WordsBounded W c) {τ ee eh L : ℕ}
   exec_block
   · omega
   · omega
-  · config_simp; rw [h77, h35, h89]; omega
-  refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h77, h35, h36, h89]
+  · omega_nf
+  omega_nf
+
+
+end
 
 /-- The frame of `chainI`. -/
 theorem frame_chainI {c c' : Config} {k : ℕ} (hk : 14 ≤ k) (hA : c'.nreg ALLOC = c.nreg ALLOC + 6)
@@ -127,25 +129,18 @@ theorem frame_chainI {c c' : Config} {k : ℕ} (hk : 14 ≤ k) (hA : c'.nreg ALL
     (hrr : ∀ r, Bchain r = false → c'.rreg r = c.rreg r) (hrm : c'.rmem = c.rmem)
     (ho : c'.output = c.output) : Frame ioBands c c' k := by
   have hB : ∀ r, Bchain r = true → bandOf r ∈ ioBands := fun r h => (io_of_band (by
-    simp only [Bchain, Bk, Bool.or_eq_true, decide_eq_true_eq] at h; omega)).1
+    ram_grind)).1
   refine ⟨fun r hr' ha => ?_, fun r hr' => ?_, hm, fun a _ => by rw [hrm], ho, by omega,
     by omega⟩
-  · cases hb : Bchain r
-    · exact hr r hb ha
-    · exact absurd (hB r hb) hr'
-  · cases hb : Bchain r
-    · exact hrr r hb
-    · exact absurd (hB r hb) hr'
+  all_goals grind
 
 /-- The subarc's offsets: its end offset is at most `L`. -/
 theorem sub_y_le {Q : Polygon} {u L sh ee eh : ℕ} (h : SubOK Q u L sh ee eh) :
     (ee : ℝ) + (interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩ ≤ L := by
   rcases h.hee with ⟨h0, h1⟩ | ⟨h0, h1, -⟩
-  · have : (interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩ = 0 := by rw [h0]; rfl
-    rw [this, h1, add_zero]
+  · simp_all
   · have := h.he.2.1
-    have : (ee : ℝ) + 1 = L := by exact_mod_cast h1
-    linarith
+    aesop (add safe (by nlinarith))
 
 /-- **A sub-query of the interior shooter.** -/
 theorem sqS_exec {sh : Stmt} {F : ℕ → ℕ}
@@ -182,20 +177,20 @@ theorem sqS_exec {sh : Stmt} {F : ℕ → ℕ}
   have hsubC : oset (interiorWalk (Qof P)) u x y ⊆ C.set := oset_sub_set hu h1 h2 hyL
   -- the chain
   obtain ⟨c₁, k₁, e₁, hk₁, hk₁', C₁, d78, dA, dm, dr, drr, drm, dout⟩ := chainI_exec c hw hS h33 h37
-    (by rw [← hQ]; exact hu) h1 h2 hcap (by omega)
+    (by omega) h1 h2 hcap (by omega)
   have F₁ : Frame ioBands c c₁ k₁ := frame_chainI hk₁' dA dm dr drr drm dout
   have w₁ := e₁.wb_right
   have g₁ : ∀ r, 170000 ≤ r → r < 180000 → BSQ r = false → c₁.nreg r = c.nreg r :=
     fun r r1 r2 hr => dr r (by
       simp only [BSQ, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
       simp only [Bchain, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
-      (by unfold ALLOC; omega)
+      (by omega_nf)
   have hB₁ : BestI P c₁ Sp (s.o.eval (Qof P)) (dirOf s.dir) := hB.keep (fun r r1 r2 => dr r
     (by simp only [Bchain, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
-    (by unfold ALLOC; omega))
-  have b34 : c₁.nreg 170034 = sh₀ := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h34
-  have b35 : c₁.nreg 170035 = ee := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h35
-  have b36 : c₁.nreg 170036 = eh := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h36
+    (by omega_nf))
+  have b34 : c₁.nreg 170034 = sh₀ := by ram_simp
+  have b35 : c₁.nreg 170035 = ee := by ram_simp
+  have b36 : c₁.nreg 170036 = eh := by ram_simp
   have hτ : tau (Qof P) u L h1 h2 < 2 * L := tau_lt
   -- the arc blocks keep the chain state and the best hit
   have keepArc : ∀ {d d' : Config}, FrameB Barc d d' → CEnv P W O s u L h1 h2 d →
@@ -287,7 +282,7 @@ theorem sqS_exec {sh : Stmt} {F : ℕ → ℕ}
     refine ⟨c₅, _, ex, by omega, ?_, C₅.env,
       ((((F₁.trans Fa').trans F₃).trans Fb').trans F₅).mono (by simp) (by omega),
       fun r r1 r2 hr => ?_⟩
-    · rw [Set.union_assoc, hU] at hB₅; exact hB₅
+    · grind
     · rw [bandShot g₅ r r1 r2 hr, bandArc Fb r r1 r2 hr, bandShot g₃ r r1 r2 hr,
         bandArc Fa r r1 r2 hr, g₁ r r1 r2 hr]
 

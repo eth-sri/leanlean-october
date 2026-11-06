@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreTEnv
 
 /-!
@@ -30,12 +32,7 @@ theorem walk_le_W {m : ℕ → ℕ} {MD A : ℕ} (hMD : ModelDescAt m MD (Qof P)
   obtain ⟨hl, hHW, -, -⟩ := (hwf.2 hz).2 H C' hC
   have hN := NFLoc.chain_n_le hC hl hHW
   have hm := C'.m_lt
-  have e : C.m = C'.m := by
-    have := congrArg (fun M : Model => M.W.n) (hM.symm.trans hM')
-    simp only [chainModel_n'] at this
-    omega
-  unfold hostWords at hW
-  omega
+  grind [chainModel_n', hostWords]
 
 /-- **The fixed data of a run** from the precondition of `TestOK`. -/
 theorem tgood_of (hG : GoodEnv P) (hW : hostWords P.n ≤ W)
@@ -71,15 +68,9 @@ theorem tSetup_exec (hw : WordsBounded W c) (hMD : c.nreg 83000 + 6 ≤ c.nreg A
       c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
     unfold tSetup
     exec_block
-    · omega
-    · omega
-    · config_simp; omega
-    · refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, ?_, rfl, rfl,
-        rfl, rfl⟩
-      intro r h1 h2 h3 h4
-      simp [upd, h1, h2, h3, h4]
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
+    all_goals (grind [upd])
+  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by omega_nf)
+    (by omega_nf) (by omega_nf) (by omega_nf)
   refine ⟨c', k, ex, hk, ⟨ex.wb_right, fun q h1 h2 => hr q (by omega) (by omega) (by omega)
     (by omega), by omega, fun a _ => by rw [hm], q20, q21, q22, q23⟩, ?_⟩
   exact rf_of_regs (fun r hr' => hr r (by omega) (by omega) (by omega) (by omega)) hrr hm hrm ho

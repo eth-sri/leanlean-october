@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreTValidMath
 
 /-!
@@ -33,7 +35,7 @@ theorem sector_horiz {a v b : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hb :
       (¬ 0 < sideCross (b - v) (a - v) ∧ (0 < sideCross (b - v) ((σ, 0) : Point) ∨
         0 < sideCross ((σ, 0) : Point) (a - v))) := by
   have hX : rayPt v σ 1 - v = ((σ, 0) : Point) := by
-    apply point_ext <;> simp [rayPt]
+    aesop
   unfold sideLeftOf sideCcw
   rw [hX]
   obtain ⟨b1, b2⟩ := b
@@ -51,19 +53,11 @@ theorem sector_horiz {a v b : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hb :
   have hBA : B2 * A2 ≠ 0 := mul_ne_zero hB hA
   rcases lt_trichotomy (B1 * A2 - B2 * A1) 0 with hd | hd | hd
   · -- reflex
-    constructor
-    · rintro (⟨h1, -⟩ | ⟨-, h2⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
-      · linarith
-      · exact Or.inr ⟨by linarith, h2⟩
-      · linarith
-      · linarith
-    · rintro (⟨h1, -⟩ | ⟨-, h2⟩)
-      · linarith
-      · exact Or.inr (Or.inl ⟨hd, h2⟩)
+    ram_grind
   · -- collinear
-    have hcol : B1 * A2 = B2 * A1 := by linarith
+    
     have hdot : (B1 * A1 + B2 * A2) * A2 ^ 2 = B2 * A2 * (A1 ^ 2 + A2 ^ 2) := by
-      linear_combination (A1 * A2) * hcol
+      grind
     have hdpos : 0 < B1 * A1 + B2 * A2 ↔ 0 < B2 * A2 := by
       constructor
       · intro h; have := mul_pos h hA2; rw [hdot] at this
@@ -72,11 +66,7 @@ theorem sector_horiz {a v b : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hb :
         exact (mul_pos_iff_of_pos_right hA2).1 this
     have hdneg : B1 * A1 + B2 * A2 < 0 ↔ B2 * A2 < 0 := by
       constructor
-      · intro h
-        have : (B1 * A1 + B2 * A2) * A2 ^ 2 < 0 := mul_neg_of_neg_of_pos h hA2
-        rw [hdot] at this
-        by_contra hc; push Not at hc
-        exact absurd this (not_lt.2 (mul_nonneg hc hS.le))
+      · grind
       · intro h
         have : B2 * A2 * (A1 ^ 2 + A2 ^ 2) < 0 := mul_neg_of_neg_of_pos h hS
         rw [← hdot] at this
@@ -87,33 +77,25 @@ theorem sector_horiz {a v b : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hb :
       · rintro (⟨h1, -⟩ | ⟨h1, -⟩ | ⟨-, -, h3⟩ | ⟨-, h2, -⟩)
         · linarith
         · linarith
-        · exact Or.inr ⟨by linarith, Or.inl h3⟩
+        · ram_grind
         · refine Or.inr ⟨by linarith, ?_⟩
           have hp := hdpos.1 h2
-          rcases lt_or_gt_of_ne hB with hb' | hb' <;> rcases lt_or_gt_of_ne hA with ha' | ha' <;>
+          rcases lt_or_gt_of_ne hB with hb' | hb' <;> simp_all <;>
             first | (left; nlinarith) | (right; nlinarith)
       · rintro (⟨h1, -⟩ | ⟨-, h2⟩)
         · linarith
         · rcases lt_or_gt_of_ne (show B2 * A2 ≠ 0 from hBA) with hn | hp
           · refine Or.inr (Or.inr (Or.inl ⟨by linarith, hdneg.2 hn, ?_⟩))
-            rcases lt_or_gt_of_ne hB with hb' | hb' <;> rcases lt_or_gt_of_ne hA with ha' | ha' <;>
+            rcases lt_or_gt_of_ne hB with hb' | hb' <;> simp_all <;>
               rcases h2 with h2 | h2 <;> first | linarith | nlinarith
-          · refine Or.inr (Or.inr (Or.inr ⟨by linarith, hdpos.2 hp, Or.inl ?_⟩))
-            intro h; apply hB; linarith
-  · -- convex
-    constructor
-    · rintro (⟨-, h2, h3⟩ | ⟨h1, -⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
-      · exact Or.inl ⟨hd, h2, h3⟩
-      · linarith
-      · linarith
-      · linarith
-    · rintro (⟨-, h2, h3⟩ | ⟨h1, -⟩)
-      · exact Or.inl ⟨hd, h2, h3⟩
-      · exact absurd hd h1
+          ram_grind
+  ram_grind
 
 
+section
+variable {M : Model} {P : Polygon} {x : WPos} {σb : ℕ}
 /-- **Inside a walk edge** the sector test is the turn from the edge. -/
-theorem left_inside_iff {M : Model} {P : Polygon} {x : WPos} {σb : ℕ}
+theorem left_inside_iff
     (h0 : 0 < M.param (Qof P) x) (h1 : M.param (Qof P) x < 1) :
     LeftB M P x σb ↔ TurnNB M x σb := by
   unfold LeftB TurnNB
@@ -121,11 +103,11 @@ theorem left_inside_iff {M : Model} {P : Polygon} {x : WPos} {σb : ℕ}
   rw [SweepPrim.pos_eq_sidePt, SweepPrim.sideLeft_interior h0 h1 hne]
   unfold sideCross
   simp only [Prod.fst_sub, Prod.snd_sub]
-  constructor <;> intro h <;> linarith
+  ram_grind
 
 /-- **At a walk vertex** whose neighbours are at other heights the sector test is decided by the
 orientation of the corner and the two turns. -/
-theorem left_vertex_iff {M : Model} {P : Polygon} {x : WPos} {σb : ℕ}
+theorem left_vertex_iff
     (h0 : M.param (Qof P) x = 0)
     (hb : (M.W.vtx ((x.edge + 1) % M.W.n)).2 ≠ (M.W.vtx x.edge).2)
     (ha : (M.W.vtx ((x.edge + M.W.n - 1) % M.W.n)).2 ≠ (M.W.vtx x.edge).2) :
@@ -139,6 +121,9 @@ theorem left_vertex_iff {M : Model} {P : Polygon} {x : WPos} {σb : ℕ}
   unfold LeftB TurnNB TurnPB
   rw [SweepPrim.pos_eq_sidePt, h0, sideLeft_zero, Chazelle.Chain.sidePt_zero]
   exact sector_horiz (dirOf_pm σb) hb ha
+
+
+end
 
 end
 

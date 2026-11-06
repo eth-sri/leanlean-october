@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutArc
 public import Chazelle.Core.SweepHit
 
@@ -90,13 +92,12 @@ theorem arcSet_pieces {s e : WPos} {ps : List Pc} (hA : ArcOK C Q s e ps)
   rw [← hnW] at hkp hs he hk
   have hL' := len_le (M.W.n : ℝ) (M.key Q s) (M.key Q e) hs.1 he.2
   rw [← kpath_wset hn hkp hA.ne (by linarith) hk, arcSet_eq_wset M hs.1 hs.2 he.1 he.2]
-  congr 1
-  unfold len; split_ifs <;> ring
+  grind [len]
 
 /-! ## Candidates -/
 
 theorem sigma_sq {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) : σ * σ = 1 := by
-  rcases hσ with rfl | rfl <;> norm_num
+  grind
 
 /-- **A candidate answer** on `S`: flag `1` and the first hit at abscissa `x`, or no hit. -/
 def Cand (S : Set Point) (z : Point) (σ : ℝ) (f : ℕ) (x : ℝ) : Prop :=
@@ -109,9 +110,7 @@ noncomputable def candOpt (z : Point) (σ : ℝ) (f : ℕ) (x : ℝ) : Option �
 theorem cand_iff {S : Set Point} {z : Point} {σ : ℝ} {f : ℕ} {x : ℝ} :
     Cand S z σ f x ↔ FirstHitOpt S z σ (candOpt z σ f x) := by
   unfold Cand candOpt
-  by_cases hf : f = 1
-  · rw [ite_eq_left hf]; exact ⟨fun h => h.1 hf, fun h => ⟨fun _ => h, fun h' => absurd hf h'⟩⟩
-  · rw [ite_eq_right hf]; exact ⟨fun h => h.2 hf, fun h => ⟨fun h' => absurd h' hf, fun _ => h⟩⟩
+  ram_grind
 
 /-- **The nearer of two candidates** is a candidate on the union. -/
 theorem cand_union {S₁ S₂ : Set Point} {z : Point} {σ : ℝ} (_hσ : σ = 1 ∨ σ = -1) {f₁ f₂ : ℕ}
@@ -122,16 +121,7 @@ theorem cand_union {S₁ S₂ : Set Point} {z : Point} {σ : ℝ} (_hσ : σ = 1
   rw [cand_iff]
   convert hu using 1
   unfold candOpt omin
-  by_cases hf₂ : f₂ = 1 <;> by_cases hf₁ : f₁ = 1
-  · by_cases hlt : σ * x₂ < σ * x₁
-    · simp only [hf₂, hf₁, hlt, ne_eq, not_true_eq_false, or_true, and_self, ite_true]
-      congr 1; rw [min_eq_right (by nlinarith)]
-    · simp only [hf₂, hf₁, hlt, ne_eq, not_true_eq_false, or_false, and_false, ite_false,
-        ite_true]
-      congr 1; rw [min_eq_left (by push Not at hlt; nlinarith)]
-  · simp [hf₂, hf₁]
-  · simp [hf₂, hf₁]
-  · simp [hf₂, hf₁]
+  ram_grind
 
 end ShootCut
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvGPiece
 public import Chazelle.Core.DownPhaseDrvGCost
 public import Chazelle.Core.GradeCtx
@@ -42,7 +44,7 @@ theorem gradeCtx_cap_le {O : OracleIface} {P : Polygon} {m : ℕ → ℕ} {g A :
   unfold topGrade
   rcases Nat.lt_or_ge (P.n - 1) 2 with h3 | h3
   · have : Nat.clog 2 (P.n - 1) = 0 := Nat.clog_of_right_le_one (by omega) 2
-    rw [this]; simp; omega
+    grind
   · have h4 := Nat.pow_pred_clog_lt_self (b := 2) (by norm_num) (show 1 < P.n - 1 by omega)
     have h5 : 1 ≤ Nat.clog 2 (P.n - 1) := Nat.clog_pos (by norm_num) (by omega)
     have e : 2 ^ Nat.clog 2 (P.n - 1) = 2 * 2 ^ (Nat.clog 2 (P.n - 1)).pred := by
@@ -146,7 +148,7 @@ theorem REnv.keep {R : RData} {d d' : Config} (h : REnv R d)
       by rw [e _ (by simp [envRegs]), h.mg.r46]⟩,
     by rw [e _ (by simp [envRegs]), h.r100], by rw [e _ (by simp [envRegs]), h.r101],
     by rw [e _ (by simp [envRegs]), h.r103], by rw [e _ (by simp [envRegs]), h.r104],
-    by rw [e _ (by simp [envRegs]), h.r107], fun a ha => by rw [hm a ha, h.low a ha],
+    by rw [e _ (by simp [envRegs]), h.r107], fun a ha => by ram_grind,
     le_trans h.alloc hA⟩
 
 section facts
@@ -156,31 +158,31 @@ variable {O : OracleIface} {P : Polygon} {W : ℕ} {R : RData}
 theorem REnv.mem_eq {d : Config} (h : REnv R d) : ∀ a, a < R.A₁ → R.m₁ a = d.nmem a :=
   fun a ha => (h.low a ha).symm
 
-theorem REnv.hostAt (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
+section
+variable (hF : RFacts O P W R) {d : Config} (h : REnv R d)
+include hF h
+theorem REnv.hostAt :
     Robust (d.nreg ALLOC) d.nmem (fun m => HostAt m R.HB R.H) :=
   (hF.hHA.transport h.low).mono h.alloc
 
-theorem REnv.holds (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
+theorem REnv.holds :
     (gradeCtx O).holds P d.nmem R.g (d.nreg ALLOC) :=
   (gradeCtx O).mono P _ _ _ _ h.alloc ((gradeCtx O).local_ P _ _ _ _ h.mem_eq hF.hX)
 
-theorem REnv.cap (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
+theorem REnv.cap :
     (gradeCtx O).cap P d.nmem R.g = (gradeCtx O).cap P R.m₁ R.g :=
   gradeCtx_capLocal O P _ _ _ _ h.low hF.hX
 
-theorem REnv.grades (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
+theorem REnv.grades :
     d.nmem R.g = R.m₁ R.g :=
   h.low _ (gradeRaw_handle_lt (O := O) hF.hX)
 
-theorem REnv.table (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
+theorem REnv.table :
     ChordListAt d.nmem R.T (R.leaves P) := by
-  intro i hi
-  obtain ⟨a1, a2, a3⟩ := hF.hT i hi
-  have := hF.hTA
-  refine ⟨?_, ?_, ?_⟩
-  · rw [h.low _ (by omega)]; exact a1
-  · rw [h.low _ (by omega)]; exact a2
-  · rw [h.low _ (by omega)]; exact a3
+  ram_grind
+
+
+end
 
 end facts
 
@@ -205,9 +207,9 @@ theorem AccOK.keep {P : Polygon} {R : RData} {d d' : Config} {pos γ : ℕ} {B :
       d'.nreg q = d.nreg q) : AccOK P R d' pos γ := by
   have r10 := hr 219110 (by simp)
   have r11 := hr 219111 (by simp)
-  refine ⟨by rw [hr _ (by simp), h.r22], by rw [hr _ (by simp), h.r12],
-    by rw [hr _ (by simp), h.r13], by rw [r10]; have := hf.2.2.2.2.2.1; have := h.dA; omega,
-    by rw [r10]; exact h.lo1, by rw [r11]; exact h.lo2, fun C hP hs hm => ?_⟩
+  refine ⟨by ram_grind, by ram_grind,
+    by ram_grind, by ram_grind,
+    by ram_grind, by ram_grind, fun C hP hs hm => ?_⟩
   obtain ⟨h1, N, h2, h3⟩ := h.desc C hP hs hm
   rw [r10, r11]
   exact ⟨h1.frame hf, N, h2.frame hf, h3⟩

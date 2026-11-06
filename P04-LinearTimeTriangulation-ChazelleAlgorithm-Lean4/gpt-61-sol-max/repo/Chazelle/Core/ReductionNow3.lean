@@ -17,27 +17,33 @@ namespace Chazelle.Core
 
 public section
 
+section
+variable (hS : SweepSpecH)
+include hS
 /-- **Reduction of the main theorem** to the sweep (WP-D) and the region loop of the base case. -/
-theorem linear_of_sweep_reg (hS : SweepSpecH) (hRL : DrvB.RegLoopSpec) :
+theorem linear_of_sweep_reg (hRL : DrvB.RegLoopSpec) :
     LinearTimeTriangulation :=
   linear_of_sweep_xr hS DrvX.extractRamSpec hRL
 
 /-- **Reduction of the main theorem** to the sweep and one step of the region loop
 (`DrvB.RegStepSpec`), via the region loop `DrvB.regLoopSpec_of`. -/
-theorem linear_of_sweep_regStep (hS : SweepSpecH) {s : Machine.Stmt} {κR : ℕ}
+theorem linear_of_sweep_regStep {s : Machine.Stmt} {κR : ℕ}
     (hR : DrvB.RegStepSpec s κR) : LinearTimeTriangulation :=
   linear_of_sweep_reg hS (DrvB.regLoopSpec_of hR)
 
 /-- **Reduction of the main theorem** to the sweep and the host expansion `DrvB.ExpSpec` of the
 base case (the region step from `DrvB.regStepSpec_of` with the host RAM `DrvH.hostRamSpec`). -/
-theorem linear_of_sweep_exp (hS : SweepSpecH) (hE : DrvB.ExpSpec) : LinearTimeTriangulation := by
+theorem linear_of_sweep_exp (hE : DrvB.ExpSpec) : LinearTimeTriangulation := by
   obtain ⟨s, κ, hR⟩ := DrvB.regStepSpec_of DrvH.hostRamSpec hE
   exact linear_of_sweep_regStep hS hR
 
 /-- **Reduction of the main theorem to the sweep alone**: the down phase is fully proved
 (`DrvB.expSpec`). -/
-theorem linear_of_sweep (hS : SweepSpecH) : LinearTimeTriangulation :=
+theorem linear_of_sweep : LinearTimeTriangulation :=
   linear_of_sweep_exp hS DrvB.expSpec
+
+
+end
 
 end
 

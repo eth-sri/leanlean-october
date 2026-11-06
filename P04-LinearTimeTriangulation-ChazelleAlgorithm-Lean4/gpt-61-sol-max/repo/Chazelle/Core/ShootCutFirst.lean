@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutGen
 
 /-!
@@ -12,10 +14,6 @@ public import Chazelle.Core.ShootCutGen
   loop, or, when the subarc is short (`Done`), to its end `e`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -35,33 +33,31 @@ theorem uFlag_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
       (∀ x, x ≠ dst → x ≠ idx → d'.nreg x = d.nreg x) ∧ d'.nmem = d.nmem := by
   unfold uFlag uIx
   by_cases hp6 : p < 6
-  · refine spec_ifLtN_true (by rw [hs, h96]; exact hp6) ?_
+  · refine spec_ifLtN_true (by omega) ?_
     refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
     refine spec_step (Exec.addN w₁ _ _ _ (by
-      simp only [upd, h1, Ne.symm h3, ite_false]; rw [hs, h91]; omega))
+      simp_all [upd, ite_false] <;> omega_nf))
       fun w₂ => spec_nil w₂ ⟨by omega, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
-    · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_left (by omega)]
-    · simp only [upd, ite_true, h1, Ne.symm h3, ite_false]
-      rw [hs, h91, ite_eq_left (by omega)]
-    · simp only [upd, hx1, hx2, ite_false]
+    · simp_all +arith
+    all_goals (simp_all [upd, ite_true, ite_false] <;> omega_nf)
   · by_cases hpm : p < 2 * m + 6
-    · refine spec_ifLtN_false (by rw [hs, h96]; exact hp6)
-        (spec_ifLtN_true (by rw [hs, h32]; exact hpm) ?_)
+    · refine spec_ifLtN_false (by omega)
+        (spec_ifLtN_true (by omega) ?_)
       refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
       refine spec_step (Exec.constN w₁ _ _ (by omega))
         fun w₂ => spec_nil w₂ ⟨by omega, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
-      · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_right (by omega)]
-      · simp only [upd, ite_true]; rw [ite_eq_right (by omega)]
-      · simp only [upd, hx1, hx2, ite_false]
-    · refine spec_ifLtN_false (by rw [hs, h96]; exact hp6)
-        (spec_ifLtN_false (by rw [hs, h32]; exact hpm)
-          (spec_ifLtN_false (by rw [hs, h32]; omega) ?_))
+      · simp_all [upd, ite_false, ite_true] <;> omega_nf
+      · omega_nf
+      · ram_simp
+    · refine spec_ifLtN_false (by omega)
+        (spec_ifLtN_false (by omega)
+          (spec_ifLtN_false (by omega) ?_))
       refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
       refine spec_step (Exec.constN w₁ _ _ (by omega))
         fun w₂ => spec_nil w₂ ⟨by omega, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
-      · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_left (by omega)]
-      · simp only [upd, ite_true]; rw [ite_eq_right (by omega)]
-      · simp only [upd, hx1, hx2, ite_false]
+      · simp_all [upd, ite_false, ite_true] <;> omega_nf
+      · omega_nf
+      · ram_simp
 
 /-! ## The pieces of kind `0` -/
 
@@ -104,21 +100,21 @@ theorem pSE_ok {s e : WPos} (hs : ProperPos (chainModel C) (Qof P) P.n s)
     (he1 : e.edge < 2 * C.m + 7)
     (hw : (chainModel C).arcWt ((chainModel C).key (Qof P) s) ((chainModel C).key (Qof P) e) ≤ 1) :
     PcOK P C m₀ h γ (pSE s e) :=
-  ⟨hs, he, hs1, he1, Or.inl rfl, fun _ => hw, fun h1 => by simp [pSE] at h1⟩
+  ⟨hs, he, hs1, he1, Or.inl rfl, fun _ => hw, fun h1 => by grind [pSE]⟩
 
 theorem pSV_ok {s : WPos} {v : ℕ} (hs : ProperPos (chainModel C) (Qof P) P.n s)
     (hs1 : s.edge < 2 * C.m + 7) (hv : v < 2 * C.m + 7)
     (hw : (chainModel C).arcWt ((chainModel C).key (Qof P) s) (v : ℝ) ≤ 1) :
     PcOK P C m₀ h γ (pSV s v) :=
-  ⟨hs, proper_vtx' P C v, hs1, hv, Or.inl rfl, fun _ => by simp only [pSV, key_hgt0]; exact hw,
-    fun h1 => by simp [pSV] at h1⟩
+  ⟨hs, proper_vtx' P C v, hs1, hv, Or.inl rfl, fun _ => by grind [pSV, key_hgt0],
+    fun h1 => by grind [pSV]⟩
 
 theorem pVE_ok {e : WPos} {v : ℕ} (he : ProperPos (chainModel C) (Qof P) P.n e)
     (he1 : e.edge < 2 * C.m + 7) (hv : v < 2 * C.m + 7)
     (hw : (chainModel C).arcWt (v : ℝ) ((chainModel C).key (Qof P) e) ≤ 1) :
     PcOK P C m₀ h γ (pVE v e) :=
-  ⟨proper_vtx' P C v, he, hv, he1, Or.inl rfl, fun _ => by simp only [pVE, key_hgt0]; exact hw,
-    fun h1 => by simp [pVE] at h1⟩
+  ⟨proper_vtx' P C v, he, hv, he1, Or.inl rfl, fun _ => by grind [pVE, key_hgt0],
+    fun h1 => by grind [pVE]⟩
 
 /-- **A leaf**: a piece written by the block `B`, handed to `emit`, then one instruction `T`
 (writing the register `tgt` of the core). -/
@@ -137,10 +133,13 @@ theorem leaf_exec {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop} {I : List Pc
   obtain ⟨d₂, k₂, e₂, hk₂, hI₂, kp₂, mem₂⟩ := hE.run _ pc d₁ e₁.wb_right (hE.stable _ _ _ hI fr₁) hR hpv
   obtain ⟨d₃, e₃, fr₃, hp₃, r₃, m₃⟩ := hT d₂ e₂.wb_right fun r hr => (kp₂ r hr).trans (kp₁ r hr)
   refine ⟨d₃, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by omega, hE.stable _ _ _ hI₂ fr₃, hp₃,
-    fun r hr h1 => by rw [r₃ r h1, kp₂ r hr, kp₁ r hr], fun a ha => ?_⟩
-  rw [m₃, mem₂ a ha, fr₁.2.2.1]
+    fun r hr h1 => by ram_grind, fun a ha => ?_⟩
+  ram_grind
 
-theorem pcSE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) {s e : WPos}
+section
+variable {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W)
+include hw hW
+theorem pcSE_exec {s e : WPos}
     (h01 : d.nreg 150001 = s.edge) (h02 : d.nreg 150002 = s.hgt) (h03 : d.nreg 150003 = e.edge)
     (h04 : d.nreg 150004 = e.hgt) :
     ∃ d₁ k₁, Exec P W pcSE d d₁ k₁ ∧ k₁ ≤ 5 ∧ PcRegs d₁ (pSE s e) ∧ FrameB Scr d d₁ ∧
@@ -151,15 +150,11 @@ theorem pcSE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
       (∀ r, (r < 150050 ∨ 150055 ≤ r) → d₁.nreg r = d.nreg r) := by
     unfold pcSE
     exec_block
-    all_goals first | omega | skip
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_⟩
-    all_goals first | (config_simp; first | exact h01 | exact h02 | exact h03 | exact h04; done) |
-      (config_simp; done) | skip
-    simp only [upd]; split_ifs <;> first | rfl | omega
-  exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by simp [pSE] at h⟩,
-    exec_frameB e₁ (by decide), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
+    all_goals (grind [upd])
+  exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by grind [pSE]⟩,
+    exec_frameB e₁ (by decide), fun r hr => r₁ r (by omega_nf)⟩
 
-theorem pcSV_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) {s : WPos} {v : ℕ}
+theorem pcSV_exec {s : WPos} {v : ℕ}
     (h01 : d.nreg 150001 = s.edge) (h02 : d.nreg 150002 = s.hgt) (h75 : d.nreg 150075 = v) :
     ∃ d₁ k₁, Exec P W pcSV d d₁ k₁ ∧ k₁ ≤ 5 ∧ PcRegs d₁ (pSV s v) ∧ FrameB Scr d d₁ ∧
       (∀ r, Keep r → d₁.nreg r = d.nreg r) := by
@@ -169,15 +164,11 @@ theorem pcSV_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
       (∀ r, (r < 150050 ∨ 150055 ≤ r) → d₁.nreg r = d.nreg r) := by
     unfold pcSV
     exec_block
-    all_goals first | omega | skip
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_⟩
-    all_goals first | (config_simp; first | exact h01 | exact h02 | exact h75; done) |
-      (config_simp; done) | skip
-    simp only [upd]; split_ifs <;> first | rfl | omega
-  exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by simp [pSV] at h⟩,
-    exec_frameB e₁ (by decide), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
+    all_goals (grind [upd])
+  exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by grind [pSV]⟩,
+    exec_frameB e₁ (by decide), fun r hr => r₁ r (by omega_nf)⟩
 
-theorem pcVE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) {e : WPos} {v : ℕ}
+theorem pcVE_exec {e : WPos} {v : ℕ}
     (h75 : d.nreg 150075 = v) (h03 : d.nreg 150003 = e.edge) (h04 : d.nreg 150004 = e.hgt) :
     ∃ d₁ k₁, Exec P W pcVE d d₁ k₁ ∧ k₁ ≤ 5 ∧ PcRegs d₁ (pVE v e) ∧ FrameB Scr d d₁ ∧
       (∀ r, Keep r → d₁.nreg r = d.nreg r) := by
@@ -187,13 +178,12 @@ theorem pcVE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
       (∀ r, (r < 150050 ∨ 150055 ≤ r) → d₁.nreg r = d.nreg r) := by
     unfold pcVE
     exec_block
-    all_goals first | omega | skip
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_⟩
-    all_goals first | (config_simp; first | exact h03 | exact h04 | exact h75; done) |
-      (config_simp; done) | skip
-    simp only [upd]; split_ifs <;> first | rfl | omega
-  exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by simp [pVE] at h⟩,
-    exec_frameB e₁ (by decide), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
+    all_goals (grind [upd])
+  exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by grind [pVE]⟩,
+    exec_frameB e₁ (by decide), fun r hr => r₁ r (by omega_nf)⟩
+
+
+end
 
 end
 

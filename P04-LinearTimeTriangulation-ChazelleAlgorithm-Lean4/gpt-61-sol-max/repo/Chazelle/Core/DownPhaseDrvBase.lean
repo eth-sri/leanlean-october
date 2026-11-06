@@ -48,7 +48,7 @@ theorem full_in_region (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S
     rintro ⟨e, he, hwe⟩
     obtain ⟨y', a', b', hch', rfl⟩ := hFam.2.1 he
     have := FullDegInt.eq_of_common ⟨y, a, b, hch, rfl⟩ ⟨y', a', b', hch', rfl⟩ hwc hwe hwD
-    exact hcS (this ▸ he)
+    simp_all
   have hpre : IsPreconnected ((fun x : ℝ => ((x, y) : Point)) '' Ioo a b) :=
     isPreconnected_Ioo.image _ (by fun_prop : Continuous fun x : ℝ => ((x, y) : Point)).continuousOn
   set z₀ : Point := ((a + b) / 2, y)

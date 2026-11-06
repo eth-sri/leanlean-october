@@ -41,7 +41,7 @@ theorem record_ok (M : Model) (Q : Polygon) {z : Point} {σ : ℝ} (hσ : σ = 1
       (recOf (h, lp, rp)).Attached M Q := by
   have hwpt : rayPt z σ T = ((z.1 + σ * T, z.2) : Point) :=
     point_ext (by simp [rayPt]) (by simp [rayPt])
-  have hzpt : z = ((z.1, z.2) : Point) := rfl
+  
   rcases hσ with rfl | rfl
   · obtain ⟨rfl, rfl⟩ := hlr.1 rfl
     have hset : (recOf (h, lp, rp)).toSet M Q = Chazelle.segment z (rayPt z 1 T) := by

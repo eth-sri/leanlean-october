@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvTC0
 public import Chazelle.Core.DownPhaseBaseLoop1
 
@@ -77,10 +79,7 @@ theorem getD_transL {li : Bool} {n c₀ : ℕ} {L₀ : List (ℕ × ℕ × ℕ)}
       trT n c₀ (L₀.getD i (0, 0, 0)) := by
   have hlt := DownBase.rankF_lt_length (keepT li n c₀) (0, 0, 0) hi hk
   have hg := DownBase.getD_filter_rank (keepT li n c₀) (0, 0, 0) hi hk
-  unfold transL
-  rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_eq_getElem hlt,
-    Option.map_some, Option.getD_some, ← hg, List.getD_eq_getElem?_getD,
-    List.getElem?_eq_getElem hlt, Option.getD_some]
+  simp_all [transL, List.getD_eq_getElem?_getD, List.getElem?_map, Option.map_some, Option.getD_some] 
 
 /-- The memory step of a kept record. -/
 theorem memT_keep {m₀ m : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {B' i : ℕ}
@@ -100,8 +99,7 @@ theorem memT_keep {m₀ m : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List
       if s = 0 then (trT n c₀ (L₀.getD i (0, 0, 0))).1
       else if s = 1 then (trT n c₀ (L₀.getD i (0, 0, 0))).2.1
       else (trT n c₀ (L₀.getD i (0, 0, 0))).2.2 := fun s hs => by
-    unfold tw
-    rw [show (3 * j + s) % 3 = s by omega, show (3 * j + s) / 3 = j by omega, hg]
+    grind [tw]
   rw [hm a]
   unfold memT
   rw [hr]
@@ -120,17 +118,14 @@ theorem memT_keep {m₀ m : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List
     rw [ite_eq_right h3, ite_eq_right h4, ite_eq_left rfl, ite_eq_left (by omega),
       show B' + 3 * j - B' = 3 * j + 0 by omega, htw 0 (by norm_num)]
     try simp
-  rw [ite_eq_right h3, ite_eq_right h4, ite_eq_right h5]
-  split_ifs <;> first | rfl | omega
+  ram_grind
 
 /-- The memory of a dropped record does not change. -/
 theorem memT_drop {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {B' i : ℕ}
     (hi : i < L₀.length) (hk : keepT li n c₀ (L₀.getD i (0, 0, 0)) = false) (a : ℕ) :
     memT m₀ li n c₀ L₀ B' i a = memT m₀ li n c₀ L₀ B' (i + 1) a := by
   have hr := DownBase.rankF_succ (keepT li n c₀) (0, 0, 0) hi
-  rw [hk] at hr
-  simp only [Bool.false_eq_true, ite_false, Nat.add_zero] at hr
-  unfold memT; rw [hr]
+  simp_all [Bool.false_eq_true, ite_false, Nat.add_zero, memT] 
 
 /-! ## The pieces of one record -/
 
@@ -156,8 +151,11 @@ theorem fLoad_exec (c : Config) (hw : WordsBounded W c) {a : ℕ} (h31 : c.nreg 
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h31, h17]
 
+section
+variable (c : Config) (hw : WordsBounded W c)
+include hw
 /-- **The test of an end.** -/
-theorem fTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {li : Bool} {n c₀ p : ℕ}
+theorem fTest_exec (hW : 1 ≤ W) {li : Bool} {n c₀ p : ℕ}
     (_hp : p ≠ 190037) (_hp1 : p ≠ 190014) (_hp2 : p ≠ 190015)
     (h14 : c.nreg 190014 = c₀) (h15 : c.nreg 190015 = c₀ + (n - 1))
     (h16 : c.nreg 190016 = idxI li n 0) :
@@ -175,31 +173,29 @@ theorem fTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {li : Boo
   unfold fTest innerE
   by_cases h1 : c.nreg p < c.nreg 190014
   · refine ⟨c, _, .ifLtN_true h1 (.skip hw), by omega, ?_, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
-    rw [ite_eq_right (by rw [h14] at h1; simp; omega)]
+    ram_grind
   by_cases h2 : c.nreg p < c.nreg 190015
   · by_cases h3 : c.nreg 190014 < c.nreg p
     · refine ⟨cs, _, .ifLtN_false h1 (.ifLtN_true h2 (.ifLtN_true h3 es)), by omega, ?_, gs,
         ms, rrs, rms, os⟩
-      rw [vs, ite_eq_left (by rw [h14] at h1 h3; rw [h15] at h2; simp; omega)]
+      ram_grind
     · by_cases h4 : c.nreg 190032 < c.nreg 190016
       · refine ⟨cs, _, .ifLtN_false h1 (.ifLtN_true h2 (.ifLtN_false h3 (.ifLtN_true h4 es))),
           by omega, ?_, gs, ms, rrs, rms, os⟩
-        rw [h14] at h1 h3; rw [h15] at h2; rw [h16] at h4
-        rw [vs, ite_eq_left (decide_eq_true ⟨by omega, by omega, fun ⟨_, he⟩ => by omega⟩)]
+        ram_grind
       · by_cases h5 : c.nreg 190016 < c.nreg 190032
         · refine ⟨cs, _, .ifLtN_false h1 (.ifLtN_true h2 (.ifLtN_false h3 (.ifLtN_false h4
             (.ifLtN_true h5 es)))), by omega, ?_, gs, ms, rrs, rms, os⟩
-          rw [h14] at h1 h3; rw [h15] at h2; rw [h16] at h5
-          rw [vs, ite_eq_left (decide_eq_true ⟨by omega, by omega, fun ⟨_, he⟩ => by omega⟩)]
+          ram_grind
         · refine ⟨c, _, .ifLtN_false h1 (.ifLtN_true h2 (.ifLtN_false h3 (.ifLtN_false h4
             (.ifLtN_false h5 (.skip hw))))), by omega, ?_, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
-          rw [ite_eq_right (by rw [h14] at h1 h3; rw [h15] at h2; rw [h16] at h4 h5; simp; omega)]
+          ram_grind
   · refine ⟨c, _, .ifLtN_false h1 (.ifLtN_false h2 (.skip hw)), by omega, ?_, fun _ _ => rfl,
       rfl, rfl, rfl, rfl⟩
-    rw [ite_eq_right (by rw [h15] at h2; simp; omega)]
+    ram_grind
 
 /-- **The map of an end.** -/
-theorem fMap_exec (c : Config) (hw : WordsBounded W c) {n c₀ d p : ℕ}
+theorem fMap_exec {n c₀ d p : ℕ}
     (hd1 : d ≠ 190014) (hd2 : d ≠ 190015) (hdp : d ≠ p) (_hd3 : d ≠ 190010)
     (h10 : c.nreg 190010 = n - 1) (h14 : c.nreg 190014 = c₀)
     (h15 : c.nreg 190015 = c₀ + (n - 1)) :
@@ -209,25 +205,27 @@ theorem fMap_exec (c : Config) (hw : WordsBounded W c) {n c₀ d p : ℕ}
   have e₁ := Exec.copyN (P := P) hw d 190010
   set c₁ : Config := { c with nreg := upd c.nreg d (c.nreg 190010) } with hc₁
   have w₁ := e₁.wb_right
-  have g₁ : ∀ r, r ≠ d → c₁.nreg r = c.nreg r := fun r hr => by rw [hc₁]; simp [hr]
-  have v₁ : c₁.nreg d = n - 1 := by rw [hc₁]; simp [h10]
-  have q14 : c₁.nreg 190014 = c₀ := by rw [g₁ _ (Ne.symm hd1), h14]
-  have q15 : c₁.nreg 190015 = c₀ + (n - 1) := by rw [g₁ _ (Ne.symm hd2), h15]
+  have g₁ : ∀ r, r ≠ d → c₁.nreg r = c.nreg r := fun r hr => by ram_simp
+  have v₁ : c₁.nreg d = n - 1 := by simp_all
+  have q14 : c₁.nreg 190014 = c₀ := by ram_grind
+  have q15 : c₁.nreg 190015 = c₀ + (n - 1) := by ram_grind
   have qp : c₁.nreg p = c.nreg p := g₁ _ (Ne.symm hdp)
   unfold fMap mapE
   by_cases h1 : c₁.nreg p < c₁.nreg 190014
   · refine ⟨c₁, _, .seq e₁ (.ifLtN_true h1 (.skip w₁)), by omega, ?_, g₁, rfl, rfl, rfl, rfl⟩
-    rw [v₁, ite_eq_right (by rw [q14, qp] at h1; omega)]
+    ram_grind
   by_cases h2 : c₁.nreg p < c₁.nreg 190015
   · have e₂ := Exec.subN (P := P) w₁ d p 190014
     refine ⟨_, _, .seq e₁ (.ifLtN_false h1 (.ifLtN_true h2 e₂)), by omega, ?_,
       fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-    · simp only [Machine.upd_same]
-      rw [qp, q14, ite_eq_left (by rw [q14, qp] at h1; rw [q15, qp] at h2; omega)]
-    · simp only; rw [Machine.upd_other _ _ _ hr]; exact g₁ r hr
+    · grind [Machine.upd_same]
+    · ram_simp
   · refine ⟨c₁, _, .seq e₁ (.ifLtN_false h1 (.ifLtN_false h2 (.skip w₁))), by omega, ?_, g₁,
       rfl, rfl, rfl, rfl⟩
-    rw [v₁, ite_eq_right (by rw [q15, qp] at h2; omega)]
+    ram_grind
+
+
+end
 
 set_option maxHeartbeats 4000000 in
 /-- **Append a triple.** -/
@@ -243,8 +241,7 @@ theorem fKeep_exec (c : Config) (hw : WordsBounded W c) {w j : ℕ} (h35 : c.nre
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h35, h36, h17]; omega)
   refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_, fun a => ?_, rfl, rfl, rfl⟩
-  all_goals simp (disch := omega) only [Machine.upd_same,
-    Machine.upd_other, h35, h36, h17]
+  all_goals ram_simp
   all_goals (try simp only [Machine.upd_apply])
 
 end exec

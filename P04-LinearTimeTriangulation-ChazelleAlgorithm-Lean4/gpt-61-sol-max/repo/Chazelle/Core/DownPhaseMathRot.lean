@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SpecBase
 public import Chazelle.Existence.Rotate
 
@@ -38,18 +40,17 @@ include hm hv hr
 
 omit hr in
 theorem set_congr : C.set = C'.set := by
-  ext p
-  simp only [Chain.set, Set.mem_ofPred_eq, Chain.chainEdge_eq, hv, hm]
+  simp_all [Chain.set, Set.mem_ofPred_eq, Chain.chainEdge_eq] <;> omega_nf
 
 omit hr in
 theorem topIdx_congr : C.topIdx = C'.topIdx := by
   apply le_antisymm
   · apply C.topIdx_min (by rw [hm]; exact C'.topIdx_le)
     intro i hi
-    rw [hv, hv]; exact C'.topIdx_spec.2 i (by rw [← hm]; exact hi)
+    rw [hv, hv]; exact C'.topIdx_spec.2 i (by omega)
   · apply C'.topIdx_min (by rw [← hm]; exact C.topIdx_le)
     intro i hi
-    rw [← hv, ← hv]; exact C.topIdx_spec.2 i (by rw [hm]; exact hi)
+    rw [← hv, ← hv]; exact C.topIdx_spec.2 i (by omega)
 
 omit hr in
 theorem top_congr : C.top = C'.top := by
@@ -57,7 +58,7 @@ theorem top_congr : C.top = C'.top := by
 
 omit hm hv in
 theorem radius_congr : C.radius = C'.radius := by
-  unfold Chain.radius; rw [hr]
+  grind [Chain.radius]
 
 theorem slitTop_congr : C.slitTop = C'.slitTop := by
   unfold Chain.slitTop; rw [top_congr hm hv, radius_congr hr]

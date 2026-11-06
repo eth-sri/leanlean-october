@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreTDisp
 public import Chazelle.Core.RestoreTLeftMath
 
@@ -39,31 +41,29 @@ theorem copyBit_exec {r : ℕ} (hr : 50100 ≤ r ∧ r < 50200) {p : Prop} (hI :
   have w₁ := e₁.wb_right
   have q10 : c₁.nreg 50210 = c.nreg 50210 := upd_ne (by omega)
   have q23 : c₁.nreg 83023 = 1 := by
-    rw [show c₁.nreg 83023 = c.nreg 83023 from upd_ne (by omega)]; exact h23
+    ram_simp
   have fin : ∀ c' k, Exec P W (copyBit r) c c' k → c'.nreg r ≤ 1 → (c'.nreg r = 1 ↔ p) →
       k ≤ 6 → ∃ c' k, Exec P W (copyBit r) c c' k ∧ k ≤ 6 ∧ c'.nreg r ≤ 1 ∧
         (c'.nreg r = 1 ↔ p) ∧ TStep W c₀ c c' k ∧ FrameB (fun q => q == r) c c' :=
     fun c' k ex h1 h2 hk =>
     ⟨c', k, ex, hk, h1, h2, hI.stepB ex.wb_right (B := fun q => q == r)
       (exec_frameB ex (by simp [copyBit, setB, wr, wrOK])) (fun q hq => by
-        simp only [beq_iff_eq] at hq; subst hq
-        exact ⟨by simp only [primBands, bandOf, bLocate, bSign, Finset.mem_insert,
-          Finset.mem_singleton]; omega, by unfold ALLOC; omega⟩) k,
+        simp only [beq_iff_eq] at hq; simp_all [primBands, bandOf, bLocate, bSign, Finset.mem_insert, Finset.mem_singleton, ALLOC] <;> omega_nf) k,
       exec_frameB ex (by simp [copyBit, setB, wr, wrOK])⟩
   unfold copyBit
   by_cases a : c₁.nreg 50210 < c₁.nreg 83023
   · refine fin _ _ (.seq e₁ (.ifLtN_true a (.skip w₁))) (by simp [c₁, upd]) ?_ (by omega)
     simp only [c₁, upd_eq, zero_ne_one, false_iff]
-    intro h; have := hp.2 h; omega
+    grind
   · by_cases b : c₁.nreg 83023 < c₁.nreg 50210
     · refine fin _ _ (.seq e₁ (.ifLtN_false a (.ifLtN_true b (.skip w₁)))) (by simp [c₁, upd]) ?_
         (by omega)
       simp only [c₁, upd_eq, zero_ne_one, false_iff]
-      intro h; have := hp.2 h; omega
+      grind
     · refine fin _ _ (.seq e₁ (.ifLtN_false a (.ifLtN_false b (Exec.constN w₁ r 1 hW1))))
         (by simp [upd]) ?_ (by omega)
       simp only [upd_eq, true_iff]
-      exact hp.1 (by omega)
+      grind
 
 
 /-! ## The corner -/
@@ -84,16 +84,13 @@ def Bcor (r : ℕ) : Bool :=
     r == 50146 || r == 50147
 
 theorem wr_cornerS : wr Bcor cornerS = true := by
-  have h1 : wr Bcor intIdx = true := wr_mono wr_intIdx (fun r h => by simp [Bcor, h])
-  simp only [cornerS, wr, block, wrOK, h1, Bool.and_true, Bool.true_and]
-  decide
+  aesop (add simp [Bcor, cornerS, wr, block, wrOK, Bool.and_true, Bool.true_and]) (add safe (by omega))
 
 /-- The previous vertex index. -/
 theorem prev_succ {p n : ℕ} (hp : p < n) : ((p + n - 1) % n + 1) % n = p := by
   have hn : 0 < n := by omega
   rcases Nat.eq_zero_or_pos p with rfl | h0
-  · rw [Nat.zero_add, Nat.mod_eq_of_lt (show n - 1 < n by omega), Nat.sub_add_cancel hn,
-      Nat.mod_self]
+  · simp_all +arith
   · rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right,
       Nat.mod_eq_of_lt (show p - 1 < n by omega), Nat.sub_add_cancel h0, Nat.mod_eq_of_lt hp]
 
@@ -121,41 +118,39 @@ theorem cornerS_exec (_hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : W
         c'.nreg 83005 = c.nreg 83005 ∧ c'.nreg 83023 = c.nreg 83023 := by
       exec_block
       · omega
-      · exact ⟨rfl, by config_simp, by config_simp, rfl, by config_simp, by config_simp⟩
+      simp_all
     refine ⟨c', k', e', ?_⟩
     have w' := e'.wb_right
     by_cases h0 : c'.nreg 83005 < c'.nreg 83023
     · refine spec_ifLtN_true h0 ?_
-      have hp0 : p = 0 := by rw [p05, p23, h23] at h0; omega
+      have hp0 : p = 0 := by omega
       exec_block
       · omega
-      · refine ⟨by omega, by config_simp; exact p00, ?_, pm, by config_simp; exact p05⟩
-        config_simp
-        rw [p32, hpe, hp0, Nat.zero_add, Nat.mod_eq_of_lt (by omega)]
+      simp_all
     · refine spec_ifLtN_false h0 (spec_instr (Exec.subN w' _ _ _) fun _ => ?_)
-      have hp1 : 0 < p := by rw [p05, p23, h23] at h0; omega
-      refine ⟨by omega, by config_simp; exact p00, ?_, pm, by config_simp; exact p05⟩
+      have hp1 : 0 < p := by omega
+      refine ⟨by omega, by ram_simp, ?_, pm, by ram_simp⟩
       config_simp
       rw [p32, p05, hpe, show p + P.n - 1 = (p - 1) + P.n by omega, Nat.add_mod_right,
         Nat.mod_eq_of_lt (by omega)]
   obtain ⟨q00, q02, qm, q05⟩ := q1
   obtain ⟨c₂, k₂, e₂, hk₂, r41, r44⟩ := intIdx_exec (P := P) hW c₁ e₁.wb_right
-    (by rw [q02]; exact hpeL) (by rw [q00]; exact hD)
+    (by omega) (by omega)
   rw [q00, q02, qm, hmd] at r41 r44
   have w₂ := e₂.wb_right
   have f₂ : FrameB Bdir c₁ c₂ := exec_frameB e₂ wr_intIdx
   have q05' : c₂.nreg 83005 = p := by rw [f₂.1 83005 (by decide), q05]
   have q00' : c₂.nreg 50000 = c.nreg 83000 := by
     rw [f₂.1 50000 (by decide), q00]
-  have qm' : c₂.nmem = c.nmem := by rw [f₂.2.2.1, qm]
+  have qm' : c₂.nmem = c.nmem := by ram_grind
   obtain ⟨c₃, k₃, e₃, hk₃, s141, s144, s02, s00, sm⟩ : ∃ c₃ k₃, Exec P W
       (block [.copyN 50141 50041, .copyN 50144 50044, .copyN 50002 83005]) c₂ c₃ k₃ ∧ k₃ = 3 ∧
       c₃.nreg 50141 = c₂.nreg 50041 ∧ c₃.nreg 50144 = c₂.nreg 50044 ∧
       c₃.nreg 50002 = c₂.nreg 83005 ∧ c₃.nreg 50000 = c₂.nreg 50000 ∧ c₃.nmem = c₂.nmem := by
     exec_block
-    exact ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, rfl⟩
+    omega_nf
   obtain ⟨c₄, k₄, e₄, hk₄, t41, t44⟩ := intIdx_exec (P := P) hW c₃ e₃.wb_right
-    (by rw [s02, q05']; exact hp) (by rw [s00, q00']; exact hD)
+    (by omega) (by omega)
   rw [s00, q00', sm, qm', hmd, s02, q05'] at t41 t44
   have f₄ : FrameB Bdir c₃ c₄ := exec_frameB e₄ wr_intIdx
   obtain ⟨c₅, k₅, e₅, hk₅, u147, u140, u143, u146, u141, u144⟩ : ∃ c₅ k₅, Exec P W
@@ -167,8 +162,7 @@ theorem cornerS_exec (_hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : W
     · omega
     · omega
     · omega
-    · exact ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
-        by config_simp⟩
+    · omega_nf
   refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by omega, ⟨u140, ?_⟩, ⟨u143, ?_⟩,
     ⟨u146, ?_⟩⟩
   · rw [u141, f₄.1 50141 (by decide), s141, r41]; rfl
@@ -197,8 +191,8 @@ theorem combineS_exec {c : Config} (hw : WordsBounded W c) (hW1 : 1 ≤ W) (h23 
   have ho' := ho.of_eq (g 50150 (by decide))
   have hn' := hn.of_eq (g 50130 (by decide))
   have hp' := hp.of_eq (g 50131 (by decide))
-  have h23' : c₁.nreg 83023 = 1 := by rw [g _ (by decide), h23]
-  have h10 : c₁.nreg 50210 = 0 := by show upd c.nreg 50210 0 50210 = 0; exact upd_eq
+  have h23' : c₁.nreg 83023 = 1 := by ram_simp
+  have h10 : c₁.nreg 50210 = 0 := by ram_simp
   unfold combineS
   refine spec_seq ⟨c₁, 1, e₁, ?_⟩
   rcases bit01 ho' with ⟨qo, no⟩ | ⟨qo, no⟩ <;>
@@ -209,21 +203,18 @@ theorem combineS_exec {c : Config} (hw : WordsBounded W c) (hW1 : 1 ≤ W) (h23 
       | (refine spec_ifLtN_true (by omega) ?_)
       | (refine spec_ifLtN_false (by omega) ?_))
   all_goals first
-    | exact spec_skip w₁ ⟨by omega, ⟨by omega, by simp [h10, no, nn, np]⟩,
+    | exact spec_skip w₁ ⟨by omega, ⟨by omega, by ram_grind⟩,
         fun r hr => g r hr⟩
     | exact spec_instr (Exec.constN w₁ _ _ hW1) fun _ => ⟨by omega, ⟨by simp [upd],
-        by simp [upd, no, nn, np]⟩, fun r hr => by
-          show upd c₁.nreg 50210 1 r = c.nreg r
-          rw [upd_ne hr, g r hr]⟩
+        by ram_simp⟩, fun r hr => by
+          ram_simp⟩
 
 
 /-! ## The sector test -/
 
 theorem primReg {r : ℕ} (h : (10000 ≤ r ∧ r < 20000) ∨ (50000 ≤ r ∧ r < 60000)) :
     bandOf r ∈ primBands ∧ r ≠ ALLOC := by
-  refine ⟨?_, by unfold ALLOC; omega⟩
-  simp only [primBands, bandOf, bSign, bLocate, Finset.mem_insert, Finset.mem_singleton]
-  omega
+  simp_all [ALLOC, primBands, bandOf, bSign, bLocate, Finset.mem_insert, Finset.mem_singleton] <;> omega_nf
 
 /-- Reset a turn code other than `1` to `0`. -/
 def fixBit : Stmt := .ifLtN 83023 50210 (.instr (.constN 50210 0)) .skip
@@ -242,7 +233,7 @@ theorem interior_vtx {bit : ℕ} (hbit : bit = 1 ↔ Mountain.LeftInside (Qof P)
 
 theorem iIdx_inj {bit n p q : ℕ} (hp : p < n) (hq : q < n) (h : iIdx bit n p = iIdx bit n q) :
     p = q := by
-  unfold iIdx at h; split_ifs at h <;> omega
+  core_grind
 
 theorem wr_combineS : wr (fun q => q == 50210) combineS = true := by decide
 
@@ -253,16 +244,16 @@ theorem iLeft_ok_vertex (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
     ∃ c' k, Exec P W iVertexLeft c c' k ∧ k ≤ 11000 ∧
       BitIs c' 50210 (LeftB M P (xOf c₀) (c₀.nreg 83008)) ∧ TStep W c₀ c c' k := by
   have hG := hE.hG
-  have hWn : P.n + 3 ≤ W := by have := hE.hW; unfold hostWords at this; omega
+  have hWn : P.n + 3 ≤ W := by have := hE.hW; grind [hostWords]
   have hn3 : 3 ≤ P.n := hG.1.1
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hn : M.W.n = P.n := by rw [hM]; exact interior_n
-  have hp : c₀.nreg 83005 < P.n := by rw [← hn]; exact hE.hxe
+  have hp : c₀.nreg 83005 < P.n := by ram_grind
   set bit := c₀.nmem (c₀.nreg 83000 + 1)
   have hbit' : bit = 1 ↔ Mountain.LeftInside (Qof P) := hbit
   -- the next turn
   obtain ⟨c₁, k₁, e₁, hk₁, t₁, s₁⟩ := turn_ok.1 P W M N c₀ c hE hI (by omega)
-  have f₁ : FrameB Bturn c c₁ := exec_frameB e₁ wr_tTurnN
+  
   obtain ⟨c₂, k₂, e₂, hk₂, b₂0, b₂, s₂, f₂⟩ := copyBit_exec (P := P) (r := 50130) (by omega)
     s₁.1 t₁
   -- the previous turn
@@ -283,9 +274,9 @@ theorem iLeft_ok_vertex (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
   have hmd : c₄.nmem (c₄.nreg 83000 + 1) = bit := by
     rw [i0, hI₄.hm _ (by have := hE.hwfMD.1; omega)]
   have hD : c₄.nreg 83000 + 1 ≤ W := by
-    have := (hI₄.modelDesc hE).2.1; have := hI₄.hw.1 ALLOC; omega
+    have := (hI₄.modelDesc hE).2.1;  omega
   obtain ⟨c₅, k₅, e₅, hk₅, y40, y43, y46⟩ := cornerS_exec (P := P) hG hWn hI₄.hw hmd hD
-    (by rw [i5]; exact hp) hI₄.h23
+    (by omega) hI₄.h23
   rw [i5] at y40 y43 y46
   have f₅ : FrameB Bcor c₄ c₅ := exec_frameB e₅ wr_cornerS
   have s₅ : TStep W c₀ c₄ c₅ k₅ := hI₄.stepB e₅.wb_right f₅ (fun r hr => primReg (by
@@ -313,7 +304,7 @@ theorem iLeft_ok_vertex (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
     s₆.1.h23 ⟨o₆0, o₆⟩ (BitIs.of_eq ⟨b₂0, b₂⟩ g30) (BitIs.of_eq ⟨b₄0, b₄⟩ g31)
   have f₇ : FrameB (fun q => q == 50210) c₆ c₇ := exec_frameB e₇ wr_combineS
   have s₇ : TStep W c₀ c₆ c₇ k₇ := s₆.1.stepB e₇.wb_right f₇ (fun r hr => primReg (by
-    simp only [beq_iff_eq] at hr; omega)) k₇
+    ram_grind)) k₇
   refine ⟨c₇, k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + k₇))))),
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))), by omega, ?_,
     s₁.trans (s₂.trans (s₃.trans (s₄.trans (s₅.trans (s₆.trans s₇)))))⟩
@@ -334,18 +325,16 @@ theorem iLeft_ok_vertex (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
     simp only [pb] at h
     rcases Nat.lt_or_ge (p + 1) P.n with h1 | h1
     · rw [Nat.mod_eq_of_lt h1] at h; omega
-    · have : p + 1 = P.n := by omega
-      rw [this, Nat.mod_self] at h; omega
+    grind [Nat.mod_self]
   have hep : pe ≠ p := by
     intro h
     have h2 := prev_succ (n := P.n) hp
-    rw [show (p + P.n - 1) % P.n = pe from rfl, h] at h2
-    exact hbp h2
+    grind
   have hcross : sideCross (M.W.vtx ((p + 1) % M.W.n) - M.W.vtx p)
       (M.W.vtx ((p + M.W.n - 1) % M.W.n) - M.W.vtx p) =
       det ((Qof P).vtx (iIdx bit P.n pe)) ((Qof P).vtx (iIdx bit P.n p))
         ((Qof P).vtx (iIdx bit P.n pb)) := by
-    rw [wb, wv, wa, Chazelle.Chain.sideCross_corner]
+    grind [Chazelle.Chain.sideCross_corner]
   have hb' : (M.W.vtx (((xOf c₀).edge + 1) % M.W.n)).2 ≠ (M.W.vtx (xOf c₀).edge).2 := by
     show (M.W.vtx ((p + 1) % M.W.n)).2 ≠ (M.W.vtx p).2
     rw [wb, wv]; exact hne _ hpb hbp

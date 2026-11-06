@@ -53,13 +53,12 @@ theorem fuse_endm (hP : J.P.Simple) {S₁ S₂ : Set (Set Point)} (h₁ : S₁ �
       (Merge.rend c ≠ J.shared →
         ∃ e ∈ J.fusion S₁ S₂ ∪ glueChords J, Merge.rend c ∈ e ∧ e ⊆ c) := by
   obtain ⟨hl, hr⟩ := Merge.Junction.end_mem_fusion J hP h₁ h₂ hc
-  refine ⟨fun h => ?_, fun h => ?_⟩
-  · obtain ⟨e, he, h'⟩ := hl h; exact ⟨e, Or.inl he, h'⟩
-  · obtain ⟨e, he, h'⟩ := hr h; exact ⟨e, Or.inl he, h'⟩
+  grind
 
-theorem sideOK_left (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
-    {S₁ S₂ : Set (Set Point)} (hS₁ : (chainModel J.left).ChordFamily Q S₁)
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂) :
+section
+variable (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon} {S₁ S₂ : Set (Set Point)} (hS₁ : (chainModel J.left).ChordFamily Q S₁) (hS₂ : (chainModel J.right).ChordFamily Q S₂)
+include hP hgen hS₁ hS₂
+theorem sideOK_left :
     SideOK J J.left Q S₁ (J.fusion S₁ S₂ ∪ glueChords J) where
   simple := hP
   fam := hS₁
@@ -69,9 +68,7 @@ theorem sideOK_left (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
   adm := fuse_adm J hgen hS₁.2.1 hS₂.2.1
   fin := fuse_fin J hS₁.1 hS₂.1
 
-theorem sideOK_right (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
-    {S₁ S₂ : Set (Set Point)} (hS₁ : (chainModel J.left).ChordFamily Q S₁)
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂) :
+theorem sideOK_right :
     SideOK J J.right Q S₂ (J.fusion S₁ S₂ ∪ glueChords J) where
   simple := hP
   fam := hS₂
@@ -80,6 +77,9 @@ theorem sideOK_right (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
   shared := fun _ hc => Or.inl (Or.inr hc)
   adm := fuse_adm J hgen hS₁.2.1 hS₂.2.1
   fin := fuse_fin J hS₁.1 hS₂.1
+
+
+end
 
 /-- An end of a chord of the other side lying on this side chain is the shared vertex. -/
 theorem jend (_hP : J.P.Simple) {C' C'' : Chain} (hR : C'.radius = C''.radius)
@@ -113,8 +113,10 @@ theorem jend_right (hP : J.P.Simple) {S₁ : Set (Set Point)} (hj : S₁ ⊆ Mer
 /-- The chord passes through the shared vertex or through the top of `C₁` or of `C₂`. -/
 def Thr (f : Set Point) : Prop := J.shared ∈ f ∨ J.left.top ∈ f ∨ J.right.top ∈ f
 
-theorem thr_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainModel J.whole).Adm)
-    (hfin : F.Finite) : {f | f ∈ F ∧ Thr J f}.ncard ≤ 6 := by
+section
+variable (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainModel J.whole).Adm) (hfin : F.Finite)
+include hP hFA hfin
+theorem thr_ncard : {f | f ∈ F ∧ Thr J f}.ncard ≤ 6 := by
   have hM : WalkAx (chainModel J.whole) := walkAx_chainModel hP
   have hv : ∀ v ∈ J.whole.set, v ∉ (chainModel J.whole).D := fun v hv h =>
     J.whole.not_mem_set_of_mem_dom h hv
@@ -124,22 +126,19 @@ theorem thr_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainMod
   have hsub : {f | f ∈ F ∧ Thr J f} ⊆ ({c | c ∈ F ∧ J.shared ∈ c} ∪
       {c | c ∈ F ∧ J.left.top ∈ c}) ∪ {c | c ∈ F ∧ J.right.top ∈ c} := by
     rintro f ⟨hf, h | h | h⟩
-    · exact Or.inl (Or.inl ⟨hf, h⟩)
-    · exact Or.inl (Or.inr ⟨hf, h⟩)
-    · exact Or.inr ⟨hf, h⟩
+    all_goals grind
   calc {f | f ∈ F ∧ Thr J f}.ncard
       ≤ (({c | c ∈ F ∧ J.shared ∈ c} ∪ {c | c ∈ F ∧ J.left.top ∈ c}) ∪
           {c | c ∈ F ∧ J.right.top ∈ c}).ncard :=
         Set.ncard_le_ncard hsub (hfin.subset (by
-          rintro f ((⟨hf, -⟩ | ⟨hf, -⟩) | ⟨hf, -⟩) <;> exact hf))
+          simp_all))
     _ ≤ 6 := by
         refine (Set.ncard_union_le _ _).trans ?_
         have := Set.ncard_union_le {c | c ∈ F ∧ J.shared ∈ c} {c | c ∈ F ∧ J.left.top ∈ c}
         omega
 
 /-- **The exit chords attached on the box block**: at most `42`. -/
-theorem nc_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainModel J.whole).Adm)
-    (hfin : F.Finite) {R : Set Point} (hR : R ∈ (chainModel J.whole).regions F) :
+theorem nc_ncard {R : Set Point} (hR : R ∈ (chainModel J.whole).regions F) :
     {f | f ∈ exits (chainModel J.whole) F R ∧ ∃ (p : ℕ) (t : ℝ),
       SideAttach (chainModel J.whole).W f p t ∧ ¬ (chainModel J.whole).counted p}.ncard ≤ 42 := by
   classical
@@ -166,7 +165,7 @@ theorem nc_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainMode
       · exact ⟨t, Or.inl h.symm, hf.1, hA⟩
     calc (X p).ncard ≤ (⋃ t ∈ insert 0 T, {f | f ∈ F ∧ SideAttach M.W f p t}).ncard :=
           Set.ncard_le_ncard hsub (hfin.subset (by
-            intro f hf; simp only [Set.mem_iUnion] at hf; obtain ⟨t, -, hf, -⟩ := hf; exact hf))
+            intro f hf; grind [Set.mem_iUnion]))
       _ ≤ 2 * (insert 0 T).ncard :=
           ncard_biUnion_le_mul (hTfin.insert 0) _ fun t _ => ncard_at_le hM hFA hfin p t
       _ ≤ 6 := by have := Set.ncard_insert_le (0 : ℝ) T; omega
@@ -178,14 +177,15 @@ theorem nc_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainMode
     have hp := hA.1
     rw [hn] at hp
     have : ¬ (6 ≤ p ∧ p < 2 * J.whole.m + 6) := hc
-    simp only [hP0, Finset.coe_union, Finset.coe_range, Finset.coe_singleton, Set.mem_union,
-      Set.mem_Iio, Set.mem_singleton_iff]
-    omega
+    grind
   calc _ ≤ (⋃ p ∈ (P0 : Set ℕ), X p).ncard :=
         Set.ncard_le_ncard hsub (hfin.subset (by
           intro f hf; simp only [Set.mem_iUnion] at hf; obtain ⟨p, -, hf, -⟩ := hf; exact hf.1))
     _ ≤ 6 * (P0 : Set ℕ).ncard := ncard_biUnion_le_mul P0.finite_toSet _ fun p _ => hXp p
-    _ ≤ 42 := by rw [Set.ncard_coe_finset]; omega
+    _ ≤ 42 := by grind [Set.ncard_coe_finset]
+
+
+end
 
 /-- **Glue and shared chords pass through the shared vertex or a top, or are the cap chord.** -/
 theorem glue_thr {f : Set Point}
@@ -195,11 +195,11 @@ theorem glue_thr {f : Set Point}
     simp only [topIdxs, Finset.mem_insert, Finset.mem_singleton] at hk
     have hmem : J.whole.vertex k ∈ J.whole.chordSet k σ := Geometry.left_mem_segment _ _
     rcases hk with rfl | rfl
-    · right; left; exact hmem
+    · right; aesop
     · right; right
       rw [Merge.Junction.whole_vertex_add] at hmem
       exact hmem
-  · exact Or.inr hcap
+  · simp_all
   · left; left
     exact Geometry.left_mem_segment _ _
 
@@ -211,15 +211,13 @@ theorem fused_parent {S₁ S₂ : Set (Set Point)} (h₁ : S₁ ⊆ Merge.augCho
       f = Merge.shoot J.whole (Merge.rend c) (-1)) ∧ f ⊆ c ∧
       (Merge.lend c ∈ f ∨ Merge.rend c ∈ f) := by
   have hc' : ∀ c ∈ S₁ ∪ S₂, c ∈ Merge.augChords J.left ∪ Merge.augChords J.right := by
-    rintro c (hc | hc)
-    · exact Or.inl (h₁ hc)
-    · exact Or.inr (h₂ hc)
+    grind
   rcases hf with (⟨c, hc, -, rfl⟩ | ⟨c, hc, -, rfl⟩) | hd
   · exact ⟨c, hc, Or.inl rfl, J.shoot_lend_subset (hc' c hc),
       Or.inl (Geometry.left_mem_segment _ _)⟩
   · exact ⟨c, hc, Or.inr rfl, J.shoot_rend_subset (hc' c hc),
       Or.inr (Geometry.left_mem_segment _ _)⟩
-  · exact absurd hd hsh
+  simp_all
 
 
 /-! ## The four pieces -/
@@ -244,12 +242,12 @@ theorem four_pieces (hP : J.P.Simple) :
   obtain ⟨gA, gA', LA, gB, gB', LB, hA, hB, hsA, hsB, hcovL⟩ :=
     side_two_pieces J hP (C' := J.left) rfl (J₀ := J.m₁ + 2 * J.m₂) (J₀' := J.m₁)
       (ℓ := 2 * J.m₁) (fun e he => tourV_left J he)
-      (by rw [tourV_left J (by omega), tourV_left_zero]; rfl) (by simp) (by rw [hwm]; omega)
+      (by rw [tourV_left J (by omega), tourV_left_zero]; rfl) (by simp) (by omega)
       (left_box_eq J)
   obtain ⟨gC, gC', LC, gD, gD', LD, hC, hD, hsC, hsD, hcovR⟩ :=
     side_two_pieces J hP (C' := J.right) rfl (J₀ := J.m₁) (J₀' := 0)
       (ℓ := 2 * J.m₂) (fun e he => tourV_right J he)
-      (by rw [tourV_right J (by omega), tourV_right_zero]; rfl) (by simp) (by rw [hwm]; omega)
+      (by rw [tourV_right J (by omega), tourV_right_zero]; rfl) (by simp) (by omega)
       (right_box_eq J)
   refine ⟨gA, gA', LA, gB, gB', LB, gC, gC', LC, gD, gD', LD, hA, hB, hC, hD, hsA, hsB, hsC, hsD,
     fun p hp hc => ?_⟩
@@ -261,11 +259,9 @@ theorem four_pieces (hP : J.P.Simple) :
   rw [hwm] at hrel
   rcases cover_arith h1 h2 hτlt hrel (show i < 2 * (J.m₁ + J.m₂) by omega) with hin | hin
   · rcases hcovL _ hp (by rw [hn, hwm]; exact hin) with h | h
-    · exact Or.inl h
-    · exact Or.inr (Or.inl h)
+    all_goals omega
   · rcases hcovR _ hp (by rw [hn, hwm]; exact hin) with h | h
-    · exact Or.inr (Or.inr (Or.inl h))
-    · exact Or.inr (Or.inr (Or.inr h))
+    all_goals omega
 
 /-- An exit chord faced next to an attachment inside a piece is of type (I) or crossing. -/
 theorem in_piece (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (Set Point)}
@@ -289,7 +285,7 @@ theorem in_piece (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
   · exact classify J hP hS hpc hjend hjnd hf hpar hcnt hsh hdp hA.2.1 hA.2.2.1 h0 hA hadj
   · exfalso
     have ht : t = 0 := le_antisymm (by
-      have := (Nat.cast_nonneg (dOf (chainModel J.whole).W.n g p) : (0 : ℝ) ≤ _); linarith)
+      linarith)
       hA.2.1
     have hd : dOf (chainModel J.whole).W.n g p = 0 := by
       have : (dOf (chainModel J.whole).W.n g p : ℝ) ≤ 0 := by linarith
@@ -298,8 +294,7 @@ theorem in_piece (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     have hmem := hA.2.2.2.1
     rw [Chazelle.Chain.sidePt_zero] at hmem
     rcases hstart with h | h
-    · exact hsh (h ▸ hmem)
-    · exact htop (h ▸ hmem)
+    all_goals grind
 
 
 theorem cap_ncard : (capChords J).ncard ≤ 1 :=
@@ -340,20 +335,18 @@ theorem adj_ncard (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
     by_cases hthr : Thr J f
     · exact Or.inl (Or.inl (Or.inl ⟨hf.1, hthr⟩))
     by_cases hcap : f ∈ capChords J
-    · exact Or.inl (Or.inl (Or.inr hcap))
+    · grind
     by_cases hnc : ∃ (p : ℕ) (t : ℝ), SideAttach M.W f p t ∧ ¬ M.counted p
-    · exact Or.inl (Or.inr ⟨hf, hnc⟩)
+    · grind
     push Not at hnc
     right
     have hfus : f ∈ J.fusion S₁ S₂ ∧ f ∉ J.sharedChords := by
       rcases hf.1 with h | h
       · refine ⟨h, fun hs => ?_⟩
         rcases glue_thr J (Or.inr hs) with h' | h'
-        · exact hthr h'
-        · exact hcap h'
+        all_goals grind
       · rcases glue_thr J (Or.inl h) with h' | h'
-        · exact absurd h' hthr
-        · exact absurd h' hcap
+        all_goals grind
     obtain ⟨c, hc, -, hfc, hnear⟩ := fused_parent J hS₁.2.1 hS₂.2.1 hfus.1 hfus.2
     have hsh : J.shared ∉ f := fun h => hthr (Or.inl h)
     have hlt : J.left.top ∉ f := fun h => hthr (Or.inr (Or.inl h))
@@ -426,9 +419,7 @@ theorem fusionDegSpec : FusionDegSpec := by
     parents_ncard_le J hP (C' := J.right) rfl J.right_set_subset hS₂ hFA hfin hendsR hR hD₂
   set P := P₁ ∪ P₂ with hPdef
   have hPfin : P.Finite := (hS₁.1.union hS₂.1).subset (by
-    rintro c (⟨hc, -⟩ | ⟨hc, -⟩)
-    · exact Or.inl hc
-    · exact Or.inr hc)
+    grind)
   set I₁ := (fun c => Merge.shoot J.whole (Merge.lend c) 1) '' P
   set I₂ := (fun c => Merge.shoot J.whole (Merge.rend c) (-1)) '' P
   set E₀ := {f | f ∈ F ∧ Thr J f} ∪ capChords J
@@ -437,25 +428,19 @@ theorem fusionDegSpec : FusionDegSpec := by
     by_cases hthr : Thr J f
     · exact Or.inl (Or.inl ⟨hf.1, hthr⟩)
     by_cases hcap : f ∈ capChords J
-    · exact Or.inl (Or.inr hcap)
+    · grind
     right
     have hfus : f ∈ J.fusion S₁ S₂ ∧ f ∉ J.sharedChords := by
       rcases hf.1 with h | h
       · refine ⟨h, fun hs => ?_⟩
         rcases glue_thr J (Or.inr hs) with h' | h'
-        · exact hthr h'
-        · exact hcap h'
+        all_goals grind
       · rcases glue_thr J (Or.inl h) with h' | h'
-        · exact absurd h' hthr
-        · exact absurd h' hcap
+        all_goals grind
     obtain ⟨c, hc, hshoot, hfc, -⟩ := fused_parent J hS₁.2.1 hS₂.2.1 hfus.1 hfus.2
     have hcP : c ∈ P := by
-      rcases hc with hc | hc
-      · exact Or.inl ⟨hc, f, hf, hfc⟩
-      · exact Or.inr ⟨hc, f, hf, hfc⟩
-    rcases hshoot with rfl | rfl
-    · exact Or.inl ⟨c, hcP, rfl⟩
-    · exact Or.inr ⟨c, hcP, rfl⟩
+      grind
+    grind
   have hfin' : (E₀ ∪ (I₁ ∪ I₂)).Finite :=
     ((hfin.subset (by rintro f (⟨hf, -⟩ | hf); exacts [hf, Or.inr (Or.inr hf)])).union
       ((hPfin.image _).union (hPfin.image _)))
@@ -470,10 +455,7 @@ theorem fusionDegSpec : FusionDegSpec := by
   have hsubn := Set.ncard_le_ncard hsub hfin'
   have hDA : D * (adjExits M F R).ncard ≤ D * (16 * D + 65) := Nat.mul_le_mul_left D hA
   show (exits M F R).ncard ≤ 7 + 4 * D * (16 * D + 65)
-  rw [show 7 + 4 * D * (16 * D + 65) = 7 + 4 * (D * (16 * D + 65)) by ring]
-  generalize D * (16 * D + 65) = Y at hDA ⊢
-  generalize D * (adjExits M F R).ncard = Z at hDA h₁ h₂
-  omega
+  grind
 
 end FuseDeg
 

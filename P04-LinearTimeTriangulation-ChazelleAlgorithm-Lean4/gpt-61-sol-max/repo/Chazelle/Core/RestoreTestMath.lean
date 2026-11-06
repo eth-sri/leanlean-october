@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreTProg
 public import Chazelle.Core.FactsArcs
 
@@ -48,10 +50,10 @@ theorem arcs_listed (hNF : IsNF M (Qof P) N) {reg : ℕ → Set Point}
   have hmem : i ∈ (N.region r).arcs := (hArcs.2.2.2 r hr i).2 ⟨hi, hir⟩
   obtain ⟨j, hj, hji⟩ := List.getElem_of_mem hmem
   have hat : arcAt N r j = i := by
-    rw [arcAt, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some, hji]
+    simp_all [arcAt, List.getD_eq_getElem?_getD, Option.getD_some] 
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hps : ProperPos M (Qof P) P.n (N.arc i).s := by rw [← hQn]; exact (hpp i hi).1
-  have hpe : ProperPos M (Qof P) P.n (N.arc i).e := by rw [← hQn]; exact (hpp i hi).2
+  have hps : ProperPos M (Qof P) P.n (N.arc i).s := by simp_all
+  have hpe : ProperPos M (Qof P) P.n (N.arc i).e := by simp_all
   refine ⟨j, hj, ?_, ?_⟩
   · rw [harr j hj, nArc, hat, (normOf_facts hps).2.2.2.1, hia]
   · rw [harr j hj, nArc, hat, (normOf_facts hpe).2.2.2.1, hib]
@@ -59,15 +61,11 @@ theorem arcs_listed (hNF : IsNF M (Qof P) N) {reg : ℕ → Set Point}
 /-- The direction of a bit is `± 1`. -/
 theorem dir_pm (v : ℕ) : dirOf v = 1 ∨ dirOf v = -1 := dirOf_pm v
 
+section
+variable (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ → Set Point} (hregs : NFRegs M (Qof P) N reg) {r : ℕ} (hr : r < N.nRegions) {x : WPos} {σb : ℕ} (hx : ProperPos M (Qof P) P.n x) (hxe : x.edge < M.W.n) (hv : ValidB M P N r x σb) (htop : ∀ C : Chain, M = chainModel C → (M.pos (Qof P) x).2 ≤ C.top.2) {m : ℕ → ℕ} {B : ℕ} {hs : List (WPos × WPos)} {A : Set Point} (harr : ∀ j, j < (N.region r).arcs.length → ShotList.arcAt m B j = nArc M (Qof P) N r j) (hnear : Near M (Qof P) hs (M.pos (Qof P) x)) (hlo : loSet M (Qof P) m B (N.region r).arcs.length hs ⊆ A)
+include hGM hNF reg hregs r hr hx hxe hv htop m B hs harr hnear hlo
 /-- **The mathematics of a hit.** -/
-theorem hit_math (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ → Set Point}
-    (hregs : NFRegs M (Qof P) N reg) {r : ℕ} (hr : r < N.nRegions) {x : WPos} {σb : ℕ}
-    (hx : ProperPos M (Qof P) P.n x) (hxe : x.edge < M.W.n) (hv : ValidB M P N r x σb)
-    (htop : ∀ C : Chain, M = chainModel C → (M.pos (Qof P) x).2 ≤ C.top.2)
-    {m : ℕ → ℕ} {B : ℕ} {hs : List (WPos × WPos)} {A : Set Point}
-    (harr : ∀ j, j < (N.region r).arcs.length → ShotList.arcAt m B j = nArc M (Qof P) N r j)
-    (hnear : Near M (Qof P) hs (M.pos (Qof P) x))
-    (hlo : loSet M (Qof P) m B (N.region r).arcs.length hs ⊆ A)
+theorem hit_math
     (hhi : A ⊆ hiSet M (Qof P) m B (N.region r).arcs.length) {t : ℝ}
     (hfh : FirstHit A (M.pos (Qof P) x) (dirOf σb) t) :
     rayPt (M.pos (Qof P) x) (dirOf σb) t ∉ M.D ∧
@@ -79,14 +77,7 @@ theorem hit_math (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ → Set
     (valid_sound hGM hNF hregs hr hx hxe hv) htop (arcs_listed hNF hregs hr harr) hnear hlo hhi hfh
 
 /-- **The shot hits** when the ray from a valid candidate leaves the domain. -/
-theorem noHit_false (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ → Set Point}
-    (hregs : NFRegs M (Qof P) N reg) {r : ℕ} (hr : r < N.nRegions) {x : WPos} {σb : ℕ}
-    (hx : ProperPos M (Qof P) P.n x) (hxe : x.edge < M.W.n) (hv : ValidB M P N r x σb)
-    (htop : ∀ C : Chain, M = chainModel C → (M.pos (Qof P) x).2 ≤ C.top.2)
-    {m : ℕ → ℕ} {B : ℕ} {hs : List (WPos × WPos)} {A : Set Point}
-    (harr : ∀ j, j < (N.region r).arcs.length → ShotList.arcAt m B j = nArc M (Qof P) N r j)
-    (hnear : Near M (Qof P) hs (M.pos (Qof P) x))
-    (hlo : loSet M (Qof P) m B (N.region r).arcs.length hs ⊆ A) {T : ℝ} (hT : 0 < T)
+theorem noHit_false {T : ℝ} (hT : 0 < T)
     (hout : rayPt (M.pos (Qof P) x) (dirOf σb) T ∉ M.D)
     (hno : NoHit A (M.pos (Qof P) x) (dirOf σb)) : False :=
   not_noHit hGM hNF.1 (hregs.1.1 r hr) (dir_pm σb) (pos_off hGM hxe hx.1 hx.2.1.le)
@@ -95,6 +86,9 @@ theorem noHit_false (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ → 
 
 
 /-! ## Sizes of the region records -/
+
+
+end
 
 /-- A duplicate-free list mapped injectively into a finite set is no longer than the set. -/
 theorem length_le_ncard {α β : Type*} {L : List α} (hL : L.Nodup) {f : α → β} {S : Set β}
@@ -106,9 +100,7 @@ theorem length_le_ncard {α β : Type*} {L : List α} (hL : L.Nodup) {f : α →
     rw [List.toFinset_card_of_nodup hnd, List.length_map]
   rw [hlen, ← Set.ncard_coe_finset]
   exact Set.ncard_le_ncard (fun y hy => by
-    simp only [Finset.mem_coe, List.mem_toFinset, List.mem_map] at hy
-    obtain ⟨a, ha, rfl⟩ := hy
-    exact hmem a ha) hS
+    grind [Finset.mem_coe, List.mem_toFinset, List.mem_map]) hS
 
 /-- **A region has at most as many exit-chord records as its degree.** -/
 theorem chords_le_deg {Q : Polygon} (hNF : IsNF M Q N) {reg : ℕ → Set Point}
@@ -137,8 +129,7 @@ theorem arcs_le_deg {Q : Polygon} (hGM : GoodModel M) (hNF : IsNF M Q N) {reg : 
     exact hArcs.2.1 a b haN hbN (har.trans hbr.symm) (Prod.mk.inj h).1
   · obtain ⟨haN, har⟩ := (hArcs.2.2.2 r hr a).1 ha
     have := (hArcs.1 a haN).2
-    rw [har] at this
-    exact this
+    simp_all
 
 
 /-! ## The run of the test -/
@@ -251,28 +242,28 @@ theorem testS_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
       refine RSB.ifT g' (RSB.of_RS Finset.subset_union_left
         (postHit_rs hE hI₄ hpp hpe hy hex (by omega))) |>.mono le_rfl (fun c₅ h₅ => ?_)
       obtain ⟨q1, q2, q3, q4, q5, q6, q7, q8, q9, q10⟩ := h₅
-      have v10 : c₅.nreg 83010 = 1 := by rw [q9, e10, hv]
+      have v10 : c₅.nreg 83010 = 1 := by omega
       have v11 : c₅.nreg 83011 = 1 := by rw [q10, hh]
       refine ⟨by omega, ⟨fun _ => hV, fun _ => v10⟩, by omega, q6, fun _ => v10, fun _ => v11,
         fun _ => ⟨m, B, hs, A, harr, hnear, hlo, hhi, fun _ => ⟨t, _, hfh, hpp, hpe, hpos, q1, q2,
           q3, q4, q5, q7, q8⟩, fun h => absurd v11 h⟩⟩
     · have h0 : c₄.nreg 83011 = 0 := by omega
-      have g' : ¬ c₄.nreg 83022 < c₄.nreg 83011 := by rw [h0]; omega
+      have g' : ¬ c₄.nreg 83022 < c₄.nreg 83011 := by omega
       refine (RSB.ifF g' (RSB.skip (K := postHitK (N.region (c₀.nreg 83002)).chords.length)
         (Q := fun c' => c' = c₄) hI₄ rfl)).mono le_rfl (fun c₅ h₅ => ?_)
       rw [h₅]
       have v10 : c₄.nreg 83010 = 1 := by rw [e10, hv]
-      refine ⟨by omega, ⟨fun _ => hV, fun _ => v10⟩, by omega, by rw [e14, y14]; omega,
-        fun h => absurd h hh, fun h => by rw [e14, y14] at h; omega,
+      refine ⟨by omega, ⟨fun _ => hV, fun _ => v10⟩, by omega, by omega,
+        fun h => absurd h hh, fun h => by omega,
         fun _ => ⟨m, B, hs, A, harr, hnear, hlo, hhi, fun h => absurd h hh, fun _ => hno hh⟩⟩
-  · have g : ¬ c₃.nreg 83022 < c₃.nreg 83010 := by rw [hI₃.h22]; omega
+  · have g : ¬ c₃.nreg 83022 < c₃.nreg 83010 := by omega
     refine (RSB.ifF g (RSB.skip (K := shotAK (F (c₀.nreg 83003))
       (N.region (c₀.nreg 83002)).arcs.length +
         (postHitK (N.region (c₀.nreg 83002)).chords.length + 2))
       (Q := fun c' => c' = c₃) hI₃ rfl)).mono le_rfl (fun c₅ h₅ => ?_)
     rw [h₅]
-    refine ⟨b10, i10, by omega, by omega, fun h => by rw [y11] at h; omega,
-      fun h => by rw [y14] at h; omega, fun h => absurd h hv⟩
+    refine ⟨b10, i10, by omega, by omega, fun h => by omega,
+      fun h => by omega, fun h => absurd h hv⟩
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Existence.Arc
 public import Chazelle.Geometry.Conformity
 
@@ -45,15 +47,16 @@ def WeakTriangulates (P : Polygon) (T : List Polygon.Triangle) : Prop :=
   T.Pairwise (fun s t => Disjoint (interior (P.triSet s)) (interior (P.triSet t))) ∧
   (∀ t ∈ T, ∀ i, i < P.n → P.vtx i ∈ P.triSet t → P.vtx i ∈ P.triVertices t)
 
+section
+variable {P : Polygon} {T : List Polygon.Triangle} (h : WeakTriangulates P T)
+include h
 /-- Every triangle of a weak triangulation lies in the filled region. -/
-theorem triSet_subset_filled_of_weak {P : Polygon} {T : List Polygon.Triangle}
-    (h : WeakTriangulates P T) {t : Polygon.Triangle} (ht : t ∈ T) : P.triSet t ⊆ P.filled :=
+theorem triSet_subset_filled_of_weak {t : Polygon.Triangle} (ht : t ∈ T) : P.triSet t ⊆ P.filled :=
   fun _ hp => h.2.2.1 ▸ ⟨t, ht, hp⟩
 
 /-- **A weak triangulation is a triangulation**: conformity follows from the disjointness of
 the interiors and the vertex condition, by the conformity criterion. -/
-theorem triangulates_of_weak {P : Polygon} {T : List Polygon.Triangle}
-    (h : WeakTriangulates P T) : P.Triangulates T := by
+theorem triangulates_of_weak : P.Triangulates T := by
   obtain ⟨hvalid, hcount, hunion, hdisj, hvert⟩ := h
   refine ⟨hvalid, hcount, hunion, hdisj, ?_⟩
   refine hdisj.imp_of_mem ?_
@@ -74,6 +77,9 @@ theorem triangulates_of_weak {P : Polygon} {T : List Polygon.Triangle}
 
 /-! ### Vertices of `P` in the filled region of an arc -/
 
+
+end
+
 variable (P : Polygon) (s L : ℕ)
 
 /-- The first vertex of the arc is vertex `s % n` of `P`. -/
@@ -92,7 +98,7 @@ theorem vtx_arc_compl_zero :
 /-- The last vertex of the complementary arc is vertex `s % n` of `P`. -/
 theorem vtx_arc_compl_last (hL : L ≤ P.n) :
     (P.arc ((s + L) % P.n) (P.n - L)).vtx (P.n - L) = P.vtx (s % P.n) := by
-  rw [vtx_arc_last, compl_arc_last_index P s L hL]
+  simp_all [vtx_arc_last] 
 
 /-- A vertex of `P` on the chord of a diagonal is one of its two endpoints. -/
 theorem vtx_eq_chord_endpoint (hd : IsDiagonal P s L) {i : ℕ} (hi : i < P.n)
@@ -102,43 +108,42 @@ theorem vtx_eq_chord_endpoint (hd : IsDiagonal P s L) {i : ℕ} (hi : i < P.n)
   rw [not_or] at hcon
   exact hd.2.2 _ h hcon.1 hcon.2 (vtx_mem_boundary P hi)
 
+section
+variable (hd : IsDiagonal P s L) (hmeet : ∀ p, p ∈ (P.arc s L).filled → p ∈ (P.arc ((s + L) % P.n) (P.n - L)).filled →
+      p ∈ segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n))) {i : ℕ} (hi : i < P.n)
+include hd hmeet hi
 /-- A vertex of `P` lying in the filled region of the arc is a vertex of the arc, provided the
 filled regions of the two arcs meet only on the chord. -/
-theorem exists_arc_vertex_of_mem_filled (hd : IsDiagonal P s L)
-    (hmeet : ∀ p, p ∈ (P.arc s L).filled → p ∈ (P.arc ((s + L) % P.n) (P.n - L)).filled →
-      p ∈ segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)))
-    {i : ℕ} (hi : i < P.n) (h : P.vtx i ∈ (P.arc s L).filled) :
+theorem exists_arc_vertex_of_mem_filled (h : P.vtx i ∈ (P.arc s L).filled) :
     ∃ k, k ≤ L ∧ (P.arc s L).vtx k = P.vtx i := by
-  have hn : 0 < P.n := by have := hd.2.1; omega
+  have hn : 0 < P.n := by omega
   have hL : L ≤ P.n := by have := hd.2.1; omega
   rcases vertex_index_cases P s L hL hn hi with ⟨k, hk, hki⟩ | ⟨k, hk, hki⟩
   · exact ⟨k, hk, by rw [vtx_arc P s L hk, hki]⟩
   · have h2 : P.vtx i ∈ (P.arc ((s + L) % P.n) (P.n - L)).filled := by
       rw [← hki, ← vtx_arc P _ _ hk]
-      exact boundary_subset_filled _ (vtx_mem_boundary _ (by rw [n_arc]; omega))
+      exact boundary_subset_filled _ (vtx_mem_boundary _ (by simp_all))
     rcases vtx_eq_chord_endpoint P s L hd hi (hmeet _ h h2) with h3 | h3
-    · exact ⟨0, Nat.zero_le L, by rw [vtx_arc_zero, h3]⟩
-    · exact ⟨L, le_rfl, by rw [vtx_arc_last, h3]⟩
+    · grind [vtx_arc_zero]
+    grind [vtx_arc_last]
 
 /-- A vertex of `P` lying in the filled region of the complementary arc is a vertex of the
 complementary arc, provided the filled regions of the two arcs meet only on the chord. -/
-theorem exists_arc_compl_vertex_of_mem_filled (hd : IsDiagonal P s L)
-    (hmeet : ∀ p, p ∈ (P.arc s L).filled → p ∈ (P.arc ((s + L) % P.n) (P.n - L)).filled →
-      p ∈ segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)))
-    {i : ℕ} (hi : i < P.n) (h : P.vtx i ∈ (P.arc ((s + L) % P.n) (P.n - L)).filled) :
+theorem exists_arc_compl_vertex_of_mem_filled (h : P.vtx i ∈ (P.arc ((s + L) % P.n) (P.n - L)).filled) :
     ∃ k, k ≤ P.n - L ∧ (P.arc ((s + L) % P.n) (P.n - L)).vtx k = P.vtx i := by
-  have hn : 0 < P.n := by have := hd.2.1; omega
+  have hn : 0 < P.n := by omega
   have hL : L ≤ P.n := by have := hd.2.1; omega
   rcases vertex_index_cases P s L hL hn hi with ⟨k, hk, hki⟩ | ⟨k, hk, hki⟩
   · have h1 : P.vtx i ∈ (P.arc s L).filled := by
       rw [← hki, ← vtx_arc P s L hk]
-      exact boundary_subset_filled _ (vtx_mem_boundary _ (by rw [n_arc]; omega))
-    rcases vtx_eq_chord_endpoint P s L hd hi (hmeet _ h1 h) with h3 | h3
-    · exact ⟨P.n - L, le_rfl, by rw [vtx_arc_compl_last P s L hL, h3]⟩
-    · exact ⟨0, Nat.zero_le _, by rw [vtx_arc_compl_zero, h3]⟩
+      exact boundary_subset_filled _ (vtx_mem_boundary _ (by simp_all))
+    grind [Chazelle.Existence.vtx_eq_chord_endpoint, Chazelle.Existence.vtx_arc_compl_last, Chazelle.Existence.vtx_arc_compl_zero, vtx_arc_compl_zero]
   · exact ⟨k, hk, by rw [vtx_arc P _ _ hk, hki]⟩
 
 /-! ### Combining -/
+
+
+end
 
 /-- **Combining weak triangulations along a diagonal.**  Let `(s, L)` be a diagonal of `P`,
 `T₁` a weak triangulation of the arc `P.arc s L` and `T₂` one of the complementary arc
@@ -183,22 +188,18 @@ theorem weakTriangulates_combine {P : Polygon} {s L : ℕ} (hd : IsDiagonal P s 
     · exact validTriangle_arc P s L hn (hv₁ t' ht')
     · exact validTriangle_arc P _ _ hn (hv₂ t' ht')
   · -- count
-    rw [List.length_append, List.length_map, List.length_map]
-    rw [n_arc] at hc₁ hc₂
-    have := hd.1
-    have := hd.2.1
-    omega
+    grind [List.length_append, List.length_map, n_arc]
   · -- union
     rw [hcover, ← hu₁, ← hu₂]
     ext p
     simp only [Set.mem_ofPred_eq, Set.mem_union, List.mem_append, List.mem_map]
     constructor
     · rintro ⟨t, (⟨t', ht', rfl⟩ | ⟨t', ht', rfl⟩), hp⟩
-      · exact Or.inl ⟨t', ht', by rw [← hts₁ t' ht']; exact hp⟩
-      · exact Or.inr ⟨t', ht', by rw [← hts₂ t' ht']; exact hp⟩
+      · grind
+      grind
     · rintro (⟨t', ht', hp⟩ | ⟨t', ht', hp⟩)
-      · exact ⟨_, Or.inl ⟨t', ht', rfl⟩, by rw [hts₁ t' ht']; exact hp⟩
-      · exact ⟨_, Or.inr ⟨t', ht', rfl⟩, by rw [hts₂ t' ht']; exact hp⟩
+      · grind
+      grind
   · -- disjoint interiors
     rw [List.pairwise_append]
     refine ⟨?_, ?_, ?_⟩
@@ -226,14 +227,12 @@ theorem weakTriangulates_combine {P : Polygon} {s L : ℕ} (hd : IsDiagonal P s 
       rw [htv₁ t' ht']
       obtain ⟨k, hk, hki⟩ :=
         exists_arc_vertex_of_mem_filled P s L hd hmeet hi (hsub₁ t' ht' hpi)
-      rw [← hki] at hpi ⊢
-      exact hx₁ t' ht' k (by rw [n_arc]; omega) hpi
+      grind [n_arc]
     · rw [hts₂ t' ht'] at hpi
       rw [htv₂ t' ht']
       obtain ⟨k, hk, hki⟩ :=
         exists_arc_compl_vertex_of_mem_filled P s L hd hmeet hi (hsub₂ t' ht' hpi)
-      rw [← hki] at hpi ⊢
-      exact hx₂ t' ht' k (by rw [n_arc]; omega) hpi
+      grind [n_arc]
 
 end
 

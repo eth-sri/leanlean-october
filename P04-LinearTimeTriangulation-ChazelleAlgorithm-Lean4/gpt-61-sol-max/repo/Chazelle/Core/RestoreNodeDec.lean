@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFNode
 public import Chazelle.Core.RestoreNodeGend
 public import Chazelle.Core.RestoreNodeArr
@@ -42,17 +44,17 @@ theorem walk_vtx_box (C : Chain) (β : Bool) {e : ℕ} (he : e < (C.sideWalk β)
     replace hb : True ∧ |((C.sideWalk β).vtx e).2| < C.radius := ⟨trivial, hb⟩
     interval_cases e
     · rw [C.sideWalk_vtx_zero] at hb
-      have := hb.2; simp only [Chain.slitTop] at this; rw [abs_of_pos hr] at this; linarith
+      grind [Chain.slitTop]
     · rw [C.sideWalk_vtx_one] at hb
-      have := hb.2; rw [abs_of_pos hr] at this; linarith
+      grind
     · rw [C.sideWalk_vtx_two] at hb
-      have := hb.2; rw [abs_neg, abs_of_pos hr] at this; linarith
+      grind
     · rw [C.sideWalk_vtx_three] at hb
-      have := hb.2; rw [abs_neg, abs_of_pos hr] at this; linarith
+      grind
     · rw [C.sideWalk_vtx_four] at hb
-      have := hb.2; rw [abs_of_pos hr] at this; linarith
+      grind
     · rw [C.sideWalk_vtx_five] at hb
-      have := hb.2; simp only [Chain.slitTop] at this; rw [abs_of_pos hr] at this; linarith
+      grind [Chain.slitTop]
 
 variable {E : FEnv} {c₀ : Config} {Cα : Chain} {g g' L : ℕ}
 
@@ -68,13 +70,13 @@ theorem far_range (hE : FGood E c₀) {far : WPos} (hfe : far.edge < E.M.W.n)
     rw [e] at hb'
     have hv : ∀ M' : Model, M'.pos (Qof E.P) ⟨far.edge, 0⟩ = M'.W.vtx far.edge := fun M' => by
       rw [pos_eq_sidePt]; show sidePt M'.W far.edge 0 = _
-      unfold sidePt; rw [Chazelle.Geometry.lerp_zero]
+      grind [sidePt, Chazelle.Geometry.lerp_zero]
     rw [hv] at hb' ⊢
     revert hb' hfe
     rw [hC]
     intro hfe hb'
     exact walk_vtx_box C _ hfe hb'
-  · left; exact h0
+  omega
 
 /-- The host parameter and point of a node chord end's candidate. -/
 theorem end_param (hS : Stretch E.M Cα g g' L) {d h : ℕ} (hd : d < L)
@@ -88,21 +90,18 @@ theorem end_param (hS : Stretch E.M Cα g g' L) {d h : ℕ} (hd : d < L)
   rw [endM_param hS hd, endM_pos hS hd]
   unfold endCode
   split_ifs with hk
-  · exact ⟨rfl, rfl⟩
+  · simp_all
   · have h0 : t = 0 := by
-      rw [key_pz] at hk; push Not at hk; exact le_antisymm hk ht0
+      grind [key_pz]
     have e : (chainModel Cα).param (Qof E.P) ⟨g' + d, 0⟩ =
         (chainModel Cα).param (Qof E.P) ⟨g' + d, h + 1⟩ := by
-      rw [← ht, h0]; rfl
+      simp_all
     exact ⟨by rw [e], pos_of_param e⟩
 
 /-- The code of an end is `0` iff its parameter is `0`. -/
 theorem endCode_zero {p h : ℕ} :
     endCode Cα (Qof E.P) p (h + 1) = 0 ↔ ¬ 0 < (chainModel Cα).param (Qof E.P) ⟨p, h + 1⟩ := by
-  unfold endCode
-  split_ifs with hk
-  · rw [key_pz] at hk; simp [hk]
-  · rw [key_pz] at hk; simp [hk]
+  grind [endCode, key_pz]
 
 theorem nat_add_frac {a b : ℕ} {t t' : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (ht0' : 0 ≤ t')
     (ht1' : t' < 1) (h : (a : ℝ) + t = b + t') : a = b ∧ t = t' := by
@@ -110,8 +109,7 @@ theorem nat_add_frac {a b : ℕ} {t t' : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (ht0
   have h2 : (b : ℝ) < a + 1 := by linarith
   have h1' : a < b + 1 := by exact_mod_cast h1
   have h2' : b < a + 1 := by exact_mod_cast h2
-  obtain rfl : a = b := by omega
-  exact ⟨rfl, by linarith⟩
+  grind
 
 /-- **The facts of a stretch of a kind-1 piece** that the completeness of the descent reads:
 the region `reg E.r` with the arc `A_i = (ai, bi)` containing the open stretch and the target arc
@@ -180,7 +178,7 @@ theorem end_info (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) (hGα : GoodM
             sideInArc (off (chainModel Cα).W.n g' (pE + tE)) α u))) := by
   have hn : 0 < E.M.W.n := by have := hS.hg; omega
   have hM := walkAx_of_goodModel hE.hGM
-  have hMα := walkAx_of_goodModel hGα
+  
   have hσ' := dirOf_pm σ
   have hpe' := hpe
   obtain ⟨hpn, ⟨ht0, ht1, -⟩, -⟩ := hpe'
@@ -197,41 +195,37 @@ theorem end_info (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) (hGα : GoodM
         c'.nreg s = 1 ∧ eMof E cs p = (g + d) % E.M.W.n := by
     intro a b
     obtain ⟨i1, i2, i3⟩ := (inE_iff hS hpn ht0 ht1).2 ⟨a, b⟩
-    refine ⟨pE - g', by omega, by omega, fun h0 => by rw [h0] at i3; simp at i3; omega, ?_,
-      hin.2 ⟨a, b⟩, by unfold eMof; rw [h30, h31, hp]⟩
+    refine ⟨pE - g', by omega, by omega, fun h0 => by grind, ?_,
+      hin.2 ⟨a, b⟩, by grind [eMof]⟩
     have e := endα_off hS (d := pE - g') (by omega) ht0 ht1
     rw [show g' + (pE - g') = pE by omega] at e
     exact e
   -- the end is not the good vertex
   have hcode : ∀ d, pE = g' + d → tE = 0 → endCode Cα (Qof E.P) (cs.nreg p) (cs.nreg 81155) = 0 :=
     fun d hd h0 => by
-      rw [hp, h55]; exact endCode_zero.2 (by rw [← htE, h0]; exact lt_irrefl 0)
+      rw [hp, h55]; exact endCode_zero.2 (by grind)
   have hne : off (chainModel Cα).W.n g' (pE + tE) ≠ dX := by
     intro hx
     have hX0 : (0 : ℝ) < dX := by exact_mod_cast hD.hX0
     have hXL : (dX : ℝ) < L := by exact_mod_cast hD.hXL
-    obtain ⟨d, rfl, hd, -, ho, hs1, heM⟩ := hst (by rw [hx]; exact hX0) (by rw [hx]; exact hXL)
+    obtain ⟨d, rfl, hd, -, ho, hs1, heM⟩ := hst (by grind) (by grind)
     rw [ho] at hx
-    obtain ⟨rfl, h0⟩ := nat_add_frac (a := d) (b := dX) ht0 ht1 le_rfl one_pos (by rw [hx, add_zero])
+    obtain ⟨rfl, h0⟩ := nat_add_frac (a := d) (b := dX) ht0 ht1 le_rfl one_pos (by grind)
     obtain ⟨σb, hσb, hg⟩ := hD.hgX
     exact hf1 (R3 hs1 (by rw [heM]; exact hD.hcnt d hd) reg hD.hregs hD.hch (hcode d rfl h0) σb hσb
-      (by rw [heM]; exact hg))
+      (by grind))
   refine ⟨hin, hne, fun a b => ?_⟩
   obtain ⟨d, rfl, hd, htd, ho, hs1, heM⟩ := hst a b
   have hdn : d < E.M.W.n := by have := hS.hLn; omega
   have hdt : (0 : ℝ) < d + tE := by
-    rcases ht0.eq_or_lt with h0 | h0
-    · have h1 : (1 : ℝ) ≤ d := by exact_mod_cast htd h0.symm
-      linarith
-    · have : (0 : ℝ) ≤ d := Nat.cast_nonneg _
-      linarith
+    core_grind
   obtain ⟨ct, ct', hTO, i60, i61, i63, e3, e4, ev, efl⟩ := R4 hs1 (by rw [heM]; exact hD.hcnt d hd) hf0
   rw [heM] at i60
   rw [hp, h55] at i61
   have hpar := end_param hS hd (h := h) hpe
   rw [← htE] at hpar
   have hx : (⟨ct.nreg 81060, ct.nreg 81061⟩ : WPos) =
-      ⟨(g + d) % E.M.W.n, endCode Cα (Qof E.P) (g' + d) (h + 1)⟩ := by rw [i60, i61]
+      ⟨(g + d) % E.M.W.n, endCode Cα (Qof E.P) (g' + d) (h + 1)⟩ := by grind
   obtain ⟨-, -, hcl⟩ := hTO
   obtain ⟨-, hex, hcomp⟩ := hcl reg hD.hregs
   rw [hx, i63] at hex hcomp
@@ -249,7 +243,7 @@ theorem end_info (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) (hGα : GoodM
   rw [← hza] at hceq hoO hkopen
   have haC : sidePt E.M.W ((g + d) % E.M.W.n) tE ∈ Cα.set := hS.memM hd ht0 ht1
   have hAM : SideAttach E.M.W c ((g + d) % E.M.W.n) tE :=
-    (hS.hA.sideAttach_iff hn (by rw [Stretch.nα]; omega) hd htd c).2
+    (hS.hA.sideAttach_iff hn (by omega) hd htd c).2
       (by rw [hS.mod' hd.le]; exact hAE)
   have hsec := attach_ray_left hAM hσ' hL₀ hceq
   obtain ⟨T', hT', hdom', hout', hadm', hnS', hsub'⟩ := inner_exit hE.hGM hE.hNF.1
@@ -322,7 +316,7 @@ theorem node_dec (hE : FGood E c₀) {Hα : Host} {Nα : NF} {Dα Bα : ℕ}
     fl₄, hch, fl'⟩ := hraw
   obtain ⟨r30, r31, r32, r33, r34, r35⟩ := hR
   have hS := hP.hS
-  have hn : 0 < E.M.W.n := by have := hS.hg; omega
+  
   have hnα := Stretch.nα Cα
   have hgL := hS.hgL
   have hsimp : Cα.P.Simple := by rw [hP.hQ]; exact (shearInvariance (epsOf E.P) E.P).1 hE.hG.1
@@ -331,41 +325,39 @@ theorem node_dec (hE : FGood E c₀) {Hα : Host} {Nα : NF} {Dα Bα : ℕ}
   obtain ⟨hpA, hpB⟩ := chord_posOK hsimp hP.hNα hk
   have hat := hP.hNα.2.2.1 k hk
   -- flags
-  have f4 : c₄.nreg 81007 = 0 := by rw [← fl']; exact hf
-  have f3 : c₃.nreg 81007 = 0 := by rw [← fl₄]; exact f4
+  
+  
   have f2 : c₂.nreg 81007 = 0 := by
     have := hw₂.1
-    by_contra h
-    have := m₃ (by omega); omega
+    grind
   have f1 : c₁.nreg 81007 = 0 := by
     have := hw.1
-    by_contra h
-    have := m₂ (by rw [fl₁] at h ⊢; omega); omega
+    grind
   -- registers
   have g2 : ∀ q, 81100 ≤ q → q ≤ 81159 → c₂.nreg q = c₁.nreg q :=
     fun q a b => f₂ q (by omega) (by omega) (by unfold EndW KeyW VertW; omega)
   have g3 : ∀ q, 81100 ≤ q → q ≤ 81169 → c₃.nreg q = c₂.nreg q :=
     fun q a b => f₃ q (by omega) (by omega) (by unfold EndW KeyW VertW; omega)
-  have a30 : c₁.nreg 81130 = g := by rw [F1 _ (by norm_num) (by norm_num), r30]
-  have a31 : c₁.nreg 81131 = g' := by rw [F1 _ (by norm_num) (by norm_num), r31]
-  have a32 : c₁.nreg 81132 = L := by rw [F1 _ (by norm_num) (by norm_num), r32]
-  have a35 : c₁.nreg 81135 = g' + L := by rw [F1 _ (by norm_num) (by norm_num), r35]
+  have a30 : c₁.nreg 81130 = g := by grind
+  have a31 : c₁.nreg 81131 = g' := by grind
+  have a32 : c₁.nreg 81132 = L := by grind
+  have a35 : c₁.nreg 81135 = g' + L := by grind
   have a40 : c₁.nreg 81140 = c.nreg 81140 := F1 _ (by norm_num) (by norm_num)
   have a41 : c₁.nreg 81141 = c.nreg 81141 := F1 _ (by norm_num) (by norm_num)
-  have b30 : c₂.nreg 81130 = g := by rw [g2 _ (by norm_num) (by norm_num), a30]
-  have b31 : c₂.nreg 81131 = g' := by rw [g2 _ (by norm_num) (by norm_num), a31]
-  have b32 : c₂.nreg 81132 = L := by rw [g2 _ (by norm_num) (by norm_num), a32]
-  have b35 : c₂.nreg 81135 = g' + L := by rw [g2 _ (by norm_num) (by norm_num), a35]
-  have b40 : c₂.nreg 81140 = c.nreg 81140 := by rw [g2 _ (by norm_num) (by norm_num), a40]
-  have b41 : c₂.nreg 81141 = c.nreg 81141 := by rw [g2 _ (by norm_num) (by norm_num), a41]
-  have b53 : c₂.nreg 81153 = (Nα.chord k).lp := by rw [g2 _ (by norm_num) (by norm_num), u53]
-  have b54 : c₂.nreg 81154 = (Nα.chord k).rp := by rw [g2 _ (by norm_num) (by norm_num), u54]
-  have b55 : c₂.nreg 81155 = (Nα.chord k).h + 1 := by rw [g2 _ (by norm_num) (by norm_num), u55]
-  have d30 : c₃.nreg 81130 = g := by rw [g3 _ (by norm_num) (by norm_num), b30]
-  have d31 : c₃.nreg 81131 = g' := by rw [g3 _ (by norm_num) (by norm_num), b31]
-  have d32 : c₃.nreg 81132 = L := by rw [g3 _ (by norm_num) (by norm_num), b32]
-  have d53 : c₃.nreg 81153 = (Nα.chord k).lp := by rw [g3 _ (by norm_num) (by norm_num), b53]
-  have d54 : c₃.nreg 81154 = (Nα.chord k).rp := by rw [g3 _ (by norm_num) (by norm_num), b54]
+  have b30 : c₂.nreg 81130 = g := by grind
+  have b31 : c₂.nreg 81131 = g' := by grind
+  have b32 : c₂.nreg 81132 = L := by grind
+  have b35 : c₂.nreg 81135 = g' + L := by grind
+  have b40 : c₂.nreg 81140 = c.nreg 81140 := by grind
+  have b41 : c₂.nreg 81141 = c.nreg 81141 := by grind
+  have b53 : c₂.nreg 81153 = (Nα.chord k).lp := by grind
+  have b54 : c₂.nreg 81154 = (Nα.chord k).rp := by grind
+  have b55 : c₂.nreg 81155 = (Nα.chord k).h + 1 := by grind
+  have d30 : c₃.nreg 81130 = g := by grind
+  have d31 : c₃.nreg 81131 = g' := by grind
+  have d32 : c₃.nreg 81132 = L := by grind
+  have d53 : c₃.nreg 81153 = (Nα.chord k).lp := by grind
+  have d54 : c₃.nreg 81154 = (Nα.chord k).rp := by grind
   -- the chord
   have hcF : (Nα.chord k).toSet (chainModel Cα) (Qof E.P) ∈ Nα.F (chainModel Cα) (Qof E.P) :=
     ⟨_, Dec.chord_mem hk, rfl⟩
@@ -379,31 +371,29 @@ theorem node_dec (hE : FGood E c₀) {Hα : Host} {Nα : NF} {Dα Bα : ℕ}
   have hAB1 : A.1 < B.1 := by
     have hm : B ∈ (Nα.chord k).toSet (chainModel Cα) (Qof E.P) := hat.2.2.2.2.1
     have h1 : A.1 ≤ B.1 := hm.2.1
-    rcases h1.lt_or_eq with h | h
-    · exact h
-    · exact absurd (Prod.ext h hy) hne
+    grind
   have hL₀ : 0 < B.1 - A.1 := by linarith
   have hrA : rayPt A (dirOf 1) (B.1 - A.1) = B := by
     have := eq_rayPt (w := A) (x := B) (σ := 1) (Or.inl rfl) hy.symm
-    rw [one_mul] at this; rw [dirOf1]; exact this.symm
+    grind [one_mul, dirOf1]
   have hrB : rayPt B (dirOf 0) (B.1 - A.1) = A := by
     have := eq_rayPt (w := B) (x := A) (σ := -1) (Or.inr rfl) hy
-    rw [show -1 * (A.1 - B.1) = B.1 - A.1 by ring] at this; rw [dirOf0]; exact this.symm
-  have hJ1 : aj = E.M.key (Qof E.P) ⟨c₁.nreg 81140, c₁.nreg 81141⟩ := by rw [a40, a41]; exact hJ
-  have hJ2 : aj = E.M.key (Qof E.P) ⟨c₂.nreg 81140, c₂.nreg 81141⟩ := by rw [b40, b41]; exact hJ
+    rw [show -1 * (A.1 - B.1) = B.1 - A.1 by ring] at this; grind [dirOf0]
+  have hJ1 : aj = E.M.key (Qof E.P) ⟨c₁.nreg 81140, c₁.nreg 81141⟩ := by grind
+  have hJ2 : aj = E.M.key (Qof E.P) ⟨c₂.nreg 81140, c₂.nreg 81141⟩ := by grind
   have EA := end_info hE hS hGα hD (s := 81160) (p := 81153) (σ := 1) R₂ a30 a31 a35 u53 u55 hpA
     rfl hcA hat.1 hat.2 hL₀
-    (by show _ = Chazelle.segment A (rayPt A (dirOf 1) (B.1 - A.1)); rw [hrA]; exact hseg) hrA
+    (by show _ = Chazelle.segment A (rayPt A (dirOf 1) (B.1 - A.1)); grind) hrA
     (by show ∀ s ∈ Ioo (0 : ℝ) 1, lerp A (rayPt A (dirOf 1) (B.1 - A.1)) s ∈ Cα.dom
         rw [hrA]; exact hopen) hJ1
-    (by rw [a40, a41]; exact hJr) f1 (by rw [f2]; norm_num)
+    (by grind) f1 (by omega)
   have EB := end_info hE hS hGα hD (s := 81170) (p := 81154) (σ := 0) R₃ b30 b31 b35 b54 b55 hpB
     rfl hcA hat.2 hat.1 hL₀
     (by show _ = Chazelle.segment B (rayPt B (dirOf 0) (B.1 - A.1))
         rw [hrB, Chazelle.Geometry.segment_comm]; exact hseg) hrB
     (by show ∀ s ∈ Ioo (0 : ℝ) 1, lerp B (rayPt B (dirOf 0) (B.1 - A.1)) s ∈ Cα.dom
-        rw [hrB]; exact WalkAx.open_rev hopen) hJ2 (by rw [b40, b41]; exact hJr) f2
-    (by rw [f3]; norm_num)
+        rw [hrB]; exact WalkAx.open_rev hopen) hJ2 (by grind) f2
+    (by omega)
   simp only [Nat.reduceAdd] at EA EB
   have tA0 : 0 ≤ (chainModel Cα).param (Qof E.P) (Nα.chord k).lpos := hpA.2.1.1
   have tA1 : (chainModel Cα).param (Qof E.P) (Nα.chord k).lpos < 1 := hpA.2.1.2.1
@@ -463,7 +453,7 @@ theorem node_dec (hE : FGood E c₀) {Hα : Host} {Nα : NF} {Dα Bα : ℕ}
         fun a b => absurd ⟨a, b⟩ hi⟩
   have hg0 : (0 : ℝ) ≤ g' := Nat.cast_nonneg _
   have hgn : (g' : ℝ) < (chainModel Cα).W.n := by
-    rw [hnα]; have := hS.hgL; have := hS.hL0; exact_mod_cast (by omega : g' < 2 * Cα.m + 7)
+    rw [hnα];  have := hS.hL0; exact_mod_cast (by omega : g' < 2 * Cα.m + 7)
   have hkA0 : (0 : ℝ) ≤ (Nα.chord k).lp + tA := by positivity
   have hkB0 : (0 : ℝ) ≤ (Nα.chord k).rp + tB := by positivity
   have hkAn : ((Nα.chord k).lp : ℝ) + tA < (chainModel Cα).W.n := by
@@ -529,7 +519,7 @@ theorem node_dec (hE : FGood E c₀) {Hα : Host} {Nα : NF} {Dα Bα : ℕ}
     simp only [Nat.reduceAdd] at hW
     rw [d30, d31, d32, d53, d54, q60, q61, q62, q63, q64, q65, q66, q67, key_vtx] at hW
     obtain ⟨hu, -, nA, nB, gA, gB⟩ := hW
-    have hu0 : (0 : ℝ) < u := by exact_mod_cast hu1
+    have hu0 : (0 : ℝ) < u := by positivity
     have huL : (u : ℝ) < L := by exact_mod_cast hu
     refine ⟨hu0, huL, fun h => ?_, fun h => ?_, fun ⟨a, b⟩ => ?_, fun ⟨a, b⟩ => ?_⟩
     · have a : 0 < da := h ▸ hu0

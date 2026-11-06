@@ -32,9 +32,12 @@ namespace DrvR
 
 open Machine
 
+section
+variable (Q : Polygon) (N : NF)
+include Q N
 /-- **The bucket of a walk position** for the splice into `N`: `2 · #{arc starts with a smaller
 key} + [some arc start has the same key]`. -/
-noncomputable def keyBkt (Q : Polygon) (N : NF) (x : WPos) : ℕ := by
+noncomputable def keyBkt (x : WPos) : ℕ := by
   classical
   exact 2 * ((List.range N.arcs.length).filter fun j =>
       decide ((interiorModel Q).key Q (N.arc j).s < (interiorModel Q).key Q x)).length +
@@ -42,11 +45,14 @@ noncomputable def keyBkt (Q : Polygon) (N : NF) (x : WPos) : ℕ := by
     then 1 else 0
 
 /-- The position lies on the closure of arc `j` of `N` (cyclically, by keys). -/
-def OnArcKey (Q : Polygon) (N : NF) (j : ℕ) (x : WPos) : Prop :=
+def OnArcKey (j : ℕ) (x : WPos) : Prop :=
   (interiorModel Q).key Q x = (interiorModel Q).key Q (N.arc j).s ∨
     (interiorModel Q).key Q x = (interiorModel Q).key Q (N.arc j).e ∨
     Chazelle.Chain.sideInArc ((interiorModel Q).key Q (N.arc j).s)
       ((interiorModel Q).key Q (N.arc j).e) ((interiorModel Q).key Q x)
+
+
+end
 
 /-- The two end positions of a chord triple (`q` even: left end). -/
 def endPos (Lx : List (ℕ × ℕ × ℕ)) (q : ℕ) : WPos :=

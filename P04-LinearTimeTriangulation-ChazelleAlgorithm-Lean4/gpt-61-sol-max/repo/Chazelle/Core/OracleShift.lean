@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePosSem
 
 /-!
@@ -21,11 +23,13 @@ open Chazelle.Visibility (rayPt rayPt_fst rayPt_snd)
 
 @[expose] public section
 
-variable {A : Set Point} {z : Point} {σ d : ℝ} {R : ℝ}
+variable {A : Set Point} {z : Point} {σ d R : ℝ}
 
+section
+variable (hA : A ⊆ Chain.box R) (hd : 0 ≤ d) (hout : ∀ s, 0 < s → s ≤ d → rayPt z σ s ∉ Chain.box R)
+include hA hd hout
 /-- First hits from the entry point. -/
-theorem firstHitOpt_shift (hA : A ⊆ Chain.box R) (hd : 0 ≤ d)
-    (hout : ∀ s, 0 < s → s ≤ d → rayPt z σ s ∉ Chain.box R) {o : Option ℝ}
+theorem firstHitOpt_shift {o : Option ℝ}
     (h : Sweep.FirstHitOpt A z σ o) :
     Sweep.FirstHitOpt A (rayPt z σ d) σ (o.map (· - d)) := by
   cases o with
@@ -36,47 +40,49 @@ theorem firstHitOpt_shift (hA : A ⊆ Chain.box R) (hd : 0 ≤ d)
   | some v =>
     obtain ⟨hv, hm, hfirst⟩ := h
     have hdv : d < v := by
-      by_contra hc; push Not at hc
-      exact hout v hv hc (hA hm)
-    refine ⟨by simp only; linarith, ?_, fun t ht hlt hm' => ?_⟩
-    · simp only
-      rw [rayPt_rayPt, show d + (v - d) = v by ring]; exact hm
-    · rw [rayPt_rayPt] at hm'
-      simp only at hlt
-      exact hfirst (d + t) (by linarith) (by linarith) hm'
+      grind
+    refine ⟨by simp_all, ?_, fun t ht hlt hm' => ?_⟩
+    all_goals (grind [rayPt_rayPt])
 
 /-- A first hit from the entry point is a first hit from the origin. -/
-theorem firstHit_unshift (hA : A ⊆ Chain.box R) (hd : 0 ≤ d)
-    (hout : ∀ s, 0 < s → s ≤ d → rayPt z σ s ∉ Chain.box R) {t : ℝ}
+theorem firstHit_unshift {t : ℝ}
     (h : FirstHit A (rayPt z σ d) σ t) : FirstHit A z σ (t + d) := by
   obtain ⟨ht, hm, hfirst⟩ := h
-  refine ⟨by linarith, by rw [rayPt_rayPt, add_comm] at hm; exact hm, fun s hs hlt hm' => ?_⟩
+  refine ⟨by linarith, by simp_all [rayPt_rayPt, add_comm] <;> omega_nf, fun s hs hlt hm' => ?_⟩
   by_cases hsd : s ≤ d
-  · exact hout s hs hsd (hA hm')
+  · grind
   · push Not at hsd
     refine hfirst (s - d) (by linarith) (by linarith) ?_
-    rw [rayPt_rayPt, show d + (s - d) = s by ring]; exact hm'
+    simp_all [rayPt_rayPt] <;> omega_nf
 
+
+end
+
+section
+variable (hA : A ⊆ Chain.box R)
+include hA
 /-- No hit from the entry point is no hit from the origin. -/
-theorem noHit_unshift (hA : A ⊆ Chain.box R) (_hd : 0 ≤ d)
+theorem noHit_unshift (_hd : 0 ≤ d)
     (hout : ∀ s, 0 < s → s ≤ d → rayPt z σ s ∉ Chain.box R) (h : NoHit A (rayPt z σ d) σ) :
     NoHit A z σ := by
   intro s hs hm
   by_cases hsd : s ≤ d
-  · exact hout s hs hsd (hA hm)
+  · grind
   · push Not at hsd
     refine h (s - d) (by linarith) ?_
-    rw [rayPt_rayPt, show d + (s - d) = s by ring]; exact hm
+    simp_all [rayPt_rayPt] <;> omega_nf
 
 /-- **An origin past the box**: the ray never meets the box. -/
-theorem noHit_past (hA : A ⊆ Chain.box R) (hσ : σ = 1 ∨ σ = -1) (hpast : R ≤ σ * z.1) :
+theorem noHit_past (hσ : σ = 1 ∨ σ = -1) (hpast : R ≤ σ * z.1) :
     NoHit A z σ := by
   intro s hs hm
   have := (abs_lt.1 (hA hm).1)
   simp only [rayPt_fst] at this
   rcases hσ with rfl | rfl
-  · linarith [this.2]
-  · linarith [this.1]
+  all_goals linarith
+
+
+end
 
 end
 

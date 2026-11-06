@@ -31,100 +31,81 @@ variable {M : Model}
 theorem sideInArc_compl {a b x : ℝ} (hab : a ≠ b) (hxa : x ≠ a) (hxb : x ≠ b) :
     sideInArc a b x ↔ ¬ sideInArc b a x := by
   unfold sideInArc
-  rcases lt_or_gt_of_ne hab with h | h
-  · rw [ite_eq_left h, ite_eq_right (not_lt.2 h.le)]
-    constructor
-    · rintro ⟨h1, h2⟩ (h3 | h3) <;> linarith
-    · intro h3
-      push Not at h3
-      exact ⟨lt_of_le_of_ne h3.2 (Ne.symm hxa), lt_of_le_of_ne h3.1 hxb⟩
-  · rw [ite_eq_right (not_lt.2 h.le), ite_eq_left h]
-    constructor
-    · rintro (h1 | h1) ⟨h2, h3⟩ <;> linarith
-    · intro h3
-      rw [not_and_or] at h3
-      push Not at h3
-      rcases h3 with h3 | h3
-      · right; exact lt_of_le_of_ne h3 hxb
-      · left; exact lt_of_le_of_ne h3 (Ne.symm hxa)
+  grind
 
+section
+variable {n g A B x y : ℝ} (hg : 0 ≤ g) (hgn : g < n) (hA : 0 ≤ A) (hAn : A < n) (hB : 0 ≤ B) (hBn : B < n) (hx : 0 ≤ x) (hxn : x < n) (hy : 0 ≤ y) (hyn : y < n)
+include hg hgn hA hAn hB hBn hx hxn hy hyn
+section
+variable (hAB : A ≠ B)
+include hAB
 /-- **Two keys with no end of `(A, B)` between them are on the same side.** -/
-theorem off_same_side {n g A B x y : ℝ} (hg : 0 ≤ g) (hgn : g < n) (hA : 0 ≤ A) (hAn : A < n)
-    (hB : 0 ≤ B) (hBn : B < n) (hx : 0 ≤ x) (hxn : x < n) (hy : 0 ≤ y) (hyn : y < n)
-    (hAB : A ≠ B) (hxy : off n g x ≤ off n g y)
+theorem off_same_side (hxy : off n g x ≤ off n g y)
     (hA' : off n g A < off n g x ∨ off n g y < off n g A)
     (hB' : off n g B < off n g x ∨ off n g y < off n g B) :
     sideInArc A B x ↔ sideInArc A B y := by
   have hne : off n g A ≠ off n g B := fun h => hAB (off_inj hg hgn hA hAn hB hBn h)
-  have hxA : x ≠ A := by rintro rfl; rcases hA' with h | h <;> linarith
-  have hxB : x ≠ B := by rintro rfl; rcases hB' with h | h <;> linarith
-  have hyA : y ≠ A := by rintro rfl; rcases hA' with h | h <;> linarith
-  have hyB : y ≠ B := by rintro rfl; rcases hB' with h | h <;> linarith
+  have hxA : x ≠ A := by grind
+  have hxB : x ≠ B := by grind
+  have hyA : y ≠ A := by grind
+  have hyB : y ≠ B := by grind
   rcases lt_or_gt_of_ne hne with h | h
   · rw [sideInArc_iff_off hg hgn hA hAn hB hBn hx hxn h,
       sideInArc_iff_off hg hgn hA hAn hB hBn hy hyn h]
-    rcases hA' with h1 | h1 <;> rcases hB' with h2 | h2 <;> constructor <;>
-      rintro ⟨h3, h4⟩ <;> first | (constructor <;> linarith)
+    grind
   · rw [sideInArc_compl hAB hxA hxB, sideInArc_compl hAB hyA hyB,
       sideInArc_iff_off hg hgn hB hBn hA hAn hx hxn h,
       sideInArc_iff_off hg hgn hB hBn hA hAn hy hyn h]
-    rcases hA' with h1 | h1 <;> rcases hB' with h2 | h2 <;> constructor <;>
-      intro h3 h4 <;> apply h3 <;> obtain ⟨h5, h6⟩ := h4 <;>
-      first | (constructor <;> linarith)
+    grind
 
 /-- **Two keys with both ends of `(A, B)` between them are on the same side.** -/
-theorem off_same_side_in {n g A B x y : ℝ} (hg : 0 ≤ g) (hgn : g < n) (hA : 0 ≤ A) (hAn : A < n)
-    (hB : 0 ≤ B) (hBn : B < n) (hx : 0 ≤ x) (hxn : x < n) (hy : 0 ≤ y) (hyn : y < n)
-    (hAB : A ≠ B) (hA' : off n g x < off n g A ∧ off n g A < off n g y)
+theorem off_same_side_in (hA' : off n g x < off n g A ∧ off n g A < off n g y)
     (hB' : off n g x < off n g B ∧ off n g B < off n g y) :
     sideInArc A B x ↔ sideInArc A B y := by
   have hne : off n g A ≠ off n g B := fun h => hAB (off_inj hg hgn hA hAn hB hBn h)
-  have hxA : x ≠ A := by rintro rfl; linarith [hA'.1]
-  have hxB : x ≠ B := by rintro rfl; linarith [hB'.1]
-  have hyA : y ≠ A := by rintro rfl; linarith [hA'.2]
-  have hyB : y ≠ B := by rintro rfl; linarith [hB'.2]
+  have hxA : x ≠ A := by grind
+  have hxB : x ≠ B := by grind
+  have hyA : y ≠ A := by grind
+  have hyB : y ≠ B := by grind
   obtain ⟨h1, h2⟩ := hA'
   obtain ⟨h3, h4⟩ := hB'
   rcases lt_or_gt_of_ne hne with h | h
   · rw [sideInArc_iff_off hg hgn hA hAn hB hBn hx hxn h,
       sideInArc_iff_off hg hgn hA hAn hB hBn hy hyn h]
-    constructor <;> rintro ⟨h5, h6⟩ <;> exfalso <;> linarith
+    grind
   · rw [sideInArc_compl hAB hxA hxB, sideInArc_compl hAB hyA hyB,
       sideInArc_iff_off hg hgn hB hBn hA hAn hx hxn h,
       sideInArc_iff_off hg hgn hB hBn hA hAn hy hyn h]
-    constructor <;> intro _ ⟨h5, h6⟩ <;> linarith
+    grind
+
+
+end
 
 /-- **A chord with one end between two keys and the other outside separates them.** -/
-theorem off_sep {n g A B x y : ℝ} (hg : 0 ≤ g) (hgn : g < n) (hA : 0 ≤ A) (hAn : A < n)
-    (hB : 0 ≤ B) (hBn : B < n) (hx : 0 ≤ x) (hxn : x < n) (hy : 0 ≤ y) (hyn : y < n)
+theorem off_sep
     (hA' : off n g x < off n g A ∧ off n g A < off n g y)
     (hB' : off n g B < off n g x ∨ off n g y < off n g B) :
     sideInArc A B x ↔ ¬ sideInArc A B y := by
-  have hAB : A ≠ B := by rintro rfl; rcases hB' with h | h <;> linarith [hA'.1, hA'.2]
+  have hAB : A ≠ B := by grind
   have hne : off n g A ≠ off n g B := fun h => hAB (off_inj hg hgn hA hAn hB hBn h)
-  have hxA : x ≠ A := by rintro rfl; linarith [hA'.1]
-  have hxB : x ≠ B := by rintro rfl; rcases hB' with h | h <;> linarith [hA'.1, hA'.2]
-  have hyA : y ≠ A := by rintro rfl; linarith [hA'.2]
-  have hyB : y ≠ B := by rintro rfl; rcases hB' with h | h <;> linarith [hA'.1, hA'.2]
+  have hxA : x ≠ A := by grind
+  have hxB : x ≠ B := by grind
+  have hyA : y ≠ A := by grind
+  have hyB : y ≠ B := by grind
   obtain ⟨h1, h2⟩ := hA'
   rcases lt_or_gt_of_ne hne with h | h
   · rw [sideInArc_iff_off hg hgn hA hAn hB hBn hx hxn h,
       sideInArc_iff_off hg hgn hA hAn hB hBn hy hyn h]
-    rcases hB' with h3 | h3
-    · exfalso; linarith
-    · constructor
-      · rintro ⟨h4, -⟩; linarith
-      · intro h4; exfalso; exact h4 ⟨h2, h3⟩
+    grind
   · rw [sideInArc_compl hAB hxA hxB, sideInArc_compl hAB hyA hyB,
       sideInArc_iff_off hg hgn hB hBn hA hAn hx hxn h,
       sideInArc_iff_off hg hgn hB hBn hA hAn hy hyn h]
-    rcases hB' with h3 | h3
-    · constructor
-      · intro h4; exfalso; exact h4 ⟨h3, h1⟩
-      · intro h4; exfalso; apply h4; intro ⟨h5, h6⟩; linarith
-    · exfalso; linarith
+    grind
 
 /-! ## Counting keys -/
+
+
+end
 
 /-- A finite union of sets of at most `k` elements has at most `k` times as many elements as
 there are sets. -/
@@ -132,7 +113,7 @@ theorem ncard_biUnion_le_mul {ι α : Type*} {T : Set ι} (hT : T.Finite) (s : �
     (hs : ∀ i ∈ T, (s i).ncard ≤ k) : (⋃ i ∈ T, s i).ncard ≤ k * T.ncard := by
   classical
   have e : (⋃ i ∈ T, s i) = ⋃ i ∈ hT.toFinset, s i := by
-    ext x; simp only [Set.mem_iUnion, Set.Finite.mem_toFinset, exists_prop]
+    simp_all
   rw [e, Set.ncard_eq_toFinset_card T hT]
   refine (Chazelle.Chain.ncard_biUnion_finset_le _ _).trans ?_
   calc ∑ i ∈ hT.toFinset, (s i).ncard ≤ ∑ _i ∈ hT.toFinset, k :=
@@ -143,8 +124,11 @@ theorem ncard_biUnion_le_mul {ι α : Type*} {T : Set ι} (hT : T.Finite) (s : �
 def attKeys (M : Model) (c : Set Point) : Set ℝ :=
   {x | ∃ (p : ℕ) (t : ℝ), SideAttach M.W c p t ∧ x = p + t}
 
+section
+variable (hM : WalkAx M)
+include hM
 /-- **An admissible chord is attached at at most two keys** (one at each endpoint). -/
-theorem ncard_attKeys_le (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
+theorem ncard_attKeys_le {c : Set Point} (hc : c ∈ M.Adm) :
     (attKeys M c).ncard ≤ 2 := by
   classical
   obtain ⟨a, b, hab, hce, -, hop, -, -⟩ := hM.ends c hc
@@ -152,8 +136,8 @@ theorem ncard_attKeys_le (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
   have hkey : ∀ (p : ℕ) (t : ℝ), 0 ≤ t → t < 1 → f (p + t) = sidePt M.W p t := by
     intro p t ht ht1
     have hfl : ⌊(p : ℝ) + t⌋₊ = p := by
-      rw [Nat.floor_eq_iff (by positivity)]; constructor <;> linarith
-    simp only [f, hfl]; congr 1; ring
+      rw [Nat.floor_eq_iff (by positivity)]; simp_all
+    grind
   have hmaps : MapsTo f (attKeys M c) {a, b} := by
     rintro x ⟨p, t, hA, rfl⟩
     rw [hkey p t hA.2.1 hA.2.2.1]
@@ -161,11 +145,7 @@ theorem ncard_attKeys_le (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
     rw [hce] at hq
     obtain ⟨s, hs0, hs1, hs⟩ := Geometry.mem_segment_iff_lerp.1 hq
     have hnD := hM.trace p hA.1 t hA.2.1 hA.2.2.1.le
-    rcases hs0.lt_or_eq with h0 | h0
-    · rcases hs1.lt_or_eq with h1 | h1
-      · exact absurd (hs ▸ hop s ⟨h0, h1⟩) hnD
-      · right; rw [hs, h1, Geometry.lerp_one]; rfl
-    · left; rw [hs, ← h0, Geometry.lerp_zero]
+    grind [Geometry.lerp_one, Geometry.lerp_zero]
   have hinj : InjOn f (attKeys M c) := by
     rintro x ⟨p, t, hA, rfl⟩ y ⟨p', t', hA', rfl⟩ hxy
     rw [hkey p t hA.2.1 hA.2.2.1, hkey p' t' hA'.2.1 hA'.2.2.1] at hxy
@@ -176,11 +156,14 @@ theorem ncard_attKeys_le (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
     _ ≤ 2 := (Set.ncard_insert_le a {b}).trans (by rw [Set.ncard_singleton])
 
 /-- The keys at which the chords of a finite admissible set `T` are attached: at most `2 |T|`. -/
-theorem ncard_attKeys_union_le (hM : WalkAx M) {T : Set (Set Point)} (hT : T ⊆ M.Adm)
+theorem ncard_attKeys_union_le {T : Set (Set Point)} (hT : T ⊆ M.Adm)
     (hfin : T.Finite) : (⋃ c ∈ T, attKeys M c).ncard ≤ 2 * T.ncard :=
   ncard_biUnion_le_mul hfin _ fun _c hc => ncard_attKeys_le hM (hT hc)
 
 /-! ## Arcs at cut positions -/
+
+
+end
 
 /-- The positions just before a walk vertex face the region of an arc ending there. -/
 theorem faced_before_zero {F : Set (Set Point)} {V : Set Point} {l : ℝ} {p : ℕ}
@@ -189,34 +172,35 @@ theorem faced_before_zero {F : Set (Set Point)} {V : Set Point} {l : ℝ} {p : �
   rcases Nat.eq_zero_or_pos p with h0 | h0
   · have hl0 : 0 ≤ l := harcV.1
     have hln : l < M.W.n := harcV.2.1
-    have hl0' : 0 < l := lt_of_le_of_ne hl0 (fun h => hVne (by rw [← h, h0]; simp))
+    have hl0' : 0 < l := lt_of_le_of_ne hl0 (fun h => hVne (by simp_all))
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT (show (0 : ℝ) < min 1 (M.W.n - l) from
       lt_min one_pos (by linarith))] with s hs hs'
     have hs0 : (0 : ℝ) < s := hs
     have hs1 : s < 1 := hs'.2.trans_le (min_le_left _ _)
     have hs2 : s < M.W.n - l := hs'.2.trans_le (min_le_right _ _)
     have e : (0 + M.W.n - 1) % M.W.n = M.W.n - 1 := by
-      rw [Nat.mod_eq_of_lt (show 0 + M.W.n - 1 < M.W.n by omega)]; omega
+      simp_all
     rw [h0, e]
     refine harcV.2.2.2.2.2.2 _ _ (by omega) (by linarith) (by linarith) ?_
-    have hc : ((M.W.n - 1 : ℕ) : ℝ) = M.W.n - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have hc : ((M.W.n - 1 : ℕ) : ℝ) = M.W.n - 1 := by simp_all +zetaDelta 
     rw [hc, h0]
-    unfold sideInArc
-    rw [ite_eq_right (by push_cast; linarith)]
-    left; linarith
+    grind [sideInArc]
   · filter_upwards [eventually_before_end hVne, Ioo_mem_nhdsGT one_pos] with s h1 h2
     have e : (p + M.W.n - 1) % M.W.n = p - 1 := by
       rw [show p + M.W.n - 1 = p - 1 + M.W.n by omega, Nat.add_mod_right,
         Nat.mod_eq_of_lt (by omega)]
     rw [e]
-    refine harcV.2.2.2.2.2.2 _ _ (by omega) (by linarith [h2.2]) (by linarith [h2.1]) ?_
-    have hc : ((p - 1 : ℕ) : ℝ) = p - 1 := by rw [Nat.cast_sub (by omega)]; simp
-    rw [hc, show (p : ℝ) - 1 + (1 - s) = p + 0 - s by ring]
-    exact h1
+    refine harcV.2.2.2.2.2.2 _ _ (by omega) (by simp_all) (by simp_all) ?_
+    simp_all
 
+section
+variable (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
+include hM hF hfin
+section
+variable {c : Set Point} (hc : c ∈ F) {p : ℕ}
+include c hc p
 /-- **A region faced just after a cut position has an arc starting there.** -/
-theorem arc_start_of_faced (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
-    (hfin : F.Finite) {c : Set Point} (hc : c ∈ F) {p : ℕ} {t : ℝ} (hA : SideAttach M.W c p t)
+theorem arc_start_of_faced {t : ℝ} (hA : SideAttach M.W c p t)
     {U : Set Point} (hU : U ∈ M.regions F) (hf : ∀ᶠ s in 𝓝[>] (0 : ℝ), M.Faces p (t + s) U) :
     ∃ r, M.IsArc F U (p + t) r := by
   obtain ⟨U₀, -, -, r, hU₀, -, -, harc, -, -⟩ := hM.attach_face hF hfin hc hA
@@ -225,8 +209,7 @@ theorem arc_start_of_faced (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
   exact ⟨r, (WalkAx.faces_unique hU₀ hU h1 h2) ▸ harc⟩
 
 /-- **A region faced just before a cut position inside a walk edge has an arc ending there.** -/
-theorem arc_end_of_faced (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
-    (hfin : F.Finite) {c : Set Point} (hc : c ∈ F) {p : ℕ} {t : ℝ} (hA : SideAttach M.W c p t)
+theorem arc_end_of_faced {t : ℝ} (hA : SideAttach M.W c p t)
     (ht : 0 < t) {U : Set Point} (hU : U ∈ M.regions F)
     (hf : ∀ᶠ s in 𝓝[>] (0 : ℝ), M.Faces p (t - s) U) : ∃ l, M.IsArc F U l (p + t) := by
   obtain ⟨-, V₀, l, -, -, hV₀, -, -, harc, -⟩ := hM.attach_face hF hfin hc hA
@@ -235,8 +218,7 @@ theorem arc_end_of_faced (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm
   exact ⟨l, (WalkAx.faces_unique hV₀ hU h1 h2) ▸ harc⟩
 
 /-- **A region faced just before a cut walk vertex has an arc ending there.** -/
-theorem arc_end_of_faced_zero (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
-    (hfin : F.Finite) {c : Set Point} (hc : c ∈ F) {p : ℕ} (hA : SideAttach M.W c p 0)
+theorem arc_end_of_faced_zero (hA : SideAttach M.W c p 0)
     {U : Set Point} (hU : U ∈ M.regions F)
     (hf : ∀ᶠ s in 𝓝[>] (0 : ℝ), M.Faces ((p + M.W.n - 1) % M.W.n) (1 - s) U) :
     ∃ l, M.IsArc F U l (p + 0) := by
@@ -248,41 +230,38 @@ theorem arc_end_of_faced_zero (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ 
 
 /-! ## Non-cut keys near a key -/
 
+
+end
+
 /-- The keys just after a key are not cuts. -/
-theorem eventually_not_cut_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
-    (hfin : F.Finite) (x : ℝ) : ∀ᶠ s in 𝓝[>] (0 : ℝ), ¬ M.IsCut F (x + s) := by
+theorem eventually_not_cut_after (x : ℝ) : ∀ᶠ s in 𝓝[>] (0 : ℝ), ¬ M.IsCut F (x + s) := by
   have hK := hM.finite_cuts hF hfin
   have h := (Filter.eventually_all_finite hK (l := 𝓝[>] (0 : ℝ))
     (p := fun y s => x + s ≠ y)).2 fun y _ => by
       rcases le_or_gt y x with hy | hy
       · filter_upwards [self_mem_nhdsWithin] with s hs
-        have : (0 : ℝ) < s := hs
-        intro h; linarith
+        grind
       · filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < y - x by linarith)] with s hs
-        intro h; linarith [hs.2]
-  filter_upwards [h] with s hs hcut
-  exact hs _ hcut rfl
+        grind
+  grind
 
 /-- The keys just before a key are not cuts. -/
-theorem eventually_not_cut_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
-    (hfin : F.Finite) (x : ℝ) : ∀ᶠ s in 𝓝[>] (0 : ℝ), ¬ M.IsCut F (x - s) := by
+theorem eventually_not_cut_before (x : ℝ) : ∀ᶠ s in 𝓝[>] (0 : ℝ), ¬ M.IsCut F (x - s) := by
   have hK := hM.finite_cuts hF hfin
   have h := (Filter.eventually_all_finite hK (l := 𝓝[>] (0 : ℝ))
     (p := fun y s => x - s ≠ y)).2 fun y _ => by
       rcases le_or_gt x y with hy | hy
       · filter_upwards [self_mem_nhdsWithin] with s hs
-        have : (0 : ℝ) < s := hs
-        intro h; linarith
+        grind
       · filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < x - y by linarith)] with s hs
-        intro h; linarith [hs.2]
-  filter_upwards [h] with s hs hcut
-  exact hs _ hcut rfl
+        grind
+  grind
 
 
 /-- **Faced positions next to an adjacency**: if a region has an arc starting (ending) at the
 position of offset `d + t` from the walk vertex `g`, then non-cut positions faced by it exist at
 offsets just above (below) `d + t`. -/
-theorem adj_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
+theorem adj_near
     (hne : F.Nonempty) {g : ℕ} {R : Set Point} {d : ℕ} {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
     (hdt : 0 < (d : ℝ) + t) (hadj : Adj M F R ((g + d) % M.W.n) t) :
     (∀ b : ℝ, (d : ℝ) + t < b → ∃ (d₁ : ℕ) (t₁ : ℝ), d₁ ≤ d ∧ t₁ ∈ Ioo (0 : ℝ) 1 ∧
@@ -307,7 +286,7 @@ theorem adj_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
     have hs5 : s < 1 - t := hs4.2.trans_le (min_le_left _ _)
     have hs6 : s < b - (d + t) := hs4.2.trans_le (min_le_right _ _)
     refine ⟨d, t + s, le_rfl, ⟨by linarith, by linarith⟩, by linarith, by linarith, ?_, hs1⟩
-    rw [← add_assoc]; exact hs2
+    grind
   · right
     intro a ha
     rcases ht0.lt_or_eq with ht0' | ht0'
@@ -319,11 +298,10 @@ theorem adj_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
       have hs5 : s < t := hs4.2.trans_le (min_le_left _ _)
       have hs6 : s < (d + t) - a := hs4.2.trans_le (min_le_right _ _)
       refine ⟨d, t - s, le_rfl, ⟨by linarith, by linarith⟩, by linarith, by linarith, ?_, hs1⟩
-      rw [show (p : ℝ) + (t - s) = p + t - s by ring]; exact hs2
+      grind
     · subst ht0'
       have hd1 : 1 ≤ d := by
-        have : (0 : ℝ) < d := by linarith
-        exact_mod_cast this
+        aesop (add safe (by nlinarith))
       have h1 := faced_before_zero (Nat.mod_lt _ hn) harc (WalkAx.arc_cuts hne harc).2.2
       have hpm : (p + M.W.n - 1) % M.W.n = (g + (d - 1)) % M.W.n := mod_pred_mod hn g hd1
       rw [hpm] at h1
@@ -335,12 +313,13 @@ theorem adj_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
       have hs5 : s < 1 := hs4.2.trans_le (min_le_left _ _)
       have hs6 : s < (d + 0) - a := hs4.2.trans_le (min_le_right _ _)
       have hc : ((d - 1 : ℕ) : ℝ) = d - 1 := by rw [Nat.cast_sub hd1]; simp
-      refine ⟨d - 1, 1 - s, by omega, ⟨by linarith, by linarith⟩, by rw [hc]; linarith,
-        by rw [hc]; linarith, ?_, hs1⟩
-      rw [show (((g + (d - 1)) % M.W.n : ℕ) : ℝ) + (1 - s) =
-        (((g + (d - 1)) % M.W.n : ℕ) : ℝ) + 1 - s by ring]
-      exact hs2
+      refine ⟨d - 1, 1 - s, by omega, ⟨by linarith, by linarith⟩, by grind,
+        by grind, ?_, hs1⟩
+      grind
 
+
+
+end
 
 /-- The exit chords of `R` attached at an offset in `(0, L)` from `g` next to which `R` is faced,
 and whose other attachment is outside the stretch (the *crossing* chords of a piece). -/
@@ -351,9 +330,12 @@ def CrossX (M : Model) (F : Set (Set Point)) (R : Set Point) (g L : ℕ) : Set (
       sidePt M.W pb tb ≠ sidePt M.W ((g + d) % M.W.n) t ∧
       (off M.W.n g (pb + tb) = 0 ∨ (L : ℝ) ≤ off M.W.n g (pb + tb))}
 
+section
+variable (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
+include hM hF hfin
 /-- The chords attached at the position of offset `o` from `g` (with vertex offset `< L`): at most
 two. -/
-theorem ncard_at_off_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
+theorem ncard_at_off_le
     (g L : ℕ) (o : ℝ) :
     {f | f ∈ F ∧ ∃ (d : ℕ) (t : ℝ), d < L ∧ 0 ≤ t ∧ t < 1 ∧ o = d + t ∧
       SideAttach M.W f ((g + d) % M.W.n) t}.ncard ≤ 2 := by
@@ -363,24 +345,21 @@ theorem ncard_at_off_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
       (ncard_at_le hM hF hfin ((g + d₀) % M.W.n) t₀)
     rintro f ⟨hf, d, t, -, ht, ht1, ho', hA⟩
     obtain ⟨rfl, rfl⟩ := Chazelle.Chain.sideKey_inj ht ht1 ht₀ ht₀1 (ho'.symm.trans ho)
-    exact ⟨hf, hA⟩
+    simp_all
   · have : {f | f ∈ F ∧ ∃ (d : ℕ) (t : ℝ), d < L ∧ 0 ≤ t ∧ t < 1 ∧ o = d + t ∧
         SideAttach M.W f ((g + d) % M.W.n) t} = ∅ := by
-      ext f
-      simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and, not_exists]
-      intro _ d t _ ht ht1 ho _
-      exact h ⟨d, t, ht, ht1, ho⟩
-    rw [this, Set.ncard_empty]; omega
+      grind
+    grind [Set.ncard_empty]
 
 /-- **At most four crossing chords per piece**: the positions of crossing chords next to which
 `R` is faced are at most two (the first and the last of `R`'s positions in the stretch), by the
 separation of the walk by a chord. -/
-theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
+theorem crossX_ncard_le
     {g L : ℕ} (hg : g < M.W.n) (hLn : L < M.W.n) {R : Set Point} (hR : R ∈ M.regions F) :
     (CrossX M F R g L).ncard ≤ 4 := by
   set n := M.W.n with hn_def
   have hn : 0 < n := by omega
-  have hgR : (g : ℝ) < n := by exact_mod_cast hg
+  have hgR : (g : ℝ) < n := by simp_all
   set O : Set ℝ := {o | ∃ f ∈ exits M F R, ∃ (d : ℕ) (t : ℝ), d < L ∧ 0 ≤ t ∧ t < 1 ∧
     0 < (d : ℝ) + t ∧ SideAttach M.W f ((g + d) % n) t ∧ Adj M F R ((g + d) % n) t ∧
     (∃ (pb : ℕ) (tb : ℝ), SideAttach M.W f pb tb ∧
@@ -390,7 +369,7 @@ theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
       0 ≤ (p : ℝ) + t ∧ (p : ℝ) + t < n := by
     intro p hp t ht ht1
     have : (p : ℝ) + 1 ≤ n := by exact_mod_cast hp
-    exact ⟨by positivity, by linarith⟩
+    grind
   have hLR : ∀ {d : ℕ} {t : ℝ}, d < L → t < 1 → (d : ℝ) + t < L := fun {d t} hd ht => by
     have : (d : ℝ) + 1 ≤ L := by exact_mod_cast hd
     linarith
@@ -418,11 +397,8 @@ theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
       have hs : M.Separates f₂ (((g + dx) % n : ℕ) + tx) (((g + dy) % n : ℕ) + ty) := by
         refine ⟨(g + d₂) % n, pb, t₂, tb, hA₂, hB, Ne.symm hBne, ?_⟩
         refine off_sep (Nat.cast_nonneg g) hgR hKA.1 hKA.2 hKB.1 hKB.2 hKx.1 hKx.2 hKy.1 hKy.2
-          ⟨by rw [hox, hoA]; exact h1, by rw [hoy, hoA]; exact h2⟩ ?_
-        rw [hox, hoy]
-        rcases hBo with h | h
-        · left; rw [h]; exact h0
-        · right; linarith
+          ⟨by grind, by grind⟩ ?_
+        grind
       exact ((hM.eq_iff_not_separates hF hfin hR hR (Nat.mod_lt _ hn) (Nat.mod_lt _ hn) htx hty
         hcx hcy hfx hfy).1 rfl) f₂ hf₂.1 hs
     -- a faced position of `R` near the first position, below the second
@@ -467,6 +443,9 @@ theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
           intro f hf; simp only [Set.mem_iUnion] at hf; obtain ⟨o, -, hf, -⟩ := hf; exact hf))
     _ ≤ 2 * O.ncard := ncard_biUnion_le_mul hOfin _ fun o _ => ncard_at_off_le hM hF hfin g L o
     _ ≤ 4 := by omega
+
+
+end
 
 end FuseDeg
 

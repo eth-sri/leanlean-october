@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFTile
 public import Chazelle.Core.RestoreFPieceGeo
 
@@ -26,12 +28,11 @@ def MeetsArc (M : Model) (a b : ℝ) (p : ℕ) : Prop :=
 
 theorem wrapK_bounds {n x : ℝ} (h0 : 0 ≤ x) (h1 : x < 2 * n) :
     0 ≤ wrapK n x ∧ wrapK n x < n := by
-  unfold wrapK; split_ifs with h <;> constructor <;> linarith
+  core_grind
 
 theorem unwrapK_wrapK {n l x : ℝ} (_hl : 0 ≤ l ∧ l < n) (h0 : l ≤ x) (h1 : x < l + n) :
     unwrapK n l (wrapK n x) = x := by
-  unfold wrapK unwrapK
-  split_ifs with h2 h3 <;> linarith
+  core_grind
 
 /-- **An edge of the unwrapped interval `[⌊a⌋, P)` meets the interval `(a, b)`.** -/
 theorem meets_of_unwrapped {M : Model} {a b : ℝ} (ha : 0 ≤ a ∧ a < M.W.n)
@@ -39,29 +40,23 @@ theorem meets_of_unwrapped {M : Model} {a b : ℝ} (ha : 0 ≤ a ∧ a < M.W.n)
     (hjb : (j : ℝ) + 1 ≤ unwrapK M.W.n a b) (_hjn : (j : ℝ) < a + M.W.n) :
     MeetsArc M a b (j % M.W.n) := by
   set n := M.W.n
-  have hn : (0 : ℝ) < n := by linarith [ha.1, ha.2]
-  have hnN : 0 < n := by exact_mod_cast hn
+  have hn : (0 : ℝ) < n := by linarith
+  have hnN : 0 < n := by simp_all
   set y : ℝ := (max a j + (j + 1)) / 2 with hy
   have hy1 : a < y := by
-    have := le_max_left a (j : ℝ); have := max_lt (show a < (j : ℝ) + 1 by linarith)
-      (show (j : ℝ) < (j : ℝ) + 1 by linarith); rw [hy]; linarith
+    ram_grind
   have hy2 : (j : ℝ) < y := by
-    have := le_max_right a (j : ℝ)
-    rw [hy]
-    rcases le_or_gt a j with h | h
-    · rw [max_eq_right h]; linarith
-    · rw [max_eq_left h.le]; linarith
+    ram_grind
   have hy3 : y < j + 1 := by
-    have := max_lt (show a < (j : ℝ) + 1 by linarith) (show (j : ℝ) < (j : ℝ) + 1 by linarith)
-    rw [hy]; linarith
+    ram_grind
   have hub := (unwrapK_bounds ha hb).2
   -- the wrapped point
-  have hyb : 0 ≤ y ∧ y < 2 * n := ⟨by linarith [ha.1], by linarith⟩
+  have hyb : 0 ≤ y ∧ y < 2 * n := ⟨by linarith, by linarith⟩
   have hw := wrapK_bounds hyb.1 hyb.2
   have huw : unwrapK n a (wrapK n y) = y := unwrapK_wrapK ha hy1.le (by linarith)
   have hin : sideInArc a b (wrapK n y) :=
-    (cyc_unwrap ha ha hb hw (by rw [unwrapK_self]; exact hab)).2
-      ⟨by rw [unwrapK_self, huw]; exact hy1, by rw [huw]; linarith⟩
+    (cyc_unwrap ha ha hb hw (by core_grind)).2
+      ⟨by core_grind, by linarith⟩
   refine ⟨Nat.mod_lt _ hnN, y - j, by linarith, by linarith, ?_⟩
   have e : ((j % n : ℕ) : ℝ) + (y - j) = wrapK n y := by
     unfold wrapK
@@ -70,7 +65,7 @@ theorem meets_of_unwrapped {M : Model} {a b : ℝ} (ha : 0 ≤ a ∧ a < M.W.n)
       have : y < n := by
         have : (j : ℝ) + 1 ≤ n := by exact_mod_cast hj
         linarith
-      rw [ite_eq_left this]; ring
+      ram_grind
     · have hj2 : j - n < n := by
         have : (j : ℝ) < 2 * n := by linarith
         have : j < 2 * n := by exact_mod_cast this
@@ -80,10 +75,12 @@ theorem meets_of_unwrapped {M : Model} {a b : ℝ} (ha : 0 ≤ a ∧ a < M.W.n)
         have : (n : ℝ) ≤ j := by exact_mod_cast (by omega : n ≤ j)
         linarith
       rw [ite_eq_right this, Nat.cast_sub (by omega)]; ring
-  rw [e]; exact hin
+  ram_grind
 
+section
+variable {M : Model} {Q : Polygon} {n0 : ℕ}
 /-- **The walk vertices of a light closed key interval** are within `9` steps of its start edge. -/
-theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
+theorem light_cover
     (hunc : {p | p < M.W.n ∧ ¬ M.counted p}.ncard ≤ 7) {s e : WPos}
     (hs : ProperPos M Q n0 s) (hse : s.edge < M.W.n) (hke : 0 ≤ M.key Q e ∧ M.key Q e < M.W.n)
     (hne : M.key Q s ≠ M.key Q e) (hwt : M.arcWt (M.key Q s) (M.key Q e) ≤ 1) {p : ℕ}
@@ -99,26 +96,25 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
     have : (s.edge : ℝ) + 1 ≤ n := by exact_mod_cast hse
     constructor <;> linarith [hs.1, hs.2.1]
   have hab : a < unwrapK n a b := by
-    have := unwrapK_bounds ha hke
+    
     unfold unwrapK at *
     split_ifs at * with h1
-    · exact lt_of_le_of_ne h1 hne
-    · linarith [ha.2, hke.1]
-  have hpn : (0 : ℝ) ≤ p ∧ (p : ℝ) < n := ⟨by positivity, by exact_mod_cast hp⟩
+    all_goals grind
+  have hpn : (0 : ℝ) ≤ p ∧ (p : ℝ) < n := ⟨by positivity, by simp_all⟩
   -- the unwrapped vertex
   set P := unwrapK n a p with hPdef
   have hPb : a ≤ P ∧ P ≤ unwrapK n a b := by
     rcases hx with hx | hx | hx
     · have := (cyc_unwrap ha ha hke hpn (by rw [unwrapK_self]; exact hab)).1 hx
-      rw [unwrapK_self] at this; exact ⟨this.1.le, this.2.le⟩
-    · rw [hPdef, hx, unwrapK_self]; exact ⟨le_rfl, hab.le⟩
-    · rw [hPdef, hx]; exact ⟨hab.le, le_rfl⟩
+      rw [unwrapK_self] at this; grind
+    · rw [hPdef, hx, unwrapK_self]; grind
+    grind
   -- `P` is the natural `p` or `p + n`
   obtain ⟨Pn, hPn, hPmod⟩ : ∃ Pn : ℕ, (Pn : ℝ) = P ∧ Pn % n = p := by
     rw [hPdef]; unfold unwrapK
     split_ifs
     · exact ⟨p, rfl, Nat.mod_eq_of_lt hp⟩
-    · exact ⟨p + n, by push_cast; ring, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt hp]⟩
+    · exact ⟨p + n, by simp_all, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt hp]⟩
   have hsP : s.edge ≤ Pn := by
     have : (s.edge : ℝ) ≤ Pn := by rw [hPn]; linarith [hPb.1, hs.1]
     exact_mod_cast this
@@ -131,12 +127,12 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
   -- the `t` edges before the vertex meet the interval
   have hmeet : ∀ d, d < t → MeetsArc M a b ((s.edge + d) % n) := fun d hd =>
     meets_of_unwrapped ha hke hab
-      (by have : (s.edge : ℝ) ≤ ((s.edge + d : ℕ) : ℝ) := by exact_mod_cast (by omega)
+      (by have : (s.edge : ℝ) ≤ ((s.edge + d : ℕ) : ℝ) := by grind
           linarith [hs.2.1])
       (by have : ((s.edge + d : ℕ) : ℝ) + 1 ≤ Pn := by exact_mod_cast (by omega)
-          linarith [hPb.2])
+          grind)
       (by have : ((s.edge + d : ℕ) : ℝ) + 1 ≤ Pn := by exact_mod_cast (by omega)
-          linarith [hPb.2])
+          grind)
   -- counting
   set S : Set ℕ := (fun d => (s.edge + d) % n) '' Set.Iio t with hS
   have hinj : Set.InjOn (fun d => (s.edge + d) % n) (Set.Iio t) := by
@@ -147,14 +143,10 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
     rcases Nat.lt_or_gt_of_ne hne' with h | h
     · obtain ⟨k, hk⟩ := (Nat.modEq_iff_dvd' h.le).1 (Nat.ModEq.add_left_cancel' _ hxy)
       rcases k with _ | k
-      · omega
-      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (by omega)
-        omega
+      all_goals grind
     · obtain ⟨k, hk⟩ := (Nat.modEq_iff_dvd' h.le).1 (Nat.ModEq.add_left_cancel' _ hxy).symm
       rcases k with _ | k
-      · omega
-      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (by omega)
-        omega
+      all_goals grind
   have hcS : S.ncard = t := by
     rw [hS, hinj.ncard_image, Set.ncard_eq_toFinset_card', Set.toFinset_Iio]
     simp
@@ -176,7 +168,7 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
 
 /-- **The steps from the start edge to a walk vertex of a closed key interval** are at most its
 weight plus the uncounted edges. -/
-theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
+theorem steps_le
     {w u : ℕ} (hunc : {p | p < M.W.n ∧ ¬ M.counted p}.ncard ≤ u) {s e : WPos}
     (hs : ProperPos M Q n0 s) (hse : s.edge < M.W.n) (hke : 0 ≤ M.key Q e ∧ M.key Q e < M.W.n)
     (hne : M.key Q s ≠ M.key Q e) (hwt : M.arcWt (M.key Q s) (M.key Q e) ≤ w) {p : ℕ}
@@ -193,26 +185,25 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
     have : (s.edge : ℝ) + 1 ≤ n := by exact_mod_cast hse
     constructor <;> linarith [hs.1, hs.2.1]
   have hab : a < unwrapK n a b := by
-    have := unwrapK_bounds ha hke
+    
     unfold unwrapK at *
     split_ifs at * with h1
-    · exact lt_of_le_of_ne h1 hne
-    · linarith [ha.2, hke.1]
-  have hpn : (0 : ℝ) ≤ p ∧ (p : ℝ) < n := ⟨by positivity, by exact_mod_cast hp⟩
+    all_goals grind
+  have hpn : (0 : ℝ) ≤ p ∧ (p : ℝ) < n := ⟨by positivity, by simp_all⟩
   -- the unwrapped vertex
   set P := unwrapK n a p with hPdef
   have hPb : a ≤ P ∧ P ≤ unwrapK n a b := by
     rcases hx with hx | hx | hx
     · have := (cyc_unwrap ha ha hke hpn (by rw [unwrapK_self]; exact hab)).1 hx
-      rw [unwrapK_self] at this; exact ⟨this.1.le, this.2.le⟩
-    · rw [hPdef, hx, unwrapK_self]; exact ⟨le_rfl, hab.le⟩
-    · rw [hPdef, hx]; exact ⟨hab.le, le_rfl⟩
+      rw [unwrapK_self] at this; grind
+    · rw [hPdef, hx, unwrapK_self]; grind
+    grind
   -- `P` is the natural `p` or `p + n`
   obtain ⟨Pn, hPn, hPmod⟩ : ∃ Pn : ℕ, (Pn : ℝ) = P ∧ Pn % n = p := by
     rw [hPdef]; unfold unwrapK
     split_ifs
     · exact ⟨p, rfl, Nat.mod_eq_of_lt hp⟩
-    · exact ⟨p + n, by push_cast; ring, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt hp]⟩
+    · exact ⟨p + n, by simp_all, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt hp]⟩
   have hsP : s.edge ≤ Pn := by
     have : (s.edge : ℝ) ≤ Pn := by rw [hPn]; linarith [hPb.1, hs.1]
     exact_mod_cast this
@@ -225,12 +216,12 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
   -- the `t` edges before the vertex meet the interval
   have hmeet : ∀ d, d < t → MeetsArc M a b ((s.edge + d) % n) := fun d hd =>
     meets_of_unwrapped ha hke hab
-      (by have : (s.edge : ℝ) ≤ ((s.edge + d : ℕ) : ℝ) := by exact_mod_cast (by omega)
+      (by have : (s.edge : ℝ) ≤ ((s.edge + d : ℕ) : ℝ) := by grind
           linarith [hs.2.1])
       (by have : ((s.edge + d : ℕ) : ℝ) + 1 ≤ Pn := by exact_mod_cast (by omega)
-          linarith [hPb.2])
+          grind)
       (by have : ((s.edge + d : ℕ) : ℝ) + 1 ≤ Pn := by exact_mod_cast (by omega)
-          linarith [hPb.2])
+          grind)
   -- counting
   set S : Set ℕ := (fun d => (s.edge + d) % n) '' Set.Iio t with hS
   have hinj : Set.InjOn (fun d => (s.edge + d) % n) (Set.Iio t) := by
@@ -241,14 +232,10 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
     rcases Nat.lt_or_gt_of_ne hne' with h | h
     · obtain ⟨k, hk⟩ := (Nat.modEq_iff_dvd' h.le).1 (Nat.ModEq.add_left_cancel' _ hxy)
       rcases k with _ | k
-      · omega
-      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (by omega)
-        omega
+      all_goals grind
     · obtain ⟨k, hk⟩ := (Nat.modEq_iff_dvd' h.le).1 (Nat.ModEq.add_left_cancel' _ hxy).symm
       rcases k with _ | k
-      · omega
-      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (by omega)
-        omega
+      all_goals grind
   have hcS : S.ncard = t := by
     rw [hS, hinj.ncard_image, Set.ncard_eq_toFinset_card', Set.toFinset_Iio]
     simp
@@ -268,6 +255,9 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
   refine ⟨t, by omega, ?_, ?_⟩
   · rw [htdef, show s.edge + (Pn - s.edge) = Pn by omega, hPmod]
   · rw [htdef, show s.edge + (Pn - s.edge) = Pn by omega, hPn]
+
+
+end
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopLab2
 public import Chazelle.Core.SweepEvStep
 
@@ -34,13 +36,15 @@ theorem slb_shoot_pt {C : Chain} {a w : Point} {σ : ℝ} (hw : w ∈ Merge.shoo
   unfold Merge.shoot at hw
   obtain ⟨u, hu0, hu1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hw
   have hT : 0 ≤ C.hitParam a σ := Real.sInf_nonneg fun _ ht => ht.1.le
-  refine ⟨by simp [Geometry.lerp_snd, Visibility.rayPt_snd], u * C.hitParam a σ,
+  refine ⟨by simp_all, u * C.hitParam a σ,
     mul_nonneg hu0 hT, ?_⟩
-  simp only [Geometry.lerp_fst, Visibility.rayPt_fst]
-  ring
+  core_grind
 
+section
+variable {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right)
+include hS₂
 /-- A chord of `F₂⁺` in no chord of `S₂`: a shared chord or a top chord. -/
-theorem slb_nonfused_kind {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right)
+theorem slb_nonfused_kind
     {e : Set Point} (he : e ∈ F₂plus J S₂) (hnf : ∀ c ∈ S₂, ¬ e ⊆ c) :
     ∃ (a : Point) (σ : ℝ), (a = J.shared ∨ a = J.right.top) ∧ (σ = 1 ∨ σ = -1) ∧
       e = Merge.shoot J.whole a σ := by
@@ -51,7 +55,7 @@ theorem slb_nonfused_kind {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augCh
 
 /-- **No tie of two non-fused chords** at a point other than the shared vertex and the top of
 `C₂`. -/
-theorem slb_nonfused_pt {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right)
+theorem slb_nonfused_pt
     {e e' : Set Point} (he : e ∈ F₂plus J S₂) (he' : e' ∈ F₂plus J S₂) (hne : e' ≠ e)
     (hnf : ∀ c ∈ S₂, ¬ e ⊆ c) (hnf' : ∀ c ∈ S₂, ¬ e' ⊆ c) {w : Point} (hw : w ∈ e)
     (hw' : w ∈ e') (hwv : w ≠ J.shared) (hwt : w ≠ J.right.top) : False := by
@@ -62,22 +66,22 @@ theorem slb_nonfused_pt {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChor
   have haa : a = a' := by
     rcases ha with rfl | rfl <;> rcases ha' with rfl | rfl
     · rfl
-    · exact shared_eq_top_of_snd J (by rw [← h2', h2])
-    · exact (shared_eq_top_of_snd J (by rw [← h2, h2'])).symm
+    · exact shared_eq_top_of_snd J (by simp_all)
+    · exact (shared_eq_top_of_snd J (by simp_all)).symm
     · rfl
   subst haa
   have hσσ : σ' ≠ σ := fun h => hne (by rw [h])
   have hσ' : σ' = -σ := by
-    rcases hσ with rfl | rfl <;> rcases hσ' with rfl | rfl <;> simp_all
-  have hss : σ * (s + s') = 0 := by rw [hσ'] at h1'; linarith
-  have hσ0 : σ ≠ 0 := by rcases hσ with rfl | rfl <;> norm_num
+    grind
+  have hss : σ * (s + s') = 0 := by grind
+  have hσ0 : σ ≠ 0 := by grind
   have hs0 : s = 0 := by
     have := (mul_eq_zero.1 hss).resolve_left hσ0
     linarith
-  have hwa : w = a := Prod.ext (by rw [h1, hs0]; ring) h2
-  rcases ha with rfl | rfl
-  · exact hwv hwa
-  · exact hwt hwa
+  grind
+
+
+end
 
 /-- **No tie of two non-fused chords** at a vertex position of the open right stretch other than
 the split vertex. -/
@@ -100,7 +104,7 @@ theorem slb_nonfused_tie (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)
       off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ)
         ((((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n : ℕ) : ℝ) + 0) <
         ((rL1 J + rL2 J : ℕ) : ℝ) := by
-    rw [hoff]; constructor <;> linarith
+    ram_grind
   have hwv : sidePt (chainModel J.whole).W ((gW J + d) % (chainModel J.whole).W.n) 0 ≠
       J.shared := fun h =>
     off_shared_out J hP hS₂.2.1 hS₂.1 (Nat.mod_lt _ hC.n_pos) le_rfl zero_lt_one h hin
@@ -111,10 +115,7 @@ theorem slb_nonfused_tie (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)
 
 /-- In case G the slit has positive length. -/
 theorem slb_rδ_pos (h : rL1 J < Lst J) : 0 < rδ J := by
-  unfold Lst at h
-  unfold rL2 at h
-  unfold rδ
-  split_ifs at h ⊢ <;> omega
+  core_grind [rL2, rδ]
 
 /-- **The tie at the split vertex leaving the stretch** (`TieOut`). -/
 theorem slb_tieOut (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
@@ -143,14 +144,13 @@ theorem slb_tieOut (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     obtain ⟨rfl, rfl⟩ := hM.attach_unique (hC.hF he) hB hA h
     have : oW J (((gW J + rL1 J) % (chainModel J.whole).W.n : ℕ) + 0) = rL1 J + 0 := hoff
     rw [this] at hBo
-    have : (rL1 J : ℝ) < (Lst J : ℝ) := by exact_mod_cast hlt
-    linarith
+    simp_all +zetaDelta <;> omega
   refine ⟨e, e', rL1 J, q, pb', s, tb', ρ, he, he', hne, hd0, hlt, hA, hA', hB, hB', hBne,
-    by first | (rw [hsplit']; exact hBne'), fun h => ?_, hOff pb' tb' hB' (by first | (rw [hsplit]; exact hBne')), hρ,
+    by simp_all, fun h => ?_, hOff pb' tb' hB' (by simp_all), hρ,
     hS, hS', hsplit ▸ hA.2.2.2.1, hsplit ▸ hA'.2.2.2.1⟩
   have : (Lst J : ℝ) ≤ off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (q + s) :=
     hBo
-  have h2 := h.2
+  
   have : ((rL1 J + rL2 J : ℕ) : ℝ) = (Lst J : ℝ) := rfl
   linarith
 

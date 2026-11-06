@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranRamRm
 
 /-!
@@ -79,7 +81,7 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
       c₁.nmem = c.nmem) := by
     exec_block
     · omega
-    · refine ⟨rfl, ?_, ?_, fun r a1 a2 => by simp [upd, a1, a2], rfl⟩ <;> config_simp
+    · refine ⟨rfl, ?_, ?_, fun r a1 a2 => by ram_simp , rfl⟩ <;> config_simp
       rw [h50, hC.one]
   obtain ⟨q101, q108, qr, qm⟩ := q
   have I0 : WbI W d S X (top - 1) L c₁ c₁ := by
@@ -92,9 +94,9 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
   have k44 : c₁.nreg 90044 = d.b0 + d.oTmp := by rw [qr _ (by decide) (by decide), hC.bTmp]
   have k43 : c₁.nreg 90043 = d.b0 + d.oStk := by rw [qr _ (by decide) (by decide), hC.bStk]
   have k19 : c₁.nreg 90019 = 1 := by rw [qr _ (by decide) (by decide), hC.one]
-  have k100 : c₁.nreg 90100 = L.length := by rw [qr _ (by decide) (by decide), h100]
+  have k100 : c₁.nreg 90100 = L.length := by grind
   have k103 : c₁.nreg 90103 = d.b0 + d.oEx + d.D * X := by
-    rw [qr _ (by decide) (by decide), h103]
+    grind
   obtain ⟨c', k, e, I', hx, hk⟩ := Exec.whileLtN_bounded (P := P) (a := 90101) (b := 90100)
     (body := wbBody) (WbI W d S X (top - 1) L c₁) (fun d' => L.length - d'.nreg 90101) 8
     (fun _ h => h.wb)
@@ -104,25 +106,25 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
       generalize htdef : c₂.nreg 90101 = t at ht ht₂ henc₂
       have s := slot_lt (R := d.R) (D := d.D) hX (show t < d.D by omega)
       have r44 : c₂.nreg 90044 = d.b0 + d.oTmp := by
-        rw [hr₂ _ (by decide) (by decide) (by decide), k44]
+        grind
       have r43 : c₂.nreg 90043 = d.b0 + d.oStk := by
-        rw [hr₂ _ (by decide) (by decide) (by decide), k43]
-      have r19 : c₂.nreg 90019 = 1 := by rw [hr₂ _ (by decide) (by decide) (by decide), k19]
+        grind
+      have r19 : c₂.nreg 90019 = 1 := by grind
       have r103 : c₂.nreg 90103 = d.b0 + d.oEx + d.D * X := by
-        rw [hr₂ _ (by decide) (by decide) (by decide), k103]
+        grind
       have r108 : c₂.nreg 90108 = top - 1 := by
-        rw [hr₂ _ (by decide) (by decide) (by decide), q108]
+        grind
       have vt : c₂.nmem (d.b0 + d.oTmp + t) = L.getD t 0 := by
-        rw [hm₂ _ (by right; omega), qm, htmp t ht]
+        grind
       unfold wbBody
       exec_block
-      · rw [r44]; omega
-      · config_simp; rw [r103]; omega
-      · config_simp; rw [r43, r108]; omega
-      · config_simp; rw [r43, r108]; omega
-      · config_simp; rw [r19]; omega
+      · omega
+      · config_simp; grind
+      · config_simp; grind
+      · config_simp; grind
+      · config_simp; omega
       · refine ⟨⟨by assumption, ?_, ?_, ?_, ?_⟩, by omega, ?_⟩
-        · config_simp; rw [r19]; omega
+        · config_simp; omega
         · config_simp
           rw [r44, r103, r43, r108, r19, htdef, vt]
           have E1 := henc₂.set_ex hX (show t < d.D by omega) (L.getD t 0)
@@ -134,33 +136,15 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
             (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
             (fun u _ => ?_)
           · simp only [St.wb]
-            by_cases hx' : x = X
-            · simp only [hx', true_and]
-              by_cases hu : u = t
-              · rw [ite_eq_left (by omega), ite_eq_left hu, hu]
-              · rw [ite_eq_right hu]
-                by_cases hu' : u < t
-                · rw [ite_eq_left (by omega), ite_eq_left hu']
-                · rw [ite_eq_right (by omega), ite_eq_right hu']
-            · simp [hx']
+            grind
           · simp only [St.wb, Function.update_apply]
-            by_cases hu : u = top - 1 + t
-            · rw [ite_eq_left hu, ite_eq_left ⟨by omega, by omega⟩, hu]
-              congr 1; omega
-            · rw [ite_eq_right hu]
-              by_cases hu' : top - 1 ≤ u ∧ u < top - 1 + t
-              · rw [ite_eq_left hu', ite_eq_left ⟨hu'.1, by omega⟩]
-              · rw [ite_eq_right hu', ite_eq_right (by omega)]
+            grind
         · intro r a1 a2 a3
           config_simp
           simp only [upd, a1, a2, a3, ite_false]
-          exact hr₂ r a1 a2 a3
-        · intro a ha
-          config_simp
-          simp only [upd]
-          rw [ite_eq_right (by rw [r43, r108]; omega), ite_eq_right (by rw [r103]; omega)]
-          exact hm₂ a ha
-        · config_simp; rw [r19]; omega) I0
+          grind
+        · grind [upd]
+        · config_simp; omega) I0
   obtain ⟨hw', ht', henc', hr', hm'⟩ := I'
   rw [hr' 90100 (by decide) (by decide) (by decide), k100] at hx
   have hfull : c'.nreg 90101 = L.length := by omega
@@ -168,11 +152,9 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
   refine ⟨c', _, .seq e₁ e, ?_, henc', ?_, fun r a1 a2 a3 a4 => ?_, fun a ha => ?_⟩
   · rw [q101] at hk
     rw [← hD.D]
-    have : 10 * L.length ≤ 10 * d.D := Nat.mul_le_mul_left _ hL
     omega
-  · rw [hr' _ (by decide) (by decide) (by decide), q108]
-  · rw [hr' r a1 a2 a3, qr r a1 a4]
-  · rw [hm' a ha, qm]
+  · grind
+  all_goals grind
 
 /-! ## The tail -/
 
@@ -208,17 +190,16 @@ theorem tailStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : C
   · config_simp; rw [hC.bWt, h64]; omega
   · config_simp; rw [hC.bLive, h62]; omega
   · omega
-  · config_simp; rw [h108, h100]; omega
-  · refine ⟨rfl, ?_, ?_, ?_, fun r a1 a2 a3 a4 => by simp [upd, a1, a2, a3, a4], ?_⟩ <;>
+  · config_simp; omega
+  · refine ⟨rfl, ?_, ?_, ?_, fun r a1 a2 a3 a4 => by ram_simp , ?_⟩ <;>
       config_simp
     · rw [hC.bDeg, h64, hC.bWt, hC.bLive, h62, h100, h78]
       exact ((henc.set_deg hX len).set_wt hX μ).set_live hcc 0
-    · rw [h108, h100]
+    · omega
     · rw [hC.one]
     · intro a ha
       rw [hC.bDeg, h64, hC.bWt, hC.bLive, h62]
-      simp only [upd]
-      rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
+      grind [upd]
 
 /-! ## The ring -/
 
@@ -249,21 +230,22 @@ theorem unlinkS_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Co
   · config_simp; simp (config := { failIfUnchanged := false }) only [Machine.upd_other _ _ _ h5, Machine.upd_other _ _ _ h6]; rw [hC.bNxt, hj]; omega
   · config_simp; rw [hC.bNxt, hC.bPrv, hj, ep]; omega
   · config_simp; simp (config := { failIfUnchanged := false }) only [Machine.upd_other _ _ _ h5, Machine.upd_other _ _ _ h6]; rw [hC.bPrv, hC.bNxt, hj, en]; omega
-  · refine ⟨rfl, ?_, fun r a1 a2 a3 => by simp [upd, a1, a2, a3], ?_⟩ <;> config_simp <;>
+  · refine ⟨rfl, ?_, fun r a1 a2 a3 => by ram_simp , ?_⟩ <;> config_simp <;>
       simp (config := { failIfUnchanged := false }) only [Machine.upd_other _ _ _ h5, Machine.upd_other _ _ _ h6]
     · rw [hC.bPrv, hC.bNxt, hj, ep, en]
       exact (henc.set_nxt hp (S.nxt j)).set_prv hn (S.prv j)
     · intro a ha
       rw [hC.bPrv, hC.bNxt, hj, ep, en]
-      simp only [upd]
-      rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+      grind [upd]
 
 /-- Decrement the count at position `r rn`. -/
 def decS (rn : ℕ) : Stmt := block [.addN 90105 90038 rn, .loadN 90106 90105,
   .subN 90106 90106 90019, .storeN 90105 90106]
 
-theorem decS_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Config}
-    (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d S) (hD : DimOK E d W)
+section
+variable {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Config} (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d S) (hD : DimOK E d W)
+include E hw hC henc hD
+theorem decS_exec
     {rn j : ℕ} (_h5 : rn ≠ 90105) (_h6 : rn ≠ 90106) (hj : c.nreg rn = j) (hjA : j < d.A) :
     ∃ c' k, Exec P W (decS rn) c c' k ∧ k = 4 ∧
       Enc c'.nmem d { S with cnt := Function.update S.cnt j (S.cnt j - 1) } ∧
@@ -275,17 +257,15 @@ theorem decS_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Confi
   unfold decS
   exec_block
   · rw [hC.bCnt, hj]; omega
-  · refine ⟨rfl, ?_, fun r a1 a2 => by simp [upd, a1, a2], ?_⟩ <;> config_simp
+  · refine ⟨rfl, ?_, fun r a1 a2 => by simp_all, ?_⟩ <;> config_simp
     · rw [hC.bCnt, hj, ec, hC.one]
       exact henc.set_cnt hjA _
     · intro a ha
       rw [hC.bCnt, hj]
-      simp only [upd]
-      rw [ite_eq_right (by omega)]
+      grind [upd]
 
 /-- Unlink position `r rn` iff the bit `r rb` is set. -/
-theorem optUnl_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Config}
-    (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d S) (hD : DimOK E d W)
+theorem optUnl_exec
     {rb rn j : ℕ} {b : Bool} (h5 : rn ≠ 90105) (h6 : rn ≠ 90106) (h7 : rn ≠ 90107)
     (hj : c.nreg rn = j) (hbit : c.nreg rb = bit b)
     (hjA : j < d.A) (hp : S.prv j < d.A) (hn : S.nxt j < d.A) :
@@ -301,6 +281,9 @@ theorem optUnl_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
     obtain ⟨c', k, e, hk, h1, h2, h3⟩ := unlinkS_exec (P := P) hw hC henc hD h5 h6 h7 hj hjA hp hn
     exact ⟨c', _, .ifLtN_false (by rw [hbit, hC.one]; decide) e, by omega, h1, h2, h3⟩
 
+
+end
+
 /-- Unlink the dying positions and decrement the counts. -/
 def ringStmt : Stmt :=
   .seq (.ifLtN 90072 90019 .skip (unlinkS 90068))
@@ -312,16 +295,14 @@ def St.rg (S : St) (n1 n2 : ℕ) : St :=
   { S3 with cnt := Function.update (Function.update S.cnt n1 (S.cnt n1 - 1)) n2 (S.cnt n2 - 1) }
 
 theorem optUnl_cnt (S : St) (b : Bool) (j : ℕ) : (S.optUnl b j).cnt = S.cnt := by
-  unfold St.optUnl; split_ifs <;> rfl
+  grind [St.optUnl]
 
 theorem optUnl_bound {S : St} {A : ℕ} (b : Bool) {j j' : ℕ} (hn : S.nxt j < A) (hp : S.prv j < A)
     (hn' : S.nxt j' < A) (hp' : S.prv j' < A) :
     (S.optUnl b j).nxt j' < A ∧ (S.optUnl b j).prv j' < A := by
   unfold St.optUnl St.unl
   split_ifs
-  · simp only [Function.update_apply]
-    constructor <;> split_ifs <;> assumption
-  · exact ⟨hn', hp'⟩
+  all_goals grind
 
 theorem ringStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Config}
     (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d S) (hD : DimOK E d W)
@@ -341,25 +322,19 @@ theorem ringStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : C
   have bb := optUnl_bound (S := S) (decide (S.cnt n1 = 1)) (j := n1) b1.1 b1.2 b2.1 b2.2
   obtain ⟨c₂, k₂, e₂, hk₂, E₂, r₂, m₂⟩ := optUnl_exec (P := P) (rb := 90073) (rn := 90069)
     (b := decide (S.cnt n2 = 1)) e₁.wb_right hC₁ E₁ hD (by decide) (by decide) (by decide)
-    (by rw [r₁ _ (by decide) (by decide) (by decide), h69])
-    (by rw [r₁ _ (by decide) (by decide) (by decide), h73]) hn2 bb.2 bb.1
+    (by grind)
+    (by grind) hn2 bb.2 bb.1
   have hC₂ : Cst c₂ E d := hC₁.frame fun r hr _ => r₂ r (by omega) (by omega) (by omega)
   obtain ⟨c₃, k₃, e₃, hk₃, E₃, r₃, m₃⟩ := decS_exec (P := P) (rn := 90068) e₂.wb_right hC₂ E₂ hD
     (by decide) (by decide)
-    (by rw [r₂ _ (by decide) (by decide) (by decide), r₁ _ (by decide) (by decide) (by decide),
-      h68]) hn1
+    (by grind) hn1
   have hC₃ : Cst c₃ E d := hC₂.frame fun r hr _ => r₃ r (by omega) (by omega)
   obtain ⟨c₄, k₄, e₄, hk₄, E₄, r₄, m₄⟩ := decS_exec (P := P) (rn := 90069) e₃.wb_right hC₃ E₃ hD
     (by decide) (by decide)
-    (by rw [r₃ _ (by decide) (by decide), r₂ _ (by decide) (by decide) (by decide),
-      r₁ _ (by decide) (by decide) (by decide), h69]) hn2
+    (by grind) hn2
   refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, ?_, ?_, ?_⟩
-  · refine E₄.st_congr (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
-      (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ _ _ => rfl) (fun j _ => ?_)
-      (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
-    simp only [St.rg, optUnl_cnt, Function.update_apply, ite_eq_right (Ne.symm hne)]
-  · intro r a1 a2 a3
-    rw [r₄ r a1 a2, r₃ r a1 a2, r₂ r a1 a2 a3, r₁ r a1 a2 a3]
+  · grind [St.rg, optUnl_cnt, Function.update_apply]
+  · grind
   · intro a ha
     rw [m₄ a (by omega), m₃ a (by omega), m₂ a (by omega), m₁ a (by omega)]
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreNodeEndMath
 public import Chazelle.Core.RestoreFEndP
 
@@ -27,7 +29,7 @@ theorem pos_of_param {M : Model} {Q : Polygon} {e a b : ℕ} (h : M.param Q ⟨e
   rw [h]
 
 /-- **The candidate at a node chord end.** -/
-theorem end_cand (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) {c : Set Point} {h : ℕ} {d : ℕ}
+theorem end_cand (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) {c : Set Point} {h d : ℕ}
     (hd : d < L) (hpe : PosOK Cα (Qof E.P) E.P.n ⟨g' + d, h + 1⟩)
     (hA : SideAttach (chainModel Cα).W c (g' + d) ((chainModel Cα).param (Qof E.P) ⟨g' + d, h + 1⟩))
     (hc : ∀ z ∈ c, z.2 = ((Qof E.P).vtx h).2)
@@ -43,29 +45,22 @@ theorem end_cand (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) {c : Set Poin
     rw [endM_param hS hd, endM_pos hS hd]
     unfold endCode
     split_ifs with hk
-    · exact ⟨rfl, rfl⟩
+    · ram_grind
     · have h0 : t = 0 := by
-        rw [key_pz] at hk; push Not at hk; exact le_antisymm hk ht0
-      have e : (chainModel Cα).param (Qof E.P) ⟨g' + d, 0⟩ =
-          (chainModel Cα).param (Qof E.P) ⟨g' + d, h + 1⟩ := by
-        rw [← ht, h0]; rfl
-      exact ⟨by rw [e], pos_of_param e⟩
+        grind [key_pz]
+      solve_by_elim [Chazelle.Core.Restore.pos_of_param]
   obtain ⟨hp, hpos⟩ := hpar
   have hy : ((Qof E.P).vtx h).2 = (E.M.pos (Qof E.P)
       ⟨(g + d) % E.M.W.n, endCode Cα (Qof E.P) (g' + d) (h + 1)⟩).2 := by
     rw [hpos, pos_eq_sidePt]
     exact (hc _ hA.2.2.2.1).symm
   have hcode : endCode Cα (Qof E.P) (g' + d) (h + 1) ≤ E.P.n := by
-    unfold endCode; split_ifs <;> omega
+    grind [endCode]
   have hpp : ProperPos E.M (Qof E.P) E.P.n
       ⟨(g + d) % E.M.W.n, endCode Cα (Qof E.P) (g' + d) (h + 1)⟩ :=
-    ⟨by rw [hp]; exact ht0, by rw [hp]; exact ht1, hcode⟩
-  refine ⟨Nat.mod_lt _ hn, hpp, ?_, fun C hM => ?_, by simp only at hhn; omega, hy, hσb⟩
-  · have hp' := hp
-    unfold endCode at hp' ⊢
-    split_ifs at hp' ⊢ with hk
-    · right; rw [hp']; rw [key_pz] at hk; exact hk
-    · left; rfl
+    ⟨by grind, by grind, hcode⟩
+  refine ⟨Nat.mod_lt _ hn, hpp, ?_, fun C hM => ?_, by grind, hy, hσb⟩
+  · grind [endCode, key_pz]
   · exact hE.ehr _ _ (Nat.mod_lt _ hn) hr.1 hr.2 hpp C hM
 
 end

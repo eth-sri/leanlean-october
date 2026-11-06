@@ -57,7 +57,7 @@ variable {g : ℕ} {h3 : 3 ≤ nk (interiorModel Q) S R}
 theorem vertex_arc (X : Ctx Q S R) {i_l : ℕ} (hil : i_l < nk (interiorModel Q) S R) (j : ℕ) :
     (hostChain Q S R g h3).vertex (kIdx (nk (interiorModel Q) S R) g i_l + j) =
       hostPt (interiorModel Q).W (hk (interiorModel Q) S R ((i_l + j) % nk (interiorModel Q) S R)) := by
-  have hN : 0 < nk (interiorModel Q) S R := by have := X.three; omega
+  have hN : 0 < nk (interiorModel Q) S R := by omega
   rw [hostChain_vertex, ← add_assoc]
   unfold kIdx
   rw [chain_idx (Nat.mod_lt _ hN) hil]
@@ -69,7 +69,7 @@ theorem wrapK_edge {n p : ℕ} (_hn : 0 < n) (hp : p < 2 * n) {y : ℝ} (hy1 : (
   split_ifs with h
   · have hpn : p < n := by
       have : (p : ℝ) < n := lt_of_le_of_lt hy1 h
-      exact_mod_cast this
+      simp_all
     rw [Nat.mod_eq_of_lt hpn]; ring
   · push Not at h
     have hpn : n ≤ p := by
@@ -77,11 +77,13 @@ theorem wrapK_edge {n p : ℕ} (_hn : 0 < n) (hp : p < 2 * n) {y : ℝ} (hy1 : (
       have : (p : ℝ) + 1 ≤ n := by exact_mod_cast hpn
       linarith
     rw [Nat.mod_eq_sub_mod hpn, Nat.mod_eq_of_lt (by omega)]
-    push_cast [hpn]; ring
+    simp_all
 
+section
+variable (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ} (hA : ArcData (interiorModel Q) S R l r i_l d) {j : ℕ}
+include X l r hA
 /-- **A piece of an arc**: chain edge `kl + j` lies on interior walk edge `p` (mod `n`). -/
-theorem piece (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
-    (hA : ArcData (interiorModel Q) S R l r i_l d) {j : ℕ} (hj : j < d) :
+theorem piece (hj : j < d) :
     ∃ p : ℕ, p < 2 * (interiorModel Q).W.n ∧
       (p : ℝ) ≤ ukey (interiorModel Q) S R i_l j ∧
       ukey (interiorModel Q) S R i_l (j + 1) ≤ p + 1 ∧
@@ -106,13 +108,12 @@ theorem piece (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hjj := ukey_mono (U := R) hM hF hfin hA.hil (Nat.lt_succ_self j) (by omega)
   refine ⟨p, hp3, hp1, hp2, ?_, ?_, hq⟩
   · rw [vertex_arc X hA.hil, ← wrapK_ukey hM hF hfin hA.hil (by omega)]
-    exact hq _ le_rfl hjj.le
+    grind
   · rw [add_assoc, vertex_arc X hA.hil, ← wrapK_ukey hM hF hfin hA.hil (by omega)]
-    exact hq _ hjj.le le_rfl
+    grind
 
 /-- **Inner host keys are integers.** -/
-theorem ukey_inner_int (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
-    (hA : ArcData (interiorModel Q) S R l r i_l d) {j : ℕ} (hj0 : 0 < j) (hjd : j < d) :
+theorem ukey_inner_int (hj0 : 0 < j) (hjd : j < d) :
     ∃ k : ℕ, ukey (interiorModel Q) S R i_l j = k := by
   have hM := X.walkAx
   have hF := X.hFam.2.1
@@ -122,8 +123,11 @@ theorem ukey_inner_int (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   rw [ukey_eq_unwrap hM hF hfin hA.hil (by omega), hk]
   unfold unwrapK
   split_ifs
-  · exact ⟨k, rfl⟩
-  · exact ⟨k + (interiorModel Q).W.n, by push_cast; ring⟩
+  · simp_all
+  · exact ⟨k + (interiorModel Q).W.n, by simp_all⟩
+
+
+end
 
 /-- **At an inner host key the pieces meet at a walk vertex**: the piece before ends at the end of
 its walk edge, the piece after starts at the start of the next one. -/
@@ -139,12 +143,12 @@ theorem piece_inner {i_l j p p' : ℕ} (K : ℕ)
   rw [Nat.sub_add_cancel hj0] at hp2'
   rw [hK] at hp1 hlt hp2' hlt'
   constructor
-  · have h1 : p ≤ K := by exact_mod_cast hp1
+  · have h1 : p ≤ K := by simp_all
     have h2 : (K : ℝ) < p + 1 := lt_of_lt_of_le hlt hp2
     have h2' : K < p + 1 := by exact_mod_cast h2
     omega
   · have h1 : (p' : ℝ) < K := lt_of_le_of_lt hp1' hlt'
-    have h1' : p' < K := by exact_mod_cast h1
+    have h1' : p' < K := by simp_all
     have h2 : K ≤ p' + 1 := by exact_mod_cast hp2'
     omega
 

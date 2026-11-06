@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutShRec
 public import Chazelle.Core.ShootCutShK0
 
@@ -17,10 +19,6 @@ hit so far is kept in `140210 …` (`CandAt`).
   step bound.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -65,7 +63,6 @@ def Blpl (r : ℕ) : Bool := decide (140250 ≤ r ∧ r < 140259) || r == 140110
 
 theorem wr_lpInit : wr Blpi lpInit = true := by decide
 
-theorem wr_lpLoad : wr Blpl lpLoad = true := by decide
 
 /-! ## The set-up and the loads -/
 
@@ -89,8 +86,10 @@ theorem lpInit_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {D
       (config_simp; rw [h101, h1']; omega) | skip
   exact ⟨c', k, ex, hk, v34, v10, v210, exec_frameB ex wr_lpInit⟩
 
-theorem lpLoadA_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p : ℕ}
-    (h10 : c.nreg 140110 = p) (hp : p + 9 ≤ W) :
+section
+variable (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p : ℕ} (h10 : c.nreg 140110 = p)
+include hw h1 h10
+theorem lpLoadA_exec (hp : p + 9 ≤ W) :
     ∃ c' k, Exec P W lpLoadA c c' k ∧ k = 10 ∧ c'.nreg 140110 = p + 5 ∧
       c'.nreg 140250 = c.nmem p ∧ c'.nreg 140251 = c.nmem (p + 1) ∧
       c'.nreg 140252 = c.nmem (p + 2) ∧ c'.nreg 140253 = c.nmem (p + 3) ∧
@@ -99,13 +98,12 @@ theorem lpLoadA_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {
   unfold lpLoadA
   simp only [K1]
   exec_block
-  all_goals first | (config_simp; rw [h10, h1']; omega) | skip
+  all_goals first | (config_simp; omega) | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_⟩
   all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h10, h1']
   all_goals first | (split_ifs <;> first | rfl | omega) | skip
 
-theorem lpLoadB_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p : ℕ}
-    (h10 : c.nreg 140110 = p) (hp : p + 4 ≤ W) :
+theorem lpLoadB_exec (hp : p + 4 ≤ W) :
     ∃ c' k, Exec P W lpLoadB c c' k ∧ k = 8 ∧ c'.nreg 140110 = p + 4 ∧
       c'.nreg 140255 = c.nmem p ∧ c'.nreg 140256 = c.nmem (p + 1) ∧
       c'.nreg 140257 = c.nmem (p + 2) ∧ c'.nreg 140258 = c.nmem (p + 3) := by
@@ -118,8 +116,7 @@ theorem lpLoadB_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {
   all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h10, h1']
   all_goals first | (split_ifs <;> first | rfl | omega) | skip
 
-theorem lpLoad_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p : ℕ}
-    (h10 : c.nreg 140110 = p) (hp : p + 9 ≤ W) :
+theorem lpLoad_exec (hp : p + 9 ≤ W) :
     ∃ c' k, Exec P W lpLoad c c' k ∧ k = 18 ∧ c'.nreg 140110 = p + 9 ∧
       c'.nreg 140250 = c.nmem p ∧ c'.nreg 140251 = c.nmem (p + 1) ∧
       c'.nreg 140252 = c.nmem (p + 2) ∧ c'.nreg 140253 = c.nmem (p + 3) ∧
@@ -135,19 +132,12 @@ theorem lpLoad_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p
     (by decide)
   have ex : Exec P W lpLoad c c₂ (k₁ + k₂) := .seq e₁ e₂
   have hm : c₁.nmem = c.nmem := f₁.2.2.1
-  refine ⟨c₂, _, ex, by omega, by rw [u10], ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-    exec_frameB ex wr_lpLoad⟩
-  · rw [f₂.1 _ (by decide), q0]
-  · rw [f₂.1 _ (by decide), q1]
-  · rw [f₂.1 _ (by decide), q2]
-  · rw [f₂.1 _ (by decide), q3]
-  · rw [f₂.1 _ (by decide), q4]
-  · rw [u5, hm]
-  · rw [u6, hm, show p + 5 + 1 = p + 6 by omega]
-  · rw [u7, hm, show p + 5 + 2 = p + 7 by omega]
-  · rw [u8, hm, show p + 5 + 3 = p + 8 by omega]
+  ram_grind
 
 /-! ## The invariant -/
+
+
+end
 
 /-- The point set of a piece. -/
 noncomputable def pcSetOf (C : Chain) (Q : Polygon) (pc : Pc) : Set Point :=
@@ -172,15 +162,11 @@ def FrameNK (c c' : Config) : Prop :=
     c.nreg ALLOC ≤ c'.nreg ALLOC
 
 theorem FrameNK.refl (c : Config) : FrameNK c c :=
-  ⟨fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_rfl⟩
+  by core_grind
 
 theorem FrameNK.step {c c₁ c₂ : Config} {k : ℕ} (h₁ : FrameNK c c₁)
     (h₂ : Frame oracleBands c₁ c₂ k) : FrameNK c c₂ := by
-  obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁⟩ := h₁
-  obtain ⟨r₂, rr₂, m₂, rm₂, o₂, a₂, -⟩ := h₂
-  exact ⟨fun r hr hra => by rw [r₂ r hr hra, r₁ r hr hra], fun r hr => by rw [rr₂ r hr, rr₁ r hr],
-    fun a ha => by rw [m₂ a (lt_of_lt_of_le ha a₁), m₁ a ha],
-    fun a ha => by rw [rm₂ a (lt_of_lt_of_le ha a₁), rm₁ a ha], o₂.trans o₁, a₁.trans a₂⟩
+  core_grind
 
 theorem FrameNK.frame {c c' : Config} {k : ℕ} (h : FrameNK c c')
     (hk : c'.nreg ALLOC ≤ c.nreg ALLOC + k) : Frame oracleBands c c' k :=

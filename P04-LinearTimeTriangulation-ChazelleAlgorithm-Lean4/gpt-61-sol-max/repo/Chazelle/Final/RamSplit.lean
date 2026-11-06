@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Final.LinkSplit
 public import Chazelle.EarClip.RamDet
 public import Chazelle.Programs.Tactics
@@ -88,9 +90,9 @@ theorem chain_unique {mem : ℕ → ℕ} {SB : ℕ} :
     ∀ {e : ℕ} {l l' : List ℕ}, Chain mem SB e l → Chain mem SB e l' → l = l'
   | _, [], [], _, _ => rfl
   | _, [], _ :: _, h, h' => by
-      simp only [Chain] at h h'; omega
+      simp_all [Chain]
   | _, _ :: _, [], h, h' => by
-      simp only [Chain] at h h'; omega
+      simp_all [Chain]
   | _, z :: l, z' :: l', ⟨h1, h2⟩, ⟨h1', h2'⟩ => by
       have hz : z = z' := by omega
       subst hz
@@ -160,53 +162,48 @@ theorem wedgeLogic_exec (c : Config) (hc : WordsBounded W c) (h1 : 1 ≤ W)
   simp only [one_mul]
   by_cases hD : c.rreg 117 < c.rreg 114
   · rw [h117] at hD
-    refine spec_ifLtR_true (by rw [h117]; exact hD) ?_
+    refine spec_ifLtR_true (by ram_grind) ?_
     rw [ite_eq_left hD]
     by_cases hL1 : 0 < c.rreg 115
-    · refine spec_ifLtR_true (by rw [h117]; exact hL1) ?_
+    · refine spec_ifLtR_true (by ram_grind) ?_
       by_cases hL2 : 0 < c.rreg 116
-      · refine spec_ifLtR_true (by rw [h117]; exact hL2) ?_
+      · refine spec_ifLtR_true (by ram_grind) ?_
         obtain ⟨c', k, ex, hk, hf, hr⟩ := hset 2
-        exact ⟨c', k, ex, by omega, fun _ => hf, fun h => absurd ⟨hL1, hL2⟩ h, hr⟩
-      · refine spec_ifLtR_false (by rw [h117]; exact hL2) (spec_skip hc ?_)
-        exact ⟨by omega, fun h => absurd h.2 hL2, fun _ => h127, fun _ _ => rfl, rfl, rfl, rfl,
-          rfl⟩
-    · refine spec_ifLtR_false (by rw [h117]; exact hL1) (spec_skip hc ?_)
-      exact ⟨by omega, fun h => absurd h.1 hL1, fun _ => h127, fun _ _ => rfl, rfl, rfl, rfl,
-        rfl⟩
+        grind
+      · refine spec_ifLtR_false (by ram_grind) (spec_skip hc ?_)
+        ram_grind
+    · refine spec_ifLtR_false (by ram_grind) (spec_skip hc ?_)
+      ram_grind
   · rw [h117] at hD
-    refine spec_ifLtR_false (by rw [h117]; exact hD) ?_
+    refine spec_ifLtR_false (by ram_grind) ?_
     rw [ite_eq_right hD]
     by_cases hD' : c.rreg 114 < 0
-    · refine spec_ifLtR_true (by rw [h117]; exact hD') ?_
+    · refine spec_ifLtR_true (by ram_grind) ?_
       rw [ite_eq_left hD']
       by_cases hL1 : 0 < c.rreg 115
-      · refine spec_ifLtR_true (by rw [h117]; exact hL1) ?_
+      · refine spec_ifLtR_true (by ram_grind) ?_
         obtain ⟨c', k, ex, hk, hf, hr⟩ := hset 2
-        exact ⟨c', k, ex, by omega, fun _ => hf, fun h => absurd (Or.inl hL1) h, hr⟩
-      · refine spec_ifLtR_false (by rw [h117]; exact hL1) ?_
+        grind
+      · refine spec_ifLtR_false (by ram_grind) ?_
         by_cases hL2 : 0 < c.rreg 116
-        · refine spec_ifLtR_true (by rw [h117]; exact hL2) ?_
+        · refine spec_ifLtR_true (by ram_grind) ?_
           obtain ⟨c', k, ex, hk, hf, hr⟩ := hset 5
-          exact ⟨c', k, ex, by omega, fun _ => hf, fun h => absurd (Or.inr hL2) h, hr⟩
-        · refine spec_ifLtR_false (by rw [h117]; exact hL2) (spec_skip hc ?_)
-          refine ⟨by omega, fun h => ?_, fun _ => h127, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
-          rcases h with h | h
-          · exact absurd h hL1
-          · exact absurd h hL2
-    · refine spec_ifLtR_false (by rw [h117]; exact hD') ?_
+          grind
+        · refine spec_ifLtR_false (by ram_grind) (spec_skip hc ?_)
+          ram_grind
+    · refine spec_ifLtR_false (by ram_grind) ?_
       rw [ite_eq_right hD']
       by_cases hL2 : 0 < c.rreg 116
-      · refine spec_ifLtR_true (by rw [h117]; exact hL2) ?_
+      · refine spec_ifLtR_true (by ram_grind) ?_
         obtain ⟨c', k, ex, hk, hf, hr⟩ := hset 4
-        exact ⟨c', k, ex, by omega, fun _ => hf, fun h => absurd hL2 h, hr⟩
-      · refine spec_ifLtR_false (by rw [h117]; exact hL2) (spec_skip hc ?_)
-        exact ⟨by omega, fun h => absurd h hL2, fun _ => h127, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
+        grind
+      · refine spec_ifLtR_false (by ram_grind) (spec_skip hc ?_)
+        ram_grind
 
 /-- The wedge test in terms of the three signed determinants. -/
 theorem wedgeTest_iff_sign (σ : ℝ) (p a q x : Point) :
     wedgeTest σ p a q x ↔ wedgeSign 1 (σ * det p a q) (σ * det p a x) (σ * det a q x) := by
-  unfold wedgeTest wedgeSign; simp only [one_mul]
+  ram_grind
 
 /-- **Spec of the wedge test.**  With the node `nreg 124`, the target vertex `nreg 125`, the
 bases `nreg 105 = VB`, `nreg 106 = NB`, `nreg 107 = PB` and `rreg 117 = 0`: cost `≤ 55`; the
@@ -236,29 +233,26 @@ theorem wedgeStmt_exec (c : Config) (hc : WordsBounded W c) (h1 : 1 ≤ W)
   refine spec_seq ?_
   exec_block
   · exact hA1
-  · config_simp; exact hA2
-  · config_simp; exact hA3
-  · config_simp; exact hA4
-  · config_simp; exact hA5
+  · simp_all
+  · simp_all
+  · simp_all
+  · simp_all
   refine spec_seq (spec_seq (spec_use (detInto_exec (P := P) 109 112 113 101 102 103 104 105 106
     (by decide) (by decide) (by decide)
-    (fun r hr => by rcases hr with rfl | rfl | rfl | rfl | rfl | rfl <;> decide) _ ‹_›) ?_))
+    (fun r hr => by omega) _ ‹_›) ?_))
   rintro c₁ k₁ hk₁ hw₁ ⟨hD, hfr₁, hn₁, hnm₁, hrm₁, hout₁⟩
   refine spec_seq (spec_use (detInto_exec (P := P) 110 112 113 101 102 103 104 107 108
     (by decide) (by decide) (by decide)
-    (fun r hr => by rcases hr with rfl | rfl | rfl | rfl | rfl | rfl <;> decide) _ hw₁) ?_)
+    (fun r hr => by omega) _ hw₁) ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨hL1, hfr₂, hn₂, hnm₂, hrm₂, hout₂⟩
   refine spec_seq (spec_use (detInto_exec (P := P) 111 112 113 103 104 105 106 107 108
     (by decide) (by decide) (by decide)
-    (fun r hr => by rcases hr with rfl | rfl | rfl | rfl | rfl | rfl <;> decide) _ hw₂) ?_)
+    (fun r hr => by omega) _ hw₂) ?_)
   rintro c₃ k₃ hk₃ hw₃ ⟨hL2, hfr₃, hn₃, hnm₃, hrm₃, hout₃⟩
   exec_block
   · omega
   refine spec_use (wedgeLogic_exec _ ‹_› h1 ?_ ?_) ?_
-  · config_simp
-    rw [hfr₃ 117 (by decide) (by decide) (by decide), hfr₂ 117 (by decide) (by decide) (by decide),
-      hfr₁ 117 (by decide) (by decide) (by decide)]
-    config_simp; exact h117
+  · ram_simp
   · config_simp
   rintro c₄ k₄ hk₄ hw₄ ⟨hy, hn, hnfr, hr₄, hnm₄, hrm₄, hout₄⟩
   config_simp at hy
@@ -277,9 +271,7 @@ theorem wedgeStmt_exec (c : Config) (hc : WordsBounded W c) (h1 : 1 ≤ W)
   have eD : c₃.rreg 109 = det (P.vtx (c.nmem (c.nreg 105 + c.nmem (c.nreg 107 + c.nreg 124))))
       (P.vtx (c.nmem (c.nreg 105 + c.nreg 124)))
       (P.vtx (c.nmem (c.nreg 105 + c.nmem (c.nreg 106 + c.nreg 124)))) := by
-    rw [hfr₃ 109 (by decide) (by decide) (by decide), hfr₂ 109 (by decide) (by decide) (by decide),
-      hD]
-    config_simp
+    ram_simp
   have eL1 : c₃.rreg 110 = det (P.vtx (c.nmem (c.nreg 105 + c.nmem (c.nreg 107 + c.nreg 124))))
       (P.vtx (c.nmem (c.nreg 105 + c.nreg 124))) (P.vtx (c.nreg 125)) := by
     rw [hfr₃ 110 (by decide) (by decide) (by decide), hL1, hfr₁ 101 (by decide) (by decide)
@@ -299,19 +291,13 @@ theorem wedgeStmt_exec (c : Config) (hc : WordsBounded W c) (h1 : 1 ≤ W)
     config_simp
   rw [eD, eL1, eL2, e100, ← wedgeTest_iff_sign] at hy hn
   refine ⟨by omega, hy, hn, fun r h127 h129 h130 => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
-  · rw [hnfr r h127]
-    config_simp
-    rw [Machine.upd_other _ _ _ h127, hn₃, hn₂, hn₁]
-    config_simp
-    simp [h129, h130]
+  · ram_simp
   · rw [congrFun hr₄ r]
     config_simp
     rw [Machine.upd_other _ _ _ (by omega : r ≠ 116), Machine.upd_other _ _ _ (by omega : r ≠ 115),
       Machine.upd_other _ _ _ (by omega : r ≠ 114)]
-    exact e r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  · rw [hnm₄]; config_simp; rw [hnm₃, hnm₂, hnm₁]
-  · rw [hrm₄]; config_simp; rw [hrm₃, hrm₂, hrm₁]
-  · rw [hout₄]; config_simp; rw [hout₃, hout₂, hout₁]
+    grind
+  all_goals ram_simp
 
 end Wedge
 
@@ -340,7 +326,7 @@ open Classical in
 /-- The Boolean wedge predicate. -/
 theorem wedgeP_eq_true {P : Polygon} {σ : ℝ} {S : LState} {w z : ℕ} :
     wedgeP P σ S w z = true ↔ nodeWedge P σ S z w := by
-  unfold wedgeP; exact decide_eq_true_iff
+  simp_all [wedgeP]
 
 /-- The standing hypotheses of the scan on a configuration: the band bases, the constants, the
 orientation, the memory relation, closure, and the address bound. -/
@@ -366,16 +352,16 @@ theorem ScanHyp.congr {P : Polygon} {W B NN n : ℕ} {σ : ℝ} {S : LState} {c 
       c'.nreg r = c.nreg r)
     (hr : c'.rreg 100 = c.rreg 100 ∧ c'.rreg 117 = c.rreg 117) (hm : c'.nmem = c.nmem) :
     ScanHyp P W B NN n σ S c' where
-  r105 := by rw [hn 105 (by simp)]; exact h.r105
-  r106 := by rw [hn 106 (by simp)]; exact h.r106
-  r107 := by rw [hn 107 (by simp)]; exact h.r107
-  r108 := by rw [hn 108 (by simp)]; exact h.r108
-  r109 := by rw [hn 109 (by simp)]; exact h.r109
-  r112 := by rw [hn 112 (by simp)]; exact h.r112
-  r113 := by rw [hn 113 (by simp)]; exact h.r113
-  s100 := by rw [hr.1]; exact h.s100
-  s117 := by rw [hr.2]; exact h.s117
-  mem := by rw [hm]; exact h.mem
+  r105 := by ram_grind
+  r106 := by ram_grind
+  r107 := by ram_grind
+  r108 := by ram_grind
+  r109 := by ram_grind
+  r112 := by ram_grind
+  r113 := by ram_grind
+  s100 := by ram_grind
+  s117 := by ram_grind
+  mem := by ram_grind
   closed := h.closed
   cntNN := h.cntNN
   addr := h.addr
@@ -417,26 +403,26 @@ theorem findBody_inv {v w : ℕ} {c₀ c : Config} (hI : FindInv P W B NN n σ S
   rw [hH.r112] at ht
   obtain ⟨z, rest', rfl⟩ : ∃ z rest', rest = z :: rest' := by
     cases rest with
-    | nil => simp only [Chain] at hchain; omega
-    | cons z rest' => exact ⟨z, rest', rfl⟩
+    | nil => grind [Chain]
+    | cons z rest' => grind
   obtain ⟨he, hchain'⟩ := hchain
-  have hzmem : z ∈ S.cop v := by rw [hsplit]; simp
+  have hzmem : z ∈ S.cop v := by grind
   have hz : z < S.cnt := hH.closed.cop v z hzmem
   have hpz := hH.closed.prv z hz
   have hnz := hH.closed.nxt z hz
   have hcnt := hH.cntNN
   have haddr := hH.addr
-  have hW1 : 1 ≤ W := by have := hw.1 113; rw [hH.r113] at this; exact this
+  have hW1 : 1 ≤ W := by omega
   unfold findBody
   refine spec_seq (spec_instr (Exec.subN hw 124 123 113) fun hw₁ => ?_)
   have hH₁ := hH.congr (c' := { c with nreg := upd c.nreg 124 (c.nreg 123 - c.nreg 113) })
     (fun r hr => by rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp) ⟨rfl, rfl⟩ rfl
-  have hnode : c.nreg 123 - c.nreg 113 = z := by rw [hH.r113, he]; omega
+  have hnode : c.nreg 123 - c.nreg 113 = z := by ram_grind
   refine spec_seq (spec_use (wedgeStmt_exec (P := P) _ hw₁ hW1 hH₁.s117 ?_ ?_ ?_ ?_ ?_) ?_)
-  · config_simp; rw [hnode, hH.r107]; omega
+  · config_simp; ram_grind
   · config_simp; rw [hnode, hH.r107, hH.r105, hH.mem.prv z hz]; omega
-  · config_simp; rw [hnode, hH.r105]; omega
-  · config_simp; rw [hnode, hH.r106]; omega
+  · config_simp; ram_grind
+  · config_simp; ram_grind
   · config_simp; rw [hnode, hH.r106, hH.r105, hH.mem.nxt z hz]; omega
   rintro c₂ k₂ hk₂ hw₂ ⟨hyes, hno, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩
   config_simp at hyes
@@ -444,7 +430,7 @@ theorem findBody_inv {v w : ℕ} {c₀ c : Config} (hI : FindInv P W B NN n σ S
   rw [hnode, hH.r105, hH.r106, hH.r107, hH.mem.prv z hz, hH.mem.nxt z hz,
     hH.mem.vtx _ hpz, hH.mem.vtx _ hnz, hH.mem.vtx z hz, hH.s100, h125] at hyes hno
   have h112₂ : c₂.nreg 112 = 0 := by
-    rw [hfn₂ 112 (by decide) (by decide) (by decide)]; config_simp; exact hH.r112
+    ram_grind
   have h124₂ : c₂.nreg 124 = z := by
     rw [hfn₂ 124 (by decide) (by decide) (by decide)]; config_simp; exact hnode
   -- the conditional update of the result
@@ -454,12 +440,12 @@ theorem findBody_inv {v w : ℕ} {c₀ c : Config} (hI : FindInv P W B NN n σ S
       c₃.rmem = c₂.rmem ∧ c₃.output = c₂.output := by
     by_cases hp : nodeWedge P σ S z w
     · have h127 := hyes hp
-      refine spec_ifLtN_true (by rw [h112₂, h127]; omega)
+      refine spec_ifLtN_true (by omega)
         (spec_instr (Exec.copyN hw₂ 126 124) fun _ => ?_)
       refine ⟨by omega, ?_, fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
       rw [ite_eq_left (wedgeP_eq_true.2 hp)]; config_simp; exact h124₂
     · have h127 := hno hp
-      refine spec_ifLtN_false (by rw [h112₂, h127]; omega) (spec_skip hw₂ ?_)
+      refine spec_ifLtN_false (by omega) (spec_skip hw₂ ?_)
       refine ⟨by omega, ?_, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
       rw [ite_eq_right (fun h => hp (wedgeP_eq_true.1 h)), hfn₂ 126 (by decide) (by decide) (by decide)]
       config_simp
@@ -468,45 +454,34 @@ theorem findBody_inv {v w : ℕ} {c₀ c : Config} (hI : FindInv P W B NN n σ S
   have h108₃ : c₃.nreg 108 = B + 3 * NN := by
     rw [hfn₃ 108 (by decide), hfn₂ 108 (by decide) (by decide) (by decide)]
     config_simp; exact hH.r108
-  have h124₃ : c₃.nreg 124 = z := by rw [hfn₃ 124 (by decide)]; exact h124₂
-  have hmem₃ : c₃.nmem = c.nmem := by rw [hnm₃, hnm₂]
+  have h124₃ : c₃.nreg 124 = z := by grind
+  have hmem₃ : c₃.nmem = c.nmem := by ram_grind
   exec_block
-  · rw [h108₃, h124₃]; omega
+  · omega
   have e1 : chainLen c₀.nmem (B + 3 * NN) (c.nmem (B + 3 * NN + z)) = rest'.length :=
-    chainLen_eq (by rw [← hnm]; exact hchain')
+    chainLen_eq (by grind)
   have e2 : chainLen c₀.nmem (B + 3 * NN) (c.nreg 123) = rest'.length + 1 := by
-    rw [chainLen_eq (l := z :: rest') (by rw [← hnm]; exact ⟨he, hchain'⟩)]; simp
+    rw [chainLen_eq (l := z :: rest') (by ram_grind)]; simp
   refine ⟨?_, by omega, ?_⟩
   · refine ⟨‹_›, hH.congr (fun r hr => ?_) ⟨?_, ?_⟩ ?_, ?_, fun r h123 h124 h126 h127 h129 h130 => ?_,
-      fun r hr => ?_, ?_, ?_, ?_, done ++ [z], rest', by rw [hsplit]; simp, ?_, ?_⟩
+      fun r hr => ?_, ?_, ?_, ?_, done ++ [z], rest', by grind, ?_, ?_⟩
     · rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      · config_simp
-        rw [hfn₃ _ (by decide), hfn₂ _ (by decide) (by decide) (by decide)]
-        config_simp
-    · config_simp; rw [hfr₃, hfr₂ 100 (by omega)]
-    · config_simp; rw [hfr₃, hfr₂ 117 (by omega)]
-    · config_simp; exact hmem₃
+      ram_simp
+    · grind
+    · grind
+    · omega
+    · ram_simp
+    · ram_simp
+    · grind
+    · grind
+    · grind
+    · grind
     · config_simp
-      rw [hfn₃ 125 (by decide), hfn₂ 125 (by decide) (by decide) (by decide)]
-      config_simp; exact h125
+      grind
     · config_simp
-      rw [Machine.upd_other _ _ _ h123, Machine.upd_other _ _ _ h129, hfn₃ r h126,
-        hfn₂ r h127 h129 h130]
-      config_simp
-      rw [Machine.upd_other _ _ _ h124]
-      exact hfn r h123 h124 h126 h127 h129 h130
-    · config_simp; rw [hfr₃, hfr₂ r hr, hfr r hr]
-    · config_simp; rw [hmem₃, hnm]
-    · config_simp; rw [hrm₃, hrm₂, hrm]
-    · config_simp; rw [hout₃, hout₂, hout]
-    · config_simp
-      rw [hmem₃, h108₃, h124₃]
-      exact hchain'
-    · config_simp
-      rw [hres₃, hres, selectLast_append, selectLast_cons, selectLast_nil]
+      grind [selectLast_append, selectLast_cons, selectLast_nil]
   · config_simp
-    rw [hmem₃, h108₃, h124₃, e1, e2]
-    omega
+    grind
 
 /-- **Spec of the copy scan.**  Under the scan hypotheses, with `nreg 128 = v < n` and
 `nreg 125 = w`: cost `≤ 62 * (S.cop v).length + 5`, and `nreg 126 = findCopy P σ S v w`; only
@@ -523,18 +498,18 @@ theorem findStmt_exec {v w : ℕ} (c : Config) (hc : WordsBounded W c)
   refine spec_seq ?_
   exec_block
   · omega
-  · config_simp; rw [hH.r109, hv]; omega
+  · config_simp; ram_grind
   set c₁ : Config := { c with nreg := (upd (upd (upd c.nreg 126 0) 129
     (c.nreg 109 + c.nreg 128)) 123 (c.nmem (c.nreg 109 + c.nreg 128))) } with hc₁
   have hH₁ : ScanHyp P W B NN n σ S c₁ := hH.congr (fun r hr => by
-    rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [hc₁] <;> config_simp)
+    rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp_all <;> config_simp)
     ⟨rfl, rfl⟩ rfl
   have hchain₁ : Chain c₁.nmem (B + 3 * NN) (c₁.nreg 123) (S.cop v) := by
     simp only [hc₁]; config_simp; rw [hH.r109, hv]; exact hH.mem.cop v hvn
   have hI₀ : FindInv P W B NN n σ S v w c₁ c₁ := by
-    refine ⟨‹_›, hH₁, by simp only [hc₁]; config_simp; exact h125, fun _ _ _ _ _ _ _ => rfl,
+    refine ⟨‹_›, hH₁, by simp_all, fun _ _ _ _ _ _ _ => rfl,
       fun _ _ => rfl, rfl, rfl, rfl, [], S.cop v, rfl, hchain₁, ?_⟩
-    simp only [hc₁]; config_simp; rfl
+    aesop
   refine spec_imp (Exec.whileLtN_bounded (FindInv P W B NN n σ S v w c₁)
     (fun d => chainLen c₁.nmem (B + 3 * NN) (d.nreg 123)) 60 (fun _ h => h.1)
     (fun d hI ht => findBody_inv hI ht) hI₀) ?_
@@ -544,20 +519,13 @@ theorem findStmt_exec {v w : ℕ} (c : Config) (hc : WordsBounded W c)
     rw [hH'.r112] at hexit
     cases rest with
     | nil => rfl
-    | cons z l => exact absurd (by rw [hchain.1]; omega) hexit
+    | cons z l => exact absurd (by ram_grind) hexit
   subst hrest
   rw [List.append_nil] at hsplit
   have hμ : chainLen c₁.nmem (B + 3 * NN) (c₁.nreg 123) = (S.cop v).length :=
     chainLen_eq hchain₁
-  refine ⟨by rw [hμ] at hk; omega, by rw [hres, ← hsplit]; rfl, hH', ?_, ?_, ?_, ?_, ?_⟩
-  · intro r h123 h124 h126 h127 h129 h130
-    rw [hfn' r h123 h124 h126 h127 h129 h130]
-    simp only [hc₁]
-    rw [Machine.upd_other _ _ _ h123, Machine.upd_other _ _ _ h129, Machine.upd_other _ _ _ h126]
-  · intro r hr; rw [hfr' r hr]
-  · rw [hnm']
-  · rw [hrm']
-  · rw [hout']
+  refine ⟨by omega, by rw [hres, ← hsplit]; rfl, hH', ?_, ?_, ?_, ?_, ?_⟩
+  all_goals ram_simp
 
 end Find
 
@@ -573,8 +541,10 @@ def surgMem (mem : ℕ → ℕ) (B NN a b x y px ny N ha hb : ℕ) : ℕ → ℕ
     (B + 3 * NN + N) ha) (B + 3 * NN + (N + 1)) hb)
     (B + 4 * NN + a) (N + 1)) (B + 4 * NN + b) (N + 1 + 1)
 
+section
+variable (mem : ℕ → ℕ)
 /-- The bands of the memory after the surgery stores. -/
-theorem surgMem_bands (mem : ℕ → ℕ) {B NN a b x y px ny N ha hb : ℕ} (hN : N + 2 ≤ NN)
+theorem surgMem_bands {B NN a b x y px ny N ha hb : ℕ} (hN : N + 2 ≤ NN)
     (hab : a ≠ b) (hx : x < N) (hy : y < N) (hpx : px < N) (hny : ny < N) :
     (∀ z < N + 2, surgMem mem B NN a b x y px ny N ha hb (B + z) =
       upd (upd (fun t => mem (B + t)) N a) (N + 1) b z) ∧
@@ -595,12 +565,15 @@ theorem surgMem_bands (mem : ℕ → ℕ) {B NN a b x y px ny N ha hb : ℕ} (hN
     repeat' (first | omega | rfl | (rw [Machine.upd_apply]; split_ifs))
 
 /-- The surgery stores stay in the work area. -/
-theorem surgMem_frame (mem : ℕ → ℕ) {B NN n a b x y px ny N ha hb : ℕ} (hN : N + 2 ≤ NN)
+theorem surgMem_frame {B NN n a b x y px ny N ha hb : ℕ} (hN : N + 2 ≤ NN)
     (hA : a < n) (hB : b < n) (hx : x < N) (hy : y < N) (hpx : px < N) (hny : ny < N) :
     ∀ t, (t < B ∨ B + 4 * NN + n ≤ t) → surgMem mem B NN a b x y px ny N ha hb t = mem t := by
   intro t ht
   unfold surgMem
   repeat' (first | omega | rfl | (rw [Machine.upd_apply]; split_ifs))
+
+
+end
 
 /-- **The memory relation passes through the surgery stores.** -/
 theorem memRel_surgery {mem : ℕ → ℕ} {B NN n : ℕ} {S : LState} (hM : MemRel mem B NN n S)
@@ -615,11 +588,7 @@ theorem memRel_surgery {mem : ℕ → ℕ} {B NN n : ℕ} {S : LState} (hM : Mem
   · have hz' : z < S.cnt + 2 := hz
     rw [e1 z hz']
     show _ = upd (upd S.vtx S.cnt a) (S.cnt + 1) b z
-    simp only [Machine.upd_apply]
-    split_ifs
-    · rfl
-    · rfl
-    · exact hM.vtx z (by omega)
+    grind [Machine.upd_apply]
   · have hz' : z < S.cnt + 2 := hz
     rw [e2 z hz']
     show _ = upd (upd (upd (upd S.nxt y x) (S.cnt + 1) (S.nxt y)) (S.prv x) S.cnt) S.cnt
@@ -770,7 +739,7 @@ theorem mainBody_exec {d : ℕ × ℕ} {k DB : ℕ} (c : Config) (hc : WordsBoun
   refine spec_seq (spec_use (findStmt_exec (P := P) (v := d.1) (w := d.2) _ ‹_›
     (hH.congr (fun r hr => ?_) ⟨rfl, rfl⟩ rfl) ?_ ha ?_) ?_)
   · rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> config_simp
-  · config_simp; rw [h101, h116, hd1]
+  · simp_all
   · config_simp; rw [h101, h116, hH.r113, hd2]
   rintro c₂ k₂ hk₂ hw₂ ⟨hres₂, hH₂, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩
   config_simp at hfn₂
@@ -808,8 +777,7 @@ theorem mainBody_exec {d : ℕ × ℕ} {k DB : ℕ} (c : Config) (hc : WordsBoun
     simp [h117, h118, h125, h128, h129]
   have hmem₄ : c₄.nmem = c.nmem := by rw [hnm₄, hnm₂]
   have h115₄ : c₄.nreg 115 = S.cnt := by
-    rw [hreg₄ 115 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide) (by decide) (by decide) (by decide) (by decide), h115]
+    grind
   have h117₄ : c₄.nreg 117 = d.1 := by
     rw [hfn₄ 117 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)]
     config_simp; exact h117₂
@@ -820,8 +788,7 @@ theorem mainBody_exec {d : ℕ × ℕ} {k DB : ℕ} (c : Config) (hc : WordsBoun
     rw [hfn₄ 119 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)]
     config_simp; exact hres₂
   have h116₄ : c₄.nreg 116 = k := by
-    rw [hreg₄ 116 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide) (by decide) (by decide) (by decide) (by decide), h116]
+    grind
   refine spec_use (mainSurg_exec (a := d.1) (b := d.2) (x := findCopy P σ S d.1 d.2)
     (y := findCopy P σ S d.2 d.1) c₄ hw₄ hH₄ h115₄ h117₄ h118₄ h119₄ hres₄ ha hb hx hy hcnt
     (by rw [h116₄]; exact hkW)) ?_
@@ -832,7 +799,7 @@ theorem mainBody_exec {d : ℕ × ℕ} {k DB : ℕ} (c : Config) (hc : WordsBoun
     rw [hfn₅ r hr, hreg₄ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
       (by omega) (by omega) (by omega) (by omega) (by omega)]
   have hrreg₅ : ∀ r, (r < 101 ∨ 116 < r) → c₅.rreg r = c.rreg r := fun r hr => by
-    rw [hfr₅, hfr₄ r hr]; rw [hfr₂ r hr]
+    grind
   refine ⟨by omega, ?_, by rw [h115₅], by rw [h116₅, h116₄], hreg₅, hrreg₅, ?_, ?_, ?_⟩
   · refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, hmemrel, hS.step ha hb, ?_, hH.addr⟩
     · rw [hreg₅ 105 (by omega)]; exact hH.r105
@@ -848,8 +815,8 @@ theorem mainBody_exec {d : ℕ × ℕ} {k DB : ℕ} (c : Config) (hc : WordsBoun
   · intro t ht
     rw [hnm₅, hmem₄]
     exact surgMem_frame c.nmem hcnt ha hb hx hy (hS.prv _ hx) (hS.nxt _ hy) t ht
-  · rw [hrm₅, hrm₄]; rw [hrm₂]
-  · rw [hout₅, hout₄]; rw [hout₂]
+  · grind
+  grind
 
 /-! ### The main loop -/
 
@@ -897,33 +864,31 @@ theorem mainLoop_exec {DB ND : ℕ} {D : List (ℕ × ℕ)} (hlen : D.length = N
     set S := runState P σ (initState n) (D.take k) with hSdef
     have hcnt : S.cnt = n + 2 * k := by
       rw [hSdef, cnt_runState, List.length_take]; show n + 2 * min k D.length = _
-      rw [min_eq_left (by omega)]
+      omega
     obtain ⟨hd1n, hd2n, hdne⟩ := hD (D[k]) (List.getElem_mem hkD)
     have hb := hband k ht
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hkD, Option.getD_some] at hb
     have hdk1 : c.nmem (DB + k + k) = (D[k]).1 := by
-      rw [hnm _ (by omega), show DB + k + k = DB + 2 * k by omega]; exact hb.1
+      grind
     have hdk2 : c.nmem (DB + k + k + 1) = (D[k]).2 := by
-      rw [hnm _ (by omega), show DB + k + k + 1 = DB + 2 * k + 1 by omega]; exact hb.2
+      grind
     obtain ⟨c', k', ex, hk', hH', h115', h116', hfn', hfr', hnm', hrm', hout'⟩ :=
       mainBody_exec (P := P) (d := D[k]) (k := k) (DB := DB) c hw hH h101 (by rw [h115, hcnt])
         rfl hdk1 hdk2 hd1n hd2n hdne (by omega) (by omega) (by omega)
     refine ⟨c', k', ex, ⟨ex.wb_right, by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_⟩
     · rw [h116', runState_take_succ σ _ hkD]; exact hH'
-    · rw [h115', h116', hcnt]; ring
-    · rw [hfn' 101 (by omega)]; exact h101
-    · rw [hfn' 102 (by omega)]; exact h102
-    · intro r hr; rw [hfn' r hr, hfn r hr]
-    · intro r hr; rw [hfr' r hr, hfr r hr]
-    · intro t ht; rw [hnm' t ht, hnm t ht]
+    · omega
+    · grind
+    · grind
+    · grind
+    · grind
+    · grind
     · rw [hrm', hrm]
     · rw [hout', hout]
     · unfold mainPot
       rw [h116', ← hk, runState_take_succ σ _ hkD, ← hSdef, List.drop_eq_getElem_cons hkD,
         runCost_cons]
-      have : ND - k = ND - (k + 1) + 1 := by omega
-      rw [this]
-      nlinarith
+      omega
   obtain ⟨c', k, ex, hI', hexit, hk⟩ := Exec.whileLtN_potential (MainInv P W B NN n DB ND σ D c₀)
     (mainPot P n ND σ D) (fun _ h => h.1) hbody hI
   refine ⟨c', k, ex, hI', ?_, hk⟩
@@ -985,8 +950,11 @@ def InitInv (P : Polygon) (W B NN : ℕ) (c₀ c : Config) : Prop :=
     (∀ t, (t < B ∨ B + 4 * NN + P.n ≤ t) → c.nmem t = c₀.nmem t) ∧
     c.rmem = c₀.rmem ∧ c.output = c₀.output
 
+section
+variable {B NN : ℕ} (hNN : P.n ≤ NN) (hW : B + 4 * NN + P.n ≤ W)
+include hNN hW
 /-- One iteration of the initialisation loop preserves `InitInv`. -/
-theorem initBody_inv {B NN : ℕ} (hNN : P.n ≤ NN) (hW : B + 4 * NN + P.n ≤ W) {c₀ c : Config}
+theorem initBody_inv {c₀ c : Config}
     (hI : InitInv P W B NN c₀ c) (ht : c.nreg 116 < c.nreg 103) :
     ∃ c' k, Exec P W initBody c c' k ∧ InitInv P W B NN c₀ c' ∧ k ≤ 14 ∧
       P.n - c'.nreg 116 < P.n - c.nreg 116 := by
@@ -1033,7 +1001,7 @@ theorem initBody_inv {B NN : ℕ} (hNN : P.n ≤ NN) (hW : B + 4 * NN + P.n ≤ 
 
 /-- **Spec of the initialisation loop**: from `k = 0` it fills the five bands for the `n`
 vertices, at cost `≤ 16 n + 2`. -/
-theorem initLoop_exec {B NN : ℕ} (hNN : P.n ≤ NN) (hW : B + 4 * NN + P.n ≤ W) (c₀ : Config)
+theorem initLoop_exec (c₀ : Config)
     (hI : InitInv P W B NN c₀ c₀) (h0 : c₀.nreg 116 = 0) :
     ∃ c' k, Exec P W initLoop c₀ c' k ∧ k ≤ 16 * P.n + 2 ∧ InitInv P W B NN c₀ c' ∧
       c'.nreg 116 = P.n := by
@@ -1041,11 +1009,13 @@ theorem initLoop_exec {B NN : ℕ} (hNN : P.n ≤ NN) (hW : B + 4 * NN + P.n ≤
     (fun d => P.n - d.nreg 116) 14 (fun _ h => h.1)
     (fun d hd ht => initBody_inv hNN hW hd ht) hI
   refine ⟨c', k, ex, ?_, hI', ?_⟩
-  · rw [h0] at hk
-    simpa [Nat.sub_zero, Nat.mul_comm] using hk
+  · omega
   · have := hI'.2.1
     rw [hI'.2.2.1] at hexit
     omega
+
+
+end
 
 /-- The memory relation for the initial structure: node `z < n` is vertex `z`, with successor
 `(z + 1) % n` and predecessor `(z + n - 1) % n`, and the only copy of `v < n` is `v`. -/
@@ -1101,13 +1071,7 @@ theorem splitStmt_exec {B DB ND NN : ℕ} {σ : ℝ} {D : List (ℕ × ℕ)} (c 
     refine ⟨by rw [hc₁]; assumption, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun _ _ _ _ => rfl, rfl,
       fun _ _ => rfl,
       rfl, rfl⟩ <;> simp only [hc₁] <;> config_simp
-    · omega
-    · rw [h100]
-    · rw [h100, h102, hNN]; ring
-    · rw [h100, h102, hNN]; ring
-    · rw [h100, h102, hNN]; ring
-    · rw [h100, h102, hNN]; ring
-    · intro z hz; omega
+    all_goals omega
   refine spec_seq (spec_use (initLoop_exec hNNn hW c₁ hI₀ (by simp only [hc₁]; config_simp)) ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨⟨-, -, h103, h105, h106, h107, h108, h109, h112, h113, hbands, hfn, hfr,
     hnm, hrm, hout⟩, h116⟩
@@ -1115,7 +1079,7 @@ theorem splitStmt_exec {B DB ND NN : ℕ} {σ : ℝ} {D : List (ℕ × ℕ)} (c 
   unfold initFix
   refine spec_seq ?_
   exec_block
-  · config_simp; rw [h106, h103, h113]; omega
+  · config_simp; grind
   · omega
   refine spec_name fun c₃ hc₃ => ?_
   have e₁ : ∀ r, r ≠ 103 → r ≠ 104 → r ≠ 105 → r ≠ 106 → r ≠ 107 → r ≠ 108 → r ≠ 109 →
@@ -1124,8 +1088,7 @@ theorem splitStmt_exec {B DB ND NN : ℕ} {σ : ℝ} {D : List (ℕ × ℕ)} (c 
     simp only [hc₁]
     simp [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11]
   have hmem₃ : c₃.nmem = upd (upd c₂.nmem (B + NN + (P.n - 1)) 0) (B + 2 * NN) (P.n - 1) := by
-    simp only [hc₃]
-    rw [h106, h103, h113, h112, h107]
+    grind
   have hS₀ : ScanHyp P W B NN P.n σ (runState P σ (initState P.n) (D.take 0)) c₃ := by
     rw [List.take_zero, runState_nil]
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, closed_init hn, hNNn, hW⟩ <;>
@@ -1207,8 +1170,8 @@ theorem splitStmt_exec {B DB ND NN : ℕ} {σ : ℝ} {D : List (ℕ × ℕ)} (c 
     rw [hnm₄ t ht, hmem₃, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
       hnm t ht]
     simp only [hc₁]
-  · rw [hrm₄]; simp only [hc₃]; rw [hrm]; simp only [hc₁]
-  · rw [hout₄]; simp only [hc₃]; rw [hout]; simp only [hc₁]
+  · grind
+  grind
 
 end Init
 

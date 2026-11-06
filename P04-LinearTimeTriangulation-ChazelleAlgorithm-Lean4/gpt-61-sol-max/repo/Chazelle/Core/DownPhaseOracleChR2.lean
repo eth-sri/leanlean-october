@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseOracleChR
 
 /-!
@@ -11,9 +13,6 @@ the top (`nbrI`, indices modulo `n`), six sign tests (`testsI`) and a decision t
 following `BetaF` (`sideBeta_ch`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -59,18 +58,7 @@ def betaI : Stmt := .ifLtN 170012 170074 (.seq nbrI (.seq testsI logI)) (setB 0)
 def Bbeta (r : ℕ) : Bool := decide (r = 170075) || decide (170080 ≤ r ∧ r < 170089) || Bk r
 
 theorem wr_betaI : wr Bbeta betaI = true := by
-  have hsp : wr Bbeta signProg = true :=
-    SweepPrim.wr_mono SweepPrim.wr_signProg (fun r hr => by simp [Bbeta, hr])
-  have ht : ∀ op x y z d, 170080 ≤ d → d < 170089 → wr Bbeta (testS op x y z d) = true := by
-    intro op x y z d h1 h2
-    cases x <;> cases y <;> cases z <;>
-      simp only [testS, Src.load, wr, block, wrOK, hsp, Bool.and_true, Bool.true_and] <;>
-      simp [Bbeta, Bk] <;> omega
-  simp only [betaI, nbrI, testsI, logI, setB, wr, block, wrOK, ht _ _ _ _ 170082 (by norm_num)
-    (by norm_num), ht _ _ _ _ 170083 (by norm_num) (by norm_num), ht _ _ _ _ 170085 (by norm_num)
-    (by norm_num), ht _ _ _ _ 170086 (by norm_num) (by norm_num), ht _ _ _ _ 170087 (by norm_num)
-    (by norm_num), ht _ _ _ _ 170088 (by norm_num) (by norm_num), Bool.and_true, Bool.true_and]
-  decide
+  aesop
 
 /-! ## Execution -/
 
@@ -78,16 +66,18 @@ section exec
 
 variable {P : Polygon} {W : ℕ} {O : OracleIface} {s : Stat}
 
-theorem setB_exec (c : Config) (hw : WordsBounded W c) (v : ℕ) (hv : v ≤ 1) (hW : 1 ≤ W) :
+section
+variable (c : Config) (hw : WordsBounded W c)
+include hw
+theorem setB_exec (v : ℕ) (hv : v ≤ 1) (hW : 1 ≤ W) :
     ∃ c' k, Exec P W (setB v) c c' k ∧ k = 1 ∧
       c' = { c with nreg := upd c.nreg 170075 v } := by
   unfold setB
   exec_block
-  · omega
-  exact ⟨rfl, rfl⟩
+  all_goals grind
 
 /-- **The decision tree** of `BetaF` on six bits. -/
-theorem logI_exec (c : Config) (hw : WordsBounded W c) (h12 : c.nreg 170012 = 0) (hW : 1 ≤ W)
+theorem logI_exec (h12 : c.nreg 170012 = 0) (hW : 1 ≤ W)
     {pp p0 bx ax by' by'' : Prop} (hpp : BitIs c 170082 pp) (hp0 : BitIs c 170083 p0)
     (hbx : BitIs c 170085 bx) (hax : BitIs c 170086 ax) (hby : BitIs c 170087 by')
     (hby' : BitIs c 170088 by'') (hcons : p0 → ¬ pp) :
@@ -102,7 +92,7 @@ theorem logI_exec (c : Config) (hw : WordsBounded W c) (h12 : c.nreg 170012 = 0)
   obtain ⟨hby1, hby2⟩ := hby
   obtain ⟨hby'1, hby'2⟩ := hby'
   have t : ∀ r, c.nreg r ≤ 1 → (c.nreg 170012 < c.nreg r ↔ c.nreg r = 1) := fun r hr => by
-    rw [h12]; omega
+    omega
   have one : ∀ {Φ : Prop}, Φ → ((1 : ℕ) = 1 ↔ Φ) := fun h => iff_of_true rfl h
   have zero : ∀ {Φ : Prop}, ¬ Φ → ((0 : ℕ) = 1 ↔ Φ) := fun h => iff_of_false (by norm_num) h
   unfold logI
@@ -129,14 +119,12 @@ theorem logI_exec (c : Config) (hw : WordsBounded W c) (h12 : c.nreg 170012 = 0)
           refine spec_ifLtN_false g3 ?_
           obtain ⟨c', k, e, hk, rfl⟩ := setB_exec (P := P) c hw 0 (by norm_num) hW
           refine ⟨_, _, e, by omega, 0, by norm_num, rfl, zero ?_⟩
-          rintro (⟨a1, -, -⟩ | ⟨-, a2, -⟩ | ⟨-, -, a3⟩ | ⟨-, a4⟩)
-          exacts [q0' a1, a2 q0, q3 a3, q1 a4]
+          simp_all
       · have q2 : ¬ by' := fun h => g2 ((t _ hby1).2 (hby2.2 h))
         refine spec_ifLtN_false g2 ?_
         obtain ⟨c', k, e, hk, rfl⟩ := setB_exec (P := P) c hw 0 (by norm_num) hW
         refine ⟨_, _, e, by omega, 0, by norm_num, rfl, zero ?_⟩
-        rintro (⟨a1, -, -⟩ | ⟨-, a2, -⟩ | ⟨-, a3, -⟩ | ⟨-, a4⟩)
-        exacts [q0' a1, a2 q0, q2 a3, q1 a4]
+        simp_all
   · have q0 : ¬ p0 := fun h => g0 ((t _ hp01).2 (hp02.2 h))
     refine spec_ifLtN_false g0 ?_
     by_cases g1 : c.nreg 170012 < c.nreg 170082
@@ -154,14 +142,12 @@ theorem logI_exec (c : Config) (hw : WordsBounded W c) (h12 : c.nreg 170012 = 0)
           refine spec_ifLtN_false g3 ?_
           obtain ⟨c', k, e, hk, rfl⟩ := setB_exec (P := P) c hw 0 (by norm_num) hW
           refine ⟨_, _, e, by omega, 0, by norm_num, rfl, zero ?_⟩
-          rintro (⟨-, -, a1⟩ | ⟨a2, -, -⟩ | ⟨a3, -, -⟩ | ⟨a4, -⟩)
-          exacts [q3 a1, a2 q1, q0 a3, q0 a4]
+          simp_all
       · have q2 : ¬ bx := fun h => g2 ((t _ hbx1).2 (hbx2.2 h))
         refine spec_ifLtN_false g2 ?_
         obtain ⟨c', k, e, hk, rfl⟩ := setB_exec (P := P) c hw 0 (by norm_num) hW
         refine ⟨_, _, e, by omega, 0, by norm_num, rfl, zero ?_⟩
-        rintro (⟨-, a1, -⟩ | ⟨a2, -, -⟩ | ⟨a3, -, -⟩ | ⟨a4, -⟩)
-        exacts [q2 a1, a2 q1, q0 a3, q0 a4]
+        simp_all
     · have q1 : ¬ pp := fun h => g1 ((t _ hpp1).2 (hpp2.2 h))
       refine spec_ifLtN_false g1 ?_
       by_cases g2 : c.nreg 170012 < c.nreg 170085
@@ -180,11 +166,10 @@ theorem logI_exec (c : Config) (hw : WordsBounded W c) (h12 : c.nreg 170012 = 0)
           refine spec_ifLtN_false g3 ?_
           obtain ⟨c', k, e, hk, rfl⟩ := setB_exec (P := P) c hw 0 (by norm_num) hW
           refine ⟨_, _, e, by omega, 0, by norm_num, rfl, zero ?_⟩
-          rintro (⟨a1, -, -⟩ | ⟨-, -, a2⟩ | ⟨a3, -, -⟩ | ⟨a4, -⟩)
-          exacts [q1 a1, a2.elim q2 q3, q0 a3, q0 a4]
+          simp_all
 
 /-- **The neighbours of the top.** -/
-theorem nbrI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {v : ℕ}
+theorem nbrI_exec (hS : SEnv P W O s c) {v : ℕ}
     (hv : c.nreg 170079 = v) (hvn : v < P.n) :
     ∃ c' k, Exec P W nbrI c c' k ∧ k ≤ 8 ∧ c'.nreg 170080 = (v + P.n - 1) % P.n ∧
       c'.nreg 170081 = (v + 1) % P.n ∧ c'.nmem = c.nmem ∧
@@ -195,26 +180,20 @@ theorem nbrI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {v 
   unfold nbrI
   refine spec_seq ?_
   exec_block
-  · config_simp; rw [hv, hS.r19]; omega
-  · config_simp; rw [hv, hS.r11]; omega
+  · ram_grind
+  · config_simp; ram_grind
   refine spec_seq ?_
-  have hA : (v + (P.n - 1)) % P.n = (v + P.n - 1) % P.n := by congr 1; omega
+  have hA : (v + (P.n - 1)) % P.n = (v + P.n - 1) % P.n := by grind
   by_cases h1 : v + (P.n - 1) < P.n
-  · refine spec_ifLtN_true (by config_simp; rw [hv, hS.r19, hS.r10]; exact h1) ?_
+  · refine spec_ifLtN_true (by config_simp; ram_grind) ?_
     refine spec_skip ‹_› ?_
     by_cases h2 : v + 1 < P.n
-    · refine spec_ifLtN_true (by config_simp; rw [hv, hS.r11, hS.r10]; exact h2) ?_
+    · refine spec_ifLtN_true (by config_simp; ram_grind) ?_
       refine spec_skip ‹_› ⟨by omega, ?_, ?_, rfl, fun r h1 h2 => ?_⟩
       · config_simp; rw [hv, hS.r19, ← hA, Nat.mod_eq_of_lt h1]
       · config_simp; rw [hv, hS.r11, Nat.mod_eq_of_lt h2]
-      · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
-    · refine spec_ifLtN_false (by config_simp; rw [hv, hS.r11, hS.r10]; exact h2) ?_
-      exec_block
-      · omega
-      refine ⟨by omega, ?_, ?_, rfl, fun r h1 h2 => ?_⟩
-      · config_simp; rw [hv, hS.r19, ← hA, Nat.mod_eq_of_lt h1]
-      · config_simp; rw [show v + 1 = P.n by omega, Nat.mod_self]
-      · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+      simp_all
+    grind [Chazelle.WordsBounded, Chazelle.Core.IOrc.SEnv]
   · refine spec_ifLtN_false (by config_simp; rw [hv, hS.r19, hS.r10]; exact h1) ?_
     exec_block
     by_cases h2 : v + 1 < P.n
@@ -223,15 +202,18 @@ theorem nbrI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {v 
       · config_simp; rw [hv, hS.r19, hS.r10, ← hA, Nat.mod_eq_sub_mod (by omega),
           Nat.mod_eq_of_lt (by omega)]
       · config_simp; rw [hv, hS.r11, Nat.mod_eq_of_lt h2]
-      · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+      ram_simp
     · refine spec_ifLtN_false (by config_simp; rw [hv, hS.r11, hS.r10]; exact h2) ?_
       exec_block
       · omega
       refine ⟨by omega, ?_, ?_, rfl, fun r h1 h2 => ?_⟩
       · config_simp; rw [hv, hS.r19, hS.r10, ← hA, Nat.mod_eq_sub_mod (by omega),
           Nat.mod_eq_of_lt (by omega)]
-      · config_simp; rw [show v + 1 = P.n by omega, Nat.mod_self]
-      · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+      · config_simp; grind [Nat.mod_self]
+      ram_simp
+
+
+end
 
 /-- One test of `testsI`: the bit, and the other registers outside the kernel. -/
 theorem test1 {op : ℕ} (hop : op ≤ 3) (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {a b d dst : ℕ}
@@ -242,13 +224,16 @@ theorem test1 {op : ℕ} (hop : op ≤ 3) (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
         ((Qof P).vtx (c.nreg d))) ∧
       (∀ r, r ≠ dst → (r < 10000 ∨ 10500 ≤ r) → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
   obtain ⟨c', k, e, hk, F, b1, b2⟩ := testS_exec hG hW hop (x := .v a) (y := .v b) (z := .v d)
-    (d := dst) (by simp only [Src.Out]; omega) (by simp only [Src.Out]; omega)
-    (by simp only [Src.Out]; omega) c hw hla hlb hld
+    (d := dst) (by core_grind) (by core_grind)
+    (by core_grind) c hw hla hlb hld
   refine ⟨c', k, e, hk, ⟨b1, b2⟩, fun r h1 h2 => F.1 r ?_, F.2.2.1⟩
-  unfold Bt Bk; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+  core_grind
 
+section
+variable (c : Config) (hw : WordsBounded W c)
+include hw
 /-- **The six sign tests.** -/
-theorem testsI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
+theorem testsI_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
     {A v B : ℕ} (hA : c.nreg 170080 = A) (hv : c.nreg 170079 = v) (hB : c.nreg 170081 = B)
     (hAn : A < P.n) (hvn : v < P.n) (hBn : B < P.n) :
     ∃ c' k, Exec P W testsI c c' k ∧ k ≤ 1470 ∧
@@ -262,48 +247,48 @@ theorem testsI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : 
       c'.nmem = c.nmem := by
   obtain ⟨c₁, k₁, e₁, hk₁, b₁, r₁, m₁⟩ := test1 (op := 2) (by norm_num) hG hW (a := 170080)
     (b := 170079) (d := 170081) (dst := 170082) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) c hw (by rw [hA]; exact hAn) (by rw [hv]; exact hvn) (by rw [hB]; exact hBn)
+    (by norm_num) c hw (by omega) (by omega) (by omega)
   rw [hA, hv, hB] at b₁
   have f₁ : ∀ r, (r < 170082 ∨ 170082 < r) → (r < 10000 ∨ 10500 ≤ r) → c₁.nreg r = c.nreg r :=
     fun r h1 h2 => r₁ r (by omega) h2
   obtain ⟨c₂, k₂, e₂, hk₂, b₂, r₂, m₂⟩ := test1 (op := 3) (by norm_num) hG hW (a := 170080)
     (b := 170079) (d := 170081) (dst := 170083) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) c₁ e₁.wb_right (by rw [f₁ _ (by omega) (by omega), hA]; exact hAn)
-    (by rw [f₁ _ (by omega) (by omega), hv]; exact hvn)
-    (by rw [f₁ _ (by omega) (by omega), hB]; exact hBn)
+    (by norm_num) c₁ e₁.wb_right (by simp_all)
+    (by simp_all)
+    (by simp_all)
   rw [f₁ _ (by omega) (by omega), f₁ _ (by omega) (by omega), f₁ _ (by omega) (by omega), hA, hv,
     hB] at b₂
   have f₂ : ∀ r, (r < 170082 ∨ 170083 < r) → (r < 10000 ∨ 10500 ≤ r) → c₂.nreg r = c.nreg r :=
-    fun r h1 h2 => by rw [r₂ r (by omega) h2, f₁ r (by omega) h2]
+    fun r h1 h2 => by grind
   obtain ⟨c₃, k₃, e₃, hk₃, b₃, r₃, m₃⟩ := test1 (op := 0) (by norm_num) hG hW (a := 170079)
     (b := 170081) (d := 170079) (dst := 170085) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) c₂ e₂.wb_right (by rw [f₂ _ (by omega) (by omega), hv]; exact hvn)
-    (by rw [f₂ _ (by omega) (by omega), hB]; exact hBn)
-    (by rw [f₂ _ (by omega) (by omega), hv]; exact hvn)
+    (by norm_num) c₂ e₂.wb_right (by grind)
+    (by grind)
+    (by grind)
   rw [f₂ _ (by omega) (by omega), f₂ _ (by omega) (by omega), hv, hB] at b₃
   have f₃ : ∀ r, (r < 170082 ∨ 170085 < r) → (r < 10000 ∨ 10500 ≤ r) → c₃.nreg r = c.nreg r :=
-    fun r h1 h2 => by rw [r₃ r (by omega) h2, f₂ r (by omega) h2]
+    fun r h1 h2 => by grind
   obtain ⟨c₄, k₄, e₄, hk₄, b₄, r₄, m₄⟩ := test1 (op := 0) (by norm_num) hG hW (a := 170080)
     (b := 170079) (d := 170080) (dst := 170086) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) c₃ e₃.wb_right (by rw [f₃ _ (by omega) (by omega), hA]; exact hAn)
-    (by rw [f₃ _ (by omega) (by omega), hv]; exact hvn)
-    (by rw [f₃ _ (by omega) (by omega), hA]; exact hAn)
+    (by norm_num) c₃ e₃.wb_right (by grind)
+    (by grind)
+    (by grind)
   rw [f₃ _ (by omega) (by omega), f₃ _ (by omega) (by omega), hv, hA] at b₄
   have f₄ : ∀ r, (r < 170082 ∨ 170086 < r) → (r < 10000 ∨ 10500 ≤ r) → c₄.nreg r = c.nreg r :=
-    fun r h1 h2 => by rw [r₄ r (by omega) h2, f₃ r (by omega) h2]
+    fun r h1 h2 => by grind
   obtain ⟨c₅, k₅, e₅, hk₅, b₅, r₅, m₅⟩ := test1 (op := 1) (by norm_num) hG hW (a := 170079)
     (b := 170081) (d := 170079) (dst := 170087) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) c₄ e₄.wb_right (by rw [f₄ _ (by omega) (by omega), hv]; exact hvn)
-    (by rw [f₄ _ (by omega) (by omega), hB]; exact hBn)
-    (by rw [f₄ _ (by omega) (by omega), hv]; exact hvn)
+    (by norm_num) c₄ e₄.wb_right (by grind)
+    (by grind)
+    (by grind)
   rw [f₄ _ (by omega) (by omega), f₄ _ (by omega) (by omega), hv, hB] at b₅
   have f₅ : ∀ r, (r < 170082 ∨ 170087 < r) → (r < 10000 ∨ 10500 ≤ r) → c₅.nreg r = c.nreg r :=
-    fun r h1 h2 => by rw [r₅ r (by omega) h2, f₄ r (by omega) h2]
+    fun r h1 h2 => by grind
   obtain ⟨c₆, k₆, e₆, hk₆, b₆, r₆, m₆⟩ := test1 (op := 1) (by norm_num) hG hW (a := 170081)
     (b := 170079) (d := 170081) (dst := 170088) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) c₅ e₅.wb_right (by rw [f₅ _ (by omega) (by omega), hB]; exact hBn)
-    (by rw [f₅ _ (by omega) (by omega), hv]; exact hvn)
-    (by rw [f₅ _ (by omega) (by omega), hB]; exact hBn)
+    (by norm_num) c₅ e₅.wb_right (by grind)
+    (by grind)
+    (by grind)
   rw [f₅ _ (by omega) (by omega), f₅ _ (by omega) (by omega), hv, hB] at b₆
   have ex : Exec P W testsI c c₆ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k₆))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
@@ -311,7 +296,7 @@ theorem testsI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : 
       c'.nreg q = c.nreg q) → ∀ {r' : ℕ} {p : Prop}, BitIs c r' p → r' ≠ r → 10500 ≤ r' →
       BitIs c' r' p := fun h _ _ hb hne h2 => hb.of_eq (h _ hne (Or.inr h2))
   refine ⟨c₆, _, ex, by omega, ?_, ?_, ?_, ?_, ?_, b₆, fun r h1 h2 => ?_, by
-    rw [m₆, m₅, m₄, m₃, m₂, m₁]⟩
+    grind⟩
   · exact pr r₆ (pr r₅ (pr r₄ (pr r₃ (pr r₂ b₁ (by norm_num) (by norm_num)) (by norm_num)
       (by norm_num)) (by norm_num) (by norm_num)) (by norm_num) (by norm_num)) (by norm_num)
       (by norm_num)
@@ -321,10 +306,10 @@ theorem testsI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : 
       (by norm_num) (by norm_num)
   · exact pr r₆ (pr r₅ b₄ (by norm_num) (by norm_num)) (by norm_num) (by norm_num)
   · exact pr r₆ b₅ (by norm_num) (by norm_num)
-  · rw [r₆ r (by omega) h2, f₅ r (by omega) h2]
+  grind
 
 /-- **The orientation bit of the chain of a stretch.** -/
-theorem betaI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {C : Chain}
+theorem betaI_exec (hS : SEnv P W O s c) {C : Chain}
     (hC : C.P = Qof P) (hT : c.nreg 170074 = C.topIdx) (hv : c.nreg 170079 = (C.s + C.topIdx) % (Qof P).n) :
     ∃ c' k, Exec P W betaI c c' k ∧ k ≤ 1500 ∧ c'.nreg 170075 ≤ 1 ∧
       (c'.nreg 170075 = 1 ↔ C.sideBeta = true) ∧ c'.nmem = c.nmem ∧ FrameB Bbeta c c' := by
@@ -334,29 +319,32 @@ theorem betaI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {C
   unfold betaI
   have hwr := wr_betaI
   by_cases h0 : c.nreg 170012 < c.nreg 170074
-  · have hT0 : 0 < C.topIdx := by rw [← hT]; rw [hS.r12] at h0; exact h0
+  · have hT0 : 0 < C.topIdx := by omega
     set v := (C.s + C.topIdx) % (Qof P).n with hvd
     have hvn : v < P.n := by rw [← hQ]; exact Nat.mod_lt _ (by rw [hQ]; have := hS.n3; omega)
     obtain ⟨c₁, k₁, e₁, hk₁, a80, a81, m₁, r₁⟩ := nbrI_exec c hw hS hv hvn
     obtain ⟨c₂, k₂, e₂, hk₂, b82, b83, b85, b86, b87, b88, r₂, m₂⟩ := testsI_exec c₁ e₁.wb_right
-      hS.good hW a80 (by rw [r₁ _ (by decide) (by decide)]; exact hv) a81
+      hS.good hW a80 (by grind) a81
       (Nat.mod_lt _ (by omega)) hvn (Nat.mod_lt _ (by omega))
     have c12 : c₂.nreg 170012 = 0 := by
       rw [r₂ _ (by decide) (by decide), r₁ _ (by decide) (by decide)]; exact hS.r12
-    have hcons : ∀ x : ℝ, x = 0 → ¬ 0 < x := fun x h => by rw [h]; exact lt_irrefl 0
+    have hcons : ∀ x : ℝ, x = 0 → ¬ 0 < x := fun x h => by grind
     obtain ⟨c₃, k₃, e₃, hk₃, b, b75, rfl, i75⟩ := logI_exec c₂ e₂.wb_right c12 (by omega) b82 b83
       b85 b86 b87 b88 (hcons _)
     have ex := Exec.ifLtN_true (e := setB 0) h0 (.seq e₁ (.seq e₂ e₃))
-    refine ⟨_, _, ex, by omega, by simpa using b75, ?_, by simp [m₂, m₁], exec_frameB ex hwr⟩
+    refine ⟨_, _, ex, by omega, by simpa using b75, ?_, by grind, exec_frameB ex hwr⟩
     simp only [upd_same]
     rw [i75, sideBeta_ch hC hD hT0 hvd]
     unfold BetaF
     rw [hQ]
-  · have hT0 : C.topIdx = 0 := by rw [← hT]; rw [hS.r12] at h0; omega
+  · have hT0 : C.topIdx = 0 := by rw [← hT]; ram_grind
     obtain ⟨c₁, k₁, e₁, hk₁, rfl⟩ := setB_exec (P := P) c hw 0 (by norm_num) (by omega)
     have ex := Exec.ifLtN_false (t := nbrI.seq (testsI.seq logI)) h0 e₁
     refine ⟨_, _, ex, by omega, by simp, ?_, rfl, exec_frameB ex hwr⟩
     rw [sideBeta_of_top_zero hT0]; simp
+
+
+end
 
 end exec
 

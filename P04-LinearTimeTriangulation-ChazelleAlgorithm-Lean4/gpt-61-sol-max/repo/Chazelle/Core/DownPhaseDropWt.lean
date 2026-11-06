@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FactsAttach
 public import Chazelle.Core.FactsL23
 
@@ -45,12 +47,12 @@ macro "cyc_close2" : tactic => `(tactic| (
 /-- The successor `f` of `a` among keys containing `w ∈ (a, b)` lies in `(a, b)`. -/
 theorem cyc_succ_in {a b w f : ℝ} (hw : sideInArc a b w) (hf : ¬ sideInArc a f w) (hfa : f ≠ a) :
     sideInArc a b f := by
-  rcases lt_or_gt_of_ne hfa with h | h <;> unfold sideInArc at * <;> split_ifs at * <;> cyc_close2
+  core_grind
 
 /-- The predecessor `g` of `b` among keys containing `w ∈ (a, b)` lies in `(a, b)`. -/
 theorem cyc_pred_in {a b w g : ℝ} (hw : sideInArc a b w) (hg : ¬ sideInArc g b w) (hgb : g ≠ b) :
     sideInArc a b g := by
-  rcases lt_or_gt_of_ne hgb with h | h <;> unfold sideInArc at * <;> split_ifs at * <;> cyc_close2
+  core_grind
 
 /-- **The two end pieces.**  If `(a, b)` contains points `f, g` of an interval `I = [lo, hi]`
 avoiding `a` and `b`, a key of `(a, b)` outside `I` lies in `(a, f)` or in `(g, b)`. -/
@@ -58,8 +60,7 @@ theorem cyc_pieces {lo hi a b f g x : ℝ} (hf : lo ≤ f ∧ f ≤ hi) (hg : lo
     (ha : a < lo ∨ hi < a) (hb : b < lo ∨ hi < b) (hfin : sideInArc a b f)
     (hgin : sideInArc a b g) (hx : x < lo ∨ hi < x) (hin : sideInArc a b x) :
     sideInArc a f x ∨ sideInArc g b x := by
-  unfold sideInArc at *
-  split_ifs at * <;> cyc_close2
+  core_grind
 
 /-! ## Weights -/
 
@@ -69,16 +70,21 @@ variable {M : Model}
 def edgesIn (M : Model) (a b : ℝ) : Set ℕ :=
   {p : ℕ | p < M.W.n ∧ M.counted p ∧ ∃ t : ℝ, 0 < t ∧ t < 1 ∧ sideInArc a b (p + t)}
 
-theorem arcWt_eq' (a b : ℝ) : M.arcWt a b = (edgesIn M a b).ncard := rfl
+section
+variable (a b : ℝ)
+theorem arcWt_eq' : M.arcWt a b = (edgesIn M a b).ncard := rfl
 
-theorem edgesIn_finite (a b : ℝ) : (edgesIn M a b).Finite :=
+theorem edgesIn_finite : (edgesIn M a b).Finite :=
   (Set.finite_lt_nat M.W.n).subset fun _ hp => hp.1
 
-theorem arcWt_le_n (a b : ℝ) : M.arcWt a b ≤ M.W.n := by
+theorem arcWt_le_n : M.arcWt a b ≤ M.W.n := by
   rw [arcWt_eq']
   calc (edgesIn M a b).ncard ≤ ((Finset.range M.W.n : Finset ℕ) : Set ℕ).ncard :=
         Set.ncard_le_ncard (fun p hp => by simpa using hp.1) (Finset.finite_toSet _)
     _ = M.W.n := by rw [Set.ncard_coe_finset, Finset.card_range]
+
+
+end
 
 /-- The weight of an arc is at most the weight of its region. -/
 theorem arcWt_le_weight {F : Set (Set Point)} {X : Set Point} {a b : ℝ} (h : M.IsArc F X a b) :
@@ -108,8 +114,7 @@ theorem arcWt_le_add {a b a₁ b₁ a₂ b₂ : ℝ}
 
 theorem isCut_mono {F F' : Set (Set Point)} (hsub : F' ⊆ F) {k : ℝ} (h : M.IsCut F' k) :
     M.IsCut F k := by
-  obtain ⟨c, hc, rest⟩ := h
-  exact ⟨c, hsub hc, rest⟩
+  core_grind
 
 /-- **Dropping a block of chords at most doubles the weights.** -/
 theorem semigranular_drop (hM : WalkAx M) {F F' : Set (Set Point)} (hF : F ⊆ M.Adm)
@@ -122,7 +127,7 @@ theorem semigranular_drop (hM : WalkAx M) {F F' : Set (Set Point)} (hF : F ⊆ M
     fun X hX a b h => (arcWt_le_weight h).trans (hγ X hX)
   have hK := hM.finite_cuts hF hfin
   have hkey : ∀ (p : ℕ) (t : ℝ), M.counted p → 0 < t → hi < p + t := fun p t hc ht => by
-    have := hcnt p hc; linarith
+    grind
   intro W hW
   apply csSup_le'
   rintro _ ⟨⟨a, b⟩, harc, rfl⟩
@@ -152,16 +157,12 @@ theorem semigranular_drop (hM : WalkAx M) {F F' : Set (Set Point)} (hF : F ⊆ M
         _ = 2 * γ := by ring
     · push Not at hw
       obtain ⟨X, hX, harcX⟩ := hM.arc_of_gap hF hfin hcaF hcbF hab (fun k hk hc => hw k hk hc)
-      have := key X hX a b harcX
-      omega
+      grind
   · by_cases hFe : F = ∅
-    · have hFF : F' = F := by rw [hF'e, hFe]
-      subst hFF
-      have := key W hW 0 0 harc
-      omega
+    · grind
     · obtain ⟨k₁, k₂, h₁, h₂, hk⟩ := hM.two_cuts hF (Set.nonempty_iff_ne_empty.2 hFe)
       have hnoF' : ∀ k, ¬ M.IsCut F' k := by
-        rintro k ⟨c, hc, -⟩; rw [hF'e] at hc; exact hc
+        rintro k ⟨c, hc, -⟩; simp_all
       obtain ⟨f, hfK, hfmin⟩ := Set.exists_min_image {x | M.IsCut F x} id hK ⟨k₁, h₁⟩
       obtain ⟨g, hgK, hgmax⟩ := Set.exists_max_image {x | M.IsCut F x} id hK ⟨k₁, h₁⟩
       simp only [id] at hfmin hgmax
@@ -170,8 +171,7 @@ theorem semigranular_drop (hM : WalkAx M) {F F' : Set (Set Point)} (hF : F ⊆ M
         · exact h
         · exfalso; apply hk
           have e1 := hfmin k₁ h₁; have e2 := hgmax k₁ h₁
-          have e3 := hfmin k₂ h₂; have e4 := hgmax k₂ h₂
-          linarith
+          have e3 := hfmin k₂ h₂; grind
       have hgI := (hcut g hgK).resolve_left (hnoF' g)
       obtain ⟨X, hX, harcX⟩ := hM.arc_of_gap hF hfin hgK hfK (ne_of_gt hfg) (by
         intro k hk hc
@@ -182,9 +182,7 @@ theorem semigranular_drop (hM : WalkAx M) {F F' : Set (Set Point)} (hF : F ⊆ M
         · linarith [hfmin k hc])
       have := (arcWt_le_of_sub (M := M) (a := 0) (b := 0) (a' := g) (b' := f)
         fun p hc t ht0 _ _ => by
-          unfold sideInArc
-          rw [ite_eq_right (not_lt.2 hfg.le)]
-          left; linarith [hkey p t hc ht0, hgI.2]).trans (key X hX _ _ harcX)
+          core_grind).trans (key X hX _ _ harcX)
       omega
 
 end

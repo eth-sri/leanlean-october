@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreCounts
 public import Chazelle.Core.FactsL23
 public import Chazelle.Core.WalkEmbed
@@ -48,29 +50,15 @@ def ClosedArc (a b x : ℝ) : Prop := sideInArc a b x ∨ x = a ∨ x = b
 
 /-- Facts about an interval `(A, B)` (keys in `[0, n)`) containing the key `0`. -/
 theorem cyc_zero {A B : ℝ} (hA0 : 0 ≤ A) (hAB : A ≠ B) (hi : sideInArc A B 0) : 0 < B ∧ B < A := by
-  unfold sideInArc at hi
-  split_ifs at hi with h
-  · linarith [hi.1]
-  · rcases hi with hi | hi
-    · linarith
-    · exact ⟨hi, lt_of_le_of_ne (not_lt.1 h) (Ne.symm hAB)⟩
+  core_grind
 
 /-- Outside an interval `(A, B)` containing `0`. -/
 theorem cyc_zero_out {A B u : ℝ} (hBA : B < A) (h : ¬ sideInArc A B u) : B ≤ u ∧ u ≤ A := by
-  unfold sideInArc at h
-  rw [ite_eq_right (not_lt.2 hBA.le)] at h
-  push Not at h
-  exact ⟨h.2, h.1⟩
+  core_grind
 
 /-- On the closed interval `[A, B]` containing `0` inside. -/
 theorem cyc_zero_closed {A B x : ℝ} (hBA : B < A) (h : ClosedArc A B x) : A ≤ x ∨ x ≤ B := by
-  unfold ClosedArc sideInArc at h
-  rw [ite_eq_right (not_lt.2 hBA.le)] at h
-  rcases h with (h | h) | h | h
-  · exact Or.inl h.le
-  · exact Or.inr h.le
-  · exact Or.inl h.ge
-  · exact Or.inr h.le
+  core_grind [sideInArc]
 
 /-- **Domination when `a'` is strictly inside `Aⱼ`** (keys rotated so that `a` is at `0`). -/
 theorem cyc_dom_open {A B A' B' x x' a' u : ℝ} (hA0 : 0 ≤ A) (_hB'0 : 0 ≤ B') (_hx0 : 0 ≤ x)
@@ -79,59 +67,7 @@ theorem cyc_dom_open {A B A' B' x x' a' u : ℝ} (hA0 : 0 ≤ A) (_hB'0 : 0 ≤ 
     (ha' : sideInArc A' B' a') (hx : ClosedArc A B x) (hx' : ClosedArc A' B' x') (hxx : x ≠ x')
     (hui : ¬ sideInArc A B u) (huj : ¬ sideInArc A' B' u) :
     (sideInArc x x' u → sideInArc 0 a' u) ∧ (sideInArc x' x u → sideInArc a' 0 u) := by
-  obtain ⟨hB0, hBA⟩ := cyc_zero hA0 hAB hi
-  obtain ⟨h1, h2⟩ := cyc_zero_out hBA hjA
-  obtain ⟨h3, h4⟩ := cyc_zero_out hBA hjB
-  obtain ⟨h5, h6⟩ := cyc_zero_out hBA hui
-  have h7 := cyc_zero_closed hBA hx
-  have hA'B' : A' < B' := by
-    by_contra hle
-    push Not at hle
-    unfold sideInArc at hj0
-    rcases hle.lt_or_eq with h | h
-    · rw [ite_eq_right (not_lt.2 h.le)] at hj0; push Not at hj0; linarith [hj0.2]
-    · rw [h] at ha'; unfold sideInArc at ha'; rw [ite_eq_right (lt_irrefl _)] at ha'
-      rw [h, ite_eq_right (lt_irrefl _)] at hj0; push Not at hj0; linarith [hj0.2]
-  have ha'' : A' < a' ∧ a' < B' := by unfold sideInArc at ha'; rwa [ite_eq_left hA'B'] at ha'
-  have hx'' : A' ≤ x' ∧ x' ≤ B' := by
-    unfold ClosedArc sideInArc at hx'
-    rw [ite_eq_left hA'B'] at hx'
-    rcases hx' with h | h | h
-    · exact ⟨h.1.le, h.2.le⟩
-    · exact ⟨h.ge, by linarith⟩
-    · exact ⟨by linarith, h.le⟩
-  have huj' : u ≤ A' ∨ B' ≤ u := by
-    unfold sideInArc at huj
-    rw [ite_eq_left hA'B'] at huj
-    by_contra h; push Not at h; exact huj ⟨h.1, h.2⟩
-  have ha'0 : 0 < a' := by linarith [ha''.1]
-  constructor
-  · intro h
-    unfold sideInArc at h ⊢
-    rw [ite_eq_left ha'0]
-    split_ifs at h with hxx'
-    · rcases huj' with hu | hu <;> constructor <;> linarith [h.1, h.2]
-    · have hxA : A ≤ x := by
-        rcases h7 with h7 | h7
-        · exact h7
-        · exfalso; exact hxx (le_antisymm (by linarith) (not_lt.1 hxx'))
-      rcases h with h | h
-      · linarith
-      · rcases huj' with hu | hu <;> constructor <;> linarith
-  · intro h
-    unfold sideInArc at h ⊢
-    rw [ite_eq_right (not_lt.2 ha'0.le)]
-    left
-    split_ifs at h with hxx'
-    · rcases huj' with hu | hu <;> linarith [h.1, h.2]
-    · rcases h with h | h
-      · rcases huj' with hu | hu <;> linarith
-      · have hxB : x ≤ B := by
-          rcases h7 with h7 | h7
-          · exfalso
-            exact hxx (le_antisymm (not_lt.1 hxx') (by linarith))
-          · exact h7
-        linarith
+  core_grind
 
 /-- **Domination when `a' = x'`** (keys rotated so that `a` is at `0`). -/
 theorem cyc_dom_same {A B x k u : ℝ} (hA0 : 0 ≤ A) (hAB : A ≠ B) (hi : sideInArc A B 0)
@@ -141,43 +77,14 @@ theorem cyc_dom_same {A B x k u : ℝ} (hA0 : 0 ≤ A) (hAB : A ≠ B) (hi : sid
   obtain ⟨h1, h2⟩ := cyc_zero_out hBA hk
   obtain ⟨h5, h6⟩ := cyc_zero_out hBA hui
   have h7 := cyc_zero_closed hBA hx
-  have hk0 : 0 < k := by linarith
-  constructor
-  · intro h
-    unfold sideInArc at h ⊢
-    rw [ite_eq_left hk0]
-    split_ifs at h with hxk'
-    · rcases h7 with h7 | h7 <;> constructor <;> linarith [h.1, h.2]
-    · have hxA : A ≤ x := by
-        rcases h7 with h7 | h7
-        · exact h7
-        · exfalso; exact hxk (le_antisymm (by linarith) (not_lt.1 hxk'))
-      rcases h with h | h
-      · linarith
-      · constructor <;> linarith
-  · intro h
-    unfold sideInArc at h ⊢
-    rw [ite_eq_right (not_lt.2 hk0.le)]
-    left
-    split_ifs at h with hkx
-    · linarith [h.1]
-    · rcases h with h | h
-      · exact h
-      · have hxB : x ≤ B := by
-          rcases h7 with h7 | h7
-          · exfalso; exact hxk (le_antisymm (not_lt.1 hkx) (by linarith))
-          · exact h7
-        linarith
+  core_grind
 
 /-- A start or an end version of `cyc_nosep`: the start of an interval is on the side of its
 interior points (with respect to two keys outside the interval). -/
 theorem cyc_nosep_start {a x y A B : ℝ} (hy : sideInArc a x y) (hA : ¬ sideInArc a x A)
     (hB : ¬ sideInArc a x B) (haA : a ≠ A) (haB : a ≠ B) (hAB : A ≠ B) :
     sideInArc A B y ↔ sideInArc A B a := by
-  rcases lt_or_gt_of_ne haA with h1 | h1 <;> rcases lt_or_gt_of_ne haB with h2 | h2 <;>
-    rcases lt_or_gt_of_ne hAB with h3 | h3 <;>
-    · unfold sideInArc at *
-      split_ifs at * <;> constructor <;> intro h <;> cyc_close
+  core_grind
 
 /-- A more thorough closing tactic for cyclic case analyses (nested disjunctions). -/
 macro "cyc_close2" : tactic => `(tactic| (
@@ -196,23 +103,26 @@ macro "cyc_close2" : tactic => `(tactic| (
 /-- The part of an interval before one of its interior points is inside the interval. -/
 theorem cyc_sub_arc {a b w z : ℝ} (hw : sideInArc a b w) (hz : sideInArc a w z) :
     sideInArc a b z := by
-  unfold sideInArc at *
-  split_ifs at * <;> cyc_close2
+  core_grind
 
+section
+variable {a b y w : ℝ} (hy : sideInArc a b y) (hw : sideInArc a b w) (hyw : y ≠ w)
+include b hy hw hyw
 /-- Of two distinct interior points of an interval, one is before the other. -/
-theorem cyc_split {a b y w : ℝ} (hy : sideInArc a b y) (hw : sideInArc a b w) (hyw : y ≠ w) :
+theorem cyc_split :
     sideInArc a w y ∨ sideInArc a y w := by
-  rcases lt_or_gt_of_ne hyw with h | h <;>
-  · unfold sideInArc at *
-    split_ifs at * <;> cyc_close2
+  core_grind
 
 /-- Two interior points of an interval: one is inside the part of the interval before the other. -/
-theorem cyc_order {a b y w : ℝ} (hy : sideInArc a b y) (hw : sideInArc a b w) (hyw : y ≠ w) :
+theorem cyc_order :
     (sideInArc a w y ∧ ∀ z, sideInArc a w z → sideInArc a b z) ∨
       (sideInArc a y w ∧ ∀ z, sideInArc a y z → sideInArc a b z) := by
   rcases cyc_split hy hw hyw with h | h
   · exact Or.inl ⟨h, fun z hz => cyc_sub_arc hw hz⟩
   · exact Or.inr ⟨h, fun z hz => cyc_sub_arc hy hz⟩
+
+
+end
 
 /-- A closed interval avoiding two keys lies on one side of them. -/
 theorem cyc_closed_side {a b y w k k' : ℝ} (hy : sideInArc a b y)
@@ -234,19 +144,13 @@ theorem cyc_closed_side {a b y w k k' : ℝ} (hy : sideInArc a b y)
 inside the other. -/
 theorem cyc_overlap {a b a' b' y : ℝ} (hab : a ≠ b) (hab' : a' ≠ b') (haa : a ≠ a')
     (hy : sideInArc a b y) (hy' : sideInArc a' b' y) : sideInArc a b a' ∨ sideInArc a' b' a := by
-  rcases lt_or_gt_of_ne haa with h1 | h1 <;> rcases lt_or_gt_of_ne hab with h2 | h2 <;>
-    rcases lt_or_gt_of_ne hab' with h3 | h3 <;>
-    · unfold sideInArc at *
-      split_ifs at * <;> cyc_close2
+  core_grind
 
 /-- A key is strictly on one side when it avoids both ends. -/
 theorem cyc_two {k k' x : ℝ} (hkk : k ≠ k') (hx : x ≠ k) (hx' : x ≠ k') :
     sideInArc k k' x ∨ sideInArc k' k x := by
   rcases cyc_cases (x := x) hkk with h | h | h | h
-  · exact absurd h hx
-  · exact absurd h hx'
-  · exact Or.inl h
-  · exact Or.inr h
+  all_goals simp_all
 
 /-! ## Side counts -/
 
@@ -255,15 +159,17 @@ side. -/
 def CountOK (M : Model) (S : Set (Set Point)) (R : Set Point) (k₁ k₂ : ℝ) : Prop :=
   2 ≤ (sideExits M S R k₁ k₂).ncard ∧ 2 ≤ (sideExits M S R k₂ k₁).ncard
 
+section
+variable {S : Set (Set Point)}
 /-- The side counts only depend on the cut keys inside the key interval. -/
-theorem sideExits_mono {S : Set (Set Point)} {R : Set Point} {k₁ k₂ l₁ l₂ : ℝ}
+theorem sideExits_mono {R : Set Point} {k₁ k₂ l₁ l₂ : ℝ}
     (h : ∀ u, M.IsCut S u → sideInArc k₁ k₂ u → sideInArc l₁ l₂ u) :
     sideExits M S R k₁ k₂ ⊆ sideExits M S R l₁ l₂ := by
   rintro c ⟨hc, p, t, hat, hin⟩
   exact ⟨hc, p, t, hat, h _ ⟨c, hc.1, p, t, hat, rfl⟩ hin⟩
 
 /-- Domination of the count test. -/
-theorem countOK_mono {S : Set (Set Point)} (hfin : S.Finite) {R : Set Point} {k₁ k₂ l₁ l₂ : ℝ}
+theorem countOK_mono (hfin : S.Finite) {R : Set Point} {k₁ k₂ l₁ l₂ : ℝ}
     (h₁ : ∀ u, M.IsCut S u → sideInArc k₁ k₂ u → sideInArc l₁ l₂ u)
     (h₂ : ∀ u, M.IsCut S u → sideInArc k₂ k₁ u → sideInArc l₂ l₁ u)
     (hc : CountOK M S R k₁ k₂) : CountOK M S R l₁ l₂ := by
@@ -274,6 +180,9 @@ theorem countOK_mono {S : Set (Set Point)} (hfin : S.Finite) {R : Set Point} {k�
 
 /-! ## The pruning lemma -/
 
+
+end
+
 /-- The key of an attachment is in `[0, n)`. -/
 theorem key_range {W : Polygon} {c : Set Point} {p : ℕ} {t : ℝ} (hA : SideAttach W c p t) :
     0 ≤ (p : ℝ) + t ∧ (p : ℝ) + t < W.n := by
@@ -283,8 +192,7 @@ theorem key_range {W : Polygon} {c : Set Point} {p : ℕ} {t : ℝ} (hA : SideAt
 /-- Offsets are injective on `[0, n)`. -/
 theorem off_inj {n g x y : ℝ} (_hg0 : 0 ≤ g) (_hgn : g < n) (hx0 : 0 ≤ x) (hxn : x < n)
     (hy0 : 0 ≤ y) (hyn : y < n) (h : off n g x = off n g y) : x = y := by
-  unfold off at h
-  split_ifs at h <;> linarith
+  core_grind
 
 /-- Rotation of a closed interval. -/
 theorem closedArc_rot {n g a b x : ℝ} (hg0 : 0 ≤ g) (hgn : g < n) (ha0 : 0 ≤ a) (han : a < n)
@@ -293,17 +201,17 @@ theorem closedArc_rot {n g a b x : ℝ} (hg0 : 0 ≤ g) (hgn : g < n) (ha0 : 0 �
   unfold ClosedArc
   rw [sideInArc_rot hg0 hgn ha0 han hb0 hbn hx0 hxn]
   constructor
-  · rintro (h | rfl | rfl)
-    · exact Or.inl h
-    · exact Or.inr (Or.inl rfl)
-    · exact Or.inr (Or.inr rfl)
+  · grind
   · rintro (h | h | h)
-    · exact Or.inl h
+    · simp_all
     · exact Or.inr (Or.inl (off_inj hg0 hgn hx0 hxn ha0 han h))
     · exact Or.inr (Or.inr (off_inj hg0 hgn hx0 hxn hb0 hbn h))
 
+section
+variable (hM : WalkAx M)
+include hM
 /-- An attachment of an admissible chord `e` attached at `A` and `A'` is `A` or `A'` (by key). -/
-theorem attach_key_cases (hM : WalkAx M) {e : Set Point} (he : e ∈ M.Adm) {pa pb p : ℕ}
+theorem attach_key_cases {e : Set Point} (he : e ∈ M.Adm) {pa pb p : ℕ}
     {ta tb t : ℝ} (hA : SideAttach M.W e pa ta) (hB : SideAttach M.W e pb tb)
     (hAB : sidePt M.W pa ta ≠ sidePt M.W pb tb) (h : SideAttach M.W e p t) :
     (p : ℝ) + t = pa + ta ∨ (p : ℝ) + t = pb + tb := by
@@ -318,15 +226,7 @@ theorem attach_key_cases (hM : WalkAx M) {e : Set Point} (he : e ∈ M.Adm) {pa 
     intro q s hq hpt
     obtain ⟨h1, h2⟩ := attach_unique hM he h hq hpt
     rw [h1, h2]
-  rcases ha with ha | ha <;> rcases hb with hb | hb
-  · exact absurd (ha.trans hb.symm) hAB
-  · rcases hx with hx | hx
-    · exact Or.inl (key pa ta hA (hx.trans ha.symm))
-    · exact Or.inr (key pb tb hB (hx.trans hb.symm))
-  · rcases hx with hx | hx
-    · exact Or.inr (key pb tb hB (hx.trans hb.symm))
-    · exact Or.inl (key pa ta hA (hx.trans ha.symm))
-  · exact absurd (ha.trans hb.symm) hAB
+  grind
 
 /-- **The pruning lemma.**  Let `Aᵢ = (aᵢ, bᵢ)` and `Aⱼ = (aⱼ, bⱼ)` be two distinct arcs of the
 region `R` of the nonempty family `S`.  Let the admissible chord `e_a` be attached at `A`, with key
@@ -335,7 +235,7 @@ attached at `X`, with key in the closed arc `Aᵢ`, and at `X'`, with key in the
 pass the count test.  If the key of `X` is neither that of `A` nor that of `A'`, then `A'` is not
 inside `Aⱼ`, and the key of `X` is strictly on the side of `e_a` that contains the open arc
 `Aⱼ`. -/
-theorem prune (hM : WalkAx M) {S : Set (Set Point)} (_hS : S ⊆ M.Adm) (hfin : S.Finite)
+theorem prune {S : Set (Set Point)} (_hS : S ⊆ M.Adm) (hfin : S.Finite)
     (hne : S.Nonempty) {R : Set Point} {ai bi aj bj : ℝ} (hAi : M.IsArc S R ai bi)
     (hAj : M.IsArc S R aj bj) (hij : ai ≠ aj)
     {ea : Set Point} (hea : ea ∈ M.Adm) {pa pa' : ℕ} {ta ta' : ℝ}
@@ -371,15 +271,13 @@ theorem prune (hM : WalkAx M) {S : Set (Set Point)} (_hS : S ⊆ M.Adm) (hfin : 
   have disj : ∀ z, sideInArc ai bi z → ¬ sideInArc aj bj z := by
     intro z h1 h2
     rcases cyc_overlap hab hab' hij h1 h2 with h | h
-    · exact hF1 h
-    · exact hF1'' h
+    all_goals grind
   have hF2 : ¬ sideInArc aj bj ka := disj _ hka
   have hF4 : ¬ sideInArc ai bi kx' := by
     intro h
     rcases hkx' with h' | h' | h'
-    · exact disj _ h h'
-    · rw [h'] at h; exact hF1 h
-    · rw [h'] at h; exact hF1' h
+    · grind
+    all_goals grind
   -- rotation by `ka`
   have rot := fun {a b x : ℝ} (ha0 : 0 ≤ a) (han : a < n) (hb0 : 0 ≤ b) (hbn : b < n)
       (hx0 : 0 ≤ x) (hxn : x < n) =>
@@ -389,7 +287,7 @@ theorem prune (hM : WalkAx M) {S : Set (Set Point)} (_hS : S ⊆ M.Adm) (hfin : 
     closedArc_rot (n := n) (g := ka) hka0 hkan ha0 han hb0 hbn hx0 hxn
   have o0 : off n ka ka = 0 := WalkEmbed.off_self n ka
   have on0 : ∀ {x}, 0 ≤ x → 0 ≤ off n ka x := fun h => WalkEmbed.off_nonneg h hkan
-  have onn : ∀ {x}, x < n → off n ka x < n := fun h => WalkEmbed.off_lt h hka0
+  
   have oinj : ∀ {x y}, 0 ≤ x → x < n → 0 ≤ y → y < n → off n ka x = off n ka y → x = y :=
     fun hx0 hxn hy0 hyn h => off_inj hka0 hkan hx0 hxn hy0 hyn h
   have hi' : sideInArc (off n ka ai) (off n ka bi) 0 := by
@@ -461,20 +359,23 @@ theorem prune (hM : WalkAx M) {S : Set (Set Point)} (_hS : S ⊆ M.Adm) (hfin : 
     rw [h] at hX
     rcases attach_key_cases hM hea hA hA' hAA' hX with h | h
     · exact hxa h
-    · exact hxa' h
+    grind
   rcases cyc_two hkk hx'ka hx'a' with h | h
   · have h1 := same_side hM hea hex hne' hA hA' hAA' hX' hX h
     rcases cyc_two hkk hxa hxa' with h2 | h2
-    · exact ⟨fun _ => hside.1 h, fun _ => h2⟩
-    · exact absurd h2 h1
+    · grind
+    grind
   · have h1 := same_side hM hea hex hne' hA' hA hAA'.symm hX' hX h
     rcases cyc_two hkk hxa hxa' with h2 | h2
-    · exact absurd h2 h1
+    · grind
     · constructor
-      · intro h3; exact absurd h3 h1
+      · grind
       · intro h3
         exfalso
         exact (sideInArc_swap hkk hx'ka hx'a').1 (hside.2 h3) h
+
+
+end
 
 end
 

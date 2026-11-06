@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Spec
 public import Mathlib.Tactic.Linarith
 
@@ -27,22 +29,17 @@ theorem ylexLE_refl (p : Point) : ylexLE p p := Or.inr ⟨rfl, le_rfl⟩
 
 theorem ylexLE_of_ylexLT {p q : Point} (h : ylexLT p q) : ylexLE p q := by
   rcases h with h | ⟨h1, h2⟩
-  · exact Or.inl h
-  · exact Or.inr ⟨h1, h2.le⟩
+  all_goals core_grind
 
 theorem ylexLT_trans {p q r : Point} (h₁ : ylexLT p q) (h₂ : ylexLT q r) : ylexLT p r := by
-  rcases h₁ with h₁ | ⟨h₁, h₁'⟩ <;> rcases h₂ with h₂ | ⟨h₂, h₂'⟩
-  · exact Or.inl (h₁.trans h₂)
-  · exact Or.inl (h₂ ▸ h₁)
-  · exact Or.inl (h₁ ▸ h₂)
-  · exact Or.inr ⟨h₁.trans h₂, h₁'.trans h₂'⟩
+  core_grind
 
 /-- `ylexLT` is asymmetric with respect to `ylexLE`. -/
 theorem not_ylexLE_of_ylexLT {p q : Point} (h : ylexLT p q) : ¬ ylexLE q p := by
   rintro (h' | ⟨h1, h2⟩) <;> rcases h with h | ⟨h3, h4⟩ <;> linarith
 
 theorem ylexLT_irrefl (p : Point) : ¬ ylexLT p p := by
-  rintro (h | ⟨_, h⟩) <;> exact lt_irrefl _ h
+  rintro (h | ⟨_, h⟩) <;> simp_all
 
 theorem ylexLT_asymm {p q : Point} (h : ylexLT p q) : ¬ ylexLT q p := by
   rintro (h' | ⟨h1, h2⟩) <;> rcases h with h | ⟨h3, h4⟩ <;> linarith
@@ -53,7 +50,7 @@ theorem ylexLT_trichotomy (p q : Point) : ylexLT p q ∨ p = q ∨ ylexLT q p :=
   · exact Or.inl (Or.inl h)
   · rcases lt_trichotomy p.1 q.1 with h' | h' | h'
     · exact Or.inl (Or.inr ⟨h, h'⟩)
-    · exact Or.inr (Or.inl (Prod.ext h' h))
+    · grind
     · exact Or.inr (Or.inr (Or.inr ⟨h.symm, h'⟩))
   · exact Or.inr (Or.inr (Or.inl h))
 

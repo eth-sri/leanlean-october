@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseExtractCorr
 public import Chazelle.Core.DownPhaseFrontier
 
@@ -32,13 +34,6 @@ open ArcT (wrapK)
 variable {Q : Polygon} {S : Set (Set Point)} {R : Set Point} {g : ℕ}
   {h3 : 3 ≤ nk (interiorModel Q) S R}
 
-/-- **Cyclic betweenness in unwrapped form, wrapping case.** -/
-theorem cyc_unwrap' {n l a b y : ℝ} (hl : 0 ≤ l ∧ l < n) (ha : 0 ≤ a ∧ a < n)
-    (hb : 0 ≤ b ∧ b < n) (hy : 0 ≤ y ∧ y < n) (hab : unwrapK n l b < unwrapK n l a) :
-    sideInArc a b y ↔ unwrapK n l y < unwrapK n l b ∨ unwrapK n l a < unwrapK n l y := by
-  unfold unwrapK at *
-  unfold sideInArc
-  split_ifs at * <;> constructor <;> intro h <;> cyc_close2
 
 /-- **An interval inside an arc, unwrapped.**  If `(a, b)` and `(l, r)` share a key `x₀` and
 `(a, b)` contains neither `l` nor `r`, then, unwrapped from `l`, `(a, b)` is an increasing
@@ -48,11 +43,11 @@ theorem unwrap_sub {n l r a b x₀ : ℝ} (hl : 0 ≤ l ∧ l < n) (hr : 0 ≤ r
     (hlr : l < unwrapK n l r) (hab : a ≠ b) (hxab : sideInArc a b x₀)
     (hxlr : sideInArc l r x₀) (hla : ¬ sideInArc a b l) (hra : ¬ sideInArc a b r) :
     unwrapK n l a < unwrapK n l b ∧ unwrapK n l b ≤ unwrapK n l r := by
-  have e2 := (cyc_unwrap hl hl hr hx (by rw [unwrapK_self]; exact hlr)).1 hxlr
+  have e2 := (cyc_unwrap hl hl hr hx (by core_grind)).1 hxlr
   rw [unwrapK_self] at e2
-  have hbx := unwrapK_bounds hl hx
-  have hbb := unwrapK_bounds hl hb
-  have hba := unwrapK_bounds hl ha
+  
+  
+  
   have hne : unwrapK n l a ≠ unwrapK n l b := fun e => hab (by
     rw [← wrapK_unwrapK (l := l) ha, ← wrapK_unwrapK (l := l) hb, e])
   rcases lt_or_gt_of_ne hne with h | h
@@ -60,29 +55,22 @@ theorem unwrap_sub {n l r a b x₀ : ℝ} (hl : 0 ≤ l ∧ l < n) (hr : 0 ≤ r
     refine ⟨h, ?_⟩
     by_contra h'
     push Not at h'
-    exact hra ((cyc_unwrap hl ha hb hr h).2 ⟨by linarith [e1.1, e1.2, e2.2], h'⟩)
-  · exfalso
-    have e1 := (cyc_unwrap' hl ha hb hx h).1 hxab
-    have h1 : ¬ (unwrapK n l l < unwrapK n l b ∨ unwrapK n l a < unwrapK n l l) := fun h' =>
-      hla ((cyc_unwrap' hl ha hb hl h).2 h')
-    have h2 : ¬ (unwrapK n l r < unwrapK n l b ∨ unwrapK n l a < unwrapK n l r) := fun h' =>
-      hra ((cyc_unwrap' hl ha hb hr h).2 h')
-    rw [unwrapK_self] at h1
-    push Not at h1 h2
-    rcases e1 with e1 | e1 <;> linarith [e2.1, e2.2, h1.1, h1.2, h2.1, h2.2]
+    exact hra ((cyc_unwrap hl ha hb hr h).2 ⟨by linarith, h'⟩)
+  core_grind
 
 /-- A cut of `S` is a cut of any larger family. -/
 theorem isCut_mono {M : Model} {F G : Set (Set Point)} (hFG : F ⊆ G) {x : ℝ} (h : M.IsCut F x) :
     M.IsCut G x := by
-  obtain ⟨c, hc, p, t, hA, e⟩ := h
-  exact ⟨c, hFG hc, p, t, hA, e⟩
+  core_grind
 
+section
+variable (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R) (hgc : ChordGap (interiorModel Q) S R g) {F₁ : Set (Set Point)} (hF₁ : F₁ ⊆ (chainModel (hostChain Q S R g h3)).Adm)
+include X hg hgc hF₁
+section
+variable (hfin₁ : F₁.Finite) {U : Set Point} (hU : U ∈ (chainModel (hostChain Q S R g h3)).regions F₁) {V : Set Point} (hVR : V ⊆ R) (hVU : V ⊆ U)
+include hfin₁ U hU V hVR hVU
 /-- **(X2) for one arc.** -/
-theorem arcWt_kept (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
-    (hgc : ChordGap (interiorModel Q) S R g) {F₁ : Set (Set Point)}
-    (hF₁ : F₁ ⊆ (chainModel (hostChain Q S R g h3)).Adm) (hfin₁ : F₁.Finite)
-    {U : Set Point} (hU : U ∈ (chainModel (hostChain Q S R g h3)).regions F₁)
-    {V : Set Point} (hVR : V ⊆ R) (hVU : V ⊆ U) {a b : ℝ}
+theorem arcWt_kept {a b : ℝ}
     (harc : (interiorModel Q).IsArc (S ∪ kept R F₁) V a b) :
     (interiorModel Q).arcWt a b ≤ (chainModel (hostChain Q S R g h3)).weight F₁ U := by
   have hM := X.walkAx
@@ -109,8 +97,7 @@ theorem arcWt_kept (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
   have hxb : 0 ≤ (p : ℝ) + t ∧ (p : ℝ) + t < (interiorModel Q).W.n := by
     refine ⟨add_nonneg (Nat.cast_nonneg p) ht.1.le, ?_⟩
     have : ((p + 1 : ℕ) : ℝ) ≤ ((interiorModel Q).W.n : ℝ) := by exact_mod_cast hp
-    push_cast at this
-    linarith [ht.2]
+    grind
   have hn : (0 : ℝ) < (interiorModel Q).W.n := lt_of_le_of_lt hlb.1 hlb.2
   obtain ⟨i_l, d, hA⟩ := arc_keys hM hF hfin X.hne X.hR harcY
   have hl0 : ukey (interiorModel Q) S R i_l 0 = l := by rw [ukey_zero hA.hil, hA.hl]
@@ -131,35 +118,35 @@ theorem arcWt_kept (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
       wrapK_unwrapK ⟨hx0, hxn⟩⟩
   · intro xx hxx
     have hlo : l ≤ xx := le_trans (unwrapK_bounds hlb ha).1 hxx.1.le
-    have hhi : xx < l + (interiorModel Q).W.n := by linarith [hxx.2]
+    have hhi : xx < l + (interiorModel Q).W.n := by grind
     have hxx0 : 0 ≤ xx := le_trans hlb.1 hlo
-    have hxx2 : xx < 2 * ((interiorModel Q).W.n : ℝ) := by linarith [hlb.2]
+    have hxx2 : xx < 2 * ((interiorModel Q).W.n : ℝ) := by linarith
     have hy : 0 ≤ wrapK (interiorModel Q).W.n xx ∧
         wrapK (interiorModel Q).W.n xx < (interiorModel Q).W.n :=
       ⟨ArcT.wrapK_nonneg hxx0 hxx2, ArcT.wrapK_lt hn hxx0 hxx2⟩
     have e := unwrapK_wrapK hlb.1 hn hlo hhi
     refine (cyc_unwrap hlb ha hb hy h1).2 ?_
-    rw [e]; exact hxx
+    ram_grind
 
 /-- **(X2) The weight transfer.** -/
-theorem weight_kept (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
-    (hgc : ChordGap (interiorModel Q) S R g) {F₁ : Set (Set Point)}
-    (hF₁ : F₁ ⊆ (chainModel (hostChain Q S R g h3)).Adm) (hfin₁ : F₁.Finite)
-    {U : Set Point} (hU : U ∈ (chainModel (hostChain Q S R g h3)).regions F₁)
-    {V : Set Point} (hVR : V ⊆ R) (hVU : V ⊆ U) :
+theorem weight_kept :
     (interiorModel Q).weight (S ∪ kept R F₁) V ≤
       (chainModel (hostChain Q S R g h3)).weight F₁ U := by
   apply csSup_le'
   rintro _ ⟨⟨a, b⟩, hab, rfl⟩
   exact arcWt_kept X hg hgc hF₁ hfin₁ hU hVR hVU hab
 
+
+end
+
 /-- **(X1, localization)** The kept chords are admissible and meet the domain only in `R`. -/
-theorem kept_local (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
-    (hgc : ChordGap (interiorModel Q) S R g) {F₁ : Set (Set Point)}
-    (hF₁ : F₁ ⊆ (chainModel (hostChain Q S R g h3)).Adm) {c : Set Point}
+theorem kept_local {c : Set Point}
     (hc : c ∈ kept R F₁) :
     c ∈ (interiorModel Q).Adm ∧ c ∩ (interiorModel Q).D ⊆ R :=
   kept_adm X.hQ X.hFam X.hne X.hR hg hgc (hF₁ hc.1) hc.2
+
+
+end
 
 /-- The walk vertices of the interior walk are vertices of `Q`. -/
 theorem interiorWalk_vtx {k : ℕ} (hk : k < (interiorWalk Q).n) :
@@ -171,11 +158,14 @@ theorem interiorWalk_vtx {k : ℕ} (hk : k < (interiorWalk Q).n) :
   have hk' : k < Q.n := hWn ▸ hk
   unfold interiorWalk
   split_ifs
-  · exact ⟨k, hk', rfl⟩
+  · ram_grind
   · exact ⟨Q.n - 1 - k, by omega, FactsInterior.rev_vtx Q k hk'⟩
 
+section
+variable (X : Ctx Q S R)
+include X
 /-- **Host points lie at vertex heights of `Q`.** -/
-theorem host_height (X : Ctx Q S R) {i : ℕ} (hi : i < nk (interiorModel Q) S R) :
+theorem host_height {i : ℕ} (hi : i < nk (interiorModel Q) S R) :
     ∃ h, h < Q.n ∧ (hostPt (interiorModel Q).W (hk (interiorModel Q) S R i)).2 = (Q.vtx h).2 := by
   have hM := X.walkAx
   rcases hk_mem hM X.hFam.2.1 X.hFam.1 hi with ⟨c, hc, -, p, t, hA, e⟩ | ⟨k, hk, e, -⟩
@@ -188,7 +178,7 @@ theorem host_height (X : Ctx Q S R) {i : ℕ} (hi : i < nk (interiorModel Q) S R
     exact ⟨h, hh, by rw [← e']; rfl⟩
 
 /-- **Every region of the extended family inside `R` lies in a region of `F₁`.** -/
-theorem exists_chain_region (X : Ctx Q S R) {F₁ : Set (Set Point)} {V : Set Point}
+theorem exists_chain_region {F₁ : Set (Set Point)} {V : Set Point}
     (hV : V ∈ (interiorModel Q).regions (S ∪ kept R F₁)) (hVR : V ⊆ R) :
     ∃ U ∈ (chainModel (hostChain Q S R g h3)).regions F₁, V ⊆ U := by
   obtain ⟨v, hv⟩ := Chazelle.Chain.regionsIn_nonempty hV
@@ -201,7 +191,7 @@ theorem exists_chain_region (X : Ctx Q S R) {F₁ : Set (Set Point)} {V : Set Po
     (Chazelle.Chain.regionsIn_isPreconnected hV).subset_connectedComponentIn hv hfree⟩
 
 /-- **(X3) The degree bound.** -/
-theorem deg_kept (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
+theorem deg_kept (hg : g < nk (interiorModel Q) S R)
     (hgc : ChordGap (interiorModel Q) S R g) {F₁ : Set (Set Point)}
     (hF₁ : F₁ ⊆ (chainModel (hostChain Q S R g h3)).Adm) (hfin₁ : F₁.Finite)
     {U V : Set Point} (hVR : V ⊆ R) (hVU : V ⊆ U) :
@@ -218,6 +208,9 @@ theorem deg_kept (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
       exact Or.inl ⟨hc.1, z, ⟨hz.1, hdom hzR⟩, closure_mono hVU hzV⟩
   refine le_trans (Set.ncard_le_ncard hsub ?_) (Set.ncard_union_le _ _)
   exact (hfin₁.subset fun c hc => hc.1).union (X.hFam.1.subset fun c hc => hc.1)
+
+
+end
 
 end
 

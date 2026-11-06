@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.UpPhase7
 
 /-!
@@ -29,14 +31,20 @@ def nfU (sB sL sG : Stmt) : Stmt :=
 /-- The bands written by the three packages. -/
 def pkgBands : Finset ℕ := bruteBands ∪ l41Bands
 
-theorem not_brute_of {r : ℕ} (h : bandOf r ∉ pkgBands) : bandOf r ∉ bruteBands := fun h' =>
+section
+variable {r : ℕ} (h : bandOf r ∉ pkgBands)
+include h
+theorem not_brute_of : bandOf r ∉ bruteBands := fun h' =>
   h (Finset.mem_union_left _ h')
 
-theorem not_l41_of {r : ℕ} (h : bandOf r ∉ pkgBands) : bandOf r ∉ l41Bands := fun h' =>
+theorem not_l41_of : bandOf r ∉ l41Bands := fun h' =>
   h (Finset.mem_union_right _ h')
 
-theorem not_gran_of {r : ℕ} (h : bandOf r ∉ pkgBands) : bandOf r ∉ granBands := fun h' =>
+theorem not_gran_of : bandOf r ∉ granBands := fun h' =>
   h (Finset.mem_union_left _ (Finset.mem_union_left _ h'))
+
+
+end
 
 section proofs
 
@@ -70,7 +78,7 @@ theorem nfU_brute {sB sL sG : Stmt} {κB : ℕ}
       (∀ r, bandOf r ∉ pkgBands → c'.rreg r = c.rreg r) := by
   obtain ⟨c', k, e, hk, hw', a1, a2, hpost, m1, m2, o, fr, frr⟩ :=
     bruteCall_exec hB hG hWh hw h16 h17 h11 hl hsl hγ hlγ hbud
-  exact ⟨c', k + 1, .ifLtN_true (by rw [h07, h37]; exact hg) e, by omega, hw', a1, by omega,
+  exact ⟨c', k + 1, .ifLtN_true (by omega) e, by omega, hw', a1, by omega,
     hpost, m1, m2, o, fun r h1 _ h3 _ h5 => fr r (not_brute_of h1) h3 h5,
     fun r h1 => frr r (not_brute_of h1)⟩
 
@@ -106,8 +114,8 @@ theorem nfU_l41 {O : OracleIface} {sB sL sG : Stmt} {κL : ℕ}
       (∀ r, bandOf r ∉ pkgBands → c'.rreg r = c.rreg r) := by
   obtain ⟨c', k, e, hk, hw', a1, a2, hpost, m1, m2, o, fr, frr⟩ :=
     l41Call_exec hL hG hWh hw h05 h16 h17 h07 hX hgΛ h7 hsl hl1 hl2 hbud
-  exact ⟨c', k + 1 + 2, .ifLtN_false (by rw [h07, h37]; omega)
-      (.ifLtN_true (by rw [h19, h17]; exact hl1) e), by omega, hw', a1, by omega,
+  exact ⟨c', k + 1 + 2, .ifLtN_false (by omega)
+      (.ifLtN_true (by omega) e), by omega, hw', a1, by omega,
     hpost, m1, m2, o, fun r h1 _ h3 _ h5 => fr r (not_l41_of h1) h3 h5,
     fun r h1 => frr r (not_l41_of h1)⟩
 
@@ -160,27 +168,26 @@ theorem nfU_gran {sB sL sG : Stmt} {κG : ℕ → ℕ}
       c1.nreg 170031 = F ∧ (∀ r, r ≠ 170034 → r ≠ 170031 → c1.nreg r = c.nreg r) ∧
       c1.nmem = c.nmem ∧ c1.rreg = c.rreg ∧ c1.rmem = c.rmem ∧ c1.output = c.output := by
     exec_block
-    all_goals try (config_simp; (try simp only [h14, h35, h20]); omega)
-    refine ⟨rfl, ‹_›, by config_simp; simp only [h14, h35, h20],
-      by config_simp; simp only [h14, h35, h20, hF], fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    all_goals try (config_simp; omega)
+    refine ⟨rfl, ‹_›, by ram_simp,
+      by ram_simp, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
+    ram_simp 
   have g1 : ∀ r, r ≠ 170034 → r ≠ 170031 → c1.nreg r = c.nreg r := fr1
   obtain ⟨c', k, e, hk, hw', a1, a2, hpost, m1, m2, o, fr, frr⟩ :=
     granCall_exec (P := P) (C := C) (N := N) (γ0 := γ0) (hp := hp) hGr hG hWh hw1
-      (by rw [g1 _ (by rw [hAl]; decide) (by rw [hAl]; decide)]; exact hA)
-      (by rw [g1 _ (by decide) (by decide)]; exact h30) l31
-      (by rw [g1 _ (by decide) (by decide)]; exact h11)
-      (by rw [g1 _ (by decide) (by decide)]; exact h20)
-      (by rw [g1 _ (by decide) (by decide)]; exact h25)
-      (by rw [g1 _ (by decide) (by decide)]; exact h26)
-      (by rw [g1 _ (by decide) (by decide)]; exact h29)
-      (by rw [hm1]; exact hd) (by rw [hm1]; exact hBh) hB5 hhp hCP hCn
-      (by rw [hm1]; exact hNW) hc hγ (by rw [hm1]; exact hbud)
+      (by grind)
+      (by ram_grind) l31
+      (by ram_grind)
+      (by ram_grind)
+      (by ram_grind)
+      (by ram_grind)
+      (by ram_grind)
+      (by ram_grind) (by ram_grind) hB5 hhp hCP hCn
+      (by ram_grind) hc hγ (by omega_nf)
   rw [hm1] at hk
-  refine ⟨c', (k1 + k) + 2 + 2, .ifLtN_false (by rw [h07, h37]; omega)
-      (.ifLtN_false (by rw [h19, h17]; omega) (.seq e1 e)), by omega, hw', a1, by omega,
-    hpost, fun a ha => by rw [m1 a ha, hm1], fun a ha => by rw [m2 a ha, hrm1], by rw [o, ho1],
+  refine ⟨c', (k1 + k) + 2 + 2, .ifLtN_false (by omega)
+      (.ifLtN_false (by omega) (.seq e1 e)), by omega, hw', a1, by omega,
+    hpost, fun a ha => by ram_grind, fun a ha => by ram_grind, by rw [o, ho1],
     fun r h1 h2 h3 h4 h5 => ?_, fun r h1 => by rw [frr r (not_gran_of h1), hrr1]⟩
   rw [fr r (not_gran_of h1) h2 h3 h5, g1 r h4 h3]
 

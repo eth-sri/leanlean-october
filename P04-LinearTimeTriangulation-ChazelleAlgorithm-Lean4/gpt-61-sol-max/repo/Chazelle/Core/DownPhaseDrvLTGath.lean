@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvLTLoop
 
 /-!
@@ -46,24 +48,24 @@ theorem gather_exec {G : GEnv} (hG : GGood G) {c : Config} (hw : WordsBounded G.
   obtain ⟨c₁, k₁, x₁, hk₁, i00, i01, i34, i10, i11, f₁⟩ :=
     ltInit_exec (P := G.P) c hw (by omega)
   have g₁ : ∀ r, ¬ (r = 211100 ∨ r = 211101 ∨ r = 210034 ∨ r = 211110 ∨ r = 211111) →
-      c₁.nreg r = c.nreg r := fun r h => f₁.1 r (by simpa using h)
+      c₁.nreg r = c.nreg r := fun r h => f₁.1 r (by simp_all)
   have w₁ := x₁.wb_right
-  have A₁ : c₁.nreg ALLOC = G.A₀ := by rw [g₁ _ (by unfold ALLOC; omega), hA]
+  have A₁ : c₁.nreg ALLOC = G.A₀ := by ram_grind
   -- 2. the reservation
   obtain ⟨c₂, k₂, x₂, hk₂, A₂, j11, f₂, RF₂⟩ := ltRes_exec (P := G.P) w₁ (K₂ := G.K₂)
-    (by rw [g₁ _ (by omega), h12]) i11 i00 (by rw [A₁]; omega) G.A₀
+    (by ram_grind) i11 i00 (by omega) G.A₀
   rw [A₁] at A₂
   have g₂ : ∀ r, r ≠ 211111 → r ≠ 9999 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
-    f₂.1 r (by simp [Bres, h1, h2])
+    f₂.1 r (by core_grind)
   have w₂ := x₂.wb_right
   -- 3. the set-up
   obtain ⟨c₃, k₃, x₃, hk₃, s12, s13, s14, s30, s31, f₃⟩ := ltMid_exec (P := G.P) c₂ w₂
     (K₂ := G.K₂) (A := G.A₀) (T := G.T)
-    (by rw [g₂ _ (by norm_num) (by norm_num), g₁ _ (by omega), h12])
-    (by rw [g₂ _ (by norm_num) (by norm_num), i10, hA])
-    (by rw [g₂ _ (by norm_num) (by norm_num), g₁ _ (by omega), h09]) (by omega)
+    (by ram_grind)
+    (by ram_grind)
+    (by ram_grind) (by omega)
   have g₃ : ∀ r, ¬ (r = 211147 ∨ (211112 ≤ r ∧ r ≤ 211114) ∨ r = 211130 ∨ r = 211131) →
-      c₃.nreg r = c₂.nreg r := fun r h => f₃.1 r (by simpa using h)
+      c₃.nreg r = c₂.nreg r := fun r h => f₃.1 r (by ram_grind)
   have w₃ := x₃.wb_right
   have back : ∀ r, BL r = false → r ≠ ALLOC → c₃.nreg r = c.nreg r := by
     intro r hr hra
@@ -71,21 +73,20 @@ theorem gather_exec {G : GEnv} (hG : GGood G) {c : Config} (hw : WordsBounded G.
     unfold ALLOC at hra
     rw [g₃ r (by omega), g₂ r (by omega) hra, g₁ r (by omega)]
   have I0 : LInv G 0 c₃ := by
-    refine ⟨w₃, s30, ?_, by rw [s31]; omega, ?_, ?_, ?_, ?_, s12, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
+    refine ⟨w₃, s30, ?_, by omega, ?_, ?_, ?_, ?_, s12, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
       Nat.zero_le _⟩
-    · rw [g₃ _ (by omega), g₂ _ (by norm_num) (by norm_num), g₁ _ (by omega), h11]
-    · rw [g₃ _ (by omega), g₂ _ (by norm_num) (by norm_num), i00]
-    · rw [g₃ _ (by omega), g₂ _ (by norm_num) (by norm_num), i01]
-    · rw [g₃ _ (by omega), g₂ _ (by norm_num) (by norm_num), i34]
-    · rw [g₃ _ (by omega), g₂ _ (by norm_num) (by norm_num), i10, hA]
-    · rw [s13]; simp [GEnv.flat]
-    · rw [s14]; simp [GEnv.flat]
-    · rw [g₃ _ (by unfold ALLOC; omega), A₂]
-    · intro r hb hra; rw [back r hb hra, hr]
-    · intro a _
-      rw [f₃.2.2.1, f₂.2.2.1, f₁.2.2.1, hm]
-    · intro i hi; simp [GEnv.flat] at hi
-    · intro q hq; simp [GEnv.flat] at hq
+    · grind
+    · ram_grind
+    · ram_grind
+    · ram_grind
+    · ram_grind
+    · grind [GEnv.flat]
+    · grind [GEnv.flat]
+    · grind [ALLOC]
+    · ram_grind
+    · ram_grind
+    · intro i hi; grind [GEnv.flat]
+    grind [GEnv.flat]
   -- 4. the loop
   obtain ⟨c₄, k₄, x₄, I₄, RF₄, hk₄⟩ := loop_exec hG I0
   -- 5. the arguments
@@ -95,31 +96,31 @@ theorem gather_exec {G : GEnv} (hG : GGood G) {c : Config} (hw : WordsBounded G.
     (by rw [I₄.keep _ (by decide) (by decide), ← hr, h03])
     (by rw [I₄.keep _ (by decide) (by decide), ← hr, h13]) I₄.r01 hWK hWM
   have g₅ : ∀ r, ¬ ((210020 ≤ r ∧ r ≤ 210024) ∨ r = 211150 ∨ r = 211151) →
-      c₅.nreg r = c₄.nreg r := fun r h => f₅.1 r (by simpa using h)
+      c₅.nreg r = c₄.nreg r := fun r h => f₅.1 r (by ram_grind)
   -- frames
   have RF₁ : Restore.RF DrvR.drvBands G.A₀ c c₁ k₁ :=
     DrvD.rf_of_frameB (fun r hr => by
       simp only [decide_eq_true_eq] at hr
-      exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩) f₁
+      exact ⟨DrvD.mem_drvBands (by omega) (by omega), by omega_nf⟩) f₁
   have RF₃ : Restore.RF DrvR.drvBands G.A₀ c₂ c₃ k₃ :=
     DrvD.rf_of_frameB (fun r hr => by
       simp only [decide_eq_true_eq] at hr
-      exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩) f₃
+      exact ⟨DrvD.mem_drvBands (by omega) (by omega), by omega_nf⟩) f₃
   have RF₅ : Restore.RF DrvR.drvBands G.A₀ c₄ c₅ k₅ :=
     DrvD.rf_of_frameB (fun r hr => by
       simp only [decide_eq_true_eq] at hr
-      exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩) f₅
+      exact ⟨DrvD.mem_drvBands (by omega) (by omega), by omega_nf⟩) f₅
   refine ⟨c₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), Exec.seq x₁ (Exec.seq x₂ (Exec.seq x₃
     (Exec.seq x₄ x₅))), by omega, x₅.wb_right, v20, v21, v22, v23, v24, ?_, ?_, ?_, ?_, ?_,
     RF₁.trans (RF₂.trans (RF₃.trans (RF₄.trans RF₅)))⟩
-  · rw [g₅ _ (by unfold ALLOC; omega), I₄.alloc]
+  · rw [g₅ _ (by omega_nf), I₄.alloc]
   · intro r hb hra
     have hb' := hb
     simp only [BL, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hb'
     rw [g₅ r (by omega), I₄.keep r hb hra, ← hr]
   · intro a ha; rw [m₅, I₄.low a ha]
   · rw [m₅]; exact I₄.list
-  · intro q hq; rw [m₅]; exact I₄.bkt q (by unfold GEnv.K₂ at hq; omega)
+  · intro q hq; rw [m₅]; exact I₄.bkt q (by grind [GEnv.K₂])
 
 end
 

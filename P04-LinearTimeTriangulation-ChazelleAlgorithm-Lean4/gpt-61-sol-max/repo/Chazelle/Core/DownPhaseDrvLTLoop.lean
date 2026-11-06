@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvLTGat
 
 /-!
@@ -84,16 +86,16 @@ theorem seg_pt {m m' : ℕ → ℕ} {a b n q : ℕ} (h : seg m' a n = seg m b n)
   exact this
 
 theorem B1_BL : ∀ r, B1 r = true → BL r = true := by
-  intro r h; simp only [B1, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  intro r h; simp_all [B1, BL, Bool.or_eq_true, decide_eq_true_eq] <;> omega_nf
 
 theorem B2_BL : ∀ r, B2 r = true → BL r = true := by
-  intro r h; simp only [B2, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  intro r h; simp_all [B2, BL, Bool.or_eq_true, decide_eq_true_eq] <;> omega_nf
 
 theorem B3_BL : ∀ r, B3 r = true → BL r = true := by
-  intro r h; simp only [B3, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  simp_all [B3, BL, Bool.or_eq_true, decide_eq_true_eq] <;> omega_nf
 
 theorem Bcp_BL : ∀ r, DrvR.Bcp r = true → BL r = true := by
-  intro r h; simp only [DrvR.Bcp, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  simp_all [DrvR.Bcp, BL, Bool.or_eq_true, decide_eq_true_eq] <;> omega_nf
 
 set_option maxHeartbeats 4000000 in
 /-- **One region of the gather.** -/
@@ -119,11 +121,11 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
   rw [hF] at r13 r14
   -- the table entry
   have t0 : e.nmem (G.T + 3 * j) = G.m₀ (G.T + 3 * j) := hI.low _ (by omega)
-  have t1 : e.nmem (G.T + 3 * j + 1) = ℓ := by rw [hI.low _ (by omega)]; exact g1
+  have t1 : e.nmem (G.T + 3 * j + 1) = ℓ := by ram_grind
   have t2 : e.nmem (G.T + 3 * j + 1 + 1) = G.m₀ (G.T + 3 * j + 2) := hI.low _ (by omega)
   -- 1. the entry
   obtain ⟨e₁, k₁, x₁, hk₁, a40, a43, a44, a45, a61, a62, a63, m₁, f₁⟩ :=
-    ltB1_exec (P := G.P) e hI.wb hI.r31 hI.r00 r13 (by omega) (by rw [t1]; omega)
+    ltB1_exec (P := G.P) e hI.wb hI.r31 hI.r00 r13 (by omega) (by omega)
   rw [t0] at a40 a62
   rw [t1] at a44 a45 a61
   rw [t2] at a43
@@ -138,10 +140,10 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
   obtain ⟨e₃, k₃, x₃, hk₃, a13, b61, b62, b63, m₃, f₃⟩ := ltB2_exec (P := G.P) e₂ w₂
     (a := G.A₀ + 3 * F) (ℓ := ℓ) (b := G.m₀ (G.T + 3 * j + 2))
     (D₂ := G.A₀ + 3 * G.K₂ + 2 * F)
-    (by rw [k₂r _ (by decide), k₁r _ (by decide), r13])
-    (by rw [k₂r _ (by decide), a44]) (by rw [k₂r _ (by decide), a45])
-    (by rw [k₂r _ (by decide), a43])
-    (by rw [k₂r _ (by decide), k₁r _ (by decide), r14]) (by omega)
+    (by ram_simp)
+    (by ram_simp) (by ram_simp)
+    (by ram_simp)
+    (by ram_simp) (by omega)
   have w₃ := x₃.wb_right
   have k₃r : ∀ r, B2 r = false → e₃.nreg r = e₂.nreg r := f₃.1
   -- 4. the buckets
@@ -153,11 +155,11 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
   -- 5. the pointers
   have r4 : ∀ r, B1 r = false → DrvR.Bcp r = false → B2 r = false →
       e₄.nreg r = e.nreg r := fun r h1 h2 h3 => by
-    rw [k₄r r h2, k₃r r h3, k₂r r h2, k₁r r h1]
+    ram_grind
   obtain ⟨e₅, k₅, x₅, hk₅, c14, c31, c30, m₅, f₅⟩ := ltB3_exec (P := G.P) e₄ w₄
     (D₂ := G.A₀ + 3 * G.K₂ + 2 * F) (ℓ := ℓ) (p := G.T + 3 * j) (j := j)
-    (by rw [r4 _ (by decide) (by decide) (by decide), r14])
-    (by rw [k₄r _ (by decide), k₃r _ (by decide), k₂r _ (by decide), a45])
+    (by ram_simp)
+    (by ram_simp)
     (by rw [r4 _ (by decide) (by decide) (by decide), hI.r31])
     (by rw [r4 _ (by decide) (by decide) (by decide), hI.r01])
     (by rw [r4 _ (by decide) (by decide) (by decide), hI.r30])
@@ -172,8 +174,8 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
     rw [m₅]
     split_ifs with h1 h2
     · rfl
-    · rw [mo₄ a (by omega), m₃]
-    · rw [mo₄ a (by omega), m₃, mo₂ a (by omega), m₁]
+    · ram_grind
+    ram_grind
   have low5 : ∀ a, a < G.A₀ → e₅.nmem a = e.nmem a := fun a ha => by
     rw [mem5 a, ite_eq_right (by omega), ite_eq_right (by omega)]
   -- the frame
@@ -183,15 +185,15 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
       (BL_mono Bcp_BL f₄)).trans (BL_mono B3_BL (BuildRam.FrameB.toM f₅))
   have r5 : ∀ r, BL r = false → e₅.nreg r = e.nreg r := fun r hr => fr.1 r hr
   have r5' : ∀ r, B1 r = false → DrvR.Bcp r = false → B2 r = false → B3 r = false →
-      e₅.nreg r = e.nreg r := fun r h1 h2 h3 h4 => by rw [k₅r r h4, r4 r h1 h2 h3]
+      e₅.nreg r = e.nreg r := fun r h1 h2 h3 h4 => by ram_grind
   refine ⟨e₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), Exec.seq x₁ (Exec.seq x₂ (Exec.seq x₃
     (Exec.seq x₄ x₅))), ?_, DrvD.rf_of_frameM inDrv_BL fr low5, by omega⟩
-  refine ⟨x₅.wb_right, by rw [c30], by rw [r5 _ (by decide), hI.r11], by rw [c31]; omega,
+  refine ⟨x₅.wb_right, by rw [c30], by rw [r5 _ (by decide), hI.r11], by omega,
     by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r00],
     by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r01],
     by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r34],
     by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r10],
-    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r12], ?_, by rw [c14, hF1]; omega,
+    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r12], ?_, by ram_grind,
     by rw [r5 _ (by decide), hI.alloc],
     fun r hr hra => by rw [r5 r hr, hI.keep r hr hra], fun a ha => by rw [low5 a ha, hI.low a ha],
     ?_, ?_, by omega⟩
@@ -228,7 +230,7 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
       rw [ea, mem5, ite_eq_left (by omega),
         show G.A₀ + 3 * G.K₂ + (2 * F + q') = G.A₀ + 3 * G.K₂ + 2 * F + q' by ring,
         seg_pt sg₄ (by omega), m₃, mo₂ _ (by omega), m₁, hI.low _ (by omega)]
-      exact g7 q' (by omega)
+      grind
 
 set_option maxHeartbeats 1000000 in
 /-- **The gather loop.** -/
@@ -240,14 +242,12 @@ theorem loop_exec {G : GEnv} (hG : GGood G) {e : Config} (hI : LInv G 0 e) :
     (fun e => ∃ j, LInv G j e) (fun e => G.R - e.nreg 211130) (35 * G.Mx + 30)
     (fun e ⟨_, h⟩ => h.wb)
     (fun e ⟨j, hJ⟩ ht => by
-      rw [hJ.r30, hJ.r11] at ht
-      obtain ⟨e', k, ex, hJ', RF', hk⟩ := body_step hG hJ ht
-      exact ⟨e', k, ex, ⟨j + 1, hJ'⟩, RF', hk, by rw [hJ.r30, hJ'.r30]; omega⟩) ⟨0, hI⟩
+      grind [Chazelle.Core.DrvLT.LInv.r11, Chazelle.Core.DrvLT.LInv.r30, Chazelle.Core.DrvLT.body_step]) ⟨0, hI⟩
   have hjR : j = G.R := by rw [hJ.r30, hJ.r11] at hx; have := hJ.jle; omega
   subst hjR
   refine ⟨e', k, ex, hJ, RFl, ?_⟩
   rw [hI.r30] at hk
-  simpa using hk
+  omega
 
 end
 

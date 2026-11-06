@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoSpec
 public import Chazelle.Core.RestoreTestMath
 
@@ -44,15 +46,18 @@ theorem onCB_right {x : Point} (h : OnCB J.right x) : OnCB J.whole x := by
   · exact Or.inr (Or.inl h)
   · exact Or.inr (Or.inr h)
 
+section
+variable {z : Point} (h₁ : z.2 ≤ J.left.top.2)
+include h₁
 /-- **Both bits `1`**: the first hit of `C` is the earlier of the first hits of `C₁`, `C₂`. -/
-theorem whole_eq_min {z : Point} (h₁ : z.2 ≤ J.left.top.2) (h₂ : z.2 ≤ J.right.top.2) {σ : ℝ}
+theorem whole_eq_min (h₂ : z.2 ≤ J.right.top.2) {σ : ℝ}
     (hσ : σ = 1 ∨ σ = -1) :
     J.whole.hitParam z σ = min (J.left.hitParam z σ) (J.right.hitParam z σ) := by
   rw [whole_hitParam_eq_min J (h₁.trans J.left_top_le) hσ, left_hitParam_eq J h₁,
     right_hitParam_eq J h₂]
 
 /-- **Above the top of `C₂`**: the first hit of `C` is the first hit of `C₁`. -/
-theorem whole_eq_left {z : Point} (h₁ : z.2 ≤ J.left.top.2) (h₂ : J.right.top.2 < z.2) {σ : ℝ}
+theorem whole_eq_left (h₂ : J.right.top.2 < z.2) {σ : ℝ}
     (hσ : σ = 1 ∨ σ = -1) : J.whole.hitParam z σ = J.left.hitParam z σ := by
   rw [whole_hitParam_eq_min J (h₁.trans J.left_top_le) hσ, left_hitParam_eq J h₁,
     rayHit_eq_empty_of_above J.right h₂]
@@ -61,20 +66,20 @@ theorem whole_eq_left {z : Point} (h₁ : z.2 ≤ J.left.top.2) (h₂ : J.right.
   exact Merge.rayHit_anti (Set.empty_subset _) z hσ
 
 /-- A membership of the first hit of `C` from those of `C₁` and `C₂` (both bits `1`). -/
-theorem whole_mem_of_both {z : Point} (h₁ : z.2 ≤ J.left.top.2) (h₂ : z.2 ≤ J.right.top.2)
+theorem whole_mem_of_both (h₂ : z.2 ≤ J.right.top.2)
     {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) {L : Set ℝ} (hl : J.left.hitParam z σ ∈ L)
     (hr : J.right.hitParam z σ ∈ L) : J.whole.hitParam z σ ∈ L := by
-  rw [whole_eq_min h₁ h₂ hσ]
-  rcases min_choice (J.left.hitParam z σ) (J.right.hitParam z σ) with h | h <;> rw [h]
-  · exact hl
-  · exact hr
+  grind [Chazelle.Core.SweepIo.whole_eq_min]
+
+
+end
 
 /-- Freeness for `C` gives freeness for `C₂` below the top of `C₂`. -/
 theorem freeAt_right_of_whole {z : Point} (h₂ : z.2 ≤ J.right.top.2) {σ : ℝ}
     (h : FreeAt J.whole z σ) : FreeAt J.right z σ := by
   unfold FreeAt at h ⊢
   filter_upwards [h] with t ht
-  exact dom_right J ht (by rw [Chazelle.Visibility.rayPt_snd]; exact h₂)
+  exact dom_right J ht (by simp_all)
 
 /-! ## The log entry -/
 
@@ -90,11 +95,7 @@ theorem logIdx_exists {Q : Polygon} {N : NF} {S₂ : Set (Set Point)}
   have h0 : oW J (logKey J Q N ls 0) ≤ oW J x := by
     rcases ls with _ | ⟨a, ls⟩
     · simp at hlen
-    · simp only [logOf, List.map_cons, List.head?_cons, Option.mem_def, Option.some.injEq,
-        forall_eq'] at hhead
-      unfold logKey
-      simp only [logOf, List.map_cons, List.getD_cons_zero]
-      rw [hhead]; exact hx
+    simp_all [logOf, List.map_cons, List.head?_cons, Option.mem_def, Option.some.injEq, forall_eq', logKey, List.getD_cons_zero] 
   classical
   set p : ℕ → Prop := fun i => oW J (logKey J Q N ls i) ≤ oW J x
   refine ⟨Nat.findGreatest p (ls.length - 1), by
@@ -102,8 +103,7 @@ theorem logIdx_exists {Q : Polygon} {N : NF} {S₂ : Set (Set Point)}
     Nat.findGreatest_spec (P := p) (m := 0) (Nat.zero_le _) h0, fun hi => ?_⟩
   have := Nat.findGreatest_is_greatest (P := p) (n := ls.length - 1) (k := Nat.findGreatest p (ls.length - 1) + 1)
     (by omega) (by omega)
-  simp only [p, not_le] at this
-  exact this
+  ram_grind
 
 /-! ## The shared vertex among the positions of `M₁` -/
 
@@ -119,15 +119,7 @@ theorem shared_iff₁ (hP : J.P.Simple) (Q : Polygon) {x : WPos}
       (x.edge = cstL J 1 ∨ (x.edge + 1 = 2 * J.m₁ + 7 ∧ cstL J 1 = 6)) := by
   have e : J.shared = J.left.vertex J.left.m := rfl
   rw [e, atEnd_iff J.left hP (Or.inr rfl) Q hx h0 h1, cstL_one]
-  have hm : J.left.m = J.m₁ := rfl
-  rw [hm]
-  constructor
-  · rintro ⟨ht, h | ⟨h, h'⟩⟩
-    · exact ⟨ht, Or.inl (by omega)⟩
-    · exact ⟨ht, Or.inr ⟨by omega, by omega⟩⟩
-  · rintro ⟨ht, h | ⟨h, h'⟩⟩
-    · exact ⟨ht, Or.inl (by omega)⟩
-    · exact ⟨ht, Or.inr ⟨by omega, by omega⟩⟩
+  simp_all
 
 /-! ## The geometric conditions of the local hits -/
 
@@ -140,19 +132,13 @@ theorem lhGeo_query {P : Polygon} {q : ℕ × ℕ × ℕ} (hq : QueryOK J (Qof P
   have hQn : (Qof P).n = P.n := shear_n _ _
   obtain ⟨-, hh1, hh2, -, -, htop, hsec⟩ := hq
   simp only [sideChain_zero'] at htop hsec
-  refine ⟨q.2.1 - 1, by simp only; omega, by rw [← hQn]; omega, hht.symm, ?_, htop⟩
-  have e : rayPt ((chainModel J.left).pos (Qof P) ⟨q.1, q.2.1⟩) (dirOf q.2.2) 1 =
-      (((chainModel J.left).pos (Qof P) ⟨q.1, q.2.1⟩).1 + dirOf q.2.2,
-        ((chainModel J.left).pos (Qof P) ⟨q.1, q.2.1⟩).2) := by
-    simp [rayPt]
-  rw [e]; exact hsec
+  core_grind [rayPt]
 
 /-- `sideLeft` at a position depends only on the edge ends when the parameter is positive. -/
 theorem sideLeft_congr {W W' : Polygon} {p p' : ℕ} {t : ℝ} (ht : t ≠ 0)
     (ha : W.vtx p = W'.vtx p') (hb : W.vtx ((p + 1) % W.n) = W'.vtx ((p' + 1) % W'.n))
     (x : Point) : sideLeft W p t x ↔ sideLeft W' p' t x := by
-  unfold sideLeft sidePrev sideNext sidePt
-  rw [ite_eq_right ht, ite_eq_right ht, ha, hb]
+  simp_all [sideLeft, sidePrev, sideNext, sidePt] 
 
 /-- **The box twin**: a query position on a vertical side of the box satisfies `LHGeo` in the
 model of `C₂` when it is not above the top of `C₂`. -/
@@ -168,14 +154,14 @@ theorem lhGeo_box {P : Polygon} {x : WPos} {d : ℕ} (he : x.edge = 1 ∨ x.edge
   have ht : (chainModel J.left).param (Qof P) x ≠ 0 := by
     intro h0
     have e : (chainModel J.left).pos (Qof P) x = (chainModel J.left).wa x.edge := by
-      unfold Model.pos; rw [h0]; simp [Geometry.lerp]
+      simp_all [Model.pos, Geometry.lerp] 
     rw [e] at hy
     have hW : (chainModel J.left).W = J.left.sideWalk J.left.sideBeta := rfl
     unfold Model.wa at hy
     rw [hW] at hy
     rcases he with h' | h' <;> rw [h'] at hy
-    · rw [J.left.sideWalk_vtx_one] at hy; simp [abs_of_pos hR] at hy
-    · rw [J.left.sideWalk_vtx_three] at hy; simp [abs_of_pos hR] at hy
+    · rw [J.left.sideWalk_vtx_one] at hy; ram_grind
+    · rw [J.left.sideWalk_vtx_three] at hy; ram_grind
   have hx : (chainModel J.right).pos (Qof P) ⟨x.edge, x.hgt⟩ =
       (chainModel J.left).pos (Qof P) ⟨x.edge, x.hgt⟩ := hpos.symm
   refine ⟨⟨h, hxh, hhn, ?_, ?_, ?_⟩, hx⟩
@@ -195,14 +181,11 @@ theorem lhGeo_arr {P : Polygon} {C : Chain} {z : Point} {σ : ℝ} {p : ℕ} {t 
   obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := harr
   rw [neg_neg] at hsec
   have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
-    rw [hpt]; exact hsec
-  have hy : ((Qof P).vtx h).2 = (sidePt (chainModel C).W p t).2 := by rw [hpt]; exact hhz
+    simp_all
+  have hy : ((Qof P).vtx h).2 = (sidePt (chainModel C).W p t).2 := by simp_all
   have epar := param_of_arrival (Qof P) ht0 ht1 hy hsec'
   have epos := pos_of_arrival (Qof P) ht0 ht1 hy hsec'
-  rw [hpt] at epos
-  refine ⟨⟨h, rfl, hh, by rw [epos]; exact hhz, ?_, by rw [epos]; exact htop⟩, epos, epar⟩
-  simp only
-  rw [epos, epar, hd]; exact hsec
+  ram_grind
 
 
 /-! ## Positions -/
@@ -218,7 +201,7 @@ theorem posClass_mem {C : Chain} {Q : Polygon} {x : WPos} (hx : PosClass C Q x) 
   · omega
   · have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6) (t := (chainModel C).param Q x)
       (by omega) (fun h => by omega) h0 h1
-    rwa [show x.edge - 6 + 6 = x.edge by omega] at this
+    simp_all
   · rw [hend, hz]
     exact C.sideWalk_tour_pt_mem C.sideBeta (i := 2 * C.m) (t := 0) le_rfl (fun _ => rfl) le_rfl
       one_pos
@@ -231,21 +214,14 @@ theorem shared_pos₂ (hP : J.P.Simple) (Q : Polygon) {h : ℕ} (hh : (Q.vtx h).
       (chainModel J.right).pos Q ⟨cstR J 1, h + 1⟩ = J.shared := by
   have hn := cm_n J.right
   have hτ := tpos_lt J.right 0
-  have hlt : cstR J 1 < (chainModel J.right).W.n := by rw [cstR_one, hn]; omega
+  have hlt : cstR J 1 < (chainModel J.right).W.n := by grind [cstR_one]
   have hwa : (chainModel J.right).wa (cstR J 1) = J.shared := by
     have := (vtx_pos_iff J.right hP (k := 0) (Nat.zero_le _) (p := cstR J 1) hlt le_rfl
-      one_pos).2 ⟨rfl, tpos J.right 0, by omega, by rw [cstR_one]; ring,
+      one_pos).2 ⟨rfl, tpos J.right 0, by omega, by grind [cstR_one],
         (endIdx J.right (Or.inl rfl) (by omega)).2 (Or.inl rfl)⟩
     rw [Chazelle.Chain.sidePt_zero] at this
-    rw [← J.right_vertex_zero]; exact this
-  have hpar : (chainModel J.right).param Q ⟨cstR J 1, h + 1⟩ = 0 := by
-    unfold Model.param
-    simp only
-    split_ifs
-    · rfl
-    · rw [hwa, hh]; simp
-  refine ⟨hlt, hpar, ?_⟩
-  unfold Model.pos; rw [hpar]; simp only [Geometry.lerp]; simpa using hwa
+    aesop
+  simp_all [Model.param, Model.pos, Geometry.lerp] 
 
 
 /-- A position on a vertical side of the box is not a point of the chain. -/
@@ -257,10 +233,7 @@ theorem box_not_mem {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge = 1 ∨ x.
   rw [pos_eq_sidePt' C Q x] at hb
   obtain ⟨-, b1, -, b3, -, -, -⟩ := C.sidePt_box C.sideBeta ((chainModel C).param Q x)
   have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
-  rw [hW] at hb
-  rcases he with h | h <;> rw [h] at hb
-  · rw [b1] at hb; simp only at hb; rw [abs_neg, abs_of_pos hR] at hb; linarith
-  · rw [b3] at hb; simp only at hb; rw [abs_of_pos hR] at hb; linarith
+  ram_grind
 
 end
 

@@ -35,12 +35,18 @@ structure RegCtx (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (re
   hregs : Restore.NFRegs (interiorModel Q) Q (buildNF (interiorModel Q) Q L E) reg
   hr : r < (buildNF (interiorModel Q) Q L E).nRegions
 
+section
+variable (li : Bool) (n : ℕ) (x : WPos) (isEnd : Bool)
+include li n x isEnd
 /-- The symbolic point inside `DrvR.ptI`. -/
-def ptSym (li : Bool) (n : ℕ) (x : WPos) (isEnd : Bool) : SymPt :=
+def ptSym : SymPt :=
   .onEdge (qE li n (if isEnd && atVtx li n x then (x.edge + n - 1) % n else x.edge)) (x.hgt - 1)
 
-theorem ptI_eq (li : Bool) (n : ℕ) (x : WPos) (isEnd : Bool) :
+theorem ptI_eq :
     ptI li n x isEnd = .pt (ptSym li n x isEnd) := rfl
+
+
+end
 
 variable {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {reg : ℕ → Set Point} {r : ℕ}
 
@@ -57,7 +63,7 @@ theorem arcGap_prev_of_end {S : Set (Set Point)} {R : Set Point} (hQ : Q.Simple)
   have hd0 := hD.hd0
   have e : prevIdx (nk (interiorModel Q) S R) i = (i_l + (d - 1)) % nk (interiorModel Q) S R := by
     have h1 : i = ((i_l + (d - 1)) % nk (interiorModel Q) S R + 1) % nk (interiorModel Q) S R := by
-      rw [Nat.mod_add_mod, show i_l + (d - 1) + 1 = i_l + d by omega]; exact hidx.symm
+      grind
     rw [h1]; exact prevIdx_succ (Nat.mod_lt _ (by omega))
   rw [e]
   exact arcData_gap hQ hFam hne hR harc hD (by omega)
@@ -79,8 +85,8 @@ theorem ptSym_rep {N : NF} {R : Set Point} (hN : IsNF (interiorModel Q) Q N)
   obtain ⟨-, hA, ek, eh, hh, hy⟩ := chordPos_attach hN hc hxc
   have hfl : ⌊(interiorModel Q).key Q x⌋₊ = x.edge := by rw [ek, floor_add hA.2.1 hA.2.2.1]
   right
-  refine ⟨hex, x.hgt - 1, by rw [eh]; simpa using hh, ?_, ?_⟩
-  · rw [hki, ek, hostPt_eq _ hA.2.1 hA.2.2.1, eh, Nat.add_sub_cancel]; exact hy.symm
+  refine ⟨hex, x.hgt - 1, by omega, ?_, ?_⟩
+  · rw [hki, ek, hostPt_eq _ hA.2.1 hA.2.2.1, eh, Nat.add_sub_cancel]; simp_all
   · rw [hki]
     by_cases hb : (isEnd && atVtx li Q.n x) = true
     · have hb' := hb
@@ -93,7 +99,7 @@ theorem ptSym_rep {N : NF} {R : Set Point} (hN : IsNF (interiorModel Q) Q N)
       refine ⟨fun ⟨hint, hAp⟩ => hb ?_, ?_⟩
       · simp only [Bool.and_eq_true]
         exact ⟨(hend hint).2 hAp, (atVtx_iff hN hdh hli ⟨c, hc, hxc⟩).2 hint⟩
-      · unfold ptSym; rw [ite_eq_right hb, hfl]
+      grind [ptSym]
 
 end
 

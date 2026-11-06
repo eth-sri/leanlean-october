@@ -36,9 +36,12 @@ variable (J : Merge.Junction)
 def EvBrk (e : Set Point) : Prop :=
   ∀ (p : ℕ) (t : ℝ), SideAttach (chainModel J.whole).W e p t → (Lst J : ℝ) ≤ oW J (p + t)
 
+section
+variable (S₂ : Set (Set Point))
+include S₂
 /-- **The offset `o` is enclosed**: strictly between the two attachments of a chord of `F₂⁺` on
 the `C₁` part, or after the `C₁` attachment of a chord attached at offset `0` (a pocket). -/
-def EvEncl (S₂ : Set (Set Point)) (o : ℝ) : Prop :=
+def EvEncl (o : ℝ) : Prop :=
   ∃ e ∈ F₂plus J S₂, ∃ (pa pb : ℕ) (ta tb : ℝ), SideAttach (chainModel J.whole).W e pa ta ∧
     SideAttach (chainModel J.whole).W e pb tb ∧
     sidePt (chainModel J.whole).W pa ta ≠ sidePt (chainModel J.whole).W pb tb ∧
@@ -46,41 +49,42 @@ def EvEncl (S₂ : Set (Set Point)) (o : ℝ) : Prop :=
 
 /-- **A label set is valid for a region**: some valid label (`Valid`) of the region is in the set
 or is a gap label. -/
-def EvVal (S₂ : Set (Set Point)) (Λ : Set (Set Point)) (G : Set Point) : Prop :=
+def EvVal (Λ : Set (Set Point)) (G : Set Point) : Prop :=
   ∃ L, (L ∈ Λ ∨ GapLab J S₂ L) ∧ L ∈ (chainModel J.right).regions S₂ ∧ Valid J S₂ G L
 
 /-- **The facts at a non-cut position**: it is enclosed, or the regions faced there have a valid
 label set. -/
-def EvPos (S₂ : Set (Set Point)) (Λ : Set (Set Point)) (p : ℕ) (t : ℝ) : Prop :=
+def EvPos (Λ : Set (Set Point)) (p : ℕ) (t : ℝ) : Prop :=
   EvEncl J S₂ (oW J (p + t)) ∨
     ∀ G ∈ (chainModel J.whole).regions (F₂plus J S₂), (chainModel J.whole).Faces p t G →
       EvVal J S₂ Λ G
 
 /-- **The invariant of the event loop** at a key with offset `oK` and label set `Λ`: every later
 non-cut position reached through keys carrying only bracket chords has `EvPos`. -/
-def EvInv (S₂ : Set (Set Point)) (oK : ℝ) (Λ : Set (Set Point)) : Prop :=
+def EvInv (oK : ℝ) (Λ : Set (Set Point)) : Prop :=
   ∀ (p : ℕ) (t : ℝ), p < (chainModel J.whole).W.n → t ∈ Ioo (0 : ℝ) 1 →
     ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p + t) → oK < oW J (p + t) →
     (∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s →
       oK < oW J (q + s) → oW J (q + s) < oW J (p + t) → EvBrk J e) →
     EvPos J S₂ Λ p t
 
+
+end
+
 variable {J}
 
+section
+variable {S₂ : Set (Set Point)}
 /-- **Keys carrying only bracket chords keep the invariant.** -/
-theorem evInv_mono {S₂ : Set (Set Point)} {oK oK' : ℝ} {Λ : Set (Set Point)}
+theorem evInv_mono {oK oK' : ℝ} {Λ : Set (Set Point)}
     (h : EvInv J S₂ oK Λ) (hle : oK ≤ oK')
     (hbr : ∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s →
       oK < oW J (q + s) → oW J (q + s) ≤ oK' → EvBrk J e) :
     EvInv J S₂ oK' Λ := by
-  intro p t hp ht hnc ho hb
-  refine h p t hp ht hnc (by linarith) fun e he q s hA h1 h2 => ?_
-  rcases le_or_gt (oW J (q + s)) oK' with h3 | h3
-  · exact hbr e he q s hA h1 h3
-  · exact hb e he q s hA h3 h2
+  grind [Chazelle.Core.Sweep.EvInv]
 
 /-- **After a pocket key** every position is enclosed. -/
-theorem evInv_pocket {S₂ : Set (Set Point)} {e : Set Point} (he : e ∈ F₂plus J S₂)
+theorem evInv_pocket {e : Set Point} (he : e ∈ F₂plus J S₂)
     {pa pb : ℕ} {ta tb : ℝ} (hA : SideAttach (chainModel J.whole).W e pa ta)
     (hB : SideAttach (chainModel J.whole).W e pb tb)
     (hAB : sidePt (chainModel J.whole).W pa ta ≠ sidePt (chainModel J.whole).W pb tb)
@@ -88,16 +92,23 @@ theorem evInv_pocket {S₂ : Set (Set Point)} {e : Set Point} (he : e ∈ F₂pl
     EvInv J S₂ (oW J (pa + ta)) Λ :=
   fun _ _ _ _ _ ho _ => Or.inl ⟨e, he, pa, pb, ta, tb, hA, hB, hAB, hAo, ho, Or.inr hBo⟩
 
+
+end
+
 /-- `oW` is the offset from the base `gW`. -/
 theorem oW_eq (x : ℝ) :
     oW J x = off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) x := rfl
 
 theorem Lst_eq : (Lst J : ℝ) = ((rL1 J + rL2 J : ℕ) : ℝ) := rfl
 
+section
+variable (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite)
+include hP hS₂ hS₂f
+section
+variable {p : ℕ} {t : ℝ} (hp : p < (chainModel J.whole).W.n)
+include p t hp
 /-- **An enclosed position faces an unlabelled region.** -/
-theorem not_rlabel_of_encl (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {p : ℕ} {t : ℝ}
-    (hp : p < (chainModel J.whole).W.n) (ht : t ∈ Ioo (0 : ℝ) 1)
+theorem not_rlabel_of_encl (ht : t ∈ Ioo (0 : ℝ) 1)
     (hnc : ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p + t))
     (hE : EvEncl J S₂ (oW J (p + t))) {G : Set Point}
     (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂)) (hf : (chainModel J.whole).Faces p t G)
@@ -109,9 +120,7 @@ theorem not_rlabel_of_encl (hP : J.P.Simple) {S₂ : Set (Set Point)}
   · exact no_label_of_pocket J hP hS₂ hS₂f hG he hA hB hAB hAo hBo hp ht hnc hf ho V
 
 /-- **A cut-free stretch just after a position** facing the region faced just after it. -/
-theorem after_pos_exists (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {p : ℕ} {t : ℝ}
-    (hp : p < (chainModel J.whole).W.n) (ht0 : 0 ≤ t) (ht1 : t < 1) {G : Set Point}
+theorem after_pos_exists (ht0 : 0 ≤ t) (ht1 : t < 1) {G : Set Point}
     (hW : AfterFaces (chainModel J.whole) p t G) :
     ∃ s, 0 < s ∧ t + s < 1 ∧ (chainModel J.whole).Faces p (t + s) G ∧
       ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p + (t + s)) ∧
@@ -135,8 +144,7 @@ theorem after_pos_exists (hP : J.P.Simple) {S₂ : Set (Set Point)}
     off_add_small hC.hg hp ht0 hs0.le (by linarith)
   refine ⟨s, hs0, by linarith, hfac s hs0 (by linarith) (by linarith), ?_, hoff, ?_⟩
   · have := hsub ⟨show 0 < s by linarith, show s < δ₁ by linarith⟩
-    rw [Set.mem_ofPred_eq] at this
-    rwa [← add_assoc]
+    grind
   · rintro x hx hx0 hxn ⟨hlo, hhi⟩
     rw [hoff] at hhi
     have hu : 0 ≤ oW J x - oW J (p + t) := by linarith
@@ -144,19 +152,18 @@ theorem after_pos_exists (hP : J.P.Simple) {S₂ : Set (Set Point)}
       (show oW J x = oW J (p + t) + (oW J x - oW J (p + t)) by ring)
     have := hsub ⟨show 0 < oW J x - oW J (p + t) by linarith,
       show oW J x - oW J (p + t) < δ₁ by linarith⟩
-    rw [Set.mem_ofPred_eq] at this
-    apply this
-    rw [hx'] at hx
-    exact hx
+    grind
+
+
+end
 
 /-- **The label facts of the event log from the invariant.** -/
-theorem labIn_of_evInv (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {Λ : Set (Set Point)} {p : ℕ}
+theorem labIn_of_evInv {Λ : Set (Set Point)} {p : ℕ}
     {t : ℝ} (hp : p < (chainModel J.whole).W.n) (ht0 : 0 ≤ t) (ht1 : t < 1)
     (h : EvInv J S₂ (oW J (p + t)) Λ) : LabIn J S₂ p t Λ := by
   intro G hG hW V hV hR
   obtain ⟨s, hs0, hs1, hf, hnc, hoff, hgap⟩ := after_pos_exists hP hS₂ hS₂f hp ht0 ht1 hW
-  have hpos := h p (t + s) hp ⟨by linarith, hs1⟩ hnc (by rw [hoff]; linarith)
+  have hpos := h p (t + s) hp ⟨by linarith, hs1⟩ hnc (by linarith)
     (fun e he q s' hA h1 h2 => by
       obtain ⟨k0, k1⟩ := Corr.key_mem hA.1 hA.2.1 hA.2.2.1
       exact absurd ⟨h1, h2⟩ (hgap _ ⟨e, he, q, s', hA, rfl⟩ k0 k1))
@@ -164,10 +171,10 @@ theorem labIn_of_evInv (hP : J.P.Simple) {S₂ : Set (Set Point)}
   · exact absurd hR (not_rlabel_of_encl hP hS₂ hS₂f hp ⟨by linarith, hs1⟩ hnc hE hG hf V)
   · obtain ⟨L, hL, -, hv⟩ := hval G hG hf
     rcases hv.1 V hV hR with rfl | hg
-    · rcases hL with hL | hL
-      · exact Or.inl hL
-      · exact Or.inr hL
-    · exact Or.inr hg
+    all_goals grind
+
+
+end
 
 end EvInv
 

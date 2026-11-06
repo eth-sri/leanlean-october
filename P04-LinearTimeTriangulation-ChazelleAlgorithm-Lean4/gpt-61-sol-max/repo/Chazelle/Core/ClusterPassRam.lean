@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterClassRam
 public import Chazelle.Core.ClusterBfsRam
 
@@ -86,9 +88,7 @@ theorem PassCtx.of_frame {c c' : Config} {lo hi mode a b bTMP bACT bPOS bDF bFIR
     (h : PassCtx c lo hi mode a b bTMP bACT bPOS bDF bFIRST bFPRE)
     (hr : ∀ r, ¬ PassRG r → c'.nreg r = c.nreg r) :
     PassCtx c' lo hi mode a b bTMP bACT bPOS bDF bFIRST bFPRE := by
-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13⟩ := h
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hr _ (by unfold PassRG; omega)]; assumption)
+  ram_grind
 
 /-- The static memory of a pass: the read arrays are disjoint from the written ones. -/
 structure PassMem (m : ℕ → ℕ) (W lo hi bTMP bACT bPOS bDF bFIRST bFPRE μ N : ℕ) : Prop where
@@ -117,37 +117,30 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
+section
+variable (m0 : ℕ → ℕ) (sel : ℕ → Prop)
 /-- The pointer of a pass stays within `[e, e + j]`. -/
-theorem passMem_ptr (m0 : ℕ → ℕ) (sel : ℕ → Prop) (bACT bPOS bTMP lo e : ℕ) (j : ℕ) :
+theorem passMem_ptr (bACT bPOS bTMP lo e j : ℕ) :
     e ≤ (passMem m0 sel bACT bPOS bTMP lo e j).2 ∧
       (passMem m0 sel bACT bPOS bTMP lo e j).2 ≤ e + j := by
   classical
   induction j with
-  | zero => simp [passMem]
+  | zero => aesop
   | succ j ih =>
-    simp only [passMem]
-    split_ifs
-    · simp only; omega
-    · omega
+    core_grind
 
 /-- The pointer of a pass grows. -/
-theorem passMem_ptr_mono (m0 : ℕ → ℕ) (sel : ℕ → Prop) (bACT bPOS bTMP lo e : ℕ) {j j' : ℕ}
+theorem passMem_ptr_mono (bACT bPOS bTMP lo e : ℕ) {j j' : ℕ}
     (h : j ≤ j') :
     (passMem m0 sel bACT bPOS bTMP lo e j).2 ≤ (passMem m0 sel bACT bPOS bTMP lo e j').2 := by
   classical
   induction j' with
-  | zero => rw [show j = 0 by omega]
+  | zero => simp_all
   | succ j' ih =>
-    rcases Nat.lt_succ_iff_lt_or_eq.mp (Nat.lt_succ_of_le h) with h' | h'
-    · refine le_trans (ih (by omega)) ?_
-      simp only [passMem]
-      split_ifs
-      · simp only; omega
-      · exact le_rfl
-    · rw [h']
+    core_grind
 
 /-- A pass changes only `ACT` below the pointer and `POS[0, μ)` (for items below `μ`). -/
-theorem passMem_other (m0 : ℕ → ℕ) (sel : ℕ → Prop) {bACT bPOS bTMP lo e μ : ℕ} (j : ℕ)
+theorem passMem_other {bACT bPOS bTMP lo e μ : ℕ} (j : ℕ)
     (hit : ∀ i, lo ≤ i → i < lo + j → m0 (bTMP + i) < μ) {x : ℕ}
     (hx : ¬ (bACT + e ≤ x ∧ x < bACT + (passMem m0 sel bACT bPOS bTMP lo e j).2) ∧
       ¬ (bPOS ≤ x ∧ x < bPOS + μ)) :
@@ -157,27 +150,28 @@ theorem passMem_other (m0 : ℕ → ℕ) (sel : ℕ → Prop) {bACT bPOS bTMP lo
   | zero => rfl
   | succ j ih =>
     have hp := passMem_ptr m0 sel bACT bPOS bTMP lo e j
-    have hmono := passMem_ptr_mono m0 sel bACT bPOS bTMP lo e (Nat.le_succ j)
+    
     by_cases hs : sel (lo + j)
     · have e1 : passMem m0 sel bACT bPOS bTMP lo e (j + 1) =
           (upd (upd (passMem m0 sel bACT bPOS bTMP lo e j).1
             (bACT + (passMem m0 sel bACT bPOS bTMP lo e j).2) (m0 (bTMP + (lo + j))))
             (bPOS + m0 (bTMP + (lo + j))) (passMem m0 sel bACT bPOS bTMP lo e j).2,
           (passMem m0 sel bACT bPOS bTMP lo e j).2 + 1) := by
-        simp only [passMem, ite_eq_left hs]
+        core_grind
       rw [e1] at hx ⊢
       simp only at hx ⊢
       have := hit (lo + j) (by omega) (by omega)
-      rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
-      exact ih (fun i h1 h2 => hit i h1 (by omega)) ⟨fun h => hx.1 ⟨h.1, by omega⟩, hx.2⟩
-    · have e1 : passMem m0 sel bACT bPOS bTMP lo e (j + 1) =
-          passMem m0 sel bACT bPOS bTMP lo e j := by
-        simp only [passMem, ite_eq_right hs]
-      rw [e1] at hx ⊢
-      exact ih (fun i h1 h2 => hit i h1 (by omega)) hx
+      core_grind
+    core_grind
 
+
+end
+
+section
+variable {c : Config} (hw : WordsBounded W c)
+include hw
 /-- **Append.** -/
-theorem appendB_exec {c : Config} (hw : WordsBounded W c) {bACT bPOS v p : ℕ}
+theorem appendB_exec {bACT bPOS v p : ℕ}
     (hone : c.nreg 130001 = 1) (hA : c.nreg 130651 = bACT) (hP : c.nreg 130652 = bPOS)
     (hv : c.nreg 130658 = v) (hp : c.nreg 130656 = p) (hwA : bACT + p ≤ W) (hwP : bPOS + v ≤ W)
     (hpW : p + 1 ≤ W) :
@@ -187,13 +181,10 @@ theorem appendB_exec {c : Config} (hw : WordsBounded W c) {bACT bPOS v p : ℕ}
       c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold appendB
   exec_block
-  all_goals first | omega | (config_simp; simp only [hA, hP, hv, hp, hone]; omega) | skip
-  refine ⟨rfl, ‹_›, ?_, by config_simp; simp only [hp, hone], fun r h1 h2 h3 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [hA, hP, hv, hp]
-  · simp only [Machine.upd_apply]; split_ifs <;> first | omega
+  all_goals (grind [Machine.upd_apply])
 
 /-- **The class test and the append.** -/
-theorem ctestB_exec {c : Config} (hw : WordsBounded W c) {bACT bPOS v p mode a b κ : ℕ}
+theorem ctestB_exec {bACT bPOS v p mode a b κ : ℕ}
     (hone : c.nreg 130001 = 1) (hzero : c.nreg 130009 = 0) (hA : c.nreg 130651 = bACT)
     (hP : c.nreg 130652 = bPOS) (hv : c.nreg 130658 = v) (hp : c.nreg 130656 = p)
     (hm : c.nreg 130637 = mode) (ha : c.nreg 130638 = a) (hb : c.nreg 130639 = b)
@@ -217,19 +208,16 @@ theorem ctestB_exec {c : Config} (hw : WordsBounded W c) {bACT bPOS v p mode a b
     · have e := Exec.constN (P := P) hw 130660 0 (by omega)
       refine ⟨_, _, .ifLtN_true h1 e, by omega, e.wb_right, ?_, fun r hr => ?_, rfl, rfl, rfl,
         rfl⟩
-      · simp only [Machine.upd_same]; rw [ite_eq_right]; rw [hk, ha] at h1; omega
-      · simp only [Machine.upd_apply, hr, ite_false]
+      all_goals simp_all
     · by_cases h2 : c.nreg 130659 < c.nreg 130639
-      · have e := Exec.constN (P := P) hw 130660 1 (by have := hw.1 130001; omega)
+      · have e := Exec.constN (P := P) hw 130660 1 (by omega)
         refine ⟨_, _, .ifLtN_false h1 (.ifLtN_true h2 e), by omega, e.wb_right, ?_,
           fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-        · simp only [Machine.upd_same]; rw [ite_eq_left]; rw [hk, ha] at h1; rw [hk, hb] at h2; omega
-        · simp only [Machine.upd_apply, hr, ite_false]
+        all_goals simp_all
       · have e := Exec.constN (P := P) hw 130660 0 (by omega)
         refine ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 e), by omega, e.wb_right, ?_,
           fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-        · simp only [Machine.upd_same]; rw [ite_eq_right]; rw [hk, ha] at h1; rw [hk, hb] at h2; omega
-        · simp only [Machine.upd_apply, hr, ite_false]
+        all_goals simp_all
   have r1 : ∀ x, x ≠ 130660 → c1.nreg x = c.nreg x := h1r
   have hone1 := (r1 130001 (by omega)).trans hone
   have hzero1 := (r1 130009 (by omega)).trans hzero
@@ -258,63 +246,48 @@ theorem ctestB_exec {c : Config} (hw : WordsBounded W c) {bACT bPOS v p mode a b
     intro c2 k2 e2 hk2 hw2 hm2 hp2 hr2 hrr2 hrm2 ho2
     refine ⟨c2, k1 + k2, .seq e1 e2, by omega, hw2, hm2, hp2, fun r h1 h2 h3 => ?_,
       hrr2.trans hrr1, hrm2.trans hrm1, ho2.trans ho1⟩
-    rw [hr2 r h1 h2 h3, r1 r h2]
-  have hA0 : cA.nmem = upd (upd c.nmem (bACT + p) v) (bPOS + v) p := by rw [hmA, hm1]
+    grind
+  have hA0 : cA.nmem = upd (upd c.nmem (bACT + p) v) (bPOS + v) p := by grind
   by_cases hm0 : c1.nreg 130637 < c1.nreg 130001
   · -- mode 0: never
     rw [hm1', hone1] at hm0
     have hnt : ¬ ClassTest mode a b κ := by unfold ClassTest; omega
-    exact fin c1 _ (.ifLtN_true (by rw [hm1', hone1]; exact hm0) (.skip hw1)) (by omega) hw1
-      (by rw [ite_eq_right hnt, hm1]) (by rw [ite_eq_right hnt, hp1]) (fun _ _ _ _ => rfl) rfl rfl rfl
+    exact fin c1 _ (.ifLtN_true (by omega) (.skip hw1)) (by omega) hw1
+      (by grind) (by grind) (fun _ _ _ _ => rfl) rfl rfl rfl
   · by_cases hm2 : c1.nreg 130001 < c1.nreg 130637
     · -- mode 2: outside the interval
       rw [hm1', hone1] at hm2
-      have hmode2 : 2 ≤ mode := by omega
+      
       by_cases hin : c1.nreg 130660 < c1.nreg 130001
       · have htest : ClassTest mode a b κ := by
-          rw [h1i, hone1] at hin
-          unfold ClassTest
-          refine Or.inr ⟨hmode2, fun h => ?_⟩
-          rw [ite_eq_left h] at hin; omega
-        exact fin cA _ (.ifLtN_false (by rw [hm1', hone1]; omega)
-          (.ifLtN_true (by rw [hm1', hone1]; omega) (.ifLtN_true hin eA))) (by omega) hwA'
-          (by rw [ite_eq_left htest, hA0]) (by rw [ite_eq_left htest, hpA])
+          grind [ClassTest]
+        exact fin cA _ (.ifLtN_false (by omega)
+          (.ifLtN_true (by omega) (.ifLtN_true hin eA))) (by omega) hwA'
+          (by grind) (by grind)
           (fun r h1 h2 h3 => hrA r h1 h2 h3) hrrA hrmA hoA
       · have hnt : ¬ ClassTest mode a b κ := by
-          rw [h1i, hone1] at hin
-          unfold ClassTest
-          rintro (⟨h, -⟩ | ⟨-, h⟩)
-          · omega
-          · rw [ite_eq_right h] at hin; omega
-        exact fin c1 _ (.ifLtN_false (by rw [hm1', hone1]; omega)
-          (.ifLtN_true (by rw [hm1', hone1]; omega) (.ifLtN_false hin (.skip hw1)))) (by omega)
-          hw1 (by rw [ite_eq_right hnt, hm1]) (by rw [ite_eq_right hnt, hp1]) (fun _ _ _ _ => rfl) rfl rfl rfl
+          grind [ClassTest]
+        exact fin c1 _ (.ifLtN_false (by omega)
+          (.ifLtN_true (by omega) (.ifLtN_false hin (.skip hw1)))) (by omega)
+          hw1 (by grind) (by grind) (fun _ _ _ _ => rfl) rfl rfl rfl
     · -- mode 1: inside the interval
       rw [hm1', hone1] at hm0 hm2
       have hmode1 : mode = 1 := by omega
       by_cases hin : c1.nreg 130009 < c1.nreg 130660
       · have htest : ClassTest mode a b κ := by
-          rw [h1i, hzero1] at hin
-          unfold ClassTest
-          refine Or.inl ⟨hmode1, ?_⟩
-          by_contra h
-          rw [ite_eq_right h] at hin; omega
-        exact fin cA _ (.ifLtN_false (by rw [hm1', hone1]; omega)
-          (.ifLtN_false (by rw [hm1', hone1]; omega) (.ifLtN_true hin eA))) (by omega) hwA'
-          (by rw [ite_eq_left htest, hA0]) (by rw [ite_eq_left htest, hpA])
+          grind [ClassTest]
+        exact fin cA _ (.ifLtN_false (by omega)
+          (.ifLtN_false (by omega) (.ifLtN_true hin eA))) (by omega) hwA'
+          (by grind) (by grind)
           (fun r h1 h2 h3 => hrA r h1 h2 h3) hrrA hrmA hoA
       · have hnt : ¬ ClassTest mode a b κ := by
-          rw [h1i, hzero1] at hin
-          unfold ClassTest
-          rintro (⟨-, h⟩ | ⟨h, -⟩)
-          · rw [ite_eq_left h] at hin; omega
-          · omega
-        exact fin c1 _ (.ifLtN_false (by rw [hm1', hone1]; omega)
-          (.ifLtN_false (by rw [hm1', hone1]; omega) (.ifLtN_false hin (.skip hw1)))) (by omega)
-          hw1 (by rw [ite_eq_right hnt, hm1]) (by rw [ite_eq_right hnt, hp1]) (fun _ _ _ _ => rfl) rfl rfl rfl
+          grind [ClassTest]
+        exact fin c1 _ (.ifLtN_false (by omega)
+          (.ifLtN_false (by omega) (.ifLtN_false hin (.skip hw1)))) (by omega)
+          hw1 (by grind) (by grind) (fun _ _ _ _ => rfl) rfl rfl rfl
 
 /-- **One item of the pass.** -/
-theorem passBody_exec {c : Config} (hw : WordsBounded W c) {m0 : ℕ → ℕ}
+theorem passBody_exec {m0 : ℕ → ℕ}
     {lo hi mode a b bTMP bACT bPOS bDF bFIRST bFPRE μ N e j : ℕ}
     (hC : PassCtx c lo hi mode a b bTMP bACT bPOS bDF bFIRST bFPRE)
     (hM : PassMem m0 W lo hi bTMP bACT bPOS bDF bFIRST bFPRE μ N)
@@ -340,15 +313,14 @@ theorem passBody_exec {c : Config} (hw : WordsBounded W c) {m0 : ℕ → ℕ}
   set q := passMem m0 sel bACT bPOS bTMP lo e j
   have hit : ∀ i, lo ≤ i → i < hi → m0 (bTMP + i) < μ := hM.item_lt
   have hq := passMem_ptr_mono m0 sel bACT bPOS bTMP lo e (show j ≤ hi - lo by omega)
-  have hq0 := passMem_ptr m0 sel bACT bPOS bTMP lo e j
+  
   have hqh : q.2 ≤ hi := le_trans hq hfin
   -- reads outside the written ranges
   have hread : ∀ x, ¬ (bACT + lo ≤ x ∧ x < bACT + hi) → ¬ (bPOS ≤ x ∧ x < bPOS + μ) →
       c.nmem x = m0 x := by
     intro x h1 h2
     rw [hmem]
-    exact passMem_other m0 sel j (fun i h1 h2 => hit i h1 (by omega))
-      ⟨fun h => h1 ⟨by omega, by omega⟩, h2⟩
+    grind [Chazelle.Core.Cluster.passMem_other]
   set i := lo + j
   have hvμ := hit i (by omega) hj
   set v := m0 (bTMP + i)
@@ -373,14 +345,14 @@ theorem passBody_exec {c : Config} (hw : WordsBounded W c) {m0 : ℕ → ℕ}
     all_goals first | omega | (config_simp; simp only [hC.rTMP, hC.rDF, hi', rv]; omega) | skip
     refine ⟨rfl, ‹_›, by config_simp; simp only [hC.rTMP, hi', rv], by
       config_simp; simp only [hC.rTMP, hC.rDF, hi', rv, rdf], fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-    simp only [Machine.upd_apply]; split_ifs <;> first | omega
-  have hC1 := hC.of_frame (fun r hr => h1r r (by unfold PassRG at hr; omega)
-    (by unfold PassRG at hr; omega) (by unfold PassRG at hr; omega))
+    ram_simp
+  have hC1 := hC.of_frame (fun r hr => h1r r (by grind [PassRG])
+    (by grind [PassRG]) (by grind [PassRG]))
   have h1p : c1.nreg 130656 = q.2 := (h1r _ (by omega) (by omega) (by omega)).trans hptr
   have h1i : c1.nreg 130657 = i := (h1r _ (by omega) (by omega) (by omega)).trans hi'
   have hsel_def : passMem m0 sel bACT bPOS bTMP lo e (j + 1) =
       if sel i then (upd (upd q.1 (bACT + q.2) v) (bPOS + v) q.2, q.2 + 1) else q := by
-    simp only [passMem]; rfl
+    grind [passMem]
   -- the conditional part
   obtain ⟨c2, k2, e2, hk2, hw2, h2m, h2p, h2i, h2r, hrr2, hrm2, ho2⟩ : ∃ c2 k2, Exec P W
       (ifNe1 130660 (.seq (block [.addN 130661 130654 130658, .loadN 130661 130661,
@@ -403,7 +375,7 @@ theorem passBody_exec {c : Config} (hw : WordsBounded W c) {m0 : ℕ → ℕ}
           (config_simp; simp only [hC1.rFIRST, hC1.rFPRE, h1v, hm1, rfi]; omega) | skip
         refine ⟨rfl, ‹_›, by config_simp; simp only [hC1.rFIRST, hC1.rFPRE, h1v, hm1, rfi, rpr],
           fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-        simp only [Machine.upd_apply]; split_ifs <;> first | omega
+        grind [Machine.upd_apply]
       have r3 : ∀ x, x ≠ 130659 → x ≠ 130661 → c3.nreg x = c1.nreg x := h3r
       obtain ⟨c4, k4, e4, hk4, hw4, h4m, h4p, h4r, hrr4, hrm4, ho4⟩ := ctestB_exec (P := P) (bACT := bACT) (bPOS := bPOS)
         (v := v) (p := q.2) (mode := mode) (a := a) (b := b) hw3
@@ -415,40 +387,24 @@ theorem passBody_exec {c : Config} (hw : WordsBounded W c) {m0 : ℕ → ℕ}
         (by omega) (by omega) (by omega)
       have hselc : sel i ↔ ClassTest mode a b (m0 (bFPRE + m0 (bFIRST + v))) := by
         show (m0 (bDF + m0 (bTMP + i)) ≠ 1 ∧ _) ↔ _
-        exact ⟨fun h => h.2, fun h => ⟨hne, h⟩⟩
+        grind
       refine ⟨c4, k3 + k4, .seq e3 e4, by omega, hw4, ?_, ?_, ?_, fun r hr => ?_,
         hrr4.trans hrr3, hrm4.trans hrm3, ho4.trans ho3⟩
-      · rw [h4m, hm3, hm1, hmem, hsel_def]
-        by_cases hs : sel i
-        · rw [ite_eq_left (hselc.mp hs), ite_eq_left hs]
-        · rw [ite_eq_right (fun h => hs (hselc.mpr h)), ite_eq_right hs]
-      · rw [h4p, hsel_def]
-        by_cases hs : sel i
-        · rw [ite_eq_left (hselc.mp hs), ite_eq_left hs]
-        · rw [ite_eq_right (fun h => hs (hselc.mpr h)), ite_eq_right hs]
-      · rw [h4r _ (by omega) (by omega) (by omega), r3 _ (by omega) (by omega)]; exact h1i
-      · rw [h4r r (by unfold PassRG at hr; omega) (by unfold PassRG at hr; omega)
-          (by unfold PassRG at hr; omega), r3 r (by unfold PassRG at hr; omega)
-          (by unfold PassRG at hr; omega)]
+      all_goals (grind [PassRG])
     · rw [h1f] at heq
       have hs : ¬ sel i := fun h => h.1 heq
-      refine ⟨hw1, ?_, ?_, h1i, fun _ _ => rfl, rfl, rfl, rfl⟩
-      · rw [hsel_def, ite_eq_right hs, hm1, hmem]
-      · rw [hsel_def, ite_eq_right hs, h1p]
+      grind
   have hC2 := hC1.of_frame h2r
   have e3 := Exec.addN (P := P) hw2 130657 130657 130001 (by rw [h2i, hC2.one]; omega)
   refine ⟨_, k1 + (k2 + 1), .seq e1 (.seq e2 e3), by omega, e3.wb_right, h2m, ?_, ?_,
     fun r hr => ?_, hrr2.trans hrr1, hrm2.trans hrm1, ho2.trans ho1⟩
-  · simp only [Machine.upd_apply]; rw [ite_eq_right (by omega)]; exact h2p
+  · grind [Machine.upd_apply]
   · simp only [Machine.upd_same, h2i, hC2.one]
-  · simp only [Machine.upd_apply]
-    rw [ite_eq_right (by unfold PassRG at hr; omega), h2r r hr]
-    exact h1r r (by unfold PassRG at hr; omega) (by unfold PassRG at hr; omega)
-      (by unfold PassRG at hr; omega)
+  grind [Machine.upd_apply, PassRG]
 
 /-- **A partition pass**: starting with the pointer `e` (register `130656`), the memory and the
 pointer become `passMem … (hi - lo)`. -/
-theorem passStmt_exec {c : Config} (hw : WordsBounded W c)
+theorem passStmt_exec
     {lo hi mode a b bTMP bACT bPOS bDF bFIRST bFPRE μ N e : ℕ}
     (hC : PassCtx c lo hi mode a b bTMP bACT bPOS bDF bFIRST bFPRE)
     (hM : PassMem c.nmem W lo hi bTMP bACT bPOS bDF bFIRST bFPRE μ N)
@@ -478,19 +434,18 @@ theorem passStmt_exec {c : Config} (hw : WordsBounded W c)
       have hC2 := hC.of_frame hr2
       obtain ⟨c3, k3, e3, hk3, hw3, hm3, hp3, hi3, hr3, hrr3, hrm3, ho3⟩ :=
         passBody_exec (P := P) (j := i - lo) hw2 hC2 hM hlo hfin (by omega) hm2 hp2
-          (by rw [hi2]; omega)
-      refine ⟨c3, k3, e3, hk3, hw3, by rw [hi3]; omega, by
-        rw [hr3 _ (by unfold PassRG; omega)]; exact hn2, by
-        rw [hm3, show i + 1 - lo = i - lo + 1 by omega], by
-        rw [hp3, show i + 1 - lo = i - lo + 1 by omega], fun r hr => (hr3 r hr).trans (hr2 r hr),
-        hrr3.trans hrr2, hrm3.trans hrm2, ho3.trans ho2, by omega⟩)
+          (by omega)
+      grind [PassRG])
     (j₀ := lo) ⟨e0.wb_right, by simp [hC.rlo], by
-      simp only [Machine.upd_apply]; rw [ite_eq_right (by omega)]; exact hC.rhi, by simp [m0, passMem],
-      by simp only [Machine.upd_apply, Nat.sub_self]; rw [ite_eq_right (by omega)]; exact hptr,
+      simp only [Machine.upd_apply]; ram_grind, by aesop,
+      by aesop (add simp [Machine.upd_apply, Nat.sub_self]) (add safe (by omega)),
       fun r hr => by
-        simp only [Machine.upd_apply]; rw [ite_eq_right (by unfold PassRG at hr; omega)],
+        ram_simp,
       rfl, rfl, rfl, le_rfl⟩ hlh
   exact ⟨c', 1 + k, .seq e0 e, by omega, hw', hm', hp', hr', hrr', hrm', ho'.1⟩
+
+
+end
 
 end proofs
 

@@ -38,7 +38,7 @@ theorem tendsto_mul_const_nhdsGT {c : ℝ} (hc : 0 < c) :
       (continuous_id.mul continuous_const).tendsto 0
     rw [zero_mul] at this
     exact this.mono_left nhdsWithin_le_nhds
-  · exact mul_pos hx hc
+  simp_all
 
 variable {Q : Polygon}
 
@@ -55,9 +55,7 @@ theorem near_sub_region (hQ : Q.Simple) {F : Set (Set Point)}
   set z := sidePt W p t with hz
   obtain ⟨hWs, hWb, hWf, hWo⟩ := FactsInterior.interiorWalk_spec hQ
   have hM : WalkAx M := walkAx_interiorModel hQ
-  have hD : M.D = W.filled \ W.boundary := by
-    show Q.filled \ Q.boundary = (interiorWalk Q).filled \ (interiorWalk Q).boundary
-    rw [hWb, hWf]
+  
   obtain ⟨rL, hrL, hleft⟩ := FactsInterior.interior_left hWs hWo hp ht0 ht1
   obtain ⟨rC, hrC, hclean⟩ := FactsInterior.clean hWs hWo hp ht0 ht1
   -- the point is on no chord of `F`
@@ -70,9 +68,7 @@ theorem near_sub_region (hQ : Q.Simple) {F : Set (Set Point)}
     refine hcut ⟨hseg y a b, hc, p, t, ⟨hp, ht0, ht1, hzc, min (b - a) rL,
       lt_min (by linarith) hrL, fun x hx hxz hdist => ?_⟩, rfl⟩
     have hd1 : |x.1 - z.1| < b - a := by
-      have h := lt_of_lt_of_le hdist (min_le_left _ _)
-      have h2 : dist x.1 z.1 ≤ dist x z := by rw [Prod.dist_eq]; exact le_max_left _ _
-      rw [Real.dist_eq] at h2; exact lt_of_le_of_lt h2 h
+      grind [Prod.dist_eq, Real.dist_eq]
     have hxy : x.2 = y := hx.1
     -- `z` is an end of the chord
     have hzend : z.1 = a ∨ z.1 = b := by
@@ -149,7 +145,7 @@ theorem near_sub_region (hQ : Q.Simple) {F : Set (Set Point)}
         offset (M.wa p) (M.wb p) (t + s * (1 - t)) (δ * (1 - t)) := by
       rw [hz]; unfold sidePt sideNext
       exact Chazelle.Chain.offset_lerp_left _ _ _ _ _
-    rw [e]; exact hδ2
+    grind
   have hLU : L ⊆ U := Chazelle.Chain.subset_regionsIn_of_inter hU hpre hLfree hmeet
   refine ⟨r, hr, fun x hx hxD => hLU ⟨hx, ?_⟩⟩
   have := hleft x (lt_of_lt_of_le hx hrL') (by rw [hWb, hWf]; exact hxD)

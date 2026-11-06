@@ -54,28 +54,14 @@ open Machine Machine.Stmt
 
 /-! ### The mathematics -/
 
-/-- The edge `u v` straddles the ordinate of `q` (half-open rule): exactly one endpoint has
-ordinate `≤ q.2`.  Mirror image of `Chazelle.Jordan.straddles`. -/
-def StraddlesY (q u v : Point) : Prop :=
-  (u.2 ≤ q.2 ∧ q.2 < v.2) ∨ (v.2 ≤ q.2 ∧ q.2 < u.2)
 
-/-- The abscissa at which the horizontal line through `q` meets the line through `u` and `v`
-(meaningful when `v.2 ≠ u.2`). -/
-noncomputable def hitX (q u v : Point) : ℝ :=
-  u.1 + (q.2 - u.2) * (v.1 - u.1) / (v.2 - u.2)
 
-/-- The horizontal ray to the right from `q` hits the edge `u v`: the edge straddles the
-ordinate of `q` and the hit abscissa is strictly to the right of `q`. -/
-def HitsRight (q u v : Point) : Prop := StraddlesY q u v ∧ q.1 < hitX q u v
 
 /-! ### The program -/
 
 /-! ### Verification -/
 
-section verification
-variable {P : Polygon} {W : ℕ}
 
-end verification
 
 end
 

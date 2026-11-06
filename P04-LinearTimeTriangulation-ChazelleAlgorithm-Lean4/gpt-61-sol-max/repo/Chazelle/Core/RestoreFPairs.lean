@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFPairRun
 
 /-!
@@ -38,9 +40,9 @@ def PGood (E : FEnv) (c₀ : Config) (Kp i : ℕ) : Prop :=
     (normOf E.M (Qof E.P) (arcOf E.N E.r i).e) c'.nmem (c'.nreg ALLOC) (c'.nreg 81076) →
     ∀ i', i' < c'.nmem (c'.nreg 81076) → PieceGood (E.re c') c' (c'.nreg 81076) Kp i'
 
-theorem nPair30 : ¬ PairW 81030 := by unfold PairW RdW PW K1W DescW NodeW LeafW KeyW VertW; omega
-theorem nPair31 : ¬ PairW 81031 := by unfold PairW RdW PW K1W DescW NodeW LeafW KeyW VertW; omega
-theorem nPair32 : ¬ PairW 81032 := by unfold PairW RdW PW K1W DescW NodeW LeafW KeyW VertW; omega
+theorem nPair30 : ¬ PairW 81030 := by omega_nf
+theorem nPair31 : ¬ PairW 81031 := by omega_nf
+theorem nPair32 : ¬ PairW 81032 := by omega_nf
 
 /-! ## The inner loop -/
 
@@ -62,27 +64,25 @@ theorem innerLoop_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     FRS B E.P E.W c₀ (innerLoop E.cu E.sT) c ((pairK E Kp + 3) * k + 2) (fun c' => FWin E c' ∧
       (∀ q, 81011 ≤ q → q < 83000 → ¬ PairW q → q ≠ 81031 → c'.nreg q = c.nreg q) ∧
       (c.nreg 81007 = 1 → c'.nreg 81007 = 1) ∧ ∀ j, j < k → PairDone E c₀ i j (c'.nreg 81007)) := by
-  have hkW : k ≤ E.W := by
-    have : k ≤ (pairK E Kp + 3) * k := Nat.le_mul_of_pos_left k (by omega)
-    omega
-  have hq0 : c.nreg 81032 - c.nreg 81031 = k := by rw [hk, h0]; rfl
+  
+  have hq0 : c.nreg 81032 - c.nreg 81031 = k := by omega
   refine (FRS.while (a := 81031) (b := 81032) (body := .seq (pairBody E.cu E.sT)
     (Stmt.block [.addN 81031 81031 81012])) (IInv E c₀ c i k)
     (fun d => d.nreg 81032 - d.nreg 81031) (pairK E Kp + 1) (fun d _ hlt => by omega)
-    (fun d hId hd hlt hroomd => ?_) hI ⟨hw, fun _ _ _ _ _ => rfl, id, by rw [h0]; omega,
-      fun j hj => by rw [h0] at hj; omega⟩ (by rw [hq0]; omega)).mono (by rw [hq0])
+    (fun d hId hd hlt hroomd => ?_) hI ⟨hw, fun _ _ _ _ _ => rfl, id, by omega,
+      fun j hj => by omega⟩ (by ram_grind)).mono (by rw [hq0])
     (fun c' hP => ?_)
   · obtain ⟨dw, df, dm, dle, dd⟩ := hd
-    have d32 : d.nreg 81032 = k := by rw [df _ (by norm_num) (by norm_num) nPair32 (by norm_num), hk]
-    have d30 : d.nreg 81030 = i := by rw [df _ (by norm_num) (by norm_num) nPair30 (by norm_num), hi]
+    have d32 : d.nreg 81032 = k := by ram_simp
+    have d30 : d.nreg 81030 = i := by ram_simp
     rw [d32] at hlt
     refine FRS.seq (K₁ := pairK E Kp) (K₂ := 1) (pairBody_fs hE hB hBT hId dw d30 rfl hAi
       (hA _ hlt) hPG hnW (by omega)) (fun c₁ hI₁ hA₁ h₁ => ?_)
     obtain ⟨w₁, f₁, m₁, pd⟩ := h₁
-    have k1 : c₁.nreg 81012 = 1 := by rw [hI₁.hin _ (by unfold FFix; omega), hE.k1]
+    have k1 : c₁.nreg 81012 = 1 := by rw [hI₁.hin _ (by omega_nf), hE.k1]
     have j₁ : c₁.nreg 81031 = d.nreg 81031 := f₁ _ (by norm_num) (by norm_num) nPair31
     have ok : okB E.W c₁.nmem [.addN 81031 81031 81012] c₁.nreg := by
-      simp only [okB, okI, FScr, FOut, k1, j₁]; norm_num; omega
+      grind [okB, okI, FScr, FOut]
     refine (FRS.block hB _ hI₁ ok).mono (by simp) (fun c' h' => ?_)
     have e' : ∀ q, c'.nreg q = regB c₁.nmem [.addN 81031 81031 81012] c₁.nreg q := fun q => by
       rw [h']
@@ -94,17 +94,15 @@ theorem innerLoop_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     have c32 : c'.nreg 81032 = k := by
       rw [f' _ (by norm_num), f₁ _ (by norm_num) (by norm_num) nPair32, d32]
     refine ⟨⟨w₁.congr' (fun q a b => f' q (by omega)), fun q a b hq h31 => by
-      rw [f' q h31, f₁ q a b hq, df q a b hq h31], fun h => by rw [g07]; exact m₁ (dm h),
+      ram_grind, fun h => by omega,
       by omega, fun j hj => ?_⟩, by omega⟩
     rw [g07]
     rcases Nat.lt_or_ge j (d.nreg 81031) with h | h
     · exact (dd j h).mono m₁
-    · rw [show j = d.nreg 81031 by omega]; exact pd
+    grind [Chazelle.Core.Restore.PairDone]
   · obtain ⟨hP1, hex⟩ := hP
     obtain ⟨cw, cf, cm, cle, cd⟩ := hP1
-    have c32 : c'.nreg 81032 = k := by
-      rw [cf _ (by norm_num) (by norm_num) nPair32 (by norm_num), hk]
-    exact ⟨cw, cf, cm, fun j hj => cd j (by omega)⟩
+    grind [Chazelle.Core.Restore.nPair32]
 
 /-! ## The outer loop -/
 
@@ -131,39 +129,37 @@ theorem outerLoop_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       FWin E c' ∧ (∀ q, 81011 ≤ q → q < 83000 → ¬ PairW q → q ≠ 81030 → q ≠ 81031 →
         c'.nreg q = c.nreg q) ∧ (c.nreg 81007 = 1 → c'.nreg 81007 = 1) ∧
       ∀ i, i < k → ∀ j, j < k → PairDone E c₀ i j (c'.nreg 81007)) := by
-  have hkW : k ≤ E.W := by
-    have : k ≤ (outerK E Kp k + 2) * k := Nat.le_mul_of_pos_left k (by unfold outerK; omega)
-    omega
-  have hq0 : c.nreg 81032 - c.nreg 81030 = k := by rw [hk, h0]; rfl
+  
+  have hq0 : c.nreg 81032 - c.nreg 81030 = k := by omega
   refine (FRS.while (a := 81030) (b := 81032) (body := .seq (Stmt.block [.constN 81031 0])
     (.seq (innerLoop E.cu E.sT) (Stmt.block [.addN 81030 81030 81012]))) (OInv E c₀ c k)
     (fun d => d.nreg 81032 - d.nreg 81030) (outerK E Kp k) (fun d _ hlt => by omega)
-    (fun d hId hd hlt hroomd => ?_) hI ⟨hw, fun _ _ _ _ _ _ => rfl, id, by rw [h0]; omega,
-      fun i hi => by rw [h0] at hi; omega⟩ (by rw [hq0]; omega)).mono (by rw [hq0])
+    (fun d hId hd hlt hroomd => ?_) hI ⟨hw, fun _ _ _ _ _ _ => rfl, id, by omega,
+      fun i hi => by omega⟩ (by ram_grind)).mono (by rw [hq0])
     (fun c' hP => ?_)
   · obtain ⟨dw, df, dm, dle, dd⟩ := hd
     have d32 : d.nreg 81032 = k := by
-      rw [df _ (by norm_num) (by norm_num) nPair32 (by norm_num) (by norm_num), hk]
+      ram_simp
     rw [d32] at hlt
     have ok0 : okB E.W d.nmem [.constN 81031 0] d.nreg := by
-      simp only [okB, okI, FScr, FOut]; norm_num
+      grind [okB, okI, FScr, FOut]
     refine FRS.seq (K₁ := 1) (K₂ := (pairK E Kp + 3) * k + 2 + 1) (FRS.block hB _ hId ok0)
-      (fun c₁ hI₁ hA₁ h₁ => ?_) |>.mono (by unfold outerK; omega) (fun _ h => h)
+      (fun c₁ hI₁ hA₁ h₁ => ?_) |>.mono (by omega_nf) (fun _ h => h)
     have e₁ : ∀ q, c₁.nreg q = regB d.nmem [.constN 81031 0] d.nreg q := fun q => by rw [h₁]
     have f₁ : ∀ q, q ≠ 81031 → c₁.nreg q = d.nreg q := fun q h => by
       rw [e₁]; simp [regB, regI, upd, h]
     have z31 : c₁.nreg 81031 = 0 := by rw [e₁]; simp [regB, regI, upd]
     have w₁ : FWin E c₁ := dw.congr' (fun q a b => f₁ q (by omega))
     refine FRS.seq (K₁ := (pairK E Kp + 3) * k + 2) (K₂ := 1)
-      (innerLoop_fs hE hB hBT hI₁ w₁ (f₁ _ (by norm_num)) (by rw [f₁ _ (by norm_num), d32]) z31
-        (hA _ hlt) hA (hPG _ hlt) hnW (by unfold outerK at hroomd; omega))
+      (innerLoop_fs hE hB hBT hI₁ w₁ (f₁ _ (by norm_num)) (by ram_grind) z31
+        (hA _ hlt) hA (hPG _ hlt) hnW (by grind [outerK]))
       (fun c₂ hI₂ hA₂ h₂ => ?_)
     obtain ⟨w₂, f₂, m₂, pd⟩ := h₂
-    have k1 : c₂.nreg 81012 = 1 := by rw [hI₂.hin _ (by unfold FFix; omega), hE.k1]
+    have k1 : c₂.nreg 81012 = 1 := by rw [hI₂.hin _ (by omega_nf), hE.k1]
     have i₂ : c₂.nreg 81030 = d.nreg 81030 := by
       rw [f₂ _ (by norm_num) (by norm_num) nPair30 (by norm_num), f₁ _ (by norm_num)]
     have ok : okB E.W c₂.nmem [.addN 81030 81030 81012] c₂.nreg := by
-      simp only [okB, okI, FScr, FOut, k1, i₂]; norm_num; omega
+      grind [okB, okI, FScr, FOut]
     refine (FRS.block hB _ hI₂ ok).mono (by simp) (fun c' h' => ?_)
     have e' : ∀ q, c'.nreg q = regB c₂.nmem [.addN 81030 81030 81012] c₂.nreg q := fun q => by
       rw [h']
@@ -172,22 +168,19 @@ theorem outerLoop_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     have v30 : c'.nreg 81030 = d.nreg 81030 + 1 := by
       rw [e']; simp [regB, regI, upd, k1, i₂]
     have g07 : c'.nreg 81007 = c₂.nreg 81007 := f' _ (by norm_num)
-    have g07' : c₂.nreg 81007 = 1 → c'.nreg 81007 = 1 := fun h => by rw [g07]; exact h
+    have g07' : c₂.nreg 81007 = 1 → c'.nreg 81007 = 1 := fun h => by omega
     have c32 : c'.nreg 81032 = k := by
-      rw [f' _ (by norm_num), f₂ _ (by norm_num) (by norm_num) nPair32 (by norm_num),
-        f₁ _ (by norm_num), d32]
+      grind [Chazelle.Core.Restore.nPair32]
     refine ⟨⟨w₂.congr' (fun q a b => f' q (by omega)), fun q a b hq h30 h31 => by
-      rw [f' q h30, f₂ q a b hq h31, f₁ q h31, df q a b hq h30 h31],
-      fun h => g07' (m₂ (by rw [f₁ _ (by norm_num)]; exact dm h)),
+      grind,
+      fun h => g07' (m₂ (by ram_grind)),
       by omega, fun i hi j hj => ?_⟩, by omega⟩
     rcases Nat.lt_or_ge i (d.nreg 81030) with h | h
-    · exact ((dd i h j hj).mono (fun h => m₂ (by rw [f₁ _ (by norm_num)]; exact h))).mono g07'
-    · rw [show i = d.nreg 81030 by omega]; exact (pd j hj).mono g07'
+    · grind [Chazelle.Core.Restore.PairDone.mono]
+    ram_grind
   · obtain ⟨hP1, hex⟩ := hP
     obtain ⟨cw, cf, cm, cle, cd⟩ := hP1
-    have c32 : c'.nreg 81032 = k := by
-      rw [cf _ (by norm_num) (by norm_num) nPair32 (by norm_num) (by norm_num), hk]
-    exact ⟨cw, cf, cm, fun i hi j hj => cd i (by omega) j hj⟩
+    grind [Chazelle.Core.Restore.nPair32]
 
 end
 

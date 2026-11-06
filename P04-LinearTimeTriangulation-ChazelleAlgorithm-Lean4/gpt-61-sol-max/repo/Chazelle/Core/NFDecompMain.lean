@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFDecompRamOut
 
 /-!
@@ -37,18 +39,18 @@ theorem allocS_exec' {c : Config} (hw : WordsBounded W c) (h1 : c.nreg 60011 = 1
       d.rmem = c.rmem ∧ d.output = c.output)
     (fun d => 3 * (c.nreg 60086 - d.nreg 9999)) (fun d => d.nreg 9999) (fun d h => h.1)
     (fun d ⟨hwd, hled, hrd, hmd, hrrd, hrmd, hod⟩ ht => by
-      have h1d : d.nreg 60011 = 1 := by rw [hrd _ (by decide)]; exact h1
+      have h1d : d.nreg 60011 = 1 := by ram_simp
       have h86 : d.nreg 60086 = c.nreg 60086 := hrd _ (by decide)
       rw [h86] at ht
-      refine spec_instr (Exec.addN hwd _ _ _ (by rw [h1d]; omega)) fun hw2 => ?_
-      refine ⟨⟨hw2, by config_simp; omega, fun r hr => ?_, hmd, hrrd, hrmd, hod⟩, ?_, ?_⟩
-      · config_simp; rw [Machine.upd_other _ _ _ hr]; exact hrd r hr
-      · config_simp; rw [h1d]; omega
-      · config_simp; omega)
+      refine spec_instr (Exec.addN hwd _ _ _ (by omega)) fun hw2 => ?_
+      refine ⟨⟨hw2, by omega_nf, fun r hr => ?_, hmd, hrrd, hrmd, hod⟩, ?_, ?_⟩
+      · ram_simp
+      · omega_nf
+      simp_all)
     ⟨hw, hle, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
   have h86 : c'.nreg 60086 = c.nreg 60086 := hr _ (by decide)
   rw [h86] at htest
-  exact ⟨c', k, e, by unfold ALLOC at hle ⊢; omega, by unfold ALLOC; omega, hlb,
+  exact ⟨c', k, e, by omega_nf, by omega_nf, hlb,
     fun r hra => hr r hra, hm, hrr, hrm, ho⟩
 
 /-- The stages after the allocation do not write the allocator. -/
@@ -71,9 +73,7 @@ theorem nfAt_seq_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h
 theorem clog_succ_le (K : ℕ) : Nat.clog 2 (K + 1) ≤ Nat.clog 2 K + 1 := by
   apply Nat.clog_le_of_le_pow
   have h1 := Nat.le_pow_clog (by norm_num : 1 < 2) K
-  have h2 : 1 ≤ 2 ^ Nat.clog 2 K := Nat.one_le_two_pow
-  rw [pow_succ]
-  omega
+  grind
 
 /-- **The cost of the procedure.** -/
 theorem decomp_cost (D K : ℕ) (hD : K = 0 ∨ 1 ≤ D) :
@@ -84,36 +84,26 @@ theorem decomp_cost (D K : ℕ) (hD : K = 0 ∨ 1 ≤ D) :
   set L := Nat.clog 2 K with hL
   have hr : rounds D K ≤ D * (L + 1) := by
     rcases hD with h0 | h1
-    · subst h0; rw [rounds_zero]; exact Nat.zero_le _
+    · simp_all [rounds_zero] 
     · exact (rounds_le h1 K).trans (Nat.mul_le_mul_left _ (clog_succ_le K))
   set X := K * (L + 1) + 1 with hX
-  have hX1 : K + 1 ≤ X := by
-    have : K ≤ K * (L + 1) := Nat.le_mul_of_pos_right _ (by omega)
-    omega
+  
   have hX2 : (K + 1) * (L + 1) ≤ 2 * X := by
     rcases Nat.eq_zero_or_pos K with h0 | hpos
-    · subst h0
-      have : L = 0 := by rw [hL]; simp
-      rw [this, hX]; simp
+    · simp_all
     · have : L + 1 ≤ K * (L + 1) := Nat.le_mul_of_pos_left _ hpos
-      rw [Nat.add_mul, Nat.one_mul, hX]; omega
+      grind
   have hR1 : rounds D K + 1 ≤ (D + 1) * (L + 1) := by
-    have : D * (L + 1) + 1 ≤ (D + 1) * (L + 1) := by rw [Nat.add_mul]; omega
-    omega
+    grind
   set Y := (D + 1) * X with hY
-  have hXY : X ≤ Y := Nat.le_mul_of_pos_left _ (by omega)
+  
   have e1 : (175 * (K + 1) + 45) * (rounds D K + 1) ≤ 440 * Y := by
     calc (175 * (K + 1) + 45) * (rounds D K + 1) ≤ (220 * (K + 1)) * ((D + 1) * (L + 1)) :=
           Nat.mul_le_mul (by omega) hR1
       _ = 220 * (D + 1) * ((K + 1) * (L + 1)) := by ring
       _ ≤ 220 * (D + 1) * (2 * X) := Nat.mul_le_mul_left _ hX2
-      _ = 440 * Y := by rw [hY]; ring
-  have e2 : (42 * D + 16) * (K + 1) ≤ 58 * Y := by
-    calc (42 * D + 16) * (K + 1) ≤ (58 * (D + 1)) * X := Nat.mul_le_mul (by omega) hX1
-      _ = 58 * Y := by rw [hY]; ring
-  have e4 : 1000 * (D + 1) * X = 1000 * Y := by rw [hY]; ring
-  rw [e4]
-  constructor <;> omega
+      _ = 440 * Y := by grind
+  grind
 
 end helpers
 
@@ -149,7 +139,7 @@ theorem decomp_run {c : Config} (hw : WordsBounded W c) {B D : ℕ} {N₀ : NF}
       (by omega) (by omega)
   -- allocation
   obtain ⟨c2, k2, e2, hk2, hA2, hlb2, hregs2, hm2, hrr2, hrm2, ho2⟩ :=
-    allocS_exec' (P := P) e1.wb_right hR1.one (by rw [h86, hA1]; omega)
+    allocS_exec' (P := P) e1.wb_right hR1.one (by omega)
   have hR2 : DRegs A R K (c.nmem (B + 3)) (c.nmem (B + 5)) (c.nmem (B + 7)) c2 :=
     hR1.of_regs fun r _ hr => hregs2 r hr
   -- initialisation
@@ -182,11 +172,10 @@ theorem decomp_run {c : Config} (hw : WordsBounded W c) {B D : ℕ} {N₀ : NF}
   have hRo := Rooted.congr hroot t1 t3 t4
   have hch : ∀ e, e < K → tv c4.nmem A R 6 e < R ∧ tv c4.nmem A R 6 e ≠ 0 ∧
       tv c4.nmem A R 4 (tv c4.nmem A R 6 e) = e := fun e he => by
-    obtain ⟨a1, a2, a3⟩ := hchst e he
-    rw [t6 e (by omega), t4 _ a1]; exact ⟨a1, a2, a3⟩
+    grind
   have hisdn : ∀ s, s < R → s ≠ 0 →
       (tv c4.nmem A R 5 s = 1 ↔ (N₀.chord (tv c4.nmem A R 4 s)).dn = s) := fun s hs hs0 => by
-    rw [t5 s hs, t4 s hs]; exact hisdnst s hs hs0
+    rw [t5 s hs, t4 s hs]; ram_simp
   have hdeg : ∀ v, v < R →
       (kids R (tv c4.nmem A R 3) (tv c4.nmem A R 4) rem0 v).card + (if v = 0 then 0 else 1) ≤ D :=
     fun v hv => (kids_deg hRo hRT.lists hRT.nodup hv).trans (hRT.deg v hv)
@@ -195,18 +184,18 @@ theorem decomp_run {c : Config} (hw : WordsBounded W c) {B D : ℕ} {N₀ : NF}
   -- the rounds
   obtain ⟨c5, k5, e5, hk5, hw5, hf5, hst5, jj, gc, cr, hI, hna⟩ :=
     roundsS_exec (P := P) hw4 hR4 (by omega) hRo hch hdeg (fun _ _ _ _ => rfl)
-      (fun u hu => by rw [fx 7 u (by norm_num) (by unfold BFields; omega) hu]; exact (hv3 u hu).2.1)
-      (fun u hu => by rw [fx 11 u (by norm_num) (by unfold BFields; omega) hu]; exact (hv3 u hu).2.2.1)
-      (fun u hu => by rw [fx 12 u (by norm_num) (by unfold BFields; omega) hu]; exact (hv3 u hu).2.2.2)
-      (by rw [fx 13 0 (by norm_num) (by unfold BFields; omega) (by omega)]; exact h13)
-      (by rw [fx 15 0 (by norm_num) (by unfold BFields; omega) (by omega)]; exact h15)
+      (fun u hu => by rw [fx 7 u (by norm_num) (by omega_nf) hu]; exact (hv3 u hu).2.1)
+      (fun u hu => by rw [fx 11 u (by norm_num) (by omega_nf) hu]; exact (hv3 u hu).2.2.1)
+      (fun u hu => by rw [fx 12 u (by norm_num) (by omega_nf) hu]; exact (hv3 u hu).2.2.2)
+      (by rw [fx 13 0 (by norm_num) (by omega_nf) (by omega)]; exact h13)
+      (by rw [fx 15 0 (by norm_num) (by omega_nf) (by omega)]; exact h15)
   have hR5 := hR4.frame hf5
   -- the node table and the header
   obtain ⟨c6, k6, e6, hk6, hw6, hf6, hv6⟩ := fcS_exec (P := P) hw5 hR5 (by omega) hKR
   have hR6 := hR5.frame hf6
   have hB6 : c6.nreg 60001 = B := by
-    rw [hf6.1 _ (by unfold Prot; omega) (by decide), hf5.1 _ (by unfold Prot; omega) (by decide),
-      hf4.1 _ (by unfold Prot; omega) (by decide), hf3.1 _ (by unfold Prot; omega) (by decide),
+    rw [hf6.1 _ (by omega_nf) (by decide), hf5.1 _ (by omega_nf) (by decide),
+      hf4.1 _ (by omega_nf) (by decide), hf3.1 _ (by omega_nf) (by decide),
       hregs2 _ (by decide), hregs1 _ (Or.inl (by norm_num)) (by decide), hB]
   obtain ⟨c7, k7, e7, hk7, h03, hregs7, hrr7, hrm7, ho7, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9,
     x10, x11, xo⟩ := hdrS_exec (P := P) hw6 hR6 hB6 hB9 (by omega)
@@ -252,8 +241,8 @@ theorem decomp_run {c : Config} (hw : WordsBounded W c) {B D : ℕ} {N₀ : NF}
         simp only [Finset.mem_singleton, bandOf, bDecomp] at hr
         omega
       rw [hregs7 r (by omega) (by omega) (by omega) (by omega),
-        hf6.1 r (by unfold Prot; omega) hra, hf5.1 r (by unfold Prot; omega) hra,
-        hf4.1 r (by unfold Prot; omega) hra, hf3.1 r (by unfold Prot; omega) hra, hregs2 r hra,
+        hf6.1 r (by omega_nf) hra, hf5.1 r (by omega_nf) hra,
+        hf4.1 r (by omega_nf) hra, hf3.1 r (by omega_nf) hra, hregs2 r hra,
         hregs1 r (by omega) hra]
     · rw [hrr7, hf6.2.1, hf5.2.1, hf4.2.1, hf3.2.1, hrr2, hrr1]
     · intro a _
@@ -274,7 +263,7 @@ theorem decomp_run {c : Config} (hw : WordsBounded W c) {B D : ℕ} {N₀ : NF}
     have e5 := eqB 5 (by norm_num) (by norm_num) (by rw [hm' _ (by omega), x5, M1' _ (by omega)])
     have e6 := eqB 6 (by norm_num) (by norm_num) (by rw [hm' _ (by omega), x6, M1' _ (by omega)])
     have e7 := eqB 7 (by norm_num) (by norm_num) (by rw [hm' _ (by omega), x7, M1' _ (by omega)])
-    have hR0 : 0 < R := by omega
+    
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     · rw [hm' _ (by omega), x0]; rfl
     · rw [hm' _ (by omega), x1, M1' _ (by omega)]; exact hN0.2.1
@@ -315,20 +304,18 @@ theorem decomp_run {c : Config} (hw : WordsBounded W c) {B D : ℕ} {N₀ : NF}
       have ha1 : A + 12 + r < A + 12 + 19 * R + 3 * K := Nat.lt_add_right _ ha2
       have hl : σ.lpar r = fv c5.nmem A R 0 r := tv_lt hr'
       rw [hlp, hx10, hm' (A + 12 + r) ha1, M3 (A + 12 + r) (Nat.le_add_right _ _) ha2, hl]
-      unfold fv
-      rw [Nat.zero_mul, Nat.add_zero]
+      omega_nf
   · exact isDecomp_final (N := N₀) rfl rfl hRo hch hisdn hI hna hD
 
 /-- A record tree with a chord has a positive degree cap. -/
 theorem recTree_hD {N : NF} {D : ℕ} (hRT : RecTree N D) : N.nChords = 0 ∨ 1 ≤ D := by
   rcases Nat.eq_zero_or_pos N.nChords with h0 | hpos
-  · exact Or.inl h0
+  · omega
   · right
     have hu := (hRT.ends_lt 0 hpos).1
     have hmem : 0 ∈ (N.region (N.chord 0).up).chords := (hRT.lists _ hu 0).2 ⟨hpos, Or.inl rfl⟩
     have := hRT.deg _ hu
-    have := List.length_pos_of_mem hmem
-    omega
+    grind
 
 /-- **WP-C: the tree decomposition meets `DecompSpec`** (constant `κ = 1000`). -/
 theorem decomp : DecompSpec := by
@@ -342,11 +329,9 @@ theorem decomp : DecompSpec := by
   obtain ⟨hc1, hc2⟩ := decomp_cost (rd c bDecomp 2) N₀.nChords (recTree_hD hRT)
   rw [hKc] at hroom
   obtain ⟨c', k, σ, e, hk, hF, h03, hNW', hdec⟩ := decomp_run (P := P) hw rfl hNW hRT
-    (by rw [hcount]; omega)
+    (by omega)
   refine ⟨c', k, e, ?_, ?_, hF⟩
-  · rw [hKc]
-    rw [hcount] at hk
-    omega
+  · grind
   · intro M' N _ hN hNF'
     have hch : N₀.chords = N.chords := nfAt_chords_eq' hN hN0
     have har : N₀.arcs = N.arcs := nfAt_arcs_eq' hN hN0
@@ -354,9 +339,9 @@ theorem decomp : DecompSpec := by
     have hsq : N₀.seq = N.seq := nfAt_seq_eq' hN hN0 (by
       rw [seq_length' hNF, seq_length' hNF', har])
     have h3 : rd c' bDecomp 3 = c.nreg ALLOC := h03
-    have hnc : N.nChords = N₀.nChords := by unfold NF.nChords; rw [hch]
-    refine ⟨withDec N₀ N₀.nChords N₀.nRegions σ, by rw [h3], by rw [h3]; exact hNW', hch, har,
-      hrg, hsq, by rw [hnc]; exact hdec⟩
+    have hnc : N.nChords = N₀.nChords := by core_grind
+    refine ⟨withDec N₀ N₀.nChords N₀.nRegions σ, by rw [h3], by omega_nf, hch, har,
+      hrg, hsq, by simp_all⟩
 
 end run
 

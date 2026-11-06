@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFStart
 
 /-!
@@ -19,13 +21,15 @@ open Machine Machine.Stmt Programs SweepPrim
 
 variable {E : FEnv} {c₀ : Config}
 
-theorem FGood.kind (hE : FGood E c₀) :
+section
+variable (hE : FGood E c₀)
+include hE
+theorem FGood.kind :
     (∃ C : Chain, C.P.Simple ∧ E.M = chainModel C) ∨ E.M = interiorModel (Qof E.P) := by
   rcases hE.hOkM _ _ hE.hOk with ⟨H, C, -, -, -, hs, hM⟩ | hI
-  · exact Or.inl ⟨C, hs, hM⟩
-  · exact Or.inr hI
+  all_goals ram_grind
 
-theorem FGood.end_ok (hE : FGood E c₀) {x : WPos}
+theorem FGood.end_ok {x : WPos}
     (hx : ProperPos E.M (Qof E.P) (Qof E.P).n x) (hk : E.M.key (Qof E.P) x < E.M.W.n)
     (hy : ∀ C : Chain, E.M = chainModel C → |(E.M.pos (Qof E.P) x).2| < C.radius) :
     x.edge < E.M.W.n ∧
@@ -36,10 +40,10 @@ theorem FGood.end_ok (hE : FGood E c₀) {x : WPos}
   have hkey : E.M.key (Qof E.P) x = x.edge + E.M.param (Qof E.P) x := rfl
   have hxe : x.edge < E.M.W.n := by
     have : (x.edge : ℝ) < E.M.W.n := by linarith [hx.1]
-    exact_mod_cast this
+    simp_all
   refine ⟨hxe, ?_⟩
   rcases hcase with h0 | hp
-  · exact Or.inl h0
+  · omega
   right
   have hp' : 0 < E.M.param (Qof E.P) x := by
     unfold normOf at hp; split_ifs at hp with hz
@@ -53,9 +57,9 @@ theorem FGood.end_ok (hE : FGood E c₀) {x : WPos}
     have hn3 : 3 ≤ (Qof E.P).n := by rw [hQn]; exact hE.hG.1.1
     obtain ⟨e, h⟩ := x
     exact innerPt_mi_edge (ShootCut.goodEnv_distinct hE.hG) hn3
-      (by rw [IOrc.mi_n] at hxe; exact hxe) (by rw [hM] at hp'; exact hp') hx.2.1
+      (by simp_all [IOrc.mi_n] <;> omega_nf) (by simp_all) hx.2.1
 
-theorem FGood.arc_abs (hE : FGood E c₀) (hne : (E.N.F E.M (Qof E.P)).Nonempty) {j : ℕ}
+theorem FGood.arc_abs (hne : (E.N.F E.M (Qof E.P)).Nonempty) {j : ℕ}
     (hj : j < E.N.arcs.length) :
     (∀ C : Chain, E.M = chainModel C → |(E.M.pos (Qof E.P) (E.N.arc j).s).2| < C.radius) ∧
       (∀ C : Chain, E.M = chainModel C → |(E.M.pos (Qof E.P) (E.N.arc j).e).2| < C.radius) := by
@@ -68,10 +72,10 @@ theorem FGood.arc_abs (hE : FGood E c₀) (hne : (E.N.F E.M (Qof E.P)).Nonempty)
     rw [hM'] at hNF hne
     have := arc_abs_lt hs hNF hne hj
     rw [radius_eq_of_model (hM.symm.trans hM'), hM']
-    first | exact this.1 | exact this.2
+    simp_all
 
 /-- **The arcs of a region with an exit chord.** -/
-theorem FGood.arcOK (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : ℕ}
+theorem FGood.arcOK (hch : (E.N.region E.r).chords ≠ []) {t : ℕ}
     (ht : t < (E.N.region E.r).arcs.length) : ArcOK E t := by
   have hr : E.r < E.N.nRegions := hE.hr
   obtain ⟨-, -, -, reg, hRC, -, hArcs, hRg, -, -, hpp⟩ := hE.hNF
@@ -83,12 +87,11 @@ theorem FGood.arcOK (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {
     have hmem : E.N.chord i ∈ E.N.chords := by
       unfold NF.chord
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi', Option.getD_some]
-      exact List.getElem_mem hi'
+      grind
     exact ⟨_, E.N.chord i, hmem, rfl⟩
   set j := (E.N.region E.r).arcs.getD t 0 with hjdef
   have hjm : j ∈ (E.N.region E.r).arcs := by
-    rw [hjdef, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
-    exact List.getElem_mem ht
+    simp_all
   obtain ⟨hj, -⟩ := (hArcs.2.2.2 E.r hr j).1 hjm
   obtain ⟨hjr, harc⟩ := hArcs.1 j hj
   have hU := hRC.1 _ hjr
@@ -96,10 +99,13 @@ theorem FGood.arcOK (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {
   obtain ⟨sy, ey⟩ := hE.arc_abs hne hj
   have hs := hE.end_ok (hpp j hj).1 ha sy
   have he := hE.end_ok (hpp j hj).2 hb ey
-  have hps : ProperPos E.M (Qof E.P) E.P.n (E.N.arc j).s := by rw [← hQn]; exact (hpp j hj).1
-  have hpe : ProperPos E.M (Qof E.P) E.P.n (E.N.arc j).e := by rw [← hQn]; exact (hpp j hj).2
+  have hps : ProperPos E.M (Qof E.P) E.P.n (E.N.arc j).s := by simp_all +arith
+  have hpe : ProperPos E.M (Qof E.P) E.P.n (E.N.arc j).e := by simp_all
   exact ⟨ht, hj, hs.1, he.1, hps, hpe, sy, ey, hs.2, he.2,
     (BoxT.arcWt_le_weight (hArcs.1 j hj).2).trans (hE.hsg _ hU)⟩
+
+
+end
 
 end
 

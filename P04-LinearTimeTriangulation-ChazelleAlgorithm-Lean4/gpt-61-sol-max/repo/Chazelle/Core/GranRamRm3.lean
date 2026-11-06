@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranRamRm2
 
 /-!
@@ -30,7 +32,7 @@ theorem wrS_rm : wrS Brm2 rmStmt = true := by decide
 theorem optUnl_eq (S : St) (b : Bool) (j : ℕ) : S.optUnl b j =
     { S with nxt := if b then (St.unl (S.nxt, S.prv) j).1 else S.nxt,
              prv := if b then (St.unl (S.nxt, S.prv) j).2 else S.prv } := by
-  cases b <;> rfl
+  aesop
 
 theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : ℕ → ℕ} {c : Config}
     {st : St} (hE : E.Good) (hM : MS W E d A₀ m₀ c st) (hI : Inv E st) (hD : DimOK E d W)
@@ -57,7 +59,7 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
   obtain ⟨P', hs⟩ := hI.split hE hc
   obtain ⟨hX, hY, -, htouch⟩ := hI.sides cc hc
   obtain ⟨hXr, hYr⟩ := hI.cl_mem hE hc
-  have hcX : cc ∈ st.exl (st.s0 cc) := (exl_X hE hI hc cc).2 ⟨hc, (htouch _ hXr).2 (Or.inl rfl)⟩
+  
   have hcY : cc ∈ st.exl (st.s1 cc) := (exl_Y hE hI hc cc).2 ⟨hc, (htouch _ hYr).2 (Or.inr rfl)⟩
   have clX := hI.cls _ ⟨cc, hc, Or.inl rfl⟩
   have clY := hI.cls _ ⟨cc, hc, Or.inr rfl⟩
@@ -65,14 +67,9 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
   have hlen2 := newEx_length hE hI hc hs
   have hfY : ((st.exl (st.s1 cc)).filter (· != cc)).length + 1 = st.deg (st.s1 cc) := by
     rw [← clY.2.2.1.erase_eq_filter, List.length_erase_of_mem hcY, exl_length]
-    have := List.length_pos_of_mem hcY
-    rw [exl_length] at this
-    omega
+    grind [exl_length]
   have hroom : ((st.exl (st.s0 cc)).filter (· != cc)).length + st.deg (st.s1 cc) ≤ E.D + 1 := by
-    have : (st.newEx cc).length = ((st.exl (st.s0 cc)).filter (· != cc)).length +
-        ((st.exl (st.s1 cc)).filter (· != cc)).length := by
-      unfold St.newEx; rw [List.length_append]
-    omega
+    grind [St.newEx, List.length_append]
   have hcap : st.top - 1 + (st.newEx cc).length ≤ d.cap := by
     have := hI'.topLe
     simp only [St.remove] at this
@@ -83,7 +80,7 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
     hX hY clX.2.2.2.2 clY.2.2.2.2 hroom h62 h64 h65 h66 h67
   have g₁ : ∀ r, Brm r = false → c₁.nreg r = c.nreg r := gF.1
   have hw₁ := e₁.wb_right
-  have hC₁ : Cst c₁ E d := hC.frame fun r hr h' => g₁ r (by simp [Brm]; omega)
+  have hC₁ : Cst c₁ E d := hC.frame fun r hr h' => g₁ r (by grind [Brm])
   have henc₁ : Enc c₁.nmem d st := henc.mem_congr fun a _ ha => gmem a (Or.inl ha)
   -- relabel
   obtain ⟨c₂, k₂, e₂, hk₂, E₂, r₂, m₂, F₂⟩ := relStmt_exec (P := P) hw₁ hC₁ henc₁ hD hY
@@ -97,7 +94,7 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
   obtain ⟨c₃, k₃, e₃, hk₃, E₃, w108, r₃, m₃, F₃⟩ := wbStmt_exec (P := P) (top := st.top)
     (L := st.newEx cc) hw₂ hC₂ E₂ hD hX hlen hcap
     (by rw [r₂ _ (by decide) (by decide) (by decide) (by decide), g100]; rfl)
-    (by rw [r₂ _ (by decide) (by decide) (by decide) (by decide), g103])
+    (by ram_grind)
     (by rw [r₂ _ (by decide) (by decide) (by decide) (by decide), g₁ _ (by decide), hM.top])
     (fun i hi => by
       rw [m₂ _ (by right; omega)]
@@ -107,14 +104,14 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
     (by omega)
   have R₃ : ∀ r, r < 90100 → c₃.nreg r = c.nreg r := fun r hr => by
     rw [r₃ r (by omega) (by omega) (by omega) (by omega),
-      r₂ r (by omega) (by omega) (by omega) (by omega), g₁ r (by simp [Brm]; omega)]
+      r₂ r (by omega) (by omega) (by omega) (by omega), g₁ r (by grind [Brm])]
   -- tail
   obtain ⟨c₄, k₄, e₄, hk₄, E₄, t50, t51, r₄, m₄⟩ := tailStmt_exec (P := P) (len := (st.newEx cc).length)
-    (μ := μ) hw₃ hC₃ E₃ hD hX hc.1 hcap (by rw [R₃ _ (by decide), h62])
-    (by rw [R₃ _ (by decide), h64])
+    (μ := μ) hw₃ hC₃ E₃ hD hX hc.1 hcap (by grind)
+    (by grind)
     (by rw [r₃ _ (by decide) (by decide) (by decide) (by decide),
       r₂ _ (by decide) (by decide) (by decide) (by decide), g100]; rfl)
-    (by rw [R₃ _ (by decide), h78]) w108
+    (by grind) w108
   have hw₄ := e₄.wb_right
   have hC₄ : Cst c₄ E d := hC₃.frame fun r hr h' => r₄ r (by omega) (by omega) (by omega)
     (by omega)
@@ -135,7 +132,7 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
     (by rw [R₄ _ (by decide) (by decide) (by decide), h73]; rfl) hn0 hn1 (hI.nd_ne hE hc)
     ⟨a0, b0'⟩ ⟨a1, b1'⟩
   refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), ?_, fun hw₅ F => ?_⟩
-  · rw [← hD.D] at hlen ⊢; rw [← hD.D] at hk₁ hk₂ hk₃; omega
+  · omega
   refine ⟨hw₅, hC₄.frame fun r hr _ => r₅ r (by omega) (by omega) (by omega), ?_, ?_, ?_, ?_⟩
   · -- the encoding of the removed state
     refine E₅.st_congr (fun i _ => ?_) (fun i _ => ?_) (fun i _ => ?_) (fun i _ => ?_)

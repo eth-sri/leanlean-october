@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FactsChain
 public import Chazelle.Mountain.PiecesMain
 
@@ -51,29 +53,41 @@ variable {W : Polygon}
 
 /-! ## Being filled is constant on preconnected sets off the boundary -/
 
-theorem filled_iff_of_preconnected (hW : W.Simple) {S : Set Point} (hS : IsPreconnected S)
-    (hSb : S ⊆ W.boundaryᶜ) {x y : Point} (hx : x ∈ S) (hy : y ∈ S) :
+section
+variable (hW : W.Simple) {S : Set Point} (hS : IsPreconnected S) (hSb : S ⊆ W.boundaryᶜ)
+include hW hS hSb
+theorem filled_iff_of_preconnected {x y : Point} (hx : x ∈ S) (hy : y ∈ S) :
     x ∈ W.filled ↔ y ∈ W.filled := by
   rw [mem_filled_iff hW (hSb hx), mem_filled_iff hW (hSb hy),
     parity_eq_of_isPreconnected W hS hSb hx hy]
 
+section
+variable {x : Point} (hx : x ∈ S)
+include x hx
 /-- A preconnected set off the boundary meeting the interior lies in the interior. -/
-theorem subset_interior (hW : W.Simple) {S : Set Point} (hS : IsPreconnected S)
-    (hSb : S ⊆ W.boundaryᶜ) {x : Point} (hx : x ∈ S) (hxi : x ∈ W.filled) :
+theorem subset_interior (hxi : x ∈ W.filled) :
     S ⊆ W.filled \ W.boundary := fun _y hy =>
   ⟨(filled_iff_of_preconnected hW hS hSb hx hy).1 hxi, hSb hy⟩
 
 /-- A preconnected set off the boundary meeting the exterior lies in the exterior. -/
-theorem subset_exterior (hW : W.Simple) {S : Set Point} (hS : IsPreconnected S)
-    (hSb : S ⊆ W.boundaryᶜ) {x : Point} (hx : x ∈ S) (hxe : x ∉ W.filled) :
+theorem subset_exterior (hxe : x ∉ W.filled) :
     S ⊆ W.filledᶜ := fun _y hy h =>
   hxe ((filled_iff_of_preconnected hW hS hSb hx hy).2 h)
 
 /-! ## Near a point inside an edge -/
 
+
+
+end
+
+end
+
+section
+variable (hW : W.Simple)
+include hW
 /-- **Near a point inside an edge**: the open left half-plane is interior, the open right
 half-plane exterior, and the line of the edge is the boundary. -/
-theorem edge_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) {t : ℝ}
+theorem edge_local (hL : orient W = 1) {p : ℕ} (hp : p < W.n) {t : ℝ}
     (ht : t ∈ Ioo (0 : ℝ) 1) :
     ∃ r > 0, ∀ x ∈ ball (sidePt W p t) r,
       (0 < det (W.vtx p) (W.vtx ((p + 1) % W.n)) x → x ∈ W.filled \ W.boundary) ∧
@@ -90,10 +104,7 @@ theorem edge_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) 
     set H := ball (sidePt W p t) r ∩ {y | 0 < 1 * det u v y} with hH
     have hHc : IsPreconnected H := ((convex_ball _ _).inter (convex_det_pos _ _ 1)).isPreconnected
     have hHb : H ⊆ W.boundaryᶜ := fun y hy hyb => by
-      have := (hstrip y hy.1).1 hyb
-      have h2 := hy.2
-      simp only [mem_ofPred_eq, one_mul] at h2
-      linarith
+      grind
     obtain ⟨δ, hδ1, hδ2, hδ0⟩ := ((eventually_offset_orient hW hp ht).and
       ((eventually_offset_mem 1 isOpen_ball (mem_ball_self hr) (u := u) (v := v) (t := t)).and
         self_mem_nhdsWithin)).exists
@@ -102,17 +113,14 @@ theorem edge_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) 
     have hδ : (0 : ℝ) < δ := hδ0
     have hmem : offset u v t δ ∈ H := ⟨hδ2, by
       show 0 < 1 * det u v (offset u v t δ)
-      rw [one_mul, det_offset]; exact mul_pos hδ hsq⟩
+      rw [one_mul, det_offset]; positivity⟩
     exact subset_interior hW hHc hHb hmem hδ1.1.1 ⟨hx, by simpa using hdet⟩
   · -- the right half-ball
     set H := ball (sidePt W p t) r ∩ {y | 0 < (-1) * det u v y} with hH
     have hHc : IsPreconnected H :=
       ((convex_ball _ _).inter (convex_det_pos _ _ (-1))).isPreconnected
     have hHb : H ⊆ W.boundaryᶜ := fun y hy hyb => by
-      have := (hstrip y hy.1).1 hyb
-      have h2 := hy.2
-      simp only [mem_ofPred_eq] at h2
-      rw [this] at h2; linarith
+      grind
     obtain ⟨δ, hδ1, hδ2, hδ0⟩ := ((eventually_offset_orient hW hp ht).and
       ((eventually_offset_mem (-1) isOpen_ball (mem_ball_self hr) (u := u) (v := v)
         (t := t)).and self_mem_nhdsWithin)).exists
@@ -123,13 +131,16 @@ theorem edge_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) 
     have hmem : offset u v t ((-1) * δ) ∈ H := ⟨hδ2, by
       show 0 < (-1) * det u v (offset u v t ((-1) * δ))
       rw [det_offset]; nlinarith [mul_pos hδ hsq]⟩
-    exact subset_exterior hW hHc hHb hmem hδ1.2 ⟨hx, by simp only [mem_ofPred_eq]; linarith⟩
-  · exact (hstrip x hx).2 hdet
+    exact subset_exterior hW hHc hHb hmem hδ1.2 ⟨hx, by grind [mem_ofPred_eq]⟩
+  simp_all
 
 /-! ## Near a vertex -/
 
+section
+variable {p : ℕ} (hp : p < W.n)
+include p hp
 /-- The two edges at a vertex of a simple polygon meet only at the vertex. -/
-theorem corner_meet (hW : W.Simple) {p : ℕ} (hp : p < W.n) :
+theorem corner_meet :
     Chazelle.segment (W.vtx (prevIdx W p)) (W.vtx p) ∩
       Chazelle.segment (W.vtx p) (W.vtx ((p + 1) % W.n)) ⊆ {W.vtx p} := by
   have hn := simple_three_le hW
@@ -144,15 +155,10 @@ theorem corner_meet (hW : W.Simple) {p : ℕ} (hp : p < W.n) :
     rw [edge_prevIdx W hp]; exact hx
   rw [simple_edge_inter hW hjn hp hji] at this
   obtain ⟨h1, h2⟩ := this
-  rw [hsucc] at h1
-  rcases h1 with rfl | rfl
-  · rcases h2 with h2 | h2
-    · exact h2
-    · exact absurd h2 hab
-  · rfl
+  grind
 
 /-- The corner at a vertex of a simple polygon is not a spike. -/
-theorem corner_nonSpike (hW : W.Simple) {p : ℕ} (hp : p < W.n) :
+theorem corner_nonSpike :
     sideNonSpike (W.vtx ((p + 1) % W.n) - W.vtx p) (W.vtx (prevIdx W p) - W.vtx p) := by
   have hbv : W.vtx p ≠ W.vtx ((p + 1) % W.n) := simple_vtx_succ_ne hW hp
   rintro ⟨hcr, hdot⟩
@@ -166,7 +172,7 @@ theorem corner_nonSpike (hW : W.Simple) {p : ℕ} (hp : p < W.n) :
     unfold sqLen at hsq
     nlinarith
   set μ := min s 1 / 2 with hμ
-  have hμ0 : 0 < μ := by rw [hμ]; have := lt_min hs one_pos; linarith
+  have hμ0 : 0 < μ := by simp_all
   have hμ1 : μ < 1 := by rw [hμ]; have := min_le_right s 1; linarith
   have hμs : μ ≤ s := by rw [hμ]; have := min_le_left s 1; linarith
   have hy1 : lerp (W.vtx p) (W.vtx ((p + 1) % W.n)) μ ∈
@@ -179,10 +185,13 @@ theorem corner_nonSpike (hW : W.Simple) {p : ℕ} (hp : p < W.n) :
   have := corner_meet hW hp ⟨hy2, hy1⟩
   exact lerp_ne_left hbv hμ0 this
 
+
+end
+
 /-- **Near a vertex** of a simple polygon with the interior on the left: the open left sector
 of the corner is interior, the open right sector is exterior, and every point off the boundary
 lies in one of them. -/
-theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) :
+theorem vertex_local (hL : orient W = 1) {p : ℕ} (hp : p < W.n) :
     ∃ r > 0, ∀ x ∈ ball (W.vtx p) r,
       (sideLeftOf (W.vtx (prevIdx W p)) (W.vtx p) (W.vtx ((p + 1) % W.n)) x →
         x ∈ W.filled \ W.boundary) ∧
@@ -205,8 +214,7 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
     intro k hk hmem
     simp only [Finset.mem_erase, Finset.mem_range] at hk
     rcases (simple_vtx_mem_edge_iff hW hp hk.2.2).1 hmem with h | h
-    · exact hk.2.1 h
-    · exact hk.1 h
+    all_goals omega
   obtain ⟨r₀, hr₀, hball⟩ := exists_ball_disjoint_edges W _ hother
   have hS : ∀ x ∈ ball v r₀, x ∈ W.boundary →
       x ∈ Chazelle.segment a v ∨ x ∈ Chazelle.segment v b := by
@@ -217,8 +225,7 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
       · subst hkj
         left
         rw [← edge_prevIdx W hp]; exact hxk
-      · exfalso
-        exact hball x hx k (by simp [Finset.mem_erase, Finset.mem_range, hkp, hkj, hk]) hxk
+      grind
   -- radius also below the edge lengths (for the coverage)
   set r := min r₀ (min ‖b - v‖ ‖a - v‖) with hr
   have hbv0 : 0 < ‖b - v‖ := norm_pos_iff.2 (sub_ne_zero.2 hbv)
@@ -244,7 +251,7 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
   obtain ⟨hLb, hLc, hLoff⟩ := sideSector hav hbv hr0 hSL
   obtain ⟨hRb, hRc, hRoff⟩ := (sideSector hbv hav hr0 hSR).reverse
   -- a point of the left sector is interior, one of the right sector exterior
-  have hp1 : W.vtx ((p + 1) % W.n) = b := rfl
+  
   have hs01 : ∀ᶠ s in 𝓝[>] (0 : ℝ), s ∈ Ioo (0 : ℝ) 1 := by
     filter_upwards [Ioo_mem_nhdsGT (zero_lt_one' ℝ)] with s hs; exact hs
   obtain ⟨s, ⟨hsL, hsR⟩, hs⟩ := ((hLoff.and hRoff).and hs01).exists
@@ -277,7 +284,7 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
       by_contra h
       push Not at h
       have : ‖w - v‖ < μ * ‖w - v‖ := by
-        have := norm_pos_iff.2 (sub_ne_zero.2 hwv); nlinarith
+         nlinarith
       linarith
     exact hxb (hseg (lerp_mem_segment _ _ hμ0 hμ1))
   have hsegb : Chazelle.segment v b ⊆ W.boundary := Existence.edge_subset_boundary W hp
@@ -290,7 +297,7 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
 /-! ## Walk positions of a simple polygon -/
 
 /-- **A point of a simple polygon is at a single walk position.** -/
-theorem pos_unique (hW : W.Simple) {p p' : ℕ} {t t' : ℝ} (hp : p < W.n) (hp' : p' < W.n)
+theorem pos_unique {p p' : ℕ} {t t' : ℝ} (hp : p < W.n) (hp' : p' < W.n)
     (ht : 0 ≤ t) (ht1 : t < 1) (ht' : 0 ≤ t') (ht1' : t' < 1)
     (h : sidePt W p t = sidePt W p' t') : p = p' ∧ t = t' := by
   have key : ∀ {p p' : ℕ} {t t' : ℝ}, p < W.n → p' < W.n → t ∈ Ioo (0 : ℝ) 1 → 0 ≤ t' →
@@ -307,14 +314,16 @@ theorem pos_unique (hW : W.Simple) {p p' : ℕ} {t t' : ℝ} (hp : p < W.n) (hp'
       rw [sidePt_zero] at h
       exact absurd h (simple_openEdge_ne_vtx hW hp ht hp')
   rcases ht.lt_or_eq with ht0 | ht0
-  · exact key hp hp' ⟨ht0, ht1⟩ ht' ht1' h
+  · grind
   · subst ht0
     rcases ht'.lt_or_eq with ht'0 | ht'0
-    · obtain ⟨h1, h2⟩ := key hp' hp ⟨ht'0, ht1'⟩ le_rfl zero_lt_one h.symm
-      exact ⟨h1.symm, h2.symm⟩
+    · grind
     · subst ht'0
       rw [sidePt_zero, sidePt_zero] at h
-      exact ⟨simple_vtx_inj hW hp hp' h, rfl⟩
+      ram_grind
+
+
+end
 
 /-- A point of the boundary is the point of a walk position. -/
 theorem exists_pos_of_mem_boundary {q : Point} (hq : q ∈ W.boundary) :
@@ -324,23 +333,24 @@ theorem exists_pos_of_mem_boundary {q : Point} (hq : q ∈ W.boundary) :
   rcases hτ1.lt_or_eq with h | h
   · exact ⟨i, hi, τ, hτ0, h, rfl⟩
   · refine ⟨(i + 1) % W.n, Nat.mod_lt _ (by omega), 0, le_rfl, one_pos, ?_⟩
-    rw [sidePt_zero, h, lerp_one]
+    simp_all [sidePt_zero, lerp_one]
 
+section
+variable (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1)
+include hW hL hp ht ht1
 /-- **Cleanness** of every position of a simple polygon with the interior on the left. -/
-theorem clean (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) {t : ℝ} (ht : 0 ≤ t)
-    (ht1 : t < 1) : SideClean W (W.filled \ W.boundary) p t := by
+theorem clean : SideClean W (W.filled \ W.boundary) p t := by
   rcases ht.lt_or_eq with ht0 | ht0
   · obtain ⟨r, hr, hloc⟩ := edge_local hW hL hp ⟨ht0, ht1⟩
     refine ⟨r, hr, fun x hx hxD hxl => hxD ((hloc x hx).1 ?_)⟩
     rwa [sideLeft_edge (simple_vtx_succ_ne hW hp) ⟨ht0, ht1⟩] at hxl
   · subst ht0
     obtain ⟨r, hr, hloc⟩ := vertex_local hW hL hp
-    refine ⟨r, hr, fun x hx hxD hxl => hxD ((hloc x (by rwa [sidePt_zero] at hx)).1 ?_)⟩
+    refine ⟨r, hr, fun x hx hxD hxl => hxD ((hloc x (by grind [sidePt_zero])).1 ?_)⟩
     rwa [sideLeft_zero] at hxl
 
 /-- Near its point, the interior points are in the left sector of a position. -/
-theorem interior_left (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) {t : ℝ}
-    (ht : 0 ≤ t) (ht1 : t < 1) :
+theorem interior_left :
     ∃ r > 0, ∀ x ∈ ball (sidePt W p t) r, x ∈ W.filled \ W.boundary → sideLeft W p t x := by
   rcases ht.lt_or_eq with ht0 | ht0
   · obtain ⟨r, hr, hloc⟩ := edge_local hW hL hp ⟨ht0, ht1⟩
@@ -357,7 +367,10 @@ theorem interior_left (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.
     rw [sideLeft_zero]
     rcases (hloc x hx).2.2 hxD.2 with h | h
     · exact h
-    · exact absurd hxD.1 ((hloc x hx).2.1 h)
+    simp_all
+
+
+end
 
 /-- The endpoint condition for a segment `[e, e']` whose open part is interior, at the boundary
 point `e`. -/
@@ -373,21 +386,10 @@ theorem walkEnd (hW : W.Simple) (hL : orient W = 1) {e e' : Point} (hee : e ≠ 
       min r (dist e e'), lt_min hr hd, fun x hx hxe hxd => ?_⟩, hpt⟩
     rw [hpt] at hxe hxd
     obtain ⟨s, hs0, hs1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hx
-    have hs0' : 0 < s := by
-      rcases hs0.lt_or_eq with h | h
-      · exact h
-      · exact absurd (by rw [← h, lerp_zero]) hxe
-    have hs1' : s < 1 := by
-      rcases hs1.lt_or_eq with h | h
-      · exact h
-      · exfalso
-        rw [h, lerp_one, dist_comm] at hxd
-        exact lt_irrefl _ (hxd.trans_le (min_le_right _ _))
-    refine hleft _ ?_ (hopen s ⟨hs0', hs1'⟩)
-    rw [hpt, mem_ball]; exact hxd.trans_le (min_le_left _ _)
+    grind [lerp_zero, lerp_one, dist_comm, mem_ball]
   · exfalso
     obtain ⟨h3, h4⟩ := pos_unique hW hp hp' ht ht1 ht' ht1' (h1.trans h2.symm)
-    exact hne h3 h4
+    simp_all
 
 /-! ## The chord system of the interior -/
 
@@ -400,9 +402,7 @@ theorem chordPoly_n (W : Polygon) (i m : ℕ) (e₁ e₂ : Point) : (chordPoly W
 
 theorem chordPoly_vtx_lt (W : Polygon) (i : ℕ) {m : ℕ} (e₁ e₂ : Point) {k : ℕ} (hk : k < m) :
     (chordPoly W i m e₁ e₂).vtx k = W.vtx ((i + 1 + k) % W.n) := by
-  simp only [chordPoly, Polygon.vtx, List.getD_eq_getElem?_getD]
-  rw [List.getElem?_append_left (by simpa using hk), List.getElem?_map, List.getElem?_range hk]
-  rfl
+  grind [chordPoly, Polygon.vtx, List.getD_eq_getElem?_getD, List.getElem?_map]
 
 theorem chordPoly_vtx_m (W : Polygon) (i m : ℕ) (e₁ e₂ : Point) :
     (chordPoly W i m e₁ e₂).vtx m = e₂ := by
@@ -426,8 +426,7 @@ theorem chordPoly_edge_pen (W : Polygon) (i : ℕ) {m : ℕ} (e₁ e₂ : Point)
 
 theorem chordPoly_edge_m (W : Polygon) (i m : ℕ) (e₁ e₂ : Point) :
     (chordPoly W i m e₁ e₂).edge m = Chazelle.segment e₂ e₁ := by
-  unfold Polygon.edge
-  rw [chordPoly_n, Nat.mod_eq_of_lt (by omega : m + 1 < m + 2), chordPoly_vtx_m, chordPoly_vtx_m1]
+  simp_all [Polygon.edge, chordPoly_n, chordPoly_vtx_m, chordPoly_vtx_m1]
 
 theorem chordPoly_edge_last (W : Polygon) (i : ℕ) {m : ℕ} (e₁ e₂ : Point) (hm : 0 < m) :
     (chordPoly W i m e₁ e₂).edge (m + 1) = Chazelle.segment e₁ (W.vtx ((i + 1) % W.n)) := by
@@ -484,19 +483,13 @@ theorem chord_parity_flip (hW : W.Simple) {e₁ e₂ : Point} (h12 : e₁.1 ≠ 
           (Geometry.right_mem_segment _ _)).trans (Existence.edge_subset_boundary W hi)
   refine ⟨Γ, ?_, ?_⟩
   · rintro x ⟨k, hk, hxk⟩
-    rw [hΓn] at hk
-    by_cases hkm : k = m
-    · subst hkm
-      right
-      rw [hΓ, chordPoly_edge_m, Geometry.segment_comm] at hxk
-      exact hxk
-    · exact Or.inl (hedge k hk hkm hxk)
-  · have hmn : m < Γ.n := by rw [hΓn]; omega
+    grind [chordPoly_edge_m, Geometry.segment_comm]
+  · have hmn : m < Γ.n := by omega
     have hsucc : (m + 1) % Γ.n = m + 1 := by rw [hΓn]; exact Nat.mod_eq_of_lt (by omega)
     have hzΓ : z ∈ Γ.edge m := by
       rw [hΓ, chordPoly_edge_m, Geometry.segment_comm]; exact hz
     have hne : (Γ.vtx m).1 ≠ (Γ.vtx ((m + 1) % Γ.n)).1 := by
-      rw [hsucc, hΓ, chordPoly_vtx_m, chordPoly_vtx_m1]; exact Ne.symm h12
+      grind [chordPoly_vtx_m, chordPoly_vtx_m1]
     have hzu : z ≠ Γ.vtx m := by
       rw [hΓ, chordPoly_vtx_m]
       rintro rfl
@@ -506,9 +499,7 @@ theorem chord_parity_flip (hW : W.Simple) {e₁ e₂ : Point} (h12 : e₁.1 ≠ 
       rintro rfl
       exact hzD.2 (Existence.edge_subset_boundary W hi he₁)
     have hother : ∀ k, k < Γ.n → k ≠ m → z ∉ Γ.edge k := by
-      intro k hk hkm hzk
-      rw [hΓn] at hk
-      exact hzD.2 (hedge k hk hkm hzk)
+      grind
     exact parity_flip Γ hmn hzΓ hne hzu hzv hother
 
 /-- The endpoints of a horizontal chord of the interior are on the boundary. -/
@@ -524,30 +515,22 @@ theorem hchord_end_mem_boundary {y a b : ℝ}
     obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 (isClosed_filled W).isOpen_compl _ hnf
     obtain ⟨x', hx', hx'D⟩ := happ r hr
     apply hball (show ((x', y) : Point) ∈ ball ((x, y) : Point) r by
-      rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-      simp only [sub_self, abs_zero]
-      exact max_lt hx' hr)
+      simp_all [mem_ball, Prod.dist_eq, Real.dist_eq, sub_self, abs_zero])
     exact hx'D.1
   have hlt := h.lt
   refine ⟨key a h.left_not fun ε hε => ?_, key b h.right_not fun ε hε => ?_⟩
   · refine ⟨a + min ε (b - a) / 2, ?_, h.open_mem _ ?_ ?_⟩
-    · rw [add_sub_cancel_left, abs_of_pos (by have := lt_min hε (sub_pos.2 hlt); linarith)]
-      have := min_le_left ε (b - a); linarith
-    · have := lt_min hε (sub_pos.2 hlt); linarith
-    · have := min_le_right ε (b - a); linarith
+    · core_grind
+    all_goals grind
   · refine ⟨b - min ε (b - a) / 2, ?_, h.open_mem _ ?_ ?_⟩
-    · rw [show b - min ε (b - a) / 2 - b = -(min ε (b - a) / 2) by ring, abs_neg,
-        abs_of_pos (by have := lt_min hε (sub_pos.2 hlt); linarith)]
-      have := min_le_left ε (b - a); linarith
-    · have := min_le_right ε (b - a); linarith
-    · have := lt_min hε (sub_pos.2 hlt); linarith
+    all_goals core_grind
 
 /-- The open part of `[(a, y), (b, y)]` of a horizontal chord. -/
 theorem hchord_open {D : Set Point} {y a b : ℝ} (h : IsHChordIn D y a b) :
     ∀ s ∈ Ioo (0 : ℝ) 1, lerp ((a, y) : Point) (b, y) s ∈ D := by
   intro s hs
   have e : lerp ((a, y) : Point) (b, y) s = ((a + s * (b - a), y) : Point) := by
-    apply point_ext <;> simp [lerp]
+    grind [lerp]
   rw [e]
   exact h.open_mem _ (by nlinarith [h.lt, hs.1]) (by nlinarith [h.lt, hs.2])
 
@@ -568,9 +551,7 @@ theorem chordSystem (hW : W.Simple) {F : Set (Set Point)} (hfin : F.Finite)
     obtain ⟨Γ, hΓ, hflip⟩ := chord_parity_flip hW (by simp only; exact h.lt.ne) (hchord_open h)
       hi hj hai hbj hz hzD
     refine ⟨Γ, hΓ.trans ?_, hflip⟩
-    rintro x (hx | hx)
-    · exact Or.inl fun hxD => hxD.2 hx
-    · exact Or.inr hx
+    grind
 
 /-! ## Reach -/
 
@@ -590,44 +571,40 @@ theorem reach (hW : W.Simple) (hL : orient W = 1) {z : Point} (hz : z ∈ W.fill
     by_contra hnf
     obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 (isClosed_filled W).isOpen_compl _ hnf
     set ε := min r s / 2 with hε
-    have hε0 : 0 < ε := by rw [hε]; have := lt_min hr hs; linarith
-    have hεr : ε < r := by rw [hε]; have := min_le_left r s; linarith
-    have hεs : ε < s := by rw [hε]; have := min_le_right r s; linarith
+    have hε0 : 0 < ε := by grind
+    have hεr : ε < r := by grind
+    have hεs : ε < s := by grind
     apply hball (show ((z.1 + (s - ε), z.2) : Point) ∈ ball q r by
-      rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-      simp only [hqdef, sub_self, abs_zero]
-      rw [show z.1 + (s - ε) - (z.1 + s) = -ε by ring, abs_neg, abs_of_pos hε0]
-      exact max_lt hεr hr)
-    exact (hseg (s - ε) ⟨by linarith, by linarith⟩).1
+      grind [mem_ball, Prod.dist_eq, Real.dist_eq, sub_self, abs_zero, abs_neg])
+    grind
   have hqb : q ∈ W.boundary := by
-    by_contra hb; exact hq ⟨hqf, hb⟩
+    grind
   have hqv : ∀ j, j < W.n → q ≠ W.vtx j := fun j hj h => hzv j hj (by rw [← h])
   obtain ⟨p, hp, t, ht, hqe⟩ := exists_openEdge_of_mem_boundary W hqb hqv
   refine ⟨p, hp, t, ht, hqe.symm, ?_⟩
   set u := W.vtx p
   set v := W.vtx ((p + 1) % W.n)
   have hq2 : z.2 = u.2 + t * (v.2 - u.2) := by
-    have := congrArg Prod.snd hqe; simp only [hqdef, lerp_snd] at this; exact this
+    grind [lerp_snd]
   rcases lt_trichotomy u.2 v.2 with h | h | h
   · exact h
-  · exfalso; apply hzv p hp; rw [hq2, h]; ring
+  · grind
   · exfalso
     obtain ⟨r, hr, hloc⟩ := edge_local hW hL hp ht
     set ε := min r s / 2 with hε
-    have hε0 : 0 < ε := by rw [hε]; have := lt_min hr hs; linarith
-    have hεr : ε < r := by rw [hε]; have := min_le_left r s; linarith
-    have hεs : ε < s := by rw [hε]; have := min_le_right r s; linarith
+    have hε0 : 0 < ε := by grind
+    have hεr : ε < r := by grind
+    have hεs : ε < s := by grind
     have hx : ((z.1 + (s - ε), z.2) : Point) ∈ ball (sidePt W p t) r := by
       rw [show sidePt W p t = q from hqe.symm, mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
       simp only [hqdef, sub_self, abs_zero]
-      rw [show z.1 + (s - ε) - (z.1 + s) = -ε by ring, abs_neg, abs_of_pos hε0]
-      exact max_lt hεr hr
+      grind [abs_neg]
     have hq0 : det u v q = 0 := by rw [hqe]; exact Geometry.det_lerp_self _ _ _
     have hdet : det u v ((z.1 + (s - ε), z.2) : Point) < 0 := by
       have e : det u v ((z.1 + (s - ε), z.2) : Point) = det u v q + ε * (v.2 - u.2) := by
-        simp only [hqdef, det]; ring
+        grind [det]
       rw [e, hq0]; nlinarith
-    exact (hloc _ hx).2.1 hdet (hseg (s - ε) ⟨by linarith, by linarith⟩).1
+    grind
 
 /-! ## The interior walk -/
 
@@ -638,7 +615,7 @@ theorem rev_n (Q : Polygon) : (⟨Q.vertices.reverse⟩ : Polygon).n = Q.n := by
 theorem rev_vtx (Q : Polygon) : ∀ k < Q.n, (⟨Q.vertices.reverse⟩ : Polygon).vtx k =
     Q.vtx (Q.n - 1 - k) := by
   intro k hk
-  have hk' : k < Q.vertices.reverse.length := by rw [List.length_reverse]; exact hk
+  have hk' : k < Q.vertices.reverse.length := by aesop
   have hk2 : Q.n - 1 - k < Q.vertices.length := by
     have : Q.n = Q.vertices.length := rfl
     omega
@@ -654,8 +631,7 @@ theorem interiorWalk_spec {Q : Polygon} (hQ : Q.Simple) :
   classical
   unfold interiorWalk
   split_ifs with h
-  · refine ⟨hQ, rfl, rfl, ?_⟩
-    unfold orient; simp [h]
+  · simp_all [orient]
   · set R : Polygon := ⟨Q.vertices.reverse⟩ with hR
     have hn := rev_n Q
     have hv := rev_vtx Q
@@ -663,17 +639,16 @@ theorem interiorWalk_spec {Q : Polygon} (hQ : Q.Simple) :
     have hRf : R.filled = Q.filled := Mountain.rev_filled hn hv
     refine ⟨hRs, Mountain.rev_boundary hn hv, hRf, ?_⟩
     have hn3 := simple_three_le hQ
-    have hQo : orient Q = -1 := by unfold orient; simp [h]
+    have hQo : orient Q = -1 := by core_grind
     obtain ⟨e1, e2⟩ := Mountain.rev_endpoints hn hv (k := 0) (by omega)
-    apply Mountain.orient_eq_of_eventually hRs (i := 0) (by rw [hn]; omega)
+    apply Mountain.orient_eq_of_eventually hRs (i := 0) (by grind)
       (t := 1 / 2) ⟨by norm_num, by norm_num⟩ (Or.inl rfl)
     set e := Mountain.revEdge Q.n 0 with he
     have hel : e < Q.n := Mountain.revEdge_lt (by omega)
     filter_upwards [eventually_offset_orient hQ hel (t := 1 / 2) ⟨by norm_num, by norm_num⟩]
       with δ hδ
     rw [hRf, e1, e2, one_mul, offset_reverse, show (1 : ℝ) - 1 / 2 = 1 / 2 by norm_num]
-    rw [hQo, neg_one_mul] at hδ
-    exact hδ.1.1
+    simp_all
 
 /-- **Walk axioms from a simple polygon** with the interior on its left. -/
 theorem walkAx_of_simple (hW : W.Simple) (hL : orient W = 1) (M : Model)
@@ -710,7 +685,7 @@ end FactsInterior
 theorem walkAx_interiorModel {Q : Polygon} (hQ : Q.Simple) : WalkAx (interiorModel Q) := by
   obtain ⟨hs, hb, hf, ho⟩ := FactsInterior.interiorWalk_spec hQ
   exact FactsInterior.walkAx_of_simple hs ho (interiorModel Q) rfl (by
-    show Q.filled \ Q.boundary = _; rw [hb, hf]) rfl
+    aesop) rfl
 
 /-- **The chain model of a chain of a simple polygon satisfies the walk axioms.** -/
 theorem walkAx_chainModel {C : Chain} (hP : C.P.Simple) : WalkAx (chainModel C) :=

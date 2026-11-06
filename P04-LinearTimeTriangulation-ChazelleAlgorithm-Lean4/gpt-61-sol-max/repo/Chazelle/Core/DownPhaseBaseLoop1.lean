@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseBaseRam
 
 /-!
@@ -56,7 +58,7 @@ theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   have hle := rankF_le (keepX li n) L i
   obtain ⟨l1, l2, l3⟩ := hL i ht
   have hmL : ∀ q, q < 3 → d.nmem (B + 3 * i + q) = m₀ (B + 3 * i + q) := fun q hq => by
-    rw [hI.mem]; unfold mem1; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+    rw [hI.mem]; grind [mem1]
   have hW1 : 1 ≤ W := by omega
   -- load
   obtain ⟨d₁, k₁, e₁, hk₁, v12, v13, v14, v11, v15, r₁, m₁, rr₁, rm₁, o₁⟩ :=
@@ -75,30 +77,26 @@ theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
     (by rw [r₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), hI.r104])
   obtain ⟨d₃, k₃, e₃, hk₃, v₃, r₃, m₃, rr₃, rm₃, o₃⟩ := dTest_exec (P := P) d₂ e₂.wb_right hW1
     (li := li) (n := n) (p := 200114) (by norm_num)
-    (by rw [r₂ _ (by norm_num) (by norm_num), r₁ _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num), hI.r101])
-    (by rw [r₂ _ (by norm_num) (by norm_num), r₁ _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num), hI.r103])
-    (by rw [r₂ _ (by norm_num) (by norm_num), r₁ _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num), hI.r104])
+    (by grind [Chazelle.Core.DownBase.Inv1.r101])
+    (by grind [Chazelle.Core.DownBase.Inv1.r103])
+    (by grind [Chazelle.Core.DownBase.Inv1.r104])
   -- registers of `d₃`
   have g3 : ∀ r, r ≠ 200111 → r ≠ 200112 → r ≠ 200113 → r ≠ 200114 → r ≠ 200115 →
       r ≠ 200116 → d₃.nreg r = d.nreg r := fun r a1 a2 a3 a4 a5 a6 => by
-    rw [r₃ r a5 a6, r₂ r a5 a6, r₁ r a1 a2 a3 a4 a5]
+    grind
   have e12 : d₃.nreg 200112 = x.1 := by
-    rw [r₃ _ (by norm_num) (by norm_num), r₂ _ (by norm_num) (by norm_num), v12]
+    ram_grind
   have e13 : d₃.nreg 200113 = x.2.1 := by
-    rw [r₃ _ (by norm_num) (by norm_num), r₂ _ (by norm_num) (by norm_num), v13]
+    ram_grind
   have e14 : d₃.nreg 200114 = x.2.2 := by
-    rw [r₃ _ (by norm_num) (by norm_num), r₂ _ (by norm_num) (by norm_num), v14]
+    ram_grind
   have hflag : d₃.nreg 200115 = if keepX li n x = true then 1 else 0 := by
     rw [v₃, v₂, v15, r₂ _ (by norm_num) (by norm_num), v12, v13,
       r₂ _ (by norm_num) (by norm_num), v14]
     rw [← hx]
     have hk := keepX_iff li n x
-    by_cases h1 : x.1 = wStart li n x.2.1 <;> by_cases h2 : x.1 = wStart li n x.2.2 <;>
-      simp [hk, h1, h2]
-  have hm3 : d₃.nmem = d.nmem := by rw [m₃, m₂, m₁]
+    grind
+  have hm3 : d₃.nmem = d.nmem := by ram_grind
   -- the branch and the increment
   have hB' : B' + 3 * L.length ≤ X := by omega
   obtain ⟨d₄, k₄, e₄, hk₄, hk₄', g4, mem4, n117, n118, n119, rr₄, rm₄, o₄⟩ : ∃ d₄ k₄,
@@ -123,23 +121,21 @@ theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
     · -- dropped
       rw [hk] at hflag
       simp only [Bool.false_eq_true, ite_false] at hflag
-      have hn : ¬ d₃.nreg 200101 < d₃.nreg 200115 := by rw [h101, hflag]; omega
+      have hn : ¬ d₃.nreg 200101 < d₃.nreg 200115 := by omega
       obtain ⟨d₄, k₄, e₄, hk₄, w117, r₄, mm₄, rr₄, rm₄, o₄⟩ :=
         dDrop_exec (P := P) d₃ e₃.wb_right h117 h100 h101 (by omega)
       rw [← hx, hk] at hr
       simp only [Bool.false_eq_true, ite_false, Nat.add_zero] at hr
       refine ⟨d₄, _, .ifLtN_false hn e₄, by omega, by omega, fun r a1 a2 a3 a4 => r₄ r a1,
-        fun a => ?_, by rw [w117]; ring, ?_, ?_, rr₄, rm₄, o₄⟩
+        fun a => ?_, by omega, ?_, ?_, rr₄, rm₄, o₄⟩
       · rw [mm₄, hm3]
         exact mem1_drop hI.mem ht hB' hk a
-      · rw [r₄ _ (by norm_num), g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num) (by norm_num), hI.r118, hr]
-      · rw [r₄ _ (by norm_num), g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num) (by norm_num), hI.r119, hr]
+      · grind [Chazelle.Core.DownBase.Inv1.r118]
+      grind [Chazelle.Core.DownBase.Inv1.r119]
     · -- kept
       rw [hk] at hflag
       simp only [ite_true] at hflag
-      have hp : d₃.nreg 200101 < d₃.nreg 200115 := by rw [h101, hflag]; omega
+      have hp : d₃.nreg 200101 < d₃.nreg 200115 := by omega
       have h119 : d₃.nreg 200119 = B' + 3 * j := by
         rw [g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
           (by norm_num), hI.r119]
@@ -151,17 +147,14 @@ theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
       rw [← hx, hk] at hr
       simp only [ite_true] at hr
       refine ⟨d₄, _, .ifLtN_true hp e₄, by omega, by omega, r₄, fun a => ?_,
-        by rw [w117]; ring, by rw [w118, hr], by rw [w119, hr]; ring, rr₄, rm₄, o₄⟩
+        by omega, by omega, by omega, rr₄, rm₄, o₄⟩
       rw [mm₄, e12, e13, e14, hm3]
       exact mem1_keep hI.mem ht hB' hk a
   have h110 : d₄.nreg 200110 = i := by
-    rw [g4 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)]
+    ram_grind
   have h100 : d₄.nreg 200100 = 1 := by
-    rw [g4 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      hI.r100]
-  have e₅ := Exec.addN (P := P) e₄.wb_right 200110 200110 200100 (by rw [h110, h100]; omega)
+    grind [Chazelle.Core.DownBase.Inv1.r100]
+  have e₅ := Exec.addN (P := P) e₄.wb_right 200110 200110 200100 (by omega)
   set d₅ : Config := { d₄ with nreg := upd d₄.nreg 200110 (d₄.nreg 200110 + d₄.nreg 200100) }
     with hd₅
   have g5 : ∀ r, r ≠ 200110 → d₅.nreg r = d₄.nreg r := fun r hr => by rw [hd₅]; simp [hr]
@@ -172,20 +165,7 @@ theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   have X' : Exec P W dBody1 d d₅ (k₁ + (k₂ + (k₃ + (k₄ + 1)))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
   refine ⟨d₅, _, X', e₅.wb_right, ?_, v5, by omega, by omega⟩
-  refine ⟨by rw [v5]; omega, by rw [g _ (by norm_num), hI.rK], ?_, ?_, ?_, ?_,
-    by rw [g _ (by norm_num), hI.r100], by rw [g _ (by norm_num), hI.r101],
-    by rw [g _ (by norm_num), hI.r103], by rw [g _ (by norm_num), hI.r104],
-    fun r hr => by rw [g r hr, hI.fr r hr], ?_, ?_, ?_, fun a => ?_⟩
-  · rw [v5, g5 _ (by norm_num), g4 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      r₃ _ (by norm_num) (by norm_num), r₂ _ (by norm_num) (by norm_num), v11]
-    ring
-  · rw [v5, g5 _ (by norm_num), n117]
-  · rw [v5, g5 _ (by norm_num), n118]
-  · rw [v5, g5 _ (by norm_num), n119]
-  · show d₄.rreg = c₀.rreg; rw [rr₄, rr₃, rr₂, rr₁, hI.rr]
-  · show d₄.rmem = c₀.rmem; rw [rm₄, rm₃, rm₂, rm₁, hI.rm]
-  · show d₄.output = c₀.output; rw [o₄, o₃, o₂, o₁, hI.out]
-  · show d₄.nmem a = _; rw [v5, mem4]
+  ram_grind
 
 /-- **The chord pass.** -/
 theorem dLoop1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {B B' X : ℕ}
@@ -202,15 +182,12 @@ theorem dLoop1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
       obtain ⟨d', k, e, hw', hI', hi', hk1, hk2⟩ := dBody1_exec hL hB hX hXW hwd hId ht
       have := hId.rK
       refine ⟨d', k, e, ⟨hw', hI'⟩, ?_, ?_⟩
-      · rw [hi']; rw [this] at ht; omega
-      · rw [hi']; omega)
+      all_goals omega)
     ⟨hw, hI⟩
   have hi := hI'.i_le
   rw [hI'.rK] at htest
   refine ⟨d', k, e, hw', hI', by omega, ?_, ?_⟩
-  · rw [h0] at hψ; have : d'.nreg 200110 = L.length := by omega
-    rw [this] at hψ; omega
-  · rw [h0] at hk; omega
+  all_goals omega
 
 end exec
 

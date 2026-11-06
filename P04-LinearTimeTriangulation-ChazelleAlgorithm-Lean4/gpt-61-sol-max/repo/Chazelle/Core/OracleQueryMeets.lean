@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleQueryCost
 
 /-!
@@ -23,7 +25,7 @@ open OracleQ OracleBook NFLoc
 theorem qOriginIn_unique {c : Config} {r : ℕ} {o o' : QOrigin} (h : QOriginIn c r o)
     (h' : QOriginIn c r o') : o = o' := by
   rcases o with (i | ⟨e, hh⟩) | hh <;> rcases o' with (i' | ⟨e', hh'⟩) | hh' <;>
-    simp only [QOriginIn, SymPtIn] at h h' <;>
+    core_grind [SymPtIn] <;>
     first
       | (exfalso; omega)
       | (simp only [QOrigin.sym.injEq, SymPt.vtx.injEq, SymPt.onEdge.injEq, QOrigin.box.injEq]
@@ -59,7 +61,7 @@ theorem query_meets {bands : Finset ℕ} (hb : bSign ∈ bands ∧ bLocate ∈ b
   have hEW : E ≤ W := by rw [← hE]; exact hw.2 _
   have hn : 1 ≤ P.n := by
     have := C.add_one_le; rw [hA.CQ, show (Qof P).n = P.n from shear_n _ _] at this; omega
-  have hW : 8 * P.n + 32 ≤ W := by unfold hostWords at hHW; omega
+  have hW : 8 * P.n + 32 ≤ W := by omega_nf
   obtain ⟨c', k', ex, hk, hf, hans⟩ := qry_exec hG hW hA hEW hHW c hw rfl rfl ho hol
     (NC := NCof (min (c.nmem (O + 2)) (2 * V.m + 7))) (CS := 8 * k ^ 2)
     (fun u _ => (hA.withQ o _).nodeCost_le hA.simple)
@@ -86,9 +88,7 @@ theorem query_meets {bands : Finset ℕ} (hb : bSign ∈ bands ∧ bLocate ∈ b
     subst hCC hoo
     exact hans
   · rcases BQ_band hr with h | h | h <;> rw [h]
-    · exact hb.1
-    · exact hb.2.1
-    · exact hb.2.2
+    all_goals grind
   · rintro rfl; simp [BQ, BLd, BRest, Bk, BCS, BP, BX2, BCP, BDg, BX, BMain, BD, BN, BA, BW, BE,
       BT, BPo, BCa, BL, Bdir, Bloc, Bcmp, BC, ALLOC] at hr
 

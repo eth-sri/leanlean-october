@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Mountain.RamStack
 
 /-!
@@ -75,18 +77,15 @@ def stackS (c : Config) : List ℕ := stk (fun i => c.nmem (c.nreg 61 + i)) (c.n
 /-- The stack only depends on `nreg 61`, `nreg 63` and the natural memory. -/
 theorem stackS_congr {c c' : Config} (h61 : c'.nreg 61 = c.nreg 61)
     (h63 : c'.nreg 63 = c.nreg 63) (hnm : c'.nmem = c.nmem) : stackS c' = stackS c := by
-  unfold stackS; rw [h61, h63, hnm]
+  core_grind
 
 /-- **Push into a shifted region**: writing `v` at address `s + t` and taking `t + 1` entries
 of the region starting at `s` pushes `v`. -/
 theorem stk_shift_push (g : ℕ → ℕ) (s t v : ℕ) :
     stk (fun i => upd g (s + t) v (s + i)) (t + 1) = v :: stk (fun i => g (s + i)) t := by
   have e : (fun i => upd g (s + t) v (s + i)) = upd (fun i => g (s + i)) t v := by
-    funext i
-    by_cases h : i = t
-    · subst h; rw [Machine.upd_same, Machine.upd_same]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ h]
-  rw [e, stk_push]
+    core_grind
+  grind [stk_push]
 
 /-- The layout hypothesis: the index table `base … base + m - 1` and the stack region
 `sbase … sbase + m - 1` are disjoint, and every address of either region is `≤ W`. -/
@@ -114,25 +113,19 @@ def SFrame (c₀ c : Config) : Prop :=
 
 /-- The frame is reflexive. -/
 theorem sFrame_refl (c : Config) : SFrame c c :=
-  ⟨fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl⟩
+  by grind [Chazelle.Mountain.SFrame]
 
 /-- The frame is transitive. -/
 theorem sFrame_trans {c₀ c₁ c₂ : Config} (h₁ : SFrame c₀ c₁) (h₂ : SFrame c₁ c₂) :
     SFrame c₀ c₂ := by
-  obtain ⟨n₁, r₁, m₁, q₁⟩ := h₁
-  obtain ⟨n₂, r₂, m₂, q₂⟩ := h₂
-  have e61 : c₁.nreg 61 = c₀.nreg 61 := n₁ 61 (by omega)
-  have e62 : c₁.nreg 62 = c₀.nreg 62 := n₁ 62 (by omega)
-  refine ⟨fun r hr => by rw [n₂ r hr, n₁ r hr], fun r hr => by rw [r₂ r hr, r₁ r hr],
-    fun a ha => ?_, by rw [q₂, q₁]⟩
-  rw [m₂ a (by rw [e61, e62]; exact ha), m₁ a ha]
+  core_grind
 
 /-- A step that changes nothing but the natural registers `63 … 74`, the real registers
 `61 … 72` and the output keeps the frame. -/
 theorem sFrame_of_regs {c c' : Config} (hn : ∀ r, (r < 63 ∨ 74 < r) → c'.nreg r = c.nreg r)
     (hr : ∀ r, (r < 61 ∨ 72 < r) → c'.rreg r = c.rreg r) (hnm : c'.nmem = c.nmem)
     (hrm : c'.rmem = c.rmem) : SFrame c c' :=
-  ⟨hn, hr, fun a _ => by rw [hnm], hrm⟩
+  by grind [Chazelle.Mountain.SFrame]
 
 /-! ### The program -/
 
@@ -196,7 +189,6 @@ def mountainSubStmt : Stmt := .seq subInitBlock (.seq subSignStmt subOuterLoop)
 section specs
 variable {P : Polygon} {W : ℕ}
 
-set_option linter.unusedSimpArgs false in
 /-- **Spec lemma for `subTestStmt`.**  With `nreg 65 = 1` and the four addresses in range:
 cost `≤ 25`; `nreg 72 = l[c]`, `nreg 73 = l[b]`, `nreg 74 = l[k]` read through the table at
 `nreg 60` from the positions `c = nmem (sbase + top - 1)`, `b = nmem (sbase + top - 1 - 1)`;
@@ -223,32 +215,29 @@ theorem subTestStmt_exec (c : Config) (hc : WordsBounded W c) (h65 : c.nreg 65 =
   refine spec_seq ?_
   exec_block
   · exact hs
-  · config_simp; rw [h65]; exact hcb
-  · config_simp; rw [h65]; exact hbb
+  · config_simp; grind
+  · config_simp; grind
   · config_simp; exact hkb
   refine spec_seq (spec_use (detInto_exec (P := P) 67 68 69 61 62 63 64 65 66 (by decide)
     (by decide) (by decide)
-    (fun r hr => by rcases hr with rfl | rfl | rfl | rfl | rfl | rfl <;> decide) _ ‹_›) ?_)
+    (fun r hr => by omega) _ ‹_›) ?_)
   rintro c₁ k₁ hk₁ hw₁ ⟨hdet, hfr, hn, hnm, hrm, hout⟩
   refine spec_instr (Exec.mulR hw₁ 71 70 67) fun hw₂ => ?_
   config_simp at hdet
   have e70 : c₁.rreg 70 = c.rreg 70 := by
-    rw [hfr 70 (by decide) (by decide) (by decide)]; config_simp
+    ram_simp
   refine ⟨by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · config_simp; rw [hn]; config_simp; rw [h65]
   · config_simp; rw [hn]; config_simp; rw [h65]
-  · config_simp; rw [hn]; config_simp
-  · config_simp; rw [hdet, e70, h65]
-  · intro r h66 h67 h71 h72 h73 h74
-    config_simp; rw [hn]; simp [h66, h67, h71, h72, h73, h74]
+  · ram_simp
+  · config_simp; grind
+  · ram_simp
   · intro r hr h71
     config_simp
     rw [Machine.upd_other _ _ _ h71, hfr r (by omega) (by omega) (by omega)]
     simp [show r ≠ 61 by omega, show r ≠ 62 by omega, show r ≠ 63 by omega,
       show r ≠ 64 by omega, show r ≠ 65 by omega, show r ≠ 66 by omega]
-  · config_simp; rw [hnm]
-  · config_simp; rw [hrm]
-  · config_simp; rw [hout]
+  all_goals omega
 
 end specs
 
@@ -277,13 +266,13 @@ def SInnerInv (P : Polygon) (W : ℕ) (l : List ℕ) (base sbase : ℕ) (σ : �
 section inner
 variable {P : Polygon} {W : ℕ} {l : List ℕ} {base sbase : ℕ}
 
+section
+variable {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.Triangle} {sF : List ℕ} {c c' : Config} (hw' : WordsBounded W c') (hC' : SConsts base sbase l.length σ c') (hT' : STab l base c') (hF' : SFrame c₀ c') (h64 : c.nreg 64 = k) (htop : c.nreg 63 ≤ k)
+include hw' hC' hT' hF' h64 htop
 /-- **A pop re-establishes the invariant** and decreases the potential by `32`.  `c` is the
 configuration at the start of the iteration (flag `1`, `2 ≤ top`, a convex corner of
 `subPoly P l`), `c'` the one after the pop, described by the equations `e…`. -/
-theorem sInnerInv_pop {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.Triangle}
-    {sF : List ℕ} {c c' : Config} (hw' : WordsBounded W c')
-    (hC' : SConsts base sbase l.length σ c') (hT' : STab l base c') (hF' : SFrame c₀ c')
-    (h64 : c.nreg 64 = k) (htop : c.nreg 63 ≤ k) (hge : 2 ≤ c.nreg 63) (hf : c.nreg 69 = 1)
+theorem sInnerInv_pop (hge : 2 ≤ c.nreg 63) (hf : c.nreg 69 = 1)
     (hlt : ∀ x ∈ stackS c, x < l.length)
     (hconv : 0 < σ * det ((subPoly P l).vtx (c.nmem (c.nreg 61 + (c.nreg 63 - 2))))
       ((subPoly P l).vtx (c.nmem (c.nreg 61 + (c.nreg 63 - 1)))) ((subPoly P l).vtx k))
@@ -303,28 +292,11 @@ theorem sInnerInv_pop {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.Tr
     unfold stackS
     rw [e61, e63, enm, stk_pop (f := fun i => c.nmem (c.nreg 61 + i)) (t := c.nreg 63 - 1)
       (by omega), show c.nreg 63 - 1 - 1 = c.nreg 63 - 2 by omega]
-  have hpl : popLoop (subPoly P l) σ k (stackS c) =
-      ((c.nmem (c.nreg 61 + (c.nreg 63 - 2)), c.nmem (c.nreg 61 + (c.nreg 63 - 1)), k) ::
-          (popLoop (subPoly P l) σ k (stackS c')).1,
-        (popLoop (subPoly P l) σ k (stackS c')).2.1,
-        (popLoop (subPoly P l) σ k (stackS c')).2.2 + 1) := by
-    rw [hs, hs', popLoop_cons_cons, ite_eq_left hconv]
-  refine ⟨⟨hw', hC', hT', hF', by rw [e64, h64], by omega, ?_, Or.inl ⟨e69, ?_, ?_⟩⟩, ?_⟩
-  · intro x hx
-    rw [hs'] at hx
-    exact hlt x (by rw [hs]; exact List.mem_cons_of_mem _ hx)
-  · rw [eout, List.append_assoc, List.singleton_append, ← hout, hpl, List.map_cons]
-  · rw [← hst, hpl]
-  · unfold subInnerPot
-    rw [ite_eq_right (by omega), ite_eq_right (by omega), hpl, List.length_cons]
-    omega
+  grind [Chazelle.Mountain.SInnerInv, Chazelle.WordsBounded, Chazelle.Mountain.SConsts, Chazelle.Mountain.STab, Chazelle.Mountain.SFrame, popLoop_cons_cons, List.append_assoc, List.singleton_append, List.map_cons, subInnerPot, List.length_cons]
 
 /-- **Stopping re-establishes the invariant** (flag `0`) when the pop loop emits nothing more
 and keeps the stack. -/
-theorem sInnerInv_stop {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.Triangle}
-    {sF : List ℕ} {c c' : Config} (hw' : WordsBounded W c')
-    (hC' : SConsts base sbase l.length σ c') (hT' : STab l base c') (hF' : SFrame c₀ c')
-    (h64 : c.nreg 64 = k) (htop : c.nreg 63 ≤ k) (hlt : ∀ x ∈ stackS c, x < l.length)
+theorem sInnerInv_stop (hlt : ∀ x ∈ stackS c, x < l.length)
     (hpl : (popLoop (subPoly P l) σ k (stackS c)).1 = [])
     (hpl2 : (popLoop (subPoly P l) σ k (stackS c)).2.1 = stackS c)
     (hout : c.output ++ (popLoop (subPoly P l) σ k (stackS c)).1.map (relabelList l) = oF)
@@ -334,11 +306,12 @@ theorem sInnerInv_stop {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.T
     (eout : c'.output = c.output) :
     SInnerInv P W l base sbase σ k c₀ oF sF c' ∧ subInnerPot P l σ k c' = 0 := by
   have hs' : stackS c' = stackS c := stackS_congr e61 e63 enm
-  refine ⟨⟨hw', hC', hT', hF', by rw [e64, h64], by omega, by rw [hs']; exact hlt,
+  refine ⟨⟨hw', hC', hT', hF', by omega, by omega, by simp_all,
     Or.inr ⟨e69, ?_, ?_⟩⟩, ?_⟩
-  · rw [eout, ← hout, hpl, List.map_nil, List.append_nil]
-  · rw [hs', ← hst, hpl2]
-  · unfold subInnerPot; rw [ite_eq_left e69]
+  all_goals (simp_all [List.map_nil, List.append_nil, subInnerPot])
+
+
+end
 
 set_option maxHeartbeats 800000 in
 /-- **One iteration of the pop loop** preserves `SInnerInv` and decreases the potential
@@ -355,12 +328,10 @@ theorem subInnerBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
   obtain ⟨hf, hout, hst⟩ : c.nreg 69 = 1 ∧
       c.output ++ (popLoop (subPoly P l) σ k (stackS c)).1.map (relabelList l) = oF ∧
       (popLoop (subPoly P l) σ k (stackS c)).2.1 = sF := by
-    rcases hflag with h | h
-    · exact h
-    · omega
+    ram_grind
   have hpot : subInnerPot P l σ k c =
       32 * ((popLoop (subPoly P l) σ k (stackS c)).1.length + 1) := by
-    unfold subInnerPot; rw [ite_eq_right (by omega)]
+    simp_all [subInnerPot]
   unfold subInnerBody
   by_cases hlt2 : c.nreg 63 < 2
   · -- fewer than two entries: stop
@@ -369,31 +340,29 @@ theorem subInnerBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
       obtain h | h : c.nreg 63 = 0 ∨ c.nreg 63 = 1 := by omega
       · rw [h]; exact popLoop_nil _ σ k
       · rw [h]; exact popLoop_singleton _ σ k _
-    refine spec_ifLtN_true (by rw [h68]; exact hlt2)
+    refine spec_ifLtN_true (by omega)
       (spec_instr (Exec.constN hw 69 0 (Nat.zero_le _)) fun hw' => ?_)
     obtain ⟨hI', hp'⟩ := sInnerInv_stop (P := P) (W := W) (c₀ := c₀) hw'
-      ⟨by config_simp; exact h60, by config_simp; exact h61, by config_simp; exact h62,
-        by config_simp; exact h65, by config_simp; exact h68, by config_simp; exact h70,
-        by config_simp; exact hr70, by config_simp; exact hr72⟩
+      ⟨by simp_all, by config_simp; exact h61, by simp_all,
+        by simp_all, by simp_all, by simp_all,
+        by omega, by omega⟩
       hT (sFrame_trans hF (sFrame_of_regs
-        (fun r hr => by config_simp; exact Machine.upd_other _ _ _ (by omega))
+        (fun r hr => by ram_simp)
         (fun r _ => rfl) rfl rfl))
       h64 htop hlt (by rw [hpl]) (by rw [hpl]) hout hst (by config_simp) (by config_simp)
       (by config_simp) (by config_simp) rfl rfl
-    refine ⟨hI', ?_⟩
-    rw [hp', hpot, hpl]
-    simp
+    simp_all
   · have hge : 2 ≤ c.nreg 63 := by omega
     have hs : stackS c = c.nmem (c.nreg 61 + (c.nreg 63 - 1)) ::
         c.nmem (c.nreg 61 + (c.nreg 63 - 2)) :: stk (fun i => c.nmem (c.nreg 61 + i))
           (c.nreg 63 - 2) := stk_two hge
     have hcm : c.nmem (c.nreg 61 + (c.nreg 63 - 1)) < l.length :=
-      hlt _ (by rw [hs]; exact List.mem_cons_self)
+      hlt _ (by ram_grind)
     have hbm : c.nmem (c.nreg 61 + (c.nreg 63 - 2)) < l.length :=
-      hlt _ (by rw [hs]; exact List.mem_cons_of_mem _ List.mem_cons_self)
+      hlt _ (by ram_grind)
     have ea1 : c.nreg 61 + c.nreg 63 - 1 = c.nreg 61 + (c.nreg 63 - 1) := by omega
     have ea2 : c.nreg 61 + c.nreg 63 - 1 - 1 = c.nreg 61 + (c.nreg 63 - 2) := by omega
-    refine spec_ifLtN_false (by rw [h68]; exact hlt2) ?_
+    refine spec_ifLtN_false (by omega) ?_
     refine spec_seq (spec_use (subTestStmt_exec (P := P) c hw h65 (by rw [h61]; omega)
       (by rw [ea1, h60]; omega) (by rw [ea2, h60]; omega) (by rw [h60, h64]; omega)) ?_)
     rintro c₁ k₁ hk₁ hw₁ ⟨e72, e73, e74, e71, efr, erf, enm, erm, eout⟩
@@ -499,10 +468,10 @@ theorem subInnerLoop_exec (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
   obtain ⟨-, hC', hT', hF', h64', htop', hlt', hflag'⟩ := hI'
   have hpot : subInnerPot P l σ k c =
       32 * ((popLoop (subPoly P l) σ k (stackS c)).1.length + 1) := by
-    unfold subInnerPot; rw [ite_eq_right (by omega)]
+    grind [subInnerPot]
   rcases hflag' with ⟨hf', -, -⟩ | ⟨-, hout', hst'⟩
-  · exfalso; apply hexit; rw [hf', hC'.2.2.2.2.2.1]; omega
-  · exact ⟨c', k', ex, by rw [← hpot]; exact hk', hC', hT', hF', h64', htop', hlt', hout', hst'⟩
+  · ram_grind
+  · exact ⟨c', k', ex, by omega, hC', hT', hF', h64', htop', hlt', hout', hst'⟩
 
 end inner
 

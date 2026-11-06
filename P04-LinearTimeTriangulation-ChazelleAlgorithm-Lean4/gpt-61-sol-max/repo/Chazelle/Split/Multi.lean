@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Split.All
 public import Chazelle.Mountain.Pieces
 
@@ -46,35 +48,31 @@ theorem diagSeg_eq_pairSeg (P : Polygon) (d : ℕ × ℕ) : diagSeg P d = pairSe
 
 /-- A diagonal with its endpoints swapped. -/
 theorem IsDiag.swap {l : List ℕ} {d : ℕ × ℕ} (hd : IsDiag P l d) : IsDiag P l d.swap := by
-  obtain ⟨h1, h2, hne, hch, hf⟩ := hd
-  refine ⟨h2, h1, Ne.symm hne, ?_, ?_⟩
-  · intro p hp hp1 hp2
-    rw [pairSeg_swap] at hp
-    exact hch p hp hp2 hp1
-  · rw [pairSeg_swap]; exact hf
+  core_grind [pairSeg_swap]
 
+section
+variable {d d' : ℕ × ℕ} (h : NonCross P d d')
+include h
 /-- Non-crossing is invariant under swapping the first pair. -/
-theorem NonCross.swap_left {d d' : ℕ × ℕ} (h : NonCross P d d') : NonCross P d.swap d' := by
-  intro p hp
-  rw [pairSeg_swap] at hp
-  have := h hp
-  refine ⟨?_, this.2⟩
-  rcases this.1 with e | e
-  · exact Or.inr e
-  · exact Or.inl e
+theorem NonCross.swap_left : NonCross P d.swap d' := by
+  core_grind [pairSeg_swap]
 
 /-- Non-crossing is symmetric. -/
-theorem NonCross.symm {d d' : ℕ × ℕ} (h : NonCross P d d') : NonCross P d' d := by
-  intro p hp
-  have := h ⟨hp.2, hp.1⟩
-  exact ⟨this.2, this.1⟩
+theorem NonCross.symm : NonCross P d' d := by
+  core_grind
 
 /-- Non-crossing is invariant under swapping the second pair. -/
-theorem NonCross.swap_right {d d' : ℕ × ℕ} (h : NonCross P d d') : NonCross P d d'.swap :=
+theorem NonCross.swap_right : NonCross P d d'.swap :=
   h.symm.swap_left.symm
 
+
+end
+
+section
+variable (hP : P.Simple) {d : ℕ × ℕ}
+include hP
 /-- **An inserted diagonal is an `IsDiag` of the whole polygon.** -/
-theorem isDiag_range_of_mem_allDiagonals (hP : P.Simple) {d : ℕ × ℕ}
+theorem isDiag_range_of_mem_allDiagonals
     (hd : d ∈ allDiagonals P) : IsDiag P (List.range P.n) d := by
   obtain ⟨h1, h2, hne⟩ := allDiagonals_lt hP hd
   obtain ⟨s, L, hdiag, hs, hsL, hsub⟩ := allDiagonals_isDiagonal hP hd
@@ -86,22 +84,26 @@ theorem isDiag_range_of_mem_allDiagonals (hP : P.Simple) {d : ℕ × ℕ}
   exact hch
 
 /-- A member of `allDiagonals P` up to orientation is an `IsDiag` of the whole polygon. -/
-theorem isDiag_range_of_mem_or_swap (hP : P.Simple) {d : ℕ × ℕ}
+theorem isDiag_range_of_mem_or_swap
     (hd : d ∈ allDiagonals P ∨ d.swap ∈ allDiagonals P) : IsDiag P (List.range P.n) d := by
   rcases hd with h | h
   · exact isDiag_range_of_mem_allDiagonals hP h
   · have := (isDiag_range_of_mem_allDiagonals hP h).swap
-    rwa [Prod.swap_swap] at this
+    simp_all
 
+
+end
+
+section
+variable (hP : P.Simple) {d d' : ℕ × ℕ} (hd : d ∈ allDiagonals P ∨ d.swap ∈ allDiagonals P) (hd' : d' ∈ allDiagonals P ∨ d'.swap ∈ allDiagonals P)
+include hP hd hd'
 /-- **Two inserted diagonals (up to orientation) with the same segment are the same pair up to
 orientation.** -/
-theorem eq_or_eq_swap_of_pairSeg_eq (hP : P.Simple) {d d' : ℕ × ℕ}
-    (hd : d ∈ allDiagonals P ∨ d.swap ∈ allDiagonals P)
-    (hd' : d' ∈ allDiagonals P ∨ d'.swap ∈ allDiagonals P) (h : pairSeg P d = pairSeg P d') :
+theorem eq_or_eq_swap_of_pairSeg_eq (h : pairSeg P d = pairSeg P d') :
     d' = d ∨ d' = d.swap := by
   have hD := isDiag_range_of_mem_or_swap hP hd
   have hD' := isDiag_range_of_mem_or_swap hP hd'
-  have hQ : (subPoly P (List.range P.n)).Simple := by rw [subPoly_range]; exact hP
+  have hQ : (subPoly P (List.range P.n)).Simple := by grind [subPoly_range]
   -- each endpoint of `d'` is an endpoint of `d`
   have key : ∀ x, x ∈ List.range P.n → P.vtx x ∈ pairSeg P d → x = d.1 ∨ x = d.2 := by
     intro x hxl hxs
@@ -113,40 +115,36 @@ theorem eq_or_eq_swap_of_pairSeg_eq (hP : P.Simple) {d d' : ℕ × ℕ}
     exact Chazelle.Existence.vtx_mem_boundary P (List.mem_range.1 hxl)
   have e1 := key d'.1 hD'.1 (by rw [h]; exact Chazelle.Geometry.left_mem_segment _ _)
   have e2 := key d'.2 hD'.2.1 (by rw [h]; exact Chazelle.Geometry.right_mem_segment _ _)
-  have hne := hD.2.2.1
+  
   have hne' := hD'.2.2.1
-  obtain ⟨a, b⟩ := d
-  obtain ⟨a', b'⟩ := d'
-  simp only [Prod.swap_prod_mk, Prod.mk.injEq] at e1 e2 hne hne' ⊢
-  omega
+  grind
 
 /-- **Two inserted diagonals (up to orientation) that are distinct pairs up to orientation do not
 cross.** -/
-theorem nonCross_of_mem_or_swap (hP : P.Simple) {d d' : ℕ × ℕ}
-    (hd : d ∈ allDiagonals P ∨ d.swap ∈ allDiagonals P)
-    (hd' : d' ∈ allDiagonals P ∨ d'.swap ∈ allDiagonals P) (hne : d ≠ d' ∧ d ≠ d'.swap) :
+theorem nonCross_of_mem_or_swap (hne : d ≠ d' ∧ d ≠ d'.swap) :
     NonCross P d d' := by
   have hseg : pairSeg P d ≠ pairSeg P d' := by
     intro h
     rcases eq_or_eq_swap_of_pairSeg_eq hP hd hd' h with e | e
-    · exact hne.1 e.symm
-    · exact hne.2 (by rw [e, Prod.swap_swap])
+    all_goals simp_all
   have key : ∀ e e', e ∈ allDiagonals P → e' ∈ allDiagonals P →
       pairSeg P e = pairSeg P d → pairSeg P e' = pairSeg P d' → NonCross P e e' := by
     intro e e' he he' h1 h2
     apply allDiagonals_inter hP he he'
-    rw [diagSeg_eq_pairSeg, diagSeg_eq_pairSeg, h1, h2]
-    exact hseg
+    simp_all [diagSeg_eq_pairSeg] 
   rcases hd with h | h <;> rcases hd' with h' | h'
-  · exact key _ _ h h' rfl rfl
+  · simp_all
   · have := (key _ _ h h' rfl (pairSeg_swap P d')).swap_right
-    rwa [Prod.swap_swap] at this
+    simp_all
   · have := (key _ _ h h' (pairSeg_swap P d) rfl).swap_left
-    rwa [Prod.swap_swap] at this
+    simp_all
   · have := (key _ _ h h' (pairSeg_swap P d) (pairSeg_swap P d')).swap_left.swap_right
-    rwa [Prod.swap_swap, Prod.swap_swap] at this
+    simp_all
 
 /-! ### Enumerations of the inserted diagonals -/
+
+
+end
 
 /-- **`D` enumerates the inserted diagonals of `P` up to orientation**: every member or its swap
 is in `allDiagonals P`, every member of `allDiagonals P` or its swap is in `D`, and no pair occurs
@@ -159,7 +157,7 @@ structure EnumDiags (P : Polygon) (D : List (ℕ × ℕ)) : Prop where
 /-- **An enumeration of the inserted diagonals is a diagonal system for the whole polygon.** -/
 theorem EnumDiags.diagSystem (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumDiags P D) :
     DiagSystem P (List.range P.n) D where
-  simple := by rw [subPoly_range]; exact hP
+  simple := by grind [subPoly_range]
   diag d hd := isDiag_range_of_mem_or_swap hP (hD.sound d hd)
   noncross := hD.distinct.imp_of_mem fun hd hd' hne =>
     nonCross_of_mem_or_swap hP (hD.sound _ hd) (hD.sound _ hd') hne
@@ -186,11 +184,7 @@ theorem EnumDiags.isPiece (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumDiag
     · rcases hD.sound _ h with h' | h'
       · exact Or.inr (Or.inr (Or.inr h'))
       · exact Or.inr (Or.inr (Or.inl h'))
-  · intro d hd p hp
-    rw [diagSeg_eq_pairSeg]
-    rcases hD.complete d hd with h' | h'
-    · exact hdiag d h' p hp
-    · rw [← pairSeg_swap]; exact hdiag _ h' p hp
+  grind [Chazelle.Split.diagSeg_eq_pairSeg, Chazelle.Split.EnumDiags.complete, diagSeg_eq_pairSeg, pairSeg_swap]
 
 /-- The triangles of a weak triangulation of `P` are unchanged by `relabelList (List.range P.n)`. -/
 theorem map_relabelList_range {T : List Polygon.Triangle} (h : WeakTriangulates P T) :

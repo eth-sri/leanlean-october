@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopM1C4
 public import Chazelle.Core.SweepEvGen
 
@@ -23,9 +25,7 @@ open Chazelle.Merge (FreeAt)
 
 theorem m1c_lhRunK_le (T Fg D : ℕ) : lhRunK T Fg D ≤ κGen D * (Fg + T + 1) := by
   have := genK_le Fg D T
-  unfold genK at this
-  unfold lhRunK
-  omega
+  core_grind [genK]
 
 set_option maxRecDepth 20000 in
 /-- **Task M1: the candidate of `C₁`** of a stop origin. -/
@@ -39,11 +39,11 @@ theorem m1Task : M1Task := by
   obtain ⟨M, hMd⟩ : ∃ M, M = (if c.nreg oKd = 1 then 1 else N₁.nChords + N₂.nChords + 1) :=
     ⟨_, rfl⟩
   rw [← hMd] at hroom ⊢
-  have hM1 : 1 ≤ M := by rw [hMd]; split_ifs <;> omega
+  have hM1 : 1 ≤ M := by grind
   have hLK := m1c_lhRunK_le (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))
   set Q := F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1 with hQ
   set G := κGen (c₀.nreg (sw 6)) with hG
-  have hQ1 : 1 ≤ Q := by omega
+  
   have hMQ : 1 ≤ M * Q := Nat.one_le_iff_ne_zero.2 (by positivity)
   have e : (G + κB + 60000) * M * Q = G * M * Q + κB * M * Q + 60000 * (M * Q) := by ring
   have hp2 : G * Q ≤ G * M * Q := by
@@ -59,7 +59,7 @@ theorem m1Task : M1Task := by
       exact m1cK1_irs E hI hD hpos (by omega) (by omega) (by omega)
     · rw [hK.2.2.2.2.2.1] at h1
       have hk2 : c.nreg oKd = 2 := by omega
-      have hMe : M = N₁.nChords + N₂.nChords + 1 := by rw [hMd, ite_eq_right (by omega)]
+      have hMe : M = N₁.nChords + N₂.nChords + 1 := by grind
       have hp1 : κB * (N₁.nChords + 1) * (F (c₀.nreg (sw 5)) + 1) ≤ κB * M * Q :=
         Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) (by omega)
       exact m1cK2_irs hBr E hI hD hk2 (by omega) (by omega)

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Chain.Basic
 
 /-!
@@ -53,37 +55,40 @@ def DirFree (k : ℕ) (σ : ℝ) : Prop :=
 
 /-! ### Horizontal rays and their first hit of the obstacle -/
 
+section
+variable (v : Point) (σ : ℝ)
+include v σ
 /-- The parameters `t > 0` at which the ray from `v` in direction `σ` meets the complement of
 the domain. -/
-def hitSet (v : Point) (σ : ℝ) : Set ℝ := {t : ℝ | 0 < t ∧ rayPt v σ t ∈ C.domᶜ}
+def hitSet : Set ℝ := {t : ℝ | 0 < t ∧ rayPt v σ t ∈ C.domᶜ}
 
 /-- The parameter of the first point of the open ray outside the domain. -/
-noncomputable def hitParam (v : Point) (σ : ℝ) : ℝ := sInf (C.hitSet v σ)
+noncomputable def hitParam : ℝ := sInf (C.hitSet v σ)
 
-theorem hitSet_bddBelow (v : Point) (σ : ℝ) : BddBelow (C.hitSet v σ) :=
+theorem hitSet_bddBelow : BddBelow (C.hitSet v σ) :=
   ⟨0, fun _ ht => ht.1.le⟩
 
+
+end
+
+section
+variable {v : Point} (hv : v ∈ box C.radius) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
+include hv hσ
 /-- The ray from a point of the box leaves the box: the hit set is nonempty. -/
-theorem hitSet_nonempty {v : Point} (hv : v ∈ box C.radius) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
+theorem hitSet_nonempty :
     (C.hitSet v σ).Nonempty := by
   refine ⟨C.radius - σ * v.1, ?_, ?_⟩
   · have := abs_lt.1 hv.1
-    rcases hσ with rfl | rfl <;> simp only [one_mul, neg_one_mul] <;> linarith
+    rcases hσ with rfl | rfl <;> grind 
   · intro hmem
     have hbox := hmem.1
     have hx := hbox.1
-    simp only [rayPt_fst] at hx
-    have hσ2 : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
-    have : v.1 + σ * (C.radius - σ * v.1) = σ * C.radius := by linear_combination (-v.1) * hσ2
-    rw [this, abs_mul] at hx
-    have hσ1 : |σ| = 1 := by rcases hσ with rfl | rfl <;> simp
-    rw [hσ1, one_mul, abs_of_pos C.radius_pos] at hx
-    exact lt_irrefl _ hx
+    grind [rayPt_fst, abs_mul, one_mul]
 
 /-- **The first hit.**  If an initial open stretch `(0, t₀)` of the ray from a point of the box
 is in the domain, then the first-hit parameter is at least `t₀`, the first-hit point is outside
 the domain, and every point of the ray strictly before it is in the domain. -/
-theorem hit_of_initial {v : Point} (hv : v ∈ box C.radius) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
+theorem hit_of_initial
     {t₀ : ℝ} (ht₀ : 0 < t₀) (hint : ∀ t, 0 < t → t < t₀ → rayPt v σ t ∈ C.dom) :
     t₀ ≤ C.hitParam v σ ∧ rayPt v σ (C.hitParam v σ) ∈ C.domᶜ ∧
       ∀ t, 0 < t → t < C.hitParam v σ → rayPt v σ t ∈ C.dom := by
@@ -108,14 +113,18 @@ theorem hit_of_initial {v : Point} (hv : v ∈ box C.radius) {σ : ℝ} (hσ : �
   have : t ∈ C.hitSet v σ := ⟨ht1, hmem⟩
   exact absurd (csInf_le (C.hitSet_bddBelow v σ) this) (not_le.2 ht2)
 
+
+end
+
+section
+variable (v : Point) (σ : ℝ) {t : ℝ} (ht : 0 < t) (hmem : rayPt v σ t ∉ C.dom)
+include ht hmem
 /-- Every point of the open ray outside the domain is at or after the first hit. -/
-theorem hitParam_le_of_not_mem_dom (v : Point) (σ : ℝ) {t : ℝ} (ht : 0 < t)
-    (hmem : rayPt v σ t ∉ C.dom) : C.hitParam v σ ≤ t :=
+theorem hitParam_le_of_not_mem_dom : C.hitParam v σ ≤ t :=
   csInf_le (C.hitSet_bddBelow v σ) ⟨ht, hmem⟩
 
 /-- **Uniqueness of the first hit.** -/
-theorem hitParam_eq_of_first (v : Point) (σ : ℝ) {t : ℝ} (ht : 0 < t)
-    (hmem : rayPt v σ t ∉ C.dom) (hfirst : ∀ s, 0 < s → s < t → rayPt v σ s ∈ C.dom) :
+theorem hitParam_eq_of_first (hfirst : ∀ s, 0 < s → s < t → rayPt v σ s ∈ C.dom) :
     C.hitParam v σ = t := by
   refine le_antisymm (C.hitParam_le_of_not_mem_dom v σ ht hmem) (le_csInf ⟨t, ht, hmem⟩ ?_)
   intro s hs
@@ -124,29 +133,46 @@ theorem hitParam_eq_of_first (v : Point) (σ : ℝ) {t : ℝ} (ht : 0 < t)
 
 /-! ### The chord -/
 
+
+end
+
+section
+variable (k : ℕ) (σ : ℝ)
+include k σ
 /-- The parameter of the far endpoint of the chord of vertex `k` in direction `σ`. -/
-noncomputable def chordParam (k : ℕ) (σ : ℝ) : ℝ := C.hitParam (C.vertex k) σ
+noncomputable def chordParam : ℝ := C.hitParam (C.vertex k) σ
 
 /-- The far endpoint of the chord of vertex `k` in direction `σ`. -/
-noncomputable def chordEnd (k : ℕ) (σ : ℝ) : Point := rayPt (C.vertex k) σ (C.chordParam k σ)
+noncomputable def chordEnd : Point := rayPt (C.vertex k) σ (C.chordParam k σ)
 
 /-- The closed chord of vertex `k` in direction `σ`. -/
-noncomputable def chordSet (k : ℕ) (σ : ℝ) : Set Point :=
+noncomputable def chordSet : Set Point :=
   Chazelle.segment (C.vertex k) (C.chordEnd k σ)
 
 /-- The open chord: the chord without its two endpoints. -/
-noncomputable def openChordSet (k : ℕ) (σ : ℝ) : Set Point :=
+noncomputable def openChordSet : Set Point :=
   rayPt (C.vertex k) σ '' Ioo 0 (C.chordParam k σ)
 
-@[simp] theorem chordEnd_fst (k : ℕ) (σ : ℝ) :
+
+end
+
+section
+variable (k : ℕ) (σ : ℝ)
+@[simp] theorem chordEnd_fst :
     (C.chordEnd k σ).1 = (C.vertex k).1 + σ * C.chordParam k σ := rfl
 
-@[simp] theorem chordEnd_snd (k : ℕ) (σ : ℝ) : (C.chordEnd k σ).2 = (C.vertex k).2 := rfl
+@[simp] theorem chordEnd_snd : (C.chordEnd k σ).2 = (C.vertex k).2 := rfl
 
+
+end
+
+section
+variable {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (h : C.DirFree k σ)
+include hk hσ h
 /-- **The chord exists.**  When direction `σ` at vertex `k` is free: the chord parameter is
 positive, the far endpoint is outside the domain, and every point of the open chord is in the
 domain. -/
-theorem chord_spec {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (h : C.DirFree k σ) :
+theorem chord_spec :
     0 < C.chordParam k σ ∧ C.chordEnd k σ ∈ C.domᶜ ∧
       ∀ t, 0 < t → t < C.chordParam k σ → rayPt (C.vertex k) σ t ∈ C.dom := by
   obtain ⟨u, hu, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 h
@@ -155,35 +181,27 @@ theorem chord_spec {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ σ = 
     (fun t ht1 ht2 => hsub ⟨ht1, ht2⟩)
   exact ⟨lt_of_lt_of_le hu h1, h2, h3⟩
 
-theorem chordParam_pos {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (h : C.DirFree k σ) : 0 < C.chordParam k σ :=
+theorem chordParam_pos : 0 < C.chordParam k σ :=
   (C.chord_spec hk hσ h).1
 
-theorem chordEnd_not_mem_dom {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (h : C.DirFree k σ) : C.chordEnd k σ ∉ C.dom :=
+theorem chordEnd_not_mem_dom : C.chordEnd k σ ∉ C.dom :=
   (C.chord_spec hk hσ h).2.1
 
 /-- The open chord is in the domain. -/
-theorem openChordSet_subset_dom {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (h : C.DirFree k σ) : C.openChordSet k σ ⊆ C.dom := by
+theorem openChordSet_subset_dom : C.openChordSet k σ ⊆ C.dom := by
   rintro _ ⟨t, ht, rfl⟩
   exact (C.chord_spec hk hσ h).2.2 t ht.1 ht.2
 
 /-- The far endpoint is not the vertex. -/
-theorem chordEnd_ne_vertex {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (h : C.DirFree k σ) : C.chordEnd k σ ≠ C.vertex k := by
+theorem chordEnd_ne_vertex : C.chordEnd k σ ≠ C.vertex k := by
   intro heq
   have := congrArg Prod.fst heq
   simp only [chordEnd_fst] at this
   have hpos := C.chordParam_pos hk hσ h
-  have : σ * C.chordParam k σ = 0 := by linarith
-  rcases mul_eq_zero.1 this with h' | h'
-  · rcases hσ with rfl | rfl <;> norm_num at h'
-  · exact hpos.ne' h'
+  aesop
 
 /-- The far endpoint of a chord, when outside the box, is on the vertical side `x = σ R`. -/
-theorem chordEnd_fst_eq_of_not_mem_box {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (h : C.DirFree k σ) (hbox : C.chordEnd k σ ∉ box C.radius) :
+theorem chordEnd_fst_eq_of_not_mem_box (hbox : C.chordEnd k σ ∉ box C.radius) :
     (C.chordEnd k σ).1 = σ * C.radius := by
   obtain ⟨hpos, -, hint⟩ := C.chord_spec hk hσ h
   have hv := C.set_subset_box (C.vertex_mem_set hk)
@@ -201,47 +219,32 @@ theorem chordEnd_fst_eq_of_not_mem_box {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (h�
     rcases hσ with rfl | rfl
     · simp only [chordEnd_fst, one_mul] at hgt
       have hgt' : C.radius < (C.vertex k).1 + T := by
-        rcases lt_abs.1 hgt with h | h
-        · exact h
-        · linarith
+        grind
       have := hcase ((T + C.radius - (C.vertex k).1) / 2) (by linarith) (by linarith)
-      rw [one_mul, abs_lt] at this
-      linarith [this.2]
+      grind
     · simp only [chordEnd_fst, neg_one_mul] at hgt
       have hgt' : C.radius < -((C.vertex k).1 + -T) := by
-        rcases lt_abs.1 hgt with h | h
-        · linarith
-        · exact h
+        grind
       have := hcase ((T + C.radius + (C.vertex k).1) / 2) (by linarith) (by linarith)
-      rw [neg_one_mul, abs_lt] at this
-      linarith [this.1]
+      grind
   have hnot : ¬ |(C.chordEnd k σ).1| < C.radius := fun hlt => hbox ⟨hlt, by
-    rw [chordEnd_snd]; exact hv2⟩
+    simp_all⟩
   have habs : |(C.chordEnd k σ).1| = C.radius := le_antisymm hle (not_lt.1 hnot)
   rcases hσ with rfl | rfl
-  · simp only [chordEnd_fst, one_mul] at habs ⊢
-    rcases abs_eq (C.radius_pos.le) |>.1 habs with h | h
-    · exact h
-    · linarith
-  · simp only [chordEnd_fst, neg_one_mul] at habs ⊢
-    rcases abs_eq (C.radius_pos.le) |>.1 habs with h | h
-    · linarith
-    · linarith
+  · grind [chordEnd_fst, one_mul]
+  grind [chordEnd_fst, neg_one_mul]
 
 /-- **The two kinds of chord.**  The far endpoint lies on the chain (finite chord) or on the
 vertical side `x = σ R` of the box (box chord).  In particular it is never on the open slit. -/
-theorem chordEnd_cases {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (h : C.DirFree k σ) :
+theorem chordEnd_cases :
     C.chordEnd k σ ∈ C.set ∨ (C.chordEnd k σ).1 = σ * C.radius := by
   have hnd := C.chordEnd_not_mem_dom hk hσ h
   rw [mem_dom_iff] at hnd
   by_cases hbox : C.chordEnd k σ ∈ box C.radius
   · have hnd' : C.chordEnd k σ ∈ C.set ∨ C.chordEnd k σ ∈ C.slit := by
-      by_contra hcon
-      push Not at hcon
-      exact hnd ⟨hbox, hcon.1, hcon.2⟩
+      grind
     rcases hnd' with hset | hslit
-    · exact Or.inl hset
+    · simp_all
     · -- on the slit at the height of a chain vertex: it is the top vertex
       left
       obtain ⟨h1, h2, -⟩ := C.mem_slit_iff.1 hslit
@@ -252,8 +255,7 @@ theorem chordEnd_cases {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ �
   · exact Or.inr (C.chordEnd_fst_eq_of_not_mem_box hk hσ h hbox)
 
 /-- The chord as the image of the closed parameter interval. -/
-theorem chordSet_eq_image {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (h : C.DirFree k σ) :
+theorem chordSet_eq_image :
     C.chordSet k σ = rayPt (C.vertex k) σ '' Icc 0 (C.chordParam k σ) := by
   have hpos := C.chordParam_pos hk hσ h
   ext p
@@ -263,18 +265,13 @@ theorem chordSet_eq_image {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 �
   · rintro ⟨t, ht0, ht1, rfl⟩
     refine ⟨t * C.chordParam k σ, ⟨mul_nonneg ht0 hpos.le, ?_⟩, ?_⟩
     · nlinarith
-    · rw [Geometry.point_ext_iff]; simp only [rayPt_fst, rayPt_snd]; constructor <;> ring
+    grind [Geometry.point_ext_iff, rayPt_fst, rayPt_snd]
   · rintro ⟨s, ⟨hs0, hs1⟩, rfl⟩
     refine ⟨s / C.chordParam k σ, div_nonneg hs0 hpos.le, (div_le_one hpos).2 hs1, ?_⟩
-    rw [Geometry.point_ext_iff]; simp only [rayPt_fst, rayPt_snd]
-    constructor
-    · field_simp
-      ring
-    · ring
+    grind [Geometry.point_ext_iff, rayPt_fst, rayPt_snd]
 
 /-- The closed chord is the open chord with its two endpoints. -/
-theorem chordSet_eq_openChordSet_union {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (h : C.DirFree k σ) :
+theorem chordSet_eq_openChordSet_union :
     C.chordSet k σ = C.openChordSet k σ ∪ {C.vertex k, C.chordEnd k σ} := by
   rw [chordSet_eq_image C hk hσ h]
   ext p
@@ -284,15 +281,18 @@ theorem chordSet_eq_openChordSet_union {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (h�
   · rintro ⟨t, ⟨ht0, ht1⟩, rfl⟩
     rcases ht0.lt_or_eq with h0 | h0
     · rcases ht1.lt_or_eq with h1 | h1
-      · exact Or.inl ⟨t, ⟨h0, h1⟩, rfl⟩
+      · grind
       · right; right; rw [h1]; rfl
-    · right; left; rw [← h0, rayPt_zero]
+    grind [rayPt_zero]
   · rintro (⟨t, ht, rfl⟩ | rfl | rfl)
-    · exact ⟨t, ⟨ht.1.le, ht.2.le⟩, rfl⟩
+    · grind
     · exact ⟨0, ⟨le_rfl, (C.chordParam_pos hk hσ h).le⟩, rayPt_zero _ _⟩
     · exact ⟨C.chordParam k σ, ⟨(C.chordParam_pos hk hσ h).le, le_rfl⟩, rfl⟩
 
 /-! ### Abstract horizontal chords of a domain -/
+
+
+end
 
 /-- A horizontal chord of the domain `D`: a horizontal segment `[a, b] × {y}` with `a < b`,
 both endpoints off `D`, and the open part inside `D`. -/
@@ -312,59 +312,8 @@ theorem hchordIn_inter {D : Set Point} {y a b y' a' b' : ℝ} (h : IsHChordIn D 
   have hyy : y = y' := hpy.symm.trans hpy'
   subst hyy
   by_cases hend : p.1 = a ∨ p.1 = b
-  · have hpD : p ∉ D := by
-      rcases hend with he | he
-      · have : p = (a, y) := Prod.ext he hpy
-        rw [this]; exact h.left_not
-      · have : p = (b, y) := Prod.ext he hpy
-        rw [this]; exact h.right_not
-    right
-    refine ⟨?_, ?_⟩
-    · rcases hend with he | he
-      · exact Or.inl (Prod.ext he hpy)
-      · exact Or.inr (Prod.ext he hpy)
-    · by_contra hne
-      push Not at hne
-      have ha' : a' < p.1 := lt_of_le_of_ne hpa' (fun e => hne.1 (Prod.ext e.symm hpy))
-      have hb' : p.1 < b' := lt_of_le_of_ne hpb' (fun e => hne.2 (Prod.ext e hpy))
-      have := h'.open_mem p.1 ha' hb'
-      rw [show ((p.1, y) : Point) = p from Prod.ext rfl hpy.symm] at this
-      exact hpD this
-  · push Not at hend
-    have ha : a < p.1 := lt_of_le_of_ne hpa (Ne.symm hend.1)
-    have hb : p.1 < b := lt_of_le_of_ne hpb hend.2
-    have hint := h.open_mem p.1 ha hb
-    rw [show ((p.1, y) : Point) = p from Prod.ext rfl hpy.symm] at hint
-    have ha' : a' < p.1 := by
-      rcases hpa'.lt_or_eq with h1 | h1
-      · exact h1
-      · exfalso
-        apply h'.left_not
-        rw [show p = (a', y) from Prod.ext h1.symm hpy] at hint
-        exact hint
-    have hb' : p.1 < b' := by
-      rcases hpb'.lt_or_eq with h1 | h1
-      · exact h1
-      · exfalso
-        apply h'.right_not
-        rw [show p = (b', y) from Prod.ext h1 hpy] at hint
-        exact hint
-    left
-    refine ⟨rfl, ?_, ?_⟩
-    · apply le_antisymm
-      · by_contra hlt
-        push Not at hlt
-        exact h.left_not (h'.open_mem a hlt (ha.trans hb'))
-      · by_contra hlt
-        push Not at hlt
-        exact h'.left_not (h.open_mem a' hlt (ha'.trans hb))
-    · apply le_antisymm
-      · by_contra hlt
-        push Not at hlt
-        exact h'.right_not (h.open_mem b' (ha.trans hb') hlt)
-      · by_contra hlt
-        push Not at hlt
-        exact h.right_not (h'.open_mem b (ha'.trans hb) hlt)
+  · grind [Chazelle.Chain.IsHChordIn]
+  · grind [Chazelle.Chain.IsHChordIn]
 
 /-- The chord of a vertex, as a horizontal segment between its two abscissae. -/
 theorem chordSet_eq_hseg (k : ℕ) (σ : ℝ) :
@@ -383,21 +332,19 @@ theorem isHChordIn_chord {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨
   have hvD : C.vertex k ∉ C.dom := fun hd => C.not_mem_set_of_mem_dom hd (C.vertex_mem_set hk)
   rcases hσ with rfl | rfl
   · have hlt : (C.vertex k).1 < (C.chordEnd k 1).1 := by
-      simp only [chordEnd_fst, one_mul]; linarith
+      simp_all
     rw [min_eq_left hlt.le, max_eq_right hlt.le]
     refine ⟨hlt, hv ▸ hvD, he ▸ hend, fun x hx1 hx2 => ?_⟩
     have := hint (x - (C.vertex k).1) (by linarith)
-      (by simp only [chordEnd_fst, one_mul] at hx2; linarith)
-    simp only [rayPt, one_mul, add_sub_cancel] at this
-    exact this
+      (by grind [chordEnd_fst, one_mul])
+    simp_all [rayPt, one_mul, add_sub_cancel] 
   · have hlt : (C.chordEnd k (-1)).1 < (C.vertex k).1 := by
-      simp only [chordEnd_fst, neg_one_mul]; linarith
+      simp_all
     rw [min_eq_right hlt.le, max_eq_left hlt.le]
     refine ⟨hlt, he ▸ hend, hv ▸ hvD, fun x hx1 hx2 => ?_⟩
     have := hint ((C.vertex k).1 - x) (by linarith)
-      (by simp only [chordEnd_fst, neg_one_mul] at hx1; linarith)
-    simp only [rayPt, neg_one_mul, neg_sub, add_sub_cancel] at this
-    exact this
+      (by grind [chordEnd_fst, neg_one_mul])
+    simp_all [rayPt, neg_one_mul, neg_sub, add_sub_cancel] 
 
 /-! ### The set of all chords -/
 
@@ -410,8 +357,7 @@ theorem chords_subset_image :
       ((↑(Finset.range (C.m + 1)) : Set ℕ) ×ˢ ({1, -1} : Set ℝ)) := by
   rintro S ⟨k, σ, hk, hσ, -, rfl⟩
   refine ⟨(k, σ), ⟨by simp [hk], ?_⟩, rfl⟩
-  simp only [mem_insert_iff, mem_singleton_iff]
-  exact hσ
+  simp_all
 
 theorem chords_finite : C.chords.Finite :=
   ((Finset.range (C.m + 1)).finite_toSet.prod ((finite_singleton (-1 : ℝ)).insert 1)).image _

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvLoopStartS
 public import Chazelle.Core.SweepEvFace3
 
@@ -40,23 +42,23 @@ theorem face_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   rintro c₁ hI₁ - - ⟨j, hj, hl1, hl2, r0, r1, r2, vSE, vSH, vEE, vEH, hm1, hAl1, hk1⟩
   have hK₁ := E.hK.fix hI₁
   have hfe1 : c₁.nreg fE = c.nreg fE :=
-    hk1 _ (not_oracle_sw (by unfold fE sw; norm_num) (by unfold fE sw; norm_num))
-      (Or.inr (by unfold fE sw; norm_num))
+    hk1 _ (not_oracle_sw (by omega_nf) (by omega_nf))
+      (Or.inr (by omega_nf))
   have hfa1 : c₁.nreg fA = c.nreg fA :=
-    hk1 _ (not_oracle_sw (by unfold fA sw; norm_num) (by unfold fA sw; norm_num))
-      (Or.inr (by unfold fA sw; norm_num))
+    hk1 _ (not_oracle_sw (by omega_nf) (by omega_nf))
+      (Or.inr (by omega_nf))
   have hsj := NFLoc.seq_lt hNF hj
   obtain ⟨⟨pps, hse, hsy⟩, ⟨ppe, hee, hey⟩⟩ := arc_end_facts hP₂ hNF hsj
-  have hQn : (Qof P).n = P.n := shear_n _ _
+  
   -- 2. normalise the start of the arc
   refine IRS.seq (normS_irs (dsc := sw 21) (pe := fSE) (ph := fSH) (o := fO) (C := J.right) hI₁ hK₁
-    (E.ctx2' hI₁) ⟨by unfold sw; norm_num, by unfold sw; norm_num, by unfold fSE sw; norm_num,
-      by unfold fSE sw; norm_num, by unfold fSH sw; norm_num, by unfold fSH sw; norm_num⟩
-    ⟨by unfold fO sw; norm_num, by unfold fO sw; norm_num, by unfold fO fSE sw; norm_num,
-      by unfold fO fSH sw; norm_num, by unfold fO fSE sw; norm_num, by unfold fO fSH sw; norm_num,
-      by unfold fSE fSH sw; norm_num⟩
+    (E.ctx2' hI₁) ⟨by omega_nf, by omega_nf, by omega_nf,
+      by omega_nf, by omega_nf, by omega_nf⟩
+    ⟨by omega_nf, by omega_nf, by omega_nf,
+      by omega_nf, by omega_nf, by omega_nf,
+      by omega_nf⟩
     (by rw [vSE]; exact hse) (by rw [vSE, vSH]; exact pps) (by rw [vSE, vSH]; exact hsy)
-    (by rw [hAl1]; exact face_room2 hroom)) ?_
+    (by grind)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨v2SE, v2SH, k2, hA2, hm2⟩
   have hK₂ := E.hK.fix hI₂
   have n2 : ∀ q, bandOf q ∉ oracleBands → q ≠ fSH → q ≠ fO → q ≠ fO + 1 → q ≠ ALLOC →
@@ -65,23 +67,23 @@ theorem face_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       c₂.nreg q = c₁.nreg q := by
     intro q hq
     rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      exact n2 _ (not_oracle_sw (by simp [fEE, fEH, fE, fA, lR0, lR1, lR2, sw])
-        (by simp [fEE, fEH, fE, fA, lR0, lR1, lR2, sw]))
-        (by simp [fEE, fEH, fE, fA, lR0, lR1, lR2, fSH, sw])
-        (by simp [fEE, fEH, fE, fA, lR0, lR1, lR2, fO, sw])
-        (by simp [fEE, fEH, fE, fA, lR0, lR1, lR2, fO, sw])
-        (by simp [fEE, fEH, fE, fA, lR0, lR1, lR2, ALLOC, sw])
+      exact n2 _ (not_oracle_sw (by omega_nf)
+        (by omega_nf))
+        (by omega_nf)
+        (by omega_nf)
+        (by omega_nf)
+        (by omega_nf)
   -- 3. normalise the end of the arc
   refine IRS.seq (normS_irs (dsc := sw 21) (pe := fEE) (ph := fEH) (o := fO) (C := J.right) hI₂ hK₂
-    (E.ctx2' hI₂) ⟨by unfold sw; norm_num, by unfold sw; norm_num, by unfold fEE sw; norm_num,
-      by unfold fEE sw; norm_num, by unfold fEH sw; norm_num, by unfold fEH sw; norm_num⟩
-    ⟨by unfold fO sw; norm_num, by unfold fO sw; norm_num, by unfold fO fEE sw; norm_num,
-      by unfold fO fEH sw; norm_num, by unfold fO fEE sw; norm_num, by unfold fO fEH sw; norm_num,
-      by unfold fEE fEH sw; norm_num⟩
+    (E.ctx2' hI₂) ⟨by omega_nf, by omega_nf, by omega_nf,
+      by omega_nf, by omega_nf, by omega_nf⟩
+    ⟨by omega_nf, by omega_nf, by omega_nf,
+      by omega_nf, by omega_nf, by omega_nf,
+      by omega_nf⟩
     (by rw [n2' fEE (by simp), vEE]; exact hee)
     (by rw [n2' fEE (by simp), n2' fEH (by simp), vEE, vEH]; exact ppe)
     (by rw [n2' fEE (by simp), n2' fEH (by simp), vEE, vEH]; exact hey)
-    (by have := hA₂'; rw [hAl1] at this; exact face_room3 hroom this)) ?_
+    (by grind)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨v3EE, v3EH, k3, hA3, hm3⟩
   have n3 : ∀ q, bandOf q ∉ oracleBands → q ≠ fEH → q ≠ fO → q ≠ fO + 1 → q ≠ ALLOC →
       c₃.nreg q = c₂.nreg q := k3
@@ -89,32 +91,32 @@ theorem face_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       q = K0 ∨ q = K1) → c₃.nreg q = c₂.nreg q := by
     intro q hq
     rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      exact n3 _ (not_oracle_sw (by simp [fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, sw])
-        (by simp [fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, sw]))
-        (by simp [fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, fEH, sw])
-        (by simp [fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, fO, sw])
-        (by simp [fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, fO, sw])
-        (by simp [fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, ALLOC, sw])
+      exact n3 _ (not_oracle_sw (by omega_nf)
+        (by omega_nf))
+        (by omega_nf)
+        (by omega_nf)
+        (by omega_nf)
+        (by omega_nf)
   have hK₃ := E.hK.fix hI₃
   -- 4. the selection
   refine (faceSel_irs hI₃ hK₃.1).mono le_rfl ?_
   rintro c₄ ⟨v4R, k4, hm4⟩
   -- the values at the selection
-  have eA : c₃.nreg fA = c.nreg fA := by rw [n3' fA (by simp), n2' fA (by simp), hfa1]
-  have eE : c₃.nreg fE = c.nreg fE := by rw [n3' fE (by simp), n2' fE (by simp), hfe1]
+  have eA : c₃.nreg fA = c.nreg fA := by grind
+  have eE : c₃.nreg fE = c.nreg fE := by grind
   have eK1 : c₃.nreg K1 = 1 := hK₃.2.1
-  have eSE : c₃.nreg fSE = (N₂.arc (sj N₂ j)).s.edge := by rw [n3' fSE (by simp), v2SE, vSE]
+  have eSE : c₃.nreg fSE = (N₂.arc (sj N₂ j)).s.edge := by grind
   have eSH : c₃.nreg fSH = nhgt (chainModel J.right) (Qof P) (N₂.arc (sj N₂ j)).s := by
     rw [n3' fSH (by simp), v2SH, vSE, vSH]
-  have eEE : c₃.nreg fEE = (N₂.arc (sj N₂ j)).e.edge := by rw [v3EE, n2' fEE (by simp), vEE]
+  have eEE : c₃.nreg fEE = (N₂.arc (sj N₂ j)).e.edge := by grind
   have eEH : c₃.nreg fEH = nhgt (chainModel J.right) (Qof P) (N₂.arc (sj N₂ j)).e := by
     rw [v3EH, n2' fEE (by simp), n2' fEH (by simp), vEE, vEH]
   have eR0 : c₃.nreg lR0 = (N₂.arc (sj N₂ (predP N₂.arcs.length j))).reg := by
-    rw [n3' lR0 (by simp), n2' lR0 (by simp), r0]
+    grind
   have eR1 : c₃.nreg lR1 = (N₂.arc (sj N₂ j)).reg := by
-    rw [n3' lR1 (by simp), n2' lR1 (by simp), r1]
+    grind
   have eR2 : c₃.nreg lR2 = (N₂.arc (sj N₂ (succP N₂.arcs.length j))).reg := by
-    rw [n3' lR2 (by simp), n2' lR2 (by simp), r2]
+    grind
   rw [eA, eE, eK1, eSE, eSH, eEE, eEH, eR0, eR1, eR2] at v4R
   -- the key tests
   have hS : (N₂.arc (sj N₂ j)).s.edge = c.nreg fE ∧
@@ -142,20 +144,19 @@ theorem face_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     split_ifs with h
     · exact face_after_eq hP₂ hNF hfe hj (hE.1 h)
     · exact face_after_ne hP₂ hNF hfe hj hl1 hl2 (fun h' => h (hE.2 h'))
-  · intro a ha
-    rw [hm4, hm3 a (by omega), hm2 a (by omega), hm1]
-  · rw [k4 ALLOC (by unfold ALLOC fR sw; norm_num)]; omega
+  · ram_simp
+  · rw [k4 ALLOC (by omega_nf)]; omega
   · intro r hr hFR hra
     have hout' : ¬ (sw 700 ≤ r ∧ r < sw 2200) := fun h => hFR (Or.inl h)
     unfold sw at hout'
-    have hout : r < sw 1102 ∨ sw 1203 < r := by unfold sw; omega
+    have hout : r < sw 1102 ∨ sw 1203 < r := by omega_nf
     have hrR : r ≠ fR := fun h => hFR (Or.inr (Or.inl h))
-    have h1 : r ≠ fEH := fun h => by subst h; unfold fEH sw at hout'; omega
+    have h1 : r ≠ fEH := fun h => by grind [fEH, sw]
     have h2 : r ≠ fSH := fun h => by subst h; unfold fSH sw at hout'; omega
     have h3 : r ≠ fO := fun h => by subst h; unfold fO sw at hout'; omega
     have h4 : r ≠ fO + 1 := fun h => by subst h; unfold fO sw at hout'; omega
     rw [k4 r hrR, n3 r hr h1 h3 h4 hra, n2 r hr h2 h3 h4 hra]
-    exact hk1 r hr hout
+    grind
 
 
 /-! ## The constants of the right correspondence -/
@@ -171,13 +172,12 @@ theorem cst_regs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀
   obtain ⟨H, -, hst⟩ := E.hst
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, h40, -, -, h34, -⟩ := hst
   have fx : ∀ k, k < 700 → c.nreg (sw k) = c₀.nreg (sw k) := fun k hk =>
-    hI.hin _ (by unfold IFix sw; omega)
+    hI.hin _ (by omega_nf)
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · rw [fx 41 (by norm_num), show sw 41 = sw (40 + 1) from rfl, h40 1 (by norm_num)]; simp [cstR]
-  · rw [fx 42 (by norm_num), show sw 42 = sw (40 + 2) from rfl, h40 2 (by norm_num)]; simp [cstR]
-  · rw [fx 43 (by norm_num), show sw 43 = sw (40 + 3) from rfl, h40 3 (by norm_num)]; simp [cstR]
-  · rw [fx 44 (by norm_num), show sw 44 = sw (40 + 4) from rfl, h40 4 (by norm_num)]; simp [cstR]
-  · rw [fx 34 (by norm_num), h34, cm_n]
+  · grind [cstR]
+  · grind [cstR]
+  · grind [cstR]
+  all_goals (grind [cstR, cm_n])
 
 end Consts
 
@@ -194,10 +194,10 @@ theorem modR_irs {P : Polygon} {W : ℕ} {c₀ c : Config} {dst a b : ℕ} (hI :
   refine IRS.ite (K := 1) (fun h => ?_) (fun h => ?_)
   · refine (IRS.instr1 (i := .copyN dst a) hI hd).mono le_rfl ?_
     rintro c' rfl
-    refine ⟨by simp [regI, Nat.mod_eq_of_lt h], fun q hq => by simp [regI, upd_other _ _ _ hq], rfl⟩
+    refine ⟨by simp [regI, Nat.mod_eq_of_lt h], fun q hq => by simp_all [regI] , rfl⟩
   · refine (IRS.instr1 (i := .subN dst a b) hI hd).mono le_rfl ?_
     rintro c' rfl
-    refine ⟨?_, fun q hq => by simp [regI, upd_other _ _ _ hq], rfl⟩
+    refine ⟨?_, fun q hq => by simp_all [regI] , rfl⟩
     simp only [regI, upd_same]
     rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
 
@@ -238,29 +238,23 @@ theorem fpos_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   rintro c₁ hI₁ - - rfl
   have h34 := (cst_regs E hI₁).2.2.2.2
   refine IRS.seq (modR_irs (dst := fE) (a := zT) (b := sw 34) hI₁
-    (iscr_sw (by simp [fE, sw]) (by simp [fE, sw])) (by
-      show regB c.nmem l c.nreg zT < 2 * regB c.nmem l c.nreg (sw 34)
-      rw [hv, hl _ (by simp [zT, sw]), h34c]; exact hv2)) ?_
+    (iscr_sw (by omega_nf) (by omega_nf)) (by
+      omega_nf)) ?_
   rintro c₂ hI₂ - - ⟨e2, f2, m2⟩
-  have e2' : c₂.nreg fE = v % (chainModel J.right).W.n := by
-    rw [e2]
-    show regB c.nmem l c.nreg zT % regB c.nmem l c.nreg (sw 34) = _
-    rw [hv, hl _ (by simp [zT, sw]), h34c]
+  
   refine IRS.seq (K₁ := 1) (IRS.instr1 (i := .constN fA side) hI₂
-    ⟨iscr_sw (by simp [fA, sw]) (by simp [fA, sw]), by have := E.hWh; unfold hostWords at this; omega⟩) ?_
+    ⟨iscr_sw (by omega_nf) (by omega_nf), by omega⟩) ?_
   rintro c₃ hI₃ hA₃ - hc₃
   have e3E : c₃.nreg fE = v % (chainModel J.right).W.n := by
-    rw [hc₃]; simp [regI, upd_other _ _ _ (show fE ≠ fA by simp [fE, fA, sw])]; exact e2'
-  have e3A : c₃.nreg fA = side := by rw [hc₃]; simp [regI]
+    simp_all [regI, fE, fA, sw] <;> omega_nf
+  have e3A : c₃.nreg fA = side := by simp_all [regI] <;> omega_nf
   have hA2 : c₂.nreg ALLOC = c.nreg ALLOC := by
-    rw [f2 _ (by simp [ALLOC, fE, sw])]
-    show regB c.nmem l c.nreg ALLOC = _
-    exact hl _ (by simp [ALLOC, zT, sw])
+    simp_all [ALLOC, fE, sw, zT] <;> omega_nf
   have hA3 : c₃.nreg ALLOC = c.nreg ALLOC := by
-    rw [hc₃]; simp [regI, upd_other _ _ _ (show ALLOC ≠ fA by simp [ALLOC, fA, sw])]; exact hA2
-  refine (face_irs E hI₃ (by rw [e3E]; exact Nat.mod_lt _ (by have := hv2; omega))
-    (by rw [e3A]; exact hs) (by
-      rw [hA3]; generalize 30000 * (c₀.nreg TLR + 1) = Y at hroom ⊢; omega)).mono le_rfl ?_
+    simp_all [regI, ALLOC, fA, sw] <;> omega_nf
+  refine (face_irs E hI₃ (by rw [e3E]; exact Nat.mod_lt _ (by  omega))
+    (by omega) (by
+      grind)).mono le_rfl ?_
   rintro c₄ ⟨r4, hb4, ha4, m4, A4, k4⟩
   rw [e3A, e3E] at hb4 ha4
   refine ⟨r4, hb4, ha4, fun r hr hfp hra => ?_, by omega, fun a ha => ?_⟩
@@ -270,9 +264,7 @@ theorem fpos_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     rw [upd_other _ _ _ (fun h => hfp (Or.inr (Or.inr (Or.inr h)))),
       f2 r (fun h => hfp (Or.inr (Or.inr (Or.inl h))))]
     exact hl r (fun h => hfp (Or.inr (Or.inl h)))
-  · rw [m4 a (by omega)]
-    have : c₃.nmem = c₂.nmem := by rw [hc₃]
-    rw [this, m2]
+  · ram_simp
 
 end
 

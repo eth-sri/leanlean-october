@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreLink
 
 /-!
@@ -45,12 +47,13 @@ theorem region_of_subset_free {S T : Set (Set Point)} (hST : S ⊆ T) {R : Set P
       (mem_connectedComponentIn hzT)
       ((connectedComponentIn_subset _ _).trans (freeIn_anti M.D hST))
 
+section
+variable (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T) (hT : T ⊆ M.Adm) (hTfin : T.Finite) {R : Set Point} (hRS : R ∈ regionsIn M.D S) (hRT : R ∈ regionsIn M.D T) {e : Set Point} (he : e ∈ M.Adm) (heT : e ∉ T)
+include hM hST hT hTfin hRS hRT he heT
 /-- **The halves do not depend on the chords outside the region**: a region of `insert e T`
 inside `R` is a region of `insert e S`, for `S ⊆ T` finite admissible families of which `R` is a
 common region, and `e` a new admissible chord inside `R`. -/
-theorem half_old (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T) (hT : T ⊆ M.Adm)
-    (hTfin : T.Finite) {R : Set Point} (hRS : R ∈ regionsIn M.D S) (hRT : R ∈ regionsIn M.D T)
-    {e : Set Point} (he : e ∈ M.Adm) (heT : e ∉ T) (heR : e ∩ M.D ⊆ R) {P : Set Point}
+theorem half_old (heR : e ∩ M.D ⊆ R) {P : Set Point}
     (hP : P ∈ regionsIn M.D (insert e T)) (hPR : P ⊆ R) : P ∈ regionsIn M.D (insert e S) := by
   have hFT := hM.sys _ (insert_subset he hT) (hTfin.insert e)
   have heS : e ∉ S := fun h => heT (hST h)
@@ -102,14 +105,15 @@ theorem half_old (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T) (hT : T
     rw [Subset.antisymm h this]; exact hs'.mem₂
 
 /-- **Good splits survive more chords outside the region.** -/
-theorem splitsWell_mono (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T) (hT : T ⊆ M.Adm)
-    (hTfin : T.Finite) {R : Set Point} (hRS : R ∈ regionsIn M.D S) (hRT : R ∈ regionsIn M.D T)
-    {e : Set Point} (he : e ∈ M.Adm) (heT : e ∉ T) (hw : SplitsWell M S R e) :
+theorem splitsWell_mono (hw : SplitsWell M S R e) :
     SplitsWell M T R e := by
   refine ⟨heT, hw.2.1, fun P hP hPR => ?_⟩
   have h1 := hw.2.2 P (half_old hM hST hT hTfin hRS hRT he heT hw.2.1 hP hPR) hPR
   exact h1.trans (ncard_le_ncard (Merge.exitsIn_mono hST P)
     (hTfin.subset (Merge.exitsIn_subset T P)))
+
+
+end
 
 /-- The data of a round: new admissible chords, each splitting a region of `S` well, at most one
 per region. -/
@@ -133,9 +137,11 @@ theorem inter_nonempty_of_adm (hM : WalkAx M) {e : Set Point} (he : e ∈ M.Adm)
   ((hM.sys {e} (singleton_subset_iff.2 he) (finite_singleton e)).chord_inter_nonempty_isPreconnected
     (mem_singleton e)).1
 
+section
+variable (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm) (hfin : S.Finite) (hE : RoundData M S E)
+include hM hS hfin hE
 /-- **The regions after a round.** -/
-theorem round_classify (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm)
-    (hfin : S.Finite) (hE : RoundData M S E) :
+theorem round_classify :
     ∀ U ∈ regionsIn M.D (S ∪ E), Classified M S E U := by
   suffices key : ∀ E₀ : Set (Set Point), E₀.Finite → E₀ ⊆ E →
       ∀ U ∈ regionsIn M.D (S ∪ E₀), Classified M S E₀ U from key E hE.fin subset_rfl
@@ -143,9 +149,7 @@ theorem round_classify (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm
   induction E₀, hE₀ using Set.Finite.induction_on with
   | empty =>
     intro _ U hU
-    rw [union_empty] at hU
-    left
-    exact ⟨hU, by rw [union_empty], fun e he => absurd he (notMem_empty e)⟩
+    grind [Chazelle.Core.Restore.Classified, union_empty]
   | @insert e E₀ heE₀ hE₀fin ih =>
     intro hsub U hU
     have hE₀sub : E₀ ⊆ E := (subset_insert e E₀).trans hsub
@@ -154,14 +158,12 @@ theorem round_classify (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm
     have hT : T ⊆ M.Adm := union_subset hS (hE₀sub.trans hE.adm)
     have hTfin : T.Finite := hfin.union hE₀fin
     have hTe : S ∪ insert e E₀ = insert e T := by
-      rw [hTd]; ext x; simp only [mem_union, mem_insert_iff]; tauto
+      simp_all
     obtain ⟨R, hR, hw⟩ := hE.split e heE
     have he := hE.adm heE
     have heS : e ∉ S := hw.1
     have heT : e ∉ T := by
-      rintro (h | h)
-      · exact heS h
-      · exact heE₀ h
+      simp_all
     -- the chords of `E₀` avoid `R`
     have hE₀R : ∀ e₀ ∈ E₀, ∀ z ∈ e₀, z ∉ closure R ∨ z ∉ M.D := by
       intro e₀ he₀ z hz
@@ -193,9 +195,7 @@ theorem round_classify (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm
       · exact hcS
       · exfalso
         obtain ⟨z, ⟨hz, hzD⟩, hzR⟩ := hcR
-        rcases hE₀R c hcE z hz with h | h
-        · exact h hzR
-        · exact h hzD
+        grind
     have hwT : SplitsWell M T R e :=
       splitsWell_mono hM subset_union_left hT hTfin hR hRT he heT hw
     have hFT := hM.sys _ (insert_subset he hT) (hTfin.insert e)
@@ -209,7 +209,7 @@ theorem round_classify (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm
       have hex := hs.exits_other hFT (subset_insert e T) hUT hUR
       rcases ih hE₀sub U hUT with ⟨hUS, hexS, hno⟩ | ⟨R', hR', e', he', hw', hUR', h3, hlt⟩
       · left
-        refine ⟨hUS, by rw [hex, hexS], fun e'' he'' => ?_⟩
+        refine ⟨hUS, by grind, fun e'' he'' => ?_⟩
         rcases he'' with rfl | he''
         · intro hsub'
           obtain ⟨z, hz⟩ := inter_nonempty_of_adm hM he
@@ -217,21 +217,18 @@ theorem round_classify (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm
           have hzR := hw.2.1 hz
           have : U = R := by
             rw [regionsIn_eq_component hUS hzU, regionsIn_eq_component hR hzR]
-          exact hUR this
-        · exact hno e'' he''
-      · right
-        exact ⟨R', hR', e', mem_insert_of_mem e he', hw', hUR', by rw [hex]; exact h3,
-          by rw [hex]; exact hlt⟩
+          grind
+        grind
+      grind
     · -- a half of `R`
       right
       have hUsub : U ⊆ R := by rcases hU12 with rfl | rfl; exacts [hs.sub₁, hs.sub₂]
       obtain ⟨h3, hlt⟩ := splitsWell_degrees hM hT hTfin hRT he hwT U hU hUsub
-      exact ⟨R, hR, e, mem_insert e E₀, hw, hUsub, h3, by rw [← hexR]; exact hlt⟩
+      ram_grind
 
 /-- **The degree after a round.**  If `S` has degree `≤ d` and every region of `S` with more
 than `D` exit chords received a chord of `E`, then `S ∪ E` has degree `≤ max D (d - 1)`. -/
-theorem round_degLe (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm)
-    (hfin : S.Finite) (hE : RoundData M S E) {d D : ℕ} (hd : M.DegLe S d)
+theorem round_degLe {d D : ℕ} (hd : M.DegLe S d)
     (hall : ∀ R ∈ regionsIn M.D S, D < (exitsIn M.D S R).ncard → ∃ e ∈ E, SplitsWell M S R e) :
     M.DegLe (S ∪ E) (max D (d - 1)) := by
   intro U hU
@@ -246,6 +243,9 @@ theorem round_degLe (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm)
     have := hd R hR
     change (exitsIn M.D S R).ncard ≤ d at this
     omega
+
+
+end
 
 end
 

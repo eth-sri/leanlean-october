@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvXContracts
 public import Chazelle.Core.DownPhaseDrvXPos2
 public import Chazelle.Core.DownPhaseDrvXKept
@@ -40,7 +42,7 @@ theorem kl_nodup (i : ℕ) : (kl P v NR i).Nodup := List.nodup_range.filter _
 
 /-- The chord record `t < #chords` is a member of the record list. -/
 theorem chord_mem_chords {t : ℕ} (ht : t < NR.chords.length) : NR.chord t ∈ NR.chords := by
-  unfold NF.chord; rw [List.getD_eq_getElem _ _ ht]; exact List.getElem_mem ht
+  simp_all [NF.chord] <;> omega_nf
 
 end GlueB
 
@@ -53,7 +55,7 @@ theorem postMath : PostMath := by
   have hxT : ∀ t, xT P v NR t = xTriple (Qof P).n
       (regHost li (Qof P).n (buildNF (interiorModel (Qof P)) (Qof P) L E) r) li C.m C.topIdx
       C.sideBeta (NR.chord t).h (NR.chord t).lp (NR.chord t).rp := by
-    intro t; unfold xT; rw [hm, hT, hβ, hli, hH]
+    simp_all [xT] <;> omega_nf
   have hkR : ∀ t, t < NR.nChords → (kR P v (NR.chord t) ↔
       ((NR.chord t).toSet (chainModel C) (Qof P) ∩ reg r).Nonempty) := by
     intro t ht; unfold kR; rw [hm, hT, hβ, hli, hH]; exact Y.kept_iff ht
@@ -96,10 +98,10 @@ theorem postMath : PostMath := by
     · rintro ⟨⟨c, hc, rfl⟩, hne⟩
       obtain ⟨t, htK, rfl⟩ := List.getElem_of_mem hc
       have hct : NR.chord t = NR.chords[t] := by
-        unfold NF.chord; rw [List.getD_eq_getElem _ _ htK]
-      have ht : t ∈ kl P v NR K := mem_kl.2 ⟨htK, (hkR t htK).2 (by rw [hct]; exact hne)⟩
+        grind [NF.chord]
+      have ht : t ∈ kl P v NR K := mem_kl.2 ⟨htK, (hkR t htK).2 (by grind)⟩
       refine ⟨xT P v NR t, List.mem_map.2 ⟨t, ht, rfl⟩, ?_⟩
-      rw [hset t ht, hct]
+      grind
   · -- no repetition
     have e : (xL P v NR K).map (fun y => (recOf y).toSet (interiorModel (Qof P)) (Qof P)) =
         (kl P v NR K).map (fun t => (NR.chord t).toSet (chainModel C) (Qof P)) := by
@@ -110,24 +112,16 @@ theorem postMath : PostMath := by
     exact (kl_nodup K).map_on fun t ht t' ht' h =>
       X.hNR.2.1 t t' (mem_kl.1 ht).1 (mem_kl.1 ht').1 h
   · -- attached, in range
-    intro y hy
-    unfold xL at hy
-    obtain ⟨t, ht, rfl⟩ := List.mem_map.1 hy
-    exact hatt t ht
+    core_grind
   · -- the ends on arcs of the region
     intro q hq
     have hlen : (xL P v NR K).length = (kl P v NR K).length := by
-      unfold xL; rw [List.length_map]
+      core_grind
     have hq2 : q / 2 < (kl P v NR K).length := by omega
     have ht : (kl P v NR K)[q / 2] ∈ kl P v NR K := List.getElem_mem hq2
     have hget : (xL P v NR K).getD (q / 2) (0, 0, 0) = xT P v NR ((kl P v NR K)[q / 2]) := by
-      unfold xL
-      rw [List.getD_eq_getElem _ _ (by rw [List.length_map]; exact hq2), List.getElem_map]
-    unfold endPos
-    rw [hget]
-    split_ifs
-    · exact (hon _ ht).1
-    · exact (hon _ ht).2
+      grind [xL, List.length_map, List.getElem_map]
+    grind [endPos]
 
 end
 

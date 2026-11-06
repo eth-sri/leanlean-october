@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FactsFullDegInt
 public import Chazelle.Core.SpecKernels
 public import Chazelle.Merge.Augmented
@@ -35,27 +37,36 @@ open Chazelle.Geometry (lerp point_ext)
 
 namespace DownBase
 
+section
+variable (li : Bool) (n p : ℕ)
+include li n p
 /-- The input vertex at the start of interior walk edge `p` (`li`: the `LeftInside` bit). -/
-def wStart (li : Bool) (n p : ℕ) : ℕ := if li then p else n - 1 - p
+def wStart : ℕ := if li then p else n - 1 - p
 
 /-- The input vertex at the end of interior walk edge `p`. -/
-def wEnd (li : Bool) (n p : ℕ) : ℕ := wStart li n ((p + 1) % n)
+def wEnd : ℕ := wStart li n ((p + 1) % n)
 
+
+end
+
+section
+variable (li : Bool) (n : ℕ) (x : ℕ × ℕ × ℕ)
+include li n x
 /-- **A kept triple**: one of its walk edges starts at the height vertex. -/
-def keepX (li : Bool) (n : ℕ) (x : ℕ × ℕ × ℕ) : Bool :=
+def keepX : Bool :=
   decide (x.1 = wStart li n x.2.1) || decide (x.1 = wStart li n x.2.2)
 
-theorem keepX_iff (li : Bool) (n : ℕ) (x : ℕ × ℕ × ℕ) :
+theorem keepX_iff :
     keepX li n x = true ↔ x.1 = wStart li n x.2.1 ∨ x.1 = wStart li n x.2.2 := by
   simp [keepX]
+
+
+end
 
 variable {Q : Polygon} {li : Bool}
 
 theorem interiorWalk_n (Q : Polygon) : (interiorWalk Q).n = Q.n := by
-  unfold interiorWalk
-  split_ifs
-  · rfl
-  · simp [Polygon.n]
+  core_grind
 
 theorem rev_vtx (Q : Polygon) {p : ℕ} (hp : p < Q.n) :
     Polygon.vtx ⟨Q.vertices.reverse⟩ p = Q.vtx (Q.n - 1 - p) := by
@@ -65,16 +76,7 @@ theorem rev_vtx (Q : Polygon) {p : ℕ} (hp : p < Q.n) :
 
 theorem walk_vtx (hli : li = true ↔ Mountain.LeftInside Q) {p : ℕ} (hp : p < Q.n) :
     (interiorWalk Q).vtx p = Q.vtx (wStart li Q.n p) := by
-  unfold interiorWalk wStart
-  by_cases h : Mountain.LeftInside Q
-  · rw [ite_eq_left h, hli.2 h]
-    rfl
-  · have : li = false := by
-      cases hb : li
-      · rfl
-      · exact absurd (hli.1 hb) h
-    rw [ite_eq_right h, this]
-    exact rev_vtx Q hp
+  grind [Chazelle.Core.DownBase.rev_vtx, interiorWalk, wStart]
 
 theorem mod_lt' {p n : ℕ} (hp : p < n) : (p + 1) % n < n := Nat.mod_lt _ (by omega)
 
@@ -83,19 +85,24 @@ theorem walk_vtx_succ (hli : li = true ↔ Mountain.LeftInside Q) {p : ℕ} (hp 
   rw [interiorWalk_n]
   exact walk_vtx hli (mod_lt' hp)
 
-theorem wStart_lt {n p : ℕ} (hp : p < n) : wStart li n p < n := by
-  unfold wStart; split_ifs <;> omega
+section
+variable {n p : ℕ} (hp : p < n)
+include hp
+theorem wStart_lt : wStart li n p < n := by
+  core_grind
 
-theorem wEnd_lt {n p : ℕ} (hp : p < n) : wEnd li n p < n := wStart_lt (mod_lt' hp)
+theorem wEnd_lt : wEnd li n p < n := wStart_lt (mod_lt' hp)
+
+
+end
 
 theorem wStart_ne_wEnd {n p : ℕ} (hn : 2 ≤ n) (hp : p < n) : wStart li n p ≠ wEnd li n p := by
   unfold wEnd wStart
   have : (p + 1) % n = if p + 1 < n then p + 1 else 0 := by
     split_ifs with h
     · exact Nat.mod_eq_of_lt h
-    · rw [show p + 1 = n by omega, Nat.mod_self]
-  rw [this]
-  split_ifs <;> omega
+    grind [Nat.mod_self]
+  grind
 
 /-! ## Positions on the interior walk -/
 
@@ -117,25 +124,26 @@ theorem wa_wb_snd_ne {p : ℕ} (hp : p < Q.n) :
   rw [wa_eq hQ hDH hli hp, wb_eq hQ hDH hli hp]
   exact hDH _ _ (wStart_lt hp) (wEnd_lt hp) (wStart_ne_wEnd (by have := hQ.1; omega) hp)
 
-theorem param_eq {p h : ℕ} (hp : p < Q.n) :
+section
+variable {p h : ℕ} (hp : p < Q.n)
+include hp
+theorem param_eq :
     (interiorModel Q).param Q ⟨p, h + 1⟩ =
       ((Q.vtx h).2 - ((interiorModel Q).wa p).2) /
         (((interiorModel Q).wb p).2 - ((interiorModel Q).wa p).2) := by
-  simp only [Model.param]
-  rw [ite_eq_right (wa_wb_snd_ne hQ hDH hli hp)]
+  simp_all [Model.param] 
 
 /-- The point of a position lies at the height of its vertex. -/
-theorem pos_snd {p h : ℕ} (hp : p < Q.n) :
+theorem pos_snd :
     ((interiorModel Q).pos Q ⟨p, h + 1⟩).2 = (Q.vtx h).2 := by
   have hne := wa_wb_snd_ne hQ hDH hli hp
   have hd : ((interiorModel Q).wb p).2 - ((interiorModel Q).wa p).2 ≠ 0 := sub_ne_zero.2 hne.symm
   simp only [Model.pos, Geometry.lerp_snd]
   rw [param_eq hQ hDH hli hp]
-  field_simp
-  ring
+  simp_all
 
 /-- A position whose edge starts at its vertex is that vertex. -/
-theorem pos_start {p h : ℕ} (hp : p < Q.n) (hh : h = wStart li Q.n p) :
+theorem pos_start (hh : h = wStart li Q.n p) :
     (interiorModel Q).pos Q ⟨p, h + 1⟩ = Q.vtx h := by
   have hpar : (interiorModel Q).param Q ⟨p, h + 1⟩ = 0 := by
     rw [param_eq hQ hDH hli hp, wa_eq hQ hDH hli hp, ← hh, sub_self, zero_div]
@@ -143,7 +151,7 @@ theorem pos_start {p h : ℕ} (hp : p < Q.n) (hh : h = wStart li Q.n p) :
   rw [hpar, Geometry.lerp_zero, wa_eq hQ hDH hli hp, ← hh]
 
 /-- **A position at a vertex, with parameter in `[0, 1)`, is on an edge starting there.** -/
-theorem start_of_pos {p h : ℕ} (hp : p < Q.n) (hh : h < Q.n)
+theorem start_of_pos (hh : h < Q.n)
     (ht0 : 0 ≤ (interiorModel Q).param Q ⟨p, h + 1⟩)
     (ht1 : (interiorModel Q).param Q ⟨p, h + 1⟩ < 1)
     (hpos : (interiorModel Q).pos Q ⟨p, h + 1⟩ = Q.vtx h) : h = wStart li Q.n p := by
@@ -158,10 +166,7 @@ theorem start_of_pos {p h : ℕ} (hp : p < Q.n) (hh : h < Q.n)
   by_contra hne
   have inj : ∀ a b, a < Q.n → b < Q.n → Q.vtx a = Q.vtx b → a = b := hQ.2.1
   -- `t ≠ 0`
-  have ht0' : t ≠ 0 := by
-    intro e
-    rw [e, Geometry.lerp_zero] at hpos'
-    exact hne (inj _ _ hh hjn hpos'.symm)
+  
   -- `h ≠ j'`
   have hj'h : h ≠ j' := by
     intro e
@@ -169,54 +174,46 @@ theorem start_of_pos {p h : ℕ} (hp : p < Q.n) (hh : h < Q.n)
     rw [e] at hy
     simp only [Geometry.lerp_snd] at hy
     have hne' : (Q.vtx j).2 ≠ (Q.vtx j').2 := hDH _ _ hjn hj'n hjj'
-    have : (1 - t) * ((Q.vtx j').2 - (Q.vtx j).2) = 0 := by linarith
-    rcases mul_eq_zero.1 this with h1 | h1
-    · linarith
-    · exact hne' (by linarith)
+    grind
   -- the `Q` edge carrying the position
   obtain ⟨e, hen, hee, hmem⟩ : ∃ e, e < Q.n ∧ (e = j ∧ (e + 1) % Q.n = j' ∨
       e = j' ∧ (e + 1) % Q.n = j) ∧ Q.vtx h ∈ Q.edge e := by
     have hmod : ∀ q, q < Q.n → (q + 1) % Q.n = if q + 1 < Q.n then q + 1 else 0 := fun q hq => by
       split_ifs with h1
       · exact Nat.mod_eq_of_lt h1
-      · rw [show q + 1 = Q.n by omega, Nat.mod_self]
+      grind [Nat.mod_self]
     cases hb : li
     · -- reversed walk: edge `j'` runs from `j'` to `j`
-      have hj1 : j = Q.n - 1 - p := by rw [hj]; simp [wStart, hb]
+      have hj1 : j = Q.n - 1 - p := by grind [wStart]
       have hj'1 : j' = Q.n - 1 - (p + 1) % Q.n := by rw [hj']; simp [wEnd, wStart, hb]
       refine ⟨j', hj'n, Or.inr ⟨rfl, ?_⟩, ?_⟩
-      · rw [hj1, hj'1, hmod p hp, hmod _ (by split_ifs <;> omega)]
+      · rw [hj1, hj'1, hmod p hp, hmod _ (by omega)]
         split_ifs <;> omega
       · have hjs : (j' + 1) % Q.n = j := by
-          rw [hj1, hj'1, hmod p hp, hmod _ (by split_ifs <;> omega)]
+          rw [hj1, hj'1, hmod p hp, hmod _ (by omega)]
           split_ifs <;> omega
         refine ⟨1 - t, by linarith, by linarith, ?_⟩
-        rw [hjs, ← hpos']
-        simp only [lerp]
-        refine Prod.ext ?_ ?_ <;> simp only <;> ring
-    · have hj1 : j = p := by rw [hj]; simp [wStart, hb]
+        grind [lerp]
+    · have hj1 : j = p := by grind [wStart]
       have hj'1 : j' = (p + 1) % Q.n := by rw [hj']; simp [wEnd, wStart, hb]
-      refine ⟨j, hjn, Or.inl ⟨rfl, by rw [hj1, hj'1]⟩, ?_⟩
+      refine ⟨j, hjn, Or.inl ⟨rfl, by grind⟩, ?_⟩
       refine ⟨t, ht0, ht1.le, ?_⟩
-      have hs : (j + 1) % Q.n = j' := by rw [hj1, hj'1]
+      have hs : (j + 1) % Q.n = j' := by grind
       rw [hs, ← hpos']
       rfl
   have heh : e ≠ h := by
-    rintro rfl
-    rcases hee with ⟨rfl, -⟩ | ⟨rfl, -⟩
-    · exact hne rfl
-    · exact hj'h rfl
+    omega
   have hmh : Q.vtx h ∈ Q.edge h := ⟨0, le_rfl, zero_le_one, by simp⟩
   have hcap := hQ.2.2 h e hh hen heh.symm
   have hin : Q.vtx h ∈ Q.edge h ∩ Q.edge e := ⟨hmh, hmem⟩
   rw [hcap] at hin
   obtain ⟨-, h2 | h2⟩ := hin
-  · have := inj _ _ hh hen h2
-    exact heh this.symm
+  · grind
   · have := inj _ _ hh (Nat.mod_lt _ (by omega)) h2
-    rcases hee with ⟨rfl, h3⟩ | ⟨rfl, h3⟩
-    · exact hj'h (this.trans h3)
-    · exact hne (this.trans h3)
+    omega
+
+
+end
 
 omit hQ hDH hli in
 theorem vtx_not_mem_dom {h : ℕ} (hh : h < Q.n) : Q.vtx h ∉ Q.filled \ Q.boundary := fun hm =>
@@ -259,7 +256,7 @@ theorem mem_full_iff {x : ℕ × ℕ × ℕ} (hx : (recOf x).Attached (interiorM
     obtain ⟨i, σ, hi, hσ, hdir, hcs, -⟩ := Visibility.chords_spec hQ hmem
     have hvi : Q.vtx i ∈ hseg y a b := by
       rw [hcs, Visibility.chordSet_eq_openChordSet_union hQ hi hdir]
-      exact Or.inr (Or.inl rfl)
+      grind
     have hih : i = h := by
       by_contra hne
       exact hDH _ _ hi hh hne hvi.1
@@ -270,11 +267,11 @@ theorem mem_full_iff {x : ℕ × ℕ × ℕ} (hx : (recOf x).Attached (interiorM
     · rcases h2.lt_or_eq with h2 | h2
       · exact absurd (by
           have := hch.open_mem _ h1 h2
-          rwa [show (((Q.vtx i).1, y) : Point) = Q.vtx i from point_ext rfl rfl] at this) hvD
+          omega) hvD
       · right
-        exact start_of_pos hQ hDH hli hrp hi hr0 hr1 (by rw [hR]; exact point_ext h2.symm rfl)
+        exact start_of_pos hQ hDH hli hrp hi hr0 hr1 (by grind)
     · left
-      exact start_of_pos hQ hDH hli hlp hi hl0 hl1 (by rw [hL]; exact point_ext h1 rfl)
+      exact start_of_pos hQ hDH hli hlp hi hl0 hl1 (by grind)
   · -- a kept triple: the chord is the vertex chord of `h`
     have key : ∀ σ : ℝ, (σ = 1 ∨ σ = -1) →
         (∀ t, 0 < t → t < b - a → rayPt (Q.vtx h) σ t ∈ Q.filled \ Q.boundary) →
@@ -295,22 +292,19 @@ theorem mem_full_iff {x : ℕ × ℕ × ℕ} (hx : (recOf x).Attached (interiorM
         exact Or.inl ⟨s, ⟨hs0, hs1⟩, rfl⟩
       have heq := FullDegInt.eq_of_common (FullDegInt.hc_full hQ hmem) hHC hzC
         (hon s hs0 hs2) (hin s hs0 hs2)
-      rw [← heq]
-      exact hmem
+      grind
     rintro (e | e)
     · -- left end at the vertex
       have hv : Q.vtx h = (a, y) := by rw [← hL]; exact (pos_start hQ hDH hli hlp e).symm
       refine key 1 (Or.inl rfl) (fun t ht1 ht2 => ?_) (fun t ht1 ht2 => ?_)
       · have := hch.open_mem (a + t) (by linarith) (by linarith)
-        convert this using 1
-        rw [hv]; simp [rayPt]
+        grind [rayPt]
       · rw [hv]; refine ⟨rfl, ?_, ?_⟩ <;> simp [rayPt] <;> linarith
     · -- right end at the vertex
       have hv : Q.vtx h = (b, y) := by rw [← hR]; exact (pos_start hQ hDH hli hrp e).symm
       refine key (-1) (Or.inr rfl) (fun t ht1 ht2 => ?_) (fun t ht1 ht2 => ?_)
       · have := hch.open_mem (b - t) (by linarith) (by linarith)
-        convert this using 1
-        rw [hv]; simp [rayPt, sub_eq_add_neg]
+        grind [rayPt, sub_eq_add_neg]
       · rw [hv]; refine ⟨rfl, ?_, ?_⟩ <;> simp [rayPt] <;> linarith
 
 end DownBase

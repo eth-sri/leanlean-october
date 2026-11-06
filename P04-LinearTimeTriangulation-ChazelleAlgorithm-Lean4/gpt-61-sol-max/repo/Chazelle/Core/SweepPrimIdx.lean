@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepPrimJun
 public import Chazelle.Core.SweepLabelJG
 public import Chazelle.Core.SweepLabelJL0
@@ -38,9 +40,7 @@ def Bidx (r : ℕ) : Bool := decide (50100 ≤ r ∧ r < 50110) || decide (50210
 
 theorem Bidx_frame {c c' : Config} (h : FrameB Bidx c c') (k : ℕ) : Frame {bLocate} c c' k :=
   NFLoc.frame_of_frameB h (fun r hr => by
-    simp only [Bidx, Bool.or_eq_true, decide_eq_true_eq] at hr
-    refine ⟨?_, by unfold ALLOC; omega⟩
-    simp only [bandOf, bLocate, Finset.mem_singleton]; omega) k
+    ram_grind) k
 
 /-! ## `(a + b) mod n` -/
 
@@ -50,10 +50,12 @@ theorem Bidx_frame {c c' : Config} (h : FrameB Bidx c c') (k : ℕ) : Frame {bLo
 
 /-! ## The geometric meaning -/
 
+section
+variable (J : Merge.Junction) (hP : J.P.Simple) {d : ℕ}
+include hP
 /-- **`corrR`**: the walk point at offset `d` of the right stretch of `M` is the walk point of
 `M₂` at `dq rL1 rδ d` from its base. -/
-theorem corrR_sidePt (J : Merge.Junction) (hP : J.P.Simple)
-    {d : ℕ} (hd : d < Sweep.rL1 J + Sweep.rL2 J) (t : ℝ) :
+theorem corrR_sidePt (hd : d < Sweep.rL1 J + Sweep.rL2 J) (t : ℝ) :
     sidePt (chainModel J.whole).W ((6 + WalkEmbed.tpos J.whole J.m₁ + d) %
         (chainModel J.whole).W.n) t =
       sidePt (chainModel J.right).W ((6 + WalkEmbed.tpos J.right 0 +
@@ -62,13 +64,15 @@ theorem corrR_sidePt (J : Merge.Junction) (hP : J.P.Simple)
 
 /-- **`corrL`**: the walk point at offset `d` of the left stretch of `M` is the walk point of
 `M₁` at `dq lL1 lδ d` from its base. -/
-theorem corrL_sidePt (J : Merge.Junction) (hP : J.P.Simple) 
-    {d : ℕ} (hd : d < Sweep.lL1 J + Sweep.lL2 J) (t : ℝ) :
+theorem corrL_sidePt (hd : d < Sweep.lL1 J + Sweep.lL2 J) (t : ℝ) :
     sidePt (chainModel J.whole).W ((6 + WalkEmbed.tpos J.whole (J.m₁ + 2 * J.m₂) + d) %
         (chainModel J.whole).W.n) t =
       sidePt (chainModel J.left).W ((6 + WalkEmbed.tpos J.left J.m₁ +
         Sweep.dq (Sweep.lL1 J) (Sweep.lδ J) d) % (chainModel J.left).W.n) t :=
   (Sweep.corr_left0 J hP (S₁ := ∅) (Set.empty_subset _) Set.finite_empty).sidePt_eq hd t
+
+
+end
 
 /-- **`boxTwin`**: on the vertical sides of the box (walk edges `1` and `3`) two chain models with
 the same box have the same positions. -/
@@ -90,15 +94,12 @@ theorem boxTwin_pos {C₁ C₂ : Chain} (hR : C₁.radius = C₂.radius) {e : �
     simp only [Model.wb]
     rw [show (chainModel C₁).W = C₁.sideWalk C₁.sideBeta from rfl,
       show (chainModel C₂).W = C₂.sideWalk C₂.sideBeta from rfl,
-      C₁.sideWalk_mod_small _ (by rcases he with rfl | rfl <;> norm_num),
-      C₂.sideWalk_mod_small _ (by rcases he with rfl | rfl <;> norm_num)]
+      C₁.sideWalk_mod_small _ (by omega),
+      C₂.sideWalk_mod_small _ (by omega)]
     rcases he with rfl | rfl
     · rw [C₁.sideWalk_vtx_two, C₂.sideWalk_vtx_two, hR]
-    · rw [C₁.sideWalk_vtx_four, C₂.sideWalk_vtx_four, hR]
-  have hp : (chainModel C₁).param Q ⟨e, h⟩ = (chainModel C₂).param Q ⟨e, h⟩ := by
-    unfold Model.param; simp only; rw [ha, hb]
-  refine ⟨ha, hb, hp, ?_⟩
-  unfold Model.pos; rw [ha, hb, hp]
+    aesop
+  simp_all [Model.param, Model.pos] <;> omega_nf
 
 end
 

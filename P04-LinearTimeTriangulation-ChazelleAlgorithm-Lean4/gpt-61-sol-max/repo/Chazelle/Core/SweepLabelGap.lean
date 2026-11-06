@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepLabel
 public import Chazelle.Core.FactsTie
 
@@ -41,13 +43,7 @@ theorem sideInArc_rev_iff_off {n g u w x : ℝ} (_hg : 0 ≤ g) (_hgn : g < n) (
     (hun : u < n) (hw : 0 ≤ w) (hwn : w < n) (hx : 0 ≤ x) (hxn : x < n)
     (huw : off n g u < off n g w) :
     sideInArc w u x ↔ off n g x < off n g u ∨ off n g w < off n g x := by
-  unfold off at *
-  unfold sideInArc
-  split_ifs at * <;> constructor <;>
-    first
-    | (rintro ⟨h1, h2⟩; first | (left; linarith) | (right; linarith))
-    | (rintro (h1 | h1) <;>
-        first | (left; linarith) | (right; linarith) | (constructor <;> linarith))
+  grind [off, sideInArc]
 
 /-- **Non-crossing in offsets.**  If one attachment of a chord `d` lies strictly between the two
 attachments of a chord `c` (in offsets from `g`), so does (weakly) every other attachment of
@@ -69,9 +65,7 @@ theorem no_cross_off {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
   by_contra hcon
   have hy : off M.W.n g (py + ty) < off M.W.n g (pa + ta) ∨
       off M.W.n g (pb + tb) < off M.W.n g (py + ty) := by
-    by_contra h
-    push Not at h
-    exact hcon h
+    grind
   apply hM.no_cross hF hfin hc hd hcd hA hB hAB hX hY
   exact ⟨(sideInArc_iff_off hg0 hgn a0 a1 b0 b1 x0 x1 hab).2 ⟨hx1, hx2⟩,
     (sideInArc_rev_iff_off hg0 hgn a0 a1 b0 b1 y0 y1 hab).2 hy⟩
@@ -80,51 +74,57 @@ section NonCut
 
 variable {M : Model}
 
+section
+variable (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite) (x : ℝ)
+include hM hF hfin
 /-- The keys just after a key are not cuts. -/
-theorem eventually_not_cut_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
-    (hfin : F.Finite) (x : ℝ) : ∀ᶠ s in 𝓝[>] (0 : ℝ), ¬ M.IsCut F (x + s) := by
+theorem eventually_not_cut_after : ∀ᶠ s in 𝓝[>] (0 : ℝ), ¬ M.IsCut F (x + s) := by
   have hK := hM.finite_cuts hF hfin
   have h := (Filter.eventually_all_finite hK (l := 𝓝[>] (0 : ℝ))
     (p := fun y s => x + s ≠ y)).2 fun y _ => by
       rcases le_or_gt y x with hy | hy
       · filter_upwards [self_mem_nhdsWithin] with s hs
-        have : (0 : ℝ) < s := hs
-        intro h; linarith
+        grind
       · filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < y - x by linarith)] with s hs
-        intro h; linarith [hs.2]
-  filter_upwards [h] with s hs hcut
-  exact hs _ hcut rfl
+        aesop
+  grind
 
 /-- The keys just before a key are not cuts. -/
-theorem eventually_not_cut_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
-    (hfin : F.Finite) (x : ℝ) : ∀ᶠ s in 𝓝[>] (0 : ℝ), ¬ M.IsCut F (x - s) := by
+theorem eventually_not_cut_before : ∀ᶠ s in 𝓝[>] (0 : ℝ), ¬ M.IsCut F (x - s) := by
   have hK := hM.finite_cuts hF hfin
   have h := (Filter.eventually_all_finite hK (l := 𝓝[>] (0 : ℝ))
     (p := fun y s => x - s ≠ y)).2 fun y _ => by
       rcases le_or_gt x y with hy | hy
       · filter_upwards [self_mem_nhdsWithin] with s hs
-        have : (0 : ℝ) < s := hs
-        intro h; linarith
+        grind
       · filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < x - y by linarith)] with s hs
-        intro h; linarith [hs.2]
-  filter_upwards [h] with s hs hcut
-  exact hs _ hcut rfl
+        aesop
+  grind
+
+
+end
 
 end NonCut
 
 /-! ## Faced regions just after and just before a position -/
 
+section
+variable (M : Model) (p : ℕ) (t : ℝ) (U : Set Point)
+include M p t U
 /-- The positions just after `(p, t)` (on the same walk edge) face `U`. -/
-def AfterFaces (M : Model) (p : ℕ) (t : ℝ) (U : Set Point) : Prop :=
+def AfterFaces : Prop :=
   ∃ δ > (0 : ℝ), ∀ s, 0 < s → s < δ → t + s < 1 → M.Faces p (t + s) U
 
 /-- The positions just before `(p, t)` (on the same walk edge if `0 < t`, on the previous one if
 `t = 0`) face `U`. -/
-def BeforeFaces (M : Model) (p : ℕ) (t : ℝ) (U : Set Point) : Prop :=
+def BeforeFaces : Prop :=
   ∃ δ > (0 : ℝ), (0 < t → ∀ s, 0 < s → s < δ → s < t → M.Faces p (t - s) U) ∧
     (t = 0 → ∀ s, 0 < s → s < δ → M.Faces ((p + M.W.n - 1) % M.W.n) (1 - s) U)
 
 /-! ## Correspondences without a separating chord -/
+
+
+end
 
 /-- **A correspondence without a separating chord at the gap** (F2, `Corr` minus `box`) between the walk of a model `M` (read from the vertex `g`) and the walk
 of a model `M₂` (read from `g'`): they agree along a first piece of length `L1` and, after a gap of
@@ -157,16 +157,25 @@ namespace Corr0
 
 variable {M M₂ : Model} {F S : Set (Set Point)} {g g' L1 L2 δ : ℕ}
 
-theorem n_pos (hC : Corr0 M M₂ F S g g' L1 L2 δ) : 0 < M.W.n := by have := hC.hg; omega
+section
+variable (hC : Corr0 M M₂ F S g g' L1 L2 δ)
+include hC
+theorem n_pos : 0 < M.W.n := by ram_grind
 
-theorem n₂_pos (hC : Corr0 M M₂ F S g g' L1 L2 δ) : 0 < M₂.W.n := by have := hC.hg'; omega
+theorem n₂_pos : 0 < M₂.W.n := by ram_grind
 
-theorem dq_lt (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 + L2) :
+
+end
+
+section
+variable (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 + L2)
+include hC hd
+theorem dq_lt :
     dq L1 δ d < M₂.W.n := by
-  have := hC.hL₂; unfold dq; split_ifs <;> omega
+  have := hC.hL₂; grind [dq]
 
 /-- Agreeing points. -/
-theorem sidePt_eq (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 + L2) (t : ℝ) :
+theorem sidePt_eq (t : ℝ) :
     sidePt M.W ((g + d) % M.W.n) t = sidePt M₂.W ((g' + dq L1 δ d) % M₂.W.n) t := by
   unfold dq
   split_ifs with h
@@ -176,60 +185,63 @@ theorem sidePt_eq (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 +
       show g' + L1 + δ + (d - L1) = g' + (d + δ) by omega] at this
 
 /-- Agreeing attachments (away from the base and the split vertex). -/
-theorem attach_iff (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 + L2) {t : ℝ}
+theorem attach_iff {t : ℝ}
     (hsec : t = 0 → d ≠ 0 ∧ d ≠ L1) (c : Set Point) :
     SideAttach M.W c ((g + d) % M.W.n) t ↔ SideAttach M₂.W c ((g' + dq L1 δ d) % M₂.W.n) t := by
   unfold dq
   split_ifs with h
   · exact hC.A1.sideAttach_iff hC.n_pos hC.n₂_pos h (fun h0 => by
-      have := (hsec h0).1; omega) c
+      grind) c
   · have := hC.A2.sideAttach_iff hC.n_pos hC.n₂_pos (d := d - L1) (by omega) (t := t)
-      (fun h0 => by have := (hsec h0).2; omega) c
+      (fun h0 => by grind) c
     rwa [show g + L1 + (d - L1) = g + d by omega,
       show g' + L1 + δ + (d - L1) = g' + (d + δ) by omega] at this
 
+
+end
+
+section
+variable (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 + L2) {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1)
+include hC hd ht ht1
 /-- The offset of a position of the stretch of `M`. -/
-theorem off_M (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 + L2) {t : ℝ}
-    (ht : 0 ≤ t) (ht1 : t < 1) :
+theorem off_M :
     off M.W.n g (((g + d) % M.W.n : ℕ) + t) = d + t :=
-  off_key hC.hg (by have := hC.hL; omega) ht ht1
+  off_key hC.hg (by ram_grind) ht ht1
 
 /-- The offset of the corresponding position of `M₂`. -/
-theorem off_M₂ (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 + L2) {t : ℝ}
-    (ht : 0 ≤ t) (ht1 : t < 1) :
+theorem off_M₂ :
     off M₂.W.n g' (((g' + dq L1 δ d) % M₂.W.n : ℕ) + t) = dq L1 δ d + t :=
   off_key hC.hg' (hC.dq_lt hd) ht ht1
 
 /-- **Transfer of an attachment** from `M₂` to `M` along the stretch. -/
-theorem transfer (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 + L2) {t : ℝ}
-    (ht : 0 ≤ t) (ht1 : t < 1) (hsec : t = 0 → d ≠ 0 ∧ d ≠ L1) {c : Set Point} (hc : c ∈ S)
+theorem transfer (hsec : t = 0 → d ≠ 0 ∧ d ≠ L1) {c : Set Point} (hc : c ∈ S)
     (hA : SideAttach M₂.W c ((g' + dq L1 δ d) % M₂.W.n) t) :
     ∃ e ∈ F, e ⊆ c ∧ sidePt M.W ((g + d) % M.W.n) t ∈ e ∧
       SideAttach M.W e ((g + d) % M.W.n) t := by
   have hpos : 0 < (dq L1 δ d : ℝ) + t := by
     rcases ht.lt_or_eq with h | h
-    · have : (0 : ℝ) ≤ dq L1 δ d := Nat.cast_nonneg _
-      linarith
-    · have hd0 := (hsec h.symm).1
-      have : 1 ≤ dq L1 δ d := by unfold dq; split_ifs <;> omega
-      have : (1 : ℝ) ≤ dq L1 δ d := by exact_mod_cast this
-      linarith
+    · linarith
+    · 
+      have : 1 ≤ dq L1 δ d := by grind [dq]
+      aesop
   have hlt : (dq L1 δ d : ℝ) + t < L1 + δ + L2 := by
-    have : dq L1 δ d + 1 ≤ L1 + δ + L2 := by unfold dq; split_ifs <;> omega
+    have : dq L1 δ d + 1 ≤ L1 + δ + L2 := by grind [dq]
     have : (dq L1 δ d : ℝ) + 1 ≤ L1 + δ + L2 := by exact_mod_cast this
     linarith
   have hq : sidePt M₂.W ((g' + dq L1 δ d) % M₂.W.n) t ≠ M₂.W.vtx g' := by
     refine hC.noV _ (Nat.mod_lt _ hC.n₂_pos) t ht ht1 ?_ ?_ <;> rw [hC.off_M₂ hd ht ht1]
-    · exact hpos
-    · exact hlt
+    all_goals omega
   have hqD : sidePt M₂.W ((g' + dq L1 δ d) % M₂.W.n) t ∉ M₂.D :=
     hC.hM₂.trace _ (Nat.mod_lt _ hC.n₂_pos) t ht ht1.le
   obtain ⟨e, he, hqe, hec⟩ := hC.trans c hc _ hA.2.2.2.1 hqD hq
   have hpt := hC.sidePt_eq hd t
-  refine ⟨e, he, hec, by rw [hpt]; exact hqe, ?_⟩
+  refine ⟨e, he, hec, by simp_all, ?_⟩
   rw [hC.attach_iff hd hsec]
   obtain ⟨hp, ht0, ht1', -, r, hr, hl⟩ := hA
   exact ⟨hp, ht0, ht1', hqe, r, hr, fun x hx => hl x (hec hx)⟩
+
+
+end
 
 end Corr0
 
@@ -237,21 +249,24 @@ namespace Corr0
 
 variable {M M₂ : Model} {F S : Set (Set Point)} {g g' L1 L2 δ : ℕ}
 
+section
+variable (hC : Corr0 M M₂ F S g g' L1 L2 δ)
+include hC
 /-- Decomposing a position of the walk of `M` by its offset from `g`. -/
-theorem decomp (hC : Corr0 M M₂ F S g g' L1 L2 δ) {p : ℕ} (hp : p < M.W.n) {t : ℝ} (ht : 0 ≤ t)
+theorem decomp {p : ℕ} (hp : p < M.W.n) {t : ℝ} (ht : 0 ≤ t)
     (ht1 : t < 1) :
     (g + dOf M.W.n g p) % M.W.n = p ∧ off M.W.n g (p + t) = dOf M.W.n g p + t :=
   ⟨add_dOf hC.hg hp, off_key' hC.hg hp ht ht1⟩
 
 /-- Decomposing a position of the walk of `M₂` by its offset from `g'`. -/
-theorem decomp₂ (hC : Corr0 M M₂ F S g g' L1 L2 δ) {p : ℕ} (hp : p < M₂.W.n) {t : ℝ} (ht : 0 ≤ t)
+theorem decomp₂ {p : ℕ} (hp : p < M₂.W.n) {t : ℝ} (ht : 0 ≤ t)
     (ht1 : t < 1) :
     (g' + dOf M₂.W.n g' p) % M₂.W.n = p ∧ off M₂.W.n g' (p + t) = dOf M₂.W.n g' p + t :=
   ⟨add_dOf hC.hg' hp, off_key' hC.hg' hp ht ht1⟩
 
 /-- A second attachment of a transferred chord (through a point `q` of a chord `c` of `S`) never
 lies between two positions of the stretch unless the corresponding attachment of `c` does. -/
-theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 + L2)
+theorem other_not_btw {d d' : ℕ} (hd : d < L1 + L2)
     (hd' : d' < L1 + L2) {t t' : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) (ht' : t' ∈ Ioo (0 : ℝ) 1)
     {c : Set Point} (hc : c ∈ S) {pb : ℕ} {tb : ℝ} (hB : SideAttach M₂.W c pb tb)
     (hout : ¬ Btw ((dq L1 δ d : ℕ) + t) ((dq L1 δ d' : ℕ) + t') (off M₂.W.n g' (pb + tb)))
@@ -260,19 +275,19 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
     (hne : sidePt M.W p₃ t₃ ≠ q) :
     ¬ Btw (d + t) (d' + t') (off M.W.n g (p₃ + t₃)) := by
   intro hb3
-  have hn := hC.n_pos
+  
   have hn₂ := hC.n₂_pos
   have hcS : c ∈ M₂.Adm := hC.hS hc
   have heF : e ∈ M.Adm := hC.hF he
   -- the offsets of the positions
-  have hox0 : (0 : ℝ) < d + t := by have := ht.1; positivity
-  have hox0' : (0 : ℝ) < d' + t' := by have := ht'.1; positivity
+  have hox0 : (0 : ℝ) < d + t := by grind
+  have hox0' : (0 : ℝ) < d' + t' := by grind
   have hoxL : (d : ℝ) + t < L1 + L2 := by
     have : (d : ℝ) + 1 ≤ L1 + L2 := by exact_mod_cast hd
-    linarith [ht.2]
+    ram_grind
   have hoxL' : (d' : ℝ) + t' < L1 + L2 := by
     have : (d' : ℝ) + 1 ≤ L1 + L2 := by exact_mod_cast hd'
-    linarith [ht'.2]
+    ram_grind
   obtain ⟨hp₃e, ho₃⟩ := hC.decomp hA₃.1 hA₃.2.1 hA₃.2.2.1
   set d₃ := dOf M.W.n g p₃ with hd₃def
   have ho₃b : 0 < (d₃ : ℝ) + t₃ ∧ (d₃ : ℝ) + t₃ < L1 + L2 := by
@@ -287,20 +302,12 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
   have hybD : sidePt M₂.W pb tb ∉ M₂.D := hC.hM₂.trace _ hB.1 _ hB.2.1 hB.2.2.1.le
   -- the other end of `c` is the point of the attachment `(pb, tb)`
   have hother : ∀ y ∈ c, y ∉ M₂.D → y ≠ q → y = sidePt M₂.W pb tb := by
-    intro y hy hyD hyq
-    have h1 := hend q (hec hqe) hqD
-    have h2 := hend y hy hyD
-    have h3 := hend _ hyb hybD
-    rcases h1 with rfl | rfl <;> rcases h2 with rfl | rfl <;> rcases h3 with h3 | h3 <;>
-      first | exact absurd rfl hyq | exact h3.symm | exact absurd h3 hqB
+    grind
   by_cases hsplit : t₃ = 0 ∧ d₃ = L1
   · -- the second attachment is at the split vertex
     obtain ⟨ht₃, hd₃L⟩ := hsplit
     have hL2 : 0 < L2 := by
-      have : (d₃ : ℝ) + t₃ < L1 + L2 := ho₃b.2
-      rw [ht₃, hd₃L] at this
-      have : (0 : ℝ) < L2 := by linarith
-      exact_mod_cast this
+      omega
     have hδ : 0 < δ := by
       rcases Nat.eq_zero_or_pos δ with h | h
       · exact absurd (hC.hδ h) (by omega)
@@ -314,14 +321,14 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
     have hyb₃ : sidePt M₂.W pb tb = sidePt M.W p₃ t₃ :=
       (hother _ (hec hA₃.2.2.2.1) hy₃D hne).symm
     -- the positions lie on both sides of the gap
-    have hL1pos : (0 : ℝ) < L1 := by rw [ht₃, hd₃L] at ho₃b; simpa using ho₃b.1
+    have hL1pos : (0 : ℝ) < L1 := by grind
     have hx_side : ∀ {k : ℕ} {s : ℝ}, s ∈ Ioo (0 : ℝ) 1 → (k : ℝ) + s < L1 →
         ((dq L1 δ k : ℕ) : ℝ) + s < L1 := by
       intro k s hs h
       have hk : k < L1 := by
         have : (k : ℝ) < L1 := by linarith [hs.1]
         exact_mod_cast this
-      unfold dq; rw [ite_eq_left hk]; exact h
+      unfold dq; grind
     have hx_side' : ∀ {k : ℕ} {s : ℝ}, s ∈ Ioo (0 : ℝ) 1 → (L1 : ℝ) < k + s →
         (L1 : ℝ) + δ < ((dq L1 δ k : ℕ) : ℝ) + s := by
       intro k s hs h
@@ -329,12 +336,10 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
         have : (L1 : ℝ) < k + 1 := by linarith [hs.2]
         have : L1 < k + 1 := by exact_mod_cast this
         omega
-      unfold dq; rw [ite_eq_right (by omega)]; push_cast
-      have : (L1 : ℝ) ≤ k := by exact_mod_cast hk
-      linarith [hs.1]
+      unfold dq; rw [ite_eq_right (by omega)]; grind
     obtain ⟨hpbe, hob⟩ := hC.decomp₂ hB.1 hB.2.1 hB.2.2.1
     set db := dOf M₂.W.n g' pb with hdbdef
-    have hδR : (0 : ℝ) < δ := by exact_mod_cast hδ
+    have hδR : (0 : ℝ) < δ := by positivity
     -- the attachment `(pb, tb)` is outside the gap
     have hgap : off M₂.W.n g' (pb + tb) < L1 ∨ (L1 : ℝ) + δ < off M₂.W.n g' (pb + tb) := by
       rw [ho₃, ht₃, hd₃L, add_zero] at hb3
@@ -342,18 +347,18 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
       · have a1 := hx_side ht h1
         have a2 := hx_side' ht' h2
         by_contra hc'; push Not at hc'
-        exact hout (Or.inl ⟨by linarith [hc'.1], by linarith [hc'.2]⟩)
+        exact hout (Or.inl ⟨by ram_grind, by ram_grind⟩)
       · have a1 := hx_side ht' h1
         have a2 := hx_side' ht h2
         by_contra hc'; push Not at hc'
-        exact hout (Or.inr ⟨by linarith [hc'.1], by linarith [hc'.2]⟩)
+        exact hout (Or.inr ⟨by ram_grind, by ram_grind⟩)
     -- transfer `(pb, tb)` to the walk of `M` and compare with the split vertex
     have key : ∀ d₀ : ℕ, d₀ < L1 + L2 → (tb = 0 → d₀ ≠ 0 ∧ d₀ ≠ L1) →
         (g' + dq L1 δ d₀) % M₂.W.n = pb → d₀ = L1 ∧ tb = 0 := by
       intro d₀ hd₀ hsec hpb
-      have hB' : SideAttach M₂.W c ((g' + dq L1 δ d₀) % M₂.W.n) tb := by rw [hpb]; exact hB
+      have hB' : SideAttach M₂.W c ((g' + dq L1 δ d₀) % M₂.W.n) tb := by ram_grind
       obtain ⟨e'', he'', he''c, hpt'', hA''⟩ := hC.transfer hd₀ hB.2.1 hB.2.2.1 hsec hc hB'
-      have he''e : e'' = e := hC.nest e'' he'' e he (by rw [hec']; exact he''c)
+      have he''e : e'' = e := hC.nest e'' he'' e he (by ram_grind)
       rw [he''e] at hA''
       have hpteq : sidePt M.W ((g + d₀) % M.W.n) tb = sidePt M.W p₃ t₃ := by
         rw [hC.sidePt_eq hd₀, hpb, hyb₃]
@@ -372,16 +377,15 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
       by_cases h0 : db = 0 ∧ tb = 0
       · -- the base point is not the split vertex
         apply hC.noV ((g' + L1) % M₂.W.n) (Nat.mod_lt _ hn₂) 0 le_rfl zero_lt_one
-        · rw [off_key hC.hg' (by have := hC.hL₂; omega) le_rfl zero_lt_one]; simpa using hL1pos
+        · rw [off_key hC.hg' (by have := hC.hL₂; omega) le_rfl zero_lt_one]; ram_grind
         · rw [off_key hC.hg' (by have := hC.hL₂; omega) le_rfl zero_lt_one]
-          have : (0 : ℝ) < L2 := by exact_mod_cast hL2
           linarith
         · rw [Chazelle.Chain.sidePt_zero, ← hpt₃, ← hyb₃, ← hpbe, h0.1, h0.2, add_zero,
             Nat.mod_eq_of_lt hC.hg', Chazelle.Chain.sidePt_zero]
       · have hsec : tb = 0 → db ≠ 0 ∧ db ≠ L1 := fun htb =>
           ⟨fun hdb0 => h0 ⟨hdb0, htb⟩, by omega⟩
-        have hdq : dq L1 δ db = db := by unfold dq; rw [ite_eq_left hdb]
-        obtain ⟨h1, -⟩ := key db (by omega) hsec (by rw [hdq]; exact hpbe)
+        have hdq : dq L1 δ db = db := by unfold dq; ram_grind
+        obtain ⟨h1, -⟩ := key db (by omega) hsec (by ram_grind)
         omega
     · have hdb : L1 + δ ≤ db := by
         by_contra hlt; push Not at hlt
@@ -397,20 +401,16 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
         intro htb
         rw [htb, add_zero] at hhigh
         have : L1 + δ < db := by exact_mod_cast hhigh
-        constructor <;> omega
+        omega
       have hdq : dq L1 δ (db - δ) = db := by unfold dq; rw [ite_eq_right (by omega)]; omega
-      obtain ⟨h1, h2⟩ := key (db - δ) (by omega) hsec (by rw [hdq]; exact hpbe)
-      rw [h2, add_zero] at hhigh
-      have : (db : ℝ) = L1 + δ := by
-        have : db = L1 + δ := by omega
-        exact_mod_cast this
-      linarith
+      obtain ⟨h1, h2⟩ := key (db - δ) (by omega) hsec (by ram_grind)
+      grind
   · -- the second attachment is at a regular position of the stretch
     have hsec₃ : t₃ = 0 → d₃ ≠ 0 ∧ d₃ ≠ L1 := by
       intro h0
       refine ⟨fun hz => ?_, fun hL => hsplit ⟨h0, hL⟩⟩
       have := ho₃b.1; rw [hz, h0] at this; simp at this
-    have hA₃' : SideAttach M.W e ((g + d₃) % M.W.n) t₃ := by rw [hp₃e]; exact hA₃
+    have hA₃' : SideAttach M.W e ((g + d₃) % M.W.n) t₃ := by ram_grind
     have hpt₃ : sidePt M.W p₃ t₃ = sidePt M₂.W ((g' + dq L1 δ d₃) % M₂.W.n) t₃ := by
       rw [← hp₃e]; exact hC.sidePt_eq hd₃ t₃
     have hy₃D : sidePt M.W p₃ t₃ ∉ M₂.D := by
@@ -428,6 +428,9 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
     apply btw_of_psi (L1 := L1) (δ := δ)
     rw [psi_dq ht.1.le ht.2, psi_dq ht'.1.le ht'.2, psi_dq hA₃.2.1 hA₃.2.2.1, ← ho₃]
     exact hb3
+
+
+end
 
 end Corr0
 
@@ -447,17 +450,17 @@ theorem mirror (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 +
     (∃ e ∈ F, ∃ (p₁ p₃ : ℕ) (t₁ t₃ : ℝ), SideAttach M.W e p₁ t₁ ∧ SideAttach M.W e p₃ t₃ ∧
       sidePt M.W p₁ t₁ ≠ sidePt M.W p₃ t₃ ∧ Btw (d + t) (d' + t') (off M.W.n g (p₁ + t₁)) ∧
       ¬ Btw (d + t) (d' + t') (off M.W.n g (p₃ + t₃))) ∨ InGap L1 δ (off M₂.W.n g' (pa + ta)) := by
-  have hn := hC.n_pos
-  have hn₂ := hC.n₂_pos
+  
+  
   obtain ⟨hpae, hoa⟩ := hC.decomp₂ hA.1 hA.2.1 hA.2.2.1
   set da := dOf M₂.W.n g' pa with hdadef
   have hbx : ∀ {k : ℕ} {s : ℝ}, k < L1 + L2 → s ∈ Ioo (0 : ℝ) 1 →
       0 < ((dq L1 δ k : ℕ) : ℝ) + s ∧ ((dq L1 δ k : ℕ) : ℝ) + s < L1 + δ + L2 := by
     intro k s hk hs
-    refine ⟨by have := hs.1; positivity, ?_⟩
-    have : dq L1 δ k + 1 ≤ L1 + δ + L2 := by unfold dq; split_ifs <;> omega
+    refine ⟨by grind, ?_⟩
+    have : dq L1 δ k + 1 ≤ L1 + δ + L2 := by grind [dq]
     have : ((dq L1 δ k : ℕ) : ℝ) + 1 ≤ L1 + δ + L2 := by exact_mod_cast this
-    linarith [hs.2]
+    grind
   obtain ⟨hx1, hx2⟩ := hbx hd ht
   obtain ⟨hx1', hx2'⟩ := hbx hd' ht'
   have hoab : 0 < off M₂.W.n g' (pa + ta) ∧ off M₂.W.n g' (pa + ta) < L1 + δ + L2 := by
@@ -474,21 +477,21 @@ theorem mirror (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 +
         sidePt M.W p₁ t₁ ≠ sidePt M.W p₃ t₃ ∧ Btw (d + t) (d' + t') (off M.W.n g (p₁ + t₁)) ∧
         ¬ Btw (d + t) (d' + t') (off M.W.n g (p₃ + t₃)) := by
     intro d₀ hd₀ hsec hpa hpsi
-    have hA' : SideAttach M₂.W c ((g' + dq L1 δ d₀) % M₂.W.n) ta := by rw [hpa]; exact hA
+    have hA' : SideAttach M₂.W c ((g' + dq L1 δ d₀) % M₂.W.n) ta := by ram_grind
     obtain ⟨e, he, hec, hpte, hAe⟩ := hC.transfer hd₀ hA.2.1 hA.2.2.1 hsec hc hA'
     have hptq : sidePt M.W ((g + d₀) % M.W.n) ta = q := by rw [hC.sidePt_eq hd₀, hpa]
     obtain ⟨p₃, t₃, hA₃, hne₃⟩ := WalkAx.other_attach hC.hM (hC.hF he) hAe
     refine ⟨e, he, _, p₃, ta, t₃, hAe, hA₃, hne₃.symm, ?_, ?_⟩
     · rw [hC.off_M hd₀ hA.2.1 hA.2.2.1, hpsi]; exact hbtw
-    · exact hC.other_not_btw hd hd' ht ht' hc hB hout he hec (by rw [← hptq]; exact hpte) hqD
-        (Ne.symm hAB) hA₃ (by rw [← hptq]; exact hne₃)
+    · exact hC.other_not_btw hd hd' ht ht' hc hB hout he hec (by grind) hqD
+        (Ne.symm hAB) hA₃ (by grind)
   by_cases hA1 : da < L1
-  · have hdq : dq L1 δ da = da := by unfold dq; rw [ite_eq_left hA1]
+  · have hdq : dq L1 δ da = da := by grind [dq]
     refine Or.inl (trans_case da (by omega) (fun h0 => ⟨fun hz => ?_, by omega⟩)
-      (by rw [hdq]; exact hpae) ?_)
+      (by ram_grind) ?_)
     · have := hoab.1; rw [h0, hz] at this; simp at this
     · have := psi_dq (L1 := L1) (δ := δ) (d := da) hA.2.1 hA.2.2.1
-      rw [hdq] at this; exact this.symm
+      grind
   by_cases hA3 : (L1 : ℝ) + δ < da + ta
   · have hda : L1 + δ ≤ da := by
       by_contra hlt; push Not at hlt
@@ -498,12 +501,12 @@ theorem mirror (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 +
     have hdan : da < L1 + δ + L2 := by
       have : (da : ℝ) < L1 + δ + L2 := by linarith [hA.2.1, hoab.2]
       exact_mod_cast this
-    refine Or.inl (trans_case (da - δ) (by omega) (fun h0 => ?_) (by rw [hdq]; exact hpae) ?_)
+    refine Or.inl (trans_case (da - δ) (by omega) (fun h0 => ?_) (by ram_grind) ?_)
     · rw [h0, add_zero] at hA3
       have : L1 + δ < da := by exact_mod_cast hA3
-      constructor <;> omega
+      omega
     · have := psi_dq (L1 := L1) (δ := δ) (d := da - δ) hA.2.1 hA.2.2.1
-      rw [hdq] at this; exact this.symm
+      grind
   -- the gap
   push Not at hA1 hA3
   right
@@ -547,11 +550,7 @@ theorem attach_third {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.A
   have hy := hend _ hY.2.2.2.1 (hM.trace _ hY.1 _ hY.2.1 hY.2.2.1.le)
   have hz := hend _ hZ.2.2.2.1 (hM.trace _ hZ.1 _ hZ.2.1 hZ.2.2.1.le)
   have key : sidePt M.W pz tz = sidePt M.W px tx ∨ sidePt M.W pz tz = sidePt M.W py ty := by
-    rcases hx with hx | hx <;> rcases hy with hy | hy <;> rcases hz with hz | hz <;>
-      first
-      | exact absurd (hx.trans hy.symm) hXY
-      | exact Or.inl (hz.trans hx.symm)
-      | exact Or.inr (hz.trans hy.symm)
+    grind
   rcases key with h | h
   · exact Or.inl (WalkAx.attach_unique hM hc hZ hX h)
   · exact Or.inr (WalkAx.attach_unique hM hc hZ hY h)
@@ -560,12 +559,12 @@ namespace Corr0
 
 variable {M M₂ : Model} {F S : Set (Set Point)} {g g' L1 L2 δ : ℕ}
 
+section
+variable (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 + L2) (hd' : d' < L1 + L2) {t t' : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) (ht' : t' ∈ Ioo (0 : ℝ) 1) (hcut : ¬ M.IsCut F (((g + d) % M.W.n : ℕ) + t)) (hcut' : ¬ M.IsCut F (((g + d') % M.W.n : ℕ) + t'))
+include hC hd hd' ht ht' hcut hcut'
 /-- A chord of `F` with exactly one attachment between two positions of the stretch separates
 them. -/
-theorem sepM (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 + L2)
-    (hd' : d' < L1 + L2) {t t' : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) (ht' : t' ∈ Ioo (0 : ℝ) 1)
-    (hcut : ¬ M.IsCut F (((g + d) % M.W.n : ℕ) + t))
-    (hcut' : ¬ M.IsCut F (((g + d') % M.W.n : ℕ) + t')) (hne : (d : ℝ) + t ≠ d' + t')
+theorem sepM (hne : (d : ℝ) + t ≠ d' + t')
     {e : Set Point} (he : e ∈ F) {p₁ p₃ : ℕ} {t₁ t₃ : ℝ} (hA₁ : SideAttach M.W e p₁ t₁)
     (hA₃ : SideAttach M.W e p₃ t₃) (hne₁₃ : sidePt M.W p₁ t₁ ≠ sidePt M.W p₃ t₃)
     (hb1 : Btw (d + t) (d' + t') (off M.W.n g (p₁ + t₁)))
@@ -591,17 +590,15 @@ theorem sepM (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 + L
   refine (sep_iff_btw hg0 hgn a0 a1 b0 b1 y0 y1 y0' y1' hk13 hyy (hya hA₁).1 (hya hA₃).1
     (hya hA₁).2 (hya hA₃).2).2 ?_
   rw [hC.off_M hd ht.1.le ht.2, hC.off_M hd' ht'.1.le ht'.2]
-  exact ⟨fun _ => hb3, fun _ => hb1⟩
+  grind
 
+section
+variable {U : Set Point} (hU : U ∈ M.regions F) (hf : M.Faces ((g + d) % M.W.n) t U) (hf' : M.Faces ((g + d') % M.W.n) t' U) (hne : (d : ℝ) + t ≠ d' + t')
+include U hU hf hf' hne
 /-- **Both attachments of a chord of `F` stay between two positions of one region**: if two
 positions of the stretch face the same region of `F`, a chord of `F` attached between them has
 every attachment at another point between them too. -/
-theorem btw_other (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 + L2)
-    (hd' : d' < L1 + L2) {t t' : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) (ht' : t' ∈ Ioo (0 : ℝ) 1)
-    (hcut : ¬ M.IsCut F (((g + d) % M.W.n : ℕ) + t))
-    (hcut' : ¬ M.IsCut F (((g + d') % M.W.n : ℕ) + t')) {U : Set Point}
-    (hU : U ∈ M.regions F) (hf : M.Faces ((g + d) % M.W.n) t U)
-    (hf' : M.Faces ((g + d') % M.W.n) t' U) (hne : (d : ℝ) + t ≠ d' + t') {e : Set Point}
+theorem btw_other {e : Set Point}
     (he : e ∈ F) {p₁ p₃ : ℕ} {t₁ t₃ : ℝ} (hA₁ : SideAttach M.W e p₁ t₁)
     (hA₃ : SideAttach M.W e p₃ t₃) (hne₁₃ : sidePt M.W p₁ t₁ ≠ sidePt M.W p₃ t₃)
     (hb1 : Btw (d + t) (d' + t') (off M.W.n g (p₁ + t₁))) :
@@ -614,12 +611,7 @@ theorem btw_other (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L
 /-- **The far attachment of a chord of `S` whose piece in `F` is attached between two positions
 of one region** lies between their counterparts, and the piece has a second point in the
 stretch. -/
-theorem far_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 + L2)
-    (hd' : d' < L1 + L2) {t t' : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) (ht' : t' ∈ Ioo (0 : ℝ) 1)
-    (hcut : ¬ M.IsCut F (((g + d) % M.W.n : ℕ) + t))
-    (hcut' : ¬ M.IsCut F (((g + d') % M.W.n : ℕ) + t')) {U : Set Point}
-    (hU : U ∈ M.regions F) (hf : M.Faces ((g + d) % M.W.n) t U)
-    (hf' : M.Faces ((g + d') % M.W.n) t' U) (hne : (d : ℝ) + t ≠ d' + t') {c : Set Point}
+theorem far_btw {c : Set Point}
     (hc : c ∈ S) {pb : ℕ} {tb : ℝ} (hB : SideAttach M₂.W c pb tb) {e : Set Point} (he : e ∈ F)
     (hec : e ⊆ c) {q : Point} (hqe : q ∈ e) (hqD : q ∉ M₂.D) (hqB : sidePt M₂.W pb tb ≠ q)
     {pe : ℕ} {te : ℝ} (hAe : SideAttach M.W e pe te) (hpe : sidePt M.W pe te = q)
@@ -628,17 +620,17 @@ theorem far_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 
       ∃ y ∈ c, StrPt M g (L1 + L2) y ∧ y ≠ q := by
   obtain ⟨p₃, t₃, hA₃, hne₃⟩ := WalkAx.other_attach hC.hM (hC.hF he) hAe
   have hb3 := hC.btw_other hd hd' ht ht' hcut hcut' hU hf hf' hne he hAe hA₃ (Ne.symm hne₃) hbe
-  have hne₃' : sidePt M.W p₃ t₃ ≠ q := by rw [← hpe]; exact hne₃
+  have hne₃' : sidePt M.W p₃ t₃ ≠ q := by simp_all
   refine ⟨by_contra fun hout => hC.other_not_btw hd hd' ht ht' hc hB hout he hec hqe hqD hqB
     hA₃ hne₃' hb3, ?_⟩
-  have hlo : (0 : ℝ) < d + t := by have := ht.1; positivity
-  have hlo' : (0 : ℝ) < d' + t' := by have := ht'.1; positivity
+  have hlo : (0 : ℝ) < d + t := by grind
+  have hlo' : (0 : ℝ) < d' + t' := by grind
   have hhi : (d : ℝ) + t < L1 + L2 := by
     have : (d : ℝ) + 1 ≤ L1 + L2 := by exact_mod_cast hd
-    linarith [ht.2]
+    grind
   have hhi' : (d' : ℝ) + t' < L1 + L2 := by
     have : (d' : ℝ) + 1 ≤ L1 + L2 := by exact_mod_cast hd'
-    linarith [ht'.2]
+    grind
   obtain ⟨hp₃e, ho₃⟩ := hC.decomp hA₃.1 hA₃.2.1 hA₃.2.2.1
   have hb : 0 < (dOf M.W.n g p₃ : ℝ) + t₃ ∧ (dOf M.W.n g p₃ : ℝ) + t₃ < L1 + L2 := by
     rw [← ho₃]; rcases hb3 with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> constructor <;> linarith
@@ -648,8 +640,17 @@ theorem far_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 
   exact ⟨sidePt M.W p₃ t₃, hec hA₃.2.2.2.1,
     ⟨dOf M.W.n g p₃, hlt, t₃, hA₃.2.1, hA₃.2.2.1, hb.1, by rw [hp₃e]⟩, hne₃'⟩
 
+
+
+end
+
+end
+
+section
+variable (hC : Corr0 M M₂ F S g g' L1 L2 δ)
+include hC
 /-- A key of `M₂` at the offset `L + u` (`0 ≤ u < 1`) is the key of `((g' + L) mod n₂, u)`. -/
-theorem key_of_off₂ (hC : Corr0 M M₂ F S g g' L1 L2 δ) {L : ℕ} (hL : L < M₂.W.n) {p : ℕ}
+theorem key_of_off₂ {L : ℕ} (hL : L < M₂.W.n) {p : ℕ}
     {s u : ℝ} (hp : p < M₂.W.n) (hs0 : 0 ≤ s) (hs1 : s < 1) (hu0 : 0 ≤ u) (hu1 : u < 1)
     (h : off M₂.W.n g' (p + s) = L + u) : p = (g' + L) % M₂.W.n ∧ s = u := by
   have hn₂ := hC.n₂_pos
@@ -661,7 +662,7 @@ theorem key_of_off₂ (hC : Corr0 M M₂ F S g g' L1 L2 δ) {L : ℕ} (hL : L < 
   exact Chazelle.Chain.sideKey_inj hs0 hs1 hu0 hu1 e
 
 /-- The counterpart of a non-cut position of the stretch is not a cut. -/
-theorem not_cut₂ (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 + L2) {t : ℝ}
+theorem not_cut₂ {d : ℕ} (hd : d < L1 + L2) {t : ℝ}
     (ht : t ∈ Ioo (0 : ℝ) 1) (hcut : ¬ M.IsCut F (((g + d) % M.W.n : ℕ) + t)) :
     ¬ M₂.IsCut S (((g' + dq L1 δ d) % M₂.W.n : ℕ) + t) := by
   rintro ⟨c₀, hc₀, p, t₀, hA₀, hkey⟩
@@ -671,7 +672,7 @@ theorem not_cut₂ (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 
   exact hcut ⟨e, he, _, t, hAe, rfl⟩
 
 /-- A separation in `M₂` as betweenness of offsets from `g'`. -/
-theorem sep₂_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {c : Set Point} (hc : c ∈ S) {p p' : ℕ}
+theorem sep₂_btw {c : Set Point} (hc : c ∈ S) {p p' : ℕ}
     {s s' : ℝ} (hp : p < M₂.W.n) (hp' : p' < M₂.W.n) (hs : s ∈ Ioo (0 : ℝ) 1)
     (hs' : s' ∈ Ioo (0 : ℝ) 1) (hnc : ¬ M₂.IsCut S (p + s)) (hnc' : ¬ M₂.IsCut S (p' + s'))
     {pa pb : ℕ} {ta tb : ℝ} (hA : SideAttach M₂.W c pa ta) (hB : SideAttach M₂.W c pb tb)
@@ -679,7 +680,7 @@ theorem sep₂_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {c : Set Point} (hc : c
     (hiff : sideInArc (pa + ta) (pb + tb) (p + s) ↔ ¬ sideInArc (pa + ta) (pb + tb) (p' + s')) :
     (Btw (off M₂.W.n g' (p + s)) (off M₂.W.n g' (p' + s')) (off M₂.W.n g' (pa + ta)) ↔
       ¬ Btw (off M₂.W.n g' (p + s)) (off M₂.W.n g' (p' + s')) (off M₂.W.n g' (pb + tb))) := by
-  have hxs : (p : ℝ) + s ≠ p' + s' := by intro h; rw [h] at hiff; exact iff_not_self hiff
+  have hxs : (p : ℝ) + s ≠ p' + s' := by grind
   have hxa : ∀ {q : ℕ} {u : ℝ}, SideAttach M₂.W c q u → (p : ℝ) + s ≠ q + u ∧
       (p' : ℝ) + s' ≠ q + u :=
     fun hP => ⟨fun h => hnc ⟨c, hc, _, _, hP, h⟩, fun h => hnc' ⟨c, hc, _, _, hP, h⟩⟩
@@ -695,20 +696,16 @@ theorem sep₂_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {c : Set Point} (hc : c
 
 /-! ## The two sides of the gap -/
 
+
+end
+
+section
+variable (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hdL : d < L1) (hLd : L1 ≤ d') (hd' : d' < L1 + L2) {t t' : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) (ht' : t' ∈ Ioo (0 : ℝ) 1) (hcut : ¬ M.IsCut F (((g + d) % M.W.n : ℕ) + t)) (hcut' : ¬ M.IsCut F (((g + d') % M.W.n : ℕ) + t')) {U : Set Point} (hU : U ∈ M.regions F) (hf : M.Faces ((g + d) % M.W.n) t U) (hf' : M.Faces ((g + d') % M.W.n) t' U) {c : Set Point} (hc : c ∈ S) {pa pb : ℕ} {ta tb : ℝ} (hA : SideAttach M₂.W c pa ta) (hB : SideAttach M₂.W c pb tb) (hAg : InGap L1 δ (off M₂.W.n g' (pa + ta))) (hout : ¬ Btw ((dq L1 δ d : ℕ) + t) ((dq L1 δ d' : ℕ) + t') (off M₂.W.n g' (pb + tb))) {V : Set Point} (hV : V ∈ M₂.regions S)
+include hC hG d d' hdL hLd hd' t t' ht ht' hcut hcut' U hU hf hf' c hc pa pb ta tb hA hB hAg hout hV
 /-- **The side before the gap.**  Two positions `d < L1 ≤ d'` of the stretch face the same region
 of `F`, and a chord `c ∈ S` attached in the gap separates their counterparts.  Then the region of
 `S` faced at the counterpart of `d` is the one faced just after the split vertex of `M₂`. -/
-theorem gapS_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g g' L1 L2 δ)
-    {d d' : ℕ} (hdL : d < L1) (hLd : L1 ≤ d') (hd' : d' < L1 + L2) {t t' : ℝ}
-    (ht : t ∈ Ioo (0 : ℝ) 1) (ht' : t' ∈ Ioo (0 : ℝ) 1)
-    (hcut : ¬ M.IsCut F (((g + d) % M.W.n : ℕ) + t))
-    (hcut' : ¬ M.IsCut F (((g + d') % M.W.n : ℕ) + t')) {U : Set Point}
-    (hU : U ∈ M.regions F) (hf : M.Faces ((g + d) % M.W.n) t U)
-    (hf' : M.Faces ((g + d') % M.W.n) t' U) {c : Set Point} (hc : c ∈ S) {pa pb : ℕ}
-    {ta tb : ℝ} (hA : SideAttach M₂.W c pa ta) (hB : SideAttach M₂.W c pb tb)
-    (hAg : InGap L1 δ (off M₂.W.n g' (pa + ta)))
-    (hout : ¬ Btw ((dq L1 δ d : ℕ) + t) ((dq L1 δ d' : ℕ) + t') (off M₂.W.n g' (pb + tb)))
-    {V : Set Point} (hV : V ∈ M₂.regions S)
+theorem gapS_of
     (hfV : M₂.Faces ((g' + dq L1 δ d) % M₂.W.n) t V) :
     AfterFaces M₂ ((g' + L1) % M₂.W.n) 0 V := by
   have hn₂ := hC.n₂_pos
@@ -890,17 +887,7 @@ theorem gapS_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
 of `F`, and a chord `c ∈ S` attached in the gap separates their counterparts.  Then the region of
 `S` faced at the counterpart of `d'` is the one faced just before the second copy
 `(g' + L1 + δ)` of the split vertex in `M₂`. -/
-theorem gapE_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g g' L1 L2 δ)
-    {d d' : ℕ} (hdL : d < L1) (hLd : L1 ≤ d') (hd' : d' < L1 + L2) {t t' : ℝ}
-    (ht : t ∈ Ioo (0 : ℝ) 1) (ht' : t' ∈ Ioo (0 : ℝ) 1)
-    (hcut : ¬ M.IsCut F (((g + d) % M.W.n : ℕ) + t))
-    (hcut' : ¬ M.IsCut F (((g + d') % M.W.n : ℕ) + t')) {U : Set Point}
-    (hU : U ∈ M.regions F) (hf : M.Faces ((g + d) % M.W.n) t U)
-    (hf' : M.Faces ((g + d') % M.W.n) t' U) {c : Set Point} (hc : c ∈ S) {pa pb : ℕ}
-    {ta tb : ℝ} (hA : SideAttach M₂.W c pa ta) (hB : SideAttach M₂.W c pb tb)
-    (hAg : InGap L1 δ (off M₂.W.n g' (pa + ta)))
-    (hout : ¬ Btw ((dq L1 δ d : ℕ) + t) ((dq L1 δ d' : ℕ) + t') (off M₂.W.n g' (pb + tb)))
-    {V : Set Point} (hV : V ∈ M₂.regions S)
+theorem gapE_of
     (hfV : M₂.Faces ((g' + dq L1 δ d') % M₂.W.n) t' V) :
     BeforeFaces M₂ ((g' + L1 + δ) % M₂.W.n) 0 V := by
   have hn₂ := hC.n₂_pos
@@ -912,16 +899,16 @@ theorem gapE_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
     · exact h
   have hfull := hC.hfull hδ
   have hL1n : L1 < M₂.W.n := by omega
-  have hdq : dq L1 δ d = d := by unfold dq; rw [ite_eq_left hdL]
-  have hdq' : dq L1 δ d' = d' + δ := by unfold dq; rw [ite_eq_right (by omega)]
+  have hdq : dq L1 δ d = d := by grind [dq]
+  have hdq' : dq L1 δ d' = d' + δ := by unfold dq; simp_all
   have hout' : ¬ Btw ((d : ℝ) + t) ((d' : ℝ) + δ + t') (off M₂.W.n g' (pb + tb)) := by
-    have := hout; rw [hdq, hdq'] at this; push_cast at this; exact this
+    simp_all
   have hdLr : (d : ℝ) + t < L1 := by
     have : (d : ℝ) + 1 ≤ L1 := by exact_mod_cast hdL
-    linarith [ht.2]
-  have hLdr : (L1 : ℝ) ≤ d' := by exact_mod_cast hLd
+    grind
+  have hLdr : (L1 : ℝ) ≤ d' := by simp_all
   have hδr : (1 : ℝ) ≤ δ := by exact_mod_cast hδ
-  have hL2r : (0 : ℝ) < L2 := by exact_mod_cast hL2
+  
   have hL1pos : (0 : ℝ) < L1 := by linarith [ht.1, (Nat.cast_nonneg d : (0 : ℝ) ≤ d)]
   have hne : (d : ℝ) + t ≠ d' + t' := by intro h; linarith [ht'.1]
   have hg'0 : (0 : ℝ) ≤ g' := Nat.cast_nonneg _
@@ -946,12 +933,11 @@ theorem gapE_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
   have hsε₀ : s < ε₀ := lt_of_lt_of_le hsε (min_le_left _ _)
   have hnc : ¬ M₂.IsCut S ((Q₀ : ℝ) + (1 - s)) := by
     have := hsub ⟨hs0, hsε₀⟩
-    simp only [mem_ofPred_eq] at this
-    rwa [show (Q₀ : ℝ) + 1 - s = Q₀ + (1 - s) by ring] at this
+    grind [mem_ofPred_eq]
   have hs' : 1 - s ∈ Ioo (0 : ℝ) 1 := ⟨by linarith, by linarith⟩
   obtain ⟨V'', hV'', hfV''⟩ := hC.hM₂.exists_faces_of_not_cut hC.hS hC.hSfin
     (Nat.mod_lt _ hn₂) hs' hnc
-  suffices hVV : V = V'' by rw [hVV]; exact hfV''
+  suffices hVV : V = V'' by ram_grind
   have hc₂ := hC.not_cut₂ hd' ht' hcut'
   refine (hC.hM₂.eq_iff_not_separates hC.hS hC.hSfin hV hV'' (Nat.mod_lt _ hn₂)
     (Nat.mod_lt _ hn₂) ht' hs' hc₂ hnc hfV hfV'').2 ?_
@@ -969,19 +955,17 @@ theorem gapE_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
         off M₂.W.n g' (pa₁ + ta₁) < d' + δ + t' := by
       rcases hin₁ with ⟨h1, h2⟩ | ⟨h1, h2⟩
       · exfalso; linarith [ht'.1]
-      · exact ⟨by linarith, h2⟩
+      grind
     -- no attachment strictly between `L1 + δ - s` and the second copy of the split vertex
     have hoaL : (L1 : ℝ) + δ ≤ off M₂.W.n g' (pa₁ + ta₁) := by
       by_contra hlt; push Not at hlt
       obtain ⟨hp, hu⟩ := hC.key_of_off₂ hLδn hA₁.1 hA₁.2.1 hA₁.2.2.1
-        (u := off M₂.W.n g' (pa₁ + ta₁) - (L1 + δ - 1)) (by linarith [hin₁'.1])
+        (u := off M₂.W.n g' (pa₁ + ta₁) - (L1 + δ - 1)) (by ram_grind)
         (by linarith) (by push_cast [show 1 ≤ L1 + δ by omega]; ring)
       apply hsub ⟨show 0 < (L1 + δ : ℝ) - off M₂.W.n g' (pa₁ + ta₁) by linarith,
-        show (L1 + δ : ℝ) - off M₂.W.n g' (pa₁ + ta₁) < ε₀ by linarith [hin₁'.1]⟩
+        show (L1 + δ : ℝ) - off M₂.W.n g' (pa₁ + ta₁) < ε₀ by ram_grind⟩
       refine ⟨c', hc', pa₁, ta₁, hA₁, ?_⟩
-      rw [← hQ₀] at hp
-      rw [hp] at hu ⊢
-      linarith [hu]
+      grind
     have hqD₀ : sidePt M₂.W pa₁ ta₁ ∉ M₂.D := hC.hM₂.trace _ hA₁.1 _ hA₁.2.1 hA₁.2.2.1.le
     have hoan : off M₂.W.n g' (pa₁ + ta₁) < L1 + δ + L2 := by
       rw [← hnr]
@@ -1008,41 +992,39 @@ theorem gapE_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
           have : db = L1 + δ := by omega
           have h1 := hlt
           rw [hoae, this, h0] at h1
-          push_cast at h1
-          linarith
+          grind
         have hA₁' : SideAttach M₂.W c' ((g' + dq L1 δ (db - δ)) % M₂.W.n) ta₁ := by
-          rw [hdqa, hpae]; exact hA₁
+          grind
         obtain ⟨e', he', hec', hqe', hAe'⟩ :=
           hC.transfer (d := db - δ) (by omega) hA₁.2.1 hA₁.2.2.1 hsec hc' hA₁'
         have hpt : sidePt M.W ((g + (db - δ)) % M.W.n) ta₁ = sidePt M₂.W pa₁ ta₁ := by
           rw [hC.sidePt_eq (by omega : db - δ < L1 + L2) ta₁, hdqa, hpae]
         have hcast : ((db - δ : ℕ) : ℝ) = db - δ := by push_cast [show δ ≤ db by omega]; ring
         refine ⟨e', he', hec', hpt ▸ hqe', _, _, hAe', hpt, ?_,
-          ⟨db - δ, by omega, ta₁, hA₁.2.1, hA₁.2.2.1, by rw [hcast]; linarith, hpt⟩⟩
+          ⟨db - δ, by omega, ta₁, hA₁.2.1, hA₁.2.2.1, by ram_grind, hpt⟩⟩
         rw [hC.off_M (by omega : db - δ < L1 + L2) hA₁.2.1 hA₁.2.2.1, hcast]
-        left; constructor <;> linarith [hin₁'.2]
+        left; grind
       · -- at the second copy of the split vertex
         obtain ⟨hp1, ht1⟩ := hC.key_of_off₂ (L := L1 + δ) (by omega) hA₁.1 hA₁.2.1 hA₁.2.2.1
-          (u := 0) le_rfl one_pos (by rw [← heq]; push_cast; ring)
+          (u := 0) le_rfl one_pos (by grind)
         have hvtx : M.W.vtx ((g + L1) % M.W.n) = M₂.W.vtx ((g' + (L1 + δ)) % M₂.W.n) := by
           have := hC.A2 0 (Nat.zero_le _)
-          rwa [add_zero, add_zero, show g' + L1 + δ = g' + (L1 + δ) by ring] at this
+          grind
         have hu : sidePt M.W ((g + L1) % M.W.n) 0 = sidePt M₂.W pa₁ ta₁ := by
           rw [hp1, ht1, Chazelle.Chain.sidePt_zero, Chazelle.Chain.sidePt_zero, hvtx]
         have hnoV : sidePt M₂.W pa₁ ta₁ ≠ M₂.W.vtx g' := by
           rw [hp1, ht1]
           refine hC.noV _ (Nat.mod_lt _ hn₂) 0 le_rfl one_pos ?_ ?_ <;>
-            rw [off_key hC.hg' (by omega : L1 + δ < M₂.W.n) le_rfl one_pos] <;> push_cast <;>
-            linarith
+            grind <;> push_cast 
         obtain ⟨e', he', hqe', hec'⟩ := hC.trans c' hc' _ hA₁.2.2.2.1 hqD₀ hnoV
         have hA₁P : SideAttach M₂.W c' ((g' + (L1 + δ)) % M₂.W.n) 0 := by
-          have := hA₁; rw [hp1, ht1] at this; exact this
+          grind
         have hAe' := hG.splitAttach (L1 + δ) (Or.inr rfl) c' hc' hA₁P e' he' hec'
-          (by rw [hu]; exact hqe')
+          (by ram_grind)
         refine ⟨e', he', hec', hqe', _, _, hAe', hu, ?_,
           ⟨L1, by omega, 0, le_rfl, one_pos, by linarith, hu⟩⟩
         rw [hC.off_M (by omega : L1 < L1 + L2) le_rfl one_pos]
-        left; constructor <;> linarith [ht'.1]
+        left; grind
     obtain ⟨hbtw, y, hyc, hyS, hyq⟩ := hC.far_btw hd hd' ht ht' hcut hcut' hU hf hf' hne hc' hB₁
       he' hec' hqe' hqD₀ (fun h => hAB₁ h.symm) hAe hpe hbe
     rw [hdq, hdq'] at hbtw
@@ -1053,36 +1035,34 @@ theorem gapE_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
       · refine ⟨h1, ?_⟩
         by_contra hlt; push Not at hlt
         exact hout₁ (Or.inr ⟨by linarith, h2⟩)
-      · exfalso; linarith [ht'.1]
+      grind
     have hcc : c ≠ c' := by
       rintro rfl
       rcases attach_third hC.hM₂ (hC.hS hc) hA₁ hB₁ hAB₁ hB with ⟨h1, h2⟩ | ⟨h1, h2⟩
-      · exact hout' (by rw [h1, h2]; left; exact ⟨by linarith, hin₁'.2⟩)
-      · exact hout' (by rw [h1, h2]; left; exact ⟨hob.1, by linarith [ht'.1]⟩)
+      · exact hout' (by rw [h1, h2]; left; grind)
+      grind
     obtain ⟨hA1, hA2⟩ := hAg
     have hab₁ : off M₂.W.n g' (pb₁ + tb₁) < off M₂.W.n g' (pa₁ + ta₁) := by
-      linarith [hob.2]
+      ram_grind
     by_cases hmid : off M₂.W.n g' (pb₁ + tb₁) < off M₂.W.n g' (pa + ta) ∧
         off M₂.W.n g' (pa + ta) < off M₂.W.n g' (pa₁ + ta₁)
     · obtain ⟨h1, h2⟩ := no_cross_off hC.hM₂ hC.hS hC.hSfin hc' hc (Ne.symm hcc) hB₁ hA₁
         (Ne.symm hAB₁) hA hB hg'0 hg'n hab₁ hmid.1 hmid.2
-      exact hout' (Or.inl ⟨by linarith [hob.1], by linarith [hin₁'.2]⟩)
+      exact hout' (Or.inl ⟨by ram_grind, by ram_grind⟩)
     have hge : off M₂.W.n g' (pa + ta) ≤ off M₂.W.n g' (pb₁ + tb₁) ∨
         off M₂.W.n g' (pa + ta) = off M₂.W.n g' (pa₁ + ta₁) := by
-      by_contra hcon; push Not at hcon
-      exact hmid ⟨lt_of_le_of_ne' (by linarith) hcon.1.ne', lt_of_le_of_ne (le_trans hA2 hoaL)
-        hcon.2⟩
+      grind
     rcases hge with hge | heq
     · rcases lt_or_eq_of_le (le_trans hA1 hge) with hlt | heq'
       · -- `c'` is attached strictly inside the gap
-        exact hyq (hG.gapOut c' hc' pb₁ tb₁ hB₁ hlt (by linarith [hob.2]) y hyc _
+        exact hyq (hG.gapOut c' hc' pb₁ tb₁ hB₁ hlt (by ram_grind) y hyc _
           (hec' hqe') hyS hqS)
       · -- both at the split vertex before the gap
         have hA' : off M₂.W.n g' (pa + ta) = L1 := le_antisymm (heq' ▸ hge) hA1
         obtain ⟨hp1, ht1⟩ := hC.key_of_off₂ hL1n hB₁.1 hB₁.2.1 hB₁.2.2.1
-          (u := 0) le_rfl one_pos (by rw [← heq']; ring)
+          (u := 0) le_rfl one_pos (by ram_grind)
         obtain ⟨hp2, ht2⟩ := hC.key_of_off₂ hL1n hA.1 hA.2.1 hA.2.2.1
-          (u := 0) le_rfl one_pos (by rw [hA']; ring)
+          (u := 0) le_rfl one_pos (by ring_nf <;> omega)
         have hB₁' := hB₁
         have hA'' := hA
         rw [hp1, ht1] at hB₁'
@@ -1091,9 +1071,9 @@ theorem gapE_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
     · -- both at the second copy of the split vertex
       have hoaL1 : off M₂.W.n g' (pa₁ + ta₁) = L1 + δ := le_antisymm (heq ▸ hA2) hoaL
       obtain ⟨hp1, ht1⟩ := hC.key_of_off₂ (L := L1 + δ) (by omega) hA₁.1 hA₁.2.1 hA₁.2.2.1
-        (u := 0) le_rfl one_pos (by rw [hoaL1]; push_cast; ring)
+        (u := 0) le_rfl one_pos (by grind)
       obtain ⟨hp2, ht2⟩ := hC.key_of_off₂ (L := L1 + δ) (by omega) hA.1 hA.2.1 hA.2.2.1
-        (u := 0) le_rfl one_pos (by rw [heq, hoaL1]; push_cast; ring)
+        (u := 0) le_rfl one_pos (by grind)
       have hA₁' := hA₁
       have hA'' := hA
       rw [hp1, ht1] at hA₁'
@@ -1102,6 +1082,9 @@ theorem gapE_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
   by_cases h : Btw (d' + δ + t') (L1 + δ - 1 + (1 - s)) (off M₂.W.n g' (pa' + ta'))
   · exact core hA' hB' hAB' h (hsep.1 h)
   · exact core hB' hA' (Ne.symm hAB') (by_contra fun hn' => h (hsep.2 hn')) h
+
+
+end
 
 /-- **Lemma (K3), generic form.**  Two positions of the stretch of `M` (inside walk edges, not
 cuts of `F`) facing the same region of `F` correspond to positions of `M₂` facing the same region
@@ -1120,7 +1103,7 @@ theorem label_gen3 (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : 0 < δ → CorrGa
       (0 < δ ∧ BeforeFaces M₂ ((g' + L1 + δ) % M₂.W.n) 0 V ∧
         AfterFaces M₂ ((g' + L1) % M₂.W.n) 0 V') := by
   by_cases hVV : V = V'
-  · exact Or.inl hVV
+  · simp_all
   right
   have hn := hC.n_pos
   have hn₂ := hC.n₂_pos
@@ -1143,8 +1126,7 @@ theorem label_gen3 (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : 0 < δ → CorrGa
   have hdd : (d : ℝ) + t ≠ d' + t' := by
     intro h
     obtain ⟨e1, e2⟩ := Chazelle.Chain.sideKey_inj ht.1.le ht.2 ht'.1.le ht'.2 h
-    subst e1; subst e2
-    exact hVV (WalkAx.faces_unique hV hV' hfV hfV')
+    simp_all
   have gap_of : ∀ {pa pb : ℕ} {ta tb : ℝ}, SideAttach M₂.W c pa ta → SideAttach M₂.W c pb tb →
       sidePt M₂.W pa ta ≠ sidePt M₂.W pb tb →
       Btw ((dq L1 δ d : ℕ) + t) ((dq L1 δ d' : ℕ) + t') (off M₂.W.n g' (pa + ta)) →
@@ -1167,9 +1149,9 @@ theorem label_gen3 (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : 0 < δ → CorrGa
       exact ⟨pb, pa, tb, ta, hB, hA, h', h, gap_of hB hA (Ne.symm hAB) h' h⟩
   obtain ⟨hgap, hin', hout'⟩ := And.intro hout.2 (And.intro hin hout.1)
   -- the two positions lie on both sides of the gap
-  have hng := not_inGap_dq (L1 := L1) (δ := δ) (d := d) ht.1 ht.2
-  have hng' := not_inGap_dq (L1 := L1) (δ := δ) (d := d') ht'.1 ht'.2
-  have hδ0 : (0 : ℝ) ≤ δ := Nat.cast_nonneg _
+  
+  
+  
   have side : ∀ k : ℕ, ∀ s : ℝ, s ∈ Ioo (0 : ℝ) 1 → (k < L1 → ((dq L1 δ k : ℕ) : ℝ) + s < L1) ∧
       (L1 ≤ k → (L1 : ℝ) + δ < ((dq L1 δ k : ℕ) : ℝ) + s) := by
     intro k s hs

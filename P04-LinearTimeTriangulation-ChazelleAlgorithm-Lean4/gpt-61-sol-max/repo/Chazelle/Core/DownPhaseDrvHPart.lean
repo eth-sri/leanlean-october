@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvHEmit
 
 /-!
@@ -22,11 +24,16 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-theorem lpos_eq_iff {c : CRec} {x : WPos} : c.lpos = x ↔ c.lp = x.edge ∧ c.h + 1 = x.hgt := by
+section
+variable {c : CRec} {x : WPos}
+theorem lpos_eq_iff : c.lpos = x ↔ c.lp = x.edge ∧ c.h + 1 = x.hgt := by
   cases x; simp [CRec.lpos]
 
-theorem rpos_eq_iff {c : CRec} {x : WPos} : c.rpos = x ↔ c.rp = x.edge ∧ c.h + 1 = x.hgt := by
+theorem rpos_eq_iff : c.rpos = x ↔ c.rp = x.edge ∧ c.h + 1 = x.hgt := by
   cases x; simp [CRec.rpos]
+
+
+end
 
 theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N : NF} {x : WPos}
     {i v : ℕ} (hK : Kst n li d) (h46 : d.nreg 215046 = x.edge) (h47 : d.nreg 215047 = x.hgt)
@@ -92,23 +99,28 @@ theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {
   exact ⟨d', k, ex, hk, hpost, hm, exec_frameM ex (by decide)⟩
 
 
+section
+variable (N : NF)
+include N
 /-- The search predicate of `partner`. -/
-def pmatch (N : NF) (x : WPos) (i : ℕ) : Bool := decide ((N.chord i).lpos = x ∨ (N.chord i).rpos = x)
+def pmatch (x : WPos) (i : ℕ) : Bool := decide ((N.chord i).lpos = x ∨ (N.chord i).rpos = x)
 
 /-- The result of the partner search for a search outcome. -/
-def resOf (N : NF) (x : WPos) : Option ℕ → WPos
+def resOf (x : WPos) : Option ℕ → WPos
   | some i => if (N.chord i).lpos = x then (N.chord i).rpos else (N.chord i).lpos
   | none => x
 
-theorem partner_eq (N : NF) (r : ℕ) (x : WPos) :
+theorem partner_eq (r : ℕ) (x : WPos) :
     partner N r x = resOf N x ((N.region r).chords.find? (pmatch N x)) := by
   rfl
+
+
+end
 
 theorem find_take_succ {l : List ℕ} {p : ℕ → Bool} {v : ℕ} (hv : v < l.length) :
     (l.take (v + 1)).find? p =
       ((l.take v).find? p).or (if p (l.getD v 0) then some (l.getD v 0) else none) := by
-  rw [List.take_add_one, List.find?_append, List.getElem?_eq_getElem hv, Option.toList_some,
-    List.find?_singleton, List.getD_eq_getElem _ _ hv]
+  grind [List.take_add_one, List.find?_append, Option.toList_some, List.find?_singleton]
 
 set_option maxHeartbeats 1000000 in
 /-- **The partner search.** -/
@@ -139,7 +151,7 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
       exec_block
       · omega
       · omega
-      refine ⟨rfl, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp <;> simp only [h46, h47]
+      simp_all
     exact ⟨d₀, k₀, e₀, hk₀, a52, a53, a54, a55, m₀, exec_frameM e₀ (by decide)⟩
   -- the loop
   let Inv : ℕ → Config → Prop := fun v e => WordsBounded W e ∧ e.nreg 215055 = v ∧
@@ -156,7 +168,7 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
       have Ke : Kst n li e := hK.frame fe (by decide)
       have hfs := find_take_succ (p := pmatch N x) hv
       have hmem : cs.getD v 0 ∈ cs := by
-        rw [List.getD_eq_getElem _ _ hv]; exact List.getElem_mem hv
+        grind
       obtain ⟨hi1, hil, hir, hih⟩ := hF.hch _ hmem
       have Ke' : e.nreg 215020 = 1 := Ke.one
       obtain ⟨e', k, ex, hk, p55, p52, p53, p54, pm⟩ : ∃ e' k, Exec P W chBody e e' k ∧ k ≤ 33 ∧
@@ -180,7 +192,7 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
           · omega
           · exact e52
           · exact e53
-          · simpa using e54
+          ram_grind
         | none =>
           rw [hfound] at e52 e53 e54
           simp only [Option.isSome_none, Bool.false_eq_true, ↓reduceIte, resOf] at e52 e53 e54
@@ -193,12 +205,12 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
           have t27 : e.nreg 215027 = d.nreg 215027 := g _ (by decide)
           have t29 : e.nreg 215029 = d.nreg 215029 := g _ (by decide)
           have t25 : e.nreg 215025 = d.nreg 215025 := g _ (by decide)
-          have ti : e.nmem (e.nreg 215027 + (e.nreg 215029 + v)) = i := by rw [me, t27, t29, c1]
-          have tiW : e.nreg 215027 + (e.nreg 215029 + v) ≤ W := by rw [t27, t29]; exact c2
-          have th : e.nmem (e.nreg 215025 + 5 * i) = (N.chord i).h := by rw [me, t25, r1]
-          have tl : e.nmem (e.nreg 215025 + 5 * i + 1) = (N.chord i).lp := by rw [me, t25, r2]
-          have tr : e.nmem (e.nreg 215025 + 5 * i + 2) = (N.chord i).rp := by rw [me, t25, r3]
-          have tW : e.nreg 215025 + 5 * i + 2 ≤ W := by rw [t25]; exact r4
+          have ti : e.nmem (e.nreg 215027 + (e.nreg 215029 + v)) = i := by ram_grind
+          have tiW : e.nreg 215027 + (e.nreg 215029 + v) ≤ W := by omega
+          have th : e.nmem (e.nreg 215025 + 5 * i) = (N.chord i).h := by ram_grind
+          have tl : e.nmem (e.nreg 215025 + 5 * i + 1) = (N.chord i).lp := by ram_grind
+          have tr : e.nmem (e.nreg 215025 + 5 * i + 2) = (N.chord i).rp := by ram_grind
+          have tW : e.nreg 215025 + 5 * i + 2 ≤ W := by omega
           refine spec_use (chTest_exec (P := P) e hwe Ke t46 t47 e55 ti tiW th tl tr tW hxe hxh
             hil hir hih hW) ?_
           intro c₁ k₁ hk₁ hw₁ ⟨hpost, hm₁, hf₁⟩

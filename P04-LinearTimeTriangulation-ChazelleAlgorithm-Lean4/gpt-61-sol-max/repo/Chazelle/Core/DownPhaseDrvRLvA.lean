@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRLvlSpec
 public import Chazelle.Core.DownPhaseDrvRPad
 public import Chazelle.Core.DownPhaseDrvRProg
@@ -68,8 +70,8 @@ theorem lvParA_exec (c : Config) (hw : WordsBounded W c) {S n lam MD : ℕ}
   set p := topGrade n with hp
   have hμl : nextLvl lam < lam := nextLvl_lt h16
   have hcb : ∀ i, Cost.ceilBeta i = (i + 4) / 5 := Setup.ceilBeta_eq
-  have hμ : nextLvl lam = (lam + 4) / 5 + 11 := by unfold nextLvl; rw [hcb]
-  have hb12 : Cost.ceilBeta (nextLvl lam) + 12 ≤ nextLvl lam := by rw [hcb]; omega
+  have hμ : nextLvl lam = (lam + 4) / 5 + 11 := by core_grind
+  have hb12 : Cost.ceilBeta (nextLvl lam) + 12 ≤ nextLvl lam := by grind
   have t1 : c.nmem (S + p + 4 + lam) = Cost.ceilBeta lam := (hT lam (by omega)).2
   have t2 : c.nmem (S + p + 4 + nextLvl lam) = Cost.ceilBeta (nextLvl lam) :=
     (hT _ (by omega)).2
@@ -82,23 +84,20 @@ theorem lvParA_exec (c : Config) (hw : WordsBounded W c) {S n lam MD : ℕ}
   have w5 := hw.2 (S + 2 + (Cost.ceilBeta (nextLvl lam) + 12))
   rw [t5] at w5
   have hpow : 2 ^ (Cost.ceilBeta (nextLvl lam) + 12) = 4 * 2 ^ (Cost.ceilBeta (nextLvl lam) + 10) := by
-    rw [show Cost.ceilBeta (nextLvl lam) + 12 = (Cost.ceilBeta (nextLvl lam) + 10) + 2 by omega,
-      pow_add]; ring
+    ring_nf 
   have hμ' : Cost.ceilBeta lam + 11 = nextLvl lam := rfl
   have w3 := hw.2 (S + 2 + nextLvl lam)
   rw [t3] at w3
-  have wm := hw.2 (MD + 1)
-  have cb1 := Cost.ceilBeta_le lam
-  have cb2 := Cost.ceilBeta_le (nextLvl lam)
-  have hAW' : c.nreg 9999 ≤ W := hAW
+  
+  
+  
+  
   have t4' : c.nmem (S + 2 + Cost.ceilBeta (nextLvl lam) + 10) =
       2 ^ (Cost.ceilBeta (nextLvl lam) + 10) := by
-    rw [show S + 2 + Cost.ceilBeta (nextLvl lam) + 10 = S + 2 + (Cost.ceilBeta (nextLvl lam) + 10)
-      by omega]; exact t4
+    omega
   have t5' : c.nmem (S + 2 + Cost.ceilBeta (nextLvl lam) + 10 + 2) =
       2 ^ (Cost.ceilBeta (nextLvl lam) + 12) := by
-    rw [show S + 2 + Cost.ceilBeta (nextLvl lam) + 10 + 2 =
-      S + 2 + (Cost.ceilBeta (nextLvl lam) + 12) by omega]; exact t5
+    omega
   unfold lvParA
   exec_block
   all_goals try (config_simp; (try simp only [h0, hl, h1, hS1, t1, hμ', t2, t3, t4', t5']); omega)
@@ -127,13 +126,13 @@ theorem lvParB_exec (c : Config) (hw : WordsBounded W c) (h16 : c.nreg 211016 = 
     · have e := Exec.constN (P := P) hw 211008 1 hW
       refine ⟨_, _, .ifLtN_true ha (.ifLtN_true hb e), by omega, by simp, ?_, fun r hr => by
         simp [hr], rfl, rfl, rfl, rfl⟩
-      simp only [Machine.upd_same, true_iff]; omega
+      ram_simp <;> omega_nf
     · refine ⟨_, _, .ifLtN_true ha (.ifLtN_false hb (.skip hw)), by omega, by omega, ?_,
         fun r _ => rfl, rfl, rfl, rfl, rfl⟩
-      rw [h08]; omega
+      omega
   · refine ⟨_, _, .ifLtN_false ha (.skip hw), by omega, by omega, ?_, fun r _ => rfl, rfl, rfl,
       rfl, rfl⟩
-    rw [h08]; omega
+    omega
 
 /-- The registers `lvParC` writes. -/
 def BparC (r : ℕ) : Bool :=
@@ -183,60 +182,60 @@ theorem lvPar_exec (c : Config) (hw : WordsBounded W c) {S n lam MD K : ℕ}
     lvParB_exec (P := P) c₁ e₁.wb_right a16 a17 a08 (by omega)
   have u₂ : ∀ r, r ≠ 211008 → Bpar r = false → c₂.nreg r = c.nreg r := fun r h h' =>
     (g₂ r h).trans (g₁.1 r h')
-  have q03 : c₂.nreg 210003 = K := by rw [u₂ _ (by decide) (by decide), h03]
-  have q14 : c₂.nreg 211014 = 1 := by rw [g₂ _ (by decide), a14]
+  have q03 : c₂.nreg 210003 = K := by ram_grind
+  have q14 : c₂.nreg 211014 = 1 := by grind
   have qA : c₂.nreg 9999 = c.nreg 9999 := u₂ _ (by decide) (by decide)
   have hA9 : c.nreg 9999 + 3 * (K + 1) ≤ W := hAW
   obtain ⟨c₃, k₃, e₃, hk₃, d09, d11, d99, d10, d12, d13, m₃, rr₃, rm₃, o₃⟩ :=
-    lvParC_exec (P := P) c₂ e₂.wb_right q03 q14 (by show c₂.nreg 9999 + 3 * (K + 1) ≤ W; omega)
+    lvParC_exec (P := P) c₂ e₂.wb_right q03 q14 (by omega_nf)
   have g₃ : FrameB BparC c₂ c₃ := exec_frameB e₃ wr_lvParC
   obtain ⟨c₄, e₄, g₄, rr₄, m₄, rm₄, o₄, w₄⟩ :=
-    padS_exec (P := P) (src := 211009) e₃.wb_right (by show c₃.nreg 211009 ≤ c₃.nreg 9999; omega)
+    padS_exec (P := P) (src := 211009) e₃.wb_right (by omega)
       (by omega)
   have v : ∀ r, Bpar r = false → BparC r = false → r ≠ 211008 → r ≠ 210068 → r ≠ 210069 →
       c₄.nreg r = c.nreg r := fun r h1 h2 h3 h4 h5 =>
     (g₄ r h4 h5).trans ((g₃.1 r h2).trans (u₂ r h3 h1))
   have k4 : 3 * (c₃.nreg 9999 - c₃.nreg 211009) + 4 = 9 * (K + 1) + 4 := by
-    rw [d99, d09, qA]; omega
+    omega
   rw [k4] at e₄
   have ex : Exec P W lvPar c c₄ (k₁ + (k₂ + (k₃ + (9 * (K + 1) + 4)))) :=
     .seq e₁ (.seq e₂ (.seq e₃ e₄))
   have w₃ : ∀ r, BparC r = false → c₃.nreg r = c₂.nreg r := g₃.1
   have v32 : ∀ r, BparC r = false → r ≠ 210068 → r ≠ 210069 → c₄.nreg r = c₂.nreg r :=
     fun r h1 h2 h3 => (g₄ r h2 h3).trans (w₃ r h1)
-  have hmm : c₄.nmem = c.nmem := by rw [m₄, m₃, m₂, m₁]
+  have hmm : c₄.nmem = c.nmem := by grind
   have hA4 : c₄.nreg 9999 = c.nreg 9999 + 3 * (K + 1) := by
-    rw [g₄ _ (by decide) (by decide), d99, qA]
+    grind
   have hreg : ∀ q, (q < 211000 ∨ 211030 ≤ q) → q ≠ 210068 → q ≠ 210069 → q ≠ ALLOC →
       c₄.nreg q = c.nreg q := fun q hq h68 h69 hA => v q
-    (by simp only [Bpar, decide_eq_false_iff_not]; omega)
+    (by grind [Bpar, decide_eq_false_iff_not])
     (by simp only [BparC, Bool.or_eq_false_iff, decide_eq_false_iff_not]; unfold ALLOC at hA; omega)
     (by omega) h68 h69
   refine ⟨c₄, _, ex, by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     hA4, ?_, ?_, ?_, w₄, hreg, hmm, ?_⟩
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a00
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a01
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a02
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a03
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a04
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a06
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a07
+  · ram_simp
+  · ram_simp
+  · ram_simp
+  · ram_simp
+  · ram_simp
+  · ram_simp
+  · ram_simp
   · rw [v32 _ (by decide) (by decide) (by decide)]; exact b08
   · rw [v32 _ (by decide) (by decide) (by decide), b08', a25]
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a14
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a15
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a16
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a17
-  · rw [g₄ _ (by decide) (by decide), d09, qA]; rfl
-  · rw [g₄ _ (by decide) (by decide)]; exact d11
-  · rw [g₄ _ (by decide) (by decide)]; exact d10
-  · rw [g₄ _ (by decide) (by decide)]; exact d12
-  · rw [g₄ _ (by decide) (by decide)]; exact d13
-  · refine ⟨fun r hr hrA => hreg r ?_ ?_ ?_ hrA, fun r _ => by rw [rr₄, rr₃, rr₂, rr₁],
-      fun a _ => by rw [hmm], fun a _ => by rw [rm₄, rm₃, rm₂, rm₁], by rw [o₄, o₃, o₂, o₁],
-      by show c.nreg 9999 ≤ c₄.nreg 9999; omega,
-      by show c₄.nreg 9999 ≤ c.nreg 9999 + _; rw [hA4]; omega⟩
-    all_goals (simp only [Finset.mem_singleton, bandOf, bDownDrv] at hr; omega)
+  · ram_simp
+  · ram_simp
+  · ram_simp
+  · ram_simp
+  · ram_grind
+  · grind
+  · grind
+  · grind
+  · grind
+  · refine ⟨fun r hr hrA => hreg r ?_ ?_ ?_ hrA, fun r _ => by grind,
+      fun a _ => by rw [hmm], fun a _ => by grind, by grind,
+      by omega_nf,
+      by omega_nf⟩
+    all_goals grind [Finset.mem_singleton, bandOf, bDownDrv]
 
 end exec
 

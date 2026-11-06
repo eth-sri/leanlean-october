@@ -42,9 +42,9 @@ theorem arc_int {N se ee w : ℕ} {a b : ℝ} (hse : se < N) (hee : ee < N) (ha0
     omega
   rw [ite_eq_right hsp]
   have hxa : ∀ y : ℕ, (y : ℝ) = a → y = se := fun y h => by
-    have h1 : (se : ℝ) ≤ y := h ▸ ha0
+    
     have h2 : (y : ℝ) < se + 1 := h ▸ ha1
-    have h1' : se ≤ y := by exact_mod_cast h1
+    have h1' : se ≤ y := by aesop
     have h2' : y < se + 1 := by exact_mod_cast h2
     omega
   have hxb : ∀ y : ℕ, (y : ℝ) = b → y = ee := fun y h => by
@@ -58,14 +58,12 @@ theorem arc_int {N se ee w : ℕ} {a b : ℝ} (hse : se < N) (hee : ee < N) (ha0
     split_ifs at hc with hab
     · -- a < x < b
       have h1 : se < x + 1 := by
-        have : (se : ℝ) < x + 1 := by linarith [hc.1]
+        have : (se : ℝ) < x + 1 := by linarith
         exact_mod_cast this
       have h2 : x < ee + 1 := by
-        have : (x : ℝ) < ee + 1 := by linarith [hc.2]
+        have : (x : ℝ) < ee + 1 := by linarith
         exact_mod_cast this
       have h3 : se ≤ ee := by
-        have : (se : ℝ) < ee + 1 := by linarith
-        have : se < ee + 1 := by exact_mod_cast this
         omega
       rw [show x + N - se = (x - se) + N by omega, Nat.add_mod_right,
         show ee + N - se = (ee - se) + N by omega, Nat.add_mod_right,
@@ -77,10 +75,7 @@ theorem arc_int {N se ee w : ℕ} {a b : ℝ} (hse : se < N) (hee : ee < N) (ha0
         have : ee < se + 1 := by exact_mod_cast this
         omega
       have hne : ee ≠ se := by
-        intro e; subst e
-        rcases hw with hw | hw
-        · exact hsp ⟨rfl, hw⟩
-        · exact hab hw
+        grind
       have hlt : ee < se := by omega
       rw [Nat.mod_eq_of_lt (by omega : ee + N - se < N)]
       rcases hc with hc | hc
@@ -100,10 +95,7 @@ theorem arc_int {N se ee w : ℕ} {a b : ℝ} (hse : se < N) (hee : ee < N) (ha0
   · have := hxa x hc
     subst this
     simp
-  · have := hxb x hc
-    subst this
-    have := Nat.mod_lt (x + N - se) (by omega : 0 < N)
-    omega
+  grind
 
 /-- **The leaf above the target is the target.** -/
 theorem leaf_target {N : NF} {d : ℕ} (hD : IsDecomp N d) {r T : ℕ} (hr : r < N.nRegions)
@@ -135,10 +127,8 @@ theorem arc_of_target (hGα : GoodModel (chainModel Cα)) {Nα : NF}
   have hmem : j ∈ (Nα.region T).arcs := (harcs.2.2.2 T hD.hT j).2 ⟨hj, hjr⟩
   obtain ⟨t, ht, htj⟩ := List.mem_iff_getElem.1 hmem
   have hget : (Nα.region T).arcs.getD t 0 = j := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, htj]; rfl
-  refine ⟨t, ht, by rw [hget]; exact hj, ?_⟩
-  rw [hget, hjs, hje]
-  exact hcl
+    simp_all
+  grind
 
 end
 

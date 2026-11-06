@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreNodeEnd
 public import Chazelle.Core.RestoreTree
 
@@ -23,10 +25,7 @@ open Chazelle.Chain (sidePt SideAttach sideLeft sideInArc)
 
 theorem after_ne (k a : ℝ) : ∀ᶠ ε in 𝓝[>] (0 : ℝ), k + ε ≠ a := by
   filter_upwards [lt_after a k, after_lt a k, self_mem_nhdsWithin] with ε h1 h2 h3 h
-  have : (0 : ℝ) < ε := h3
-  by_cases hak : a ≤ k
-  · linarith
-  · push Not at hak; have := h2.2 hak; linarith
+  simp_all
 
 theorem small_lt (b : ℝ) (hb : 0 < b) : ∀ᶠ ε in 𝓝[>] (0 : ℝ), ε < b := by
   filter_upwards [Ioo_mem_nhdsGT hb] with ε hε using hε.2
@@ -48,7 +47,7 @@ theorem child_side {M : Model} {Q : Polygon} {N : NF} {reg : ℕ → Set Point} 
     (¬ (sideInArc (pa + ta) (pb + tb) p ↔
         (M.key Q (N.arc j).s = pa + ta ∨ sideInArc (pa + ta) (pb + tb) (M.key Q (N.arc j).s))) →
       r ∈ N.highSide k) := by
-  have hM := walkAx_of_goodModel hGM
+  
   set ka : ℝ := pa + ta
   set kb : ℝ := pb + tb
   have hab : ka ≠ kb := WalkAx.key_ne_of_pt_ne hA hB hAB
@@ -69,31 +68,18 @@ theorem child_side {M : Model} {Q : Polygon} {N : NF} {reg : ℕ → Set Point} 
   have hε0' : (0 : ℝ) < ε := hε0
   have hsedge : s.edge < M.W.n := by
     obtain ⟨-, h, -⟩ := harc
-    have := hτ0
+    
     have h' : (s.edge : ℝ) < M.W.n := by
-      have : ks = s.edge + τ := hks
       linarith
     exact_mod_cast h'
   have hf₀ : M.Faces s.edge (τ + ε) (reg (N.chord k).dn) :=
     harc.2.2.2.2.2.2 s.edge (τ + ε) hsedge (by linarith) (by linarith)
-      (by rw [← add_assoc, ← hks]; exact hst)
+      (by grind)
   have hd := decide_side hGM hN hT hregs.1 hregs.2.1 hk hA hB hAB hr hp hε0' hε1 hfp hsedge
     (by linarith) (by linarith) hf₀
   have sw : ∀ v, v ≠ ka → v ≠ kb → (sideInArc kb ka v ↔ ¬ sideInArc ka kb v) := fun v h1 h2 =>
     Chazelle.Chain.sideInArc_swap (Ne.symm hab) h2 h1
-  have ex : sideInArc ka kb (p + ε) ↔ sideInArc ka kb p := by
-    rw [hsp]; exact ⟨fun h => h.resolve_left hpa, Or.inr⟩
-  have er : sideInArc ka kb (s.edge + (τ + ε)) ↔ (ks = ka ∨ sideInArc ka kb ks) := by
-    rw [← add_assoc, ← hks]; exact hss
-  rw [sw _ n1 n2, sw _ (by rw [← add_assoc, ← hks]; exact n3)
-    (by rw [← add_assoc, ← hks]; exact n4), ex, er] at hd
-  refine ⟨fun h => hd.1 ?_, fun h => hd.2 ?_⟩
-  · by_cases h' : sideInArc ka kb p
-    · exact Or.inl ⟨h', h.1 h'⟩
-    · exact Or.inr ⟨h', fun h'' => h' (h.2 h'')⟩
-  · by_cases h' : sideInArc ka kb p
-    · exact Or.inl ⟨h', fun h'' => h ⟨fun _ => h'', fun _ => h'⟩⟩
-    · exact Or.inr ⟨h', by_contra fun h'' => h ⟨fun h3 => absurd h3 h', fun h3 => absurd h3 h''⟩⟩
+  ram_grind
 
 end
 

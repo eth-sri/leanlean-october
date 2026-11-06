@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvTBuild
 public import Chazelle.Core.DownPhaseDrvRInv
 
@@ -47,11 +49,10 @@ theorem wrM_setB : wrM BsetB setB = true := by decide
 theorem wrM_finT : wrM BfinT finT = true := by decide
 
 theorem le_gradeGran (g : ℕ) : g ≤ gradeGran g := by
-  have : g ≤ g * (Nat.clog 2 g + 2) := Nat.le_mul_of_pos_right _ (by omega)
+  
   have h1 : gradeGran g = 2 ^ Cost.ceilBeta g + fuseLoss * (g * (Nat.clog 2 g + 2)) := rfl
   have h2 : fuseLoss = 1 := rfl
-  rw [h1, h2, one_mul]
-  exact this.trans (Nat.le_add_left _ _)
+  grind
 
 /-- **The cost of the transition.** -/
 theorem trans_cost_le {n K K₀ : ℕ} (hn : 3 ≤ n) (hK : K ≤ K₀)
@@ -62,19 +63,15 @@ theorem trans_cost_le {n K K₀ : ℕ} (hn : 3 ≤ n) (hK : K ≤ K₀)
   have hnp : n - 1 ≤ 2 ^ p := Nat.le_pow_clog (by norm_num) _
   have hgp : p ≤ gradeGran p := le_gradeGran p
   have hK₀n : K₀ ≤ 1680 * n := by
-    have : K₀ ≤ K₀ * (gradeGran p + 1) := Nat.le_mul_of_pos_right _ (by omega)
-    omega
+    grind
   have hKpow : K ≤ 2 ^ (p + 12) := by
-    have h2 : 2 ^ (p + 12) = 4096 * 2 ^ p := by rw [pow_add]; norm_num; ring
-    have h1 : 1 ≤ 2 ^ p := Nat.one_le_two_pow
-    omega
+    ring_nf <;> omega
   have hclog : Nat.clog 2 K ≤ p + 12 := Nat.clog_le_of_le_pow hKpow
   have hKK : K * (Nat.clog 2 K + 1) ≤ 13 * (K₀ * (gradeGran p + 1)) := by
     calc K * (Nat.clog 2 K + 1) ≤ K * (13 * (p + 1)) := Nat.mul_le_mul_left _ (by omega)
       _ ≤ K₀ * (13 * (gradeGran p + 1)) := Nat.mul_le_mul hK (by omega)
       _ = 13 * (K₀ * (gradeGran p + 1)) := by ring
-  unfold κBuild κT
-  omega
+  omega_nf
 
 section exec
 
@@ -90,7 +87,7 @@ theorem setB_exec (c : Config) (hw : WordsBounded W c) :
       c'.nreg 40002 = c.nreg 190036 ∧ c'.nmem = c.nmem := by
     unfold setB
     exec_block
-    exact ⟨rfl, by config_simp, by config_simp, by config_simp, rfl⟩
+    simp_all
   exact ⟨c', k, e, hk, h1, h2, h3, exec_frameM e wrM_setB, hm⟩
 
 set_option maxHeartbeats 1000000 in
@@ -105,8 +102,7 @@ theorem finT_exec (c : Config) (hw : WordsBounded W c) :
       c'.nreg 210005 = c.nreg 40003 ∧ c'.nmem = c.nmem := by
     unfold finT
     exec_block
-    exact ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
-      rfl⟩
+    simp_all
   exact ⟨c', k, e, hk, h1, h2, h3, h4, h5, exec_frameM e wrM_finT, hm⟩
 
 end exec

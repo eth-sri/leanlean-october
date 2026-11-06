@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildEvCmp
 public import Chazelle.Core.SortRam
 
@@ -57,17 +59,17 @@ theorem recWord_eq (L : List (ℕ × ℕ × ℕ)) (i k : ℕ) (hk : k < 8) :
   unfold recWord
   interval_cases k
   · rw [show (8 * i + 0) % 4 = 0 by omega, show (8 * i + 0) / 4 = 2 * i by omega]
-    simp [wposOf, e0, d0, BuildRegions.crec, CRec.lpos, recOf]
+    grind [wposOf, BuildRegions.crec, CRec.lpos, recOf]
   · rw [show (8 * i + 1) % 4 = 1 by omega, show (8 * i + 1) / 4 = 2 * i by omega]
-    simp [wposOf, e0, d0, BuildRegions.crec, CRec.lpos, recOf]
+    grind [wposOf, BuildRegions.crec, CRec.lpos, recOf]
   · rw [show (8 * i + 2) % 4 = 2 by omega, show (8 * i + 2) / 4 = 2 * i by omega]
     simp [e0]
   · rw [show (8 * i + 3) % 4 = 3 by omega, show (8 * i + 3) / 4 = 2 * i by omega]
     simp [d0]
   · rw [show (8 * i + 4) % 4 = 0 by omega, show (8 * i + 4) / 4 = 2 * i + 1 by omega]
-    simp [wposOf, e1, d1, BuildRegions.crec, CRec.rpos, recOf]
+    grind [wposOf, BuildRegions.crec, CRec.rpos, recOf]
   · rw [show (8 * i + 5) % 4 = 1 by omega, show (8 * i + 5) / 4 = 2 * i + 1 by omega]
-    simp [wposOf, e1, d1, BuildRegions.crec, CRec.rpos, recOf]
+    grind [wposOf, BuildRegions.crec, CRec.rpos, recOf]
   · rw [show (8 * i + 6) % 4 = 2 by omega, show (8 * i + 6) / 4 = 2 * i + 1 by omega]
     simp [e1]
   · rw [show (8 * i + 7) % 4 = 3 by omega, show (8 * i + 7) / 4 = 2 * i + 1 by omega]
@@ -78,21 +80,21 @@ theorem recsAt_of {m : ℕ → ℕ} {T : ℕ} {L : List (ℕ × ℕ × ℕ)}
     (h : ∀ q, q < 8 * L.length → m (T + q) = recWord L q) : RecsAt m T L := by
   intro c hc
   have w : ∀ k, k < 4 → m (T + 4 * c + k) = recWord L (4 * c + k) := fun k hk => by
-    rw [← h (4 * c + k) (by omega)]; congr 1; omega
-  have r : ∀ k, k < 4 → (4 * c + k) % 4 = k ∧ (4 * c + k) / 4 = c := fun k hk => ⟨by omega, by omega⟩
+    grind
+  
   refine ⟨?_, ?_, ?_, ?_⟩
   · have := w 0 (by norm_num); rw [Nat.add_zero] at this
-    rw [this, recWord, ite_eq_left (by omega), (r 0 (by norm_num)).2]
-  · rw [w 1 (by norm_num), recWord, (r 1 (by norm_num)).1, (r 1 (by norm_num)).2]; simp
-  · rw [w 2 (by norm_num), recWord, (r 2 (by norm_num)).1, (r 2 (by norm_num)).2]; simp
-  · rw [w 3 (by norm_num), recWord, (r 3 (by norm_num)).1, (r 3 (by norm_num)).2]; simp
+    grind [recWord]
+  · grind [recWord]
+  · grind [recWord]
+  grind [recWord]
 
 section exec
 
 variable {P : Polygon} {W : ℕ}
 
 /-- The memory after `i` chords. -/
-def recMem (m₀ : ℕ → ℕ) (L : List (ℕ × ℕ × ℕ)) (T S₀ i : ℕ) (a : ℕ) : ℕ :=
+def recMem (m₀ : ℕ → ℕ) (L : List (ℕ × ℕ × ℕ)) (T S₀ i a : ℕ) : ℕ :=
   if T ≤ a ∧ a < T + 8 * i then recWord L (a - T)
   else if S₀ ≤ a ∧ a < S₀ + 2 * i then a - S₀ else m₀ a
 
@@ -197,20 +199,20 @@ theorem recLoop_exec {m₀ : ℕ → ℕ} {L : List (ℕ × ℕ × ℕ)} {B T S�
       refine ⟨⟨‹WordsBounded _ _›, ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, hId.rr, hId.rm,
         hId.out, fun a => ?_⟩⟩, ?_, ?_⟩
       all_goals config_simp
-      · rw [hi]; omega
+      · omega_nf
       · exact hId.rK
       · exact z
       · exact o
-      · rw [ha21, hi, o]; omega
-      · rw [ha22, hi, o]; omega
-      · rw [ha23, hi, o]; omega
-      · rw [ha24, hi, o]; omega
-      · simp (disch := omega) only [upd_other]; exact fr r hr
+      · omega_nf
+      · omega_nf
+      · omega_nf
+      · omega_nf
+      · simp (disch := omega) only [upd_other]; ram_simp
       · rw [hi, o]
         refine recStep_mem hm htest ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ hS a <;>
-          simp only [ha21, ha22, ha23, ha24, z, m21, m22, m23, hS]
-      · rw [hi, o]; omega
-      · rw [hi, o]; omega)
+          ram_simp
+      · omega_nf
+      · omega_nf)
     ⟨hw, hI⟩
   refine ⟨c', k, e, ?_, ?_, hw', hI', ?_⟩
   · rw [h0] at hk; omega

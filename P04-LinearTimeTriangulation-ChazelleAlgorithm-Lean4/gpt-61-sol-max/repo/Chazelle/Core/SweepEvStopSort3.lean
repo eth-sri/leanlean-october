@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopSort2
 public import Chazelle.Core.SweepEvInit3
 
@@ -26,17 +28,11 @@ open Machine Machine.Stmt Programs SweepIo SweepPrim WalkEmbed SweepRam Sweep Sw
 
 theorem ss_getD_snoc {α : Type} (l : List α) (x d : α) (i : ℕ) :
     (l ++ [x]).getD i d = if i < l.length then l.getD i d else if i = l.length then x else d := by
-  split_ifs with h1 h2
-  · simp [List.getD_eq_getElem?_getD, List.getElem?_append_left h1]
-  · subst h2; simp [List.getD_eq_getElem?_getD]
-  · rw [List.getD_eq_default]; simp; omega
+  grind
 
 theorem KLe.antisymm' {a b : ℝ × ℕ} (h1 : KLe a b) (h2 : KLe b a) : a = b := by
   rcases h1 with h1 | ⟨h1, h1'⟩ <;> rcases h2 with h2 | ⟨h2, h2'⟩
-  · exact absurd (h1.trans h2) (lt_irrefl _)
-  · rw [h2] at h1; exact absurd h1 (lt_irrefl _)
-  · rw [h1] at h2; exact absurd h2 (lt_irrefl _)
-  · exact Prod.ext h1 (le_antisymm h1' h2')
+  all_goals grind
 
 /-! ## The program of the pass -/
 
@@ -54,8 +50,9 @@ def ssDedup : Stmt := .whileLtN srJ gRC ssBody
 
 /-! ## Records -/
 
-theorem stopRecs_snoc {m m' : ℕ → ℕ} {A : ℕ} {O : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
-    {x : ℕ × ℕ × ℕ × ℕ × ℕ} (h : StopRecsAt m A O)
+section
+variable {m m' : ℕ → ℕ} {A : ℕ} {O : List (ℕ × ℕ × ℕ × ℕ × ℕ)} {x : ℕ × ℕ × ℕ × ℕ × ℕ}
+theorem stopRecs_snoc (h : StopRecsAt m A O)
     (hk : ∀ a, A ≤ a → a < A + 5 * O.length → m' a = m a)
     (hn : m' (A + 5 * O.length) = x.1 ∧ m' (A + 5 * O.length + 1) = x.2.1 ∧
       m' (A + 5 * O.length + 2) = x.2.2.1 ∧ m' (A + 5 * O.length + 3) = x.2.2.2.1 ∧
@@ -65,14 +62,11 @@ theorem stopRecs_snoc {m m' : ℕ → ℕ} {A : ℕ} {O : List (ℕ × ℕ × �
   simp only [List.length_append, List.length_singleton] at hi
   split_ifs with h1 h2
   · obtain ⟨a0, a1, a2, a3, a4⟩ := h i h1
-    exact ⟨(hk _ (by omega) (by omega)).trans a0, (hk _ (by omega) (by omega)).trans a1,
-      (hk _ (by omega) (by omega)).trans a2, (hk _ (by omega) (by omega)).trans a3,
-      (hk _ (by omega) (by omega)).trans a4⟩
-  · subst h2; exact hn
+    ram_grind
+  · ram_grind
   · omega
 
-theorem auxRecs_snoc {m m' : ℕ → ℕ} {A : ℕ} {O : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
-    {x : ℕ × ℕ × ℕ × ℕ × ℕ} (h : AuxRecsAt m A O)
+theorem auxRecs_snoc (h : AuxRecsAt m A O)
     (hk : ∀ a, A ≤ a → a < A + 5 * O.length → m' a = m a)
     (hn : m' (A + 5 * O.length) = x.1 ∧ m' (A + 5 * O.length + 1) = x.2.1 ∧
       m' (A + 5 * O.length + 2) = x.2.2.1 ∧ m' (A + 5 * O.length + 3) = x.2.2.2.1 ∧
@@ -82,13 +76,14 @@ theorem auxRecs_snoc {m m' : ℕ → ℕ} {A : ℕ} {O : List (ℕ × ℕ × ℕ
   simp only [List.length_append, List.length_singleton] at hi
   split_ifs with h1 h2
   · obtain ⟨a0, a1, a2, a3, a4⟩ := h i h1
-    exact ⟨(hk _ (by omega) (by omega)).trans a0, (hk _ (by omega) (by omega)).trans a1,
-      (hk _ (by omega) (by omega)).trans a2, (hk _ (by omega) (by omega)).trans a3,
-      (hk _ (by omega) (by omega)).trans a4⟩
-  · subst h2; exact hn
+    ram_grind
+  · ram_grind
   · omega
 
 /-! ## The invariant of the pass -/
+
+
+end
 
 /-- **The state of the pass after `j` indices** of `L` (from the entry configuration `d₀`). -/
 structure SsDI (P : Polygon) (W : ℕ) (J : Merge.Junction) (d2 RB S A₀ : ℕ) (m₀ : ℕ → ℕ)
@@ -127,50 +122,47 @@ theorem ssWr_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
         d'.nreg r = d.nreg r) ∧ d'.rreg = d.rreg ∧ d'.rmem = d.rmem ∧ d'.output = d.output := by
   obtain ⟨-, -, hRB, -, -, hK1, -, hm⟩ := hctx
   obtain ⟨d', k, ex, hk, hmem', hsC, hr, hrr, hrm, ho⟩ := ssWr_exec (P := P) hw hK1
-    (by rw [hRB, hx, hb1, hC]; omega) (by rw [hb1, hb2, hC]; omega)
-    (by rw [hb2, hC]; omega)
+    (by omega) (by omega)
+    (by omega)
   rw [hRB, hx, hb1, hb2, hC] at hmem'
   have src : ∀ u, u < 11 → d.nmem (RB + 11 * x + u) = m₀ (RB + 11 * x + u) := fun u hu =>
-    hm _ (by have : 11 * x + 11 ≤ 11 * S := by omega
+    hm _ (by 
              omega)
   have wD : ∀ t, t < 5 → d'.nmem (B1 + 5 * O.length + t) = m₀ (RB + 11 * x + ssOff t) :=
     fun t ht => by
-      rw [hmem']; unfold ssWM
-      rw [ite_eq_left (by omega), show B1 + 5 * O.length + t - (B1 + 5 * O.length) = t by omega]
-      exact src _ (by unfold ssOff; split_ifs <;> omega)
+      rw [hmem']; grind [ssWM, ssOff]
   have wE : ∀ t, t < 5 → d'.nmem (B1 + 5 * S + 5 * O.length + t) = m₀ (RB + 11 * x + 6 + t) :=
     fun t ht => by
       rw [hmem']; unfold ssWM
       rw [ite_eq_right (by omega), ite_eq_left (by omega),
         show B1 + 5 * S + 5 * O.length + t - (B1 + 5 * S + 5 * O.length) = t by omega]
-      rw [show RB + 11 * x + 6 + t = RB + 11 * x + (6 + t) by omega]
-      exact src _ (by omega)
+      ram_grind
   have kD : ∀ a, a < B1 + 5 * O.length → d'.nmem a = d.nmem a := fun a ha => by
-    rw [hmem']; unfold ssWM; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+    rw [hmem']; grind [ssWM]
   have kE : ∀ a, a < B1 + 5 * S + 5 * O.length → (a < B1 + 5 * O.length ∨
       B1 + 5 * O.length + 5 ≤ a) → d'.nmem a = d.nmem a := fun a ha ha' => by
-    rw [hmem']; unfold ssWM; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
-  refine ⟨d', k, ex, hk, by rw [hsC, hC]; simp, ?_, ?_, fun a ha => kD a (by omega),
+    rw [hmem']; grind [ssWM]
+  refine ⟨d', k, ex, hk, by ram_grind, ?_, ?_, fun a ha => kD a (by omega),
     hr, hrr, hrm, ho⟩
   · rw [List.map_append, List.map_singleton]
-    refine stopRecs_snoc hst (fun a _ ha => kD a (by simpa using ha)) ?_
+    refine stopRecs_snoc hst (fun a _ ha => kD a (by grind)) ?_
     simp only [List.length_map, rawRec]
     refine ⟨?_, ?_, ?_, ?_, ?_⟩
-    · have := wD 0 (by norm_num); simp only [ssOff] at this; simpa using this
-    · have := wD 1 (by norm_num); simp only [ssOff] at this; simpa using this
-    · have := wD 2 (by norm_num); simp only [ssOff] at this; simpa using this
-    · have := wD 3 (by norm_num); simp only [ssOff] at this; simpa using this
-    · have := wD 4 (by norm_num); simp only [ssOff] at this; simpa using this
+    · have := wD 0 (by norm_num); simp only [ssOff] at this; ram_grind
+    · have := wD 1 (by norm_num); grind [ssOff]
+    · have := wD 2 (by norm_num); grind [ssOff]
+    · have := wD 3 (by norm_num); grind [ssOff]
+    · have := wD 4 (by norm_num); grind [ssOff]
   · rw [List.map_append, List.map_singleton]
-    refine auxRecs_snoc hax (fun a ha0 ha => kE a (by simpa using ha) (by
-      simp only [List.length_map] at ha; omega)) ?_
+    refine auxRecs_snoc hax (fun a ha0 ha => kE a (by grind) (by
+      omega)) ?_
     simp only [List.length_map, rawAux]
     refine ⟨?_, ?_, ?_, ?_, ?_⟩
-    · have := wE 0 (by norm_num); simpa using this
-    · have := wE 1 (by norm_num); simpa using this
-    · have := wE 2 (by norm_num); simpa using this
-    · have := wE 3 (by norm_num); simpa using this
-    · have := wE 4 (by norm_num); simpa using this
+    · have := wE 0 (by norm_num); omega
+    · ram_simp
+    · ram_simp
+    · ram_simp
+    · ram_simp
 
 /-! ## One step of the pass -/
 
@@ -182,8 +174,8 @@ theorem ssCtx_keep {J : Merge.Junction} {d2 RB S A₀ : ℕ} {m₀ : ℕ → ℕ
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8⟩ := h
   have k : ∀ i, (i < 3003 ∨ (3016 < i ∧ i < 10000)) ∧ i ≠ 2601 →
       d'.nreg (sw i) = d.nreg (sw i) :=
-    fun i hi => hr (sw i) (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega)
-      (by unfold sC sw; omega)
+    fun i hi => hr (sw i) (by omega_nf) (by omega_nf) (by omega_nf)
+      (by omega_nf)
   exact ⟨(k 2 (by norm_num)).trans h1, (k 659 (by norm_num)).trans h2,
     (k 4000 (by norm_num)).trans h3, (k 4001 (by norm_num)).trans h4,
     (k 610 (by norm_num)).trans h5, (k 611 (by norm_num)).trans h6,
@@ -203,31 +195,19 @@ def ssAdv : List Instr := [.copyN srP srX, .addN srJ srJ K1]
 set_option maxRecDepth 20000 in
 theorem ssRd_val (m f : ℕ → ℕ) : regB m ssRd f srX = m (f srSB + f srJ) ∧
     ∀ r, r ≠ srA → r ≠ srX → regB m ssRd f r = f r := by
-  refine ⟨?_, fun r h1 h2 => ?_⟩
-  · simp only [ssRd, regB, regI, srA, srX, srSB, srJ, sw, Nat.reduceAdd, upd_same]
-  · simp only [ssRd, regB, regI]; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
+  simp_all [ssRd, regB, regI, srA, srX, srSB, srJ, sw, Nat.reduceAdd, upd_same] 
 
 set_option maxRecDepth 20000 in
 theorem ssAdv_val (m f : ℕ → ℕ) : regB m ssAdv f srP = f srX ∧ regB m ssAdv f srJ = f srJ + f K1 ∧
     ∀ r, r ≠ srP → r ≠ srJ → regB m ssAdv f r = f r := by
-  refine ⟨?_, ?_, fun r h1 h2 => ?_⟩
-  · simp only [ssAdv, regB, regI, srP, srX, srJ, K1, sw, Nat.reduceAdd, upd_same, ne_eq, upd_other,
-      Nat.reduceEqDiff, not_false_eq_true]
-  · simp only [ssAdv, regB, regI, srP, srX, srJ, K1, sw, Nat.reduceAdd, upd_same, ne_eq, upd_other,
-      Nat.reduceEqDiff, not_false_eq_true]
-  · simp only [ssAdv, regB, regI]; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
+  simp_all [ssAdv, regB, regI, srP, srX, srJ, K1, sw, Nat.reduceAdd, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true] 
 
 set_option maxRecDepth 20000 in
 theorem ssCp_val (m f : ℕ → ℕ) :
     regB m [.copyN 30000 srX, .copyN 30001 srP] f 30000 = f srX ∧
     regB m [.copyN 30000 srX, .copyN 30001 srP] f 30001 = f srP ∧
     ∀ r, r ≠ 30000 → r ≠ 30001 → regB m [.copyN 30000 srX, .copyN 30001 srP] f r = f r := by
-  refine ⟨?_, ?_, fun r h1 h2 => ?_⟩
-  · simp only [regB, regI, srP, srX, sw, Nat.reduceAdd, upd_same, ne_eq, upd_other,
-      Nat.reduceEqDiff, not_false_eq_true]
-  · simp only [regB, regI, srP, srX, sw, Nat.reduceAdd, upd_same]
-    rw [upd_other _ _ _ (by norm_num)]
-  · simp only [regB, regI]; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
+  simp_all [regB, regI, srP, srX, sw, Nat.reduceAdd, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true] 
 
 end
 

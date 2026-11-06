@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopRC
 public import Chazelle.Core.RestoreTShot
 
@@ -41,9 +43,9 @@ theorem h6_of_abs (C : Chain) (Q : Polygon) {x : WPos}
   push Not at hlt
   have hv : (chainModel C).pos Q ⟨e, 0⟩ = (chainModel C).W.vtx e := by
     show sidePt _ e ((chainModel C).param Q ⟨e, 0⟩) = _
-    rw [show (chainModel C).param Q ⟨e, 0⟩ = 0 from rfl, Chazelle.Chain.sidePt_zero]
+    simp_all [Chazelle.Chain.sidePt_zero] 
   rw [hv, Restore.chain_box_vtx_abs C hlt] at hy
-  exact lt_irrefl _ hy
+  simp_all
 
 /-- Points of `C₁` or of the box are off the domain of `C`. -/
 theorem onCB_not_dom_left {z : Point} (h : OnCB J.left z) : z ∉ J.whole.dom := by
@@ -69,21 +71,20 @@ theorem far_free (C : Chain) {a : Point} (ha : a.2 ≤ C.top.2) {σ : ℝ} (hσ 
   obtain ⟨hT, -, hin⟩ := Merge.hit_of_freeAt C ha hσ hf
   show ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (farPt C a σ) (-σ) s ∈ C.dom
   filter_upwards [Ioo_mem_nhdsGT hT] with s hs
-  unfold farPt
-  rw [Sweep.rayPt_back]
-  exact hin _ (by linarith [hs.2]) (by linarith [hs.1])
+  simp_all [farPt, Sweep.rayPt_back] 
 
+section
+variable {a : Point} (ha : a.2 ≤ J.right.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hf : FreeAt J.whole a σ)
+include ha hσ hf
 /-- **Only the candidate of `C₂`**: without a first hit of `C₁` it is the first hit of `C`. -/
-theorem win_only2 {a : Point} (ha : a.2 ≤ J.right.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (hf : FreeAt J.whole a σ) (hno : ¬ (FreeAt J.left a σ ∧ a.2 ≤ J.left.top.2)) {τ₂ : ℝ}
+theorem win_only2 (hno : ¬ (FreeAt J.left a σ ∧ a.2 ≤ J.left.top.2)) {τ₂ : ℝ}
     (h2 : τ₂ = J.right.hitParam a σ) : τ₂ = J.whole.hitParam a σ := by
   rcases hit_cases ha hσ with h | ⟨h1, h⟩
   · rw [h, h2]
   · exact absurd ⟨free_left hf h1, h1⟩ hno
 
 /-- **The nearer candidate** is the first hit of `C`. -/
-theorem win_min {a : Point} (ha : a.2 ≤ J.right.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (hf : FreeAt J.whole a σ) {τ₁ τ₂ τ : ℝ} (h1 : 0 < τ₁) (h1o : OnCB J.left (rayPt a σ τ₁))
+theorem win_min {τ₁ τ₂ τ : ℝ} (h1 : 0 < τ₁) (h1o : OnCB J.left (rayPt a σ τ₁))
     (h1g : FreeAt J.left a σ ∧ a.2 ≤ J.left.top.2 → τ₁ = J.left.hitParam a σ)
     (h2 : 0 < τ₂) (h2o : OnCB J.right (rayPt a σ τ₂)) (h2g : τ₂ = J.right.hitParam a σ)
     (hτ : τ = τ₁ ∨ τ = τ₂) (hτ1 : τ ≤ τ₁) (hτ2 : τ ≤ τ₂) : τ = J.whole.hitParam a σ := by
@@ -95,17 +96,14 @@ theorem win_min {a : Point} (ha : a.2 ≤ J.right.top.2) {σ : ℝ} (hσ : σ = 
     · rw [mem_singleton_iff] at hx; subst hx
       exact ⟨h2, onCB_not_dom_right h2o⟩
   · rcases hit_cases ha hσ with h | ⟨hl, h⟩
-    · rw [h, ← h2g]; exact Or.inr rfl
-    · rw [h, ← h1g ⟨free_left hf hl, hl⟩]; exact Or.inl rfl
-  · rcases hτ with rfl | rfl
-    · exact Or.inl rfl
-    · exact Or.inr rfl
-  · intro x hx
-    rcases hx with rfl | hx
-    · exact hτ1
-    · rw [mem_singleton_iff] at hx; subst hx; exact hτ2
+    · simp_all
+    · rw [h, ← h1g ⟨free_left hf hl, hl⟩]; simp_all
+  all_goals simp_all
 
 /-! ## The origins in the walk of `C₂` -/
+
+
+end
 
 theorem right_v_pos (Q : Polygon) :
     (chainModel J.right).pos Q ⟨6 + tpos J.right 0, 0⟩ = J.shared := by
@@ -124,24 +122,21 @@ theorem top_not_left (hP : J.P.Simple) (ht : J.right.topIdx ≠ 0) : J.right.top
 
 /-! ## The parent of a shared or top chord -/
 
+section
+variable {P : Polygon} {N : NF} (hN : IsNF (chainModel J.right) (Qof P) N)
+include hN
 /-- The point of the end `1 - b` of a chord record. -/
-theorem endPos_pt {P : Polygon} {N : NF} (hN : IsNF (chainModel J.right) (Qof P) N) {i b : ℕ}
+theorem endPos_pt {i b : ℕ}
     (hi : i < N.nChords) (hb : b ≤ 1) :
     (chainModel J.right).pos (Qof P) (endPos N i (1 - b)) =
       (if b = 1 then Merge.lend ((N.chord i).toSet (chainModel J.right) (Qof P))
         else Merge.rend ((N.chord i).toSet (chainModel J.right) (Qof P))) := by
   have hj : 2 * i + (1 - b) < 2 * N.nChords := by omega
   obtain ⟨hEO, -⟩ := endOrigin_eq J hN hj
-  rw [show (2 * i + (1 - b)) / 2 = i by omega, show (2 * i + (1 - b)) % 2 = 1 - b by omega] at hEO
-  rw [← hEO]
-  unfold endOrigin
-  rw [show (2 * i + (1 - b)) / 2 = i by omega]
-  rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
-  · rw [ite_eq_right (by omega), ite_eq_right (by omega)]
-  · rw [ite_eq_left (by omega), ite_eq_left rfl]
+  grind [endOrigin]
 
 /-- The attachment of a chord record at its end. -/
-theorem endPos_attach {P : Polygon} {N : NF} (hN : IsNF (chainModel J.right) (Qof P) N) {i : ℕ}
+theorem endPos_attach {i : ℕ}
     (hi : i < N.nChords) (s : ℕ) :
     SideAttach (chainModel J.right).W ((N.chord i).toSet (chainModel J.right) (Qof P))
       (endPos N i s).edge ((chainModel J.right).param (Qof P) (endPos N i s)) := by
@@ -149,6 +144,9 @@ theorem endPos_attach {P : Polygon} {N : NF} (hN : IsNF (chainModel J.right) (Qo
   unfold endPos; split_ifs
   · exact hA.1
   · exact hA.2
+
+
+end
 
 /-- **The parent of a shared or top chord**: the chord record `i` contains the chord of `a` in the
 direction of code `b` iff its end `1 - b` has the key of the arrival position of `a` in the walk
@@ -175,11 +173,7 @@ theorem parent_key_iff (hP : J.P.Simple) {P : Polygon} {N : NF}
     have hpa : (chainModel J.right).pos (Qof P) (endPos N i (1 - b)) = a := by
       show sidePt _ _ _ = _
       rw [he, ht]; exact hA.2.2.2.1
-    rw [hpt] at hpa
-    refine hiff.2 ?_
-    rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
-    · rw [ite_eq_right (by norm_num)] at hpa; exact Or.inr ⟨rfl, hpa⟩
-    · rw [ite_eq_left rfl] at hpa; exact Or.inl ⟨rfl, hpa⟩
+    grind
   · intro hsub
     have hend := hiff.1 hsub
     -- the chord is the chord of `C₂` seen from `a`
@@ -197,10 +191,7 @@ theorem parent_key_iff (hP : J.P.Simple) {P : Polygon} {N : NF}
     have hpa : sidePt (chainModel J.right).W (endPos N i (1 - b)).edge
         ((chainModel J.right).param (Qof P) (endPos N i (1 - b))) = a := by
       show (chainModel J.right).pos (Qof P) (endPos N i (1 - b)) = a
-      rw [hpt]
-      rcases hend with ⟨rfl, h⟩ | ⟨rfl, h⟩
-      · rw [ite_eq_left rfl]; exact h
-      · rw [ite_eq_right (by norm_num)]; exact h
+      grind
     obtain ⟨e1, e2⟩ := hM.attach_unique (hS₂ hc) hAt hA' (by rw [hpa, hA.2.2.2.1])
     rw [e1, e2]
 

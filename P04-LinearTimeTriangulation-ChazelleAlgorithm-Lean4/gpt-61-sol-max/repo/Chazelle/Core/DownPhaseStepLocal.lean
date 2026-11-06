@@ -62,8 +62,11 @@ theorem region_restrict (hSG : S ⊆ G) (hGT : G ⊆ T) (hR : R ∈ regionsIn D 
   have hVW : V ⊆ W := (Chazelle.Chain.regionsIn_isPreconnected hV).subset_connectedComponentIn hv hVG
   exact ⟨v, hVG hv, Subset.antisymm hVW hWV⟩
 
+section
+variable (hsys : ChordSystem D T) (hST : S ⊆ T)
+include hsys hST
 /-- **The chords of the other regions do not touch `V`.** -/
-theorem touch_restrict (hsys : ChordSystem D T) (hST : S ⊆ T) (hR : R ∈ regionsIn D S)
+theorem touch_restrict (hR : R ∈ regionsIn D S)
     (hK : OutOther D S G T R) (hVR : V ⊆ R) {c : Set Point} (hc : c ∈ T) (hcG : c ∉ G) :
     ¬ TouchesIn D c V := by
   rintro ⟨z, ⟨hzc, hzD⟩, hzV⟩
@@ -73,16 +76,13 @@ theorem touch_restrict (hsys : ChordSystem D T) (hST : S ⊆ T) (hR : R ∈ regi
   exact (Chazelle.Chain.regionsIn_disjoint_of_ne hR' hR hne).le_bot ⟨hwR', hVR hwV⟩
 
 /-- **The exits of `V` in the full family are its exits in the intermediate family.** -/
-theorem exits_restrict (hsys : ChordSystem D T) (hST : S ⊆ T) (hGT : G ⊆ T)
+theorem exits_restrict (hGT : G ⊆ T)
     (hR : R ∈ regionsIn D S) (hK : OutOther D S G T R) (hVR : V ⊆ R) :
     {c | c ∈ T ∧ TouchesIn D c V} = {c | c ∈ G ∧ TouchesIn D c V} := by
-  ext c
-  constructor
-  · rintro ⟨hc, ht⟩
-    by_contra hcG
-    exact touch_restrict hsys hST hR hK hVR hc (fun h => hcG ⟨h, ht⟩) ht
-  · rintro ⟨hc, ht⟩
-    exact ⟨hGT hc, ht⟩
+  grind [Chazelle.Core.DownStep.touch_restrict]
+
+
+end
 
 /-- **The weight of `V` in the full family is its weight in the intermediate family.** -/
 theorem weight_restrict {M : Model} (hM : WalkAx M) (hT : T ⊆ M.Adm) (hfin : T.Finite)
@@ -96,30 +96,19 @@ theorem weight_restrict {M : Model} (hM : WalkAx M) (hT : T ⊆ M.Adm) (hfin : T
     intro K hKf
     refine Set.Finite.induction_on
       (motive := fun K _ => K ⊆ T \ G → M.weight (G ∪ K) V = M.weight G V) K hKf ?_ ?_
-    · intro _; rw [union_empty]
+    · simp_all
     · intro c K hcK _ ih hsub
       have hcT : c ∈ T := (hsub (mem_insert c K)).1
       have hcG : c ∉ G := (hsub (mem_insert c K)).2
       have hKsub : K ⊆ T \ G := fun d hd => hsub (mem_insert_of_mem c hd)
       set H := G ∪ insert c K with hH
       have hHT : H ⊆ T := union_subset hGT (insert_subset hcT fun d hd => (hKsub hd).1)
-      have hHd : H \ {c} = G ∪ K := by
-        ext d
-        simp only [hH, Set.mem_sdiff, mem_union, mem_insert_iff, mem_singleton_iff]
-        constructor
-        · rintro ⟨h1 | rfl | h1, h2⟩
-          · exact Or.inl h1
-          · exact absurd rfl h2
-          · exact Or.inr h1
-        · rintro (h1 | h1)
-          · exact ⟨Or.inl h1, fun e => hcG (e ▸ h1)⟩
-          · exact ⟨Or.inr (Or.inr h1), fun e => hcK (e ▸ h1)⟩
+      
       have hVH : V ∈ M.regions H :=
         region_restrict (hSG.trans subset_union_left) hHT hR (hK.mono subset_union_left) hV hVR
       have hnt : ¬ TouchesIn M.D c V := touch_restrict hsys hST hR hK hVR hcT hcG
       have := hloc H hHT c (Or.inr (mem_insert c K)) V hVH hnt
-      rw [hHd] at this
-      rw [← this, ih hKsub]
+      simp_all
   have hTG : T = G ∪ (T \ G) := (union_sdiff_cancel hGT).symm
   rw [hTG]
   exact key _ (hfin.subset sdiff_subset) subset_rfl

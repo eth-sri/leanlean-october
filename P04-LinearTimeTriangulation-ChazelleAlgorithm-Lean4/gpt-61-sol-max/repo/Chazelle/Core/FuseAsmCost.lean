@@ -29,12 +29,10 @@ theorem piece_le (κ T S Fg : ℕ) (hT : T ≤ 8 * S) :
 theorem nlog_le (K S Fg : ℕ) (hK : K ≤ 8 * S) :
     K * (Nat.clog 2 K + 1) ≤ 32 * (S * (Fg + Nat.clog 2 S + 1)) := by
   have := piece_le 1 K S Fg hK
-  have h2 : K * (Nat.clog 2 K + 1) ≤ 1 * K * (Fg + Nat.clog 2 K + 1) := by
-    rw [Nat.one_mul]; exact Nat.mul_le_mul le_rfl (by omega)
-  omega
+  grind
 
 /-- The cost bound of the fusion. -/
-def fuseκ (κs : ℕ → ℕ) (κB : ℕ) (D : ℕ) : ℕ := 400000 * (κs D + κB + 1)
+def fuseκ (κs : ℕ → ℕ) (κB D : ℕ) : ℕ := 400000 * (κs D + κB + 1)
 
 /-- **The total cost of the fusion.** -/
 theorem fuse_total {κs : ℕ → ℕ} {κB D K₁ K₂ L₀ L₁ Kc Kd Fg k₁ k₂ k₃ k₄ k₅ k₆ k₇ : ℕ}
@@ -59,22 +57,20 @@ theorem fuse_total {κs : ℕ → ℕ} {κB D K₁ K₂ L₀ L₁ Kc Kd Fg k₁ 
   obtain ⟨SY, hSY⟩ : ∃ x, x = S * Y := ⟨_, rfl⟩
   rw [← hSY] at p₂ p₄ p₆ p₇
   have hS1 : S ≤ SY := by rw [hSY]; exact Nat.le_mul_of_pos_right _ (by omega)
-  have hS0 : 1 ≤ S := by omega
+  
   unfold SortR.sortCost at h₆
   have e7 : κB * (Kd * (Nat.clog 2 Kd + 1) + 1) ≤ κB * (32 * SY + 1) :=
     Nat.mul_le_mul le_rfl (by omega)
   have e7' : κB * (32 * SY + 1) ≤ 33 * (κB * SY) := by nlinarith
-  have e6 : (40 + 30) * (Kc * (Nat.clog 2 Kc + 1) + 1) ≤ 70 * (32 * SY + 1) :=
-    Nat.mul_le_mul le_rfl (by omega)
+  
   obtain ⟨A, hA⟩ : ∃ x, x = κs D * SY := ⟨_, rfl⟩
   obtain ⟨B, hB⟩ : ∃ x, x = κB * SY := ⟨_, rfl⟩
-  have eA : 32 * κs D * SY = 32 * A := by rw [hA]; ring
+  have eA : 32 * κs D * SY = 32 * A := by ring_nf <;> omega
   rw [eA] at p₂ p₄
   rw [← hB] at e7'
   have goal : fuseκ κs κB D * S * Y = 400000 * A + 400000 * B + 400000 * SY := by
-    unfold fuseκ; rw [hA, hB, hSY]; ring
-  rw [goal]
-  omega
+    grind [fuseκ]
+  grind
 
 theorem sweepc_mono (κ A Fg : ℕ) {L L' : ℕ} (h : L ≤ L') :
     κ * (A + L + 1) * (Fg + Nat.clog 2 (A + L + 1) + 1) ≤
@@ -82,16 +78,22 @@ theorem sweepc_mono (κ A Fg : ℕ) {L L' : ℕ} (h : L ≤ L') :
   Nat.mul_le_mul (Nat.mul_le_mul le_rfl (by omega))
     (by have := clog_mono (show A + L + 1 ≤ A + L' + 1 by omega); omega)
 
-theorem nlogc_mono (κ : ℕ) {K K' : ℕ} (h : K ≤ K') :
+section
+variable (κ : ℕ) {K K' : ℕ} (h : K ≤ K')
+include h
+theorem nlogc_mono :
     κ * (K * (Nat.clog 2 K + 1) + 1) ≤ κ * (K' * (Nat.clog 2 K' + 1) + 1) :=
   Nat.mul_le_mul le_rfl (by
     have := clog_mono h
     have := Nat.mul_le_mul h (show Nat.clog 2 K + 1 ≤ Nat.clog 2 K' + 1 by omega)
     omega)
 
-theorem sortc_mono (κ : ℕ) {K K' : ℕ} (h : K ≤ K') :
+theorem sortc_mono :
     SortR.sortCost κ K ≤ SortR.sortCost κ K' := by
   unfold SortR.sortCost; exact nlogc_mono _ h
+
+
+end
 
 end
 

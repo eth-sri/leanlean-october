@@ -32,30 +32,26 @@ namespace Brute
 
 /-! ## Horizontal directions in an arc of directions -/
 
-theorem sideDot_key {A B : Point} (h : sideCross B A = 0) :
+section
+variable {A B : Point}
+theorem sideDot_key (h : sideCross B A = 0) :
     sideDot B A * A.2 = B.2 * (A.1 ^ 2 + A.2 ^ 2) := by
-  unfold sideCross at h; unfold sideDot
-  have : B.1 * A.2 = B.2 * A.1 := by linarith
-  linear_combination A.1 * this
+  grind [sideCross, sideDot]
 
-theorem sideCcw_horiz_same {A B : Point} (hAB : 0 < A.2 * B.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
+theorem sideCcw_horiz_same (hAB : 0 < A.2 * B.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     sideCcw B ((σ, 0) : Point) A ↔ sideCross B A ≤ 0 := by
   have eBX : sideCross B ((σ, 0) : Point) = -σ * B.2 := by unfold sideCross; ring
   have eXA : sideCross ((σ, 0) : Point) A = σ * A.2 := by unfold sideCross; ring
-  have hσ2 : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
-  have hA0 : A.2 ≠ 0 := by rintro h; rw [h, zero_mul] at hAB; exact lt_irrefl _ hAB
-  have hB0 : B.2 ≠ 0 := by rintro h; rw [h, mul_zero] at hAB; exact lt_irrefl _ hAB
-  have hσ0 : σ ≠ 0 := by rcases hσ with rfl | rfl <;> norm_num
+  have hσ2 : σ * σ = 1 := by grind
+  have hA0 : A.2 ≠ 0 := by rintro h; simp_all
+  have hB0 : B.2 ≠ 0 := by rintro h; simp_all
+  have hσ0 : σ ≠ 0 := by grind
   unfold sideCcw
   rw [eBX, eXA]
   constructor
   · rintro (⟨h1, h2, h3⟩ | ⟨h1, -⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
-    · exfalso
-      have := mul_pos h2 h3
-      nlinarith
-    · exact h1.le
-    · exact h1.le
-    · exact h1.le
+    · nlinarith
+    all_goals grind
   · intro h
     rcases h.lt_or_eq with h | h
     · right; left
@@ -89,7 +85,7 @@ theorem sideCcw_horiz_same {A B : Point} (hAB : 0 < A.2 * B.2) {σ : ℝ} (hσ :
           · exact hB0 hb
         nlinarith [mul_pos hb hpos]
 
-theorem sideCcw_horiz_opp {A B : Point} (hAB : A.2 * B.2 < 0) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
+theorem sideCcw_horiz_opp (hAB : A.2 * B.2 < 0) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     sideCcw B ((σ, 0) : Point) A ↔ 0 < -σ * B.2 := by
   have eBX : sideCross B ((σ, 0) : Point) = -σ * B.2 := by unfold sideCross; ring
   have eXA : sideCross ((σ, 0) : Point) A = σ * A.2 := by unfold sideCross; ring
@@ -133,6 +129,9 @@ theorem sideCcw_horiz_opp {A B : Point} (hAB : A.2 * B.2 < 0) {σ : ℝ} (hσ : 
       · have hb : B.2 < 0 := by nlinarith
         nlinarith [mul_neg_of_neg_of_pos hb hpos]
     · exact Or.inl ⟨h1, h, hsame' h⟩
+
+
+end
 
 /-- The emission rule at a corner `a → v → b` for the horizontal direction `σ`. -/
 def emitR (a v b : Point) (σ : ℝ) : Prop :=
@@ -202,23 +201,32 @@ theorem sideLeftOf_horiz {a v b : Point} (ha : a.2 ≠ v.2) (hb : b.2 ≠ v.2) {
 
 variable {C : Chain}
 
+section
+variable (C : Chain) (i : ℕ)
+include C i
 /-- The chain vertex at tour position `i`. -/
-noncomputable def vPt (C : Chain) (i : ℕ) : Point := C.vertex (C.sideIdx C.sideBeta i)
+noncomputable def vPt : Point := C.vertex (C.sideIdx C.sideBeta i)
 
 /-- The walk vertex before tour position `i` (the top of the slit before position `0`). -/
-noncomputable def prevPt (C : Chain) (i : ℕ) : Point :=
+noncomputable def prevPt : Point :=
   if i = 0 then C.slitTop else C.vertex (C.sideIdx C.sideBeta (i - 1))
 
 /-- The walk vertex after tour position `i` (the top of the slit after position `2m`). -/
-noncomputable def nextPt (C : Chain) (i : ℕ) : Point :=
+noncomputable def nextPt : Point :=
   if i = 2 * C.m then C.slitTop else C.vertex (C.sideIdx C.sideBeta (i + 1))
+
+
+end
 
 theorem walk_vtx_tour {i : ℕ} (hi : i ≤ 2 * C.m) : (chainModel C).W.vtx (i + 6) = vPt C i :=
   C.sideWalk_vtx_tour C.sideBeta hi
 
 theorem walk_n : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n C.sideBeta
 
-theorem walk_prev {i : ℕ} (hi : i ≤ 2 * C.m) :
+section
+variable {i : ℕ} (hi : i ≤ 2 * C.m)
+include hi
+theorem walk_prev :
     (chainModel C).W.vtx ((i + 6 + (chainModel C).W.n - 1) % (chainModel C).W.n) = prevPt C i := by
   rw [walk_n, show i + 6 + (2 * C.m + 7) - 1 = (i + 5) + (2 * C.m + 7) by omega, Nat.add_mod_right,
     Nat.mod_eq_of_lt (by omega)]
@@ -227,13 +235,16 @@ theorem walk_prev {i : ℕ} (hi : i ≤ 2 * C.m) :
   · subst h; rfl
   · rw [show i + 5 = (i - 1) + 6 by omega]; exact C.sideWalk_vtx_tour _ (by omega)
 
-theorem walk_next {i : ℕ} (hi : i ≤ 2 * C.m) :
+theorem walk_next :
     (chainModel C).W.vtx ((i + 6 + 1) % (chainModel C).W.n) = nextPt C i := by
   unfold nextPt
   split_ifs with h
   · subst h; exact C.sideWalk_vtx_wrap C.sideBeta
   · rw [walk_n, Nat.mod_eq_of_lt (by omega), show i + 6 + 1 = (i + 1) + 6 by ring]
     exact C.sideWalk_vtx_tour _ (by omega)
+
+
+end
 
 theorem vPt_zero : vPt C 0 = C.top := C.sideTour_zero _
 
@@ -246,7 +257,10 @@ theorem vPt_succ_ne (hDH : DistinctHeights C.P) (i : ℕ) : (vPt C (i + 1)).2 �
   have hs := C.sideTour_step C.sideBeta i
   exact ChainObs.vertex_snd_ne hDH hl' hl (by rcases hs with h | h <;> omega)
 
-theorem prevPt_ne (hDH : DistinctHeights C.P) {i : ℕ} (hi : i ≤ 2 * C.m) :
+section
+variable (hDH : DistinctHeights C.P) {i : ℕ} (hi : i ≤ 2 * C.m)
+include hDH hi
+theorem prevPt_ne :
     (prevPt C i).2 ≠ (vPt C i).2 := by
   unfold prevPt
   split_ifs with h
@@ -255,7 +269,7 @@ theorem prevPt_ne (hDH : DistinctHeights C.P) {i : ℕ} (hi : i ≤ 2 * C.m) :
     rw [show i - 1 + 1 = i by omega] at this
     exact this.symm
 
-theorem nextPt_ne (hDH : DistinctHeights C.P) {i : ℕ} (hi : i ≤ 2 * C.m) :
+theorem nextPt_ne :
     (nextPt C i).2 ≠ (vPt C i).2 := by
   unfold nextPt
   split_ifs with h
@@ -263,15 +277,21 @@ theorem nextPt_ne (hDH : DistinctHeights C.P) {i : ℕ} (hi : i ≤ 2 * C.m) :
   · exact vPt_succ_ne hDH i
 
 /-- **The horizontal directions leaving the walk vertex `i + 6` into its left sector.** -/
-theorem corner_iff (hDH : DistinctHeights C.P) {i : ℕ} (hi : i ≤ 2 * C.m) {σ : ℝ}
+theorem corner_iff {σ : ℝ}
     (hσ : σ = 1 ∨ σ = -1) :
     sideLeft (chainModel C).W (i + 6) 0 (rayPt (vPt C i) σ 1) ↔
       emitR (prevPt C i) (vPt C i) (nextPt C i) σ := by
   rw [Chain.sideLeft_zero, walk_prev hi, walk_vtx_tour hi, walk_next hi]
   exact sideLeftOf_horiz (prevPt_ne hDH hi) (nextPt_ne hDH hi) hσ
 
+
+end
+
+section
+variable (hDH : DistinctHeights C.P) {σ : ℝ}
+include hDH
 /-- At tour position `0` only the direction east is emitted. -/
-theorem emitR_zero (hDH : DistinctHeights C.P) {σ : ℝ} :
+theorem emitR_zero :
     emitR (prevPt C 0) (vPt C 0) (nextPt C 0) σ ↔ σ = 1 := by
   have hn : (nextPt C 0).2 < (vPt C 0).2 := by
     have hne := nextPt_ne hDH (C := C) (i := 0) (by omega)
@@ -287,7 +307,7 @@ theorem emitR_zero (hDH : DistinctHeights C.P) {σ : ℝ} :
   exact ⟨fun h => h.2 hn, fun h => ⟨fun _ => hn, fun _ => h⟩⟩
 
 /-- At tour position `2m` only the direction west is emitted. -/
-theorem emitR_two_m (hDH : DistinctHeights C.P) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
+theorem emitR_two_m (hσ : σ = 1 ∨ σ = -1) :
     emitR (prevPt C (2 * C.m)) (vPt C (2 * C.m)) (nextPt C (2 * C.m)) σ ↔ σ = -1 := by
   have hp : (prevPt C (2 * C.m)).2 < (vPt C (2 * C.m)).2 := by
     have hne := prevPt_ne hDH (C := C) (i := 2 * C.m) le_rfl
@@ -306,6 +326,9 @@ theorem emitR_two_m (hDH : DistinctHeights C.P) {σ : ℝ} (hσ : σ = 1 ∨ σ 
 
 /-! ## Positions of the walk at a chain vertex -/
 
+
+end
+
 /-- **A position of the walk at a chain vertex is a tour vertex** (parameter `0`). -/
 theorem pos_of_vertex (hP : C.P.Simple) {p : ℕ} {t : ℝ}
     (hp : p < (chainModel C).W.n) (ht0 : 0 ≤ t) (ht1 : t < 1) {k : ℕ} (hk : k ≤ C.m)
@@ -314,7 +337,7 @@ theorem pos_of_vertex (hP : C.P.Simple) {p : ℕ} {t : ℝ}
   have hn := walk_n (C := C)
   rw [hn] at hp
   have hbox := (Chain.mem_box_iff.1 (C.set_subset_box (C.vertex_mem_set hk)))
-  have hR := C.radius_pos
+  
   have htop := C.top_snd_lt_radius
   have hvt := C.vertex_snd_le_top hk
   have habs1 := abs_lt.1 hbox.1
@@ -400,7 +423,7 @@ theorem pos_of_vertex (hP : C.P.Simple) {p : ℕ} {t : ℝ}
 /-- The top index is the index of any topmost vertex (distinct heights). -/
 theorem topIdx_eq_of_max (hDH : DistinctHeights C.P) {j : ℕ} (hj : j ≤ C.m)
     (htop : ∀ i, i ≤ C.m → (C.vertex i).2 ≤ (C.vertex j).2) : C.topIdx = j := by
-  have h1 := C.topIdx_min hj htop
+  
   have h2 := C.vertex_snd_le_top hj
   have h3 := htop C.topIdx C.topIdx_le
   by_contra hne

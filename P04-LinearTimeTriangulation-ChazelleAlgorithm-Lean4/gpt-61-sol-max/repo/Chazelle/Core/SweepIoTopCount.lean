@@ -49,10 +49,10 @@ theorem chord_aug {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) Q
     refine ⟨N.chord k, ?_, rfl⟩
     unfold NF.chord
     rw [NFLoc.getD_of_lt _ hk]
-    exact List.getElem_mem _
+    grind
   obtain ⟨y, a, b, hH, -, heq, hl, hr⟩ :=
     Merge.augChords_spec (show _ ∈ Merge.augChords C from hN.1.2.1 hmem)
-  exact ⟨y, a, b, hH, heq, hl, hr⟩
+  simp_all
 
 /-- Two endpoint queries of the same parity with the same origin are equal. -/
 theorem endOrigin_inj {J : Merge.Junction} {Q : Polygon} {N : NF}
@@ -85,12 +85,10 @@ theorem topCount : TopCountSpec := by
   have hnd : l.Nodup := (List.nodup_range).filter _
   rw [← List.toFinset_card_of_nodup hnd]
   have hmem : ∀ j ∈ l.toFinset, j < 2 * N₂.nChords ∧ endOrigin J (Qof P) N₂ j = J.right.top := by
-    intro j hj
-    rw [List.mem_toFinset, hl, List.mem_filter, List.mem_range, decide_eq_true_eq] at hj
-    exact hj
+    simp_all
   calc l.toFinset.card ≤ (Finset.range 2).card :=
         Finset.card_le_card_of_injOn (fun j => j % 2)
-          (fun j _ => by simp only [Finset.coe_range, Set.mem_Iio]; omega)
+          (fun j _ => by grind)
           (fun j hj j' hj' h => by
             obtain ⟨h1, h2⟩ := hmem j hj
             obtain ⟨h1', h2'⟩ := hmem j' hj'

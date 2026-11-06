@@ -90,17 +90,23 @@ def lfS (sp sM : Stmt) : Stmt :=
 def lfAdv : Stmt :=
   block [.addN 219221 219226 219227, .addN 219220 219220 219230, .addN 219224 219224 219231]
 
+section
+variable (sp sM : Stmt)
+include sp sM
 /-- One leaf (and the connector before it). -/
-def lfBody (sp sM : Stmt) : Stmt := .seq lfLoad (.seq (conS sp sM) (.seq (lfS sp sM) lfAdv))
+def lfBody : Stmt := .seq lfLoad (.seq (conS sp sM) (.seq (lfS sp sM) lfAdv))
 
 /-- **The leaf loop.** -/
-def lfLoop (sp sM : Stmt) : Stmt := .whileLtN 219220 219004 (lfBody sp sM)
+def lfLoop : Stmt := .whileLtN 219220 219004 (lfBody sp sM)
 
 /-- The last connector (if `pos < M`). -/
-def finCon (sp sM : Stmt) : Stmt :=
+def finCon : Stmt :=
   .ifLtN 219221 219223
     (.seq (block [.copyN 219240 219221, .subN 219241 219223 219221, .constN 219242 0,
       .constN 219243 0]) (pcS sp sM)) .skip
+
+
+end
 
 /-- The outputs. -/
 def rgOut : Stmt := block [.copyN 219210 219110, .copyN 219211 219111, .copyN 219212 219113]

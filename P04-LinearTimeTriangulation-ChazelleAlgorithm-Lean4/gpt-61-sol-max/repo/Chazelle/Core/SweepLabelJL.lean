@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepLabelJ
 
 /-!
@@ -45,7 +47,7 @@ theorem vertexEnd_arith {m b i : ℕ} (hm : 0 < m) (hb : b ≤ 2 * m) (hi : i �
         (i + 6 + (2 * m + 7) - (6 + (m + 2 * m - b) % (2 * m))) % (2 * m + 7) = 2 * m) := by
   have hq : b + i = (b + i) / (2 * m) * (2 * m) + m := by
     have := Nat.div_add_mod (b + i) (2 * m)
-    rw [h] at this; linarith
+    grind
   have hq2 : (b + i) / (2 * m) ≤ 1 := by
     by_contra hc; push Not at hc
     have : 2 * (2 * m) ≤ (b + i) / (2 * m) * (2 * m) := Nat.mul_le_mul_right _ hc
@@ -73,7 +75,7 @@ theorem off_vertexEnd (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) 
   have hn := cm_n C
   have hτ := tpos_lt C C.m
   have hm := C.two_m_pos
-  rw [off_key' (by rw [hn]; omega) hp le_rfl zero_lt_one, add_zero]
+  rw [off_key' (by omega) hp le_rfl zero_lt_one, add_zero]
   have h0 : (bS C + i) % (2 * C.m) = C.m := by
     rw [Chain.sideIdx_eq] at hidx
     unfold Chain.sideE at hidx
@@ -87,7 +89,7 @@ theorem off_vertexEnd (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) 
   unfold tpos
   rcases this with h | ⟨h1, h2⟩
   · left; rw [h]; simp
-  · right; exact ⟨h1, by rw [h2]; push_cast; ring⟩
+  · right; exact ⟨h1, by rw [h2]; grind⟩
 
 end VertexEnd
 
@@ -109,17 +111,22 @@ def F₁plus (S₁ : Set (Set Point)) : Set (Set Point) := J.fusion S₁ ∅ ∪
 theorem topChords₁_subset_chords : topChords₁ J ⊆ J.whole.chords := by
   rintro d ⟨σ, hσ, hfree, rfl⟩
   have := J.left.topIdx_le
-  exact ⟨_, σ, by simp only [Merge.Junction.whole_m, Merge.Junction.left_m] at this ⊢; omega,
+  exact ⟨_, σ, by simp_all [Merge.Junction.whole_m, Merge.Junction.left_m] <;> omega_nf,
     hσ, hfree, rfl⟩
 
-theorem F₁plus_subset {S₁ : Set (Set Point)} (hS₁ : S₁ ⊆ Merge.augChords J.left) :
+section
+variable {S₁ : Set (Set Point)}
+theorem F₁plus_subset (hS₁ : S₁ ⊆ Merge.augChords J.left) :
     F₁plus J S₁ ⊆ Merge.augChords J.whole := by
   rintro e (he | he)
   · exact J.fusion_subset_augChords hS₁ (empty_subset _) he
   · exact Merge.chords_subset_augChords _ (topChords₁_subset_chords J he)
 
-theorem F₁plus_finite {S₁ : Set (Set Point)} (hS₁ : S₁.Finite) : (F₁plus J S₁).Finite :=
+theorem F₁plus_finite (hS₁ : S₁.Finite) : (F₁plus J S₁).Finite :=
   (J.fusion_finite hS₁ finite_empty).union (J.whole.chords_finite.subset (topChords₁_subset_chords J))
+
+
+end
 
 /-- **Endpoints of the chords of `S₁`** other than the shared vertex lie on chords of the fusion
 inside them. -/
@@ -131,13 +138,12 @@ theorem trans_left (hP : J.P.Simple) {S₁ : Set (Set Point)} (hS₁ : S₁ ⊆ 
   obtain ⟨hq2, hqa, hqb⟩ := hq
   rcases hqa.lt_or_eq with h1 | h1
   · rcases hqb.lt_or_eq with h2 | h2
-    · exact absurd (by rw [show q = (q.1, y) from Prod.ext rfl hq2]; exact hH.open_mem q.1 h1 h2)
-        hqD
-    · have hqr : Merge.rend (Visibility.hseg y a b) = q := by rw [hr]; exact Prod.ext h2.symm hq2.symm
+    · ram_grind
+    · have hqr : Merge.rend (Visibility.hseg y a b) = q := by grind
       rw [hqr] at hR
       obtain ⟨e, he, hqe, hec⟩ := hR hqv
       exact ⟨e, Or.inl he, hqe, hec⟩
-  · have hql : Merge.lend (Visibility.hseg y a b) = q := by rw [hl]; exact Prod.ext h1 hq2.symm
+  · have hql : Merge.lend (Visibility.hseg y a b) = q := by grind
     rw [hql] at hL
     obtain ⟨e, he, hqe, hec⟩ := hL hqv
     exact ⟨e, Or.inl he, hqe, hec⟩
@@ -174,10 +180,7 @@ noncomputable def lδ : ℕ :=
   else 7
 
 theorem lL1_add_lL2 : lL1 J + lL2 J = llen J := by
-  have := tpos_lt J.left J.m₁
-  have hm1 : J.left.m = J.m₁ := rfl
-  unfold lL1 lL2 llen
-  split_ifs <;> omega
+  grind [lL1, lL2, llen]
 
 end CorrLeft
 

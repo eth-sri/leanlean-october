@@ -39,7 +39,7 @@ def NFRegs (M : Model) (Q : Polygon) (N : NF) (reg : ℕ → Set Point) : Prop :
   RegionCorr M Q N reg ∧ ChordSidesOK M Q N reg ∧ ArcsOK M Q N reg ∧ RegionsOK M Q N reg
 
 /-- **The contract of a splitting step.** -/
-def FindOK (s : Stmt) (κ : ℕ → ℕ) (F G H : ℕ → ℕ) (X : MemCtx)
+def FindOK (s : Stmt) (κ F G H : ℕ → ℕ) (X : MemCtx)
     (Ok : Polygon → Model → Prop) (Bo : Finset ℕ) : Prop :=
   Meets s (restoreBands ∪ Bo)
     (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧

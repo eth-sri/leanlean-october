@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreSearch
 
 /-!
@@ -33,31 +35,7 @@ variable {M : Model}
 /-- A key is one of two distinct keys or strictly inside one of the two cyclic intervals. -/
 theorem cyc_cases {a b x : ℝ} (hab : a ≠ b) :
     x = a ∨ x = b ∨ sideInArc a b x ∨ sideInArc b a x := by
-  by_cases hxa : x = a
-  · exact Or.inl hxa
-  by_cases hxb : x = b
-  · exact Or.inr (Or.inl hxb)
-  right; right
-  unfold sideInArc
-  rcases lt_or_gt_of_ne hab with h | h
-  · rw [ite_eq_left h, ite_eq_right (not_lt.2 h.le)]
-    by_cases h1 : a < x ∧ x < b
-    · exact Or.inl h1
-    · right
-      rcases lt_or_gt_of_ne hxa with h2 | h2
-      · exact Or.inr h2
-      · left
-        have : ¬ x < b := fun h3 => h1 ⟨h2, h3⟩
-        exact lt_of_le_of_ne (not_lt.1 this) (Ne.symm hxb)
-  · rw [ite_eq_right (not_lt.2 h.le), ite_eq_left h]
-    by_cases h1 : b < x ∧ x < a
-    · exact Or.inr h1
-    · left
-      rcases lt_or_gt_of_ne hxb with h2 | h2
-      · exact Or.inr h2
-      · left
-        have : ¬ x < a := fun h3 => h1 ⟨h2, h3⟩
-        exact lt_of_le_of_ne (not_lt.1 this) (Ne.symm hxa)
+  core_grind
 
 /-- Two attachment positions with distinct points have distinct keys. -/
 theorem key_ne_of_attach {W : Polygon} {c c' : Set Point} {pa pb : ℕ} {ta tb : ℝ}
@@ -65,12 +43,14 @@ theorem key_ne_of_attach {W : Polygon} {c c' : Set Point} {pa pb : ℕ} {ta tb :
     (hAB : sidePt W pa ta ≠ sidePt W pb tb) : (pa : ℝ) + ta ≠ pb + tb := by
   intro h
   obtain ⟨h1, h2⟩ := sideKey_inj hA.2.1 hA.2.2.1 hB.2.1 hB.2.2.1 h
-  subst h1 h2
-  exact hAB rfl
+  simp_all
 
+section
+variable (hM : WalkAx M)
+include hM
 /-- **An admissible chord other than `e` has an attachment off the two attachment keys of
 `e`.** -/
-theorem exists_attach_off (hM : WalkAx M) {e c : Set Point} (he : e ∈ M.Adm) (hc : c ∈ M.Adm)
+theorem exists_attach_off {e c : Set Point} (he : e ∈ M.Adm) (hc : c ∈ M.Adm)
     (hce : c ≠ e) {pa pb : ℕ} {ta tb : ℝ} (hA : SideAttach M.W e pa ta)
     (hB : SideAttach M.W e pb tb) (hAB : sidePt M.W pa ta ≠ sidePt M.W pb tb) :
     ∃ (p : ℕ) (t : ℝ), SideAttach M.W c p t ∧
@@ -91,19 +71,14 @@ theorem exists_attach_off (hM : WalkAx M) {e c : Set Point} (he : e ∈ M.Adm) (
     intro p t hat hk
     rcases hk with hk | hk
     · obtain ⟨h1, h2⟩ := sideKey_inj hat.2.1 hat.2.2.1 hA.2.1 hA.2.2.1 hk
-      subst h1 h2; exact Or.inl rfl
+      grind
     · obtain ⟨h1, h2⟩ := sideKey_inj hat.2.1 hat.2.2.1 hB.2.1 hB.2.2.1 hk
-      subst h1 h2; exact Or.inr rfl
+      grind
   by_contra hno
   push Not at hno
   have off : ∀ (p : ℕ) (t : ℝ), SideAttach M.W c p t →
       (p : ℝ) + t = pa + ta ∨ (p : ℝ) + t = pb + tb := by
-    intro p t hat
-    rcases cyc_cases (x := (p : ℝ) + t) hne with h | h | h | h
-    · exact Or.inl h
-    · exact Or.inr h
-    · exact absurd h (hno p t hat).1
-    · exact absurd h (hno p t hat).2
+    grind [Chazelle.Core.Restore.cyc_cases]
   have ha := pos_of p₁ t₁ hA₁ (off p₁ t₁ hA₁)
   have hb := pos_of p₂ t₂ hA₂ (off p₂ t₂ hA₂)
   rw [h₁] at ha
@@ -112,19 +87,7 @@ theorem exists_attach_off (hM : WalkAx M) {e c : Set Point} (he : e ∈ M.Adm) (
   rw [hcab, heq]
   -- `{a, b} = {ea, eb}`
   have hpts : (a = ea ∧ b = eb) ∨ (a = eb ∧ b = ea) := by
-    rcases ha with ha | ha <;> rcases hb with hb | hb
-    · exact absurd (ha.trans hb.symm) hab
-    · rcases hAe with h | h <;> rcases hBe with h' | h'
-      · exact absurd (h.trans h'.symm) hAB
-      · left; exact ⟨ha.trans h, hb.trans h'⟩
-      · right; exact ⟨ha.trans h, hb.trans h'⟩
-      · exact absurd (h.trans h'.symm) hAB
-    · rcases hAe with h | h <;> rcases hBe with h' | h'
-      · exact absurd (h.trans h'.symm) hAB
-      · right; exact ⟨ha.trans h', hb.trans h⟩
-      · left; exact ⟨ha.trans h', hb.trans h⟩
-      · exact absurd (h.trans h'.symm) hAB
-    · exact absurd (ha.trans hb.symm) hab
+    grind
   rcases hpts with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
   · rfl
   · exact Geometry.segment_comm _ _
@@ -132,7 +95,7 @@ theorem exists_attach_off (hM : WalkAx M) {e c : Set Point} (he : e ∈ M.Adm) (
 /-- **A good split is seen by the count test.**  If the admissible chord `e`, attached at two
 positions with distinct points, splits the region `R` of `S` well, then at least two exit chords
 of `R` are attached strictly inside each of the two key intervals cut by `e`. -/
-theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm)
+theorem counts_of_splitsWell {S : Set (Set Point)} (hS : S ⊆ M.Adm)
     (hfin : S.Finite) {R : Set Point} (hR : R ∈ regionsIn M.D S) {e : Set Point}
     (he : e ∈ M.Adm) {pa pb : ℕ} {ta tb : ℝ} (hA : SideAttach M.W e pa ta)
     (hB : SideAttach M.W e pb tb) (hAB : sidePt M.W pa ta ≠ sidePt M.W pb tb)
@@ -261,6 +224,9 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
   · exact ⟨k1.1 h1, k2.2 h2⟩
   · exact ⟨k2.1 h2, k1.2 h1⟩
   · exact absurd (Or.inr ⟨h1, h2⟩) hdiff
+
+
+end
 
 end
 

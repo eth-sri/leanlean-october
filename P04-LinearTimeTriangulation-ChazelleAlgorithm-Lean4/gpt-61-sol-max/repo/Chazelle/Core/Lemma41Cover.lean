@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Mathlib.Data.Nat.Find
 public import Mathlib.Data.List.Basic
 public import Mathlib.Algebra.Order.BigOperators.Group.List
@@ -50,14 +52,14 @@ theorem not_gradeOK_succ {lam b x : ℕ} (hl : nextG lam b x + 1 ≤ lam - 1) :
 def cover (lam b x : ℕ) : List (ℕ × ℕ) :=
   if h : x < b then (nextG lam b x, x) :: cover lam b (x + 2 ^ nextG lam b x) else []
 termination_by b - x
-decreasing_by have := Nat.one_le_two_pow (n := nextG lam b x); omega
+decreasing_by grind
 
 theorem cover_of_lt {lam b x : ℕ} (h : x < b) :
     cover lam b x = (nextG lam b x, x) :: cover lam b (x + 2 ^ nextG lam b x) := by
-  rw [cover, dite_eq_left h]
+  grind [cover]
 
 theorem cover_of_ge {lam b x : ℕ} (h : b ≤ x) : cover lam b x = [] := by
-  rw [cover, dite_eq_right (by omega)]
+  grind [cover]
 
 /-- Induction along the cover (on `b - x`). -/
 theorem cover_ind {b : ℕ} {Pr : ℕ → Prop}
@@ -65,13 +67,15 @@ theorem cover_ind {b : ℕ} {Pr : ℕ → Prop}
   suffices H : ∀ d x, b - x = d → Pr x from H _ x rfl
   intro d
   induction d using Nat.strong_induction_on with
-  | _ d ih => intro x hx; exact h x (fun y hy => ih (b - y) (by omega) y rfl)
+  | _ d ih => grind
 
 theorem step_lt {lam b x : ℕ} (h : x < b) : b - (x + 2 ^ nextG lam b x) < b - x := by
-  have := Nat.one_le_two_pow (n := nextG lam b x); omega
+  grind
 
+section
+variable {lam b : ℕ}
 /-- **The pieces are aligned full chains** inside `[x, b]`. -/
-theorem mem_cover {lam b : ℕ} (x : ℕ) : ∀ q ∈ cover lam b x,
+theorem mem_cover (x : ℕ) : ∀ q ∈ cover lam b x,
     q.1 ≤ lam - 1 ∧ 2 ^ q.1 ∣ q.2 ∧ x ≤ q.2 ∧ q.2 + 2 ^ q.1 ≤ b := by
   induction x using cover_ind (b := b) with
   | h x ih =>
@@ -81,24 +85,22 @@ theorem mem_cover {lam b : ℕ} (x : ℕ) : ∀ q ∈ cover lam b x,
       rcases List.mem_cons.mp hq with rfl | hq
       · have := nextG_spec (lam := lam) hx
         exact ⟨nextG_le _ _ _, this.1, le_rfl, this.2⟩
-      · obtain ⟨a1, a2, a3, a4⟩ := ih _ (step_lt hx) q hq
-        have := Nat.one_le_two_pow (n := nextG lam b x)
-        exact ⟨a1, a2, by omega, a4⟩
+      ram_grind
     · rw [cover_of_ge (by omega)] at hq; simp at hq
 
 /-- **The pieces tile `[x, b]`.** -/
-theorem cover_sum {lam b : ℕ} (x : ℕ) :
+theorem cover_sum (x : ℕ) :
     ((cover lam b x).map fun q => 2 ^ q.1).sum = b - x := by
   induction x using cover_ind (b := b) with
   | h x ih =>
     by_cases hx : x < b
     · rw [cover_of_lt hx, List.map_cons, List.sum_cons, ih _ (step_lt hx)]
-      have := (nextG_spec (lam := lam) hx).2; dsimp only; omega
+      have := (nextG_spec (lam := lam) hx).2; grind
     · rw [cover_of_ge (by omega)]; simp; omega
 
 /-- The descending phase: from a position aligned to `2^h` with less than `2^h` to go, at most
 `h` pieces. -/
-theorem cover_length_desc {lam b : ℕ} (h : ℕ) : ∀ x, h ≤ lam → 2 ^ h ∣ x → b - x < 2 ^ h →
+theorem cover_length_desc (h : ℕ) : ∀ x, h ≤ lam → 2 ^ h ∣ x → b - x < 2 ^ h →
     (cover lam b x).length ≤ h := by
   induction h using Nat.strong_induction_on with
   | _ h ih =>
@@ -117,10 +119,10 @@ theorem cover_length_desc {lam b : ℕ} (h : ℕ) : ∀ x, h ≤ lam → 2 ^ h �
         have hgh1 : g + 1 < h := by
           by_contra hc2
           have := Nat.pow_le_pow_right (show 0 < 2 by norm_num) (not_lt.mp hc2)
-          rw [pow_succ] at this; omega
+          omega
         have hok : GradeOK b x (g + 1) := by
           refine ⟨(Nat.pow_dvd_pow 2 (by omega)).trans hd, ?_⟩
-          rw [pow_succ]; omega
+          omega
         have := le_nextG (lam := lam) (by omega) hok
         omega
       have := ih g hgh (x + 2 ^ g) (by omega) (Nat.dvd_add hs.1 dvd_rfl) hrest
@@ -128,7 +130,7 @@ theorem cover_length_desc {lam b : ℕ} (h : ℕ) : ∀ x, h ≤ lam → 2 ^ h �
     · rw [cover_of_ge (by omega)]; simp
 
 /-- The ascending phase. -/
-theorem cover_length_asc {lam b : ℕ} (hl : 1 ≤ lam) (x : ℕ) : ∀ h, h < lam → 2 ^ h ∣ x →
+theorem cover_length_asc (hl : 1 ≤ lam) (x : ℕ) : ∀ h, h < lam → 2 ^ h ∣ x →
     b - x ≤ 2 ^ lam → (cover lam b x).length ≤ 2 * lam - h := by
   induction x using cover_ind (b := b) with
   | h x ih =>
@@ -141,7 +143,7 @@ theorem cover_length_asc {lam b : ℕ} (hl : 1 ≤ lam) (x : ℕ) : ∀ h, h < l
       have hgl : g ≤ lam - 1 := nextG_le _ _ _
       have hd' : 2 ^ g ∣ x + 2 ^ g := Nat.dvd_add hs.1 dvd_rfl
       by_cases hA : b < x + 2 ^ (g + 1)
-      · have hr : b - (x + 2 ^ g) < 2 ^ g := by rw [pow_succ] at hA; omega
+      · have hr : b - (x + 2 ^ g) < 2 ^ g := by omega
         have := cover_length_desc (lam := lam) (b := b) g (x + 2 ^ g) (by omega) hd' hr
         omega
       · push Not at hA
@@ -158,28 +160,24 @@ theorem cover_length_asc {lam b : ℕ} (hl : 1 ≤ lam) (x : ℕ) : ∀ h, h < l
             refine ⟨k / 2, ?_⟩
             rw [hk, pow_succ]
             have : k = 2 * (k / 2) := by omega
-            conv_lhs => rw [this]
-            ring
+            grind
           have hd2 : 2 ^ (g + 1) ∣ x + 2 ^ g := by
             refine ⟨(k + 1) / 2, ?_⟩
             rw [hk, pow_succ]
             have : k + 1 = 2 * ((k + 1) / 2) := by omega
-            calc 2 ^ g * k + 2 ^ g = 2 ^ g * (k + 1) := by ring
-              _ = 2 ^ g * (2 * ((k + 1) / 2)) := by rw [← this]
-              _ = 2 ^ g * 2 * ((k + 1) / 2) := by ring
+            grind
           have hglt : g + 1 < lam := by omega
           have hb' : b - (x + 2 ^ g) ≤ 2 ^ lam := by omega
           have := ih (x + 2 ^ g) (step_lt hx) (g + 1) hglt hd2 hb'
           omega
-        · have hge : g = lam - 1 := by omega
+        · 
           have e2 : 2 ^ lam = 2 * 2 ^ g := by
-            rw [hge, ← pow_succ']; congr 1; omega
+            grind
           rw [pow_succ] at hA
           by_cases hC : b - (x + 2 ^ g) < 2 ^ g
-          · have := cover_length_desc (lam := lam) (b := b) g (x + 2 ^ g) (by omega) hd' hC
-            omega
+          · omega
           · have heq : x + 2 ^ g + 2 ^ g = b := by omega
-            have hx' : x + 2 ^ g < b := by have := Nat.one_le_two_pow (n := g); omega
+            have hx' : x + 2 ^ g < b := by omega
             rw [cover_of_lt hx']
             have hok : GradeOK b (x + 2 ^ g) g := ⟨hd', by omega⟩
             have hng : nextG lam b (x + 2 ^ g) = g := by
@@ -189,6 +187,9 @@ theorem cover_length_asc {lam b : ℕ} (hl : 1 ≤ lam) (x : ℕ) : ∀ h, h < l
             rw [hng, cover_of_ge (by omega)]
             simp; omega
     · rw [cover_of_ge (by omega)]; simp
+
+
+end
 
 /-- **At most `2λ` pieces.** -/
 theorem cover_length_le {lam b x : ℕ} (hl : 1 ≤ lam) (hb : b - x ≤ 2 ^ lam) :

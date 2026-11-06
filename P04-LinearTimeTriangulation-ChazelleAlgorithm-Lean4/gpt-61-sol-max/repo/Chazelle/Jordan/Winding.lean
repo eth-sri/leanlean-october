@@ -51,11 +51,6 @@ open Chazelle.Geometry (lerp lerp_fst lerp_snd det_lerp det_lerp_self lerp_mem_s
 
 /-! ### Definitions -/
 
-/-- The signed crossing of the upward vertical ray from `z` by the directed edge `u → v`:
-`-1` if the edge crosses it from left to right, `1` from right to left, `0` if it does not
-cross it (`crosses`, half-open rule). -/
-noncomputable def windInd (z u v : Point) : ℤ :=
-  if crosses z u v then (if u.1 < v.1 then -1 else 1) else 0
 
 /-! ### Basic lemmas -/
 
@@ -71,18 +66,9 @@ noncomputable def windInd (z u v : Point) : ℤ :=
 
 /-! ### Open paths and closed walks -/
 
-/-- The signed crossing sum of the open polygonal path through the vertex list `L`. -/
-noncomputable def windPath (z : Point) : List Point → ℤ
-  | [] => 0
-  | [_] => 0
-  | a :: b :: l => windInd z a b + windPath z (b :: l)
 
-@[simp] theorem windPath_nil (z : Point) : windPath z [] = 0 := rfl
 
-@[simp] theorem windPath_singleton (z a : Point) : windPath z [a] = 0 := rfl
 
-@[simp] theorem windPath_cons_cons (z a b : Point) (l : List Point) :
-    windPath z (a :: b :: l) = windInd z a b + windPath z (b :: l) := rfl
 
 /-! ### Simple polygons: the winding number is the orientation inside, `0` outside -/
 

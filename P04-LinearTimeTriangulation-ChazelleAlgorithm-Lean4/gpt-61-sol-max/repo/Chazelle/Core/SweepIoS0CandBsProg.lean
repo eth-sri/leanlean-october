@@ -1,5 +1,7 @@
 module
 
+public meta import Mathlib.Tactic
+
 public import Chazelle.Core.SweepIoS0CandBsSpec
 
 /-!
@@ -68,8 +70,7 @@ theorem lsInit_exec (d : Config) (hw : WordsBounded W d) :
       d'.nreg 244000 = 0 ∧ d'.nreg 244001 = d.nreg 240601 := by
     unfold lsInit
     exec_block
-    all_goals try (config_simp; omega)
-    refine ⟨rfl, ?_, ?_⟩ <;> config_simp
+    all_goals simp_all
   have hf := SignK.exec_frameB ex (B := LB) (by decide)
   exact ⟨d', k, ex, hk, q1, q2, hf.1, funext fun r => WalkKey.exec_rframe ex
     (B := fun _ => false) (by decide) r rfl, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩
@@ -124,7 +125,7 @@ theorem lsB3_exec (d : Config) (hw : WordsBounded W d) :
       d'.nreg 244000 = d.nreg 244004 ∧ d'.nreg 244001 = d.nreg 244001 := by
     unfold lsB3
     exec_block
-    refine ⟨rfl, ?_, ?_⟩ <;> config_simp
+    simp_all
   have hf := SignK.exec_frameB ex (B := LB) (by decide)
   exact ⟨d', k, ex, hk, q1, q2, hf.1, funext fun r => WalkKey.exec_rframe ex
     (B := fun _ => false) (by decide) r rfl, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩

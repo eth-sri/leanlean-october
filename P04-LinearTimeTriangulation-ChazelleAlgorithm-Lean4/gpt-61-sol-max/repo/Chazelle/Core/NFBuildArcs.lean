@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildRegions
 
 /-!
@@ -30,38 +32,43 @@ open List
 /-- The key of the `m`-th event. -/
 noncomputable def kap (S : List Ev) (m : ℕ) : ℝ := (S.getD m (0, 0, 0)).2.1
 
-theorem kap_eq {S : List Ev} {m : ℕ} (hm : m < S.length) : kap S m = (S[m]).2.1 := by
-  unfold kap; rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hm, Option.getD_some]
+section
+variable {S : List Ev}
+theorem kap_eq {m : ℕ} (hm : m < S.length) : kap S m = (S[m]).2.1 := by
+  simp_all [kap, List.getD_eq_getElem?_getD, Option.getD_some] 
 
 /-- Every event is at some index. -/
-theorem index_of_mem {S : List Ev} {e : Ev} (he : e ∈ S) : ∃ k < S.length, kap S k = e.2.1 := by
+theorem index_of_mem {e : Ev} (he : e ∈ S) : ∃ k < S.length, kap S k = e.2.1 := by
   obtain ⟨k, hk, rfl⟩ := mem_iff_getElem.1 he
   exact ⟨k, hk, kap_eq hk⟩
 
 /-- The key at an index is an event key. -/
-theorem kap_mem {S : List Ev} {m : ℕ} (hm : m < S.length) : ∃ e ∈ S, e.2.1 = kap S m :=
+theorem kap_mem {m : ℕ} (hm : m < S.length) : ∃ e ∈ S, e.2.1 = kap S m :=
   ⟨S[m], getElem_mem hm, (kap_eq hm).symm⟩
 
+
+end
+
+section
+variable {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n))
+include n hs
 /-- **Keys are sorted along the list.** -/
-theorem kap_mono {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {i j : ℕ} (hij : i ≤ j)
+theorem kap_mono {i j : ℕ} (hij : i ≤ j)
     (hj : j < S.length) : kap S i ≤ kap S j := by
   rcases hij.lt_or_eq with h | rfl
   · rw [kap_eq (h.trans hj), kap_eq hj]
     exact key_le_of_evLe (pairwise_iff_getElem.1 hs i j (h.trans hj) hj h)
-  · exact le_rfl
+  simp_all
 
+section
+variable {m : ℕ} (hm : m + 1 < S.length)
+include m hm
 /-- The events up to index `m` have keys at most `kap S m`, those after at least `kap S (m+1)`. -/
-theorem key_le_or_ge {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {m : ℕ}
-    (hm : m + 1 < S.length) {e : Ev} (he : e ∈ S) : e.2.1 ≤ kap S m ∨ kap S (m + 1) ≤ e.2.1 := by
-  obtain ⟨k, hk, hke⟩ := index_of_mem he
-  rw [← hke]
-  rcases Nat.lt_or_ge m k with h | h
-  · exact Or.inr (kap_mono hs h hk)
-  · exact Or.inl (kap_mono hs h (by omega))
+theorem key_le_or_ge {e : Ev} (he : e ∈ S) : e.2.1 ≤ kap S m ∨ kap S (m + 1) ≤ e.2.1 := by
+  grind [Chazelle.Core.BuildSort.index_of_mem, Chazelle.Core.BuildSort.kap_mono]
 
 /-- **The number of events below a key inside a gap.** -/
-theorem cntBelow_gap {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {m : ℕ}
-    (hm : m + 1 < S.length) {y : ℝ} (h1 : kap S m < y) (h2 : y < kap S (m + 1)) :
+theorem cntBelow_gap {y : ℝ} (h1 : kap S m < y) (h2 : y < kap S (m + 1)) :
     cntBelow S y = m + 1 := by
   unfold cntBelow
   rw [← take_append_drop (m + 1) S, countP_append]
@@ -71,7 +78,7 @@ theorem cntBelow_gap {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {m : ℕ
     obtain ⟨j, hj, rfl⟩ := mem_take_iff_getElem.1 ha
     have := kap_mono hs (show j ≤ m by omega) (by omega)
     rw [kap_eq (by omega : j < S.length)] at this
-    simp only [decide_eq_true_eq]; linarith
+    grind
   have hd : (S.drop (m + 1)).countP (fun e => decide (e.2.1 < y)) = 0 := by
     rw [countP_eq_zero]
     intro a ha
@@ -79,28 +86,34 @@ theorem cntBelow_gap {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {m : ℕ
     have hj' : m + 1 + j < S.length := by omega
     have := kap_mono hs (show m + 1 ≤ m + 1 + j by omega) hj'
     rw [kap_eq hj'] at this
-    simp only [decide_eq_true_eq, not_lt]; linarith
-  rw [ht, hd, add_zero]
+    grind
+  omega
+
+
+end
 
 /-- No event below the first key. -/
-theorem cntBelow_first {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n))
+theorem cntBelow_first
     {y : ℝ} (hy : y < kap S 0) : cntBelow S y = 0 := by
   unfold cntBelow
   rw [countP_eq_zero]
   intro a ha
   obtain ⟨k, hk, hka⟩ := index_of_mem ha
   have := kap_mono hs (Nat.zero_le k) hk
-  simp only [decide_eq_true_eq, not_lt]; linarith
+  grind
 
 /-- Every event below a key above the last key. -/
-theorem cntBelow_last {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) (hS : 0 < S.length)
+theorem cntBelow_last (hS : 0 < S.length)
     {y : ℝ} (hy : kap S (S.length - 1) < y) : cntBelow S y = S.length := by
   unfold cntBelow
   rw [countP_eq_length]
   intro a ha
   obtain ⟨k, hk, hka⟩ := index_of_mem ha
   have := kap_mono hs (show k ≤ S.length - 1 by omega) (by omega)
-  simp only [decide_eq_true_eq]; linarith
+  grind
+
+
+end
 
 end
 
@@ -135,7 +148,7 @@ theorem isCut_iff {k : ℝ} : M.IsCut (famOf M Q L) k ↔ ∃ e ∈ S, e.2.1 = k
     · obtain ⟨rfl, rfl⟩ := h.walk.attach_unique (h.adm (chordSet_mem hj)) hA hL hpt
       exact ⟨_, h.eL_mem hj, rfl⟩
     · have hpt' : sidePt M.W p t = sidePt M.W (crec L j).rp (M.param Q (crec L j).rpos) := by
-        rw [hoth _ _ hA hpt, hRe]
+        grind
       obtain ⟨rfl, rfl⟩ := h.walk.attach_unique (h.adm (chordSet_mem hj)) hA hR hpt'
       exact ⟨_, h.eR_mem hj, rfl⟩
   · rintro ⟨e, he, rfl⟩
@@ -149,12 +162,18 @@ theorem key_bounds_mem {e : Ev} (he : e ∈ S) : 0 ≤ e.2.1 ∧ e.2.1 < M.W.n :
   · exact h.kl_bounds hi
   · exact h.kr_bounds hi
 
-theorem kap_bounds {m : ℕ} (hm : m < S.length) : 0 ≤ kap S m ∧ kap S m < M.W.n := by
+section
+variable {m : ℕ} (hm : m < S.length)
+include hm
+theorem kap_bounds : 0 ≤ kap S m ∧ kap S m < M.W.n := by
   obtain ⟨e, he, hk⟩ := BuildSort.kap_mem hm
   rw [← hk]; exact h.key_bounds_mem he
 
-theorem kap_cut {m : ℕ} (hm : m < S.length) : M.IsCut (famOf M Q L) (kap S m) :=
+theorem kap_cut : M.IsCut (famOf M Q L) (kap S m) :=
   h.isCut_iff.2 (BuildSort.kap_mem hm)
+
+
+end
 
 theorem length_S : S.length = 2 * L.length := by
   rw [h.perm.length_eq]
@@ -170,12 +189,12 @@ theorem arc_of_gap {m : ℕ} (hm : m + 1 < S.length) (hlt : kap S m < kap S (m +
   have ha := h.kap_bounds (m := m) (by omega)
   have hb := h.kap_bounds hm
   have hin : ∀ x, sideInArc (kap S m) (kap S (m + 1)) x ↔ kap S m < x ∧ x < kap S (m + 1) := by
-    intro x; unfold sideInArc; rw [ite_eq_left hlt]
+    simp_all [sideInArc] <;> omega_nf
   have hnocut : ∀ x, sideInArc (kap S m) (kap S (m + 1)) x → ¬ M.IsCut (famOf M Q L) x := by
     intro x hx hcut
     rw [hin] at hx
     obtain ⟨e, he, rfl⟩ := h.isCut_iff.1 hcut
-    rcases BuildSort.key_le_or_ge h.sorted hm he with h1 | h1 <;> linarith [hx.1, hx.2]
+    rcases BuildSort.key_le_or_ge h.sorted hm he with h1 | h1 <;> linarith
   refine ⟨ha.1, ha.2, hb.1, hb.2, Or.inl ⟨h.kap_cut (by omega), h.kap_cut hm, hlt.ne⟩, hnocut,
     fun p t hp ht0 ht1 hx => ?_⟩
   have hcut := hnocut _ hx
@@ -193,8 +212,11 @@ theorem label_ends : BuildStack.label (S.map Prod.fst) 0 = none ∧
   rw [← length_map (f := Prod.fst), take_length, BuildStack.run_eq_nil htw hnc]
   rfl
 
+section
+variable (hK : 0 < L.length)
+include hK
 /-- **The wrapping gap is an arc of the root region.** -/
-theorem arc_of_wrap (hK : 0 < L.length) :
+theorem arc_of_wrap :
     M.IsArc (famOf M Q L) (reg M Q L S none) (kap S (S.length - 1)) (kap S 0) := by
   have hlen := h.length_S
   have hS : 0 < S.length := by omega
@@ -210,7 +232,7 @@ theorem arc_of_wrap (hK : 0 < L.length) :
     linarith [h.lo_lt_hi hK]
   have hin : ∀ x, sideInArc (kap S (S.length - 1)) (kap S 0) x ↔
       kap S (S.length - 1) < x ∨ x < kap S 0 := by
-    intro x; unfold sideInArc; rw [ite_eq_right (not_lt.2 hlt.le)]
+    grind [sideInArc]
   have hnocut : ∀ x, sideInArc (kap S (S.length - 1)) (kap S 0) x →
       ¬ M.IsCut (famOf M Q L) x := by
     intro x hx hcut
@@ -219,8 +241,7 @@ theorem arc_of_wrap (hK : 0 < L.length) :
     obtain ⟨k, hk, hke⟩ := BuildSort.index_of_mem he
     have h1 := BuildSort.kap_mono h.sorted (Nat.zero_le k) hk
     have h2 := BuildSort.kap_mono h.sorted (show k ≤ S.length - 1 by omega) (by omega)
-    rw [hke] at h1 h2
-    rcases hx with hx | hx <;> linarith
+    grind
   refine ⟨ha.1, ha.2, hb.1, hb.2, Or.inl ⟨h.kap_cut (by omega), h.kap_cut hS, hlt.ne'⟩, hnocut,
     fun p t hp ht0 ht1 hx => ?_⟩
   have hcut := hnocut _ hx
@@ -232,7 +253,7 @@ theorem arc_of_wrap (hK : 0 < L.length) :
   · rwa [BuildSort.cntBelow_first h.sorted hx, h.label_ends.1] at hf
 
 /-- **Every arc is a gap** (with chords). -/
-theorem gap_of_arc (hK : 0 < L.length) {U : Set Point} {a b : ℝ}
+theorem gap_of_arc {U : Set Point} {a b : ℝ}
     (harc : M.IsArc (famOf M Q L) U a b) :
     (∃ m, m + 1 < S.length ∧ kap S m < kap S (m + 1) ∧ a = kap S m ∧ b = kap S (m + 1)) ∨
       (a = kap S (S.length - 1) ∧ b = kap S 0) := by
@@ -250,61 +271,63 @@ theorem gap_of_arc (hK : 0 < L.length) {U : Set Point} {a b : ℝ}
   rcases lt_or_gt_of_ne hab with hlt | hgt
   · left
     have hin : ∀ x, sideInArc a b x ↔ a < x ∧ x < b := by
-      intro x; unfold sideInArc; rw [ite_eq_left hlt]
-    have hex : ∃ j, a < kap S j ∧ j < S.length := ⟨k₂, by rw [hk₂e]; exact hlt, hk₂⟩
+      simp_all [sideInArc] 
+    have hex : ∃ j, a < kap S j ∧ j < S.length := ⟨k₂, by simp_all, hk₂⟩
     set j₀ := Nat.find hex with hj₀
     obtain ⟨hj₀a, hj₀l⟩ := Nat.find_spec hex
     have hmin : ∀ j < j₀, ¬ (a < kap S j ∧ j < S.length) := fun j hj => Nat.find_min hex hj
     have hj₀pos : j₀ ≠ 0 := by
       intro h0
       have := BuildSort.kap_mono h.sorted (Nat.zero_le k₁) hk₁
-      rw [← h0, hk₁e] at *
-      linarith
+      grind
     have hk₁m : k₁ ≤ j₀ - 1 := by
       by_contra hc
       have := BuildSort.kap_mono h.sorted (show j₀ ≤ k₁ by omega) hk₁
-      rw [hk₁e] at this; linarith
+      grind
     have hm1 : kap S (j₀ - 1) ≤ a := by
-      by_contra hc; push Not at hc
-      exact hmin (j₀ - 1) (by omega) ⟨hc, by omega⟩
+      grind
     have hm2 : a ≤ kap S (j₀ - 1) := by
       have := BuildSort.kap_mono h.sorted hk₁m (by omega)
-      rwa [hk₁e] at this
-    have hj₀k₂ : j₀ ≤ k₂ := Nat.find_min' hex ⟨by rw [hk₂e]; exact hlt, hk₂⟩
+      grind
+    have hj₀k₂ : j₀ ≤ k₂ := Nat.find_min' hex ⟨by grind, hk₂⟩
     have hb1 : kap S j₀ ≤ b := by
-      have := BuildSort.kap_mono h.sorted hj₀k₂ hk₂; rwa [hk₂e] at this
+      have := BuildSort.kap_mono h.sorted hj₀k₂ hk₂; grind
     have hb2 : b ≤ kap S j₀ := by
       by_contra hc
       push Not at hc
       exact hfree _ ((hin _).2 ⟨hj₀a, hc⟩) (h.kap_cut hj₀l)
     refine ⟨j₀ - 1, by omega, ?_, by linarith, ?_⟩
-    · rw [Nat.sub_add_cancel (Nat.one_le_iff_ne_zero.2 hj₀pos)]; linarith
-    · rw [Nat.sub_add_cancel (Nat.one_le_iff_ne_zero.2 hj₀pos)]; linarith
+    · grind
+    grind
   · right
     have hin : ∀ x, sideInArc a b x ↔ a < x ∨ x < b := by
-      intro x; unfold sideInArc; rw [ite_eq_right (not_lt.2 hgt.le)]
+      core_grind
     have h1 : kap S (S.length - 1) ≤ a := by
       by_contra hc; push Not at hc
       exact hfree _ ((hin _).2 (Or.inl hc)) (h.kap_cut (by omega))
     have h2 : a ≤ kap S (S.length - 1) := by
       have := BuildSort.kap_mono h.sorted (show k₁ ≤ S.length - 1 by omega) (by omega)
-      rwa [hk₁e] at this
+      simp_all
     have h3 : b ≤ kap S 0 := by
       by_contra hc; push Not at hc
       exact hfree _ ((hin _).2 (Or.inr hc)) (h.kap_cut hlen)
     have h4 : kap S 0 ≤ b := by
       have := BuildSort.kap_mono h.sorted (Nat.zero_le k₂) hk₂
-      rwa [hk₂e] at this
-    exact ⟨by linarith, by linarith⟩
+      simp_all
+    grind
 
+
+end
+
+section
+variable (hK : L.length = 0)
+include hK
 /-- Without chords the family is empty. -/
-theorem fam_empty (hK : L.length = 0) : famOf M Q L = ∅ := by
-  have : L = [] := List.length_eq_zero_iff.1 hK
-  subst this
-  ext c; simp [famOf]
+theorem fam_empty : famOf M Q L = ∅ := by
+  simp_all [famOf] 
 
 /-- **Without chords, the pinned arc `(0, 0)` is an arc of the root region.** -/
-theorem arc_of_empty (hK : L.length = 0) :
+theorem arc_of_empty :
     M.IsArc (famOf M Q L) (reg M Q L S none) 0 0 := by
   have hF := h.fam_empty hK
   have hS : S = [] := by
@@ -312,7 +335,7 @@ theorem arc_of_empty (hK : L.length = 0) :
     intro e he
     have := (h.mem_cases he).1; omega
   have hnocut : ∀ x, ¬ M.IsCut (famOf M Q L) x := by
-    rintro x ⟨c, hc, -⟩; rw [hF] at hc; exact hc
+    rintro x ⟨c, hc, -⟩; simp_all
   -- the walk has an edge
   have hsys := h.walk.sys _ h.adm h.finite
   obtain ⟨-, hcard⟩ := hsys.regionsIn_finite_ncard h.walk.preconn h.walk.nonempty subset_rfl
@@ -326,17 +349,19 @@ theorem arc_of_empty (hK : L.length = 0) :
     fun p t hp ht0 ht1 _ => ?_⟩
   have hf := (h.faces_reg hp ⟨ht0, ht1⟩ (hnocut _)).2
   have hlab : gapLabel S (p + t) = none := by unfold gapLabel; rw [hS]; rfl
-  rwa [hlab] at hf
+  simp_all
 
 /-- **Without chords every arc is the pinned `(0, 0)`.** -/
-theorem gap_of_arc_empty (hK : L.length = 0) {U : Set Point} {a b : ℝ}
+theorem gap_of_arc_empty {U : Set Point} {a b : ℝ}
     (harc : M.IsArc (famOf M Q L) U a b) : a = 0 ∧ b = 0 := by
   have hF := h.fam_empty hK
   obtain ⟨-, -, -, -, hcuts, -⟩ := harc
   rcases hcuts with ⟨⟨c, hc, -⟩, -⟩ | ⟨-, ha, hb⟩
-  · rw [hF] at hc; exact absurd hc (Set.notMem_empty c)
-  · exact ⟨ha, hb⟩
+  all_goals simp_all
 
+
+
+end
 
 end Ctx
 

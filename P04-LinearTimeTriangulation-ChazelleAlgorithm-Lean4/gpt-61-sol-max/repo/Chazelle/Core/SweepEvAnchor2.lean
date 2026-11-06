@@ -64,19 +64,17 @@ theorem anchor_caseA (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   · exfalso
     have hYZ : Y ≠ Z := fun h => hZnb (h ▸ hYb)
     have hXZ : X = Z := by
-      rcases hall Z hZ hZK with h | h
-      · exact h.symm
-      · exact absurd h.symm hYZ
+      grind
     obtain ⟨pb, tb, hB, hBne⟩ := hM.other_attach (hC.hF hY) hYK
     have hBL := hYb pb tb hB
     have hBne' : oW J (pb + tb) ≠ oW J (pK + tK) := by
       intro h
       obtain ⟨rfl, rfl⟩ := pos_eq_of_oW hP hS₂a hS₂f hB.1 hpK hB.2.1 hB.2.2.1 htK0 htK1 h
-      exact hBne rfl
+      grind
     rcases lt_or_gt_of_ne hBne' with hlt | hgt
     · -- `Y` closes at `K`: the region before `K` is on a side of `Z`, faced inside `Y`'s arc
       obtain ⟨Rb, hRb, hWb, q, u, hq, hu, -, hfq, h1, h2, -⟩ := before_region_exists' hP hS₂a hS₂f
-        hpK htK0 htK1 (by have : (0 : ℝ) ≤ Lst J := Nat.cast_nonneg _; linarith)
+        hpK htK0 htK1 (by linarith)
         (show 0 < oW J (pK + tK) - oW J (pb + tb) by linarith)
       have hRbZ := hbef Rb hRb hWb
       rw [hXZ] at hRbZ
@@ -95,9 +93,9 @@ theorem anchor_caseA (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
             have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
             have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
               exact_mod_cast hC.hg
-            have hkey := off_inj hg0 hgn hk.1 hk.2 k0 k1 (by rw [← oW_eq, ← oW_eq]; exact h.symm)
+            have hkey := off_inj hg0 hgn hk.1 hk.2 k0 k1 (by grind [oW_eq])
             exact hncy ⟨Y, hY, pb, tb, hB, hkey⟩
-      exact hEy ⟨Y, hY, pK, pb, tK, tb, hYK, hB, hBne.symm, hLst, by rw [hoy]; linarith,
+      exact hEy ⟨Y, hY, pK, pb, tK, tb, hYK, hB, hBne.symm, hLst, by linarith,
         Or.inl hyB⟩
   · obtain ⟨ρ, hρ⟩ : ∃ ρ : ℝ, ρ = -dY := ⟨_, rfl⟩
     have hρ : -dY = 1 ∨ -dY = -1 := by rcases hdY.cases with h | h <;> simp [h]
@@ -119,7 +117,7 @@ theorem alone_far (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ M
   intro e he hE
   by_contra hne
   have hout : ∀ {q : ℕ} {u : ℝ}, (Lst J : ℝ) < oW J (q + u) →
-      ¬ (0 < oW J (q + u) ∧ oW J (q + u) < Lst J) := fun h h' => by linarith [h'.2]
+      ¬ (0 < oW J (q + u) ∧ oW J (q + u) < Lst J) := fun h h' => by linarith
   have hDC : sidePt (chainModel J.whole).W qc sc ∈ J.right.dom := by
     rcases tie_dom hP hS₂ hS₂f hs' he (Ne.symm hne) hsC hE (hout hLC) with h | h
     · exact h
@@ -139,26 +137,19 @@ theorem alone_far (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ M
   · subst h
     rcases key_of_two hC.hM (hC.hF hc) hcA hcB (pt_ne_of_off_ne hP hS₂ hS₂f hc hcA hcB hab) hE with
       ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-    · exact hCa rfl
-    · exact hCb rfl
-  · exact hne h.symm
+    all_goals grind
+  simp_all
 
+section
+variable (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂) (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) (hNTV : NoTieV J S₂) {pK : ℕ} {tK : ℝ} (hpK : pK < (chainModel J.whole).W.n) (htK0 : 0 ≤ tK) (htK1 : tK < 1) (hLst : (Lst J : ℝ) ≤ oW J (pK + tK)) {Z : Set Point} (hZ : Z ∈ F₂plus J S₂) (hZK : SideAttach (chainModel J.whole).W Z pK tK) {pz : ℕ} {tz : ℝ} (hZz : SideAttach (chainModel J.whole).W Z pz tz) (hzL : oW J (pz + tz) < Lst J) (hnp : ∀ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e pK tK →
+      ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s → oW J (q + s) ≠ 0) {Λ : Set (Set Point)} (hlab : ∀ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e pK tK → ¬ EvBrk J e →
+      (AftChord J S₂ pK tK e ∨ ∀ e' ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e' pK tK →
+        e' ≠ e → EvBrk J e') → EvSideLab J S₂ Λ e)
+include hP Q hS₂ hF hNTV hpK htK0 htK1 hLst Z hZ hZK pz tz hZz hzL hnp hlab
 /-- **Case B**: the position just after `K` is enclosed: a bracket `c` opens at `K` (with `Z`, a
 tie) and closes before `x`; the region at `x` is the middle region of the tie at `K`, on a side of
 `Z`. -/
-theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) (hNTV : NoTieV J S₂) {pK : ℕ}
-    {tK : ℝ} (hpK : pK < (chainModel J.whole).W.n) (htK0 : 0 ≤ tK) (htK1 : tK < 1)
-    (hLst : (Lst J : ℝ) ≤ oW J (pK + tK)) {Z : Set Point} (hZ : Z ∈ F₂plus J S₂)
-    (hZK : SideAttach (chainModel J.whole).W Z pK tK) {pz : ℕ} {tz : ℝ}
-    (hZz : SideAttach (chainModel J.whole).W Z pz tz) (hzL : oW J (pz + tz) < Lst J)
-    (hnp : ∀ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e pK tK →
-      ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s → oW J (q + s) ≠ 0)
-    {Λ : Set (Set Point)}
-    (hlab : ∀ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e pK tK → ¬ EvBrk J e →
-      (AftChord J S₂ pK tK e ∨ ∀ e' ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e' pK tK →
-        e' ≠ e → EvBrk J e') → EvSideLab J S₂ Λ e)
+theorem anchor_caseB
     {p : ℕ} {t : ℝ} (hp : p < (chainModel J.whole).W.n) (ht : t ∈ Ioo (0 : ℝ) 1)
     (hnc : ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p + t))
     (hbr : ∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s →
@@ -183,7 +174,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
-  have hL0 : (0 : ℝ) ≤ Lst J := Nat.cast_nonneg _
+  
   set o' := oW J (pK + tK) with ho'
   set oy := oW J (pK + (tK + s)) with hoydef
   set ox := oW J (p + t) with hoxdef
@@ -197,14 +188,14 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       oW J (q + u) ≠ ox := fun e he q u hA h => by
     obtain ⟨k0, k1⟩ := attach_key_mem hA
     obtain ⟨x0, x1⟩ := Corr.key_mem hp ht.1.le ht.2
-    exact hnc ⟨e, he, q, u, hA, off_inj hg0 hgn x0 x1 k0 k1 (by rw [← oW_eq, ← oW_eq]; exact h.symm)⟩
+    exact hnc ⟨e, he, q, u, hA, off_inj hg0 hgn x0 x1 k0 k1 (by grind [oW_eq])⟩
   have hposK : ∀ {q : ℕ} {u : ℝ}, q < (chainModel J.whole).W.n → 0 ≤ u → u < 1 →
       oW J (q + u) = o' → q = pK ∧ u = tK := fun hq hu0 hu1 h =>
     pos_eq_of_oW hP hS₂a hS₂f hq hpK hu0 hu1 htK0 htK1 h
   -- the enclosing chord of `y` is a bracket opening at `K`
   obtain ⟨c, hc, qa, qb, sa, sb, hA, hB, hAB, hLa, hay, hby⟩ := hEy
   have hqa : oW J (qa + sa) ≤ o' := by
-    by_contra h; push Not at h; exact hcg c hc qa sa hA ⟨h, hay⟩
+    grind
   rcases hby with hby | hby
   swap
   · -- a pocket
@@ -212,7 +203,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     rcases hqa.lt_or_eq with h | h
     · exact hEx ⟨c, hc, qa, qb, sa, sb, hA, hB, hAB, hLa, by linarith, Or.inr hby⟩
     · obtain ⟨rfl, rfl⟩ := hposK hA.1 hA.2.1 hA.2.2.1 h
-      exact hnp c hc hA qb sb hB hby
+      grind
   have hcZ : c ≠ Z := by
     rintro rfl
     rcases key_of_two hM (hC.hF hc) hA hB hAB hZz with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> linarith
@@ -230,7 +221,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     · exact h
     · rcases h.lt_or_eq with h | h
       · exact absurd ⟨c, hc, pK, qb, tK, sb, hA, hB, hAB, hLst, by linarith, Or.inl h⟩ hEx
-      · exact absurd h.symm (hnex c hc qb sb hB)
+      grind
   have hKqb : o' < oW J (qb + sb) := by linarith
   -- the structure at `K`: `X = Z`, `Y = c`
   obtain ⟨X, Y, dX, dY, hX, hY, hXK, hYK, hdX, hdY, hall, haft, hbef, hmid, hXY⟩ :=
@@ -239,15 +230,15 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hYZ : Y ≠ Z := by
     rintro rfl
     exact side_comp_off hP hS₂a hS₂f hc hY hA hB hKqb hZz (Or.inl (by linarith)) hRa hRaY hpK
-      ⟨by linarith, hs1⟩ (by rw [← hoydef, hoy]; linarith) (by rw [← hoydef]; linarith) hfy
+      ⟨by linarith, hs1⟩ (by linarith) (by omega) hfy
   have hXZ : X = Z := by
     rcases hall Z hZ hZK with h | h
     · exact h.symm
-    · exact absurd h.symm hYZ
+    grind
   have hYc : Y = c := by
     rcases hall c hc hA with h | h
-    · exact absurd (h.trans hXZ) hcZ
-    · exact h.symm
+    · grind
+    grind
   subst hXZ hYc
   have hXYne : X ≠ Y := fun h => hcZ h.symm
   -- the middle region `M` at `K`, on a side of `Z` (and of `c`)
@@ -259,9 +250,9 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hMval : EvVal J S₂ Λ Mk :=
     hlab X hX hXK hZnb (Or.inr fun e' he' hA' hne => by
       rcases hall e' he' hA' with h | h
-      · exact absurd h hne
-      · rw [h]; exact hcbrk) Mk hMk (-dX) (by rcases hdX.cases with h | h <;> simp [h]) hMkZ
-  suffices hGM' : G = Mk by rw [hGM']; exact hMval
+      · grind
+      grind) Mk hMk (-dX) (by rcases hdX.cases with h | h <;> simp [h]) hMkZ
+  suffices hGM' : G = Mk by grind
   -- `c` at `qb`
   have hcA := F₂plus_subset J hS₂a hc
   have hdq : DirAt (chainModel J.whole).W Y qb sb (-dY) := dirAt_other hP hcA hA hB hAB hdY
@@ -279,7 +270,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     hB.2.2.1
   obtain ⟨s₁, hs₁0, hs₁ε, hs₁1, hfy₁, hncy₁, hoy₁, hgapy₁⟩ := after_pos_eps hP hS₂a hS₂f hB.1
     hB.2.1 hB.2.2.1 hWa' hqbx
-  have hy₁x : oW J (qb + (sb + s₁)) < ox := by rw [hoy₁]; linarith
+  have hy₁x : oW J (qb + (sb + s₁)) < ox := by linarith
   -- the region at `x` from a non-enclosed position before it
   have hGfrom : ∀ {q : ℕ} {u : ℝ} {R : Set Point}, q < (chainModel J.whole).W.n →
       u ∈ Ioo (0 : ℝ) 1 → ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (q + u) →
@@ -313,10 +304,9 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       exact dirAt_unique hP hcA hB this hdq
     have hRa'c : SideOf (chainModel J.whole) dY Y Ra' := by
       have := haft' Ra' hRa' hWa'
-      rw [hdY', neg_neg, ← hYX'] at this
-      exact this
+      grind [neg_neg]
     have hnE : ¬ EvEncl J S₂ (oW J (qb + (sb + s₁))) := by
-      refine noEncl_of_closed hP hS₂a hS₂f hZ hZK hZz hzL hLst hKqb.le ?_ (by rw [hoy₁]; linarith)
+      refine noEncl_of_closed hP hS₂a hS₂f hZ hZK hZz hzL hLst hKqb.le ?_ (by linarith)
         hy₁x (fun e he q u hQ h => hgapy₁ _ ⟨e, he, q, u, hQ, rfl⟩ (attach_key_mem hQ).1
           (attach_key_mem hQ).2 h) hEx
       intro e he heZ q u hQ h1 h2 q' u' hQ'
@@ -331,7 +321,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
         · exact absurd h heZ
         · exact absurd h hec
     rw [← hMeq Ra' hRa' hRa'c]
-    exact (hGfrom hB.1 ⟨by linarith [hB.2.1], hs₁1⟩ hncy₁ (by rw [hoy₁]; linarith) hy₁x hnE hRa'
+    exact (hGfrom hB.1 ⟨by linarith [hB.2.1], hs₁1⟩ hncy₁ (by linarith) hy₁x hnE hRa'
       hfy₁).symm
   · -- a tie at `qb`: `c` and the other chord `s'`
     obtain ⟨s', hs', hs'B, hs'c, hcase⟩ : ∃ s' ∈ F₂plus J S₂,
@@ -413,11 +403,11 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
         have heq := hs'eq hRb' hRa' hRb's hRa's
         subst heq
         exact faced_both_off hP hS₂a hS₂f hc hA hB hKqb hRb' hw hB.1 hu
-          ⟨by linarith [hB.2.1], hs₁1⟩ (by linarith) (by linarith) (Or.inr (by rw [hoy₁]; linarith))
+          ⟨by linarith [hB.2.1], hs₁1⟩ (by linarith) (by linarith) (Or.inr (by linarith))
           hfw hfy₁
       · -- (iv) `qc` after `qb`: the region after `qc` is the middle region at `K`
         have hMs : SideOf (chainModel J.whole) dY X'' Mk := by
-          have := (hmid' (by rw [← hYX', ← hs'Y']; exact hs'c.symm) Mk hMk).2
+          have := (hmid' (by omega) Mk hMk).2
           rw [hdY'e, hdX'e, neg_neg, ← hYX', ← hs'Y'] at this
           exact this hMks
         obtain ⟨-, -, -, -, Ra'', hRa'', hWa''⟩ := after_region_exists hM hC.hF hC.hfin hC.hg hC'.1
@@ -429,7 +419,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
           hC'.2.1 hC'.2.2.1 hWa'' (show 0 < ox - oW J (qc + sc) by linarith)
         have hnE : ¬ EvEncl J S₂ (oW J (qc + (sc + s₂))) := by
           refine noEncl_of_closed hP hS₂a hS₂f hZ hZK hZz hzL hLst (by linarith) ?_
-            (by rw [hoy₂]; linarith) (by rw [hoy₂]; linarith)
+            (by linarith) (by linarith)
             (fun e he q u hQ h => hgapy₂ _ ⟨e, he, q, u, hQ, rfl⟩ (attach_key_mem hQ).1
               (attach_key_mem hQ).2 h) hEx
           intro e he heZ q u hQ h1 h2 q' u' hQ'
@@ -443,13 +433,13 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
           rcases h1.lt_or_eq with h1 | h1
           · rcases lt_trichotomy (oW J (q + u)) (oW J (qb + sb)) with h3 | h3 | h3
             · have := closed_nested hP hS₂a hS₂f hc he (Ne.symm hec) hA hB hKqb hQ h1 h3 hQ'
-              constructor <;> linarith [this.1, this.2]
+              constructor <;> linarith
             · rcases hatB e he q u hQ h3 with h | h
               · exact absurd (h.trans hYX'.symm) hec
               · exact absurd (h.trans hs'Y'.symm) hes
             · rcases h2.lt_or_eq with h2 | h2
               · have := closed_nested hP hS₂a hS₂f hs' he (Ne.symm hes) hs'B hC' hgt hQ h3 h2 hQ'
-                constructor <;> linarith [this.1, this.2]
+                constructor <;> linarith
               · obtain ⟨rfl, rfl⟩ := pos_eq_of_oW hP hS₂a hS₂f hQ.1 hC'.1 hQ.2.1 hQ.2.2.1 hC'.2.1
                   hC'.2.2.1 h2
                 exact absurd (halone e he hQ) hes
@@ -457,8 +447,8 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
             · exact absurd h heZ
             · exact absurd h hec
         rw [← hRM]
-        exact (hGfrom hC'.1 ⟨by linarith [hC'.2.1], hs₂1⟩ hncy₂ (by rw [hoy₂]; linarith)
-          (by rw [hoy₂]; linarith) hnE hRa'' hfy₂).symm
+        exact (hGfrom hC'.1 ⟨by linarith [hC'.2.1], hs₂1⟩ hncy₂ (by linarith)
+          (by linarith) hnE hRa'' hfy₂).symm
     · -- (b) `s'` bounds the region before `qb`, `c` the one after
       have hdY'e : dY' = -dY := by
         rw [← hYY'] at hdY'; exact dirAt_unique hP hcA hB hdY' hdq
@@ -472,7 +462,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       · -- (iii) `qc` before `qb`: the position after `qb` is not enclosed
         have hnE : ¬ EvEncl J S₂ (oW J (qb + (sb + s₁))) := by
           refine noEncl_of_closed hP hS₂a hS₂f hZ hZK hZz hzL hLst hKqb.le ?_
-            (by rw [hoy₁]; linarith) hy₁x (fun e he q u hQ h => hgapy₁ _ ⟨e, he, q, u, hQ, rfl⟩
+            (by linarith) hy₁x (fun e he q u hQ h => hgapy₁ _ ⟨e, he, q, u, hQ, rfl⟩
               (attach_key_mem hQ).1 (attach_key_mem hQ).2 h) hEx
           intro e he heZ q u hQ h1 h2 q' u' hQ'
           by_cases hec : e = Y
@@ -492,7 +482,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
             · exact absurd h heZ
             · exact absurd h hec
         rw [← hRM]
-        exact (hGfrom hB.1 ⟨by linarith [hB.2.1], hs₁1⟩ hncy₁ (by rw [hoy₁]; linarith) hy₁x hnE
+        exact (hGfrom hB.1 ⟨by linarith [hB.2.1], hs₁1⟩ hncy₁ (by linarith) hy₁x hnE
           hRa' hfy₁).symm
       · -- (iv) `qc` after `qb`: the region after `qc` is the region before `qb`: impossible
         exfalso
@@ -510,24 +500,12 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
           hC'.2.1 hC'.2.2.1 hWa'' (show (0 : ℝ) < 1 by norm_num)
         exact faced_both_off hP hS₂a hS₂f hc hA hB hKqb hRa'' hw hC'.1 hu
           ⟨by linarith [hC'.2.1], hs₂1⟩ (by linarith) (by linarith)
-          (Or.inr (by rw [hoy₂]; linarith)) hfw hfy₂
+          (Or.inr (by linarith)) hfw hfy₂
 
 /-- **The invariant after a key with an anchored chord.**  At a key `K` of the `C₁` part carrying an
 anchored chord `Z` (attached also at offset in `(0, Lst)`) and no chord attached at offset `0`, a
 label set containing the side labels of every non-bracket chord at `K` satisfies `EvInv` at `K`. -/
-theorem evInv_anchor (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) (hNTV : NoTieV J S₂) {pK : ℕ}
-    {tK : ℝ} (hpK : pK < (chainModel J.whole).W.n) (htK0 : 0 ≤ tK) (htK1 : tK < 1)
-    (hLst : (Lst J : ℝ) ≤ oW J (pK + tK)) {Z : Set Point} (hZ : Z ∈ F₂plus J S₂)
-    (hZK : SideAttach (chainModel J.whole).W Z pK tK) {pz : ℕ} {tz : ℝ}
-    (hZz : SideAttach (chainModel J.whole).W Z pz tz) (hzL : oW J (pz + tz) < Lst J)
-    (hnp : ∀ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e pK tK →
-      ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s → oW J (q + s) ≠ 0)
-    {Λ : Set (Set Point)}
-    (hlab : ∀ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e pK tK → ¬ EvBrk J e →
-      (AftChord J S₂ pK tK e ∨ ∀ e' ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e' pK tK →
-        e' ≠ e → EvBrk J e') → EvSideLab J S₂ Λ e) :
+theorem evInv_anchor :
     EvInv J S₂ (oW J (pK + tK)) Λ := by
   intro p t hp ht hnc ho hbr
   by_cases hEx : EvEncl J S₂ (oW J (p + t))
@@ -540,15 +518,18 @@ theorem evInv_anchor (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   obtain ⟨-, -, -, -, Ra, hRa, hWa⟩ := after_region_exists hC.hM hC.hF hC.hfin hC.hg hpK htK0 htK1
   obtain ⟨s, hs0, hsε, hs1, hfy, hncy, hoy, hgapy⟩ := after_pos_eps hP hS₂a hS₂f hpK htK0 htK1 hWa
     (show 0 < oW J (p + t) - oW J (pK + tK) by linarith)
-  have hyx : oW J (pK + (tK + s)) < oW J (p + t) := by rw [hoy]; linarith
+  have hyx : oW J (pK + (tK + s)) < oW J (p + t) := by linarith
   by_cases hEy : EvEncl J S₂ (oW J (pK + (tK + s)))
   · exact anchor_caseB hP hS₂ hF hNTV hpK htK0 htK1 hLst hZ hZK hZz hzL hnp hlab hp ht hnc hbr hEx
       hG hf hs0 hs1 hncy hoy hyx hgapy hRa hWa hfy hEy
   · have hRaG : Ra = G := evGL hP hS₂a hS₂f hpK hp ⟨by linarith, hs1⟩ ht hncy hnc hyx hEy hEx
-      (fun e he q u hQ h1 h2 => hbr e he q u hQ (by rw [hoy] at h1; linarith) h2) hRa hG hfy hf
+      (fun e he q u hQ h1 h2 => hbr e he q u hQ (by linarith) h2) hRa hG hfy hf
     rw [← hRaG]
     exact anchor_caseA hP hS₂ hF hpK htK0 htK1 hLst hZ hZK hZz hzL hlab hRa hWa hncy hoy hs0 hs1
       hgapy hEy
+
+
+end
 
 end Anchor2
 

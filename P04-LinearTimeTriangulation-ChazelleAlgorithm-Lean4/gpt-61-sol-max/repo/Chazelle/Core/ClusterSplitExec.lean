@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterStepMain
 
 /-!
@@ -24,18 +26,11 @@ theorem cntIn_congr {κ κ' : ℕ → ℕ} {lo hi a b : ℕ} (h : ∀ i, lo ≤ 
     cntIn κ' lo hi a b = cntIn κ lo hi a b := by
   unfold cntIn
   congr 1
-  refine Finset.filter_congr (fun i hi' => ?_)
-  simp only [Finset.mem_Ico] at hi'
-  rw [h i hi'.1 hi'.2]
+  grind
 
 theorem SS.Regs.of_frame2 {S : SS} {c c' : Config} (h : S.Regs c)
     (hr : ∀ r, ¬ SplitRG r → r ≠ 130701 → r ≠ 130704 → c'.nreg r = c.nreg r) : S.Regs c' := by
-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19,
-    h20, h21, h22, h23, h24, h25, h26, h27, h28, h29, h30, h31, h32, h33, h34, h35, h36, h37, h38,
-    h39, h40, h41, h42, h43, h44⟩ := h
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-    ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hr _ (by unfold SplitRG; omega) (by omega) (by omega)]; assumption)
+  ram_grind
 
 /-- Pop the top entry: `tp := tp - 2`, `lo := STK[tp]`, `hi := STK[tp + 1]`. -/
 def popB : Stmt := block [.subN 130701 130701 130001, .subN 130701 130701 130001,
@@ -62,12 +57,7 @@ theorem popB_exec {S : SS} {c : Config} (hw : WordsBounded W c) (hR : S.Regs c) 
   have h1 := hR.one; have hs := hR.rSTK
   unfold popB
   exec_block
-  all_goals try (config_simp; simp only [htp, h1, hs]; omega)
-  refine ⟨rfl, ‹_›, rfl, ?_, ?_, ?_, fun r a b c d => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [htp, h1]; omega
-  · config_simp; simp only [htp, h1, hs]; rw [show tp + 2 - 1 - 1 = tp by omega]
-  · config_simp; simp only [htp, h1, hs]; rw [show tp + 2 - 1 - 1 = tp by omega]
-  · simp only [Machine.upd_apply]; split_ifs <;> omega
+  all_goals (grind [Machine.upd_apply])
 
 end proofs
 
@@ -75,23 +65,23 @@ section body
 
 variable {μ N : ℕ} {F : Type} [Fintype F] [DecidableEq F] {M : CombMap (Fin μ) F (Fin N)}
   {T : SpanTree M} {a : F → Fin N} {ha : ∀ g, M.face (a g) = g}
-  {C : CoTree (starTree T a ha)} {R : BTree} {first : Fin μ → Fin N} {preE slot : ℕ → ℕ}
-  {upT : ℕ → ℕ} {k c : ℕ} {P : Polygon} {W : ℕ}
+  {C : CoTree (starTree T a ha)} {R : BTree} {first : Fin μ → Fin N} {preE slot upT : ℕ → ℕ} {k c : ℕ} {P : Polygon} {W : ℕ}
 
+section
+variable {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} (hSF : SFacts M T a ha C R first preE slot upT k c S A0 U W m)
+include A0 U hSF
 /-- The keys of the items of a segment are preorders. -/
-theorem SFacts.key_eq {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
-    (hSF : SFacts M T a ha C R first preE slot upT k c S A0 U W m) {i : ℕ}
+theorem SFacts.key_eq {i : ℕ}
     (hv : m (S.bACT + i) < μ) :
     keyOf m S.bACT S.bFIRST S.bFPRE i = preE (m (S.bFIRST + m (S.bACT + i))) ∧
       m (S.bFIRST + m (S.bACT + i)) < N := by
   have hf := hSF.first ⟨_, hv⟩
   simp only at hf
-  have hN : m (S.bFIRST + m (S.bACT + i)) < N := by rw [hf]; exact Fin.isLt _
+  have hN : m (S.bFIRST + m (S.bACT + i)) < N := by omega
   exact ⟨by unfold keyOf; rw [hSF.pre _ hN], hN⟩
 
 /-- The good test in memory is the good test of the preorder tree. -/
-theorem SFacts.gdF_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
-    (hSF : SFacts M T a ha C R first preE slot upT k c S A0 U W m) {lo hi : ℕ}
+theorem SFacts.gdF_iff {lo hi : ℕ}
     (hlt : ∀ i, lo ≤ i → i < hi → m (S.bACT + i) < μ) {z : ℕ} (hz : z < N) :
     GdF m S.bACT S.bFIRST S.bFPRE S.bFSZ lo hi z ↔
       BTree.GdN preE (fun g => (R.sub g).card) (fun i => preE (m (S.bFIRST + m (S.bACT + i))))
@@ -99,6 +89,9 @@ theorem SFacts.gdF_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
   unfold GdF BTree.GdN
   rw [hSF.pre z hz, hSF.sz z hz,
     cntIn_congr (fun i h1 h2 => (hSF.key_eq (hlt i h1 h2)).1)]
+
+
+end
 
 open Classical in
 /-- **One iteration of the split driver.** -/
@@ -151,8 +144,8 @@ theorem splitBody_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W 
   rw [hm_def, ← hhi_eq] at hhi1
   rw [hm_def] at hm1
   have hfr1 : ∀ r, ¬ SplitRG r → r ≠ 130701 → r ≠ 130704 → c1.nreg r = cf.nreg r :=
-    fun r h1 h2 h3 => hr1 r h2 (by unfold SplitRG at h1; omega) (by unfold SplitRG at h1; omega)
-      (by unfold SplitRG at h1; omega)
+    fun r h1 h2 h3 => hr1 r h2 (by grind [SplitRG]) (by grind [SplitRG])
+      (by grind [SplitRG])
   have hR1 : S.Regs c1 := hR.of_frame2 hfr1
   -- the median and the window
   have hhalf : m (S.bHALF + (hi - lo)) = (hi - lo) / 2 := hSF.half _ (by omega)
@@ -164,16 +157,16 @@ theorem splitBody_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W 
   simp only at hlev0 hlevlt
   obtain ⟨c2, k2, x2, hk2, hw2, hm2, hW2, hy2, hb2, ht2, hlo2, hhi2, hr2, hrr2, hrm2, ho2⟩ :=
     medB_exec (P := P) hw1 hR1 hlo1 hhi1 (by omega)
-      (by rw [hm1, hhalf]; omega)
-      (by rw [hm1, hhalf, show (hi - lo) / 2 + lo = lo + (hi - lo) / 2 by omega]; omega)
-      (by omega) (by rw [hm1]; omega) (by rw [hm1, hlev0]; omega) (by rw [hm1, hlev0]; omega)
+      (by grind)
+      (by grind)
+      (by omega) (by grind) (by rw [hm1, hlev0]; omega) (by rw [hm1, hlev0]; omega)
   rw [hm1] at hy2 hb2 ht2
   rw [hhalf, show (hi - lo) / 2 + lo = lo + (hi - lo) / 2 by omega] at hy2
   have hR2 : S.Regs c2 := hR1.of_frame hr2
   set y := m (S.bFIRST + m (S.bACT + (lo + (hi - lo) / 2))) with hy_def
   set lbot := m (S.bLBOT + m (S.bLEV + m (S.bACT + lo))) with hlbot
   set ltop := m (S.bLTOP + m (S.bLEV + m (S.bACT + lo))) with hltop
-  have hm2' : c2.nmem = m := by rw [hm2, hm1]
+  have hm2' : c2.nmem = m := by grind
   -- the climb
   have hCtx : ClimbCtx c2 lo hi S.bACT S.bFIRST S.bFPRE S.bPOW S.L S.bFSZ S.bUP S.L S.N :=
     ⟨hR2.one, hR2.zero, hlo2, hhi2, hR2.cACT, hR2.cFIRST, hR2.cFPRE, hR2.cPOW, hR2.cLP, hW2,
@@ -184,11 +177,11 @@ theorem splitBody_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W 
   have hcp := hSF.cpMem
   have hupN : ∀ g, g < N → R.up g < N := by
     intro g hg
-    rw [hSF.R_up ⟨g, hg⟩]; exact Fin.isLt _
+    rw [hSF.R_up ⟨g, hg⟩]; omega
   have hupit : ∀ n g, g < N → R.up^[n] g < N := by
     intro n; induction n with
     | zero => intro g hg; exact hg
-    | succ n ih => intro g hg; rw [Function.iterate_succ_apply]; exact ih _ (hupN g hg)
+    | succ n ih => intro g hg; rw [Function.iterate_succ_apply]; grind
   have hCM : ClimbMem c2.nmem W lo hi S.bACT S.bFIRST S.bFPRE S.bPOW S.L S.bFSZ S.bUP S.L S.N
       R.up := by
     rw [hm2']
@@ -197,27 +190,27 @@ theorem splitBody_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W 
       fun j hj g hg => ?_, by omega⟩
     · have := hkey i i1 i2; have := hactμ i i1 i2; omega
     · have := hcp.prsz z hz; omega
-    · rw [hN] at hg ⊢; exact hupN g hg
+    · grind
     · rw [hN] at hg ⊢; exact hSF.up_tab j hj g hg
   have hyN : y < N := (hkey _ hmed.1 hmed.2).2
   have hRn := hSF.R_n
   have hroot : GdF c2.nmem S.bACT S.bFIRST S.bFPRE S.bFSZ lo hi (R.up^[2 ^ S.L] y) := by
-    have hyR : y < R.n := by rw [hRn]; exact hyN
+    have hyR : y < R.n := by omega
     have hpos := (hSF.R_ok.pos_spec hyR).1
     rw [BTree.iterate_up_root hSF.R_ok hyR (by omega), hm2', hSF.R_root,
       hSF.gdF_iff (fun i i1 i2 => hactμ i i1 i2) (by omega), ← hSF.R_root]
     exact BTree.good_root hSF.R_ok hSF.R_pre
       (φ := fun i => m (S.bFIRST + m (S.bACT + i)))
-      (fun i i1 i2 => ⟨by rw [hRn]; exact (hkey i i1 i2).2, rfl⟩) (by omega)
+      (fun i i1 i2 => ⟨by grind, rfl⟩) (by omega)
   obtain ⟨c3, k3, x3, hk3, hm3, hr3, hrr3, hrm3, ho3, hf3, hres3⟩ :=
-    climbStmt_exec (P := P) hw2 hCtx hCM hy2 (by rw [hN]; exact hyN) hSF.L_pos hroot
+    climbStmt_exec (P := P) hw2 hCtx hCM hy2 (by omega) hSF.L_pos hroot
   rw [hm2'] at hres3
-  have hm3' : c3.nmem = m := by rw [hm3, hm2']
+  have hm3' : c3.nmem = m := by grind
   have hfr3 : ∀ r, ¬ SplitRG r → c3.nreg r = c2.nreg r := fun r h => hr3 r (fun h' => h (by
     unfold ClimbRG GoodRG at h'; unfold SplitRG; omega))
   have hR3 : S.Regs c3 := hR2.of_frame hfr3
   set f := c3.nreg 130344 with hf_def
-  have hfN : f < N := by rw [← hN]; exact hf3
+  have hfN : f < N := by omega
   -- the centroid
   have hgd : ∀ z, z < N → (GdF m S.bACT S.bFIRST S.bFPRE S.bFSZ lo hi z ↔
       BTree.GdN preE (fun g => (R.sub g).card) (fun i => preE (m (S.bFIRST + m (S.bACT + i))))
@@ -270,25 +263,25 @@ theorem splitBody_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W 
   obtain ⟨c4, k4, x4, hk4, hw4, hq4, hnsp4, hr4, hrr4, hrm4, ho4⟩ :=
     splitTail_exec (P := P) x3.wb_right hR3 hL (lo := lo) (hi := hi) (lbot := lbot) (ltop := ltop)
       (f := f) (tp := 2 * rest.length) (nsp := nsp) (up := upT)
-      (by rw [hr3 _ (by unfold ClimbRG GoodRG; omega)]; exact hlo2)
-      (by rw [hr3 _ (by unfold ClimbRG GoodRG; omega)]; exact hhi2)
-      (by rw [hr3 _ (by unfold ClimbRG GoodRG; omega)]; exact hb2)
-      (by rw [hr3 _ (by unfold ClimbRG GoodRG; omega)]; exact ht2) rfl
-      (by rw [hr3 _ (by unfold ClimbRG GoodRG; omega), hr2 _ (by unfold SplitRG; omega)]; exact htp1)
-      (by rw [hr3 _ (by unfold ClimbRG GoodRG; omega), hr2 _ (by unfold SplitRG; omega),
+      (by ram_simp)
+      (by ram_simp)
+      (by rw [hr3 _ (by omega_nf)]; exact hb2)
+      (by rw [hr3 _ (by omega_nf)]; exact ht2) rfl
+      (by ram_simp)
+      (by rw [hr3 _ (by omega_nf), hr2 _ (by omega_nf),
         hr1 _ (by omega) (by omega) (by omega) (by omega)]; exact hnsp)
-      hlh (by rw [hμ]; exact hhi) (by rw [hN]; exact hfN)
+      hlh (by omega) (by omega)
       (by rw [hm3']; exact hSF.markMem)
       (fun d hd => by
-        rw [hm3', hSF.vert ⟨d, by rw [← hN]; exact hd⟩, hμ]; exact Fin.isLt _)
-      (by rw [hm3', hSF.opp ⟨f, hfN⟩, hN]; exact Fin.isLt _)
-      (by rw [hm3', hSF.att ⟨f, hfN⟩, hN]; exact Fin.isLt _)
+        rw [hm3', hSF.vert ⟨d, by omega⟩, hμ]; omega)
+      (by rw [hm3', hSF.opp ⟨f, hfN⟩, hN]; omega)
+      (by rw [hm3', hSF.att ⟨f, hfN⟩, hN]; omega)
       (by rw [hm3']; exact hcp)
-      (by rw [hm3', hSF.fp ⟨f, hfN⟩, hN]; exact Fin.isLt _)
+      (by rw [hm3', hSF.fp ⟨f, hfN⟩, hN]; omega)
       (fun v hv => by
-        have := hSF.first ⟨v, by rw [← hμ]; exact hv⟩
+        have := hSF.first ⟨v, by omega⟩
         simp only at this
-        rw [hm3', this, hN]; exact Fin.isLt _)
+        rw [hm3', this, hN]; omega)
       (fun i i1 i2 => by rw [hm3', hμ]; exact hactμ i i1 i2)
       (by rw [hm3']; exact hsum)
       (by omega) hnspW
@@ -311,9 +304,9 @@ theorem splitBody_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W 
     rw [e]; exact hstat
   · intro r h1 h2 h3
     rw [hr4 r h1 h2 h3, hfr3 r h1, hr2 r h1, hfr1 r h1 h2 h3]
-  · rw [hrr4, hrr3, hrr2, hrr1]
-  · rw [hrm4, hrm3, hrm2, hrm1]
-  · rw [ho4, ho3, ho2, ho1]
+  · ram_simp
+  · ram_simp
+  · ram_simp
 
 end body
 

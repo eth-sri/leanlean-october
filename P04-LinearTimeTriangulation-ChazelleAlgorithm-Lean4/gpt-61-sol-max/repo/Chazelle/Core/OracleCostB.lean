@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleCostQ
 
 /-!
@@ -24,8 +26,11 @@ def NCof (w : ℕ) : ℕ := 5 * (1132 * (w + 11) + 40) + 40
 variable {P : Polygon} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host} {C : Chain} {N : NF}
   {B : BookData} {k : ℕ}
 
+section
+variable (h : QAt P m O E V H C N B k)
+include h
 /-- The number of arcs of the region of a node, and its arcs. -/
-theorem QAt.nodeNa_eq (h : QAt P m O E V H C N B k) {u : ℕ} (hu : u < V.A) :
+theorem QAt.nodeNa_eq {u : ℕ} (hu : u < V.A) :
     nodeNa m V u = (N.region (rgi N u)).arcs.length ∧ rgi N u < N.regions.length ∧
       ∀ t, t < nodeNa m V u → nodeArc m V u t = (N.region (rgi N u)).arcs.getD t 0 := by
   have hN := h.isNF
@@ -45,10 +50,10 @@ theorem QAt.nodeNa_eq (h : QAt P m O E V H C N B k) {u : ℕ} (hu : u < V.A) :
     unfold nodeNa; rw [hr, ← hm.RB]; exact hna
   refine ⟨hna', hrR, fun t ht => ?_⟩
   rw [hna'] at ht
-  unfold nodeArc nodeLs; rw [hr, ← hm.RB, ← hm.LB]; exact hlist t ht
+  unfold nodeArc nodeLs; rw [hr, ← hm.RB, ← hm.LB]; simp_all
 
 /-- The walk edges scanned for an arc record, from the normal form. -/
-theorem QAt.arcLen_eq (h : QAt P m O E V H C N B k) {j : ℕ} (hj : j < V.A) :
+theorem QAt.arcLen_eq {j : ℕ} (hj : j < V.A) :
     arcLenM m V j = scanLenR N (2 * V.m + 7) N.arcs.length (arcPos m V j) ∧
       arcPos m V j < N.arcs.length := by
   have hm := h.nodeMem
@@ -59,7 +64,7 @@ theorem QAt.arcLen_eq (h : QAt P m O E V H C N B k) {j : ℕ} (hj : j < V.A) :
   rw [hsj, ← h.hA, arcSe_eq hm hj, arcEe_eq hm hj]
 
 /-- **The cost of the scan of a node.** -/
-theorem QAt.nodeCost_le (h : QAt P m O E V H C N B k) (hP : C.P.Simple) {u : ℕ} :
+theorem QAt.nodeCost_le (hP : C.P.Simple) {u : ℕ} :
     nodeCost m V u ≤ NCof (min (m (O + 2)) (2 * V.m + 7)) := by
   have hC := h.canon
   have hVm : V.m = C.m := by
@@ -78,21 +83,16 @@ theorem QAt.nodeCost_le (h : QAt P m O E V H C N B k) (hP : C.P.Simple) {u : ℕ
     have hjA := ((h.qmem (W := E) le_rfl).node u hu).2.2.2.2 i hi.2
     obtain ⟨e1, e2⟩ := h.arcLen_eq hjA.1
     obtain ⟨b1, b2⟩ := scanLen_le hP hC e2
-    have hb : arcLenM m V (nodeArc m V u i) ≤ min (m (O + 2)) (2 * V.m + 7) + 10 := by
-      rw [e1, hVm]
-      rcases le_total (m (O + 2)) (2 * C.m + 7) with hh | hh
-      · rw [min_eq_left hh]; omega
-      · rw [min_eq_right hh]; omega
-    omega
+    grind
   unfold nodeCostFrom
   have := Finset.sum_le_card_nsmul _ _ _ hterm
   rw [Nat.card_Ico, Nat.sub_zero, smul_eq_mul] at this
-  have h5' : nodeNa m V u ≤ 5 := by rw [hna]; exact h5
+  have h5' : nodeNa m V u ≤ 5 := by omega
   have := Nat.mul_le_mul_right (1132 * (min (m (O + 2)) (2 * V.m + 7) + 11) + 40) h5'
   omega
 
 /-- The flagged nodes are at most the length of the list of `D*`. -/
-theorem QAt.flagged_le (h : QAt P m O E V H C N B k) :
+theorem QAt.flagged_le :
     ((Finset.range V.μ).filter fun v => m (V.FL + v) = 1).card ≤ V.nD := by
   classical
   calc ((Finset.range V.μ).filter fun v => m (V.FL + v) = 1).card
@@ -101,12 +101,12 @@ theorem QAt.flagged_le (h : QAt P m O E V H C N B k) :
         intro v hv
         rw [Finset.mem_filter, Finset.mem_range] at hv
         obtain ⟨i, hi, hiv⟩ := h.dl_all v hv.1 hv.2
-        exact Finset.mem_image.2 ⟨i, Finset.mem_range.2 hi, hiv⟩
+        grind
     _ ≤ (Finset.range V.nD).card := Finset.card_image_le
     _ = V.nD := Finset.card_range _
 
 /-- **A cluster has at most `8 k²` nodes.** -/
-theorem QAt.clusSize_le (h : QAt P m O E V H C N B k) (l : ℕ) : clusSize m V l ≤ 8 * k ^ 2 := by
+theorem QAt.clusSize_le (l : ℕ) : clusSize m V l ≤ 8 * k ^ 2 := by
   classical
   unfold clusSize
   have hsplit := Finset.card_filter_add_card_filter_not
@@ -114,16 +114,16 @@ theorem QAt.clusSize_le (h : QAt P m O E V H C N B k) (l : ℕ) : clusSize m V l
   have h1 : (((Finset.range V.μ).filter fun u => lab m V u = l).filter
       fun v => m (V.FL + v) = 1).card ≤ V.nD := by
     refine le_trans (Finset.card_le_card ?_) h.flagged_le
-    intro v hv; simp only [Finset.mem_filter] at hv ⊢; exact ⟨hv.1.1, hv.2⟩
+    grind
   have h2 : (((Finset.range V.μ).filter fun u => lab m V u = l).filter
       fun v => ¬ m (V.FL + v) = 1).card ≤ k ^ 2 := by
     refine le_trans (Finset.card_le_card ?_) (h.clus l)
-    intro v hv; simp only [Finset.mem_filter] at hv ⊢; exact ⟨hv.1.1, hv.2, hv.1.2⟩
+    intro v hv; simp_all [Finset.mem_filter] <;> omega_nf
   have := h.nD_le
   omega
 
 /-- **The cost of the scan of `D*`.** -/
-theorem QAt.dstarCost_le (h : QAt P m O E V H C N B k) (hP : C.P.Simple) :
+theorem QAt.dstarCost_le (hP : C.P.Simple) :
     dstarCost m V ≤ 7 * k ^ 2 * (NCof (min (m (O + 2)) (2 * V.m + 7)) + 6) + 4 := by
   unfold dstarCost dstarCostFrom
   have := Finset.sum_le_card_nsmul (Finset.Ico 0 V.nD) (fun t => nodeCost m V (m (V.DL + t)) + 6)
@@ -132,6 +132,9 @@ theorem QAt.dstarCost_le (h : QAt P m O E V H C N B k) (hP : C.P.Simple) :
   rw [Nat.card_Ico, Nat.sub_zero, smul_eq_mul] at this
   have := Nat.mul_le_mul_right (NCof (min (m (O + 2)) (2 * V.m + 7)) + 6) h.nD_le
   omega
+
+
+end
 
 end
 

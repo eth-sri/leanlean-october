@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseDegPos
 public import Chazelle.Core.FuseMath
 
@@ -72,8 +74,8 @@ theorem chord_transfer (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple)
     · rcases hqb.lt_or_eq with h2 | h2
       · exact absurd (by rw [show q = (q.1, y) from Prod.ext rfl hq2]; exact hH.open_mem q.1 h1 h2)
           hqd
-      · right; exact Prod.ext h2 hq2
-    · left; exact Prod.ext h1.symm hq2
+      grind
+    grind
   have hpt : sidePt W ((g + d) % W.n) t = q := hA.sidePt_eq hd t
   have hleft := hA.sideLeft_eq hn hn' hd hdt'
   by_cases hv : q = J.shared
@@ -92,14 +94,14 @@ theorem chord_transfer (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple)
         · intro e; have := congrArg Prod.fst e; simp only [rayPt] at this; linarith
         · rw [dist_rayPt _ (Or.inl rfl) hε0.le]; exact hεr
         · rw [hqa, hceq]
-          exact Merge.shoot_subset_pos J.whole hab (by rw [← hr]; exact (hends c hcS).2)
+          exact Merge.shoot_subset_pos J.whole hab (by grind)
       · refine ⟨-1, Or.inr rfl, (sideLeft_rayPt hε0).1 (hsec _ ?_ ?_ ?_), ?_⟩
         · show rayPt q (-1) ε ∈ c
           rw [hceq, hqb]; refine ⟨rfl, ?_, ?_⟩ <;> simp only [rayPt] <;> linarith
         · intro e; have := congrArg Prod.fst e; simp only [rayPt] at this; linarith
         · rw [dist_rayPt _ (Or.inr rfl) hε0.le]; exact hεr
         · rw [hqb, hceq]
-          exact Merge.shoot_subset_neg J.whole hab (by rw [← hl]; exact (hends c hcS).1)
+          exact Merge.shoot_subset_neg J.whole hab (by grind)
     have hl2 : sideLeft W ((g + d) % W.n) t (rayPt (sidePt W ((g + d) % W.n) t) σ 1) := by
       rw [hleft, hpt]; exact hdir
     have hm₁ : J.m₁ ≤ J.whole.m := by rw [Merge.Junction.whole_m]; omega
@@ -108,35 +110,34 @@ theorem chord_transfer (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple)
       (by rw [hvq]; exact J.whole.vertex_snd_le_top hm₁) hl2
     rw [hvq] at hfree hAt
     refine ⟨_, hshared ⟨σ, hσ, hfree, rfl⟩, hAt, ?_⟩
-    have e : J.whole.vertex J.m₁ = q := hv.symm
+    
     show Merge.shoot J.whole (J.whole.vertex J.m₁) σ ⊆ c
-    rw [e]; exact hsubc
+    grind
   · obtain ⟨hL, hR⟩ := hend _ hcS
     rcases hqe with hqa | hqb
-    · obtain ⟨e, he, hqe, hec⟩ := hL (by rw [hl, ← hqa]; exact hv)
+    · obtain ⟨e, he, hqe, hec⟩ := hL (by grind)
       rw [hl, ← hqa] at hqe
       exact ⟨e, he, hA.sideAttach_subset hn hn' hd hdt' hc hec hqe, hec⟩
-    · obtain ⟨e, he, hqe, hec⟩ := hR (by rw [hr, ← hqb]; exact hv)
+    · obtain ⟨e, he, hqe, hec⟩ := hR (by grind)
       rw [hr, ← hqb] at hqe
       exact ⟨e, he, hA.sideAttach_subset hn hn' hd hdt' hc hec hqe, hec⟩
 
 
+section
+variable {M : Model} (hM : WalkAx M)
+include hM
 /-- The endpoints of an admissible chord are its only points off the domain. -/
-theorem seg_end {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
+theorem seg_end {c : Set Point} (hc : c ∈ M.Adm) :
     ∃ u w : Point, c = Chazelle.segment u w ∧ ∀ z ∈ c, z ∉ M.D → z = u ∨ z = w := by
   obtain ⟨u, w, -, hcuw, -, hopc, -, -⟩ := hM.ends c hc
   refine ⟨u, w, hcuw, fun z hz hzD => ?_⟩
   rw [hcuw] at hz
   obtain ⟨s, hs0, hs1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hz
-  rcases hs0.lt_or_eq with h0 | h0
-  · rcases hs1.lt_or_eq with h1 | h1
-    · exact absurd (hopc s ⟨h0, h1⟩) hzD
-    · right; rw [h1, Geometry.lerp_one]
-  · left; rw [← h0, Geometry.lerp_zero]
+  grind [Geometry.lerp_one, Geometry.lerp_zero]
 
 /-- An admissible chord contained in another and containing both of its endpoints is equal to
 it. -/
-theorem eq_of_ends {M : Model} (hM : WalkAx M) {f c : Set Point} (hf : f ∈ M.Adm)
+theorem eq_of_ends {f c : Set Point} (hf : f ∈ M.Adm)
     (hfc : f ⊆ c) {u w : Point} (hcuw : c = Chazelle.segment u w) (hu : u ∈ f) (hw : w ∈ f) :
     f = c := by
   obtain ⟨a, b, -, hfab, -⟩ := hM.ends f hf
@@ -144,9 +145,15 @@ theorem eq_of_ends {M : Model} (hM : WalkAx M) {f c : Set Point} (hf : f ∈ M.A
   rw [hcuw]
   exact Geometry.segment_subset_of_convex (hfab ▸ Geometry.segment_convex a b) hu hw
 
+
+end
+
+section
+variable (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple)
+include hP hP'
 /-- **The core of `one_piece`**: no chord of `Sᵢ` separates the side positions of two non-cut
 positions of a piece faced by one region of `S'`. -/
-theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : Polygon}
+theorem one_piece_core {Q : Polygon}
     {Si S' : Set (Set Point)} (hSi : (chainModel C').ChordFamily Q Si)
     (hS'A : S' ⊆ (chainModel J.whole).Adm) (hS' : S'.Finite)
     (hend : ∀ c ∈ Si, (Merge.lend c ≠ J.shared → ∃ e ∈ S', Merge.lend c ∈ e ∧ e ⊆ c) ∧
@@ -221,7 +228,7 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
     have hoA : off n' g' (pa + ta) = dA + ta := off_key' hg' hA'.1 hA'.2.1 hA'.2.2.1
     rw [hoA] at h1 h2
     have hdAL : dA < L := hdL hA'.2.1 h2
-    have hA'' : SideAttach M'.W c ((g' + dA) % n') ta := by rw [hpa]; exact hA'
+    have hA'' : SideAttach M'.W c ((g' + dA) % n') ta := by grind
     have hdA0 : (0 : ℝ) < dA + ta := by linarith [ht₁.1, (Nat.cast_nonneg d₁ : (0 : ℝ) ≤ d₁)]
     obtain ⟨f, hf, hAf, hfc⟩ := chord_transfer J hP hP' hSi.2.1 hend hends hshared hA hdAL
       hA'.2.1 hA'.2.2.1 hdA0 hc hA''
@@ -239,14 +246,14 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
       have hf1 : (pf : ℝ) + tf ≠ k₁ := fun h => hc₁ ⟨f, hf, pf, tf, hBf, h.symm⟩
       have hf2 : (pf : ℝ) + tf ≠ k₂ := fun h => hc₂ ⟨f, hf, pf, tf, hBf, h.symm⟩
       have hlo' : d₁ + t₁ < off n g (pf + tf) := lt_of_le_of_ne hlo fun h =>
-        hf1 (off_inj (Nat.cast_nonneg g) hgR hKF.1 hKF.2 hK₁.1 hK₁.2 (by rw [ho₁]; exact h.symm))
+        hf1 (off_inj (Nat.cast_nonneg g) hgR hKF.1 hKF.2 hK₁.1 hK₁.2 (by grind))
       have hhi' : off n g (pf + tf) < d₂ + t₂ := lt_of_le_of_ne hhi fun h =>
-        hf2 (off_inj (Nat.cast_nonneg g) hgR hKF.1 hKF.2 hK₂.1 hK₂.2 (by rw [ho₂]; exact h))
+        hf2 (off_inj (Nat.cast_nonneg g) hgR hKF.1 hKF.2 hK₂.1 hK₂.2 (by grind))
       set dF := dOf n g pf with hdF
       have hpf : (g + dF) % n = pf := add_dOf hg hBf.1
       rw [hofk] at hlo' hhi'
       have hdFL : dF < L := hdL hBf.2.1 hhi'
-      have hBf' : SideAttach M.W f ((g + dF) % n) tf := by rw [hpf]; exact hBf
+      have hBf' : SideAttach M.W f ((g + dF) % n) tf := by grind
       have hdF1 : tf = 0 → 1 ≤ dF := by
         intro h0
         rw [h0, add_zero] at hlo'
@@ -264,9 +271,9 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
       have hzF := hends2 _ (hfc hBi.2.2.2.1)
         (hM'.trace _ hBi.1 tf hBi.2.1 hBi.2.2.1.le)
       have hAF : sidePt M'.W pa ta ≠ sidePt M'.W ((g' + dF) % n') tf := by
-        rw [← hptF, hpf, ← hpa, ← hptA]; exact Ne.symm hBfne
+        grind
       have hBF : sidePt M'.W pb tb = sidePt M'.W ((g' + dF) % n') tf := by
-        rcases hzA with h | h <;> rcases hzB with h' | h' <;> rcases hzF with h'' | h''
+        rcases hzA with h | h <;> grind <;> rcases hzF with h'' | h''
         all_goals first | exact h'.trans h''.symm | (exfalso; exact hne (h.trans h'.symm)) |
           (exfalso; exact hAF (h.trans h''.symm))
       -- `f` contains both ends of `c`, so `f = c`
@@ -275,10 +282,10 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
       have hFf : sidePt M'.W ((g' + dF) % n') tf ∈ f := hBi.2.2.2.1
       have hfeq : f = c := by
         rcases hzA with h | h <;> rcases hzF with h'' | h''
-        · exact absurd (h.trans h''.symm) hAF
+        · grind
         · exact eq_of_ends hM (hS'A hf) hfc hcuw (h ▸ hAf') (h'' ▸ hFf)
         · exact eq_of_ends hM (hS'A hf) hfc hcuw (h'' ▸ hFf) (h ▸ hAf')
-        · exact absurd (h.trans h''.symm) hAF
+        grind
       rw [hfeq] at hBi
       obtain ⟨hpb, htb⟩ := hM'.attach_unique (hSi.2.1 hc) hB' hBi hBF
       have hoB : off n' g' (pb + tb) = dF + tf := by
@@ -287,15 +294,15 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
       have hKB' := hkey hB'.1 hB'.2.1 hB'.2.2.1
       have hsame := off_same_side_in (Nat.cast_nonneg g') hg'R hKA'.1 hKA'.2 hKB'.1 hKB'.2
         hK₁'.1 hK₁'.2 hK₂'.1 hK₂'.2 (Chazelle.Core.WalkAx.key_ne_of_pt_ne hA' hB' hne)
-        ⟨by rw [ho₁', hoA]; exact h1, by rw [ho₂', hoA]; exact h2⟩
-        ⟨by rw [ho₁', hoB]; exact hlo', by rw [ho₂', hoB]; exact hhi'⟩
-      exact iff_not_self (hsame.symm.trans hiff)
+        ⟨by grind, by grind⟩
+        ⟨by grind, by grind⟩
+      grind
     -- so `f` separates the two positions in the walk of `C`
     have hsepf : M.Separates f k₁ k₂ := by
       refine ⟨(g + dA) % n, pf, ta, tf, hAf, hBf, Ne.symm hBfne, ?_⟩
       exact off_sep (Nat.cast_nonneg g) hgR hKA.1 hKA.2 hKF.1 hKF.2 hK₁.1 hK₁.2 hK₂.1 hK₂.2
-        ⟨by rw [ho₁, hoA_W]; exact h1, by rw [ho₂, hoA_W]; exact h2⟩
-        (by rw [ho₁, ho₂]; exact hof)
+        ⟨by grind, by grind⟩
+        (by grind)
     exact ((hM.eq_iff_not_separates hS'A hS' hR hR (Nat.mod_lt _ hn) (Nat.mod_lt _ hn) ht₁ ht₂
       hc₁ hc₂ hf₁ hf₂).1 rfl) f hf hsepf
   obtain ⟨pa, pb, ta, tb, hA', hB', hne, hiff⟩ := hsep
@@ -315,7 +322,7 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
   · refine inside hB' hA' (Ne.symm hne) ?_ hin'.1 hin'.2
     rw [sideInArc_compl (Ne.symm hAB) (Ne.symm hB1) (Ne.symm hA1),
       sideInArc_compl (Ne.symm hAB) (Ne.symm hB2) (Ne.symm hA2)]
-    exact not_congr hiff
+    grind
   have hA1' := hoffne hKA'.1 hKA'.2 hK₁'.1 hK₁'.2 hA1
   have hA2' := hoffne hKA'.1 hKA'.2 hK₂'.1 hK₂'.2 hA2
   have hB1' := hoffne hKB'.1 hKB'.2 hK₁'.1 hK₁'.2 hB1
@@ -323,7 +330,7 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
   rw [ho₁'] at hA1' hB1'
   rw [ho₂'] at hA2' hB2'
   have hsame := off_same_side (Nat.cast_nonneg g') hg'R hKA'.1 hKA'.2 hKB'.1 hKB'.2
-    hK₁'.1 hK₁'.2 hK₂'.1 hK₂'.2 hAB (by rw [ho₁', ho₂']; exact hlt.le)
+    hK₁'.1 hK₁'.2 hK₂'.1 hK₂'.2 hAB (by grind)
     (by
       rw [ho₁', ho₂']
       by_contra h; push Not at h
@@ -332,11 +339,11 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
       rw [ho₁', ho₂']
       by_contra h; push Not at h
       exact hin' ⟨lt_of_le_of_ne h.1 (Ne.symm hB1'), lt_of_le_of_ne h.2 hB2'⟩)
-  exact iff_not_self (hsame.symm.trans hiff)
+  grind
 
 
 /-- A non-cut position of a piece has a non-cut side position. -/
-theorem side_not_cut (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple)
+theorem side_not_cut
     {Si S' : Set (Set Point)} (hsub : Si ⊆ Merge.augChords C')
     (hend : ∀ c ∈ Si, (Merge.lend c ≠ J.shared → ∃ e ∈ S', Merge.lend c ∈ e ∧ e ⊆ c) ∧
       (Merge.rend c ≠ J.shared → ∃ e ∈ S', Merge.rend c ∈ e ∧ e ⊆ c))
@@ -353,13 +360,12 @@ theorem side_not_cut (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple)
     ht.2 (by have := ht.1; positivity) hc₀ hA₀
   exact hnc ⟨f, hf, _, t, hAf, rfl⟩
 
+
+end
+
 theorem separates_symm {M : Model} {c : Set Point} {x y : ℝ} (h : M.Separates c x y) :
     M.Separates c y x := by
-  obtain ⟨pa, pb, ta, tb, hA, hB, hne, hiff⟩ := h
-  refine ⟨pa, pb, ta, tb, hA, hB, hne, ?_⟩
-  constructor
-  · intro hy hx; exact (hiff.1 hx) hy
-  · intro hx; by_contra hy; exact hx (hiff.2 hy)
+  core_grind
 
 /-- **One region of `Sᵢ` per piece**: two non-cut positions of a piece faced by one region of
 `S'` have side positions facing one region of `Sᵢ`. -/
@@ -393,7 +399,7 @@ theorem one_piece (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : Polygo
       hc₁ hc₂ hf₁ hf₂ hc hsep
   · obtain ⟨rfl, rfl⟩ := Chazelle.Chain.sideKey_inj ht₁.1.le ht₁.2 ht₂.1.le ht₂.2 h
     obtain ⟨pa, pb, ta, tb, hA0, hB0, hne0, hiff0⟩ := hsep
-    exact iff_not_self hiff0
+    grind
   · exact one_piece_core J hP hP' hSi hS'A hS' hend hends hshared hpc hR hd₂ hd₁ ht₂ ht₁ h
       hc₂ hc₁ hf₂ hf₁ hc (separates_symm hsep)
 
@@ -409,17 +415,12 @@ structure SideOK (C' : Chain) (Q : Polygon) (Si S' : Set (Set Point)) : Prop whe
   adm : S' ⊆ (chainModel J.whole).Adm
   fin : S'.Finite
 
+section
+variable (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set Point)} (hS : SideOK J C' Q Si S') {g g' L : ℕ} (hpc : PieceAt J C' g g' L) {R : Set Point} (hR : R ∈ (chainModel J.whole).regions S') {d₀ : ℕ} {t₀ : ℝ} (hd₀ : d₀ < L) (ht₀ : t₀ ∈ Ioo (0 : ℝ) 1) (hnc₀ : ¬ (chainModel J.whole).IsCut S' (((g + d₀) % (chainModel J.whole).W.n : ℕ) + t₀)) (hf₀ : (chainModel J.whole).Faces ((g + d₀) % (chainModel J.whole).W.n) t₀ R) {U : Set Point} (hU : U ∈ (chainModel C').regions Si) (hg₀ : (chainModel C').Faces ((g' + d₀) % (chainModel C').W.n) t₀ U) {d : ℕ} {t : ℝ} (hd : d < L)
+include hP Q Si hS L hpc hR d₀ t₀ hd₀ ht₀ hnc₀ hf₀ hU hg₀ hd
 /-- A faced non-cut position of a piece has its side position facing the region `U` of `Sᵢ`
 faced at one reference position. -/
-theorem faces_ref (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set Point)}
-    (hS : SideOK J C' Q Si S') {g g' L : ℕ} (hpc : PieceAt J C' g g' L) {R : Set Point}
-    (hR : R ∈ (chainModel J.whole).regions S') {d₀ : ℕ} {t₀ : ℝ} (hd₀ : d₀ < L)
-    (ht₀ : t₀ ∈ Ioo (0 : ℝ) 1)
-    (hnc₀ : ¬ (chainModel J.whole).IsCut S' (((g + d₀) % (chainModel J.whole).W.n : ℕ) + t₀))
-    (hf₀ : (chainModel J.whole).Faces ((g + d₀) % (chainModel J.whole).W.n) t₀ R)
-    {U : Set Point} (hU : U ∈ (chainModel C').regions Si)
-    (hg₀ : (chainModel C').Faces ((g' + d₀) % (chainModel C').W.n) t₀ U)
-    {d : ℕ} {t : ℝ} (hd : d < L) (ht : t ∈ Ioo (0 : ℝ) 1)
+theorem faces_ref (ht : t ∈ Ioo (0 : ℝ) 1)
     (hnc : ¬ (chainModel J.whole).IsCut S' (((g + d) % (chainModel J.whole).W.n : ℕ) + t))
     (hf : (chainModel J.whole).Faces ((g + d) % (chainModel J.whole).W.n) t R) :
     (chainModel C').Faces ((g' + d) % (chainModel C').W.n) t U := by
@@ -435,15 +436,7 @@ theorem faces_ref (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set
 /-- **The positions of type (I)**: at a position of a piece next to which `R` is faced and at
 whose side position a chord of `Sᵢ` is attached, some exit chord of the region `U` of `Sᵢ` faced
 by `R`'s positions in the piece is attached. -/
-theorem piece_I (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set Point)}
-    (hS : SideOK J C' Q Si S') {g g' L : ℕ} (hpc : PieceAt J C' g g' L) {R : Set Point}
-    (hR : R ∈ (chainModel J.whole).regions S') {d₀ : ℕ} {t₀ : ℝ} (hd₀ : d₀ < L)
-    (ht₀ : t₀ ∈ Ioo (0 : ℝ) 1)
-    (hnc₀ : ¬ (chainModel J.whole).IsCut S' (((g + d₀) % (chainModel J.whole).W.n : ℕ) + t₀))
-    (hf₀ : (chainModel J.whole).Faces ((g + d₀) % (chainModel J.whole).W.n) t₀ R)
-    {U : Set Point} (hU : U ∈ (chainModel C').regions Si)
-    (hg₀ : (chainModel C').Faces ((g' + d₀) % (chainModel C').W.n) t₀ U)
-    {d : ℕ} {t : ℝ} (hd : d < L) (ht0 : 0 ≤ t) (ht1 : t < 1) (hdt : 0 < (d : ℝ) + t)
+theorem piece_I (ht0 : 0 ≤ t) (ht1 : t < 1) (hdt : 0 < (d : ℝ) + t)
     (hne : S'.Nonempty)
     (hadj : Adj (chainModel J.whole) S' R ((g + d) % (chainModel J.whole).W.n) t)
     {c : Set Point} (hc : c ∈ Si)
@@ -469,8 +462,8 @@ theorem piece_I (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set P
         self_mem_nhdsWithin, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 - t by linarith)]
         with s hs1 hs2 hs3 hs4
       have hs0 : (0 : ℝ) < s := hs3
-      refine hfaced hd ⟨by linarith, by linarith [hs4.2]⟩ ?_ hs1
-      rw [← add_assoc]; exact hs2
+      refine hfaced hd ⟨by linarith, by grind⟩ ?_ hs1
+      grind
     obtain ⟨r', harc'⟩ := arc_start_of_faced hM' hS.fam.2.1 hS.fam.1 hc hcA hU h2
     obtain ⟨c', hc', p₁, t₁, hA₁, hk⟩ :=
       hM'.exists_exit_at_start hS.fam.2.1 hS.fam.1 ⟨c, hc⟩ hU harc'
@@ -483,8 +476,8 @@ theorem piece_I (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set P
         filter_upwards [h1, eventually_not_cut_before hM hS.adm hS.fin ((p : ℝ) + t),
           self_mem_nhdsWithin, Ioo_mem_nhdsGT ht0'] with s hs1 hs2 hs3 hs4
         have hs0 : (0 : ℝ) < s := hs3
-        refine hfaced hd ⟨by linarith [hs4.2], by linarith⟩ ?_ hs1
-        rw [show (p : ℝ) + (t - s) = p + t - s by ring]; exact hs2
+        refine hfaced hd ⟨by grind, by linarith⟩ ?_ hs1
+        grind
       obtain ⟨l', harc'⟩ := arc_end_of_faced hM' hS.fam.2.1 hS.fam.1 hc hcA ht0' hU h2
       obtain ⟨c', hc', p₁, t₁, hA₁, hk⟩ :=
         hM'.exists_exit_at_end hS.fam.2.1 hS.fam.1 ⟨c, hc⟩ hU harc'
@@ -506,10 +499,8 @@ theorem piece_I (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set P
           ((((g + (d - 1)) % M.W.n : ℕ) : ℝ) + 1), self_mem_nhdsWithin, Ioo_mem_nhdsGT one_pos]
           with s hs1 hs2 hs3 hs4
         have hs0 : (0 : ℝ) < s := hs3
-        refine hfaced (by omega) ⟨by linarith [hs4.2], by linarith⟩ ?_ hs1
-        rw [show (((g + (d - 1)) % M.W.n : ℕ) : ℝ) + (1 - s) =
-          (((g + (d - 1)) % M.W.n : ℕ) : ℝ) + 1 - s by ring]
-        exact hs2
+        refine hfaced (by omega) ⟨by grind, by linarith⟩ ?_ hs1
+        grind
       obtain ⟨l', harc'⟩ := arc_end_of_faced_zero hM' hS.fam.2.1 hS.fam.1 hc hcA hU h2
       obtain ⟨c', hc', p₁, t₁, hA₁, hk⟩ :=
         hM'.exists_exit_at_end hS.fam.2.1 hS.fam.1 ⟨c, hc⟩ hU harc'
@@ -517,6 +508,9 @@ theorem piece_I (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set P
       rw [← hp₁, ← ht₁] at hA₁
       exact ⟨c', hc', hA₁⟩
 
+
+
+end
 
 /-- The chords of `S'` of type (I) in a piece: attached at an offset in `(0, L)` next to which `R`
 is faced, where a chord of `Sᵢ` is attached at the side position. -/
@@ -540,20 +534,19 @@ theorem typeI_ncard_le (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set
   set M' := chainModel C' with hM'def
   have hM : WalkAx M := walkAx_chainModel hP
   have hM' : WalkAx M' := walkAx_chainModel hS.simple
-  have hn : 0 < M.W.n := by omega
+  
   have hn' : 0 < M'.W.n := by omega
   rcases (TypeI J C' Si S' R g g' L).eq_empty_or_nonempty with h0 | ⟨f₀, hf₀, d₀', t₀', hd₀',
     ht₀', ht₀'1, hdt₀', -, hadj₀, -⟩
-  · rw [h0, Set.ncard_empty]; omega
+  · simp_all
   have hne : S'.Nonempty := ⟨f₀, hf₀⟩
   -- a reference position and the region of `Sᵢ` it faces
   obtain ⟨d₀, t₀, hd₀, ht₀, hc₀, hf₀'⟩ : ∃ (d₀ : ℕ) (t₀ : ℝ), d₀ < L ∧ t₀ ∈ Ioo (0 : ℝ) 1 ∧
       ¬ M.IsCut S' (((g + d₀) % M.W.n : ℕ) + t₀) ∧ M.Faces ((g + d₀) % M.W.n) t₀ R := by
     rcases adj_near hM hS.adm hS.fin hne ht₀' ht₀'1 hdt₀' hadj₀ with h | h
     · obtain ⟨d, t, hd, ht, -, -, h3, h4⟩ := h _ (lt_add_one _)
-      exact ⟨d, t, by omega, ht, h3, h4⟩
-    · obtain ⟨d, t, hd, ht, -, -, h3, h4⟩ := h _ (sub_one_lt _)
-      exact ⟨d, t, by omega, ht, h3, h4⟩
+      grind
+    grind
   have hnc₀' := side_not_cut J hP hS.simple hS.fam.2.1 hS.endm hS.ends hS.shared hA hd₀ ht₀ hc₀
   obtain ⟨U, hU, hg₀⟩ := hM'.exists_faces_of_not_cut hS.fam.2.1 hS.fam.1 (Nat.mod_lt _ hn') ht₀
     hnc₀'

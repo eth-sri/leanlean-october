@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRPlB
 
 /-!
@@ -66,10 +68,7 @@ theorem hostLeaves_take_succ (n C : ℕ) (H : Host) {i : ℕ} (hi : i < H.length
 theorem pts_take_succ (n : ℕ) (H : Host) {i : ℕ} (hi : i < H.length) :
     (Host.pts n (H.take (i + 1))).length = (Host.pts n (H.take i)).length +
       ((H.getD i (.run 0 0)).pts n).length := by
-  rw [List.take_add_one, List.getElem?_eq_getElem hi, Option.toList_some, DownMath.pts_append,
-    List.length_append, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi,
-    Option.getD_some]
-  simp [Host.pts]
+  grind [List.take_add_one, Option.toList_some, DownMath.pts_append, List.length_append, List.getD_eq_getElem?_getD, Option.getD_some, Host.pts]
 
 section exec
 
@@ -160,7 +159,7 @@ theorem plItem_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw :
       have q18 := kK₂.r18
       have e := e₂.wb_right
       exec_block
-      all_goals try (config_simp; (try simp only [t07, t11, q18]); omega)
+      all_goals try (config_simp; omega)
       refine ⟨rfl, ?_, fun r h1 => ?_, rfl⟩ <;> config_simp <;> (try simp only [t07, t11, q18])
       · omega
       · first | rfl | (simp only [Machine.upd_apply]; split_ifs <;> first | rfl | omega)

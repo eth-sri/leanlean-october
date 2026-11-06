@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutRun
 
 /-!
@@ -11,9 +13,6 @@ public import Chazelle.Core.ShootCutRun
   `L = min (m - J) (ℓ - t) (n - 1 - q) lim` (`L = min (2m - J) t q lim`) and its dyadic cover.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -40,28 +39,26 @@ theorem single_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Pr
       (∀ r, (r < 150050 ∨ 150055 ≤ r) → d₁.nreg r = d.nreg r) ∧ d₁.nmem = d.nmem := by
     unfold pcSingle
     exec_block
-    all_goals first | omega | (config_simp; rw [h40, h91]; omega) | skip
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl⟩
-    all_goals first | (config_simp; rw [h40, h91]; done) | (config_simp; rw [h40]; done) |
-      (config_simp; done) | skip
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    all_goals (grind [upd])
   have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (by decide)
-  have hR : PcRegs d₁ (sgPc c) := ⟨v50, v51, v52, v53, v54, fun h => by simp [sgPc] at h⟩
+  have hR : PcRegs d₁ (sgPc c) := ⟨v50, v51, v52, v53, v54, fun h => by grind [sgPc]⟩
   obtain ⟨d₂, k₂, e₂, hk₂, hI₂, kp, mem₂⟩ := hE.run _ (sgPc c) d₁ e₁.wb_right (hE.stable _ _ _ hI fr₁) hR hpv
   have q40 : d₂.nreg 150040 = c := by
-    rw [kp _ (by unfold Keep; omega), r₁ _ (by omega), h40]
+    ram_grind
   have q91 : d₂.nreg 150091 = 1 := by
-    rw [kp _ (by unfold Keep; omega), r₁ _ (by omega), h91]
-  have e₃ := Exec.addN (P := P) e₂.wb_right 150040 150040 150091 (by rw [q40, q91]; omega)
+    ram_grind
+  have e₃ := Exec.addN (P := P) e₂.wb_right 150040 150040 150091 (by omega)
   refine ⟨_, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by omega,
-    hE.stable _ _ _ hI₂ (exec_frameB e₃ (by decide)), by config_simp; rw [q40, q91],
+    hE.stable _ _ _ hI₂ (exec_frameB e₃ (by decide)), by ram_simp,
     fun r hr h1 => ?_, fun a ha => ?_⟩
-  · config_simp
-    rw [upd_other _ _ _ h1, kp r hr, r₁ r (by unfold Keep at hr; omega)]
-  · config_simp; rw [mem₂ a ha, m₁]
+  · ram_simp
+  simp_all
 
+section
+variable {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
+include hw
 /-- **`150071 := min 150071 r`.** -/
-theorem minTo_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) (r : ℕ) :
+theorem minTo_exec (r : ℕ) :
     ∃ d' k, Exec P W (minTo r) d d' k ∧ k ≤ 2 ∧
       d'.nreg 150071 = min (d.nreg 150071) (d.nreg r) ∧
       (∀ x, x ≠ 150071 → d'.nreg x = d.nreg x) ∧ d'.nmem = d.nmem := by
@@ -73,7 +70,7 @@ theorem minTo_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
   · refine spec_ifLtN_false h (spec_skip hw ⟨by omega, by omega, fun _ _ => rfl, rfl⟩)
 
 /-- The straight part of a climbing stretch: `L` into `150071`. -/
-theorem upLen_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) {mC J ℓ t n q lim : ℕ}
+theorem upLen_exec {mC J ℓ t n q lim : ℕ}
     (h23 : d.nreg 150023 = mC) (h61 : d.nreg 150061 = J) (h69 : d.nreg 150069 = ℓ)
     (h66 : d.nreg 150066 = t) (h27 : d.nreg 150027 = n) (h70 : d.nreg 150070 = q)
     (h72 : d.nreg 150072 = lim) (h91 : d.nreg 150091 = 1) :
@@ -85,36 +82,26 @@ theorem upLen_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
       d₁.nreg 150071 = mC - J ∧ d₁.nreg 150075 = ℓ - t ∧
       (∀ x, x ≠ 150071 → x ≠ 150075 → d₁.nreg x = d.nreg x) ∧ d₁.nmem = d.nmem := by
     exec_block
-    refine ⟨rfl, ?_, ?_, fun x h1 h2 => ?_, rfl⟩
-    · config_simp; rw [h23, h61]
-    · config_simp; rw [h69, h66]
-    · simp only [upd]; split_ifs <;> first | rfl | omega
+    simp_all
   obtain ⟨d₂, k₂, e₂, hk₂, o71', r₂, m₂⟩ := minTo_exec (P := P) d₁ e₁.wb_right 150075
   obtain ⟨d₃, k₃, e₃, hk₃, o75', r₃, m₃⟩ : ∃ d₃ k₃, Exec P W
       (block [.subN 150075 150027 150070, .subN 150075 150075 150091]) d₂ d₃ k₃ ∧ k₃ = 2 ∧
       d₃.nreg 150075 = n - q - 1 ∧ (∀ x, x ≠ 150075 → d₃.nreg x = d₂.nreg x) ∧
       d₃.nmem = d₂.nmem := by
-    have a27 : d₂.nreg 150027 = n := by rw [r₂ _ (by omega), r₁ _ (by omega) (by omega), h27]
-    have a70 : d₂.nreg 150070 = q := by rw [r₂ _ (by omega), r₁ _ (by omega) (by omega), h70]
-    have a91 : d₂.nreg 150091 = 1 := by rw [r₂ _ (by omega), r₁ _ (by omega) (by omega), h91]
+    have a27 : d₂.nreg 150027 = n := by grind
+    have a70 : d₂.nreg 150070 = q := by grind
+    have a91 : d₂.nreg 150091 = 1 := by grind
     have w₂ := e₂.wb_right
     exec_block
-    refine ⟨rfl, ?_, fun x h1 => ?_, rfl⟩
-    · config_simp; rw [a27, a70, a91]
-    · simp only [upd]; split_ifs <;> first | rfl | omega
+    grind [upd]
   obtain ⟨d₄, k₄, e₄, hk₄, o71'', r₄, m₄⟩ := minTo_exec (P := P) d₃ e₃.wb_right 150075
   obtain ⟨d₅, k₅, e₅, hk₅, o71''', r₅, m₅⟩ := minTo_exec (P := P) d₄ e₄.wb_right 150072
   refine ⟨d₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by omega,
-    ?_, fun x h1 h2 => ?_, by rw [m₅, m₄, m₃, m₂, m₁]⟩
-  · have a1 : d₄.nreg 150072 = lim := by
-      rw [r₄ 150072 (by omega), r₃ 150072 (by omega), r₂ 150072 (by omega),
-        r₁ 150072 (by omega) (by omega), h72]
-    have a2 : d₃.nreg 150071 = d₂.nreg 150071 := r₃ _ (by omega)
-    rw [o71''', o71'', a1, a2, o71', o75', o71, o75]
-  · rw [r₅ _ h1, r₄ _ h1, r₃ _ h2, r₂ _ h1, r₁ _ h1 h2]
+    ?_, fun x h1 h2 => ?_, by grind⟩
+  all_goals grind
 
 /-- The straight part of a descending stretch: `L` into `150071`. -/
-theorem dnLen_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) {m2 J t q lim : ℕ}
+theorem dnLen_exec {m2 J t q lim : ℕ}
     (h29 : d.nreg 150029 = m2) (h61 : d.nreg 150061 = J) (h66 : d.nreg 150066 = t)
     (h70 : d.nreg 150070 = q) (h72 : d.nreg 150072 = lim) :
     ∃ d' k, Exec P W dnLen d d' k ∧ k ≤ 7 ∧
@@ -123,22 +110,18 @@ theorem dnLen_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
   have e₁ := Exec.subN (P := P) hw 150071 150029 150061
   set d₁ := ({ d with nreg := upd d.nreg 150071 (d.nreg 150029 - d.nreg 150061) } : Config)
     with hd₁
-  have r₁ : ∀ x, x ≠ 150071 → d₁.nreg x = d.nreg x := fun x hx => by simp [hd₁, upd, hx]
-  have o71 : d₁.nreg 150071 = m2 - J := by simp [hd₁, upd, h29, h61]
+  have r₁ : ∀ x, x ≠ 150071 → d₁.nreg x = d.nreg x := fun x hx => by ram_simp
+  have o71 : d₁.nreg 150071 = m2 - J := by simp_all
   obtain ⟨d₂, k₂, e₂, hk₂, o₂, r₂, m₂⟩ := minTo_exec (P := P) d₁ e₁.wb_right 150066
   obtain ⟨d₃, k₃, e₃, hk₃, o₃, r₃, m₃⟩ := minTo_exec (P := P) d₂ e₂.wb_right 150070
   obtain ⟨d₄, k₄, e₄, hk₄, o₄, r₄, m₄⟩ := minTo_exec (P := P) d₃ e₃.wb_right 150072
   refine ⟨d₄, 1 + (k₂ + (k₃ + k₄)), .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, ?_,
-    fun x hx => by rw [r₄ _ hx, r₃ _ hx, r₂ _ hx, r₁ _ hx], by rw [m₄, m₃, m₂]⟩
-  have a72 : d₃.nreg 150072 = lim := by
-    rw [r₃ 150072 (by omega), r₂ 150072 (by omega), r₁ 150072 (by omega), h72]
-  have a70 : d₂.nreg 150070 = q := by rw [r₂ 150070 (by omega), r₁ 150070 (by omega), h70]
-  have a66 : d₁.nreg 150066 = t := by rw [r₁ 150066 (by omega), h66]
-  rw [o₄, o₃, o₂, o71, a72, a70, a66]
+    fun x hx => by grind, by grind⟩
+  grind
 
 
 /-- **The constants.** -/
-theorem cInit_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 6 ≤ W) :
+theorem cInit_exec (hW : 6 ≤ W) :
     ∃ d' k, Exec P W cInit d d' k ∧ k = 5 ∧ d'.nreg 150090 = 0 ∧ d'.nreg 150091 = 1 ∧
       d'.nreg 150092 = 2 ∧ d'.nreg 150093 = 3 ∧ d'.nreg 150096 = 6 ∧
       (∀ r, r ≠ 150090 → r ≠ 150091 → r ≠ 150092 → r ≠ 150093 → r ≠ 150096 →
@@ -150,11 +133,14 @@ theorem cInit_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
   all_goals first | (config_simp; done) | skip
   simp only [upd]; split_ifs <;> first | rfl | omega
 
+
+end
+
+section
+variable {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop} {I : List Pc → Config → Prop} (hE : EmitOK P W emit A₀ Pv I K) {m₀ : ℕ → ℕ} {Tb Hb Pb tg : ℕ} (env : SwEnv P.n W A₀ Tb Hb Pb tg m₀) {ps₀ : List Pc} (d : Config) (hw : WordsBounded W d) (hm : ∀ a, a < A₀ → d.nmem a = m₀ a)
+include hE env hw hm
 /-- **A climbing stretch** on the RAM: its length `L` and its upward cover. -/
-theorem upStretch_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop}
-    {I : List Pc → Config → Prop} (hE : EmitOK P W emit A₀ Pv I K) {m₀ : ℕ → ℕ}
-    {Tb Hb Pb tg : ℕ} (env : SwEnv P.n W A₀ Tb Hb Pb tg m₀) {ps₀ : List Pc} (d : Config)
-    (hw : WordsBounded W d) (hm : ∀ a, a < A₀ → d.nmem a = m₀ a)
+theorem upStretch_exec
     {mC J ℓ t q lim c : ℕ} (h90 : d.nreg 150090 = 0) (h91 : d.nreg 150091 = 1)
     (h34 : d.nreg 150034 = Tb) (h35 : d.nreg 150035 = Hb) (h36 : d.nreg 150036 = Pb)
     (h23 : d.nreg 150023 = mC) (h61 : d.nreg 150061 = J) (h69 : d.nreg 150069 = ℓ)
@@ -180,28 +166,24 @@ theorem upStretch_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc →
   have k₁' : ∀ r, r ≠ 150071 → r ≠ 150075 → d₁.nreg r = d.nreg r := r₁
   obtain ⟨d₂, k₂, ps', e₂, hk₂, hI₂, hch, hv, hlen, o40, r₂, a90, a91, m₂⟩ :=
     dyUp_exec hE (ps₀ := ps₀) (q₀ := q) (L := L) (c₀ := c) d₁ env hblk (by omega)
-      (by have : L ≤ P.n := by omega
-          omega) (by omega) (by omega) e₁.wb_right
-      (fun a ha => by rw [m₁]; exact hm a ha)
-      (by rw [k₁' _ (by omega) (by omega), h90]) (by rw [k₁' _ (by omega) (by omega), h91])
-      (by rw [k₁' _ (by omega) (by omega), h34]) (by rw [k₁' _ (by omega) (by omega), h35])
-      (by rw [k₁' _ (by omega) (by omega), h36]) (by rw [k₁' _ (by omega) (by omega), h70])
-      o71 (by rw [k₁' _ (by omega) (by omega), h40]) (hE.stable _ _ _ hI fr₁)
+      (by grind) (by omega) (by omega) e₁.wb_right
+      (fun a ha => by grind)
+      (by grind) (by grind)
+      (by grind) (by grind)
+      (by grind) (by grind)
+      o71 (by grind) (hE.stable _ _ _ hI fr₁)
   obtain ⟨d₃, k₃, e₃, hk₃, b90, b91, b92, b93, b96, r₃, m₃⟩ :=
     cInit_exec (P := P) d₂ e₂.wb_right (by omega)
   refine ⟨d₃, k₁ + (k₂ + k₃), ps', .seq e₁ (.seq e₂ e₃), by omega,
     hE.stable _ _ _ hI₂ (exec_frameB e₃ (by decide)), hch, hv, hlen,
-    by rw [r₃ _ (by omega) (by omega) (by omega) (by omega) (by omega), o40],
+    by grind,
     fun r h1 h2 h3 => ?_, b90, b91, b92, b93, b96, e₃.wb_right,
-    fun a ha => by rw [m₃]; exact m₂ a ha⟩
+    fun a ha => by grind⟩
   rw [r₃ _ (by omega) (by omega) (by omega) (by omega) (by omega), r₂ r h1 h2 h3,
     k₁' r (by omega) (by omega)]
 
 /-- **A descending stretch** on the RAM: its length `L` and its downward cover. -/
-theorem dnStretch_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop}
-    {I : List Pc → Config → Prop} (hE : EmitOK P W emit A₀ Pv I K) {m₀ : ℕ → ℕ}
-    {Tb Hb Pb tg : ℕ} (env : SwEnv P.n W A₀ Tb Hb Pb tg m₀) {ps₀ : List Pc} (d : Config)
-    (hw : WordsBounded W d) (hm : ∀ a, a < A₀ → d.nmem a = m₀ a)
+theorem dnStretch_exec
     {m2 J t q lim c : ℕ} (h90 : d.nreg 150090 = 0) (h91 : d.nreg 150091 = 1)
     (h34 : d.nreg 150034 = Tb) (h35 : d.nreg 150035 = Hb) (h36 : d.nreg 150036 = Pb)
     (h29 : d.nreg 150029 = m2) (h61 : d.nreg 150061 = J)
@@ -227,20 +209,23 @@ theorem dnStretch_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc →
   obtain ⟨d₂, k₂, ps', e₂, hk₂, hI₂, hch, hv, hlen, o40, r₂, a90, a91, m₂⟩ :=
     dyDn_exec hE (ps₀ := ps₀) (q₀ := q) (L := L) (c₀ := c) d₁ env hblk (by omega)
       (by omega) (by omega) (by omega) (by omega) e₁.wb_right
-      (fun a ha => by rw [m₁]; exact hm a ha)
-      (by rw [k₁' _ (by omega), h90]) (by rw [k₁' _ (by omega), h91])
-      (by rw [k₁' _ (by omega), h34]) (by rw [k₁' _ (by omega), h35])
-      (by rw [k₁' _ (by omega), h36]) (by rw [k₁' _ (by omega), h70])
-      o71 (by rw [k₁' _ (by omega), h40]) (hE.stable _ _ _ hI fr₁)
+      (fun a ha => by grind)
+      (by grind) (by grind)
+      (by grind) (by grind)
+      (by grind) (by grind)
+      o71 (by grind) (hE.stable _ _ _ hI fr₁)
   obtain ⟨d₃, k₃, e₃, hk₃, b90, b91, b92, b93, b96, r₃, m₃⟩ :=
     cInit_exec (P := P) d₂ e₂.wb_right (by omega)
   refine ⟨d₃, k₁ + (k₂ + k₃), ps', .seq e₁ (.seq e₂ e₃), by omega,
     hE.stable _ _ _ hI₂ (exec_frameB e₃ (by decide)), hch, hv, hlen,
-    by rw [r₃ _ (by omega) (by omega) (by omega) (by omega) (by omega), o40],
+    by grind,
     fun r h1 h2 h3 => ?_, b90, b91, b92, b93, b96, e₃.wb_right,
-    fun a ha => by rw [m₃]; exact m₂ a ha⟩
+    fun a ha => by grind⟩
   rw [r₃ _ (by omega) (by omega) (by omega) (by omega) (by omega), r₂ r h1 h2 h3,
     k₁' r (by omega)]
+
+
+end
 
 end
 

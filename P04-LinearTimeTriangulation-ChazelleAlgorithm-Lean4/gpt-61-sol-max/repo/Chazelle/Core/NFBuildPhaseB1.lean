@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildPhaseBAux
 
 /-!
@@ -44,9 +46,9 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
           (H + 17 + 26 * L.length) (H + 17 + 28 * L.length) (loOf c.nmem D)
           (hdOf c.nmem D P.n) c.nmem) (c₂ : Config), PassInv F c₂ c₃ E.length := by
   set K := L.length with hKdef
-  have hHW : H ≤ W := by unfold sizeB at hroom; omega
+  have hHW : H ≤ W := by omega
   obtain ⟨hDW, hCW⟩ := locChainWF_of hwf hHW hWn
-  have hD6 := hwf.1
+  
   -- 1. setup
   obtain ⟨c₁, k₁, x₁, hk₁, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
     s16, s17, s18, s19, s20⟩ := setupB_exec (P := P) c hw hK hN h1 hH hSEr hroom
@@ -56,16 +58,16 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   -- 2. the counted interval
   obtain ⟨c₂, k₂, x₂, hk₂, l1, l2, l3, l4, f₂⟩ := lohiS_exec (P := P) c₁ w₁ (D := D)
     (by rw [g₁ _ (by decide), hD]) (by rw [f₁.2.2.1]; exact twice_m_le hM hCW)
-    (by omega) (by unfold hostWords at hWn; omega) (by unfold hostWords at hWn; omega)
+    (by omega) (by grind [hostWords]) (by grind)
   rw [f₁.2.2.1] at l1 l2 l3
   have w₂ := x₂.wb_right
   have g₂ : ∀ r, r ≠ 41023 → r ≠ 41019 → r ≠ 44020 → r ≠ 44021 → r ≠ 44022 →
       c₂.nreg r = c₁.nreg r := fun r a1 a2 a3 a4 a5 => f₂.1 r (by
-    simp only [decide_eq_false_iff_not]; omega)
+    grind)
   have mm₂ : c₂.nmem = c.nmem := by rw [f₂.2.2.1, f₁.2.2.1]
   have G₂ : ∀ r, BsetupB r = false → r ≠ 41023 → r ≠ 41019 → r ≠ 44020 → r ≠ 44021 →
       r ≠ 44022 → c₂.nreg r = c.nreg r := fun r h a1 a2 a3 a4 a5 => by
-    rw [g₂ r a1 a2 a3 a4 a5, g₁ r h]
+    ram_grind
   have C₂ : BConst D T K B H (loOf c.nmem D) (hdOf c.nmem D P.n) (c.nmem D) c₂ :=
     { rD := by rw [G₂ 40000 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
           (by norm_num), hD]
@@ -73,7 +75,7 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
           (by norm_num), hT]
       rN := by rw [G₂ 42001 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
           (by norm_num), hN]
-      r1a := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s1]
+      r1a := by ram_grind
       rB := by rw [G₂ 43001 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
           (by norm_num), hB]
       rK := by rw [G₂ 43002 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
@@ -82,20 +84,20 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
           (by norm_num), h0]
       r1 := by rw [G₂ 43011 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
           (by norm_num), h1]
-      r3 := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s2]
-      rR := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s3]
-      rH := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s4]
-      rCT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s5]
-      rAT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s6]
-      rRT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s7]
-      rQT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s8]
-      rLT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s9]
-      rST := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s10]
-      rWT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s11]
-      rCA := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s12]
-      rFA := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s13]
-      rFC := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s14]
-      rA := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s15]
+      r3 := by ram_grind
+      rR := by ram_grind
+      rH := by ram_grind
+      rCT := by ram_grind
+      rAT := by ram_grind
+      rRT := by ram_grind
+      rQT := by ram_grind
+      rLT := by ram_grind
+      rST := by ram_grind
+      rWT := by ram_grind
+      rCA := by ram_grind
+      rFA := by ram_grind
+      rFC := by ram_grind
+      rA := by ram_grind
       rlo := l1
       rhd := l2
       r19 := l4
@@ -109,16 +111,15 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     { inp := hI, good := hG, hwords := hWn, len := hlen, wf := hwf, desc := hM, HW := hHW,
       recs := hR, TH := hTH, chl := hCL, BH := hBH, codes := hSE, SEH := hSEH,
       l1 := by omega, l2 := by omega, l3 := by omega, l4 := by omega,
-      l5 := by unfold sizeB at hroom; omega
+      l5 := by grind [sizeB]
       cnt := fun p hp => by rw [hcI p hp, hdOf_eq]; omega
-      cntW := by rw [hdOf_eq]; omega }
+      cntW := by grind [hdOf_eq] }
   have n100 : c₂.nreg 43100 = 0 := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s16]
+    grind
   have n103 : c₂.nreg 43103 = SE + 0 := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s19,
-      Nat.add_zero]
+    grind
   have n104 : c₂.nreg 43104 = SE := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s20]
+    grind
   have n101 : c₂.nreg 43101 = (stk E 0).length := by
     rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s17]; rfl
   have n102 : c₂.nreg 43102 = (gapsB M (Qof P) L E 0).length := by
@@ -126,7 +127,7 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   have nN : c₂.nreg 42001 = E.length := by rw [C₂.rN, hlen]
   have I₀ : PassInv F c₂ c₂ 0 :=
     { m_le := Nat.zero_le _, r100 := n100, r103 := n103, r104 := n104, r101 := n101,
-      sp_le := by simp [stk, BuildNF.cw, BuildStack.run], r102 := n102,
+      sp_le := by grind, r102 := n102,
       rD := C₂.rD, rT := C₂.rT, rN := nN, r1a := C₂.r1a, rB := C₂.rB,
       r0 := C₂.r0, r1 := C₂.r1, rCT := C₂.rCT, rAT := C₂.rAT, rST := C₂.rST, rWT := C₂.rWT,
       rlo := C₂.rlo, rhd := C₂.rhd, r19 := C₂.r19, r23 := C₂.r23,

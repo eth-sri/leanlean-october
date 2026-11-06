@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvDScan
 public import Chazelle.Core.DownPhaseDrvDRMath
 public import Chazelle.Core.RestoreRegArc
@@ -40,8 +42,7 @@ theorem arcList_lt {m : ℕ → ℕ} {B E' : ℕ} {N : NF} (h : NFWithin m B E' 
     (v := (N.region r).arcs.getD t 0) hp (fun m' hm' => by
       have e5 : m' (B + 5) = m (B + 5) := hm' _ (by omega)
       have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.2.1 t ht
-      rw [e5] at this
-      exact this)
+      simp_all)
 
 /-- The ends of a found chord are proper positions of the walk at a vertex height. -/
 theorem endPos_props (_hGM : GoodModel M) {N : NF} {reg : ℕ → Set Point} {r : ℕ}
@@ -55,14 +56,14 @@ theorem endPos_props (_hGM : GoodModel M) {N : NF} {reg : ℕ → Set Point} {r 
     rcases (by omega : s = 0 ∨ s = 1) with rfl | rfl
     · exact hf.1.1
     · exact hf.1.2
-  have hh : (endPos t s).hgt = t.1 + 1 := by unfold endPos; split_ifs <;> rfl
-  obtain ⟨he, h0, h1, -⟩ := id hA
-  refine ⟨he, by omega, ⟨h0, h1, ?_⟩, hA⟩
-  have := hf.2.1
-  omega
+  have hh : (endPos t s).hgt = t.1 + 1 := by grind [endPos]
+  ram_grind
 
+section
+variable (hGM : GoodModel M)
+include hGM
 /-- **The scan data of an end of a chord of region `r`.** -/
-theorem scanGood_of (hGM : GoodModel M) {W : ℕ} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
+theorem scanGood_of {W : ℕ} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
     (hok : ChordTriplesOK M (Qof P) L) (hperm : E.Perm (List.range (2 * L.length)))
     (hsort : E.Pairwise (codeLe M (Qof P) L)) (hK : 0 < L.length) {reg : ℕ → Set Point}
     (hregs : Restore.NFRegs M (Qof P) (BuildNF.buildNF M (Qof P) L E) reg) {m : ℕ → ℕ} {H B MD : ℕ}
@@ -76,23 +77,19 @@ theorem scanGood_of (hGM : GoodModel M) {W : ℕ} (hG : GoodEnv P) (hWh : hostWo
   have hQn : (Qof P).n = P.n := shear_n _ _
   obtain ⟨hNF, -, -⟩ := BuildNF.isNF_goodModel hGM hok hperm hsort
   set N := BuildNF.buildNF M (Qof P) L E with hN
-  have hR : N.nRegions = L.length + 1 := by simp [hN, NF.nRegions, BuildNF.buildNF]
-  have hr' : r < N.nRegions := by rw [hR]; exact hr
+  have hR : N.nRegions = L.length + 1 := by core_grind [BuildNF.buildNF]
+  have hr' : r < N.nRegions := by omega
   have hNAt := hNW.nfAt
   have hne : (N.F M (Qof P)).Nonempty := by
     refine ⟨(N.chord 0).toSet M (Qof P), N.chord 0, ?_, rfl⟩
-    unfold NF.chord
-    have h0 : 0 < N.chords.length := by simp [hN, BuildNF.buildNF]; exact hK
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h0, Option.getD_some]
-    exact List.getElem_mem h0
+    grind [NF.chord, BuildNF.buildNF, List.getD_eq_getElem?_getD, Option.getD_some]
   obtain ⟨hnA, -, -⟩ := Restore.region_arc hM hNF hregs hne hr'
   obtain ⟨hDW, hCW⟩ := NFLoc.locChainWF_of hwf hBW hWh
   have hAOK := hregs.2.2.1
   have hareas := Gran.nf_areas hNW
   have hA : 0 < N.arcs.length := by
     have hm : (N.region r).arcs.getD 0 0 ∈ (N.region r).arcs := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hnA, Option.getD_some]
-      exact List.getElem_mem hnA
+      grind
     exact lt_of_le_of_lt (Nat.zero_le _) ((hAOK.2.2.2 r hr' _).1 hm).1
   refine ⟨hG, hWh, hDW, hCW, hMD, hxe, hx1, hxp, ?_, ?_, fun t ht => ?_, fun j hj => ?_⟩
   · have := arcList_lt hNW hr' (t := (N.region r).arcs.length - 1) (by omega)
@@ -108,7 +105,7 @@ theorem scanGood_of (hGM : GoodModel M) {W : ℕ} (hG : GoodEnv P) (hWh : hostWo
     rw [hQn] at hps hpe
     have hA' := arcs_length (M := M) (Q := Qof P) (E := E) hK
     have hElen : E.length = 2 * L.length := by rw [hperm.length_eq, List.length_range]
-    have hjg : j < (BuildNF.gapStarts M (Qof P) L E).length := by rw [← hA']; exact hjA
+    have hjg : j < (BuildNF.gapStarts M (Qof P) L E).length := by grind
     -- the end of arc `j` is an event position
     have hev : (E.getD ((gs M (Qof P) L E j + 1) % E.length) 0) < 2 * L.length := by
       have hi : (gs M (Qof P) L E j + 1) % E.length < E.length := Nat.mod_lt _ (by omega)
@@ -126,7 +123,7 @@ theorem scanGood_of (hGM : GoodModel M) {W : ℕ} (hG : GoodEnv P) (hWh : hostWo
     · rw [he]; exact BuildRam.edge_lt hok hev
 
 /-- **Some arc of region `r` matches each end of a chord found for `r`.** -/
-theorem hex_of (hGM : GoodModel M) (hok : ChordTriplesOK M (Qof P) L)
+theorem hex_of (hok : ChordTriplesOK M (Qof P) L)
     (hperm : E.Perm (List.range (2 * L.length))) (hsort : E.Pairwise (codeLe M (Qof P) L))
     (hK : 0 < L.length) {reg : ℕ → Set Point}
     (hregs : Restore.NFRegs M (Qof P) (BuildNF.buildNF M (Qof P) L E) reg) {r : ℕ}
@@ -141,15 +138,15 @@ theorem hex_of (hGM : GoodModel M) (hok : ChordTriplesOK M (Qof P) L)
   set N := BuildNF.buildNF M (Qof P) L E with hN
   have hne : (N.F M (Qof P)).Nonempty := by
     refine ⟨(N.chord 0).toSet M (Qof P), N.chord 0, ?_, rfl⟩
-    unfold NF.chord
-    have h0 : 0 < N.chords.length := by simp [hN, BuildNF.buildNF]; exact hK
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h0, Option.getD_some]
-    exact List.getElem_mem h0
+    grind [NF.chord, BuildNF.buildNF, List.getD_eq_getElem?_getD, Option.getD_some]
   have hElen : E.length = 2 * L.length := by rw [hperm.length_eq, List.length_range]
   obtain ⟨-, -, -, hA⟩ := endPos_props (P := P) hGM hf hs
   obtain ⟨j, hj, hjA, hcl⟩ := exists_closedArc hM hNF hregs hne hr hf.2.2.1 hf.2.2.2 hA
   refine ⟨j, hj, match_of_closedArc hK (by omega) hjA hcl (by simp [tA]; rfl)
     (by simp [tB]; rfl)⟩
+
+
+end
 
 end
 

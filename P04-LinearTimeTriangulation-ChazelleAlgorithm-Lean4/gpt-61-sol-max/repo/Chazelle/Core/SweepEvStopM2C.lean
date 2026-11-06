@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopTasks3
 public import Chazelle.Core.SweepEvStopRC
 public import Chazelle.Core.SweepEvGen
@@ -38,7 +40,7 @@ theorem m2c_wall_left {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel 
   obtain ⟨y, l, r, hlr, heq, hl, hr, -⟩ := rec_ends hN hk
   have hA := hN.2.2.1 k hk
   rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
-  · have he : endPos N k (1 - 0) = (N.chord k).rpos := by unfold endPos; simp
+  · have he : endPos N k (1 - 0) = (N.chord k).rpos := by aesop
     rw [he, dirOf_zero]
     have := sideLeft_of_attach hA.2 (Or.inr rfl) (show (0 : ℝ) < r - l by linarith)
       (fun s hs0 hs => by
@@ -46,7 +48,7 @@ theorem m2c_wall_left {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel 
         rw [hr, heq]
         refine ⟨by simp [rayPt], ?_, ?_⟩ <;> simp [rayPt] <;> linarith)
     exact this
-  · have he : endPos N k (1 - 1) = (N.chord k).lpos := by unfold endPos; simp
+  · have he : endPos N k (1 - 1) = (N.chord k).lpos := by aesop
     rw [he, dirOf_one]
     have := sideLeft_of_attach hA.1 (Or.inl rfl) (show (0 : ℝ) < r - l by linarith)
       (fun s hs0 hs => by
@@ -60,52 +62,53 @@ theorem m2c_wall_left {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel 
 /-- Set the local hit's input from the position `(e, h)` and the direction code `oB`. -/
 def m2cSet (e h : ℕ) : List Instr := [.copyN lE e, .copyN lH h, .copyN lD oB]
 
+section
+variable (sh : Stmt)
+include sh
 /-- **Shared and top codes.** -/
-def m2cS (sh : Stmt) : Stmt :=
+def m2cS : Stmt :=
   .seq (callArr (sw 21) oPE oPH oB m2F)
     (.ifLtN m2F K1 (noRes r2F)
       (.seq (block (m2cSet pE2 pH2)) (lhSave sh gMD2 gCD2 (sw 4) (sw 34) r2F)))
 
 /-- **Wall codes.** -/
-def m2cW (sh : Stmt) : Stmt :=
+def m2cW : Stmt :=
   .seq (block (m2cSet oPE oPH)) (lhSave sh gMD2 gCD2 (sw 4) (sw 34) r2F)
 
 /-- **The candidate of `C₂`.** -/
-def m2c (sh : Stmt) : Stmt :=
+def m2c : Stmt :=
   .ifLtN oKd K1 (m2cS sh) (.ifLtN K1 oKd (m2cS sh) (m2cW sh))
+
+
+end
 
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
-theorem m2cSet_val (m f : ℕ → ℕ) {e h : ℕ} (_he : e ≠ lE ∧ e ≠ lH) (hh : h ≠ lE) :
+section
+variable (m f : ℕ → ℕ)
+theorem m2cSet_val {e h : ℕ} (_he : e ≠ lE ∧ e ≠ lH) (hh : h ≠ lE) :
     regB m (m2cSet e h) f lE = f e ∧ regB m (m2cSet e h) f lH = f h ∧
       regB m (m2cSet e h) f lD = f oB ∧
       (∀ q, q ≠ lE → q ≠ lH → q ≠ lD → regB m (m2cSet e h) f q = f q) := by
-  have n1 : lE ≠ lH := by unfold lE lH sw; omega
-  have n2 : lE ≠ lD := by unfold lE lD sw; omega
-  have n3 : lH ≠ lD := by unfold lH lD sw; omega
-  have nb : oB ≠ lE ∧ oB ≠ lH := by unfold oB lE lH sw; omega
-  refine ⟨?_, ?_, ?_, fun q h1 h2 h3 => ?_⟩ <;>
-    simp [m2cSet, regB, regI, upd, nb.1,
-      nb.2, *]
+  simp_all [lE, lH, sw, lD, oB, m2cSet, regB, regI, upd] <;> omega_nf
 
-theorem m2cSet_ok (m f : ℕ → ℕ) (e h : ℕ) : okB W m (m2cSet e h) f :=
-  ⟨iscr_sw (by unfold lE sw; norm_num) (by unfold lE sw; norm_num),
-    iscr_sw (by unfold lH sw; norm_num) (by unfold lH sw; norm_num),
-    iscr_sw (by unfold lD sw; norm_num) (by unfold lD sw; norm_num), trivial⟩
+theorem m2cSet_ok (e h : ℕ) : okB W m (m2cSet e h) f :=
+  ⟨iscr_sw (by omega_nf) (by omega_nf),
+    iscr_sw (by omega_nf) (by omega_nf),
+    iscr_sw (by omega_nf) (by omega_nf), trivial⟩
+
+
+end
 
 /-- The cost of a branch. -/
 def m2cK (T Fg D : ℕ) : ℕ := 35007 + (3 + (lhRunK T Fg D + 7) + 2)
 
 theorem m2cK_le (T Fg D : ℕ) : m2cK T Fg D + 4 ≤ (κGen D + 40000) * (Fg + T + 1) := by
-  have h1 : lhRunK T Fg D + 7 ≤ genK Fg D T := by unfold lhRunK genK; omega
+  have h1 : lhRunK T Fg D + 7 ≤ genK Fg D T := by omega_nf
   have h2 := genK_le Fg D T
   have h3 : (κGen D + 40000) * (Fg + T + 1) = κGen D * (Fg + T + 1) + 40000 * (Fg + T + 1) := by
     ring
-  have h4 : 40000 ≤ 40000 * (Fg + T + 1) := Nat.le_mul_of_pos_right _ (Nat.succ_pos _)
-  rw [h3]
-  have e : m2cK T Fg D + 4 = (lhRunK T Fg D + 7) + 35016 := by unfold m2cK; ring
-  rw [e]
-  exact Nat.add_le_add (h1.trans h2) (le_trans (by norm_num) h4)
+  simp_all [m2cK] <;> omega_nf
 
 end
 

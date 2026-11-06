@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFDecompBfs
 public import Chazelle.Core.SortRam
 
@@ -55,17 +57,18 @@ section spec
 
 variable {P : Polygon} {W : ℕ}
 
+section
+variable {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → Prop}
 /-- Spec of `ifEqN`, equal case. -/
-theorem ifEqN_eq {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → Prop}
+theorem ifEqN_eq
     (h : c.nreg a = c.nreg b) (ht : ∃ c' k, Exec P W t c c' k ∧ Q c' (k + 4)) :
     ∃ c' k, Exec P W (ifEqN a b t e) c c' k ∧ Q c' k := by
   unfold ifEqN
   refine spec_ifLtN_false (by omega) (spec_ifLtN_false (by omega) ?_)
-  obtain ⟨c', k, ex, q⟩ := ht
-  exact ⟨c', k, ex, by rwa [show k + 2 + 2 = k + 4 by omega]⟩
+  omega
 
 /-- Spec of `ifEqN`, unequal case (cost at most `k + 3`). -/
-theorem ifEqN_ne {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → Prop}
+theorem ifEqN_ne
     (h : c.nreg a ≠ c.nreg b) (he : ∃ c' k, Exec P W e c c' k ∧ ∀ k', k' ≤ k + 3 → Q c' k') :
     ∃ c' k, Exec P W (ifEqN a b t e) c c' k ∧ Q c' k := by
   unfold ifEqN
@@ -75,8 +78,14 @@ theorem ifEqN_ne {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → P
   · have hlt' : c.nreg b < c.nreg a := by omega
     exact ⟨c', k + 1 + 2, .ifLtN_false hlt (.ifLtN_true hlt' ex), q _ (by omega)⟩
 
+
+end
+
+section
+variable {c : Config} (hw : WordsBounded W c)
+include hw
 /-- Spec of `ldF`. -/
-theorem ldF_exec {c : Config} (hw : WordsBounded W c) (d f x : ℕ)
+theorem ldF_exec (d f x : ℕ)
     (hb : c.nreg (fb f) + c.nreg x ≤ W) :
     ∃ c' k, Exec P W (ldF d f x) c c' k ∧ k = 2 ∧
       c' = { c with nreg := (upd (upd c.nreg 60030 (c.nreg (fb f) + c.nreg x)) d
@@ -85,10 +94,10 @@ theorem ldF_exec {c : Config} (hw : WordsBounded W c) (d f x : ℕ)
   refine spec_step (Exec.addN hw _ _ _ hb) fun hw1 => ?_
   refine spec_step (Exec.loadN hw1 _ _) fun _ => ?_
   refine spec_nil ‹_› ⟨rfl, ?_⟩
-  simp only [Machine.upd_same]
+  simp_all
 
 /-- Spec of `stF`. -/
-theorem stF_exec {c : Config} (hw : WordsBounded W c) (f x v : ℕ) (hv : v ≠ 60030)
+theorem stF_exec (f x v : ℕ) (hv : v ≠ 60030)
     (hb : c.nreg (fb f) + c.nreg x ≤ W) :
     ∃ c' k, Exec P W (stF f x v) c c' k ∧ k = 2 ∧
       c' = { c with
@@ -98,7 +107,10 @@ theorem stF_exec {c : Config} (hw : WordsBounded W c) (f x v : ℕ) (hv : v ≠ 
   refine spec_step (Exec.addN hw _ _ _ hb) fun hw1 => ?_
   refine spec_step (Exec.storeN hw1 _ _) fun _ => ?_
   refine spec_nil ‹_› ⟨rfl, ?_⟩
-  simp only [Machine.upd_same, Machine.upd_other _ _ _ hv]
+  simp_all
+
+
+end
 
 end spec
 
@@ -128,28 +140,15 @@ def DFr (lo hi : ℕ) (c c' : Config) : Prop :=
     c'.output = c.output ∧ ∀ a, (a < lo ∨ hi ≤ a) → c'.nmem a = c.nmem a
 
 theorem DFr.refl (lo hi : ℕ) (c : Config) : DFr lo hi c c :=
-  ⟨fun _ _ _ => rfl, rfl, rfl, rfl, fun _ _ => rfl⟩
+  by core_grind
 
 theorem DFr.trans {lo hi : ℕ} {c₁ c₂ c₃ : Config} (h₁ : DFr lo hi c₁ c₂) (h₂ : DFr lo hi c₂ c₃) :
     DFr lo hi c₁ c₃ :=
-  ⟨fun r h h' => (h₂.1 r h h').trans (h₁.1 r h h'), h₂.2.1.trans h₁.2.1,
-    h₂.2.2.1.trans h₁.2.2.1, h₂.2.2.2.1.trans h₁.2.2.2.1,
-    fun a ha => (h₂.2.2.2.2 a ha).trans (h₁.2.2.2.2 a ha)⟩
+  by core_grind
 
 theorem DRegs.of_regs {A R K CB RB LB : ℕ} {c c' : Config} (h : DRegs A R K CB RB LB c)
     (k : ∀ r, Prot r → r ≠ ALLOC → c'.nreg r = c.nreg r) : DRegs A R K CB RB LB c' := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun f hf' => ?_⟩
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.zero
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.one
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.two
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rR
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rK
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rCB
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rRB
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rLB
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rA
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rR1
-  · rw [k _ (by unfold Prot fb; omega) (by unfold fb ALLOC; omega)]; exact h.base f hf'
+  grind [Chazelle.Core.DecR.DRegs, Chazelle.Core.DecR.Prot, Prot, fb, ALLOC]
 
 theorem DRegs.frame {A R K CB RB LB lo hi : ℕ} {c c' : Config} (h : DRegs A R K CB RB LB c)
     (hf : DFr lo hi c c') : DRegs A R K CB RB LB c' := h.of_regs hf.1
@@ -166,30 +165,35 @@ theorem addr_inj {A R f g i j : ℕ} (hi : i < R) (hj : j < R)
     (h : A + 12 + f * R + i = A + 12 + g * R + j) : f = g ∧ i = j := by
   rcases lt_trichotomy f g with hfg | rfl | hfg
   · have : (f + 1) * R ≤ g * R := Nat.mul_le_mul_right _ hfg
-    rw [Nat.succ_mul] at this; omega
-  · exact ⟨rfl, by omega⟩
+    ram_grind
+  · omega
   · have : (g + 1) * R ≤ f * R := Nat.mul_le_mul_right _ hfg
-    rw [Nat.succ_mul] at this; omega
+    ram_grind
 
+section
+variable {m : ℕ → ℕ}
 /-- A store into field `f` at `i` changes exactly that entry of the view. -/
-theorem fv_store {m : ℕ → ℕ} {A R f i v g j : ℕ} (hi : i < R) (hj : j < R) :
+theorem fv_store {A R f i v g j : ℕ} (hi : i < R) (hj : j < R) :
     fv (upd m (A + 12 + f * R + i) v) A R g j = if g = f ∧ j = i then v else fv m A R g j := by
   unfold fv
   by_cases e : g = f ∧ j = i
-  · rw [ite_eq_left e, e.1, e.2, Machine.upd_same]
+  · simp_all
   · rw [ite_eq_right e, Machine.upd_other]
     intro h
     exact e (addr_inj hj hi h)
 
 /-- A store into the field block leaves the memory outside it unchanged. -/
-theorem fv_store_out {m : ℕ → ℕ} {A R f i v a : ℕ} (hf : f < 19) (hi : i < R)
+theorem fv_store_out {A R f i v a : ℕ} (hf : f < 19) (hi : i < R)
     (ha : a < A + 12 ∨ A + 12 + 19 * R ≤ a) : upd m (A + 12 + f * R + i) v a = m a := by
   rw [Machine.upd_other]
   intro h
   rcases ha with ha | ha
   · omega
   · have : (f + 1) * R ≤ 19 * R := Nat.mul_le_mul_right _ (by omega)
-    rw [Nat.succ_mul] at this; omega
+    grind
+
+
+end
 
 end
 

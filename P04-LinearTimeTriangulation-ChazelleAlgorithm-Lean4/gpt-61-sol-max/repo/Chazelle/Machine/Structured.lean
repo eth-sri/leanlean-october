@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Machine.Relocate
 
 /-!
@@ -75,60 +77,15 @@ noncomputable def effect (P : Polygon) : Instr → Config → Option Config
 
 variable {P : Polygon} {c : Config}
 
-@[simp] theorem effect_inputSize (r : ℕ) :
-    (Instr.inputSize r).effect P c = some { c with nreg := upd c.nreg r P.n } := rfl
-@[simp] theorem effect_constN (r k : ℕ) :
-    (Instr.constN r k).effect P c = some { c with nreg := upd c.nreg r k } := rfl
-@[simp] theorem effect_copyN (r a : ℕ) :
-    (Instr.copyN r a).effect P c = some { c with nreg := upd c.nreg r (c.nreg a) } := rfl
-@[simp] theorem effect_addN (r a b : ℕ) :
-    (Instr.addN r a b).effect P c =
-      some { c with nreg := upd c.nreg r (c.nreg a + c.nreg b) } := rfl
-@[simp] theorem effect_subN (r a b : ℕ) :
-    (Instr.subN r a b).effect P c =
-      some { c with nreg := upd c.nreg r (c.nreg a - c.nreg b) } := rfl
-@[simp] theorem effect_loadN (r a : ℕ) :
-    (Instr.loadN r a).effect P c =
-      some { c with nreg := upd c.nreg r (c.nmem (c.nreg a)) } := rfl
-@[simp] theorem effect_storeN (a r : ℕ) :
-    (Instr.storeN a r).effect P c =
-      some { c with nmem := upd c.nmem (c.nreg a) (c.nreg r) } := rfl
-@[simp] theorem effect_constR (r : ℕ) (z : ℤ) :
-    (Instr.constR r z).effect P c = some { c with rreg := upd c.rreg r (z : ℝ) } := rfl
-@[simp] theorem effect_copyR (r a : ℕ) :
-    (Instr.copyR r a).effect P c = some { c with rreg := upd c.rreg r (c.rreg a) } := rfl
-@[simp] theorem effect_addR (r a b : ℕ) :
-    (Instr.addR r a b).effect P c =
-      some { c with rreg := upd c.rreg r (c.rreg a + c.rreg b) } := rfl
-@[simp] theorem effect_subR (r a b : ℕ) :
-    (Instr.subR r a b).effect P c =
-      some { c with rreg := upd c.rreg r (c.rreg a - c.rreg b) } := rfl
-@[simp] theorem effect_mulR (r a b : ℕ) :
-    (Instr.mulR r a b).effect P c =
-      some { c with rreg := upd c.rreg r (c.rreg a * c.rreg b) } := rfl
-theorem effect_divR (r a b : ℕ) (hb : c.rreg b ≠ 0) :
+section
+variable (r a b : ℕ)
+theorem effect_divR (hb : c.rreg b ≠ 0) :
     (Instr.divR r a b).effect P c =
       some { c with rreg := upd c.rreg r (c.rreg a / c.rreg b) } := by
-  simp [effect, hb]
-@[simp] theorem effect_loadR (r a : ℕ) :
-    (Instr.loadR r a).effect P c =
-      some { c with rreg := upd c.rreg r (c.rmem (c.nreg a)) } := rfl
-@[simp] theorem effect_storeR (a r : ℕ) :
-    (Instr.storeR a r).effect P c =
-      some { c with rmem := upd c.rmem (c.nreg a) (c.rreg r) } := rfl
-@[simp] theorem effect_readX (r a : ℕ) :
-    (Instr.readX r a).effect P c =
-      some { c with rreg := upd c.rreg r (P.vtx (c.nreg a)).1 } := rfl
-@[simp] theorem effect_readY (r a : ℕ) :
-    (Instr.readY r a).effect P c =
-      some { c with rreg := upd c.rreg r (P.vtx (c.nreg a)).2 } := rfl
-@[simp] theorem effect_emit (a b d : ℕ) :
-    (Instr.emit a b d).effect P c =
-      some { c with output := c.output ++ [(c.nreg a, c.nreg b, c.nreg d)] } := rfl
-@[simp] theorem effect_halt : (Instr.halt).effect P c = none := rfl
-@[simp] theorem effect_jump (l : ℕ) : (Instr.jump l).effect P c = none := rfl
-@[simp] theorem effect_brLtN (a b l : ℕ) : (Instr.brLtN a b l).effect P c = none := rfl
-@[simp] theorem effect_brLtR (a b l : ℕ) : (Instr.brLtR a b l).effect P c = none := rfl
+  grind [effect]
+
+end
+
 
 /-- The effect is insensitive to the program counter. -/
 theorem effect_setPc (ins : Instr) (p : ℕ) :
@@ -136,8 +93,10 @@ theorem effect_setPc (ins : Instr) (p : ℕ) :
   cases ins <;> simp only [effect, Option.map_some, Option.map_none]
   split <;> simp_all
 
+section
+variable {prog : Program} {ins : Instr}
 /-- `step` on a straight-line instruction is `effect` followed by `pc + 1`. -/
-theorem step_eq_effect {prog : Program} {ins : Instr} (h : prog[c.pc]? = some ins)
+theorem step_eq_effect (h : prog[c.pc]? = some ins)
     (hs : ins.IsStraight) :
     step prog P c = (ins.effect P c).map (fun c' => { c' with pc := c.pc + 1 }) := by
   cases ins <;> simp only [step, effect, h, Option.map_some, Option.map_none] <;>
@@ -147,10 +106,13 @@ theorem step_eq_effect {prog : Program} {ins : Instr} (h : prog[c.pc]? = some in
     | simp at hs
 
 /-- `step` on a straight-line instruction whose effect is `c'`. -/
-theorem step_of_effect {prog : Program} {ins : Instr} {c' : Config} (h : prog[c.pc]? = some ins)
+theorem step_of_effect {c' : Config} (h : prog[c.pc]? = some ins)
     (hs : ins.IsStraight) (he : ins.effect P c = some c') :
     step prog P c = some { c' with pc := c.pc + 1 } := by
   rw [step_eq_effect h hs, he]; rfl
+
+
+end
 
 end
 
@@ -212,14 +174,19 @@ def compile : Stmt → ℕ → Program
 @[simp] theorem codeSize_skip : codeSize .skip = 0 := rfl
 @[simp] theorem codeSize_instr (i : Instr) : codeSize (.instr i) = 1 := rfl
 @[simp] theorem codeSize_seq (s t : Stmt) : codeSize (.seq s t) = codeSize s + codeSize t := rfl
-@[simp] theorem codeSize_ifLtN (a b : ℕ) (t e : Stmt) :
+section
+variable (a b : ℕ)
+@[simp] theorem codeSize_ifLtN (t e : Stmt) :
     codeSize (.ifLtN a b t e) = codeSize t + codeSize e + 2 := rfl
-@[simp] theorem codeSize_ifLtR (a b : ℕ) (t e : Stmt) :
+@[simp] theorem codeSize_ifLtR (t e : Stmt) :
     codeSize (.ifLtR a b t e) = codeSize t + codeSize e + 2 := rfl
-@[simp] theorem codeSize_whileLtN (a b : ℕ) (body : Stmt) :
+@[simp] theorem codeSize_whileLtN (body : Stmt) :
     codeSize (.whileLtN a b body) = codeSize body + 3 := rfl
-@[simp] theorem codeSize_whileLtR (a b : ℕ) (body : Stmt) :
+@[simp] theorem codeSize_whileLtR (body : Stmt) :
     codeSize (.whileLtR a b body) = codeSize body + 3 := rfl
+
+
+end
 
 /-- The compiled code has exactly `codeSize` instructions. -/
 @[simp] theorem length_compile (s : Stmt) (base : ℕ) : (compile s base).length = codeSize s := by
@@ -241,16 +208,16 @@ def block : List Instr → Stmt
 @[simp] theorem block_cons (i : Instr) (l : List Instr) :
     block (i :: l) = .seq (.instr i) (block l) := rfl
 
-@[simp] theorem codeSize_block (l : List Instr) : codeSize (block l) = l.length := by
+section
+variable (l : List Instr)
+@[simp] theorem codeSize_block : codeSize (block l) = l.length := by
   induction l with
   | nil => rfl
   | cons i l ih => simp [block, ih, Nat.add_comm]
 
-/-- A block compiles to exactly its list of instructions, at any base address. -/
-@[simp] theorem compile_block (l : List Instr) (base : ℕ) : compile (block l) base = l := by
-  induction l generalizing base with
-  | nil => rfl
-  | cons i l ih => simp [block, compile, ih]
+
+
+end
 
 end Stmt
 
@@ -292,8 +259,10 @@ namespace Exec
 
 variable {P : Polygon} {W : ℕ}
 
+section
+variable {s : Stmt}
 /-- The final configuration of an execution is word-bounded. -/
-theorem wb_right {s : Stmt} {c c' : Config} {k : ℕ} (h : Exec P W s c c' k) :
+theorem wb_right {c c' : Config} {k : ℕ} (h : Exec P W s c c' k) :
     WordsBounded W c' := by
   induction h with
   | skip hw => exact hw
@@ -309,17 +278,20 @@ theorem wb_right {s : Stmt} {c c' : Config} {k : ℕ} (h : Exec P W s c c' k) :
   | whileLtR_true _ _ _ _ ih => exact ih
 
 /-- Replace the cost by an equal one. -/
-theorem cast {s : Stmt} {c c' : Config} {k k' : ℕ} (h : Exec P W s c c' k) (hk : k = k') :
+theorem cast {c c' : Config} {k k' : ℕ} (h : Exec P W s c c' k) (hk : k = k') :
     Exec P W s c c' k' := hk ▸ h
 
 /-- Replace the final configuration by an equal one. -/
-theorem cast_end {s : Stmt} {c c' c'' : Config} {k : ℕ} (h : Exec P W s c c' k) (hc : c' = c'') :
+theorem cast_end {c c' c'' : Config} {k : ℕ} (h : Exec P W s c c' k) (hc : c' = c'') :
     Exec P W s c c'' k := hc ▸ h
 
 /-! #### Per-instruction rules
 
 Each rule gives the exact next state, cost `1`, and the side conditions: the written natural
 value must be `≤ W` (for `inputSize`, `constN`, `addN`), and `divR` needs a nonzero divisor. -/
+
+
+end
 
 section instrRules
 variable {c : Config} (hw : WordsBounded W c)
@@ -361,21 +333,26 @@ theorem copyR (r a : ℕ) :
     Exec P W (.instr (.copyR r a)) c { c with rreg := upd c.rreg r (c.rreg a) } 1 :=
   .instr (by simp) rfl hw hw
 
-theorem addR (r a b : ℕ) :
+section
+variable (r a b : ℕ)
+theorem addR :
     Exec P W (.instr (.addR r a b)) c { c with rreg := upd c.rreg r (c.rreg a + c.rreg b) } 1 :=
   .instr (by simp) rfl hw hw
 
-theorem subR (r a b : ℕ) :
+theorem subR :
     Exec P W (.instr (.subR r a b)) c { c with rreg := upd c.rreg r (c.rreg a - c.rreg b) } 1 :=
   .instr (by simp) rfl hw hw
 
-theorem mulR (r a b : ℕ) :
+theorem mulR :
     Exec P W (.instr (.mulR r a b)) c { c with rreg := upd c.rreg r (c.rreg a * c.rreg b) } 1 :=
   .instr (by simp) rfl hw hw
 
-theorem divR (r a b : ℕ) (hb : c.rreg b ≠ 0) :
+theorem divR (hb : c.rreg b ≠ 0) :
     Exec P W (.instr (.divR r a b)) c { c with rreg := upd c.rreg r (c.rreg a / c.rreg b) } 1 :=
   .instr (by simp) (Instr.effect_divR r a b hb) hw hw
+
+
+end
 
 theorem loadR (r a : ℕ) :
     Exec P W (.instr (.loadR r a)) c { c with rreg := upd c.rreg r (c.rmem (c.nreg a)) } 1 :=
@@ -429,10 +406,8 @@ theorem loop_potential (test : Config → Prop) (body loop : Stmt)
   induction hn : Φ c using Nat.strong_induction_on generalizing c with
   | _ n ih =>
     by_cases ht : test c
-    · obtain ⟨c₁, k₁, hb, hI₁, hΦ⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hk₂⟩ := ih (Φ c₁) (by omega) hI₁ rfl
-      exact ⟨c', k₁ + 2 + k₂, htrue c c₁ c' k₁ k₂ ht hb hl, hI', ht', by omega⟩
-    · exact ⟨c, 2, hfalse c ht (hI c hc), hc, ht, by omega⟩
+    · grind
+    grind
 
 /-- Loop rule with a potential for `whileLtN a b body`: total cost `≤ Φ c + 2`. -/
 theorem whileLtN_potential {a b : ℕ} {body : Stmt} (I : Config → Prop) (Φ : Config → ℕ)
@@ -461,8 +436,7 @@ theorem loop_bounded (test : Config → Prop) (body loop : Stmt)
       obtain ⟨c', k, he, hI', hk, hμ⟩ := hbody c hc ht
       refine ⟨c', k, he, hI', ?_⟩
       have : (B + 2) * (μ c' + 1) ≤ (B + 2) * μ c := Nat.mul_le_mul_left _ hμ
-      rw [Nat.mul_add, Nat.mul_one] at this
-      omega) hc
+      grind) hc
 
 /-- `whileLtN` with a bounded body cost `B` and a strictly decreasing measure `μ`. -/
 theorem whileLtN_bounded {a b : ℕ} {body : Stmt} (I : Config → Prop) (μ : Config → ℕ) (B : ℕ)
@@ -492,11 +466,13 @@ theorem setPc_congr {c : Config} {p p' : ℕ} (h : p = p') :
 theorem RunsTo.cast_end {prog : Program} {P : Polygon} {W k : ℕ} {c c' c'' : Config}
     (h : RunsTo prog P W k c c') (hc : c' = c'') : RunsTo prog P W k c c'' := hc ▸ h
 
+section
+variable {P : Polygon} {W : ℕ} {s : Stmt}
 /-- **Simulation.**  If `compile s base` sits at `base` inside `q`, an execution
 `Exec P W s c c' k` is realised by running `q` for exactly `k` steps from `c` with
 `pc := base`, ending at `c'` with `pc := base + codeSize s`, every visited configuration
 `WordsBounded W`. -/
-theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
+theorem Exec.runsTo {c c' : Config} {k : ℕ}
     (h : Exec P W s c c' k) {q : Program} {base : ℕ} (hq : SubAt (compile s base) q base) :
     RunsTo q P W k { c with pc := base } { c' with pc := base + codeSize s } := by
   induction h generalizing q base with
@@ -512,25 +488,25 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
   | @seq s t c c₁ c₂ k₁ k₂ _ _ ih₁ ih₂ =>
     simp only [compile] at hq
     have h₁ := ih₁ hq.of_append_left
-    have h₂ := ih₂ (hq.of_append_right.cast (by rw [length_compile]))
-    exact (h₁.trans h₂).cast_end (setPc_congr (by rw [codeSize_seq]; omega))
+    have h₂ := ih₂ (hq.of_append_right.cast (by simp_all))
+    exact (h₁.trans h₂).cast_end (setPc_congr (by core_grind))
   | @ifLtN_true a b t e c c' k ht _ ih =>
     simp only [compile] at hq
     have h0 : q[base]? = some (.brLtN a b (base + 2 + codeSize e)) := hq.head
     have hqt : SubAt (compile t (base + 2 + codeSize e)) q (base + 2 + codeSize e) :=
-      hq.tail.of_append_right.tail.cast (by rw [length_compile]; omega)
+      hq.tail.of_append_right.tail.cast (by grind [length_compile])
     have hst : step q P { c with pc := base } = some { c with pc := base + 2 + codeSize e } :=
       step_brLtN_true h0 ht
     have hrun := ih hqt
     have hw : WordsBounded W { c with pc := base } := hrun.wb_start
     exact (RunsTo.cons hw hst hrun).cast_end
-      (setPc_congr (by rw [codeSize_ifLtN]; omega))
+      (setPc_congr (by core_grind))
   | @ifLtN_false a b t e c c' k ht _ ih =>
     simp only [compile] at hq
     have h0 : q[base]? = some (.brLtN a b (base + 2 + codeSize e)) := hq.head
     have hqe : SubAt (compile e (base + 1)) q (base + 1) := hq.tail.of_append_left
     have hj : q[base + 1 + codeSize e]? = some (.jump (base + 2 + codeSize e + codeSize t)) :=
-      hq.tail.of_append_right.cast (by rw [length_compile]) |>.head
+      hq.tail.of_append_right.cast (by simp_all) |>.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 1 } :=
       step_brLtN_false h0 ht
     have hrun := ih hqe
@@ -539,24 +515,24 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
       step_jump hj
     have hw : WordsBounded W { c with pc := base } := hrun.wb_start
     exact ((RunsTo.cons hw hst hrun).snoc hstj hrun.wb_end).cast_end
-      (setPc_congr (by rw [codeSize_ifLtN]; omega))
+      (setPc_congr (by core_grind))
   | @ifLtR_true a b t e c c' k ht _ ih =>
     simp only [compile] at hq
     have h0 : q[base]? = some (.brLtR a b (base + 2 + codeSize e)) := hq.head
     have hqt : SubAt (compile t (base + 2 + codeSize e)) q (base + 2 + codeSize e) :=
-      hq.tail.of_append_right.tail.cast (by rw [length_compile]; omega)
+      hq.tail.of_append_right.tail.cast (by grind [length_compile])
     have hst : step q P { c with pc := base } = some { c with pc := base + 2 + codeSize e } :=
       step_brLtR_true h0 ht
     have hrun := ih hqt
     have hw : WordsBounded W { c with pc := base } := hrun.wb_start
     exact (RunsTo.cons hw hst hrun).cast_end
-      (setPc_congr (by rw [codeSize_ifLtR]; omega))
+      (setPc_congr (by core_grind))
   | @ifLtR_false a b t e c c' k ht _ ih =>
     simp only [compile] at hq
     have h0 : q[base]? = some (.brLtR a b (base + 2 + codeSize e)) := hq.head
     have hqe : SubAt (compile e (base + 1)) q (base + 1) := hq.tail.of_append_left
     have hj : q[base + 1 + codeSize e]? = some (.jump (base + 2 + codeSize e + codeSize t)) :=
-      hq.tail.of_append_right.cast (by rw [length_compile]) |>.head
+      hq.tail.of_append_right.cast (by simp_all) |>.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 1 } :=
       step_brLtR_false h0 ht
     have hrun := ih hqe
@@ -565,7 +541,7 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
       step_jump hj
     have hw : WordsBounded W { c with pc := base } := hrun.wb_start
     exact ((RunsTo.cons hw hst hrun).snoc hstj hrun.wb_end).cast_end
-      (setPc_congr (by rw [codeSize_ifLtR]; omega))
+      (setPc_congr (by core_grind))
   | @whileLtN_false a b body c ht hw =>
     simp only [compile] at hq
     have h0 : q[base]? = some (.brLtN a b (base + 2)) := hq.head
@@ -578,7 +554,7 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     have hw1 : WordsBounded W { c with pc := base + 1 } := hw
     have hw3 : WordsBounded W { c with pc := base + 3 + codeSize body } := hw
     exact (RunsTo.cons hw' hst (RunsTo.single hw1 hw3 hstj)).cast_end
-      (setPc_congr (by rw [codeSize_whileLtN]; omega))
+      (setPc_congr (by core_grind))
   | @whileLtN_true a b body c c₁ c' k₁ k₂ ht _ _ ih₁ ih₂ =>
     have hq' := hq
     simp only [compile] at hq
@@ -586,7 +562,7 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     have hqb : SubAt (compile body (base + 2)) q (base + 2) :=
       hq.tail.tail.of_append_left.cast (by omega)
     have hj : q[base + 2 + codeSize body]? = some (.jump base) :=
-      hq.tail.tail.of_append_right.cast (by rw [length_compile]) |>.head
+      hq.tail.tail.of_append_right.cast (by simp_all) |>.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 2 } :=
       step_brLtN_true h0 ht
     have hrun := ih₁ hqb
@@ -607,7 +583,7 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     have hw1 : WordsBounded W { c with pc := base + 1 } := hw
     have hw3 : WordsBounded W { c with pc := base + 3 + codeSize body } := hw
     exact (RunsTo.cons hw' hst (RunsTo.single hw1 hw3 hstj)).cast_end
-      (setPc_congr (by rw [codeSize_whileLtR]; omega))
+      (setPc_congr (by core_grind))
   | @whileLtR_true a b body c c₁ c' k₁ k₂ ht _ _ ih₁ ih₂ =>
     have hq' := hq
     simp only [compile] at hq
@@ -615,7 +591,7 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     have hqb : SubAt (compile body (base + 2)) q (base + 2) :=
       hq.tail.tail.of_append_left.cast (by omega)
     have hj : q[base + 2 + codeSize body]? = some (.jump base) :=
-      hq.tail.tail.of_append_right.cast (by rw [length_compile]) |>.head
+      hq.tail.tail.of_append_right.cast (by simp_all) |>.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 2 } :=
       step_brLtR_true h0 ht
     have hrun := ih₁ hqb
@@ -627,7 +603,7 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
 
 /-- **Top level.**  An execution of `s` from the initial configuration gives a
 `RunsWithin` for the program `compile s 0 ++ [halt]` with `k + 1` steps. -/
-theorem runsWithin_of_exec {P : Polygon} {W : ℕ} {s : Stmt} {c' : Config} {k : ℕ}
+theorem runsWithin_of_exec {c' : Config} {k : ℕ}
     (h : Exec P W s initConfig c' k) :
     RunsWithin (compile s 0 ++ [Instr.halt]) P W (k + 1) c'.output := by
   have hsub : SubAt (compile s 0) (compile s 0 ++ [Instr.halt]) 0 := SubAt.append_left _ _
@@ -636,13 +612,12 @@ theorem runsWithin_of_exec {P : Polygon} {W : ℕ} {s : Stmt} {c' : Config} {k :
   have hinit : ({ initConfig with pc := 0 } : Config) = initConfig := rfl
   rw [hinit] at hrun
   have hh : AtHalt (compile s 0 ++ [Instr.halt]) { c' with pc := codeSize s } := by
-    unfold AtHalt
-    have : codeSize s = (compile s 0).length := (length_compile s 0).symm
-    show (compile s 0 ++ [Instr.halt])[codeSize s]? = some Instr.halt
-    rw [this]
-    exact List.getElem?_concat_length
+    aesop (add simp [AtHalt]) (add safe (by omega))
   have := runsWithin_of_runsTo hrun hh
   exact this
+
+
+end
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranRamJw
 
 /-!
@@ -48,18 +50,12 @@ theorem bx_le {E : Env} {st : St} (hE : E.Good) (h : StatOK E st) {j : ℕ} (hj 
   obtain ⟨h1, h2⟩ := h.pz j hj
   rw [h.eg j hj]
   unfold Env.sz cntIn bB
-  have hnE : E.n = E.M.W.n := rfl
+  
   cases hch : E.ch with
-  | false => simp only [Bool.false_eq_true, ite_false]; omega
+  | false => grind
   | true =>
     have hn := hE.hn hch
-    simp only [ite_true]
-    rw [hch] at hcnt
-    simp only [Bool.true_eq_false, false_or] at hcnt
-    by_cases hz : st.pz j = 1
-    · have := hcnt.1 (h2.1 hz).1
-      omega
-    · omega
+    grind
 
 /-! ## Popping -/
 
@@ -72,12 +68,12 @@ theorem MS.pop {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : ℕ → ℕ} {P
       (∀ r, r ≠ 90050 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
   have e := Exec.subN (P := P) h.wb 90050 90050 90019
   refine ⟨_, 1, e, rfl, ⟨e.wb_right, h.cst.frame fun r hr _ => ?_, ?_, ?_, ?_, h.low⟩,
-    fun r hr => by simp [upd, hr], rfl⟩
-  · simp [upd, show r ≠ 90050 by omega]
+    fun r hr => by simp_all, rfl⟩
+  · ram_all
   · obtain ⟨a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15⟩ := h.enc
     exact ⟨a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15⟩
   · simp only [upd, ite_true, St.pop]; rw [h.top, h.cst.one]
-  · simp only [upd, show (90051 : ℕ) ≠ 90050 by decide, ite_false, St.pop]; exact h.nlive
+  · simp only [upd, show (90051 : ℕ) ≠ 90050 by decide, ite_false, St.pop]; ram_grind
 
 /-! ## The front -/
 
@@ -108,7 +104,7 @@ theorem front_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀
     unfold St.cur at hcurK; dm_simp; rw [hD.K] at *; omega
   · have e1 : c.nmem (d.b0 + d.oStk + (st.top - 1)) = st.cur := h.enc.stk _ (by omega)
     have e2 : c.nmem (d.b0 + st.cur) = st.live st.cur := h.enc.live _ (by rw [hD.K]; exact hcurK)
-    refine ⟨rfl, ?_, ?_, hcurK, fun r a1 a2 a3 a4 => by simp [upd, a1, a2, a3, a4], rfl⟩
+    refine ⟨rfl, ?_, ?_, hcurK, fun r a1 a2 a3 a4 => by simp_all, rfl⟩
     · config_simp; rw [hC.bStk, h.top, hC.one, e1]
     · config_simp; rw [hC.bStk, h.top, hC.one, e1, hC.bLive, e2]
 
@@ -133,7 +129,7 @@ theorem xy_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
     henc.deg _ (by rw [hD.R]; exact hX)
   have e4 : c.nmem (d.b0 + d.oDeg + st.s1 cc) = st.deg (st.s1 cc) :=
     henc.deg _ (by rw [hD.R]; exact hY)
-  have hR : st.s0 cc < d.R ∧ st.s1 cc < d.R := by rw [hD.R]; exact ⟨hX, hY⟩
+  have hR : st.s0 cc < d.R ∧ st.s1 cc < d.R := by ram_grind
   have hb := hD.base
   unfold xyStmt
   exec_block
@@ -141,7 +137,7 @@ theorem xy_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
   · config_simp; rw [hC.bS1, h62]; dm_simp; omega
   · config_simp; rw [hC.bS0, h62, e1, hC.bDeg]; dm_simp; omega
   · config_simp; rw [hC.bS1, h62, e2, hC.bDeg]; dm_simp; omega
-  · refine ⟨rfl, ?_, ?_, ?_, ?_, fun r a1 a2 a3 a4 a5 => by simp [upd, a1, a2, a3, a4, a5], rfl⟩
+  · refine ⟨rfl, ?_, ?_, ?_, ?_, fun r a1 a2 a3 a4 a5 => by simp_all, rfl⟩
     · config_simp; rw [hC.bS0, h62, e1]
     · config_simp; rw [hC.bS1, h62, e2]
     · config_simp; rw [hC.bS0, h62, e1, hC.bDeg, e3]
@@ -159,20 +155,22 @@ def ndStmt : Stmt :=
 
 theorem wr_ndStmt : wr (Bin 90061 90074) ndStmt = true := by decide
 
+section
+variable {P : Polygon} {W : ℕ}
 /-- A death bit from a positive count. -/
-theorem bitSet_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W)
+theorem bitSet_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W)
     {rk rd : ℕ} (h21 : c.nreg 90021 = 2) (hk : 0 < c.nreg rk) :
     ∃ c' k, Exec P W (.ifLtN rk 90021 (.instr (.constN rd 1)) (.instr (.constN rd 0))) c c' k ∧
       k ≤ 3 ∧ c'.nreg rd = bit (decide (c.nreg rk = 1)) ∧
       (∀ r, r ≠ rd → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
   by_cases h : c.nreg rk < 2
-  · exact ⟨_, _, .ifLtN_true (by rw [h21]; exact h) (Exec.constN hw rd 1 hW), by omega,
-      by simp [upd, bit, show c.nreg rk = 1 by omega], fun r hr => by simp [upd, hr], rfl⟩
-  · exact ⟨_, _, .ifLtN_false (by rw [h21]; exact h) (Exec.constN hw rd 0 (by omega)),
-      by omega, by simp [upd, bit, show c.nreg rk ≠ 1 by omega], fun r hr => by simp [upd, hr],
+  · exact ⟨_, _, .ifLtN_true (by omega) (Exec.constN hw rd 1 hW), by omega,
+      by simp_all [upd, bit] <;> omega_nf, fun r hr => by simp_all, rfl⟩
+  · exact ⟨_, _, .ifLtN_false (by omega) (Exec.constN hw rd 0 (by omega)),
+      by omega, by simp_all [upd, bit] <;> omega_nf, fun r hr => by simp_all,
       rfl⟩
 
-theorem nd_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config}
+theorem nd_exec {E : Env} {d : Dm} {st : St} {c : Config}
     (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d st) (hI : Inv E st)
     (hD : DimOK E d W) {cc : ℕ} (hc : cc ∈ st.L E) (h62 : c.nreg 90062 = cc) :
     ∃ c' k, Exec P W ndStmt c c' k ∧ k ≤ 14 ∧ c'.nreg 90068 = st.nd0 cc ∧
@@ -216,28 +214,28 @@ theorem nd_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
       · exact hC.two
   obtain ⟨q68, q69, q70, q71, q21⟩ := q
   obtain ⟨c₂, k₂, ex₂, hk₂, b₂, r₂, -⟩ := bitSet_exec (P := P) (rk := 90070) (rd := 90072) c₁
-    ex₁.wb_right (by have := hD.W1; omega) q21 (by rw [q70]; exact hL0)
+    ex₁.wb_right (by have := hD.W1; omega) q21 (by ram_grind)
   obtain ⟨c₃, k₃, ex₃, hk₃, b₃, r₃, -⟩ := bitSet_exec (P := P) (rk := 90071) (rd := 90073) c₂
-    ex₂.wb_right (by have := hD.W1; omega) (by rw [r₂ _ (by decide), q21])
-    (by rw [r₂ _ (by decide), q71]; exact hL1)
+    ex₂.wb_right (by have := hD.W1; omega) (by simp_all)
+    (by ram_grind)
   refine ⟨c₃, _, .seq ex₁ (.seq ex₂ ex₃), by omega, ?_, ?_, ?_, ?_⟩
-  · rw [r₃ _ (by decide), r₂ _ (by decide), q68]
-  · rw [r₃ _ (by decide), r₂ _ (by decide), q69]
-  · rw [r₃ _ (by decide), b₂, q70]
-  · rw [b₃, r₂ _ (by decide), q71]
+  all_goals grind
 
 /-! ## The merged weight -/
 
 /-- `rd := max ra rb`. -/
-theorem maxSet_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {ra rb rd : ℕ} :
+theorem maxSet_exec (c : Config) (hw : WordsBounded W c) {ra rb rd : ℕ} :
     ∃ c' k, Exec P W (.ifLtN ra rb (.instr (.copyN rd rb)) (.instr (.copyN rd ra))) c c' k ∧
       k ≤ 3 ∧ c'.nreg rd = max (c.nreg ra) (c.nreg rb) ∧
       (∀ r, r ≠ rd → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
   by_cases h : c.nreg ra < c.nreg rb
   · exact ⟨_, _, .ifLtN_true h (Exec.copyN hw rd rb), by omega,
-      by simp [upd, max_eq_right h.le], fun r hr => by simp [upd, hr], rfl⟩
+      by grind [upd], fun r hr => by simp_all, rfl⟩
   · exact ⟨_, _, .ifLtN_false h (Exec.copyN hw rd ra), by omega,
-      by simp [upd, max_eq_left (not_lt.1 h)], fun r hr => by simp [upd, hr], rfl⟩
+      by simp_all, fun r hr => by simp_all, rfl⟩
+
+
+end
 
 /-- `r78 := max (max r74 r75) (max r76 r77)`. -/
 def maxStmt : Stmt :=
@@ -255,10 +253,8 @@ theorem maxStmt_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
     (rd := 90078) c₁ e₁.wb_right
   obtain ⟨c₃, k₃, e₃, hk₃, m₃, r₃, n₃⟩ := maxSet_exec (P := P) (ra := 90078) (rb := 90079)
     (rd := 90078) c₂ e₂.wb_right
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, ?_, fun r a1 a2 => ?_, by rw [n₃, n₂, n₁]⟩
-  · rw [m₃, m₂, r₂ _ (by decide), m₁, r₁ _ (by decide), r₁ _ (by decide)]
-    exact max_comm _ _
-  · rw [r₃ r a1, r₂ r a1, r₁ r a2]
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, ?_, fun r a1 a2 => ?_, by grind⟩
+  all_goals grind
 
 /-- **The merged weight** `r78 := St.mu E c`. -/
 def muStmt : Stmt :=
@@ -310,12 +306,11 @@ theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
     exec_block
     · rw [hC.bWt, h64]; dm_simp; omega
     · config_simp; rw [hC.bWt, h65]; dm_simp; omega
-    · refine ⟨rfl, ?_, ?_, ?_, ?_, fun r a1 a2 a3 a4 a5 => by simp [upd, a1, a2, a3, a4, a5],
+    · refine ⟨rfl, ?_, ?_, ?_, ?_, fun r a1 a2 a3 a4 a5 => by simp_all,
         rfl⟩ <;> config_simp
       · rw [hC.bWt, h64, e1]
       · rw [hC.bWt, h65, e2]
-      · exact h68
-      · exact h72
+      all_goals omega
   obtain ⟨q74, q75, q86, q87, qr, qm⟩ := q
   -- common facts for the two gaps
   have hring : ∀ j, j < d.A → 0 < st.cnt j → st.prv j < d.A ∧ 0 < st.cnt (st.prv j) ∧
@@ -334,29 +329,24 @@ theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
   have hC₁ : Cst c₁ E d := hC.frame fun r hr _ => qr r (by omega) (by omega) (by omega)
     (by omega) (by omega)
   obtain ⟨c₂, k₂, ex₂, hk₂, j₂, f₂⟩ := jwStmt_exec (P := P) c₁ ex₁.wb_right hW1 hC₁
-    (by rw [qm]; exact henc) (cc := cc) (k := st.nd0 cc) q86 q87
-    (by rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), h68])
-    (by rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), h69])
-    (by rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), h72])
-    (by rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), h73])
+    (by grind) (cc := cc) (k := st.nd0 cc) q86 q87
+    (by grind)
+    (by grind)
+    (by grind)
+    (by grind)
     hn0 hL0 hring hbx hD.sz hb
   have g₂ : ∀ r, Bin 90080 90100 r = false → c₂.nreg r = c₁.nreg r := f₂.1
   obtain ⟨c₃, k₃, e₃, hk₃, q76, q3r, q3m⟩ : ∃ c₃ k₃, Exec P W (.instr (.copyN 90076 90085)) c₂ c₃
       k₃ ∧ k₃ = 1 ∧ c₃.nreg 90076 = c₂.nreg 90085 ∧ (∀ r, r ≠ 90076 → c₃.nreg r = c₂.nreg r) ∧
       c₃.nmem = c₂.nmem :=
     ⟨_, 1, Exec.copyN ex₂.wb_right 90076 90085, rfl, by simp [upd],
-      fun r hr => by simp [upd, hr], rfl⟩
+      fun r hr => by grind [upd], rfl⟩
   obtain ⟨c₄, k₄, ex₄, hk₄, q⟩ : ∃ c₄ k₄, Exec P W (block [.copyN 90086 90069,
       .copyN 90087 90073]) c₃ c₄ k₄ ∧ k₄ = 2 ∧
       (c₄.nreg 90086 = st.nd1 cc ∧ c₄.nreg 90087 = bit (decide (st.cnt (st.nd1 cc) = 1)) ∧
         (∀ r, r ≠ 90086 → r ≠ 90087 → c₄.nreg r = c₃.nreg r) ∧ c₄.nmem = c₃.nmem) := by
     have hw₃ := e₃.wb_right
-    exec_block
-    refine ⟨rfl, ?_, ?_, fun r a1 a2 => by simp [upd, a1, a2], rfl⟩ <;> config_simp
-    · rw [q3r _ (by decide), g₂ _ (by decide), qr _ (by decide) (by decide) (by decide) (by decide) (by decide),
-        h69]
-    · rw [q3r _ (by decide), g₂ _ (by decide),
-        qr _ (by decide) (by decide) (by decide) (by decide) (by decide), h73]
+    exec_block <;> (config_simp; grind [Chazelle.upd, Chazelle.Core.Gran.Env.Good, Chazelle.WordsBounded, Chazelle.Core.Gran.Cst, Chazelle.Core.Gran.Enc, Chazelle.Core.Gran.Inv, Chazelle.Core.Gran.DimOK, Chazelle.Core.Gran.St.Lv, Chazelle.Core.SignK.FrameB, Chazelle.Core.Gran.Bin])
   obtain ⟨q86', q87', qr', qm'⟩ := q
   have c4r : ∀ r, r < 90080 → r ≠ 90061 → r ≠ 90074 → r ≠ 90075 → r ≠ 90076 →
       c₄.nreg r = c.nreg r := by
@@ -367,11 +357,11 @@ theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
     (by omega) (by omega)
   have m4 : c₄.nmem = c.nmem := by rw [qm', q3m, f₂.2.2.1, qm]
   obtain ⟨c₅, k₅, ex₅, hk₅, j₅, f₅⟩ := jwStmt_exec (P := P) c₄ ex₄.wb_right hW1 hC₄
-    (by rw [m4]; exact henc) (cc := cc) (k := st.nd1 cc) q86' q87'
-    (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h68])
-    (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h69])
-    (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h72])
-    (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h73])
+    (by grind) (cc := cc) (k := st.nd1 cc) q86' q87'
+    (by grind)
+    (by grind)
+    (by grind)
+    (by grind)
     hn1 hL1 hring hbx hD.sz hb
   have e₆ := Exec.copyN (P := P) ex₅.wb_right 90077 90085
   obtain ⟨c₇, k₇, ex₇, hk₇, m₇, -, -⟩ := maxStmt_exec (P := P) _ e₆.wb_right
@@ -388,8 +378,7 @@ theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
   have v75 : c₅.nreg 90075 = st.wt (st.s1 cc) := by
     rw [f₅.1 _ (by decide), qr' _ (by decide) (by decide), q3r _ (by decide),
       g₂ _ (by decide), q75]
-  rw [v74, v75, v76, j₅]
-  simp only [ite_false]
+  grind
 
 end
 

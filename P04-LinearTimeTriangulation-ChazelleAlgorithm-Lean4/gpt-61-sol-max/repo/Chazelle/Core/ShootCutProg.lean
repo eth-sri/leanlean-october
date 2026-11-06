@@ -145,8 +145,11 @@ def pcBlock (x dir : ℕ) : Stmt :=
 
 /-! ## The dyadic sweeps -/
 
+section
+variable (emit : Stmt)
+include emit
 /-- Upward, ascending sweep body. -/
-def upABody (emit : Stmt) : Stmt :=
+def upABody : Stmt :=
   .seq (block [.addN 150075 150035 150083, .loadN 150086 150075, .addN 150075 150086 150086])
     (.seq (.ifLtN 150075 150083
         (.seq (.instr (.copyN 150077 150083))
@@ -159,7 +162,7 @@ def upABody (emit : Stmt) : Stmt :=
 
 /-- Upward, descending sweep body (the odd branch as in the ascending sweep, with the index
 kept in `86`). -/
-def upBBody (emit : Stmt) : Stmt :=
+def upBBody : Stmt :=
   .seq (block [.subN 150082 150082 150091, .addN 150075 150036 150082, .loadN 150084 150075,
       .addN 150083 150083 150083, .copyN 150086 150083, .addN 150087 150080 150084])
     (.seq (.ifLtN 150087 150088
@@ -171,7 +174,7 @@ def upBBody (emit : Stmt) : Stmt :=
 
 /-- **The upward dyadic cover** of `[q, q + L)` (`q` in `70`, `L` in `71`) from the walk vertex
 `c`; the new `c` is `c + L`. -/
-def dyUp (emit : Stmt) : Stmt :=
+def dyUp : Stmt :=
   .seq (block [.copyN 150080 150070, .addN 150081 150070 150071, .addN 150088 150081 150091,
       .constN 150082 0, .copyN 150083 150070, .constN 150084 1, .copyN 150085 150040,
       .addN 150087 150080 150084])
@@ -179,26 +182,26 @@ def dyUp (emit : Stmt) : Stmt :=
       (.seq (.whileLtN 150090 150082 (upBBody emit)) (.instr (.copyN 150040 150085))))
 
 /-- Downward sweeps: hand the block below `y` (index `x / 2^g - 1`), then lower `y`. -/
-def dnOdd (emit : Stmt) : Stmt :=
+def dnOdd : Stmt :=
   .seq (block [.subN 150077 150083 150091, .subN 150078 150081 150084])
     (.seq (pcBlock 150078 0)
       (.seq emit (block [.subN 150081 150081 150084, .addN 150085 150085 150084])))
 
 /-- Downward, ascending sweep body. -/
-def dnABody (emit : Stmt) : Stmt :=
+def dnABody : Stmt :=
   .seq (block [.addN 150075 150035 150083, .loadN 150086 150075, .addN 150075 150086 150086])
     (.seq (.ifLtN 150075 150083 (dnOdd emit) .skip)
       (block [.addN 150082 150082 150091, .addN 150075 150036 150082, .loadN 150084 150075,
         .copyN 150083 150086, .addN 150087 150080 150084, .addN 150088 150081 150091]))
 
 /-- Downward, descending sweep body. -/
-def dnBBody (emit : Stmt) : Stmt :=
+def dnBBody : Stmt :=
   .seq (block [.subN 150082 150082 150091, .addN 150075 150036 150082, .loadN 150084 150075,
       .addN 150083 150083 150083, .addN 150087 150080 150084, .addN 150088 150081 150091])
     (.ifLtN 150087 150088 (.seq (dnOdd emit) (.instr (.subN 150083 150083 150091))) .skip)
 
 /-- **The downward dyadic cover** of `[q - L, q)` from the top `q`. -/
-def dyDn (emit : Stmt) : Stmt :=
+def dyDn : Stmt :=
   .seq (block [.copyN 150081 150070, .subN 150080 150070 150071, .addN 150088 150081 150091,
       .constN 150082 0, .copyN 150083 150070, .constN 150084 1, .copyN 150085 150040,
       .addN 150087 150080 150084])
@@ -206,6 +209,9 @@ def dyDn (emit : Stmt) : Stmt :=
       (.seq (.whileLtN 150090 150082 (dnBBody emit)) (.instr (.copyN 150040 150085))))
 
 /-! ## One step of the main loop -/
+
+
+end
 
 /-- `150071 := min 150071 r`. -/
 def minTo (r : ℕ) : Stmt := .ifLtN r 150071 (.instr (.copyN 150071 r)) .skip
@@ -226,11 +232,14 @@ def dnLen : Stmt :=
   .seq (.instr (.subN 150071 150029 150061))
     (.seq (minTo 150066) (.seq (minTo 150070) (minTo 150072)))
 
+section
+variable (emit : Stmt)
+include emit
 /-- A descending stretch. -/
-def dnStretch (emit : Stmt) : Stmt := .seq dnLen (.seq (dyDn emit) cInit)
+def dnStretch : Stmt := .seq dnLen (.seq (dyDn emit) cInit)
 
 /-- A run item: the index `q = (a + t) mod n`, then a stretch or a single edge. -/
-def runStep (emit : Stmt) : Stmt :=
+def runStep : Stmt :=
   .seq (.seq (.instr (.addN 150075 150068 150066))
       (.ifLtN 150075 150027 (.instr (.copyN 150070 150075))
         (.instr (.subN 150070 150075 150027))))
@@ -242,7 +251,7 @@ def runStep (emit : Stmt) : Stmt :=
           (single emit)))
 
 /-- **A step on the double boundary** from the vertex `c < 2m + 6`. -/
-def cStep (emit : Stmt) : Stmt :=
+def cStep : Stmt :=
   .seq (.instr (.copyN 150044 150040))
     (.seq locV
       (.seq (.ifLtN 150041 150040 (.instr (.subN 150072 150032 150040))
@@ -250,10 +259,13 @@ def cStep (emit : Stmt) : Stmt :=
         (.ifLtN 150067 150091 (runStep emit) (single emit))))
 
 /-- The piece through the uncounted block, from `2m + 6` to `6`. -/
-def uStep (emit : Stmt) : Stmt :=
+def uStep : Stmt :=
   .seq (block [.copyN 150050 150032, .constN 150051 0, .copyN 150052 150096, .constN 150053 0,
       .constN 150054 0])
     (.seq emit (.instr (.copyN 150040 150096)))
+
+
+end
 
 /-- The loop flag: `1` iff `c ≠ f`. -/
 def setFlag : Stmt :=
@@ -345,8 +357,11 @@ def pcSV : Stmt := block [.copyN 150050 150001, .copyN 150051 150002, .copyN 150
 def pcVE : Stmt := block [.copyN 150050 150075, .constN 150051 0, .copyN 150052 150003,
   .copyN 150053 150004, .constN 150054 0]
 
+section
+variable (emit : Stmt)
+include emit
 /-- The first piece; sets `c` (`150040`) or the done flag (`150043`). -/
-def first (emit : Stmt) : Stmt :=
+def first : Stmt :=
   .ifLtN 150090 150038
     -- the start is in the box block
     (.ifLtN 150090 150039
@@ -364,7 +379,7 @@ def first (emit : Stmt) : Stmt :=
         (.seq pcSV (.seq emit (.instr (.addN 150040 150001 150091))))))
 
 /-- The last piece. -/
-def final (emit : Stmt) : Stmt :=
+def final : Stmt :=
   .ifLtN 150090 150039
     (.seq (.instr (.copyN 150075 150031)) (.seq pcVE emit))
     (.ifLtN 150090 150004
@@ -374,7 +389,7 @@ def final (emit : Stmt) : Stmt :=
       .skip)
 
 /-- The general case: the first piece, the main loop, the last piece. -/
-def general (emit : Stmt) : Stmt :=
+def general : Stmt :=
   .seq (.seq (uFlag 150001 150038 150037) (uFlag 150003 150039 150030))
     (.seq (.ifLtN 150090 150039 (.instr (.copyN 150041 150031)) (.instr (.copyN 150041 150003)))
       (.seq (.instr (.constN 150043 0))
@@ -382,8 +397,11 @@ def general (emit : Stmt) : Stmt :=
           (.ifLtN 150043 150091 (.seq setFlag (.seq (mainLoop emit) (final emit))) .skip))))
 
 /-- **The core of the arc-cutter.** -/
-def core (emit : Stmt) : Stmt :=
+def core : Stmt :=
   .seq cPre (.seq decideS (.ifLtN 150090 150048 (.seq pcSE emit) (general emit)))
+
+
+end
 
 end
 

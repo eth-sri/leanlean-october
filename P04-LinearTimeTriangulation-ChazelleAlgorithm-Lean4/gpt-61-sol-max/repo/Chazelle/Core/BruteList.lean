@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.BruteFar
 
 /-!
@@ -39,7 +41,10 @@ def fwdIdx (m S b : ℕ) : ℕ := (b + 2 * m - S) % (2 * m)
 /-- The tour position traversing chain edge `b` backward (`v_{b+1} → v_b`). -/
 def bwdIdx (m S b : ℕ) : ℕ := (2 * m - 1 - b + 2 * m - S) % (2 * m)
 
-theorem fwdIdx_spec {b : ℕ} (hb : b < C.m) :
+section
+variable {b : ℕ} (hb : b < C.m)
+include hb
+theorem fwdIdx_spec :
     fwdIdx C.m (tS C) b < 2 * C.m ∧ C.sideIdx C.sideBeta (fwdIdx C.m (tS C) b) = b ∧
       C.sideIdx C.sideBeta (fwdIdx C.m (tS C) b + 1) = b + 1 := by
   have hm := C.two_m_pos
@@ -49,10 +54,10 @@ theorem fwdIdx_spec {b : ℕ} (hb : b < C.m) :
     rw [Nat.add_mod_mod, show C.sideS C.sideBeta + (b + 2 * C.m - C.sideS C.sideBeta) =
       b + 2 * C.m by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
   refine ⟨Nat.mod_lt _ hm, ?_, ?_⟩
-  · rw [Chain.sideIdx_eq, hmod]; unfold Chain.sideE; rw [ite_eq_left (by omega)]
-  · rw [Chain.sideIdx_succ, hmod]; unfold Chain.sideE; rw [ite_eq_left (by omega)]
+  · grind [Chain.sideIdx_eq, Chain.sideE]
+  simp_all [Chain.sideIdx_succ, Chain.sideE] 
 
-theorem bwdIdx_spec {b : ℕ} (hb : b < C.m) :
+theorem bwdIdx_spec :
     bwdIdx C.m (tS C) b < 2 * C.m ∧ C.sideIdx C.sideBeta (bwdIdx C.m (tS C) b) = b + 1 ∧
       C.sideIdx C.sideBeta (bwdIdx C.m (tS C) b + 1) = b := by
   have hm := C.two_m_pos
@@ -62,10 +67,13 @@ theorem bwdIdx_spec {b : ℕ} (hb : b < C.m) :
     rw [Nat.add_mod_mod, show C.sideS C.sideBeta + (2 * C.m - 1 - b + 2 * C.m - C.sideS C.sideBeta)
       = (2 * C.m - 1 - b) + 2 * C.m by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
   refine ⟨Nat.mod_lt _ hm, ?_, ?_⟩
-  · rw [Chain.sideIdx_eq, hmod]; unfold Chain.sideE; split_ifs <;> omega
-  · rw [Chain.sideIdx_succ, hmod]; unfold Chain.sideE; split_ifs <;> omega
+  · grind [Chain.sideIdx_eq, Chain.sideE]
+  grind [Chain.sideIdx_succ, Chain.sideE]
 
 /-! ## The walk edges of the chain model -/
+
+
+end
 
 theorem wb_eq (p : ℕ) :
     (chainModel C).wb p = (chainModel C).W.vtx ((p + 1) % (chainModel C).W.n) := rfl
@@ -74,18 +82,16 @@ theorem cwa_tour {i : ℕ} (hi : i ≤ 2 * C.m) : (chainModel C).wa (i + 6) = vP
   walk_vtx_tour hi
 
 theorem cwb_tour {i : ℕ} (hi : i < 2 * C.m) : (chainModel C).wb (i + 6) = vPt C (i + 1) := by
-  rw [wb_eq, walk_next hi.le]; unfold nextPt; rw [ite_eq_right (by omega)]; rfl
+  rw [wb_eq, walk_next hi.le]; unfold nextPt; aesop
 
 theorem param_hgt {x : WPos} {h : ℕ} (hx : x.hgt = h + 1)
     (hne : ((chainModel C).wa x.edge).2 ≠ ((chainModel C).wb x.edge).2) (Q : Polygon) :
     (chainModel C).param Q x = ((Q.vtx h).2 - ((chainModel C).wa x.edge).2) /
       (((chainModel C).wb x.edge).2 - ((chainModel C).wa x.edge).2) := by
-  unfold Model.param; rw [hx]; simp only; rw [ite_eq_right hne]
+  simp_all [Model.param] 
 
 theorem xAt_comm {u w : Point} (h : u.2 ≠ w.2) (y : ℝ) : xAt w u y = xAt u w y := by
-  have h1 : w.2 - u.2 ≠ 0 := sub_ne_zero.2 h.symm
-  have h2 : u.2 - w.2 ≠ 0 := sub_ne_zero.2 h
-  unfold xAt; field_simp; ring
+  core_grind
 
 /-- **Attachment at a point inside a walk edge**: if the walk edge `p` straddles the height `y`
 of `v_k` and has `v_k` on its left, and the far end of the chord of `v_k` is the point of the edge
@@ -116,21 +122,16 @@ theorem attach_on_edge {p : ℕ} (hp : p < (chainModel C).W.n) {k : ℕ} {σ : �
       exact ⟨div_pos_of_neg_of_neg (by linarith) (by linarith),
         (div_lt_one_of_neg (by linarith)).2 (by linarith)⟩
   have hlerp : Geometry.lerp u w t = C.chordEnd k σ := by
-    rw [hend]
-    ext
-    · simp only [Geometry.lerp_fst]; unfold xAt; rw [ht]; ring
-    · simp only [Geometry.lerp_snd]; rw [ht]; field_simp; ring
+    grind [Geometry.lerp_fst, xAt, Geometry.lerp_snd]
   have hpos : (chainModel C).pos C.P ⟨p, C.edgeIdx k + 1⟩ = C.chordEnd k σ := by
-    unfold Model.pos; rw [hpar]; exact hlerp
+    grind [Model.pos]
   refine ⟨hpos, ?_⟩
   rw [hpar]
   have hspt : sidePt (chainModel C).W p t = C.chordEnd k σ := hlerp
   have hl : sideLeft (chainModel C).W p t (C.vertex k) := by
     rw [Chain.sideLeft_edge (fun e => hne (congrArg Prod.snd e)) ⟨ht01.1, ht01.2⟩]; exact hdet
   have := Chain.sideAttach_of_left hp ht01.1.le ht01.2 hspt hl
-  unfold Chain.chordSet
-  rw [Geometry.segment_comm]
-  exact this
+  grind [Chain.chordSet, Geometry.segment_comm]
 
 /-! ## The far walk edge -/
 
@@ -144,11 +145,7 @@ noncomputable def farEdge (C : Chain) (k : ℕ) (σ : ℝ) : ℕ := by
 
 theorem det_zero_on_line {u w v : Point} (h : u.2 ≠ w.2) (hd : det u w v = 0) :
     v.1 = xAt u w v.2 := by
-  have hne : w.2 - u.2 ≠ 0 := sub_ne_zero.2 h.symm
-  unfold det at hd
-  unfold xAt
-  field_simp
-  linarith
+  core_grind [det]
 
 /-- **The far end of every chord is attached at `farEdge`.** -/
 theorem far_attach (hDH : DistinctHeights C.P) {k : ℕ} (hk : k ≤ C.m) {σ : ℝ}
@@ -162,62 +159,57 @@ theorem far_attach (hDH : DistinctHeights C.P) {k : ℕ} (hk : k ≤ C.m) {σ : 
   have hR := C.radius_pos
   have ha1 := abs_lt.1 hbox.1
   have ha2 := abs_lt.1 hbox.2
-  have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
+  
   obtain ⟨hsome, hnone⟩ := far_end hDH hk hσ hf
   rcases hsc : scan C k σ C.m with _ | b
   · have hend := hnone hsc
     have hfe : farEdge C k σ = if σ = 1 then 3 else 1 := by
-      unfold farEdge; simp only [hsc]
+      grind [farEdge]
     rcases hσ with rfl | rfl
     · rw [hfe, ite_eq_left rfl]
       have e3 : (chainModel C).wa 3 = (C.radius, -C.radius) := rfl
       have e4 : (chainModel C).wb 3 = (C.radius, C.radius) := by
         rw [wb_eq, hn, Nat.mod_eq_of_lt (by omega)]; rfl
-      refine ⟨by omega, attach_on_edge (by omega) (by rw [e3, e4]; intro h; simp at h; linarith)
-        (by rw [e3, e4, min_eq_left (by linarith)]; linarith)
-        (by rw [e3, e4, max_eq_right (by linarith)]; linarith)
+      refine ⟨by omega, attach_on_edge (by omega) (by grind)
+        (by simp_all)
+        (by simp_all)
         (by rw [e3, e4]; unfold det; simp only; nlinarith) ?_⟩
-      rw [hend, e3, e4]; ext
-      · simp [xAt]
-      · rfl
+      simp_all [xAt] <;> omega_nf
     · rw [hfe, ite_eq_right (by norm_num)]
       have e1 : (chainModel C).wa 1 = (-C.radius, C.radius) := rfl
       have e2 : (chainModel C).wb 1 = (-C.radius, -C.radius) := by
         rw [wb_eq, hn, Nat.mod_eq_of_lt (by omega)]; rfl
-      refine ⟨by omega, attach_on_edge (by omega) (by rw [e1, e2]; intro h; simp at h; linarith)
-        (by rw [e1, e2, min_eq_right (by linarith)]; linarith)
-        (by rw [e1, e2, max_eq_left (by linarith)]; linarith)
+      refine ⟨by omega, attach_on_edge (by omega) (by grind)
+        (by simp_all)
+        (by simp_all)
         (by rw [e1, e2]; unfold det; simp only; nlinarith) ?_⟩
-      rw [hend, e1, e2]; ext
-      · simp [xAt]
-      · rfl
+      simp_all [xAt] <;> omega_nf
   · obtain ⟨hend, hj, hs, -⟩ := hsome b hsc
     have hne : (C.vertex b).2 ≠ (C.vertex (b + 1)).2 :=
       ChainObs.vertex_snd_ne hDH (by omega) (by omega) (by omega)
     have hstr : min (C.vertex b).2 (C.vertex (b + 1)).2 < (C.vertex k).2 ∧
         (C.vertex k).2 < max (C.vertex b).2 (C.vertex (b + 1)).2 := by
       rcases hs with ⟨h1, h2⟩ | ⟨h1, h2⟩
-      · exact ⟨(min_le_left _ _).trans_lt h1, h2.trans_le (le_max_right _ _)⟩
-      · exact ⟨(min_le_right _ _).trans_lt h1, h2.trans_le (le_max_left _ _)⟩
+      all_goals grind
     by_cases hd : 0 < det (C.vertex b) (C.vertex (b + 1)) (C.vertex k)
     · have hfe : farEdge C k σ = fwdIdx C.m (tS C) b + 6 := by
-        unfold farEdge; simp only [hsc]; rw [ite_eq_left hd]
+        simp_all [farEdge] <;> omega_nf
       obtain ⟨hi, e1, e2⟩ := fwdIdx_spec (C := C) hj
       have ea : (chainModel C).wa (fwdIdx C.m (tS C) b + 6) = C.vertex b := by
-        rw [cwa_tour hi.le]; unfold vPt; rw [e1]
+        rw [cwa_tour hi.le]; grind [vPt]
       have eb : (chainModel C).wb (fwdIdx C.m (tS C) b + 6) = C.vertex (b + 1) := by
-        rw [cwb_tour hi]; unfold vPt; rw [e2]
+        rw [cwb_tour hi]; grind [vPt]
       rw [hfe]
-      refine ⟨by omega, attach_on_edge (by omega) (by rw [ea, eb]; exact hne)
-        (by rw [ea, eb]; exact hstr.1) (by rw [ea, eb]; exact hstr.2) (by rw [ea, eb]; exact hd)
+      refine ⟨by omega, attach_on_edge (by omega) (by simp_all)
+        (by simp_all) (by simp_all) (by simp_all)
         (by rw [ea, eb, hend]; rfl)⟩
     · have hfe : farEdge C k σ = bwdIdx C.m (tS C) b + 6 := by
-        unfold farEdge; simp only [hsc]; rw [ite_eq_right hd]
+        simp_all [farEdge] <;> omega_nf
       obtain ⟨hi, e1, e2⟩ := bwdIdx_spec (C := C) hj
       have ea : (chainModel C).wa (bwdIdx C.m (tS C) b + 6) = C.vertex (b + 1) := by
-        rw [cwa_tour hi.le]; unfold vPt; rw [e1]
+        rw [cwa_tour hi.le]; grind [vPt]
       have eb : (chainModel C).wb (bwdIdx C.m (tS C) b + 6) = C.vertex b := by
-        rw [cwb_tour hi]; unfold vPt; rw [e2]
+        rw [cwb_tour hi]; grind [vPt]
       have hd0 : det (C.vertex b) (C.vertex (b + 1)) (C.vertex k) ≠ 0 := by
         intro h0
         have hon := det_zero_on_line hne h0
@@ -228,9 +220,9 @@ theorem far_attach (hDH : DistinctHeights C.P) {k : ℕ} (hk : k ≤ C.m) {σ : 
       have hneg : det (C.vertex b) (C.vertex (b + 1)) (C.vertex k) < 0 :=
         lt_of_le_of_ne (not_lt.1 hd) hd0
       rw [hfe]
-      refine ⟨by omega, attach_on_edge (by omega) (by rw [ea, eb]; exact hne.symm)
-        (by rw [ea, eb, min_comm]; exact hstr.1) (by rw [ea, eb, max_comm]; exact hstr.2)
-        (by rw [ea, eb, Geometry.det_swap12]; linarith)
+      refine ⟨by omega, attach_on_edge (by omega) (by grind)
+        (by grind) (by grind)
+        (by grind [Geometry.det_swap12])
         (by rw [ea, eb, hend, xAt_comm hne]; rfl)⟩
 
 /-! ## The vertex end -/
@@ -251,12 +243,12 @@ theorem vert_attach (hP : C.P.Simple) (hDH : DistinctHeights C.P) {i : ℕ} (hi 
     · rfl
     · rw [cwa_tour hi]
       have : C.P.vtx (C.edgeIdx (C.sideIdx C.sideBeta i)) = vPt C i := rfl
-      rw [this, sub_self, zero_div]
+      simp_all
   have hpt : sidePt (chainModel C).W (i + 6) 0 = C.vertex (C.sideIdx C.sideBeta i) := by
     rw [Chain.sidePt_zero]; exact walk_vtx_tour hi
   have hl := (corner_iff hDH hi hσ).2 he
   obtain ⟨hf, hA⟩ := FuseMath.sideAttach_chordSet hP (by omega) (C.sideIdx_le _ _) hpt hσ hl
-  refine ⟨hf, ?_, by rw [hpar]; exact hA⟩
+  refine ⟨hf, ?_, by simp_all⟩
   unfold Model.pos; rw [hpar, Geometry.lerp_zero]; exact cwa_tour hi
 
 end Brute

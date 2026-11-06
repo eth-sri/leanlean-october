@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDegSide
 
 /-!
@@ -119,9 +121,7 @@ theorem deg_leH (hS : GoodH R S t) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD 
         rintro c ⟨hc, z, hz, hzD, hzU, hzc⟩
         have hz0 := hclle _ hU0 z hzU
         have hmz : q.2 < z.2 ∧ z.2 < y₂ := by
-          rcases hzc with e | e
-          · rw [e] at hz0; linarith
-          · exact e
+          ram_grind
         have hzT := hmid z hzD (hcl hzU) (hqy₁.trans hmz.1) hmz.2
         have hUz := hbelow c hc z hz hzT hmz.1
         have hz0' := hclle _ hUz z₀ hz₀U
@@ -152,9 +152,7 @@ theorem deg_leH (hS : GoodH R S t) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD 
         rintro c ⟨hc, z, hz, hzD, hzU, hzc⟩
         have hz0 := hclge _ hU0 z hzU
         have hmz : y₁ < z.2 ∧ z.2 < q.2 := by
-          rcases hzc with e | e
-          · rw [e] at hz0; linarith
-          · exact e
+          ram_grind
         have hzT := hmid z hzD (hcl hzU) hmz.1 (hmz.2.trans hqy₂)
         have hUz := habove c hc z hz hzT hmz.2
         have hz0' := hclge _ hUz z₀ hz₀U

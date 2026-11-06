@@ -66,7 +66,9 @@ structure XG (P : Polygon) (v : XV) (d : Config) : Prop where
 def xgRegs : List ℕ := [217020, 217021, 217022, 217025, 217026, 217027, 217028, 217030, 217031,
   217032, 217033, 217034, 217035, 217036, 217037, 217041, 217042, 217044]
 
-theorem XG.congr {P : Polygon} {v : XV} {d d' : Config} (h : XG P v d)
+section
+variable {P : Polygon} {v : XV} {d d' : Config}
+theorem XG.congr (h : XG P v d)
     (hr : ∀ r ∈ xgRegs, d'.nreg r = d.nreg r) : XG P v d' :=
   ⟨(hr _ (by simp [xgRegs])).trans h.r20, (hr _ (by simp [xgRegs])).trans h.r21,
     (hr _ (by simp [xgRegs])).trans h.r22, (hr _ (by simp [xgRegs])).trans h.r25,
@@ -78,18 +80,26 @@ theorem XG.congr {P : Polygon} {v : XV} {d d' : Config} (h : XG P v d)
     (hr _ (by simp [xgRegs])).trans h.r37, (hr _ (by simp [xgRegs])).trans h.r41,
     (hr _ (by simp [xgRegs])).trans h.r42, (hr _ (by simp [xgRegs])).trans h.r44⟩
 
-theorem XG.frameM {P : Polygon} {v : XV} {d d' : Config} {B : ℕ → Bool} (h : XG P v d)
+theorem XG.frameM {B : ℕ → Bool} (h : XG P v d)
     (hf : FrameM B d d') (hB : xgRegs.all (fun r => !B r) = true) : XG P v d' :=
   h.congr fun r hr => hf.1 r (by
-    have := List.all_eq_true.1 hB r hr
-    simpa using this)
+    simp_all)
 
+
+end
+
+section
+variable (P : Polygon) (v : XV)
+include P v
 /-- The interior walk position of an end, from the values of a run. -/
-noncomputable def xP (P : Polygon) (v : XV) (h p : ℕ) : WPos := xPos (Qof P).n v.H v.li v.m v.T v.β h p
+noncomputable def xP (h p : ℕ) : WPos := xPos (Qof P).n v.H v.li v.m v.T v.β h p
 
 /-- The kept test, from the values of a run. -/
-def kR (P : Polygon) (v : XV) (c : CRec) : Prop :=
+def kR (c : CRec) : Prop :=
   KeptT (Qof P).n v.H v.li v.m v.T v.β c.h c.lp c.rp
+
+
+end
 
 noncomputable instance (P : Polygon) (v : XV) (c : CRec) : Decidable (kR P v c) := by
   unfold kR; infer_instance
@@ -153,15 +163,21 @@ def Bch (r : ℕ) : Bool :=
 
 theorem wrM_ch : wrM Bch chS = true := by decide
 
+section
+variable (P : Polygon) (v : XV)
+include P v
 /-- The host point at the start of walk edge `p`. -/
-noncomputable def sPt (P : Polygon) (v : XV) (p : ℕ) : SymPt := hpt (Qof P).n v.H (tK v.m v.T v.β p)
+noncomputable def sPt (p : ℕ) : SymPt := hpt (Qof P).n v.H (tK v.m v.T v.β p)
 
 /-- The memory after storing a kept chord. -/
-noncomputable def stMem (P : Polygon) (v : XV) (N : NF) (mm : ℕ → ℕ) (cnt : ℕ) (c : CRec) : ℕ → ℕ :=
+noncomputable def stMem (N : NF) (mm : ℕ → ℕ) (cnt : ℕ) (c : CRec) : ℕ → ℕ :=
   upd (upd (upd (upd (upd mm (v.LxB + 3 * cnt) c.h) (v.LxB + 3 * cnt + 1)
     (xP P v c.h c.lp).edge) (v.LxB + 3 * cnt + 2) (xP P v c.h c.rp).edge) (v.BkB + 2 * cnt)
       (keyBkt (Qof P) N (xP P v c.h c.lp))) (v.BkB + 2 * cnt + 1)
       (keyBkt (Qof P) N (xP P v c.h c.rp))
+
+
+end
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmPt
 public import Chazelle.Core.SweepMachine8
 public import Chazelle.Core.FuseAsmSet
@@ -23,26 +25,31 @@ namespace FuseAsm
 
 open Chazelle.Merge (FreeAt shoot)
 
-theorem param_congr (M : Model) (Q : Polygon) (e : ℕ) {h h' : ℕ}
-    (hh : (Q.vtx h).2 = (Q.vtx h').2) : M.param Q ⟨e, h + 1⟩ = M.param Q ⟨e, h' + 1⟩ := by
-  unfold Model.param; simp only; rw [hh]
+section
+variable (M : Model) (Q : Polygon) (e : ℕ) {h h' : ℕ} (hh : (Q.vtx h).2 = (Q.vtx h').2)
+include hh
+theorem param_congr : M.param Q ⟨e, h + 1⟩ = M.param Q ⟨e, h' + 1⟩ := by
+  simp_all [Model.param] <;> omega_nf
 
-theorem pos_congr (M : Model) (Q : Polygon) (e : ℕ) {h h' : ℕ}
-    (hh : (Q.vtx h).2 = (Q.vtx h').2) : M.pos Q ⟨e, h + 1⟩ = M.pos Q ⟨e, h' + 1⟩ := by
+theorem pos_congr : M.pos Q ⟨e, h + 1⟩ = M.pos Q ⟨e, h' + 1⟩ := by
   unfold Model.pos; rw [param_congr M Q e hh]
 
-theorem toSet_congr (M : Model) (Q : Polygon) {r r' : CRec} (hh : (Q.vtx r.h).2 = (Q.vtx r'.h).2)
-    (hl : r.lp = r'.lp) (hr : r.rp = r'.rp) : r.toSet M Q = r'.toSet M Q := by
+
+end
+
+section
+variable (M : Model) (Q : Polygon) {r r' : CRec} (hh : (Q.vtx r.h).2 = (Q.vtx r'.h).2) (hl : r.lp = r'.lp) (hr : r.rp = r'.rp)
+include hh hl hr
+theorem toSet_congr : r.toSet M Q = r'.toSet M Q := by
   unfold CRec.toSet CRec.lpos CRec.rpos
   rw [hh, pos_congr M Q r.lp hh, pos_congr M Q r.rp hh, hl, hr]
 
-theorem attached_congr (M : Model) (Q : Polygon) {r r' : CRec}
-    (hh : (Q.vtx r.h).2 = (Q.vtx r'.h).2) (hl : r.lp = r'.lp) (hr : r.rp = r'.rp)
+theorem attached_congr
     (hA : r.Attached M Q) : r'.Attached M Q := by
-  unfold CRec.Attached CRec.lpos CRec.rpos at *
-  rw [← toSet_congr M Q hh hl hr, ← hl, ← hr, ← param_congr M Q r.lp hh,
-    ← param_congr M Q r.rp hh]
-  exact hA
+  core_grind [Chazelle.Core.FuseAsm.param_congr, Chazelle.Core.FuseAsm.toSet_congr, CRec.lpos, CRec.rpos]
+
+
+end
 
 /-- The height of a query agrees with its height code. -/
 def HeightOK (J : Merge.Junction) (Q : Polygon) (i : ℕ) (q : ℕ × ℕ × ℕ) : Prop :=
@@ -60,17 +67,16 @@ theorem collectQ_append {L : List (ℕ × ℕ × ℕ)} {R : List (ℕ × ℕ × 
     (hlen : L.length = R.length) (q : ℕ × ℕ × ℕ) (r : ℕ × ℕ × ℕ × ℕ) :
     collectQ (L ++ [q]) (R ++ [r]) =
       collectQ L R ++ (if r.1 = 1 then [(q.2.1 - 1, r.2.2.1, r.2.2.2)] else []) := by
-  unfold collectQ
-  rw [List.zip_append hlen, List.filter_append, List.map_append]
-  by_cases h : r.1 = 1 <;> simp [h, qtrip]
+  grind [collectQ, List.filter_append, List.map_append, qtrip]
 
 theorem collectQ_length_le (L : List (ℕ × ℕ × ℕ)) (R : List (ℕ × ℕ × ℕ × ℕ)) :
     (collectQ L R).length ≤ L.length := by
-  unfold collectQ; rw [List.length_map]
-  exact (List.length_filter_le _ _).trans (by rw [List.length_zip]; omega)
+  grind [collectQ, List.length_map, List.length_zip]
 
+section
+variable (J : Merge.Junction) (Q : Polygon) (i : ℕ)
 /-- The chord seen from a query of a reported answer is at the height of the query. -/
-theorem qtrip_eq (J : Merge.Junction) (Q : Polygon) (i : ℕ) {q : ℕ × ℕ × ℕ}
+theorem qtrip_eq {q : ℕ × ℕ × ℕ}
     {r : ℕ × ℕ × ℕ × ℕ} (hs : SeesInWhole J Q i q r) (hH : HeightOK J Q i q) (h1 : r.1 = 1) :
     (recOf (qtrip (q, r))).toSet (chainModel J.whole) Q = (recOf r.2).toSet (chainModel J.whole) Q ∧
       (recOf (qtrip (q, r))).Attached (chainModel J.whole) Q := by
@@ -85,7 +91,7 @@ theorem qtrip_eq (J : Merge.Junction) (Q : Polygon) (i : ℕ) {q : ℕ × ℕ ×
   exact ⟨(toSet_congr _ Q hh rfl rfl).symm, attached_congr _ Q hh rfl rfl hatt⟩
 
 /-- **The chords reported by the sweep**, with the height indices of the queries. -/
-theorem collectQ_spec (J : Merge.Junction) (Q : Polygon) (i : ℕ) (L : List (ℕ × ℕ × ℕ))
+theorem collectQ_spec (L : List (ℕ × ℕ × ℕ))
     (R : List (ℕ × ℕ × ℕ × ℕ)) (hlen : R.length = L.length)
     (hs : ∀ j, j < L.length → SeesInWhole J Q i (L.getD j (0, 0, 0)) (R.getD j (0, 0, 0, 0)))
     (hq : ∀ q ∈ L, QueryOK J Q i q ∧ HeightOK J Q i q) :
@@ -98,32 +104,25 @@ theorem collectQ_spec (J : Merge.Junction) (Q : Polygon) (i : ℕ) (L : List (�
     simp only [collectQ, List.mem_map, List.mem_filter, beq_iff_eq] at ht
     obtain ⟨p, ⟨hp, h1⟩, rfl⟩ := ht
     obtain ⟨j, hj, rfl⟩ := List.getElem_of_mem hp
-    have hjL : j < L.length := by rw [List.length_zip] at hj; omega
-    have hjR : j < R.length := by omega
-    refine ⟨j, hjL, ?_, ?_⟩
-    · rw [getD_lt hjR]; simpa using h1
-    · rw [getD_lt hjL, getD_lt hjR]; simp
+    ram_grind
   have memk : ∀ j, j < L.length → (R.getD j (0, 0, 0, 0)).1 = 1 →
       qtrip (L.getD j (0, 0, 0), R.getD j (0, 0, 0, 0)) ∈ collectQ L R := by
     intro j hj h1
     have hjR : j < R.length := by omega
     simp only [collectQ, List.mem_map, List.mem_filter, beq_iff_eq]
     refine ⟨(L[j], R[j]), ⟨?_, ?_⟩, ?_⟩
-    · have : (L.zip R)[j]'(by rw [List.length_zip]; omega) = (L[j], R[j]) := by simp
-      rw [← this]; exact List.getElem_mem _
-    · rw [getD_lt hjR] at h1; exact h1
-    · rw [getD_lt hj, getD_lt hjR]
+    · have : (L.zip R)[j]'(by grind) = (L[j], R[j]) := by simp
+      grind
+    all_goals grind
   refine ⟨?_, fun t ht => ?_⟩
   · ext d
     simp only [shots, geoQ, Set.mem_ofPred_eq]
     constructor
     · rintro ⟨t, ht, rfl⟩
       obtain ⟨j, hj, h1, rfl⟩ := key t ht
-      have hmem : L.getD j (0, 0, 0) ∈ L := by rw [getD_lt hj]; exact List.getElem_mem hj
+      have hmem : L.getD j (0, 0, 0) ∈ L := by grind
       obtain ⟨e1, -⟩ := qtrip_eq J Q i (hs j hj) (hq _ hmem).2 h1
-      rw [e1]
-      obtain ⟨hf, hrec⟩ := hs j hj
-      exact ⟨_, ⟨_, hmem, rfl⟩, hf.1 h1, (hrec h1).1⟩
+      ram_grind
     · rintro ⟨x, ⟨q, hq', rfl⟩, hf, rfl⟩
       obtain ⟨j, hj, rfl⟩ := List.getElem_of_mem hq'
       have hs' := hs j hj
@@ -133,12 +132,14 @@ theorem collectQ_spec (J : Merge.Junction) (Q : Polygon) (i : ℕ) (L : List (�
       obtain ⟨e1, -⟩ := qtrip_eq J Q i hs' (hq _ (List.getElem_mem hj)).2 h1
       rw [getD_lt hj, e1, (hs'.2 h1).1]
   · obtain ⟨j, hj, h1, rfl⟩ := key t ht
-    have hmem : L.getD j (0, 0, 0) ∈ L := by rw [getD_lt hj]; exact List.getElem_mem hj
+    have hmem : L.getD j (0, 0, 0) ∈ L := by grind
     obtain ⟨hQ, hH⟩ := hq _ hmem
     refine ⟨(qtrip_eq J Q i (hs j hj) hH h1).2, ?_⟩
     obtain ⟨-, h1', h2', -⟩ := hQ
-    simp only [qtrip]
-    omega
+    grind [qtrip]
+
+
+end
 
 end
 

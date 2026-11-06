@@ -35,7 +35,7 @@ variable (C : Chain)
 /-- The ray points from a later origin, backwards. -/
 theorem rayPt_back (a : Point) (σ τ' s : ℝ) :
     rayPt (rayPt a σ τ') (-σ) s = rayPt a σ (τ' - s) := by
-  apply point_ext <;> simp [rayPt]; ring
+  grind [rayPt]
 
 end ChainModel
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranRemove
 public import Chazelle.Core.FactsInterior
 
@@ -54,9 +56,12 @@ variable {M : Model}
 
 /-! ## Adding chords keeps semigranularity -/
 
+section
+variable (hM : WalkAx M)
+include hM
 /-- **Adding one admissible chord keeps γ-semigranularity**: the region split by the chord is
 replaced by two regions whose arcs lie inside its arcs, and the other regions keep their arcs. -/
-theorem semigranular_insert (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm)
+theorem semigranular_insert {S : Set (Set Point)} (hS : S ⊆ M.Adm)
     (hfin : S.Finite) {e : Set Point} (he : e ∈ M.Adm) (heS : e ∉ S) {γ : ℕ}
     (h : M.Semigranular S γ) : M.Semigranular (insert e S) γ := by
   have hT : insert e S ⊆ M.Adm := insert_subset he hS
@@ -66,7 +71,7 @@ theorem semigranular_insert (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.
   have hsd : insert e S \ {e} = S := insert_sdiff_self_of_notMem heS
   obtain ⟨P, hP, heP⟩ := Merge.exists_region_of_chord hsys (subset_insert e S) heT heS
   obtain ⟨R₁, R₂, hs⟩ := Merge.exists_split hsys (subset_insert e S) heT heS hP heP
-  have hs' : IsSplit M.D (insert e S \ {e}) e P R₁ R₂ := by rw [hsd]; exact hs
+  have hs' : IsSplit M.D (insert e S \ {e}) e P R₁ R₂ := by simp_all
   have hPγ : M.weight (insert e S \ {e}) P ≤ γ := by rw [hsd]; exact h P hP
   intro U hU
   rcases Gran.split_cases heT hs' hU with rfl | rfl | ⟨hU', hUP⟩
@@ -79,7 +84,7 @@ theorem semigranular_insert (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.
     exact h U hU'
 
 /-- **Adding any finite set of admissible chords keeps γ-semigranularity.** -/
-theorem semigranular_mono (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T)
+theorem semigranular_mono {S T : Set (Set Point)} (hST : S ⊆ T)
     (hT : T ⊆ M.Adm) (hTfin : T.Finite) {γ : ℕ} (h : M.Semigranular S γ) :
     M.Semigranular T γ := by
   suffices key : ∀ k, ∀ S : Set (Set Point), S ⊆ T → (T \ S).ncard ≤ k →
@@ -91,7 +96,7 @@ theorem semigranular_mono (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T
     have he : T \ S = ∅ :=
       (ncard_eq_zero (hTfin.subset sdiff_subset)).1 (Nat.le_zero.1 hk)
     have : T = S := Subset.antisymm (sdiff_eq_empty.1 he) hST
-    rw [this]; exact hS
+    simp_all
   | succ k ih =>
     intro S hST hk hS
     by_cases he : (T \ S).Nonempty
@@ -99,8 +104,7 @@ theorem semigranular_mono (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T
       have hins : insert e S ⊆ T := insert_subset heT hST
       refine ih (insert e S) hins ?_ ?_
       · have hsub : T \ insert e S ⊆ (T \ S) \ {e} := by
-          rintro x ⟨hxT, hx⟩
-          exact ⟨⟨hxT, fun h' => hx (Or.inr h')⟩, fun h' => hx (Or.inl h')⟩
+          grind
         have h1 := ncard_le_ncard hsub ((hTfin.subset sdiff_subset).sdiff)
         have h2 := ncard_sdiff_singleton_add_one (show e ∈ T \ S from ⟨heT, heS⟩)
           (hTfin.subset sdiff_subset)
@@ -108,9 +112,12 @@ theorem semigranular_mono (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T
       · exact semigranular_insert hM (hST.trans hT) (hTfin.subset hST) (hT heT) heS hS
     · rw [not_nonempty_iff_eq_empty] at he
       have : T = S := Subset.antisymm (sdiff_eq_empty.1 he) hST
-      rw [this]; exact hS
+      simp_all
 
 /-! ## The full map of a good model -/
+
+
+end
 
 /-- A vertex chord of a simple polygon is an admissible chord of its interior model. -/
 theorem chords_subset_interiorAdm {Q : Polygon} (hQ : Q.Simple) :
@@ -120,25 +127,31 @@ theorem chords_subset_interiorAdm {Q : Polygon} (hQ : Q.Simple) :
   refine ⟨_, _, _, ⟨hch.lt, fun h => h.2 hch.left_mem, fun h => h.2 hch.right_mem,
     fun x h1 h2 => hch.open_int x h1 h2⟩, Visibility.chordSet_eq_hseg Q i σ⟩
 
+section
+variable (hG : GoodModel M)
+include hG
 /-- **The full map of a good model is admissible.** -/
-theorem full_subset_adm (hG : GoodModel M) : M.Full ⊆ M.Adm := by
+theorem full_subset_adm : M.Full ⊆ M.Adm := by
   rcases hG with ⟨C, -, rfl⟩ | ⟨Q, hQ, rfl⟩
   · exact Merge.chords_subset_augChords C
   · exact chords_subset_interiorAdm hQ
 
 /-- **The full map of a good model is finite.** -/
-theorem full_finite (hG : GoodModel M) : M.Full.Finite := by
+theorem full_finite : M.Full.Finite := by
   rcases hG with ⟨C, -, rfl⟩ | ⟨Q, -, rfl⟩
   · exact C.chords_finite
   · exact Visibility.chords_finite Q
 
 /-- For a finite admissible `S`, the augmented full map `M.Full ∪ S` is a chord system. -/
-theorem fullSystem (hG : GoodModel M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) (hfin : S.Finite) :
+theorem fullSystem {S : Set (Set Point)} (hS : S ⊆ M.Adm) (hfin : S.Finite) :
     ChordSystem M.D (M.Full ∪ S) :=
   (walkAx_of_goodModel hG).sys _ (union_subset (full_subset_adm hG) hS)
     ((full_finite hG).union hfin)
 
 /-! ## Good splitting steps -/
+
+
+end
 
 /-- **The chord `e` splits the region `R` of `S` well**: `e` is a new chord whose open part lies
 in `R`, and each of the two regions of `insert e S` inside `R` is touched by at least two exit
@@ -154,7 +167,7 @@ theorem exists_step (hG : GoodModel M) {Q : Polygon} {D : ℕ} (hfull : M.FullDe
     (hdeg : D < (exitsIn M.D S R).ncard) : ∃ e ∈ M.Full, SplitsWell M S R e := by
   obtain ⟨e, he, heS, heR, hsplit⟩ := Merge.lemma_3_3 (fullSystem hG hS.2.1 hS.1)
     subset_union_right hR (fun U hU _ => hfull S hS U hU) hdeg
-  exact ⟨e, he.resolve_right heS, heS, heR, hsplit⟩
+  ram_grind
 
 /-- **The two halves of a good split** have at least `3` and fewer than `deg R` exit chords. -/
 theorem splitsWell_degrees (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm)

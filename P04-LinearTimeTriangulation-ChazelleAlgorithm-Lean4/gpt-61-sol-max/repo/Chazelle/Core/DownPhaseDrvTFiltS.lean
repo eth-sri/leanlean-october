@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvTFiltL
 
 /-!
@@ -42,20 +44,18 @@ theorem nfAt_robust_bound {A : ℕ} {m : ℕ → ℕ} {B : ℕ} {N : NF}
     by_contra hc
     push Not at hc
     have := (h (Function.update m (B + 11) (N.dec.length + 1)) (fun a ha => by
-      rw [Function.update_of_ne (by omega)])).2.2.2.2.1
-    rw [Function.update_self] at this
-    omega
+      ram_simp)).2.2.2.2.1
+    simp_all
   refine ⟨h1, fun i hi => ?_⟩
   by_contra hc
   push Not at hc
   set a := m (B + 3) + 5 * i + 4 with ha
   have hm : ∀ a', a' < A → Function.update m a ((N.chord i).dn + 1) a' = m a' := fun a' ha' => by
-    rw [Function.update_of_ne (by omega)]
+    ram_simp
   have hN := h _ hm
   have h3 : Function.update m a ((N.chord i).dn + 1) (B + 3) = m (B + 3) := hm _ (by omega)
   have := (hN.2.2.2.2.2.1 i hi).2.2.2.2
-  rw [h3, ← ha, Function.update_self] at this
-  omega
+  simp_all
 
 section exec
 
@@ -93,38 +93,23 @@ theorem recsT_of_nfAt {A : ℕ} {m m' : ℕ → ℕ} {B : ℕ} {N : NF}
   obtain ⟨-, hrec⟩ := nfAt_robust_bound h
   have hN := h.holds
   intro i hi
-  have hi' : i < N.chords.length := by unfold triplesOf at hi; simpa using hi
+  have hi' : i < N.chords.length := by grind [triplesOf]
   obtain ⟨e1, e2, e3, -, -⟩ := hN.2.2.2.2.2.1 i hi'
-  have hb := hrec i hi'
-  have hg : (triplesOf N).getD i (0, 0, 0) = ((N.chord i).h, (N.chord i).lp, (N.chord i).rp) := by
-    unfold triplesOf NF.chord
-    rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_eq_getElem hi',
-      Option.map_some, Option.getD_some, List.getD_eq_getElem?_getD,
-      List.getElem?_eq_getElem hi', Option.getD_some]
-  rw [hg]
-  refine ⟨?_, ?_, ?_⟩
-  · rw [hm _ (by omega)]; exact e1
-  · rw [hm _ (by omega)]; exact e2
-  · rw [hm _ (by omega)]; exact e3
+  grind [triplesOf, NF.chord, List.getD_eq_getElem?_getD, List.getElem?_map, Option.map_some, Option.getD_some]
 
 /-- The list of a full pass, in memory. -/
 theorem chordListAt_memT {m₀ m : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {B' : ℕ}
     (hm : ∀ a, m a = memT m₀ li n c₀ L₀ B' L₀.length a) :
     ChordListAt m B' (transL li n c₀ L₀) := by
   have hlen : rankF (keepT li n c₀) L₀ L₀.length = (transL li n c₀ L₀).length := by
-    rw [DownBase.rankF_length]; unfold transL; rw [List.length_map]
+    core_grind
   intro j hj
   have hq : ∀ q, q < 3 → m (B' + 3 * j + q) = tw (transL li n c₀ L₀) (3 * j + q) := by
-    intro q hq
-    rw [hm]; unfold memT; rw [hlen, ite_eq_left (by omega), show B' + 3 * j + q - B' = 3 * j + q by
-      omega]
+    grind [memT]
   refine ⟨?_, ?_, ?_⟩
-  · have := hq 0 (by norm_num); rw [Nat.add_zero, Nat.add_zero] at this; rw [this]
-    unfold tw; rw [show 3 * j % 3 = 0 by omega, show 3 * j / 3 = j by omega]; simp
-  · rw [hq 1 (by norm_num)]
-    unfold tw; rw [show (3 * j + 1) % 3 = 1 by omega, show (3 * j + 1) / 3 = j by omega]; simp
-  · rw [hq 2 (by norm_num)]
-    unfold tw; rw [show (3 * j + 2) % 3 = 2 by omega, show (3 * j + 2) / 3 = j by omega]; simp
+  · have := hq 0 (by norm_num); rw [Nat.add_zero, Nat.add_zero] at this; grind [tw]
+  · grind [tw]
+  grind [tw]
 
 set_option maxHeartbeats 4000000 in
 /-- **The filter procedure.** -/
@@ -149,57 +134,54 @@ theorem filtS_exec (c : Config) (hw : WordsBounded W c) {N : NF} {li : Bool} {n 
   have hNA := hN.holds
   obtain ⟨hBnA, -⟩ := nfAt_robust_bound hN
   set K₀ := N.chords.length with hK₀
-  have hlen₀ : (triplesOf N).length = K₀ := by unfold triplesOf; rw [List.length_map]
+  have hlen₀ : (triplesOf N).length = K₀ := by core_grind
   obtain ⟨c₁, k₁, e₁, hk₁, v21, v22, v23, v24, v17, v18, v99, v30, v31, v35, v36, g₁, mm₁,
     rr₁, rm₁, o₁⟩ := fSetup_exec (P := P) c hw (A := A) (Bn := Bn) (K₀ := K₀)
       (CB := c.nmem (Bn + 3)) (b := if li then 1 else 0) rfl rfl hBnA hNA.1 rfl h01 (by omega)
   have hlow₁ : ∀ a, a < A → c₁.nmem a = c.nmem a := fun a ha => by
-    rw [mm₁, ite_eq_right (by omega), ite_eq_right (by omega)]
+    ram_grind
   have hR := recsT_of_nfAt hN hlow₁
   have hI₁ : FInv c₁.nmem li n c₀ (triplesOf N) (c.nmem (Bn + 3)) (A + 6) c₁ c₁ :=
-    { i_le := by rw [v30]; omega
-      rK := by rw [v23, hlen₀]
-      r31 := by rw [v31, v30]; ring
-      r35 := by rw [v35, v30]; simp [rankF]
-      r36 := by rw [v36, v30]; simp [rankF]
-      r10 := by rw [g₁ _ (by norm_num) (by norm_num), h10]
-      r14 := by rw [g₁ _ (by norm_num) (by norm_num), h14]
-      r15 := by rw [g₁ _ (by norm_num) (by norm_num), h15]
-      r16 := by rw [g₁ _ (by norm_num) (by norm_num), h16]
+    { i_le := by omega
+      rK := by omega
+      r31 := by omega
+      r35 := by grind [rankF]
+      r36 := by grind [rankF]
+      r10 := by ram_grind
+      r14 := by ram_grind
+      r15 := by ram_grind
+      r16 := by ram_grind
       r17 := v17
       r18 := v18
       fr := fun _ _ => rfl
       rr := rfl
       rm := rfl
       out := rfl
-      mem := fun a => by rw [v30]; unfold memT; simp [rankF] }
+      mem := fun a => by grind [memT, rankF] }
   have hCB : (triplesOf N).length = 0 ∨
       c.nmem (Bn + 3) + 5 * (triplesOf N).length ≤ A + 6 := by
     rcases Nat.eq_zero_or_pos (triplesOf N).length with h0 | hpos
-    · left; exact h0
+    · omega
     · right
       have := (nfAt_robust_bound hN).2 (K₀ - 1) (by omega)
-      rw [hlen₀]
-      have : c.nmem (Bn + 3) + 5 * (K₀ - 1) + 4 < A := this
       omega
   obtain ⟨c₂, k₂, e₂, hw₂, hI₂, h30, hk₂, hk₂'⟩ := fLoop_exec (P := P) hR hCB
-    (by rw [hlen₀]; omega) e₁.wb_right hI₁ v30
+    (by omega) e₁.wb_right hI₁ v30
   rw [hlen₀] at hk₂ hk₂' h30
   have g₂ : ∀ r, (r < 190030 ∨ 190039 < r) → c₂.nreg r = c₁.nreg r := hI₂.fr
   refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by omega, by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     hI₂.rr.trans rr₁, hI₂.rm.trans rm₁, hI₂.out.trans o₁⟩
-  · rw [g₂ _ (by norm_num), v21]
-  · rw [g₂ _ (by norm_num), v22]
-  · rw [hI₂.r36, h30, ← hlen₀, DownBase.rankF_length]; unfold transL; rw [List.length_map]
-  · show c₂.nreg 9999 = _; rw [g₂ _ (by norm_num), v99]
+  · ram_grind
+  · ram_grind
+  · rw [hI₂.r36, h30, ← hlen₀, DownBase.rankF_length]; grind [transL, List.length_map]
+  · ram_grind
   · refine chordListAt_memT (m₀ := c₁.nmem) (fun a => ?_)
     rw [hI₂.mem a, h30, hlen₀]
-  · rw [hI₂.mem, h30]; unfold memT; rw [ite_eq_right (by omega), mm₁, ite_eq_right (by omega), ite_eq_left rfl]
-  · rw [hI₂.mem, h30]; unfold memT; rw [ite_eq_right (by omega), mm₁, ite_eq_left rfl]
+  · rw [hI₂.mem, h30]; grind [memT]
+  · rw [hI₂.mem, h30]; grind [memT]
   · intro a ha
-    rw [hI₂.mem, h30]; unfold memT; rw [ite_eq_right (by omega), hlow₁ a ha]
-  · intro r hr hra
-    rw [g₂ r (by omega), g₁ r hr hra]
+    rw [hI₂.mem, h30]; grind [memT]
+  ram_grind
 
 end exec
 

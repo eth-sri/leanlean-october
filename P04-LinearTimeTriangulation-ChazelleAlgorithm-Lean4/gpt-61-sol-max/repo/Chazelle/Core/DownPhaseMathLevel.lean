@@ -89,7 +89,7 @@ theorem sum_nk_le' {Q : Polygon} (hQ : Q.Simple) {S : Set (Set Point)}
     hsys.regionsIn_finite hM.preconn hM.nonempty subset_rfl
   rw [finsum_mem_eq_finite_toFinset_sum _ hRfin, interiorModel_n] at hsum
   refine le_trans (Finset.sum_le_sum_of_subset fun R hR => ?_) hsum
-  rw [Set.Finite.mem_toFinset]; exact hT R hR
+  simp_all
 
 /-! ## One level -/
 
@@ -118,7 +118,7 @@ theorem trans_count {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF} {γ : �
     (N.F (chainModel C) Q).ncard * (γ + 1) ≤ 840 * (2 * C.m + 1) := by
   obtain ⟨hNF, hdeg, hgran, -⟩ := hN
   have := lemma23_chain hP hNF.1 hdeg hgran
-  simpa using this
+  omega
 
 end
 

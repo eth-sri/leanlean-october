@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreDrvReg
 
 /-!
@@ -42,8 +44,7 @@ theorem chords_map_nodup (hN : IsNF M Q N) : (N.chords.map fun x => x.toSet M Q)
   simp only [List.get_eq_getElem, List.getElem_map] at h
   simp only [List.length_map] at hi hj
   have e : ∀ k (hk : k < N.chords.length), N.chords[k] = N.chord k := fun k hk => by
-    unfold NF.chord; rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk,
-      Option.getD_some]
+    simp_all [NF.chord, List.getD_eq_getElem?_getD, Option.getD_some] <;> omega_nf
   rw [e i hi, e j hj] at h
   exact Fin.ext (hN.2.1 i j hi hj h)
 
@@ -74,12 +75,7 @@ theorem fst_inj {l : List (ℕ × (ℕ × ℕ × ℕ))} (hl : (l.map Prod.fst).N
   induction l with
   | nil => simp at hp
   | cons a l ih =>
-    simp only [List.map_cons, List.nodup_cons, List.mem_map] at hl
-    rcases List.mem_cons.1 hp with h1 | h1 <;> rcases List.mem_cons.1 hp' with h2 | h2
-    · rw [h1, h2]
-    · exact absurd ⟨p', h2, by rw [← h, h1]⟩ hl.1
-    · exact absurd ⟨p, h1, by rw [h, h2]⟩ hl.1
-    · exact ih hl.2 h1 h2
+    grind
 
 /-- The data of the end of a region loop. -/
 structure NewOK (M : Model) (Q : Polygon) (N : NF) (reg : ℕ → Set Point) (D : ℕ)
@@ -87,14 +83,20 @@ structure NewOK (M : Model) (Q : Polygon) (N : NF) (reg : ℕ → Set Point) (D 
   fst : newL.map Prod.fst = highList N D N.nRegions
   good : ∀ p ∈ newL, FoundOK M Q N reg p.1 p.2
 
-theorem NewOK.lt {D : ℕ} {newL : List (ℕ × (ℕ × ℕ × ℕ))} (h : NewOK M Q N reg D newL)
+section
+variable {D : ℕ} {newL : List (ℕ × (ℕ × ℕ × ℕ))} (h : NewOK M Q N reg D newL)
+include D h
+theorem NewOK.lt
     {p : ℕ × (ℕ × ℕ × ℕ)} (hp : p ∈ newL) : p.1 < N.nRegions := by
   have : p.1 ∈ newL.map Prod.fst := List.mem_map_of_mem hp
   rw [h.fst, mem_highList] at this
   exact this.1
 
-theorem NewOK.nodup_fst {D : ℕ} {newL : List (ℕ × (ℕ × ℕ × ℕ))} (h : NewOK M Q N reg D newL) :
+theorem NewOK.nodup_fst :
     (newL.map Prod.fst).Nodup := by rw [h.fst]; exact highList_nodup _ _
+
+
+end
 
 /-- **The list of a round is a valid input of the normal-form construction.** -/
 theorem round_list_ok (hM : WalkAx M) (hN : IsNF M Q N) (hregs : NFRegs M Q N reg) {D : ℕ}
@@ -107,20 +109,18 @@ theorem round_list_ok (hM : WalkAx M) (hN : IsNF M Q N) (hregs : NFRegs M Q N re
     · obtain ⟨y, hy, rfl⟩ := List.mem_map.1 hx
       obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hy
       have e : N.chords[i] = N.chord i := by
-        unfold NF.chord; rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi,
-          Option.getD_some]
+        simp_all [NF.chord, List.getD_eq_getElem?_getD, Option.getD_some] 
       rw [e]
       obtain ⟨-, -, -, -, -, -, hh, -⟩ := hN.2.2.2
       exact ⟨hN.1.2.1 (chord_toSet_mem hi), hh i hi, hN.2.2.1 i hi⟩
     · obtain ⟨p, hp, rfl⟩ := List.mem_map.1 hx
       obtain ⟨h1, h2, h3, -⟩ := h.good p hp
-      exact ⟨h3, h2, h1⟩
+      simp_all
   refine ⟨⟨(List.finite_toSet ((oldL N ++ newL.map Prod.snd).map
       fun x => (recOf x).toSet M Q)).subset ?_, fun c ⟨x, hx, hc⟩ => hc ▸ (hmem x hx).1,
     fun c ⟨x, hx, hc⟩ => ⟨x.1, (hmem x hx).2.1, _, _, hc⟩⟩, ?_, fun x hx => (hmem x hx).2.2,
     fun x hx => (hmem x hx).2.1⟩
-  · rintro c ⟨x, hx, rfl⟩
-    exact List.mem_map_of_mem (f := fun x => (recOf x).toSet M Q) hx
+  · grind
   · rw [List.map_append]
     refine List.nodup_append.2 ⟨?_, ?_, ?_⟩
     · have : (oldL N).map (fun x => (recOf x).toSet M Q) = N.chords.map fun x => x.toSet M Q := by
@@ -151,11 +151,11 @@ theorem round_lset {newL : List (ℕ × (ℕ × ℕ × ℕ))} :
   · rintro ⟨x, hx | ⟨p, hp, rfl⟩, rfl⟩
     · left
       obtain ⟨y, hy, rfl⟩ := hx
-      exact ⟨y, hy, rfl⟩
-    · right; exact ⟨p, hp, rfl⟩
+      aesop
+    ram_grind
   · rintro (⟨y, hy, rfl⟩ | ⟨p, hp, rfl⟩)
     · exact ⟨_, Or.inl ⟨y, hy, rfl⟩, rfl⟩
-    · exact ⟨_, Or.inr ⟨p, hp, rfl⟩, rfl⟩
+    ram_grind
 
 /-- **The new chords of a round are round data.** -/
 theorem round_data (hM : WalkAx M) (_hN : IsNF M Q N) (hregs : NFRegs M Q N reg) {D : ℕ}
@@ -164,7 +164,7 @@ theorem round_data (hM : WalkAx M) (_hN : IsNF M Q N) (hregs : NFRegs M Q N reg)
   obtain ⟨hRC, -, -, -⟩ := hregs
   refine ⟨fun c ⟨p, hp, hc⟩ => hc ▸ (h.good p hp).2.2.1, (List.finite_toSet (newL.map fun p =>
     (recOf p.2).toSet M Q)).subset fun c ⟨p, hp, hc⟩ => by
-      rw [hc]; exact List.mem_map_of_mem (f := fun p => (recOf p.2).toSet M Q) hp,
+      grind,
     fun c ⟨p, hp, hc⟩ => ⟨reg p.1, hRC.1 _ (h.lt hp), hc ▸ (h.good p hp).2.2.2⟩, ?_⟩
   rintro e ⟨p, hp, rfl⟩ e' ⟨p', hp', rfl⟩ R hR hw hw'
   obtain ⟨z, hz⟩ := inter_nonempty_of_adm hM (h.good p hp).2.2.1
@@ -191,7 +191,7 @@ theorem round_all (hN : IsNF M Q N) (hregs : NFRegs M Q N reg) {D : ℕ}
   have hdeg : (exitsIn M.D (N.F M Q) (reg r)).ncard = degOf N r :=
     Gran.deg_region hN hRC hRO hr
   have : r ∈ newL.map Prod.fst := by
-    rw [h.fst, mem_highList]; exact ⟨hr, by rw [← hdeg]; exact hD⟩
+    rw [h.fst, mem_highList]; omega
   obtain ⟨p, hp, rfl⟩ := List.mem_map.1 this
   exact ⟨_, ⟨p, hp, rfl⟩, (h.good p hp).2.2.2⟩
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Mountain.BaseSign
 public import Chazelle.EarClip.RamDet
 
@@ -65,40 +67,45 @@ def stk (f : ℕ → ℕ) : ℕ → List ℕ
   | 0 => []
   | t + 1 => f t :: stk f t
 
-/-- The empty stack. -/
-@[simp] theorem stk_zero (f : ℕ → ℕ) : stk f 0 = [] := rfl
+section
+variable (f : ℕ → ℕ)
 
 /-- Unfolding the stack by one entry: the top is `f t`. -/
-@[simp] theorem stk_succ (f : ℕ → ℕ) (t : ℕ) : stk f (t + 1) = f t :: stk f t := rfl
+@[simp] theorem stk_succ (t : ℕ) : stk f (t + 1) = f t :: stk f t := rfl
 
-/-- The stack `stk f t` has `t` entries. -/
-@[simp] theorem length_stk (f : ℕ → ℕ) (t : ℕ) : (stk f t).length = t := by
-  induction t with
-  | zero => rfl
-  | succ t ih => simp [ih]
+
+
+end
 
 /-- The stack `stk f t` only depends on the entries of `f` below `t`. -/
 theorem stk_congr {f g : ℕ → ℕ} {t : ℕ} (h : ∀ i, i < t → f i = g i) : stk f t = stk g t := by
   induction t with
   | zero => rfl
-  | succ t ih => rw [stk_succ, stk_succ, h t (by omega), ih (fun i hi => h i (by omega))]
+  | succ t ih => core_grind
 
+section
+variable (f : ℕ → ℕ) (t v : ℕ)
 /-- Writing at address `t` does not change the stack `stk f t`. -/
-theorem stk_upd (f : ℕ → ℕ) (t v : ℕ) : stk (upd f t v) t = stk f t :=
+theorem stk_upd : stk (upd f t v) t = stk f t :=
   stk_congr (fun i hi => Machine.upd_other _ _ _ (by omega))
 
 /-- **Push**: writing `v` at address `t` and taking `t + 1` entries pushes `v`. -/
-theorem stk_push (f : ℕ → ℕ) (t v : ℕ) : stk (upd f t v) (t + 1) = v :: stk f t := by
+theorem stk_push : stk (upd f t v) (t + 1) = v :: stk f t := by
   rw [stk_succ, Machine.upd_same, stk_upd]
 
+
+end
+
+section
+variable {f : ℕ → ℕ} {t : ℕ}
 /-- A stack with at least two entries: its top two entries are `f (t - 1)` and `f (t - 2)`. -/
-theorem stk_two {f : ℕ → ℕ} {t : ℕ} (ht : 2 ≤ t) :
+theorem stk_two (ht : 2 ≤ t) :
     stk f t = f (t - 1) :: f (t - 2) :: stk f (t - 2) := by
   obtain ⟨u, rfl⟩ : ∃ u, t = u + 2 := ⟨t - 2, by omega⟩
   simp
 
 /-- **Pop**: dropping the top entry. -/
-theorem stk_pop {f : ℕ → ℕ} {t : ℕ} (ht : 1 ≤ t) : stk f t = f (t - 1) :: stk f (t - 1) := by
+theorem stk_pop (ht : 1 ≤ t) : stk f t = f (t - 1) :: stk f (t - 1) := by
   obtain ⟨u, rfl⟩ : ∃ u, t = u + 1 := ⟨t - 1, by omega⟩
   simp
 
@@ -108,12 +115,10 @@ theorem stk_pop {f : ℕ → ℕ} {t : ℕ} (ht : 1 ≤ t) : stk f t = f (t - 1)
 
 /-! ### The corner test -/
 
-section specs
-variable {P : Polygon} {W : ℕ}
 
-/-! ### The pop loop -/
+end
 
-end specs
+
 
 end
 

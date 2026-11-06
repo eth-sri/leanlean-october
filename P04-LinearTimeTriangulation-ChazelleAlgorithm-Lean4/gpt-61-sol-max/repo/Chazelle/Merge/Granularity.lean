@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Merge.Conformal
 
 /-!
@@ -87,7 +89,7 @@ theorem exists_removal_split (hF : ChordSystem D F) {S : Set (Set Point)} (hS : 
   have hcT : c ∉ S \ {c} := fun h => h.2 rfl
   obtain ⟨P, hP, hcP⟩ := exists_region_of_chord hF hT (hS hc) hcT
   obtain ⟨R₁, R₂, h⟩ := exists_split hF hT (hS hc) hcT hP hcP
-  exact ⟨P, R₁, R₂, h⟩
+  ram_grind
 
 theorem insert_sdiff_self {S : Set (Set Point)} {c : Set Point} (hc : c ∈ S) :
     insert c (S \ {c}) = S :=
@@ -103,7 +105,7 @@ theorem mem_sdiff_of_not_touches (hF : ChordSystem D F) {S : Set (Set Point)} (h
   have hcT : c ∉ S \ {c} := fun h => h.2 rfl
   obtain ⟨P, R₁, R₂, h⟩ := exists_removal_split hF hS hc
   have hins := insert_sdiff_self hc
-  have hX' : X ∈ regionsIn D (insert c (S \ {c})) := by rw [hins]; exact hX
+  have hX' : X ∈ regionsIn D (insert c (S \ {c})) := by simp_all
   rcases h.mem_cases hX' with ⟨hXT, hXP⟩ | rfl | rfl
   · refine ⟨hXT, ?_⟩
     rw [← h.exits_other hF hT hXT hXP, hins]
@@ -112,10 +114,13 @@ theorem mem_sdiff_of_not_touches (hF : ChordSystem D F) {S : Set (Set Point)} (h
 
 /-! ### Removable chords and granularity -/
 
+section
+variable (D : Set Point) (wt : Set (Set Point) → Set Point → ℕ)
+include D wt
 /-- The chord `c` is *removable* from `S` (p. 512): it separates two regions `U ≠ V` of `S`, one
 of which has fewer than `3` exit chords (the dual edge `UV` is incident upon a node of degree
 `< 3`), and the region of `S \ {c}` obtained by merging them has weight at most `γ`. -/
-def Removable (D : Set Point) (wt : Set (Set Point) → Set Point → ℕ) (γ : ℕ)
+def Removable (γ : ℕ)
     (S : Set (Set Point)) (c : Set Point) : Prop :=
   c ∈ S ∧ ∃ U ∈ regionsIn D S, ∃ V ∈ regionsIn D S, U ≠ V ∧ TouchesIn D c U ∧ TouchesIn D c V ∧
     ((exitsIn D S U).ncard < 3 ∨ (exitsIn D S V).ncard < 3) ∧
@@ -123,11 +128,14 @@ def Removable (D : Set Point) (wt : Set (Set Point) → Set Point → ℕ) (γ :
 
 /-- Granularity condition (ii) (p. 496), with the degree of a region measured by its number of
 exit chords (`ncard_neighborSet_eq_exits`). -/
-def ContractionCondIn (D : Set Point) (wt : Set (Set Point) → Set Point → ℕ)
+def ContractionCondIn
     (S : Set (Set Point)) (γ : ℕ) : Prop :=
   ∀ c ∈ S, ∀ U ∈ regionsIn D S, ∀ V ∈ regionsIn D S, U ≠ V → TouchesIn D c U →
     TouchesIn D c V → ((exitsIn D S U).ncard < 3 ∨ (exitsIn D S V).ncard < 3) →
     ∀ W ∈ regionsIn D (S \ {c}), U ⊆ W → γ < wt (S \ {c}) W
+
+
+end
 
 /-- *Locality* of a weight: removing a chord does not change the weight of the regions it does
 not touch. -/
@@ -149,14 +157,17 @@ theorem contractionCondIn_iff {wt : Set (Set Point) → Set Point → ℕ} {S : 
     rw [regionsIn_eq_of_subset hW' hW (regionsIn_nonempty hU) hUW' hUW]
     exact hle
 
+section
+variable (hF : ChordSystem D F)
+include hF
 /-- The two regions touched by a removable chord are the two halves `R₁`, `R₂` of the removal
 split. -/
-theorem IsSplit.eq_pair_of_touches (hF : ChordSystem D F) {S : Set (Set Point)} (hS : S ⊆ F)
+theorem IsSplit.eq_pair_of_touches {S : Set (Set Point)} (hS : S ⊆ F)
     {c P R₁ R₂ : Set Point} (hc : c ∈ S) (h : IsSplit D (S \ {c}) c P R₁ R₂) {U : Set Point}
     (hU : U ∈ regionsIn D S) (hcU : TouchesIn D c U) : U = R₁ ∨ U = R₂ := by
   have hT : S \ {c} ⊆ F := fun _ h => hS h.1
   have hcT : c ∉ S \ {c} := fun h => h.2 rfl
-  have hU' : U ∈ regionsIn D (insert c (S \ {c})) := by rw [insert_sdiff_self hc]; exact hU
+  have hU' : U ∈ regionsIn D (insert c (S \ {c})) := by simp_all
   exact (h.touches_iff hF hT (hS hc) hcT U hU').1 hcU
 
 /-! ### Which chords can become removable -/
@@ -168,7 +179,7 @@ it was already removable before.  So a removal can only change the status of the
 (at most `4 + 4 - 2` other) exit chords of the merged region; the literal claim is false (see the
 module docstring), and a correct linear-time procedure re-examines those chords after each
 removal (a worklist), or simply iterates to a fixpoint as in `lemma_3_5`. -/
-theorem removable_of_removable_sdiff (hF : ChordSystem D F)
+theorem removable_of_removable_sdiff
     {wt : Set (Set Point) → Set Point → ℕ} {γ : ℕ} (hloc : WeightLocal D F wt)
     {S : Set (Set Point)} (hS : S ⊆ F) {c c' : Set Point} (hc' : c' ∈ S) (hcc : c ≠ c')
     (hsep : ∀ X ∈ regionsIn D S, TouchesIn D c' X → ¬ TouchesIn D c X)
@@ -182,8 +193,8 @@ theorem removable_of_removable_sdiff (hF : ChordSystem D F)
   -- `c` does not touch the region merged by the removal of `c'`
   have hnotP' : ∀ X, X = P' → ¬ TouchesIn D c X := by
     rintro X rfl hcX
-    have hR₁' : R₁' ∈ regionsIn D S := by rw [← hins']; exact hs'.mem₁
-    have hR₂' : R₂' ∈ regionsIn D S := by rw [← hins']; exact hs'.mem₂
+    have hR₁' : R₁' ∈ regionsIn D S := by ram_grind
+    have hR₂' : R₂' ∈ regionsIn D S := by ram_grind
     rcases hF.touches_split_or (hS hc') (hS hc) hcc.symm hs'.union hcX with h1 | h1
     · exact hsep R₁' hR₁' (hs'.touches₁ hF hT' (hS hc') hc'T') h1
     · exact hsep R₂' hR₂' (hs'.touches₂ hF hT' (hS hc') hc'T') h1
@@ -197,7 +208,7 @@ theorem removable_of_removable_sdiff (hF : ChordSystem D F)
     exact ⟨by rw [← hins']; exact hs'.mem_of_ne hX hXP, e⟩
   obtain ⟨hUS, eU⟩ := hold U hU hcU
   obtain ⟨hVS, eV⟩ := hold V hV hcV
-  refine ⟨hc, U, hUS, V, hVS, hne, hcU, hcV, by rw [eU, eV]; exact hlow, ?_⟩
+  refine ⟨hc, U, hUS, V, hVS, hne, hcU, hcV, by ram_grind, ?_⟩
   -- the merged region of `c` is not touched by `c'`, so its weight is unchanged
   intro W hW' hUW
   have hS1 : S \ {c} ⊆ F := fun _ h => hS h.1
@@ -219,11 +230,12 @@ theorem removable_of_removable_sdiff (hF : ChordSystem D F)
     · exact hsep R₂ hR₂ h1 (hs.touches₂ hF hS1 (hS hc) hc1)
   obtain ⟨hWmem, -⟩ := mem_sdiff_of_not_touches hF hS1 hc'1 hW' hc'W
   have hcomm : (S \ {c}) \ {c'} = (S \ {c'}) \ {c} := sdiff_right_comm _ _ _
-  rw [← hloc (S \ {c}) hS1 c' hc'1 W hW' hc'W, hcomm]
-  rw [hcomm] at hWmem
-  exact hW W hWmem hUW
+  ram_grind
 
 /-! ### The chain instances -/
+
+
+end
 
 section ChainInstance
 

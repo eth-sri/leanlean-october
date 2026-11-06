@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SignKernel
 
 /-!
@@ -35,21 +37,20 @@ theorem wr_mono {B B' : ℕ → Bool} {s : Stmt} (h : wr B s = true)
   | skip => rfl
   | instr i =>
     simp only [wr] at h ⊢
-    cases i <;> simp only [wrOK] at h ⊢ <;> first | exact hB _ h | exact h
+    cases i <;> core_grind <;> first | exact hB _ h | exact h
   | seq s t ihs iht =>
-    simp only [wr, Bool.and_eq_true] at h ⊢; exact ⟨ihs h.1, iht h.2⟩
+    simp_all [wr, Bool.and_eq_true] <;> omega_nf
   | ifLtN a b t e iht ihe =>
-    simp only [wr, Bool.and_eq_true] at h ⊢; exact ⟨iht h.1, ihe h.2⟩
+    simp_all [wr, Bool.and_eq_true] <;> omega_nf
   | ifLtR a b t e iht ihe =>
-    simp only [wr, Bool.and_eq_true] at h ⊢; exact ⟨iht h.1, ihe h.2⟩
-  | whileLtN a b body ih => simp only [wr] at h ⊢; exact ih h
-  | whileLtR a b body ih => simp only [wr] at h ⊢; exact ih h
+    simp_all [wr, Bool.and_eq_true] <;> omega_nf
+  | whileLtN a b body ih => simp_all [wr] 
+  | whileLtR a b body ih => simp_all [wr] 
 
 /-- A register frame for fewer registers is one for more. -/
 theorem frameB_mono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' :=
-  ⟨fun r hr => h.1 r (by cases hb : B r <;> simp_all), fun r hr => h.2.1 r (by
-    cases hb : B r <;> simp_all), h.2.2⟩
+  by ram_grind
 
 /-! ## Formulas -/
 
@@ -84,8 +85,6 @@ def size : BF → ℕ
   | and f g => f.size + g.size + 1
   | or f g => f.size + g.size + 1
 
-theorem one_le_size (f : BF) : 1 ≤ f.size := by
-  cases f <;> simp only [size] <;> omega
 
 /-- Every variable register satisfies `p`. -/
 def VarsOK (p : ℕ → Prop) : BF → Prop
@@ -115,49 +114,27 @@ def compile : BF → ℕ → Stmt
         .subN d d (d + 1)]))
 
 /-- The registers the compiled block may write. -/
-def wset (f : BF) (d : ℕ) (r : ℕ) : Bool := decide (d ≤ r ∧ r ≤ d + f.size)
+def wset (f : BF) (d r : ℕ) : Bool := decide (d ≤ r ∧ r ≤ d + f.size)
 
 theorem wr_compile : ∀ (f : BF) (d : ℕ), wr (f.wset d) (f.compile d) = true
   | var r, d => by simp [compile, wr, wrOK, wset]
   | const b, d => by simp [compile, wr, wrOK, wset]
   | not f, d => by
     have h := wr_mono (wr_compile f d) (B' := (not f).wset d) (fun r hr => by
-      unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
-    have h1 := one_le_size f
-    simp only [compile, wr]
-    rw [h]
-    simp only [block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
-    refine ⟨?_, ?_⟩ <;>
-      exact decide_eq_true (by omega)
+      simp_all [wset, size] <;> omega_nf)
+    simp_all [compile, wr, block, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true] <;> omega_nf
   | and f g, d => by
     have hf := wr_mono (wr_compile f d) (B' := (and f g).wset d) (fun r hr => by
-      unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
+      simp_all [wset, size] <;> omega_nf)
     have hg := wr_mono (wr_compile g (d + 1)) (B' := (and f g).wset d) (fun r hr => by
-      unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
-    have h1 := one_le_size f
-    have h2 := one_le_size g
-    simp only [compile, wr]
-    rw [hf, hg]
-    simp only [block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
-    refine ⟨?_, ?_⟩ <;> (try refine ⟨?_, ?_⟩) <;>
-      exact decide_eq_true (by omega)
+      core_grind [size])
+    simp_all [compile, wr, block, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true] <;> omega_nf
   | or f g, d => by
     have hf := wr_mono (wr_compile f d) (B' := (or f g).wset d) (fun r hr => by
-      unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
+      simp_all [wset, size] <;> omega_nf)
     have hg := wr_mono (wr_compile g (d + 1)) (B' := (or f g).wset d) (fun r hr => by
-      unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
-    have h1 := one_le_size f
-    have h2 := one_le_size g
-    simp only [compile, wr]
-    rw [hf, hg]
-    simp only [block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
-    refine ⟨?_, ?_⟩ <;> (try refine ⟨?_, ?_⟩) <;> (try refine ⟨?_, ?_⟩) <;>
-      exact decide_eq_true (by omega)
+      core_grind [size])
+    simp_all [compile, wr, block, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true] <;> omega_nf
 /-- **The compiled formula computes its value.**  If every variable is a register below `d`
 holding a bit, the block writes `(f.eval …).toNat` into `d` (at most `4 · size f` steps) and
 changes only the registers `d … d + size f`. -/
@@ -184,22 +161,19 @@ theorem compile_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) :
         k₂ = 2 ∧ c₂.nreg d = 1 - c₁.nreg d := by
       exec_block
       · omega
-      · refine ⟨rfl, ?_⟩
-        simp [upd]
+      · omega_nf
     obtain ⟨c₂, k₂, e₂, hk₂, v₂⟩ := e₂
     have ex : Exec P W ((not f).compile d) c c₂ (k₁ + k₂) := .seq e₁ e₂
-    refine ⟨c₂, _, ex, by simp only [size]; omega, ?_, exec_frameB ex (wr_compile (not f) d)⟩
-    rw [v₂, v₁]
-    simp only [eval]
-    cases f.eval _ <;> rfl
+    refine ⟨c₂, _, ex, by core_grind, ?_, exec_frameB ex (wr_compile (not f) d)⟩
+    grind [eval]
   | and f g, d, c, hw, hv => by
     obtain ⟨c₁, k₁, e₁, hk₁, v₁, f₁⟩ := compile_exec (P := P) hW f d c hw (VarsOK.mono (by
-      intro r h; exact h) hv.1)
+      omega) hv.1)
     have hw₁ := e₁.wb_right
     have keep : ∀ r, r < d → c₁.nreg r = c.nreg r := fun r hr =>
-      f₁.1 r (by simp only [wset, decide_eq_false_iff_not]; omega)
+      f₁.1 r (by core_grind)
     obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := compile_exec (P := P) hW g (d + 1) c₁ hw₁ (VarsOK.mono (by
-      intro r h; exact ⟨by omega, by rw [keep r h.1]; exact h.2⟩) hv.2)
+      ram_grind) hv.2)
     have hw₂ := e₂.wb_right
     have d₂ : c₂.nreg d = c₁.nreg d := f₂.1 d (by simp [wset])
     have hb₁ : c₁.nreg d ≤ 1 := by rw [v₁]; exact Bool.toNat_le _
@@ -210,25 +184,22 @@ theorem compile_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) :
       exec_block
       · omega
       · omega
-      · refine ⟨rfl, ?_⟩
-        simp [upd]
+      · omega_nf
     obtain ⟨c₃, k₃, e₃, hk₃, v₃⟩ := e₃
     have ex : Exec P W ((and f g).compile d) c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
-    refine ⟨c₃, _, ex, by simp only [size]; omega, ?_, exec_frameB ex (wr_compile (and f g) d)⟩
+    refine ⟨c₃, _, ex, by core_grind, ?_, exec_frameB ex (wr_compile (and f g) d)⟩
     rw [v₃, d₂, v₁, v₂]
     have hg : (g.eval fun r => decide (c₁.nreg r = 1)) = g.eval fun r => decide (c.nreg r = 1) :=
-      eval_congr (p := fun r => r < d ∧ c.nreg r ≤ 1) (fun r hr => by rw [keep r hr.1]) hv.2
-    rw [hg]
-    simp only [eval]
-    cases f.eval _ <;> cases g.eval _ <;> rfl
+      eval_congr (p := fun r => r < d ∧ c.nreg r ≤ 1) (fun r hr => by ram_simp) hv.2
+    grind [eval]
   | or f g, d, c, hw, hv => by
     obtain ⟨c₁, k₁, e₁, hk₁, v₁, f₁⟩ := compile_exec (P := P) hW f d c hw (VarsOK.mono (by
-      intro r h; exact h) hv.1)
+      omega) hv.1)
     have hw₁ := e₁.wb_right
     have keep : ∀ r, r < d → c₁.nreg r = c.nreg r := fun r hr =>
-      f₁.1 r (by simp only [wset, decide_eq_false_iff_not]; omega)
+      f₁.1 r (by core_grind)
     obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := compile_exec (P := P) hW g (d + 1) c₁ hw₁ (VarsOK.mono (by
-      intro r h; exact ⟨by omega, by rw [keep r h.1]; exact h.2⟩) hv.2)
+      ram_grind) hv.2)
     have hw₂ := e₂.wb_right
     have d₂ : c₂.nreg d = c₁.nreg d := f₂.1 d (by simp [wset])
     have hb₁ : c₁.nreg d ≤ 1 := by rw [v₁]; exact Bool.toNat_le _
@@ -237,19 +208,14 @@ theorem compile_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) :
         .subN (d + 1) d (d + 1), .subN d d (d + 1)]) c₂ c₃ k₃ ∧ k₃ = 4 ∧
         c₃.nreg d = (c₂.nreg d + c₂.nreg (d + 1)) - (c₂.nreg d + c₂.nreg (d + 1) - 1) := by
       exec_block
-      · omega
-      · omega
-      · refine ⟨rfl, ?_⟩
-        simp [upd]
+      all_goals (grind [upd])
     obtain ⟨c₃, k₃, e₃, hk₃, v₃⟩ := e₃
     have ex : Exec P W ((or f g).compile d) c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
-    refine ⟨c₃, _, ex, by simp only [size]; omega, ?_, exec_frameB ex (wr_compile (or f g) d)⟩
+    refine ⟨c₃, _, ex, by core_grind, ?_, exec_frameB ex (wr_compile (or f g) d)⟩
     rw [v₃, d₂, v₁, v₂]
     have hg : (g.eval fun r => decide (c₁.nreg r = 1)) = g.eval fun r => decide (c.nreg r = 1) :=
-      eval_congr (p := fun r => r < d ∧ c.nreg r ≤ 1) (fun r hr => by rw [keep r hr.1]) hv.2
-    rw [hg]
-    simp only [eval]
-    cases f.eval _ <;> cases g.eval _ <;> rfl
+      eval_congr (p := fun r => r < d ∧ c.nreg r ≤ 1) (fun r hr => by ram_grind) hv.2
+    grind [eval]
 where
   /-- The value depends only on the variables. -/
   eval_congr {v v' : ℕ → Bool} {p : ℕ → Prop} {f : BF} (h : ∀ r, p r → v r = v' r)

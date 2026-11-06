@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildPassRam
 
 /-!
@@ -38,11 +40,17 @@ def cntF (key : ℕ → ℕ) (n r : ℕ) : ℕ := (lstF key n r).length
 /-- The largest weight among them. -/
 def wmaxF (key w : ℕ → ℕ) (n r : ℕ) : ℕ := ((lstF key n r).map w).foldr max 0
 
+section
+variable (u v : ℕ → ℕ) (n r : ℕ)
+include u v n r
 /-- The chords below `n` with a side `r`. -/
-def lst2F (u v : ℕ → ℕ) (n r : ℕ) : List ℕ := (List.range n).filter fun i => u i = r ∨ v i = r
+def lst2F : List ℕ := (List.range n).filter fun i => u i = r ∨ v i = r
 
 /-- Their number. -/
-def cnt2F (u v : ℕ → ℕ) (n r : ℕ) : ℕ := (lst2F u v n r).length
+def cnt2F : ℕ := (lst2F u v n r).length
+
+
+end
 
 theorem lstF_succ (key : ℕ → ℕ) (n r : ℕ) :
     lstF key (n + 1) r = lstF key n r ++ (if key n = r then [n] else []) := by
@@ -52,30 +60,25 @@ theorem lstF_succ (key : ℕ → ℕ) (n r : ℕ) :
 
 theorem lst2F_succ (u v : ℕ → ℕ) (n r : ℕ) :
     lst2F u v (n + 1) r = lst2F u v n r ++ (if u n = r ∨ v n = r then [n] else []) := by
-  unfold lst2F
-  rw [List.range_succ, List.filter_append]
-  by_cases h : u n = r ∨ v n = r <;> simp [h]
+  aesop (add simp [lst2F, List.range_succ, List.filter_append]) (add safe (by omega))
 
 theorem cntF_succ (key : ℕ → ℕ) (n r : ℕ) :
     cntF key (n + 1) r = cntF key n r + (if key n = r then 1 else 0) := by
-  unfold cntF; rw [lstF_succ]; split_ifs <;> simp
+  core_grind [lstF_succ]
 
 theorem cnt2F_succ (u v : ℕ → ℕ) (n r : ℕ) :
     cnt2F u v (n + 1) r = cnt2F u v n r + (if u n = r ∨ v n = r then 1 else 0) := by
-  unfold cnt2F; rw [lst2F_succ]; split_ifs <;> simp
+  core_grind [lst2F_succ]
 
 theorem foldr_max_append (l : List ℕ) (x : ℕ) :
     (l ++ [x]).foldr max 0 = max (l.foldr max 0) x := by
   induction l with
   | nil => simp
-  | cons y l ih => simp only [List.cons_append, List.foldr_cons, ih]; omega
+  | cons y l ih => simp_all
 
 theorem wmaxF_succ (key w : ℕ → ℕ) (n r : ℕ) :
     wmaxF key w (n + 1) r = if key n = r then max (wmaxF key w n r) (w n) else wmaxF key w n r := by
-  unfold wmaxF; rw [lstF_succ]
-  split_ifs
-  · rw [List.map_append, List.map_singleton, foldr_max_append]
-  · simp
+  core_grind [lstF_succ, List.map_append, List.map_singleton, foldr_max_append]
 
 /-! ## The three arrays -/
 
@@ -85,65 +88,65 @@ def regMem (m₀ : ℕ → ℕ) (CA R : ℕ) (fA fC fW : ℕ → ℕ) (a : ℕ) 
   else if CA + R ≤ a ∧ a < CA + 2 * R then fC (a - (CA + R))
   else if CA + 2 * R ≤ a ∧ a < CA + 3 * R then fW (a - (CA + 2 * R)) else m₀ a
 
-theorem regMem_A (m₀ : ℕ → ℕ) (CA R : ℕ) (fA fC fW : ℕ → ℕ) {r v : ℕ} (hr : r < R) :
+section
+variable (m₀ : ℕ → ℕ) (CA R : ℕ) (fA fC fW : ℕ → ℕ) {r v : ℕ} (hr : r < R)
+include hr
+theorem regMem_A :
     upd (regMem m₀ CA R fA fC fW) (CA + r) v = regMem m₀ CA R (Function.update fA r v) fC fW := by
-  funext a
-  simp only [upd_apply, regMem, Function.update_apply]
-  split_ifs <;> first | rfl | omega
+  grind [upd_apply, regMem, Function.update_apply]
 
-theorem regMem_C (m₀ : ℕ → ℕ) (CA R : ℕ) (fA fC fW : ℕ → ℕ) {r v : ℕ} (hr : r < R) :
+theorem regMem_C :
     upd (regMem m₀ CA R fA fC fW) (CA + R + r) v =
       regMem m₀ CA R fA (Function.update fC r v) fW := by
-  funext a
-  simp only [upd_apply, regMem, Function.update_apply]
-  split_ifs <;> first | rfl | omega
+  grind [upd_apply, regMem, Function.update_apply]
 
-theorem regMem_W (m₀ : ℕ → ℕ) (CA R : ℕ) (fA fC fW : ℕ → ℕ) {r v : ℕ} (hr : r < R) :
+theorem regMem_W :
     upd (regMem m₀ CA R fA fC fW) (CA + 2 * R + r) v =
       regMem m₀ CA R fA fC (Function.update fW r v) := by
-  funext a
-  simp only [upd_apply, regMem, Function.update_apply]
-  split_ifs <;> first | rfl | omega
+  grind [upd_apply, regMem, Function.update_apply]
 
-theorem regMem_rdA (m₀ : ℕ → ℕ) (CA R : ℕ) (fA fC fW : ℕ → ℕ) {r : ℕ} (hr : r < R) :
+
+end
+
+section
+variable (m₀ : ℕ → ℕ) (CA R : ℕ) (fA fC fW : ℕ → ℕ) {r : ℕ} (hr : r < R)
+include hr
+theorem regMem_rdA :
     regMem m₀ CA R fA fC fW (CA + r) = fA r := by
   unfold regMem
   split_ifs <;> first | (congr 1; omega)
 
-theorem regMem_rdC (m₀ : ℕ → ℕ) (CA R : ℕ) (fA fC fW : ℕ → ℕ) {r : ℕ} (hr : r < R) :
+theorem regMem_rdC :
     regMem m₀ CA R fA fC fW (CA + R + r) = fC r := by
-  unfold regMem
-  split_ifs <;> first | (congr 1; omega)
+  grind [regMem]
 
-theorem regMem_rdW (m₀ : ℕ → ℕ) (CA R : ℕ) (fA fC fW : ℕ → ℕ) {r : ℕ} (hr : r < R) :
+theorem regMem_rdW :
     regMem m₀ CA R fA fC fW (CA + 2 * R + r) = fW r := by
-  unfold regMem
-  split_ifs <;> first | (congr 1; omega)
+  grind [regMem]
 
-theorem regMem_out (m₀ : ℕ → ℕ) (CA R : ℕ) (fA fC fW : ℕ → ℕ) {a : ℕ}
+
+end
+
+section
+variable (m₀ : ℕ → ℕ) (CA R : ℕ)
+theorem regMem_out (fA fC fW : ℕ → ℕ) {a : ℕ}
     (ha : a < CA ∨ CA + 3 * R ≤ a) : regMem m₀ CA R fA fC fW a = m₀ a := by
-  unfold regMem
-  split_ifs <;> first | rfl | omega
+  grind [regMem]
 
-theorem regMem_congr (m₀ : ℕ → ℕ) (CA R : ℕ) {fA fC fW gA gC gW : ℕ → ℕ}
+theorem regMem_congr {fA fC fW gA gC gW : ℕ → ℕ}
     (hA : ∀ r, r < R → fA r = gA r) (hC : ∀ r, r < R → fC r = gC r)
     (hW : ∀ r, r < R → fW r = gW r) : regMem m₀ CA R fA fC fW = regMem m₀ CA R gA gC gW := by
-  funext a
-  unfold regMem
-  split_ifs with h1 h2 h3
-  · exact hA _ (by omega)
-  · exact hC _ (by omega)
-  · exact hW _ (by omega)
-  · rfl
+  grind [regMem]
 
-theorem regMem_self (m₀ : ℕ → ℕ) (CA R : ℕ) :
+theorem regMem_self :
     regMem m₀ CA R (fun r => m₀ (CA + r)) (fun r => m₀ (CA + R + r)) (fun r => m₀ (CA + 2 * R + r))
       = m₀ := by
-  funext a
-  unfold regMem
-  split_ifs <;> first | rfl | (show m₀ _ = m₀ a; congr 1; omega)
+  aesop (add simp [regMem]) (add safe (by omega))
 
 /-! ## The programs -/
+
+
+end
 
 /-- Zero the three arrays. -/
 def zeroLoop : Stmt :=
@@ -180,19 +183,18 @@ def chCntLoop : Stmt :=
       (.seq (.ifLtN 43203 43204 incV (.ifLtN 43204 43203 incV .skip))
         (.instr (.addN 43201 43201 43011))))
 
-theorem wr_zeroLoop : wrM (fun r => decide (43201 ≤ r ∧ r < 43210)) zeroLoop = true := by decide
-theorem wr_arcCntLoop : wrM (fun r => decide (43201 ≤ r ∧ r < 43210)) arcCntLoop = true := by
-  decide
-theorem wr_chCntLoop : wrM (fun r => decide (43201 ≤ r ∧ r < 43210)) chCntLoop = true := by
-  decide
 
+section
+variable (i : ℕ) (f : ℕ → ℕ)
+include i f
 /-- `f` with its first `i` values zeroed. -/
-def zU (i : ℕ) (f : ℕ → ℕ) (r : ℕ) : ℕ := if r < i then 0 else f r
+def zU (r : ℕ) : ℕ := if r < i then 0 else f r
 
-theorem zU_succ (i : ℕ) (f : ℕ → ℕ) : Function.update (zU i f) i 0 = zU (i + 1) f := by
-  funext r
-  simp only [Function.update_apply, zU]
-  split_ifs <;> first | rfl | omega
+theorem zU_succ : Function.update (zU i f) i 0 = zU (i + 1) f := by
+  core_grind
+
+
+end
 
 section exec
 
@@ -239,16 +241,16 @@ theorem zeroLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ} 
         hfe.trans (exec_frameM x (by decide)), ?_⟩, ?_⟩
       · rw [hm', hme, regMem_A _ _ _ _ _ _ (by omega), regMem_C _ _ _ _ _ _ (by omega),
           regMem_W _ _ _ _ _ _ (by omega), zU_succ, zU_succ, zU_succ]
-      · rw [hi', hie]; omega)
+      omega)
     ⟨hw, 0, hi, Nat.zero_le _, FrameM.refl _ _, by
-      rw [hm]; congr 1⟩
+      aesop⟩
   have hiR' : i = R := by
     rw [hi', hf.1 _ (by decide), hR] at htest; omega
   subst hiR'
-  refine ⟨d', k, e, by rw [hi] at hk; omega, hw', hf, ?_⟩
+  refine ⟨d', k, e, by omega, hw', hf, ?_⟩
   rw [hm']
-  exact regMem_congr _ _ _ (fun r hr => by simp [zU, hr]) (fun r hr => by simp [zU, hr])
-    (fun r hr => by simp [zU, hr])
+  exact regMem_congr _ _ _ (fun r hr => by grind [zU]) (fun r hr => by grind [zU])
+    (fun r hr => by grind [zU])
 
 end exec
 
@@ -256,23 +258,24 @@ theorem cntF_update (key : ℕ → ℕ) (j : ℕ) :
     Function.update (cntF key j) (key j) (cntF key j (key j) + 1) = cntF key (j + 1) := by
   funext r
   by_cases h : r = key j
-  · subst h; rw [Function.update_self, cntF_succ, ite_eq_left rfl]
-  · rw [Function.update_of_ne h, cntF_succ, ite_eq_right (Ne.symm h), Nat.add_zero]
+  all_goals (aesop (add simp [Function.update_self, cntF_succ, Nat.add_zero]) (add safe (by omega)))
 
-theorem wmaxF_update (key w : ℕ → ℕ) (j : ℕ) (hlt : wmaxF key w j (key j) < w j) :
+section
+variable (key w : ℕ → ℕ) (j : ℕ)
+theorem wmaxF_update (hlt : wmaxF key w j (key j) < w j) :
     Function.update (wmaxF key w j) (key j) (w j) = wmaxF key w (j + 1) := by
-  funext r
-  by_cases h : r = key j
-  · subst h; rw [Function.update_self, wmaxF_succ, ite_eq_left rfl]; omega
-  · rw [Function.update_of_ne h, wmaxF_succ, ite_eq_right (Ne.symm h)]
+  grind [Function.update_self, wmaxF_succ]
 
-theorem wmaxF_same (key w : ℕ → ℕ) (j : ℕ) (hge : ¬ wmaxF key w j (key j) < w j) :
+theorem wmaxF_same (hge : ¬ wmaxF key w j (key j) < w j) :
     wmaxF key w j = wmaxF key w (j + 1) := by
   funext r
   rw [wmaxF_succ]
   split_ifs with h1
   · subst h1; omega
   · rfl
+
+
+end
 
 section exec
 
@@ -292,7 +295,7 @@ theorem arcCntLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ
   obtain ⟨key, hkeydef⟩ : ∃ f : ℕ → ℕ, f = fun j => m₀ (AT + 5 * j) := ⟨_, rfl⟩
   obtain ⟨wt, hwdef⟩ : ∃ f : ℕ → ℕ, f = fun j => m₀ (WT + j) := ⟨_, rfl⟩
   rw [← hkeydef, ← hwdef]
-  have hkey' : ∀ j, j < A → key j < R := fun j hj => by rw [hkeydef]; exact hkey j hj
+  have hkey' : ∀ j, j < A → key j < R := fun j hj => by simp_all
   obtain ⟨d', k, e, ⟨hw', i, hi', hiA, hf, hm'⟩, htest, hk⟩ := Exec.whileLtN_potential (P := P)
     (W := W) (a := 43201) (b := 43102) (body := _)
     (fun e => WordsBounded W e ∧ ∃ i, e.nreg 43201 = i ∧ i ≤ A ∧
@@ -315,9 +318,7 @@ theorem arcCntLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ
       have mc : e.nmem (CA + key j) = cntF key j (key j) := by
         rw [hme, regMem_rdA _ _ _ _ _ _ hkj]
       have hcW : cntF key j (key j) + 1 ≤ W := by
-        have : cntF key j (key j) ≤ j := by
-          unfold cntF lstF; exact (List.length_filter_le _ _).trans (by simp)
-        omega
+        grind [cntF, lstF]
       obtain ⟨e₁, k₁, x₁, hk₁, v7, v8, v9, v1, m₁, g₁⟩ : ∃ e₁ k₁, Exec P W
           (block [.addN 43202 43201 43201, .addN 43202 43202 43202, .addN 43202 43202 43201,
             .addN 43202 43202 44002, .loadN 43203 43202,
@@ -338,14 +339,14 @@ theorem arcCntLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ
         refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_⟩ <;> config_simp
         · rw [r1, r5, r6, r4, hje, show j + j + (j + j) + j + AT = AT + 5 * j by omega, mk,
             upd_other _ _ _ (by omega), mw]
-        · rw [r1, r2, hje, r5, show j + j + (j + j) + j + AT = AT + 5 * j by omega, mk]; omega
+        · grind
         · rw [r1, r2, hje, r5, r4, show j + j + (j + j) + j + AT = AT + 5 * j by omega, mk, mc,
             hme, regMem_A _ _ _ _ _ _ hkj, show CA + R + R + key j = CA + 2 * R + key j by omega,
             regMem_rdW _ _ _ _ _ _ hkj]
         · rw [hje]
         · rw [r1, r5, r4, hje, show j + j + (j + j) + j + AT = AT + 5 * j by omega, mk, mc,
             hme, regMem_A _ _ _ _ _ _ hkj, cntF_update]
-        · simp (disch := omega) only [upd_other]
+        grind [upd_other]
       have w₁ := x₁.wb_right
       -- the maximum
       obtain ⟨e₂, k₂, x₂, hk₂, v1', m₂⟩ : ∃ e₂ k₂, Exec P W
@@ -353,48 +354,50 @@ theorem arcCntLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ
           e₂.nreg = e₁.nreg ∧
           e₂.nmem = regMem m₀ CA R (cntF key (j + 1)) fC (wmaxF key wt (j + 1)) := by
         by_cases hlt : wmaxF key wt j (key j) < wt j
-        · refine spec_ifLtN_true (by rw [v9, v7]; exact hlt)
+        · refine spec_ifLtN_true (by omega)
             (spec_instr (Exec.storeN w₁ _ _) fun _ => ⟨by omega, rfl, ?_⟩)
           simp only
           rw [v8, v7, m₁, regMem_W _ _ _ _ _ _ hkj, wmaxF_update _ _ _ hlt]
-        · refine spec_ifLtN_false (by rw [v9, v7]; exact hlt) (spec_skip w₁ ⟨by omega, rfl, ?_⟩)
+        · refine spec_ifLtN_false (by omega) (spec_skip w₁ ⟨by omega, rfl, ?_⟩)
           rw [m₁, wmaxF_same _ _ _ hlt]
       have w₂ := x₂.wb_right
-      have e1011 : e₂.nreg 43011 = 1 := by rw [v1', g₁ _ (by omega), r4]
+      have e1011 : e₂.nreg 43011 = 1 := by simp_all
       have e1201 : e₂.nreg 43201 = j := by rw [v1', v1]
-      have x₃ := Exec.addN (P := P) w₂ 43201 43201 43011 (by rw [e1011, e1201]; omega)
+      have x₃ := Exec.addN (P := P) w₂ 43201 43201 43011 (by omega)
       have X := Exec.seq x₁ (Exec.seq x₂ x₃)
       refine ⟨_, _, X, ⟨X.wb_right, j + 1, by simp [e1011, e1201], by omega,
-        hfe.trans (exec_frameM X (by decide)), by simpa using m₂⟩, ?_⟩
-      simp only [upd_same, e1011, e1201]
-      omega)
+        hfe.trans (exec_frameM X (by decide)), by omega⟩, ?_⟩
+      grind [upd_same])
     ⟨hw, 0, hi, Nat.zero_le _, FrameM.refl _ _, by
       rw [hm]; exact regMem_congr _ _ _ (fun r _ => by simp [cntF, lstF]) (fun _ _ => rfl)
         (fun r _ => by simp [wmaxF, lstF])⟩
   have hiA' : i = A := by
     rw [hi', hf.1 _ (by decide), hA] at htest; omega
   subst hiA'
-  exact ⟨d', k, e, by rw [hi] at hk; omega, hw', hf, hm'⟩
+  exact ⟨d', k, e, by omega, hw', hf, hm'⟩
 
 end exec
 
-theorem cnt2_update_eq (u v : ℕ → ℕ) (i : ℕ) (h : u i = v i) :
+section
+variable (u v : ℕ → ℕ) (i : ℕ)
+theorem cnt2_update_eq (h : u i = v i) :
     Function.update (cnt2F u v i) (u i) (cnt2F u v i (u i) + 1) = cnt2F u v (i + 1) := by
   funext r
   by_cases hr : r = u i
-  · subst hr; rw [Function.update_self, cnt2F_succ, ite_eq_left (Or.inl rfl)]
-  · rw [Function.update_of_ne hr, cnt2F_succ, ite_eq_right (by rw [← h]; omega), Nat.add_zero]
+  all_goals (aesop (add simp [Function.update_self, cnt2F_succ, Nat.add_zero]) (add safe (by omega)))
 
-theorem cnt2_update_ne (u v : ℕ → ℕ) (i : ℕ) (_h : u i ≠ v i) :
+theorem cnt2_update_ne (_h : u i ≠ v i) :
     Function.update (Function.update (cnt2F u v i) (u i) (cnt2F u v i (u i) + 1)) (v i)
       (cnt2F u v i (v i) + 1) = cnt2F u v (i + 1) := by
   funext r
   by_cases hr : r = v i
-  · subst hr; rw [Function.update_self, cnt2F_succ, ite_eq_left (Or.inr rfl)]
+  · grind [Function.update_self, cnt2F_succ]
   · rw [Function.update_of_ne hr]
     by_cases hr' : r = u i
-    · subst hr'; rw [Function.update_self, cnt2F_succ, ite_eq_left (Or.inl rfl)]
-    · rw [Function.update_of_ne hr', cnt2F_succ, ite_eq_right (by omega), Nat.add_zero]
+    all_goals (aesop (add simp [Function.update_self, cnt2F_succ, Nat.add_zero]) (add safe (by omega)))
+
+
+end
 
 section exec
 
@@ -408,12 +411,10 @@ theorem incV_exec (e : Config) (hw : WordsBounded W e) {CA R v : ℕ} (hCA : e.n
       (∀ r, (r < 43207 ∨ 43208 < r) → e'.nreg r = e.nreg r) := by
   unfold incV
   exec_block
-  · rw [hCA, hR]; omega
-  · config_simp; rw [hCA, hR, hv]; omega
-  · config_simp; rw [hCA, hR, hv, h1]; omega
-  · refine ⟨rfl, ?_, fun r hr => ?_⟩ <;> config_simp
-    · rw [hCA, hR, hv, h1]
-    · simp (disch := omega) only [upd_other]
+  · omega
+  · simp_all
+  · simp_all
+  grind [upd_other]
 
 /-- **Counting the chords by side region.** -/
 theorem chCntLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ} {CA R K CT : ℕ}
@@ -429,8 +430,8 @@ theorem chCntLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ}
   obtain ⟨u, hudef⟩ : ∃ f : ℕ → ℕ, f = fun i => m₀ (CT + 5 * i + 3) := ⟨_, rfl⟩
   obtain ⟨v, hvdef⟩ : ∃ f : ℕ → ℕ, f = fun i => m₀ (CT + 5 * i + 4) := ⟨_, rfl⟩
   rw [← hudef, ← hvdef]
-  have hu' : ∀ i, i < K → u i < R := fun i hi => by rw [hudef]; exact hu i hi
-  have hv' : ∀ i, i < K → v i < R := fun i hi => by rw [hvdef]; exact hv i hi
+  have hu' : ∀ i, i < K → u i < R := fun i hi => by simp_all
+  have hv' : ∀ i, i < K → v i < R := fun i hi => by simp_all
   obtain ⟨d', k, e, ⟨hw', i, hi', hiK, hf, hm'⟩, htest, hk⟩ := Exec.whileLtN_potential (P := P)
     (W := W) (a := 43201) (b := 43002) (body := _)
     (fun e => WordsBounded W e ∧ ∃ i, e.nreg 43201 = i ∧ i ≤ K ∧
@@ -454,8 +455,8 @@ theorem chCntLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ}
       have mc : e.nmem (CA + R + u j) = cnt2F u v j (u j) := by
         rw [hme, regMem_rdC _ _ _ _ _ _ huj]
       have hcle : ∀ r, cnt2F u v j r ≤ j := fun r => by
-        unfold cnt2F lst2F; exact (List.length_filter_le _ _).trans (by simp)
-      have hcW : cnt2F u v j (u j) + 1 ≤ W := by have := hcle (u j); omega
+        grind [cnt2F, lst2F]
+      have hcW : cnt2F u v j (u j) + 1 ≤ W := by grind
       obtain ⟨e₁, k₁, x₁, hk₁, v3, v4, v1, m₁, g₁⟩ : ∃ e₁ k₁, Exec P W
           (block [.addN 43202 43201 43201, .addN 43202 43202 43202, .addN 43202 43202 43201,
             .addN 43202 43202 44001, .addN 43202 43202 43013, .loadN 43203 43202,
@@ -473,13 +474,12 @@ theorem chCntLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ}
               show CT + 5 * j + 3 + 1 = CT + 5 * j + 4 by omega, mu, mv, mc]; omega)
           | skip
         refine ⟨rfl, ?_, ?_, ?_, ?_, fun r hr => ?_⟩ <;> config_simp
-        · rw [r3, r5, hje, show j + j + (j + j) + j + CT + 3 = CT + 5 * j + 3 by omega, mu]
-        · rw [r3, r4, r5, hje, show j + j + (j + j) + j + CT + 3 + 1 = CT + 5 * j + 4 by omega,
-            mv]
+        · grind
+        · grind
         · rw [hje]
         · rw [r1, r2, r3, r4, r5, hje, show j + j + (j + j) + j + CT + 3 = CT + 5 * j + 3 by omega,
             mu, mc, hme, regMem_C _ _ _ _ _ _ huj]
-        · simp (disch := omega) only [upd_other]
+        grind [upd_other]
       have w₁ := x₁.wb_right
       -- the other side
       obtain ⟨e₂, k₂, x₂, hk₂, g₂, m₂⟩ : ∃ e₂ k₂, Exec P W
@@ -492,36 +492,35 @@ theorem chCntLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ}
           have hrd : e₁.nmem (CA + R + v j) = cnt2F u v j (v j) := by
             rw [m₁, regMem_rdC _ _ _ _ _ _ hvj, Function.update_of_ne (Ne.symm hne)]
           obtain ⟨e₂, k₂, x₂, hk₂, m₂, g₂⟩ := incV_exec (P := P) e₁ w₁ (CA := CA) (R := R)
-            (v := v j) (by rw [g₁ _ (by omega), r1]) (by rw [g₁ _ (by omega), r2]) v4
-            (by rw [g₁ _ (by omega), r4]) (by omega) (by rw [hrd]; have := hcle (v j); omega)
+            (v := v j) (by grind) (by grind) v4
+            (by grind) (by omega) (by grind)
           refine ⟨e₂, k₂, x₂, hk₂, g₂, ?_⟩
           rw [m₂, hrd, m₁, regMem_C _ _ _ _ _ _ hvj, cnt2_update_ne u v j hne]
         by_cases a1 : u j < v j
         · obtain ⟨e₂, k₂, x₂, hk₂, g₂, m₂⟩ := inc (by omega)
-          exact ⟨e₂, _, .ifLtN_true (by rw [v3, v4]; exact a1) x₂, by omega, g₂, m₂⟩
+          exact ⟨e₂, _, .ifLtN_true (by omega) x₂, by omega, g₂, m₂⟩
         by_cases a2 : v j < u j
         · obtain ⟨e₂, k₂, x₂, hk₂, g₂, m₂⟩ := inc (by omega)
-          exact ⟨e₂, _, .ifLtN_false (by rw [v3, v4]; exact a1)
-            (.ifLtN_true (by rw [v3, v4]; exact a2) x₂), by omega, g₂, m₂⟩
-        · refine ⟨e₁, _, .ifLtN_false (by rw [v3, v4]; exact a1)
-            (.ifLtN_false (by rw [v3, v4]; exact a2) (.skip w₁)), by omega, fun _ _ => rfl, ?_⟩
+          exact ⟨e₂, _, .ifLtN_false (by omega)
+            (.ifLtN_true (by omega) x₂), by omega, g₂, m₂⟩
+        · refine ⟨e₁, _, .ifLtN_false (by omega)
+            (.ifLtN_false (by omega) (.skip w₁)), by omega, fun _ _ => rfl, ?_⟩
           rw [m₁, cnt2_update_eq u v j (by omega)]
       have w₂ := x₂.wb_right
-      have e1011 : e₂.nreg 43011 = 1 := by rw [g₂ _ (by omega), g₁ _ (by omega), r4]
-      have e1201 : e₂.nreg 43201 = j := by rw [g₂ _ (by omega), v1]
-      have x₃ := Exec.addN (P := P) w₂ 43201 43201 43011 (by rw [e1011, e1201]; omega)
+      have e1011 : e₂.nreg 43011 = 1 := by grind
+      have e1201 : e₂.nreg 43201 = j := by grind
+      have x₃ := Exec.addN (P := P) w₂ 43201 43201 43011 (by omega)
       have X := Exec.seq x₁ (Exec.seq x₂ x₃)
       refine ⟨_, _, X, ⟨X.wb_right, j + 1, by simp [e1011, e1201], by omega,
-        hfe.trans (exec_frameM X (by decide)), by simpa using m₂⟩, ?_⟩
-      simp only [upd_same, e1011, e1201]
-      omega)
+        hfe.trans (exec_frameM X (by decide)), by omega⟩, ?_⟩
+      grind [upd_same])
     ⟨hw, 0, hi, Nat.zero_le _, FrameM.refl _ _, by
       rw [hm]; exact regMem_congr _ _ _ (fun _ _ => rfl) (fun r _ => by simp [cnt2F, lst2F])
         (fun _ _ => rfl)⟩
   have hiK' : i = K := by
     rw [hi', hf.1 _ (by decide), hK] at htest; omega
   subst hiK'
-  exact ⟨d', k, e, by rw [hi] at hk; omega, hw', hf, hm'⟩
+  exact ⟨d', k, e, by omega, hw', hf, hm'⟩
 
 end exec
 

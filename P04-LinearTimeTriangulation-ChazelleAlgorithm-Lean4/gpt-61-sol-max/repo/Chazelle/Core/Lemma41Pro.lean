@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.Lemma41Tab
 
 /-!
@@ -79,7 +81,7 @@ theorem proC_exec {c : Config} (hw : WordsBounded W c) (hW : 8 ≤ W) :
     by config_simp, by config_simp, by config_simp, by config_simp, fun r hr => ?_, rfl, rfl, rfl,
     rfl⟩
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat ram_simp
 
 set_option maxHeartbeats 16000000 in
 theorem proL_exec {c : Config} (hw : WordsBounded W c) {h a L lam : ℕ}
@@ -107,20 +109,20 @@ theorem proL_exec {c : Config} (hw : WordsBounded W c) {h a L lam : ℕ}
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold proL
   exec_block
-  all_goals try (config_simp; (try simp only [h00, h01, h02, h03, h24, h80, h83, h84]); omega)
+  all_goals try (config_simp; grind)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl,
     rfl⟩
-  · config_simp; simp only [h01]
-  · config_simp; simp only [h01, h02]
-  · config_simp; simp only [h03]
-  · config_simp; simp only [h00, h83]
-  · config_simp; simp only [h00, h24]
-  · config_simp; simp only [h00, h24, h80]
-  · config_simp; simp only [h00, h80]
-  · config_simp; simp only [h00, h03, h24, h80]
-  · config_simp; simp only [h00, h24]
-  · config_simp; simp only [h00, h03, h24, h84]
-  · config_simp; simp only [h00, h03, h24, h80, h84]
+  · ram_simp <;> omega_nf
+  · ram_simp <;> omega_nf
+  · ram_simp <;> omega_nf
+  · ram_simp <;> omega_nf
+  · ram_simp <;> omega_nf
+  · ram_simp <;> omega_nf
+  · ram_simp <;> omega_nf
+  · config_simp; grind
+  · ram_simp <;> omega_nf
+  · ram_simp <;> omega_nf
+  · ram_simp <;> omega_nf
   · config_simp
   · unfold ProRG at hr
     simp only
@@ -148,9 +150,8 @@ theorem clogS_exec {c : Config} (hw : WordsBounded W c) {PW lam : ℕ}
     exec_block
     all_goals try (config_simp; omega)
     refine ⟨rfl, ‹_›, by config_simp, ?_, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
-    · config_simp; rw [h21]; have := hpow 0 (by omega); simpa using this
-    · simp only
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    · config_simp; rw [h21]; have := hpow 0 (by omega); omega
+    simp_all
   let I : Config → Prop := fun c' => WordsBounded W c' ∧ ∃ i, i ≤ Nat.clog 2 lam ∧
     c'.nreg 160104 = i ∧ c'.nreg 160105 = 2 ^ i ∧
     (∀ r, r ≠ 160104 → r ≠ 160105 → r ≠ 160031 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧
@@ -161,15 +162,14 @@ theorem clogS_exec {c : Config} (hw : WordsBounded W c) {PW lam : ℕ}
         .loadN 160105 160031]) I (fun c' => 5 * (Nat.clog 2 lam - c'.nreg 160104))
       (fun c' h => h.1)
       (fun c2 ⟨hw2, i, hi, h04, h05, fr2, hm2, hrr2, hrm2, ho2⟩ htest => by
-        have c03 : c2.nreg 160003 = lam := by rw [fr2 _ (by omega) (by omega) (by omega)]; exact h03
-        have c21 : c2.nreg 160021 = PW := by rw [fr2 _ (by omega) (by omega) (by omega)]; exact h21
-        have c24 : c2.nreg 160024 = 1 := by rw [fr2 _ (by omega) (by omega) (by omega)]; exact h24
+        have c03 : c2.nreg 160003 = lam := by grind
+        have c21 : c2.nreg 160021 = PW := by grind
+        have c24 : c2.nreg 160024 = 1 := by grind
         rw [h05, c03] at htest
         have hil : i < Nat.clog 2 lam := by
           by_contra hc
           have := Nat.le_pow_clog (b := 2) (by norm_num) lam
-          have := Nat.pow_le_pow_right (show 0 < 2 by norm_num) (not_lt.mp hc)
-          omega
+          grind
         obtain ⟨c3, k3, e3, hk3, hw3, q04, q05, fr3, hm3, hrr3, hrm3, ho3⟩ : ∃ c3 k3, Exec P W
             (block [.addN 160104 160104 160024, .addN 160031 160021 160104, .loadN 160105 160031])
             c2 c3 k3 ∧ k3 = 3 ∧ WordsBounded W c3 ∧ c3.nreg 160104 = i + 1 ∧
@@ -178,22 +178,20 @@ theorem clogS_exec {c : Config} (hw : WordsBounded W c) {PW lam : ℕ}
             c3.nmem = c2.nmem ∧ c3.rreg = c2.rreg ∧ c3.rmem = c2.rmem ∧
             c3.output = c2.output := by
           exec_block
-          all_goals try (config_simp; (try simp only [h04, c21, c24]); omega)
-          refine ⟨rfl, ‹_›, by config_simp; simp only [h04, c24], ?_, fun r a1 a2 a3 => ?_, rfl,
+          all_goals try (config_simp; omega)
+          refine ⟨rfl, ‹_›, by ram_simp, ?_, fun r a1 a2 a3 => ?_, rfl,
             rfl, rfl, rfl⟩
-          · config_simp; simp only [h04, c21, c24, hm2]; exact hpow (i + 1) (by omega)
-          · simp only
-            repeat (rw [Machine.upd_other _ _ _ (by omega)])
+          · ram_simp
+          · ram_simp
         refine ⟨c3, k3, e3, ⟨hw3, i + 1, by omega, q04, q05,
-          fun r a1 a2 a3 => by rw [fr3 r a1 a2 a3]; exact fr2 r a1 a2 a3, by rw [hm3, hm2],
-          by rw [hrr3, hrr2], by rw [hrm3, hrm2], by rw [ho3, ho2]⟩, ?_⟩
-        show 5 * (Nat.clog 2 lam - c3.nreg 160104) + k3 + 2 ≤ 5 * (Nat.clog 2 lam - c2.nreg 160104)
-        rw [q04, h04]; omega)
+          fun r a1 a2 a3 => by grind, by grind,
+          by grind, by grind, by grind⟩, ?_⟩
+        omega)
       ⟨hw1, 0, Nat.zero_le _, i04, i05, fun r a1 a2 _ => fr1 r a1 a2, hm1, hrr1, hrm1, ho1⟩
-  have c03 : c'.nreg 160003 = lam := by rw [fr' _ (by omega) (by omega) (by omega)]; exact h03
+  have c03 : c'.nreg 160003 = lam := by grind
   rw [h05, c03] at htest
   have hk' : k ≤ 5 * Nat.clog 2 lam + 2 := by
-    have := hk; simp only [i04, Nat.sub_zero] at this; exact this
+    omega
   refine ⟨c', k1 + k, .seq e1 e, by omega, hw', ?_, fr', hm', hrr', hrm', ho'⟩
   rw [h04]; exact clog_eq_of (by omega) hi
 
@@ -271,21 +269,15 @@ theorem proH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ}
   rw [hAl] at hA ⊢
   unfold proH
   exec_block
-  all_goals try (config_simp; (try simp only [hA, h24, h29, h86]); omega)
+  all_goals try (config_simp; omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ⟨?_, fun i hi => ?_⟩, fun a ha => ?_,
     fun r h1 h2 h3 h4 h5 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [hA, h86]
-  · config_simp; simp only [hA]
-  · config_simp; simp only [hA, h86]
-  · config_simp; simp only [hA, h24, Machine.upd_apply]; split_ifs <;> first | omega | simp [Host.whole]
-  · have hi0 : i = 0 := by simp [Host.whole] at hi; omega
-    subst hi0
-    simp only [Host.whole, List.getD_cons_zero]
-    simp only [hA, h24, h29, Machine.upd_apply]
-    refine ⟨?_, ?_, ?_⟩ <;> (split_ifs <;> first | omega)
-  · config_simp; simp only [hA, h24, Machine.upd_apply]; split_ifs <;> first | omega
-  · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  · ram_simp
+  · ram_simp
+  · ram_simp
+  · grind [Machine.upd_apply, Host.whole]
+  · grind [Host.whole, List.getD_cons_zero, Machine.upd_apply]
+  all_goals (grind [Machine.upd_apply])
 
 end proofs
 

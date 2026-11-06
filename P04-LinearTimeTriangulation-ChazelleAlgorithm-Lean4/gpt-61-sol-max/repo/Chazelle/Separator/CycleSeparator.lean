@@ -89,7 +89,7 @@ theorem label_unique (hM : M.Planar) {d d' : D} (hd : d ∈ T.coDarts) (hd' : d'
     d = d' := by
   by_contra hne
   have hsub := T.cross_subset hM (T.opp_mem_coDarts hd) hd' (by rw [M.opp_opp]; exact hf)
-    (by rw [M.opp_opp]; exact Ne.symm hne)
+    (by rw [M.opp_opp]; grind)
   exact T.notMem_cross_opp hM hd hg (hsub hg')
 
 omit [DecidableEq D] [Fintype F] in
@@ -104,19 +104,16 @@ theorem card_sepSet_filter_shift_le (f : F) (c : ℕ) (I : Finset ℕ) :
         (fun v => T.IsAnc v (M.vert e) ∧ T.level v + c ∈ I)) := by
     intro v hv
     simp only [Finset.mem_filter, mem_sepSet] at hv
-    obtain ⟨⟨e, he, hanc⟩, hl⟩ := hv
-    simp only [Finset.mem_biUnion, Finset.mem_filter, Finset.mem_univ, true_and, E]
-    exact ⟨e, he, hanc, hl⟩
+    aesop
   refine (Finset.card_le_card hsub).trans (Finset.card_biUnion_le.trans ?_)
   rw [faceDeg, ← smul_eq_mul, ← Finset.sum_const]
   refine Finset.sum_le_sum (fun e _ => ?_)
   refine Finset.card_le_card_of_injOn (fun v => T.level v + c) ?_ ?_
   · intro v hv
-    simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at hv
-    exact hv.2
+    simp_all
   · intro v hv v' hv' hl
     simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at hv hv'
-    exact T.eq_of_isAnc_of_level_eq hv.1 hv'.1 (by simpa using hl)
+    exact T.eq_of_isAnc_of_level_eq hv.1 hv'.1 (by simp_all)
 
 end SpanTree
 

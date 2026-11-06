@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreTIntKey
 public import Chazelle.Core.ShootCutOrig
 public import Chazelle.Core.SweepPrimAbs
@@ -40,15 +42,18 @@ def iSym (bit n e h : ℕ) : SymPt :=
   if h = 0 then .vtx (iIdx bit n e) else .onEdge (iEdgeIdx bit n e) (h - 1)
 
 theorem iEdgeIdx_lt {bit n e : ℕ} (hn : 3 ≤ n) (he : e < n) : iEdgeIdx bit n e < n := by
-  unfold iEdgeIdx; split_ifs <;> omega
+  grind [iEdgeIdx]
 
 theorem iSym_lt {bit n e h : ℕ} (hn : 3 ≤ n) (he : e < n) (hh : h ≤ n) : (iSym bit n e h).Lt n := by
   unfold iSym; split_ifs with h0
   · exact iIdx_lt he
   · exact ⟨iEdgeIdx_lt hn he, by omega⟩
 
+section
+variable {bit n e : ℕ} (hn : 3 ≤ n) (he : e < n)
+include hn he
 /-- The walk edge `e` joins consecutive vertices of `Q`. -/
-theorem iIdx_edgeOK {bit n e : ℕ} (hn : 3 ≤ n) (he : e < n) :
+theorem iIdx_edgeOK :
     HostEdgeOK n (.vtx (iIdx bit n e)) (.vtx (iIdx bit n ((e + 1) % n))) := by
   simp only [HostEdgeOK, iIdx]
   rcases Nat.lt_or_ge (e + 1) n with h1 | h1
@@ -56,38 +61,40 @@ theorem iIdx_edgeOK {bit n e : ℕ} (hn : 3 ≤ n) (he : e < n) :
     split_ifs
     · left; rw [Nat.mod_eq_of_lt h1]
     · right; rw [Nat.mod_eq_of_lt (by omega)]; omega
-  · have : e + 1 = n := by omega
-    rw [this, Nat.mod_self]
-    split_ifs
-    · left; rw [← this, Nat.mod_self]
-    · right; rw [show n - 1 - 0 + 1 = n by omega, Nat.mod_self]; omega
+  grind [Nat.mod_self]
 
-theorem iIdx_ne {bit n e : ℕ} (hn : 3 ≤ n) (he : e < n) :
+theorem iIdx_ne :
     iIdx bit n e ≠ iIdx bit n ((e + 1) % n) := by
   unfold iIdx
   rcases Nat.lt_or_ge (e + 1) n with h1 | h1
-  · rw [Nat.mod_eq_of_lt h1]; split_ifs <;> omega
-  · rw [show e + 1 = n by omega, Nat.mod_self]; split_ifs <;> omega
+  · rw [Nat.mod_eq_of_lt h1]; grind
+  grind [Nat.mod_self]
 
 /-- **The edge of `Q` carrying the walk edge** is `iEdgeIdx`. -/
-theorem edgeOf_iIdx {bit n e : ℕ} (hn : 3 ≤ n) (he : e < n) :
+theorem edgeOf_iIdx :
     ShootCut.edgeOf n (.vtx (iIdx bit n e)) (.vtx (iIdx bit n ((e + 1) % n))) = iEdgeIdx bit n e := by
   have hmod : (e + 1) % n = if e + 1 < n then e + 1 else 0 := by
     split_ifs with h
     · exact Nat.mod_eq_of_lt h
-    · rw [show e + 1 = n by omega, Nat.mod_self]
+    grind [Nat.mod_self]
   by_cases hb : bit = 1
-  · simp [ShootCut.edgeOf, iEdgeIdx, iIdx, hb]
+  · grind [ShootCut.edgeOf, iEdgeIdx, iIdx]
   · have hne : n - 1 - (e + 1) % n ≠ (n - 1 - e + 1) % n := by
       rw [hmod]
       rcases Nat.eq_zero_or_pos e with h0 | h0
-      · subst h0; rw [ite_eq_left (by omega), show n - 1 - 0 + 1 = n by omega, Nat.mod_self]; omega
-      · rw [Nat.mod_eq_of_lt (show n - 1 - e + 1 < n by omega)]; split_ifs <;> omega
+      · subst h0; grind [Nat.mod_self]
+      · rw [Nat.mod_eq_of_lt (show n - 1 - e + 1 < n by omega)]; grind
     simp only [ShootCut.edgeOf, iEdgeIdx, iIdx, hb, ite_false, ite_eq_right hne]
-    rw [hmod]; split_ifs <;> omega
+    grind
 
+
+end
+
+section
+variable (hG : GoodEnv P) {bit : ℕ} (hbit : bit = 1 ↔ Mountain.LeftInside (Qof P))
+include hG bit hbit
 /-- **The point of a position of the interior walk** is its symbolic point. -/
-theorem interior_pos_sym (hG : GoodEnv P) {bit : ℕ} (hbit : bit = 1 ↔ Mountain.LeftInside (Qof P))
+theorem interior_pos_sym
     {e h : ℕ} (he : e < P.n) :
     (interiorModel (Qof P)).pos (Qof P) ⟨e, h⟩ = (iSym bit P.n e h).eval (Qof P) := by
   have hn : (Qof P).n = P.n := shear_n _ _
@@ -100,16 +107,16 @@ theorem interior_pos_sym (hG : GoodEnv P) {bit : ℕ} (hbit : bit = 1 ↔ Mounta
     have hb := interior_wb (P := P) hbit he
     have hi := iIdx_lt (bit := bit) he
     have hj := iIdx_lt (bit := bit) (Nat.mod_lt (e + 1) (show 0 < P.n by omega))
-    have := ShootCut.pos_eq_onEdge (interiorModel (Qof P)) hD (by rw [hn]; omega)
+    have := ShootCut.pos_eq_onEdge (interiorModel (Qof P)) hD (by omega)
       (p := e) (h := k) (sp₁ := .vtx (iIdx bit P.n e)) (sp₂ := .vtx (iIdx bit P.n ((e + 1) % P.n)))
-      ha hb (by show _ < _; rw [hn]; exact hi) (by show _ < _; rw [hn]; exact hj)
+      ha hb (by aesop) (by aesop)
       (by rw [hn]; exact iIdx_edgeOK hn3 he)
-      (by rw [ha, hb]; exact hD _ _ (by rw [hn]; exact hi) (by rw [hn]; exact hj) (iIdx_ne hn3 he))
+      (by rw [ha, hb]; exact hD _ _ (by omega) (by omega) (iIdx_ne hn3 he))
     rw [this, hn, edgeOf_iIdx hn3 he]
     simp [iSym]
 
 /-- **The abscissa of a proper position of the interior walk** is below `coordBound Q + 1`. -/
-theorem interior_abs_lt (hG : GoodEnv P) {bit : ℕ} (hbit : bit = 1 ↔ Mountain.LeftInside (Qof P))
+theorem interior_abs_lt
     {x : WPos} (he : x.edge < P.n) (hp : ProperPos (interiorModel (Qof P)) (Qof P) P.n x) :
     |((interiorModel (Qof P)).pos (Qof P) x).1| < Jordan.coordBound (Qof P) + 1 := by
   have hn : (Qof P).n = P.n := shear_n _ _
@@ -117,10 +124,10 @@ theorem interior_abs_lt (hG : GoodEnv P) {bit : ℕ} (hbit : bit = 1 ↔ Mountai
   have hb := interior_wb (P := P) hbit he
   have hi := iIdx_lt (bit := bit) he
   have hj := iIdx_lt (bit := bit) (Nat.mod_lt (x.edge + 1) (show 0 < P.n by
-    have := hG.1.1; omega))
-  have b1 := Jordan.abs_fst_vtx_le_coordBound (Qof P) (i := iIdx bit P.n x.edge) (by rw [hn]; exact hi)
+    omega))
+  have b1 := Jordan.abs_fst_vtx_le_coordBound (Qof P) (i := iIdx bit P.n x.edge) (by omega)
   have b2 := Jordan.abs_fst_vtx_le_coordBound (Qof P) (i := iIdx bit P.n ((x.edge + 1) % P.n))
-    (by rw [hn]; exact hj)
+    (by omega)
   obtain ⟨t0, t1, -⟩ := hp
   simp only [Model.pos, Geometry.lerp_fst]
   rw [ha, hb]
@@ -140,6 +147,9 @@ theorem interior_abs_lt (hG : GoodEnv P) {bit : ℕ} (hbit : bit = 1 ↔ Mountai
   linarith
 
 /-! ## The machine -/
+
+
+end
 
 /-- The edge index for the reversed orientation: `n - 2 - e`, or `n - 1` at the last edge. -/
 def iNxt (a : ℕ) : Stmt :=
@@ -162,15 +172,13 @@ def iRec (a b : ℕ) : Stmt :=
 def BiR (r : ℕ) : Bool := decide (50210 ≤ r ∧ r < 50218)
 
 theorem wr_iRec (a b : ℕ) : wr BiR (iRec a b) = true := by
-  simp only [iRec, iFix, iNxt, wr, block, wrOK, BiR]
-  decide
+  aesop
 
 /-- The registers written by `iFix`. -/
 def Bfx (r : ℕ) : Bool := r == 50212 || r == 50217
 
 theorem bfx_sub {r : ℕ} (h : Bfx r = true) : BiR r = true := by
-  simp only [Bfx, Bool.or_eq_true, beq_iff_eq] at h
-  simp only [BiR, decide_eq_true_eq]; omega
+  simp_all [Bfx, Bool.or_eq_true, beq_iff_eq, BiR, decide_eq_true_eq] <;> omega_nf
 
 /-- **The reversed index**: `iFix` puts `n - 1 - e` (vertex) or `iEdgeIdx` (edge) into `50212`. -/
 theorem iFix_exec {c : Config} (hw : WordsBounded W c) {a b : ℕ} (hW : P.n + 3 ≤ W)
@@ -183,12 +191,12 @@ theorem iFix_exec {c : Config} (hw : WordsBounded W c) {a b : ℕ} (hW : P.n + 3
   unfold iFix
   by_cases hb : c.nreg 83022 < c.nreg b
   · have hb0 : c.nreg b ≠ 0 := by omega
-    have e₁ := Exec.addN (P := P) hw 50217 a 50216 (by rw [h16]; have := hw.1 ALLOC; omega)
+    have e₁ := Exec.addN (P := P) hw 50217 a 50216 (by omega)
     set c₁ : Config := { c with nreg := upd c.nreg 50217 (c.nreg a + c.nreg 50216) } with hc₁
     have w₁ := e₁.wb_right
-    have v17 : c₁.nreg 50217 = c.nreg a + 1 := by rw [hc₁]; simp [h16]
-    have v15 : c₁.nreg 50215 = P.n := by rw [hc₁]; simp [upd, h15]
-    have v16 : c₁.nreg 50216 = 1 := by rw [hc₁]; simp [upd, h16]
+    have v17 : c₁.nreg 50217 = c.nreg a + 1 := by simp_all
+    have v15 : c₁.nreg 50215 = P.n := by simp_all
+    have v16 : c₁.nreg 50216 = 1 := by simp_all
     by_cases hl : c₁.nreg 50217 < c₁.nreg 50215
     · obtain ⟨c', k, e, hk, v12, fr⟩ : ∃ c' k, Exec P W
           (block [.subN 50212 50215 50217, .subN 50212 50212 50216]) c₁ c' k ∧ k = 2 ∧
@@ -200,20 +208,18 @@ theorem iFix_exec {c : Config} (hw : WordsBounded W c) {a b : ℕ} (hW : P.n + 3
           ?_, ?_⟩
         · simp [upd]
         · exact exec_frameB (Exec.block_cons ea (Exec.block_cons eb (Exec.block_nil eb.wb_right)))
-            (by simp only [wr, block, wrOK, Bfx]; decide)
+            (by core_grind [wrOK])
       have ex : Exec P W (.ifLtN 83022 b (iNxt a) (block [.subN 50212 50215 50216,
           .subN 50212 50212 a])) c c' _ := .ifLtN_true hb (.seq e₁ (.ifLtN_true hl e))
       refine ⟨c', _, ex, by omega, ?_, exec_frameB ex (by
-        simp only [iNxt, wr, block, wrOK, Bfx]; decide)⟩
-      rw [v12, v15, v17, v16, ite_eq_right hb0, ite_eq_left (by rw [v17, v15] at hl; exact hl)]
-      omega
+        grind [iNxt, wr, block, wrOK, Bfx])⟩
+      grind
     · have e₂ := Exec.subN (P := P) w₁ 50212 50215 50216
       have ex : Exec P W (.ifLtN 83022 b (iNxt a) (block [.subN 50212 50215 50216,
           .subN 50212 50212 a])) c _ _ := .ifLtN_true hb (.seq e₁ (.ifLtN_false hl e₂))
       refine ⟨_, _, ex, by omega, ?_, exec_frameB ex (by
-        simp only [iNxt, wr, block, wrOK, Bfx]; decide)⟩
-      simp only [upd_same]
-      rw [v15, v16, ite_eq_right hb0, ite_eq_right (by rw [v17, v15] at hl; exact hl)]
+        grind [iNxt, wr, block, wrOK, Bfx])⟩
+      grind [upd_same]
   · have hb0 : c.nreg b = 0 := by omega
     have ea := Exec.subN (P := P) hw 50212 50215 50216
     have eb := Exec.subN (P := P) ea.wb_right 50212 50212 a
@@ -221,9 +227,8 @@ theorem iFix_exec {c : Config} (hw : WordsBounded W c) {a b : ℕ} (hW : P.n + 3
         .subN 50212 50212 a])) c _ _ :=
       .ifLtN_false hb (Exec.block_cons ea (Exec.block_cons eb (Exec.block_nil eb.wb_right)))
     refine ⟨_, _, ex, by omega, ?_, exec_frameB ex (by
-      simp only [iNxt, wr, block, wrOK, Bfx]; decide)⟩
-    simp only [upd_same, ite_eq_left hb0]
-    rw [upd_other _ _ _ hab.1, h15, h16]
+      grind [iNxt, wr, block, wrOK, Bfx])⟩
+    simp_all
 
 /-- **The abscissa record of an interior position.** -/
 theorem iRec_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : WordsBounded W c)
@@ -259,7 +264,7 @@ theorem iRec_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Words
       · simp [upd, show r ≠ 50210 by omega, show r ≠ 50211 by omega, show r ≠ 50212 by omega,
           show r ≠ 50214 by omega, show r ≠ 50215 by omega, show r ≠ 50216 by omega]
   have w₁ := e₁.wb_right
-  have ga := g₁ a ha8.1 ha8.2
+  
   have gb := g₁ b hb8.1 hb8.2
   have g22 := g₁ 83022 (by norm_num) (by norm_num)
   have F₁ : FrameB BiR c c₁ := exec_frameB e₁ (by simp only [wr, block, wrOK, BiR]; decide)

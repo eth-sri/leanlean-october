@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FactsTree
 public import Chazelle.Core.SpecRam
 
@@ -44,12 +46,12 @@ structure RecTree (N : NF) (D : ℕ) : Prop where
 
 theorem getD_of_lt {α : Type*} {l : List α} {i : ℕ} (h : i < l.length) (d : α) :
     l.getD i d = l[i] := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h]; rfl
+  simp_all
 
 theorem chord_mem {N : NF} {i : ℕ} (hi : i < N.nChords) : N.chord i ∈ N.chords := by
   unfold NF.chord
   rw [getD_of_lt hi]
-  exact List.getElem_mem hi
+  grind
 
 /-- The region graph of a good model, with regions as intermediate nodes. -/
 theorem regions_reach {M : Model} {Q : Polygon} {F : Set (Set Point)} (hM : GoodModel M)
@@ -65,9 +67,12 @@ section tree
 
 variable {M : Model} {Q : Polygon} {N : NF} {D : ℕ}
 
+section
+variable (hM : GoodModel M) (hN : IsNF M Q N)
+include hM hN
 /-- The regions of a chord record: the region above and the region below, distinct, and the only
 regions the chord touches. -/
-theorem chord_regions (hM : GoodModel M) (hN : IsNF M Q N) {reg : ℕ → Set Point}
+theorem chord_regions {reg : ℕ → Set Point}
     (hcorr : RegionCorr M Q N reg) (hsides : ChordSidesOK M Q N reg) {i : ℕ} (hi : i < N.nChords) :
     reg (N.chord i).up ≠ reg (N.chord i).dn ∧
       ∀ W ∈ M.regions (N.F M Q), TouchesIn M.D ((N.chord i).toSet M Q) W ↔
@@ -87,17 +92,14 @@ theorem chord_regions (hM : GoodModel M) (hN : IsNF M Q N) {reg : ℕ → Set Po
   have hregV := hcorr.1 _ hdn
   have e1 : reg (N.chord i).up = U := by
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hregU hU with e | e
-    · exact e
-    · exact absurd (Set.disjoint_left.1 e ha) (not_not.2 hUV'.1)
+    all_goals grind
   have e2 : reg (N.chord i).dn = V := by
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hregV hV with e | e
-    · exact e
-    · exact absurd (Set.disjoint_left.1 e hb) (not_not.2 hUV'.2)
-  rw [e1, e2]
-  exact ⟨hUV, htouch⟩
+    all_goals grind
+  ram_grind
 
 /-- **The record tree of a valid normal form** of a good model with degree cap `D`. -/
-theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) D) :
+theorem recTree_of (hD : M.DegLe (N.F M Q) D) :
     RecTree N D := by
   obtain ⟨hfam, hinj, -, reg, hcorr, hsides, -, hregs, -, -, -⟩ := id hN
   have hcr := fun i (hi : i < N.nChords) => chord_regions hM hN hcorr hsides hi
@@ -108,20 +110,12 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
     intro i hi r hr
     obtain ⟨hup, hdn, -⟩ := hsides i hi
     rw [(hcr i hi).2 _ (hcorr.1 r hr)]
-    constructor
-    · rintro (e | e)
-      · exact Or.inl (hregInj _ _ hup hr e.symm)
-      · exact Or.inr (hregInj _ _ hdn hr e.symm)
-    · rintro (e | e)
-      · exact Or.inl (by rw [e])
-      · exact Or.inr (by rw [e])
+    grind
   have hlists : ∀ r, r < N.nRegions → ∀ i,
       i ∈ (N.region r).chords ↔ i < N.nChords ∧ ((N.chord i).up = r ∨ (N.chord i).dn = r) := by
     intro r hr i
     rw [((hregs r hr).1 i)]
-    constructor
-    · rintro ⟨hi, ht⟩; exact ⟨hi, (htouchIdx i hi r hr).1 ht⟩
-    · rintro ⟨hi, ht⟩; exact ⟨hi, (htouchIdx i hi r hr).2 ht⟩
+    grind
   -- the chord map is injective and onto the family
   have hF : N.F M Q = (fun i => (N.chord i).toSet M Q) '' Set.Iio N.nChords := by
     ext c
@@ -129,7 +123,7 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
     · rintro ⟨x, hx, rfl⟩
       obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hx
       refine ⟨i, hi, ?_⟩
-      simp only [NF.chord, getD_of_lt hi]
+      grind [NF.chord]
     · rintro ⟨i, hi, rfl⟩
       exact ⟨N.chord i, chord_mem hi, rfl⟩
   have hFcard : (N.F M Q).ncard = N.nChords := by
@@ -142,7 +136,7 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
       constructor
       · intro hU
         obtain ⟨r, hr, e⟩ := hcorr.2.2 U hU
-        exact ⟨r, hr, e⟩
+        grind
       · rintro ⟨r, hr, rfl⟩
         exact hcorr.1 r hr
     have hio : Set.InjOn reg (Set.Iio N.nRegions) := fun a ha b hb e => hregInj a b ha hb e
@@ -150,7 +144,7 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
   obtain ⟨-, hcount, -⟩ := regionTree M Q (N.F M Q) hM hfam
   refine ⟨fun i hi => ⟨(hsides i hi).1, (hsides i hi).2.1⟩,
     fun i hi e => (hcr i hi).1 (by rw [e]), hlists, fun r hr => (hregs r hr).2.1,
-    by rw [← hRcard, ← hFcard]; exact hcount, ?_, ?_⟩
+    by omega, ?_, ?_⟩
   · -- connectivity
     intro r s hr hs
     have hpath := regions_reach hM hfam (hcorr.1 r hr) (hcorr.1 s hs)
@@ -158,7 +152,7 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
         ∃ b, b < N.nRegions ∧ reg b = W ∧ ReflTransGen (RecAdj N) r b := by
       intro W hW
       induction hW with
-      | refl => intro _; exact ⟨r, hr, rfl, ReflTransGen.refl⟩
+      | refl => grind
       | tail hAB hBC ih =>
         rename_i B C
         intro _
@@ -167,21 +161,15 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
         obtain ⟨a, ha, rfl⟩ := hcorr.2.2 C hC
         obtain ⟨x, hx, rfl⟩ := hc
         obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hx
-        have hci : N.chords[i] = N.chord i := by simp only [NF.chord, getD_of_lt hi]
+        have hci : N.chords[i] = N.chord i := by grind [NF.chord]
         rw [hci] at h1 h2
         have t1 := (htouchIdx i hi b hb).1 h1
         have t2 := (htouchIdx i hi a ha).1 h2
         have hab : b ≠ a := fun e => hne (by rw [e])
         refine ⟨a, ha, rfl, hpb.tail ⟨i, hi, ?_⟩⟩
-        have hne' := (hcr i hi).1
-        rcases t1 with e1 | e1 <;> rcases t2 with e2 | e2
-        · exact absurd (e1.symm.trans e2) hab
-        · exact Or.inl ⟨e1, e2⟩
-        · exact Or.inr ⟨e2, e1⟩
-        · exact absurd (e1.symm.trans e2) hab
+        grind
     obtain ⟨b, hb, e, hp⟩ := key _ hpath (hcorr.1 s hs)
-    rw [hregInj _ _ hb hs e] at hp
-    exact hp
+    grind
   · -- the degree
     intro r hr
     classical
@@ -190,19 +178,17 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
         {c | c ∈ N.F M Q ∧ TouchesIn M.D c (reg r)} := by
       intro c hc
       simp only [Finset.coe_image, Set.mem_image, Finset.mem_coe, List.mem_toFinset] at hc
-      obtain ⟨i, hi, rfl⟩ := hc
-      rw [(hregs r hr).1 i] at hi
-      exact ⟨⟨N.chord i, chord_mem hi.1, rfl⟩, hi.2⟩
+      grind
     have hfin : {c | c ∈ N.F M Q ∧ TouchesIn M.D c (reg r)}.Finite :=
       hfam.1.subset fun c hc => hc.1
     have h1 := Set.ncard_le_ncard hsub hfin
     rw [Set.ncard_coe_finset, Finset.card_image_of_injOn, List.toFinset_card_of_nodup hnd] at h1
     · exact h1.trans (hD _ (hcorr.1 r hr))
     · intro a ha b hb e
-      simp only [Finset.mem_coe, List.mem_toFinset] at ha hb
-      rw [(hregs r hr).1 a] at ha
-      rw [(hregs r hr).1 b] at hb
-      exact hinj a b ha.1 hb.1 e
+      grind [Finset.mem_coe, List.mem_toFinset]
+
+
+end
 
 end tree
 

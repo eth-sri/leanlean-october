@@ -47,7 +47,6 @@ theorem tpos_second : tpos J.whole (J.m₁ + 2 * J.m₂) =
   have hb := bS_le J.whole
   rw [Nat.mod_add_mod]
   congr 1
-  have : J.whole.m = J.m₁ + J.m₂ := rfl
   omega
 
 /-- **The shared vertex is not the top of `C`** (arithmetic form): neither copy of the shared vertex
@@ -55,8 +54,11 @@ is at the ends of the tour.  (When it is, the box block of `C` lies between the 
 def VNotTop : Prop :=
   0 < tpos J.whole J.m₁ ∧ tpos J.whole J.m₁ + 2 * J.m₂ ≠ 2 * J.whole.m
 
+section
+variable (hv : VNotTop J)
+include hv
 /-- The two stretches fill the walk of `C` (the shared vertex is not the top of `C`). -/
-theorem rlen_add_llen (hv : VNotTop J) : rlen J + llen J = (chainModel J.whole).W.n := by
+theorem rlen_add_llen : rlen J + llen J = (chainModel J.whole).W.n := by
   have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := J.whole.sideWalk_n J.whole.sideBeta
   have h1 := tpos_lt J.whole J.m₁
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
@@ -67,14 +69,14 @@ theorem rlen_add_llen (hv : VNotTop J) : rlen J + llen J = (chainModel J.whole).
   rw [hm] at h1 hv2 ⊢
   by_cases hc : tpos J.whole J.m₁ + 2 * J.m₂ < 2 * (J.m₁ + J.m₂)
   · rw [Nat.mod_eq_of_lt hc]
-    split_ifs <;> omega
+    grind
   · rw [show tpos J.whole J.m₁ + 2 * J.m₂ = (tpos J.whole J.m₁ + 2 * J.m₂ - 2 * (J.m₁ + J.m₂)) +
       2 * (J.m₁ + J.m₂) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-    split_ifs <;> omega
+    grind
 
 /-- The left stretch starts where the right stretch ends (the shared vertex is not the top of
 `C`). -/
-theorem base_left (hv : VNotTop J) :
+theorem base_left :
     (6 + tpos J.whole J.m₁ + rlen J) % (chainModel J.whole).W.n =
       6 + tpos J.whole (J.m₁ + 2 * J.m₂) := by
   have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := J.whole.sideWalk_n J.whole.sideBeta
@@ -98,31 +100,35 @@ theorem base_left (hv : VNotTop J) :
 
 /-! ## Soundness: a genuine hit is a fused chord -/
 
+
+end
+
 /-- **The piece is attached at the arrival position** (model of `C₁`). -/
 theorem attach_left_of_arrival {C : Chain} {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) {τ : ℝ}
     (hτ : 0 < τ) {p : ℕ} {t : ℝ} (hA : Arrival (chainModel C).W (rayPt a σ τ) σ p t) :
     SideAttach (chainModel C).W (Chazelle.segment a (rayPt a σ τ)) p t := by
   obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := hA
-  have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
+  
   refine ⟨hp, ht0, ht1, by rw [hpt]; exact Geometry.right_mem_segment _ _, τ, hτ,
     fun x hx hxw _ => ?_⟩
   rw [hpt] at hxw
   obtain ⟨u, hu0, hu1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hx
   have hu1' : u < 1 := by
-    rcases hu1.lt_or_eq with h | h
-    · exact h
-    · exfalso; apply hxw; rw [h, Geometry.lerp_one]
+    grind [Geometry.lerp_one]
   have e : lerp a (rayPt a σ τ) u = rayPt (rayPt a σ τ) (-σ) (τ * (1 - u)) := by
-    apply point_ext <;> simp [rayPt, lerp]; ring
+    grind [rayPt, lerp]
   rw [e]
   have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) (-σ) 1) := by
-    rw [hpt]; exact hsec
+    simp_all
   have := (sideLeft_rayPt_iff _ p t (-σ) one_pos (show 0 < τ * (1 - u) by nlinarith)).1 h1
-  rwa [hpt] at this
+  simp_all
 
+section
+variable (hP : J.P.Simple) {a : Point}
+include hP
 /-- **The piece is attached at the corresponding position of `C`** (left correspondence, away from
 its base and its split vertex). -/
-theorem attach_whole_of_arrival (hP : J.P.Simple) {a : Point} {σ : ℝ}
+theorem attach_whole_of_arrival {σ : ℝ}
     (hσ : σ = 1 ∨ σ = -1) {τ : ℝ} (hτ : 0 < τ) {d : ℕ} (hd : d < lL1 J + lL2 J) {t : ℝ}
     (hsec : t = 0 → d ≠ 0 ∧ d ≠ lL1 J)
     (hA : Arrival (chainModel J.left).W (rayPt a σ τ) σ
@@ -139,7 +145,7 @@ theorem attach_whole_of_arrival (hP : J.P.Simple) {a : Point} {σ : ℝ}
 at a position of the left stretch of `C` (away from its base and split vertex), then the shot from
 `a` in the model of `C₁` is genuine at the first hit of `C`, and arrives at the corresponding
 position. -/
-theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
+theorem genuine_of_attach
     (ha₁ : a.2 ≤ J.left.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hfree : FreeAt J.whole a σ)
     {d : ℕ} (hd : d < lL1 J + lL2 J) {t : ℝ} (hsec : t = 0 → d ≠ 0 ∧ d ≠ lL1 J)
     (hA : SideAttach (chainModel J.whole).W (Merge.shoot J.whole a σ)
@@ -160,7 +166,7 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
       ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t =
         rayPt a σ T := by
     rw [← hC.sidePt_eq hd t]; exact hend
-  refine ⟨⟨hT0, fun s h0 h1 => dom_left J (hdom s h0 h1) (by simpa [rayPt] using ha₁), ?_⟩, ?_⟩
+  refine ⟨⟨hT0, fun s h0 h1 => dom_left J (hdom s h0 h1) (by simp_all), ?_⟩, ?_⟩
   · rw [← hpt]
     exact hM₁.trace _ hA₁.1 t hA₁.2.1 hA₁.2.2.1.le
   · refine ⟨hA₁.1, hA₁.2.1, hA₁.2.2.1, hpt, ?_⟩
@@ -176,7 +182,7 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
       have e : rayPt a σ (T - s) = lerp a (rayPt a σ T) ((T - s) / T) := by
         apply point_ext <;> simp [rayPt, lerp]; field_simp
       rw [e]
-      exact Geometry.lerp_mem_segment _ _ (by apply div_nonneg <;> linarith)
+      exact Geometry.lerp_mem_segment _ _ (by positivity)
         (by rw [div_le_one hT0]; linarith)
     have hne : rayPt (rayPt a σ T) (-σ) s ≠ rayPt a σ T := by
       intro h
@@ -186,14 +192,17 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
     have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
     have hdist : dist (rayPt (rayPt a σ T) (-σ) s) (rayPt a σ T) < r := by
       rw [dist_rayPt _ hnσ hs0.le]; exact hsr
-    have hl := hnear _ hmem (by rw [hpt]; exact hne) (by rw [hpt]; exact hdist)
+    have hl := hnear _ hmem (by grind) (by grind)
     have h1 : sideLeft (chainModel J.left).W
         ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t
         (rayPt (sidePt (chainModel J.left).W
           ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t) (-σ) s) := by
-      rw [hpt]; exact hl
+      grind
     have := (sideLeft_rayPt_iff _ _ t (-σ) hs0 one_pos).1 h1
-    rwa [hpt] at this
+    grind
+
+
+end
 
 end Machine
 

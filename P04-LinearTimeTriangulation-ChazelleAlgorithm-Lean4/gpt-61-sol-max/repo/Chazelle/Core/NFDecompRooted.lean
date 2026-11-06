@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SpecNF
 
 /-!
@@ -45,12 +47,18 @@ structure Rooted (R K : ℕ) (up dn ord pos prg pch : ℕ → ℕ) : Prop where
   pch_surj : ∀ i, i < K → ∃ s, s < R ∧ s ≠ 0 ∧ pch s = i
   ends_lt : ∀ i, i < K → up i < R ∧ dn i < R
 
+section
+variable (R : ℕ) (prg pch rem : ℕ → ℕ)
+include R prg pch rem
 /-- `y` is a child of `x` (not through a removed chord). -/
-def ChX (R : ℕ) (prg pch rem : ℕ → ℕ) (x y : ℕ) : Prop :=
+def ChX (x y : ℕ) : Prop :=
   y < R ∧ y ≠ 0 ∧ prg y = x ∧ rem (pch y) ≠ 1
 
 /-- `a` is an ancestor of `u` in its component (not through a removed chord). -/
-def AncX (R : ℕ) (prg pch rem : ℕ → ℕ) : ℕ → ℕ → Prop := ReflTransGen (ChX R prg pch rem)
+def AncX : ℕ → ℕ → Prop := ReflTransGen (ChX R prg pch rem)
+
+
+end
 
 /-- A top: the root, or a region whose parent chord is removed. -/
 def IsTop (pch rem : ℕ → ℕ) (t : ℕ) : Prop := t = 0 ∨ rem (pch t) = 1
@@ -73,26 +81,31 @@ theorem Rooted.R_pos : 0 < R := by rw [h.hR]; omega
 
 variable {rem : ℕ → ℕ}
 
+section
+variable {a b : ℕ} (hab : AncX R prg pch rem a b)
+include hab
 /-- An ancestor precedes its descendants in the search order. -/
-theorem AncX.pos_le {a b : ℕ} (hab : AncX R prg pch rem a b) (hb : b < R) :
+theorem AncX.pos_le (hb : b < R) :
     a < R ∧ pos a ≤ pos b ∧ (a ≠ b → pos a < pos b) := by
   induction hab with
-  | refl => exact ⟨hb, le_rfl, fun h => (h rfl).elim⟩
+  | refl => omega
   | tail hax hxc ih =>
     rename_i x c
     obtain ⟨hc, hc0, hpc, -⟩ := hxc
     have hxR : x < R := hpc ▸ h.prg_lt c hc hc0
     have hlt : pos x < pos c := hpc ▸ h.pos_prg c hc hc0
-    obtain ⟨ha, hle, -⟩ := ih hxR
-    exact ⟨ha, by omega, fun _ => by omega⟩
+    omega
 
-theorem AncX.antisymm {a b : ℕ} (hab : AncX R prg pch rem a b) (hba : AncX R prg pch rem b a)
+theorem AncX.antisymm (hba : AncX R prg pch rem b a)
     (hb : b < R) : a = b := by
   by_contra hne
   have h1 := (hab.pos_le h hb).2.2 hne
   have ha := (hab.pos_le h hb).1
   have h2 := (hba.pos_le h ha).2.1
   omega
+
+
+end
 
 omit h in
 /-- The last step of an ancestor path. -/
@@ -101,9 +114,9 @@ theorem AncX.back_iff (_h : Rooted R K up dn ord pos prg pch) {a s : ℕ} :
   constructor
   · intro hs
     rcases hs.cases_tail with e | ⟨x, hax, hx⟩
-    · exact Or.inl e.symm
+    · omega
     · obtain ⟨hsR, hs0, hp, hr⟩ := hx
-      exact Or.inr ⟨hsR, hs0, hr, hp ▸ hax⟩
+      aesop
   · rintro (rfl | ⟨hsR, hs0, hr, hax⟩)
     · exact ReflTransGen.refl
     · exact hax.tail ⟨hsR, hs0, rfl, hr⟩
@@ -112,24 +125,19 @@ theorem AncX.back_iff (_h : Rooted R K up dn ord pos prg pch) {a s : ℕ} :
 theorem AncX.chain {a b u : ℕ} (hau : AncX R prg pch rem a u) (hbu : AncX R prg pch rem b u) :
     AncX R prg pch rem a b ∨ AncX R prg pch rem b a := by
   induction hau generalizing b with
-  | refl => exact Or.inr hbu
+  | refl => simp_all
   | tail hax hxc ih =>
     rename_i x c
     rcases (AncX.back_iff h).1 hbu with rfl | ⟨-, -, -, hbx⟩
     · exact Or.inl (hax.tail hxc)
     · obtain ⟨-, -, hpc, -⟩ := hxc
-      rw [hpc] at hbx
-      exact ih hbx
+      simp_all
 
 omit h in
 /-- A proper descendant is not a top. -/
 theorem AncX.not_top {a b : ℕ} (hab : AncX R prg pch rem a b) (hne : a ≠ b) : ¬ IsTop pch rem b := by
   rcases hab.cases_tail with e | ⟨x, -, hx⟩
-  · exact (hne e.symm).elim
-  · obtain ⟨-, hb0, -, hr⟩ := hx
-    rintro (h0 | h1)
-    · exact hb0 h0
-    · exact hr h1
+  all_goals (aesop (add safe (by omega_nf)))
 
 /-- The top of a region is unique. -/
 theorem top_unique {t t' u : ℕ} (ht : IsTop pch rem t) (ht' : IsTop pch rem t')
@@ -140,8 +148,11 @@ theorem top_unique {t t' u : ℕ} (ht : IsTop pch rem t) (ht' : IsTop pch rem t'
   · by_contra hne
     exact h1.not_top (Ne.symm hne) ht
 
+section
+variable {u : ℕ} (hu : u < R)
+include hu
 /-- Every region has a top. -/
-theorem exists_top {u : ℕ} (hu : u < R) : ∃ t, IsTop pch rem t ∧ AncX R prg pch rem t u := by
+theorem exists_top : ∃ t, IsTop pch rem t ∧ AncX R prg pch rem t u := by
   induction hp : pos u using Nat.strong_induction_on generalizing u with
   | _ n ih =>
     by_cases ht : IsTop pch rem u
@@ -152,11 +163,13 @@ theorem exists_top {u : ℕ} (hu : u < R) : ∃ t, IsTop pch rem t ∧ AncX R pr
       exact ⟨t, htt, hta.tail ⟨hu, ht.1, rfl, ht.2⟩⟩
 
 /-- Every region descends from the root (no chord removed). -/
-theorem anc_root {u : ℕ} (hu : u < R) : AncX R prg pch rem0 0 u := by
+theorem anc_root : AncX R prg pch rem0 0 u := by
   obtain ⟨t, ht, hta⟩ := exists_top h (rem := rem0) hu
   rcases ht with rfl | h1
-  · exact hta
-  · simp [rem0] at h1
+  all_goals core_grind
+
+
+end
 
 omit h in
 /-- Removing more chords shrinks the ancestor relation. -/
@@ -170,7 +183,7 @@ theorem AncX.mono {rem' : ℕ → ℕ} (hrem : ∀ e, rem e = 1 → rem' e = 1) 
 
 omit h in
 theorem AncX.to0 {a b : ℕ} (hab : AncX R prg pch rem a b) : AncX R prg pch rem0 a b :=
-  AncX.mono (rem := rem0) (fun e he => by simp [rem0] at he) hab
+  AncX.mono (rem := rem0) (fun e he => by core_grind) hab
 
 /-- A path whose chords are all kept by `rem'` survives. -/
 theorem AncX.of_keep {rem' : ℕ → ℕ} {a b : ℕ} (hab : AncX R prg pch rem a b)
@@ -188,8 +201,7 @@ theorem AncX.of_keep {rem' : ℕ → ℕ} {a b : ℕ} (hab : AncX R prg pch rem 
     have hxR : x < R := h3 ▸ h.prg_lt c h1 h2
     have h5 := (AncX.pos_le h hax hxR).2.1
     have h6 := h.pos_prg c h1 h2
-    rw [h3, hca] at h6
-    omega
+    grind
 
 /-- The part of a component below one of its regions. -/
 theorem AncX.of_anc0 {a b v : ℕ} (hav : AncX R prg pch rem a v) (hbv : AncX R prg pch rem0 b v)
@@ -285,14 +297,11 @@ variable {rem : ℕ → ℕ}
 
 omit h in
 theorem mem_sub {u v : ℕ} : v ∈ sub R prg pch rem u ↔ v < R ∧ AncX R prg pch rem u v := by
-  classical
-  simp [sub]
+  core_grind
 
 omit h in
 theorem mem_kids {u c : ℕ} : c ∈ kids R prg pch rem u ↔ ChX R prg pch rem u c := by
-  classical
-  simp only [kids, mem_filter, mem_range, and_iff_right_iff_imp]
-  exact fun hc => hc.1
+  simp_all [kids, mem_filter, mem_range, and_iff_right_iff_imp] <;> omega_nf
 
 omit h in
 theorem self_mem_sub {u : ℕ} (hu : u < R) : u ∈ sub R prg pch rem u :=
@@ -322,7 +331,7 @@ theorem sz_rec {u : ℕ} (hu : u < R) :
         rw [hc.2.2.1] at h4
         omega
     · rcases (AncX.back_iff h).1 h1 with e | ⟨-, -, -, h2⟩
-      · exact hne e.symm
+      · omega
       · rw [hc.2.2.1] at h2
         have h3 := (h2.pos_le h hu).2.1
         have h4 := h.pos_prg c' hc'.1 hc'.2.1
@@ -343,7 +352,7 @@ theorem sz_rec {u : ℕ} (hu : u < R) :
     constructor
     · rintro ⟨hv, hav⟩
       rcases hav.cases_head with e | ⟨c, huc, hcv⟩
-      · exact Or.inl e.symm
+      · omega
       · exact Or.inr ⟨c, mem_kids.2 huc, mem_sub.2 ⟨hv, hcv⟩⟩
     · rintro (rfl | ⟨c, hc, hv⟩)
       · exact ⟨hu, ReflTransGen.refl⟩
@@ -371,8 +380,7 @@ theorem sz_lt {a c : ℕ} (hac : AncX R prg pch rem a c) (hne : a ≠ c) (hc : c
     rintro ⟨-, hca⟩
     exact hne (AncX.antisymm h hac hca hc)
   have := Finset.card_le_card hsub
-  rw [Finset.card_insert_of_notMem hna] at this
-  exact this
+  aesop
 
 end sizes2
 
@@ -393,7 +401,7 @@ theorem pigeon {s : Finset ℕ} (f : ℕ → ℕ) (u m D : ℕ) (e : Prop) [Deci
   by_cases he : e
   · have h2' := h2 he
     rw [ite_eq_left he] at hcard
-    have : D * m = D * (∑ c ∈ s, f c) + D * u := by rw [← hsum]; ring
+    have : D * m = D * (∑ c ∈ s, f c) + D * u := by grind
     have h3 : D * m < (s.card + 1) * m := by nlinarith
     have h4 : (s.card + 1) * m ≤ D * m := Nat.mul_le_mul_right _ hcard
     omega
@@ -402,8 +410,7 @@ theorem pigeon {s : Finset ℕ} (f : ℕ → ℕ) (u m D : ℕ) (e : Prop) [Deci
     rw [hu0, add_zero] at hsum
     have hne : s.Nonempty := by
       rcases Finset.eq_empty_or_nonempty s with h0 | h0
-      · rw [h0, Finset.sum_empty] at hsum; omega
-      · exact h0
+      all_goals grind
     have hs' : ∑ c ∈ s, D * f c < ∑ c ∈ s, m := Finset.sum_lt_sum_of_nonempty hne h1
     rw [← Finset.mul_sum, Finset.sum_const, smul_eq_mul, hsum] at hs'
     have h4 : s.card * m ≤ D * m := Nat.mul_le_mul_right _ hcard
@@ -450,51 +457,28 @@ theorem exists_good
     apply Finset.card_le_card
     intro c hc
     rw [mem_kids] at hc ⊢
-    exact ⟨hc.1, hc.2.1, hc.2.2.1, by simp [rem0]⟩
+    core_grind
   have hrec := sz_rec h (rem := rem) hvR
   have hvt : v ≠ t → v ≠ 0 := by
     intro hne h0
     exact AncX.not_top htv (Ne.symm hne) (Or.inl h0)
   have hsv : sz R prg pch rem v ≤ n := by
     by_cases e : t = v
-    · rw [hn_def, e]
+    · grind
     · have := sz_lt h htv e hvR; omega
   have hcard : (kids R prg pch rem v).card + (if v ≠ t then 1 else 0) ≤ D := by
-    have hd := hdeg v hvR
-    by_cases e : v = t
-    · rw [ite_eq_right (not_not.2 e)]
-      have : 0 ≤ (if v = 0 then 0 else 1) := Nat.zero_le _
-      omega
-    · rw [ite_eq_left e]
-      rw [ite_eq_right (hvt e)] at hd
-      omega
+    grind
   have hsum : ∑ c ∈ kids R prg pch rem v, sz R prg pch rem c +
       (if v ≠ t then n - sz R prg pch rem v else 0) = n - 1 := by
-    by_cases e : v = t
-    · rw [ite_eq_right (not_not.2 e), add_zero]
-      rw [e] at hrec ⊢; omega
-    · rw [ite_eq_left e]
-      omega
+    grind
   rcases pigeon (fun c => sz R prg pch rem c) _ (n - 1) D (v ≠ t) hsum hcard
     (fun hh => ite_eq_right hh) (by omega) with
     ⟨c, hc, hc'⟩ | ⟨hne, hu⟩
   · have hc2 := hsmall c hc
     rw [mem_kids] at hc
     refine ⟨c, hc.1, htv.tail hc, ?_, ?_⟩
-    · intro e
-      rw [e] at hc
-      have h4 := h.pos_prg t hc.1 hc.2.1
-      rw [hc.2.2.1] at h4
-      have := (htv.pos_le h hvR).2.1
-      omega
-    · have : min (sz R prg pch rem c) (n - sz R prg pch rem c) = sz R prg pch rem c :=
-        min_eq_left (by omega)
-      rw [this]; exact hc'
-  · rw [ite_eq_left hne] at hu
-    refine ⟨v, hvR, htv, hne, ?_⟩
-    have : min (sz R prg pch rem v) (n - sz R prg pch rem v) = n - sz R prg pch rem v :=
-      min_eq_right (by omega)
-    rw [this]; exact hu
+    all_goals grind
+  grind
 
 end sep
 

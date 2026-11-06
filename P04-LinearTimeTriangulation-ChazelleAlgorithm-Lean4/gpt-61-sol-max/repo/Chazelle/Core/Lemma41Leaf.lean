@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.Lemma41Pro
 
 /-!
@@ -24,9 +26,7 @@ noncomputable def leafShp (lam b a : ℕ) : List Shp :=
 
 theorem nd_map_of_lt {l : List (ℕ × ℕ)} {f : ℕ × ℕ → Shp} {k : ℕ} (hk : k < l.length) :
     nd (l.map f) k = f (l.getD k (0, 0)) := by
-  unfold nd
-  rw [List.getD_eq_getElem _ _ (by simpa using hk), List.getD_eq_getElem _ _ hk,
-    List.getElem_map]
+  simp_all [nd, List.getElem_map] <;> omega_nf
 
 theorem cover_getD_zero {lam b x : ℕ} (h : x < b) : ((cover lam b x).getD 0 (0, 0)).2 = x := by
   rw [cover_of_lt h]; rfl
@@ -45,9 +45,7 @@ theorem cover_getD_succ {lam b : ℕ} (x : ℕ) : ∀ k, k + 1 < (cover lam b x)
           rw [cover_of_ge (by omega)] at hk; simp at hk
         simp only [List.getD_cons_succ, List.getD_cons_zero]
         exact cover_getD_zero hx'
-      · simp only [List.getD_cons_succ]
-        simp only [List.length_cons] at hk
-        exact ih _ (step_lt hx) k (by omega)
+      grind
     · rw [cover_of_ge (by omega)] at hk; simp at hk
 
 theorem leafShp_length (lam b a : ℕ) : (leafShp lam b a).length = (cover lam b a).length := by
@@ -74,7 +72,7 @@ theorem leafShp_sum (lam b a : ℕ) :
 theorem two_le_cover {lam b a : ℕ} (_hl : 1 ≤ lam) (h : 2 ^ (lam - 1) < b - a) :
     2 ≤ (cover lam b a).length := by
   by_contra hc
-  have hab : a < b := by have := Nat.one_le_two_pow (n := lam - 1); omega
+  have hab : a < b := by grind
   have hsum := cover_sum (lam := lam) (b := b) a
   rw [cover_of_lt hab] at hsum hc
   simp only [List.length_cons] at hc
@@ -92,7 +90,7 @@ theorem leafShp_gran {lam b a : ℕ} : ∀ k, k < (leafShp lam b a).length →
   rw [leafShp_length] at hk
   unfold leafShp
   rw [nd_map_of_lt hk]
-  have hq := mem_cover (lam := lam) (b := b) a ((cover lam b a).getD k (0, 0)) (by rw [List.getD_eq_getElem _ _ hk]; exact List.getElem_mem hk)
+  have hq := mem_cover (lam := lam) (b := b) a ((cover lam b a).getD k (0, 0)) (by simp_all)
   refine ⟨gradeGran_mono hq.1, ?_⟩
   exact le_trans (Nat.one_le_two_pow) (two_pow_ceilBeta_le_gradeGran _)
 
@@ -121,7 +119,7 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
   unfold leafShp
   rw [nd_map_of_lt hk]
   have hmem0 : (cover lam b a).getD k (0, 0) ∈ cover lam b a := by
-    rw [List.getD_eq_getElem _ _ hk]; exact List.getElem_mem hk
+    grind
   set q := (cover lam b a).getD k (0, 0) with hq
   have hmem := mem_cover (lam := lam) (b := b) a q hmem0
   obtain ⟨hg, hdvd, hax, hxb⟩ := hmem
@@ -134,12 +132,12 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
   have hic : i < gradeCount P.n g := by
     unfold gradeCount
     have : i * 2 ^ g ≤ P.n - 2 := by
-      have := Nat.one_le_two_pow (n := g); rw [hi] at hxb; rw [mul_comm]; omega
+      grind
     have := (Nat.le_div_iff_mul_le hpos).mpr this
     omega
   obtain ⟨H, C, N, hd, hwf, hCP, -, -, hCs, hCm, hN, hc, -⟩ := hG.2.2.2 g i hgΛ hic
   obtain ⟨hT, hO, -, -⟩ := hent g i hgΛ hic
-  have hCs' : C.s = x := by rw [hCs]; unfold gradeStart; rw [hi]; ring
+  have hCs' : C.s = x := by grind [gradeStart]
   have hCm' : C.m = 2 ^ g := by
     rw [hCm]; unfold gradeLen
     have : x + 2 ^ g ≤ P.n - 1 := by omega
@@ -159,7 +157,7 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
     rw [h86 _ (by omega), rj t t1 t4, e5, eR, h5 _ (by omega)]
   have hd0 : m8 (A + 7 + 6 * k) = A := by rw [h86 _ (by omega), r0]
   have hf : m8 (A + 7 + 6 * j + 2 * k + 1) = m0 (R + 3 * i + 1) := by
-    rw [(h8ent k hk).2, r5, e5, eF]
+    grind
   have h8m0 : ∀ y, y < A → m8 y = m0 y := fun y hy => by
     rw [h86 _ (by omega), h65 _ (by omega), h5 _ hy]
   refine ⟨C, hCs', hCm', ?_⟩
@@ -170,7 +168,7 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
   · rw [hd0]
     exact hostAt_agree (A := A + 7) hhost rfl (by omega) fun y hy => by
       rw [h86 _ (by omega), h65 _ (by omega)]
-  · rw [hCP]; have := poly_whole (Qof P) (by omega); rw [hQn] at this; exact this.symm
+  · rw [hCP]; have := poly_whole (Qof P) (by omega); grind
   · rw [hwords 1 le_rfl (by norm_num)]; exact d1
   · rw [hwords 2 (by norm_num) (by norm_num)]; exact d2
   · rw [hwords 3 (by norm_num) (by norm_num)]; exact d3

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.UpPhase20
 
 /-!
@@ -83,13 +85,9 @@ theorem initH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ} (hA : c.nreg A
       (∀ r, r ≠ 160024 → r ≠ 160029 → r ≠ 160086 → c1.nreg r = c.nreg r) ∧ c1.nmem = c.nmem ∧
       c1.rreg = c.rreg ∧ c1.rmem = c.rmem ∧ c1.output = c.output := by
     exec_block
-    all_goals try (config_simp; omega)
-    refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp, fun r a1 a2 a3 => ?_, rfl,
-      rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    all_goals (simp_all +zetaDelta <;> omega)
   have hA1 : c1.nreg ALLOC = A := by
-    rw [fr1 _ (by rw [hAl]; omega) (by rw [hAl]; omega) (by rw [hAl]; omega)]; exact hA
+    simp_all
   obtain ⟨c2, k2, e2, hk2, hw2, A2, j27, j15, hH, hm2, fr2, hrr2, hrm2, ho2⟩ :=
     proH_exec (P := P) hw1 hA1 i24 i29 i86 hn hW hWn
   obtain ⟨c3, k3, e3, hk3, hw3, j04, fr3, hm3, hrr3, hrm3, ho3⟩ : ∃ c3 k3, Exec P W
@@ -101,12 +99,10 @@ theorem initH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ} (hA : c.nreg A
     simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
   refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, hw3,
-    by rw [fr3 _ (by rw [hAl]; omega)]; exact A2, by rw [j04, j27], by rw [hm3]; exact hH,
-    fun a ha => by rw [hm3, hm2 a ha, hm1], fun r h1 h2 h3 => ?_, by rw [hrr3, hrr2, hrr1],
-    by rw [hrm3, hrm2, hrm1], by rw [ho3, ho2, ho1]⟩
-  have : r < 160000 ∨ 170000 ≤ r := by unfold bandOf bL41 at h1; omega
-  rw [fr3 r h2, fr2 r (by omega) (by omega) (by omega) (by omega) h3,
-    fr1 r (by omega) (by omega) (by omega)]
+    by ram_grind, by omega, by ram_grind,
+    fun a ha => by ram_grind, fun r h1 h2 h3 => ?_, by ram_grind,
+    by ram_grind, by ram_grind⟩
+  grind [bandOf, bL41]
 
 set_option maxHeartbeats 16000000 in
 theorem initR_exec {c : Config} (hw : WordsBounded W c) {H S D n1 : ℕ}

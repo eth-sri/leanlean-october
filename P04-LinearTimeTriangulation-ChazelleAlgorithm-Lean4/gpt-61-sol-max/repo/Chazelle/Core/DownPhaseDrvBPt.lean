@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvBRegM
 
 /-!
@@ -18,6 +20,8 @@ point `k = r212017`.  One point (`ptS`):
    the append `emitS`;
 4. `k := k + 1`.
 -/
+
+set_option maxRecDepth 20000
 
 namespace Chazelle.Core
 
@@ -66,8 +70,7 @@ theorem emAt_eq (Q : Polygon) (l : List SymPt) (k : ℕ) :
       (if (qvx Q (l.getD k (.vtx 0))).isSome ∧ emitAt Q l k 1 then [(k, 1)] else []) := by
   unfold emAt
   rw [show List.range 2 = [0, 1] from rfl]
-  simp only [List.filterMap_cons, List.filterMap_nil]
-  split_ifs <;> simp
+  grind
 
 /-! ## The program -/
 
@@ -171,7 +174,7 @@ theorem PtSt.step {E : BEnv} {r PA : ℕ} {c c' : Config} {T T' : List (ℕ × (
     h.hPA, h.hPAW, hout⟩
   have := h.arr k hk
   have hp := h.hPA
-  have hk3 : 3 * k + 2 < 3 * (E.pts r).length := by omega
+  
   cases hs : (E.pts r).getD k (.vtx 0) with
   | vtx i =>
     rw [hs] at this
@@ -191,11 +194,11 @@ theorem PtSt.regStep {E : BEnv} {r PA : ℕ} {c c' : Config} {T : List (ℕ × (
     (hm : c'.nmem = c.nmem) : PtSt E r PA c' T := by
   refine h.step hw (fun q hq => hr q (Or.inl hq)) (fun a _ => by rw [hm]) ?_
   obtain ⟨a1, a2, a3, a4, a5, a6, a7⟩ := h.out
-  refine ⟨by rw [hr _ (Or.inr ⟨le_rfl, by norm_num⟩)]; exact a1,
-    by rw [hr _ (Or.inr ⟨by norm_num, by norm_num⟩)]; exact a2,
-    by rw [hr _ (Or.inr ⟨by norm_num, le_rfl⟩)]; exact a3, by rw [hm]; exact a4,
-    fun hK => by rw [hm]; exact a5 hK, fun hK => by rw [hm]; exact a6 hK,
-    fun a ha => by rw [hm]; exact a7 a ha⟩
+  refine ⟨by simp_all,
+    by simp_all,
+    by simp_all, by simp_all,
+    fun hK => by simp_all, fun hK => by simp_all,
+    fun a ha => by simp_all⟩
 
 /-- The registers `vtxS` writes. -/
 def Bvt (r : ℕ) : Bool :=
@@ -241,34 +244,32 @@ theorem nbS_exec (c : Config) (hw : WordsBounded W c) {k NP : ℕ} (hk : c.nreg 
       k₁ ≤ 3 ∧ c₁.nreg 212040 = (k + NP - 1) % NP ∧ ∀ r, r ≠ 212040 → c₁.nreg r = c.nreg r := by
     by_cases h0 : 0 < k
     · have e := Exec.subN (P := P) hw 212040 212017 212000
-      refine ⟨_, _, .ifLtN_true (by rw [c1, hk]; exact h0) e, by omega, ?_, fun r h => by simp [h]⟩
+      refine ⟨_, _, .ifLtN_true (by omega) e, by omega, ?_, fun r h => by simp [h]⟩
       simp only [Machine.upd_same, hk, c0]
       rw [show k + NP - 1 = (k - 1) + NP by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
     · have e := Exec.subN (P := P) hw 212040 212016 212000
-      refine ⟨_, _, .ifLtN_false (by rw [c1, hk]; exact h0) e, by omega, ?_, fun r h => by simp [h]⟩
-      simp only [Machine.upd_same, hNP, c0]
-      rw [show k = 0 by omega, Nat.zero_add, Nat.mod_eq_of_lt (by omega)]
+      refine ⟨_, _, .ifLtN_false (by omega) e, by omega, ?_, fun r h => by simp [h]⟩
+      simp_all
   have w₁ := e₁.wb_right
-  have k1 : c₁.nreg 212017 = k := by rw [g₁ _ (by norm_num), hk]
-  have n1 : c₁.nreg 212016 = NP := by rw [g₁ _ (by norm_num), hNP]
-  have c0' : c₁.nreg 212000 = 1 := by rw [g₁ _ (by norm_num), c0]
-  have e₂ := Exec.addN (P := P) w₁ 212041 212017 212000 (by rw [k1, c0']; omega)
+  have k1 : c₁.nreg 212017 = k := by simp_all
+  have n1 : c₁.nreg 212016 = NP := by simp_all
+  have c0' : c₁.nreg 212000 = 1 := by simp_all
+  have e₂ := Exec.addN (P := P) w₁ 212041 212017 212000 (by omega)
   set c₂ : Config := { c₁ with nreg := upd c₁.nreg 212041 (c₁.nreg 212017 + c₁.nreg 212000) }
     with hc₂
   have w₂ := e₂.wb_right
-  have v41 : c₂.nreg 212041 = k + 1 := by simp [hc₂, k1, c0']
-  have n2 : c₂.nreg 212016 = NP := by simp [hc₂, n1]
+  have v41 : c₂.nreg 212041 = k + 1 := by simp_all
+  have n2 : c₂.nreg 212016 = NP := by simp_all
   by_cases h1 : k + 1 < NP
   · have ex : Exec P W nbS c c₂ (k₁ + (1 + (0 + 1))) :=
-      .seq e₁ (.seq e₂ (.ifLtN_true (by rw [v41, n2]; exact h1) (.skip w₂)))
-    refine ⟨c₂, _, ex, by omega, by simp [hc₂, v40], by rw [v41, Nat.mod_eq_of_lt h1],
+      .seq e₁ (.seq e₂ (.ifLtN_true (by omega) (.skip w₂)))
+    refine ⟨c₂, _, ex, by omega, by simp_all, by rw [v41, Nat.mod_eq_of_lt h1],
       exec_frameB ex (by decide)⟩
   · have e₃ := Exec.constN (P := P) w₂ 212041 0 (Nat.zero_le _)
     have ex : Exec P W nbS c _ (k₁ + (1 + (1 + 2))) :=
-      .seq e₁ (.seq e₂ (.ifLtN_false (by rw [v41, n2]; exact h1) e₃))
+      .seq e₁ (.seq e₂ (.ifLtN_false (by omega) e₃))
     refine ⟨_, _, ex, by omega, by simp [hc₂, v40], ?_, exec_frameB ex (by decide)⟩
-    simp only [Machine.upd_same]
-    rw [show k + 1 = NP by omega, Nat.mod_self]
+    grind [Machine.upd_same, Nat.mod_self]
 
 /-- The registers `loadS` writes. -/
 def Bld (r : ℕ) : Bool := decide (212040 ≤ r ∧ r ≤ 212042) || decide (212060 ≤ r ∧ r ≤ 212068)
@@ -292,17 +293,17 @@ theorem loadS_exec (c : Config) (hw : WordsBounded W c) {k PA : ℕ} {l : List S
   have i2 : (k + 1) % l.length < l.length := Nat.mod_lt _ hpos
   obtain ⟨c₂, k₂, e₂, hk₂, s₂, f₂⟩ := ldPtS_exec (P := P) c₁ e₁.wb_right (ir := 212040)
     (x := 212060) v40 (by rw [g₁ _ (by norm_num) (by norm_num), hPA])
-    (by rw [g₁ _ (by norm_num) (by norm_num), c0]) (by rw [m₁]; exact harr _ i1) (by omega)
+    (by simp_all) (by rw [m₁]; exact harr _ i1) (by omega)
     (by norm_num) (by norm_num)
   have g₂ : ∀ r, r ≠ 212042 → (r < 212060 ∨ 212062 < r) → c₂.nreg r = c₁.nreg r := fun r a b =>
-    f₂.1 r (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    f₂.1 r (by grind)
   obtain ⟨c₃, k₃, e₃, hk₃, s₃, f₃⟩ := ldPtS_exec (P := P) c₂ e₂.wb_right (ir := 212017)
     (x := 212063) (by rw [g₂ _ (by norm_num) (by norm_num), g₁ _ (by norm_num) (by norm_num), hk])
     (by rw [g₂ _ (by norm_num) (by norm_num), g₁ _ (by norm_num) (by norm_num), hPA])
-    (by rw [g₂ _ (by norm_num) (by norm_num), g₁ _ (by norm_num) (by norm_num), c0])
+    (by grind)
     (by rw [f₂.2.2.1, m₁]; exact harr _ hkN) (by omega) (by norm_num) (by norm_num)
   have g₃ : ∀ r, r ≠ 212042 → (r < 212063 ∨ 212065 < r) → c₃.nreg r = c₂.nreg r := fun r a b =>
-    f₃.1 r (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    f₃.1 r (by grind)
   obtain ⟨c₄, k₄, e₄, hk₄, s₄, f₄⟩ := ldPtS_exec (P := P) c₃ e₃.wb_right (ir := 212041)
     (x := 212066) (by rw [g₃ _ (by norm_num) (by norm_num), g₂ _ (by norm_num) (by norm_num), v41])
     (by rw [g₃ _ (by norm_num) (by norm_num), g₂ _ (by norm_num) (by norm_num),
@@ -311,7 +312,7 @@ theorem loadS_exec (c : Config) (hw : WordsBounded W c) {k PA : ℕ} {l : List S
       g₁ _ (by norm_num) (by norm_num), c0])
     (by rw [f₃.2.2.1, f₂.2.2.1, m₁]; exact harr _ i2) (by omega) (by norm_num) (by norm_num)
   have g₄ : ∀ r, r ≠ 212042 → (r < 212066 ∨ 212068 < r) → c₄.nreg r = c₃.nreg r := fun r a b =>
-    f₄.1 r (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    f₄.1 r (by grind)
   have ex : Exec P W loadS c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
   have hBld : ∀ {B : ℕ → Bool} {c c' : Config}, FrameB B c c' →
       (∀ r, B r = true → Bld r = true) → FrameB Bld c c' := fun f h => fbMono f h
@@ -335,26 +336,21 @@ theorem vtxS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Words
     obtain ⟨c', k, e, hk, v43, v70⟩ : ∃ c' k, Exec P W (block [.constN 212043 1,
         .copyN 212070 212064]) c c' k ∧ k = 2 ∧ c'.nreg 212043 = 1 ∧ c'.nreg 212070 = i := by
       exec_block
-      · have := hw.1 212000; omega
-      · refine ⟨rfl, ?_, ?_⟩ <;> config_simp; exact k1
-    have ex : Exec P W vtxS c c' _ := .ifLtN_true (by rw [k0, c0]; omega) e
+      all_goals (aesop (add safe (by omega)))
+    have ex : Exec P W vtxS c c' _ := .ifLtN_true (by omega) e
     refine ⟨c', _, ex, by omega, exec_frameB ex (by decide), by omega, fun _ => ?_, ?_⟩
-    · rw [v70]; rfl
-    · simp [v43, qvx]
+    all_goals (grind [qvx])
   | onEdge e h =>
     obtain ⟨k0, k1, k2⟩ := hs
     obtain ⟨c₁, k₁, e₁, hk₁, v56, v57, g₁⟩ : ∃ c₁ k₁, Exec P W (block [.constN 212056 0,
         .copyN 212057 212065]) c c₁ k₁ ∧ k₁ = 2 ∧ c₁.nreg 212056 = 0 ∧ c₁.nreg 212057 = h ∧
         ∀ r, r ≠ 212056 → r ≠ 212057 → c₁.nreg r = c.nreg r := by
       exec_block
-      · omega
-      · refine ⟨rfl, ?_, ?_, fun r a b => ?_⟩ <;> config_simp
-        · exact k2
-        · simp [a, b]
+      all_goals simp_all
     have hv : SymPtIn c₁ 212056 (.vtx h) := ⟨v56, v57⟩
     have hp : SymPtIn c₁ 212063 (.onEdge e h) :=
-      ⟨by rw [g₁ _ (by norm_num) (by norm_num), k0], by rw [g₁ _ (by norm_num) (by norm_num), k1],
-        by rw [g₁ _ (by norm_num) (by norm_num), k2]⟩
+      ⟨by simp_all, by simp_all,
+        by simp_all⟩
     have o63 : OutK 212063 := Or.inr (by norm_num)
     have o56 : OutK 212056 := Or.inr (by norm_num)
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, b₂, t₂⟩ := tstR_exec (P := P) hG hW (op := 0) (by norm_num)
@@ -378,43 +374,24 @@ theorem vtxS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Words
       have w₃ := e₃.wb_right
       exec_block
       refine ⟨rfl, ?_, ?_⟩ <;> config_simp
-      · rw [c0₃]
-      · exact h65
+      all_goals omega
     have ex : Exec P W vtxS c c₄ _ :=
-      .ifLtN_false (by rw [k0, c0]; omega) (.seq e₁ (.seq e₂ (.seq e₃ e₄)))
+      .ifLtN_false (by omega) (.seq e₁ (.seq e₂ (.seq e₃ e₄)))
     have fr : FrameB Bvt c c₄ := by
       refine fbTrans (exec_frameB e₁ (by decide)) (fbTrans (fbMono f₂ fun r hr => ?_)
         (fbTrans (fbMono f₃ fun r hr => ?_) (exec_frameB e₄ (by decide))))
       · simp only [Brute.Bt, Bvt, Bool.or_eq_true, decide_eq_true_eq] at hr ⊢
-        rcases hr with h' | h'
-        · exact Or.inl (Or.inl h')
-        · exact Or.inl (Or.inr (by omega))
+        grind
       · simp only [Brute.Bt, Bvt, Bool.or_eq_true, decide_eq_true_eq] at hr ⊢
-        rcases hr with h' | h'
-        · exact Or.inl (Or.inl h')
-        · exact Or.inl (Or.inr (by omega))
+        grind
     have hx1 : c₃.nreg 212044 = 1 ↔ edgeXAt (Qof P) e h < ((Qof P).vtx h).1 := by
-      rw [v44, t₂]; simp [SignTest, SymPt.eval]
+      grind [SignTest, SymPt.eval]
     have hx2 : c₃.nreg 212045 = 1 ↔ ((Qof P).vtx h).1 < edgeXAt (Qof P) e h := by
-      rw [t₃]; simp [SignTest, SymPt.eval]
-    have b44 : c₃.nreg 212044 ≤ 1 := v44 ▸ b₂
+      grind [SignTest, SymPt.eval]
+    
     have hq : (c₄.nreg 212043 = 1) ↔ edgeXAt (Qof P) e h = ((Qof P).vtx h).1 := by
-      rw [v43]
-      constructor
-      · intro h1
-        have a1 : c₃.nreg 212044 = 0 := by omega
-        have a2 : c₃.nreg 212045 = 0 := by omega
-        rcases lt_trichotomy (edgeXAt (Qof P) e h) ((Qof P).vtx h).1 with hl | heq | hl
-        · have := hx1.2 hl; omega
-        · exact heq
-        · have := hx2.2 hl; omega
-      · intro heq
-        have a1 : c₃.nreg 212044 ≠ 1 := fun h' => absurd (hx1.1 h') (by rw [heq]; exact lt_irrefl _)
-        have a2 : c₃.nreg 212045 ≠ 1 := fun h' => absurd (hx2.1 h') (by rw [heq]; exact lt_irrefl _)
-        omega
-    refine ⟨c₄, _, ex, by omega, fr, by rw [v43]; omega, fun h1 => ?_, ?_⟩
-    · rw [v70]; simp only [qvx]; rw [ite_eq_left (hq.1 h1)]
-    · rw [hq]; simp only [qvx]; split_ifs with hx <;> simp [hx]
+      grind
+    grind [qvx]
 
 set_option maxHeartbeats 8000000 in
 /-- The direction code and the far-end scan of `dirS`. -/
@@ -428,7 +405,7 @@ theorem dirS_far {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
       c₂.nreg 212097 = farW E.li E.Q i d ∧ c₂.nreg 212086 = d ∧ i < E.P.n := by
   have R := hS.regs
   have O := hS.out
-  have hW3 : E.P.n + 3 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
+  have hW3 : E.P.n + 3 ≤ E.W := by have := hE.hWh; grind [hostWords]
   have hn3 := hE.hn3
   have hBW := hE.hBW
   obtain ⟨i', hi', hin, -, hdir, hES⟩ := hE.far_ok hr hkd
@@ -439,7 +416,7 @@ theorem dirS_far {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
     Machine.upd_other _ _ _ h
   have v₁ : (upd c.nreg 212086 d) 212086 = d := Machine.upd_same _ _ _
   set c₁ : Config := { c with nreg := upd c.nreg 212086 d } with hc₁
-  have R₁ : BRegs E c₁ := R.congr fun q hq => g₁ q (by unfold FixB at hq; omega)
+  have R₁ : BRegs E c₁ := R.congr fun q hq => g₁ q (by omega_nf)
   have hld : ∀ t, t < E.nRg r → LdOK c₁ E.P.n t (E.stF r t) (E.cntF r t) ∧
       (0 < c₁.nreg 212012 → c₁.nreg 216014 + 5 * c₁.nmem (c₁.nreg 212033 + t) + 3 ≤ E.W) ∧
       (0 < c₁.nreg 212012 → c₁.nreg 212033 + E.nRg r ≤ E.W) := fun t ht =>
@@ -454,15 +431,15 @@ theorem dirS_far {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
     (fun hK => by
       rcases Nat.eq_zero_or_pos (E.nRg r) with h0 | h0
       · rw [h0, Nat.add_zero]; exact e₁.wb_right.1 _
-      · exact (hld 0 h0).2.2 hK) R₁.li
-    (by show (upd c.nreg 212086 d) 212070 = _; rw [g₁ _ (by norm_num)]; exact hi) hin v₁ hd
+      grind) R₁.li
+    (by grind) hin v₁ hd
     R₁.c0 R₁.c1 R₁.c2
   have hQn := hE.hQn
   have hb₂' : BestOK E.Q E.Q.n i (sgnD d) E.li (ESr E.P.n (E.stF r) (E.cntF r) (E.nRg r) 0)
-      (c₂.nreg 212099) (c₂.nreg 212097) (c₂.nreg 212098) := by rw [hQn]; exact hb₂
-  obtain ⟨-, hbw⟩ := far_found hE.hQ hE.hDH (by rw [hQn]; exact hin) hdir hES hb₂'
+      (c₂.nreg 212099) (c₂.nreg 212097) (c₂.nreg 212098) := by grind
+  obtain ⟨-, hbw⟩ := far_found hE.hQ hE.hDH (by omega) hdir hES hb₂'
   have f₁ : FrameB (fun q => decide (q = 212086)) c c₁ :=
-    ⟨fun q hq => g₁ q (by simpa using hq), fun _ _ => rfl, rfl, rfl, rfl⟩
+    ⟨fun q hq => g₁ q (by grind), fun _ _ => rfl, rfl, rfl, rfl⟩
   refine ⟨c₁, c₂, k₂, e₁, e₂, hk₂, ?_, hbw, ?_, hin⟩
   · exact fbTrans (fbMono f₁ fun q h => by simp [h]) (fbMono f₂ fun q h => by simp [h])
   · rw [f₂.1 _ (by unfold Bfar Bk; simp)]; exact v₁
@@ -482,19 +459,19 @@ theorem dirS_on {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : C
       FrameM Bdir c c' ∧ (∀ a, (a < E.B₂ ∨ E.B₂ + 10 * E.P.n ≤ a) → c'.nmem a = c.nmem a) := by
   have R := hS.regs
   have O := hS.out
-  have hW3 : E.P.n + 3 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
+  
   have hn3 := hE.hn3
   have hBW := hE.hBW
   · have hkd := hem h1
     obtain ⟨c₁, c₂, k₂, e₁, e₂, hk₂, f₂, hbw, h86, hin⟩ := dirS_far hE hr c hS hd hi hkd (hqi h1)
     have hQn := hE.hQn
     have R₂ : BRegs E c₂ := R.congr fun q hq => f₂.1 q (by
-      unfold FixB at hq; simp only [Bfar, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+      grind [FixB, Bfar, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not])
     have k₂' : ∀ q, q ≠ 212086 → Bfar q = false → c₂.nreg q = c.nreg q := fun q a b =>
       f₂.1 q (by simp [a, b])
     -- the record
     have hrec : recAt E.li E.Q (E.pts r) (k, d) = vtrip E.li E.P.n i d (farW E.li E.Q i d) := by
-      unfold recAt; rw [hqi h1, hQn]; rfl
+      grind [recAt]
     have hxm : vtrip E.li E.P.n i d (farW E.li E.Q i d) ∈ E.recs r := by
       rw [← hrec]; exact List.mem_map_of_mem hkd
     have hm₂ : ∀ a, a < E.B₂ → c₂.nmem a = E.m₀ a := fun a ha => by
@@ -514,7 +491,7 @@ theorem dirS_on {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : C
       (by rw [k₂' _ (by norm_num) (by decide)]; exact O.dst)
       (by rw [k₂' _ (by norm_num) (by decide), O.dstB, hBK])
       hm₂ le_rfl (hT h1) (by omega) (by omega)
-      (by have := hE.LP_lt hr; unfold BEnv.LP at this; omega)
+      (by have := hE.LP_lt hr; grind [BEnv.LP])
       hlist (fun hK => by rw [f₂.2.2.1, ← hBK]; exact O.bk hK)
       (fun hK q hq => by rw [f₂.2.2.1, ← hBK]; exact O.bk0 hK q hq) (hE.nA_eq hr)
       (fun hK m hm hmW s hs => hE.scan_ok hK hr hxm hm hmW hs)
@@ -528,7 +505,7 @@ theorem dirS_on {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : C
     have hn5 := hE.nRg_le5 hr
     have ha5 := hE.arcs_le5 hr
     have FM : FrameM Bdir c c₃ :=
-      ((FrameB.toM f₂).mono fun q h => by unfold Bdir; rw [h]; rfl).trans
+      ((FrameB.toM f₂).mono fun q h => by core_grind).trans
         (f₃.mono fun q h => by simp [Bdir, h])
     have hmem : ∀ a, (a < E.B₂ ∨ E.B₂ + 10 * E.P.n ≤ a) → c₃.nmem a = c.nmem a := fun a ha => by
       rw [hm₃ a (by omega), f₂.2.2.1]
@@ -538,13 +515,13 @@ theorem dirS_on {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : C
       unfold dirK; omega
     · refine hS.step w₃ (fun q hq => ?_) hmem ⟨?_, ?_, ?_, ?_, fun hK => ?_, fun hK => ?_, fun a ha => ?_⟩
       · rw [FM.1 q (bdir_fix hq)]
-      · rw [d20, List.length_append, List.length_singleton]
-      · rw [d21, List.length_append, List.length_singleton]
-      · rw [d22, List.length_append, List.length_singleton, hBK]
-      · rw [hrec]; exact hL₃
-      · rw [hrec, hBK]; exact hbk₃ hK
-      · intro q hq; rw [hBK]; exact hbk0₃ hK q (by simpa using hq)
-      · rw [hmem a (Or.inl ha)]; exact O.low a ha
+      · grind
+      · grind
+      · grind
+      · grind
+      · grind
+      · intro q hq; rw [hBK]; grind
+      grind
 
 set_option maxHeartbeats 8000000 in
 /-- **One direction of a vertex point**: if the corner bit `b` is set, the far end is `farW`
@@ -580,20 +557,18 @@ theorem ptS_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
       c'.nreg 212017 = k + 1 ∧ FrameM Bpt c c' ∧
       (∀ a, (a < E.B₂ ∨ E.B₂ + 10 * E.P.n ≤ a) → c'.nmem a = c.nmem a) := by
   have R := hS.regs
-  have hW3 : E.P.n + 3 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
+  have hW3 : E.P.n + 3 ≤ E.W := by have := hE.hWh; grind [hostWords]
   have hQn := hE.hQn
   set l := E.pts r with hl
   have hlt : ∀ s ∈ l, s.Lt E.P.n := by rw [← hQn]; exact hE.pts_lt hr
   have hgetD : ∀ j, j < l.length → (l.getD j (.vtx 0)).Lt E.P.n := fun j hj => by
-    apply hlt
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some]
-    exact List.getElem_mem hj
+    simp_all
   have hpos : 0 < l.length := by omega
   -- 1. the three points
   obtain ⟨c₁, k₁, e₁, hk₁, sa, sv, sb, f₁⟩ := loadS_exec (P := E.P) c hS.wb hk hS.np hkn hS.pa
     hS.hPAW hS.arr R.c0 R.c1
   have S₁ : PtSt E r PA c₁ T := hS.regStep e₁.wb_right (fun q hq => f₁.1 q (by
-    unfold FixP FixB at hq; simp only [Bld, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
+    grind [FixP, FixB, Bld, Bool.or_eq_false_iff, decide_eq_false_iff_not]))
     f₁.2.2.1
   -- 2. the vertex test
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hb₂, hq₂, hs₂⟩ := vtxS_exec (P := E.P) hE.hG hW3 c₁ e₁.wb_right sv
@@ -603,7 +578,7 @@ theorem ptS_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
       decide_eq_false_iff_not]; omega)
   have S₂ : PtSt E r PA c₂ T := S₁.regStep e₂.wb_right fx₂ f₂.2.2.1
   have keep₂ : ∀ q, 212060 ≤ q → q ≤ 212068 → c₂.nreg q = c₁.nreg q := fun q a b =>
-    f₂.1 q (by simp only [Bvt, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    f₂.1 q (by grind [Bvt, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not])
   set C : Prop := (qvx E.Q (l.getD k (.vtx 0))).isSome = true with hC
   -- the records of the point
   have hrecs : ∀ (b0 b1 : Prop) [Decidable b0] [Decidable b1],
@@ -620,7 +595,7 @@ theorem ptS_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
     · rw [ite_eq_left (h0.1 g0), ite_eq_right (h1.not.1 g1), ite_eq_left g0, ite_eq_right g1]; rfl
     · rw [ite_eq_right (h0.not.1 g0), ite_eq_left (h1.1 g1), ite_eq_right g0, ite_eq_left g1]; rfl
     · rw [ite_eq_right (h0.not.1 g0), ite_eq_right (h1.not.1 g1), ite_eq_right g0, ite_eq_right g1]; rfl
-  have hw₁ : WordsBounded E.W c₁ := e₁.wb_right
+  
   have hw₂ : WordsBounded E.W c₂ := e₂.wb_right
   have FM₁ : FrameM Bpt c c₁ := (FrameB.toM f₁).mono fun q hq => bpt_of_range (by
     simp only [Bld, Bool.or_eq_true, decide_eq_true_eq] at hq; omega)
@@ -669,7 +644,7 @@ theorem ptS_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
     have e0 : emitAt E.Q l k 0 ↔ c₃.nreg 212084 = 1 := by
       rw [t84]; unfold emitAt; rw [show sgnD 0 = 1 by simp [sgnD]]
     have e1 : emitAt E.Q l k 1 ↔ c₃.nreg 212085 = 1 := by
-      rw [t85]; unfold emitAt; rw [show sgnD 1 = -1 by simp [sgnD]]
+      rw [t85]; unfold emitAt; grind [sgnD]
     have i₃ : c₃.nreg 212070 = i := f₃.1 _ (by decide)
     have k₃' : c₃.nreg 212017 = k := by rw [f₃.1 _ (by decide), hk₂]
     -- the length of the records
@@ -678,12 +653,12 @@ theorem ptS_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
     -- direction `+1`
     obtain ⟨c₄, k₄, e₄, hk₄, S₄, F₄, M₄⟩ := dirS_exec hE hr c₃ S₃ (k := k) (d := 0) (b := 212084)
       (i := i) b84 (by norm_num) i₃ (fun h => mem_emIdx.2 ⟨hkn, by norm_num, hCt, e0.2 h⟩)
-      (fun _ => hqv) (fun h => by rw [ite_eq_left h] at hL; omega)
+      (fun _ => hqv) (fun h => by grind)
     have b85' : c₄.nreg 212085 = c₃.nreg 212085 := F₄.1 _ (by decide)
     have i₄ : c₄.nreg 212070 = i := by rw [F₄.1 _ (by decide), i₃]
     -- direction `-1`
     obtain ⟨c₅, k₅, e₅, hk₅, S₅, F₅, M₅⟩ := dirS_exec hE hr c₄ S₄ (k := k) (d := 1) (b := 212085)
-      (i := i) (by rw [b85']; exact b85) (by norm_num) i₄
+      (i := i) (by omega) (by norm_num) i₄
       (fun h => mem_emIdx.2 ⟨hkn, by norm_num, hCt, e1.2 (b85' ▸ h)⟩)
       (fun _ => hqv) (fun h => by
         rw [b85'] at h
@@ -696,10 +671,10 @@ theorem ptS_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
     have c0₅ : c₅.nreg 212000 = 1 := S₅.regs.c0
     have hkW : k + 1 ≤ E.W := by
       have h1 : PA + 3 * l.length ≤ E.W := hS.hPAW; omega
-    have e₆ := Exec.addN (P := E.P) S₅.wb 212017 212017 212000 (by rw [k₅', c0₅]; exact hkW)
+    have e₆ := Exec.addN (P := E.P) S₅.wb 212017 212017 212000 (by omega)
     have f₆ : FrameB (fun q => decide (q = 212017)) c₅ _ := exec_frameB e₆ (by decide)
     have ex : Exec E.P E.W ptS c _ (k₁ + (k₂ + ((k₃ + (k₄ + k₅) + 1) + 1))) :=
-      .seq e₁ (.seq e₂ (.seq (.ifLtN_true (by rw [c1₂, hf]; omega) (.seq e₃ (.seq e₄ e₅))) e₆))
+      .seq e₁ (.seq e₂ (.seq (.ifLtN_true (by omega) (.seq e₃ (.seq e₄ e₅))) e₆))
     have hT₂ : T ++ (ptRecs E.li E.Q l k).map (fun x => (r, x)) =
         (T ++ if c₃.nreg 212084 = 1 then [(r, recAt E.li E.Q l (k, 0))] else []) ++
           (if c₄.nreg 212085 = 1 then [(r, recAt E.li E.Q l (k, 1))] else []) := by
@@ -712,7 +687,7 @@ theorem ptS_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
       refine S₅.regStep e₆.wb_right (fun q hq => f₆.1 q ?_) f₆.2.2.1
       rcases hq with hq | hq
       · unfold FixP FixB at hq; simp only [decide_eq_false_iff_not]; omega
-      · simp only [decide_eq_false_iff_not]; omega
+      grind
     · simp only [Machine.upd_same, k₅', c0₅]
     · refine FM₁.trans (FM₂.trans (FM₃.trans ((F₄.mono fun q hq => bpt_dir hq).trans
         ((F₅.mono fun q hq => bpt_dir hq).trans ((FrameB.toM f₆).mono fun q hq => ?_)))))
@@ -729,15 +704,15 @@ theorem ptS_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
       rw [hk₂, c0₂]; have h1 : PA + 3 * l.length ≤ E.W := hS.hPAW; omega)
     have f₆ : FrameB (fun q => decide (q = 212017)) c₂ _ := exec_frameB e₆ (by decide)
     have ex : Exec E.P E.W ptS c _ (k₁ + (k₂ + (2 + 1))) :=
-      .seq e₁ (.seq e₂ (.seq (.ifLtN_false (by rw [c1₂, hf']; omega) (.skip hw₂)) e₆))
+      .seq e₁ (.seq e₂ (.seq (.ifLtN_false (by omega) (.skip hw₂)) e₆))
     refine ⟨_, _, ex, ?_, ?_, ?_, ?_, fun a ha => ?_⟩
     · unfold ptK; omega
     · rw [hnil, List.append_nil]
       refine S₂.regStep e₆.wb_right (fun q hq => f₆.1 q ?_) f₆.2.2.1
       rcases hq with hq | hq
       · unfold FixP FixB at hq; simp only [decide_eq_false_iff_not]; omega
-      · simp only [decide_eq_false_iff_not]; omega
-    · simp only [Machine.upd_same, hk₂, c0₂]
+      grind
+    · grind [Machine.upd_same]
     · exact FM₁.trans (FM₂.trans ((FrameB.toM f₆).mono fun q hq => by
         simp only [decide_eq_true_eq] at hq; subst hq; decide))
     · show c₂.nmem a = c.nmem a

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvBApp
 public import Chazelle.Core.DownPhaseDrvBSpec
 
@@ -69,36 +71,54 @@ def li : Bool := liBit E.m₀ E.MD
 /-- The bucket base. -/
 def BK : ℕ := E.B₂ + 6 * E.P.n
 
+section
+variable (r : ℕ)
+include r
 /-- The pointer `RB + 5 r + 2` to the record of region `r`. -/
-def RP (r : ℕ) : ℕ := E.m₀ (E.H + 5) + 2 + 5 * r
+def RP : ℕ := E.m₀ (E.H + 5) + 2 + 5 * r
 
 /-- The arc list of region `r`. -/
-def LP (r : ℕ) : ℕ := E.m₀ (E.H + 7) + E.m₀ (E.m₀ (E.H + 5) + 5 * r + 1)
+def LP : ℕ := E.m₀ (E.H + 7) + E.m₀ (E.m₀ (E.H + 5) + 5 * r + 1)
 
 /-- The number of walk-edge ranges of region `r`. -/
-noncomputable def nRg (r : ℕ) : ℕ := if E.K = 0 then 1 else (E.N.region r).arcs.length
+noncomputable def nRg : ℕ := if E.K = 0 then 1 else (E.N.region r).arcs.length
 
+
+end
+
+section
+variable (r t : ℕ)
+include r t
 /-- Arc `t` of region `r`. -/
-noncomputable def arcR (r t : ℕ) : ARec := E.N.arc ((E.N.region r).arcs.getD t 0)
+noncomputable def arcR : ARec := E.N.arc ((E.N.region r).arcs.getD t 0)
 
 /-- The first walk edge of range `t` of region `r`. -/
-noncomputable def stF (r t : ℕ) : ℕ := if E.K = 0 then 0 else (E.arcR r t).s.edge
+noncomputable def stF : ℕ := if E.K = 0 then 0 else (E.arcR r t).s.edge
 
 /-- The number of walk edges of range `t` of region `r`. -/
-noncomputable def cntF (r t : ℕ) : ℕ := if E.K = 0 then E.P.n else arcCnt E.P.n (E.arcR r t)
+noncomputable def cntF : ℕ := if E.K = 0 then E.P.n else arcCnt E.P.n (E.arcR r t)
 
+
+end
+
+section
+variable (r : ℕ)
+include r
 /-- The walk-order points of region `r`. -/
-noncomputable def pts (r : ℕ) : List SymPt := ptsB E.li E.Q E.L E.E r
+noncomputable def pts : List SymPt := ptsB E.li E.Q E.L E.E r
 
 /-- The records of region `r`. -/
-noncomputable def recs (r : ℕ) : List (ℕ × ℕ × ℕ) := regList E.li E.Q (E.pts r)
+noncomputable def recs : List (ℕ × ℕ × ℕ) := regList E.li E.Q (E.pts r)
 
 /-- The tagged records of the regions `< r`. -/
-noncomputable def TL (r : ℕ) : List (ℕ × (ℕ × ℕ × ℕ)) :=
+noncomputable def TL : List (ℕ × (ℕ × ℕ × ℕ)) :=
   (List.range r).flatMap fun r' => (E.recs r').map fun x => (r', x)
 
-theorem TL_succ (r : ℕ) : E.TL (r + 1) = E.TL r ++ (E.recs r).map fun x => (r, x) := by
-  unfold TL; rw [List.range_succ, List.flatMap_append, List.flatMap_singleton]
+theorem TL_succ : E.TL (r + 1) = E.TL r ++ (E.recs r).map fun x => (r, x) := by
+  grind [TL, List.range_succ, List.flatMap_append, List.flatMap_singleton]
+
+
+end
 
 theorem TL_all : E.TL (E.K + 1) = tagLB E.li E.Q E.L E.E := rfl
 
@@ -130,8 +150,7 @@ theorem pts_pos {r : ℕ} (hK : 0 < E.K) : E.pts r = regPts E.li E.Q.n E.N r := 
 
 theorem pts_zero {r : ℕ} (hK : E.K = 0) :
     E.pts r = wlist E.li (Host.pts E.Q.n [HostItem.run 0 (E.Q.n - 1)]) := by
-  have : E.L.length = 0 := hK
-  simp only [BEnv.pts, ptsB, this, ↓reduceIte]
+  simp_all [BEnv.pts, ptsB, reduceIte] 
 
 variable (hE : BGood E)
 include hE
@@ -151,7 +170,7 @@ theorem hli : E.li = true ↔ Mountain.LeftInside E.Q := by
   · exfalso
     have := DrvD.desc_one hE.hMD
     omega
-  · simp only [decide_eq_true_eq]; exact h1
+  simp_all
 
 omit hE in
 theorem nRegions (_hE : BGood E) : E.N.nRegions = E.K + 1 := by
@@ -162,15 +181,18 @@ theorem ctx (hK : 0 < E.K) : BaseCtx E.Q E.L E.E E.reg E.li :=
   ⟨hE.hQ, hE.hDH, hE.hok, hE.hperm, hE.hsort, hK, hE.hregs, hE.hli⟩
 
 
+section
+variable {r : ℕ} (hr : r < E.K + 1)
+include hr
 /-- **The points of a region are symbolic points of `Q`.** -/
-theorem pts_lt {r : ℕ} (hr : r < E.K + 1) : ∀ s ∈ E.pts r, s.Lt E.Q.n := by
+theorem pts_lt : ∀ s ∈ E.pts r, s.Lt E.Q.n := by
   rcases Nat.eq_zero_or_pos E.K with hK | hK
   · rw [pts_zero hK]; exact run_pts_lt hE.hQ
   · rw [pts_pos hK]
     exact (region_facts ((hE.ctx hK).rc (by rw [hE.nRegions]; exact hr)) hE.hli).2
 
 /-- **The shooting polygon of a region.** -/
-theorem regOK {r : ℕ} (hr : r < E.K + 1) :
+theorem regOK :
     ∃ (S : Set (Set Point)) (R : Set Point), E.I.ChordFamily E.Q S ∧
       RegOK E.Q S R (polyOf E.Q (E.pts r)) := by
   rcases Nat.eq_zero_or_pos E.K with hK | hK
@@ -180,6 +202,9 @@ theorem regOK {r : ℕ} (hr : r < E.K + 1) :
   · refine ⟨_, E.reg r, (hE.ctx hK).fam, ?_⟩
     rw [pts_pos hK]
     exact (region_facts ((hE.ctx hK).rc (by rw [hE.nRegions]; exact hr)) hE.hli).1
+
+
+end
 
 end BGood
 
@@ -208,9 +233,7 @@ structure BRegs (E : BEnv) (c : Config) : Prop where
 
 theorem BRegs.congr {E : BEnv} {c c' : Config} (h : BRegs E c)
     (hc : ∀ q, FixB q → c'.nreg q = c.nreg q) : BRegs E c' := by
-  obtain ⟨a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13⟩ := h
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hc _ (by unfold FixB; omega)]; assumption)
+  ram_grind
 
 /-- **The output so far**: the records of `T` at `B₂`, their buckets at `BK`, the memory below
 `B₂` the initial one. -/

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutShLoad
 
 /-!
@@ -13,10 +15,6 @@ height of the origin is strictly between those of `U` and `V`.  The answer is a 
 (`CandAt`) in `140220 … 140226`: flag, abscissa record, walk position.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -38,16 +36,14 @@ def CandAt (P : Polygon) (C : Chain) (c : Config) (b : ℕ) (S : Set Point) (z :
 
 theorem FrameB.wk {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' :=
-  ⟨fun r hr => h.1 r (by cases hb : B r; rfl; exact absurd (hB r hb) (by simp [hr])),
-    fun r hr => h.2.1 r (by cases hb : B r; rfl; exact absurd (hB r hb) (by simp [hr])),
-    h.2.2⟩
+  by core_grind
 
 /-- One register update is framed by any set containing the register. -/
 theorem frameB_upd {B : ℕ → Bool} (c : Config) {r : ℕ} (v : ℕ) (hB : B r = true) :
     FrameB B c ({ c with nreg := upd c.nreg r v } : Config) :=
   ⟨fun r' hr' => by
-    have : r' ≠ r := fun h => by rw [h, hB] at hr'; exact absurd hr' (by decide)
-    simp [upd_other _ _ _ this], fun _ _ => rfl, rfl, rfl, rfl⟩
+    have : r' ≠ r := fun h => by simp_all
+    simp_all, fun _ _ => rfl, rfl, rfl, rfl⟩
 
 /-- The registers written by the segment machine. -/
 def Bedge (r : ℕ) : Bool :=
@@ -55,9 +51,7 @@ def Bedge (r : ℕ) : Bool :=
     decide (140262 ≤ r ∧ r < 140330)
 
 theorem Bedge_env (r : ℕ) (h : envR r) : Bedge r = false := by
-  unfold envR at h
-  simp only [Bedge, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not, K1, ALLOC] at h ⊢
-  omega
+  core_grind
 
 variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {z : Point} {σ : ℝ}
 
@@ -69,7 +63,7 @@ def cand0 : Stmt := .instr (.constN 140220 0)
 theorem cand0_exec (c : Config) (hw : WordsBounded W c) {S : Set Point} (h : NoHit S z σ) :
     ∃ c' k, Exec P W cand0 c c' k ∧ k = 1 ∧ CandAt P C c' 140220 S z σ ∧
       FrameB Bedge c c' := by
-  refine ⟨_, _, Exec.constN hw 140220 0 (by have := hw; exact Nat.zero_le _), rfl,
+  refine ⟨_, _, Exec.constN hw 140220 0 (by omega), rfl,
     ⟨by simp, fun _ => h, fun h' => by simp at h'⟩, frameB_upd c 0 (by decide)⟩
 
 /-- The candidate from the record at `A` and the position in `e`, `h`. -/
@@ -95,14 +89,14 @@ theorem candFrom_exec (c : Config) (hw : WordsBounded W c) (hW1 : 1 ≤ W) {A e 
   set c₂ : Config := { c₁ with nreg := upd c₁.nreg 140220 1 } with hc₂
   have g : ∀ r, r ≠ 140220 → c₂.nreg r = c₁.nreg r := fun r hr => by rw [hc₂]; simp [hr]
   refine ⟨c₂, _, .seq e₁ e₂, rfl, ⟨by simp [hc₂], fun h' => by simp [hc₂] at h', fun _ =>
-    ⟨x, absRec_copy' hx (by rw [g _ (by norm_num), w1]) (by rw [g _ (by norm_num), w2])
-      (by rw [g _ (by norm_num), w3]) (by rw [g _ (by norm_num), w4]), hF,
-      by rw [g _ (by norm_num), g _ (by norm_num), w5, w6]; exact hp,
-      by rw [g _ (by norm_num), w5]; exact hen,
-      by rw [g _ (by norm_num), g _ (by norm_num), w5, w6]; exact hpos⟩⟩, ?_⟩
-  refine ⟨fun r hr => ?_, fun r _ => by rw [show c₂.rreg = c₁.rreg from rfl, rr₁], by
-    show c₁.nmem = c.nmem; exact m₁, by show c₁.rmem = c.rmem; exact rm₁,
-    by show c₁.output = c.output; exact o₁⟩
+    ⟨x, absRec_copy' hx (by ram_grind) (by ram_grind)
+      (by ram_grind) (by ram_grind), hF,
+      by ram_grind,
+      by ram_grind,
+      by ram_grind⟩⟩, ?_⟩
+  refine ⟨fun r hr => ?_, fun r _ => by ram_simp <;> omega_nf, by
+    omega, by omega,
+    by omega⟩
   simp only [Bedge, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
   rw [g r (by omega), k₁ r (by simp; omega)]
 
@@ -116,7 +110,7 @@ theorem aheadT_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ
     (hne : x ≠ z.1) :
     ∃ c' k, Exec P W (aheadT A dst) c c' k ∧ k ≤ 252 ∧ BitIs c' dst (0 < σ * (x - z.1)) ∧
       FrameB (Bkb dst) c c' := by
-  have hW : P.n + 3 ≤ W := by have := E.hW; unfold hostWords at this; omega
+  have hW : P.n + 3 ≤ W := by have := E.hW; grind [hostWords]
   unfold aheadT
   by_cases hs : c.nreg 140241 < c.nreg K1
   · have hσ : σ = -1 := by
@@ -126,12 +120,12 @@ theorem aheadT_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ
     obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw hA (by norm_num) hdst E.k1 (AbsRec.weak hx)
       E.ox (Or.inl hne)
     refine ⟨c', _, .ifLtN_true hs ex, by omega, bt.congr ?_, f⟩
-    rw [hσ]; constructor <;> intro h <;> linarith
-  · have hσ : σ = 1 := E.sig.2.1 (by rw [E.k1] at hs; have := E.sig.1; omega)
+    simp_all
+  · have hσ : σ = 1 := E.sig.2.1 (by ram_grind)
     obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw (by norm_num) hA hdst E.k1 E.ox
       (AbsRec.weak hx) (Or.inl (Ne.symm hne))
     refine ⟨c', _, .ifLtN_false hs ex, by omega, bt.congr ?_, f⟩
-    rw [hσ]; constructor <;> intro h <;> linarith
+    simp_all
 
 /-- The bit "`V` is nearer than `U`" (the negation of `σ U.1 ≤ σ V.1`). -/
 def nearT (dst : ℕ) : Stmt := .ifLtN 140241 K1 (xLess 140270 140281 dst) (xLess 140281 140270 dst)
@@ -141,7 +135,7 @@ theorem nearT_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
     (hV : AbsRec P c 140281 xV C.radius) :
     ∃ c' k, Exec P W (nearT dst) c c' k ∧ k ≤ 252 ∧ BitIs c' dst (¬ σ * xU ≤ σ * xV) ∧
       FrameB (Bkb dst) c c' := by
-  have hW : P.n + 3 ≤ W := by have := E.hW; unfold hostWords at this; omega
+  have hW : P.n + 3 ≤ W := by have := E.hW; grind [hostWords]
   have st : ∀ {r : ℕ} {x : ℝ}, AbsRec P c r x C.radius → c.nreg r = 1 → |x| < C.radius :=
     fun {r} {x} h hk => by
       rcases h.2 with ⟨h1, -⟩ | ⟨h1, -⟩ | ⟨-, hx, -⟩ <;> [omega; omega; exact hx]
@@ -154,16 +148,12 @@ theorem nearT_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
     obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw (by norm_num) (by norm_num) hdst E.k1
       (AbsRec.weak hU) (AbsRec.weak hV) (Or.inr ⟨st hU, st hV⟩)
     refine ⟨c', _, .ifLtN_true hs ex, by omega, bt.congr ?_, f⟩
-    rw [hσ]; constructor <;> intro h
-    · intro h'; linarith
-    · push Not at h; linarith
-  · have hσ : σ = 1 := E.sig.2.1 (by rw [E.k1] at hs; have := E.sig.1; omega)
+    simp_all
+  · have hσ : σ = 1 := E.sig.2.1 (by ram_grind)
     obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw (by norm_num) (by norm_num) hdst E.k1
       (AbsRec.weak hV) (AbsRec.weak hU) (Or.inr ⟨st hV, st hU⟩)
     refine ⟨c', _, .ifLtN_false hs ex, by omega, bt.congr ?_, f⟩
-    rw [hσ]; constructor <;> intro h
-    · intro h'; linarith
-    · push Not at h; linarith
+    simp_all
 
 end
 

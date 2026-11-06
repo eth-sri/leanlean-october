@@ -83,8 +83,7 @@ theorem stopOff_rs {i : ℕ} (hi : i < rs.length) :
   obtain ⟨e0, e1, -⟩ := hrec i hi
   rw [List.getD_eq_getElem _ _ hi] at e0 e1
   show offK P J (c.nmem (c.nreg sB + 5 * i)) (c.nmem (c.nreg sB + 5 * i + 1)) = _
-  rw [e0, e1]
-  rfl
+  aesop
 
 /-- **A skipped stop is attached at the next key.** -/
 theorem skip_at {i : ℕ} (h1 : c.nreg sP ≤ i) (h2 : i < c'.nreg sP) :
@@ -107,14 +106,14 @@ theorem skip_at {i : ℕ} (h1 : c.nreg sP ≤ i) (h2 : i < c'.nreg sP) :
   have ho := hk3 i h1 h2
   rw [S.stopOff_rs hi] at ho
   obtain ⟨e1, e2⟩ := S.posEq a0.1 a0.2.1 a0.2.2.1 ho
-  refine ⟨f0, f1, ?_, e1, e2⟩
-  rw [← e2, ← e1]
-  exact a0
+  simp_all
 
-/-- **A stop chord at the next key is a skipped stop.** -/
-theorem stop_idx {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)))
-    (hA : SideAttach (chainModel J.whole).W e (c'.nreg kE)
+section
+variable {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P))) (hA : SideAttach (chainModel J.whole).W e (c'.nreg kE)
       ((chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩))
+include he hA
+/-- **A stop chord at the next key is a skipped stop.** -/
+theorem stop_idx
     (hs : StopChord2 J (N₂.F (chainModel J.right) (Qof P)) e) :
     ∃ i, ∃ hi : i < rs.length, c.nreg sP ≤ i ∧ i < c'.nreg sP ∧
       stopSet J (Qof P) N₂ rs[i].2.2.1 rs[i].2.2.2.1 rs[i].2.2.2.2 = e := by
@@ -143,13 +142,11 @@ theorem stop_idx {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.ri
   · by_contra h
     have := (S.L.ptrL i hic).1 (by omega)
     linarith
-  · exact (hptr i (by omega)).2 (by rw [hso.2.2, ho])
+  simp_all
 
 /-- **A non-stop chord at the next key** is the chord of an accepted triple at its offset, and
 the best candidate is there. -/
-theorem nonstop_acc {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)))
-    (hA : SideAttach (chainModel J.whole).W e (c'.nreg kE)
-      ((chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩))
+theorem nonstop_acc
     (hs : ¬ StopChord2 J (N₂.F (chainModel J.right) (Qof P)) e) :
     ∃ t ∈ A, offT P J t = keyOff P J c' ∧
       Merge.shoot J.whole (endOrigin J (Qof P) N₂ t.1) (endDir t.1) = e ∧
@@ -164,7 +161,7 @@ theorem nonstop_acc {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J
   obtain ⟨-, -, hKb, -, hKw, -⟩ := hK.2.2.2 hsome
   obtain ⟨k, hk, a, σ, ha, haR, hav, hat, hfree, rfl, hlt', j, hj, hjk, hjO, hjD, h, hh, hmA⟩ :=
     stp_accepted_of_found S.E S.L hW hR S.hBA he hA hlt S.gapK hs (fun h0 => by
-      have := hKw (by rw [ewX]; exact h0)
+      have := hKw (by omega)
       rw [ewE, ewH] at this
       exact this)
   have hoT : offT P J (j, c'.nreg kE, h) = keyOff P J c' := by
@@ -173,7 +170,10 @@ theorem nonstop_acc {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J
     rfl
   obtain ⟨hbF, hle⟩ := S.hBA.bMin _ hmA (by rw [hoT, ekE, ekH]; exact hlt)
   have hge := hKb hbF
-  exact ⟨_, hmA, hoT, by rw [hjO, hjD], hbF, le_antisymm (hle.trans hoT.le) hge⟩
+  exact ⟨_, hmA, hoT, by simp_all, hbF, le_antisymm (hle.trans hoT.le) hge⟩
+
+
+end
 
 /-- **The chord of an accepted triple at the offset of the next key** is attached there, is not
 a stop chord and is anchored. -/
@@ -192,14 +192,14 @@ theorem triple_at {t : ℕ × ℕ × ℕ} (ht : t ∈ A) (hto : offT P J t = key
   obtain ⟨hc, ha⟩ := query_chord (J := J) (Q := Qof P) hj
   have hS₂a : N₂.F (chainModel J.right) (Qof P) ⊆ Merge.augChords J.right := S.E.hNF₂.1.2.1
   obtain ⟨e1, e2⟩ := S.posEq hpw.1 hpw.2.1.1 hpw.2.1.2.1 hto
-  refine ⟨hmemF, by rw [← e2, ← e1]; exact hAt,
+  refine ⟨hmemF, by simp_all,
     origin_not_stop hP hS₂a (hS₂a hc) ha haR hav hat hlt', fun hbr => ?_⟩
   have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
   have haD : endOrigin J (Qof P) N₂ t.1 ∉ J.whole.dom := fun hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.right_set_subset haR)
   obtain ⟨q, s, hq, hqpt⟩ := endpoint_attach hM (F₂plus_subset J hS₂a hmemF) (origin_mem J) haD
   have := off_right_pt J hP (S₂ := ∅) (empty_subset _) finite_empty hq.1 hq.2.1 hq.2.2.1
-    (by rw [hqpt]; exact haR) (by rw [hqpt]; exact hav)
+    (by simp_all) (by simp_all)
   rw [← oW_eq, ← Lst_eq] at this
   have := hbr q s hq
   linarith

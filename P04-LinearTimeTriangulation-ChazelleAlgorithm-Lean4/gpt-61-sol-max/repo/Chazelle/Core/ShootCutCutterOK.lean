@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutCutter2
 public import Chazelle.Core.NFBuildMain
 
@@ -11,10 +13,6 @@ public import Chazelle.Core.NFBuildMain
 granularity `cutGran γ`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -44,29 +42,25 @@ theorem BcutR_false {r : ℕ} (hr : bandOf r ∉ oracleBands) : BcutR r = false 
   have h5 : (5 : ℕ) ∈ oracleBands := by decide
   have h14 : (14 : ℕ) ∈ oracleBands := by decide
   have h15 : (15 : ℕ) ∈ oracleBands := by decide
-  unfold bandOf at hr
-  unfold BcutR
-  have a1 : r / 10000 ≠ 1 := fun h => hr (h ▸ h1)
-  have a5 : r / 10000 ≠ 5 := fun h => hr (h ▸ h5)
-  have a14 : r / 10000 ≠ 14 := fun h => hr (h ▸ h14)
-  have a15 : r / 10000 ≠ 15 := fun h => hr (h ▸ h15)
-  simp [a1, a5, a14, a15]
+  core_grind
 
 theorem chainModel_ne_interior' (C : Chain) (Q : Polygon) : chainModel C ≠ interiorModel Q := by
   intro h
   have := congrArg (fun M : Model => M.counted 0) h
-  simp [chainModel, interiorModel] at this
+  core_grind
 
+section
+variable {m : ℕ → ℕ} {B : ℕ} {Q : Polygon}
 /-- The model descriptor of a chain model holds a chain descriptor. -/
-theorem modelDesc_chain {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {M : Model} {C : Chain}
+theorem modelDesc_chain {M : Model} {C : Chain}
     (h : ModelDescAt m B Q M) (hM : M = chainModel C) :
     m B = 0 ∧ ∃ H C', ChainDescAt m (B + 1) Q H C' ∧ M = chainModel C' := by
   rcases h with ⟨h0, H, C', hC, hM'⟩ | ⟨-, -, hI⟩
-  · exact ⟨h0, H, C', hC, hM'⟩
+  · ram_grind
   · exact absurd (hM.symm.trans hI) (chainModel_ne_interior' C Q)
 
 /-- **A chain descriptor determines the chain.** -/
-theorem chainDesc_unique {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {H H' : Host} {C C' : Chain}
+theorem chainDesc_unique {H H' : Host} {C C' : Chain}
     (h : ChainDescAt m B Q H C) (h' : ChainDescAt m B Q H' C') : C = C' := by
   obtain ⟨h1, h2, h3, h4, -⟩ := h
   obtain ⟨h1', h2', h3', h4', -⟩ := h'
@@ -74,12 +68,10 @@ theorem chainDesc_unique {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {H H' : Host}
   subst hH
   obtain ⟨P, s, m, a, b⟩ := C
   obtain ⟨P', s', m', a', b'⟩ := C'
-  simp only at h2 h2' h3 h3' h4 h4'
-  subst h2 h2'
-  have e1 : s = s' := h3.symm.trans h3'
-  have e2 : m = m' := h4.symm.trans h4'
-  subst e1 e2
-  rfl
+  simp_all
+
+
+end
 
 /-- The constant of the arc-cutter. -/
 def κc : ℕ := 2500000
@@ -95,8 +87,7 @@ theorem Bcut_false {r : ℕ} (hr : bandOf r ∉ oracleBands) (ha : r ≠ ALLOC) 
   have a5 : r / 10000 ≠ 5 := fun h => hr (h ▸ h5)
   have a14 : r / 10000 ≠ 14 := fun h => hr (h ▸ h14)
   have a15 : r / 10000 ≠ 15 := fun h => hr (h ▸ h15)
-  have a9 : r ≠ 9999 := ha
-  simp [a1, a5, a14, a15, a9]
+  aesop
 
 /-- **The arc-cutter meets `CutterOK`.** -/
 theorem cutter_ok (O : OracleIface) :
@@ -143,14 +134,12 @@ theorem cutter_ok (O : OracleIface) :
     have hΛ := hG0.1
     have h2 : 2 ^ (m₀ h - 1) ≤ 2 ^ topGrade P.n := Nat.pow_le_pow_right (by norm_num) (by omega)
     have h3 := Setup.pow_topGrade_le (n := P.n) (by omega)
-    unfold hostWords at hHW
-    have : γ ≤ 2 ^ (m₀ h - 1) := hcap
-    omega
+    grind [hostWords]
   have hlog := Nat.log_le_clog 2 γ
   have hκ : κc = 2500000 := rfl
   -- the set-up
   obtain ⟨c₁, k₁, Nmax, e₁, hk₁, hI₁, hlt, fr₁, m₁⟩ := cutInit_exec (P := P) c hw (m₀ := m₀)
-    (fun a _ => rfl) rfl rfl hγW (by rw [hκ] at hcost; linarith)
+    (fun a _ => rfl) rfl rfl hγW (by ram_grind)
   have g₁ : ∀ x, 150000 ≤ x → x < 150100 → c₁.nreg x = c.nreg x := fun x h1 h2 =>
     fr₁ x (by omega)
   -- the core
@@ -177,21 +166,19 @@ theorem cutter_ok (O : OracleIface) :
   refine ⟨c₃, k₁ + (k₂ + k₃), ex, ?_, ?_, ?_⟩
   · -- the cost
     show k₁ + (k₂ + k₃) ≤ κc * (Nat.clog 2 γ + 1)
-    unfold coreCost genCost at hk₂
-    rw [hκ]
-    linarith
+    grind [coreCost, genCost]
   · -- the pieces
     intro M' hM'
     have hM'C : M' = chainModel C := by
       rcases (show ModelDescAt m₀ MD (Qof P) M' from hM') with ⟨-, H', C', hC', hM''⟩ | ⟨h1, -⟩
       · rw [hM'', chainDesc_unique hC' hD]
-      · rw [h0] at h1; exact absurd h1 (by decide)
+      omega
     subst hM'C
     have hL : rd c₃ bCut 10 = A₀ := o10
     have hq3 : c₃.nmem A₀ = ps.length := om
     have hpc : ∀ a, A₀ < a → c₃.nmem a = c₂.nmem a := fun a ha => omo a (by omega)
     have hm₃ : ∀ a, a < A₀ → c₃.nmem a = m₀ a := fun a ha => by
-      rw [omo a (by omega)]; exact hm₂ a ha
+      ram_grind
     -- the words of the records
     have w0 : ∀ i (hi : i < ps.length), c₃.nmem (A₀ + 1 + 7 * i + 0) = (ps[i]'hi).s.edge :=
       fun i hi => by rw [hpc _ (by omega), Nat.add_zero]; exact (hrec i hi).1
@@ -210,7 +197,7 @@ theorem cutter_ok (O : OracleIface) :
       obtain ⟨b5, b6⟩ := (hrec i hi).2.2.2.2.2 hk
       rw [hpc (A₀ + 1 + 7 * i + 5) (by omega), hpc (A₀ + 1 + 7 * i + 6) (by omega), b5, b6,
         hm₃ (ps[i]'hi).entry (by omega), hm₃ ((ps[i]'hi).entry + 1) (by omega)]
-      exact ⟨rfl, rfl⟩
+      omega
     have kS : ∀ i (hi : i < ps.length), (chainModel C).key (Qof P)
         ⟨c₃.nmem (A₀ + 1 + 7 * i + 0), c₃.nmem (A₀ + 1 + 7 * i + 1)⟩ =
         (chainModel C).key (Qof P) (ps[i]'hi).s := fun i hi => by rw [w0 i hi, w1 i hi]
@@ -239,7 +226,7 @@ theorem cutter_ok (O : OracleIface) :
       obtain ⟨b5, b6⟩ := w56 i hi hk'
       rw [kS i hi, kE i hi, b5, b6, w0 i hi, w1 i hi, w2 i hi, w3 i hi]
       have := kind1_facts (hok _ (List.getElem_mem hi)) hk' hX hm₃ (A' := c₃.nreg ALLOC)
-        (by rw [oA]; omega)
+        (by omega)
       exact this
     · have hp := hok _ (List.getElem_mem hi)
       rw [w0 i hi, w1 i hi, w2 i hi, w3 i hi, hnW]
@@ -248,10 +235,9 @@ theorem cutter_ok (O : OracleIface) :
       rcases (hok _ (List.getElem_mem hi)).2.2.2.2.1 with h | h <;> omega
   · -- the frame
     refine ⟨fun r hr ha => fM.1 r (Bcut_false hr ha), fun r hr => fR r (BcutR_false hr),
-      fun a ha => ?_, fun a _ => by rw [fM.2.2.1], fM.2.2.2, by rw [oA]; omega, ?_⟩
-    · show c₃.nmem a = c.nmem a
-      rw [omo a (by omega), hm₂ a ha]
-    · rw [← hA₀]; omega
+      fun a ha => ?_, fun a _ => by rw [fM.2.2.1], fM.2.2.2, by omega, ?_⟩
+    · ram_grind
+    omega
 
 end
 

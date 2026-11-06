@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreTShot
 public import Chazelle.Core.RestoreTShotMath
 
@@ -31,35 +33,44 @@ def RSB (B : Finset ℕ) (P : Polygon) (W : ℕ) (c₀ : Config) (s : Stmt) (c :
     (Q : Config → Prop) : Prop :=
   ∃ c' k, Exec P W s c c' k ∧ k ≤ K ∧ TInv W c₀ c' ∧ RF B (c₀.nreg ALLOC) c c' k ∧ Q c'
 
-theorem RSB.of_RS {B : Finset ℕ} (hB : dBands ⊆ B) {s : Stmt} {K : ℕ} {Q : Config → Prop}
+section
+variable {B : Finset ℕ}
+theorem RSB.of_RS (hB : dBands ⊆ B) {s : Stmt} {K : ℕ} {Q : Config → Prop}
     (h : RS P W c₀ s c K Q) : RSB B P W c₀ s c K Q := by
   obtain ⟨c', k, ex, hk, hI, hrf, hq⟩ := h
   exact ⟨c', k, ex, hk, hI, hrf.mono hB le_rfl, hq⟩
 
-theorem RSB.mono {B : Finset ℕ} {s : Stmt} {K K' : ℕ} {Q Q' : Config → Prop}
+theorem RSB.mono {s : Stmt} {K K' : ℕ} {Q Q' : Config → Prop}
     (h : RSB B P W c₀ s c K Q) (hK : K ≤ K') (hQ : ∀ c', Q c' → Q' c') : RSB B P W c₀ s c K' Q' := by
-  obtain ⟨c', k, ex, hk, hI, hrf, hq⟩ := h
-  exact ⟨c', k, ex, by omega, hI, hrf, hQ c' hq⟩
+  core_grind
 
-theorem RSB.seq {B : Finset ℕ} {s t : Stmt} {K₁ K₂ : ℕ} {Q₁ Q₂ : Config → Prop}
+theorem RSB.seq {s t : Stmt} {K₁ K₂ : ℕ} {Q₁ Q₂ : Config → Prop}
     (h₁ : RSB B P W c₀ s c K₁ Q₁)
     (h₂ : ∀ c₁, TInv W c₀ c₁ → c₁.nreg ALLOC ≤ c.nreg ALLOC + K₁ → Q₁ c₁ →
       RSB B P W c₀ t c₁ K₂ Q₂) : RSB B P W c₀ (.seq s t) c (K₁ + K₂) Q₂ := by
   obtain ⟨c₁, k₁, e₁, hk₁, hI₁, hrf₁, hq₁⟩ := h₁
-  obtain ⟨c', k₂, e₂, hk₂, hI', hrf₂, hq⟩ := h₂ c₁ hI₁ (by have := hrf₁.2.2.2.2.2.2; omega) hq₁
+  obtain ⟨c', k₂, e₂, hk₂, hI', hrf₂, hq⟩ := h₂ c₁ hI₁ (by ram_grind) hq₁
   exact ⟨c', k₁ + k₂, .seq e₁ e₂, by omega, hI', hrf₁.trans hrf₂, hq⟩
 
-theorem RSB.ifT {B : Finset ℕ} {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
+
+end
+
+section
+variable {B : Finset ℕ} {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
+theorem RSB.ifT
     (ht : c.nreg a < c.nreg b) (h : RSB B P W c₀ t c K Q) :
     RSB B P W c₀ (.ifLtN a b t e) c (K + 2) Q := by
   obtain ⟨c', k, ex, hk, hI, hrf, hq⟩ := h
   exact ⟨c', k + 1, .ifLtN_true ht ex, by omega, hI, hrf.mono subset_rfl (by omega), hq⟩
 
-theorem RSB.ifF {B : Finset ℕ} {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
+theorem RSB.ifF
     (ht : ¬ c.nreg a < c.nreg b) (h : RSB B P W c₀ e c K Q) :
     RSB B P W c₀ (.ifLtN a b t e) c (K + 2) Q := by
   obtain ⟨c', k, ex, hk, hI, hrf, hq⟩ := h
   exact ⟨c', k + 2, .ifLtN_false ht ex, by omega, hI, hrf.mono subset_rfl (by omega), hq⟩
+
+
+end
 
 theorem RSB.skip {B : Finset ℕ} {K : ℕ} {Q : Config → Prop} (hI : TInv W c₀ c) (hq : Q c) :
     RSB B P W c₀ .skip c K Q :=
@@ -67,23 +78,28 @@ theorem RSB.skip {B : Finset ℕ} {K : ℕ} {Q : Config → Prop} (hI : TInv W c
 
 /-! ## Larger cost bounds -/
 
-theorem KeyG.mono {M : Model} {R : ℕ} {E : Config → Prop} {kc : ℕ → ℕ → ℕ → ℕ → Stmt}
+section
+variable {M : Model} {R : ℕ} {E : Config → Prop}
+theorem KeyG.mono {kc : ℕ → ℕ → ℕ → ℕ → Stmt}
     {Bk : ℕ → Bool} {K K' : ℕ} (h : KeyG P W M R E kc Bk K) (hK : K ≤ K') :
     KeyG P W M R E kc Bk K' := by
   intro a b d e ha hb hd he c hw hctx hx hxe hx0 hy hye hy0 hroom
   obtain ⟨c', k, ex, hk, b1, f⟩ := h a b d e ha hb hd he c hw hctx hx hxe hx0 hy hye hy0
     (by omega)
-  exact ⟨c', k, ex, by omega, b1, f⟩
+  ram_grind
 
-theorem XG.mono {M : Model} {R : ℕ} {E : Config → Prop} {Y : ℝ → Prop}
+theorem XG.mono {Y : ℝ → Prop}
     {xc : ℕ → ℕ → ℕ → ℕ → Stmt} {Bx : ℕ → Bool} {K K' : ℕ} (h : XG P W M R E Y xc Bx K)
     (hK : K ≤ K') : XG P W M R E Y xc Bx K' := by
   intro a b d e ha hb hd he c hw hctx hp1 he1 hp2 he2 hyy hY hroom
   obtain ⟨c', k, ex, hk, b1, f⟩ := h a b d e ha hb hd he c hw hctx hp1 he1 hp2 he2 hyy hY
     (by omega)
-  exact ⟨c', k, ex, by omega, b1, f⟩
+  ram_grind
 
 /-! ## The shot -/
+
+
+end
 
 /-- The cost bound of the operations of the test's shot. -/
 def shK : ℕ := 34000
@@ -98,13 +114,13 @@ theorem shot_rsb {M : Model} {N : NF} {X : MemCtx} {Ok : Polygon → Model → P
     RSB (dBands ∪ Bo) P W c₀ (shotListG gKey xcR sh RS0) c
       (shotCostG (F (c.nreg 84007)) shK (c.nreg 84002))
       (fun c' => ShotPost RS0 P c c' ∧ ∀ q, 80000 ≤ q → q < 84000 → c'.nreg q = c.nreg q) := by
-  have hRB : bandOf RS0 ∉ Bo := by rw [band8 (by unfold RS0; omega) (by unfold RS0; omega)]; exact hB8
+  have hRB : bandOf RS0 ∉ Bo := by omega_nf
   obtain ⟨c', k, ex, hk, hpost, fT⟩ := shotListG_execR hsh hBs hXl regsOK_RS0 hRB hBo
-    (stable_tinv hB8) (KeyG.mono (gKey_keyG hE) (by unfold shK; omega)) opW_BgK
-    (XG.mono (xcR_xG hE) (by unfold shK; omega)) opW_BxR c hI.hw hpre hroom
+    (stable_tinv hB8) (KeyG.mono (gKey_keyG hE) (by omega_nf)) opW_BgK
+    (XG.mono (xcR_xG hE) (by omega_nf)) opW_BxR c hI.hw hpre hroom
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := fT
   have keep : ∀ q, 80000 ≤ q → q < 84000 → c'.nreg q = c.nreg q := fun q h1 h2 =>
-    r₁ q (by rw [band8 h1 (by omega)]; exact hB8) (by unfold ALLOC; omega) (by unfold RS0; omega)
+    r₁ q (by rw [band8 h1 (by omega)]; exact hB8) (by omega_nf) (by omega_nf)
   have hI' : TInv W c₀ c' := by
     refine ⟨ex.wb_right, fun q h1 h2 => by rw [keep q h1 (by omega)]; exact hI.hin q h1 h2,
       le_trans hI.hA a₁, fun a ha => by rw [m₁ a (by have := hI.hA; omega)]; exact hI.hm a ha,

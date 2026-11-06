@@ -137,23 +137,29 @@ def tbTg : List Instr :=
   [.copyN ipE oE, .copyN ipH oC, .addN ipA ipA K1, .loadN lsxE ipA, .addN ipA ipA K1,
     .loadN lsxH ipA]
 
+section
+variable (ls : Stmt)
+include ls
 /-- A table entry with flag `1`. -/
-def tbHit (ls : Stmt) : Stmt :=
+def tbHit : Stmt :=
   .seq (block [.copyN oK ipJ, .copyN oS ipS]) (.seq orgHead (.seq cls
     (.ifLtN ipV K1 .skip (.seq (block tbTg) (.seq ls slotSt)))))
 
 /-- The table entry `2 k + s`. -/
-def tbOne (ls : Stmt) (sr : ℕ) : Stmt := .seq (block (tbLd sr)) (.ifLtN ipF K1 .skip (tbHit ls))
+def tbOne (sr : ℕ) : Stmt := .seq (block (tbLd sr)) (.ifLtN ipF K1 .skip (tbHit ls))
 
 /-- One chord. -/
-def tbB (ls : Stmt) : Stmt := .seq (tbOne ls K0) (.seq (tbOne ls K1) (.instr (.addN ipJ ipJ K1)))
+def tbB : Stmt := .seq (tbOne ls K0) (.seq (tbOne ls K1) (.instr (.addN ipJ ipJ K1)))
 
 /-- **The table loop.** -/
-def tbLoop (ls : Stmt) : Stmt := .whileLtN ipJ ipKc (tbB ls)
+def tbLoop : Stmt := .whileLtN ipJ ipKc (tbB ls)
 
 /-- **The initialisation.** -/
-def initC (ls : Stmt) : Stmt :=
+def initC : Stmt :=
   .seq (.seq hdr (.seq zeroLoop (.seq (stLoop ls) (tbLoop ls)))) (.instr (.copyN sB ipB))
+
+
+end
 
 end
 

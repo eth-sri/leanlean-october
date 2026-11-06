@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SpecMerge
 
 /-!
@@ -33,7 +35,7 @@ theorem exec_zero {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
   | skip _ => rfl
   | instr _ _ _ _ => omega
   | seq _ _ ih₁ ih₂ =>
-    rw [ih₂ (by omega), ih₁ (by omega)]
+    simp_all
   | ifLtN_true _ _ _ => omega
   | ifLtN_false _ _ _ => omega
   | ifLtR_true _ _ _ => omega
@@ -69,53 +71,32 @@ theorem cutter_cost_pos {cu : Stmt} {B : Finset ℕ} {G H : ℕ → ℕ} {X : Me
 def withFlag (c : Config) (v : ℕ) : Config :=
   { c with nreg := upd c.nreg (bandReg bShoot 10) v }
 
-theorem withFlag_rd (c : Config) (v : ℕ) {i : ℕ} (hi : i ≠ 10) (_hi' : i < 10000) :
+section
+variable (c : Config) (v : ℕ)
+theorem withFlag_rd {i : ℕ} (hi : i ≠ 10) (_hi' : i < 10000) :
     rd (withFlag c v) bShoot i = rd c bShoot i := by
   unfold rd withFlag bandReg
-  simp only
-  rw [Machine.upd_other]
-  omega
+  simp_all
 
-theorem withFlag_flag (c : Config) (v : ℕ) : rd (withFlag c v) bShoot 10 = v := by
-  unfold rd withFlag
-  simp only [Machine.upd_same]
+theorem withFlag_flag : rd (withFlag c v) bShoot 10 = v := by
+  aesop
 
-theorem withFlag_alloc (c : Config) (v : ℕ) : (withFlag c v).nreg ALLOC = c.nreg ALLOC := by
-  unfold withFlag ALLOC bandReg bShoot
-  simp only
-  rw [Machine.upd_other]
-  omega
+theorem withFlag_alloc : (withFlag c v).nreg ALLOC = c.nreg ALLOC := by
+  aesop
 
-theorem withFlag_originIn (c : Config) (v : ℕ) (o : Origin) :
+theorem withFlag_originIn (o : Origin) :
     OriginIn (withFlag c v) (bandReg bShoot 5) o ↔ OriginIn c (bandReg bShoot 5) o := by
-  have e : ∀ j, j ≤ 2 → (withFlag c v).nreg (bandReg bShoot 5 + j) =
-      c.nreg (bandReg bShoot 5 + j) := by
-    intro j hj
-    unfold withFlag bandReg bShoot
-    simp only
-    rw [Machine.upd_other]
-    omega
-  have e0 := e 0 (by omega)
-  have e1 := e 1 (by omega)
-  have e2 := e 2 (by omega)
-  simp only [add_zero] at e0
-  cases o with
-  | sym p =>
-    cases p with
-    | vtx i => simp only [OriginIn, SymPtIn, e0, e1]
-    | onEdge a b => simp only [OriginIn, SymPtIn, e0, e1, e2]
-  | walk x => simp only [OriginIn, e0, e1, e2]
+  simp_all [withFlag, bandReg, bShoot, Machine.upd_other, add_zero, OriginIn, SymPtIn] 
+
+
+end
 
 theorem withFlag_wb {W : ℕ} {c : Config} (hw : WordsBounded W c) {v : ℕ} (hv : v ≤ W) :
     WordsBounded W (withFlag c v) := by
   obtain ⟨h1, h2⟩ := hw
   refine ⟨fun r => ?_, h2⟩
   unfold withFlag
-  simp only
-  rw [Machine.upd_apply]
-  split_ifs
-  · exact hv
-  · exact h1 r
+  grind [Machine.upd_apply]
 
 /-- **The ray-shooter costs at least one step**: from any configuration meeting its
 precondition (with room), `1 ≤ F γ`. -/
@@ -146,7 +127,7 @@ theorem shooter_cost_pos {sh : Stmt} {B : Finset ℕ} {F : ℕ → ℕ} {X : Mem
   have hF0 : F (rd c bShoot 9) = 0 := by omega
   obtain ⟨hG, hWh, hX, hcap, hwf, hreg, M, hM, hOk, hp1, hp2, he1, he2, hi1, hi2, hwt, o, hoLt,
     hoIn, hoK, hoA⟩ := hpre
-  have hW1 : 1 ≤ W := le_trans (by unfold hostWords; omega) hWh
+  have hW1 : 1 ≤ W := le_trans (by omega_nf) hWh
   have r : ∀ v i, i ≠ 10 → i < 10000 → rd (withFlag c v) bShoot i = rd c bShoot i :=
     fun v i h1 h2 => withFlag_rd c v h1 h2
   -- run the shooter from `c` with flag `v`
@@ -194,7 +175,7 @@ theorem shooter_cost_pos {sh : Stmt} {B : Finset ℕ} {F : ℕ → ℕ} {X : Mem
       exact ⟨hG, hWh, hX, hcap, hwf, hreg, M, hM, hOk, hp1, hp2, he1, he2, hi1, hi2, hwt, o, hoLt,
         hoIn, hoK, hoA⟩
     obtain ⟨c', k, ex, hk, hpost, -⟩ := h P W (withFlag c v) hwv pre'
-      (by beta_reduce; rw [withFlag_alloc, r v 9 (by decide) (by decide)]; exact hroom)
+      (by grind [withFlag_alloc])
     beta_reduce at hk
     rw [r v 9 (by decide) (by decide), hF0] at hk
     have hc' := exec_zero ex (by omega)
@@ -203,14 +184,11 @@ theorem shooter_cost_pos {sh : Stmt} {B : Finset ℕ} {F : ℕ → ℕ} {X : Mem
       rw [r v 0 (by decide) (by decide)]; exact hM'
     have ho'' : OriginIn (withFlag c v) (bandReg bShoot 5) o' := (withFlag_originIn c v o').2 ho'
     have := hpost M' o' hM'' ho''
-    simp only [r v 1 (by decide) (by decide), r v 2 (by decide) (by decide),
-      r v 3 (by decide) (by decide), r v 4 (by decide) (by decide),
-      r v 8 (by decide) (by decide)] at this
-    exact ⟨fun h1 => (this.1 h1).imp fun t ht => ht.1, this.2⟩
+    grind
   obtain ⟨c₁, rfl, h₁⟩ := run 1 le_rfl
   obtain ⟨c₀, rfl, h₀⟩ := run 0 (by omega)
   obtain ⟨t, ht0, htA, -⟩ := (h₁ M o hM hoIn).1 (withFlag_flag c 1)
-  exact (h₀ M o hM hoIn).2 (by rw [withFlag_flag]; omega) t ht0 htA
+  exact (h₀ M o hM hoIn).2 (by grind [withFlag_flag]) t ht0 htA
 
 end
 

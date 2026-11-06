@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutCore
 
 /-!
@@ -10,9 +12,6 @@ from the vertex `c₀` (`dyUp_exec`): at most `2 (log₂ L + 1)` pieces, chained
 `c₀ + L`, each valid by the hypothesis `hblk` on blocks.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -71,7 +70,7 @@ theorem pcBlock_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
         (∀ r, r ≠ 150054 → r ≠ 150055 → r ≠ 150075 → r ≠ 150076 → c₂.nreg r = c₁.nreg r) ∧
         c₂.nmem = c₁.nmem := by
       exec_block
-      all_goals first | (config_simp; omega) | (config_simp; rw [a34, a82, m₁, a77]; omega) | skip
+      all_goals first | (config_simp; omega) | (config_simp; grind) | skip
       · refine ⟨rfl, by config_simp, ?_, fun r h1 h2 h3 h4 => ?_, rfl⟩
         · config_simp; rw [a34, a82, m₁, a77]; ring
         · simp only [upd]; split_ifs <;> first | rfl | omega
@@ -110,7 +109,7 @@ structure SwEnv (n W A₀ Tb Hb Pb tg : ℕ) (m₀ : ℕ → ℕ) : Prop where
   aW : A₀ ≤ W
 
 /-- The registers of the sweep that stay fixed. -/
-def SwRegs (Tb Hb Pb : ℕ) (m₀ : ℕ → ℕ) (A₀ : ℕ) (c₀c : Config) (d : Config) : Prop :=
+def SwRegs (Tb Hb Pb : ℕ) (m₀ : ℕ → ℕ) (A₀ : ℕ) (c₀c d : Config) : Prop :=
   (∀ a, a < A₀ → d.nmem a = m₀ a) ∧ (∀ r, 150000 ≤ r → r < 150044 → d.nreg r = c₀c.nreg r) ∧
     d.nreg 150090 = 0 ∧ d.nreg 150091 = 1 ∧ d.nreg 150034 = Tb ∧ d.nreg 150035 = Hb ∧
     d.nreg 150036 = Pb
@@ -151,7 +150,7 @@ theorem upATail_exec {P : Polygon} {W A₀ Pb g x : ℕ} {m₀ : ℕ → ℕ} (d
       d'.nreg 150083 = d.nreg 150086 ∧ d'.nreg 150087 = x + 2 ^ (g + 1) ∧
       (∀ r, r ≠ 150075 → r ≠ 150082 → r ≠ 150083 → r ≠ 150084 → r ≠ 150087 →
         d'.nreg r = d.nreg r) ∧ d'.nmem = d.nmem := by
-  have hp := Nat.two_pow_pos (g + 1)
+  
   exec_block
   all_goals first | (config_simp; rw [h82, h91]; omega) | (config_simp; rw [h82, h91, h36]; omega) |
     (config_simp; rw [h82, h91, h80, h36, hm _ hpow.2, hpow.1]; omega) | skip
@@ -160,7 +159,7 @@ theorem upATail_exec {P : Polygon} {W A₀ Pb g x : ℕ} {m₀ : ℕ → ℕ} (d
   · config_simp; rw [h82, h91, h36, hm _ hpow.2, hpow.1]
   · config_simp
   · config_simp; rw [h82, h91, h80, h36, hm _ hpow.2, hpow.1]
-  · simp only [upd]; split_ifs <;> first | rfl | omega
+  · simp only [upd]; split_ifs <;> ram_all
 
 
 /-- Building the invariant of the ascending sweep. -/
@@ -194,9 +193,11 @@ theorem upABody_eq (emit : Stmt) : upABody emit =
     .seq (block [.addN 150075 150035 150083, .loadN 150086 150075, .addN 150075 150086 150086])
       (.seq (.ifLtN 150075 150083 (upAOdd emit) .skip) upATail) := rfl
 
+section
+variable {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop} {I : List Pc → Config → Prop} (hE : EmitOK P W emit A₀ Pv I K) {m₀ : ℕ → ℕ}
+include K emit hE
 /-- **After the optional block**: the tail re-establishes the invariant with `g + 1`. -/
-theorem upA_after {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop}
-    {I : List Pc → Config → Prop} (hE : EmitOK P W emit A₀ Pv I K) {m₀ : ℕ → ℕ}
+theorem upA_after
     {Tb Hb Pb tg q₀ L c₀ : ℕ} {ps₀ : List Pc} {cc : Config}
     (env : SwEnv P.n W A₀ Tb Hb Pb tg m₀) (hW : c₀ + L + 2 ≤ W) (hW' : 3 * L + 2 * P.n + 4 ≤ W)
     (hqL : q₀ + L ≤ P.n) (d₅ : Config) (w₅ : WordsBounded W d₅) (x' h' g : ℕ) (ps'' : List Pc)
@@ -211,32 +212,31 @@ theorem upA_after {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop
     (hv₅ : ∀ pc ∈ ps'', Pv pc) (hl₅ : ps''.length ≤ g + 1) :
     ∃ d₆ k₆, Exec P W upATail d₅ d₆ k₆ ∧ k₆ = 5 ∧
       UpA W Pv I ps₀ m₀ A₀ Tb Hb Pb tg q₀ L c₀ cc d₆ ∧ d₆.nreg 150082 = g + 1 := by
-  have hp' := Nat.two_pow_pos (g + 1)
+  
   obtain ⟨hp1, hp2⟩ := env.pow (g + 1) (by omega)
   obtain ⟨d₆, k₆, e₆, hk₆, b82, b84, b83, b87, r₆, m₆⟩ := upATail_exec (P := P) (x := x') d₅ w₅
-    m₅ a36 a82 a80 a91 ⟨hp1, hp2⟩ env.aW (by rw [pow_succ]; omega)
+    m₅ a36 a82 a80 a91 ⟨hp1, hp2⟩ env.aW (by omega)
   have fr₆ : FrameB Scr d₅ d₆ := exec_frameB e₆ (by decide)
   have k : ∀ r, r ≠ 150075 → r ≠ 150082 → r ≠ 150083 → r ≠ 150084 → r ≠ 150087 →
       d₆.nreg r = d₅.nreg r := r₆
   refine ⟨d₆, k₆, e₆, hk₆, mkUpA x' (g + 1) ps'' e₆.wb_right
-    (fun a ha => by rw [m₆]; exact m₅ a ha)
+    (fun a ha => by grind)
     (fun r h1 h2 => (k r (by omega) (by omega) (by omega) (by omega) (by omega)).trans
       (s₅ r h1 h2))
-    (by rw [k _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact a90)
-    (by rw [k _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact a91)
-    (by rw [k _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact a34)
-    (by rw [k _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact a35)
-    (by rw [k _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact a36)
-    (by rw [k _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact a80)
-    (by rw [k _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact a81)
-    b82 (by rw [b83, a86]; exact hx') b84
-    (by rw [k _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact a85) b87
-    (by rw [k _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact a88) hq' hx'L
-    (hE.stable _ _ _ hI₅ fr₆) hch₅ hv₅ hl₅ (Or.inr (by simpa using hgL)) (by omega), b82⟩
+    (by grind)
+    (by grind)
+    (by grind)
+    (by grind)
+    (by grind)
+    (by grind)
+    (by grind)
+    b82 (by grind) b84
+    (by grind) b87
+    (by grind) hq' hx'L
+    (hE.stable _ _ _ hI₅ fr₆) hch₅ hv₅ hl₅ (Or.inr (by grind)) (by omega), b82⟩
 
 /-- **The odd branch**: the block `(g, qq)` is handed to `emit`. -/
-theorem upA_odd {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop}
-    {I : List Pc → Config → Prop} (hE : EmitOK P W emit A₀ Pv I K) {m₀ : ℕ → ℕ}
+theorem upA_odd
     {Tb q₀ L c₀ : ℕ} {ps : List Pc} (hblk : UpBlocks Pv m₀ W A₀ Tb c₀ q₀ L)
     (hW : c₀ + L + 2 ≤ W) (hW' : 3 * L + 4 ≤ W) (hA : A₀ ≤ W) (hqW : q₀ + L ≤ W) {x g qq : ℕ}
     (d₁ : Config) (w₁ : WordsBounded W d₁) (hm : ∀ a, a < A₀ → d₁.nmem a = m₀ a)
@@ -251,40 +251,37 @@ theorem upA_odd {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop}
       (∀ r, ((150000 ≤ r ∧ r < 150044) ∨ r = 150081 ∨ r = 150082 ∨ r = 150088 ∨
         r = 150090 ∨ r = 150091 ∨ r = 150083) → d₅.nreg r = d₁.nreg r) ∧
       (∀ a, a < A₀ → d₅.nmem a = d₁.nmem a) := by
-  have hp := Nat.two_pow_pos g
-  obtain ⟨hblk1, hblk2⟩ := hblk g qq (by rw [← hx]; exact hqx) (by
-    rw [Nat.add_mul, one_mul, ← hx]; exact hxy)
+  
+  obtain ⟨hblk1, hblk2⟩ := hblk g qq (by omega) (by
+    grind)
   have ex₂ := Exec.copyN (P := P) w₁ 150077 150083
   set d₂ := ({ d₁ with nreg := upd d₁.nreg 150077 (d₁.nreg 150083) } : Config) with hd₂
   have w₂ := ex₂.wb_right
-  have g2 : ∀ r, r ≠ 150077 → d₂.nreg r = d₁.nreg r := fun r hr => by simp [hd₂, upd, hr]
+  have g2 : ∀ r, r ≠ 150077 → d₂.nreg r = d₁.nreg r := fun r hr => by grind [upd]
   have n77 : d₂.nreg 150077 = qq := by simp [hd₂, h83]
-  have nm : d₂.nmem = d₁.nmem := rfl
+  
   obtain ⟨d₃, k₃, e₃, hk₃, v50, v51, v52, v53, v54, v55, v56, v57, v58, r₃, m₃⟩ :=
     pcBlock_exec (P := P) d₂ w₂ 150080 1 (Or.inr (by omega)) (by omega)
-      (by rw [g2 _ (by omega), h90])
-      (by rw [g2 _ (by omega), g2 _ (by omega), h85, h84]; omega) (fun hg => by
-        have hg' : 0 < g := by rw [g2 _ (by omega), h82] at hg; exact hg
-        rw [g2 _ (by omega), g2 _ (by omega), n77, nm, h34, h82, hm _ (hblk1 hg').1]
-        exact ⟨by have := (hblk1 hg').1; omega, (hblk1 hg').2⟩)
+      (by grind)
+      (by grind) (fun hg => by
+        grind)
   rw [g2 _ (by omega)] at v50 v52 v54 v56 v58 v55
   rw [g2 _ (by omega)] at v52
   set pc := upPc c₀ q₀ g qq (d₃.nreg 150055) with hpc
   have hpcR : PcRegs d₃ pc := by
     refine ⟨?_, v51, ?_, v53, ?_, fun _ => ⟨rfl, ?_, v57, ?_⟩⟩
-    · rw [v50, h85, hpc]; simp [upPc, ← hx]
-    · rw [v52, h85, h84, hpc]; simp [upPc, ← hx]
+    · grind [upPc]
+    · grind [upPc]
     · rw [v54, h82, hpc]; rfl
-    · rw [v56, h80, hpc]; simp [upPc, ← hx]
-    · rw [v58, h84]; rfl
+    all_goals (grind [upPc])
   have hpv : Pv pc := hblk2 _ (fun hg => by
-    rw [v55 (by rw [h82]; exact hg), g2 _ (by omega), n77, h82, h34, hm _ (hblk1 hg).1])
+    grind)
   have fr₃ : FrameB Scr d₁ d₃ := (exec_frameB ex₂ (by decide)).trans (exec_frameB e₃ (by decide))
   obtain ⟨d₄, k₄, e₄, hk₄, hI₄, kp, mem₄⟩ := hE.run _ pc d₃ e₃.wb_right (hE.stable _ _ _ hI fr₃) hpcR hpv
   have w₄ := e₄.wb_right
   have back : ∀ r, Keep r → r ≠ 150077 → (r < 150050 ∨ 150059 ≤ r) → r ≠ 150075 → r ≠ 150076 →
       d₄.nreg r = d₁.nreg r := fun r hk h1 h2 h3 h4 => by
-    rw [kp r hk, r₃ r h2 h3 h4, g2 r h1]
+    grind
   have q80 : d₄.nreg 150080 = x := by rw [back _ (Or.inr (by omega)) (by omega) (by omega)
     (by omega) (by omega), h80]
   have q84 : d₄.nreg 150084 = 2 ^ g := by rw [back _ (Or.inr (by omega)) (by omega) (by omega)
@@ -302,24 +299,22 @@ theorem upA_odd {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop}
       (∀ r, r ≠ 150080 → r ≠ 150085 → r ≠ 150086 → d₅.nreg r = d₄.nreg r) ∧
       d₅.nmem = d₄.nmem := by
     exec_block
-    all_goals first | (config_simp; rw [q80, q84]; omega) | (config_simp; rw [q85, q84]; omega) |
+    all_goals first | (config_simp; omega) | (config_simp; rw [q85, q84]; omega) |
       (config_simp; rw [q86, q91]; omega) | skip
     refine ⟨rfl, ?_, ?_, ?_, fun r h1 h2 h3 => ?_, rfl⟩
-    · config_simp; rw [q80, q84]
-    · config_simp; rw [q85, q84]
+    · config_simp; omega
+    · config_simp; omega
     · config_simp; rw [q91]
-    · simp only [upd]; split_ifs <;> first | rfl | omega
+    grind [upd]
   refine ⟨d₅, 1 + (k₃ + (k₄ + k₅)), d₃.nreg 150055, .seq ex₂ (.seq e₃ (.seq e₄ e₅)), by omega,
-    hpv, hE.stable _ _ _ hI₄ (exec_frameB e₅ (by decide)), a80, a85, by rw [a86, q86], ?_, ?_⟩
+    hpv, hE.stable _ _ _ hI₄ (exec_frameB e₅ (by decide)), a80, a85, by omega, ?_, ?_⟩
   · intro r hr
     rw [r₅ r (by omega) (by omega) (by omega), back r (by unfold Keep; omega) (by omega) (by omega)
       (by omega) (by omega)]
-  · intro a ha
-    rw [m₅, mem₄ a ha, m₃]
+  grind
 
 /-- **One step of the ascending sweep.** -/
-theorem upABody_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop}
-    {I : List Pc → Config → Prop} (hE : EmitOK P W emit A₀ Pv I K) {m₀ : ℕ → ℕ}
+theorem upABody_exec
     {Tb Hb Pb tg q₀ L c₀ : ℕ} {ps₀ : List Pc} {cc d : Config}
     (env : SwEnv P.n W A₀ Tb Hb Pb tg m₀) (hblk : UpBlocks Pv m₀ W A₀ Tb c₀ q₀ L)
     (hqL : q₀ + L ≤ P.n) (hLtg : L ≤ 2 ^ tg) (hW : c₀ + L + 2 ≤ W) (hW' : 3 * L + 2 * P.n + 4 ≤ W)
@@ -344,70 +339,70 @@ theorem upABody_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → P
       d₁.nreg 150086 = d.nreg 150083 / 2 ∧
       (∀ r, r ≠ 150075 → r ≠ 150086 → d₁.nreg r = d.nreg r) ∧ d₁.nmem = d.nmem := by
     exec_block
-    all_goals first | (config_simp; rw [h35, hm _ (by omega), hh1]; omega) |
+    all_goals first | (config_simp; grind) |
       (config_simp; rw [h35]; omega) | skip
-    refine ⟨rfl, ?_, ?_, fun r h1 h2 => ?_, rfl⟩
-    · config_simp; rw [h35, hm _ (by omega), hh1]
-    · config_simp; rw [h35, hm _ (by omega), hh1]
-    · simp only [upd]; split_ifs <;> first | rfl | omega
+    grind [upd]
   have w₁ := e₁.wb_right
   have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (by decide)
   have k₁' : ∀ r, r ≠ 150075 → r ≠ 150086 → d₁.nreg r = d.nreg r := r₁
-  have m₁' : ∀ a, a < A₀ → d₁.nmem a = m₀ a := fun a ha => by rw [m₁]; exact hm a ha
+  have m₁' : ∀ a, a < A₀ → d₁.nmem a = m₀ a := fun a ha => by grind
   rw [upABody_eq]
   by_cases hodd : d.nreg 150083 / 2 + d.nreg 150083 / 2 < d.nreg 150083
   · obtain ⟨d₅, k₅, e, e₅, hk₅, hpv, hI₅, a80, a85, a86, r₅, m₅⟩ := upA_odd hE (ps := ps₀ ++ ps')
       hblk (by omega) (by omega) hA (by omega) (x := x) (g := g) (qq := d.nreg 150083) d₁ w₁ m₁'
-      (by rw [k₁' _ (by omega) (by omega), h90]) (by rw [k₁' _ (by omega) (by omega), h91])
-      (by rw [k₁' _ (by omega) (by omega), h34]) (by rw [k₁' _ (by omega) (by omega), h80])
-      (by rw [k₁' _ (by omega) (by omega), h82]) (by rw [k₁' _ (by omega) (by omega)])
-      (by rw [k₁' _ (by omega) (by omega), h84]) (by rw [k₁' _ (by omega) (by omega), h85])
-      hx hqx (by omega) (hE.stable _ _ _ hI' fr₁) (by rw [o86]; omega)
+      (by grind) (by grind)
+      (by grind) (by grind)
+      (by grind) (by grind)
+      (by grind) (by grind)
+      hx hqx (by omega) (hE.stable _ _ _ hI' fr₁) (by omega)
     have kk : ∀ r, ((150000 ≤ r ∧ r < 150044) ∨ r = 150081 ∨ r = 150082 ∨ r = 150088 ∨
         r = 150090 ∨ r = 150091) → d₅.nreg r = d.nreg r := fun r hr => by
       rw [r₅ r (by omega), k₁' r (by omega) (by omega)]
     have w₅ := e₅.wb_right
     obtain ⟨d₆, k₆, e₆, hk₆, hU, b82⟩ := upA_after hE env hW hW' hqL d₅ w₅ (x + 2 ^ g)
       (d.nreg 150083 / 2 + 1) g (ps' ++ [upPc c₀ q₀ g (d.nreg 150083) e]) hgt hgL
-      (fun a ha => by rw [m₅ a ha]; exact m₁' a ha)
+      (fun a ha => by grind)
       (fun r h1 h2 => (kk r (Or.inl ⟨h1, h2⟩)).trans (hk0 r h1 h2))
-      (by rw [kk _ (by omega)]; exact h90) (by rw [kk _ (by omega)]; exact h91)
-      (by rw [kk _ (by omega)]; exact h34) (by rw [kk _ (by omega)]; exact h35)
-      (by rw [kk _ (by omega)]; exact h36) (by rw [kk _ (by omega)]; exact h82) a80
-      (by rw [kk _ (by omega)]; exact h81) (by rw [a85]; omega)
-      (by rw [kk _ (by omega)]; exact h88)
+      (by grind) (by grind)
+      (by grind) (by grind)
+      (by grind) (by grind) a80
+      (by grind) (by rw [a85]; omega)
+      (by grind)
       (by rw [hx, pow_succ]; have : d.nreg 150083 = 2 * (d.nreg 150083 / 2) + 1 := by omega
-          nth_rewrite 1 [this]; ring)
-      (by rw [a86, o86]) (by omega) (by omega) (by rw [← List.append_assoc]; exact hI₅)
+          grind)
+      (by omega) (by omega) (by omega) (by rw [← List.append_assoc]; exact hI₅)
       (by
-        have h2 := hch.append (upPc c₀ q₀ g (d.nreg 150083) e) (by simp [upPc, ← hx])
+        have h2 := hch.append (upPc c₀ q₀ g (d.nreg 150083) e) (by grind [upPc])
         have he : (upPc c₀ q₀ g (d.nreg 150083) e).e = ⟨c₀ + (x + 2 ^ g - q₀), 0⟩ := by
           simp only [upPc, ← hx, WPos.mk.injEq, and_true]; omega
-        rw [he] at h2; exact h2)
+        grind)
       (fun p hp => by
         rcases List.mem_append.1 hp with hp | hp
-        · exact hv p hp
-        · simp only [List.mem_singleton] at hp; rw [hp]; exact hpv)
+        · grind
+        grind)
       (by simp; omega)
     exact ⟨d₆, k₁ + ((k₅ + 1) + k₆), .seq e₁ (.seq (.ifLtN_true (by
-        rw [o75, k₁' _ (by omega) (by omega)]; exact hodd) e₅) e₆), hU, by omega,
-      by rw [b82, h82]; omega⟩
+        grind) e₅) e₆), hU, by omega,
+      by omega⟩
   · obtain ⟨d₆, k₆, e₆, hk₆, hU, b82⟩ := upA_after hE env hW hW' hqL d₁ w₁ x
       (d.nreg 150083 / 2) g ps' hgt hgL m₁'
       (fun r h1 h2 => (k₁' r (by omega) (by omega)).trans (hk0 r h1 h2))
-      (by rw [k₁' _ (by omega) (by omega)]; exact h90) (by rw [k₁' _ (by omega) (by omega)]; exact h91)
-      (by rw [k₁' _ (by omega) (by omega)]; exact h34) (by rw [k₁' _ (by omega) (by omega)]; exact h35)
-      (by rw [k₁' _ (by omega) (by omega)]; exact h36) (by rw [k₁' _ (by omega) (by omega)]; exact h82)
-      (by rw [k₁' _ (by omega) (by omega)]; exact h80) (by rw [k₁' _ (by omega) (by omega)]; exact h81)
-      (by rw [k₁' _ (by omega) (by omega)]; exact h85) (by rw [k₁' _ (by omega) (by omega)]; exact h88)
+      (by grind) (by grind)
+      (by grind) (by grind)
+      (by grind) (by grind)
+      (by grind) (by grind)
+      (by grind) (by grind)
       (by rw [hx, pow_succ]; have : d.nreg 150083 = 2 * (d.nreg 150083 / 2) := by omega
-          nth_rewrite 1 [this]; ring)
+          grind)
       o86 hqx hxy (hE.stable _ _ _ hI' fr₁) hch hv (by omega)
     exact ⟨d₆, k₁ + ((0 + 2) + k₆), .seq e₁ (.seq (.ifLtN_false (by
-        rw [o75, k₁' _ (by omega) (by omega)]; exact hodd) (.skip w₁)) e₆), hU, by omega,
-      by rw [b82, h82]; omega⟩
+        grind) (.skip w₁)) e₆), hU, by omega,
+      by omega⟩
 
 /-! ## The descending sweep of the upward cover -/
+
+
+end
 
 /-- The invariant of the descending sweep. -/
 def UpB (W : ℕ) (Pv : Pc → Prop) (I : List Pc → Config → Prop) (ps₀ : List Pc)
@@ -442,10 +437,10 @@ theorem upBBody_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → P
   have hA := env.aW
   obtain ⟨hp1, hp2⟩ := env.pow g' (by omega)
   set qq := d.nreg 150083 with hqq
-  have hx2 : x = (qq + qq) * 2 ^ g' := by rw [hx, pow_succ]; ring
+  have hx2 : x = (qq + qq) * 2 ^ g' := by grind
   have hqqx : qq + qq ≤ x := by rw [hx2]; exact Nat.le_mul_of_pos_right _ hp
   have hxn : x ≤ P.n := by omega
-  have hg2 : 2 ^ g' ≤ L + 1 := by rw [pow_succ] at hgb; omega
+  
   obtain ⟨d₁, k₁, e₁, hk₁, o82, o84, o83, o86, o87, r₁, m₁⟩ : ∃ d₁ k₁, Exec P W
       (block [.subN 150082 150082 150091, .addN 150075 150036 150082, .loadN 150084 150075,
         .addN 150083 150083 150083, .copyN 150086 150083, .addN 150087 150080 150084])
@@ -454,22 +449,22 @@ theorem upBBody_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → P
       (∀ r, r ≠ 150075 → r ≠ 150082 → r ≠ 150083 → r ≠ 150084 → r ≠ 150086 → r ≠ 150087 →
         d₁.nreg r = d.nreg r) ∧ d₁.nmem = d.nmem := by
     exec_block
-    all_goals first | (config_simp; rw [h82, h91, Nat.add_sub_cancel, h36]; omega) |
+    all_goals first | (config_simp; grind) |
       (config_simp; omega) |
       (config_simp; rw [h82, h91, Nat.add_sub_cancel, h36, h80, hm _ (by omega), hp1]; omega) | skip
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r h1 h2 h3 h4 h5 h6 => ?_, rfl⟩
-    · config_simp; rw [h82, h91, Nat.add_sub_cancel]
-    · config_simp; rw [h82, h91, Nat.add_sub_cancel, h36, hm _ (by omega), hp1]
+    · config_simp; omega
+    · config_simp; grind
     · config_simp; rw [← hqq]
     · config_simp; rw [← hqq]
-    · config_simp; rw [h82, h91, Nat.add_sub_cancel, h36, h80, hm _ (by omega), hp1]
-    · simp only [upd]; split_ifs <;> first | rfl | omega
+    · config_simp; grind
+    grind [upd]
   have w₁ := e₁.wb_right
   have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (by decide)
   have k : ∀ r, ((150000 ≤ r ∧ r < 150044) ∨ r = 150080 ∨ r = 150081 ∨ r = 150085 ∨ r = 150088 ∨
       r = 150090 ∨ r = 150091) → d₁.nreg r = d.nreg r := fun r hr =>
     r₁ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  have m₁' : ∀ a, a < A₀ → d₁.nmem a = m₀ a := fun a ha => by rw [m₁]; exact hm a ha
+  have m₁' : ∀ a, a < A₀ → d₁.nmem a = m₀ a := fun a ha => by grind
   rw [upBBody_eq]
   -- the final copy
   have fin : ∀ (d₅ : Config) (k₅ x' : ℕ) (ps'' : List Pc),
@@ -491,7 +486,7 @@ theorem upBBody_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → P
     have w₅ := e₅.wb_right
     have e₆ := Exec.copyN (P := P) w₅ 150083 150086
     set d₆ := ({ d₅ with nreg := upd d₅.nreg 150083 (d₅.nreg 150086) } : Config) with hd₆
-    have g6 : ∀ r, r ≠ 150083 → d₆.nreg r = d₅.nreg r := fun r hr => by simp [hd₆, upd, hr]
+    have g6 : ∀ r, r ≠ 150083 → d₆.nreg r = d₅.nreg r := fun r hr => by grind [upd]
     have kk : ∀ r, ((150000 ≤ r ∧ r < 150044) ∨ r = 150081 ∨ r = 150088 ∨
         r = 150090 ∨ r = 150091) → d₆.nreg r = d.nreg r := fun r hr => by
       rw [g6 r (by omega), k₅' r (by omega), k r (by omega)]
@@ -504,39 +499,39 @@ theorem upBBody_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → P
       by rw [g6 _ (by omega), k₅' _ (by omega)]; exact o82,
       by simp [hd₆]; exact hx', by rw [g6 _ (by omega)]; exact a85,
       by rw [kk _ (by omega)]; exact h88, hq', hx'L, hy',
-      hE.stable _ _ _ hI₅ (exec_frameB e₆ (by decide)), hch₅, hv₅, by omega, by omega, by rw [pow_succ] at hgb; omega⟩,
+      hE.stable _ _ _ hI₅ (exec_frameB e₆ (by decide)), hch₅, hv₅, by omega, by omega, by omega⟩,
       by omega, by rw [g6 _ (by omega), k₅' _ (by omega), o82]; omega⟩
   by_cases hodd : d₁.nreg 150087 < d₁.nreg 150088
   · rw [o87, k _ (by omega), h88] at hodd
     obtain ⟨d₅, k₅, e, e₅, hk₅, hpv, hI₅, a80, a85, a86, r₅, m₅⟩ := upA_odd hE
       (ps := ps₀ ++ ps') hblk (by omega) (by omega) hA (by omega) (x := x) (g := g') (qq := qq + qq) d₁ w₁ m₁'
-      (by rw [k _ (by omega), h90]) (by rw [k _ (by omega), h91])
-      (by rw [k _ (by omega), h34]) (by rw [k _ (by omega), h80]) o82 o83 o84
-      (by rw [k _ (by omega), h85]) hx2 hqx (by omega) (hE.stable _ _ _ hI' fr₁)
-      (by rw [o86]; omega)
+      (by grind) (by grind)
+      (by grind) (by grind) o82 o83 o84
+      (by grind) hx2 hqx (by omega) (hE.stable _ _ _ hI' fr₁)
+      (by omega)
     obtain ⟨d', k', ex, hU, hk', hg'⟩ := fin d₅ (k₅ + 1) (x + 2 ^ g')
       (ps' ++ [upPc c₀ q₀ g' (qq + qq) e])
       (.ifLtN_true (by rw [o87, k _ (by omega), h88]; omega) e₅) (by omega)
       (fun a ha => by rw [m₅ a ha]; exact m₁' a ha) (fun r hr => r₅ r (by omega)) a80
-      (by rw [a85]; omega) (by rw [a86, o86, hx2]; ring) (by omega) (by omega)
-      (by rw [pow_succ] at hyx; omega) (by rw [← List.append_assoc]; exact hI₅)
+      (by rw [a85]; omega) (by grind) (by omega) (by omega)
+      (by omega) (by grind)
       (by
         have h2 := hch.append (upPc c₀ q₀ g' (qq + qq) e) (by simp [upPc, ← hx2])
         have he : (upPc c₀ q₀ g' (qq + qq) e).e = ⟨c₀ + (x + 2 ^ g' - q₀), 0⟩ := by
           simp only [upPc, ← hx2, WPos.mk.injEq, and_true]; omega
-        rw [he] at h2; exact h2)
+        grind)
       (fun p hp => by
         rcases List.mem_append.1 hp with hp | hp
         · exact hv p hp
-        · simp only [List.mem_singleton] at hp; rw [hp]; exact hpv)
+        · simp only [List.mem_singleton] at hp; grind)
       (by simp)
-    exact ⟨d', k', ex, hU, hk', by rw [h82]; exact hg'⟩
+    exact ⟨d', k', ex, hU, hk', by omega⟩
   · have hodd' := hodd
     rw [o87, k _ (by omega), h88] at hodd'
     obtain ⟨d', k', ex, hU, hk', hg'⟩ := fin d₁ 2 x ps' (.ifLtN_false hodd (.skip w₁)) (by omega)
       m₁' (fun r hr => rfl) (by rw [k _ (by omega), h80]) (by rw [k _ (by omega), h85])
-      (by rw [o86, hx2]) hqx hxy (by omega) (hE.stable _ _ _ hI' fr₁) hch hv (by omega)
-    exact ⟨d', k', ex, hU, hk', by rw [h82]; exact hg'⟩
+      (by grind) hqx hxy (by omega) (hE.stable _ _ _ hI' fr₁) hch hv (by omega)
+    exact ⟨d', k', ex, hU, hk', by omega⟩
 
 /-! ## The upward cover -/
 
@@ -562,7 +557,7 @@ theorem dyUp_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop
       ps'.length ≤ 2 * (Nat.log 2 L + 1) ∧ c'.nreg 150040 = c₀ + L ∧
       (∀ r, 150000 ≤ r → r < 150044 → r ≠ 150040 → c'.nreg r = c.nreg r) ∧
       c'.nreg 150090 = 0 ∧ c'.nreg 150091 = 1 ∧ (∀ a, a < A₀ → c'.nmem a = m₀ a) := by
-  have hA := env.aW
+  
   obtain ⟨c₁, k₁, e₁, hk₁, o80, o81, o88, o82, o83, o84, o85, o87, r₁, m₁⟩ : ∃ c₁ k₁,
       Exec P W (block [.copyN 150080 150070, .addN 150081 150070 150071,
         .addN 150088 150081 150091, .constN 150082 0, .copyN 150083 150070, .constN 150084 1,
@@ -572,19 +567,18 @@ theorem dyUp_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop
       c₁.nreg 150087 = q₀ + 1 ∧
       (∀ r, r < 150080 ∨ 150089 ≤ r → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem := by
     exec_block
-    all_goals first | (config_simp; rw [h70, h71]; omega) | (config_simp; rw [h70, h71, h91]; omega) |
+    all_goals first | (config_simp; omega) | (config_simp; rw [h70, h71, h91]; omega) |
       (config_simp; rw [h70]; omega) | omega | skip
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl⟩
-    all_goals first | (config_simp; rw [h70, h71, h91]) | (config_simp; rw [h70, h71]) |
-      (config_simp; rw [h70]) | (config_simp; rw [h40]) | config_simp | skip
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    all_goals simp_all
+    grind [upd]
   have w₁ := e₁.wb_right
   have hA0 : UpA W Pv I ps₀ m₀ A₀ Tb Hb Pb tg q₀ L c₀ c c₁ :=
-    mkUpA q₀ 0 [] w₁ (fun a ha => by rw [m₁]; exact hm a ha)
-      (fun r h1 h2 => r₁ r (by omega)) (by rw [r₁ _ (by omega)]; exact h90)
-      (by rw [r₁ _ (by omega)]; exact h91) (by rw [r₁ _ (by omega)]; exact h34)
-      (by rw [r₁ _ (by omega)]; exact h35) (by rw [r₁ _ (by omega)]; exact h36) o80 o81 o82
-      (by rw [o83]; simp) (by rw [o84]; simp) (by rw [o85]; simp) (by rw [o87]; simp) o88 le_rfl
+    mkUpA q₀ 0 [] w₁ (fun a ha => by simp_all)
+      (fun r h1 h2 => r₁ r (by omega)) (by simp_all)
+      (by simp_all) (by simp_all)
+      (by simp_all) (by simp_all) o80 o81 o82
+      (by omega) (by omega) (by omega) (by omega) o88 le_rfl
       (by omega) (by rw [List.append_nil]; exact hE.stable _ _ _ hI (exec_frameB e₁ (by decide)))
       (by simp [Chained]) (by simp) (by simp) (Or.inl rfl) (by omega)
   -- phase A
@@ -592,7 +586,7 @@ theorem dyUp_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop
     (body := upABody emit) (UpA W Pv I ps₀ m₀ A₀ Tb Hb Pb tg q₀ L c₀ c)
     (fun d => Nat.log 2 L + 1 - d.nreg 150082) (K + 40) (fun d hd => hd.1) (fun d hd ht => by
       obtain ⟨d', k, ex, hU, hk, hμ⟩ := upABody_exec hE env hblk hqL hLtg hW hW' hd ht
-      exact ⟨d', k, ex, hU, hk, hμ⟩) hA0
+      grind) hA0
   obtain ⟨w₂, ⟨m₂, s₂, a90, a91, a34, a35, a36⟩, x, g, ps', a80, a81, a82, ax, a84, a85, a87, a88,
     aqx, axy, aI, ach, av, alen, ag1, agt⟩ := hA2
   rw [a87, a88] at hx₂
@@ -600,33 +594,33 @@ theorem dyUp_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop
     rcases ag1 with h | h
     · omega
     · rcases Nat.eq_zero_or_pos L with hL | hL
-      · rw [hL] at h; have := Nat.one_le_two_pow (n := g - 1); omega
+      · grind
       · have := Nat.le_log_of_pow_le (by norm_num) h; omega
   have hB0 : UpB W Pv I ps₀ m₀ A₀ Tb Hb Pb tg q₀ L c₀ c c₂ :=
     ⟨w₂, ⟨m₂, s₂, a90, a91, a34, a35, a36⟩, x, g, ps', a80, a81, a82, ax, a85, a88, aqx, axy,
       by omega, aI, ach, av, by omega, agt, by
         rcases Nat.eq_zero_or_pos g with h0 | h0
-        · rw [h0]; omega
+        · grind
         · rcases ag1 with h | h
           · omega
-          · have : 2 ^ g = 2 * 2 ^ (g - 1) := by rw [← pow_succ']; congr 1; omega
+          · have : 2 ^ g = 2 * 2 ^ (g - 1) := by rw [← pow_succ']; grind
             omega⟩
   -- phase B
   obtain ⟨c₃, k₃, e₃, hB3, hx₃, hk₃⟩ := Exec.whileLtN_bounded (P := P) (a := 150090) (b := 150082)
     (body := upBBody emit) (UpB W Pv I ps₀ m₀ A₀ Tb Hb Pb tg q₀ L c₀ c)
     (fun d => d.nreg 150082) (K + 40) (fun d hd => hd.1) (fun d hd ht => by
       obtain ⟨d', k, ex, hU, hk, hμ⟩ := upBBody_exec hE env hblk hqL hW hW' hd ht
-      exact ⟨d', k, ex, hU, hk, hμ⟩) hB0
+      grind) hB0
   obtain ⟨w₃, ⟨m₃, s₃, b90, b91, b34, b35, b36⟩, x₃, g₃, ps₃, b80, b81, b82, bx, b85, b88,
     bqx, bxy, byx, bI, bch, bv, blen, bgt, bgb⟩ := hB3
   rw [b90, b82] at hx₃
   have hg0 : g₃ = 0 := by omega
   rw [hg0] at byx blen
-  have hxL : x₃ = q₀ + L := by simp at byx; omega
+  have hxL : x₃ = q₀ + L := by grind
   have e₄ := Exec.copyN (P := P) w₃ 150040 150085
   refine ⟨_, k₁ + (k₂ + (k₃ + 1)), ps₃, ?_, ?_,
     hE.stable _ _ _ bI (exec_frameB e₄ (by decide)), by rw [hxL] at bch; simpa using bch, bv,
-    by omega, by config_simp; rw [b85, hxL]; omega, fun r h1 h2 h3 => ?_, ?_, ?_, ?_⟩
+    by omega, by config_simp; grind, fun r h1 h2 h3 => ?_, ?_, ?_, ?_⟩
   · rw [dyUp_eq]; exact .seq e₁ (.seq e₂ (.seq e₃ e₄))
   · have l1 : Nat.log 2 L + 1 - c₁.nreg 150082 ≤ Nat.log 2 L + 1 := by omega
     rw [show K + 40 + 2 = K + 42 by ring] at hk₂ hk₃
@@ -634,14 +628,12 @@ theorem dyUp_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop
       le_trans hk₂ (by have := Nat.mul_le_mul_left (K + 42) l1; omega)
     have hk3' : k₃ ≤ (K + 42) * (Nat.log 2 L + 1) + 2 :=
       le_trans hk₃ (by rw [a82]; have := Nat.mul_le_mul_left (K + 42) hglog; omega)
-    have e : (2 * K + 90) * (Nat.log 2 L + 1) =
-        2 * ((K + 42) * (Nat.log 2 L + 1)) + 6 * (Nat.log 2 L + 1) := by ring
-    omega
+    grind
   · config_simp
     rw [upd_other _ _ _ h3, s₃ r h1 h2]
   · config_simp; exact b90
   · config_simp; exact b91
-  · intro a ha; config_simp; exact m₃ a ha
+  omega
 
 end
 

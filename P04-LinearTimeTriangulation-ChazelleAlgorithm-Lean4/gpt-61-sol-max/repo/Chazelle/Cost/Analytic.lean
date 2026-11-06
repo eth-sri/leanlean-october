@@ -28,9 +28,7 @@ open Finset
 /-- Bernoulli's inequality in the form `n (u - 1) ≤ u ^ n` for `u ≥ 1`. -/
 theorem nat_mul_sub_one_le_pow {u : ℝ} (hu : 1 ≤ u) (n : ℕ) : (n : ℝ) * (u - 1) ≤ u ^ n := by
   have h := one_add_mul_le_pow (a := u - 1) (by linarith) n
-  have e : (1 + (u - 1)) = u := by ring
-  rw [e] at h
-  linarith
+  aesop (add safe (by nlinarith))
 
 /-- `2 ^ (1/N)` is an `N`-th root of `2`. -/
 theorem two_rpow_one_div_pow (N : ℕ) (hN : N ≠ 0) : ((2 : ℝ) ^ ((1 : ℝ) / N)) ^ N = 2 := by
@@ -42,15 +40,15 @@ theorem two_rpow_one_div_pow (N : ℕ) (hN : N ≠ 0) : ((2 : ℝ) ^ ((1 : ℝ) 
 `u^N (1-h)^N = (1-h²)^N ≤ 1`.) -/
 theorem sub_one_ge_of_pow_eq_two {u : ℝ} {N : ℕ} (hN : N ≠ 0) (hu0 : 0 ≤ u) (hu : u ^ N = 2) :
     1 / (2 * (N : ℝ)) ≤ u - 1 := by
-  have hNpos : (0 : ℝ) < N := by exact_mod_cast Nat.pos_of_ne_zero hN
-  have hN1 : (1 : ℝ) ≤ N := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hN
+  have hNpos : (0 : ℝ) < N := by positivity
+  have hN1 : (1 : ℝ) ≤ N := by aesop
   have hu1 : 1 ≤ u := by
     by_contra hcon
     have : u ^ N ≤ 1 := pow_le_one₀ hu0 (not_le.mp hcon).le
     linarith
   by_contra hlt'
   have hlt := not_le.mp hlt'
-  have h0 : 0 ≤ u - 1 := by linarith
+  
   have hsmall : (N : ℝ) * (u - 1) < 1 / 2 := by
     calc (N : ℝ) * (u - 1) < N * (1 / (2 * N)) := by gcongr
       _ = 1 / 2 := by field_simp
@@ -75,7 +73,7 @@ theorem two_rpow_one_div_le_two (N : ℕ) (hN : N ≠ 0) : (2 : ℝ) ^ ((1 : ℝ
 /-- `n ≤ 2M · 2^(n/M)` for every natural `n` and `M ≥ 1`. -/
 theorem nat_le_two_rpow (M : ℕ) (hM : M ≠ 0) (n : ℕ) :
     (n : ℝ) ≤ 2 * M * (2 : ℝ) ^ ((n : ℝ) / M) := by
-  have hMpos : (0 : ℝ) < M := by exact_mod_cast Nat.pos_of_ne_zero hM
+  
   set u := (2 : ℝ) ^ ((1 : ℝ) / M) with hu_def
   have hu0 : 0 ≤ u := Real.rpow_nonneg (by norm_num) _
   have hu1 : 1 ≤ u := Real.one_le_rpow (by norm_num) (by positivity)
@@ -83,8 +81,7 @@ theorem nat_le_two_rpow (M : ℕ) (hM : M ≠ 0) (n : ℕ) :
   have hb := nat_mul_sub_one_le_pow hu1 n
   have hun : u ^ n = (2 : ℝ) ^ ((n : ℝ) / M) := by
     rw [hu_def, ← Real.rpow_mul_natCast (by norm_num)]
-    congr 1
-    ring
+    grind
   rw [← hun]
   have h1 : (n : ℝ) * (1 / (2 * M)) ≤ u ^ n :=
     le_trans (mul_le_mul_of_nonneg_left hsub (Nat.cast_nonneg n)) hb
@@ -100,26 +97,21 @@ theorem natPow_le_two_rpow (k M : ℕ) (hM : M ≠ 0) (n : ℕ) :
     simp only [pow_zero, one_mul]
     exact Real.one_le_rpow (by norm_num) (by positivity)
   · have hkM : k * M ≠ 0 := Nat.mul_ne_zero (Nat.pos_iff_ne_zero.mp hk) hM
-    have hkR : (k : ℝ) ≠ 0 := by exact_mod_cast (Nat.pos_iff_ne_zero.mp hk)
-    have hMR : (M : ℝ) ≠ 0 := by exact_mod_cast hM
+    have hkR : (k : ℝ) ≠ 0 := by simp_all
+    have hMR : (M : ℝ) ≠ 0 := by simp_all
     have h1 := nat_le_two_rpow (k * M) hkM n
     have h2 : (n : ℝ) ^ k ≤ (2 * ((k * M : ℕ) : ℝ) * (2 : ℝ) ^ ((n : ℝ) / ((k * M : ℕ) : ℝ))) ^ k :=
       pow_le_pow_left₀ (Nat.cast_nonneg n) h1 k
     rw [mul_pow] at h2
     have h3 : ((2 : ℝ) ^ ((n : ℝ) / ((k * M : ℕ) : ℝ))) ^ k = (2 : ℝ) ^ ((n : ℝ) / M) := by
       rw [← Real.rpow_mul_natCast (by norm_num)]
-      congr 1
-      push_cast
-      field_simp
-    rw [h3] at h2
-    push_cast at h2
-    calc (n : ℝ) ^ k ≤ (2 * (k * M : ℝ)) ^ k * (2 : ℝ) ^ ((n : ℝ) / M) := h2
-      _ = (2 * k * M : ℝ) ^ k * (2 : ℝ) ^ ((n : ℝ) / M) := by ring
+      grind
+    grind
 
 /-- Finite geometric series with ratio `2^(-1/M)`: `Σ_{g<n} 2^(-g/M) ≤ 4M`. -/
 theorem sum_two_rpow_neg_le (M : ℕ) (hM : M ≠ 0) (n : ℕ) :
     ∑ g ∈ range n, (2 : ℝ) ^ (-(g : ℝ) / M) ≤ 4 * M := by
-  have hMpos : (0 : ℝ) < M := by exact_mod_cast Nat.pos_of_ne_zero hM
+  
   set u := (2 : ℝ) ^ ((1 : ℝ) / M) with hu_def
   have hu0 : 0 < u := Real.rpow_pos_of_pos (by norm_num) _
   have hsub := sub_one_ge_of_pow_eq_two hM hu0.le (two_rpow_one_div_pow M hM)
@@ -128,8 +120,7 @@ theorem sum_two_rpow_neg_le (M : ℕ) (hM : M ≠ 0) (n : ℕ) :
   have hterm : ∀ g : ℕ, (2 : ℝ) ^ (-(g : ℝ) / M) = q ^ g := by
     intro g
     rw [hq_def, hu_def, ← Real.rpow_neg (by norm_num), ← Real.rpow_mul_natCast (by norm_num)]
-    congr 1
-    ring
+    grind
   simp_rw [hterm]
   have hq0 : 0 ≤ q := inv_nonneg.mpr hu0.le
   have hqle : q ≤ 1 - 1 / (4 * M) := by
@@ -137,9 +128,7 @@ theorem sum_two_rpow_neg_le (M : ℕ) (hM : M ≠ 0) (n : ℕ) :
     have : u / (4 * M) ≤ 1 / (2 * M) := by
       rw [div_le_div_iff₀ (by positivity) (by positivity)]
       nlinarith
-    have e : u * (1 - 1 / (4 * (M : ℝ))) = u - u / (4 * M) := by field_simp
-    rw [e]
-    linarith
+    grind
   have hq1 : q < 1 := by
     have : 0 < 1 / (4 * (M : ℝ)) := by positivity
     linarith
@@ -148,7 +137,7 @@ theorem sum_two_rpow_neg_le (M : ℕ) (hM : M ≠ 0) (n : ℕ) :
   refine le_trans hgeom ?_
   have hpos : 0 < 1 - q := by linarith
   rw [div_le_iff₀ hpos]
-  have : 1 / (4 * (M : ℝ)) ≤ 1 - q := by linarith
+  
   have e2 : 4 * (M : ℝ) * (1 / (4 * M)) = 1 := by field_simp
   nlinarith
 
@@ -156,7 +145,7 @@ theorem sum_two_rpow_neg_le (M : ℕ) (hM : M ≠ 0) (n : ℕ) :
 `Σ g^k q^g` with `q = 2^(-1/M)`). -/
 theorem sum_natPow_mul_two_rpow_neg_le (k M : ℕ) (hM : M ≠ 0) (n : ℕ) :
     ∑ g ∈ range n, (g : ℝ) ^ k * (2 : ℝ) ^ (-(g : ℝ) / M) ≤ (4 * k * M : ℝ) ^ k * (8 * M) := by
-  have hMR : (M : ℝ) ≠ 0 := by exact_mod_cast hM
+  have hMR : (M : ℝ) ≠ 0 := by simp_all
   have h2M : 2 * M ≠ 0 := by omega
   have hterm : ∀ g ∈ range n, (g : ℝ) ^ k * (2 : ℝ) ^ (-(g : ℝ) / M) ≤
       (4 * k * M : ℝ) ^ k * (2 : ℝ) ^ (-(g : ℝ) / ((2 * M : ℕ) : ℝ)) := by
@@ -170,11 +159,7 @@ theorem sum_natPow_mul_two_rpow_neg_le (k M : ℕ) (hM : M ≠ 0) (n : ℕ) :
             ((2 : ℝ) ^ ((g : ℝ) / ((2 * M : ℕ) : ℝ)) * (2 : ℝ) ^ (-(g : ℝ) / M)) := by ring
       _ = (4 * k * M : ℝ) ^ k * (2 : ℝ) ^ (-(g : ℝ) / ((2 * M : ℕ) : ℝ)) := by
           rw [← Real.rpow_add (by norm_num)]
-          push_cast
-          congr 2
-          · ring
-          · field_simp
-            ring
+          grind
   refine le_trans (Finset.sum_le_sum hterm) ?_
   rw [← Finset.mul_sum]
   have hs := sum_two_rpow_neg_le (2 * M) h2M n
@@ -182,7 +167,7 @@ theorem sum_natPow_mul_two_rpow_neg_le (k M : ℕ) (hM : M ≠ 0) (n : ℕ) :
   have hc : 0 ≤ (4 * k * M : ℝ) ^ k := by positivity
   calc (4 * k * M : ℝ) ^ k * ∑ g ∈ range n, (2 : ℝ) ^ (-(g : ℝ) / ((2 * M : ℕ) : ℝ))
       = (4 * k * M : ℝ) ^ k * ∑ g ∈ range n, (2 : ℝ) ^ (-(g : ℝ) / (2 * (M : ℝ))) := by
-        push_cast; rfl
+        grind
     _ ≤ (4 * k * M : ℝ) ^ k * (4 * (2 * M)) := mul_le_mul_of_nonneg_left hs hc
     _ = (4 * k * M : ℝ) ^ k * (8 * M) := by ring
 

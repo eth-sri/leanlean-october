@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SpecRam
 public import Chazelle.Core.SignKernelRam
 
@@ -70,28 +72,32 @@ variable {f : ℕ → ℕ}
 
 theorem upd_ren {α : Type} (hf : ∀ r, f (f r) = r) (g : ℕ → α) (i : ℕ) (v : α) :
     (fun r => upd g i v (f r)) = upd (fun r => g (f r)) (f i) v := by
-  funext r
-  simp only [upd_apply]
-  by_cases h : r = f i
-  · subst h; rw [hf]; simp
-  · have : f r ≠ i := fun h' => h (by rw [← h', hf])
-    simp [h, this]
+  aesop (add simp [upd_apply]) (add safe (by omega))
 
-theorem cfgRen_cfgRen (hf : ∀ r, f (f r) = r) (c : Config) : cfgRen f (cfgRen f c) = c := by
-  cases c; simp [cfgRen, hf]
+section
+variable (hf : ∀ r, f (f r) = r) (c : Config)
+include hf
+theorem cfgRen_cfgRen : cfgRen f (cfgRen f c) = c := by
+  simp_all [cfgRen] <;> omega_nf
 
-theorem wordsBounded_ren (hf : ∀ r, f (f r) = r) (c : Config) {W : ℕ} :
+theorem wordsBounded_ren {W : ℕ} :
     WordsBounded W (cfgRen f c) ↔ WordsBounded W c := by
   constructor
   · rintro ⟨h1, h2⟩
     refine ⟨fun r => ?_, h2⟩
-    have := h1 (f r); simp only [cfgRen, hf] at this; exact this
+    have := h1 (f r); simp_all [cfgRen] <;> omega_nf
   · rintro ⟨h1, h2⟩; exact ⟨fun r => h1 _, h2⟩
 
-theorem isStraight_ren {ins : Instr} (h : ins.IsStraight) : (Instr.ren f ins).IsStraight := by
-  cases ins <;> simp_all [Instr.ren]
 
-theorem effect_ren (hf : ∀ r, f (f r) = r) {P : Polygon} {ins : Instr} {c c' : Config}
+end
+
+theorem isStraight_ren {ins : Instr} (h : ins.IsStraight) : (Instr.ren f ins).IsStraight := by
+  cases ins <;> aesop
+
+section
+variable (hf : ∀ r, f (f r) = r) {P : Polygon}
+include hf
+theorem effect_ren {ins : Instr} {c c' : Config}
     (h : ins.effect P c = some c') :
     (Instr.ren f ins).effect P (cfgRen f c) = some (cfgRen f c') := by
   cases ins <;> simp only [Instr.effect, Instr.ren, Option.some.injEq, reduceCtorEq] at h ⊢ <;>
@@ -99,7 +105,7 @@ theorem effect_ren (hf : ∀ r, f (f r) = r) {P : Polygon} {ins : Instr} {c c' :
     (try subst h) <;> simp_all [cfgRen, upd_ren hf]
 
 /-- **Renaming registers preserves executions.** -/
-theorem Exec.ren (hf : ∀ r, f (f r) = r) {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
+theorem Exec.ren {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     (h : Exec P W s c c' k) : Exec P W (Stmt.ren f s) (cfgRen f c) (cfgRen f c') k := by
   induction h with
   | skip hw => exact .skip ((wordsBounded_ren hf _).2 hw)
@@ -107,20 +113,20 @@ theorem Exec.ren (hf : ∀ r, f (f r) = r) {P : Polygon} {W : ℕ} {s : Stmt} {c
     exact .instr (isStraight_ren hs) (effect_ren hf he) ((wordsBounded_ren hf _).2 hw)
       ((wordsBounded_ren hf _).2 hw')
   | seq _ _ ih₁ ih₂ => exact .seq ih₁ ih₂
-  | ifLtN_true ht _ ih => exact .ifLtN_true (by simpa [cfgRen, hf] using ht) ih
-  | ifLtN_false ht _ ih => exact .ifLtN_false (by simpa [cfgRen, hf] using ht) ih
-  | ifLtR_true ht _ ih => exact .ifLtR_true (by simpa [cfgRen, hf] using ht) ih
-  | ifLtR_false ht _ ih => exact .ifLtR_false (by simpa [cfgRen, hf] using ht) ih
+  | ifLtN_true ht _ ih => exact .ifLtN_true (by grind [cfgRen]) ih
+  | ifLtN_false ht _ ih => exact .ifLtN_false (by grind [cfgRen]) ih
+  | ifLtR_true ht _ ih => exact .ifLtR_true (by grind [cfgRen]) ih
+  | ifLtR_false ht _ ih => exact .ifLtR_false (by grind [cfgRen]) ih
   | whileLtN_false ht hw =>
-    exact .whileLtN_false (by simpa [cfgRen, hf] using ht) ((wordsBounded_ren hf _).2 hw)
-  | whileLtN_true ht _ _ ih₁ ih₂ => exact .whileLtN_true (by simpa [cfgRen, hf] using ht) ih₁ ih₂
+    exact .whileLtN_false (by grind [cfgRen]) ((wordsBounded_ren hf _).2 hw)
+  | whileLtN_true ht _ _ ih₁ ih₂ => exact .whileLtN_true (by grind [cfgRen]) ih₁ ih₂
   | whileLtR_false ht hw =>
-    exact .whileLtR_false (by simpa [cfgRen, hf] using ht) ((wordsBounded_ren hf _).2 hw)
-  | whileLtR_true ht _ _ ih₁ ih₂ => exact .whileLtR_true (by simpa [cfgRen, hf] using ht) ih₁ ih₂
+    exact .whileLtR_false (by grind [cfgRen]) ((wordsBounded_ren hf _).2 hw)
+  | whileLtR_true ht _ _ ih₁ ih₂ => exact .whileLtR_true (by grind [cfgRen]) ih₁ ih₂
 
 /-- **Running a renamed statement**: an execution of `s` from the renamed view of `d` gives an
 execution of `s.ren f` from `d`. -/
-theorem exec_of_ren (hf : ∀ r, f (f r) = r) {P : Polygon} {W : ℕ} {s : Stmt} {d c' : Config}
+theorem exec_of_ren {W : ℕ} {s : Stmt} {d c' : Config}
     {k : ℕ} (h : Exec P W s (cfgRen f d) c' k) :
     Exec P W (Stmt.ren f s) d (cfgRen f c') k := by
   have := Exec.ren hf h
@@ -128,20 +134,29 @@ theorem exec_of_ren (hf : ∀ r, f (f r) = r) {P : Polygon} {W : ℕ} {s : Stmt}
 
 /-! ## Write sets -/
 
+
+end
+
 open SignK (wr wrOK)
 
-theorem wrOK_mono {B B' : ℕ → Bool} (hB : ∀ r, B r = true → B' r = true) {i : Instr}
+section
+variable {B B' : ℕ → Bool} (hB : ∀ r, B r = true → B' r = true)
+include hB
+theorem wrOK_mono {i : Instr}
     (h : wrOK B i = true) : wrOK B' i = true := by
-  cases i <;> simp_all [wrOK]
+  cases i <;> aesop
 
 /-- A larger write set. -/
-theorem wr_mono {B B' : ℕ → Bool} (hB : ∀ r, B r = true → B' r = true) {s : Stmt}
+theorem wr_mono {s : Stmt}
     (h : wr B s = true) : wr B' s = true := by
   induction s <;> simp_all [wr, wrOK_mono hB]
 
+
+end
+
 theorem wrOK_ren {f : ℕ → ℕ} (_hf : ∀ r, f (f r) = r) (B : ℕ → Bool) (i : Instr) :
     wrOK B (Instr.ren f i) = wrOK (fun r => B (f r)) i := by
-  cases i <;> simp [wrOK, Instr.ren]
+  cases i <;> aesop
 
 theorem wr_ren {f : ℕ → ℕ} (hf : ∀ r, f (f r) = r) (B : ℕ → Bool) (s : Stmt) :
     wr B (Stmt.ren f s) = wr (fun r => B (f r)) s := by
@@ -158,7 +173,7 @@ def σ (r : ℕ) : ℕ :=
   else r
 
 theorem σ_σ (r : ℕ) : σ (σ r) = r := by
-  unfold σ; split_ifs <;> omega
+  unfold σ; ram_grind
 
 /-- The renamed view: register `r` of the view holds register `σ r`. -/
 theorem cfgRen_nreg (c : Config) (r : ℕ) : (cfgRen σ c).nreg r = c.nreg (σ r) := rfl

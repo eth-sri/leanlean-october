@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvDProg
 public import Chazelle.Core.DownPhaseDrvDLoc
 public import Chazelle.Core.DownPhaseDrvRLib
@@ -28,13 +30,19 @@ open Machine Machine.Stmt Programs SignK WalkKey
 noncomputable def tA (M : Model) (Q : Polygon) (N : NF) (x : WPos) (j : ℕ) : Bool :=
   decide (M.key Q (N.arc j).s ≤ M.key Q x)
 
+section
+variable (M : Model) (Q : Polygon) (N : NF)
+include M Q N
 /-- The second decision: `x` is not after the end of arc `j`. -/
-noncomputable def tB (M : Model) (Q : Polygon) (N : NF) (x : WPos) (j : ℕ) : Bool :=
+noncomputable def tB (x : WPos) (j : ℕ) : Bool :=
   decide (M.key Q x ≤ M.key Q (N.arc j).e)
 
 /-- **The result of a scan**: the bucket condition of `x`, on an arc of region `r`. -/
-def ScanFound (M : Model) (Q : Polygon) (N : NF) (r : ℕ) (x : WPos) (b : ℕ) : Prop :=
+def ScanFound (r : ℕ) (x : WPos) (b : ℕ) : Prop :=
   BktKey M Q N (M.key Q x) b ∧ arcOfB N.arcs.length b ∈ (N.region r).arcs
+
+
+end
 
 /-- The data of an arc scan: the end `x`, region `r` of `N` (its arc list at `lp`, the arc
 records at `AB`, in the memory `m`), the model descriptor at `MD`. -/
@@ -84,7 +92,7 @@ theorem ldArc_exec (d : Config) (hw : WordsBounded W d) {lp t AB j xe xh : ℕ}
     exec_block
     all_goals try (config_simp; simp only [h43, h44, h14, h02, h40, h41, hj]; omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
-      simp only [h43, h44, h14, h02, h40, h41, hj] <;> (congr 1; ring)
+      ram_simp <;> ram_grind
   exact ⟨d', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
     q.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2, exec_frameB ex wr_ldArc⟩
 
@@ -98,30 +106,30 @@ theorem decS_exec (d : Config) (hw : WordsBounded W d) {A j : ℕ} {t₁ t₂ : 
   obtain ⟨d', k, ex, hk, q⟩ : ∃ d' k, Exec P W decS d d' k ∧ k ≤ 7 ∧
       d'.nreg 216053 = (if matchB A j t₁ t₂ then bktB A j t₂ else d.nreg 216053) := by
     unfold decS matchB bktB
-    have hA : A ≤ W := h17 ▸ hw.1 216017
+    
     by_cases hjA : j + 1 < A
-    · refine spec_ifLtN_true (by rw [h54, h17]; exact hjA) ?_
+    · refine spec_ifLtN_true (by omega) ?_
       rw [ite_eq_left hjA, ite_eq_left hjA]
       cases t₁
-      · refine spec_ifLtN_false (by rw [h03, h07]; simp) (spec_skip hw ⟨by omega, by simp⟩)
-      · refine spec_ifLtN_true (by rw [h03, h07]; simp) ?_
+      · refine spec_ifLtN_false (by ram_simp) (spec_skip hw ⟨by omega, by simp⟩)
+      · refine spec_ifLtN_true (by ram_grind) ?_
         cases t₂
-        · exact spec_ifLtN_false (by rw [h03, h09]; simp) (spec_skip hw ⟨by omega, by simp⟩)
-        · refine spec_ifLtN_true (by rw [h03, h09]; simp)
+        · exact spec_ifLtN_false (by ram_simp) (spec_skip hw ⟨by omega, by simp⟩)
+        · refine spec_ifLtN_true (by ram_grind)
             (spec_instr (Exec.copyN hw _ _) fun _ => ⟨by omega, ?_⟩)
-          config_simp; simp [h54]
-    · refine spec_ifLtN_false (by rw [h54, h17]; exact hjA) ?_
+          simp_all
+    · refine spec_ifLtN_false (by omega) ?_
       rw [ite_eq_right hjA, ite_eq_right hjA]
       cases t₂
-      · refine spec_ifLtN_false (by rw [h03, h09]; simp) ?_
+      · refine spec_ifLtN_false (by ram_simp) ?_
         cases t₁
-        · exact spec_ifLtN_false (by rw [h03, h07]; simp) (spec_skip hw ⟨by omega, by simp⟩)
-        · refine spec_ifLtN_true (by rw [h03, h07]; simp)
+        · exact spec_ifLtN_false (by ram_simp) (spec_skip hw ⟨by omega, by simp⟩)
+        · refine spec_ifLtN_true (by ram_grind)
             (spec_instr (Exec.copyN hw _ _) fun _ => ⟨by omega, ?_⟩)
-          config_simp; simp [h17]
-      · refine spec_ifLtN_true (by rw [h03, h09]; simp)
+          simp_all
+      · refine spec_ifLtN_true (by ram_grind)
           (spec_instr (Exec.constN hw _ _ (Nat.zero_le _)) fun _ => ⟨by omega, ?_⟩)
-        config_simp; simp
+        simp_all
   exact ⟨d', k, ex, hk, q, exec_frameB ex wr_decS⟩
 
 /-- The decision bit of `halfS` as a key comparison. -/
@@ -130,11 +138,7 @@ theorem keyBit {M : Model} {x s : WPos} (hx : ProperPos M (Qof P) P.n x)
     (if keyDec (Qof P) P.n x (dirCode M x.edge) s = true then 1 else 0) =
       (if decide (M.key (Qof P) s ≤ M.key (Qof P) x) = true then 1 else 0) := by
   have h := keyDec_iff hx hs
-  unfold KeyPred at h
-  rw [ite_eq_right (by omega)] at h
-  by_cases hk : M.key (Qof P) s ≤ M.key (Qof P) x
-  · rw [ite_eq_left (h.2 hk), ite_eq_left (by simpa using hk)]
-  · rw [ite_eq_right (fun h' => hk (h.1 h')), ite_eq_right (by simpa using hk)]
+  grind [KeyPred]
 
 set_option maxHeartbeats 4000000 in
 /-- **One arc of the scan.** -/
@@ -153,10 +157,9 @@ theorem scanBody_exec {M : Model} {N : NF} {r : ℕ} {x : WPos} {m : ℕ → ℕ
         else d.nreg 216053) ∧ FrameB Bscan d d' := by
   set j := (N.region r).arcs.getD t 0 with hjd
   have hjm : j ∈ (N.region r).arcs := by
-    rw [hjd, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
-    exact List.getElem_mem ht
+    simp_all
   obtain ⟨hjA, ms1, ms2, me1, me2, hps, hpe, he1, hee⟩ := hS.arcs j hjm
-  have hW3 : P.n + 3 ≤ W := by have := hS.hW; unfold hostWords at this; omega
+  have hW3 : P.n + 3 ≤ W := by have := hS.hW; grind [hostWords]
   -- load
   obtain ⟨d₁, k₁, e₁, hk₁, a00, a01, a02, a03, a04, a05, a45, a54, f₁⟩ := ldArc_exec (P := P) d hw
     h43 h44 h14 h02 h40 h41 (by rw [hm, hS.list t ht]) (by have := hS.ABW; omega)
@@ -167,7 +170,7 @@ theorem scanBody_exec {M : Model} {N : NF} {r : ℕ} {x : WPos} {m : ℕ → ℕ
   rw [hm, me2] at a05
   have w₁ := e₁.wb_right
   have g₁ : ∀ q, BldArc q = false → d₁.nreg q = d.nreg q := f₁.1
-  have hm₁ : d₁.nmem = m := by rw [f₁.2.2.1, hm]
+  have hm₁ : d₁.nmem = m := by ram_grind
   -- the first decision
   obtain ⟨d₂, k₂, e₂, hk₂, -, b07, f₂⟩ := BuildRam.halfS_exec (P := P) hS.hG hW3 d₁ w₁
     (qe := 42100) (qh := 42101) (se := 42102) (sh := 42103) (dd := 42106) (dst := 42107)
@@ -199,9 +202,9 @@ theorem scanBody_exec {M : Model} {N : NF} {r : ℕ} {x : WPos} {m : ℕ → ℕ
   have b09' : d₃.nreg 42109 = if tB M (Qof P) N x j then 1 else 0 := by
     rw [b09]; rfl
   obtain ⟨d₄, k₄, e₄, hk₄, v53, f₄⟩ := decS_exec (P := P) d₃ w₃ (A := N.arcs.length) (j := j)
-    (by rw [g₃ _ (by decide), g₂ _ (by decide), a54])
-    (by rw [g₃ _ (by decide), g₂ _ (by decide), g₁ _ (by decide), h17])
-    (by rw [g₃ _ (by decide), g₂ _ (by decide), g₁ _ (by decide), h03]) b07' b09'
+    (by ram_simp)
+    (by ram_simp)
+    (by ram_simp) b07' b09'
   have w₄ := e₄.wb_right
   -- the increment
   have i44 : d₄.nreg 216044 = t := by
@@ -212,13 +215,12 @@ theorem scanBody_exec {M : Model} {N : NF} {r : ℕ} {x : WPos} {m : ℕ → ℕ
       k₅ = 1 ∧ d₅ = { d₄ with nreg := upd d₄.nreg 216044 (t + 1) } := by
     exec_block
     · rw [i44, i02]; have := hS.lpW; omega
-    · refine ⟨rfl, ?_⟩
-      rw [i44, i02]
+    grind
   have f₅ : FrameB Bscan d₄ d₅ := by
     rw [v44]
     exact ⟨fun q hq => by
       simp only
-      rw [Machine.upd_other _ _ _ (by rintro rfl; simp [Bscan] at hq)], fun _ _ => rfl, rfl, rfl,
+      rw [Machine.upd_other _ _ _ (by grind [Bscan])], fun _ _ => rfl, rfl, rfl,
       rfl⟩
   have F₁ : FrameB Bscan d d₁ := fbMono f₁ bldArc_scan
   have F₂ : FrameB Bscan d₁ d₂ := fbMono f₂ (bhalf_scan (by norm_num) (by norm_num))
@@ -226,8 +228,8 @@ theorem scanBody_exec {M : Model} {N : NF} {r : ℕ} {x : WPos} {m : ℕ → ℕ
   have F₄ : FrameB Bscan d₃ d₄ := fbMono f₄ b53_scan
   refine ⟨d₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), ?_, ?_, ?_,
     F₁.trans (F₂.trans (F₃.trans (F₄.trans f₅)))⟩
-  · unfold scanK; omega
-  · rw [v44]; simp
+  · omega_nf
+  · ram_simp
   · rw [v44]
     simp only
     rw [Machine.upd_other _ _ _ (by decide), v53, g₃ _ (by decide), g₂ _ (by decide),
@@ -266,39 +268,29 @@ theorem scanS_exec {M : Model} {N : NF} {r : ℕ} {x : WPos} {m : ℕ → ℕ} {
     (fun t e ⟨hw, h1, h2, _⟩ => ⟨hw, h1, h2⟩)
     (fun t e ht ⟨hw, h1, h2, hf, hI⟩ => by
       have g : ∀ q, Bscan q = false → e.nreg q = d.nreg q := hf.1
-      obtain ⟨e', k, ex, hk, h44, h53, hf'⟩ := scanBody_exec hS e hw (by rw [hf.2.2.1, hm]) ht
-        (by rw [g _ (by decide), h40]) (by rw [g _ (by decide), h41])
-        (by rw [g _ (by decide), h43]) h1 (by rw [g _ (by decide), h14])
-        (by rw [g _ (by decide), h17]) (by rw [g _ (by decide), h02])
-        (by rw [g _ (by decide), h03]) (by rw [g _ (by decide), h4])
-      refine ⟨e', k, ex, ⟨ex.wb_right, h44, by rw [hf'.1 _ (by decide), h2], hf.trans hf',
+      obtain ⟨e', k, ex, hk, h44, h53, hf'⟩ := scanBody_exec hS e hw (by ram_grind) ht
+        (by ram_simp) (by ram_simp)
+        (by ram_simp) h1 (by ram_simp)
+        (by ram_simp) (by ram_simp)
+        (by ram_simp) (by ram_simp)
+      refine ⟨e', k, ex, ⟨ex.wb_right, h44, by ram_grind, hf.trans hf',
         fun ⟨t', ht', hmt⟩ => ?_⟩, hk⟩
       have hjm : lst t ∈ (N.region r).arcs := by
-        simp only [hlst]
-        rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
-        exact List.getElem_mem ht
+        grind
       rw [h53]
       by_cases hmt' : matchB N.arcs.length (lst t) (tA M (Qof P) N x (lst t))
           (tB M (Qof P) N x (lst t)) = true
       · rw [ite_eq_left hmt']
         exact found_of_match hjm (hS.arcs _ hjm).1 hmt'
-      · rw [ite_eq_right hmt']
-        refine hI ⟨t', ?_, hmt⟩
-        rcases Nat.lt_succ_iff_lt_or_eq.1 ht' with h | h
-        · exact h
-        · subst h; exact absurd hmt hmt')
-    (j := 0) ⟨e₀.wb_right, by rw [hd₀]; simp, by rw [hd₀]; simp [h42], f₀,
+      grind)
+    (j := 0) ⟨e₀.wb_right, by ram_simp, by ram_simp, f₀,
       fun ⟨t', ht', _⟩ => absurd ht' (Nat.not_lt_zero _)⟩ (Nat.zero_le _)
   refine ⟨d', 1 + k, .seq e₀ ex, ?_, ?_, hf'⟩
-  · have : (scanK + 2) * (nA - 0) = (scanK + 2) * nA := by rw [Nat.sub_zero]
-    omega
+  · grind
   · obtain ⟨j, hj, hmj⟩ := hex
     obtain ⟨t', ht', hjt⟩ := List.mem_iff_getElem.1 hj
     refine hfound ⟨t', ht', ?_⟩
-    have : lst t' = j := by
-      simp only [hlst]
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht', Option.getD_some, hjt]
-    rw [this]; exact hmj
+    grind
 
 end exec
 

@@ -117,8 +117,8 @@ theorem extractOK_of_mir {C : Chain} (hQ : Q.Simple) (hP : C.P.Simple)
     obtain ⟨h1, h2⟩ := h.loc (hadm hF₁) _ hc'
     rw [hI.Adm, image_mem_mirF] at h1
     refine ⟨h1, fun x ⟨hxc, hxD⟩ => ?_⟩
-    have := h2 ⟨mem_image_of_mem mir hxc, by rw [hI.D]; exact mem_image_of_mem mir hxD⟩
-    rwa [mem_image_mir, mir_mir] at this
+    have := h2 ⟨mem_image_of_mem mir hxc, by rw [hI.D]; grind⟩
+    grind [mem_image_mir, mir_mir]
   · intro F₁ V hV hVR
     have hV' : mir '' V ∈ (interiorModel Q.mir).regions (mirF S ∪ Extract.kept (mir '' R)
         (mirF F₁)) := by
@@ -127,7 +127,7 @@ theorem extractOK_of_mir {C : Chain} (hQ : Q.Simple) (hP : C.P.Simple)
     rw [hC.regions] at hU'
     refine ⟨mir '' U', mem_mirF.1 hU', ?_⟩
     rw [← image_mir_image_mir V]
-    exact image_mono hVU'
+    grind
   · intro F₁ hF₁ hfin U hU V hVR hVU
     have hU' : mir '' U ∈ (chainModel C.mir).regions (mirF F₁) := by
       rw [hC.regions]; exact image_mem_mirF.2 hU

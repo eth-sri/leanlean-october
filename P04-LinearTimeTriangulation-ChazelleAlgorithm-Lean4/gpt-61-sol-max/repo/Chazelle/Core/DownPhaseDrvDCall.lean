@@ -162,7 +162,7 @@ theorem argS_exec (c : Config) (hw : WordsBounded W c) :
       c'.nreg 81006 = c.nreg 216004) := by
     unfold argS
     exec_block
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+    simp_all
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
     q.2.2.2.2.2.2, exec_frameB ex (by decide)⟩
 
@@ -196,7 +196,7 @@ theorem appT_exec (c : Config) (hw : WordsBounded W c) {d n p LB : ℕ}
       c'.nreg 216040 = c.nreg 81009) := by
     unfold appT
     exec_block
-    all_goals try (config_simp; simp only [h21, h20, h02, h05, h31, h16]; omega)
+    all_goals try (config_simp; omega)
     · config_simp
       simp only [h21, h02, h05, h31, h16, Machine.upd_apply]
       split_ifs <;> first | omega | (rw [show p - 2 + 1 = p - 1 by omega]; exact hLB)
@@ -220,8 +220,7 @@ theorem stB_exec (c : Config) (hw : WordsBounded W c) {d : ℕ} (h22 : c.nreg 21
       (c'.nmem = upd c.nmem d (c.nreg 216053) ∧ c'.nreg 216022 = d + 1) := by
     unfold stB
     exec_block
-    · config_simp; rw [h22, h02]; exact hd
-    · refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp only [h22, h02]
+    all_goals simp_all
   exact ⟨c', k, ex, hk, q.1, q.2, exec_frameM ex wrM_stB⟩
 
 end exec

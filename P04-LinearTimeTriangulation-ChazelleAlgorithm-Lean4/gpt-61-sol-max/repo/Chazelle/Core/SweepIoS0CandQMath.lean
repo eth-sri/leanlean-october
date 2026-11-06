@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoS0CandAux
 
 /-!
@@ -37,28 +39,34 @@ variable {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop} 
 
 /-! ## Small facts -/
 
-theorem dS_eq (s : ℕ) : dS s = 1 ∨ dS s = -1 := by unfold dS; split_ifs <;> simp
+theorem dS_eq (s : ℕ) : dS s = 1 ∨ dS s = -1 := by core_grind
 
 theorem dS_inj {s s' : ℕ} (hs : s ≤ 1) (hs' : s' ≤ 1) (h : dS s = dS s') : s = s' := by
-  unfold dS at h; split_ifs at h <;> first | omega | norm_num at h
+  core_grind
 
 theorem dS_sOf (b : ℕ) : dS (sOf b) = dirOf b := by
   unfold dS sOf dirOf; split_ifs <;> simp_all
 
-theorem sOf_le (b : ℕ) : sOf b ≤ 1 := by unfold sOf; split_ifs <;> omega
+theorem sOf_le (b : ℕ) : sOf b ≤ 1 := by core_grind
 
 theorem dS_mod (j : ℕ) : dS (j % 2) = endDir j := by
-  unfold dS endDir; split_ifs <;> simp_all
+  core_grind
 
+section
+variable (d : ℕ)
+include d
 /-- The slot of the query direction code `d`: the candidates point in direction `-dirOf d`. -/
-def qS (d : ℕ) : ℕ := if d = 1 then 1 else 0
+def qS : ℕ := if d = 1 then 1 else 0
 
-theorem dS_qS (d : ℕ) : dS (qS d) = -dirOf d := by
+theorem dS_qS : dS (qS d) = -dirOf d := by
   unfold dS qS dirOf; split_ifs <;> simp_all
 
-theorem qS_le (d : ℕ) : qS d ≤ 1 := by unfold qS; split_ifs <;> omega
+theorem qS_le : qS d ≤ 1 := by core_grind
 
 /-! ## The query position -/
+
+
+end
 
 /-- **A query position with height code `0` is on a tour edge.** -/
 theorem query_h6 {z : Point} {σ : ℝ} (hz : z ∈ J.left.set) {e h : ℕ}
@@ -79,23 +87,23 @@ theorem query_h6 {z : Point} {σ : ℝ} (hz : z ∈ J.left.set) {e h : ℕ}
   rw [hR] at hx hy
   rcases (by omega : e = 0 ∨ e = 1 ∨ e = 2 ∨ e = 3 ∨ e = 4 ∨ e = 5) with he | he | he | he | he | he <;>
     subst he
-  · rw [b0] at hpt; rw [← hpt] at hy; simp [abs_of_pos hRp] at hy
-  · rw [b1] at hpt; rw [← hpt] at hx; simp [abs_of_pos hRp] at hx
-  · rw [b2] at hpt; rw [← hpt] at hy; simp [abs_of_pos hRp] at hy
-  · rw [b3] at hpt; rw [← hpt] at hx; simp [abs_of_pos hRp] at hx
-  · rw [b4] at hpt; rw [← hpt] at hy; simp [abs_of_pos hRp] at hy
-  · rw [b5] at hpt; rw [← hpt] at hy; simp [abs_of_pos hRp] at hy
+  · ram_grind
+  · ram_grind
+  · ram_grind
+  all_goals grind
 
 /-! ## The log in memory -/
 
+section
+variable (hA : AEnv P W X Ok J H N₁ N₂ E c₀)
+include hA
 /-- `AEnv` gives the base of the offsets at `sw 40`. -/
-theorem aenv_gW (hA : AEnv P W X Ok J H N₁ N₂ E c₀) : c₀.nreg (sw 40) = gW J := by
+theorem aenv_gW : c₀.nreg (sw 40) = gW J := by
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, h40, -⟩ := hA.hst
-  have := h40 0 (by norm_num)
-  simpa [cstR, gW] using this
+  grind [cstR, gW]
 
 /-- **The log keys increase strictly in offset.** -/
-theorem log_sorted (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {i j : ℕ} (hij : i < j)
+theorem log_sorted {i j : ℕ} (hij : i < j)
     (hj : j < rd c₀ bSweep 301) :
     off (chainModel J.whole).W.n (c₀.nreg (sw 40))
         ((chainModel J.whole).key (Qof P) (logPos c₀.nmem (rd c₀ bSweep 300) i)) <
@@ -120,19 +128,19 @@ theorem log_sorted (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {i j : ℕ} (hij : 
   exact hp
 
 /-- The PosW facts of the log records. -/
-theorem log_posW (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {i : ℕ} (hi : i < rd c₀ bSweep 301) :
+theorem log_posW {i : ℕ} (hi : i < rd c₀ bSweep 301) :
     SweepEv.PosW P J (c₀.nmem (rd c₀ bSweep 300 + 7 * i))
       (c₀.nmem (rd c₀ bSweep 300 + 7 * i + 1)) := by
   obtain ⟨rs, ls, -, -, -, -, hlsl, hls, -, hlsW, -, -⟩ := hA.hout
   have hi' : i < ls.length := by omega
   obtain ⟨m1, m2, -⟩ := hls i hi'
   rw [m1, m2]
-  exact (hlsW _ (by rw [List.getD_eq_getElem _ _ hi']; exact List.getElem_mem _)).1
+  exact (hlsW _ (by rw [List.getD_eq_getElem _ _ hi']; ram_grind)).1
 
 /-! ## The binary search -/
 
 /-- **The result of the search is the log record at the target**, if there is one. -/
-theorem search_eq (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {x : WPos} {t i : ℕ}
+theorem search_eq {x : WPos} {t i : ℕ}
     (ht1 : ∀ j, j < t → lsPr P J c₀.nmem (rd c₀ bSweep 300) (c₀.nreg (sw 40)) x j)
     (ht2 : ∀ j, t ≤ j → j < rd c₀ bSweep 301 →
       ¬ lsPr P J c₀.nmem (rd c₀ bSweep 300) (c₀.nreg (sw 40)) x j)
@@ -141,9 +149,9 @@ theorem search_eq (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {x : WPos} {t i : �
       (chainModel J.whole).key (Qof P) x) : t = i := by
   have hnot : ¬ lsPr P J c₀.nmem (rd c₀ bSweep 300) (c₀.nreg (sw 40)) x i := by
     unfold lsPr; rw [show (⟨c₀.nmem (rd c₀ bSweep 300 + 7 * i), c₀.nmem (rd c₀ bSweep 300 + 7 * i + 1)⟩ :
-      WPos) = logPos c₀.nmem (rd c₀ bSweep 300) i from rfl, hkey]; exact lt_irrefl _
+      WPos) = logPos c₀.nmem (rd c₀ bSweep 300) i from rfl, hkey]; simp_all
   have h1 : t ≤ i := by
-    by_contra h; exact hnot (ht1 i (by omega))
+    ram_grind
   by_contra hne
   have hlt : t < i := by omega
   apply ht2 t le_rfl (by omega)
@@ -152,7 +160,7 @@ theorem search_eq (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {x : WPos} {t i : �
   exact log_sorted hA hlt hi
 
 /-- The predicate of the search is downward closed. -/
-theorem log_mono (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (x : WPos) {i j : ℕ} (hij : i ≤ j)
+theorem log_mono (x : WPos) {i j : ℕ} (hij : i ≤ j)
     (hj : j < rd c₀ bSweep 301)
     (h : lsPr P J c₀.nmem (rd c₀ bSweep 300) (c₀.nreg (sw 40)) x j) :
     lsPr P J c₀.nmem (rd c₀ bSweep 300) (c₀.nreg (sw 40)) x i := by
@@ -161,7 +169,7 @@ theorem log_mono (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (x : WPos) {i j : ℕ
   · exact h
 
 /-- **Equal offsets give equal positions** (proper positions of the walk of `C`). -/
-theorem bits_eq (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {x y : WPos}
+theorem bits_eq {x y : WPos}
     (hx : x.edge < (chainModel J.whole).W.n) (hy : y.edge < (chainModel J.whole).W.n)
     (hpx : ProperPos (chainModel J.whole) (Qof P) P.n x)
     (hpy : ProperPos (chainModel J.whole) (Qof P) P.n y)
@@ -174,9 +182,9 @@ theorem bits_eq (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {x y : WPos}
   have heq := le_antisymm (not_lt.1 h2) (not_lt.1 h1)
   rw [aenv_gW hA] at heq
   have kx0 : 0 ≤ (chainModel J.whole).key (Qof P) x := by
-    unfold Model.key; have := hpx.1; positivity
+    unfold Model.key; ram_grind
   have ky0 : 0 ≤ (chainModel J.whole).key (Qof P) y := by
-    unfold Model.key; have := hpy.1; positivity
+    unfold Model.key; ram_grind
   have kxn : (chainModel J.whole).key (Qof P) x < (chainModel J.whole).W.n := by
     unfold Model.key; have := hpx.2.1
     have : (x.edge : ℝ) + 1 ≤ (chainModel J.whole).W.n := by exact_mod_cast hx
@@ -191,6 +199,9 @@ theorem bits_eq (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {x y : WPos}
 
 /-! ## Matches -/
 
+
+end
+
 /-- **The origin in a flagged slot** at a log record with the point `z` is the candidate origin
 of `z` in the direction of the slot. -/
 theorem slot_eq (hP : J.P.Simple) {m : ℕ → ℕ} {B AL i s : ℕ} {z o : Point}
@@ -202,11 +213,12 @@ theorem slot_eq (hP : J.P.Simple) {m : ℕ → ℕ} {B AL i s : ℕ} {z o : Poin
   rw [hpt] at hc
   exact cand_unique (dS_eq s) hc ho (z_mem_right_dom hP hz hzs hz2) (z_not_mem_whole_dom hz)
 
+section
+variable (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂ c₀) {z : Point} {σ : ℝ} {zp zh : ℕ} (harr : Arrival (chainModel J.whole).W z σ zp ((chainModel J.whole).param (Qof P) ⟨zp, zh⟩))
+include hA hX σ harr
 /-- **A stop record at the query position** is attached at a log record with that position,
 whose slot (of its direction) is flagged, and its origin is a candidate origin of `z`. -/
-theorem stop_match (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂ c₀) {z : Point}
-    {σ : ℝ} {zp zh : ℕ}
-    (harr : Arrival (chainModel J.whole).W z σ zp ((chainModel J.whole).param (Qof P) ⟨zp, zh⟩))
+theorem stop_match
     {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)} (hrsl : rs.length = rd c₀ bSweep 201)
     (hrs : StopRecsAt c₀.nmem (rd c₀ bSweep 200) rs) {r : ℕ × ℕ × ℕ × ℕ × ℕ} (hr : r ∈ rs)
     (hr1 : r.1 = zp)
@@ -219,7 +231,7 @@ theorem stop_match (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N
       c₀.nmem (slotA (c₀.nreg sB) i (sOf r.2.2.2.2)) = 1 ∧
       CandAt J (stopOrig J (Qof P) N₂ r.2.2.1 r.2.2.2.1 r.2.2.2.2) (dirOf r.2.2.2.2) z := by
   obtain ⟨rs₀, ls₀, hl0, hrs0, hS, hW0, -⟩ := hA.hout
-  have heq : rs = rs₀ := stopRecs_unique hrs hrs0 (by rw [hrsl, hl0])
+  have heq : rs = rs₀ := stopRecs_unique hrs hrs0 (by omega)
   subst heq
   obtain ⟨x, hx, hxr⟩ := List.getElem_of_mem hr
   have hfx := hrs x hx
@@ -233,14 +245,12 @@ theorem stop_match (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N
   obtain ⟨-, hk, -, hk1⟩ := hW0 r hr
   obtain ⟨hc, -⟩ := stop_cand J hA.hNF₂ hS hr hk hk1
   refine ⟨i, hi, ?_, e2.trans hr2, e3, ?_⟩
-  · unfold logPos; simp only; rw [e1]
-  · rw [hr2, hr1, harr.2.2.2.1] at hc; exact hc
+  · grind [logPos]
+  ram_grind
 
 /-- **A regular table entry at the query position** is attached at a log record with that
 position, whose slot (of its direction) is flagged; its origin is a candidate origin of `z`. -/
-theorem tab_match (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂ c₀) {z : Point}
-    {σ : ℝ} {zp zh : ℕ}
-    (harr : Arrival (chainModel J.whole).W z σ zp ((chainModel J.whole).param (Qof P) ⟨zp, zh⟩))
+theorem tab_match
     {j : ℕ} (hj : j < 2 * N₂.nChords)
     (hT : tabOf J (Qof P) c₀.nmem (rd c₀ bSweep 302) j =
       some (zp, (chainModel J.whole).param (Qof P) ⟨zp, zh⟩))
@@ -253,8 +263,7 @@ theorem tab_match (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
       CandAt J (endOrigin J (Qof P) N₂ j) (endDir j) z := by
   obtain ⟨rs₀, ls₀, -, -, -, -, -, -, -, -, hTab, -⟩ := hA.hout
   have hflag : c₀.nmem (rd c₀ bSweep 302 + 3 * j) = 1 := by
-    unfold tabOf at hT; split_ifs at hT with h
-    · exact h
+    simp_all [tabOf] 
   have hT' := hT
   unfold tabOf at hT'
   rw [ite_eq_left hflag] at hT'
@@ -266,8 +275,11 @@ theorem tab_match (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   rw [g2] at e2
   obtain ⟨hc, -⟩ := tab_cand J hTab hj hv.1 hv.2.1 hv.2.2 hT
   refine ⟨i, hi, ?_, e2, e3, ?_⟩
-  · unfold logPos; simp only; rw [e1]
-  · rw [harr.2.2.2.1] at hc; exact hc
+  · grind [logPos]
+  ram_grind
+
+
+end
 
 end
 

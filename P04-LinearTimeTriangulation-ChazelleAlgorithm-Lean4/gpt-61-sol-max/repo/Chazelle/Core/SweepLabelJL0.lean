@@ -37,7 +37,7 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
   have hn₁ : W₁.n = 2 * C₁.m + 7 := cm_n C₁
   have hwm : C.m = J.m₁ + J.m₂ := rfl
   have hm1 : C₁.m = J.m₁ := rfl
-  have h1 := J.one_le_m₁
+  
   have h2 := J.one_le_m₂
   set τ := tpos C (J.m₁ + 2 * J.m₂) with hτ_def
   set τ' := tpos C₁ J.m₁ with hτ'_def
@@ -51,8 +51,8 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
   have hM := walkAx_chainModel (C := C) hP
   have hM₁ := walkAx_chainModel (C := C₁) hP
   have hR : C₁.radius = C.radius := FuseMath.radius_of_P J rfl
-  have hg : 6 + τ < W.n := by rw [hn]; omega
-  have hg' : 6 + τ' < W₁.n := by rw [hn₁]; omega
+  have hg : 6 + τ < W.n := by omega
+  have hg' : 6 + τ' < W₁.n := by omega
   have hv0 : W₁.vtx (6 + τ') = J.shared := by
     have := walk_tour C₁ J.m₁ 0 (by omega)
     rw [add_zero, Nat.mod_eq_of_lt hg', tourV_left_zero] at this
@@ -63,13 +63,7 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
     intro L hL p hp t ht ht1 hpos hlt heq
     rw [hv0, show J.shared = C₁.vertex C₁.m from rfl] at heq
     have hvx := off_vertexEnd C₁ hP hp ht ht1 heq
-    rw [show C₁.m = J.m₁ from rfl, ← hτ'_def, ← hW₁] at hvx
-    rcases hvx with h | ⟨h0, h⟩
-    · rw [h] at hpos; exact lt_irrefl _ hpos
-    · have := hL h0
-      have hc1 : (C₁.m : ℝ) = (J.m₁ : ℝ) := rfl
-      rw [h] at hlt
-      linarith
+    grind
   have htrans : ∀ c ∈ S₁, ∀ q ∈ c, q ∉ (chainModel C₁).D → q ≠ W₁.vtx (6 + τ') →
       ∃ e ∈ F₁plus J S₁, q ∈ e ∧ e ⊆ c := by
     rw [hv0]; exact trans_left J hP hS₁
@@ -79,14 +73,14 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
   have hFf := F₁plus_finite J hS₁f
   have hℓ : ℓ < 2 * C.m := by omega
   have hℓ' : ℓ ≤ 2 * C₁.m := by omega
-  have hℓ'R : (ℓ : ℝ) ≤ 2 * C₁.m := by exact_mod_cast hℓ'
+  have hℓ'R : (ℓ : ℝ) ≤ 2 * C₁.m := by grind
   by_cases hsl : s < ℓ
   · -- case Sh
     have hss : s = s' := (left_box_eq J hsl).symm
     have hA := agree_Sh hT hR.symm hℓ.le hℓ' hss hsl
     rw [ite_eq_left hsl, ite_eq_left hsl, ite_eq_left hsl]
-    refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by rw [hn]; omega,
-      by rw [hn₁]; omega, fun _ => rfl, fun h => absurd h (lt_irrefl 0), hA, ?_,
+    refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by grind,
+      by grind, fun _ => rfl, fun h => absurd h (lt_irrefl 0), hA, ?_,
       hnoV _ (fun h0 => absurd h0 (by omega)), htrans, hnest⟩
     intro d hd
     obtain rfl : d = 0 := by omega
@@ -97,26 +91,24 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
     have hA := agree_N hT hsl hsl'
     rw [ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ s < ℓ by omega),
       ite_eq_right (show ¬ s < ℓ by omega), ite_eq_left hsl', ite_eq_left hsl', ite_eq_left hsl']
-    refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by rw [hn]; omega,
-      by rw [hn₁]; omega, fun _ => rfl, fun h => absurd h (lt_irrefl 0), hA, ?_,
-      hnoV _ (fun _ => by push_cast; linarith), htrans, hnest⟩
-    intro d hd
-    obtain rfl : d = 0 := by omega
-    simpa using hA ℓ le_rfl
+    refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by grind,
+      by grind, fun _ => rfl, fun h => absurd h (lt_irrefl 0), hA, ?_,
+      hnoV _ (fun _ => by grind), htrans, hnest⟩
+    grind [Chazelle.Core.WalkEmbed.Agree]
   -- case G
   push Not at hsl'
   have hA1 := agree_G1 hT hsl hsl'
   have hA2 := agree_G2 hT hℓ' hsl hsl'
-  have hs'1 : 1 ≤ s' := by omega
+  
   rw [ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ s < ℓ by omega),
     ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ ℓ ≤ s' by omega),
     ite_eq_right (show ¬ ℓ ≤ s' by omega), ite_eq_right (show ¬ ℓ ≤ s' by omega)]
-  refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by rw [hn]; omega,
-    by rw [hn₁]; omega, fun h => absurd h (by norm_num), fun _ => by rw [hn₁]; omega, hA1, ?_,
+  refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by grind,
+    by grind, fun h => absurd h (by norm_num), fun _ => by grind, hA1, ?_,
     hnoV _ (fun h0 => absurd h0 (by omega)), htrans, hnest⟩
   · intro d hd
     have := hA2 d hd
-    rwa [Nat.mod_add_mod, Nat.mod_add_mod] at this
+    grind
 
 end Sweep
 

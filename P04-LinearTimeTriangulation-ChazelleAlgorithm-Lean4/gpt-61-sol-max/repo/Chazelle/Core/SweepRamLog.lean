@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepRamTie
 
 /-!
@@ -58,46 +60,48 @@ theorem faces_near_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm
   refine ⟨s, by linarith, by linarith, by linarith, ?_, hW' s (by linarith) (by linarith)
     (by linarith)⟩
   have := hsub ⟨show 0 < s by linarith, show s < δ₁ by linarith⟩
-  rw [Set.mem_ofPred_eq] at this
-  rwa [← add_assoc]
+  grind
 
+section
+variable {n g p : ℕ} (hg : g < n) (hp : p < n)
+include hg hp
 /-- The offset of the position just before a walk vertex. -/
-theorem off_before_vertex {n g p : ℕ} (hg : g < n) (hp : p < n) {s : ℝ} (hs0 : 0 < s)
+theorem off_before_vertex {s : ℝ} (hs0 : 0 < s)
     (hs1 : s < 1) (hpos : 0 < off n g ((p : ℝ) + 0)) :
     off n g ((((p + n - 1) % n : ℕ) : ℝ) + (1 - s)) = off n g ((p : ℝ) + 0) - s := by
   have hpg : p ≠ g := by
-    intro h; subst h; simp [off_self] at hpos
+    core_grind
   rcases Nat.eq_zero_or_pos p with rfl | hp1
-  · have e : (0 + n - 1) % n = n - 1 := by rw [Nat.mod_eq_of_lt (by omega)]; omega
+  · have e : (0 + n - 1) % n = n - 1 := by simp_all
     rw [e]
-    have hn1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have hn1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by simp_all
     rw [hn1]
     unfold off
     have hg0 : (0 : ℝ) < g := by
-      have : 0 < g := Nat.pos_of_ne_zero (Ne.symm hpg)
-      exact_mod_cast this
+      positivity
     have hgn : (g : ℝ) + 1 ≤ n := by exact_mod_cast hg
-    rw [ite_eq_left (by linarith), ite_eq_right (by push_cast; linarith)]
-    push_cast; ring
+    grind
   · have e : (p + n - 1) % n = p - 1 := by
       rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
     rw [e]
-    have hp1' : ((p - 1 : ℕ) : ℝ) = (p : ℝ) - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have hp1' : ((p - 1 : ℕ) : ℝ) = (p : ℝ) - 1 := by simp_all
     rw [hp1']
     unfold off
     rcases lt_or_gt_of_ne hpg with h | h
     · have h' : (p : ℝ) + 1 ≤ g := by exact_mod_cast h
-      rw [ite_eq_right (by linarith), ite_eq_right (by linarith)]; ring
+      grind
     · have h' : (g : ℝ) + 1 ≤ p := by exact_mod_cast h
-      rw [ite_eq_left (by linarith), ite_eq_left (by linarith)]; ring
+      grind
 
 /-- The offset of a position before `(p, t)` on the same edge. -/
-theorem off_before_edge {n g p : ℕ} (hg : g < n) (hp : p < n) {t s : ℝ} (hs0 : 0 < s)
+theorem off_before_edge {t s : ℝ} (hs0 : 0 < s)
     (hst : s < t) (ht1 : t < 1) :
     off n g ((p : ℝ) + (t - s)) = off n g ((p : ℝ) + t) - s := by
   have := off_add_small hg hp (t := t - s) (s := s) (by linarith) hs0.le (by linarith)
-  rw [show t - s + s = t by ring] at this
-  linarith
+  simp_all
+
+
+end
 
 /-- **A region faced just before a position is faced at nearby earlier non-cut positions**
 (at positive offset). -/
@@ -124,10 +128,9 @@ theorem faces_near_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Ad
     have hst : s < t := by linarith
     have hoff := off_before_edge hg hp (show 0 < s by linarith) hst ht1
     refine ⟨p, t - s, hp, ⟨by linarith, by linarith⟩, ?_, hWp htp s (by linarith) (by linarith) hst,
-      by rw [hoff]; linarith, by rw [hoff]; linarith⟩
+      by linarith, by linarith⟩
     have := hsub ⟨show 0 < s by linarith, show s < δ₁ by linarith⟩
-    rw [Set.mem_ofPred_eq] at this
-    rwa [add_sub_assoc] at this
+    grind
   · -- at a walk vertex: the end of the previous edge
     set q := (p + M.W.n - 1) % M.W.n with hq
     have hqn : q < M.W.n := Nat.mod_lt _ (by omega)
@@ -137,12 +140,12 @@ theorem faces_near_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Ad
       · right
         have e : (0 + M.W.n - 1) % M.W.n = M.W.n - 1 := by
           rw [Nat.mod_eq_of_lt (by omega)]; omega
-        rw [hq, e, Nat.cast_sub (by omega)]; push_cast; ring
+        rw [hq, e, Nat.cast_sub (by omega)]; grind
       · left
         have e : (p + M.W.n - 1) % M.W.n = p - 1 := by
           rw [show p + M.W.n - 1 = (p - 1) + M.W.n by omega, Nat.add_mod_right,
             Nat.mod_eq_of_lt (by omega)]
-        rw [hq, e, Nat.cast_sub (by omega)]; push_cast; ring
+        rw [hq, e, Nat.cast_sub (by omega)]; grind
     obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
       ((eventually_not_cut_before hM hF hfin (p : ℝ)).and
         (eventually_not_cut_before hM hF hfin (M.W.n : ℝ)))
@@ -157,15 +160,15 @@ theorem faces_near_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Ad
     have h6 := min_le_right ε (1 : ℝ)
     have hs0 : 0 < s := by linarith
     have hs1 : s < 1 := by linarith
-    have hoff := off_before_vertex hg hp hs0 hs1 (by simpa using hpos)
+    have hoff := off_before_vertex hg hp hs0 hs1 (by omega)
     simp only [add_zero] at hoff hpos ⊢
     refine ⟨q, 1 - s, hqn, ⟨by linarith, by linarith⟩, ?_, hW0 rfl s hs0 (by linarith),
-      by rw [hoff]; linarith, by rw [hoff]; linarith⟩
+      by grind, by grind⟩
     have hns := hsub ⟨hs0, show s < δ₁ by linarith⟩
     simp only [mem_ofPred_eq] at hns
     rcases hkey s with h | h <;> rw [h]
     · exact hns.1
-    · exact hns.2
+    grind
 
 end Near
 

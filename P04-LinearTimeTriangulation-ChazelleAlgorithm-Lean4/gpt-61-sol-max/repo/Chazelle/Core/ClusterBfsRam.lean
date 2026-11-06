@@ -54,8 +54,7 @@ theorem seqX {s t : Stmt} {c : Config} {K₁ K₂ : ℕ} {R₁ R₂ : Config →
 theorem weakenX {s : Stmt} {c : Config} {K K' : ℕ} {R R' : Config → Prop}
     (h : ∃ c' k, Exec P W s c c' k ∧ k ≤ K ∧ R c') (hK : K ≤ K') (hR : ∀ c', R c' → R' c') :
     ∃ c' k, Exec P W s c c' k ∧ k ≤ K' ∧ R' c' := by
-  obtain ⟨c', k, e, hk, r⟩ := h
-  exact ⟨c', k, e, by omega, hR c' r⟩
+  grind
 
 /-- `if x ≠ 1 then S`, with `nreg 130001 = 1`. -/
 def ifNe1 (x : ℕ) (S : Stmt) : Stmt := .ifLtN x 130001 S (.ifLtN 130001 x S .skip)
@@ -129,13 +128,7 @@ theorem forN {ri rn : ℕ} {body : Stmt} (I : ℕ → Config → Prop) (n B : �
       have : (B + 2) * (n - j) = (B + 2) * (n - (j + 1)) + (B + 2) := by
         rw [← Nat.mul_succ]; congr 1; omega
       omega) ⟨j₀, hc, hj₀⟩
-  obtain ⟨-, hri, hrn⟩ := hI j' c' hIj
-  have hj'n : j' = n := by rw [hri, hrn] at htest; omega
-  subst hj'n
-  refine ⟨c', k, e, ?_, hIj⟩
-  obtain ⟨-, hri0, -⟩ := hI j₀ c hc
-  rw [hri0] at hk
-  exact hk
+  grind
 
 end gen
 
@@ -209,10 +202,15 @@ structure Good (W : ℕ) : Prop where
 
 variable {Y}
 
+section
+variable (m : ℕ → ℕ)
 /-- Memories agreeing outside the written arrays read the same rotation system. -/
-@[simp] theorem env_nv (m : ℕ → ℕ) : (Y.env m).nv = Y.nv := rfl
+@[simp] theorem env_nv : (Y.env m).nv = Y.nv := rfl
 
-@[simp] theorem env_N (m : ℕ → ℕ) : (Y.env m).N = Y.N := rfl
+@[simp] theorem env_N : (Y.env m).N = Y.N := rfl
+
+
+end
 
 theorem env_congr {W : ℕ} (hY : Y.Good W) {m m' : ℕ → ℕ} (h : ∀ a, ¬ Y.Written a → m' a = m a) :
     Y.env m' = Y.env m := by
@@ -224,12 +222,7 @@ theorem env_congr {W : ℕ} (hY : Y.Good W) {m m' : ℕ → ℕ} (h : ∀ a, ¬ 
     refine view_congr (fun i hi => h _ ?_)
     unfold Written Disj at *
     omega
-  unfold env
-  rw [key _ _ (Or.inl ⟨rfl, rfl⟩), key _ _ (Or.inr (Or.inl ⟨rfl, rfl⟩)),
-    key _ _ (Or.inr (Or.inr (Or.inl ⟨rfl, rfl⟩))),
-    key _ _ (Or.inr (Or.inr (Or.inr (Or.inl ⟨rfl, rfl⟩)))),
-    key _ _ (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨rfl, rfl⟩))))),
-    key _ _ (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨rfl, rfl⟩)))))]
+  aesop (add simp [env]) (add safe (by omega))
 
 end Lay
 
@@ -239,50 +232,58 @@ section views
 
 variable {Y : Lay} {W : ℕ}
 
+section
+variable (Y : Lay) (m : ℕ → ℕ)
+include Y m
 /-- The written arrays of a configuration's memory. -/
-def labV (Y : Lay) (m : ℕ → ℕ) : ℕ → ℕ := view m Y.bLab Y.nv
+def labV : ℕ → ℕ := view m Y.bLab Y.nv
 /-- The level array. -/
-def levV (Y : Lay) (m : ℕ → ℕ) : ℕ → ℕ := view m Y.bLev Y.nv
+def levV : ℕ → ℕ := view m Y.bLev Y.nv
 /-- The parent array. -/
-def parV (Y : Lay) (m : ℕ → ℕ) : ℕ → ℕ := view m Y.bPar Y.nv
+def parV : ℕ → ℕ := view m Y.bPar Y.nv
 /-- The queue array. -/
-def qV (Y : Lay) (m : ℕ → ℕ) : ℕ → ℕ := view m Y.bQ Y.nv
+def qV : ℕ → ℕ := view m Y.bQ Y.nv
 
 /-- The memory after a push. -/
-def pushMem (Y : Lay) (m : ℕ → ℕ) (w t L lu e : ℕ) : ℕ → ℕ :=
+def pushMem (w t L lu e : ℕ) : ℕ → ℕ :=
   upd (upd (upd (upd m (Y.bLab + w) L) (Y.bLev + w) lu) (Y.bPar + w) e) (Y.bQ + t) w
 
-theorem labV_push (hY : Y.Good W) (m : ℕ → ℕ) {w t : ℕ} (hw : w < Y.nv) (ht : t < Y.nv)
-    (L lu e : ℕ) :
+
+end
+
+section
+variable (hY : Y.Good W) (m : ℕ → ℕ) {w t : ℕ} (hw : w < Y.nv) (ht : t < Y.nv) (L lu e : ℕ)
+include hY hw ht
+theorem labV_push :
     labV Y (pushMem Y m w t L lu e) = Function.update (labV Y m) w L := by
   obtain ⟨a1, a2, a3, a4, a5, a6⟩ := hY.d2
   unfold labV pushMem Disj at *
   rw [view_upd_out _ _ _ _ _ (by omega), view_upd_out _ _ _ _ _ (by omega),
     view_upd_out _ _ _ _ _ (by omega), view_upd_in _ _ _ _ _ hw]
 
-theorem levV_push (hY : Y.Good W) (m : ℕ → ℕ) {w t : ℕ} (hw : w < Y.nv) (ht : t < Y.nv)
-    (L lu e : ℕ) :
+theorem levV_push :
     levV Y (pushMem Y m w t L lu e) = Function.update (levV Y m) w lu := by
   obtain ⟨a1, a2, a3, a4, a5, a6⟩ := hY.d2
   unfold levV pushMem Disj at *
   rw [view_upd_out _ _ _ _ _ (by omega), view_upd_out _ _ _ _ _ (by omega),
     view_upd_in _ _ _ _ _ hw, view_upd_out _ _ _ _ _ (by omega)]
 
-theorem parV_push (hY : Y.Good W) (m : ℕ → ℕ) {w t : ℕ} (hw : w < Y.nv) (ht : t < Y.nv)
-    (L lu e : ℕ) :
+theorem parV_push :
     parV Y (pushMem Y m w t L lu e) = Function.update (parV Y m) w e := by
   obtain ⟨a1, a2, a3, a4, a5, a6⟩ := hY.d2
   unfold parV pushMem Disj at *
   rw [view_upd_out _ _ _ _ _ (by omega), view_upd_in _ _ _ _ _ hw,
     view_upd_out _ _ _ _ _ (by omega), view_upd_out _ _ _ _ _ (by omega)]
 
-theorem qV_push (hY : Y.Good W) (m : ℕ → ℕ) {w t : ℕ} (hw : w < Y.nv) (ht : t < Y.nv)
-    (L lu e : ℕ) :
+theorem qV_push :
     qV Y (pushMem Y m w t L lu e) = Function.update (qV Y m) t w := by
   obtain ⟨a1, a2, a3, a4, a5, a6⟩ := hY.d2
   unfold qV pushMem Disj at *
   rw [view_upd_in _ _ _ _ _ ht, view_upd_out _ _ _ _ _ (by omega),
     view_upd_out _ _ _ _ _ (by omega), view_upd_out _ _ _ _ _ (by omega)]
+
+
+end
 
 /-- A push writes only the written arrays. -/
 theorem pushMem_other (m : ℕ → ℕ) {w t : ℕ} (hw : w < Y.nv) (ht : t < Y.nv) (L lu e : ℕ)
@@ -436,8 +437,7 @@ structure II (Y : Lay) (W s L : ℕ) (lab0 : ℕ → ℕ) (c0 c : Config) : Prop
 
 /-- The state after handling one dart (relative to the registers `R` and memory `m` at the start
 of `dartB`, with head index `h`, dart counter `j` and head vertex `u`). -/
-def DPost (Y : Lay) (W s L : ℕ) (lab0 : ℕ → ℕ) (c0 : Config) (h j u : ℕ) (R : ℕ → ℕ)
-    (m : ℕ → ℕ) (c1 : Config) : Prop :=
+def DPost (Y : Lay) (W s L : ℕ) (lab0 : ℕ → ℕ) (c0 : Config) (h j u : ℕ) (R m : ℕ → ℕ) (c1 : Config) : Prop :=
   WordsBounded W c1 ∧ Fr Y c0 c1 ∧
     (Y.env c0.nmem).InvIn s L lab0 (labV Y c1.nmem) (levV Y c1.nmem) (parV Y c1.nmem)
       (qV Y c1.nmem) h (c1.nreg 130121) (j + 1) ∧
@@ -503,8 +503,7 @@ theorem visitB_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).
     · refine ⟨by omega, ‹_›, hm', by config_simp; rw [hR'.rLab, hW'], ?_, fun r h1 h2 h3 => ?_,
         by config_simp; exact hW', rfl, rfl, rfl⟩
       · config_simp; rw [hR'.rLab, hW', hm', labV, view_lt hwn]
-      · config_simp; rw [Machine.upd_other _ _ _ h2, Machine.upd_other _ _ _ h1]
-        exact hr' r h1 h2 h3
+      simp_all
   · rintro c2 ⟨hw2, hm2, hA2, hX2, hr2, hW2, hrr2, hrm2, ho2⟩
     have hf2 : Fr Y c0 c2 := by
       refine ⟨fun r hr => ?_, hrr2.trans hf'.2.1, hrm2.trans hf'.2.2.1, ho2.trans hf'.2.2.2.1,
@@ -518,7 +517,7 @@ theorem visitB_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).
     · -- already labelled: skip
       refine ⟨c2, 0 + 1, .ifLtN_true hv (.skip hw2), by omega, hw2, hf2, ?_,
         fun r h1 h6 h7 h8 => hr2 r h6 h7 h8, fun i _ => by rw [hm2],
-        by rw [hr2 _ (by decide) (by decide) (by decide)], by rw [hm2]⟩
+        by simp_all, by rw [hm2]⟩
       rw [hm2, hr2 _ (by decide) (by decide) (by decide)]
       refine hIn.skip' hjp' he (Or.inr (Or.inr ?_))
       rw [hX2, hR2.rn] at hv
@@ -527,11 +526,10 @@ theorem visitB_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).
       rw [hX2, hR2.rn] at hv
       have hnot : ∀ i, i < c.nreg 130121 →
           qV Y c.nmem i ≠ (Y.env c0.nmem).head (c.nreg 130124) := by
-        intro i hi hqi
-        exact hv (hvis.mpr ⟨i, hi, hqi⟩)
+        simp_all
       have htn : c.nreg 130121 < Y.nv := hIn.inv.t_lt_of_notMem hwn hnot
       obtain ⟨c1, k1, e1, hk1, hm1, hT1, hr1, hrr1, hrm1, ho1⟩ := pushB_exec (P := P) hY hw2 hR2
-        hA2 hW2 (by rw [hr2 _ (by decide) (by decide) (by decide)])
+        hA2 hW2 (by simp_all)
         (by rw [hr2 _ (by decide) (by decide) (by decide)])
         (by rw [hr2 _ (by decide) (by decide) (by decide)]) hwn htn
       refine ⟨c1, k1 + 2, .ifLtN_false (by rw [hX2, hR2.rn]; exact hv) e1, by omega,
@@ -546,8 +544,7 @@ theorem visitB_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).
           qV_push hY _ hwn htn]
         refine hIn.push' hp hjp' he rfl ?_ hdb hvb hnot
         rw [hI.lu, hI.u]
-      · intro r h1 h6 h7 h8
-        rw [hr1 r h6 h1, hr2 r h6 h7 h8]
+      · grind
       · intro i hi
         rw [hm1, hm2, qV_push hY _ hwn htn, Function.update_of_ne (by omega)]
       · rw [hT1]; omega
@@ -583,7 +580,7 @@ theorem dpost_skip (_hp : (Y.env c0.nmem).Pre s L lab0) {c c1 : Config}
       ((Y.env c0.nmem).first (qV Y c.nmem (c.nreg 130120))) := by
     rw [← hI.u, ← hI.d0]; exact hjp
   refine ⟨hw1, hf1, ?_, fun r h1 h6 h7 h8 => hr r h6 h7 h8, fun i _ => by rw [hm],
-    by rw [hr _ (by decide) (by decide) (by decide)], by rw [hm]⟩
+    by simp_all, by rw [hm]⟩
   rw [hm, hr _ (by decide) (by decide) (by decide)]
   rcases hcase with h | h
   · exact hI.inv.skip' hjp' he (Or.inl h)
@@ -629,9 +626,7 @@ theorem allowB_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).
     · refine ⟨by omega, ‹_›, hm', ?_, ?_, fun r h1 h2 h3 => ?_, rfl, rfl, rfl⟩
       · config_simp; rw [hR'.rVB, hR'.rV, hR'.rO, hD, r1, r2, r3]
       · config_simp; rw [hR'.rV, hR'.rO, hD, r1, r2]
-      · config_simp
-        simp only [Machine.upd_apply, h1, h2, h3, ite_false]
-        exact hr' r h1 h2 h3
+      simp_all
   · rintro c2 ⟨hw2, hm2, hX2, hW2, hr2, hrr2, hrm2, ho2⟩
     have hf2 : Fr Y c0 c2 := fr_scratch hI.fr hm2 hr2 (hrr2.trans (hf'.2.1.trans hI.fr.2.1.symm))
       (hrm2.trans (hf'.2.2.1.trans hI.fr.2.2.1.symm))
@@ -644,9 +639,11 @@ theorem allowB_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).
     · rw [hX2] at heq
       exact dpost_skip hp hI hjp hw2 hf2 hm2 hr2 (Or.inr heq)
 
+section
+variable (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).Pre s L lab0) {c : Config} (hI : II Y W s L lab0 c0 c)
+include hY hR0 hp hI
 /-- **One dart** of the inner loop (before the advance): cost `≤ 36`. -/
-theorem dartB_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).Pre s L lab0)
-    {c : Config} (hI : II Y W s L lab0 c0 c) (hjp : c.nreg 130130 <
+theorem dartB_exec (hjp : c.nreg 130130 <
       per (Y.env c0.nmem).rot Y.N (c.nreg 130123)) :
     ∃ c1 k, Exec P W dartB c c1 k ∧ k ≤ 36 ∧
       DPost Y W s L lab0 c0 (c.nreg 130120) (c.nreg 130130) (c.nreg 130122) c.nreg c.nmem c1 := by
@@ -669,8 +666,7 @@ theorem dartB_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).P
     · rw [hR.rDB]; omega
     · refine ⟨by omega, ‹_›, rfl, by config_simp; rw [hR.rDB, r1], fun r h1 h2 h3 => ?_, rfl,
         rfl, rfl⟩
-      config_simp
-      rw [Machine.upd_other _ _ _ h2, Machine.upd_other _ _ _ h1]
+      simp_all
   · rintro c2 ⟨hw2, hm2, hX2, hr2, hrr2, hrm2, ho2⟩
     have hf2 : Fr Y c0 c2 := fr_scratch hI.fr hm2 hr2 hrr2 hrm2 ho2
     have hone2 : c2.nreg 130001 = 1 := (hR0.fr hf2).one
@@ -681,10 +677,12 @@ theorem dartB_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).P
     · rw [hX2] at heq
       exact dpost_skip hp hI hjp hw2 hf2 hm2 hr2 (Or.inl heq)
 
+section
+variable (hdn : c.nreg 130125 = 0)
+include hdn
 /-- **One iteration of the inner loop**: handle the current dart, advance, test the end of the
 orbit.  Cost `≤ 48`. -/
-theorem innerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).Pre s L lab0)
-    {c : Config} (hI : II Y W s L lab0 c0 c) (hdn : c.nreg 130125 = 0) :
+theorem innerBody_exec :
     ∃ c' k, Exec P W innerBody c c' k ∧ k ≤ 48 ∧ II Y W s L lab0 c0 c' ∧
       c'.nreg 130120 = c.nreg 130120 ∧ c'.nreg 130122 = c.nreg 130122 ∧
       c'.nreg 130123 = c.nreg 130123 ∧ c'.nreg 130129 = c.nreg 130129 ∧
@@ -714,7 +712,7 @@ theorem innerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
     (by decide)
   have rd : c1.nmem (Y.bR + c.nreg 130124) = (Y.env c0.nmem).rot (c.nreg 130124) :=
     Fr.read hY hf1 (Or.inr (Or.inl ⟨rfl, rfl⟩)) heN
-  have hrotN : (Y.env c0.nmem).rot (c.nreg 130124) < Y.N := hp.ok.rot_lt _ heN
+  
   refine seqX (K₁ := 3) (K₂ := 9) (R₁ := fun c2 => WordsBounded W c2 ∧ c2.nmem = c1.nmem ∧
       c2.nreg 130124 = (Y.env c0.nmem).rot (c.nreg 130124) ∧
       c2.nreg 130130 = c.nreg 130130 + 1 ∧
@@ -726,11 +724,10 @@ theorem innerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
     · config_simp; rw [hJ1, hR1.one]; omega
     · refine ⟨by omega, ‹_›, rfl, by config_simp; rw [hR1.rR, hD1, rd],
         by config_simp; rw [hJ1, hR1.one], fun r h1 h2 h3 => ?_, rfl, rfl, rfl⟩
-      simp only [Machine.upd_apply, h1, h2, h3, ite_false]
+      simp_all
   · rintro c2 ⟨hw2, hm2, hD2, hJ2, hr2, hrr2, hrm2, ho2⟩
     have hd02 : c2.nreg 130123 = c.nreg 130123 := by
-      rw [hr2 _ (by decide) (by decide) (by decide), hr1 _ (by decide) (by decide) (by decide)
-        (by decide)]
+      simp_all
     -- the facts common to both outcomes of the test
     have hiter : (Y.env c0.nmem).rot (c.nreg 130124) =
         (Y.env c0.nmem).rot^[c.nreg 130130 + 1] (c.nreg 130123) := by
@@ -751,8 +748,7 @@ theorem innerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
       intro c3 hw3 hm3 hrr3 hrm3 ho3 hr3 hdn3
       have g : ∀ r, r ≠ 130124 → r ≠ 130125 → r ≠ 130126 → r ≠ 130127 → r ≠ 130128 →
           r ≠ 130130 → r ≠ 130121 → c3.nreg r = c.nreg r := by
-        intro r a1 a2 a3 a4 a5 a6 a7
-        rw [hr3 r a2, hr2 r a1 a3 a6, hr1 r a7 a3 a4 a5]
+        grind
       have e120 := g 130120 (by decide) (by decide) (by decide) (by decide) (by decide)
         (by decide) (by decide)
       have e122 := g 130122 (by decide) (by decide) (by decide) (by decide) (by decide)
@@ -761,9 +757,9 @@ theorem innerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
         (by decide) (by decide)
       have e129 := g 130129 (by decide) (by decide) (by decide) (by decide) (by decide)
         (by decide) (by decide)
-      have e130 : c3.nreg 130130 = c.nreg 130130 + 1 := by rw [hr3 _ (by decide), hJ2]
+      have e130 : c3.nreg 130130 = c.nreg 130130 + 1 := by grind
       have e121 : c3.nreg 130121 = c1.nreg 130121 := by
-        rw [hr3 _ (by decide), hr2 _ (by decide) (by decide) (by decide)]
+        grind
       have hf3 : Fr Y c0 c3 := by
         refine ⟨fun r hr => ?_, hrr3.trans (hrr2.trans hf1.2.1), hrm3.trans (hrm2.trans hf1.2.2.1),
           ho3.trans (ho2.trans hf1.2.2.2.1), fun a ha => by rw [hm3, hm2]; exact hf1.2.2.2.2 a ha⟩
@@ -774,24 +770,16 @@ theorem innerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
         rw [hr3 r a2, hr2 r a1 a3 a6]; exact hf1.1 r hr
       have hqh : qV Y c1.nmem (c.nreg 130120) = qV Y c.nmem (c.nreg 130120) := hq1 _ hht
       refine ⟨⟨hw3, hf3, ?_, ?_, ?_, ?_, ?_, ?_⟩, e120, e122, e123, e129, e130, ?_, ?_, ?_⟩
-      · rw [hm3, hm2, e120, e121, e130]; exact hIn1
+      · grind
       · rw [e122, hm3, hm2, e120, hqh]; exact hI.u
       · rw [e129, e122, hm3, hm2, hl1]; exact hI.lu
       · rw [e123, e122]; exact hI.d0
-      · rw [hr3 _ (by decide), hD2, e130, e123, hiter]
-      · rw [e123]; rw [e130]
-        rcases hdn3 with h | h
-        · exact Or.inl h
-        · exact Or.inr h
-      · intro i hi; rw [hm3, hm2]; exact hq1 i hi
-      · rw [e121]; exact ht1
-      · rcases hdn3 with h | h
-        · exact Or.inl h.1
-        · exact Or.inr (by rw [e130]; exact h.2)
+      · grind
+      · grind
+      · grind
+      all_goals omega
     have hdn2 : c2.nreg 130125 = 0 := by
-      rw [hr2 _ (by decide) (by decide) (by decide), hr1 _ (by decide) (by decide) (by decide)
-        (by decide)]
-      exact hdn
+      grind
     unfold testB
     by_cases hlt : c2.nreg 130124 < c2.nreg 130123
     · refine ⟨c2, 0 + 1, .ifLtN_true hlt (.skip hw2), by omega, key c2 hw2 rfl rfl rfl rfl
@@ -825,9 +813,7 @@ theorem innerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
 
 /-- **The inner loop** over the rotation orbit of `first u`: cost `≤ 50 (deg u + 1) + 2`; at
 the end the whole orbit is processed. -/
-theorem innerLoop_exec (hY : Y.Good W) (hR0 : Regs Y s L c0)
-    (hp : (Y.env c0.nmem).Pre s L lab0) {c : Config} (hI : II Y W s L lab0 c0 c)
-    (hdn : c.nreg 130125 = 0) (hj : c.nreg 130130 = 0) :
+theorem innerLoop_exec (hj : c.nreg 130130 = 0) :
     ∃ c' k, Exec P W innerLoop c c' k ∧
       k ≤ 50 * (per (Y.env c0.nmem).rot Y.N (c.nreg 130123) + 1) + 2 ∧
       II Y W s L lab0 c0 c' ∧ c'.nreg 130125 = 1 ∧
@@ -849,35 +835,24 @@ theorem innerLoop_exec (hY : Y.Good W) (hR0 : Regs Y s L c0)
       have hdn1 : c1.nreg 130125 = 0 := by omega
       have hjp1 : c1.nreg 130130 < pr := by
         rcases hI1.dn with h | h
-        · rw [hpr, ← g123]; exact h.2
-        · omega
+        all_goals simp_all
       obtain ⟨c2, k2, e2, hk2, hI2, f120, f122, f123, f129, f130, fq, ft, fdn⟩ :=
         innerBody_exec hY hR0 hp hI1 hdn1
       refine ⟨c2, k2, e2, ⟨hI2, f120.trans g120, f122.trans g122, f123.trans g123,
         fun i hi => (fq i (by omega)).trans (gq i hi), gt.trans ft⟩, ?_⟩
-      rw [g123, ← hpr] at fdn
-      have hd2 : c2.nreg 130125 = 0 ∨ c2.nreg 130125 = 1 := by
-        rcases hI2.dn with h | h
-        · exact Or.inl h.1
-        · exact Or.inr h.1
-      rcases fdn with h | h
-      · have hlt : c2.nreg 130130 < pr := by
-          rcases hI2.dn with h' | h'
-          · rw [hpr, ← g123, ← f123]; exact h'.2
-          · omega
-        rw [h, hdn1, f130]
-        have : pr + 1 - (c1.nreg 130130 + 1) - 0 + 1 = pr + 1 - c1.nreg 130130 - 0 := by omega
-        rw [f130] at hlt
-        omega
-      · rw [h, hdn1]
-        rcases hd2 with h' | h' <;> rw [h'] <;> rw [f130] at h <;> omega) ⟨hI, rfl, rfl, rfl,
+      omega) ⟨hI, rfl, rfl, rfl,
       fun _ _ => rfl, le_rfl⟩
   have hone : c'.nreg 130001 = 1 := (hR0.fr hI'.fr).one
   have hdn' : c'.nreg 130125 = 1 ∧ c'.nreg 130130 = pr := by
     rcases hI'.dn with h | h
-    · omega
-    · rw [hpr, ← h123]; exact h
-  refine ⟨c', k, e, by rw [hdn, hj] at hk; omega, hI', hdn'.1, hdn'.2, h120, h122, h123, hq', ht'⟩
+    all_goals simp_all
+  refine ⟨c', k, e, by omega, hI', hdn'.1, hdn'.2, h120, h122, h123, hq', ht'⟩
+
+
+
+end
+
+end
 
 end inner
 
@@ -894,9 +869,14 @@ section outer
 
 variable {P : Polygon} {W : ℕ} {Y : Lay} {s L : ℕ} {lab0 : ℕ → ℕ} {c0 : Config}
 
+section
+variable (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).Pre s L lab0) {c : Config} (hI : OI Y W s L lab0 c0 c)
+include hY hR0 hp hI
+section
+variable (hht : c.nreg 130120 < c.nreg 130121)
+include hht
 /-- The head entry: load `u = q h`, `lev u + 1`, `first u`; start the inner loop. -/
-theorem headB_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).Pre s L lab0)
-    {c : Config} (hI : OI Y W s L lab0 c0 c) (hht : c.nreg 130120 < c.nreg 130121) :
+theorem headB_exec :
     ∃ c1 k, Exec P W headB c c1 k ∧ k = 10 ∧ II Y W s L lab0 c0 c1 ∧ c1.nreg 130125 = 0 ∧
       c1.nreg 130130 = 0 ∧ c1.nreg 130120 = c.nreg 130120 ∧ c1.nreg 130121 = c.nreg 130121 ∧
       c1.nmem = c.nmem ∧
@@ -931,14 +911,13 @@ theorem headB_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).P
     · config_simp; simp only [hR.rQ, rq]
     · config_simp; simp only [hR.rQ, hR.rLev, rq, rl, hR.one]
     · config_simp; simp only [hR.rQ, hR.rF, rq, rf]
-    · config_simp; simp only [hR.rQ, hR.rF, rq, rf]; rfl
+    · simp_all
     · config_simp; left
       simp only [hR.rQ, hR.rF, rq, rf]
       exact per_pos (N := Y.N) hp.ok.injOn hfN
 
 /-- **One entry of the queue**: cost `≤ 50 deg u + 63`. -/
-theorem outerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).Pre s L lab0)
-    {c : Config} (hI : OI Y W s L lab0 c0 c) (hht : c.nreg 130120 < c.nreg 130121) :
+theorem outerBody_exec :
     ∃ c' k, Exec P W outerBody c c' k ∧
       k ≤ 50 * (Y.env c0.nmem).deg (qV Y c.nmem (c.nreg 130120)) + 63 ∧
       OI Y W s L lab0 c0 c' ∧ c'.nreg 130120 = c.nreg 130120 + 1 ∧
@@ -955,8 +934,7 @@ theorem outerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
   have hfin : (Y.env c0.nmem).Inv s L lab0 (labV Y c2.nmem) (levV Y c2.nmem) (parV Y c2.nmem)
       (qV Y c2.nmem) (c2.nreg 130120 + 1) (c2.nreg 130121) := by
     refine hII2.inv.finish hp ?_
-    rw [hj2, ← hII2.u, g122, hII1.d0]
-    rfl
+    simp_all
   have hone : c2.nreg 130001 = 1 := (hR0.fr hII2.fr).one
   have hw2 := hII2.wb
   have htn : c2.nreg 130121 ≤ Y.nv := hII2.inv.inv.tn
@@ -964,20 +942,18 @@ theorem outerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
   have := hY.wn
   have e3 := Exec.addN (P := P) hw2 130120 130120 130001 (by rw [hone]; omega)
   refine ⟨_, k1 + (k2 + 1), .seq e1 (.seq e2 e3), ?_, ⟨e3.wb_right, ?_, ?_⟩, ?_, ?_⟩
-  · rw [hper] at hk2; omega
+  · omega
   · exact Fr.nreg hII2.fr (fun r hr => by
       unfold Scr at hr; simp only [Machine.upd_apply]; split_ifs <;> omega)
-  · simp only [Machine.upd_same, ne_eq, Nat.reduceEqDiff, not_false_eq_true, Machine.upd_other]
-    rw [hone]; exact hfin
-  · simp only [Machine.upd_same]; rw [hone, g120, h120]
-  · intro i hi
-    rw [gq i (by rw [h121]; exact hi), hm1]
+  all_goals simp_all
+
+
+end
 
 /-- **The outer loop**: from the invariant, the loop ends with `h = t`; the cost plus
 `70 (nv - t) + 50 (N - Σ_{i<t} deg (q i))` at the end is at most the same quantity at the start
 plus `2`. -/
-theorem outerLoop_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).Pre s L lab0)
-    {c : Config} (hI : OI Y W s L lab0 c0 c) :
+theorem outerLoop_exec :
     ∃ c' k, Exec P W outerLoop c c' k ∧
       k + (70 * (Y.nv - c'.nreg 130120) + 50 * (Y.N - ∑ i ∈ Finset.range (c'.nreg 130120),
         (Y.env c0.nmem).deg (qV Y c'.nmem i))) ≤
@@ -998,7 +974,7 @@ theorem outerLoop_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
         rw [h120, Finset.sum_range_succ, hq _ htest]
         congr 1
         refine Finset.sum_congr rfl (fun i hi => ?_)
-        rw [hq i (by rw [Finset.mem_range] at hi; omega)]
+        grind
       have hle := hI2.inv.sum_deg_le hp.ok (n := c2.nreg 130120) hI2.inv.ht
       rw [hsum] at hle ⊢
       change _ ≤ Y.N at hle
@@ -1007,6 +983,9 @@ theorem outerLoop_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
   refine ⟨c', k, e, hk, hI', ?_⟩
   have := hI'.inv.ht
   omega
+
+
+end
 
 end outer
 
@@ -1033,12 +1012,9 @@ theorem bfs_exec (hY : Y.Good W) (hR0 : Regs Y s L c0)
       OI Y W s L (labV Y c0.nmem) c0 c' ∧ c'.nreg 130120 = c'.nreg 130121 := by
   have hsn : s < Y.nv := hp.s_lt
   have := hY.wLab; have := hY.wLev; have := hY.wQ; have := hY.wn
-  have hne1 : Y.bQ ≠ Y.bLab + s := by
-    have := hY.d2.2.2.1; unfold Disj at this; omega
-  have hne2 : Y.bQ ≠ Y.bLev + s := by
-    have := hY.d2.2.2.2.2.1; unfold Disj at this; omega
-  have hne3 : Y.bLab + s ≠ Y.bLev + s := by
-    have := hY.d2.1; unfold Disj at this; omega
+  
+  
+  
   unfold bfsStmt
   have hinit : ∃ c1 k1, Exec P W initB c0 c1 k1 ∧ k1 ≤ 9 ∧
       OI Y W s L (labV Y c0.nmem) c0 c1 ∧ c1.nreg 130120 = 0 := by
@@ -1071,19 +1047,13 @@ theorem bfs_exec (hY : Y.Good W) (hR0 : Regs Y s L c0)
         have hv : levV Y (upd (upd (upd c0.nmem Y.bQ s) (Y.bLab + s) L) (Y.bLev + s) 0) s = 0 := by
           unfold levV
           rw [view_lt hsn, Machine.upd_same]
-        refine Env.Inv.init hp (by rw [hq, Function.update_self]) (fun v hv' => ?_) hv
+        refine Env.Inv.init hp (by simp_all) (fun v hv' => ?_) hv
         rw [hl]
-        by_cases hvs : v = s
-        · subst hvs; simp
-        · rw [Function.update_of_ne hvs, ite_eq_right hvs]
+        grind
   obtain ⟨c1, k1, e1, hk1, hI1, h0⟩ := hinit
   obtain ⟨c', k, e, hk, hI', ht⟩ := outerLoop_exec (P := P) hY hR0 hp hI1
   refine ⟨c', k1 + k, .seq e1 e, ?_, hI', ht⟩
-  have hsum := hI'.inv.sum_deg_le hp.ok (n := c'.nreg 130121) le_rfl
-  have htn : c'.nreg 130121 ≤ Y.nv := hI'.inv.tn
-  change _ ≤ Y.N at hsum
-  rw [h0, Finset.range_zero, Finset.sum_empty, ht] at hk
-  omega
+  grind
 
 end main
 

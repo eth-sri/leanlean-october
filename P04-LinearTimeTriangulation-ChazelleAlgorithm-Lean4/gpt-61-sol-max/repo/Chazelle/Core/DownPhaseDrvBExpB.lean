@@ -52,10 +52,8 @@ theorem succ_mod_ite (x n : ℕ) (hn : 0 < n) :
   · rw [Nat.mod_eq_of_lt h1]
     split_ifs with h2
     · exact Nat.mod_eq_of_lt h2
-    · have : x % n + 1 = n := by omega
-      rw [this, Nat.mod_self]
-  · have : n = 1 := by omega
-    subst this; simp [Nat.mod_one]
+    grind [Nat.mod_self]
+  grind
 
 section loops
 
@@ -75,13 +73,13 @@ theorem forLoopPot {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (
     have hjN : j = N := by omega
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by omega) hw, hc, by omega⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
     have hlt : j < N := by omega
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁⟩ := hbody j c hlt hc
     obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (by omega) (by omega)
-    exact ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', by omega⟩
+    exact ⟨c', k₁ + 2 + k₂, .whileLtN_true (by omega) e₁ e₂, hI', by omega⟩
 
 end loops
 
@@ -89,8 +87,10 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
+section
+variable {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ e : Config}
 /-- **One step of a run.** -/
-theorem runBody_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ e : Config} {K₀ t a : ℕ}
+theorem runBody_exec {K₀ t a : ℕ}
     (hS : ESt W n PA li L c₀ e (K₀ + t)) (hK : K₀ + t < L.length) (hn : 0 < n)
     (h29 : e.nreg 212029 = t) (h30 : e.nreg 212030 = (a + t) % n)
     (hx : L.getD (K₀ + t) (.vtx 0) = .vtx ((a + t) % n)) :
@@ -115,26 +115,22 @@ theorem runBody_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ e : Config}
       e₂.nreg 212025 = e₁.nreg 212025 ∧ e₂.nmem = e₁.nmem := by
     refine spec_seq ?_
     exec_block
-    · rw [r30, h0]; omega
-    · config_simp; rw [r29, h0]; omega
+    · omega
+    · config_simp; omega
     · rw [← Nat.add_assoc, hsucc]
       by_cases hlt : (a + t) % n + 1 < n
-      · refine spec_ifLtN_true (by config_simp; rw [r30, h0, hrn]; exact hlt) ?_
+      · refine spec_ifLtN_true (by simp_all) ?_
         refine spec_skip ‹_› ?_
-        refine ⟨by omega, ?_, ?_, by config_simp, rfl⟩
-        · config_simp; rw [r29, h0]
-        · config_simp; simp only [hlt, ↓reduceIte]; rw [r30, h0]
-      · refine spec_ifLtN_false (by config_simp; rw [r30, h0, hrn]; exact hlt) ?_
+        simp_all
+      · refine spec_ifLtN_false (by simp_all) ?_
         refine spec_instr (Machine.Exec.copyN ‹_› _ _) fun _ => ?_
-        refine ⟨by omega, ?_, ?_, by config_simp, rfl⟩
-        · config_simp; rw [r29, h0]
-        · config_simp; simp only [hlt, ↓reduceIte]; rw [h1]
+        simp_all
   have hS₂ := hS₁.frame x₂.wb_right (exec_frameM x₂ wr_runTail) h25' hm'
   have X := Exec.seq x₁ x₂
   exact ⟨e₂, _, X, by omega, hS₂, h29', h30', exec_frameM X wr_runBody⟩
 
 /-- **A run**: the points `(a + t) mod n`, `t ≤ ℓ`, are written. -/
-theorem runS_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ e : Config} {K₀ a ℓ : ℕ}
+theorem runS_exec {K₀ a ℓ : ℕ}
     (hS : ESt W n PA li L c₀ e K₀) (h27 : e.nreg 212027 = a) (h28 : e.nreg 212028 = ℓ)
     (ha : a < n) (hℓ : ℓ < n) (hK : K₀ + (ℓ + 1) ≤ L.length)
     (hx : ∀ t, t ≤ ℓ → L.getD (K₀ + t) (.vtx 0) = .vtx ((a + t) % n)) :
@@ -151,14 +147,12 @@ theorem runS_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ e : Config} {K
       k₁ ≤ 3 ∧ e₁.nreg 212028 = ℓ + 1 ∧ e₁.nreg 212029 = 0 ∧ e₁.nreg 212030 = a ∧
       e₁.nreg 212025 = e.nreg 212025 ∧ e₁.nmem = e.nmem := by
     exec_block
-    · rw [h28, h0]; omega
-    · config_simp
-      rw [h28, h0, h1, h27]
-      exact ⟨by omega, rfl, rfl, rfl⟩
+    · omega
+    simp_all
   have hS₁ := hS.frame x₁.wb_right (exec_frameM x₁ wr_runInit) h25' hm'
   let Inv : ℕ → Config → Prop := fun t d => ESt W n PA li L c₀ d (K₀ + t) ∧
     d.nreg 212029 = t ∧ d.nreg 212028 = ℓ + 1 ∧ d.nreg 212030 = (a + t) % n
-  have I0 : Inv 0 e₁ := ⟨by simpa using hS₁, h29', h28', by rw [h30', Nat.add_zero,
+  have I0 : Inv 0 e₁ := ⟨by omega, h29', h28', by rw [h30', Nat.add_zero,
     Nat.mod_eq_of_lt ha]⟩
   obtain ⟨e', k₂, x₂, ⟨hS', -⟩, hk₂⟩ := DrvR.forLoop (P := P) (W := W) (ir := 212029)
     (nr := 212028) (body := runBody) Inv 12 (ℓ + 1)
@@ -166,11 +160,14 @@ theorem runS_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ e : Config} {K
     (fun j d hj ⟨hS, h1, h2, h3⟩ => by
       obtain ⟨d', k', x, hk', hS', h29, h30, f⟩ :=
         runBody_exec (P := P) hS (by omega) hn h1 h3 (hx j (by omega))
-      exact ⟨d', k', x, ⟨by simpa [Nat.add_assoc] using hS', h29,
+      exact ⟨d', k', x, ⟨by omega, h29,
         (f.1 _ (by decide)).trans h2, h30⟩, hk'⟩)
     I0 (Nat.zero_le _)
   have X := Exec.seq x₁ x₂
-  exact ⟨e', _, X, by rw [Nat.sub_zero] at hk₂; omega, hS', exec_frameM X wr_runS⟩
+  exact ⟨e', _, X, by omega, hS', exec_frameM X wr_runS⟩
+
+
+end
 
 end exec
 

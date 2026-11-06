@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Chain.Sides
 public import Chazelle.Merge.Fusion
 public import Chazelle.Mountain.Orientation
@@ -60,34 +62,32 @@ open Chazelle.Chain (IsHChordIn regionsIn TouchesIn SideAttach sideInArc)
 
 /-! ## The shear -/
 
+section
+variable (ε : ℝ)
+include ε
 /-- The shear `(x, y) ↦ (x, y + ε x)`. -/
-def shearPt (ε : ℝ) (p : Point) : Point := (p.1, p.2 + ε * p.1)
+def shearPt (p : Point) : Point := (p.1, p.2 + ε * p.1)
 
 /-- The sheared polygon: every vertex sheared, same indices. -/
-def shear (ε : ℝ) (P : Polygon) : Polygon := ⟨P.vertices.map (shearPt ε)⟩
+def shear (P : Polygon) : Polygon := ⟨P.vertices.map (shearPt ε)⟩
 
 /-- The shear does not change the number of vertices. -/
-theorem shear_n (ε : ℝ) (P : Polygon) : (shear ε P).n = P.n := by
+theorem shear_n (P : Polygon) : (shear ε P).n = P.n := by
   simp [shear, Polygon.n]
 
-theorem getD_map_point (f : Point → Point) (l : List Point) (i : ℕ) (d : Point) :
-    (l.map f).getD i (f d) = f (l.getD i d) := by
-  induction l generalizing i with
-  | nil => simp
-  | cons x xs ih => cases i <;> simp
+
+end
+
 
 /-- Vertex `i` of the sheared polygon is the sheared vertex `i` (for every `i`: the default
 vertex `(0, 0)` is fixed by the shear). -/
 theorem shear_vtx (ε : ℝ) (P : Polygon) (i : ℕ) : (shear ε P).vtx i = shearPt ε (P.vtx i) := by
-  have h0 : shearPt ε ((0 : ℝ), (0 : ℝ)) = ((0 : ℝ), (0 : ℝ)) := by simp [shearPt]
-  unfold Polygon.vtx shear
-  rw [← getD_map_point (shearPt ε) P.vertices i, h0]
+  grind [shearPt, Polygon.vtx, shear]
 
 /-- **Orientation tests are exact under the shear**: the shear has determinant `1`. -/
 theorem det_shearPt (ε : ℝ) (a b c : Point) :
     det (shearPt ε a) (shearPt ε b) (shearPt ε c) = det a b c := by
-  simp only [det, shearPt]
-  ring
+  core_grind [det]
 
 /-- The `x`-coordinate of the point of edge `e` of `Q` at the height of vertex `h` of `Q`
 (Chazelle's chord endpoints; the vertex itself when `h` is an endpoint of `e`). -/
@@ -128,34 +128,37 @@ ordinate order, orientation sign. -/
 def SignFacts (a b c : Point) : Prop × Prop × Prop × Prop :=
   (a.1 < b.1, a.2 < b.2, 0 < det a b c, det a b c = 0)
 
+section
+variable (P : Polygon)
+include P
 /-- **Stability of the algorithm's comparisons.**  Every test made by the visibility-map stage
 compares abscissae or ordinates of two symbolic points or takes the orientation sign of three
 (`SignFacts`); at `ε` each such test has the truth value it has for all smaller positive `ε'`
 (hence the limit value, computable from `P` by lexicographic sign rules: WP-A). -/
-def StableAt (P : Polygon) (ε : ℝ) : Prop :=
+def StableAt (ε : ℝ) : Prop :=
   ∀ ε', 0 < ε' → ε' ≤ ε → ∀ s₁ s₂ s₃ : SymPt, s₁.Lt P.n → s₂.Lt P.n → s₃.Lt P.n →
     SignFacts (s₁.eval (shear ε P)) (s₂.eval (shear ε P)) (s₃.eval (shear ε P)) =
       SignFacts (s₁.eval (shear ε' P)) (s₂.eval (shear ε' P)) (s₃.eval (shear ε' P))
 
 /-- A good shear parameter for `P`. -/
-def GoodShear (P : Polygon) (ε : ℝ) : Prop :=
+def GoodShear (ε : ℝ) : Prop :=
   0 < ε ∧ DistinctHeights (shear ε P) ∧ YlexAgree P (shear ε P) ∧ StableAt P ε
 
 /-- The shear parameter used for `P` (a good one whenever one exists, which WP-A proves for
 simple polygons: `GoodShearExistsSpec`). -/
-noncomputable def epsOf (P : Polygon) : ℝ := by
+noncomputable def epsOf : ℝ := by
   classical
   exact if h : ∃ ε, GoodShear P ε then h.choose else 1
 
 /-- **The geometry polygon** of the visibility-map stage. -/
-noncomputable def Qof (P : Polygon) : Polygon := shear (epsOf P) P
+noncomputable def Qof : Polygon := shear (epsOf P) P
+
+
+end
 
 /-- The chosen parameter is good as soon as some parameter is. -/
 theorem goodShear_epsOf {P : Polygon} (h : ∃ ε, GoodShear P ε) : GoodShear P (epsOf P) := by
-  classical
-  unfold epsOf
-  rw [dite_eq_left_of_eq_true (eq_true h)]
-  exact h.choose_spec
+  core_grind
 
 /-- `Q` is a shear of `P` by a nonnegative parameter whose height order is `P`'s lexicographic
 order.  The final stage accepts tables for any such `Q` (with `Q = P`, `ε = 0`, as a special
@@ -250,8 +253,11 @@ namespace Model
 
 variable (M : Model)
 
+section
+variable (Q : Polygon) (x : WPos)
+include Q x
 /-- The parameter of a walk position on its walk edge. -/
-noncomputable def param (Q : Polygon) (x : WPos) : ℝ :=
+noncomputable def param : ℝ :=
   match x.hgt with
   | 0 => 0
   | h + 1 =>
@@ -259,20 +265,29 @@ noncomputable def param (Q : Polygon) (x : WPos) : ℝ :=
       else ((Q.vtx h).2 - (M.wa x.edge).2) / ((M.wb x.edge).2 - (M.wa x.edge).2)
 
 /-- The key of a walk position (`edge + parameter`), which orders positions along the walk. -/
-noncomputable def key (Q : Polygon) (x : WPos) : ℝ := x.edge + M.param Q x
+noncomputable def key : ℝ := x.edge + M.param Q x
 
 /-- The point of a walk position. -/
-noncomputable def pos (Q : Polygon) (x : WPos) : Point :=
+noncomputable def pos : Point :=
   Geometry.lerp (M.wa x.edge) (M.wb x.edge) (M.param Q x)
 
 /-! ### Submaps: regions, cuts, arcs, weights -/
 
+
+end
+
+section
+variable (F : Set (Set Point))
+include F
 /-- The regions of the submap `F`. -/
-def regions (F : Set (Set Point)) : Set (Set Point) := regionsIn M.D F
+def regions : Set (Set Point) := regionsIn M.D F
 
 /-- The degree of a region (its number of exit chords). -/
-noncomputable def deg (F : Set (Set Point)) (U : Set Point) : ℕ :=
+noncomputable def deg (U : Set Point) : ℕ :=
   {c | c ∈ F ∧ TouchesIn M.D c U}.ncard
+
+
+end
 
 /-- An admissible chord family with all heights at vertex heights of `Q`. -/
 def ChordFamily (Q : Polygon) (F : Set (Set Point)) : Prop :=
@@ -305,34 +320,42 @@ def IsArc (F : Set (Set Point)) (U : Set Point) (a b : ℝ) : Prop :=
 noncomputable def arcWt (a b : ℝ) : ℕ :=
   {p : ℕ | p < M.W.n ∧ M.counted p ∧ ∃ t : ℝ, 0 < t ∧ t < 1 ∧ sideInArc a b (p + t)}.ncard
 
+section
+variable (F : Set (Set Point))
+include F
 /-- **The weight** of a region (p. 494): the maximum number of counted edges on one of its arcs. -/
-noncomputable def weight (F : Set (Set Point)) (U : Set Point) : ℕ :=
+noncomputable def weight (U : Set Point) : ℕ :=
   sSup ((fun ab : ℝ × ℝ => M.arcWt ab.1 ab.2) '' {ab | M.IsArc F U ab.1 ab.2})
 
-/-- **Conformal** (p. 495): every region has at most four exit chords. -/
-def Conformal (F : Set (Set Point)) : Prop := ∀ U ∈ M.regions F, M.deg F U ≤ 4
 
 /-- Regions have at most `d` exit chords (the bounded-degree relaxation used between the fusion
 and the restoration of conformality, p. 508). -/
-def DegLe (F : Set (Set Point)) (d : ℕ) : Prop := ∀ U ∈ M.regions F, M.deg F U ≤ d
+def DegLe (d : ℕ) : Prop := ∀ U ∈ M.regions F, M.deg F U ≤ d
 
 /-- **γ-semigranular** (condition (i), p. 496). -/
-def Semigranular (F : Set (Set Point)) (γ : ℕ) : Prop := ∀ U ∈ M.regions F, M.weight F U ≤ γ
+def Semigranular (γ : ℕ) : Prop := ∀ U ∈ M.regions F, M.weight F U ≤ γ
 
 /-- **Condition (ii)** of γ-granularity (p. 496): contracting a tree edge incident upon a node of
 degree `< 3` produces a region of weight `> γ`. -/
-def ContractionCond (F : Set (Set Point)) (γ : ℕ) : Prop :=
+def ContractionCond (γ : ℕ) : Prop :=
   ∀ c ∈ F, ∀ U ∈ M.regions F, ∀ V ∈ M.regions F, U ≠ V → TouchesIn M.D c U →
     TouchesIn M.D c V → (M.deg F U < 3 ∨ M.deg F V < 3) →
       ∀ W' ∈ M.regions (F \ {c}), U ⊆ W' → γ < M.weight (F \ {c}) W'
 
 /-- **γ-granular** (p. 496). -/
-def Granular (F : Set (Set Point)) (γ : ℕ) : Prop := M.Semigranular F γ ∧ M.ContractionCond F γ
+def Granular (γ : ℕ) : Prop := M.Semigranular F γ ∧ M.ContractionCond F γ
 
-theorem Granular.semigranular {F : Set (Set Point)} {γ : ℕ} (h : M.Granular F γ) :
+
+end
+
+section
+variable {F : Set (Set Point)}
+theorem Granular.semigranular {γ : ℕ} (h : M.Granular F γ) :
     M.Semigranular F γ := h.1
 
-theorem Conformal.degLe {F : Set (Set Point)} (h : M.Conformal F) : M.DegLe F 4 := h
+
+
+end
 
 /-- The number of counted walk edges (the size of the curve: `2 m` for a chain, `n` for the
 interior of a polygon). -/

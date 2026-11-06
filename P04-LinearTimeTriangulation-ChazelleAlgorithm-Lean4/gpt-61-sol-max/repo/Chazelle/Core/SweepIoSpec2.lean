@@ -75,7 +75,7 @@ noncomputable def qPt (J : Merge.Junction) (P : Polygon) (i : ℕ) (L : List (�
 open Classical in
 /-- **The cost of the query `j`**: `κ D (F γ + TLR + 1)`, plus `κ D (A₁ + 1) (F γ + 1)` for a
 brute-force query of side `1`. -/
-noncomputable def qCost (κ : ℕ → ℕ) (F : ℕ → ℕ) (c₀ : Config) (J : Merge.Junction) (P : Polygon)
+noncomputable def qCost (κ F : ℕ → ℕ) (c₀ : Config) (J : Merge.Junction) (P : Polygon)
     (N₁ N₂ : NF) (L : List (ℕ × ℕ × ℕ)) (i j : ℕ) : ℕ :=
   κ (c₀.nreg (sw 6)) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) +
     (if i = 1 ∧ BruteQ J N₂ j (qPt J P i L j) then
@@ -100,7 +100,7 @@ def QrySpec (Aux : Polygon → Merge.Junction → NF → Config → Prop) : Prop
         c.nreg ALLOC ≤ c'.nreg ALLOC)
 
 /-- **The cost of the loop**. -/
-def loopCost (κ : ℕ → ℕ) (F : ℕ → ℕ) (c₀ : Config) (N₁ : NF) (L : List (ℕ × ℕ × ℕ)) : ℕ :=
+def loopCost (κ F : ℕ → ℕ) (c₀ : Config) (N₁ : NF) (L : List (ℕ × ℕ × ℕ)) : ℕ :=
   κ (c₀.nreg (sw 6)) * (L.length + 1) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) +
     κ (c₀.nreg (sw 6)) * (N₁.arcs.length + 1) * (F (c₀.nreg (sw 5)) + 1)
 

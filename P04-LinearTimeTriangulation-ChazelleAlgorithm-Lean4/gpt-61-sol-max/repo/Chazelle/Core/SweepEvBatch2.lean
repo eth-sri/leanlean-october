@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvBatch
 
 /-!
@@ -33,7 +35,7 @@ theorem up_ne_dn (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {k : ℕ} (hk : k
 theorem not_orgR {r : ℕ} (h : (LR r ∧ r ≠ oK ∧ r ≠ oS) ∨ ER r) : ¬ OrgR r := by
   unfold OrgR CandR BestR LblR bF bE bH bN bL
   rcases h with ⟨h, h1, h2⟩ | h
-  · simp only [LR, oK, oS, sw] at h h1 h2; unfold sw; omega
+  · ram_grind
   · unfold ER kN kL gN gR sP sC aB sw at h; unfold sw; omega
 
 set_option maxHeartbeats 4000000 in
@@ -63,59 +65,56 @@ theorem orgDo_batch (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {g : Stmt} {KG
   have hInv' := hInv
   obtain ⟨hreg, hAc, A, hB⟩ := hInv
   have keepS : ∀ r, 240000 ≤ r → r < 250000 → ¬ OrgR r → ¬ LR r → c.nreg r = cs.nreg r :=
-    fun r h1 h2 h3 h4 => hreg r (band_sw_not ⟨h1, h2⟩) h3 h4 (by unfold ALLOC; omega)
-  have eGK : c.nreg wGK = cs.nreg wGK := keepS _ (by unfold wGK sw; omega)
-    (by unfold wGK sw; omega) (by unfold OrgR CandR BestR LblR wGK bF bE bH bN bL sw; omega)
-    (by unfold LR wGK oK oS sw; omega)
-  have eGB : c.nreg wGB = cs.nreg wGB := keepS _ (by unfold wGB sw; omega)
-    (by unfold wGB sw; omega) (by unfold OrgR CandR BestR LblR wGB bF bE bH bN bL sw; omega)
-    (by unfold LR wGB oK oS sw; omega)
-  have eKE : c.nreg kE = cs.nreg kE := keepS _ (by unfold kE sw; omega)
-    (by unfold kE sw; omega) (by unfold OrgR CandR BestR LblR kE bF bE bH bN bL sw; omega)
-    (by unfold LR kE oK oS sw; omega)
-  have eKH : c.nreg kH = cs.nreg kH := keepS _ (by unfold kH sw; omega)
-    (by unfold kH sw; omega) (by unfold OrgR CandR BestR LblR kH bF bE bH bN bL sw; omega)
-    (by unfold LR kH oK oS sw; omega)
-  have eTB : c.nreg cTB = cs.nreg cTB := keepS _ (by unfold cTB sw; omega)
-    (by unfold cTB sw; omega) (by unfold OrgR CandR BestR LblR cTB bF bE bH bN bL sw; omega)
-    (by unfold LR cTB oK oS sw; omega)
+    fun r h1 h2 h3 h4 => hreg r (band_sw_not ⟨h1, h2⟩) h3 h4 (by omega_nf)
+  have eGK : c.nreg wGK = cs.nreg wGK := keepS _ (by omega_nf)
+    (by omega_nf) (by omega_nf)
+    (by omega_nf)
+  have eGB : c.nreg wGB = cs.nreg wGB := keepS _ (by omega_nf)
+    (by omega_nf) (by omega_nf)
+    (by omega_nf)
+  have eKE : c.nreg kE = cs.nreg kE := keepS _ (by omega_nf)
+    (by omega_nf) (by omega_nf)
+    (by omega_nf)
+  have eKH : c.nreg kH = cs.nreg kH := keepS _ (by omega_nf)
+    (by omega_nf) (by omega_nf)
+    (by omega_nf)
+  have eTB : c.nreg cTB = cs.nreg cTB := keepS _ (by omega_nf)
+    (by omega_nf) (by omega_nf)
+    (by omega_nf)
   have hmc : ∀ x, cs.nreg cTB + 6 * N₂.nChords ≤ x → x < cs.nreg ALLOC → c.nmem x = cs.nmem x :=
     fun x h1 h2 => hB.memT x h2 (Or.inr h1)
   have harcs' : ∀ k, k < L.length → ShotList.arcAt c.nmem (c.nreg wGB) k =
       nArc (chainModel J.left) (Qof P) N₁ (L.getD k 0) := fun k hk' => by
-    rw [eGB, ← harcs k hk']
-    unfold ShotList.arcAt
-    rw [hmc _ (by omega) (by omega), hmc _ (by omega) (by omega), hmc _ (by omega) (by omega),
-      hmc _ (by omega) (by omega)]
+    grind [ShotList.arcAt]
   have hlo : ShotList.loSet (chainModel J.left) (Qof P) c.nmem (c.nreg wGB) L.length [] =
       ShotList.loSet (chainModel J.left) (Qof P) cs.nmem (cs.nreg wGB) L.length [] := by
     rw [eGB]; exact loSet_congr (fun x h1 h2 => hmc x (by omega) (by omega))
   have hb : c.nreg bF = 1 → PosW P J (c.nreg bE) (c.nreg bH) := fun h => by
     obtain ⟨⟨j, hj⟩, -⟩ := hB.bAcc h
     exact (hB.acc _ hj).2.2.2.2.2.2.2.1
-  refine (orgDo_irs E hI hgen hL (by rw [eGK, hgK]) (by rw [eGB]; omega) harcs' rfl rfl hk hs
-    (by rw [eKE, eKH]; exact hkey) hb hB.fF hB.fN hroom).mono le_rfl ?_
+  refine (orgDo_irs E hI hgen hL (by omega) (by omega) harcs' rfl rfl hk hs
+    (by ram_grind) hb hB.fF hB.fN hroom).mono le_rfl ?_
   rintro c' ⟨hres, hcomp, hrej, hfr, hA'⟩
   refine ⟨batch_step hInv' (by omega) hs (up_ne_dn E hk) hT hres
     (fun hv => hlo ▸ hcomp hv.1 hv.2.1 hv.2.2) hrej hfr hA', fun r hr => ?_, fun x h1 h2 => ?_⟩
   · refine hfr r (band_sw_not ?_) (not_orgR hr) (by
       rcases hr with ⟨h, -, -⟩ | h
-      · unfold LR oK oS sw at h; unfold ALLOC; omega
-      · unfold ER kN kL gN gR sP sC aB sw at h; unfold ALLOC; omega)
+      · unfold LR oK oS sw at h; omega_nf
+      · unfold ER kN kL gN gR sP sC aB sw at h; omega_nf)
     rcases hr with ⟨h, -, -⟩ | h
     · unfold LR oK oS sw at h; omega
     · unfold ER kN kL gN gR sP sC aB sw at h; omega
-  · have eaB : c.nreg aB = cs.nreg aB := keepS _ (by unfold aB sw; omega)
-      (by unfold aB sw; omega) (by unfold OrgR CandR BestR LblR aB bF bE bH bN bL sw; omega)
-      (by unfold LR aB oK oS sw; omega)
-    have eC : c.nreg sC = cs.nreg sC := keepS _ (by unfold sC sw; omega)
-      (by unfold sC sw; omega) (by unfold OrgR CandR BestR LblR sC bF bE bH bN bL sw; omega)
-      (by unfold LR sC oK oS sw; omega)
+  · have eaB : c.nreg aB = cs.nreg aB := keepS _ (by omega_nf)
+      (by omega_nf) (by omega_nf)
+      (by omega_nf)
+    have eC : c.nreg sC = cs.nreg sC := keepS _ (by omega_nf)
+      (by omega_nf) (by omega_nf)
+      (by omega_nf)
     rw [eaB] at h1; rw [eaB, eC] at h2
     rcases hres with ⟨hm, -⟩ | ⟨e, h, -, hm, -⟩
-    · exact hm x (by omega)
-    · rw [hm x (by omega), tabUpd_o _ (by rw [eTB]; omega) (by rw [eTB]; omega)
-        (by rw [eTB]; omega)]
+    · grind
+    · rw [hm x (by omega), tabUpd_o _ (by omega) (by omega)
+        (by omega)]
 
 end
 

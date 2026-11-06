@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SpecNF
 public import Chazelle.Final.Interface
 public import Chazelle.Machine.Structured
@@ -63,11 +65,7 @@ def bandOf (r : ℕ) : ℕ := r / 10000
 /-- Register `i` of band `b`. -/
 def bandReg (b i : ℕ) : ℕ := 10000 * b + i
 
-theorem bandOf_bandReg (b i : ℕ) (hi : i < 10000) : bandOf (bandReg b i) = b := by
-  unfold bandOf bandReg
-  omega
 
-theorem bandOf_alloc : bandOf ALLOC = 0 := by decide
 
 /-! ## Frames and the judgement -/
 
@@ -92,23 +90,12 @@ def Meets (s : Stmt) (bands : Finset ℕ) (Pre : Polygon → ℕ → Config → 
 /-- Frames compose. -/
 theorem Frame.trans {B₁ B₂ : Finset ℕ} {c c₁ c₂ : Config} {k₁ k₂ : ℕ} (h₁ : Frame B₁ c c₁ k₁)
     (h₂ : Frame B₂ c₁ c₂ k₂) : Frame (B₁ ∪ B₂) c c₂ (k₁ + k₂) := by
-  obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := h₁
-  obtain ⟨r₂, rr₂, m₂, rm₂, o₂, a₂, b₂⟩ := h₂
-  refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, o₂.trans o₁,
-    a₁.trans a₂, by omega⟩
-  · rw [Finset.mem_union, not_or] at hr
-    rw [r₂ r hr.2 hra, r₁ r hr.1 hra]
-  · rw [Finset.mem_union, not_or] at hr
-    rw [rr₂ r hr.2, rr₁ r hr.1]
-  · rw [m₂ a (lt_of_lt_of_le ha a₁), m₁ a ha]
-  · rw [rm₂ a (lt_of_lt_of_le ha a₁), rm₁ a ha]
+  grind [Chazelle.Core.Frame]
 
 /-- A frame for fewer bands is a frame for more. -/
 theorem Frame.mono {B B' : Finset ℕ} {c c' : Config} {k k' : ℕ} (h : Frame B c c' k)
     (hB : B ⊆ B') (hk : k ≤ k') : Frame B' c c' k' := by
-  obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := h
-  exact ⟨fun r hr hra => r₁ r (fun h => hr (hB h)) hra, fun r hr => rr₁ r (fun h => hr (hB h)),
-    m₁, rm₁, o₁, a₁, by omega⟩
+  core_grind
 
 /-! ## Normal forms in memory -/
 
@@ -182,9 +169,12 @@ theorem NFWithin.nfAt {m : ℕ → ℕ} {B E : ℕ} {N : NF} (h : NFWithin m B E
 
 /-! ## Hosts and chains in memory -/
 
+section
+variable (m : ℕ → ℕ) (B : ℕ)
+include m B
 /-- **Host layout** at `B`: the number of items, then three words per item: kind (`0` run, `1`
 vertex, `2` edge point) and two arguments. -/
-def HostAt (m : ℕ → ℕ) (B : ℕ) (H : Host) : Prop :=
+def HostAt (H : Host) : Prop :=
   m B = H.length ∧ ∀ i, i < H.length →
     match H.getD i (.run 0 0) with
     | .run a ℓ => m (B + 1 + 3 * i) = 0 ∧ m (B + 2 + 3 * i) = a ∧ m (B + 3 + 3 * i) = ℓ
@@ -194,7 +184,7 @@ def HostAt (m : ℕ → ℕ) (B : ℕ) (H : Host) : Prop :=
 /-- **Chain descriptor** at `B`: host handle, start `s`, number of edges `m`, top index (relative
 to the chain) and the orientation bit `sideBeta` (`1` = true).  The descriptor describes the chain
 `C` of the host `H` realised in `Q`. -/
-def ChainDescAt (m : ℕ → ℕ) (B : ℕ) (Q : Polygon) (H : Host) (C : Chain) : Prop :=
+def ChainDescAt (Q : Polygon) (H : Host) (C : Chain) : Prop :=
   HostAt m (m B) H ∧ C.P = H.poly Q ∧ m (B + 1) = C.s ∧ m (B + 2) = C.m ∧
     m (B + 3) = C.topIdx ∧ (m (B + 4) = 1 ↔ C.sideBeta = true)
 
@@ -202,11 +192,14 @@ def ChainDescAt (m : ℕ → ℕ) (B : ℕ) (Q : Polygon) (H : Host) (C : Chain)
 `m B = 1` (interior model of `Q`) with the orientation bit `m (B + 1) = 1 ↔ LeftInside Q`, which
 fixes the direction of the interior walk (review finding C3: without it, comparing keys on one
 walk edge would cost `O(n)`). -/
-def ModelDescAt (m : ℕ → ℕ) (B : ℕ) (Q : Polygon) (M : Model) : Prop :=
+def ModelDescAt (Q : Polygon) (M : Model) : Prop :=
   (m B = 0 ∧ ∃ H C, ChainDescAt m (B + 1) Q H C ∧ M = chainModel C) ∨
     (m B = 1 ∧ (m (B + 1) = 1 ↔ Mountain.LeftInside Q) ∧ M = interiorModel Q)
 
 /-! ## Well-formed descriptors (review findings C7, C8) -/
+
+
+end
 
 /-- **The word bound of the procedures that handle host curves**: `256 n + 16`.  A well-formed
 host (`HostWF`, at most `64` items) has at most `64 n` points (`Host.pts_length_le`), so the index
@@ -217,34 +210,46 @@ Finding R-W1: the search of Lemma 3.2 adds two walk positions of a chain model, 
 hence `256 n + 16`.) -/
 def hostWords (n : ℕ) : ℕ := 256 * n + 16
 
+section
+variable (P : Polygon) (E : ℕ) (m : ℕ → ℕ) (B : ℕ)
+include P E m B
 /-- **A well-formed chain descriptor** at `B`, stored below `E` (findings C7, C8): the
 descriptor words `B … B + 4` and the host layout lie below `E`; the host has at most `64` items
 and is well formed (`HostWF`: runs and points in range); the start of the chain is below the
 number of host points.  With `E` the allocator, the descriptor survives every later frame. -/
-def ChainWF (P : Polygon) (E : ℕ) (m : ℕ → ℕ) (B : ℕ) : Prop :=
+def ChainWF : Prop :=
   B + 5 ≤ E ∧ ∀ H C, ChainDescAt m B (Qof P) H C →
     H.length ≤ 64 ∧ HostWF P.n H ∧ m B + 3 * H.length + 4 ≤ E ∧ C.s < C.P.n
 
 /-- **A well-formed model descriptor** at `B`, stored below `E`: six words below `E`, and a
 well-formed chain descriptor if it describes a chain model (finding C7: a handle near the word
 bound could not be read; C8: host descriptors). -/
-def ModelDescWF (P : Polygon) (E : ℕ) (m : ℕ → ℕ) (B : ℕ) : Prop :=
+def ModelDescWF : Prop :=
   B + 6 ≤ E ∧ (m B = 0 → ChainWF P E m (B + 1))
 
-theorem ChainWF.mono {P : Polygon} {E E' : ℕ} {m : ℕ → ℕ} {B : ℕ} (h : ChainWF P E m B)
-    (hE : E ≤ E') : ChainWF P E' m B :=
-  ⟨by have := h.1; omega, fun H C hC => by
-    obtain ⟨h1, h2, h3, h4⟩ := h.2 H C hC
-    exact ⟨h1, h2, by omega, h4⟩⟩
 
-theorem ModelDescWF.mono {P : Polygon} {E E' : ℕ} {m : ℕ → ℕ} {B : ℕ} (h : ModelDescWF P E m B)
+end
+
+section
+variable {P : Polygon} {E E' : ℕ} {m : ℕ → ℕ} {B : ℕ}
+theorem ChainWF.mono (h : ChainWF P E m B)
+    (hE : E ≤ E') : ChainWF P E' m B :=
+  by core_grind
+
+theorem ModelDescWF.mono (h : ModelDescWF P E m B)
     (hE : E ≤ E') : ModelDescWF P E' m B :=
   ⟨by have := h.1; omega, fun h0 => (h.2 h0).mono hE⟩
 
 /-! ## The hand-off to the final stage -/
 
+
+end
+
+section
+variable (m : ℕ → ℕ) (B : ℕ)
+include m B
 /-- The trapezoid table at `B`: four words per record (`left, right, top, bot`). -/
-def TrapTableAt (m : ℕ → ℕ) (B : ℕ) (T : Final.TrapTable) : Prop :=
+def TrapTableAt (T : Final.TrapTable) : Prop :=
   ∀ i, i < T.length →
     m (B + 4 * i) = (T.getD i ⟨0, 0, 0, 0⟩).left ∧ m (B + 4 * i + 1) = (T.getD i ⟨0, 0, 0, 0⟩).right ∧
       m (B + 4 * i + 2) = (T.getD i ⟨0, 0, 0, 0⟩).top ∧
@@ -252,11 +257,14 @@ def TrapTableAt (m : ℕ → ℕ) (B : ℕ) (T : Final.TrapTable) : Prop :=
 
 /-- The vertex-chord table at `B`: three words per record (`src`, direction bit (`1` = right),
 `dst`). -/
-def ChordTableAt (m : ℕ → ℕ) (B : ℕ) (Cs : List Final.ChordRec) : Prop :=
+def ChordTableAt (Cs : List Final.ChordRec) : Prop :=
   ∀ i, i < Cs.length →
     m (B + 3 * i) = (Cs.getD i ⟨0, false, 0⟩).src ∧
       (m (B + 3 * i + 1) = 1 ↔ (Cs.getD i ⟨0, false, 0⟩).dir = true) ∧
       m (B + 3 * i + 2) = (Cs.getD i ⟨0, false, 0⟩).dst
+
+
+end
 
 /-- **The precondition of the final stage**: valid tables for the geometry polygon `Q` in memory,
 announced in the hand-off registers, below the allocator; nothing emitted yet. -/

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRSplH
 
 /-!
@@ -26,26 +28,15 @@ theorem spl_keep {r : ℕ}
       (r < 210034 ∨ 210059 < r) ∧ (r < 210031 ∨ 210033 < r) ∧ BsA r = false ∧
       210000 ≤ r ∧ r < 220000 := by
   refine ⟨band21_notin (by omega) (by omega), ?_, ?_, by omega, by omega, by omega,
-    by unfold ALLOC; omega, by omega, by omega, ?_, by omega, by omega⟩
-  · simp only [Bs56, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
-  · simp only [Bcp, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
-  · simp only [BsA, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+    by omega_nf, by omega, by omega, ?_, by omega, by omega⟩
+  all_goals ram_grind
 
 /-- The registers outside the bands of the splice. -/
 theorem spl_out {r : ℕ} (hr : bandOf r ∉ ({bDownDrv, bBuild, bSort, bSign} : Finset ℕ)) :
     bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) ∧ (r ≠ ALLOC → Bs56 r = false) ∧
       Bcp r = false ∧ (r < 210002 ∨ 210005 < r) ∧ r ≠ 210068 ∧ r ≠ 210069 ∧
       (r < 210034 ∨ 210059 < r) ∧ (r < 210031 ∨ 210033 < r) ∧ (r ≠ ALLOC → BsA r = false) := by
-  have hb : ¬ (r / 10000 = 21 ∨ r / 10000 = 4 ∨ r / 10000 = 3 ∨ r / 10000 = 1) := by
-    simpa only [Finset.mem_insert, Finset.mem_singleton, bandOf, bDownDrv, bBuild, bSort,
-      bSign] using hr
-  refine ⟨?_, fun hra => ?_, ?_, by omega, by omega, by omega, by omega, by omega, fun hra => ?_⟩
-  · simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort, bSign, bBuild]; omega
-  · have h9 : r ≠ 9999 := hra
-    simp only [Bs56, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
-  · simp only [Bcp, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
-  · have h9 : r ≠ 9999 := hra
-    simp only [BsA, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+  ram_grind
 
 section exec
 
@@ -69,7 +60,7 @@ theorem splice_meets {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) :
   have hcost : splCost κB c = κSpl κB * (K + K₂ + A + 1) * (Nat.clog 2 Mb + 1) := by
     unfold splCost; simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd]; rw [hK, hK₂]
   have hroom' : A₀ + κSpl κB * (K + K₂ + A + 1) * (Nat.clog 2 Mb + 1) ≤ W := by
-    rw [← hcost]; exact hroom
+    ram_grind
   have hcl : 1 ≤ Nat.clog 2 Mb + 1 := by omega
   have hbase : K + K₂ + A + 1 ≤ (K + K₂ + A + 1) * (Nat.clog 2 Mb + 1) :=
     Nat.le_mul_of_pos_right _ (by omega)
@@ -77,14 +68,10 @@ theorem splice_meets {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) :
     (fun b => hMb b)
   have hκ : κSpl κB * (K + K₂ + A + 1) * (Nat.clog 2 Mb + 1) =
       120000 * ((K + K₂ + A + 1) * (Nat.clog 2 Mb + 1)) +
-        κB * ((K + K₂ + A + 1) * (Nat.clog 2 Mb + 1)) := by unfold κSpl; ring
+        κB * ((K + K₂ + A + 1) * (Nat.clog 2 Mb + 1)) := by ram_grind
   have hB2c' : 11200 * (2 * K₂ + A + 1) * (Nat.clog 2 Mb + 1) ≤
       22400 * ((K + K₂ + A + 1) * (Nat.clog 2 Mb + 1)) := by
-    have : 2 * K₂ + A + 1 ≤ 2 * (K + K₂ + A + 1) := by omega
-    calc 11200 * (2 * K₂ + A + 1) * (Nat.clog 2 Mb + 1)
-        ≤ 11200 * (2 * (K + K₂ + A + 1)) * (Nat.clog 2 Mb + 1) :=
-          Nat.mul_le_mul_right _ (Nat.mul_le_mul_left _ this)
-      _ = 22400 * ((K + K₂ + A + 1) * (Nat.clog 2 Mb + 1)) := by ring
+    ram_grind
   have hκB : κB * (K + K₂ + 1) ≤ κB * ((K + K₂ + A + 1) * (Nat.clog 2 Mb + 1)) :=
     Nat.mul_le_mul_left _ (by omega)
   rw [hκ] at hroom'
@@ -95,37 +82,37 @@ theorem splice_meets {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) :
   have g₁ : ∀ r, BsA r = false → c₁.nreg r = c.nreg r := af.1
   have b21 : ∀ r, 210000 ≤ r → r < 220000 → bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) := by
     intro r h1 h2
-    simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort, bSign, bBuild]; omega
+    grind [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort, bSign, bBuild]
   set L' := L ++ L₂ with hL'
   have hlen : L'.length = K + K₂ := by rw [hL', List.length_append]
   -- stage B1: the records
   obtain ⟨c₂, k₂, e₂, hk₂, w₂, d40, d42, d421, d31, d32, d33, dA, drec, dlow, -, dfr, drr, drm, dout⟩ :=
     splB1_exec (P := P) (W := W) hWn c₁ w₁ (D := c.nreg 210001) (B' := A₀) (K := K) (K₂ := K₂)
-      (A := A) (M := M) (L' := L') (by rw [g₁ _ (by decide)]) a26 a25 a27 a28
-      (by rw [g₁ _ (by decide)]) hlen hok aCL aA (by rw [aA]; omega)
+      (A := A) (M := M) (L' := L') (by ram_simp) a26 a25 a27 a28
+      (by ram_simp) hlen hok aCL aA (by omega)
   rw [aA] at d42 dA drec dlow drm
   -- registers of band `bDownDrv` kept by stage B1
   have dk : ∀ r, 210000 ≤ r → r < 220000 → (r < 210031 ∨ 210033 < r) → c₂.nreg r = c₁.nreg r :=
-    fun r h1 h2 h3 => dfr r (b21 r h1 h2) h3 (by unfold ALLOC; omega)
+    fun r h1 h2 h3 => dfr r (b21 r h1 h2) h3 (by omega_nf)
   -- memory below `A₀`
   have hlow2 : ∀ a, a < A₀ → c₂.nmem a = c.nmem a := fun a ha => by rw [dlow a (by omega), alow a ha]
   obtain ⟨hM₂, hwf₂⟩ := desc_agree hwf hM (m' := c₂.nmem) fun a ha => hlow2 a ha
   -- stage B2: the sorted new codes
-  have hroomB2 : c₂.nreg ALLOC + splB2Cost bk (2 * K₂) A + 1 ≤ W := by rw [dA]; omega
+  have hroomB2 : c₂.nreg ALLOC + splB2Cost bk (2 * K₂) A + 1 ≤ W := by ram_grind
   obtain ⟨c₃, k₃, e₃, hk₃, w₃, f48, fperm, fsort, fRb, fA, flow, f40, f42, f421, f34, ffr, frr, frm,
     fout⟩ := splB2_exec (P := P) (W := W) hG hWn c₂ w₂ (D := c.nreg 210001) (T := A₀ + 3 * (K + K₂))
       (BB := BB) (n := 2 * K₂) (A := A) (base := 2 * K) (M := M) (L' := L') (bk := bk)
       (by rw [dk _ (by norm_num) (by norm_num) (by norm_num), g₁ _ (by decide)]) d31 d32 d33 d40
-      d42 (by rw [d421, hlen]) (hwf₂.mono (by rw [dA]; omega)) hM₂ hok drec
-      (by rw [dA, hlen]; omega) (by rw [hlen]; omega) (by rw [dA]; omega)
+      d42 (by omega) (hwf₂.mono (by omega)) hM₂ hok drec
+      (by omega) (by omega) (by omega)
       (fun q hq => by rw [hlow2 _ (by omega)]) (fun q hq => hbk q hq)
       (fun q q' hq hq' h => hmono q q' hq hq' h) hroomB2
   rw [dA] at f48 fA flow frm
   -- registers of band `bDownDrv` kept by stage B2
   have fk : ∀ r, 210000 ≤ r → r < 220000 → (r < 210034 ∨ 210059 < r) → c₃.nreg r = c₂.nreg r :=
-    fun r h1 h2 h3 => ffr r (b21 r h1 h2) h3 (by unfold ALLOC; omega)
+    fun r h1 h2 h3 => ffr r (b21 r h1 h2) h3 (by omega_nf)
   have hlow3 : ∀ a, a < A₀ + 3 * (K + K₂) + 10 * (K + K₂) → c₃.nmem a = c₂.nmem a := flow
-  have hA₃lo : A₀ + 13 * (K + K₂) ≤ c₃.nreg ALLOC := by have := fRb; rw [f48] at this; omega
+  have hA₃lo : A₀ + 13 * (K + K₂) ≤ c₃.nreg ALLOC := by grind
   have hCC : splCCost K K₂ ≤ 22066 * (K + K₂) + 40 := by unfold splCCost; omega
   -- the registers at `c₃`
   have t01 : c₃.nreg 210001 = c.nreg 210001 := by
@@ -171,7 +158,7 @@ theorem splice_meets {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) :
     tout⟩ := splT_exec (P := P) (W := W) hB hG hWn c₃ w₃ (D := c.nreg 210001)
       (T := A₀ + 3 * (K + K₂)) (SE := c.nreg 210004) (Rb := c₃.nreg 210048) (A₀ := A₀) (M := M)
       (L := L) (L₂ := L₂) (E := E) (E₂ := seg c₃.nmem (c₃.nreg 210048) (2 * K₂))
-      t01 t25 t26 t27 t28 t29 t04 rfl f34 f40 f42 (by rw [f421, hlen]) (by omega)
+      t01 t25 t26 t27 t28 t29 t04 rfl f34 f40 f42 (by omega) (by omega)
       (hwf₃.mono (by omega)) hM₃ hgood hok hCL₃ hrec₃ (by omega) hE₃ (by omega) rfl (by omega)
       hperm hsort fperm fsort (by rw [← hKd, ← hK₂d]; omega)
   obtain ⟨sP, sS⟩ := DownDrv.splice_ok hperm hsort fperm fsort

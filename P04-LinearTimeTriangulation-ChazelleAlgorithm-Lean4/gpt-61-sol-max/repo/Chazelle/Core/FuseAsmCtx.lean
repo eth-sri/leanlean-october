@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmCapStage
 public import Chazelle.Core.GranNFBounds
 
@@ -43,7 +45,9 @@ theorem chainDesc_keep {P : Polygon} {A : ℕ} {m m' : ℕ → ℕ} {B : ℕ} {H
   exact ⟨chainDescAt_copy hC hEb he (fun j hj => he _ (by omega)),
     chainWF_copy hwf hC he (fun j hj => he _ (by omega)) h5 le_rfl⟩
 
-theorem FCtx.keep {P : Polygon} {W : ℕ} {J : Merge.Junction} {H : Host} {N₁ N₂ : NF} {A : ℕ}
+section
+variable {P : Polygon} {W : ℕ} {J : Merge.Junction} {H : Host} {N₁ N₂ : NF} {A : ℕ}
+theorem FCtx.keep
     {c c' : Config} (h : FCtx P W J H N₁ N₂ A c)
     (hr : ∀ r, 70000 ≤ r → r < 70005 → c'.nreg r = c.nreg r)
     (hm : ∀ a, a < A → c'.nmem a = c.nmem a) (ha : c.nreg ALLOC ≤ c'.nreg ALLOC) :
@@ -63,16 +67,16 @@ theorem FCtx.keep {P : Polygon} {W : ℕ} {J : Merge.Junction} {H : Host} {N₁ 
   refine ⟨hG, hW, ⟨kl, kr, kw⟩, ⟨kwl, kwr, kww, fun H' hH' => ?_⟩, hP, hgen,
     n₁.transport hm, n₂.transport hm, i₁, i₂, le_trans hle ha⟩
   obtain ⟨-, -, hEb, -⟩ := ww.2 H J.whole hw
-  have h5 := ww.1
-  have e0 : c'.nmem (c'.nreg 70002) = c.nmem (c'.nreg 70002) := hm _ (by omega)
+  
+  
   have hH : HostAt c'.nmem (c'.nmem (c'.nreg 70002)) H := by
-    rw [e0]; exact hostAt_agree hw.1 hEb hm
+    ram_grind
   have := NFLoc.hostAt_unique hH' hH
   subst this
   exact hreg H' hw.1
 
 /-- The side chains in the input registers. -/
-theorem FCtx.side {P : Polygon} {W : ℕ} {J : Merge.Junction} {H : Host} {N₁ N₂ : NF} {A : ℕ}
+theorem FCtx.side
     {c : Config} (h : FCtx P W J H N₁ N₂ A c) :
     ChainDescAt c.nmem (c.nreg 70000) (Qof P) H (sideChain J 0) ∧
       ChainWF P (c.nreg ALLOC) c.nmem (c.nreg 70000) ∧
@@ -81,6 +85,9 @@ theorem FCtx.side {P : Polygon} {W : ℕ} {J : Merge.Junction} {H : Host} {N₁ 
       ChainDescAt c.nmem (c.nreg 70002) (Qof P) H J.whole ∧
       ChainWF P (c.nreg ALLOC) c.nmem (c.nreg 70002) :=
   ⟨h.jat.1, h.jwf.1.mono h.le, h.jat.2.1, h.jwf.2.1.mono h.le, h.jat.2.2, h.jwf.2.2.1.mono h.le⟩
+
+
+end
 
 end
 

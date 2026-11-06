@@ -42,34 +42,45 @@ def Gap (M : Model) (G : Set (Set Point)) (l r : ℝ) : Prop :=
 
 section Split
 
-variable {S : Set (Set Point)} {c : Set Point} {P R₁ R₂ : Set Point}
+variable {S : Set (Set Point)} {c P R₁ R₂ : Set Point}
 
 theorem sdiff_sub : S \ {c} ⊆ S := sdiff_subset
 
 theorem not_mem_sdiff_self : c ∉ S \ {c} := fun h => h.2 rfl
 
-theorem split_mem₁ (hc : c ∈ S) (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) :
+section
+variable (hc : c ∈ S) (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂)
+include hc hs
+theorem split_mem₁ :
     R₁ ∈ M.regions S := by
-  have := hs.mem₁; rwa [Merge.insert_sdiff_self hc] at this
+  have := hs.mem₁; aesop
 
-theorem split_mem₂ (hc : c ∈ S) (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) :
+theorem split_mem₂ :
     R₂ ∈ M.regions S := split_mem₁ hc hs.symm
 
+section
+variable {X : Set Point}
+include X
 /-- The regions of `S`: `R₁`, `R₂`, and regions of `S'` other than `P`. -/
-theorem split_cases (hc : c ∈ S) (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) {X : Set Point}
+theorem split_cases
     (hX : X ∈ M.regions S) : X = R₁ ∨ X = R₂ ∨ (X ∈ M.regions (S \ {c}) ∧ X ≠ P) := by
   have hX' : X ∈ regionsIn M.D (insert c (S \ {c})) := by
-    rw [Merge.insert_sdiff_self hc]; exact hX
+    aesop
   rcases hs.mem_cases hX' with h | h | h
   · exact Or.inr (Or.inr h)
-  · exact Or.inl h
-  · exact Or.inr (Or.inl h)
+  all_goals simp_all
 
 /-- A region of `S'` other than `P` is a region of `S`. -/
-theorem split_old (hc : c ∈ S) (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) {X : Set Point}
+theorem split_old
     (hX : X ∈ M.regions (S \ {c})) (hXP : X ≠ P) : X ∈ M.regions S := by
   have := hs.mem_of_ne hX hXP
-  rwa [Merge.insert_sdiff_self hc] at this
+  aesop
+
+
+
+end
+
+end
 
 /-- `c` touches exactly `R₁` and `R₂`. -/
 theorem split_touches_iff (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S)
@@ -77,31 +88,30 @@ theorem split_touches_iff (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (
     TouchesIn M.D c X ↔ X = R₁ ∨ X = R₂ := by
   have hF := hM.sys S hS hfin
   have hX' : X ∈ regionsIn M.D (insert c (S \ {c})) := by
-    rw [Merge.insert_sdiff_self hc]; exact hX
+    aesop
   exact hs.touches_iff hF sdiff_sub hc not_mem_sdiff_self X hX'
 
+section
+variable (hc : c ∈ S)
+include hc
 /-- If `S'` is empty, `S = {c}` and the two regions of `S` are `R₁` and `R₂`. -/
-theorem split_sdiff_nonempty (hc : c ∈ S) (hM : WalkAx M)
+theorem split_sdiff_nonempty (hM : WalkAx M)
     (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) {X : Set Point} (hX : X ∈ M.regions S)
     (h1 : X ≠ R₁) (h2 : X ≠ R₂) : (S \ {c}).Nonempty := by
   rcases split_cases hc hs hX with h | h | ⟨hX', hXP⟩
-  · exact absurd h h1
-  · exact absurd h h2
+  · simp_all
+  · simp_all
   · by_contra he
     rw [not_nonempty_iff_eq_empty] at he
     have hD : regionsIn M.D ∅ = {M.D} := Chazelle.Chain.regionsIn_empty hM.preconn hM.nonempty
     have hP : P ∈ regionsIn M.D (S \ {c}) := hs.mem
     have hX'' : X ∈ regionsIn M.D (S \ {c}) := hX'
-    have e1 : X = M.D := by
-      rw [he, hD] at hX''; exact hX''
-    have e2 : P = M.D := by
-      rw [he, hD] at hP; exact hP
-    exact hXP (e1.trans e2.symm)
+    simp_all
 
 /-! ## Lost keys -/
 
 /-- **Only `c` is attached at a lost key.** -/
-theorem lost_attach (hc : c ∈ S) {k : ℝ} (hk : k ∈ lostKeys M S c) :
+theorem lost_attach {k : ℝ} (hk : k ∈ lostKeys M S c) :
     ∃ p t, SideAttach M.W c p t ∧ k = p + t ∧ ∀ c' ∈ S, SideAttach M.W c' p t → c' = c := by
   obtain ⟨⟨d, hd, p, t, hA, rfl⟩, hno⟩ := hk
   have hdc : d = c := by
@@ -111,6 +121,9 @@ theorem lost_attach (hc : c ∈ S) {k : ℝ} (hk : k ∈ lostKeys M S c) :
   refine ⟨p, t, hA, rfl, fun c' hc' hA' => ?_⟩
   by_contra hne
   exact hno ⟨c', ⟨hc', hne⟩, p, t, hA', rfl⟩
+
+
+end
 
 /-- **The arcs of `S` at a lost key belong to `R₁` or `R₂`.** -/
 theorem lost_sides (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S)
@@ -129,9 +142,11 @@ theorem sub_P (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) {U : Set Point}
   · exact hs.sub₁
   · exact hs.sub₂
 
+section
+variable (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S) (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂)
+include hM hS hfin hc hs
 /-- **Arcs of `S'` around a lost key belong to `P`.** -/
-theorem arc_around_lost (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S)
-    (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) {k : ℝ} (hk : k ∈ lostKeys M S c)
+theorem arc_around_lost {k : ℝ} (hk : k ∈ lostKeys M S c)
     {Z : Set Point} (hZ : Z ∈ M.regions (S \ {c})) {l r : ℝ} (h : M.IsArc (S \ {c}) Z l r)
     (hin : sideInArc l r k) : Z = P := by
   obtain ⟨U, -, -, r', hU, -, hUa, -, hU12, -⟩ := lost_sides hM hS hfin hc hs hk
@@ -145,10 +160,11 @@ theorem arc_around_lost (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc
   have fU := hUa.2.2.2.2.2.2 p t' hA.1 ht'.1 ht'.2 h2
   exact WalkAx.faces_unique hZ hs.mem fZ (faces_mono fU (sub_P hs hU12))
 
+section
+variable {X : Set Point} (hX : X ∈ M.regions S) (h1 : X ≠ R₁) (h2 : X ≠ R₂)
+include X hX h1 h2
 /-- **Locality**: a region of `S` other than `R₁`, `R₂` is a region of `S'` with the same arcs. -/
-theorem arcs_other (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S)
-    (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) {X : Set Point} (hX : X ∈ M.regions S)
-    (h1 : X ≠ R₁) (h2 : X ≠ R₂) (a b : ℝ) :
+theorem arcs_other (a b : ℝ) :
     M.IsArc (S \ {c}) X a b ↔ M.IsArc S X a b := by
   have hne : S.Nonempty := ⟨c, hc⟩
   have hne' := split_sdiff_nonempty hc hM hs hX h1 h2
@@ -162,7 +178,7 @@ theorem arcs_other (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c 
     have hk : x ∈ lostKeys M S c := ⟨hcut, hfree x hx⟩
     have := arc_around_lost hM hS hfin hc hs hk hX' ⟨ha0, han, hb0, hbn,
       Or.inl ⟨ha, hb, hab⟩, hfree, hfac⟩ hx
-    exact hXP this
+    simp_all
   · intro h
     obtain ⟨ha, hb, hab⟩ := WalkAx.arc_cuts hne h
     obtain ⟨ha0, han, hb0, hbn, -, hfree, hfac⟩ := h
@@ -171,24 +187,18 @@ theorem arcs_other (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c 
       by_contra hna
       obtain ⟨U, -, -, r, hU, -, hUa, -, hU12, -⟩ := lost_sides hM hS hfin hc hs ⟨ha, hna⟩
       have := (arc_start_unique hne hX hU harc hUa).2
-      rcases hU12 with e | e
-      · exact h1 (this.trans e)
-      · exact h2 (this.trans e)
+      grind
     have hb' : M.IsCut (S \ {c}) b := by
       by_contra hnb
       obtain ⟨-, V, l, -, -, hV, -, hVa, -, hV12⟩ := lost_sides hM hS hfin hc hs ⟨hb, hnb⟩
       have := (arc_end_unique hne hX hV harc hVa).2
-      rcases hV12 with e | e
-      · exact h1 (this.trans e)
-      · exact h2 (this.trans e)
+      grind
     exact ⟨ha0, han, hb0, hbn, Or.inl ⟨ha', hb', hab⟩,
       fun x hx hcut => hfree x hx (Model.isCut_mono M sdiff_sub hcut), hfac⟩
 
 /-- **The weight is local**: removing `c` does not change the weight of the regions it does not
 touch. -/
-theorem weight_other (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S)
-    (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) {X : Set Point} (hX : X ∈ M.regions S)
-    (h1 : X ≠ R₁) (h2 : X ≠ R₂) : M.weight (S \ {c}) X = M.weight S X := by
+theorem weight_other : M.weight (S \ {c}) X = M.weight S X := by
   rw [weight_eq, weight_eq]
   congr 1
   unfold arcWts
@@ -196,10 +206,12 @@ theorem weight_other (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : 
   ext ab
   exact arcs_other hM hS hfin hc hs hX h1 h2 ab.1 ab.2
 
+
+end
+
 /-- **An arc of `R₁` lies inside an arc of `P`** (or `S'` is empty and `P` has the pinned arc,
 which weighs the most). -/
-theorem arcs_merged_ge (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S)
-    (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) {a b : ℝ} (h : M.IsArc S R₁ a b) :
+theorem arcs_merged_ge {a b : ℝ} (h : M.IsArc S R₁ a b) :
     ∃ a' b', M.IsArc (S \ {c}) P a' b' ∧ M.arcWt a b ≤ M.arcWt a' b' := by
   have hne : S.Nonempty := ⟨c, hc⟩
   have hS' : S \ {c} ⊆ M.Adm := sdiff_sub.trans hS
@@ -225,8 +237,7 @@ theorem arcs_merged_ge (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc 
     exact (Chazelle.Core.cyc_same hy hin hl' hr' hlr).2 hxin
 
 /-- **An arc of `P` is an arc of `R₁` or of `R₂`, or contains a lost key.** -/
-theorem arcs_merged_cases (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S)
-    (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) (hne' : (S \ {c}).Nonempty) {a b : ℝ}
+theorem arcs_merged_cases (hne' : (S \ {c}).Nonempty) {a b : ℝ}
     (h : M.IsArc (S \ {c}) P a b) :
     M.IsArc S R₁ a b ∨ M.IsArc S R₂ a b ∨ ∃ k ∈ lostKeys M S c, sideInArc a b k := by
   have hne : S.Nonempty := ⟨c, hc⟩
@@ -238,22 +249,24 @@ theorem arcs_merged_cases (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (
   obtain ⟨Y, hY, hYa⟩ := hM.arc_of_gap hS hfin (Model.isCut_mono M sdiff_sub ha)
     (Model.isCut_mono M sdiff_sub hb) hab (fun k hk' hcut => hk k hcut hk')
   rcases split_cases hc hs hY with rfl | rfl | ⟨hY', hYP⟩
-  · exact Or.inl hYa
-  · exact Or.inr (Or.inl hYa)
+  · simp_all
+  · simp_all
   · exfalso
     obtain ⟨p, hp, t, ht, hin, -, hf⟩ := WalkAx.exists_pos_in_arc hne hYa
     exact hYP (WalkAx.faces_unique hY' hs.mem hf (h.2.2.2.2.2.2 p t hp ht.1 ht.2 hin))
 
 /-- A gap of `S'` containing a lost key is an arc of `P`. -/
-theorem gap_lost_arc (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S)
-    (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) {k : ℝ} (hk : k ∈ lostKeys M S c) {l r : ℝ}
+theorem gap_lost_arc {k : ℝ} (hk : k ∈ lostKeys M S c) {l r : ℝ}
     (hg : Gap M (S \ {c}) l r) (hin : sideInArc l r k) : M.IsArc (S \ {c}) P l r := by
   have hS' : S \ {c} ⊆ M.Adm := sdiff_sub.trans hS
   have hfin' : (S \ {c}).Finite := hfin.subset sdiff_sub
   obtain ⟨hl, hr, hlr, hfree⟩ := hg
   obtain ⟨Z, hZ, hZa⟩ := hM.arc_of_gap hS' hfin' hl hr hlr hfree
   have := arc_around_lost hM hS hfin hc hs hk hZ hZa hin
-  rwa [this] at hZa
+  simp_all
+
+
+end
 
 /-- An arc of a nonempty family is a gap. -/
 theorem gap_of_arc {G : Set (Set Point)} (hne : G.Nonempty) {U : Set Point} {a b : ℝ}
@@ -261,9 +274,11 @@ theorem gap_of_arc {G : Set (Set Point)} (hne : G.Nonempty) {U : Set Point} {a b
   obtain ⟨ha, hb, hab⟩ := WalkAx.arc_cuts hne h
   exact ⟨ha, hb, hab, h.2.2.2.2.2.1⟩
 
+section
+variable (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S) (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂)
+include hM hS hfin hc hs
 /-- **Upper bound for the merged weight** (`S'` nonempty). -/
-theorem weight_merged_le (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S)
-    (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) (hne' : (S \ {c}).Nonempty) {w : ℕ}
+theorem weight_merged_le (hne' : (S \ {c}).Nonempty) {w : ℕ}
     (h1 : M.weight S R₁ ≤ w) (h2 : M.weight S R₂ ≤ w)
     (hJ : ∀ l r, Gap M (S \ {c}) l r → (∃ k ∈ lostKeys M S c, sideInArc l r k) →
       M.arcWt l r ≤ w) : M.weight (S \ {c}) P ≤ w := by
@@ -274,8 +289,7 @@ theorem weight_merged_le (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (h
   · exact hJ a b (gap_of_arc hne' h) h'
 
 /-- The weights of `R₁` and `R₂` are at most the merged weight. -/
-theorem weight_le_merged₁ (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S)
-    (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) :
+theorem weight_le_merged₁ :
     M.weight S R₁ ≤ M.weight (S \ {c}) P := by
   have hS' : S \ {c} ⊆ M.Adm := sdiff_sub.trans hS
   have hfin' : (S \ {c}).Finite := hfin.subset sdiff_sub
@@ -283,19 +297,20 @@ theorem weight_le_merged₁ (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite)
   obtain ⟨a', b', h', hle⟩ := arcs_merged_ge hM hS hfin hc hs h
   exact hle.trans (le_weight hM hS' hfin' hs.mem h')
 
-theorem weight_le_merged₂ (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S)
-    (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) :
+theorem weight_le_merged₂ :
     M.weight S R₂ ≤ M.weight (S \ {c}) P :=
   weight_le_merged₁ hM hS hfin hc hs.symm
 
 /-- A gap of `S'` around a lost key weighs at most the merged weight. -/
-theorem gap_le_merged (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S)
-    (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) {k : ℝ} (hk : k ∈ lostKeys M S c) {l r : ℝ}
+theorem gap_le_merged {k : ℝ} (hk : k ∈ lostKeys M S c) {l r : ℝ}
     (hg : Gap M (S \ {c}) l r) (hin : sideInArc l r k) :
     M.arcWt l r ≤ M.weight (S \ {c}) P := by
   have hS' : S \ {c} ⊆ M.Adm := sdiff_sub.trans hS
   have hfin' : (S \ {c}).Finite := hfin.subset sdiff_sub
   exact le_weight hM hS' hfin' hs.mem (gap_lost_arc hM hS hfin hc hs hk hg hin)
+
+
+end
 
 /-- **The merged weight when `S'` is empty**: `size`. -/
 theorem weight_merged_empty (hM : WalkAx M) (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂)

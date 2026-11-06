@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Separator.Clusters
 
 /-!
@@ -40,8 +42,8 @@ def starRot : Perm (D ⊕ D ⊕ D) where
     | .inl d => .inr (.inr d)
     | .inr (.inl d) => .inr (.inl (M.fperm d))
     | .inr (.inr d) => .inl (M.rot⁻¹ d)
-  left_inv x := by rcases x with d | d | d <;> simp
-  right_inv x := by rcases x with d | d | d <;> simp
+  left_inv x := by aesop
+  right_inv x := by aesop
 
 /-- The opposite darts of the star map. -/
 def starOpp : Perm (D ⊕ D ⊕ D) where
@@ -56,13 +58,18 @@ def starOpp : Perm (D ⊕ D ⊕ D) where
   left_inv x := by rcases x with d | d | d <;> simp [M.opp_opp]
   right_inv x := by rcases x with d | d | d <;> simp [M.opp_opp]
 
-@[simp] theorem starRot_inl (d : D) : starRot M (.inl d) = .inr (.inr (M.rot d)) := rfl
-@[simp] theorem starRot_inl_inr (d : D) : starRot M (.inr (.inl d)) = .inr (.inl (M.fperm⁻¹ d)) :=
+section
+variable (d : D)
+@[simp] theorem starRot_inl : starRot M (.inl d) = .inr (.inr (M.rot d)) := rfl
+@[simp] theorem starRot_inl_inr : starRot M (.inr (.inl d)) = .inr (.inl (M.fperm⁻¹ d)) :=
   rfl
-@[simp] theorem starRot_inr_inr (d : D) : starRot M (.inr (.inr d)) = .inl d := rfl
-@[simp] theorem starOpp_inl (d : D) : starOpp M (.inl d) = .inl (M.opp d) := rfl
-@[simp] theorem starOpp_inl_inr (d : D) : starOpp M (.inr (.inl d)) = .inr (.inr d) := rfl
-@[simp] theorem starOpp_inr_inr (d : D) : starOpp M (.inr (.inr d)) = .inr (.inl d) := rfl
+@[simp] theorem starRot_inr_inr : starRot M (.inr (.inr d)) = .inl d := rfl
+@[simp] theorem starOpp_inl : starOpp M (.inl d) = .inl (M.opp d) := rfl
+@[simp] theorem starOpp_inl_inr : starOpp M (.inr (.inl d)) = .inr (.inr d) := rfl
+@[simp] theorem starOpp_inr_inr : starOpp M (.inr (.inr d)) = .inr (.inl d) := rfl
+
+
+end
 
 /-- The tail vertex in the star map. -/
 def starVert : D ⊕ D ⊕ D → V ⊕ F
@@ -76,23 +83,28 @@ def starFace : D ⊕ D ⊕ D → D
   | .inr (.inl d) => d
   | .inr (.inr d) => M.fperm⁻¹ d
 
-@[simp] theorem starVert_inl (d : D) : starVert M (.inl d) = .inl (M.vert d) := rfl
-@[simp] theorem starVert_inl_inr (d : D) : starVert M (.inr (.inl d)) = .inr (M.face d) := rfl
-@[simp] theorem starVert_inr_inr (d : D) : starVert M (.inr (.inr d)) = .inl (M.vert d) := rfl
-@[simp] theorem starFace_inl (d : D) : starFace M (.inl d) = d := rfl
-@[simp] theorem starFace_inl_inr (d : D) : starFace M (.inr (.inl d)) = d := rfl
-@[simp] theorem starFace_inr_inr (d : D) : starFace M (.inr (.inr d)) = M.fperm⁻¹ d := rfl
+section
+variable (d : D)
+@[simp] theorem starVert_inl : starVert M (.inl d) = .inl (M.vert d) := rfl
+@[simp] theorem starVert_inl_inr : starVert M (.inr (.inl d)) = .inr (M.face d) := rfl
+@[simp] theorem starVert_inr_inr : starVert M (.inr (.inr d)) = .inl (M.vert d) := rfl
+@[simp] theorem starFace_inl : starFace M (.inl d) = d := rfl
+@[simp] theorem starFace_inl_inr : starFace M (.inr (.inl d)) = d := rfl
+@[simp] theorem starFace_inr_inr : starFace M (.inr (.inr d)) = M.fperm⁻¹ d := rfl
 
 /-- The face permutation of the star map, explicitly. -/
-theorem starFperm_inl (d : D) : (starRot M * starOpp M) (.inl d) = .inr (.inr (M.fperm d)) := by
-  simp [Perm.mul_apply, M.fperm_apply]
+theorem starFperm_inl : (starRot M * starOpp M) (.inl d) = .inr (.inr (M.fperm d)) := by
+  aesop
 
-theorem starFperm_inr_inr (d : D) :
+theorem starFperm_inr_inr :
     (starRot M * starOpp M) (.inr (.inr d)) = .inr (.inl (M.fperm⁻¹ d)) := by
-  simp [Perm.mul_apply]
+  simp_all
 
-theorem starFperm_inl_inr (d : D) : (starRot M * starOpp M) (.inr (.inl d)) = .inl d := by
-  simp [Perm.mul_apply]
+theorem starFperm_inl_inr : (starRot M * starOpp M) (.inr (.inl d)) = .inl d := by
+  simp_all
+
+
+end
 
 variable [Finite D]
 
@@ -174,12 +186,17 @@ def star : CombMap (V ⊕ F) D (D ⊕ D ⊕ D) where
 @[simp] theorem star_vert : (star M).vert = starVert M := rfl
 @[simp] theorem star_face : (star M).face = starFace M := rfl
 
-theorem star_fperm_inl (d : D) : (star M).fperm (.inl d) = .inr (.inr (M.fperm d)) :=
+section
+variable (d : D)
+theorem star_fperm_inl : (star M).fperm (.inl d) = .inr (.inr (M.fperm d)) :=
   starFperm_inl M d
-theorem star_fperm_inr_inr (d : D) : (star M).fperm (.inr (.inr d)) = .inr (.inl (M.fperm⁻¹ d)) :=
+theorem star_fperm_inr_inr : (star M).fperm (.inr (.inr d)) = .inr (.inl (M.fperm⁻¹ d)) :=
   starFperm_inr_inr M d
-theorem star_fperm_inl_inr (d : D) : (star M).fperm (.inr (.inl d)) = .inl d :=
+theorem star_fperm_inl_inr : (star M).fperm (.inr (.inl d)) = .inl d :=
   starFperm_inl_inr M d
+
+
+end
 
 /-- **Every face of the star map is a triangle.** -/
 theorem star_faceDeg [Fintype D] [DecidableEq D] (g : D) : (star M).faceDeg g = 3 := by
@@ -227,9 +244,7 @@ theorem star_euler [Fintype V] [Fintype F] [Fintype D] [DecidableEq D] :
     (star M).euler = M.euler := by
   have h1 := (star M).two_mul_euler
   have h2 := M.two_mul_euler
-  simp only [Fintype.card_sum] at h1
-  push_cast at h1
-  omega
+  grind [Fintype.card_sum]
 
 /-- **The star map of a planar map is planar.** -/
 theorem star_planar [Fintype V] [Fintype F] [Fintype D] [DecidableEq D] (hM : M.Planar) :

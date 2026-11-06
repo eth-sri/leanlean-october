@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepTop
 public import Chazelle.Core.SweepChainT2
 
@@ -53,29 +55,30 @@ theorem side_region_exists {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF
     ∃ U ∈ M.regions F, SideOf M ρ c U := by
   obtain ⟨Up, Dn, hUp, hDn, -, hside, -⟩ := chordSides_of_system (hM.sys F hF hfin) hc
   rcases hρ with rfl | rfl
-  · exact ⟨Up, hUp, fun z hz hzD => (hside z hz hzD).mono fun δ h => by simpa using h.1⟩
+  · exact ⟨Up, hUp, fun z hz hzD => (hside z hz hzD).mono fun δ h => by grind⟩
   · exact ⟨Dn, hDn, fun z hz hzD => (hside z hz hzD).mono fun δ h => by
-      simpa [sub_eq_add_neg] using h.2⟩
+      grind [sub_eq_add_neg]⟩
 
+section
+variable {M : Model} {F : Set (Set Point)} {p : ℕ} {t : ℝ}
 /-- Two regions faced just after the same position are equal. -/
-theorem after_unique {M : Model} {F : Set (Set Point)} {p : ℕ} {t : ℝ} (ht1 : t < 1)
+theorem after_unique (ht1 : t < 1)
     {U U' : Set Point} (hU : U ∈ M.regions F) (hU' : U' ∈ M.regions F)
     (h : AfterFaces M p t U) (h' : AfterFaces M p t U') : U = U' := by
   obtain ⟨δ, hδ, h1⟩ := h
   obtain ⟨δ', hδ', h2⟩ := h'
   set s := min (min δ δ') (1 - t) / 2 with hs
   have hs0 : 0 < s := by
-    have : 0 < min (min δ δ') (1 - t) := lt_min (lt_min hδ hδ') (by linarith)
-    linarith
+    grind
   have hs1 : s < δ := by
-    have := min_le_left (min δ δ') (1 - t); have := min_le_left δ δ'; linarith
+    grind
   have hs2 : s < δ' := by
-    have := min_le_left (min δ δ') (1 - t); have := min_le_right δ δ'; linarith
-  have hs3 : t + s < 1 := by have := min_le_right (min δ δ') (1 - t); linarith
+    grind
+  have hs3 : t + s < 1 := by grind
   exact WalkAx.faces_unique hU hU' (h1 s hs0 hs1 hs3) (h2 s hs0 hs2 hs3)
 
 /-- Two regions faced just before the same position are equal. -/
-theorem before_unique {M : Model} {F : Set (Set Point)} {p : ℕ} {t : ℝ} (ht0 : 0 ≤ t)
+theorem before_unique (ht0 : 0 ≤ t)
     {U U' : Set Point} (hU : U ∈ M.regions F) (hU' : U' ∈ M.regions F)
     (h : BeforeFaces M p t U) (h' : BeforeFaces M p t U') : U = U' := by
   obtain ⟨δ, hδ, h1a, h1b⟩ := h
@@ -83,54 +86,53 @@ theorem before_unique {M : Model} {F : Set (Set Point)} {p : ℕ} {t : ℝ} (ht0
   rcases ht0.lt_or_eq with htp | ht00
   · set s := min (min δ δ') t / 2 with hs
     have hs0 : 0 < s := by
-      have : 0 < min (min δ δ') t := lt_min (lt_min hδ hδ') htp
-      linarith
+      grind
     have hs1 : s < δ := by
-      have := min_le_left (min δ δ') t; have := min_le_left δ δ'; linarith
+      grind
     have hs2 : s < δ' := by
-      have := min_le_left (min δ δ') t; have := min_le_right δ δ'; linarith
-    have hs3 : s < t := by have := min_le_right (min δ δ') t; linarith
+      grind
+    have hs3 : s < t := by grind
     exact WalkAx.faces_unique hU hU' (h1a htp s hs0 hs1 hs3) (h2a htp s hs0 hs2 hs3)
   · subst ht00
     set s := min δ δ' / 2 with hs
-    have hs0 : 0 < s := by have : 0 < min δ δ' := lt_min hδ hδ'; linarith
+    have hs0 : 0 < s := by positivity
     have hs1 : s < δ := by have := min_le_left δ δ'; linarith
-    have hs2 : s < δ' := by have := min_le_right δ δ'; linarith
+    have hs2 : s < δ' := by grind
     exact WalkAx.faces_unique hU hU' (h1b rfl s hs0 hs1) (h2b rfl s hs0 hs2)
 
+
+end
+
+section
+variable {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : GoodModel M) (hFam : M.ChordFamily Q F) {e : Set Point} (he : e ∈ F) {p : ℕ} {t : ℝ} (hA : SideAttach M.W e p t) (huniq : ∀ e' ∈ F, SideAttach M.W e' p t → e' = e) {dir : ℝ} (hdir : (dir = 1 ∧ ∀ z ∈ e, (sidePt M.W p t).1 ≤ z.1) ∨
+      (dir = -1 ∧ ∀ z ∈ e, z.1 ≤ (sidePt M.W p t).1)) {G : Set Point} (hG : G ∈ M.regions F)
+include Q F hGM hFam he hA huniq hdir hG
 /-- **The region faced just after a uniquely attached chord** lies on its side `-dir` (item
 (c)). -/
-theorem after_side {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : GoodModel M)
-    (hFam : M.ChordFamily Q F) {e : Set Point} (he : e ∈ F) {p : ℕ} {t : ℝ}
-    (hA : SideAttach M.W e p t) (huniq : ∀ e' ∈ F, SideAttach M.W e' p t → e' = e) {dir : ℝ}
-    (hdir : (dir = 1 ∧ ∀ z ∈ e, (sidePt M.W p t).1 ≤ z.1) ∨
-      (dir = -1 ∧ ∀ z ∈ e, z.1 ≤ (sidePt M.W p t).1))
-    {G : Set Point} (hG : G ∈ M.regions F) (hW : AfterFaces M p t G) : SideOf M (-dir) e G := by
+theorem after_side (hW : AfterFaces M p t G) : SideOf M (-dir) e G := by
   have hM := walkAx_of_goodModel hGM
   have hρ : -dir = 1 ∨ -dir = -1 := by
-    rcases hdir with ⟨rfl, -⟩ | ⟨rfl, -⟩ <;> norm_num
+    grind
   obtain ⟨U, hU, hS⟩ := side_region_exists hM hFam.2.1 hFam.1 he hρ
   have hfac := (faced_or_middle hGM hFam he hA hρ hU hS hdir).1 huniq
-  have hd2 : -dir * dir = -1 := by rcases hdir with ⟨rfl, -⟩ | ⟨rfl, -⟩ <;> norm_num
+  have hd2 : -dir * dir = -1 := by grind
   rw [after_unique hA.2.2.1 hG hU hW (hfac.1 hd2)]
   exact hS
 
 /-- **The region faced just before a uniquely attached chord** lies on its side `dir` (item
 (c)). -/
-theorem before_side {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : GoodModel M)
-    (hFam : M.ChordFamily Q F) {e : Set Point} (he : e ∈ F) {p : ℕ} {t : ℝ}
-    (hA : SideAttach M.W e p t) (huniq : ∀ e' ∈ F, SideAttach M.W e' p t → e' = e) {dir : ℝ}
-    (hdir : (dir = 1 ∧ ∀ z ∈ e, (sidePt M.W p t).1 ≤ z.1) ∨
-      (dir = -1 ∧ ∀ z ∈ e, z.1 ≤ (sidePt M.W p t).1))
-    {G : Set Point} (hG : G ∈ M.regions F) (hW : BeforeFaces M p t G) : SideOf M dir e G := by
+theorem before_side (hW : BeforeFaces M p t G) : SideOf M dir e G := by
   have hM := walkAx_of_goodModel hGM
   have hρ : dir = 1 ∨ dir = -1 := by
-    rcases hdir with ⟨rfl, -⟩ | ⟨rfl, -⟩ <;> norm_num
+    grind
   obtain ⟨U, hU, hS⟩ := side_region_exists hM hFam.2.1 hFam.1 he hρ
   have hfac := (faced_or_middle hGM hFam he hA hρ hU hS hdir).1 huniq
-  have hd2 : dir * dir = 1 := by rcases hdir with ⟨rfl, -⟩ | ⟨rfl, -⟩ <;> norm_num
+  have hd2 : dir * dir = 1 := by grind
   rw [before_unique hA.2.1 hG hU hW (hfac.2 hd2)]
   exact hS
+
+
+end
 
 /-- **The regions faced around a tie** (item (c)): at a tie whose leaving edge goes down, the
 region faced just after is below the east chord and the region faced just before is below the
@@ -178,11 +180,14 @@ section Inv
 
 variable (J : Merge.Junction)
 
+section
+variable (S₂ : Set (Set Point))
+include S₂
 /-- **The middle region of a tie of top chords leaving the stretch** (case G, above the two top
 chords at the split vertex): two distinct chords of `F₂⁺` through the top of `C₂` attached at a
 vertex position inside the right stretch (not its base), with far attachments off the stretch,
 and `G` on the same side of both. -/
-def TieOut (S₂ : Set (Set Point)) (G : Set Point) : Prop :=
+def TieOut (G : Set Point) : Prop :=
   ∃ (e e' : Set Point) (d : ℕ) (pb pb' : ℕ) (tb tb' : ℝ) (ρ : ℝ),
     e ∈ F₂plus J S₂ ∧ e' ∈ F₂plus J S₂ ∧ e' ≠ e ∧ d ≠ 0 ∧ d < rL1 J + rL2 J ∧
     SideAttach (chainModel J.whole).W e ((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n) 0 ∧
@@ -205,9 +210,12 @@ def TieOut (S₂ : Set (Set Point)) (G : Set Point) : Prop :=
 /-- **The invariant of the sweep's label** `λ` for the current region `G`: every label of `G` is
 `λ`; if `G` has no label, `λ` is a virtual label of `G` or `G` is the middle region of a tie
 leaving the stretch (the cases in which the next stretch-anchored cut is found). -/
-def Valid (S₂ : Set (Set Point)) (G L : Set Point) : Prop :=
+def Valid (G L : Set Point) : Prop :=
   (∀ V ∈ (chainModel J.right).regions S₂, RLabel J S₂ G V → LabS J S₂ L V) ∧
     ((∀ V, ¬ RLabel J S₂ G V) → VLabel J S₂ G L ∨ TieOut J S₂ G)
+
+
+end
 
 /-- **Rule for fused chords, events after the stack pops of tie partners** (λ := the recorded side
 of the chord of `S₂`): a virtual label is valid. -/
@@ -218,8 +226,7 @@ theorem valid_of_vlabel (hP : J.P.Simple) {Q : Polygon}
     (hL : L ∈ (chainModel J.right).regions S₂) (hVL : VLabel J S₂ G L) : Valid J S₂ G L :=
   ⟨fun V hV hR => by
     rcases label_of_vlabel J hP hS₂ hF hG hL hV hVL hR with h | ⟨h, -⟩
-    · exact Or.inl h
-    · exact Or.inr h, fun _ => Or.inl hVL⟩
+    all_goals core_grind, fun _ => Or.inl hVL⟩
 
 /-- **Rule for faced sides** (top chords, shared chords, the start; λ := the region located in
 `N₂`): a label is valid. -/
@@ -229,14 +236,14 @@ theorem valid_of_rlabel (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hL : L ∈ (chainModel J.right).regions S₂) (hR : RLabel J S₂ G L) : Valid J S₂ G L :=
   ⟨fun V hV hR' => by
     rcases label_right3 J hP hS₂ hS₂f hG hV hL hR' hR with h | ⟨h, -⟩
-    · exact Or.inl h
-    · exact Or.inr h,
+    all_goals core_grind,
     fun hU => absurd hR (hU L)⟩
 
+section
+variable (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂) (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂))
+include hP Q hS₂ hF
 /-- **The middle region of a tie leaving the stretch** is valid for every `λ`. -/
-theorem valid_of_tieOut (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {G : Set Point}
+theorem valid_of_tieOut {G : Set Point}
     (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂)) (hT : TieOut J S₂ G) (L : Set Point) :
     Valid J S₂ G L := by
   obtain ⟨e, e', d, pb, pb', tb, tb', ρ, he, he', hne, hd0, hd, hA, hA', hB, hB', hBne, hBne',
@@ -254,9 +261,7 @@ facing `G` with a valid label `λ`.  Then:
   cut is made by a chord of a chord of `S₂` touching `λ`, or at the shared vertex), or `G` is the
   middle of a tie leaving the stretch (the next stretch-anchored cut is made by one of its two
   chords, a top chord in the case of the top of `C₂`). -/
-theorem detect_valid (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {G L : Set Point}
+theorem detect_valid {G L : Set Point}
     (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
     (hL : L ∈ (chainModel J.right).regions S₂) (hvalid : Valid J S₂ G L)
     {p₀ : ℕ} {t₀ : ℝ} (hp₀ : p₀ < (chainModel J.whole).W.n) (ht₀ : t₀ ∈ Ioo (0 : ℝ) 1)
@@ -285,9 +290,12 @@ theorem detect_valid (hP : J.P.Simple) {Q : Polygon}
     exact ⟨labS_trans J h1 h2, touches_of_sideOf J hS₂.2.1 hc' hVs⟩
   · rcases hvalid.2 hU with h1 | h1
     · exact Or.inl (detect_unlabelled J hP hS₂ hF hG hL hU h1 hp₀ ht₀ hnc₀ hfG₀ ho₀)
-    · exact Or.inr h1
+    simp_all
 
 /-! ## Item (b): the partner at a tie of a shared-vertex chord -/
+
+
+end
 
 /-- **The kinds of chords of `F₂⁺`**: contained in a chord of `S₂`, horizontal through the shared
 vertex (the shared chords), or horizontal through the top of `C₂` (the top chords). -/
@@ -325,14 +333,12 @@ theorem F₂plus_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChord
       right; left
       obtain ⟨h1, h2⟩ := hvert J.m₁ σ
       have hv : J.whole.vertex J.m₁ = J.shared := rfl
-      rw [hv] at h1 h2
-      exact ⟨h1, h2⟩
+      grind
   · right; right
     obtain ⟨h1, h2⟩ := hvert (J.m₁ + J.right.topIdx) σ
     have hv : J.whole.vertex (J.m₁ + J.right.topIdx) = J.right.top := by
       rw [Merge.Junction.whole_vertex_add]; rfl
-    rw [hv] at h1 h2
-    exact ⟨h1, h2⟩
+    grind
 
 end Inv
 

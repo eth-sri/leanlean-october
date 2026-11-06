@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterStageA
 
 /-!
@@ -86,26 +88,13 @@ namespace BTree
 /-- Well-formedness only reads the queue and the parents in range. -/
 theorem OK.congr {R R' : BTree} (hR : R.OK) (hn : R'.n = R.n) (hq : ∀ i, i < R.n → R'.q i = R.q i)
     (hp : ∀ g, g < R.n → g ≠ R.q 0 → R'.par g = R.par g) : R'.OK := by
-  refine ⟨by rw [hn]; exact hR.n_pos, fun i hi => ?_, fun i hi j hj h => ?_, fun i h0 hi => ?_⟩
-  · rw [hn] at hi ⊢; rw [hq i hi]; exact hR.q_lt i hi
-  · rw [hn] at hi hj; rw [hq i hi, hq j hj] at h; exact hR.q_inj i hi j hj h
-  · rw [hn] at hi
-    obtain ⟨j, hj, hqj⟩ := hR.par_lt i h0 hi
-    refine ⟨j, hj, ?_⟩
-    have hne : R.q i ≠ R.q 0 := fun h => by
-      have := hR.q_inj i hi 0 hR.n_pos h; omega
-    rw [hq j (by omega), hq i hi, hp _ (hR.q_lt i hi) hne]
-    exact hqj
+  ram_grind
 
 /-- The parent function only reads the queue head and the parents. -/
 theorem up_congr {R R' : BTree} (hq0 : R'.q 0 = R.q 0)
     (hp : ∀ g, g < R.n → g ≠ R.q 0 → R'.par g = R.par g) {g : ℕ} (hg : g < R.n) :
     R'.up g = R.up g := by
-  unfold up root
-  rw [hq0]
-  by_cases h : g = R.q 0
-  · rw [ite_eq_left h, ite_eq_left h]
-  · rw [ite_eq_right h, ite_eq_right h, hp g hg h]
+  grind [up, root]
 
 end BTree
 

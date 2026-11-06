@@ -72,8 +72,7 @@ theorem whole_vertex_height {P : Polygon} (hn3 : 3 ≤ P.n) {E : ℕ} {m : ℕ �
   by_cases hi : (C.s + k) % L.length < L.length
   · rw [List.getD_eq_getElem _ _ hi]
     exact NFLoc.hostWF_pts hHwf hn _ (List.getElem_mem _)
-  · rw [List.getD_eq_default _ _ (by omega)]
-    exact hn
+  aesop
 
 /-- **`F₂⁺` is a chord family of `Qof P`** in the environment of the event loop. -/
 theorem F₂plus_chordFamily {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}

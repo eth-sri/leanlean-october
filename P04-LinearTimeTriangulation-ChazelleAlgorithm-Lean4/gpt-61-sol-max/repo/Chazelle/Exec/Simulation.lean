@@ -29,34 +29,12 @@ open Std
 
 @[expose] public section
 
-/-- Embed a rational point into the real plane. -/
-noncomputable def castPt (p : ℚ × ℚ) : Point := ((p.1 : ℝ), (p.2 : ℝ))
 
-/-- Embed a rational polygon into the real plane. -/
-noncomputable def castPoly (Pq : QPolygon) : Polygon := ⟨Pq.map castPt⟩
 
-/-- Embed a rational configuration into a real one (absent keys read as `0`). -/
-noncomputable def castConfig (c : QConfig) : Config where
-  pc := c.pc
-  nreg := fun i => c.nr i
-  rreg := fun i => (c.rr i : ℝ)
-  nmem := fun i => c.nm i
-  rmem := fun i => (c.rm i : ℝ)
-  output := c.output
 
-/-- The embedded polygon has the same number of vertices. -/
-@[simp] theorem castPoly_n (Pq : QPolygon) : (castPoly Pq).n = Pq.length := by
-  simp [castPoly, Polygon.n]
 
-/-- Vertex lookup commutes with the embedding (including the out-of-range origin). -/
-@[simp] theorem castPoly_vtx (Pq : QPolygon) (i : ℕ) :
-    (castPoly Pq).vtx i = castPt (listVtx Pq i) := by
-  simp only [castPoly, Polygon.vtx, listVtx, List.getD_eq_getElem?_getD, List.getElem?_map]
-  cases Pq[i]? <;> simp [castPt]
 
-@[simp] theorem castConfig_pc (c : QConfig) : (castConfig c).pc = c.pc := rfl
 
-@[simp] theorem castConfig_output (c : QConfig) : (castConfig c).output = c.output := rfl
 
 end
 

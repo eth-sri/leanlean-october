@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SpecBase
 
 /-!
@@ -44,29 +46,25 @@ variable {M Q}
 /-- On a horizontal walk edge every position has parameter `0`. -/
 theorem param_horizontal {x : WPos} (h : (M.wa x.edge).2 = (M.wb x.edge).2) :
     M.param Q x = 0 := by
-  unfold param
-  rcases x with ⟨e, _ | k⟩
-  · rfl
-  · simp only at h ⊢
-    rw [ite_eq_left h]
+  aesop (add simp [param]) (add safe (by omega))
 
+section
+variable {x : WPos} (h : (M.wa x.edge).2 ≠ (M.wb x.edge).2)
+include h
 /-- **The parameter on a non-horizontal walk edge** is the relative height. -/
-theorem param_eq {x : WPos} (h : (M.wa x.edge).2 ≠ (M.wb x.edge).2) :
+theorem param_eq :
     M.param Q x = (M.hgtY Q x - (M.wa x.edge).2) / ((M.wb x.edge).2 - (M.wa x.edge).2) := by
-  unfold param hgtY
-  rcases x with ⟨e, _ | k⟩
-  · simp
-  · simp only at h ⊢
-    rw [ite_eq_right h]
+  aesop (add simp [param, hgtY]) (add safe (by omega))
 
 /-- The point of a position on a non-horizontal walk edge lies at the height of the position. -/
-theorem pos_snd {x : WPos} (h : (M.wa x.edge).2 ≠ (M.wb x.edge).2) :
+theorem pos_snd :
     (M.pos Q x).2 = M.hgtY Q x := by
   unfold pos
   rw [Geometry.lerp_snd, param_eq h]
-  have : (M.wb x.edge).2 - (M.wa x.edge).2 ≠ 0 := sub_ne_zero.2 (Ne.symm h)
-  field_simp
-  ring
+  grind
+
+
+end
 
 /-- **Keys on a horizontal walk edge** are all equal to the edge index. -/
 theorem key_eq_of_horizontal {x : WPos} (h : (M.wa x.edge).2 = (M.wb x.edge).2) :
@@ -89,18 +87,10 @@ theorem key_lt_key_iff_of_same_edge {x y : WPos} (he : x.edge = y.edge)
   rcases lt_or_gt_of_ne h with hab | hab
   · have hd : 0 < b - a := sub_pos.2 hab
     rw [div_lt_div_iff_of_pos_right hd, sub_lt_sub_iff_right]
-    constructor
-    · intro h'; exact Or.inl ⟨hab, h'⟩
-    · rintro (⟨-, h'⟩ | ⟨h', -⟩)
-      · exact h'
-      · exact absurd h' (not_lt.2 hab.le)
+    ram_grind
   · have hd : b - a < 0 := sub_neg.2 hab
     rw [div_lt_div_right_of_neg hd, sub_lt_sub_iff_right]
-    constructor
-    · intro h'; exact Or.inr ⟨hab, h'⟩
-    · rintro (⟨h', -⟩ | ⟨-, h'⟩)
-      · exact absurd h' (not_lt.2 hab.le)
-      · exact h'
+    ram_grind
 
 /-- A position with code `0` is the start of its walk edge (parameter `0`). -/
 theorem param_code_zero (e : ℕ) : M.param Q ⟨e, 0⟩ = 0 := rfl

@@ -187,8 +187,8 @@ theorem phaseA {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : OutI E
   have A₁ : c₁.nreg ALLOC = LB := g₁ _ (by left; decide)
   -- copy
   obtain ⟨c₂, k₂, e₂, hk₂, A₂, h30, R₂, low₂, cop₂, RF₂⟩ := copy_exec (P := E.P) (A₀ := E.A₀)
-    w₁ a13 a30 a31 A₁ (by rw [g₁ _ (by right; left; decide), hI.r20])
-    (by rw [g₁ _ (by right; left; decide), hI.r22])
+    w₁ a13 a30 a31 A₁ (by rw [g₁ _ (by omega), hI.r20])
+    (by rw [g₁ _ (by omega), hI.r22])
     (fun i hi => hareas.2.1 i hi) (by omega) (by omega) hI.alloc
   have w₂ := e₂.wb_right
   -- mid
@@ -200,7 +200,7 @@ theorem phaseA {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : OutI E
     (by rw [R₃ _ (by decide) (by decide) (by decide), R₂ _ (by decide) (by decide) (by decide)
       (by decide), a14])
     b34 A₃ (by rw [R₃ _ (by decide) (by decide) (by decide), R₂ _ (by decide) (by decide)
-      (by decide) (by decide), g₁ _ (by right; left; decide), hI.r20]) (by omega) (by omega)
+      (by decide) (by decide), g₁ _ (by omega), hI.r20]) (by omega) (by omega)
   have w₄ := e₄.wb_right
   -- region-loop set-up
   have d16 : c₄.nreg 80016 = RB := by
@@ -208,12 +208,12 @@ theorem phaseA {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : OutI E
       R₂ _ (by decide) (by decide) (by decide) (by decide), a16]
   have d21 : c₄.nreg 80021 = 2 := by
     rw [R₄ _ (by decide) (by decide), R₃ _ (by decide) (by decide) (by decide),
-      R₂ _ (by decide) (by decide) (by decide) (by decide), g₁ _ (by right; left; decide),
+      R₂ _ (by decide) (by decide) (by decide) (by decide), g₁ _ (by omega),
       hI.r21]
   have hRB : RB + 4 < LB := by
     have := hareas.2.2.1 0 (by omega); omega
   obtain ⟨c₅, k₅, e₅, hk₅, f40, f41, R₅, rr₅, m₅, rm₅, o₅⟩ := preReg_exec (P := E.P) c₄ w₄
-    (by rw [d16, d21]; omega)
+    (by grind)
   rw [d16, d21] at f41
   have w₅ := e₅.wb_right
   -- the registers of `c₅`
@@ -363,7 +363,7 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
     rw [List.length_map] at this
     rw [this]; exact highList_length_le _ _ _
   have hLlen : L.length = N.nChords + newL.length := by
-    simp [hLd, oldL, NF.nChords]
+    grind [oldL, NF.nChords]
   have hok := round_list_ok hM hcur.nf hregs hNew
   have w₆ := e₆.wb_right
   -- registers after the loop
@@ -377,8 +377,7 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
     rw [b0, reg6 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
       (by omega), hgood.r00]; rfl
   have x1 : c₇.nreg 40001 = c.nreg ALLOC := by
-    rw [b1, reg6 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-      (by omega), q17]
+    grind
   have x2 : c₇.nreg 40002 = L.length := by rw [b2, I₆.cnt, hLlen]; rfl
   -- memory below `A₀` agrees with the initial one
   have RF56 := RF₅.trans RF₆
@@ -395,7 +394,7 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
     change c.nreg ALLOC + 3 * (N.nChords + N.nRegions) ≤ c₅.nreg ALLOC at h1
     omega
   -- cost facts
-  have hLK : L.length ≤ 2 * E.Kc := by rw [hLlen]; omega
+  have hLK : L.length ≤ 2 * E.Kc := by omega
   have hcl := clog_mul_mono hLK
   have hA7le : c₇.nreg ALLOC ≤ c.nreg ALLOC + (k₅ + k₆) := by
     rw [A₇]; exact RF56.2.2.2.2.2.2
@@ -414,15 +413,13 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
   have z2 : rd c₇ bBuild 2 = L.length := x2
   have p1 : ModelDescWF E.P (c₇.nreg ALLOC) c₇.nmem (rd c₇ bBuild 0) := by
     rw [z0]; exact hwf₇.mono hA0₇
-  have p2 : ModelDescAt c₇.nmem (rd c₇ bBuild 0) (Qof E.P) E.M := by rw [z0]; exact hMD₇
-  have p3 : rd c₇ bBuild 1 + 3 * L.length ≤ c₇.nreg ALLOC := by rw [z1]; exact hLB₇
-  have p4 : ChordListAt c₇.nmem (rd c₇ bBuild 1) L := by rw [z1]; exact hlist₇
+  have p2 : ModelDescAt c₇.nmem (rd c₇ bBuild 0) (Qof E.P) E.M := by grind
+  have p3 : rd c₇ bBuild 1 + 3 * L.length ≤ c₇.nreg ALLOC := by omega
+  have p4 : ChordListAt c₇.nmem (rd c₇ bBuild 1) L := by grind
   obtain ⟨c₈, k₈, e₈, hk₈, post₈, F₈⟩ := hE.hB E.P E.W c₇ w₇
     ⟨hE.hG, hE.hWh, p1, E.M, L, p2, hE.hGM, z2, p3, p4, hok⟩
     (by
-      beta_reduce
-      rw [z2]
-      omega)
+      grind)
   beta_reduce at hk₈
   rw [z2] at hk₈
   obtain ⟨N', g₈, hNW₈, hNF₈, hmap₈, -⟩ := post₈ E.M L p2 z2 p4
@@ -444,7 +441,7 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
     have := Nat.lt_two_pow_self (n := E.d0 + 1)
     nlinarith
   obtain ⟨c₁₀, k₁₀, e₁₀, hk₁₀, h10, R₁₀, rr₁₀, m₁₀, rm₁₀, o₁₀⟩ := incr_exec (P := E.P) c₉ w₉
-    (by rw [y10, y20]; omega)
+    (by omega)
   rw [y10, y20] at h10
   -- fixed registers
   have Y : ∀ q, 80000 ≤ q → q < 81000 → q ≠ 80040 → q ≠ 80041 → q ≠ 80042 → q ≠ 80018 →
@@ -470,7 +467,7 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
   have hdata := round_data hM hcur.nf hregs hNew
   have hdeg' := round_degLe hM hSa hSf hdata hcur.deg (round_all hcur.nf hregs hNew)
   have hN'len : N'.nChords = L.length := by
-    unfold NF.nChords; rw [← hmap₈, List.length_map]
+    unfold NF.nChords; grind [List.length_map]
   have e₆' : Exec E.P E.W (regS E.sF) c₅ c₆ k₆ := e₆
   refine ⟨c₁₀, k₆ + ((k₇ + (k₈ + k₉)) + k₁₀),
     .seq e₆' (.seq (.seq e₇ (.seq e₈ e₉)) e₁₀), ?_, RFall.mono subset_rfl (by omega),
@@ -512,7 +509,7 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
       rw [RFall.2.2.1 a ha, hI.low a ha]
     refine ⟨e₁₀.wb_right, v00, v02, v03, v04, v06, h10, v11, v19, v20, v21, v22, v23, v24,
       ⟨N', ?_⟩, vlow, le_trans hI.alloc RFall.2.2.2.2.2.1, by omega, ?_⟩
-    · refine ⟨by rw [hmem10, hA10, hH10]; exact hNW₈, hNF₈, ?_, ?_, ?_, ?_, fun _ => ?_⟩
+    · refine ⟨by grind, hNF₈, ?_, ?_, ?_, ?_, fun _ => ?_⟩
       · rw [hF']; exact hcur.sub.trans Set.subset_union_left
       · rw [hF']
         exact Model.DegLe.mono _ hdeg' (max_le (le_max_left _ _) (by omega))
@@ -522,7 +519,7 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
       · rw [hN'len, hLlen, pow_succ]
         have := hcur.size
         nlinarith
-      · rw [hH10]; exact le_trans hA0₇ g₈
+      omega
     · have h1 := RFall.2.2.2.2.2.2
       have h2 : (E.d0 + 1 - t) * (E.Br + 2) = (E.d0 + 1 - (t + 1)) * (E.Br + 2) + (E.Br + 2) := by
         rw [show E.d0 + 1 - t = (E.d0 + 1 - (t + 1)) + 1 by omega, Nat.add_mul, Nat.one_mul]

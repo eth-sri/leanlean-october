@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStepL3
 public import Chazelle.Core.SweepEvLoopStartM
 
@@ -22,7 +24,7 @@ open Machine Machine.Stmt Programs SweepIo SweepPrim WalkEmbed SweepRam Sweep
 @[expose] public section
 
 theorem addLs_append' (l a b : List ℕ) : addLs l (a ++ b) = addLs (addLs l a) b := by
-  unfold addLs; rw [List.foldl_append]
+  core_grind
 
 /-- **A full list inside a set of at most four labels holds all of it.** -/
 theorem stp_mem_full {l : List ℕ} {U : Finset ℕ} (hnd : l.Nodup) (hl : l.length = 4)
@@ -31,8 +33,7 @@ theorem stp_mem_full {l : List ℕ} {U : Finset ℕ} (hnd : l.Nodup) (hl : l.len
   have hsub : l.toFinset ⊆ U := fun y hy => hU y (List.mem_toFinset.1 hy)
   have hcard : l.toFinset.card = 4 := by rw [List.toFinset_card_of_nodup hnd, hl]
   have heq : l.toFinset = U := Finset.eq_of_subset_of_card_le hsub (by omega)
-  rw [← heq] at hx
-  exact List.mem_toFinset.1 hx
+  aesop
 
 /-- **Appending labels from a set of at most four** keeps every label. -/
 theorem stp_addLs_all {U : Finset ℕ} (hc : U.card ≤ 4) :
@@ -55,8 +56,7 @@ theorem stp_addLs_all {U : Finset ℕ} (hc : U.card ≤ 4) :
     refine ⟨addL_nodup h1 v, addL_length_le h2 v, fun x hx => ?_, fun x hx => mem_addL_of_mem (h4 x hx),
       fun x hx => ?_⟩
     · rcases mem_addL hx with h | h
-      · exact h3 x h
-      · rw [h]; exact hvU
+      all_goals grind
     · rcases List.mem_append.1 hx with h | h
       · exact mem_addL_of_mem (h5 x h)
       · rw [List.mem_singleton] at h
@@ -66,7 +66,7 @@ theorem stp_addLs_all {U : Finset ℕ} (hc : U.card ≤ 4) :
         · rcases hif with hif | hif
           · exact hif
           · exact stp_mem_full h1 (by omega) h3 hc hvU
-        · exact List.mem_append_right _ (List.mem_singleton_self _)
+        grind
 
 /-- **The label set of a key** is the image of its label list. -/
 theorem stp_curLab_eq {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config}
@@ -78,23 +78,16 @@ theorem stp_curLab_eq {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config
   simp only [mem_ofPred_eq, lblOf, List.mem_map, List.mem_range]
   constructor
   · rintro (⟨h, rfl⟩ | ⟨h, rfl⟩ | ⟨h, rfl⟩ | ⟨h, rfl⟩)
-    · exact ⟨0, by omega, by rw [add_zero]⟩
-    · exact ⟨1, by omega, rfl⟩
-    · exact ⟨2, by omega, rfl⟩
-    · exact ⟨3, by omega, rfl⟩
-  · rintro ⟨i, hi, rfl⟩
-    have : i = 0 ∨ i = 1 ∨ i = 2 ∨ i = 3 := by omega
-    rcases this with rfl | rfl | rfl | rfl
-    · exact Or.inl ⟨by omega, by rw [add_zero]⟩
-    · exact Or.inr (Or.inl ⟨by omega, rfl⟩)
-    · exact Or.inr (Or.inr (Or.inl ⟨by omega, rfl⟩))
-    · exact Or.inr (Or.inr (Or.inr ⟨by omega, rfl⟩))
+    · aesop
+    · aesop
+    · aesop
+    aesop
+  ram_grind
 
 /-- The registers of a label list are its entries. -/
 theorem stp_mem_lblOf {c : Config} {i : ℕ} (hi : i < c.nreg kN) (h4 : c.nreg kN ≤ 4) :
     c.nreg (kL + i) ∈ lblOf c kN kL := by
-  unfold lblOf
-  exact List.mem_map.2 ⟨i, List.mem_range.2 (by omega), rfl⟩
+  grind [lblOf]
 
 end
 

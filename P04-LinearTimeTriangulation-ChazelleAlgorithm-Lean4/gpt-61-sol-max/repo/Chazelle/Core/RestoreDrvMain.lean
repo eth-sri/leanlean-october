@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreDrvPos
 
 /-!
@@ -74,13 +76,11 @@ theorem rounds_exec {E : DrvEnv} (hE : DrvGood E) {c : Config} (hI : OutI E 0 c)
     (fun c ⟨t, I⟩ ht => by
       rw [I.r10, I.r11] at ht
       obtain ⟨c', k, e, I', RF', hk⟩ := round_step hE I ht
-      exact ⟨c', k, e, ⟨t + 1, I'⟩, RF', hk, by rw [I.r10, I'.r10]; omega⟩) ⟨0, hI⟩
+      exact ⟨c', k, e, ⟨t + 1, I'⟩, RF', hk, by ram_grind⟩) ⟨0, hI⟩
   have ht : t = E.d0 + 1 := by
     rw [I'.r10, I'.r11] at hx; have := I'.t_le; omega
   subst ht
-  refine ⟨c', k, e, I', RFl, ?_⟩
-  rw [hI.r10] at hk
-  simpa using hk
+  ram_grind
 
 /-! ## Arithmetic of the cost -/
 
@@ -89,14 +89,20 @@ theorem clog_two_pow_mul (j x : ℕ) : Nat.clog 2 (2 ^ j * x) ≤ j + Nat.clog 2
   rw [pow_add]
   exact Nat.mul_le_mul_left _ (Nat.le_pow_clog (by norm_num) x)
 
+section
+variable (κf : ℕ → ℕ)
+include κf
 /-- The constant of the round bound. -/
-def C1 (κf : ℕ → ℕ) (κB d0 D : ℕ) : ℕ :=
+def C1 (κB d0 D : ℕ) : ℕ :=
   40 + 21 * 2 ^ (d0 + 1) + (κf (d0 + D) + 22) * 2 ^ (d0 + 1) +
     κB * (2 * 2 ^ (d0 + 1) * (d0 + 3) + 1)
 
 /-- The constant of the cost bound. -/
-def κRestore (κf : ℕ → ℕ) (κB : ℕ) (d0 D : ℕ) : ℕ :=
+def κRestore (κB d0 D : ℕ) : ℕ :=
   (d0 + 1) * (C1 κf κB d0 D + 14) + d0 + D + 20
+
+
+end
 
 set_option maxHeartbeats 4000000 in
 /-- **The round bound is linear.** -/
@@ -110,36 +116,33 @@ theorem Br_le (E : DrvEnv) (hF : 1 ≤ E.F E.γ) (hG : 1 ≤ E.G E.γ) :
   set L := Nat.clog 2 K1 with hL
   have hFG : 1 ≤ E.F E.γ * E.G E.γ := Nat.one_le_iff_ne_zero.2 (by positivity)
   have hA1 : 1 ≤ A := by
-    rw [hA]; nlinarith
-  have hA0A : A0 ≤ A := by
-    rw [hA, hA0]; exact Nat.mul_le_mul_left _ (by omega)
+    grind
+  
   have hLA : L + 1 ≤ A := by
     rw [hA]
     calc L + 1 ≤ 1 * (E.Hc E.γ + Nat.clog 2 E.γ + L + 1) := by omega
       _ ≤ E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog 2 E.γ + L + 1) := Nat.mul_le_mul_right _ hFG
   have hKc : E.Kc = T * K1 := rfl
   have hBf : E.Bf = E.κf (E.d0 + E.D) * A0 + 20 := by
-    unfold DrvEnv.Bf costF; rw [hA0]; ring
+    grind [DrvEnv.Bf, costF]
   have hcl : Nat.clog 2 (2 * E.Kc) ≤ E.d0 + 2 + L := by
-    have : 2 * E.Kc = 2 ^ (E.d0 + 2) * K1 := by rw [hKc, hT, pow_succ 2 (E.d0 + 1)]; ring
+    have : 2 * E.Kc = 2 ^ (E.d0 + 2) * K1 := by grind
     rw [this]; exact clog_two_pow_mul _ _
   have hBr : E.Br = 40 + 21 * E.Kc + (E.Bf + 2) * E.Kc +
       E.κB * (2 * E.Kc * (Nat.clog 2 (2 * E.Kc) + 1) + 1) := rfl
-  have hK1p : 1 ≤ K1 := by omega
-  have hTp : 1 ≤ T := Nat.one_le_two_pow
+  
+  
   -- the four terms
   have t1 : 40 ≤ 40 * K1 * A := by nlinarith
   have t2 : 21 * E.Kc ≤ 21 * T * K1 * A := by rw [hKc]; nlinarith
   have t3 : (E.Bf + 2) * E.Kc ≤ (E.κf (E.d0 + E.D) + 22) * T * K1 * A := by
     rw [hBf, hKc]
-    have h1 : E.κf (E.d0 + E.D) * A0 + 22 ≤ (E.κf (E.d0 + E.D) + 22) * A := by nlinarith
-    have h2 := Nat.mul_le_mul_right (T * K1) h1
-    nlinarith
+    grind
   have t4 : 2 * E.Kc * (Nat.clog 2 (2 * E.Kc) + 1) + 1 ≤
       (2 * T * (E.d0 + 3) + 1) * K1 * A := by
     rw [hKc]
     have h1 : 2 * (T * K1) * (Nat.clog 2 (2 * (T * K1)) + 1) ≤
-        2 * (T * K1) * (E.d0 + 3 + L) := Nat.mul_le_mul_left _ (by rw [← hKc]; omega)
+        2 * (T * K1) * (E.d0 + 3 + L) := Nat.mul_le_mul_left _ (by grind)
     have h2 : E.d0 + 3 + L ≤ (E.d0 + 3) * A := by nlinarith
     have h3 : 2 * (T * K1) * (E.d0 + 3 + L) ≤ 2 * (T * K1) * ((E.d0 + 3) * A) :=
       Nat.mul_le_mul_left _ h2
@@ -149,9 +152,8 @@ theorem Br_le (E : DrvEnv) (hF : 1 ≤ E.F E.γ) (hG : 1 ≤ E.G E.γ) :
       (E.Hc E.γ + Nat.clog 2 E.γ + Nat.clog 2 (E.K₀ + 1) + 1)) =
       40 * K1 * A + 21 * T * K1 * A + (E.κf (E.d0 + E.D) + 22) * T * K1 * A +
         E.κB * ((2 * T * (E.d0 + 3) + 1) * K1 * A) := by
-    unfold C1; rw [← hT, ← hK1]; ring
-  rw [hC, hBr]
-  omega
+    grind [C1]
+  grind
 
 set_option maxHeartbeats 8000000 in
 /-- **WP-E: restoring conformality**, from the splitting step (`FindSpec`) and the construction
@@ -200,12 +202,12 @@ theorem restoreSpecLocal_of_find (hB : BuildNFSpec) (hF : FindSpec) : RestoreSpe
     hwf, hMD, hreg, hsimp, hGM, hOk, hfull⟩
   -- cost bounds
   set A := F γ * G γ * (H γ + Nat.clog 2 γ + Nat.clog 2 (K + 1) + 1) with hAd
-  have hFG : 1 ≤ F γ * G γ := Nat.one_le_iff_ne_zero.2 (by positivity)
-  have hA1 : 1 ≤ A := by rw [hAd]; nlinarith
+  
+  
   have hBr : E.Br ≤ C1 κf κB d0 D * (K + 1) * A := Br_le E hF1 hG1
   have hcost : κRestore κf κB d0 D * (K + 1) * F γ * G γ *
       (H γ + Nat.clog 2 γ + Nat.clog 2 (K + 1) + 1) = κRestore κf κB d0 D * (K + 1) * A := by
-    rw [hAd]; ring
+    grind
   rw [hcost] at hroom ⊢
   have hK1A : 1 ≤ (K + 1) * A := Nat.one_le_iff_ne_zero.2 (by positivity)
   have hbig : (E.Br + 2) * (E.d0 + 1) + 20 + d0 + D ≤ κRestore κf κB d0 D * (K + 1) * A := by
@@ -217,12 +219,11 @@ theorem restoreSpecLocal_of_find (hB : BuildNFSpec) (hF : FindSpec) : RestoreSpe
     have h3 : (C1 κf κB d0 D * (K + 1) * A + 2) * (d0 + 1) ≤
         (d0 + 1) * (C1 κf κB d0 D + 14) * ((K + 1) * A) := by nlinarith
     have h4 : d0 + D + 20 ≤ (d0 + D + 20) * ((K + 1) * A) := Nat.le_mul_of_pos_right _ hK1A
-    show (E.Br + 2) * (d0 + 1) + 20 + d0 + D ≤ _
-    omega
+    grind
   -- initialisation
-  have hn3 : 3 ≤ P.n := Jordan.simple_three_le hGE.1
-  have hW5 : 5 ≤ W := le_trans (by unfold hostWords; omega) hWh
-  have hAW : c.nreg ALLOC ≤ W := hw.1 ALLOC
+  
+  have hW5 : 5 ≤ W := le_trans (by omega_nf) hWh
+  
   obtain ⟨c₁, k₁, e₁, hk₁, i20, i21, i22, i23, i24, i12, i10, i11, i19, R₁, rr₁, m₁, rm₁, o₁⟩ :=
     init_exec (P := P) c hw hW5 (by omega) (by omega)
   have w₁ := e₁.wb_right
@@ -232,14 +233,10 @@ theorem restoreSpecLocal_of_find (hB : BuildNFSpec) (hF : FindSpec) : RestoreSpe
       R₁ _ (by left; decide) (by decide), R₁ _ (by left; decide) (by decide),
       R₁ _ (by left; decide) (by decide), i10, i11, i19, i20, i21, i22, i23, i24, ⟨N, ?_⟩,
       fun a _ => by rw [m₁], by rw [A₁], by omega, ?_⟩
-    · refine ⟨by rw [i12, m₁, A₁]; exact hNW, hNF, subset_rfl, ?_, hsg, by show N.nChords + 1 ≤ 2 ^ 0 * (K + 1); simp [hKd], fun h => ?_⟩
-      · exact Model.DegLe.mono _ hdeg (by show d0 ≤ max D (d0 - 0); omega)
+    · refine ⟨by grind, hNF, subset_rfl, ?_, hsg, by grind, fun h => ?_⟩
+      · grind [Chazelle.Core.Model.DegLe]
       · omega
-    · rw [A₁]
-      show c.nreg ALLOC + (d0 + 1 - 0) * (E.Br + 2) + 3 ≤ W
-      have : (d0 + 1 - 0) * (E.Br + 2) = (E.Br + 2) * (E.d0 + 1) := by
-        show (d0 + 1 - 0) * (E.Br + 2) = (E.Br + 2) * (d0 + 1); rw [Nat.sub_zero, mul_comm]
-      omega
+    grind
   -- the rounds
   obtain ⟨c₂, k₂, e₂, I₂, RF₂, hk₂⟩ := rounds_exec hE hI0
   obtain ⟨N₂, hcur₂⟩ := I₂.cur
@@ -251,8 +248,7 @@ theorem restoreSpecLocal_of_find (hB : BuildNFSpec) (hF : FindSpec) : RestoreSpe
     rf_of_regs (fun r hr => R₃ r (by omega)) rr₃ m₃ rm₃ o₃
   have RFall := RF₁.trans (RF₂.trans RF₃)
   refine ⟨c₃, k₁ + (k₂ + k₃), .seq e₁ (.seq e₂ e₃), ?_, ?_, RFall.to_frame⟩
-  · show k₁ + (k₂ + k₃) ≤ _
-    omega
+  · omega
   · intro M' N' hM' hN'
     have hMM : M = M' := NFLoc.modelDesc_unique hMD hM'
     subst hMM
@@ -266,14 +262,9 @@ theorem restoreSpecLocal_of_find (hB : BuildNFSpec) (hF : FindSpec) : RestoreSpe
       rw [h05]; exact hcur₂.fresh (by omega)
     · show NFWithin c₃.nmem (c₃.nreg 80005) (c₃.nreg ALLOC) N₂
       rw [h05, m₃, hA3]; exact hcur₂.nw
-    · exact Model.DegLe.mono _ hcur₂.deg (by show max D (d0 - (d0 + 1)) ≤ D; omega)
+    · exact Model.DegLe.mono _ hcur₂.deg (by grind)
     · have hs := hcur₂.size
-      show N₂.nChords ≤ 2 ^ (d0 + 1) * (N'.nChords + 1)
-      rw [hKN']
-      have : E.d0 = d0 := rfl
-      have : E.K₀ = K := rfl
-      simp only [‹E.d0 = d0›, ‹E.K₀ = K›] at hs
-      omega
+      grind
 
 end
 

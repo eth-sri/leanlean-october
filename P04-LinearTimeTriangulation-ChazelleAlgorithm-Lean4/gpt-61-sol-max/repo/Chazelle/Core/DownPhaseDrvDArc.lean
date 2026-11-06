@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvSplice
 public import Chazelle.Core.RestoreSearchArc
 
@@ -49,12 +51,12 @@ noncomputable def kE (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E
 
 theorem kap_evs {m : ℕ} (hm : m < E.length) :
     BuildSort.kap (evs M Q L E) m = kE M Q L E m := by
-  have hm' : m < (evs M Q L E).length := by simp [evs, hm]
+  have hm' : m < (evs M Q L E).length := by grind [evs]
   rw [BuildSort.kap_eq hm']
   simp only [evs, List.getElem_map]
   unfold kE evOf wposOf
   rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hm, Option.getD_some]
-  split_ifs <;> rfl
+  aesop
 
 /-- **The event keys are nondecreasing** along a `codeLe`-sorted list. -/
 theorem kE_mono (hsort : E.Pairwise (codeLe M Q L)) {i i' : ℕ} (hii : i ≤ i')
@@ -66,8 +68,7 @@ theorem kE_mono (hsort : E.Pairwise (codeLe M Q L)) {i i' : ℕ} (hii : i ≤ i'
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega), Option.getD_some,
       List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi', Option.getD_some]
     rcases h with h | ⟨h, -⟩
-    · exact h.le
-    · exact h.le
+    all_goals grind
 
 /-! ## The gap starts -/
 
@@ -83,24 +84,33 @@ theorem mem_gapStarts {m : ℕ} : m ∈ gapStarts M Q L E ↔ m < E.length ∧
 theorem gapStarts_pairwise : (gapStarts M Q L E).Pairwise (· < ·) :=
   List.Pairwise.filter _ List.pairwise_lt_range
 
-theorem gs_eq {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+section
+variable {j : ℕ} (hj : j < (gapStarts M Q L E).length)
+include hj
+theorem gs_eq :
     gs M Q L E j = (gapStarts M Q L E)[j] := by
-  unfold gs; rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some]
+  simp_all [gs, List.getD_eq_getElem?_getD, Option.getD_some] 
 
-theorem gs_mem {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+theorem gs_mem :
     gs M Q L E j ∈ gapStarts M Q L E := by
-  rw [gs_eq hj]; exact List.getElem_mem hj
+  rw [gs_eq hj]; simp_all
 
-theorem gs_lt_len {j : ℕ} (hj : j < (gapStarts M Q L E).length) : gs M Q L E j < E.length :=
+theorem gs_lt_len : gs M Q L E j < E.length :=
   (mem_gapStarts.1 (gs_mem hj)).1
+
+
+end
 
 theorem gs_lt_gs {j j' : ℕ} (hjj : j < j') (hj' : j' < (gapStarts M Q L E).length) :
     gs M Q L E j < gs M Q L E j' := by
   rw [gs_eq (by omega), gs_eq hj']
   exact List.pairwise_iff_getElem.1 gapStarts_pairwise j j' (by omega) hj' hjj
 
+section
+variable (hE : 0 < E.length)
+include hE
 /-- **The last gap starts at the last event.** -/
-theorem gs_last (hE : 0 < E.length) :
+theorem gs_last :
     0 < (gapStarts M Q L E).length ∧
       gs M Q L E ((gapStarts M Q L E).length - 1) = E.length - 1 := by
   have hmem : E.length - 1 ∈ gapStarts M Q L E := mem_gapStarts.2 ⟨by omega, Or.inl (by omega)⟩
@@ -110,16 +120,14 @@ theorem gs_last (hE : 0 < E.length) :
   have h0 : gs M Q L E j₀ = E.length - 1 := by rw [gs_eq hj₀]; exact hj₀e
   by_contra hne
   have hlt : j₀ < (gapStarts M Q L E).length - 1 := by
-    rcases Nat.lt_or_ge j₀ ((gapStarts M Q L E).length - 1) with h | h
-    · exact h
-    · exact absurd (by rw [show (gapStarts M Q L E).length - 1 = j₀ by omega]; exact h0) hne
+    grind
   have h1 := gs_lt_gs (M := M) (Q := Q) (L := L) (E := E) hlt (by omega)
   have h2 := gs_lt_len (M := M) (Q := Q) (L := L) (E := E)
     (j := (gapStarts M Q L E).length - 1) (by omega)
   omega
 
 /-- **A gap other than the last one** ends at the next event, with a larger key. -/
-theorem gs_succ (hE : 0 < E.length) {j : ℕ} (hj : j + 1 < (gapStarts M Q L E).length) :
+theorem gs_succ {j : ℕ} (hj : j + 1 < (gapStarts M Q L E).length) :
     gs M Q L E j + 1 < E.length ∧ kE M Q L E (gs M Q L E j) < kE M Q L E (gs M Q L E j + 1) := by
   obtain ⟨-, hlast⟩ := gs_last (M := M) (Q := Q) (L := L) hE
   have h1 := gs_lt_gs (M := M) (Q := Q) (L := L) (E := E)
@@ -133,54 +141,73 @@ theorem gs_succ (hE : 0 < E.length) {j : ℕ} (hj : j + 1 < (gapStarts M Q L E).
 
 /-! ## The arcs of `buildNF` -/
 
+
+end
+
 theorem arcs_length (hK : 0 < L.length) :
     (buildNF M Q L E).arcs.length = (gapStarts M Q L E).length := by
   rw [DownDrv.buildNF_arcs hK, List.length_map]
 
-theorem arc_s (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+section
+variable (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).length)
+include hK hj
+theorem arc_s :
     ((buildNF M Q L E).arc j).s = wposOf L (E.getD (gs M Q L E j) 0) := by
   have h := DownDrv.buildNF_arc (M := M) (Q := Q) (L := L) (E := E) hK hj
   unfold NF.arc
   rw [h]
   rfl
 
-theorem arc_e (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+theorem arc_e :
     ((buildNF M Q L E).arc j).e = wposOf L (E.getD ((gs M Q L E j + 1) % E.length) 0) := by
   have h := DownDrv.buildNF_arc (M := M) (Q := Q) (L := L) (E := E) hK hj
   unfold NF.arc
   rw [h]
   rfl
 
-theorem key_s (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+theorem key_s :
     M.key Q ((buildNF M Q L E).arc j).s = kE M Q L E (gs M Q L E j) := by
   rw [arc_s hK hj]; rfl
 
+
+end
+
+section
+variable (hK : 0 < L.length) (hE : 0 < E.length)
+include hK hE
+section
+variable {j : ℕ} (hj : j + 1 < (gapStarts M Q L E).length)
+include j hj
 /-- The end of an arc other than the last one is the next event. -/
-theorem key_e (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
-    (hj : j + 1 < (gapStarts M Q L E).length) :
+theorem key_e :
     M.key Q ((buildNF M Q L E).arc j).e = kE M Q L E (gs M Q L E j + 1) := by
   rw [arc_e hK (by omega), Nat.mod_eq_of_lt (gs_succ hE hj).1]; rfl
 
 /-- **An arc other than the last one does not wrap.** -/
-theorem key_s_lt_e (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
-    (hj : j + 1 < (gapStarts M Q L E).length) :
+theorem key_s_lt_e :
     M.key Q ((buildNF M Q L E).arc j).s < M.key Q ((buildNF M Q L E).arc j).e := by
   rw [key_s hK (by omega), key_e hK hE hj]; exact (gs_succ hE hj).2
 
+
+end
+
 /-- The last arc ends at the first event. -/
-theorem key_e_last (hK : 0 < L.length) (hE : 0 < E.length) :
+theorem key_e_last :
     M.key Q ((buildNF M Q L E).arc ((gapStarts M Q L E).length - 1)).e = kE M Q L E 0 := by
   obtain ⟨hA, hlast⟩ := gs_last (M := M) (Q := Q) (L := L) hE
   rw [arc_e hK (by omega), hlast, Nat.sub_add_cancel hE, Nat.mod_self]; rfl
 
 /-- The last arc starts at the last event. -/
-theorem key_s_last (hK : 0 < L.length) (hE : 0 < E.length) :
+theorem key_s_last :
     M.key Q ((buildNF M Q L E).arc ((gapStarts M Q L E).length - 1)).s =
       kE M Q L E (E.length - 1) := by
   obtain ⟨hA, hlast⟩ := gs_last (M := M) (Q := Q) (L := L) hE
   rw [key_s hK (by omega), hlast]
 
 /-! ## Buckets -/
+
+
+end
 
 /-- **The bucket condition** of a key `x` for the bucket `b` of the normal form `N` (`A` arcs):
 `b = 0`: `x` at most the end of the last arc; `1 ≤ b < A`: `x` on the closed arc `b - 1`;
@@ -214,7 +241,7 @@ theorem bktKey_le (hK : 0 < L.length) (hE : 0 < E.length) (hsort : E.Pairwise (c
       exact le_trans (kE_mono hsort hi' (by omega)) hs
   rcases hx with ⟨rfl, hx⟩ | ⟨hb1, hb2, -, hx⟩ | ⟨hbA, -⟩
   · rw [hA, key_e_last hK hE] at hx
-    exact ⟨0, hE, hx, hlow 0 (fun _ => Nat.zero_le _) (Nat.zero_le _) (by omega)⟩
+    grind
   · rw [hA] at hb2
     have hj : b - 1 + 1 < (gapStarts M Q L E).length := by omega
     rw [show b - 1 = b - 1 from rfl, key_e hK hE hj] at hx
@@ -225,7 +252,6 @@ theorem bktKey_le (hK : 0 < L.length) (hE : 0 < E.length) (hsort : E.Pairwise (c
     omega
   · exfalso
     have := hy.le
-    rw [hbA] at hbb
     omega
 
 /-! ## Three chords at one position -/
@@ -260,8 +286,11 @@ theorem three_attach (hM : WalkAx M) {c₁ c₂ c₃ : Set Point} (h₁ : c₁ �
   · left
     rw [hc₁, hc₂, Restore.ray_eq ho₁2 ho₂2 h12 ho₁D ho₂D ho₁o ho₂o]
 
+section
+variable (hok : ChordTriplesOK M Q L)
+include hok
 /-- **Equal keys of event positions are equal positions** (edge and parameter). -/
-theorem pos_eq_of_key (hok : ChordTriplesOK M Q L) {a a' : ℕ} (ha : a < 2 * L.length)
+theorem pos_eq_of_key {a a' : ℕ} (ha : a < 2 * L.length)
     (ha' : a' < 2 * L.length) (h : M.key Q (wposOf L a) = M.key Q (wposOf L a')) :
     (wposOf L a).edge = (wposOf L a').edge ∧ M.param Q (wposOf L a) = M.param Q (wposOf L a') := by
   obtain ⟨-, t0, t1, -⟩ := BuildNF.attach_wposOf hok ha
@@ -271,14 +300,15 @@ theorem pos_eq_of_key (hok : ChordTriplesOK M Q L) {a a' : ℕ} (ha : a < 2 * L.
   have h2 : ((wposOf L a').edge : ℝ) < (wposOf L a).edge + 1 := by linarith
   have h1' : (wposOf L a).edge < (wposOf L a').edge + 1 := by exact_mod_cast h1
   have h2' : (wposOf L a').edge < (wposOf L a).edge + 1 := by exact_mod_cast h2
-  have he : (wposOf L a).edge = (wposOf L a').edge := by omega
-  refine ⟨he, ?_⟩
-  rw [he] at h; linarith
+  grind
 
 /-- The chords of a valid list are admissible. -/
-theorem chordSet_adm (hok : ChordTriplesOK M Q L) {k : ℕ} (hk : k < L.length) :
+theorem chordSet_adm {k : ℕ} (hk : k < L.length) :
     BuildOrder.chordSet M Q L k ∈ M.Adm :=
   hok.1.2.1 ⟨L.getD k (0, 0, 0), BuildOrder.getD_mem hk, rfl⟩
+
+
+end
 
 /-- **A smaller bucket means an earlier event** for the codes of new chords `L₂` appended to `L`:
 the keys are ordered through an event key of `E`; equal keys would put three distinct chords (or
@@ -301,30 +331,29 @@ theorem codeLe_of_bkt (hM : WalkAx M) {L₂ : List (ℕ × ℕ × ℕ)} (hok : C
   -- the old event
   have hc₀ : E.getD i 0 < 2 * L.length := by
     have hmem : E.getD i 0 ∈ E := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
-      exact List.getElem_mem hi
-    simpa using hperm.mem_iff.1 hmem
-  have hc₀' : E.getD i 0 < 2 * (L ++ L₂).length := by rw [hlen]; omega
+      simp_all
+    grind
+  have hc₀' : E.getD i 0 < 2 * (L ++ L₂).length := by omega
   have hkc : M.key Q (wposOf (L ++ L₂) (E.getD i 0)) = kE M Q L E i := by
     rw [DownDrv.wposOf_append hc₀]; rfl
   have hxa : M.key Q (wposOf (L ++ L₂) a) = M.key Q (wposOf (L ++ L₂) (E.getD i 0)) := by
-    rw [hkc]; linarith
+    grind
   have hya : M.key Q (wposOf (L ++ L₂) a') = M.key Q (wposOf (L ++ L₂) (E.getD i 0)) := by
-    rw [hkc]; linarith
+    simp_all
   obtain ⟨e1, p1⟩ := pos_eq_of_key hok ha2 hc₀' hxa
   obtain ⟨e2, p2⟩ := pos_eq_of_key hok ha2' hc₀' hya
   by_cases hii : a / 2 = a' / 2
   · -- the two ends of one chord are distinct points
     have hpos : M.pos Q (wposOf (L ++ L₂) a) = M.pos Q (wposOf (L ++ L₂) a') := by
-      unfold Model.pos; rw [e1, p1, e2, p2]
+      grind [Model.pos]
     have hlt := BuildNF.pos_lt' (M := M) (Q := Q) (L := L ++ L₂) hM hok (i := a / 2) (by omega)
     rcases Nat.mod_two_eq_zero_or_one a with h0 | h1
     · have h1' : a' % 2 = 1 := by omega
       rw [BuildNF.wposOf_even h0, BuildNF.wposOf_odd h1', ← hii] at hpos
-      rw [hpos] at hlt; exact lt_irrefl _ hlt
+      grind
     · have h0' : a' % 2 = 0 := by omega
       rw [BuildNF.wposOf_odd h1, BuildNF.wposOf_even h0', ← hii] at hpos
-      rw [hpos] at hlt; exact lt_irrefl _ hlt
+      grind
   · have A₀ := BuildNF.attach_wposOf hok hc₀'
     have A₁ := BuildNF.attach_wposOf hok ha2
     have A₂ := BuildNF.attach_wposOf hok ha2'

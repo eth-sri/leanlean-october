@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvTRun
 
 /-!
@@ -41,24 +43,17 @@ theorem transCnt_cnt {A : ℕ} (hA : 1 ≤ A) (B : ℕ) : TransCnt (DownMath.cnt
 
 theorem mem_drvBands {b : ℕ} : b ∈ DrvR.drvBands ↔ 1 ≤ b ∧ b ≤ 24 ∧ b ≠ 23 := by
   unfold DrvR.drvBands phaseBands bCore
-  simp only [Finset.mem_erase, Finset.mem_Icc]
-  omega
+  ram_grind
 
 /-- A frame of the driver's bands from a write-set frame not touching the allocator. -/
 theorem frame_drv {B : ℕ → Bool} {c c' : Config} {k : ℕ} (F : FrameM B c c')
     (hB : ∀ r, B r = true → bandOf r ∈ DrvR.drvBands) (hA : B ALLOC = false)
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) : Frame DrvR.drvBands c c' k := by
-  have hAA : c'.nreg ALLOC = c.nreg ALLOC := F.1 _ hA
-  have hnot : ∀ r, bandOf r ∉ DrvR.drvBands → B r = false := fun r hr => by
-    cases h : B r
-    · rfl
-    · exact absurd (hB r h) hr
-  exact ⟨fun r hr _ => F.1 r (hnot r hr), fun r hr => F.2.1 r (hnot r hr), hm,
-    fun a _ => by rw [F.2.2.1], F.2.2.2, by rw [hAA], by rw [hAA]; omega⟩
+  ram_grind
 
 theorem band_of_range {r lo : ℕ} (h1 : 10000 * lo ≤ r) (h2 : r < 10000 * lo + 10000) :
     bandOf r = lo := by
-  unfold bandOf; omega
+  omega_nf
 
 section exec
 
@@ -67,10 +62,7 @@ variable {P : Polygon} {W : ℕ}
 /-- The `LeftInside` bit as a register value. -/
 theorem bit_eq {b : ℕ} {p : Prop} [Decidable p] (hb : b ≤ 1) (h : b = 1 ↔ p) :
     b = if decide p then 1 else 0 := by
-  by_cases hp : p
-  · simp only [hp, decide_true, ite_true]; exact h.2 hp
-  · simp only [hp, decide_false, Bool.false_eq_true, ite_false]
-    by_contra hb0; exact hp (h.1 (by omega))
+  ram_grind
 
 set_option maxHeartbeats 8000000 in
 /-- **The transition meets its contract**, for every count function satisfying the
@@ -84,8 +76,8 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
   replace hroom : c.nreg ALLOC + κT * (P.n + 1) ≤ W := hroom
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
   have hn : (Qof P).n = P.n := shear_n _ _
-  have hn3 : 3 ≤ P.n := by have := hQ.1; rwa [hn] at this
-  have hCm : C.m = P.n - 1 := by have := hC.2.2; omega
+  have hn3 : 3 ≤ P.n := by ram_grind
+  have hCm : C.m = P.n - 1 := by ram_grind
   set li := decide (Mountain.LeftInside (Qof P)) with hli_def
   have hli : li = true ↔ Mountain.LeftInside (Qof P) := decide_eq_true_iff
   -- the math
@@ -102,40 +94,30 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
   have hA₁ : c₁.nreg ALLOC = A := F₁.1 _ (by decide)
   -- 2. the shift
   obtain ⟨c₂, k₂, e₂, hk₂, v10, v14, v15, v16, v01, F₂, m₂⟩ :=
-    c0S_exec hG hWh hC (li := li) c₁ e₁.wb_right hb₁ (by rw [hA₁]; unfold κT at hroom; omega)
+    c0S_exec hG hWh hC (li := li) c₁ e₁.wb_right hb₁ (by omega)
   have hA₂ : c₂.nreg ALLOC = A := by rw [F₂.1 _ (by decide), hA₁]
   have hcore₂ : c₂.nreg 230002 = c.nreg (coreReg 2) := by
     rw [F₂.1 _ (by decide), F₁.1 _ (by decide)]; rfl
-  have hlow₂ : ∀ a, a < A → c₂.nmem a = c.nmem a := fun a ha => by
-    rw [m₂ a (by rw [hA₁]; exact ha), m₁]
+  
   have hNr₂ : Robust (c₂.nreg ALLOC) c₂.nmem (fun m => NFAt m (c₂.nreg 230002) N) := by
-    rw [hA₂, hcore₂]; exact hNr.transport hlow₂
+    grind [Chazelle.Core.Robust]
   -- 3. the filter
   obtain ⟨c₃, k₃, e₃, hk₃, hk₃', f21, f22, f36, f99, fCL, fD0, fD1, fmem, fg, frr, frm, fo⟩ :=
-    filtS_exec c₂ e₂.wb_right (n := P.n) (c₀ := c0 C li) hNr₂ v01 (by rw [v10, hCm])
-      v14 (by rw [v15, hCm]) v16 (by rw [hA₂]; omega)
+    filtS_exec c₂ e₂.wb_right (n := P.n) (c₀ := c0 C li) hNr₂ v01 (by omega)
+      v14 (by omega) v16 (by omega)
   rw [hA₂] at f21 f22 f99 fCL fD0 fD1 fmem
   -- 4. the inputs of the build
   obtain ⟨c₄, k₄, e₄, hk₄, s0, s1, s2, F₄, m₄⟩ := setB_exec (P := P) c₃ e₃.wb_right
   have hA₄ : c₄.nreg ALLOC = A + 6 + 3 * K₀ := by rw [F₄.1 _ (by decide), f99]
   have hlenK : L.length ≤ K₀ := by
-    have := transL_length_le li P.n (c0 C li) (triplesOf N)
-    unfold triplesOf at this; rw [List.length_map] at this; exact this
+    omega
   -- 5. the build
   have hdesc : ModelDescAt c₄.nmem A (Qof P) (interiorModel (Qof P)) := by
-    right
-    refine ⟨by rw [m₄, fD0], ?_, rfl⟩
-    rw [m₄, fD1]
-    cases h : li
-    · simp only [Bool.false_eq_true, ite_false]
-      exact ⟨fun h0 => absurd h0 (by norm_num), fun h1 => by
-        have := hli.2 h1; rw [h] at this; exact absurd this (by simp)⟩
-    · simp only [ite_true]
-      exact ⟨fun _ => hli.1 h, fun _ => trivial⟩
+    ram_grind
   obtain ⟨c₅, k₅, e₅, hk₅, ⟨E, hperm, hsort, hE1, hE2, hNB, hNF⟩, g₅, F₅⟩ :=
     buildT_exec hG hWh c₄ e₄.wb_right (M := interiorModel (Qof P)) (L := L) (D := A)
-      (B := A + 6) (by rw [hA₄]; exact ⟨by omega, fun h => by rw [m₄, fD0] at h; omega⟩)
-      hdesc (Or.inr ⟨_, hQ, rfl⟩) hok (by rw [m₄]; exact fCL) (by rw [hA₄]; omega)
+      (B := A + 6) (by grind [Chazelle.Core.ModelDescWF])
+      hdesc (Or.inr ⟨_, hQ, rfl⟩) hok (by ram_grind) (by ram_grind)
       (by rw [s0, f21]) (by rw [s1, f22]) (by rw [s2, f36])
       (by rw [hA₄]; unfold κT at hcost hroom; omega)
   -- 6. the registers of the driver
@@ -143,7 +125,7 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
   have hA₆ : c₆.nreg ALLOC = c₅.nreg ALLOC := F₆.1 _ (by decide)
   have h5 : ∀ r, 190021 ≤ r → r ≤ 190036 → c₅.nreg r = c₄.nreg r := fun r h1 h2 =>
     g₅ r (by rw [band_of_range (lo := 19) (by omega) (by omega)]; simp [bBuild, bSort, bSign])
-      (by unfold ALLOC; omega) (by omega)
+      (by omega_nf) (by omega)
   have r1 : c₆.nreg 210001 = A := by
     rw [w1, h5 _ (by norm_num) (by norm_num), F₄.1 _ (by decide), f21]
   have r2 : c₆.nreg 210002 = A + 6 := by
@@ -160,47 +142,39 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
     omega
   · -- the invariant `Inv(p)`
     show c₆.nreg 210001 + 6 ≤ c₆.nreg ALLOC ∧ _
-    refine ⟨by rw [r1, hA₆]; omega, ?_, L, E, ?_, ?_, ?_, ?_, ?_, hok, hperm, hsort, ?_, ?_, ?_,
+    refine ⟨by ram_grind, ?_, L, E, ?_, ?_, ?_, ?_, ?_, hok, hperm, hsort, ?_, ?_, ?_,
       ?_⟩
     · show Robust (c₆.nreg ALLOC) c₆.nmem (fun m => ModelDescAt m (c₆.nreg 210001) (Qof P)
         (interiorModel (Qof P)))
       rw [r1]
       intro m' hm'
-      have e0 : m' A = c₄.nmem A := by
-        rw [hm' A (by rw [hA₆]; omega), hlow₅ A (by rw [hA₄]; omega), m₄]
-      have e1 : m' (A + 1) = c₄.nmem (A + 1) := by
-        rw [hm' (A + 1) (by rw [hA₆]; omega), hlow₅ (A + 1) (by rw [hA₄]; omega), m₄]
-      rcases hdesc with ⟨h0, -⟩ | ⟨h0, h1, h2⟩
-      · rw [m₄, fD0] at h0; omega
-      · exact Or.inr ⟨by rw [e0]; exact h0, by rw [e1]; exact h1, h2⟩
-    · show c₆.nreg 210003 = L.length; exact r3
+      grind [Chazelle.Core.ModelDescAt]
+    · omega_nf
     · show c₆.nreg 210002 + 3 * L.length ≤ c₆.nreg ALLOC
-      rw [r2, hA₆]; omega
+      ram_grind
     · show Robust (c₆.nreg ALLOC) c₆.nmem (fun m => ChordListAt m (c₆.nreg 210002) L)
       rw [r2]
       intro m' hm' i hi
       obtain ⟨a1, a2, a3⟩ := fCL i hi
       have hq : ∀ q, q < 3 → m' (A + 6 + 3 * i + q) = c₃.nmem (A + 6 + 3 * i + q) := fun q hq => by
-        rw [hm' _ (by rw [hA₆]; omega), hlow₅ _ (by rw [hA₄]; omega)]
+        rw [hm' _ (by ram_grind), hlow₅ _ (by ram_grind)]
       refine ⟨?_, ?_, ?_⟩
-      · have := hq 0 (by norm_num); rw [Nat.add_zero] at this; rw [this]; exact a1
+      · have := hq 0 (by norm_num); ram_grind
       · rw [hq 1 (by norm_num)]; exact a2
       · rw [hq 2 (by norm_num)]; exact a3
     · show c₆.nreg 210004 + 2 * L.length ≤ c₆.nreg ALLOC
-      rw [w4, hA₆]; exact hE1
+      omega
     · show Robust (c₆.nreg ALLOC) c₆.nmem (fun m => seg m (c₆.nreg 210004) (2 * L.length) = E)
       rw [w4]
       intro m' hm'
       rw [← hE2]
       unfold seg
       apply List.map_congr_left
-      intro j hj
-      rw [List.mem_range] at hj
-      rw [hm' _ (by rw [hA₆]; omega), m₆]
+      grind
     · show NFWithin c₆.nmem (c₆.nreg 210005) (c₆.nreg ALLOC) _
-      rw [w5, hA₆, m₆]; exact hNF
-    · rw [F_buildNF]; exact hdeg
-    · rw [F_buildNF]; exact hwt
+      ram_grind
+    · grind [F_buildNF]
+    · grind [F_buildNF]
     · exact hcnt P.n L.length K₀ (Nat.le_pow_clog (by norm_num) _) hcount hlenK
   · -- the frame
     have G₁ : Frame DrvR.drvBands c c₁ k₁ := frame_drv F₁ (fun r hr => by
@@ -214,8 +188,8 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
       (by decide) m₂
     have G₃ : Frame DrvR.drvBands c₂ c₃ k₃ := by
       refine ⟨fun r hr hra => fg r ?_ hra, fun r _ => by rw [frr], fun a ha => fmem a
-        (by rw [hA₂] at ha; exact ha), fun a _ => by rw [frm], fo, by rw [f99, hA₂]; omega,
-        by rw [f99, hA₂]; omega⟩
+        (by ram_grind), fun a _ => by rw [frm], fo, by omega,
+        by omega⟩
       by_contra hc
       push Not at hc
       exact hr (by rw [band_of_range (lo := 19) (by omega) (by omega), mem_drvBands]; omega)
@@ -227,13 +201,13 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
         intro b hb
         simp only [Finset.mem_insert, Finset.mem_singleton] at hb
         rw [mem_drvBands]
-        rcases hb with rfl | rfl | rfl | rfl <;> simp [bBuild, bSort, bSign, bTrans]) le_rfl
+        rcases hb with rfl | rfl | rfl | rfl <;> omega_nf) le_rfl
     have G₆ : Frame DrvR.drvBands c₅ c₆ k₆ := frame_drv F₆ (fun r hr => by
         unfold BfinT at hr; simp only [decide_eq_true_eq] at hr
         rw [band_of_range (lo := 21) (by omega) (by omega), mem_drvBands]; omega)
       (by decide) (fun a _ => by rw [m₆])
     have := G₁.trans (G₂.trans (G₃.trans (G₄.trans (G₅.trans G₆))))
-    simpa only [Finset.union_self] using this
+    ram_grind
 
 /-- **The transition contract** for the count function of the driver. -/
 theorem transSpec {X : MemCtx} {A : ℕ} (hA : 1 ≤ A) (B : ℕ) :

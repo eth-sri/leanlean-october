@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmSort
 
 /-!
@@ -26,35 +28,41 @@ open Machine Machine.Stmt Programs SignK
 
 variable {α : Type*} [DecidableEq α]
 
+section
+variable (l : List α) (d : α)
+include l d
 /-- The entries kept by the scan: the first one and those differing from their predecessor. -/
-def keep (l : List α) (d : α) (j : ℕ) : Bool := j = 0 ∨ l.getD j d ≠ l.getD (j - 1) d
+def keep (j : ℕ) : Bool := j = 0 ∨ l.getD j d ≠ l.getD (j - 1) d
 
 /-- The scan applied to the first `n` entries. -/
-def ddp (l : List α) (d : α) (n : ℕ) : List α :=
+def ddp (n : ℕ) : List α :=
   ((List.range n).filter (keep l d)).map fun j => l.getD j d
 
 /-- The scan. -/
-def dd (l : List α) (d : α) : List α := ddp l d l.length
+def dd : List α := ddp l d l.length
 
-theorem ddp_succ (l : List α) (d : α) (n : ℕ) :
+
+end
+
+section
+variable (l : List α) (d : α)
+theorem ddp_succ (n : ℕ) :
     ddp l d (n + 1) = ddp l d n ++ (if keep l d n then [l.getD n d] else []) := by
   unfold ddp
   rw [List.range_succ, List.filter_append, List.map_append]
   by_cases h : keep l d n <;> simp [h]
 
-theorem mem_dd (l : List α) (d : α) (x : α) : x ∈ dd l d ↔ x ∈ l := by
+theorem mem_dd (x : α) : x ∈ dd l d ↔ x ∈ l := by
   unfold dd ddp
   simp only [List.mem_map, List.mem_filter, List.mem_range]
   constructor
-  · rintro ⟨j, ⟨hj, -⟩, rfl⟩
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj]
-    exact List.getElem_mem hj
+  · ram_grind
   · intro hx
     obtain ⟨j, hj, rfl⟩ := List.getElem_of_mem hx
     -- the first occurrence
     classical
     let P : ℕ → Prop := fun i => i < l.length ∧ l.getD i d = l[j]
-    have hP : ∃ i, P i := ⟨j, hj, by rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj]; rfl⟩
+    have hP : ∃ i, P i := ⟨j, hj, by simp_all⟩
     let i := Nat.find hP
     have hi : P i := Nat.find_spec hP
     refine ⟨i, ⟨hi.1, ?_⟩, hi.2⟩
@@ -62,12 +70,10 @@ theorem mem_dd (l : List α) (d : α) (x : α) : x ∈ dd l d ↔ x ∈ l := by
     by_cases h0 : i = 0
     · simp [h0]
     · have hmin := Nat.find_min hP (show i - 1 < i by omega)
-      simp only [decide_eq_true_eq, Bool.decide_or, Bool.or_eq_true]
-      right
-      intro heq
-      apply hmin
-      refine ⟨by have := hi.1; omega, ?_⟩
-      rw [← heq]; exact hi.2
+      grind
+
+
+end
 
 /-- **The scan of a sorted list has no repetitions.** -/
 theorem dd_nodup {r : α → α → Prop} (hanti : ∀ x y, r x y → r y x → x = y) {l : List α}
@@ -86,23 +92,19 @@ theorem dd_nodup {r : α → α → Prop} (hanti : ∀ x y, r x y → r y x → 
     apply hk
     -- `l[a] = l[b]` and `a ≤ b - 1 < b`: sorted, so `l[b - 1] = l[b]`
     have ga : l.getD a d = l[a] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]; rfl
+      grind
     have gb : l.getD b d = l[b] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hb]; rfl
+      grind
     have gc : l.getD (b - 1) d = l[b - 1] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]; rfl
+      grind
     rw [gb, gc]
     rw [ga, gb] at heq
     rcases Nat.lt_or_ge a (b - 1) with h | h
     · have h1 : r l[a] l[b - 1] := List.pairwise_iff_getElem.1 hs _ _ (by omega) (by omega) h
       have h2 : r l[b - 1] l[b] := List.pairwise_iff_getElem.1 hs _ _ (by omega) hb (by omega)
-      rw [heq] at h1
-      exact (hanti _ _ h2 h1).symm
-    · have : a = b - 1 := by omega
-      subst this; exact heq.symm
-  rcases Nat.lt_or_gt_of_ne hne with h | h
-  · exact key i j h hj.1 hj.2 hij
-  · exact key j i h hi.1 hi.2 hij.symm
+      grind
+    grind
+  grind
 
 /-! ## The index loop -/
 
@@ -131,7 +133,7 @@ theorem ixLoop_exec {P : Polygon} {W K S : ℕ} {c₀ : Config} (h05 : c₀.nreg
       ∃ c' k, Exec P W ixLoop c c' k ∧ k ≤ 5 * n + 2 ∧ n ≤ k ∧ IXI W K S c₀ c' ∧ c'.nreg 70200 = K
   | 0, c, hI, hn => by
     have h01' : c.nreg 70201 = K := by rw [hI.regs 70201 (by decide) (by decide), h01]
-    exact ⟨c, 2, .whileLtN_false (by rw [h01']; omega) hI.wb, by omega, by omega, hI, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by omega) hI.wb, by omega, by omega, hI, by omega⟩
   | n + 1, c, hI, hn => by
     have h01' : c.nreg 70201 = K := by rw [hI.regs 70201 (by decide) (by decide), h01]
     have h05' : c.nreg 70105 = 1 := by rw [hI.regs 70105 (by decide) (by decide), h05]
@@ -145,16 +147,7 @@ theorem ixLoop_exec {P : Polygon} {W K S : ℕ} {c₀ : Config} (h05 : c₀.nreg
         c'.output = c.output) := by
       unfold ixBody
       exec_block
-      all_goals try (simp (disch := omega) only [Machine.upd_same,
-        Machine.upd_other, hA, hi, h05', ALLOC]; omega)
-      refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_, ?_, rfl, rfl, rfl⟩
-      · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hi,
-          h05', ALLOC]
-      · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hA,
-          h05', ALLOC]; ring
-      · have a2' : r ≠ 9999 := a2
-        simp (disch := omega) only [Machine.upd_other]
-      · simp (disch := omega) only [hA, hi, ALLOC]
+      all_goals (grind [Machine.upd_same, Machine.upd_other, ALLOC])
     obtain ⟨q0, qA, qr, qm, qrr, qrm, qo⟩ := q
     have hI' : IXI W K S c₀ c' := by
       refine ⟨e.wb_right, by omega, by rw [qA, q0], fun r a1 a2 => by rw [qr r a1 a2,
@@ -164,17 +157,14 @@ theorem ixLoop_exec {P : Polygon} {W K S : ℕ} {c₀ : Config} (h05 : c₀.nreg
       rw [qm]
       rcases Nat.lt_or_ge j i with h | h
       · rw [upd_other _ _ _ (by omega)]; exact hI.done j (by omega)
-      · have : j = i := by omega
-        subst this; rw [upd_same]
+      grind [upd_same]
     obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := ixLoop_exec h05 h01 hW n c' hI' (by omega)
-    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [hi, h01']; omega) e e₂, by omega, by omega, hI'', hK⟩
+    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by omega) e e₂, by omega, by omega, hI'', hK⟩
 
 theorem seg_range {m : ℕ → ℕ} {S K : ℕ} (h : ∀ j, j < K → m (S + j) = j) :
     SortL.seg m S K = List.range K := by
-  apply List.ext_getElem (by simp [SortL.seg])
-  intro j h1 h2
-  simp only [SortL.seg, List.getElem_map, List.getElem_range]
-  exact h j (by simpa using h2)
+  apply List.ext_getElem (by simp_all)
+  simp_all [SortL.seg, List.getElem_map, List.getElem_range] <;> omega_nf
 
 end
 

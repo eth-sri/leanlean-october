@@ -73,49 +73,28 @@ theorem regionsIn_erase (hF : ChordSystem D F) {S : Set (Set Point)} (hS : S ⊆
   rw [hins] at hR₁ hR₂ heq htouch
   have hRD : R ⊆ D := fun p hp => (regionsIn_subset hR hp).1
   have hReq : R = R₁ ∪ R₂ ∪ (c ∩ D) := by
-    ext p
-    constructor
-    · intro hp
-      by_cases hpc : p ∈ c
-      · exact Or.inr ⟨hpc, hRD hp⟩
-      · left
-        rw [hunion]
-        exact ⟨hp, hpc⟩
-    · rintro (hp | hp)
-      · rw [hunion] at hp
-        exact hp.1
-      · exact hcR hp
+    grind
   have hR₁R : R₁ ⊆ R := fun p hp => by
-    have : p ∈ R₁ ∪ R₂ := Or.inl hp
-    rw [hunion] at this
-    exact this.1
+    grind
   have hR₂R : R₂ ⊆ R := fun p hp => by
-    have : p ∈ R₁ ∪ R₂ := Or.inr hp
-    rw [hunion] at this
-    exact this.1
+    grind
   refine ⟨R₁, R₂, hne, hR₁, hR₂, htouch, hReq ▸ hR, ?_⟩
   rw [← hReq]
   ext W
   constructor
   · intro hW
     by_cases hWR : W = R
-    · exact Or.inr (mem_singleton_iff.2 hWR)
+    · grind
     · left
-      have hWS : W ∈ regionsIn D S := by rw [heq]; exact Or.inl ⟨hW, hWR⟩
+      have hWS : W ∈ regionsIn D S := by grind
       refine ⟨hWS, ?_⟩
       have hdisj := regionsIn_disjoint_of_ne hW hR hWR
       rintro (rfl | rfl)
       · obtain ⟨p, hp⟩ := regionsIn_nonempty hR₁
-        exact hdisj.notMem_of_mem_left hp (hR₁R hp)
+        grind
       · obtain ⟨p, hp⟩ := regionsIn_nonempty hR₂
-        exact hdisj.notMem_of_mem_left hp (hR₂R hp)
-  · rintro (⟨hWS, hW12⟩ | hW)
-    · rw [heq] at hWS
-      rcases hWS with h | h
-      · exact h.1
-      · exact absurd h hW12
-    · rw [mem_singleton_iff.1 hW]
-      exact hR
+        grind
+  grind
 
 /-! ### Removing a set of chords -/
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoS0CandQ4
 public import Chazelle.Core.SweepIoS0CandBsMain
 
@@ -60,14 +62,11 @@ def qK (κL : ℕ) : ℕ := κL + checkK + 10
 theorem lsPr_congr {P : Polygon} {J : Merge.Junction} {m m' : ℕ → ℕ} {AL G E : ℕ} {x : WPos}
     {j : ℕ} (hm : ∀ a, a < AL + 7 * E → m a = m' a) (hj : j < E) :
     lsPr P J m AL G x j ↔ lsPr P J m' AL G x j := by
-  unfold lsPr
-  rw [hm (AL + 7 * j) (by omega), hm (AL + 7 * j + 1) (by omega)]
+  core_grind
 
 theorem frQ_partFr {c c' : Config} (h : FrQ c c') : PartFr c c' :=
   ⟨fun r hr h1 _ h3 hra => h.1 r hr (fun hq => by
-      rcases hq with hq | hq
-      · exact h1 (by unfold sw at *; omega)
-      · exact h3 (by unfold sw at *; omega)) hra, h.2.1, h.2.2⟩
+      omega_nf) hra, h.2.1, h.2.2⟩
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 20000 in
@@ -111,33 +110,30 @@ theorem candQ_spec {ls : Stmt} {κL : ℕ} (hLs : LSearchOK ls κL) :
   have hX : AuxCore P J N₂ c₀ := core_of_aux hAux
   rw [hbL, hbR] at hacc ⊢
   have hK := hA.hK
-  have hKc := hK.fix hI
+  
   set zp := c.nreg zP with hzpdef
   set zh := c.nreg zPh with hzhdef
   set d := c.nreg qD with hddef
   have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := hI.hm
-  have hAW : c.nreg ALLOC ≤ W := hI.hw.1 ALLOC
+  
   have hA0 := hI.hA
-  have fix : ∀ k, k < 700 → c.nreg (sw k) = c₀.nreg (sw k) := fun k hk =>
-    hI.hin _ (by unfold IFix sw; omega)
+  
   -- copy the query position
   have hcost : cIn.length + (κL * (c₀.nreg TLR + 1) + (checkK + 2)) ≤
       qK κL * (c₀.nreg TLR + 1) := by
     have : cIn.length = 2 := by simp [cIn]
     rw [this]; unfold qK
-    rw [show κL + checkK + 10 = κL + (checkK + 10) by ring, add_mul]
-    have := Nat.le_mul_of_pos_right (checkK + 10) (by omega : 0 < c₀.nreg TLR + 1)
-    omega
+    ring_nf <;> omega
   refine IRS.seq (K₁ := cIn.length) (K₂ := κL * (c₀.nreg TLR + 1) + (checkK + 2))
     (IRS.block cIn hI (cIn_ok _ _)) ?_ |>.mono hcost (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' rfl
   obtain ⟨v1E, v1H, k1⟩ := cIn_val c.nmem c.nreg
   set c₁ : Config := { c with nreg := regB c.nmem cIn c.nreg } with hc₁
   have nk1 : ∀ q, (q < sw 4020 ∨ sw 4021 < q) → c₁.nreg q = c.nreg q := fun q hq =>
-    k1 q (by unfold lsxE sw at *; omega) (by unfold lsxH sw at *; omega)
+    k1 q (by core_grind) (by core_grind)
   have fix1 : ∀ k, k < 700 → c₁.nreg (sw k) = c₀.nreg (sw k) := fun k hk =>
-    hI₁.hin _ (by unfold IFix sw; omega)
-  have hAc₁ : c₁.nreg ALLOC = c.nreg ALLOC := nk1 _ (by unfold ALLOC sw; omega)
+    hI₁.hin _ (by omega_nf)
+  have hAc₁ : c₁.nreg ALLOC = c.nreg ALLOC := nk1 _ (by omega_nf)
   have hxE1 : c₁.nreg lsxE = zp := v1E
   have hxH1 : c₁.nreg lsxH = zh := v1H
   have hlog := hA.hlog
@@ -156,20 +152,20 @@ theorem candQ_spec {ls : Stmt} {κL : ℕ} (hLs : LSearchOK ls κL) :
     (fun j hj => by
       rw [hTLR] at hj; rw [hTBR, hm1 _ (by have := hA.hTW; omega)]; exact hA.htab j hj)
     (by rw [hTBR, hTLR]; have := hA.hTW; omega)
-    (by rw [fix1 301 (by norm_num), hTLR]; have := hA.hbigE; rw [rd_sw, rd_sw] at this; omega)
-    (by rw [fix1 300 (by norm_num), fix1 301 (by norm_num)]; omega)
+    (by rw [fix1 301 (by norm_num), hTLR]; have := hA.hbigE; grind [rd_sw])
+    (by grind)
     (by rw [fix1 40 (by norm_num), aenv_gW hA]; exact gW_lt_nat J)
     (fun j hj => by
       rw [fix1 301 (by norm_num)] at hj
       rw [fix1 300 (by norm_num), hm1 _ (by omega), hm1 _ (by omega)]
       exact log_posW hA hj)
-    (by rw [hxE1, hxH1]; exact ⟨hzP, hzPp, h6z⟩)
+    (by ram_grind)
     (fun i j hij hj hpr => by
       rw [fix1 301 (by norm_num)] at hj
       rw [hcongr _ i (by omega)]
       rw [hcongr _ j hj] at hpr
       exact log_mono hA _ hij hj hpr)
-    (by rw [hTLR, hAc₁]; have := hcost; omega)
+    (by rw [hTLR, hAc₁];  omega)
   rw [hTLR] at hsearch
   refine IRS.seq hsearch ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨ht0, hs1, hs2, k2, hal2, hm2⟩
@@ -184,24 +180,24 @@ theorem candQ_spec {ls : Stmt} {κL : ℕ} (hLs : LSearchOK ls κL) :
   have nk2 : ∀ q, bandOf q ∉ oracleBands → (q < sw 4000 ∨ sw 4021 < q) → q ≠ ALLOC →
       c₂.nreg q = c.nreg q := fun q hb hq hqa => by
     rw [k2 q hb (by unfold LSet sw at *; omega) hqa]
-    exact nk1 q (by unfold sw at *; omega)
+    grind [sw]
   have hfr2 : FrQ c c₂ := ⟨fun r hr hq hra => by
-      rw [k2 r hr (fun h => hq (by right; unfold LSet at h; unfold sw at *; omega)) hra]
-      exact k1 r (fun h => hq (by subst h; right; unfold lsxE sw; omega))
-        (fun h => hq (by subst h; right; unfold lsxH sw; omega)),
-    by rw [hAc₁] at hal2; exact hal2, fun a ha => by rw [hm2 a (by rw [hAc₁]; exact ha)]⟩
-  have hd₂ : c₂.nreg qD = d := nk2 qD (nob (by unfold qD sw; omega) (by unfold qD sw; omega))
-    (by unfold qD sw; omega) (by unfold qD ALLOC sw; omega)
+      rw [k2 r hr (fun h => hq (by right; unfold LSet at h; grind [sw])) hra]
+      exact k1 r (fun h => hq (by subst h; omega_nf))
+        (fun h => hq (by subst h; omega_nf)),
+    by omega, fun a ha => by grind⟩
+  have hd₂ : c₂.nreg qD = d := nk2 qD (nob (by omega_nf) (by omega_nf))
+    (by omega_nf) (by omega_nf)
   have hacc₂ : AccOK P accA (ModB J 1 1) J.whole.radius z (dirOf d) L c₂ :=
-    hacc.transport (fun j hj => nk2 (accA + j) (nob (by unfold accA sw; omega)
-      (by unfold accA sw; omega)) (by unfold accA sw; omega) (by unfold accA ALLOC sw; omega))
+    hacc.transport (fun j hj => nk2 (accA + j) (nob (by omega_nf)
+      (by omega_nf)) (by omega_nf) (by omega_nf))
   have hxE2 : c₂.nreg lsxE = zp := by
-    rw [k2 _ (nob (by unfold lsxE sw; omega) (by unfold lsxE sw; omega))
-      (by unfold LSet lsxE sw; omega) (by unfold lsxE ALLOC sw; omega)]; exact hxE1
+    rw [k2 _ (nob (by omega_nf) (by omega_nf))
+      (by omega_nf) (by omega_nf)]; exact hxE1
   have hxH2 : c₂.nreg lsxH = zh := by
-    rw [k2 _ (nob (by unfold lsxH sw; omega) (by unfold lsxH sw; omega))
-      (by unfold LSet lsxH sw; omega) (by unfold lsxH ALLOC sw; omega)]; exact hxH1
-  have h301 : c₂.nreg (sw 301) = rd c₀ bSweep 301 := hI₂.hin _ (by unfold IFix sw; omega)
+    rw [k2 _ (nob (by omega_nf) (by omega_nf))
+      (by omega_nf) (by omega_nf)]; exact hxH1
+  have h301 : c₂.nreg (sw 301) = rd c₀ bSweep 301 := hI₂.hin _ (by omega_nf)
   -- the final assembly from the completeness of the slot read
   have fin : ∀ c' L', AccOK P accA (ModB J 1 1) J.whole.radius z (dirOf d) L' c' → L ⊆ L' →
       (∀ τ ∈ L', τ ∈ L ∨ (0 < τ ∧ OnCB J.whole (rayPt z (dirOf d) τ))) →
@@ -228,11 +224,8 @@ theorem candQ_spec {ls : Stmt} {κL : ℕ} (hLs : LSearchOK ls κL) :
     exact ⟨⟨L', hacc', hLL, hsnd, hst, htb⟩, frQ_partFr hfr⟩
   refine IRS.ite (fun ht => ?_) (fun ht => ?_)
   · rw [h301] at ht
-    refine (check_irs hA hX hI₂ hz hzs hz2 hzP hzPp (by rw [hd₂]; exact harr) hxE2 hxH2 ht
+    refine (check_irs hA hX hI₂ hz hzs hz2 hzP hzPp (by grind) hxE2 hxH2 ht
       hs1' hs2' (by rw [hd₂]; exact hacc₂) (by
-        have : c₂.nreg ALLOC ≤ c.nreg ALLOC + κL * (c₀.nreg TLR + 1) := by
-          rw [hAc₁] at hA₂'; exact hA₂'
-        have := hcost
         omega)).mono le_rfl ?_
     rintro c' ⟨L', hacc', hLL, hsnd, hHC, hfr⟩
     rw [hd₂] at hacc' hsnd hHC
@@ -255,7 +248,7 @@ theorem initSpec_mono {init : Stmt} {Aux' : Polygon → Merge.Junction → NF �
     Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _ (hκ _))
   obtain ⟨c', k, ex, hk, hfr, hreg, hx⟩ := h.1 P W X Ok J H N₁ N₂ E c hw hA
     (le_trans (Nat.add_le_add_left hle _) hroom)
-  exact ⟨c', k, ex, le_trans hk hle, hfr, hreg, hx⟩
+  grind
 
 /-- **`S0CandSpec` from the initialisation contract.** -/
 theorem s0CandSpec_of (hI : InitPartSpec) : S0CandSpec := by

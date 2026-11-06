@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseHostSimple
 
 /-!
@@ -25,13 +27,19 @@ open Chazelle.Geometry (lerp lerp_mem_segment)
 
 variable {M : Model} {F : Set (Set Point)} {U : Set Point}
 
+section
+variable (M : Model) (F : Set (Set Point)) (U : Set Point)
+include M F U
 /-- The `i`-th host key. -/
-noncomputable def hk (M : Model) (F : Set (Set Point)) (U : Set Point) (i : ℕ) : ℝ :=
+noncomputable def hk (i : ℕ) : ℝ :=
   (hostKeyList M F U).getD i 0
 
 /-- The number of host keys. -/
-noncomputable def nk (M : Model) (F : Set (Set Point)) (U : Set Point) : ℕ :=
+noncomputable def nk : ℕ :=
   (hostKeyList M F U).length
+
+
+end
 
 section
 
@@ -46,14 +54,12 @@ theorem hk_strictMono {i j : ℕ} (hij : i < j) (hj : j < nk M F U) : hk M F U i
   have hS := hostKeys_finite (U := U) hM hF hfin
   have hL := hostKeyList_eq (U := U) hS
   have hsorted : (hostKeyList M F U).Pairwise (· ≤ ·) := by
-    rw [hL]; exact Finset.pairwise_sort _ _
-  have hnodup : (hostKeyList M F U).Nodup := by rw [hL]; exact Finset.sort_nodup _ _
+    simp_all
+  have hnodup : (hostKeyList M F U).Nodup := by simp_all
   unfold hk
   rw [List.getD_eq_getElem _ _ (lt_trans hij hj), List.getD_eq_getElem _ _ hj]
   refine lt_of_le_of_ne (List.pairwise_iff_getElem.1 hsorted i j (lt_trans hij hj) hj hij) ?_
-  intro h
-  have := (List.Nodup.getElem_inj_iff hnodup).1 h
-  omega
+  grind
 
 theorem hk_inj {i j : ℕ} (hi : i < nk M F U) (hj : j < nk M F U) (h : hk M F U i = hk M F U j) :
     i = j := by
@@ -64,45 +70,60 @@ theorem hk_inj {i j : ℕ} (hi : i < nk M F U) (hj : j < nk M F U) (h : hk M F U
 
 theorem hk_mem {i : ℕ} (hi : i < nk M F U) : hk M F U i ∈ hostKeys M F U := by
   rw [← hk_mem_iff hM hF hfin]; unfold hk; rw [List.getD_eq_getElem _ _ hi]
-  exact List.getElem_mem hi
+  grind
 
 theorem exists_hk {x : ℝ} (hx : x ∈ hostKeys M F U) : ∃ i, i < nk M F U ∧ hk M F U i = x := by
   rw [← hk_mem_iff hM hF hfin] at hx
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hx
-  exact ⟨i, hi, by unfold hk; rw [List.getD_eq_getElem _ _ hi]⟩
+  exact ⟨i, hi, by simp_all [hk] <;> omega_nf⟩
 
+section
+variable (h2 : 2 ≤ nk M F U) {i : ℕ} (hi : i < nk M F U)
+include h2 hi
 /-- **No host key inside a gap.** -/
-theorem hk_gap (h2 : 2 ≤ nk M F U) {i : ℕ} (hi : i < nk M F U) {x : ℝ}
+theorem hk_gap {x : ℝ}
     (hx : x ∈ hostKeys M F U) :
     ¬ sideInArc (hk M F U i) (hk M F U ((i + 1) % nk M F U)) x :=
   sorted_gap (fun _ _ hij hj => hk_strictMono hM hF hfin hij hj) h2 hi
     ((hk_mem_iff hM hF hfin x).2 hx)
 
-theorem hk_succ_ne (h2 : 2 ≤ nk M F U) {i : ℕ} (hi : i < nk M F U) :
+theorem hk_succ_ne :
     hk M F U i ≠ hk M F U ((i + 1) % nk M F U) := by
   intro h
   have := hk_inj hM hF hfin hi (Nat.mod_lt _ (by omega)) h
   by_cases h1 : i + 1 < nk M F U
   · rw [Nat.mod_eq_of_lt h1] at this; omega
-  · rw [show i + 1 = nk M F U by omega, Nat.mod_self] at this; omega
+  grind [Nat.mod_self]
+
 
 end
 
+end
+
+section
+variable (M : Model) (F : Set (Set Point)) (U : Set Point) (i : ℕ)
+include M F U i
 /-- **An arc gap**: the gap after the host key `i` lies in an arc of `U`. -/
-def ArcGap (M : Model) (F : Set (Set Point)) (U : Set Point) (i : ℕ) : Prop :=
+def ArcGap : Prop :=
   ∃ a b : ℝ, M.IsArc F U a b ∧
     ∀ x : ℝ, 0 ≤ x → x < M.W.n →
       sideInArc (hk M F U i) (hk M F U ((i + 1) % nk M F U)) x → sideInArc a b x
 
 /-- **A chord gap**: a chord of `F` is attached at both ends of the gap after the host key `i`,
 at distinct points. -/
-def ChordGap (M : Model) (F : Set (Set Point)) (U : Set Point) (i : ℕ) : Prop :=
+def ChordGap : Prop :=
   ∃ c ∈ F, ∃ (p p' : ℕ) (t t' : ℝ), SideAttach M.W c p t ∧ SideAttach M.W c p' t' ∧
     hk M F U i = p + t ∧ hk M F U ((i + 1) % nk M F U) = p' + t' ∧
     sidePt M.W p t ≠ sidePt M.W p' t'
 
+
+end
+
+section
+variable (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
+include hM hF hfin
 /-- **Every gap is an arc gap or a chord gap.** -/
-theorem gap_cases (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.Nonempty)
+theorem gap_cases (hne : F.Nonempty)
     (hU : U ∈ M.regions F) (h2 : 2 ≤ nk M F U) {i : ℕ} (hi : i < nk M F U) :
     ArcGap M F U i ∨ ChordGap M F U i := by
   have hsi : (i + 1) % nk M F U < nk M F U := Nat.mod_lt _ (by omega)
@@ -113,7 +134,7 @@ theorem gap_cases (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.
   · exact Or.inr h
 
 /-- **No gap is of both kinds**: the chord would run along the walk. -/
-theorem not_arc_and_chord (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
+theorem not_arc_and_chord
     (h2 : 2 ≤ nk M F U) {i : ℕ} (hi : i < nk M F U) (hA : ArcGap M F U i)
     (hC : ChordGap M F U i) : False := by
   obtain ⟨a', b', harc, hsub⟩ := hA
@@ -139,6 +160,9 @@ theorem not_arc_and_chord (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
   have hD := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
   rw [← hPa, ← hPb, hz] at hD
   exact hM.trace q hq s hs0 hs1.le hD
+
+
+end
 
 end
 

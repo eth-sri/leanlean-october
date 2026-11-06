@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvTasks4
 public import Chazelle.Core.SweepEvStartM
 public import Chazelle.Core.SweepEvCount
@@ -37,15 +39,11 @@ theorem hPolyS_vtx {F : Set (Set Point)} (hfin : F.Finite) {C : Chain} {c : Set 
     (hc : c ∈ F) (hcC : c ∈ Merge.augChords C) :
     ∃ h, h < (hPolyS F hfin).n ∧ ∃ a b : ℝ, c = hseg ((hPolyS F hfin).vtx h).2 a b := by
   have hmem : ((0 : ℝ), (Merge.lend c).2) ∈ (hPolyS F hfin).vertices := by
-    simp only [hPolyS]
-    exact List.mem_map.2 ⟨c, by simp [hc], rfl⟩
+    aesop (add simp [hPolyS]) (add safe (by omega))
   obtain ⟨h, hh, he⟩ := List.mem_iff_getElem.1 hmem
   obtain ⟨y, a, b, -, -, hcd, hl, -⟩ := Merge.augChords_spec hcC
   refine ⟨h, hh, a, b, ?_⟩
-  have hv : (hPolyS F hfin).vtx h = ((0 : ℝ), (Merge.lend c).2) := by
-    unfold Polygon.vtx
-    rw [List.getD_eq_getElem _ _ hh, he]
-  rw [hv, hl, hcd]
+  simp_all [Polygon.vtx] 
 
 /-- **One polygon for the families `S₂` and `F₂⁺`.** -/
 theorem chordFamily_pair (J : Merge.Junction) {S₂ : Set (Set Point)}
@@ -68,14 +66,16 @@ noncomputable def soff (P : Polygon) (J : Merge.Junction) (r : ℕ × ℕ × ℕ
   oW J (r.1 + (chainModel J.whole).param (Qof P) ⟨r.1, r.2.1⟩)
 
 theorem stopsOf_getElem {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)} {i : ℕ} (hi : i < rs.length) :
-    (stopsOf J (Qof P) N₂ rs)[i]'(by simp [stopsOf, hi]) =
+    (stopsOf J (Qof P) N₂ rs)[i]'(by grind [stopsOf]) =
       ((rs[i]).1, (chainModel J.whole).param (Qof P) ⟨(rs[i]).1, (rs[i]).2.1⟩,
         stopSet J (Qof P) N₂ (rs[i]).2.2.1 (rs[i]).2.2.2.1 (rs[i]).2.2.2.2) := by
   simp [stopsOf]
 
+section
+variable {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)} (hst : StopsOK J (N₂.F (chainModel J.right) (Qof P)) (stopsOf J (Qof P) N₂ rs))
+include rs hst
 /-- The facts of the stop `i`: its chord, attached at its position, on the `C₁` part. -/
-theorem stop_facts {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
-    (hst : StopsOK J (N₂.F (chainModel J.right) (Qof P)) (stopsOf J (Qof P) N₂ rs)) {i : ℕ}
+theorem stop_facts {i : ℕ}
     (hi : i < rs.length) :
     stopSet J (Qof P) N₂ (rs[i]).2.2.1 (rs[i]).2.2.2.1 (rs[i]).2.2.2.2 ∈
         F₂plus J (N₂.F (chainModel J.right) (Qof P)) ∧
@@ -85,14 +85,13 @@ theorem stop_facts {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
         (stopSet J (Qof P) N₂ (rs[i]).2.2.1 (rs[i]).2.2.2.1 (rs[i]).2.2.2.2) (rs[i]).1
         ((chainModel J.whole).param (Qof P) ⟨(rs[i]).1, (rs[i]).2.1⟩) ∧
       (Lst J : ℝ) ≤ soff P J rs[i] := by
-  have hi' : i < (stopsOf J (Qof P) N₂ rs).length := by simp [stopsOf, hi]
+  have hi' : i < (stopsOf J (Qof P) N₂ rs).length := by grind [stopsOf]
   have h := hst.1 _ (List.getElem_mem hi')
   rw [stopsOf_getElem hi] at h
   exact h
 
 /-- **The stops are sorted by offset.** -/
-theorem stops_sorted {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
-    (hst : StopsOK J (N₂.F (chainModel J.right) (Qof P)) (stopsOf J (Qof P) N₂ rs)) {i i' : ℕ}
+theorem stops_sorted {i i' : ℕ}
     (hii : i ≤ i') (hi' : i' < rs.length) :
     soff P J (rs[i]'(by omega)) ≤ soff P J rs[i'] := by
   rcases hii.lt_or_eq with h | rfl
@@ -100,7 +99,10 @@ theorem stops_sorted {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
     have := List.pairwise_iff_getElem.1 hst.2.2.1 i i' (by omega) (by omega) h
     rw [stopsOf_getElem, stopsOf_getElem] at this
     exact this
-  · exact le_rfl
+  simp_all
+
+
+end
 
 /-- **At most two stops share an offset.** -/
 theorem stops_two (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
@@ -144,8 +146,8 @@ theorem stops_two (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂
   rw [← t01, ← p01] at a1
   rw [← t02, ← p02] at a2
   rcases tie_third hC.hM hC.hF f0 f1 f2 d01 a0 a1 a2 with h | h
-  · exact d02 h.symm
-  · exact d12 h.symm
+  · ram_grind
+  ram_grind
 
 end Stops
 
@@ -154,8 +156,7 @@ end Stops
 theorem evSideLab_mono {J : Merge.Junction} {S₂ : Set (Set Point)} {Λ Λ' : Set (Set Point)}
     {Z : Set Point} (h : Λ ⊆ Λ') (hl : EvSideLab J S₂ Λ Z) : EvSideLab J S₂ Λ' Z :=
   fun G hG ρ hρ hS => by
-    obtain ⟨L, hL, h2, h3⟩ := hl G hG ρ hρ hS
-    exact ⟨L, hL.imp (fun x => h x) id, h2, h3⟩
+    ram_grind
 
 /-- The walk edge of the vertex at the end of the right stretch in the walk of `C₂`. -/
 noncomputable def vEnd (J : Merge.Junction) : ℕ :=
@@ -192,7 +193,7 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
   obtain ⟨Q', hQ₂, hQF⟩ := chordFamily_pair J hS₂ hS₂f
   obtain ⟨⟨hpKn, -, -⟩, hoK, hstop⟩ := startMathTask P J N₂ hP hN
   set pK := (gW J + Lst J) % (chainModel J.whole).W.n with hpKd
-  have hoK' : oW J ((pK : ℝ) + 0) = Lst J := by exact_mod_cast hoK
+  have hoK' : oW J ((pK : ℝ) + 0) = Lst J := by omega
   have hL0 := Lst_pos J
   -- every chord at the start key is a stop at the start key
   have atKey : ∀ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e pK 0 →
@@ -207,18 +208,16 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
     obtain ⟨h1, h2, h3⟩ := hkx
     refine ⟨k, hk', ?_, h3⟩
     unfold soff
-    rw [h2, h1]
-    exact hoK'
+    ram_grind
   -- a stop at the start key is attached at the start key
   have stopAt : ∀ i (hi : i < rs.length), soff P J rs[i] = Lst J →
       SideAttach (chainModel J.whole).W
         (stopSet J (Qof P) N₂ (rs[i]).2.2.1 (rs[i]).2.2.2.1 (rs[i]).2.2.2.2) pK 0 := by
     intro i hi ho
     obtain ⟨-, -, hA, -⟩ := stop_facts hst hi
-    have e : soff P J rs[i] = oW J ((pK : ℝ) + 0) := by rw [ho, hoK']
+    have e : soff P J rs[i] = oW J ((pK : ℝ) + 0) := by ram_grind
     obtain ⟨h1, h2⟩ := pos_eq_of_oW hP hS₂ hS₂f hA.1 hpKn hA.2.1 hA.2.2.1 le_rfl one_pos e
-    rw [h2, h1] at hA
-    exact hA
+    ram_grind
   by_cases hanc : ∃ i, ∃ hi : i < rs.length, soff P J rs[i] = Lst J ∧ (ax[i]'(by omega)).1 = 1
   · obtain ⟨i₀, hi₀, ho₀, ha₀⟩ := hanc
     have hZ := (stop_facts hst hi₀).1
@@ -232,7 +231,6 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
       have hne : sidePt (chainModel J.whole).W pK 0 ≠ sidePt (chainModel J.whole).W q s := by
         intro h
         obtain ⟨rfl, rfl⟩ := hC.hM.attach_unique (hC.hF he) heK hQ h
-        rw [hoK'] at hQ0
         linarith
       exact evInv_pocket he heK hQ hne (by rw [hoK']) hQ0 Λ
     push Not at hpock

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.UpPhase14
 
 /-!
@@ -59,8 +61,7 @@ theorem rowBody_exec {c : Config} (hw : WordsBounded W c) {j p x Al : ℕ}
   rw [hAl] at hA ⊢
   unfold rowBody
   exec_block
-  all_goals try (config_simp; (try simp only [h40, h41, h42, hA, h20, h21, h22,
-    Machine.upd_apply]); (try split_ifs) <;> omega)
+  all_goals try (config_simp; omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun a h1 => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
   · config_simp; simp only [h40, h20]
   · config_simp; simp only [h41, h22]
@@ -105,19 +106,17 @@ theorem rowS_exec {c : Config} (hw : WordsBounded W c) {hp g x cnt R' : ℕ}
     rw [hAl] at hA
     exec_block
     all_goals try (config_simp; (try simp only [hA, h08]); omega)
-    refine ⟨rfl, ‹_›, by config_simp; exact h08, by config_simp; simp only [hA, h08]; omega,
-      by config_simp; exact h18, by config_simp; exact hA, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
+    refine ⟨rfl, ‹_›, by simp_all, by simp_all +arith,
+      by simp_all, by simp_all, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
     unfold RowRG at hr
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
-  have g1 : ∀ r, ¬ RowRG r → c1.nreg r = c.nreg r := fr1
-  have c1A : c1.nreg ALLOC = R' := by rw [g1 _ (by unfold RowRG; rw [hAl]; omega)]; exact hA
+    repeat ram_simp 
+  
+  have c1A : c1.nreg ALLOC = R' := by ram_grind
   have c20 : ∀ c' : Config, (∀ r, ¬ RowRG r → r ≠ ALLOC → c'.nreg r = c1.nreg r) →
       c'.nreg 170020 = 1 ∧ c'.nreg 170021 = 2 ∧ c'.nreg 170022 = 3 ∧ c'.nreg 170029 = 0 :=
     fun c' h => by
-      refine ⟨?_, ?_, ?_, ?_⟩ <;>
-        rw [h _ (by unfold RowRG; omega) (by rw [hAl]; omega), g1 _ (by unfold RowRG; omega)] <;>
-        assumption
+      ram_grind
   let I : Config → Prop := fun c' => ∃ j, j ≤ cnt ∧ WordsBounded W c' ∧
     c'.nreg 170040 = j ∧ c'.nreg 170041 = R' + 3 * j ∧ c'.nreg ALLOC = R' + 3 * (cnt - j) ∧
     c'.nreg 170044 = R' ∧
@@ -127,8 +126,8 @@ theorem rowS_exec {c : Config} (hw : WordsBounded W c) {hp g x cnt R' : ℕ}
     (∀ a, (a < R' + 3 * j ∨ R' + 3 * cnt ≤ a) → c'.nmem a = c.nmem a) ∧
     (∀ r, ¬ RowRG r → r ≠ ALLOC → c'.nreg r = c1.nreg r) ∧
     c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output
-  have hI1 : I c1 := ⟨cnt, le_rfl, hw1, i40, i41, by rw [c1A]; simp, i44,
-    by rw [i42]; exact hC, fun i h1 h2 => absurd h2 (by omega), fun a _ => by rw [hm1],
+  have hI1 : I c1 := ⟨cnt, le_rfl, hw1, i40, i41, by omega, i44,
+    by ram_grind, fun i h1 h2 => absurd h2 (by omega), fun a _ => by rw [hm1],
     fun _ _ _ => rfl, hrr1, hrm1, ho1⟩
   obtain ⟨c', k, e, ⟨j, hj, hw', j40, j41, jA, j44, hCj, hE, hmem, fr, hrr, hrm, ho⟩, htest, hk,
       hψ⟩ :=
@@ -179,12 +178,11 @@ theorem rowS_exec {c : Config} (hw : WordsBounded W c) {hp g x cnt R' : ℕ}
             exact this)
       hI1
   have hj0 : j = 0 := by
-    obtain ⟨-, -, -, k29⟩ := c20 c' fr
-    rw [k29, j40] at htest; omega
+    grind
   subst hj0
-  refine ⟨c', k1 + k, .seq e1 e, by rw [i40] at hk; omega, hw', by rw [jA]; simp, by
-    rw [jA]; rw [c1A] at hψ; omega, j44, fun i h => hE i (by omega) h, fun a ha => hmem a (by omega),
-    fun r h1 h2 => by rw [fr r h1 h2, g1 r h1], by rw [hrr], by rw [hrm], by rw [ho]⟩
+  refine ⟨c', k1 + k, .seq e1 e, by omega, hw', by omega, by
+    ram_grind, j44, fun i h => hE i (by omega) h, fun a ha => hmem a (by omega),
+    fun r h1 h2 => by ram_grind, by rw [hrr], by rw [hrm], by rw [ho]⟩
 
 end proofs
 

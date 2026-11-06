@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepMachine19
 
 /-!
@@ -39,38 +41,40 @@ namespace Sweep
 /-- The box block is determined by the top and the radius. -/
 theorem boxPt_congr {C C' : Chain} (ht : C.top = C'.top) (hR : C.radius = C'.radius) (e : ℕ) :
     boxPt C e = boxPt C' e := by
-  unfold boxPt
-  rcases e with _ | _ | _ | _ | _ | _ | _ | e <;> simp [Chazelle.Chain.slitTop, ht, hR]
+  simp_all [boxPt, Chazelle.Chain.slitTop] 
 
 section Machine
 
 variable (J : Merge.Junction)
 
+section
+variable (hv : ¬ VNotTop J)
+include hv
 /-- The two cases of `¬ VNotTop`. -/
-theorem vtop_cases (hv : ¬ VNotTop J) :
+theorem vtop_cases :
     tpos J.whole J.m₁ = 0 ∨ tpos J.whole J.m₁ + 2 * J.m₂ = 2 * J.whole.m := by
-  unfold VNotTop at hv; omega
+  grind [VNotTop]
 
 /-- **The shared vertex is the top of `C`** (`¬ VNotTop`). -/
-theorem shared_eq_top (hv : ¬ VNotTop J) : J.shared = J.whole.top := by
+theorem shared_eq_top : J.shared = J.whole.top := by
   have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
   have hτ := tpos_lt J.whole J.m₁
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
-  have h1 := J.one_le_m₁
+  
   rcases vtop_cases J hv with hA | hB
   · have := walk_tour J.whole J.m₁ 0 (by omega)
     rw [add_zero, hA, add_zero, Nat.mod_eq_of_lt (by omega), tourV_right J (Nat.zero_le _),
       tourV_right_zero, cm_W, J.whole.sideWalk_vtx_six] at this
-    exact this.symm
+    simp_all
   · have := walk_tour J.whole J.m₁ (2 * J.m₂) (by omega)
     rw [tourV_right J le_rfl, tourV_right_end,
       show 6 + tpos J.whole J.m₁ + 2 * J.m₂ = 2 * J.whole.m + 6 by omega,
       Nat.mod_eq_of_lt (by omega), cm_W, J.whole.sideWalk_vtx_tour _ le_rfl,
       J.whole.sideTour_two_m] at this
-    exact this.symm
+    simp_all
 
 /-- The top of `C₁` is the shared vertex (`¬ VNotTop`). -/
-theorem left_top_eq (hv : ¬ VNotTop J) : J.left.top = J.shared := by
+theorem left_top_eq : J.left.top = J.shared := by
   have h := shared_eq_top J hv
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   have hm1 : J.left.m = J.m₁ := rfl
@@ -88,7 +92,7 @@ theorem left_top_eq (hv : ¬ VNotTop J) : J.left.top = J.shared := by
     rw [J.whole_vertex J.left.topIdx]
     have h3 : (J.left.vertex J.m₁).2 ≤ (J.left.vertex J.left.topIdx).2 :=
       J.left.vertex_snd_le_top (by omega)
-    have h4 : J.left.vertex J.m₁ = J.whole.top := by rw [← J.whole_vertex, hv1, h]
+    have h4 : J.left.vertex J.m₁ = J.whole.top := by aesop
     rw [h4] at h3
     exact (J.whole.vertex_snd_le_top hi).trans h3
   show J.left.vertex J.left.topIdx = J.shared
@@ -96,7 +100,7 @@ theorem left_top_eq (hv : ¬ VNotTop J) : J.left.top = J.shared := by
 
 /-- **The box blocks of `C` and `C₁` agree** (`¬ VNotTop`): from the end of the tour of `C` and
 of `C₁` (walk vertices `2m + 6` and `2m₁ + 6`), seven edges. -/
-theorem box_agree (hv : ¬ VNotTop J) :
+theorem box_agree :
     Agree (chainModel J.whole).W (chainModel J.left).W (2 * J.whole.m + 6) (2 * J.left.m + 6) 7 := by
   intro e he
   have h1 := walk_box J.whole 0 e he
@@ -110,9 +114,12 @@ theorem box_agree (hv : ¬ VNotTop J) :
   rw [h1, h2]
   refine boxPt_congr ?_ ?_ e
   · rw [← shared_eq_top J hv, left_top_eq J hv]
-  · exact (FuseMath.radius_of_P J (C' := J.left) rfl).symm
+  aesop
 
 /-! ## Offsets of the left stretch in all cases -/
+
+
+end
 
 /-- The offset of the base of the left stretch. -/
 noncomputable def lOff : ℕ :=
@@ -148,7 +155,7 @@ theorem lOff_add_llen : lOff J + llen J ≤ (chainModel J.whole).W.n := by
   unfold llen
   rw [tpos_second J]
   by_cases h : tpos J.whole J.m₁ + 2 * J.m₂ < 2 * J.whole.m
-  · rw [Nat.mod_eq_of_lt h]; split_ifs <;> omega
+  · grind
   · have e : (tpos J.whole J.m₁ + 2 * J.m₂) % (2 * J.whole.m) =
         tpos J.whole J.m₁ + 2 * J.m₂ - 2 * J.whole.m := by
       rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
@@ -159,7 +166,7 @@ theorem lOff_of_vnt (hv : VNotTop J) : lOff J = rlen J := by
   have hτ := tpos_lt J.whole J.m₁
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   obtain ⟨hv1, hv2⟩ := hv
-  rw [lOff_eq]; unfold rlen; split_ifs <;> omega
+  grind [lOff_eq, rlen]
 
 /-- **Offsets of the left stretch** (all cases): the position `d` of the left stretch has offset
 `lOff + d`. -/
@@ -180,7 +187,7 @@ theorem off_left_gen {d : ℕ} (hd : d < llen J) {t : ℝ} (ht : 0 ≤ t) (ht1 :
     rw [← add_assoc]
     conv_rhs => rw [← Nat.mod_add_mod, hb]
   rw [e, off_key hg (by omega) ht ht1]
-  push_cast; ring
+  grind
 
 /-- **A genuine hit on the left stretch is a cut at offset `lOff + d + t`** (all cases; see
 `cut_of_genuine`). -/
@@ -213,7 +220,7 @@ theorem off_box_pos {d : ℕ} (hd : d < 7) {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1
   have hg : 6 + tpos J.whole J.m₁ < (chainModel J.whole).W.n := by omega
   rw [show 2 * J.whole.m + 6 + d = 6 + tpos J.whole J.m₁ + (2 * J.whole.m - tpos J.whole J.m₁ + d)
     by omega, off_key hg (by omega) ht ht1]
-  push_cast; ring
+  grind
 
 /-- **Soundness on the box block**: a detection hit arriving at a position of the box block of the
 model of `C₁` (not its first vertex) gives the piece attached at the corresponding position of
@@ -257,7 +264,7 @@ theorem genuine_of_attach_box (hP : J.P.Simple) (hv : ¬ VNotTop J)
   have hpt : sidePt (chainModel J.left).W
       ((2 * J.left.m + 6 + d) % (chainModel J.left).W.n) t = rayPt a σ T := by
     rw [← hB.sidePt_eq hd t]; exact hend
-  refine ⟨⟨hT0, fun s h0 h1 => dom_left J (hdom s h0 h1) (by simpa [rayPt] using ha₁), ?_⟩, ?_⟩
+  refine ⟨⟨hT0, fun s h0 h1 => dom_left J (hdom s h0 h1) (by simp_all), ?_⟩, ?_⟩
   · rw [← hpt]
     exact hM₁.trace _ hA₁.1 t hA₁.2.1 hA₁.2.2.1.le
   · refine ⟨hA₁.1, hA₁.2.1, hA₁.2.2.1, hpt, ?_⟩
@@ -273,7 +280,7 @@ theorem genuine_of_attach_box (hP : J.P.Simple) (hv : ¬ VNotTop J)
       have e : rayPt a σ (T - s) = lerp a (rayPt a σ T) ((T - s) / T) := by
         apply point_ext <;> simp [rayPt, lerp]; field_simp
       rw [e]
-      exact Geometry.lerp_mem_segment _ _ (by apply div_nonneg <;> linarith)
+      exact Geometry.lerp_mem_segment _ _ (by positivity)
         (by rw [div_le_one hT0]; linarith)
     have hne : rayPt (rayPt a σ T) (-σ) s ≠ rayPt a σ T := by
       intro h
@@ -283,13 +290,13 @@ theorem genuine_of_attach_box (hP : J.P.Simple) (hv : ¬ VNotTop J)
     have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
     have hdist : dist (rayPt (rayPt a σ T) (-σ) s) (rayPt a σ T) < r := by
       rw [dist_rayPt _ hnσ hs0.le]; exact hsr
-    have hl := hnear _ hmem (by rw [hpt]; exact hne) (by rw [hpt]; exact hdist)
+    have hl := hnear _ hmem (by grind) (by grind)
     have h1 : sideLeft (chainModel J.left).W ((2 * J.left.m + 6 + d) % (chainModel J.left).W.n) t
         (rayPt (sidePt (chainModel J.left).W
           ((2 * J.left.m + 6 + d) % (chainModel J.left).W.n) t) (-σ) s) := by
-      rw [hpt]; exact hl
+      grind
     have := (sideLeft_rayPt_iff _ _ t (-σ) hs0 one_pos).1 h1
-    rwa [hpt] at this
+    grind
 
 /-- **A genuine hit on the box block is a cut** of `F` at the corresponding position of the box
 block of `C`, at the offset `2m - τ + d + t`. -/

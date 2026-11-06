@@ -18,8 +18,11 @@ namespace Chazelle.Core
 
 public section
 
+section
+variable (hS : SweepSpecH) (hX : DrvR.ExtractRamSpec)
+include hS hX
 /-- **Reduction of the main theorem** to the sweep and three down-phase components. -/
-theorem linear_of_sweep_parts (hS : SweepSpecH) (hX : DrvR.ExtractRamSpec)
+theorem linear_of_sweep_parts
     (hT : ∀ O : OracleIface, O.Valid → DrvR.LvTailSpec O)
     (hB : ∀ O : OracleIface, O.Valid → ∀ n₀, DrvR.BaseSpec (gradeCtx O) DrvR.lvCnt n₀) :
     LinearTimeTriangulation :=
@@ -28,7 +31,7 @@ theorem linear_of_sweep_parts (hS : SweepSpecH) (hX : DrvR.ExtractRamSpec)
 
 /-- **Reduction of the main theorem** to the sweep, the extraction RAM (D6) and the base case
 (D9): the tail of a level (D12) is proved (`DrvLT.lvTailSpec` from the interior oracles). -/
-theorem linear_of_sweep_xb (hS : SweepSpecH) (hX : DrvR.ExtractRamSpec)
+theorem linear_of_sweep_xb
     (hB : ∀ O : OracleIface, O.Valid → ∀ n₀, DrvR.BaseSpec (gradeCtx O) DrvR.lvCnt n₀) :
     LinearTimeTriangulation :=
   linear_of_sweep_parts hS hX
@@ -37,9 +40,12 @@ theorem linear_of_sweep_xb (hS : SweepSpecH) (hX : DrvR.ExtractRamSpec)
 /-- **Reduction of the main theorem** to the sweep, the extraction RAM (D6) and the region loop
 of the base case (`DrvB.RegLoopSpec`): the top level of the base case is proved
 (`DrvB.baseSpec_of_regLoop`). -/
-theorem linear_of_sweep_xr (hS : SweepSpecH) (hX : DrvR.ExtractRamSpec)
+theorem linear_of_sweep_xr
     (hRL : DrvB.RegLoopSpec) : LinearTimeTriangulation :=
   linear_of_sweep_xb hS hX fun _ _ _ => DrvB.baseSpec_of_regLoop hRL
+
+
+end
 
 end
 

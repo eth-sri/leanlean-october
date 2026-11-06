@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvDArc
 public import Chazelle.Core.RestoreDrvMath
 public import Chazelle.Core.DownPhaseDrvRBktM
@@ -43,11 +45,7 @@ def bktB (A j : ℕ) (t₂ : Bool) : ℕ := if j + 1 < A then j + 1 else if t₂
 def arcOfB (A b : ℕ) : ℕ := if b = 0 ∨ A ≤ b then A - 1 else b - 1
 
 theorem arcOfB_bktB {A j : ℕ} (hj : j < A) (t₂ : Bool) : arcOfB A (bktB A j t₂) = j := by
-  unfold arcOfB bktB
-  by_cases h : j + 1 < A
-  · rw [ite_eq_left h, ite_eq_right (by omega)]; omega
-  · rw [ite_eq_right h]
-    cases t₂ <;> simp <;> omega
+  core_grind
 
 /-- **A match gives the bucket condition.** -/
 theorem bkt_of_match (N : NF) {x : ℝ} {j : ℕ} (hj : j < N.arcs.length) {t₁ t₂ : Bool}
@@ -55,26 +53,7 @@ theorem bkt_of_match (N : NF) {x : ℝ} {j : ℕ} (hj : j < N.arcs.length) {t₁
     (hm : matchB N.arcs.length j t₁ t₂ = true) : BktKey M Q N x (bktB N.arcs.length j t₂) := by
   unfold matchB at hm
   unfold bktB
-  by_cases h : j + 1 < N.arcs.length
-  · rw [ite_eq_left h] at hm ⊢
-    simp only [Bool.and_eq_true] at hm
-    right; left
-    exact ⟨by omega, h, by rw [Nat.add_sub_cancel]; exact h₁.1 hm.1,
-      by rw [Nat.add_sub_cancel]; exact h₂.1 hm.2⟩
-  · rw [ite_eq_right h] at hm ⊢
-    have hjA : j = N.arcs.length - 1 := by omega
-    by_cases ht : t₂ = true
-    · rw [ite_eq_left ht]
-      left
-      exact ⟨rfl, by rw [← hjA]; exact h₂.1 ht⟩
-    · rw [ite_eq_right ht]
-      have ht1 : t₁ = true := by
-        simp only [Bool.or_eq_true] at hm
-        rcases hm with h' | h'
-        · exact absurd h' ht
-        · exact h'
-      right; right
-      exact ⟨rfl, by rw [← hjA]; exact h₁.1 ht1⟩
+  grind [Chazelle.Core.DrvD.BktKey]
 
 /-! ## The ends of a new chord lie on arcs of its region -/
 
@@ -89,7 +68,7 @@ theorem exists_closedArc (hM : WalkAx M) {N : NF} {reg : ℕ → Set Point} (hNF
     he hw.1 hw.2.1 hA
   obtain ⟨j, hj, hjr, hs, he'⟩ := hregs.2.2.1.2.2.1 r hr a b harc
   refine ⟨j, (hregs.2.2.1.2.2.2 r hr j).2 ⟨hj, hjr⟩, hj, ?_⟩
-  rw [hs, he']; exact hcl
+  simp_all
 
 variable {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
 
@@ -107,22 +86,11 @@ theorem match_of_closedArc (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
     have hlt := key_s_lt_e (M := M) (Q := Q) hK hE (j := j) (by rw [← arcs_length hK]; exact h)
     simp only [Bool.and_eq_true]
     rcases hc with hc | hc | hc
-    · unfold sideInArc at hc
-      rw [ite_eq_left hlt] at hc
-      exact ⟨h₁.2 hc.1.le, h₂.2 hc.2.le⟩
-    · exact ⟨h₁.2 hc.ge, h₂.2 (hc ▸ hlt.le)⟩
-    · exact ⟨h₁.2 (hc ▸ hlt.le), h₂.2 hc.le⟩
+    all_goals ram_grind
   · rw [ite_eq_right h]
     simp only [Bool.or_eq_true]
     rcases hc with hc | hc | hc
-    · unfold sideInArc at hc
-      split_ifs at hc
-      · exact Or.inl (h₂.2 hc.2.le)
-      · rcases hc with hc | hc
-        · exact Or.inr (h₁.2 hc.le)
-        · exact Or.inl (h₂.2 hc.le)
-    · exact Or.inr (h₁.2 hc.ge)
-    · exact Or.inl (h₂.2 hc.le)
+    all_goals (grind [sideInArc])
 
 /-! ## Bucket sizes -/
 
@@ -139,8 +107,7 @@ theorem bcnt_le_two {bk : ℕ → ℕ} {n b : ℕ}
   have m2 := (DrvR.mem_bfilt (bk := bk)).1 (List.getElem_mem (l := l) (n := 2) (by omega))
   have h01 := List.pairwise_iff_getElem.1 hpw 0 1 (by omega) (by omega) (by omega)
   have h12 := List.pairwise_iff_getElem.1 hpw 1 2 (by omega) (by omega) (by omega)
-  have := h _ _ m0.1 m2.1 m0.2 m2.2
-  omega
+  grind
 
 end
 

@@ -47,25 +47,15 @@ theorem near_end {a b : Point} (hab : a ≠ b) {ρ : ℝ} (hρ : 0 < ρ) (e : Po
     have := min_le_right (1 / 2 : ℝ) (ρ / (2 * L))
     calc s * L ≤ ρ / (2 * L) * L := mul_le_mul_of_nonneg_right this hL0.le
       _ = ρ / 2 := by field_simp
-  have hb1 : |b.1 - a.1| ≤ L := by rw [hL]; have := abs_nonneg (b.2 - a.2); linarith
-  have hb2 : |b.2 - a.2| ≤ L := by rw [hL]; have := abs_nonneg (b.1 - a.1); linarith
+  have hb1 : |b.1 - a.1| ≤ L := by grind
+  have hb2 : |b.2 - a.2| ≤ L := by grind
   have hne : ∀ u : ℝ, u ≠ 0 → (u * (b.1 - a.1), u * (b.2 - a.2)) ≠ ((0 : ℝ), (0 : ℝ)) := by
-    intro u hu h
-    have h1 := congrArg Prod.fst h; have h2 := congrArg Prod.snd h
-    simp only at h1 h2
-    apply hab
-    rcases mul_eq_zero.1 h1 with h1 | h1
-    · exact absurd h1 hu
-    rcases mul_eq_zero.1 h2 with h2 | h2
-    · exact absurd h2 hu
-    exact Prod.ext (by linarith) (by linarith)
+    grind
   rcases he with rfl | rfl
   · refine ⟨(e.1 + s * (b.1 - e.1), e.2 + s * (b.2 - e.2)), ⟨s, hs0.le, by linarith, rfl⟩, ?_, ?_⟩
     · intro h
       apply hne s hs0.ne'
-      have h1 := congrArg Prod.fst h; have h2 := congrArg Prod.snd h
-      simp only at h1 h2
-      exact Prod.ext (by simp only; linear_combination h1) (by simp only; linear_combination h2)
+      grind
     · rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq]
       simp only [add_sub_cancel_left, abs_mul, abs_of_pos hs0]
       refine max_lt ?_ ?_
@@ -75,9 +65,7 @@ theorem near_end {a b : Point} (hab : a ≠ b) {ρ : ℝ} (hρ : 0 < ρ) (e : Po
       ⟨1 - s, by linarith, by linarith, rfl⟩, ?_, ?_⟩
     · intro h
       apply hne s hs0.ne'
-      have h1 := congrArg Prod.fst h; have h2 := congrArg Prod.snd h
-      simp only at h1 h2
-      exact Prod.ext (by simp only; linear_combination -h1) (by simp only; linear_combination -h2)
+      grind
     · rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq]
       have e1 : a.1 + (1 - s) * (e.1 - a.1) - e.1 = -(s * (e.1 - a.1)) := by ring
       have e2 : a.2 + (1 - s) * (e.2 - a.2) - e.2 = -(s * (e.2 - a.2)) := by ring
@@ -86,8 +74,11 @@ theorem near_end {a b : Point} (hab : a ≠ b) {ρ : ℝ} (hρ : 0 < ρ) (e : Po
       · nlinarith [abs_nonneg (e.1 - a.1)]
       · nlinarith [abs_nonneg (e.2 - a.2)]
 
+section
+variable (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm)
+include hM hc
 /-- **A chord has at most two attachment keys** (one at each end). -/
-theorem attachKeys_sub (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
+theorem attachKeys_sub :
     ∃ k₁ k₂ : ℝ, attachKeys M c ⊆ {k₁, k₂} := by
   obtain ⟨a, b, hab, hcab, -, hopen, hEa, hEb⟩ := hM.ends c hc
   obtain ⟨pa, ta, hAa, hPa⟩ := hEa.1
@@ -103,8 +94,8 @@ theorem attachKeys_sub (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
       · exfalso
         apply hM.trace p hA.1 t hA.2.1 hA.2.2.1.le
         rw [hs]; exact hopen s ⟨h0, h1⟩
-      · right; rw [hs, h1]; simp
-    · left; rw [hs, ← h0]; simp
+      simp_all
+    grind
   have key : ∀ (e : Point) (pe : ℕ) (te : ℝ), (e = a ∨ e = b) → WalkEnd M.W c e →
       SideAttach M.W c pe te → sidePt M.W pe te = e → sidePt M.W p t = e → p = pe ∧ t = te := by
     intro e pe te hee hE hAe hPe hP
@@ -114,24 +105,23 @@ theorem attachKeys_sub (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
     obtain ⟨r1, hr1, hs1⟩ := hA.2.2.2.2
     obtain ⟨r2, hr2, hs2⟩ := hAe.2.2.2.2
     obtain ⟨x, hx, hxe, hxd⟩ := near_end hab (lt_min hr (lt_min hr1 hr2)) e hee
-    have hxc : x ∈ c := by rw [hcab]; exact hx
-    have h1 := hs1 x hxc (by rw [hP]; exact hxe)
-      (by rw [hP]; exact lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_left _ _)))
-    have h2 := hs2 x hxc (by rw [hPe]; exact hxe)
-      (by rw [hPe]; exact lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_right _ _)))
+    have hxc : x ∈ c := by grind
+    have h1 := hs1 x hxc (by grind)
+      (by grind)
+    have h2 := hs2 x hxc (by grind)
+      (by grind)
     exact hdisj x (lt_of_lt_of_le hxd (min_le_left _ _)) h1 h2
-  rcases hend with h | h
-  · obtain ⟨rfl, rfl⟩ := key a pa ta (Or.inl rfl) hEa hAa hPa h
-    exact Or.inl rfl
-  · obtain ⟨rfl, rfl⟩ := key b pb tb (Or.inr rfl) hEb hAb hPb h
-    exact Or.inr rfl
+  grind
 
-theorem attachKeys_ncard_le (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
+theorem attachKeys_ncard_le :
     (attachKeys M c).ncard ≤ 2 := by
   obtain ⟨k₁, k₂, hsub⟩ := attachKeys_sub hM hc
   refine (ncard_le_ncard hsub (toFinite _)).trans ?_
   refine (ncard_insert_le _ _).trans ?_
-  rw [ncard_singleton]
+  simp_all
+
+
+end
 
 /-- A union of sets of at most two elements over a finite index set. -/
 theorem ncard_biUnion_le_two {E : Set (Set Point)} (hE : E.Finite) (f : Set Point → Set ℝ)
@@ -141,9 +131,7 @@ theorem ncard_biUnion_le_two {E : Set (Set Point)} (hE : E.Finite) (f : Set Poin
   | @insert c E hcE hE ih =>
     rw [Set.biUnion_insert, ncard_insert_of_notMem hcE hE]
     refine (ncard_union_le _ _).trans ?_
-    have h1 := hf c (mem_insert c E)
-    have h2 := ih fun d hd => hf d (mem_insert_of_mem c hd)
-    omega
+    grind
 
 /-- **The exit keys of a region number at most twice its degree.** -/
 theorem exitKeys_ncard_le (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (U : Set Point) :
@@ -163,7 +151,9 @@ theorem exitKeys_ncard_le (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (
 def vtxIdx (M : Model) (F : Set (Set Point)) (U : Set Point) : Set ℕ :=
   {k | k < M.W.n ∧ ∃ a b : ℝ, M.IsArc F U a b ∧ sideInArc a b k}
 
-theorem vtxKeys_eq (U : Set Point) : vtxKeys M F U = (fun k : ℕ => (k : ℝ)) '' vtxIdx M F U := by
+section
+variable (U : Set Point)
+theorem vtxKeys_eq : vtxKeys M F U = (fun k : ℕ => (k : ℝ)) '' vtxIdx M F U := by
   ext x
   constructor
   · rintro ⟨k, hk, rfl, a, b, harc, hin⟩
@@ -171,8 +161,11 @@ theorem vtxKeys_eq (U : Set Point) : vtxKeys M F U = (fun k : ℕ => (k : ℝ)) 
   · rintro ⟨k, ⟨hk, a, b, harc, hin⟩, rfl⟩
     exact ⟨k, hk, rfl, a, b, harc, hin⟩
 
-theorem vtxKeys_ncard (U : Set Point) : (vtxKeys M F U).ncard = (vtxIdx M F U).ncard := by
+theorem vtxKeys_ncard : (vtxKeys M F U).ncard = (vtxIdx M F U).ncard := by
   rw [vtxKeys_eq, ncard_image_of_injective _ Nat.cast_injective]
+
+
+end
 
 /-- **The inner vertices of distinct regions are disjoint.** -/
 theorem vtxIdx_disjoint {U U' : Set Point} (hU : U ∈ M.regions F) (hU' : U' ∈ M.regions F)
@@ -188,8 +181,7 @@ theorem vtxIdx_disjoint {U U' : Set Point} (hU : U ∈ M.regions F) (hU' : U' �
   have hf' := harc'.2.2.2.2.2.2 k t hk ht3.1 ht3.2 ht2
   obtain ⟨δ, hδ1, hδ2⟩ := (hf.and hf').exists
   rcases Chazelle.Chain.regionsIn_eq_or_disjoint hU hU' with h | h
-  · exact hne h
-  · exact h.le_bot ⟨hδ1, hδ2⟩
+  all_goals grind
 
 
 /-- **The host keys of a region**: at most its inner vertices plus twice its degree. -/
@@ -229,9 +221,7 @@ theorem sum_nk_le (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) :
   -- the degrees
   have hdeg : ∑ᶠ U ∈ M.regions F, M.deg F U ≤ 2 * F.ncard := by
     have := Merge.potential_le hsys hM.preconn hM.nonempty subset_rfl 0
-    unfold Merge.potential at this
-    simp only [Nat.sub_zero] at this
-    exact this
+    aesop
   -- the inner vertices
   have hvtx : ∑ᶠ U ∈ M.regions F, (vtxIdx M F U).ncard ≤ M.W.n := by
     rw [sum_vtxIdx_eq hRfin subset_rfl]

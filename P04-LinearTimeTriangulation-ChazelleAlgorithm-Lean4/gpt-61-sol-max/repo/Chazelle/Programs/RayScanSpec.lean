@@ -35,21 +35,9 @@ open Machine
 
 /-! ### The first hit -/
 
-/-- `x` is the abscissa of the first hit of the horizontal ray to the right from `q` on the
-boundary of `P`: some edge `i < n` is hit (`HitsRight`, half-open rule) with hit abscissa `x`,
-and `x` is `≤` the hit abscissa of every hit edge. -/
-def FirstHitRight (P : Polygon) (q : Point) (x : ℝ) : Prop :=
-  (∃ i, i < P.n ∧ HitsRight q (P.vtx i) (P.vtx ((i + 1) % P.n)) ∧
-    x = hitX q (P.vtx i) (P.vtx ((i + 1) % P.n))) ∧
-  (∀ i, i < P.n → HitsRight q (P.vtx i) (P.vtx ((i + 1) % P.n)) →
-    x ≤ hitX q (P.vtx i) (P.vtx ((i + 1) % P.n)))
 
 variable {P : Polygon} {q : Point} {x y : ℝ}
 
-/-- The first hit is strictly to the right of `q`. -/
-theorem FirstHitRight.lt (h : FirstHitRight P q x) : q.1 < x := by
-  obtain ⟨⟨i, hi, hhit, rfl⟩, -⟩ := h
-  exact hhit.2
 
 /-! ### The program computes the first hit -/
 

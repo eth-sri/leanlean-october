@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranRing
 
 /-!
@@ -105,16 +107,19 @@ noncomputable def supR (M : Model) (G : Set (Set Point)) (U : Set Point) : Set P
   classical
   exact if h : ∃ Z ∈ M.regions G, U ⊆ Z then h.choose else ∅
 
-theorem supR_spec {M : Model} {G : Set (Set Point)} {U : Set Point}
+section
+variable {M : Model} {G : Set (Set Point)}
+theorem supR_spec {U : Set Point}
     (h : ∃ Z ∈ M.regions G, U ⊆ Z) : supR M G U ∈ M.regions G ∧ U ⊆ supR M G U := by
-  unfold supR
-  rw [dite_eq_left h]
-  exact h.choose_spec
+  grind [supR]
 
-theorem supR_eq {M : Model} {G : Set (Set Point)} {U Z : Set Point} (hU : U.Nonempty)
+theorem supR_eq {U Z : Set Point} (hU : U.Nonempty)
     (hZ : Z ∈ M.regions G) (hUZ : U ⊆ Z) : supR M G U = Z := by
   obtain ⟨h1, h2⟩ := supR_spec ⟨Z, hZ, hUZ⟩
   exact Chazelle.Chain.regionsIn_eq_of_subset h1 hZ hU h2 hUZ
+
+
+end
 
 namespace St
 
@@ -126,14 +131,20 @@ def L : Set ℕ := {i | i < E.K ∧ st.live i = 1}
 /-- **The current submap.** -/
 def F : Set (Set Point) := fam E.M E.Q E.N (st.L E)
 
+section
+variable (x : ℕ)
+include x
 /-- The region of the current submap containing the region `x` of the input (class `x`). -/
-noncomputable def cl (x : ℕ) : Set Point := supR E.M (st.F E) (E.reg x)
+noncomputable def cl : Set Point := supR E.M (st.F E) (E.reg x)
 
 /-- The exit chords of class `x`. -/
-def exl (x : ℕ) : List ℕ := List.ofFn fun t : Fin (st.deg x) => st.ex x t
+def exl : List ℕ := List.ofFn fun t : Fin (st.deg x) => st.ex x t
 
 /-- Class `x` is referenced by a live chord. -/
-def Ref (x : ℕ) : Prop := ∃ i ∈ st.L E, x = st.s0 i ∨ x = st.s1 i
+def Ref : Prop := ∃ i ∈ st.L E, x = st.s0 i ∨ x = st.s1 i
+
+
+end
 
 /-- Live ring positions. -/
 def Lv (j : ℕ) : Prop := 0 < st.cnt j
@@ -145,11 +156,17 @@ def cntOf (j : ℕ) : ℕ :=
 
 end St
 
+section
+variable (E : Env) (j : ℕ)
+include E j
 /-- The start key of position `j`. -/
-noncomputable def Env.key (E : Env) (j : ℕ) : ℝ := pk E.M E.Q E.N j
+noncomputable def Env.key : ℝ := pk E.M E.Q E.N j
 
 /-- The parameter of the start of position `j`. -/
-noncomputable def Env.par (E : Env) (j : ℕ) : ℝ := E.M.param E.Q (E.N.arc (E.N.seq.getD j 0)).s
+noncomputable def Env.par : ℝ := E.M.param E.Q (E.N.arc (E.N.seq.getD j 0)).s
+
+
+end
 
 /-- The number of counted edges before the edge `e` (for `e` below the last walk edge). -/
 def bB (ch : Bool) (e : ℕ) : ℕ := if ch then e - 6 else e
@@ -179,7 +196,7 @@ structure StatOK (E : Env) (st : St) : Prop where
 theorem StatOK.congr {E : Env} {st st' : St} (h : StatOK E st) (h0 : st'.nd0 = st.nd0)
     (h1 : st'.nd1 = st.nd1) (h2 : st'.eg = st.eg) (h3 : st'.pz = st.pz) : StatOK E st' := by
   obtain ⟨a, b, c, d⟩ := h
-  refine ⟨?_, ?_, ?_, ?_⟩ <;> simp only [h0, h1, h2, h3] <;> assumption
+  refine ⟨?_, ?_, ?_, ?_⟩ <;> simp_all 
 
 /-- **The invariant.** -/
 structure Inv (E : Env) (st : St) : Prop where
@@ -246,10 +263,10 @@ theorem lv_iff (h : Inv E st) {j : ℕ} (hj : j < E.A) :
       exact ⟨i, ⟨hi.1, hi.2.1⟩, Or.inr hi.2.2⟩
   · rintro ⟨i, ⟨hiK, hil⟩, h0 | h1⟩
     · have : 0 < ((Finset.range E.K).filter fun i => st.live i = 1 ∧ st.nd0 i = j).card :=
-        Finset.card_pos.2 ⟨i, by simp [hiK, hil, h0]⟩
+        Finset.card_pos.2 ⟨i, by simp_all⟩
       omega
     · have : 0 < ((Finset.range E.K).filter fun i => st.live i = 1 ∧ st.nd1 i = j).card :=
-        Finset.card_pos.2 ⟨i, by simp [hiK, hil, h1]⟩
+        Finset.card_pos.2 ⟨i, by simp_all⟩
       omega
 
 /-- **The cuts of the current submap are the start keys of the live positions.** -/
@@ -274,38 +291,53 @@ end Inv
 
 variable {E : Env} {st : St}
 
+section
+variable (hE : E.Good)
+include hE
 /-- The start keys are strictly increasing. -/
-theorem key_strict (hE : E.Good) {i i' : ℕ} (hii : i < i') (hi' : i' < E.A) :
+theorem key_strict {i i' : ℕ} (hii : i < i') (hi' : i' < E.A) :
     E.key i < E.key i' := pk_strict hE.hNF hE.hne hii hi'
 
 /-- Cyclic betweenness of positions is cyclic betweenness of their keys. -/
-theorem key_cyc_iff (hE : E.Good) {a b i : ℕ} (ha : a < E.A) (hb : b < E.A) (hi : i < E.A) :
+theorem key_cyc_iff {a b i : ℕ} (ha : a < E.A) (hb : b < E.A) (hi : i < E.A) :
     sideInArc (E.key a) (E.key b) (E.key i) ↔ cyc a b i :=
   sideInArc_mono_iff (fun _ _ h h' => key_strict hE h h') ha hb hi
 
-theorem key_inj (hE : E.Good) {a b : ℕ} (ha : a < E.A) (hb : b < E.A)
+theorem key_inj {a b : ℕ} (ha : a < E.A) (hb : b < E.A)
     (h : E.key a = E.key b) : a = b := pk_inj hE.hNF hE.hne ha hb h
 
+
+end
+
+section
+variable (hE : E.Good) {j : ℕ} (hj : j < E.A)
+include hE hj
 /-- The start of position `j` is a proper position. -/
-theorem par_mem (hE : E.Good) {j : ℕ} (hj : j < E.A) : 0 ≤ E.par j ∧ E.par j < 1 :=
+theorem par_mem : 0 ≤ E.par j ∧ E.par j < 1 :=
   let h := (hE.hNF.2.2.2.choose_spec.2.2.2.2.2.2 _ (NFLoc.seq_lt hE.hNF hj)).1
   ⟨h.1, h.2.1⟩
 
 /-- The start edge of a position is a walk edge. -/
-theorem edge_lt (hE : E.Good) {j : ℕ} (hj : j < E.A) : E.edge j < E.n := by
+theorem edge_lt : E.edge j < E.n := by
   have hc := pk_cut hE.hNF hE.hne hj
   have hb := WalkAx.cut_bounds hc
   have hpar := par_mem hE hj
   have e : pk E.M E.Q E.N j = (E.edge j : ℝ) + E.par j := rfl
   rw [e] at hb
-  have : (E.edge j : ℝ) < E.n := by linarith [hb.2]
-  exact_mod_cast this
+  have : (E.edge j : ℝ) < E.n := by linarith
+  simp_all
+
+
+end
 
 /-- The key of a position: its edge plus its parameter. -/
 theorem key_edge (j : ℕ) : E.key j = (E.edge j : ℝ) + E.par j := rfl
 
+section
+variable (hE : E.Good)
+include hE
 /-- Increasing keys have nondecreasing edges. -/
-theorem edge_mono (hE : E.Good) {a b : ℕ} (ha : a < E.A) (hb : b < E.A)
+theorem edge_mono {a b : ℕ} (ha : a < E.A) (hb : b < E.A)
     (hlt : E.key a < E.key b) : E.edge a ≤ E.edge b := by
   have ha0 := (par_mem hE ha).1
   have hb1 := (par_mem hE hb).2
@@ -315,7 +347,7 @@ theorem edge_mono (hE : E.Good) {a b : ℕ} (ha : a < E.A) (hb : b < E.A)
   linarith
 
 /-- **The integer weight of two positions is the weight of the key interval.** -/
-theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b < E.A) :
+theorem gw_eq (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b < E.A) :
     gwt E.sz st.eg st.pz a b = E.M.arcWt (E.key a) (E.key b) := by
   have ea := edge_lt hE ha
   have eb := edge_lt hE hb
@@ -329,23 +361,13 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
   -- the bump and the stored bit
   have hbx : (E.M.counted (E.edge b) → bump (E.par b) = st.pz b) ∧
       (¬ E.M.counted (E.edge b) → st.pz b = 0) := by
-    refine ⟨fun hc => ?_, fun hc => ?_⟩
-    · unfold bump
-      by_cases hz : E.par b = 0
-      · rw [ite_eq_right (by rw [hz]; exact lt_irrefl 0)]
-        by_contra h'
-        have : st.pz b = 1 := by omega
-        exact (hpz.1 this).2 hz
-      · rw [ite_eq_left (lt_of_le_of_ne pb0 (Ne.symm hz))]
-        exact (hpz.2 ⟨hc, hz⟩).symm
-    · by_contra h'
-      exact hc (hpz.1 (by omega)).1
-  have hb01 : bump (E.par b) ≤ 1 := by unfold bump; split_ifs <;> omega
-  have hnE : E.n = E.M.W.n := rfl
+    grind [bump]
+  have hb01 : bump (E.par b) ≤ 1 := by core_grind
+  
   unfold gwt Env.sz
   rw [h.eg a ha, h.eg b hb]
   by_cases hab : a = b
-  · subst hab; simp
+  · grind
   have hk : E.key a ≠ E.key b := fun e => hab (key_inj hE ha hb e)
   rw [ite_eq_right hab, ite_eq_right hk]
   by_cases hlt : a < b
@@ -355,24 +377,14 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
     cases hch : E.ch with
     | false =>
       have hc : E.M.counted (E.edge b) := hcnt.2 (Or.inl hch)
-      have := hbx.1 hc
-      unfold cntIn bB; simp only [Bool.false_eq_true, ite_false]
-      omega
+      
+      unfold cntIn bB; grind
     | true =>
-      have hn' := hn hch
+      
       rw [hch] at hcnt
       simp only [Bool.true_eq_false, false_or] at hcnt
       unfold cntIn bB
-      simp only [ite_true]
-      by_cases hc : E.M.counted (E.edge b)
-      · have := hcnt.1 hc
-        have := hbx.1 hc
-        simp only [min_def, max_def]
-        split_ifs <;> omega
-      · have h1 := mt hcnt.2 hc
-        have := hbx.2 hc
-        simp only [min_def, max_def]
-        split_ifs <;> omega
+      grind
   · have hlt' : b < a := by omega
     have hkl := key_strict hE hlt' ha
     have hle := edge_mono hE hb ha hkl
@@ -380,37 +392,33 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
     cases hch : E.ch with
     | false =>
       have hc : E.M.counted (E.edge b) := hcnt.2 (Or.inl hch)
-      have := hbx.1 hc
-      unfold cntIn bB; simp only [Bool.false_eq_true, ite_false]
-      omega
+      
+      unfold cntIn bB; grind
     | true =>
-      have hn' := hn hch
+      
       rw [hch] at hcnt
       simp only [Bool.true_eq_false, false_or] at hcnt
       unfold cntIn bB
       simp only [ite_true]
       by_cases hc : E.M.counted (E.edge b)
-      · have := hcnt.1 hc
-        have := hbx.1 hc
+      · 
+        
         simp only [min_def, max_def]
-        split_ifs <;> omega
-      · have h1 := mt hcnt.2 hc
-        have := hbx.2 hc
+        grind
+      · 
+        
         simp only [min_def, max_def]
-        split_ifs <;> omega
+        grind
 
 /-- `size` by integer arithmetic. -/
-theorem size_eq (hE : E.Good) : E.M.size = cntIn E.ch E.m 0 E.n := by
+theorem size_eq : E.M.size = cntIn E.ch E.m 0 E.n := by
   rw [← ncard_counted hE.hcd le_rfl]
-  unfold Model.size
-  congr 1
-  ext p
-  simp only [mem_ofPred_eq]
-  constructor
-  · rintro ⟨h1, h2⟩; exact ⟨h1, h2, Nat.zero_le _, h1⟩
-  · rintro ⟨h1, h2, -, -⟩; exact ⟨h1, h2⟩
+  grind [Model.size, mem_ofPred_eq]
 
 /-! ## The end of the run -/
+
+
+end
 
 /-- **With an empty worklist the current submap is γ-granular with degrees `≤ D`.** -/
 theorem Inv.final (_hE : E.Good) (h : Inv E st) (htop : st.top = 0) :

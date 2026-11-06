@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvXRamJ
 public import Chazelle.Core.NFBuildMain
 
@@ -103,10 +105,8 @@ theorem setupS_exec (d : Config) (hw : WordsBounded W d)
       d'.nreg 217047 = 5 * K ∧ d'.nreg ALLOC = d.nreg ALLOC + 5 * K ∧ d'.nmem = d.nmem := by
   have hAL : ALLOC = 9999 := rfl
   rw [hAL] at hA ⊢
-  have mR0' : d.nmem (RB + (r + r + (r + r) + r)) = nRA := by
-    rw [show RB + (r + r + (r + r) + r) = RB + 5 * r by ring]; exact mR0
-  have mR1' : d.nmem (RB + (r + r + (r + r) + r) + 1) = off := by
-    rw [show RB + (r + r + (r + r) + r) = RB + 5 * r by ring]; exact mR1
+  
+  
   obtain ⟨d1, k1, e1, hk1, a20, a21, a22, a23, a24, a26, a27, a28, a30, a31, a32, a33, a34, a35,
       a36, a37, a41, a42, a44, a38, a39, a40, a43, a45, a46, a47, a99, m1⟩ :
       ∃ d1 k1, Exec P W setupB d d1 k1 ∧ k1 ≤ 51 ∧
@@ -122,12 +122,10 @@ theorem setupS_exec (d : Config) (hw : WordsBounded W d)
       d1.nreg 217047 = 5 * K ∧ d1.nreg 9999 = d.nreg 9999 + 5 * K ∧ d1.nmem = d.nmem := by
     unfold setupB
     exec_block
-    all_goals (try (config_simp; simp (config := { failIfUnchanged := false }) only [h00, h01, h02,
-      h03, h05, h06, mMD3, mMD4, mMD5, mHB, mBR, mBR3, mBN1, mBN4, mBN5, mBN7, mR0', mR1']; omega))
+    all_goals (try (config_simp; ram_grind))
     all_goals (try (refine ⟨by omega, ?_⟩))
-    all_goals (repeat' apply And.intro)
-    all_goals (config_simp <;> simp (config := { failIfUnchanged := false }) only [h00, h01, h02,
-      h03, h05, h06, mMD3, mMD4, mMD5, mHB, mBR, mBR3, mBN1, mBN4, mBN5, mBN7, mR0', mR1'])
+    all_goals (repeat' ram_grind)
+    all_goals ram_simp <;> omega_nf
     all_goals omega
   have hw1 := e1.wb_right
   obtain ⟨d2, k2, e2, hk2, n2⟩ := x_ifR (P := P) (W := W) (a := 217024) (b := 217027)
@@ -137,21 +135,18 @@ theorem setupS_exec (d : Config) (hw : WordsBounded W d)
     (fun _ => x_ifR (fun _ => x_sub d1 hw1 217025 217022 217023)
       (fun _ => x_copy d1 hw1 217025 217023))
   have o : ∀ r, r ≠ 217025 → d2.nreg r = d1.nreg r := fun r hr => n2.other hr
-  refine ⟨d2, k1 + k2, .seq e1 e2, by omega, by rw [o _ (by decide), a20],
-    by rw [o _ (by decide), a21], by rw [o _ (by decide), a22], ?_,
-    by rw [o _ (by decide), a26], by rw [o _ (by decide), a27], by rw [o _ (by decide), a28],
-    by rw [o _ (by decide), a30], by rw [o _ (by decide), a31], by rw [o _ (by decide), a32],
-    by rw [o _ (by decide), a33], by rw [o _ (by decide), a34], by rw [o _ (by decide), a35],
-    by rw [o _ (by decide), a36], by rw [o _ (by decide), a37], by rw [o _ (by decide), a41],
-    by rw [o _ (by decide), a42], by rw [o _ (by decide), a44], by rw [o _ (by decide), a38],
-    by rw [o _ (by decide), a39], by rw [o _ (by decide), a40], by rw [o _ (by decide), a43],
-    by rw [o _ (by decide), a45], by rw [o _ (by decide), a46], by rw [o _ (by decide), a47],
-    by rw [o _ (by decide), a99], by rw [n2.2.2.1, m1]⟩
+  refine ⟨d2, k1 + k2, .seq e1 e2, by omega, by ram_grind,
+    by ram_grind, by ram_grind, ?_,
+    by ram_grind, by ram_grind, by ram_grind,
+    by ram_grind, by ram_grind, by ram_grind,
+    by ram_grind, by ram_grind, by ram_grind,
+    by ram_grind, by ram_grind, by ram_grind,
+    by ram_grind, by ram_grind, by ram_grind,
+    by ram_grind, by ram_grind, by ram_grind,
+    by ram_grind, by ram_grind, by ram_grind,
+    by ram_grind, by ram_grind⟩
   rw [n2.same, a24, a27, a22, a23]
-  by_cases h1 : b5 = 1
-  · rw [ite_eq_left h1, ite_eq_right (by omega), ite_eq_right (by omega)]
-  · rw [ite_eq_right h1]
-    split_ifs <;> omega
+  grind
 
 end setup
 
@@ -167,21 +162,20 @@ theorem padS_exec (d : Config) (hw : WordsBounded W d) {N j : ℕ} (h43 : d.nreg
   | zero =>
     have hjN : j = N := by omega
     subst hjN
-    refine ⟨d, 2, .whileLtN_false (by rw [h43, h47]; omega) hw, by omega, ?_⟩
-    refine ⟨?_, rfl, rfl, rfl, rfl⟩
-    rw [← h43, Machine.upd_eq_self]
+    refine ⟨d, 2, .whileLtN_false (by omega) hw, by omega, ?_⟩
+    grind [Chazelle.Core.DrvX.NRegs, Machine.upd_eq_self]
   | succ t ih =>
     have hlt : j < N := by omega
-    have hb : d.nreg 217043 + d.nreg 217027 ≤ W := by rw [h43, h27]; omega
+    have hb : d.nreg 217043 + d.nreg 217027 ≤ W := by omega
     have ea := Machine.Exec.addN (P := P) hw 217043 217043 217027 hb
     have e1 : Exec P W (block [.addN 217043 217043 217027]) d
         { d with nreg := upd d.nreg 217043 (d.nreg 217043 + d.nreg 217027) } (0 + 1) :=
       Exec.block_cons ea (Exec.block_nil ea.wb_right)
     have b43 : ({ d with nreg := upd d.nreg 217043 (d.nreg 217043 + d.nreg 217027) } : Config).nreg
-        217043 = j + 1 := by simp [h43, h27]
+        217043 = j + 1 := by ram_simp
     obtain ⟨d', k', e', hk', n'⟩ := ih _ e1.wb_right b43 (by simp [h47]) (by simp [h27]) (by omega)
       (by omega)
-    refine ⟨d', 0 + 1 + 2 + k', .whileLtN_true (by rw [h43, h47]; exact hlt) e1 e', by omega, ?_⟩
+    refine ⟨d', 0 + 1 + 2 + k', .whileLtN_true (by omega) e1 e', by omega, ?_⟩
     obtain ⟨n1, n2, n3, n4, n5⟩ := n'
     refine ⟨?_, n2, n3, n4, n5⟩
     rw [n1]; simp

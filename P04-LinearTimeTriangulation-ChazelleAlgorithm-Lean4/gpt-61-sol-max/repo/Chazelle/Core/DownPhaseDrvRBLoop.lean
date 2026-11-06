@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRBSort
 
 /-!
@@ -42,7 +44,7 @@ theorem seg_flat (bk m : ℕ → ℕ) (n R : ℕ) :
   | succ b ih => rw [bstart_succ, seg_add, ih, List.range_succ, List.flatMap_append]; simp
 
 /-- The bucket segments of `bktList`. -/
-theorem seg_bkt {m : ℕ → ℕ} {bk : ℕ → ℕ} {n A base R : ℕ} (hA : ∀ q, q < n → bk q ≤ A)
+theorem seg_bkt {m bk : ℕ → ℕ} {n A base R : ℕ} (hA : ∀ q, q < n → bk q ≤ A)
     (h : seg m R n = bktList bk n A base) {b : ℕ} (hb : b ≤ A) :
     seg m (R + bstart bk n b) (bcnt bk n b) = (bfilt bk n b).map (base + ·) := by
   have hn := bstart_all hA
@@ -54,15 +56,13 @@ theorem seg_bkt {m : ℕ → ℕ} {bk : ℕ → ℕ} {n A base R : ℕ} (hA : �
   -- split both sides at bucket `b`
   have hsplit : ∀ (f : ℕ → List ℕ), (List.range (A + 1)).flatMap f =
       (List.range b).flatMap f ++ f b ++ ((List.range d).map (b + 1 + ·)).flatMap f := by
-    intro f
-    rw [hd, List.range_add, List.range_succ, List.flatMap_append, List.flatMap_append]
-    simp
+    simp_all [List.range_add, List.range_succ, List.flatMap_append] 
   rw [hsplit, hsplit] at hl
   have hlen : ((List.range b).flatMap fun b' => (bfilt bk n b').map (base + ·)).length =
       ((List.range b).flatMap fun b' => seg m (R + bstart bk n b') (bcnt bk n b')).length := by
     rw [← seg_flat, seg_length]
     have := bktPre_length (bk := bk) n b base
-    unfold bktPre at this; rw [this]
+    simp_all [bktPre] 
   have hlen2 : (seg m (R + bstart bk n b) (bcnt bk n b)).length =
       ((bfilt bk n b).map (base + ·)).length := by rw [seg_length, List.length_map]; rfl
   rw [List.append_assoc, List.append_assoc] at hl
@@ -80,7 +80,7 @@ theorem wrM_bs1 : wrM Bbl (block [.addN 210057 210037 210050, .loadN 210052 2100
 
 /-- The fixed data of the bucket loop: the model descriptor, the chord list `L` with its event
 records, the arrays of the bucket distribution. -/
-structure BsEnv (P : Polygon) (W : ℕ) (m₁ : ℕ → ℕ) (bk : ℕ → ℕ) (n A base Cb Sb Rb D T : ℕ)
+structure BsEnv (P : Polygon) (W : ℕ) (m₁ bk : ℕ → ℕ) (n A base Cb Sb Rb D T : ℕ)
     (M : Model) (L : List (ℕ × ℕ × ℕ)) : Prop where
   good : GoodEnv P
   hw : hostWords P.n ≤ W
@@ -97,7 +97,7 @@ structure BsEnv (P : Polygon) (W : ℕ) (m₁ : ℕ → ℕ) (bk : ℕ → ℕ) 
   codes : base + n ≤ 2 * L.length
 
 /-- The invariant of the bucket loop. -/
-structure BsI (P : Polygon) (W : ℕ) (c₀ : Config) (m₁ : ℕ → ℕ) (bk : ℕ → ℕ)
+structure BsI (P : Polygon) (W : ℕ) (c₀ : Config) (m₁ bk : ℕ → ℕ)
     (n A base Cb Sb Rb D T : ℕ) (M : Model) (L : List (ℕ × ℕ × ℕ)) (j : ℕ) (d : Config) : Prop where
   wb : WordsBounded W d
   r34 : d.nreg 210034 = 1
@@ -170,11 +170,11 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
   have w₁ := e₁.wb_right
   have hlow₁ : ∀ a, a < Rb → d₁.nmem a = m₁ a := fun a ha => by rw [hm₁]; exact I.low a ha
   obtain ⟨hM₁, hwf₁⟩ := desc_agree E.wf E.desc (m' := d₁.nmem) fun a ha => hlow₁ a (by
-    rw [E.hR, E.hS]; omega)
+    omega)
   have hrec₁ : RecsAt d₁.nmem T L := fun c hc => by
     obtain ⟨a1, a2, a3, a4⟩ := E.recs c hc
     have hT := E.hT
-    refine ⟨?_, ?_, ?_, ?_⟩ <;> rw [hlow₁ _ (by rw [E.hR, E.hS]; omega)] <;> assumption
+    grind
   have hA₁ : d₁.nreg ALLOC = d.nreg ALLOC := g₁ _ (by decide)
   have hseg₁ : seg d₁.nmem (Rb + bstart bk n j) (bcnt bk n j) = (bfilt bk n j).map (base + ·) := by
     rw [hm₁]; exact I.todo j le_rfl (by omega)
@@ -184,46 +184,44 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
       (len := bcnt bk n j) (D := D) (T := T) (M := M) (L := L) v55 v54
       (by rw [g₁ _ (by decide)]; exact I.r34) (by rw [g₁ _ (by decide)]; exact I.r40)
       (by rw [g₁ _ (by decide)]; exact I.r42) (by rw [g₁ _ (by decide)]; exact I.r42')
-      (hwf₁.mono (by have := I.alloc; rw [hA₁, E.hR, E.hS] at *; omega)) hM₁ E.ok hrec₁
+      (hwf₁.mono (by have := I.alloc; omega)) hM₁ E.ok hrec₁
       (by have := I.alloc; rw [hA₁]; rw [E.hR, E.hS] at this; have := E.hT; omega)
       (by rw [hA₁]; have := I.alloc; omega)
       (by rw [hseg₁]; intro x hx; rw [List.mem_map] at hx
           obtain ⟨q, hq, rfl⟩ := hx; rw [mem_bfilt] at hq; have := E.codes; omega)
-      (by rw [hA₁]; unfold bsCost at hroom; omega)
+      (by grind [bsCost])
   -- the next bucket
   have b21 : ∀ r, 210000 ≤ r → r < 220000 → bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) :=
-    fun r h1 h2 => by simp [bandOf, bSort, bSign, bBuild]; omega
+    fun r h1 h2 => by grind [bandOf, bSort, bSign, bBuild]
   have v50₂ : d₂.nreg 210050 = j := by
     rw [g₂ _ (b21 _ (by norm_num) (by norm_num)) (by decide) (by decide), v50]
   have v34₂ : d₂.nreg 210034 = 1 := by
     rw [g₂ _ (b21 _ (by norm_num) (by norm_num)) (by decide) (by decide), g₁ _ (by decide), I.r34]
-  have e₃ := Exec.addN (P := P) w₂ 210050 210050 210034 (by rw [v50₂, v34₂]; omega)
+  have e₃ := Exec.addN (P := P) w₂ 210050 210050 210034 (by omega)
   set d₃ : Config := { d₂ with nreg := upd d₂.nreg 210050 (d₂.nreg 210050 + d₂.nreg 210034) }
     with hd₃
   have g₃ : ∀ r, r ≠ 210050 → d₃.nreg r = d₂.nreg r := fun r hr => by rw [hd₃]; simp [hr]
   have bcb : ∀ r, Bbl r = false → Bcb r = false := fun r hb => by
-    simp only [Bbl, decide_eq_false_iff_not] at hb
-    simp only [Bcb, decide_eq_false_iff_not]; omega
+    grind [Bbl, decide_eq_false_iff_not, Bcb]
   -- registers of band `bDownDrv` other than the loop's
   have k21 : ∀ r, 210000 ≤ r → r < 220000 → Bbl r = false → d₃.nreg r = d.nreg r := by
     intro r h1 h2 hb
-    rw [g₃ r (by intro h; subst h; simp [Bbl] at hb), g₂ r (b21 r h1 h2) (bcb r hb)
-      (by unfold ALLOC; omega), g₁ r hb]
-  have hst' : bstart bk n j + bcnt bk n j = bstart bk n (j + 1) := hsucc.symm
+    rw [g₃ r (by grind [Bbl]), g₂ r (b21 r h1 h2) (bcb r hb)
+      (by omega_nf), g₁ r hb]
+  
   refine ⟨d₃, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), ?_, by unfold bsCost; omega,
     by rw [show d₃.nreg ALLOC = d₂.nreg ALLOC from g₃ _ (by decide)]; unfold bsCost; omega⟩
-  refine ⟨e₃.wb_right, by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r34,
+  refine ⟨e₃.wb_right, by grind,
     by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r36,
     by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r37,
     by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r39,
     by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r48, ?_,
-    by rw [g₃ _ (by decide)]; exact v40, by rw [g₃ _ (by decide)]; exact v42,
-    by rw [g₃ _ (by decide)]; exact v42',
+    by grind, by grind,
+    by grind,
     by rw [show d₃.nreg ALLOC = d₂.nreg ALLOC from g₃ _ (by decide)]; have := I.alloc; omega,
     fun a ha => ?_, fun b hb => ?_, fun b hb1 hb2 => ?_, fun r hr hb hra => ?_,
     fun r h1 h2 => ?_, fun r hr hb => ?_, fun a ha => ?_, ?_⟩
-  · rw [hd₃]; simp only [Machine.upd_same]
-    rw [v50₂, v34₂]
+  · grind [Machine.upd_same]
   · show d₂.nmem a = m₁ a
     rw [hm₂ a (by rw [hA₁]; have := I.alloc; omega) (Or.inl (by omega)), hlow₁ a ha]
   · show (seg d₂.nmem (Rb + bstart bk n b) (bcnt bk n b)).Perm _ ∧ _
@@ -235,12 +233,10 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
         rw [bstart_succ] at h1
         have h2 := bstart_le (bk := bk) E.bkA (show j ≤ A + 1 by omega)
         have h3 := I.alloc
-        have h4 : Rb + bstart bk n b + i < d₁.nreg ALLOC := by rw [hA₁]; omega
-        rw [hm₂ _ h4 (Or.inl (by omega)), hm₁]
+        have h4 : Rb + bstart bk n b + i < d₁.nreg ALLOC := by omega
+        grind
       rw [hcong]; exact I.done b hbj
-    · have hbj' : b = j := by omega
-      subst hbj'
-      rw [← hseg₁]; exact ⟨hperm, hsort⟩
+    grind
   · show seg d₂.nmem _ _ = _
     have hcong : seg d₂.nmem (Rb + bstart bk n b) (bcnt bk n b) =
         seg d.nmem (Rb + bstart bk n b) (bcnt bk n b) := by
@@ -249,13 +245,13 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
       have h2 := bstart_le (bk := bk) E.bkA (show b + 1 ≤ A + 1 by omega)
       rw [bstart_succ] at h2
       have h3 := I.alloc
-      have h4 : Rb + bstart bk n b + i < d₁.nreg ALLOC := by rw [hA₁]; omega
-      rw [hm₂ _ h4 (Or.inr (by omega)), hm₁]
+      have h4 : Rb + bstart bk n b + i < d₁.nreg ALLOC := by omega
+      grind
     rw [hcong]; exact I.todo b (by omega) hb2
-  · have hr50 : r ≠ 210050 := fun h => by subst h; simp [Bbl] at hb
+  · have hr50 : r ≠ 210050 := fun h => by grind [Bbl]
     rw [g₃ r hr50, g₂ r hr (bcb r hb) hra, g₁ r hb]
     exact I.fr r hr hb hra
-  · rw [g₃ r (by omega), v43 r h1 h2, g₁ r (by simp [Bbl]; omega)]; exact I.r43 r h1 h2
+  · rw [g₃ r (by omega), v43 r h1 h2, g₁ r (by grind [Bbl])]; exact I.r43 r h1 h2
   · show d₂.rreg r = _
     rw [rr₂ r hr (bcb r hb), hf₁.2.1 r hb]
     exact I.rr r hr hb
@@ -264,10 +260,11 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
   · show d₂.output = _
     rw [o₂, hf₁.2.2.2]; exact I.out
 
+section
+variable {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D T : ℕ} {M : Model} {L : List (ℕ × ℕ × ℕ)} (E : BsEnv P W m₁ bk n A base Cb Sb Rb D T M L) {d : Config}
+include E
 /-- **The bucket loop.** -/
-theorem bsLoop_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D T : ℕ} {M : Model}
-    {L : List (ℕ × ℕ × ℕ)} (E : BsEnv P W m₁ bk n A base Cb Sb Rb D T M L)
-    {d : Config} (I : BsI P W c₀ m₁ bk n A base Cb Sb Rb D T M L 0 d)
+theorem bsLoop_exec (I : BsI P W c₀ m₁ bk n A base Cb Sb Rb D T M L 0 d)
     (hroom : d.nreg ALLOC + (∑ b ∈ Finset.range (A + 1), bsCost bk n b) + 1 ≤ W) :
     ∃ d' k, Exec P W bsLoop d d' k ∧ BsI P W c₀ m₁ bk n A base Cb Sb Rb D T M L (A + 1) d' ∧
       k ≤ (∑ b ∈ Finset.range (A + 1), (bsCost bk n b + 2)) + 2 ∧
@@ -283,14 +280,13 @@ theorem bsLoop_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
         Finset.sum_le_sum_of_subset (Finset.range_subset_range.2 (by omega))
       rw [Finset.sum_range_succ] at hsum
       obtain ⟨e', k, ex, h', hk, hA'⟩ := bsBody_exec E (by omega) h (by omega)
-      exact ⟨e', k, ex, ⟨h', by rw [Finset.sum_range_succ]; omega⟩, hk⟩)
+      exact ⟨e', k, ex, ⟨h', by grind [Finset.sum_range_succ]⟩, hk⟩)
     (j := 0) ⟨I, by simp⟩ (Nat.zero_le _)
-  refine ⟨d', k, ex, hI, by rw [Finset.range_eq_Ico]; exact hk, hA⟩
+  refine ⟨d', k, ex, hI, by simp_all, hA⟩
 
 /-- **The sorted new codes**: with the buckets ordered by the comparator, the array is a sorted
 permutation of the new codes. -/
-theorem bs_result {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D T : ℕ} {M : Model}
-    {L : List (ℕ × ℕ × ℕ)} (E : BsEnv P W m₁ bk n A base Cb Sb Rb D T M L) {d : Config}
+theorem bs_result
     (I : BsI P W c₀ m₁ bk n A base Cb Sb Rb D T M L (A + 1) d)
     (hmono : ∀ q q', q < n → q' < n → bk q < bk q' →
       BuildNF.codeLe M (Qof P) L (base + q) (base + q')) :
@@ -314,22 +310,13 @@ theorem bs_result {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D T
         refine ⟨fun b _ => ?_, ?_⟩
         · exact ((List.nodup_range).filter _).map (fun a b h => by omega)
         · refine List.pairwise_lt_range.imp fun {b b'} hbb => ?_
-          show List.Disjoint _ _
-          rw [List.disjoint_left]
-          intro x hx hx'
-          rw [List.mem_map] at hx hx'
-          obtain ⟨q, hq, rfl⟩ := hx
-          obtain ⟨q', hq', hqq⟩ := hx'
-          rw [mem_bfilt] at hq hq'
-          have : q' = q := by omega
-          subst this; omega
+          grind [List.disjoint_left, List.mem_map, mem_bfilt]
       · exact (List.nodup_range).map (fun a b h => by omega)
       · unfold bktList
         simp only [List.mem_flatMap, List.mem_range, List.mem_map, mem_bfilt]
         constructor
-        · rintro ⟨b, -, q, ⟨hq, -⟩, rfl⟩; exact ⟨q, hq, rfl⟩
-        · rintro ⟨q, hq, rfl⟩
-          exact ⟨bk q, by have := E.bkA q hq; omega, q, ⟨hq, rfl⟩, rfl⟩
+        · rintro ⟨b, -, q, ⟨hq, -⟩, rfl⟩; ram_all
+        · ram_all <;> ram_grind
     exact h2
   · -- sortedness
     rw [List.pairwise_flatMap]
@@ -337,11 +324,10 @@ theorem bs_result {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D T
     refine List.pairwise_lt_range.imp_of_mem fun {b b'} hb hb' hbb x hx y hy => ?_
     have hx' := (I.done b (List.mem_range.1 hb)).1.mem_iff.1 hx
     have hy' := (I.done b' (List.mem_range.1 hb')).1.mem_iff.1 hy
-    rw [List.mem_map] at hx' hy'
-    obtain ⟨q, hq, rfl⟩ := hx'
-    obtain ⟨q', hq', rfl⟩ := hy'
-    rw [mem_bfilt] at hq hq'
-    exact hmono q q' hq.1 hq'.1 (by rw [hq.2, hq'.2]; exact hbb)
+    grind [List.mem_map, mem_bfilt]
+
+
+end
 
 end exec
 

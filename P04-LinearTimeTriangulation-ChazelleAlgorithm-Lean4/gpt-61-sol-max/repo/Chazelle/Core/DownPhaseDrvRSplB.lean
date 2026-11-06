@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRSplA
 public import Chazelle.Core.NFBuildMain
 
@@ -29,7 +31,7 @@ theorem chordListAt_of_seg {m m' : ℕ → ℕ} {B A : ℕ} {L : List (ℕ × �
     exact this
   obtain ⟨h1, h2, h3⟩ := h i hi
   refine ⟨?_, ?_, ?_⟩
-  · rw [e (3 * i) (by omega)]; exact h1
+  · simp_all
   · rw [show A + 3 * i + 1 = A + (3 * i + 1) by ring, e _ (by omega),
       show B + (3 * i + 1) = B + 3 * i + 1 by ring]; exact h2
   · rw [show A + 3 * i + 2 = A + (3 * i + 2) by ring, e _ (by omega),
@@ -42,13 +44,9 @@ theorem chordListAt_append {m : ℕ → ℕ} {A : ℕ} {L L₂ : List (ℕ × �
   intro i hi
   rw [List.length_append] at hi
   rcases Nat.lt_or_ge i L.length with h | h
-  · rw [List.getD_append _ _ _ _ h]; exact h₁ i h
+  · ram_grind
   · obtain ⟨a1, a2, a3⟩ := h₂ (i - L.length) (by omega)
-    rw [List.getD_append_right _ _ _ _ h]
-    refine ⟨?_, ?_, ?_⟩
-    · rw [← a1]; congr 1; omega
-    · rw [← a2]; congr 1; omega
-    · rw [← a3]; congr 1; omega
+    ram_grind
 
 /-- The registers `spl0 ; cpS ; spl1 ; cpS` writes. -/
 def BsA (r : ℕ) : Bool :=
@@ -64,10 +62,10 @@ theorem wrM_spl1 : wrM Bs1 spl1 = true := by decide
 
 theorem FrameM.of_s1 {c c' : Config} (h : FrameM Bs1 c c') : FrameM BsA c c' :=
   h.mono fun r hr => by
-    simp only [Bs1, BsA, Bool.or_eq_true, decide_eq_true_eq] at hr ⊢; omega
+    simp_all [Bs1, BsA, Bool.or_eq_true, decide_eq_true_eq] <;> omega_nf
 
 theorem Bcp_BsA {r : ℕ} (h : Bcp r = true) : BsA r = true := by
-  simp only [Bcp, BsA, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  simp_all [Bcp, BsA, Bool.or_eq_true, decide_eq_true_eq] <;> omega_nf
 
 theorem FrameM.of_cp {c c' : Config} (h : FrameM Bcp c c') : FrameM BsA c c' :=
   h.mono fun _r hr => Bcp_BsA hr

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.WalkKey
 public import Chazelle.Core.BruteOK
 
@@ -57,31 +59,21 @@ theorem load_exec {P : Polygon} {W : ℕ} (hW : 1 ≤ W) (s : ℕ) (hs : 10000 �
     simp only [Src.Out] at hx
     unfold Src.load
     exec_block
-    · omega
-    · refine ⟨by omega, ?_, fun r' hr' => ?_, rfl, rfl, rfl, rfl⟩
-      · simp only [Src.pt, SymPtIn]
-        refine ⟨?_, ?_⟩ <;> simp (disch := omega) only [Machine.upd_same,
-          Machine.upd_other]
-      · simp (disch := omega) only [Machine.upd_other]
+    all_goals (grind [Src.pt, SymPtIn, Machine.upd_same, Machine.upd_other])
   | e r₁ r₂ =>
     simp only [Src.Out] at hx
     unfold Src.load
     exec_block
-    · omega
-    · refine ⟨by omega, ?_, fun r' hr' => ?_, rfl, rfl, rfl, rfl⟩
-      · simp only [Src.pt, SymPtIn]
-        refine ⟨?_, ?_, ?_⟩ <;> simp (disch := omega) only [Machine.upd_same,
-          Machine.upd_other]
-      · simp (disch := omega) only [Machine.upd_other]
+    all_goals (grind [Src.pt, SymPtIn, Machine.upd_same, Machine.upd_other])
 
 theorem src_pt_eq {x : Src} (hx : x.Out) {c c' : Config}
     (h : ∀ r, (r < 10000 ∨ 10500 ≤ r) → c'.nreg r = c.nreg r) : x.pt c' = x.pt c := by
   cases x with
-  | v r => simp only [Src.pt, Src.Out] at hx ⊢; rw [h r hx]
-  | e r₁ r₂ => simp only [Src.pt, Src.Out] at hx ⊢; rw [h r₁ hx.1, h r₂ hx.2]
+  | v r => simp_all [Src.pt, Src.Out] <;> omega_nf
+  | e r₁ r₂ => simp_all [Src.pt, Src.Out] <;> omega_nf
 
 /-- The write set of a test: the kernel's registers and the destination. -/
-def Bt (d : ℕ) (r : ℕ) : Bool := Bk r || decide (r = d)
+def Bt (d r : ℕ) : Bool := Bk r || decide (r = d)
 
 /-- **A sign test into register `d`** (at most `245` steps). -/
 theorem testS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {op : ℕ}
@@ -108,38 +100,35 @@ theorem testS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
     rw [src_pt_eq hz fun r hr => r₂ r (by omega)]
     exact src_pt_eq hz fun r hr => r₁ r (by omega)
   have S₁ : SymPtIn c₄ 10000 (x.pt c) := symPtIn_of_eq s₁ fun j h1 h2 => by
-    rw [q₄ j (by omega), r₃ j (by omega), r₂ j (by omega)]
+    ram_grind
   have S₂ : SymPtIn c₄ 10003 (y.pt c) := by
     rw [← hy₁]
-    exact symPtIn_of_eq s₂ fun j h1 h2 => by rw [q₄ j (by omega), r₃ j (by omega)]
+    exact symPtIn_of_eq s₂ fun j h1 h2 => by ram_grind
   have S₃ : SymPtIn c₄ 10006 (z.pt c) := by
     rw [← hz₁]
-    exact symPtIn_of_eq s₃ fun j h1 h2 => by rw [q₄ j (by omega)]
+    exact symPtIn_of_eq s₃ fun j h1 h2 => by ram_grind
   have hop₄ : c₄.nreg 10009 = op := by simp [c₄]
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, bit₅, sig₅⟩ := sig_exec (P := P) c₄ e₄.wb_right hG hW
-    (by rw [hop₄]; exact hop) hlx hly hlz S₁ S₂ S₃
+    (by omega) hlx hly hlz S₁ S₂ S₃
   rw [hop₄] at sig₅
   have e₆ := Exec.copyN (P := P) e₅.wb_right d 10010
   set c₆ : Config := { c₅ with nreg := upd c₅.nreg d (c₅.nreg 10010) }
   have ex : Exec P W (testS op x y z d) c c₆ (k₁ + (k₂ + (k₃ + (1 + (k₅ + 1))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
   have hd : c₆.nreg d = c₅.nreg 10010 := by simp [c₆]
-  refine ⟨c₆, _, ex, by omega, ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩, by rw [hd]; exact bit₅,
-    by rw [hd]; exact sig₅⟩
+  refine ⟨c₆, _, ex, by omega, ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩, by omega,
+    by ram_grind⟩
   · have hr' : Bk r = false ∧ r ≠ d := by
-      unfold Bt at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; exact hr
+      grind [Bt, Bool.or_eq_false_iff, decide_eq_false_iff_not]
     have hnk : r < 10000 ∨ 10500 ≤ r := by
-      have := hr'.1; unfold Bk at this; simp only [decide_eq_false_iff_not] at this; omega
+      grind [Bk, decide_eq_false_iff_not]
     simp only [c₆]
     rw [upd_other _ _ _ hr'.2, f₅.1 r hr'.1, q₄ r (by omega), r₃ r (by omega), r₂ r (by omega),
       r₁ r (by omega)]
   · have hr' : Bk r = false := by
-      unfold Bt at hr; simp only [Bool.or_eq_false_iff] at hr; exact hr.1
-    simp only [c₆]
-    rw [f₅.2.1 r hr', rr₃, rr₂, rr₁]
-  · simp only [c₆]; rw [f₅.2.2.1, m₃, m₂, m₁]
-  · simp only [c₆]; rw [f₅.2.2.2.1, rm₃, rm₂, rm₁]
-  · simp only [c₆]; rw [f₅.2.2.2.2, o₃, o₂, o₁]
+      grind [Bt, Bool.or_eq_false_iff]
+    ram_grind
+  all_goals ram_grind
 
 end
 

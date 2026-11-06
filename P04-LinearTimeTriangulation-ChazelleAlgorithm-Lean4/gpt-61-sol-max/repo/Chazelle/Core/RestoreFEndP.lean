@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFEndS
 
 /-!
@@ -64,7 +66,7 @@ theorem endHead_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
       c'.nreg (s + 5) = 0 ∧ c'.nreg (s + 6) = 0 ∧
       ∀ q, 80000 ≤ q → q < 90000 → ¬ HeadW s q → c'.nreg q = c.nreg q) := by
   obtain ⟨hs1, hs2⟩ := hs
-  have hW1 : 1 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
+  have hW1 : 1 ≤ E.W := by omega
   set g' := c.nreg 81131
   set pE := c.nreg p
   set h1 := c.nreg 81155
@@ -85,8 +87,8 @@ theorem endHead_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
   have f₁ : ∀ q, q ≠ s → q ≠ s + 5 → q ≠ s + 6 → c₁.nreg q = c.nreg q := fun q a b d => by
     rw [e₁]; simp [regB, regI, upd, a, b, d]
   have m₁ : c₁.nmem = c.nmem := by rw [h₁]
-  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega) (by unfold ALLOC; omega)
+  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by omega_nf)
+    (by omega_nf) (by omega_nf)
   have r := fun q (hq : q < 81160 ∨ 81190 ≤ q) => f₁ q (by omega) (by omega) (by omega)
   have rp : c₁.nreg p = pE := r p (by omega)
   have r31 : c₁.nreg 81131 = g' := r 81131 (by omega)
@@ -94,8 +96,7 @@ theorem endHead_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
   have fin0 : ∀ c' : Config, (∀ q, 80000 ≤ q → q < 90000 → ¬ HeadW s q → c'.nreg q = c₁.nreg q) →
       ∀ q, 80000 ≤ q → q < 90000 → ¬ HeadW s q → c'.nreg q = c.nreg q :=
     fun c' h q a b hq => by
-      unfold HeadW at hq
-      rw [h q a b (by unfold HeadW; exact hq), f₁ q (by omega) (by omega) (by omega)]
+      grind [HeadW]
   have no : ¬ (g' ≤ pE ∧ pE < c.nreg 81135 ∧ (g' < pE ∨ kz < kh)) →
       FRS B E.P E.W c₀ .skip c₁ 0 (fun c' =>
       BitIs c' s (g' ≤ pE ∧ pE < c.nreg 81135 ∧ (g' < pE ∨ kz < kh)) ∧
@@ -106,33 +107,33 @@ theorem endHead_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
     FRS.skip hI₁ ⟨BitIs.const_zero v0 hn, fun h => by omega, v5, v6,
       fin0 c₁ (fun _ _ _ _ => rfl)⟩
   by_cases a1 : c₁.nreg p < c₁.nreg 81131
-  · exact (FRS.ifT a1 (no (fun h => by rw [rp, r31] at a1; omega))).mono (by omega)
+  · exact (FRS.ifT a1 (no (fun h => by omega))).mono (by omega)
       (fun _ h => h)
   refine (FRS.ifF a1 ?_).mono (K := 11035) le_rfl (fun _ h => h)
   by_cases a2 : c₁.nreg p < c₁.nreg 81135
   swap
-  · exact (FRS.ifF a2 (no (fun h => by rw [rp, r35] at a2; omega))).mono (by omega)
+  · exact (FRS.ifF a2 (no (fun h => by omega))).mono (by omega)
       (fun _ h => h)
   refine (FRS.ifT a2 ?_).mono (K := 11033) (by omega) (fun _ h => h)
   rw [rp, r31] at a1
   rw [rp, r35] at a2
   -- the comparison
   have hpz : PosOK Cα (Qof E.P) E.P.n ⟨c₁.nreg p, c₁.nreg 81011⟩ := by
-    rw [rp, r 81011 (by omega), hI.hin _ (by unfold FFix; omega), hE.k0]
-    exact ⟨hpe.1, ⟨le_of_eq rfl, by show (0 : ℝ) < 1; norm_num, Nat.zero_le _⟩,
-      fun _ => by show 6 ≤ pE; omega⟩
+    rw [rp, r 81011 (by omega), hI.hin _ (by omega_nf), hE.k0]
+    exact ⟨hpe.1, ⟨le_of_eq rfl, by positivity, Nat.zero_le _⟩,
+      fun _ => by grind⟩
   have hph : PosOK Cα (Qof E.P) E.P.n ⟨c₁.nreg p, c₁.nreg 81155⟩ := by
-    rw [rp, r 81155 (by omega)]; exact hpe
+    grind
   have ir : ∀ q, 80000 ≤ q → q < 90000 → InR q := fun q a b => ⟨a, b⟩
-  have nk : ∀ q, 81000 ≤ q → q < 82000 → ¬ KeyW q := fun q a b h => by unfold KeyW at h; omega
+  have nk : ∀ q, 81000 ≤ q → q < 82000 → ¬ KeyW q := fun q a b h => by grind [KeyW]
   refine FRS.seq (K₂ := 21) (cmpA_fs hE hB hI₁ (r := s + 7) ⟨by omega, by omega⟩
     (ir p (by omega) (by omega)) (ir 81011 (by norm_num) (by norm_num)) (ir p (by omega) (by omega))
     (ir 81155 (by norm_num) (by norm_num)) (nk p (by omega) (by omega)) (nk _ (by norm_num)
     (by norm_num)) (nk p (by omega) (by omega)) (nk _ (by norm_num) (by norm_num))
-    (by rw [m₁, r 81133 (by omega), hA₁']; exact hwf) (by rw [m₁, r 81133 (by omega)]; exact hC)
-    hWm hpz hph (by rw [hA₁']; unfold ehK at hroom; omega))
+    (by grind) (by rw [m₁, r 81133 (by omega)]; exact hC)
+    hWm hpz hph (by grind [ehK]))
     (fun c₂ hI₂ hA₂ ⟨b7, _, f₂⟩ => ?_)
-  rw [rp, r 81011 (by omega), hI.hin 81011 (by unfold FFix; omega), hE.k0,
+  rw [rp, r 81011 (by omega), hI.hin 81011 (by omega_nf), hE.k0,
     r 81155 (by omega)] at b7
   have g₂ : ∀ q, 80000 ≤ q → q < 90000 → ¬ KeyW q → q ≠ s + 7 → q ≠ s + 8 →
       c₂.nreg q = c₁.nreg q := f₂
@@ -150,7 +151,7 @@ theorem endHead_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
         BitIs c' s (g' < pE ∨ kz < kh) ∧ ∀ q, q ≠ s → c'.nreg q = c₂.nreg q) := by
     by_cases a3 : c₂.nreg 81131 < c₂.nreg p
     · exact (FRS.ifT a3 ((setR_fs hB hI₂ (r := s) ⟨by omega, by omega⟩ hW1).mono le_rfl
-        (fun c' ⟨v, f⟩ => ⟨BitIs.const_one v (Or.inl (by rw [w31, w7] at a3; exact a3)), f⟩))).mono
+        (fun c' ⟨v, f⟩ => ⟨BitIs.const_one v (Or.inl (by omega)), f⟩))).mono
         (by omega) (fun _ h => h)
     refine (FRS.ifF a3 ?_).mono (K := 5) le_rfl (fun _ h => h)
     by_cases a4 : c₂.nreg 81011 < c₂.nreg (s + 7)
@@ -159,7 +160,7 @@ theorem endHead_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
         (by omega) (fun _ h => h)
     · exact (FRS.ifF a4 (FRS.skip (K := 0) hI₂ ⟨BitIs.const_zero w0 (fun h => by
         rcases h with h | h
-        · rw [w31, w7] at a3; exact a3 h
+        · omega
         · have := b7.2.2 h; omega), fun _ _ => rfl⟩)).mono (by omega) (fun _ h => h)
   refine (FRS.seq (K₂ := 12) step (fun c₃ hI₃ hA₃ ⟨b0, f₃⟩ => ?_)).mono (by omega)
     (fun _ h => h)
@@ -175,7 +176,7 @@ theorem endHead_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
       f₃ _ (by omega), f₃ _ (by omega), g₂ _ (by omega) (by omega) (nk _ (by omega) (by omega))
       (by omega) (by omega), g₂ _ (by omega) (by omega) (nk _ (by omega) (by omega)) (by omega)
       (by omega)]
-    exact ⟨v5, v6⟩
+    omega
   have k0₃ := k0_of hE hI₃
   by_cases a5 : c₃.nreg 81011 < c₃.nreg s
   · have b7' : c₃.nreg (s + 7) ≤ 1 := by rw [f₃ _ (by omega)]; exact b7.1
@@ -205,8 +206,8 @@ theorem endHead_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
     split_ifs with hk
     · rw [u2 (by rw [e77]; exact b7.2.2 hk), e55]
     · exact u3 (by
-        rw [e77]; have h1 := b7.1; by_contra hne; exact hk (b7.2.1 (by omega)))
-  · have z : c₃.nreg s = 0 := by rw [k0₃] at a5; omega
+        rw [e77];  by_contra hne; exact hk (b7.2.1 (by omega)))
+  · 
     exact (FRS.ifF a5 (FRS.skip (K := 0) hI₃ ⟨(b0.congr ⟨fun h => ⟨not_lt.1 a1, a2, h⟩, fun h => h.2.2⟩),
       fun h => by omega, (s5 c₃ (fun _ _ _ _ => rfl)).1, (s5 c₃ (fun _ _ _ _ => rfl)).2,
       fin c₃ (fun _ _ _ _ => rfl)⟩)).mono (by omega) (fun _ h => h)
@@ -233,11 +234,14 @@ theorem FWin.congr' {c c' : Config} (h : FWin E c)
 /-- The edge range of the candidates. -/
 def InRange (c₀ : Config) (e : ℕ) : Prop := c₀.nreg 81021 ≤ e ∧ e < c₀.nreg 81025
 
-theorem nfregs_of (hE : FGood E c₀) : ∃ reg, NFRegs E.M (Qof E.P) E.N reg := by
+section
+variable (hE : FGood E c₀)
+include hE
+theorem nfregs_of : ∃ reg, NFRegs E.M (Qof E.P) E.N reg := by
   obtain ⟨-, -, -, reg, h1, h2, h3, h4, -⟩ := hE.hNF
   exact ⟨reg, h1, h2, h3, h4⟩
 
-theorem endTail_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
+theorem endTail_fs {B : Finset ℕ} (hB : dBands ⊆ B)
     (hBT : restoreBands ∪ E.Bo ⊆ B) (hI : FInv E.W c₀ c) (hw : FWin E c) {s σ : ℕ}
     (hs : 81160 ≤ s ∧ s + 9 < 81190) (hσ : σ ≤ 1) (h5 : c.nreg (s + 5) = 0)
     (h6 : c.nreg (s + 6) = 0) (hs1 : c.nreg s ≤ 1)
@@ -389,6 +393,9 @@ theorem endTail_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     have := us h (by rw [e40, e41, i21 c₁ hI₁]; exact hj)
     rw [e1, e2, e40, e41, ← b3, ← b4] at this
     exact this
+
+
+end
 
 end
 

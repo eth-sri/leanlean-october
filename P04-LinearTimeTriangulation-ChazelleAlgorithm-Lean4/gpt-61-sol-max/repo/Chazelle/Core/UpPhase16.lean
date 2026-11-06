@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.UpPhase15
 
 /-!
@@ -83,29 +85,24 @@ theorem recA_exec {c : Config} (hw : WordsBounded W c) {A h g : ℕ}
   rw [hAl] at hA ⊢
   unfold recA
   exec_block
-  all_goals try (config_simp; (try simp only [hA, h05, h07, h20, h21, h22, h25]); omega)
+  all_goals try (config_simp; omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun a h1 => ?_, fun r h1 h2 => ?_,
     rfl, rfl, rfl⟩
-  · config_simp; simp only [hA, h25]
-  · config_simp; simp only [hA]
-  · config_simp; simp only [h07, h20]
-  · config_simp; simp only [hA, h25]
-  · config_simp; simp only [h05, h21, hA, h20, h22, Machine.upd_apply]
-    split_ifs <;> first | omega
+  · ram_simp <;> omega_nf
+  · ram_simp <;> omega_nf
+  · ram_simp <;> omega_nf
+  · ram_simp <;> omega_nf
+  · grind [Machine.upd_apply]
   · config_simp
+  · grind [Machine.upd_apply]
+  · grind [Machine.upd_apply]
+  · ram_simp <;> omega_nf
+  · grind [Machine.upd_apply]
   · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
-    split_ifs <;> first | omega
-  · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
-    split_ifs <;> first | omega
-  · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
-    split_ifs <;> first | omega
-  · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
-    split_ifs <;> first | omega
-  · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
-    split_ifs <;> first | omega
+    grind
   · unfold RecRG at h1
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat ram_simp 
 
 set_option maxHeartbeats 16000000 in
 theorem copyBody_exec {c : Config} (hw : WordsBounded W c) {j T T' Al : ℕ}
@@ -121,17 +118,8 @@ theorem copyBody_exec {c : Config} (hw : WordsBounded W c) {j T T' Al : ℕ}
   rw [hAl] at hA ⊢
   unfold copyBody
   exec_block
-  all_goals try (config_simp; (try simp only [hA, h50, h56, h57, h20]); omega)
-  refine ⟨rfl, ‹_›, ?_, ?_, ?_, fun a h1 => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [h50, h20]
-  · config_simp; simp only [hA, h20]
-  · config_simp; simp only [h50, h56, h57, Machine.upd_apply]
-    split_ifs <;> first | omega
-  · config_simp; simp only [h50, h56, h57, Machine.upd_apply]
-    split_ifs <;> first | omega
-  · unfold CopyRG at h1
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  all_goals simp_all
+  simp_all [Machine.upd_apply, CopyRG] 
 
 set_option maxHeartbeats 16000000 in
 /-- **The rows of the old grades**: `T'[j] = T[j]` for `j < g`. -/
@@ -159,27 +147,23 @@ theorem copyL_exec {c : Config} (hw : WordsBounded W c) {g T T' Al : ℕ}
       (fun c' => 8 * (g - c'.nreg 170050)) (fun c' => c'.nreg ALLOC) (fun c' ⟨_, _, h, _⟩ => h)
       (fun c2 ⟨j, hj, hw2, j50, jA, hcp, hmem, fr, hrr, hrm, ho⟩ htest => by
         have k07 : c2.nreg 170007 = g := by
-          rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h07
+          ram_grind
         rw [j50, k07] at htest
         obtain ⟨c3, k3, e3, hk3, hw3, l50, lA, lw, lm, fr3, hrr3, hrm3, ho3⟩ :=
           copyBody_exec (P := P) (T := T) (T' := T') hw2 j50
-            (by rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h57)
-            (by rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h56) jA
-            (by rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h20)
+            (by ram_grind)
+            (by ram_grind) jA
+            (by ram_grind)
             (by omega) (by omega) (by omega) (by omega)
-        refine ⟨c3, k3, e3, ⟨j + 1, by omega, hw3, l50, by rw [lA]; ring, fun j' h' => ?_,
-          fun a ha => by rw [lm a (by omega), hmem a (by omega)],
-          fun r h1 h2 => by rw [fr3 r h1 h2, fr r h1 h2], by rw [hrr3, hrr], by rw [hrm3, hrm],
-          by rw [ho3, ho]⟩, by rw [l50, j50]; omega, by rw [lA]; omega⟩
-        rcases Nat.lt_or_ge j' j with h1 | h1
-        · rw [lm _ (by omega), hcp j' h1]
-        · have : j' = j := by omega
-          subst this
-          rw [lw, hmem _ (Or.inl (by omega))]) hI0
+        refine ⟨c3, k3, e3, ⟨j + 1, by omega, hw3, l50, by omega, fun j' h' => ?_,
+          fun a ha => by ram_grind,
+          fun r h1 h2 => by ram_grind, by ram_grind, by ram_grind,
+          by rw [ho3, ho]⟩, by omega, by omega⟩
+        grind) hI0
   have hjg : j = g := by
-    rw [j50, fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega), h07] at htest; omega
+    grind [CopyRG]
   subst hjg
-  exact ⟨c', k, e, by rw [h50] at hk; omega, hw', jA, by rw [hA] at hψ; exact hψ, hcp, hmem, fr,
+  exact ⟨c', k, e, by omega, hw', jA, by omega, hcp, hmem, fr,
     hrr, hrm, ho⟩
 
 end proofs

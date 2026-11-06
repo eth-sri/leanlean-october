@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.UpPhase12
 
 /-!
@@ -92,30 +94,30 @@ theorem chainS_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
         r ≠ 170036 → c'.nreg r = c.nreg r) ∧
       (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r) := by
   have hAl : ALLOC = 9999 := rfl
-  have hWn : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
+  have hWn : P.n + 3 ≤ W := by grind [hostWords]
   have hfit := gradeLen_fit hn hi
   have hl1 := gradeLen_pos hn hi
   have hl2 := gradeLen_le P.n g i
   have hcnt : gradeCount P.n g ≤ P.n := by
     unfold gradeCount; have := Nat.div_le_self (P.n - 2) (2 ^ g); omega
   unfold stepB at hW
-  have hW128 : 128 * P.n + 8 ≤ W := by unfold hostWords at hWh; omega
+  have hW128 : 128 * P.n + 8 ≤ W := by grind [hostWords]
   obtain ⟨hT0, hmh0, hR0, hC0⟩ := hM.holds
   obtain ⟨-, -, -, hH, hhp, -, -, -, -⟩ := hT0
   -- `lenS`
   obtain ⟨c1, k1, e1, hk1, hw1, l17, fr1, hm1, hrr1, hrm1, ho1⟩ :=
     lenS_exec (P := P) hw hu.r28 h16 hu.r10
   have h17 : c1.nreg 170017 = gradeLen P.n g i := by rw [l17]; rfl
-  have hu1 := hu.of_frame fun r hr => fr1 r (by unfold URegR at hr; omega)
-    (by unfold URegR at hr; omega)
-  have hA1 : c1.nreg ALLOC = A := by rw [fr1 _ (by rw [hAl]; omega) (by rw [hAl]; omega)]; exact hA
+  have hu1 := hu.of_frame fun r hr => fr1 r (by grind [URegR])
+    (by grind [URegR])
+  have hA1 : c1.nreg ALLOC = A := by grind
   have g1 : ∀ r, r ≠ 170017 → r ≠ 170033 → c1.nreg r = c.nreg r := fr1
   -- `descU`
-  have hM1 : Robust A c1.nmem fun m => ChainMem O P m h hp g R x i A := by rw [hm1]; exact hM
+  have hM1 : Robust A c1.nmem fun m => ChainMem O P m h hp g R x i A := by grind
   obtain ⟨c2, k2, e2, hk2, hw2, a21, a22, d5, dh, hdesc, hm2, fr2, frr2, hrm2, ho2⟩ :=
-    descU_exec (O := O) hG hWn hn hw1 hu1 hA1 (by rw [g1 _ (by omega) (by omega)]; exact h16)
-      (by rw [g1 _ (by omega) (by omega)]; exact h35)
-      (by rw [g1 _ (by omega) (by omega)]; exact h36) hi hM1.holds.1 hM1.holds.2.1
+    descU_exec (O := O) hG hWn hn hw1 hu1 hA1 (by grind)
+      (by grind)
+      (by grind) hi hM1.holds.1 hM1.holds.2.1
       hM1.holds.2.2.1 (by omega) (by omega)
   obtain ⟨d, hd⟩ : ∃ d, c2.nreg 170030 = d := ⟨_, rfl⟩
   rw [hd] at d5 dh hdesc
@@ -124,7 +126,7 @@ theorem chainS_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
       r = 170036 → c2.nreg r = c1.nreg r := fun r hr => fr2 r (kept_of
         (by unfold bandOf bUp; omega) (by omega))
   -- memory: `c2` agrees with `c` below `A`
-  have mc2 : ∀ a, a < A → c2.nmem a = c.nmem a := fun a ha => by rw [hm2 a ha, hm1]
+  have mc2 : ∀ a, a < A → c2.nmem a = c.nmem a := fun a ha => by grind
   have hM2 : Robust (c2.nreg ALLOC) c2.nmem fun m => UpTab O P m h hp (c2.nreg ALLOC) ∧
       m h = g ∧ (1 ≤ g → m (m (h + 2) + (g - 1)) = R) :=
     robust_of (hM.transport mc2) a21 fun m' h' => ⟨h'.1.mono a21, h'.2.1, h'.2.2.1⟩
@@ -132,9 +134,9 @@ theorem chainS_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
   have hWnf : c2.nreg ALLOC + nfB κB κL κG g + 6 ≤ W := by omega
   obtain ⟨c3, k3, e3, hk3, hw3, a31, a32, hnf, m31, m32, o3, fr3, frr3⟩ :=
     nfU_exec (O := O) (sB := sB) (sL := sL) (sG := sG) hB hL hGr hG hWh hn hw2 hu2 rfl
-      (by rw [kk2 _ (by omega), g1 _ (by omega) (by omega)]; exact h16)
-      (by rw [kk2 _ (by omega)]; exact h17)
-      (by rw [kk2 _ (by omega), g1 _ (by omega) (by omega)]; exact h35) hi hM2 hd d5 dh hdesc
+      (by grind)
+      (by grind)
+      (by grind) hi hM2 hd d5 dh hdesc
       hWnf
   obtain ⟨f, hf⟩ : ∃ f, c3.nreg 170031 = f := ⟨_, rfl⟩
   rw [hf] at hnf
@@ -145,10 +147,10 @@ theorem chainS_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
   have mc3 : ∀ a, a < c2.nreg ALLOC → c3.nmem a = c2.nmem a := m31
   have hH3 : HostAt c3.nmem hp (Host.whole P.n) :=
     L41.hostAt_agree (A := A) hH rfl (by omega) fun a ha => by
-      rw [mc3 a (by omega), mc2 a (by omega)]
+      grind
   have hd3 : ChainDescAt c3.nmem d (Qof P) (Host.whole P.n) C0 :=
     chainDescAt_agree (hdesc C0 rfl rfl rfl) d5 dh (by omega) mc3
-  have dh3 : c3.nmem d = hp := by rw [mc3 _ (by omega)]; exact dh
+  have dh3 : c3.nmem d = hp := by grind
   have hNo : NodeOK P c3.nmem (c3.nreg ALLOC) hp d f C0 (gradeGran g) :=
     ⟨hd3, rfl, dh3, by omega, by omega, hfit, N, hNW, hc⟩
   have hwf := chainWF_of_node (by omega) hNo hH3
@@ -161,7 +163,7 @@ theorem chainS_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
     rw [Nat.le_div_iff_mul_le (by omega)]
     refine le_trans hcnt3 (Nat.mul_le_mul_left _ ?_)
     show 2 * gradeLen P.n g i + 8 ≤ 2 ^ (g + 1) + 8
-    rw [pow_succ]; omega
+    omega
   have hlog : Nat.clog 2 (c3.nmem (d + 2)) ≤ g := by
     rw [hd3.2.2.2.1]; exact Nat.clog_le_of_le_pow hl2
   have hpc : O.κ * (c3.nmem f * (Nat.clog 2 (c3.nmem (d + 2)) + 1) + 1) ≤
@@ -182,7 +184,7 @@ theorem chainS_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
     have kr : Kept r := kept_of (by unfold bandOf bUp; omega) (by omega)
     rw [kk4 r kr, fr3 r (Or.inl kr), fr2 r kr, g1 r (by omega) (by omega)]
   -- `cellB`
-  have hsb : gradeStart g i + 2 ^ g ≤ 3 * P.n := by unfold gradeStart at hfit ⊢; omega
+  have hsb : gradeStart g i + 2 ^ g ≤ 3 * P.n := by omega
   obtain ⟨c5, k5, e5, hk5, hw5, A5e, x5, i5, s5, q5, t5, w0, w1, w2, w3, mw, fr5, hrr5, hrm5,
       ho5⟩ :=
     cellB_exec (P := P) (d := d) (f := f) (o := o) (x := x) (i := i) (s := gradeStart g i)
@@ -202,10 +204,10 @@ theorem chainS_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
     hu4.of_frame fun r hr => fr5 r (by unfold URegR at hr; omega) (by unfold URegR at hr; omega)
       (by unfold URegR at hr; omega) (by unfold URegR at hr; omega)
       (by unfold URegR at hr; omega) (by unfold URegR at hr; omega)
-      (by unfold URegR at hr; rw [hAl]; omega),
-    i5, by rw [s5]; unfold gradeStart; ring, by rw [q5]; ring, by rw [t5]; ring, ?_, mc5,
-    fun a ha => by rw [hrm5, m42 a (by omega), m32 a (by omega), hrm2, hrm1], by
-      rw [ho5, o4, o3, ho2, ho1], fun r hr a1 a2 a3 a4 a5 a6 => ?_, fun r hr => by
+      (by unfold URegR at hr; omega),
+    i5, by rw [s5]; unfold gradeStart; ring, by omega, by omega, ?_, mc5,
+    fun a ha => by ram_simp, by
+      grind, fun r hr a1 a2 a3 a4 a5 a6 => ?_, fun r hr => by
       rw [hrr5, frr4 r (hr.not_mem (by decide)), frr3 r hr, frr2 r hr, hrr1]⟩
   · rw [x5, A5e]
     intro m hm

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseOracleCuM
 public import Chazelle.Core.ShootCutKey
 public import Chazelle.Core.ShootCutGen
@@ -43,8 +45,8 @@ theorem kpath_of_idx {M : Model} {Q : Polygon} {n : ℝ} :
     obtain ⟨h1, h2, h3⟩ := h 0 (by simp)
     refine ⟨h1, Ve 0, h3, h2, ?_⟩
     have ih := kpath_of_idx (q :: qs) (fun i => Vs (i + 1)) (fun i => Ve (i + 1))
-      (List.cons_ne_nil q qs) (fun i hi => h (i + 1) (by simp at hi ⊢; omega))
-      (fun i hi => hc (i + 1) (by simp at hi ⊢; omega))
+      (List.cons_ne_nil q qs) (fun i hi => h (i + 1) (by ram_grind))
+      (fun i hi => hc (i + 1) (by ram_grind))
     rw [hc 0 (by simp)] at ih
     simpa using ih
 
@@ -53,7 +55,7 @@ theorem kpath_of_idx {M : Model} {Q : Polygon} {n : ℝ} :
 /-- **The keys of the chain pieces increase** from the start of the arc to its end. -/
 theorem chain_mono {K : WPos → ℝ} {ps : List Pc} {sa ea : WPos} (hne : ps ≠ [])
     (hlt : K sa < K ea) (h0 : K (ps[0]'(List.length_pos_iff.2 hne)).s = K sa)
-    (hl : K (ps[ps.length - 1]'(by have := List.length_pos_iff.2 hne; omega)).e = K ea)
+    (hl : K (ps[ps.length - 1]'(by ram_grind)).e = K ea)
     (hc : ∀ i (hi : i + 1 < ps.length), K (ps[i]'(by omega)).e = K (ps[i + 1]'hi).s)
     (ht : ∀ i (hi : i + 1 < ps.length), sideInArc (K (ps[i]'(by omega)).s) (K ea)
       (K (ps[i]'(by omega)).e)) :
@@ -64,26 +66,10 @@ theorem chain_mono {K : WPos → ℝ} {ps : List Pc} {sa ea : WPos} (hne : ps �
   have hs : ∀ i (hi : i < ps.length), K sa ≤ K (ps[i]'hi).s ∧ K (ps[i]'hi).s < K ea := by
     intro i
     induction i with
-    | zero => intro hi; rw [h0]; exact ⟨le_rfl, hlt⟩
+    | zero => simp_all
     | succ i ih =>
-      intro hi
-      obtain ⟨a1, a2⟩ := ih (by omega)
-      have hti := ht i hi
-      unfold sideInArc at hti
-      rw [ite_eq_left a2] at hti
-      rw [← hc i hi]
-      exact ⟨by linarith [hti.1], hti.2⟩
-  intro i hi
-  obtain ⟨a1, a2⟩ := hs i hi
-  by_cases hlast : i + 1 < ps.length
-  · have hti := ht i hlast
-    unfold sideInArc at hti
-    rw [ite_eq_left a2] at hti
-    exact ⟨a1, hti.1, hti.2.le⟩
-  · have : i = ps.length - 1 := by omega
-    subst this
-    rw [hl]
-    exact ⟨a1, a2, le_rfl⟩
+      ram_grind
+  ram_grind
 
 /-! ## Pieces in memory -/
 
@@ -111,19 +97,6 @@ def PcV (P : Polygon) (M : Model) (m : ℕ → ℕ) (E Hγ : ℕ) (pc : Pc) : Pr
       ((∀ d, d ≤ Cα.m → M.W.vtx ((pc.s.edge + d) % M.W.n) = Cα.vertex d) ∨
         (∀ d, d ≤ Cα.m → M.W.vtx ((pc.s.edge + d) % M.W.n) = Cα.vertex (Cα.m - d))))
 
-/-- **A chain descriptor determines the chain.** -/
-theorem chainDesc_uniq {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {H : Host} {C C' : Chain}
-    (h : ChainDescAt m B Q H C) (h' : ChainDescAt m B Q H C') : C = C' := by
-  obtain ⟨-, h2, h3, h4, -⟩ := h
-  obtain ⟨-, h2', h3', h4', -⟩ := h'
-  obtain ⟨P, s, m, a, b⟩ := C
-  obtain ⟨P', s', m', a', b'⟩ := C'
-  simp only at h2 h2' h3 h3' h4 h4'
-  subst h2 h2'
-  have e1 : s = s' := h3.symm.trans h3'
-  have e2 : m = m' := h4.symm.trans h4'
-  subst e1 e2
-  rfl
 
 /-- **The facts of a piece survive** memory changes at or above their bound. -/
 theorem PcV.keep {P : Polygon} {M : Model} {m m' : ℕ → ℕ} {E E' Hγ : ℕ} {pc : Pc}
@@ -140,10 +113,7 @@ theorem PcV.keep {P : Polygon} {M : Model} {m m' : ℕ → ℕ} {E E' Hγ : ℕ}
   refine ⟨by omega, fun H' C' hC' => ?_⟩
   have hb : m' pc.entry = m pc.entry := he _ (by omega)
   have hH : H' = Hs := NFLoc.hostAt_unique hC'.1 hCD'.1
-  subst hH
-  have hC : C' = Cα := chainDesc_uniq hC' hCD'
-  subst hC
-  exact ⟨hlen, hHwf, by rw [hb]; omega, hs⟩
+  ram_grind
 
 /-- **A chain piece inside the stretch, translated, is a piece of the interior walk.** -/
 theorem pcV_tr {P : Polygon} {C : Chain} {u₀ g₀ ℓ : ℕ} (S : Stretch (Qof P) C u₀ g₀ ℓ)
@@ -154,8 +124,8 @@ theorem pcV_tr {P : Polygon} {C : Chain} {u₀ g₀ ℓ : ℕ} (S : Stretch (Qof
     PcV P (interiorModel (Qof P)) m E Hγ (trPc (Qof P).n u₀ g₀ pc) := by
   have hQ : (Qof P).n = P.n := qn'
   obtain ⟨sP, eP, sE, eE, hk, h0, h1⟩ := hv
-  have sP' : ProperPos (chainModel C) (Qof P) (Qof P).n pc.s := by rw [hQ]; exact sP
-  have eP' : ProperPos (chainModel C) (Qof P) (Qof P).n pc.e := by rw [hQ]; exact eP
+  have sP' : ProperPos (chainModel C) (Qof P) (Qof P).n pc.s := by ram_grind
+  have eP' : ProperPos (chainModel C) (Qof P) (Qof P).n pc.e := by ram_grind
   have hs1 : (chainModel C).key (Qof P) pc.s ≤ g₀ + ℓ := hse.le.trans he1
   have he0 : (g₀ : ℝ) ≤ (chainModel C).key (Qof P) pc.e := hs0.trans hse.le
   obtain ⟨-, sPI, sEI, -⟩ := trP_spec S sP' hs0 hs1
@@ -204,7 +174,7 @@ theorem slot_kpath {Q : Polygon} {C : Chain} {u₀ g₀ ℓ : ℕ} (S : Stretch 
     (hlt : (chainModel C).key Q sa < (chainModel C).key Q ea)
     (h0 : (chainModel C).key Q (ps[0]'(List.length_pos_iff.2 hne)).s = (chainModel C).key Q sa)
     (hl : (chainModel C).key Q (ps[ps.length - 1]'(by
-      have := List.length_pos_iff.2 hne; omega)).e = (chainModel C).key Q ea)
+      ram_grind)).e = (chainModel C).key Q ea)
     (hc : ∀ i (hi : i + 1 < ps.length), (chainModel C).key Q (ps[i]'(by omega)).e =
       (chainModel C).key Q (ps[i + 1]'hi).s)
     (ht : ∀ i (hi : i + 1 < ps.length), sideInArc ((chainModel C).key Q (ps[i]'(by omega)).s)
@@ -214,7 +184,7 @@ theorem slot_kpath {Q : Polygon} {C : Chain} {u₀ g₀ ℓ : ℕ} (S : Stretch 
     KPath (interiorModel Q) Q Q.n ((e₁ : ℝ) + off - g₀ + (chainModel C).key Q sa)
       (ps.map (trPc Q.n u₀ g₀)) ((e₁ : ℝ) + off - g₀ + (chainModel C).key Q ea) := by
   have hmono := chain_mono hne hlt h0 hl hc ht
-  have hne' : ps.map (trPc Q.n u₀ g₀) ≠ [] := by simpa using hne
+  have hne' : ps.map (trPc Q.n u₀ g₀) ≠ [] := by simp_all
   have hlen : (ps.map (trPc Q.n u₀ g₀)).length = ps.length := List.length_map _
   have key := kpath_of_idx (M := interiorModel Q) (Q := Q) (n := (Q.n : ℝ))
     (ps.map (trPc Q.n u₀ g₀))
@@ -231,15 +201,14 @@ theorem slot_kpath {Q : Polygon} {C : Chain} {u₀ g₀ ℓ : ℕ} (S : Stretch 
     (fun i hi => by
       rw [hlen] at hi
       have hgi : ps.getD i pc0 = ps[i]'(by omega) := by simp [List.getD, show i < ps.length by omega]
-      have hgi' : ps.getD (i + 1) pc0 = ps[i + 1]'hi := by simp [List.getD, hi]
+      have hgi' : ps.getD (i + 1) pc0 = ps[i + 1]'hi := by simp_all
       simp only [hgi, hgi', hc i hi])
   have hg0 : ps.getD 0 pc0 = ps[0]'(List.length_pos_iff.2 hne) := by
     simp [List.getD, List.length_pos_iff.2 hne]
   have hgl : ps.getD (ps.length - 1) pc0 = ps[ps.length - 1]'(by
-      have := List.length_pos_iff.2 hne; omega) := by
-    simp [List.getD, show ps.length - 1 < ps.length by have := List.length_pos_iff.2 hne; omega]
-  simp only [hlen, hg0, hgl, h0, hl] at key
-  exact key
+      ram_grind) := by
+    grind
+  ram_grind
 
 end
 

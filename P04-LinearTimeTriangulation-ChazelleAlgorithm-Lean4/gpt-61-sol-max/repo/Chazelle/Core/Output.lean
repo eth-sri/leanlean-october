@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OutputRam
 
 /-!
@@ -17,6 +19,8 @@ between symbolic points).  Adding `(N.chord k).h < Q.n` to `IsNF` (or to the dow
 postcondition and the output phase's precondition) closes the gap; every chord record produced
 from symbolic points satisfies it.
 -/
+
+set_option maxHeartbeats 2000000
 
 namespace Chazelle.Core
 
@@ -76,20 +80,20 @@ theorem prepS_spec {c : Config} (hc : WordsBounded W c) {σ : ℝ} {B T0 : ℕ}
   exec_block
   all_goals try omega
   refine Final.spec_name fun c1 hc1 => ?_
-  have hw1 : WordsBounded W c1 := by rw [hc1]; assumption
-  have r1 : c1.rreg 100 = σ := by rw [hc1]; config_simp; exact hσ
+  have hw1 : WordsBounded W c1 := by simp_all +arith
+  have r1 : c1.rreg 100 = σ := by rw [hc1]; simp_all +arith
   have r0 : c1.rreg 220000 = 0 := by rw [hc1]; config_simp; simp
   have hA1 : ∀ bb : Bool, c1.nreg 220000 = P.n ∧ c1.nreg 220001 = 1 ∧ c1.nreg 220002 = 0 ∧
       c1.nreg 220017 = P.n - 1 ∧ c1.nreg 220018 = P.n - 2 ∧ c1.nreg 220019 = 2 ∧
       c1.nreg 220020 = 3 ∧ c1.nreg 220011 = 4 ∧ c1.nreg 220012 = 5 ∧ c1.nreg 220021 = 7 ∧
       c1.nreg 230003 = B ∧ c1.nreg 9999 = T0 := fun _ => by
     rw [hc1]; config_simp
-    exact ⟨by omega, hB, hT0⟩
+    omega
   obtain ⟨b0, b1, b2, b17, b18, b19, b20, b11, b12, b21, b3, b9999⟩ := hA1 true
   have fr1 : ∀ r, 240000 ≤ r → c1.nreg r = c.nreg r := fun r hr => by
     rw [hc1]; simp (disch := omega) only [Machine.upd_other]
   have rr1 : ∀ r, 240000 ≤ r → c1.rreg r = c.rreg r := fun r hr => by
-    rw [hc1]; simp (disch := omega) only [Machine.upd_other]
+    rw [hc1]; grind [Machine.upd_other]
   have m1 : c1.nmem = c.nmem := by rw [hc1]
   have rm1 : c1.rmem = c.rmem := by rw [hc1]
   have o1 : c1.output = c.output := by rw [hc1]
@@ -98,12 +102,12 @@ theorem prepS_spec {c : Config} (hc : WordsBounded W c) {σ : ℝ} {B T0 : ℕ}
       c2 = { c1 with nreg := upd c1.nreg 220003 (decide (σ < 0)).toNat } := by
     unfold revS
     by_cases hneg : σ < 0
-    · refine spec_ifLtR_true (by rw [r1, r0]; exact hneg)
+    · refine spec_ifLtR_true (by grind)
         (spec_instr (Exec.constN hw1 220003 1 (by omega)) fun _ => ?_)
-      exact ⟨by omega, by simp [hneg]⟩
-    · refine spec_ifLtR_false (by rw [r1, r0]; exact hneg)
+      grind
+    · refine spec_ifLtR_false (by grind)
         (spec_instr (Exec.constN hw1 220003 0 (by omega)) fun _ => ?_)
-      exact ⟨by omega, by simp [hneg]⟩
+      grind
   obtain ⟨c2, k2, e2, hk2, rfl⟩ := hrev
   refine spec_seq ⟨_, k2, e2, ?_⟩
   unfold readS
@@ -148,14 +152,12 @@ def OutputSpecH : Prop :=
 
 /-- The reversal flag computed from the orientation. -/
 theorem decide_orient_neg (Q : Polygon) : decide (Mountain.orient Q < 0) = revOf Q := by
-  classical
-  unfold Mountain.orient revOf
-  by_cases h : Mountain.LeftInside Q <;> simp [h]
+  core_grind
 
 /-- Entry `i` of the table of records of the regions. -/
 theorem getD_trapTable {nR : ℕ} {f : ℕ → Final.TrapRec} {i : ℕ} (hi : i < nR) :
     ((List.range nR).map f).getD i ⟨0, 0, 0, 0⟩ = f i := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_range hi]; rfl
+  simp_all
 
 /-- A register outside the output bands is at least `240000`. -/
 theorem ge_of_band {r : ℕ} (h : bandOf r ∉ outBands) : 240000 ≤ r := by
@@ -179,7 +181,7 @@ theorem outputSpecH : OutputSpecH := by
   have hT := table_ok H
   have hnR : N.nRegions ≤ 2 * P.n + 1 := by
     have := hT.length_le hQ
-    rwa [List.length_map, List.length_range, hQn] at this
+    simp_all
   have hAL : ALLOC = 9999 := rfl
   have hc3 : coreReg 3 = 230003 := rfl
   rw [hAL] at hroom hRob
@@ -202,57 +204,55 @@ theorem outputSpecH : OutputSpecH := by
   have hent : ∀ r, r < N.nRegions → ∀ t, t < (N.region r).chords.length →
       (N.region r).chords.getD t 0 < N.nChords := fun r hr t ht => by
     have hmem : (N.region r).chords.getD t 0 ∈ (N.region r).chords := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
-      exact List.getElem_mem ht
+      grind
     exact (((hregs r hr).1 _).1 hmem).1
   have hrec : ∀ k, k < N.nChords →
       (N.chord k).h < P.n ∧ (N.chord k).lp < P.n ∧ (N.chord k).rp < P.n := fun k hk => by
     obtain ⟨hl, hr, -⟩ := rec_attach hNF hk
-    exact ⟨hhlt k hk, hQn ▸ hl, hQn ▸ hr⟩
+    grind
   have hC : RegConsts c2 (revOf (Qof P)) P.n N.nRegions (c.nmem (B + 3)) (c.nmem (B + 7)) T0 :=
-    ⟨hA2, by rw [v5, hB2.1], v6, v8, v9, v11, v12, v19, v20⟩
+    ⟨hA2, by grind, v6, v8, v9, v11, v12, v19, v20⟩
   have hI0 : RegInv W (revOf (Qof P)) P.n N T0 (c.nmem (B + 5)) c.nmem c2 c2 :=
-    ⟨e2.wb_right, fun _ _ => rfl, fun _ _ => rfl, rfl, rfl, by rw [v10]; exact Nat.zero_le _,
-      by rw [v13, v10]; ring, by rw [v16, v10]; ring, by rw [v9999, v10]; ring,
-      fun a _ => by rw [m2, m1], fun s hs => by rw [v10] at hs; exact absurd hs (Nat.not_lt_zero _)⟩
+    ⟨e2.wb_right, fun _ _ => rfl, fun _ _ => rfl, rfl, rfl, by omega,
+      by grind, by omega, by omega,
+      fun a _ => by rw [m2, m1], fun s hs => by omega⟩
   obtain ⟨c3, k3, e3, hI3, h10, hk3, hΨ⟩ := regionLoop_spec (P := P) hC hRd rfl rfl rfl
     (fun r hr => chords_length_le H hr) hent hrec (by omega) (by omega) (by omega) hI0 v10
   obtain ⟨hw3, hfr3, hrr3, hrm3, ho3, -, -, -, hal3, hmem3, hrecs3⟩ := hI3
   have eall : Exec P W Output.prog c c3 (k1 + (k2 + k3)) := e1.seq (e2.seq e3)
   refine ⟨c3, _, eall, ?_, ?_, ?_⟩
   · -- cost
-    have : 332 * N.nRegions ≤ 332 * (2 * P.n + 1) := Nat.mul_le_mul_left _ hnR
+    
     nlinarith
   · -- the tables
     refine ⟨_, [], hT, vtxChordTable_nil hQ hdh, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     · show c3.nreg 9991 = _
-      rw [hfr3 _ (by unfold regFree; omega), v9991, hB2.1, List.length_map, List.length_range]
+      rw [hfr3 _ (by omega_nf), v9991, hB2.1, List.length_map, List.length_range]
     · show TrapTableAt c3.nmem (c3.nreg 9990) _
-      rw [hfr3 _ (by unfold regFree; omega), v9990]
+      rw [hfr3 _ (by omega_nf), v9990]
       intro i hi
       rw [List.length_map, List.length_range] at hi
       rw [getD_trapTable hi, hQn]
-      obtain ⟨t1, t2, t3, t4⟩ := hrecs3 i (by rw [h10]; exact hi)
-      exact ⟨t1, t2, t3, t4⟩
+      obtain ⟨t1, t2, t3, t4⟩ := hrecs3 i (by omega)
+      grind
     · show c3.nreg 9993 = _
-      rw [hfr3 _ (by unfold regFree; omega), v9993]; rfl
-    · intro i hi; exact absurd hi (Nat.not_lt_zero _)
+      rw [hfr3 _ (by omega_nf), v9993]; rfl
+    · intro i hi; grind
     · show c3.nreg 9990 + _ ≤ c3.nreg 9999
-      rw [hfr3 _ (by unfold regFree; omega), v9990, hal3, h10, List.length_map, List.length_range]
+      rw [hfr3 _ (by omega_nf), v9990, hal3, h10, List.length_map, List.length_range]
     · show c3.nreg 9992 + 3 * 0 ≤ c3.nreg 9999
-      rw [hfr3 _ (by unfold regFree; omega), v9992, hal3]; omega
-    · rw [ho3, o2, o1, hout]
+      rw [hfr3 _ (by omega_nf), v9992, hal3]; omega
+    grind
   · -- the frame
     refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a _ => ?_, ?_, ?_, ?_⟩
     · have hr' : 240000 ≤ r := ge_of_band hr
-      rw [hfr3 _ (by unfold regFree; omega), fn2 _ hr', fn1 _ (by omega)]
+      rw [hfr3 _ (by omega_nf), fn2 _ hr', fn1 _ (by omega)]
     · have hr' : 240000 ≤ r := ge_of_band hr
-      rw [hrr3 _ (by unfold regFree; omega), fr2 _ hr', fr1 _ (by omega) (by omega)]
-    · exact hmem3 a ha
-    · rw [hrm3, rm2, rm1]
-    · rw [ho3, o2, o1]
-    · rw [hAL, hal3]; omega
-    · rw [hAL]; rw [v9999] at hΨ; omega
+      rw [hrr3 _ (by omega_nf), fr2 _ hr', fr1 _ (by omega) (by omega)]
+    · grind
+    · grind
+    · grind
+    all_goals grind
 
 /-! ## Composition with the strengthened down phase -/
 
@@ -286,21 +286,21 @@ theorem core_of_phasesH (hS : SetupSpec) (hUD : ∃ X : MemCtx, UpPhaseSpec X �
   obtain ⟨bD, hbD⟩ : ∃ b, b = κD * (P.n + 1) := ⟨_, rfl⟩
   obtain ⟨bO, hbO⟩ : ∃ b, b = κO * (P.n + 1) := ⟨_, rfl⟩
   have hsum : (κS + κU + κD + κO + 3) * (P.n + 1) = bS + bU + bD + bO + 3 * (P.n + 1) := by
-    subst hbS hbU hbD hbO; ring
+    grind
   have hC : (κS + κU + κD + κO) * (P.n + 1) = bS + bU + bD + bO := by
-    subst hbS hbU hbD hbO; ring
+    grind
   rw [hsum] at hW
   have hn3 : P.n + 3 ≤ W := by omega
   have hw0 : WordsBounded W initConfig := ⟨fun _ => Nat.zero_le _, fun _ => Nat.zero_le _⟩
   have ha0 : initConfig.nreg ALLOC = 0 := rfl
   obtain ⟨c₁, k₁, e₁, hk₁, hq₁, hf₁⟩ := hS P W initConfig hw0 ⟨hge, hn3⟩
-    (show initConfig.nreg ALLOC + κS * (P.n + 1) ≤ W by rw [ha0, ← hbS]; omega)
-  replace hk₁ : k₁ ≤ bS := by rw [hbS]; exact hk₁
-  have ha₁ : c₁.nreg ALLOC ≤ k₁ := by have := hf₁.2.2.2.2.2.2; rw [ha0] at this; omega
+    (show initConfig.nreg ALLOC + κS * (P.n + 1) ≤ W by omega)
+  replace hk₁ : k₁ ≤ bS := by grind
+  have ha₁ : c₁.nreg ALLOC ≤ k₁ := by have := hf₁.2.2.2.2.2.2; omega
   obtain ⟨c₂, k₂, e₂, hk₂, ⟨hkeep₂, hX₂, hcap₂, C, N, hC₂, hN₂, hcan₂⟩, hf₂⟩ :=
     hU P W c₁ e₁.wb_right ⟨hge, hn3, hq₁⟩
-      (show c₁.nreg ALLOC + κU * (P.n + 1) ≤ W by rw [← hbU]; omega)
-  replace hk₂ : k₂ ≤ bU := by rw [hbU]; exact hk₂
+      (show c₁.nreg ALLOC + κU * (P.n + 1) ≤ W by omega)
+  replace hk₂ : k₂ ≤ bU := by grind
   have ha₂ : c₂.nreg ALLOC ≤ c₁.nreg ALLOC + k₂ := hf₂.2.2.2.2.2.2
   have hset₂ : Robust (c₂.nreg ALLOC) c₂.nmem
       (fun m => SetupAt m (c₂.nreg (coreReg 0)) P.n (c₂.nreg ALLOC)) := by
@@ -311,20 +311,19 @@ theorem core_of_phasesH (hS : SetupSpec) (hUD : ∃ X : MemCtx, UpPhaseSpec X �
     exact ⟨hq.1, hq.2.1, hq.2.2.1, le_trans hq.2.2.2 hf₂.2.2.2.2.2.1⟩
   obtain ⟨c₃, k₃, e₃, hk₃, ⟨N', hN₃, hnf₃, hfull₃, hh₃⟩, hf₃⟩ :=
     hD P W c₂ e₂.wb_right ⟨hge, hn3, hset₂, hX₂, hcap₂, C, N, hC₂, hN₂, hcan₂⟩
-      (show c₂.nreg ALLOC + κD * (P.n + 1) ≤ W by rw [← hbD]; omega)
-  replace hk₃ : k₃ ≤ bD := by rw [hbD]; exact hk₃
+      (show c₂.nreg ALLOC + κD * (P.n + 1) ≤ W by omega)
+  replace hk₃ : k₃ ≤ bD := by grind
   have ha₃ : c₃.nreg ALLOC ≤ c₂.nreg ALLOC + k₃ := hf₃.2.2.2.2.2.2
   have hout₃ : c₃.output = [] := by
     rw [hf₃.2.2.2.2.1, hf₂.2.2.2.2.1, hf₁.2.2.2.2.1]; rfl
   obtain ⟨c₄, k₄, e₄, hk₄, hq₄, hf₄⟩ :=
     hO P W c₃ e₃.wb_right ⟨hge, hn3, hout₃, N', hN₃, hnf₃, hfull₃, hh₃⟩
-      (show c₃.nreg ALLOC + κO * (P.n + 1) ≤ W by rw [← hbO]; omega)
-  replace hk₄ : k₄ ≤ bO := by rw [hbO]; exact hk₄
+      (show c₃.nreg ALLOC + κO * (P.n + 1) ≤ W by omega)
+  replace hk₄ : k₄ ≤ bO := by grind
   have ha₄ : c₄.nreg ALLOC ≤ c₃.nreg ALLOC + k₄ := hf₄.2.2.2.2.2.2
   refine ⟨c₄, k₁ + (k₂ + (k₃ + k₄)), .seq e₁ (.seq e₂ (.seq e₃ e₄)), ?_, ?_,
     Qof P, shearRel_Qof (hgood P hP), (hsh (epsOf P) P).1 hP, hq₄⟩
-  · rw [hC]; omega
-  · rw [hC]; omega
+  all_goals grind
 
 end
 

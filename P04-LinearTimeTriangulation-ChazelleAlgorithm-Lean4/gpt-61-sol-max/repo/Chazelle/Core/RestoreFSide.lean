@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFBits
 public import Chazelle.Core.RestoreFRef
 public import Chazelle.Core.ShotListFrame
@@ -86,7 +88,7 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
       (¬ (sideInArc kA kB kU ↔ (kS = kA ∨ sideInArc kA kB kS)) →
         c'.nreg 81150 = c.nreg 81119) ∧
       ∀ q, 80000 ≤ q → q < 90000 → ¬ ScW q → c'.nreg q = c.nreg q) := by
-  have nk : ∀ q, 81000 ≤ q → q < 82000 → ¬ KeyW q := fun q h1 h2 h => by unfold KeyW at h; omega
+  have nk : ∀ q, 81000 ≤ q → q < 82000 → ¬ KeyW q := fun q h1 h2 h => by omega_nf
   have ir : ∀ q, 81000 ≤ q → q < 82000 → InR q := fun q h1 h2 => ⟨by omega, by omega⟩
   -- the registers read
   let Rd : ℕ → Prop := fun q => q = 81108 ∨ q = 81109 ∨ q = 81118 ∨ q = 81119 ∨ q = 81133 ∨
@@ -104,16 +106,16 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     exact f q (by omega)
   have mA := fun (c' : Config) (h : ∀ q, Rd q → c'.nreg q = c.nreg q) =>
     show PosOK Cα (Qof E.P) E.P.n ⟨c'.nreg 81153, c'.nreg 81155⟩ by
-      rw [h 81153 (by simp [Rd]), h 81155 (by simp [Rd])]; exact hpA
+      grind
   have mB := fun (c' : Config) (h : ∀ q, Rd q → c'.nreg q = c.nreg q) =>
     show PosOK Cα (Qof E.P) E.P.n ⟨c'.nreg 81154, c'.nreg 81155⟩ by
-      rw [h 81154 (by simp [Rd]), h 81155 (by simp [Rd])]; exact hpB
+      grind
   have mU := fun (c' : Config) (h : ∀ q, Rd q → c'.nreg q = c.nreg q) (hI' : FInv E.W c₀ c') =>
     show PosOK Cα (Qof E.P) E.P.n ⟨c'.nreg 81183, c'.nreg 81011⟩ by
       rw [h 81183 (by simp [Rd]), k0_of hE hI']; exact hpU
   have mS := fun (c' : Config) (h : ∀ q, Rd q → c'.nreg q = c.nreg q) =>
     show PosOK Cα (Qof E.P) E.P.n ⟨c'.nreg 81108, c'.nreg 81109⟩ by
-      rw [h 81108 (by simp [Rd]), h 81109 (by simp [Rd])]; exact hpS
+      grind
   have mD := fun (c' : Config) (h : ∀ q, Rd q → c'.nreg q = c.nreg q) =>
     show c'.nreg 81133 = c.nreg 81133 from h 81133 (by simp [Rd])
   have hAW : c.nreg ALLOC + scK ≤ E.W := hroom
@@ -126,7 +128,7 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num)) hwf hC hWm
     (mA c r0) (mB c r0) (by omega)) (fun c₁ hI₁ hA₁ ⟨b0, _, f₁⟩ => ?_)).mono
-    (by unfold scK; omega) (fun _ h => h)
+    (by omega_nf) (fun _ h => h)
   have p1 := keep c c₁ 81100 f₁ (by norm_num) (by norm_num)
   refine (FRS.seq (K₂ := 3 * 11010 + 40) (cmpA_fs₀ hE hB hI₁ (r := 81102) ⟨by norm_num, by norm_num⟩
     (ir _ (by norm_num) (by norm_num)) (ir _ (by norm_num) (by norm_num))
@@ -263,7 +265,7 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     rw [h q (fun e => hq (Or.inr (Or.inr e))), F9 q a b (fun e => hq (Or.inl e))
       (fun e => hq (Or.inr (Or.inl e)))]
   by_cases a1 : c₉.nreg 81011 < c₉.nreg 81114
-  · have hb : c₉.nreg 81114 = 1 := by have := b14.1; rw [k0₉] at a1; omega
+  · have hb : c₉.nreg 81114 = 1 := by have := b14.1; omega
     have ok : okB E.W c₉.nmem [.copyN 81150 81118] c₉.nreg := by
       simp only [okB, okI]; exact ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), trivial⟩
     refine (FRS.ifT a1 (FRS.block hB _ hI₉ ok)).mono (by simp) (fun c' h' => ?_)
@@ -272,7 +274,7 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
       rw [e']; simp [regB, regI, upd]; exact p9 81118 (by simp [Rd])
     exact ⟨fun _ => v, fun h => absurd (hiff.1 hb) h,
       fin c' (fun q hq => by rw [e']; simp [regB, regI, upd, hq])⟩
-  · have hb : c₉.nreg 81114 = 0 := by rw [k0₉] at a1; omega
+  · 
     have ok : okB E.W c₉.nmem [.copyN 81150 81119] c₉.nreg := by
       simp only [okB, okI]; exact ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), trivial⟩
     refine (FRS.ifF a1 (FRS.block hB _ hI₉ ok)).mono (by simp) (fun c' h' => ?_)

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranInitHdr
 
 /-!
@@ -57,16 +59,16 @@ theorem chBody_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
   obtain ⟨hw, hi, hp, h76, hr, hl, hs0, hs1, hm⟩ := hI
   obtain ⟨y1, y2, y3, y4, y5, y6, -⟩ := d.lay
   have yN : d.oNd0 = 3 * d.K := rfl
-  have b30 : c.nreg 90030 = d.b0 := by rw [hr _ (by decide), hB.bLive]
-  have b31 : c.nreg 90031 = d.b0 + d.oS0 := by rw [hr _ (by decide), hB.bS0]
-  have b32 : c.nreg 90032 = d.b0 + d.oS1 := by rw [hr _ (by decide), hB.bS1]
-  have c19 : c.nreg 90019 = 1 := by rw [hr _ (by decide), h19]
-  have c20 : c.nreg 90020 = 3 := by rw [hr _ (by decide), h20]
+  have b30 : c.nreg 90030 = d.b0 := by ram_grind
+  have b31 : c.nreg 90031 = d.b0 + d.oS0 := by ram_grind
+  have b32 : c.nreg 90032 = d.b0 + d.oS1 := by ram_grind
+  have c19 : c.nreg 90019 = 1 := by ram_grind
+  have c20 : c.nreg 90020 = 3 := by ram_grind
   obtain ⟨rup, rdn⟩ := hrec _ ht
   have mup : c.nmem (CB + 5 * c.nreg 90070 + 3) = (chords (c.nreg 90070)).up := by
-    rw [hm _ (by left; omega), rup]
+    ram_grind
   have mdn : c.nmem (CB + 5 * c.nreg 90070 + 4) = (chords (c.nreg 90070)).dn := by
-    rw [hm _ (by left; omega), rdn]
+    ram_grind
   have hEnd : d.oNd0 ≤ d.oEnd := by dm_simp; omega
   have v1 : upd c.nmem (d.b0 + c.nreg 90070) 1 (CB + 5 * c.nreg 90070 + 3) =
       (chords (c.nreg 90070)).up := by
@@ -77,8 +79,8 @@ theorem chBody_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
     exact mdn
   unfold chBody
   exec_block
-  all_goals try (have : d.oNd0 ≤ d.oEnd := hEnd; omega)
-  all_goals try (config_simp; simp only [b30, b31, b32, c19, c20, hp, h76]; omega)
+  all_goals try ( omega)
+  all_goals try (config_simp; omega)
   refine ⟨⟨by assumption, ?_, ?_, ?_, fun r hr' => ?_, fun u hu => ?_, fun u hu => ?_,
     fun u hu => ?_, fun a ha => ?_⟩, by omega, ?_⟩ <;>
     config_simp <;> simp only [b30, b31, b32, c19, c20, hp, h76, v1] <;>
@@ -91,12 +93,10 @@ theorem chBody_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
     split_ifs <;> first | omega
   · config_simp at hu; simp only [c19] at hu
     by_cases hui : u = c.nreg 90070
-    · subst hui
-      rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
-      simp [upd]
+    · grind [upd]
     · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
         Machine.upd_other _ _ _ (by omega)]
-      exact hl u (by omega)
+      ram_grind
   · config_simp at hu; simp only [c19] at hu
     by_cases hui : u = c.nreg 90070
     · subst hui
@@ -141,15 +141,11 @@ theorem chLoop_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
     · omega
     · refine ⟨rfl, ⟨by assumption, ?_, ?_, ?_, fun r hr => ?_, fun u hu => ?_, fun u hu => ?_,
         fun u hu => ?_, fun a _ => rfl⟩, ?_⟩
-      · config_simp; omega
-      · config_simp; rw [h13]; omega
+      · simp_all
+      · simp_all
       · config_simp
-      · simp only [Binit, decide_eq_false_iff_not] at hr
-        config_simp; simp only [upd]; split_ifs <;> first | rfl | omega
-      · simp [upd] at hu
-      · simp [upd] at hu
-      · simp [upd] at hu
-      · config_simp
+      · grind [Binit, decide_eq_false_iff_not, upd]
+      all_goals (simp_all [upd] )
   obtain ⟨q, q0⟩ := q
   obtain ⟨c', k, e, I', hx, hk⟩ := Exec.whileLtN_bounded (P := P) (a := 90070) (b := 90010)
     (body := chBody) (ChI W K CB d chords c₀) (fun c => K - c.nreg 90070) 13 (fun _ h => h.wb)
@@ -158,10 +154,9 @@ theorem chLoop_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
       obtain ⟨c', k, e, I', hk, hi⟩ := chBody_exec (P := P) I hB hK h10 h19 h20 hrec hCB hW t
       exact ⟨c', k, e, I', hk, by omega⟩) q
   have hK' : c'.nreg 90070 = K := by
-    rw [I'.regs 90010 (by decide), h10] at hx; have := I'.i_le; omega
+    rw [I'.regs 90010 (by decide), h10] at hx; ram_grind
   refine ⟨c', _, .seq e₁ e, ?_, fun u hu => ⟨I'.live u (by omega), I'.s0 u (by omega),
     I'.s1 u (by omega)⟩, I'.mem⟩
-  rw [q0] at hk
   omega
 
 /-! ## The worklist -/
@@ -202,41 +197,34 @@ theorem stkLoop_exec {P : Polygon} {W : ℕ} {d : Dm} {c₀ : Config}
       .addN 90077 90010 90026]) c₀ c₁ k₁ ∧ k₁ = 2 ∧ StkI W d c₀ c₁ ∧ c₁.nreg 90070 = 0 := by
     exec_block
     · omega
-    · config_simp; rw [h10, h26]; omega
+    · omega_nf
     · refine ⟨rfl, ⟨by assumption, ?_, ?_, fun r hr => ?_, fun u hu => ?_, fun a _ => rfl⟩, ?_⟩
-      · config_simp; omega
-      · config_simp; rw [h10, h26, hcap]
-      · simp only [Binit, decide_eq_false_iff_not] at hr
-        config_simp; simp only [upd]; split_ifs <;> first | rfl | omega
-      · simp [upd] at hu
-      · config_simp
+      all_goals (grind [Binit, decide_eq_false_iff_not, upd])
   obtain ⟨c', k, e, I', hx, hk⟩ := Exec.whileLtN_bounded (P := P) (a := 90070) (b := 90077)
     (body := stkBody) (StkI W d c₀) (fun c => d.cap - c.nreg 90070) 3 (fun _ h => h.wb)
     (fun c I ht => by
       obtain ⟨hwc, hle, hc77, hr, hs, hm⟩ := I
       rw [hc77] at ht
       have b43 : c.nreg 90043 = d.b0 + d.oStk := by rw [hr _ (by decide), hB.bStk]
-      have c19 : c.nreg 90019 = 1 := by rw [hr _ (by decide), h19]
+      have c19 : c.nreg 90019 = 1 := by ram_grind
       unfold stkBody
       exec_block
-      · rw [b43]; omega
-      · config_simp; rw [c19]; omega
+      · omega
+      · omega_nf
       · refine ⟨⟨by assumption, ?_, ?_, fun r hr' => ?_, fun u hu => ?_, fun a ha => ?_⟩, by omega,
           ?_⟩
-        · config_simp; rw [c19]; omega
-        · config_simp; exact hc77
-        · simp only [Binit, decide_eq_false_iff_not] at hr'
-          config_simp; simp only [upd]; split_ifs <;> first | omega | exact hr r (by simp [Binit]; omega)
+        · config_simp; omega
+        · ram_simp
+        · grind [Binit, decide_eq_false_iff_not, upd]
         · config_simp at hu; rw [c19] at hu
           config_simp; rw [b43]
           by_cases hut : u = c.nreg 90070
           · rw [hut]; simp
-          · rw [Machine.upd_other _ _ _ (by omega)]; exact hs u (by omega)
-        · config_simp; rw [b43, Machine.upd_other _ _ _ (by omega)]; exact hm a ha
-        · config_simp; rw [c19]; omega) q
-  have hfull : c'.nreg 90070 = d.cap := by rw [I'.cap] at hx; have := I'.t_le; omega
+          · rw [Machine.upd_other _ _ _ (by omega)]; ram_grind
+        · config_simp; rw [b43, Machine.upd_other _ _ _ (by omega)]; ram_grind
+        · config_simp; omega) q
+  have hfull : c'.nreg 90070 = d.cap := by ram_grind
   refine ⟨c', _, .seq e₁ e, ?_, fun u hu => I'.stk u (by omega), I'.mem⟩
-  rw [q0] at hk
   omega
 
 end

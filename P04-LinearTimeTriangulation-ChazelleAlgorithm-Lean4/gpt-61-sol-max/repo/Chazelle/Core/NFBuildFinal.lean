@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildOut
 public import Chazelle.Core.NFBuildPassMath
 
@@ -28,18 +30,15 @@ variable {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
 theorem mem_foldl_step {st u : List ℕ} {x : ℕ} (h : x ∈ u.foldl BuildStack.step st) :
     x ∈ st ∨ x ∈ u := by
   induction u generalizing st with
-  | nil => exact Or.inl h
+  | nil => simp_all
   | cons y u ih =>
     rcases ih h with h' | h'
     · unfold BuildStack.step at h'
       split_ifs at h' with hy
       · rcases st with _ | ⟨z, st⟩
-        · simp at h'
-        · exact Or.inl (mem_cons_of_mem _ h')
-      · rcases mem_cons.1 h' with rfl | h''
-        · exact Or.inr mem_cons_self
-        · exact Or.inl h''
-    · exact Or.inr (mem_cons_of_mem _ h')
+        all_goals simp_all
+      grind
+    simp_all
 
 theorem ridx_label_le {w : List ℕ} {K : ℕ} (hw : ∀ x ∈ w, x < K) (m : ℕ) :
     ridx (BuildStack.label w m) ≤ K := by
@@ -50,61 +49,75 @@ theorem ridx_label_le {w : List ℕ} {K : ℕ} (hw : ∀ x ∈ w, x < K) (m : �
     have hx := mem_of_mem_head? hh
     unfold BuildStack.run at hx
     rcases mem_foldl_step hx with h' | h'
-    · simp at h'
-    · have := hw x (mem_of_mem_take h'); omega
+    all_goals grind
 
-theorem cw_lt (h : Input M Q L E) : ∀ x ∈ cw E, x < L.length := by
+section
+variable (h : Input M Q L E)
+include h
+theorem cw_lt : ∀ x ∈ cw E, x < L.length := by
   intro x hx
   unfold cw at hx
   obtain ⟨c, hc, rfl⟩ := mem_map.1 hx
   have := mem_range.1 (h.perm.mem_iff.1 hc)
   omega
 
-theorem topR_le (h : Input M Q L E) (m : ℕ) : topR E m ≤ L.length :=
+theorem topR_le (m : ℕ) : topR E m ≤ L.length :=
   ridx_label_le (cw_lt h) m
 
-theorem chordRec_up_le (h : Input M Q L E) {i : ℕ} (hi : i < L.length) :
+theorem chordRec_up_le {i : ℕ} (hi : i < L.length) :
     (chordRec M Q L E i).up ≤ L.length ∧ (chordRec M Q L E i).dn ≤ L.length := by
   unfold chordRec outside
   rw [word_eq]
   have := ridx_label_le (w := E.map (· / 2)) (cw_lt h)
     ((evs M Q L E).idxOf (BuildRegions.e1 M Q L i))
-  split_ifs <;> constructor <;> dsimp only <;> omega
+  ram_grind
 
 /-- Every chord occurs in the word. -/
-theorem mem_cw (h : Input M Q L E) {x : ℕ} (hx : x < L.length) : x ∈ cw E := by
+theorem mem_cw {x : ℕ} (hx : x < L.length) : x ∈ cw E := by
   unfold cw
   exact mem_map.2 ⟨2 * x, h.perm.mem_iff.2 (mem_range.2 (by omega)), by omega⟩
 
 /-! ## The machine functions -/
 
+
+end
+
+section
+variable (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ)
+include M Q L E
 /-- The region of arc `j`. -/
-noncomputable def keyA (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (j : ℕ) : ℕ :=
+noncomputable def keyA (j : ℕ) : ℕ :=
   (arcRec M Q L E ((gapStarts M Q L E).getD j 0)).reg
 
 /-- The weight of arc `j`. -/
-noncomputable def wA (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (j : ℕ) : ℕ :=
+noncomputable def wA (j : ℕ) : ℕ :=
   arcW M Q (arcRec M Q L E ((gapStarts M Q L E).getD j 0))
 
 /-- The region above chord `i`. -/
-noncomputable def upC (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (i : ℕ) : ℕ :=
+noncomputable def upC (i : ℕ) : ℕ :=
   (chordRec M Q L E i).up
 
 /-- The region below chord `i`. -/
-noncomputable def dnC (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (i : ℕ) : ℕ :=
+noncomputable def dnC (i : ℕ) : ℕ :=
   (chordRec M Q L E i).dn
 
-theorem arcList_pos (hK : L.length ≠ 0) :
-    arcList M Q L E = (gapStarts M Q L E).map (arcRec M Q L E) := by
-  unfold arcList; rw [ite_eq_right hK]
 
-theorem arcList_getD (hK : L.length ≠ 0) {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+end
+
+section
+variable (hK : L.length ≠ 0)
+include hK
+theorem arcList_pos :
+    arcList M Q L E = (gapStarts M Q L E).map (arcRec M Q L E) := by
+  grind [arcList]
+
+theorem arcList_getD {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
     (arcList M Q L E).getD j ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ = arcRec M Q L E ((gapStarts M Q L E).getD j 0) := by
   rw [arcList_pos hK, getD_eq_getElem?_getD, getElem?_map, getElem?_eq_getElem hj,
     Option.map_some, Option.getD_some, getD_eq_getElem?_getD, getElem?_eq_getElem hj,
     Option.getD_some]
 
-theorem regArcs_eq (hK : L.length ≠ 0) (r : ℕ) :
+theorem regArcs_eq (r : ℕ) :
     regArcs M Q L E r = lstF (keyA M Q L E) (gapStarts M Q L E).length r := by
   unfold regArcs lstF
   rw [arcList_pos hK, length_map]
@@ -112,6 +125,9 @@ theorem regArcs_eq (hK : L.length ≠ 0) (r : ℕ) :
   intro j hj
   rw [← arcList_pos hK, arcList_getD hK (mem_range.1 hj)]
   rfl
+
+
+end
 
 theorem regChords_eq (r : ℕ) :
     regChords M Q L E r = lst2F (upC M Q L E) (dnC M Q L E) L.length r := rfl
@@ -126,7 +142,7 @@ theorem regWt_eq (hK : L.length ≠ 0) (r : ℕ) :
   have hj' : j < (gapStarts M Q L E).length := by
     unfold regArcs at hj
     rw [arcList_pos hK, length_map] at hj
-    exact mem_range.1 (mem_filter.1 hj).1
+    simp_all
   rw [arcList_getD hK hj']
   rfl
 
@@ -166,20 +182,19 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
   norm_num at h0 h1 h2 h3 h4 h5 h6 h7 h9 h11
   refine ⟨?_, ?_, ?_, ?_, ?_, fun i hi => ?_, fun j hj => ?_, fun r hr => ?_, fun j hj => ?_,
     fun k hk => ?_, fun r hr => ?_⟩
-  · rw [h0]; simp [buildNF]
-  · rw [h1, hlenA]
-  · rw [h2]; simp [buildNF]
+  · grind [buildNF]
+  · omega
+  · grind [buildNF]
   · rw [h9]; rfl
   · rw [h11]; rfl
   · -- chords
-    have hi' : i < L.length := by simpa [buildNF] using hi
+    have hi' : i < L.length := by grind [buildNF]
     rw [h3, Input.chord_eq hi']
     have c0 := hC i hi' 0 (by norm_num); have c1 := hC i hi' 1 (by norm_num)
     have c2 := hC i hi' 2 (by norm_num); have c3 := hC i hi' 3 (by norm_num)
     have c4 := hC i hi' 4 (by norm_num)
     simp only [cf, Nat.add_zero] at c0 c1 c2 c3 c4
-    norm_num at c0 c1 c2 c3 c4
-    exact ⟨c0, c1, c2, c3, c4⟩
+    ram_grind
   · -- arcs
     rw [hlenA] at hj
     have ha : (buildNF M Q L E).arc j = arcRec M Q L E ((gapStarts M Q L E).getD j 0) := by
@@ -189,10 +204,9 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
     have c2 := hA j hj 2 (by norm_num); have c3 := hA j hj 3 (by norm_num)
     have c4 := hA j hj 4 (by norm_num)
     simp only [af, Nat.add_zero] at c0 c1 c2 c3 c4
-    norm_num at c0 c1 c2 c3 c4
-    exact ⟨c0, c1, c2, c3, c4⟩
+    ram_grind
   · -- regions
-    have hr' : r < L.length + 1 := by simpa [buildNF] using hr
+    have hr' : r < L.length + 1 := by grind [buildNF]
     rw [h5, h.region_eq hr']
     simp only
     have c0 := hR r hr' 0 (by norm_num); have c1 := hR r hr' 1 (by norm_num)
@@ -218,8 +232,7 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
     show j = (range (arcList M Q L E).length).getD j 0
     rw [getD_eq_getElem?_getD, getElem?_range (by rw [arcList_pos hK, length_map]; exact hj'),
       Option.getD_some]
-  · simp [buildNF] at hk
-  · simp [buildNF] at hr
+  all_goals (grind [buildNF])
 
 end
 

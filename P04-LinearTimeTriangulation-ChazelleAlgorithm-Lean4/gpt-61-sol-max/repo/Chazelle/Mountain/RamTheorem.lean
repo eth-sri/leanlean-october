@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Mountain.RamStack
 
 /-!
@@ -52,13 +54,10 @@ theorem mountainSign_spec (P : Polygon) (hM : IsMountain P) :
       0 < mountainSign P * det (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) := by
   have h := mountain_orient_det P hM
   have hne : det (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) ≠ 0 := by
-    intro h0; rw [h0, mul_zero] at h; exact lt_irrefl _ h
+    intro h0; simp_all
   unfold mountainSign
   split_ifs with hpos
-  · exact ⟨Or.inl rfl, by linarith⟩
-  · have hneg : det (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) < 0 :=
-      lt_of_le_of_ne (not_lt.1 hpos) hne
-    exact ⟨Or.inr rfl, by linarith⟩
+  all_goals ram_grind
 
 section init
 variable {P : Polygon} {W : ℕ}

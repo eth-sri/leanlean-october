@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFDecompGlue
 
 /-!
@@ -34,7 +36,7 @@ macro "side_tac" : tactic =>
 
 section fc
 
-variable {P : Polygon} {W : ℕ} {A R K CB RB LB : ℕ}
+variable {P : Polygon} {W A R K CB RB LB : ℕ}
 
 /-- One step of the node-table copy. -/
 theorem fcBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB c)
@@ -50,7 +52,7 @@ theorem fcBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
   simp only [Nat.reduceAdd] at b16 b17 b18 b19
   have o := hR.one
   have h16 : 16 * R + j < 19 * R := by omega
-  have hjR : 3 * j + 3 ≤ 3 * K := by omega
+  
   unfold fcBody ldF fb
   simp only [Nat.reduceAdd]
   refine spec_seq ?_
@@ -79,17 +81,9 @@ theorem fcBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
   · unfold Prot at hr
     config_simp
     simp (disch := omega) only [Machine.upd_other]
-  · config_simp
-    simp only [b16, b17, b18, b19, h20, o]
-    simp (disch := omega) only [Machine.upd_other]
-  · config_simp; rw [h20, o]
-  · config_simp
-    simp only [b16, b17, b18, b19, h20, o]
-    simp (disch := omega) only [Machine.upd_other]
-    unfold fv
-    funext a
-    simp only [Machine.upd_apply]
-    split_ifs <;> first | rfl | omega
+  · grind [Machine.upd_other]
+  · ram_simp <;> omega_nf
+  grind [Machine.upd_other, fv, Machine.upd_apply]
 
 /-- The node table value at address `a` (relative to `DB = A + 12 + 19 R`). -/
 def ntv (m : ℕ → ℕ) (A R a : ℕ) : ℕ :=
@@ -107,7 +101,7 @@ theorem fcS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
   set c1 := { c with nreg := upd c.nreg 60020 0 } with hc1
   have hf1 : DFr (A + 12) (A + 12 + 19 * R + 3 * K) c c1 :=
     DFr.nreg _ fun r hr _ => by
-      unfold Prot at hr; rw [Machine.upd_other _ _ _ (by omega)]
+      ram_simp <;> omega_nf
   obtain ⟨c', k, e, ⟨hw', hf', hj', hv'⟩, htest, hk⟩ := Exec.whileLtN_potential (P := P) (W := W)
     (a := 60020) (b := 60014) (body := fcBody)
     (fun d => WordsBounded W d ∧ DFr (A + 12) (A + 12 + 19 * R + 3 * K) c d ∧ d.nreg 60020 ≤ K ∧
@@ -122,7 +116,7 @@ theorem fcS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
       obtain ⟨d', k', e', rfl, hf'', h20', hm'⟩ := fcBody_exec (P := P) hwd hRd hAW hjdef htest hKR
       have hfv : ∀ f, f < 19 → fv d.nmem A R f j = fv c.nmem A R f j := fun f hf => by
         have : f * R ≤ 18 * R := Nat.mul_le_mul_right _ (by omega)
-        unfold fv; rw [hvd, ite_eq_right (by omega)]
+        grind [fv]
       refine ⟨d', 15, e', ⟨e'.wb_right, hfd.trans hf'', by omega, fun a => ?_⟩, by omega⟩
       rw [hm', h20', hfv 16 (by norm_num), hfv 17 (by norm_num), hfv 18 (by norm_num)]
       simp only [Machine.upd_apply]
@@ -137,21 +131,17 @@ theorem fcS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
             show (a - (A + 12 + 19 * R)) / 3 = j by omega, Nat.reduceAdd])
         | (· simp only [show (a - (A + 12 + 19 * R)) % 3 = 2 by omega,
             show (a - (A + 12 + 19 * R)) / 3 = j by omega, Nat.reduceAdd]))
-    ⟨hw1, hf1, by simp only [hc1]; config_simp; omega, fun a => by
-      simp only [hc1]; config_simp; rw [ite_eq_right (by omega)]⟩
+    ⟨hw1, hf1, by simp_all, fun a => by
+      simp_all⟩
   have hR' := hR.frame hf'
   rw [hR'.rK] at htest
-  have hjK : c'.nreg 60020 = K := by omega
-  have h0 : c1.nreg 60020 = 0 := by simp only [hc1]; config_simp
-  rw [h0] at hk
-  refine ⟨c', k, e, by omega, hw', hf', fun a => ?_⟩
-  rw [hv' a, hjK]
+  grind
 
 end fc
 
 section hdr
 
-variable {P : Polygon} {W : ℕ} {A R K CB RB LB : ℕ}
+variable {P : Polygon} {W A R K CB RB LB : ℕ}
 
 /-- **The header** of the output at `A`. -/
 theorem hdrS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB c) {B : ℕ}
@@ -173,7 +163,7 @@ theorem hdrS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
   side_tac
   refine ⟨by omega, ?_, fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl, ?_⟩
   · config_simp; exact rA
-  · config_simp; simp (disch := omega) only [Machine.upd_other]
+  · ram_simp <;> omega_nf
   · config_simp
     simp only [b0, b19, o, t, rA, rK, rR, hB]
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun a ha => ?_⟩ <;>

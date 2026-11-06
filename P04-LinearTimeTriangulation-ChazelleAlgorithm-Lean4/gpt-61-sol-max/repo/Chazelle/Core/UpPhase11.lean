@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.UpPhase10
 
 /-!
@@ -23,25 +25,28 @@ variable {O : OracleIface} {P : Polygon} {W : ℕ}
 theorem two_mul_lt_gradeCount {n g i : ℕ} (hg : 1 ≤ g) (hi : i < gradeCount n g) :
     2 * i < gradeCount n (g - 1) := by
   have e := gradeCount_succ n (g - 1)
-  rw [show g - 1 + 1 = g by omega] at e
-  obtain ⟨Q, hQ⟩ : ∃ Q, (n - 2) / 2 ^ (g - 1) = Q := ⟨_, rfl⟩
-  rw [hQ] at e
-  unfold gradeCount; rw [hQ]; omega
+  core_grind
 
-theorem Kept.not_d0 {r : ℕ} (h : Kept r) : ¬ D0RG r := by
-  have := h.range; unfold D0RG; omega
+section
+variable {r : ℕ} (h : Kept r)
+include h
+theorem Kept.not_d0 : ¬ D0RG r := by
+  omega_nf
 
-theorem Kept.not_desc {r : ℕ} (h : Kept r) : ¬ DescRG r := by
-  have := h.range; unfold DescRG; omega
+theorem Kept.not_desc : ¬ DescRG r := by
+  omega_nf
 
-theorem Kept.bk {r : ℕ} (h : Kept r) : Bk r = false := by
-  have := h.range; unfold Bk; simp only [decide_eq_false_iff_not]; omega
+theorem Kept.bk : Bk r = false := by
+  simp_all [Bk, decide_eq_false_iff_not] <;> omega_nf
 
-theorem Kept.not_brute {r : ℕ} (h : Kept r) : bandOf r ≠ bBrute := by
-  have := h.range; unfold bandOf bBrute; omega
+theorem Kept.not_brute : bandOf r ≠ bBrute := by
+  omega_nf
+
+
+end
 
 theorem outB_bk {r : ℕ} (h : OutB (bandOf r)) : Bk r = false := by
-  unfold OutB bandOf at h; unfold Bk; simp only [decide_eq_false_iff_not]; omega
+  simp_all [OutB, bandOf, Bk, decide_eq_false_iff_not] <;> omega_nf
 
 set_option maxHeartbeats 16000000 in
 /-- **The descriptor of chain `(g, i)`** from the grade record. -/
@@ -61,23 +66,23 @@ theorem descU_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) (hn : 2 ≤ P.n) {c : 
       (∀ r, Kept r → c'.nreg r = c.nreg r) ∧
       (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r) ∧ c'.rmem = c.rmem ∧
       c'.output = c.output := by
-  have hAl : ALLOC = 9999 := rfl
+  
   obtain ⟨-, -, -, hH, hhp, -, -, hrow, hE⟩ := hT
   rcases Nat.eq_zero_or_pos g with hg0 | hg1
   · subst hg0
     have hfit := gradeLen_fit (g := 0) hn hi
     have hl1 : gradeLen P.n 0 i = 1 := by
-      have := gradeLen_pos (g := 0) hn hi; have := gradeLen_le P.n 0 i; simp at this; omega
+      have := gradeLen_pos (g := 0) hn hi; have := gradeLen_le P.n 0 i; omega
     unfold gradeStart at h16 hfit; simp only [pow_zero, Nat.mul_one] at h16 hfit
     obtain ⟨c', k, e, hk, hw', hA', o30, w0, hdesc, hm, fr, frr, hrm, ho⟩ :=
       descU_exec0 (P := P) hG hWn hw hu.r07 hu.r20 hA hu.r04 h16 hu.r01 hu.r23 (by omega)
         hH (by omega) hW hW8
-    refine ⟨c', k, e, hk, hw', by omega, by omega, by omega, by rw [o30]; exact w0,
-      fun C h1 h2 h3 => by rw [o30]; exact hdesc C h1 h2 h3,
+    refine ⟨c', k, e, hk, hw', by omega, by omega, by omega, by grind,
+      fun C h1 h2 h3 => by grind,
       fun a ha => hm a (Or.inl ha), fun r hr => fr r hr.not_d0 (by
         rintro rfl; have := hr.range; omega) hr.not_brute hr.bk hr.ne_alloc,
-      fun r hr => frr r (outB_bk hr) (by unfold OutB at hr; unfold bUp; omega)
-        (by unfold OutB at hr; unfold bBrute; omega), hrm, ho⟩
+      fun r hr => frr r (outB_bk hr) (by grind [OutB, bUp])
+        (by grind [OutB, bBrute]), hrm, ho⟩
   · have hR' := hR hg1
     have h2i := two_mul_lt_gradeCount hg1 hi
     have hgm : g - 1 < c.nmem h := by omega
@@ -99,9 +104,7 @@ theorem descU_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) (hn : 2 ≤ P.n) {c : 
         NodeOK P c.nmem A hp (c.nmem (R + 6 * i + 3)) (c.nmem (R + 6 * i + 3 + 1)) C
           (gradeGran (g - 1)) := fun h2 C a b d => by
       obtain ⟨hNR, -⟩ := hE (g - 1) (2 * i + 1) hgm h2
-      have e6 : ∀ x, x + 3 * (2 * i + 1) = x + 6 * i + 3 := fun x => by ring
-      simp only [rowE, hR', e6] at hNR
-      exact hNR C a b d
+      grind
     obtain ⟨c', k, e, hk, hw', hA1, hA2, o30, w0, hdesc, hm, fr, frr, hrm, ho⟩ :=
       descU_execG (P := P) (TD := A) (hp := hp) hG hWn hw hu.r07 hg1 hu.r20 hA hu.r14 h35 h36
         hu.r12 hu.r22 hu.r23 rfl hi hn hL hLh hL5
@@ -119,7 +122,7 @@ theorem descU_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) (hn : 2 ≤ P.n) {c : 
         (by omega) hW (by omega)
     refine ⟨c', k, e, by omega, hw', hA1, hA2, o30, w0, hdesc, hm,
       fun r hr => fr r hr.not_desc hr.bk ?_ ?_ ?_ ?_ ?_ ?_ hr.ne_alloc,
-      fun r hr => frr r (outB_bk hr) (by rintro rfl; unfold OutB bandOf at hr; omega), hrm,
+      fun r hr => frr r (outB_bk hr) (by rintro rfl; grind [OutB, bandOf]), hrm,
       ho⟩ <;>
       (rintro rfl; have := hr.range; omega)
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvGenR
 
 /-!
@@ -56,19 +58,10 @@ theorem localK_lin (T Fg Da Dc : ℕ) :
 theorem genK_le (Fg D T : ℕ) : genK Fg D T ≤ κGen D * (Fg + T + 1) := by
   unfold genK κGen
   rw [localK_lin]
-  set A := localK 0 0 (D + 1) D
-  set B := 16 * (3 * (D + 1) + 1) with hB
-  have e1 : (3 * (D + 1) + 1) * (16 * Fg) = B * Fg := by rw [hB]; ring
-  have e2 : (A + B + 50000) * (Fg + T + 1) =
-      A * Fg + A * T + A + B * Fg + B * T + B + 50000 * Fg + 50000 * T + 50000 := by ring
-  rw [e1, e2]
-  have := Nat.zero_le (A * Fg)
-  have := Nat.zero_le (A * T)
-  have := Nat.zero_le (B * T)
-  omega
+  ring_nf <;> omega
 
 theorem dirOf_pm (v : ℕ) : dirOf v = 1 ∨ dirOf v = -1 := by
-  unfold dirOf; split_ifs <;> simp
+  core_grind
 
 /-! ## The contract -/
 
@@ -99,7 +92,7 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
   set w := rayPt a σ τ with hwd
   have hw2 : w.2 = a.2 := rfl
   obtain ⟨hposx, hcl, hloc, hwD⟩ := arr_facts (N := P.n) (x := x) he hpp harr
-    (by rw [hw2]; exact hay) (by rw [hw2]; exact ha₁)
+    (by simp_all) (by simp_all)
   have haD : a ∈ J.left.dom := origin_mem_left_dom E.hP haR hav ha₁
   have hrev : dirOf (1 - c₁.nreg oD) = -σ := by
     rw [hσ, ← dirOf_rev hD, neg_neg]
@@ -110,7 +103,7 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
   rintro c₂ hI₂ hA₂ hA₂' hc₂
   obtain ⟨v1, v2, v3, v4, v5, v6, v7, v8, v9, vo⟩ := gSet_val c₁.nmem c₁.nreg
   have g2 : ∀ q, (q < 241100 ∨ 241107 < q) → q ≠ accA → c₂.nreg q = c₁.nreg q := fun q h h' => by
-    rw [hc₂]; exact vo q h h'
+    ram_simp
   have m₂ : c₂.nmem = c₁.nmem := by rw [hc₂]
   have r2 : ∀ r, ∀ v, regB c₁.nmem gSetL c₁.nreg r = v → c₂.nreg r = v := fun r v h => by
     rw [hc₂]; exact h
@@ -131,48 +124,48 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
     rw [(E.hM.fix hI₂).n1, WalkEmbed.cm_n]
   refine IRS.seq (K₁ := 42030) (K₂ := localK T Fg (D + 1) D + (269 + 2))
     (gHgt_irs hI₂ E.hK hctx₂ hn₂ (x := x) s2E s2H he hpp hcl
-      (by rw [hposx, hw2]; exact hay) (by omega) (by omega)) ?_
+      (by grind) (by omega) (by omega)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨k, s3E, s3H, hkl, hkh, hkpar, hkpos, hkpp, k3, hA₃'', m₃⟩
   set xs : WPos := ⟨x.edge, k + 1⟩ with hxs
   have k3' : ∀ r, r ≠ lH → 241000 ≤ r → r < 242200 → (r < sw 720 ∨ sw 726 < r) →
       c₃.nreg r = c₂.nreg r := fun r h1 h2 h3 h4 =>
-    k3 r (not_oracle_sw (by omega) (by omega)) h1 h4 (by unfold ALLOC; omega)
+    k3 r (not_oracle_sw (by omega) (by omega)) h1 h4 (by omega_nf)
   have s3D : c₃.nreg lD = 1 - c₁.nreg oD := by
-    rw [k3' lD (by unfold lD lH sw; omega) (by unfold lD sw; omega) (by unfold lD sw; omega)
-      (Or.inr (by unfold lD sw; omega))]; exact s2D
+    rw [k3' lD (by omega_nf) (by omega_nf) (by omega_nf)
+      (Or.inr (by omega_nf))]; exact s2D
   have s3N : c₃.nreg lN = 2 * J.left.m + 7 := by
-    rw [k3' lN (by unfold lN lH sw; omega) (by unfold lN sw; omega) (by unfold lN sw; omega)
-      (Or.inr (by unfold lN sw; omega))]; exact s2N
+    rw [k3' lN (by omega_nf) (by omega_nf) (by omega_nf)
+      (Or.inr (by omega_nf))]; exact s2N
   have s3T : c₃.nreg lT = 0 := by
-    rw [k3' lT (by unfold lT lH sw; omega) (by unfold lT sw; omega) (by unfold lT sw; omega)
-      (Or.inr (by unfold lT sw; omega))]; exact s2T
+    rw [k3' lT (by omega_nf) (by omega_nf) (by omega_nf)
+      (Or.inr (by omega_nf))]; exact s2T
   have s3A : c₃.nreg accA = 0 := by
-    rw [k3' accA (by unfold accA lH sw; omega) (by unfold accA sw; omega)
-      (by unfold accA sw; omega) (Or.inr (by unfold accA sw; omega))]; exact s2A
+    rw [k3' accA (by omega_nf) (by omega_nf)
+      (by omega_nf) (Or.inr (by omega_nf))]; exact s2A
   have s3MD : c₃.nreg lMD = c₃.nreg MD₁ := by
-    rw [k3' lMD (by unfold lMD lH sw; omega) (by unfold lMD sw; omega) (by unfold lMD sw; omega)
-      (Or.inr (by unfold lMD sw; omega)), s2MD, hI₁.hin _ (by unfold IFix MD₁ sw; omega),
-      hI₃.hin _ (by unfold IFix MD₁ sw; omega)]
+    rw [k3' lMD (by omega_nf) (by omega_nf) (by omega_nf)
+      (Or.inr (by omega_nf)), s2MD, hI₁.hin _ (by omega_nf),
+      hI₃.hin _ (by omega_nf)]
   have s3CD : c₃.nreg lCD = c₃.nreg CD₁ := by
-    rw [k3' lCD (by unfold lCD lH sw; omega) (by unfold lCD sw; omega) (by unfold lCD sw; omega)
-      (Or.inr (by unfold lCD sw; omega)), s2CD, hI₁.hin _ (by unfold IFix CD₁ sw; omega),
-      hI₃.hin _ (by unfold IFix CD₁ sw; omega)]
+    rw [k3' lCD (by omega_nf) (by omega_nf) (by omega_nf)
+      (Or.inr (by omega_nf)), s2CD, hI₁.hin _ (by omega_nf),
+      hI₃.hin _ (by omega_nf)]
   have s3NF : c₃.nreg lNF = c₀.nreg (sw 3) := by
-    rw [k3' lNF (by unfold lNF lH sw; omega) (by unfold lNF sw; omega) (by unfold lNF sw; omega)
-      (Or.inr (by unfold lNF sw; omega)), s2NF, hI₁.hin _ (by unfold IFix sw; omega)]
+    rw [k3' lNF (by omega_nf) (by omega_nf) (by omega_nf)
+      (Or.inr (by omega_nf)), s2NF, hI₁.hin _ (by omega_nf)]
   -- 3. the local hit
-  have hTBR₃ : c₃.nreg TBR = c₀.nreg TBR := hI₃.hin _ (by unfold IFix TBR sw; omega)
-  have hTLR₃ : c₃.nreg TLR = c₀.nreg TLR := hI₃.hin _ (by unfold IFix TLR sw; omega)
+  have hTBR₃ : c₃.nreg TBR = c₀.nreg TBR := hI₃.hin _ (by omega_nf)
+  have hTLR₃ : c₃.nreg TLR = c₀.nreg TLR := hI₃.hin _ (by omega_nf)
   have hTA := E.hTBR
   obtain ⟨md1, md2, md3, md4⟩ := E.md hI₃
   have hL₃ : LCtx P W J.left N₁ (c₀.nreg TBR) c₃ :=
     { hG := E.hG
       hWh := E.hWh
       hctx := (E.ctx1' hI₃).transport s3CD (fun _ _ => rfl) le_rfl
-      hcd := by rw [s3CD, s3MD]; exact md4
-      hmd := by rw [s3MD]; exact md1
-      hmwf := by rw [s3MD]; exact md2
-      hm0 := by rw [s3MD]; exact md3
+      hcd := by omega
+      hmd := by grind
+      hmwf := by grind
+      hm0 := by grind
       hP := E.hP
       hNW := by
         rw [s3NF]
@@ -190,7 +183,7 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
   have hposxs : (chainModel J.left).pos (Qof P) xs = w := hkpos.trans hposx
   have hlocs : (xs.edge = 1 ∨ xs.edge = 3) ∨
       (6 ≤ xs.edge ∧ (chainModel J.left).pos (Qof P) xs ∈ J.left.set) := by
-    rw [hkpos]; exact hloc
+    grind
   have hacc : AccOK P accA (fun _ => J.left) J.left.radius
       ((chainModel J.left).pos (Qof P) xs) (dirOf (1 - c₁.nreg oD)) ∅ c₃ :=
     accOK_init accA _ _ _ _ s3A
@@ -198,13 +191,13 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
     ((localHit_irs (C := J.left) (N := N₁) (Mod := fun _ => J.left) (R₀ := J.left.radius)
       (L := ∅) (Da := D + 1) (Dc := D) (x := xs) (d := 1 - c₁.nreg oD)
       E.hsh E.hBs E.hXl hI₃ E.hK hL₃ E.hX E.hcap E.hOk₁ E.hsg₁ hAr hCh s3E s3H s3D he hkpp
-      (by rw [hposxs, hw2]; exact hay) hlocs hacc (by rw [s3T]; omega) rfl rfl s3N
+      (by grind) hlocs hacc (by omega) rfl rfl s3N
       (by rw [hTLR₃]; show c₃.nreg ALLOC + localK T Fg (D + 1) D ≤ W; omega)).mono
         (by rw [hTLR₃]) (fun _ h => h)) ?_
   rintro c₄ hI₄ hA₄ hA₄' ⟨⟨L', hacc', -, hL', hgeo⟩, k4, hA₄'', m₄⟩
   -- the reverse hit
   have hgeo' : LHGeo P J.left xs (1 - c₁.nreg oD) := by
-    refine ⟨k, rfl, hkl, by rw [hkpos]; exact hkh, ?_, by rw [hposxs, hw2]; exact ha₁⟩
+    refine ⟨k, rfl, hkl, by grind, ?_, by grind⟩
     rw [hposxs, hrev]
     show sideLeft (chainModel J.left).W x.edge ((chainModel J.left).param (Qof P) xs) _
     rw [hkpar]
@@ -220,7 +213,7 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
   obtain ⟨τm, hτm, hmin, -, -, -, -, habsH⟩ := hf hflag
   have hσ'' : -σ = 1 ∨ -σ = -1 := by rcases hσ' with h | h <;> rw [h] <;> norm_num
   have hτeq : τm = J.left.hitParam w (-σ) :=
-    lh_min hσ'' (by rw [hw2]; exact ha₁) (fun t ht => by
+    lh_min hσ'' (by grind) (fun t ht => by
       rcases hL' t ht with h | h
       · exact absurd h (Set.notMem_empty t)
       · exact h) hfree hmem hτm hmin
@@ -231,15 +224,15 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
     intro r h1 h2 h3
     have hGR : ¬ ((sw 700 ≤ r ∧ r < sw 2200) ∨ r = cG ∨ (sw 3000 ≤ r ∧ r < sw 4000)) := h2
     rw [k4 r h1 (fun h => hGR (by unfold LHW at h; unfold cG; unfold sw at h ⊢; omega)) h3,
-      k3 r h1 (fun h => hGR (by subst h; unfold lH sw; omega))
+      k3 r h1 (fun h => hGR (by subst h; omega_nf))
         (by unfold sw at hGR ⊢; omega) h3,
-      g2 r (by unfold sw at hGR; omega) (fun h => hGR (by subst h; unfold accA sw; omega))]
+      g2 r (by unfold sw at hGR; omega) (fun h => hGR (by subst h; omega_nf))]
   have hD4 : c₄.nreg oD = c₁.nreg oD :=
-    keep oD (not_oracle_sw (by unfold oD sw; omega) (by unfold oD sw; omega))
-      (by unfold GR oD cG sw; omega) (by unfold oD ALLOC sw; omega)
+    keep oD (not_oracle_sw (by omega_nf) (by omega_nf))
+      (by omega_nf) (by omega_nf)
   have kA : ∀ i, i < 4 → c₄.nreg (oAbsA + i) = c₁.nreg (oAbsA + i) := fun i hi =>
-    keep _ (not_oracle_sw (by unfold oAbsA sw; omega) (by unfold oAbsA sw; omega))
-      (by unfold GR oAbsA cG sw; omega) (by unfold oAbsA ALLOC sw; omega)
+    keep _ (not_oracle_sw (by unfold oAbsA sw; omega) (by omega_nf))
+      (by unfold GR oAbsA cG sw; omega) (by omega_nf)
   have habs4 : AbsRec P c₄ oAbsA a.1 J.left.radius :=
     absRec_transport habs (kA 0 (by norm_num)) (kA 1 (by norm_num)) (kA 2 (by norm_num))
       (kA 3 (by norm_num))
@@ -254,20 +247,20 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
   unfold gCmp
   refine IRS.ite (K := 269) (fun hlt => ?_) (fun hlt => ?_)
   · -- code `0`: `σ = -1`
-    have hd0 : c₁.nreg oD = 0 := by rw [hD4, hk1₄] at hlt; omega
+    have hd0 : c₁.nreg oD = 0 := by omega
     have hsn : σ = -1 := by rw [hσ, hd0]; rfl
     refine (callAbsCmp_irs (o := cG) hI₄ E.hG hW3
-      ⟨by unfold oAbsA sw; omega, by unfold oAbsA sw; omega, by unfold accA sw; omega,
-        by unfold accA sw; omega⟩ ⟨by unfold cG sw; omega, by unfold cG sw; omega⟩ habs4 habsH
+      ⟨by omega_nf, by omega_nf, by omega_nf,
+        by omega_nf⟩ ⟨by omega_nf, by omega_nf⟩ habs4 habsH
       (by omega)).mono le_rfl ?_
     rintro c' ⟨hbit, h1, h2, h3⟩
     refine ⟨⟨hbit.1, by rw [hbit.2, gn hsn]⟩, hfin c' h1 h2 h3⟩
   · -- code `1`: `σ = 1`
-    have hd1 : c₁.nreg oD = 1 := by rw [hD4, hk1₄] at hlt; omega
+    have hd1 : c₁.nreg oD = 1 := by omega
     have hsp : σ = 1 := by rw [hσ, hd1]; rfl
     refine (callAbsCmp_irs (o := cG) hI₄ E.hG hW3
-      ⟨by unfold accA sw; omega, by unfold accA sw; omega, by unfold oAbsA sw; omega,
-        by unfold oAbsA sw; omega⟩ ⟨by unfold cG sw; omega, by unfold cG sw; omega⟩ habsH habs4
+      ⟨by omega_nf, by omega_nf, by omega_nf,
+        by omega_nf⟩ ⟨by omega_nf, by omega_nf⟩ habsH habs4
       (by omega)).mono le_rfl ?_
     rintro c' ⟨hbit, h1, h2, h3⟩
     refine ⟨⟨hbit.1, by rw [hbit.2, gp hsp]⟩, hfin c' h1 h2 h3⟩

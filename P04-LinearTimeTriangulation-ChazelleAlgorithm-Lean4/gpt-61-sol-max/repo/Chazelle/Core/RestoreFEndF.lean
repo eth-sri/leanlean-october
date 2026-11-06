@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFEndP
 public import Chazelle.Core.RestoreFWit
 public import Chazelle.Core.RestoreFSide
@@ -82,8 +84,8 @@ theorem endFull_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   obtain ⟨hs1, hs2⟩ := hs
   obtain ⟨hC', hwf'⟩ := chain_keep hwf hC (fun a ha => hI.hm a ha) hI.hA
   refine (FRS.seq (K₂ := etK E) (endHead_fs hE hB hI (s := s) (p := p) ⟨hs1, hs2⟩ hp hwf' hC' hWm
-    h6 hg hL hpe (by unfold efK at hroom; omega)) (fun c₁ hI₁ hA₁ ⟨b0, bp, z5, z6, f₁⟩ => ?_)).mono
-    (by unfold efK; omega) (fun _ h => h)
+    h6 hg hL hpe (by grind [efK])) (fun c₁ hI₁ hA₁ ⟨b0, bp, z5, z6, f₁⟩ => ?_)).mono
+    (by omega_nf) (fun _ h => h)
   have nk : ∀ q, 81000 ≤ q → q < 82000 → ¬ KeyW q := fun q h1 h2 h => by unfold KeyW at h; omega
   have F1' : ∀ q, 80000 ≤ q → q < 90000 → ¬ KeyW q → ¬ (s ≤ q ∧ q ≤ s + 9) →
       c₁.nreg q = c.nreg q :=
@@ -106,14 +108,14 @@ theorem endFull_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     rw [u1, u2, j52]; rw [u1] at hr
     exact hcand a b hr σb hσb
   refine (endTail_fs hE hB hBT hI₁ hw₁ (s := s) (σ := σ) ⟨hs1, hs2⟩ hσ z5 z6 hb0 hcand₁
-    (by rw [j40, j41]; exact hJ) (by unfold efK at hroom; omega)).mono le_rfl
+    (by ram_grind) (by unfold efK at hroom; omega)).mono le_rfl
     (fun c₂ ⟨w₂, f₂, m₂, g₂, v5, v5', t₂, v6, s6⟩ => ?_)
   -- reading back
   have F2 : ∀ q, 81011 ≤ q → q < 83000 → ¬ TailW s q → c₂.nreg q = c₁.nreg q := f₂
   have tw : ∀ j, j ≤ 9 → j ≠ 3 → j ≠ 4 → j ≠ 5 → j ≠ 6 → j ≠ 8 → ¬ TailW s (s + j) :=
     fun j hj a b d e f h => by
       unfold TailW RunW SdW VertW KeyW at h; omega
-  have t0 : ¬ TailW s s := by unfold TailW RunW SdW VertW KeyW; omega
+  have t0 : ¬ TailW s s := by omega_nf
   have k0 := F2 s (by omega) (by omega) t0
   have k1 := F2 (s + 1) (by omega) (by omega) (tw 1 (by omega) (by omega) (by omega) (by omega)
     (by omega) (by omega))
@@ -123,7 +125,7 @@ theorem endFull_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     (by omega) (by omega))
   have flag₁ : c₁.nreg 81007 = c.nreg 81007 := F1 _ (by norm_num) (by norm_num) (by omega)
   obtain ⟨reg₀, hreg₀⟩ := nfregs_of hE
-  refine ⟨w₂, fun q h1 h2 hq => ?_, fun h => m₂ (by rw [flag₁]; exact h), ?_⟩
+  refine ⟨w₂, fun q h1 h2 hq => ?_, fun h => m₂ (by omega), ?_⟩
   · have hk : ¬ KeyW q := fun h => hq (Or.inl h)
     have hv : ¬ VertW q := fun h => hq (Or.inr (Or.inl h))
     have hs' : ¬ (s ≤ q ∧ q ≤ s + 9) := fun h => hq (Or.inr (Or.inr (Or.inl h)))
@@ -137,8 +139,7 @@ theorem endFull_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       · omega
       · omega
       · exact hk h
-      · omega
-      · exact h9 h
+      all_goals omega
     rw [F2 q h1 h2 ht, F1' q (by omega) (by omega) hk hs']
   -- the result
   refine ⟨b0.of_eq k0, fun h1 => ?_, fun h1 hr => ?_, fun h1 hr hz => ?_, fun h5 => ?_,
@@ -149,23 +150,23 @@ theorem endFull_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   · rw [k0] at h1
     obtain ⟨u1, u2, -⟩ := bp h1
     intro reg hr' hch hc0 σb hσb hg
-    exact g₂ h1 (by rw [u1]; exact hr) reg hr' hch (by rw [u2]; exact hc0) σb hσb
+    exact g₂ h1 (by rw [u1]; exact hr) reg hr' hch (by omega) σb hσb
       (by rw [u1]; exact hg)
   · rw [k0] at h1
     obtain ⟨u1, u2, -⟩ := bp h1
     obtain ⟨ct, ct', hT, a1, a2, a3, h3, h4, hv, hm⟩ := t₂ h1 (by rw [u1]; exact hr)
-      (by rw [flag₁]; exact hz)
+      (by omega)
     exact ⟨ct, ct', hT, by rw [a1, u1]; rfl, by rw [a2, u2], a3, h3, h4, hv, hm⟩
   · obtain ⟨a, b, d⟩ := v5' h5
     obtain ⟨u1, -, -⟩ := bp a
-    exact ⟨by rw [k0]; exact a, by rw [u1] at b; exact b, by rw [← flag₁]; exact d⟩
+    exact ⟨by omega, by rw [u1] at b; exact b, by omega⟩
   · obtain ⟨a, -, -⟩ := v5' h5
     obtain ⟨u1, u2, -⟩ := bp a
-    have := s6 h5 (by rw [j40, j41]; exact hj)
+    have := s6 h5 (by omega)
     rw [j40, j41, u1, u2] at this
     exact this
   · -- `EndOK`
-    refine ⟨by rw [k0]; exact hb0, v5, v6, fun h1 h5 => ?_⟩
+    refine ⟨by omega, v5, v6, fun h1 h5 => ?_⟩
     obtain ⟨a, hr, hz⟩ := v5' h5
     obtain ⟨u1, u2, -⟩ := bp a
     have hc := hcand₁ a hr 0 (by omega)

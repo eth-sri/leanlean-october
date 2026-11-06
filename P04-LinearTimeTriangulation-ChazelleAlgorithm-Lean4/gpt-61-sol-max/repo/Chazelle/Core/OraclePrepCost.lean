@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepBook
 
 /-!
@@ -34,7 +36,7 @@ theorem sortCost_le {κ n K : ℕ} (h : n ≤ 64 * (K + 1)) :
     SortR.sortCost κ n ≤ (κ + 30) * (64 * Fb K + 1) := by
   unfold SortR.sortCost
   have := nclog_le h
-  exact Nat.mul_le_mul_left _ (by omega)
+  simp_all
 
 theorem clCost_le {μ E K : ℕ} (h : μ + E ≤ 64 * (K + 1)) :
     clCost μ E ≤ Cluster.clusterK * (64 * Fb K + 1) := by
@@ -45,9 +47,7 @@ theorem clCost_le {μ E K : ℕ} (h : μ + E ≤ 64 * (K + 1)) :
 theorem clog_le_Fb {x K : ℕ} (h : x ≤ 64 * (K + 1)) : Nat.clog 2 x ≤ Fb K := by
   unfold Fb
   have := Nat.clog_mono_right 2 h
-  calc Nat.clog 2 x ≤ Nat.clog 2 (64 * (K + 1)) := this
-    _ ≤ 1 * (Nat.clog 2 (64 * (K + 1)) + 1) := by omega
-    _ ≤ (K + 1) * (Nat.clog 2 (64 * (K + 1)) + 1) := Nat.mul_le_mul_right _ (by omega)
+  grind
 
 theorem mul_clog_le_Fb {a x K : ℕ} (ha : a ≤ 5 * (K + 1)) (h : x ≤ 64 * (K + 1)) :
     a * (Nat.clog 2 x + 1) ≤ 5 * Fb K := by
@@ -58,10 +58,10 @@ theorem mul_clog_le_Fb {a x K : ℕ} (ha : a ≤ 5 * (K + 1)) (h : x ≤ 64 * (K
     _ = 5 * ((K + 1) * (Nat.clog 2 (64 * (K + 1)) + 1)) := by ring
 
 theorem one_le_Fb (K : ℕ) : 1 ≤ Fb K := by
-  unfold Fb; exact Nat.mul_pos (by omega) (by omega)
+  core_grind
 
 theorem K_le_Fb (K : ℕ) : K + 1 ≤ Fb K := by
-  unfold Fb; exact Nat.le_mul_of_pos_right _ (by omega)
+  omega_nf
 
 /-- **The unit against the budget of the specification.** -/
 theorem Fb_le {K m : ℕ} (hm : 1 ≤ m) (hK : K ≤ 60 * (2 * m + 7)) :
@@ -69,14 +69,14 @@ theorem Fb_le {K m : ℕ} (hm : 1 ≤ m) (hK : K ≤ 60 * (2 * m + 7)) :
   unfold Fb
   rcases Nat.eq_zero_or_pos K with rfl | hK0
   · have : Nat.clog 2 64 = 6 := by
-      rw [show (64 : ℕ) = 2 ^ 6 by norm_num, Nat.clog_pow 2 6 (by norm_num)]
+      aesop
     simp [this]
   · have h1 : 64 * (K + 1) ≤ 131072 * m := by omega
     have h2 : Nat.clog 2 (64 * (K + 1)) ≤ 17 + Nat.clog 2 m := by
       have := Nat.clog_mono_right 2 h1
       have h3 := clog_mul_le 131072 m
       have h4 : Nat.clog 2 131072 = 17 := by
-        rw [show (131072 : ℕ) = 2 ^ 17 by norm_num, Nat.clog_pow 2 17 (by norm_num)]
+        aesop
       omega
     calc (K + 1) * (Nat.clog 2 (64 * (K + 1)) + 1) ≤ (2 * K) * (18 + Nat.clog 2 m) :=
           Nat.mul_le_mul (by omega) (by omega)

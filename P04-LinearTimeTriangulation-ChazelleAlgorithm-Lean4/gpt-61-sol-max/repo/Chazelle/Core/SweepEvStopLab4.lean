@@ -60,7 +60,7 @@ theorem slb_part2_core (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     · exact ⟨1, Or.inl rfl, Or.inl ⟨rfl, h⟩⟩
     · exact ⟨-1, Or.inr rfl, Or.inr ⟨rfl, h⟩⟩
   have hρd : ρ * dir = 1 ∨ ρ * dir = -1 := by
-    rcases hρ with rfl | rfl <;> rcases hdir1 with rfl | rfl <;> norm_num
+    rcases hρ with rfl | rfl <;> grind <;> norm_num
   have hfo := faced_or_middle hGM hF he hA hρ hG hS hdir
   have faced := fun (hfac : FacedSide (chainModel J.whole)
       ((gW J + d) % (chainModel J.whole).W.n) t ρ dir G) =>
@@ -75,9 +75,9 @@ theorem slb_part2_core (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   rcases lt_or_gt_of_ne hne' with h | h
   · rcases hρ with rfl | rfl
     · exact hmid e' he' hne hA' rfl ((hdn h).1 rfl)
-    · exact faced ((hdn h).2 rfl)
+    grind
   · rcases hρ with rfl | rfl
-    · exact faced ((hup h).2 rfl)
+    · grind
     · exact hmid e' he' hne hA' rfl ((hup h).1 rfl)
 
 /-- **The middle region of a tie at the split vertex.** -/

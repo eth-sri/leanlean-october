@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRLvA
 public import Chazelle.Core.DownPhaseDrvRMgC
 public import Chazelle.Core.GradeCtx
@@ -108,28 +110,22 @@ theorem RegMem.transport {m m' : ℕ → ℕ} {A A' T B : ℕ} {Q : Polygon} {N 
   have e0 : m' (T + 3 * r) = m (T + 3 * r) := hm _ ⟨by omega, fun _ => ⟨le_rfl, by omega⟩⟩
   have e1 : m' (T + 3 * r + 1) = m (T + 3 * r + 1) := hm _ ⟨by omega, fun _ => ⟨by omega, by omega⟩⟩
   have e2 : m' (T + 3 * r + 2) = m (T + 3 * r + 2) := hm _ ⟨by omega, fun _ => ⟨by omega, by omega⟩⟩
-  refine ⟨by rw [e1, h1], by rw [e0]; exact h2, by rw [e0]; omega, ?_, by rw [e2]; exact h5,
-    by rw [e2]; omega, fun q hq => ?_⟩
+  refine ⟨by rw [e1, h1], by omega, by omega, ?_, by omega,
+    by omega, fun q hq => ?_⟩
   · rw [e0]
     exact clAt_congr h4 fun x hx1 hx2 => hm x ⟨by omega, fun hx => by omega⟩
-  · rw [e2, hm _ ⟨by omega, fun hx => by omega⟩]
-    exact h7 q hq
+  ram_grind
 
 /-- A host description below `A` is robust. -/
 theorem hostAt_robust {m : ℕ → ℕ} {B A : ℕ} {H : Host} (h : HostAt m B H)
     (hA : B + 3 * H.length + 1 ≤ A) : Robust A m (fun m => HostAt m B H) := by
   intro m' hm'
   obtain ⟨h0, hi⟩ := h
-  refine ⟨by rw [hm' B (by omega)]; exact h0, fun i hi' => ?_⟩
+  refine ⟨by ram_grind, fun i hi' => ?_⟩
   have := hi i hi'
   revert this
   rcases H.getD i (.run 0 0) with ⟨a, ℓ⟩ | ⟨⟨j⟩ | ⟨e, hh⟩⟩ <;> simp only <;> intro hh' <;>
-    · first
-      | (obtain ⟨x1, x2, x3⟩ := hh'
-         exact ⟨by rw [hm' _ (by omega)]; exact x1, by rw [hm' _ (by omega)]; exact x2,
-           by rw [hm' _ (by omega)]; exact x3⟩)
-      | (obtain ⟨x1, x2⟩ := hh'
-         exact ⟨by rw [hm' _ (by omega)]; exact x1, by rw [hm' _ (by omega)]; exact x2⟩)
+    ram_grind
 
 /-! ## Counted loops with the allocator -/
 
@@ -150,15 +146,14 @@ theorem forLoopA {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (Kb
     have hjN : j = N := by omega
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by omega, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by omega) hw, hc, by omega, by omega⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
     have hlt : j < N := by omega
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁, hA₁⟩ := hbody j c hlt hc
     obtain ⟨c', k₂, e₂, hI', hk₂, hA₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_, by omega⟩
-    rw [Nat.mul_succ]
-    omega
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by omega) e₁ e₂, hI', ?_, by omega⟩
+    ram_grind
 
 end loops
 

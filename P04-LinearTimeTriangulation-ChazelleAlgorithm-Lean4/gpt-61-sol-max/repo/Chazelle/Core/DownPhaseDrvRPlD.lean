@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRPlC
 
 /-!
@@ -31,7 +33,7 @@ theorem hostLeaves_take_le (n C : ℕ) (H : Host) (i : ℕ) :
 theorem pts_take_le (n : ℕ) (H : Host) (i : ℕ) :
     (Host.pts n (H.take i)).length ≤ (Host.pts n H).length := by
   conv_rhs => rw [← List.take_append_drop i H]
-  rw [DownMath.pts_append, List.length_append]; omega
+  core_grind
 
 /-- The loop invariant of the planner after `i` items. -/
 structure PlI (W n C HB T len K : ℕ) (H : Host) (c₀ : Config) (i : ℕ) (c : Config) : Prop where
@@ -73,7 +75,7 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
   set T := c.nreg ALLOC with hT
   set K := (hostLeaves P.n C 0 H).length with hK
   set len := H.length with hlen
-  have hTW : T ≤ W := by omega
+  
   -- initialization
   obtain ⟨c₁, k₁, e₁, hk₁, w₁, x01, x02, x17, x18, x19, x20, x26, x05, x06, x08, x07, x16, x04,
       x03, xA, xm⟩ : ∃ c₁ k₁, Exec P W plInit c c₁ k₁ ∧ k₁ = 13 ∧ WordsBounded W c₁ ∧
@@ -86,18 +88,18 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
     have hT9 : c.nreg 9999 = T := rfl
     unfold plInit
     exec_block
-    all_goals try (config_simp; (try simp only [h00, hl, h02, hT9]); omega)
+    all_goals try (config_simp; omega)
     refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩ <;>
       (try simp only [show ALLOC = 9999 from rfl]) <;> config_simp <;>
-      (try simp only [h00, hl, h02, hT9])
+      ram_grind
   have fr₁ : FrameM Bpl c c₁ := exec_frameM e₁ (by decide)
   have h0 : hostLeaves P.n C 0 (H.take 0) = [] := by simp [hostLeaves]
   have h0p : (Host.pts P.n (H.take 0)).length = 0 := by simp [Host.pts]
   have I₁ : PlI W P.n C HB T len K H c 0 c₁ :=
     { wb := w₁, kc := ⟨x01, x02, x17, x18, x19, x20, x26⟩, r05 := x05, r06 := x06,
-      r08 := by rw [x08], r07 := by rw [x07, h0p], r16 := by rw [x16, h0]; simp,
-      r04 := by rw [x04, h0]; simp, r03 := x03, rA := xA, il := Nat.zero_le _,
-      tab := fun i hi => by rw [h0] at hi; simp at hi, low := fun a _ => by rw [xm],
+      r08 := by rw [x08], r07 := by omega, r16 := by ram_grind,
+      r04 := by ram_grind, r03 := x03, rA := xA, il := Nat.zero_le _,
+      tab := fun i hi => by ram_grind, low := fun a _ => by rw [xm],
       fr := fr₁ }
   -- the item loop
   have hstep : ∀ c₂, (∃ i, PlI W P.n C HB T len K H c i c₂) → c₂.nreg 219005 < c₂.nreg 219006 →
@@ -108,8 +110,7 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
     rw [I.r05, I.r06] at hlt
     obtain ⟨it, hitd⟩ : ∃ it, it = H.getD i (.run 0 0) := ⟨_, rfl⟩
     have hmem : it ∈ H := by
-      rw [hitd, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hlt, Option.getD_some]
-      exact List.getElem_mem hlt
+      simp_all
     have hwfi := hwf it hmem
     have hHi := hH.2 i hlt
     rw [← hitd] at hHi
@@ -118,20 +119,9 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
     have l1 := I.low (HB + 1 + 3 * i + 1) (by omega)
     have l2 := I.low (HB + 1 + 3 * i + 2) (by omega)
     have hit : ItemWords c₂.nmem (HB + 1 + 3 * i) it := by
-      cases it with
-      | run a ℓ =>
-        obtain ⟨x1, x2, x3⟩ := hHi
-        exact ⟨by rw [l0]; exact x1,
-          by rw [l1, show HB + 1 + 3 * i + 1 = HB + 2 + 3 * i by omega]; exact x2,
-          by rw [l2, show HB + 1 + 3 * i + 2 = HB + 3 + 3 * i by omega]; exact x3⟩
-      | pt x =>
-        cases x with
-        | vtx j => show c₂.nmem _ = 1; rw [l0]; exact hHi.1
-        | onEdge e h => show c₂.nmem _ = 2; rw [l0]; exact hHi.1
+      grind [Chazelle.Core.DrvR.ItemWords]
     have hwfi' : ItemOK P.n it := by
-      cases it with
-      | run a ℓ => exact hwfi
-      | pt x => trivial
+      core_grind
     have hsucc := hostLeaves_take_succ P.n C H hlt
     rw [← hitd] at hsucc
     have hpsucc := pts_take_succ P.n H hlt
@@ -146,11 +136,11 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
     refine ⟨c₃, k₃, e₃, ⟨i + 1, ?_⟩, ?_⟩
     · refine ⟨e₃.wb_right, I.kc.keep fun r hr => gI r (by
           simp only [Bitem, Brun, Bch, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega),
-        b05, by rw [gI _ (by decide), I.r06], by rw [b08]; ring, ?_, ?_, ?_,
+        b05, by rw [gI _ (by decide), I.r06], by omega, ?_, ?_, ?_,
         by rw [gI _ (by decide), I.r03], by rw [gI _ (by decide), I.rA], by omega, ?_, ?_, ?_⟩
-      · rw [b07, hpsucc]
-      · rw [b16, hsucc, List.length_append]; ring
-      · rw [b04, hsucc, List.length_append]
+      · omega
+      · ram_grind
+      · ram_grind
       · rw [hsucc]
         exact clAt_append (clAt_congr I.tab fun x _ hx => bm x (Or.inl hx)) bL
       · intro a ha
@@ -169,29 +159,27 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
     (fun c₂ ⟨i, I⟩ => I.wb) hstep ⟨0, I₁⟩
   have hi : i = len := by rw [I₂.r05, I₂.r06] at hend; have := I₂.il; omega
   subst hi
-  have htk : H.take len = H := by rw [hlen]; exact List.take_length
+  have htk : H.take len = H := by grind
   have tab₂ := I₂.tab
   have r16₂ := I₂.r16
   have r04₂ := I₂.r04
   rw [htk] at tab₂ r16₂ r04₂
   have e₃ := Exec.copyN (P := P) e₂.wb_right 9999 219016
   have ex : Exec P W plS c _ (k₁ + (k₂ + 1)) := .seq e₁ (.seq e₂ e₃)
-  have h0 : (hostLeaves P.n C 0 (H.take 0)).length = 0 := by simp [hostLeaves]
+  
   refine ⟨_, k₁ + (k₂ + 1), ex, ?_, e₃.wb_right, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [I₁.r05, I₁.r04, h0] at hk₂
-    omega
+  · omega
   · simp only; rw [Machine.upd_other _ _ _ (by decide)]; exact I₂.r03
-  · simp only; rw [Machine.upd_other _ _ _ (by decide)]; exact r04₂
-  · show upd c₂.nreg 9999 (c₂.nreg 219016) 9999 = T + 3 * K
-    rw [Machine.upd_same, r16₂]
+  · ram_simp
+  · omega_nf
   · exact tab₂
   · exact I₂.low
   · exact I₂.kc.keep fun r hr => by
-      simp only; rw [Machine.upd_other _ _ _ (by omega)]
+      ram_simp
   · intro r hr
     simp only
     rw [Machine.upd_other _ _ _ (by
-      intro h; subst h; simp [Bpl] at hr)]
+      grind [Bpl])]
     exact I₂.fr.1 r hr
   · funext r; exact exec_frameM2 ex wrM2_plS r rfl
   · exact I₂.fr.2.2.1

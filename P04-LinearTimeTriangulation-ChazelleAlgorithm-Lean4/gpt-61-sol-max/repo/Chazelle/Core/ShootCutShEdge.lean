@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutShCmp
 public import Chazelle.Core.ShootCutShPiece
 
@@ -54,51 +56,43 @@ theorem edge_cand {U V z X : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hzS :
     · have hc := seg_on hσ hUV hzU hzS
       by_cases hA : 0 < σ * (U.1 - z.1)
       · by_cases hn : σ * U.1 ≤ σ * V.1
-        · have : sel = 1 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, hn, ↓reduceIte]
+        · have : sel = 1 := by show edgeSel _ _ _ _ _ _ _ _ = _; simp_all [edgeSel, reduceIte] <;> omega_nf
           rw [this]; simp only [one_ne_zero, ↓reduceIte, selX]
-          simpa [hA, hn] using hc
-        · have : sel = 2 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, hn, ↓reduceIte]
+          simp_all
+        · have : sel = 2 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; ram_grind
           rw [this]; simp only [OfNat.ofNat_ne_zero, ↓reduceIte, selX]
-          simpa [hA, hn] using hc
-      · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, ↓reduceIte]
-        rw [this]; simp only [↓reduceIte]
-        exact e0 0 _ (by simpa [hA] using hc)
-    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; rw [ite_eq_left hUV, ite_eq_right hzU]
+          simp_all +arith
+      · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; ram_grind
+        grind
+    · have : sel = 0 := by aesop (add simp [edgeSel]) (add safe (by omega))
       rw [this]; simp only [↓reduceIte]
       exact e0 0 0 (seg_off hUV hzU 0)
   -- ends at different heights
   by_cases hzU : z.2 = U.2
   · have hc := seg_at hσ hUV (U_mem_seg U V) hzU.symm
     by_cases hA : 0 < σ * (U.1 - z.1)
-    · have : sel = 1 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, ↓reduceIte]
-      rw [this]; simpa [selX, hA] using hc
-    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, ↓reduceIte]
-      rw [this]; simp only [↓reduceIte]; exact e0 0 _ (by simpa [hA] using hc)
+    · have : sel = 1 := by aesop (add simp [edgeSel, reduceIte]) (add safe (by omega))
+      core_grind
+    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; simp_all [edgeSel, reduceIte] <;> omega_nf
+      grind
   by_cases hzV : z.2 = V.2
   · have hc := seg_at hσ hUV (V_mem_seg U V) hzV.symm
     by_cases hA : 0 < σ * (V.1 - z.1)
-    · have : sel = 2 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; rw [ite_eq_right hUV, ite_eq_right hzU, ite_eq_left hzV, ite_eq_left hA]
-      rw [this]; simpa [selX, hA] using hc
-    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; rw [ite_eq_right hUV, ite_eq_right hzU, ite_eq_left hzV, ite_eq_right hA]
-      rw [this]; simp only [↓reduceIte]; exact e0 0 _ (by simpa [hA] using hc)
+    · core_grind [edgeSel]
+    · have : sel = 0 := by grind [edgeSel]
+      grind
   by_cases hmid : (U.2 < z.2 ∧ z.2 < V.2) ∨ (V.2 < z.2 ∧ z.2 < U.2)
   · obtain ⟨hXS, hXy⟩ := hX hmid
     have hc := seg_at hσ hUV hXS hXy
     by_cases hA : 0 < σ * (X.1 - z.1)
-    · have : sel = 3 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hzV, hmid, hA, ↓reduceIte]
-      rw [this]; simpa [selX, hA] using hc
-    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hzV, hmid, hA, ↓reduceIte]
-      rw [this]; simp only [↓reduceIte]; exact e0 0 _ (by simpa [hA] using hc)
-  · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hzV, hmid, ↓reduceIte]
+    · have : sel = 3 := by aesop (add simp [edgeSel, reduceIte]) (add safe (by omega))
+      simp_all [selX] <;> omega_nf
+    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; simp_all [edgeSel, reduceIte] <;> omega_nf
+      grind
+  · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; ram_grind
     rw [this]; simp only [↓reduceIte]
     refine e0 0 0 (seg_out ?_ 0)
-    rintro ⟨h1, h2⟩
-    apply hmid
-    rcases le_total U.2 V.2 with h | h
-    · rw [min_eq_left h] at h1; rw [max_eq_right h] at h2
-      exact Or.inl ⟨lt_of_le_of_ne h1 (Ne.symm hzU), lt_of_le_of_ne h2 hzV⟩
-    · rw [min_eq_right h] at h1; rw [max_eq_left h] at h2
-      exact Or.inr ⟨lt_of_le_of_ne h1 (Ne.symm hzV), lt_of_le_of_ne h2 hzU⟩
+    ram_grind
 
 /-- **The position at the height of `z` inside a sub-segment of a walk edge.** -/
 theorem mid_pos (M : Model) (Q : Polygon) {p h : ℕ} {α β : ℝ} (hα : 0 ≤ α) (hαβ : α ≤ β)
@@ -113,17 +107,14 @@ theorem mid_pos (M : Model) (Q : Polygon) {p h : ℕ} {α β : ℝ} (hα : 0 ≤
   set a := M.wa p
   set b := M.wb p
   have hne : a.2 ≠ b.2 := by
-    intro he
-    simp only [lerp_snd] at hmid
-    rw [he] at hmid
-    rcases hmid with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> linarith
+    grind [lerp_snd]
   have hd : b.2 - a.2 ≠ 0 := sub_ne_zero.2 (Ne.symm hne)
   have hpar : M.param Q ⟨p, h + 1⟩ = ((Q.vtx h).2 - a.2) / (b.2 - a.2) := by
     show (if (M.wa p).2 = (M.wb p).2 then 0 else _) = _
-    rw [ite_eq_right hne]
+    grind
   set t := M.param Q ⟨p, h + 1⟩
   have hpos : M.pos Q ⟨p, h + 1⟩ = lerp a b t := rfl
-  have hty : a.2 + t * (b.2 - a.2) = (Q.vtx h).2 := by rw [hpar]; field_simp; ring
+  have hty : a.2 + t * (b.2 - a.2) = (Q.vtx h).2 := by simp_all
   -- `t` strictly between `α` and `β`
   simp only [lerp_snd] at hmid
   have hαt : α < t ∧ t < β := by
@@ -136,7 +127,7 @@ theorem mid_pos (M : Model) (Q : Polygon) {p h : ℕ} {α β : ℝ} (hα : 0 ≤
       · rw [← hty] at h1 h2
         constructor <;> nlinarith
       · exfalso; rw [← hty] at h1 h2; nlinarith
-  refine ⟨?_, by rw [hpos, lerp_snd, hty], by linarith [hαt.1], by linarith [hαt.2]⟩
+  refine ⟨?_, by simp_all, by linarith, by linarith⟩
   rw [hpos, ← subSeg_eq_seg M p hαβ]
   exact ⟨t, hαt.1.le, hαt.2.le, rfl⟩
 

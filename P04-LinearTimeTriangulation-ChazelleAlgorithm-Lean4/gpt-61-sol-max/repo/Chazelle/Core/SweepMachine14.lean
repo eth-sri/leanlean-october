@@ -33,13 +33,12 @@ theorem start_pt (hP : J.P.Simple) :
       ((6 + tpos J.whole (J.m₁ + 2 * J.m₂) + 0) % (chainModel J.whole).W.n) 0 = J.shared := by
   have hC := corr_left0 J hP (S₁ := ∅) (empty_subset _) finite_empty
   have hd : 0 < lL1 J + lL2 J := by
-    rw [lL1_add_lL2]; unfold llen; have := J.one_le_m₁; split_ifs <;> omega
+    rw [lL1_add_lL2]; unfold llen; have := J.one_le_m₁; grind
   rw [hC.sidePt_eq hd 0, Chazelle.Chain.sidePt_zero]
   unfold dq
   rw [ite_eq_left (by
     unfold lL1; have := J.one_le_m₁; have := tpos_lt J.left J.m₁
-    have hm : J.left.m = J.m₁ := rfl
-    split_ifs <;> omega), add_zero]
+    grind), add_zero]
   have := walk_tour J.left J.m₁ 0 (by have := tpos_lt J.left J.m₁; omega)
   rw [add_zero] at this
   rw [this]

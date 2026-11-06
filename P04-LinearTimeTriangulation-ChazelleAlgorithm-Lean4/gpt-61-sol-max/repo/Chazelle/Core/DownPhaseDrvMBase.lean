@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvBase
 public import Chazelle.Core.DownPhaseDrvKept
 
@@ -63,12 +65,15 @@ theorem region_sub_free (hR : R ∈ (interiorModel Q).regions S) :
     R ⊆ freeIn (Q.filled \ Q.boundary) S :=
   Chazelle.Chain.regionsIn_subset hR
 
+section
+variable (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
+include hQ hFam
 /-- **Soundness of the region-local shot.**  Let `H` be a simple polygon whose interior is the
 region `R` of `S` and whose boundary lies on `∂Q` or on chords of `S`.  If the vertex `j` of `H`
 is the vertex `i` of `Q` and direction `σ` enters `int H` there, then direction `σ` enters the
 interior of `Q`, the chord of `Q` at `i` in direction `σ` is the chord of `H` at `j`, it is a
 vertex chord of `Q` not in `S`, and its domain part lies in `R`. -/
-theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
+theorem chord_of_host
     (hR : R ∈ (interiorModel Q).regions S) {H : Polygon} (hH : H.Simple)
     (hHR : H.filled \ H.boundary = R) (hHb : H.boundary ⊆ Q.boundary ∪ ⋃₀ S)
     {i j : ℕ} (hi : i < Q.n) (hv : H.vtx j = Q.vtx i) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
@@ -78,11 +83,11 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   set D := Q.filled \ Q.boundary with hD
   have hRfree := region_sub_free hR
   have hRD : R ⊆ D := fun z hz => (hRfree hz).1
-  have hsub : H.filled \ H.boundary ⊆ D := by rw [hHR]; exact hRD
-  have hσ0 : σ ≠ 0 := by rcases hσ with rfl | rfl <;> norm_num
+  have hsub : H.filled \ H.boundary ⊆ D := by simp_all
+  have hσ0 : σ ≠ 0 := by grind
   set v := Q.vtx i with hvdef
   have hin : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt v σ t ∈ H.filled \ H.boundary := by
-    have := hdir; unfold DirInterior at this; rwa [hv] at this
+    simp_all [DirInterior] 
   have hvb : v ∈ Q.boundary := ⟨i, hi, Chazelle.Geometry.left_mem_segment _ _⟩
   -- the first boundary point of `H` on the ray is on `∂Q`
   have hbd : ∀ t, 0 < t → rayPt v σ t ∈ H.boundary →
@@ -97,65 +102,59 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
         ((Visibility.continuous_rayPt v σ).tendsto t).mono_left nhdsWithin_le_nhds
       refine mem_closure_of_tendsto hlim ?_
       filter_upwards [Ioo_mem_nhdsLT ht] with s hs
-      exact hsub (hbefore s hs.1 hs.2)
+      grind
     have hzF : z ∈ Q.filled :=
       (Chazelle.Jordan.isClosed_filled Q).closure_subset_iff.2 (fun w hw => hw.1) hzcl
     have hzD : z ∈ D := ⟨hzF, hzQ⟩
     obtain ⟨c, hc, hzc⟩ : ∃ c ∈ S, z ∈ c := by
-      rcases hHb hzH with h | ⟨c, hc, h⟩
-      · exact absurd h hzQ
-      · exact ⟨c, hc, h⟩
+      grind
     obtain ⟨y, a, b, hch, rfl⟩ := hFam.2.1 hc
     obtain ⟨hzy, hza, hzb⟩ := hzc
     have hza' : a < z.1 := lt_of_le_of_ne hza fun e => hch.left_not (by
-      rw [show ((a, y) : Point) = z from Prod.ext e hzy.symm]; exact hzD)
+      grind)
     have hzb' : z.1 < b := lt_of_le_of_ne hzb fun e => hch.right_not (by
-      rw [show ((b, y) : Point) = z from Prod.ext e.symm hzy.symm]; exact hzD)
+      grind)
     -- a ray point just before `z` lies on the chord
     set δ := min (t / 2) (min (z.1 - a) (b - z.1) / 2) with hδ
     have hδ0 : 0 < δ := lt_min (by linarith) (by
-      have : 0 < min (z.1 - a) (b - z.1) := lt_min (by linarith) (by linarith)
-      linarith)
-    have hδt : δ < t := by have := min_le_left (t / 2) (min (z.1 - a) (b - z.1) / 2); linarith
+      grind)
+    have hδt : δ < t := by grind
     have hδa : δ < z.1 - a := by
-      have := min_le_right (t / 2) (min (z.1 - a) (b - z.1) / 2)
-      have := min_le_left (z.1 - a) (b - z.1); linarith
+      grind
     have hδb : δ < b - z.1 := by
-      have := min_le_right (t / 2) (min (z.1 - a) (b - z.1) / 2)
-      have := min_le_right (z.1 - a) (b - z.1); linarith
+      grind
     have hw := hbefore (t - δ) (by linarith) (by linarith)
     rw [hHR] at hw
     apply (hRfree hw).2
     refine ⟨hseg y a b, hc, ?_, ?_, ?_⟩
     · show v.2 = y; rw [← hzy]; rfl
     · have e : (rayPt v σ (t - δ)).1 = z.1 - σ * δ := by
-        rw [hz, Visibility.rayPt_fst, Visibility.rayPt_fst]; ring
+        grind [Visibility.rayPt_fst]
       rw [e]; rcases hσ with rfl | rfl <;> linarith
     · have e : (rayPt v σ (t - δ)).1 = z.1 - σ * δ := by
-        rw [hz, Visibility.rayPt_fst, Visibility.rayPt_fst]; ring
+        core_grind
       rw [e]; rcases hσ with rfl | rfl <;> linarith
   obtain ⟨heq, hpos, hint⟩ := hitParam_eq_of_sub hH hσ0 hin hsub hbd
   have hdirQ : DirInterior Q i σ := hin.mono fun t ht => hsub ht
   have hcs : chordSet Q i σ = chordSet H j σ := by
-    unfold chordSet chordEnd chordParam
-    rw [hv, ← hvdef, heq]
+    grind [chordSet, chordEnd, chordParam]
   have hTQ : chordParam Q i σ = hitParam H v σ := heq
   -- the domain part lies in `R`
   have himg := Visibility.chordSet_eq_image hQ hi hdirQ
   have hinR : ∀ t, 0 < t → t < chordParam Q i σ → rayPt v σ t ∈ R := fun t h1 h2 => by
-    rw [← hHR]; exact hint t h1 (hTQ ▸ h2)
+    grind
   refine ⟨hdirQ, hcs, ⟨i, σ, hi, hσ, hdirQ, rfl⟩, fun hS => ?_, ?_⟩
   · -- a point of the open chord would be free and on a chord of `S`
-    have hT := Visibility.chordParam_pos hQ hi hdirQ
+    
     have hmem : rayPt v σ (chordParam Q i σ / 2) ∈ chordSet Q i σ := by
-      rw [himg]; exact ⟨_, ⟨by linarith, by linarith⟩, rfl⟩
+      grind
     exact (hRfree (hinR _ (by linarith) (by linarith))).2 ⟨_, hS, hmem⟩
   · rintro z ⟨hz, hzD⟩
     rw [himg] at hz
     obtain ⟨s, ⟨hs0, hs1⟩, rfl⟩ := hz
     rcases hs0.lt_or_eq with hs0 | hs0
     · rcases hs1.lt_or_eq with hs1 | hs1
-      · exact hinR s hs0 hs1
+      · grind
       · exfalso
         have := Visibility.chordEnd_mem_boundary hQ hi hdirQ
         unfold chordEnd at this
@@ -168,7 +167,7 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
 /-! ## The host polygon of a region -/
 
 /-- **The boundary of the host polygon lies on `∂Q` or on chords of `S`.** -/
-theorem hostPoly_bd_sub (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
+theorem hostPoly_bd_sub
     (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S) :
     (hostPoly Q S R).boundary ⊆ Q.boundary ∪ ⋃₀ S := by
   intro z hz
@@ -178,7 +177,10 @@ theorem hostPoly_bd_sub (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
   · left
     rw [← hWb]
     exact sidePt_mem_boundary hp ht0 ht1.le
-  · exact Or.inr ⟨c, hc, hzc⟩
+  grind
+
+
+end
 
 /-- A point of an edge of a simple polygon that is a vertex is the start of the edge (for a
 parameter in `[0, 1)`). -/
@@ -195,13 +197,15 @@ theorem exists_walk_vtx {k : ℕ} (hk : k < Q.n) :
     ∃ k', k' < (interiorWalk Q).n ∧ (interiorWalk Q).vtx k' = Q.vtx k := by
   unfold interiorWalk
   split_ifs
-  · exact ⟨k, hk, rfl⟩
-  · refine ⟨Q.n - 1 - k, by rw [FactsInterior.rev_n]; omega, ?_⟩
+  · grind
+  · refine ⟨Q.n - 1 - k, by grind [FactsInterior.rev_n], ?_⟩
     rw [FactsInterior.rev_vtx Q _ (by omega), show Q.n - 1 - (Q.n - 1 - k) = k by omega]
 
+section
+variable (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S) (hne : S.Nonempty)
+include hQ hFam hne
 /-- **A vertex of `Q` in the closure of a region is a vertex of its host polygon.** -/
-theorem vtx_mem_hostPoly (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
-    (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S) {k : ℕ} (hkn : k < Q.n)
+theorem vtx_mem_hostPoly (hR : R ∈ (interiorModel Q).regions S) {k : ℕ} (hkn : k < Q.n)
     (hcl : Q.vtx k ∈ closure R) :
     ∃ j, j < (hostPoly Q S R).n ∧ (hostPoly Q S R).vtx j = Q.vtx k := by
   set M := interiorModel Q with hMdef
@@ -221,7 +225,7 @@ theorem vtx_mem_hostPoly (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q
   suffices hend : Q.vtx k = hostPt M.W (hk M S R i) ∨
       Q.vtx k = hostPt M.W (hk M S R ((i + 1) % nk M S R)) by
     rcases hend with e | e
-    · exact ⟨i, by rw [hHn]; exact hi, by rw [hostPoly_vtx hi, e]⟩
+    · exact ⟨i, by simp_all, by rw [hostPoly_vtx hi, e]⟩
     · exact ⟨_, by rw [hHn]; exact hsi, by rw [hostPoly_vtx hsi, e]⟩
   obtain ⟨k', hk', hkv⟩ := exists_walk_vtx (Q := Q) hkn
   rcases gap_cases hM hF hfin hne hR hN2 hi with ⟨a', b', harc, hsub⟩ | ⟨c, hc, p, p', t, t', hA,
@@ -246,16 +250,7 @@ theorem vtx_mem_hostPoly (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q
       rw [← hkv, show ((q : ℕ) : ℝ) = (q : ℝ) + 0 by ring, hostPt_eq M.W le_rfl one_pos,
         Chazelle.Chain.sidePt_zero]; rfl
     unfold sideInArc at hnk
-    split_ifs at hkey hnk with hlt
-    · rcases hkey.1.lt_or_eq with h1 | h1
-      · rcases hkey.2.lt_or_eq with h2 | h2
-        · exact absurd ⟨h1, h2⟩ hnk
-        · right; rw [hvq, h2]
-      · left; rw [hvq, h1]
-    · push Not at hnk
-      rcases hkey with h1 | h1
-      · left; rw [hvq, le_antisymm hnk.1 h1]
-      · right; rw [hvq, le_antisymm h1 hnk.2]
+    grind
   · -- a chord gap: the host edge is the chord, whose inner points are in the domain
     have hPa : hostPt M.W (hk M S R i) = sidePt M.W p t := by
       rw [ha, hostPt_eq M.W hA.2.1 hA.2.2.1]
@@ -267,8 +262,8 @@ theorem vtx_mem_hostPoly (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q
     rcases hs0.lt_or_eq with h0 | h0
     · rcases hs1.lt_or_eq with h1 | h1
       · exact absurd (hs ▸ hopen s ⟨h0, h1⟩) (fun h => h.2 hvb)
-      · right; rw [hs, h1, Chazelle.Geometry.lerp_one]
-    · left; rw [hs, ← h0, Chazelle.Geometry.lerp_zero]
+      · right; grind [Chazelle.Geometry.lerp_one]
+    grind [Chazelle.Geometry.lerp_zero]
 
 /-! ## Completeness (B-M2) -/
 
@@ -276,8 +271,7 @@ theorem vtx_mem_hostPoly (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q
 in `S` is the chord at a vertex `i` of `Q` in a direction `σ` entering the interior, whose domain
 part lies in a region `R` of `S` (B-M1); the vertex `i` is a vertex `j` of the host polygon of
 `R`, and direction `σ` enters `int (hostPoly Q S R) = R` there. -/
-theorem missing_found (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
-    (hne : S.Nonempty) {c : Set Point} (hc : c ∈ chords Q) (hcS : c ∉ S) :
+theorem missing_found {c : Set Point} (hc : c ∈ chords Q) (hcS : c ∉ S) :
     ∃ R ∈ (interiorModel Q).regions S, ∃ i σ, i < Q.n ∧ (σ = 1 ∨ σ = -1) ∧
       c = chordSet Q i σ ∧ DirInterior Q i σ ∧ c ∩ (interiorModel Q).D ⊆ R ∧
       ∃ j, j < (hostPoly Q S R).n ∧ (hostPoly Q S R).vtx j = Q.vtx i ∧
@@ -290,16 +284,16 @@ theorem missing_found (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hopen : ∀ t, 0 < t → t < chordParam Q i σ → rayPt (Q.vtx i) σ t ∈ R := by
     intro t h1 h2
     refine hcR ⟨?_, (Visibility.chord_spec hQ hi hdir).2.2 t h1 h2⟩
-    rw [himg]; exact ⟨t, ⟨h1.le, h2.le⟩, rfl⟩
+    grind
   have hev : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt (Q.vtx i) σ t ∈ R := by
     filter_upwards [Ioo_mem_nhdsGT hT] with t ht
-    exact hopen t ht.1 ht.2
+    simp_all
   -- the vertex is in the closure of `R`
   have hcl : Q.vtx i ∈ closure R := by
     have hlim : Tendsto (fun t => rayPt (Q.vtx i) σ t) (𝓝[>] 0) (𝓝 (Q.vtx i)) := by
       have := ((Visibility.continuous_rayPt (Q.vtx i) σ).tendsto 0).mono_left
         (nhdsWithin_le_nhds (s := Ioi (0 : ℝ)))
-      rwa [Visibility.rayPt_zero] at this
+      simp_all
     exact mem_closure_of_tendsto hlim hev
   obtain ⟨j, hj, hjv⟩ := vtx_mem_hostPoly hQ hFam hne hR hi hcl
   refine ⟨R, hR, i, σ, hi, hσ, rfl, hdir, hcR, j, hj, hjv, ?_⟩
@@ -308,6 +302,9 @@ theorem missing_found (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   exact hev
 
 /-! ## No chord is emitted twice -/
+
+
+end
 
 /-- **With distinct heights, a vertex chord determines its vertex and its direction.** -/
 theorem chordSet_inj (hQ : Q.Simple) (hdh : DistinctHeights Q) {i i' : ℕ} (hi : i < Q.n)
@@ -331,16 +328,13 @@ theorem chordSet_inj (hQ : Q.Simple) (hdh : DistinctHeights Q) {i i' : ℕ} (hi 
   refine ⟨rfl, ?_⟩
   -- a point of the open chord of `σ` lies on the side `σ`
   have hm : rayPt (Q.vtx i) σ (chordParam Q i σ / 2) ∈ chordSet Q i σ' := by
-    rw [← h, himg]; exact ⟨_, ⟨by linarith, by linarith⟩, rfl⟩
+    grind
   rw [himg'] at hm
   obtain ⟨u, ⟨hu0, -⟩, hu⟩ := hm
   have e := congrArg Prod.fst hu
   simp only [Visibility.rayPt_fst] at e
   rcases hσ with rfl | rfl <;> rcases hσ' with rfl | rfl
-  · rfl
-  · exfalso; linarith
-  · exfalso; linarith
-  · rfl
+  all_goals grind
 
 end
 

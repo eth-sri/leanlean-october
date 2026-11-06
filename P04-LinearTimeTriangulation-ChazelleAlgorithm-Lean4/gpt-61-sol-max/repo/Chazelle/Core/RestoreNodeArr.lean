@@ -38,7 +38,7 @@ theorem arrival_off (hS : Stretch M Cα g g' L) (hGα : WalkAx (chainModel Cα))
     0 ≤ off M.W.n g (pF + tF) ∧
       (0 < off M.W.n g (pF + tF) → off M.W.n g (pF + tF) < L →
         off M.W.n g (pF + tF) = off (chainModel Cα).W.n g' (pO + tO)) := by
-  have hn : 0 < M.W.n := by have := hS.hg; omega
+  
   have hg : (g : ℝ) < M.W.n := by exact_mod_cast hS.hg
   have hFA' := hFA
   obtain ⟨hpF, htF0, htF1, -⟩ := hFA'
@@ -57,7 +57,7 @@ theorem arrival_off (hS : Stretch M Cα g g' L) (hGα : WalkAx (chainModel Cα))
   have hpF' : pF = (g + d) % M.W.n := (add_dOf hS.hg hpF).symm
   rw [hpF'] at hfar
   obtain ⟨hpO, htO⟩ := hS.arrive hGα hc hO haC hσ hL₀ hceq hoO hkopen hsetD hT hdom hdL htF0
-    htF1 hdt hfar (by rw [← hpF']; exact hFA)
+    htF1 hdt hfar (by grind)
   have hg' : g' < (chainModel Cα).W.n := by rw [Stretch.nα]; have := hS.hgL; omega
   have hdα : d < (chainModel Cα).W.n := by rw [Stretch.nα]; have := hS.hgL; omega
   rw [hpO, htO, ← hS.mod' hdL.le, off_key hg' hdα htF0 htF1]

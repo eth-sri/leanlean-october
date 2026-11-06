@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterStar
 public import Chazelle.Core.ClusterCentroid
 
@@ -33,19 +35,12 @@ omit [Fintype V] [Fintype F] [DecidableEq D] in
 theorem starTree_parent_inl (v : V) :
     (starTree T a ha).parent (.inl v) = .inl (T.parent v) := by
   unfold SpanTree.parent
-  by_cases hv : v = T.root
-  · subst hv; simp [starTree]
-  · have : (Sum.inl v : V ⊕ F) ≠ (starTree T a ha).root := by simp [starTree, hv]
-    rw [ite_eq_right this, ite_eq_right hv]
-    rfl
+  aesop
 
 omit [Fintype V] [Fintype F] [DecidableEq D] in
 theorem starTree_parent_inr (g : F) :
     (starTree T a ha).parent (.inr g) = .inl (M.vert (a g)) := by
-  unfold SpanTree.parent
-  have : (Sum.inr g : V ⊕ F) ≠ (starTree T a ha).root := by simp [starTree]
-  rw [ite_eq_right this]
-  rfl
+  aesop (add simp [SpanTree.parent, starTree]) (add safe (by omega))
 
 omit [Fintype V] [Fintype F] [DecidableEq D] in
 theorem starTree_iterate_inl (n : ℕ) (v : V) :
@@ -53,7 +48,7 @@ theorem starTree_iterate_inl (n : ℕ) (v : V) :
   induction n generalizing v with
   | zero => rfl
   | succ n ih =>
-    rw [Function.iterate_succ_apply, starTree_parent_inl, ih, Function.iterate_succ_apply]
+    grind [Function.iterate_succ_apply, starTree_parent_inl]
 
 omit [Fintype V] [Fintype F] [DecidableEq D] in
 /-- Ancestry between real vertices is ancestry in `T`. -/
@@ -61,10 +56,9 @@ theorem starTree_isAnc_inl (v u : V) :
     (starTree T a ha).IsAnc (.inl v) (.inl u) ↔ T.IsAnc v u := by
   constructor
   · rintro ⟨n, hn⟩
-    rw [starTree_iterate_inl] at hn
-    exact ⟨n, Sum.inl_injective hn⟩
+    core_grind [starTree_iterate_inl]
   · rintro ⟨n, hn⟩
-    exact ⟨n, by rw [starTree_iterate_inl, hn]⟩
+    exact ⟨n, by grind [starTree_iterate_inl]⟩
 
 omit [Fintype V] [Fintype F] [DecidableEq D] in
 /-- A real vertex is an ancestor of a centre iff it is an ancestor of its corner. -/
@@ -74,11 +68,9 @@ theorem starTree_isAnc_inr (v : V) (g : F) :
   · rintro ⟨n, hn⟩
     rcases n with _ | n
     · simp at hn
-    · rw [Function.iterate_succ_apply, starTree_parent_inr, starTree_iterate_inl] at hn
-      exact ⟨n, Sum.inl_injective hn⟩
+    grind [Chazelle.Separator.CombMap.SpanTree.IsAnc, Function.iterate_succ_apply, starTree_parent_inr, starTree_iterate_inl]
   · rintro ⟨n, hn⟩
-    exact ⟨n + 1, by rw [Function.iterate_succ_apply, starTree_parent_inr,
-      starTree_iterate_inl, hn]⟩
+    exact ⟨n + 1, by grind [Function.iterate_succ_apply, starTree_parent_inr, starTree_iterate_inl]⟩
 
 /-- The three darts of the star face `f`. -/
 def starDarts (f : D) : ℕ → D ⊕ D ⊕ D
@@ -93,14 +85,14 @@ theorem star_face_iff (f : D) (e : D ⊕ D ⊕ D) :
   constructor
   · intro h
     rcases e with d | d | d
-    · exact ⟨0, by omega, by simp only [star_face, starFace_inl] at h; subst h; rfl⟩
-    · exact ⟨2, by omega, by simp only [star_face, starFace_inl_inr] at h; subst h; rfl⟩
+    · exact ⟨0, by omega, by aesop⟩
+    · exact ⟨2, by omega, by aesop⟩
     · refine ⟨1, by omega, ?_⟩
       simp only [star_face, starFace_inr_inr] at h
       subst h
       simp [starDarts]
   · rintro ⟨t, ht, rfl⟩
-    rcases (show t = 0 ∨ t = 1 ∨ t = 2 by omega) with rfl | rfl | rfl <;> simp [starDarts]
+    aesop (add simp [starDarts]) (add safe (by omega))
 
 omit [Fintype V] [DecidableEq V] [Fintype F] [DecidableEq F] [Fintype D] [DecidableEq D] in
 theorem starDarts_inj (f : D) {t t' : ℕ} (ht : t < 3) (ht' : t' < 3)

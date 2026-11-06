@@ -56,17 +56,19 @@ theorem open_chord_not_mem_boundary_of_isEar (hi : i < P.n) (he : IsEar P i) :
 
 /-! ### The forward direction -/
 
+section
+variable (hP : P.Simple) (hi : i < P.n) (he : IsEar P i)
+include hP hi he
 /-- The filled region of the ear arc is the closed ear triangle. -/
-theorem filled_earArc (hP : P.Simple) (hi : i < P.n) (he : IsEar P i) :
+theorem filled_earArc :
     (P.arc (prevIdx P i) 2).filled = earHull P i := by
   rw [filled_eq_triangle _ (simple_earArc P i hP he) (n_arc P _ _)]
   obtain ⟨h0, h1, h2⟩ := vtx_earArc P i hi
-  rw [h0, h1, h2]
-  rfl
+  aesop
 
 /-- **No other vertex in an ear.**  If `i` is the apex of an ear, no vertex of `P` other than
 `prev i`, `i`, `next i` lies in the closed ear triangle. -/
-theorem not_mem_earHull_of_isEar (hP : P.Simple) (hi : i < P.n) (he : IsEar P i)
+theorem not_mem_earHull_of_isEar
     {j : ℕ} (hj : j < P.n) (h1 : j ≠ prevIdx P i) (h2 : j ≠ i) (h3 : j ≠ (i + 1) % P.n) :
     P.vtx j ∉ earHull P i := by
   intro hmem
@@ -83,7 +85,7 @@ theorem not_mem_earHull_of_isEar (hP : P.Simple) (hi : i < P.n) (he : IsEar P i)
     exact h3 (simple_vtx_inj hP hj (Nat.mod_lt _ (by omega)) hkj.symm)
 
 /-- **The midpoint of an ear chord is inside.** -/
-theorem parity_mid_of_isEar (hP : P.Simple) (hi : i < P.n) (he : IsEar P i) :
+theorem parity_mid_of_isEar :
     parity P (lerp (P.vtx (prevIdx P i)) (P.vtx ((i + 1) % P.n)) (1 / 2)) = true := by
   have hab := vtx_prev_ne_vtx_succ P i hP hi
   have hmB : lerp (P.vtx (prevIdx P i)) (P.vtx ((i + 1) % P.n)) (1 / 2) ∉ P.boundary :=
@@ -95,6 +97,9 @@ theorem parity_mid_of_isEar (hP : P.Simple) (hi : i < P.n) (he : IsEar P i) :
 
 /-! ### The backward direction -/
 
+
+end
+
 /-- The three fan vertices of `P.rotate i` are `prev i`, `i`, `next i`. -/
 theorem vtx_rotate_fan (hn : 2 ≤ P.n) (hi : i < P.n) :
     (P.rotate i).vtx ((P.rotate i).n - 1) = P.vtx (prevIdx P i) ∧
@@ -102,18 +107,18 @@ theorem vtx_rotate_fan (hn : 2 ≤ P.n) (hi : i < P.n) :
     (P.rotate i).vtx 1 = P.vtx ((i + 1) % P.n) := by
   refine ⟨?_, ?_, ?_⟩
   · rw [n_rotate, vtx_rotate P i (by omega)]
-    unfold prevIdx
-    congr 2; omega
+    grind [prevIdx]
   · rw [vtx_rotate P i (by omega), Nat.add_zero, Nat.mod_eq_of_lt hi]
   · rw [vtx_rotate P i (by omega)]
 
+section
+variable (hP : P.Simple) (h4 : 4 ≤ P.n) (hi : i < P.n) (hdet : det (P.vtx (prevIdx P i)) (P.vtx i) (P.vtx ((i + 1) % P.n)) ≠ 0) (hnone : ∀ j, j < P.n → j ≠ prevIdx P i → j ≠ i → j ≠ (i + 1) % P.n →
+      P.vtx j ∉ earHull P i)
+include hP h4 hi hdet hnone
 /-- **No crossing, at an arbitrary vertex.**  If the ear triangle at `i` is nondegenerate and
 contains no vertex other than its corners, the open chord from `prev i` to `next i` avoids the
 boundary. -/
-theorem open_chord_not_mem_boundary_of_test (hP : P.Simple) (h4 : 4 ≤ P.n) (hi : i < P.n)
-    (hdet : det (P.vtx (prevIdx P i)) (P.vtx i) (P.vtx ((i + 1) % P.n)) ≠ 0)
-    (hnone : ∀ j, j < P.n → j ≠ prevIdx P i → j ≠ i → j ≠ (i + 1) % P.n →
-      P.vtx j ∉ earHull P i) :
+theorem open_chord_not_mem_boundary_of_test :
     ∀ p ∈ Chazelle.segment (P.vtx (prevIdx P i)) (P.vtx ((i + 1) % P.n)),
       p ≠ P.vtx (prevIdx P i) → p ≠ P.vtx ((i + 1) % P.n) → p ∉ P.boundary := by
   have hn : 0 < P.n := by omega
@@ -121,9 +126,9 @@ theorem open_chord_not_mem_boundary_of_test (hP : P.Simple) (h4 : 4 ≤ P.n) (hi
   have hQ : Q.Simple := simple_rotate P i hP
   have hQn : Q.n = P.n := n_rotate P i
   obtain ⟨ea, ev, eb⟩ := vtx_rotate_fan P i (by omega) hi
-  have hQ4 : 4 ≤ Q.n := by rw [hQn]; exact h4
+  have hQ4 : 4 ≤ Q.n := by omega
   have hdetQ : det (Q.vtx (Q.n - 1)) (Q.vtx 0) (Q.vtx 1) ≠ 0 := by
-    rw [ea, ev, eb]; exact hdet
+    grind
   have hnoneQ : ∀ j, j < Q.n →
       Q.vtx j ∈ convexHull ℝ ({Q.vtx (Q.n - 1), Q.vtx 0, Q.vtx 1} : Set Point) →
         j = 0 ∨ j = 1 ∨ j = Q.n - 1 := by
@@ -151,14 +156,14 @@ theorem open_chord_not_mem_boundary_of_test (hP : P.Simple) (h4 : 4 ≤ P.n) (hi
   exact hchord p hp hp2 hp1
 
 /-- **The ear chord is a diagonal** under the arithmetic test. -/
-theorem isDiagonal_of_test (hP : P.Simple) (h4 : 4 ≤ P.n) (hi : i < P.n)
-    (hdet : det (P.vtx (prevIdx P i)) (P.vtx i) (P.vtx ((i + 1) % P.n)) ≠ 0)
-    (hnone : ∀ j, j < P.n → j ≠ prevIdx P i → j ≠ i → j ≠ (i + 1) % P.n →
-      P.vtx j ∉ earHull P i) :
+theorem isDiagonal_of_test :
     IsDiagonal P (prevIdx P i) 2 := by
   refine ⟨le_rfl, h4, ?_⟩
   rw [chord_ear_eq P i hi, prevIdx_mod P hi, prevIdx_add_two_mod P hi]
   exact open_chord_not_mem_boundary_of_test P i hP h4 hi hdet hnone
+
+
+end
 
 /-- **The ear chord is inside** under the arithmetic test: its open part avoids the boundary
 and its midpoint has odd parity. -/

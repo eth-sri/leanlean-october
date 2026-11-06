@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopRB
 
 /-!
@@ -28,11 +30,11 @@ def lhSave (sh : Stmt) (md cd nf nr F : ℕ) : Stmt :=
   .seq (lhRun sh md cd nf nr) (block (saveL F))
 
 /-- The registers of `lhSave` (besides the oracle bands). -/
-def LHSW (F : ℕ) (r : ℕ) : Prop := LHR r ∨ (F ≤ r ∧ r ≤ F + 6)
+def LHSW (F r : ℕ) : Prop := LHR r ∨ (F ≤ r ∧ r ≤ F + 6)
 
 theorem lhSave_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     {Ok : Polygon → Model → Prop} (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands)
-    (hXl : X.CapLocal) {C : Chain} {N : NF} {E : ℕ} {md cd nf nr Fo : ℕ}
+    (hXl : X.CapLocal) {C : Chain} {N : NF} {E md cd nf nr Fo : ℕ}
     (hd : DR md) (hc : DR cd) (hn : DR nf) (hr : DR nr) (hFo : 244000 ≤ Fo ∧ Fo + 6 < 250000)
     (hI : IInv W c₀ c) (hK : Consts c₀) (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
     (hM : MCtx P W C N E md cd nf c) (hPs : C.P.Simple) (hNF : IsNF (chainModel C) (Qof P) N)
@@ -63,7 +65,7 @@ theorem lhSave_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   refine (save_irs hI₁ hFo hacc hL (fun g => hgeo (hGd g)) (fun g => (hGd g).2)
     (SweepStop.dirOf_cases' _)).mono le_rfl ?_
   rintro c' ⟨hres, hk, hm⟩
-  have hAl : c'.nreg ALLOC = c₁.nreg ALLOC := hk ALLOC (by unfold ALLOC; omega)
+  have hAl : c'.nreg ALLOC = c₁.nreg ALLOC := hk ALLOC (by omega_nf)
   refine ⟨hres, fun r h1 h2 h3 => ?_, hAl ▸ hfr.2.1, fun a ha => ?_⟩
   · have h2' : ¬ (LHR r ∨ (Fo ≤ r ∧ r ≤ Fo + 6)) := h2
     rw [hk r (by omega)]

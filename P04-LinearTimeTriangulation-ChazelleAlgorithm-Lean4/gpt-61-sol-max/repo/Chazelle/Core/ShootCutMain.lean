@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutShTop
 
 /-!
@@ -24,7 +26,7 @@ theorem cutterOK_mono {cu : Stmt} {B : Finset ℕ} {G G' H : ℕ → ℕ} {X : M
     CutterOK cu B G' H X Ok := by
   intro P W c hw hpre hcost
   obtain ⟨c', k, ex, hk, post, fr⟩ := hc P W c hw hpre (by
-    have := hG (rd c bCut 9); dsimp only at hcost ⊢; omega)
+    grind)
   refine ⟨c', k, ex, le_trans hk (hG _), fun M hM => ?_, fr⟩
   obtain ⟨a, b, c3, rest⟩ := post M hM
   exact ⟨a, b, le_trans c3 (hG _), rest⟩

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStepL6
 
 /-!
@@ -31,10 +33,7 @@ open Chazelle.Merge (FreeAt)
 /-- The entries of a label list are register values. -/
 theorem stp_lblOf_mem {c : Config} {x : ℕ} (hx : x ∈ lblOf c kN kL) :
     ∃ i, i < c.nreg kN ∧ i < 4 ∧ c.nreg (kL + i) = x := by
-  unfold lblOf at hx
-  obtain ⟨i, hi, rfl⟩ := List.mem_map.1 hx
-  rw [List.mem_range] at hi
-  exact ⟨i, by omega, by omega, rfl⟩
+  grind [lblOf, List.mem_range]
 
 namespace SCtx
 
@@ -52,17 +51,12 @@ theorem auxRecs_co : AuxRecsAt co.nmem (co.nreg aB) ax := by
   have l3 := S.L.lay3
   have l5 := S.L.lay5
   intro i hi
-  have hi' : i < c.nreg sC := by rw [← hlen, ← hax]; exact hi
+  
   obtain ⟨a0, a1, a2, a3, a4⟩ := hrecA i hi
   rw [eaB]
   have hm : ∀ x, c.nreg aB ≤ x → x < c.nreg aB + 5 * c.nreg sC → co.nmem x = c.nmem x :=
     fun x h1 h2 => stp_co_mem S.L S.hI x (by omega) (by omega)
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · rw [hm _ (by omega) (by omega)]; exact a0
-  · rw [hm _ (by omega) (by omega)]; exact a1
-  · rw [hm _ (by omega) (by omega)]; exact a2
-  · rw [hm _ (by omega) (by omega)]; exact a3
-  · rw [hm _ (by omega) (by omega)]; exact a4
+  ram_grind
 
 /-- The label list of the key is kept until the next-key step. -/
 theorem lblOf_co : lblOf co kN kL = lblOf c kN kL ∧ co.nreg kN = c.nreg kN := by
@@ -74,7 +68,7 @@ theorem lblOf_co : lblOf co kN kL = lblOf c kN kL ∧ co.nreg kN = c.nreg kN := 
   intro i hi
   rw [List.mem_range] at hi
   have := stp_co_keep S.hI (k := 2403 + i) (by omega)
-  rwa [show sw (2403 + i) = kL + i by unfold kL sw; omega] at this
+  ram_grind
 
 /-- The auxiliary facts of a skipped stop. -/
 theorem skip_aux {i : ℕ} (h1 : c.nreg sP ≤ i) (h2 : i < c'.nreg sP) :
@@ -83,12 +77,11 @@ theorem skip_aux {i : ℕ} (h1 : c.nreg sP ≤ i) (h2 : i < c'.nreg sP) :
       AuxOK P J N₂ (stopSet J (Qof P) N₂ rs[i].2.2.1 rs[i].2.2.2.1 rs[i].2.2.2.2) ax[i] := by
   obtain ⟨hi, -⟩ := S.skip_at h1 h2
   have hax := S.hD.2.1
-  have hia : i < ax.length := by rw [hax]; exact hi
+  have hia : i < ax.length := by omega
   obtain ⟨a0, -⟩ := S.auxRecs_co i hia
   rw [List.getD_eq_getElem _ _ hia] at a0
   have hok := S.hD.2.2.2.2.2.2.1 i hi
-  rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _ _ hia] at hok
-  exact ⟨hi, hia, a0, hok⟩
+  simp_all
 
 set_option maxHeartbeats 4000000 in
 /-- **The labels at the next key.** -/
@@ -136,19 +129,14 @@ theorem labels :
       x ∈ stopLabs co.nmem (co.nreg aB) i := by
     intro x
     rw [hvs, List.mem_flatMap]
-    constructor
-    · rintro ⟨i, hi, hx⟩
-      rw [List.mem_range'_1, esP] at hi
-      exact ⟨i, hi.1, by omega, hx⟩
-    · rintro ⟨i, h1, h2, hx⟩
-      exact ⟨i, by rw [List.mem_range'_1, esP]; omega, hx⟩
+    grind
   have hL0src : ∀ x ∈ L0, ∃ t ∈ A, offT P J t = keyOff P J c' ∧ (x = upOf N₂ t.1 ∨ x = dnOf N₂ t.1) := by
     intro x hx
     rw [hL0] at hx
     split_ifs at hx with hb
     · obtain ⟨t, ht, hto, hx'⟩ := S.hBA.lSrc hb.1 x hx
       exact ⟨t, ht, hto.trans hb.2, hx'⟩
-    · exact absurd hx (List.not_mem_nil)
+    ram_grind
   have hL0U : ∀ x ∈ L0, x ∈ U := by
     intro x hx
     obtain ⟨t, ht, hto, hx'⟩ := hL0src x hx
@@ -162,7 +150,7 @@ theorem labels :
   have hL0nd : L0.Nodup := by
     rw [hL0]; split_ifs with hb
     · exact S.hBA.lNd hb.1
-    · exact List.nodup_nil
+    ram_grind
   have hL0len : L0.length ≤ 4 := by
     rw [hL0]; split_ifs
     · exact lblOf_len co
@@ -172,7 +160,7 @@ theorem labels :
   have hΛ' := stp_curLab_eq (P := P) (J := J) (N₂ := N₂) hkN4
   have toΛ : ∀ l, l ∈ lblOf c' kN kL →
       regOf (chainModel J.right) (Qof P) N₂ l ∈ curLab P J N₂ c' := fun l hl => by
-    rw [hΛ']; exact ⟨l, hl, rfl⟩
+    grind
   -- the bounds of the stop labels
   have hvs_lt : ∀ x ∈ vs, x < N₂.nRegions := by
     intro x hx
@@ -180,8 +168,7 @@ theorem labels :
     obtain ⟨hi, hia, -, hok⟩ := S.skip_aux h1 h2
     obtain ⟨-, -, -, hb0, hb1, -⟩ := hok
     rcases ((stp_mem_stopLabs hrecA hia).1 hx').2 with ⟨h, rfl⟩ | ⟨h, rfl⟩
-    · exact hb0 h
-    · exact hb1 h
+    all_goals omega
   have hL0_lt : ∀ x ∈ L0, x < N₂.nRegions := by
     intro x hx
     obtain ⟨t, ht, -, hx'⟩ := hL0src x hx
@@ -199,8 +186,8 @@ theorem labels :
     by_cases hAn : An
     · rw [hlab1 hAn] at hmem
       rcases stp_addLs_sub vs L0 hmem with h | h
-      · exact hL0_lt _ h
-      · exact hvs_lt _ h
+      · ram_grind
+      ram_grind
     · obtain ⟨h1, -⟩ := hlab2 hAn
       rw [h1, hLco] at hmem
       obtain ⟨i', hi', -, hx⟩ := stp_lblOf_mem hmem
@@ -211,7 +198,7 @@ theorem labels :
     by_cases hpock : ∃ e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)),
         SideAttach (chainModel J.whole).W e pK tK ∧
         ∃ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s ∧ oW J (q + s) = 0
-    · exact Or.inl hpock
+    · grind
     push Not at hpock
     by_cases hAn : An
     · right; left
@@ -221,7 +208,7 @@ theorem labels :
         rcases hAn with ⟨hbF, hbo⟩ | ⟨i, h1, h2, hfl⟩
         · obtain ⟨⟨j, hj⟩, -⟩ := S.hBA.bAcc hbF
           obtain ⟨hmF, hat, -, hnb'⟩ := S.triple_at hj hbo
-          exact ⟨_, hmF, hat, hnb'⟩
+          grind
         · rw [esP] at h1
           obtain ⟨hi, hmF, -, hat, -⟩ := S.skip_at h1 h2
           obtain ⟨hi', hia, hfl', hok⟩ := S.skip_aux h1 h2
@@ -240,11 +227,7 @@ theorem labels :
           apply hinvs
           rw [mem_vs]
           refine ⟨i, h1, h2, (stp_mem_stopLabs hrecA hia).2 ⟨hanc, ?_⟩⟩
-          rcases hl with h | h | h | h
-          · exact Or.inl h
-          · exact Or.inr h
-          · exact absurd h.1 (by omega)
-          · exact absurd h.1 (by omega)
+          grind
         · obtain ⟨t, ht, hto, hte, hbF, hbo⟩ := S.nonstop_acc he heK hst
           obtain ⟨-, hj, hfree, -⟩ := S.hBA.acc t ht
           obtain ⟨haR, hav, hat⟩ := S.hval t ht
@@ -253,7 +236,7 @@ theorem labels :
             hfree
           rw [hte] at hlab
           have hB : Bst := ⟨hbF, hbo⟩
-          have hL0e : L0 = lblOf co bN bL := by rw [hL0, ite_eq_left hB]
+          have hL0e : L0 = lblOf co bN bL := by ram_grind
           have hinL : ∀ x, (x = upOf N₂ t.1 ∨ x = dnOf N₂ t.1) → x ∈ L0 := by
             intro x hx
             have hxU : x ∈ U := inU _ he heK x (Or.inl ⟨t, ht, hto, hte, hx⟩)
@@ -262,10 +245,10 @@ theorem labels :
             rcases hx with rfl | rfl
             · rcases c1 with h | h
               · exact h
-              · exact stp_mem_full (S.hBA.lNd hbF) h (by rw [← hL0e]; exact hL0U) hUc hxU
+              · exact stp_mem_full (S.hBA.lNd hbF) h (by ram_grind) hUc hxU
             · rcases c2 with h | h
               · exact h
-              · exact stp_mem_full (S.hBA.lNd hbF) h (by rw [← hL0e]; exact hL0U) hUc hxU
+              · exact stp_mem_full (S.hBA.lNd hbF) h (by ram_grind) hUc hxU
           refine evSideLab_mono ?_ hlab
           rintro _ ⟨l, hl, rfl⟩
           apply toΛ
@@ -274,8 +257,7 @@ theorem labels :
           rcases hl with h | h | h | h
           · exact hinL _ (Or.inl h.2)
           · exact hinL _ (Or.inr h.2)
-          · exact absurd h.1 (by norm_num)
-          · exact absurd h.1 (by norm_num)
+          all_goals omega
     · right; right
       refine ⟨fun e he heK => ?_, ?_⟩
       · by_contra hnb
@@ -283,7 +265,7 @@ theorem labels :
         · obtain ⟨i, hi, h1, h2, hse⟩ := S.stop_idx he heK hst
           obtain ⟨hi', hia, hfl, hok⟩ := S.skip_aux h1 h2
           rw [hse] at hok
-          exact hAn (Or.inr ⟨i, by rw [esP]; exact h1, h2, hfl.trans (hok.2.1.2 hnb)⟩)
+          exact hAn (Or.inr ⟨i, by omega, h2, hfl.trans (hok.2.1.2 hnb)⟩)
         · obtain ⟨t, -, -, -, hbF, hbo⟩ := S.nonstop_acc he heK hst
           exact hAn (Or.inl ⟨hbF, hbo⟩)
       · obtain ⟨h1, h2⟩ := hlab2 hAn

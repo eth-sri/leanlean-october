@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFDecompRamRound
 
 /-!
@@ -21,8 +23,11 @@ section start
 
 variable {R K D : ℕ} {up dn ord pos prg pch isdn chOf : ℕ → ℕ}
 
+section
+variable (h : Rooted R K up dn ord pos prg pch)
+include h
 /-- With nothing removed, the root is the only top. -/
-theorem istop_start (h : Rooted R K up dn ord pos prg pch) {rem : ℕ → ℕ}
+theorem istop_start {rem : ℕ → ℕ}
     (hrem : ∀ e, e < K → rem e = 0) {t : ℕ} (ht : t < R) : IsTop pch rem t ↔ t = 0 := by
   constructor
   · rintro (h0 | h1)
@@ -33,43 +38,34 @@ theorem istop_start (h : Rooted R K up dn ord pos prg pch) {rem : ℕ → ℕ}
   · intro h0; exact Or.inl h0
 
 /-- **The invariant at the start**, for any state agreeing with `rs0` where it matters. -/
-theorem rinv_start (h : Rooted R K up dn ord pos prg pch) {σ : RS}
+theorem rinv_start {σ : RS}
     (hrem : ∀ e, e < K → σ.rem e = 0) (hpend : ∀ e, e < K → σ.pend e = 0)
     (hact : σ.act 0 = 1) (hside : σ.side 0 = 2) (hfin : σ.fin = 0)
     (gc : ℕ → Finset ℕ) (cr : ℕ → ℕ) :
     RInv R K D prg pch isdn chOf 0 σ gc cr where
-  i0 e he hp := by rw [hpend e he] at hp; omega
-  i1 e he hr := by rw [hrem e he] at hr; omega
-  i2 e he hr := by rw [hrem e he] at hr; omega
-  i3 e he hp := by rw [hpend e he] at hp; omega
+  i0 e he hp := by simp_all
+  i1 e he hr := by simp_all
+  i2 e he hr := by simp_all
+  i3 e he hp := by simp_all
   i4 t ht htop _ := by
     rw [istop_start h hrem ht] at htop
-    subst htop
-    exact Or.inl ⟨hside, rfl, rfl⟩
+    simp_all
   i5 t ht htop hact' := by
     rw [istop_start h hrem ht] at htop
-    subst htop
-    exact absurd hact hact'
+    simp_all
   i6 t _ _ _ := by
     refine ⟨?_, Or.inl rfl⟩
     have : sz R prg pch σ.rem t ≤ R := by
-      classical
-      unfold sz sub
-      exact (Finset.card_filter_le _ _).trans (by rw [Finset.card_range])
+      grind [sz, sub, Finset.card_range]
     have := h.hR
-    simp only [Function.iterate_zero, id]
-    omega
-  i7 _ := ⟨fun e he => by rw [hrem e he]; omega, hact, hside⟩
+    simp_all
+  i7 _ := by simp_all
   i8 hj := absurd hj (by norm_num)
   i9 := by
-    rw [hfin]
-    symm
-    rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
-    intro t ht ⟨htop, hact'⟩
-    rw [Finset.mem_range] at ht
-    rw [istop_start h hrem ht] at htop
-    subst htop
-    exact hact' hact
+    grind [Chazelle.Core.DecR.istop_start, Finset.card_eq_zero, Finset.filter_eq_empty_iff, Finset.mem_range]
+
+
+end
 
 /-- At most `K` rounds. -/
 theorem rounds_le_self (D K : ℕ) : rounds D K ≤ K := by
@@ -85,20 +81,18 @@ theorem rounds_le_self (D K : ℕ) : rounds D K ≤ K := by
         · left; have := hstep_lt D _ hpos; omega
         · omega
   have hK : (hstep D)^[K] K = 0 := by
-    rcases key K with h | h
-    · omega
-    · exact h
+    grind
   exact Nat.find_min' _ hK
 
 end start
 
 section loopram
 
-variable {P : Polygon} {W : ℕ} {A R K D CB RB LB : ℕ}
+variable {P : Polygon} {W A R K D CB RB LB : ℕ}
 
 /-- **The loop of rounds.** -/
 theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB c)
-    (hAW : A + 12 + 20 * R ≤ W) {up dn pos : ℕ → ℕ} {mB : ℕ → ℕ}
+    (hAW : A + 12 + 20 * R ≤ W) {up dn pos mB : ℕ → ℕ}
     (h : Rooted R K up dn (tv mB A R 1) pos (tv mB A R 3) (tv mB A R 4))
     (hch : ∀ e, e < K → tv mB A R 6 e < R ∧ tv mB A R 6 e ≠ 0 ∧ tv mB A R 4 (tv mB A R 6 e) = e)
     (hdeg : ∀ v, v < R →
@@ -132,17 +126,17 @@ theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB R
       rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
         Machine.upd_other _ _ _ (by omega)]
   have m3 : c3.nmem = c.nmem := rfl
-  have r22 : c3.nreg 60022 = 0 := by simp only [hc3, hc2, hc1]; config_simp
-  have r23 : c3.nreg 60023 = 0 := by simp only [hc3, hc2, hc1]; config_simp
-  have r24 : c3.nreg 60024 = 0 := by simp only [hc3, hc2, hc1]; config_simp
+  have r22 : c3.nreg 60022 = 0 := by simp_all
+  have r23 : c3.nreg 60023 = 0 := by simp_all
+  
   have hI0 : RInv R K D (tv mB A R 3) (tv mB A R 4) (tv mB A R 5) (tv mB A R 6) 0
       (rsOf c3.nmem A R (c3.nreg 60024) (c3.nreg 60023)) (fun _ => ∅) (fun _ => 0) :=
     rinv_start h (fun e he => by
         show tv c3.nmem A R 11 e = 0
-        rw [tv_lt (by omega), m3]; exact h11 e (by omega))
+        rw [tv_lt (by omega), m3]; ram_grind)
       (fun e he => by
         show tv c3.nmem A R 12 e = 0
-        rw [tv_lt (by omega), m3]; exact h12 e (by omega))
+        rw [tv_lt (by omega), m3]; ram_grind)
       (by show tv c3.nmem A R 13 0 = 1; rw [tv_lt hR0, m3]; exact h13)
       (by show tv c3.nmem A R 15 0 = 2; rw [tv_lt hR0, m3]; exact h15)
       (by show c3.nreg 60023 = 0; exact r23) _ _
@@ -165,17 +159,13 @@ theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB R
         hI''⟩, ?_⟩
       rw [hj'', hjdef]
       have : rounds D K + 1 - j = (rounds D K + 1 - (j + 1)) + 1 := by omega
-      rw [this, Nat.mul_add]
-      omega)
-    ⟨e3.wb_right, hf3, by rw [m3]; exact hst, by rw [m3]; exact h7, by omega, 0, r22, _, _, hI0⟩
+      grind [Nat.mul_add])
+    ⟨e3.wb_right, hf3, by omega, by omega, by omega, 0, r22, _, _, hI0⟩
   have hR' := hR.frame hf'
   rw [hR'.rR] at htest
   subst hjd
   refine ⟨c', 3 + k, .seq eB e, ?_, hw', hf', hst', _, gc, cr, hI', fun t ht htop hact => ?_⟩
-  · rw [r22] at hk
-    have : (175 * R + 45) * (rounds D K + 1 - 0) = (175 * R + 45) * (rounds D K + 1) := by
-      rw [Nat.sub_zero]
-    omega
+  · grind
   · exact htest ((fin_lt_iff h hI').2 ⟨t, ht, htop, hact⟩)
 
 end loopram

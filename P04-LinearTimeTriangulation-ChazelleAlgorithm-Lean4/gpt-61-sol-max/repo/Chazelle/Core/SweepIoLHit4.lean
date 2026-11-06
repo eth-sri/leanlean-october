@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoLHit3
 
 /-!
@@ -32,20 +34,17 @@ theorem robust_addr3 {E : ℕ} {m : ℕ → ℕ} {b a o t v : ℕ}
   have hb : b < E := by
     by_contra hge
     have := h (Function.update (Function.update m b (b + 1)) (b + 1 + m (m a + o) + t) (v + 1))
-      (fun x hx => by rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega)])
-    simp (disch := omega) only [Function.update_apply, ite_eq_right, ite_true] at this
-    omega
+      (fun x hx => by grind)
+    grind
   refine ⟨hb, ?_⟩
   by_contra hge
   have := h (Function.update m (m b + m (m a + o) + t) (v + 1)) (fun x hx => by
-    rw [Function.update_of_ne (by omega)])
-  simp (disch := omega) only [Function.update_apply, ite_eq_right, ite_true] at this
-  omega
+    grind)
+  grind
 
 theorem take_succ_getD {l : List ℕ} {t : ℕ} (h : t < l.length) :
     l.take (t + 1) = l.take t ++ [l.getD t 0] := by
-  rw [List.take_add_one, List.getElem?_eq_getElem h, List.getD_eq_getElem _ _ h]
-  rfl
+  simp_all
 
 /-! ## Register sets and frames -/
 
@@ -62,25 +61,30 @@ theorem scanReadL_other' (m f : ℕ → ℕ) {q : ℕ} (h : ¬ RSet q) : regB m 
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
       simp only [dstI] <;> intro he <;> subst he <;> apply h <;> simp [RSet])
 
+section
+variable (X : ℕ → Prop)
+include X
 /-- **The frame of a scan step**: registers outside the oracle bands, the set `X`, the
 accumulator block, `lO, lO + 1` and the allocator are unchanged; the allocator grows; memory
 below it is kept. -/
-def XFr (X : ℕ → Prop) (c c' : Config) : Prop :=
+def XFr (c c' : Config) : Prop :=
   (∀ r, bandOf r ∉ oracleBands → ¬ X r → (r < accA ∨ accA + 12 < r) → r ≠ lO → r ≠ lO + 1 →
     r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
   c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)
 
-theorem XFr.refl (X : ℕ → Prop) (c : Config) : XFr X c c :=
-  ⟨fun _ _ _ _ _ _ _ => rfl, le_rfl, fun _ _ => rfl⟩
+theorem XFr.refl (c : Config) : XFr X c c :=
+  by core_grind
+
+
+end
 
 theorem XFr.trans {X : ℕ → Prop} {c₁ c₂ c₃ : Config} (h₁ : XFr X c₁ c₂) (h₂ : XFr X c₂ c₃) :
     XFr X c₁ c₃ :=
-  ⟨fun r a b d e f g => (h₂.1 r a b d e f g).trans (h₁.1 r a b d e f g), h₁.2.1.trans h₂.2.1,
-    fun a ha => (h₂.2.2 a (lt_of_lt_of_le ha h₁.2.1)).trans (h₁.2.2 a ha)⟩
+  by core_grind
 
 theorem XFr.mono {X Y : ℕ → Prop} {c c' : Config} (h : XFr X c c') (hXY : ∀ r, X r → Y r) :
     XFr Y c c' :=
-  ⟨fun r a b d e f g => h.1 r a (fun hx => b (hXY r hx)) d e f g, h.2.1, h.2.2⟩
+  by core_grind
 
 /-! ## The environment of the scan -/
 
@@ -113,8 +117,8 @@ theorem SEnv.transport {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {
   have r4 := hr lE (Or.inr (Or.inr (Or.inr (Or.inl rfl))))
   have r5 := hr lH (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl rfl)))))
   have r6 := hr lD (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr rfl)))))
-  exact ⟨hG, hW3, hctx.transport r1 hm hA, hNF, by rw [r2]; exact htag, by rw [r2]; exact hMod, hR,
-    by rw [r3]; exact hn, by rw [r4]; exact hE, by rw [r5]; exact hH, by rw [r6]; exact hD, hy⟩
+  exact ⟨hG, hW3, hctx.transport r1 hm hA, hNF, by omega, by simp_all, hR,
+    by omega, by omega, by omega, by omega, hy⟩
 
 /-- The registers of the environment lie outside the scan's writes. -/
 theorem SEnv.keep {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : WPos} {d : ℕ}
@@ -123,7 +127,7 @@ theorem SEnv.keep {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : W
   h.transport (fun r hr => by
     refine fr.1 r (not_oracle_sw ?_ ?_) ?_ ?_ ?_ ?_ ?_ <;>
       rcases hr with rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp only [SSet, accA, lO, ALLOC, lCD, lT, lN, lE, lH, lD, sw] <;> omega) fr.2.2 fr.2.1
+      omega_nf ) fr.2.2 fr.2.1
 
 /-! ## Growth of the accumulator -/
 
@@ -135,20 +139,22 @@ def AccStep (P : Polygon) (C : Chain) (N : NF) (Mod : ℕ → Chain) (R₀ : ℝ
     (∀ τ ∈ L', τ ∈ L ∨ (0 < τ ∧ OnCB C (rayPt ((chainModel C).pos (Qof P) x) (dirOf d) τ))) ∧
     (((chainModel C).pos (Qof P) x).2 ≤ C.top.2 → ChordsDone P C N x d ks L')
 
-theorem AccStep.transport {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : WPos} {d : ℕ}
+section
+variable {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : WPos} {d : ℕ}
+theorem AccStep.transport
     {ks : List ℕ} {L : Set ℝ} {c c' : Config} (h : AccStep P C N Mod R₀ x d ks L c)
     (hr : ∀ j, j ≤ 12 → c'.nreg (accA + j) = c.nreg (accA + j)) :
     AccStep P C N Mod R₀ x d ks L c' := by
   obtain ⟨L', a, s, g, dn⟩ := h
   exact ⟨L', a.transport hr, s, g, dn⟩
 
-theorem AccStep.init {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : WPos} {d : ℕ}
+theorem AccStep.init
     {L : Set ℝ} {c : Config}
     (h : AccOK P accA Mod R₀ ((chainModel C).pos (Qof P) x) (dirOf d) L c) :
     AccStep P C N Mod R₀ x d [] L c :=
   ⟨L, h, le_rfl, fun _τ hτ => Or.inl hτ, fun _ _k hk => absurd hk List.not_mem_nil⟩
 
-theorem AccStep.trans {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : WPos} {d : ℕ}
+theorem AccStep.trans
     {ks₁ ks₂ : List ℕ} {L L' : Set ℝ} {c : Config} (h₁ : L ⊆ L')
     (g₁ : ∀ τ ∈ L', τ ∈ L ∨
       (0 < τ ∧ OnCB C (rayPt ((chainModel C).pos (Qof P) x) (dirOf d) τ)))
@@ -156,14 +162,12 @@ theorem AccStep.trans {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x
     (h₂ : AccStep P C N Mod R₀ x d ks₂ L' c) : AccStep P C N Mod R₀ x d (ks₁ ++ ks₂) L c := by
   obtain ⟨L'', a, s, g, dn⟩ := h₂
   refine ⟨L'', a, h₁.trans s, fun τ hτ => ?_, fun ht k hk hca => ?_⟩
-  · rcases g τ hτ with h | h
-    · exact g₁ τ h
-    · exact Or.inr h
-  · rcases List.mem_append.1 hk with hk | hk
-    · exact chordsDone_mono (d₁ ht) s k hk hca
-    · exact dn ht k hk hca
+  all_goals ram_grind
 
 /-! ## The test of a chord -/
+
+
+end
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 20000 in
@@ -183,29 +187,15 @@ theorem scanTest_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x 
   have hk1 : c.nreg K1 = 1 := (hK.fix hI).2.1
   have hiffR : c.nreg lD ≠ 1 → ((c.nreg sRp = c.nreg lE ∧ c.nreg sH1 = c.nreg lH) ↔
       Sweep.ChordAt (N.chord k) ⟨c.nreg lE, c.nreg lH⟩ (c.nreg lD)) := by
-    intro hd
-    unfold Sweep.ChordAt
-    rw [hrp, hh1]
-    constructor
-    · rintro ⟨h1, h2⟩; exact Or.inr ⟨hd, h1, h2⟩
-    · rintro (⟨h, -⟩ | ⟨-, h1, h2⟩)
-      · exact absurd h hd
-      · exact ⟨h1, h2⟩
+    ram_grind
   have hiffL : c.nreg lD = 1 → ((c.nreg sLp = c.nreg lE ∧ c.nreg sH1 = c.nreg lH) ↔
       Sweep.ChordAt (N.chord k) ⟨c.nreg lE, c.nreg lH⟩ (c.nreg lD)) := by
-    intro hd
-    unfold Sweep.ChordAt
-    rw [hlp, hh1]
-    constructor
-    · rintro ⟨h1, h2⟩; exact Or.inl ⟨hd, h1, h2⟩
-    · rintro (⟨-, h1, h2⟩ | ⟨h, -⟩)
-      · exact ⟨h1, h2⟩
-      · exact absurd hd h
+    ram_grind
   have hfarR : c.nreg lD ≠ 1 → Sweep.farPos (N.chord k) (c.nreg lD) = ⟨c.nreg sLp, c.nreg sH1⟩ := by
-    intro hd; unfold Sweep.farPos CRec.lpos; rw [ite_eq_right hd, hlp, hh1]
+    simp_all [Sweep.farPos, CRec.lpos]
   have hfarL : c.nreg lD = 1 → Sweep.farPos (N.chord k) (c.nreg lD) = ⟨c.nreg sRp, c.nreg sH1⟩ := by
-    intro hd; unfold Sweep.farPos CRec.rpos; rw [ite_eq_left hd, hrp, hh1]
-  have r1 : c.nreg ALLOC + (10 + offerFK) ≤ W := by unfold scanTestK at hroom; omega
+    simp_all [Sweep.farPos, CRec.rpos]
+  have r1 : c.nreg ALLOC + (10 + offerFK) ≤ W := by omega_nf
   have conv : ∀ c', ((∃ L', AccOK P accA Mod R₀ ((chainModel C).pos (Qof P) ⟨c.nreg lE, c.nreg lH⟩)
         (dirOf (c.nreg lD)) L' c' ∧ L ⊆ L' ∧
         (∀ τ ∈ L', τ ∈ L ∨ (0 < τ ∧ OnCB C (rayPt ((chainModel C).pos (Qof P)
@@ -223,8 +213,8 @@ theorem scanTest_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x 
   by_cases h1 : c.nreg lD < c.nreg K1
   · exact (IRS.ifT h1 (eqOffer_irs (Or.inr rfl) (Or.inl rfl) hk hI hK hG hW3 hctx hNF hacc htag
       hMod hR hn rfl hy (hiffR (by omega)) (hfarR (by omega)) r1)).mono
-      (by unfold scanTestK; omega) conv
-  refine IRS.mono (K := (12 + offerFK) + 2) (IRS.ifF h1 ?_) (by unfold scanTestK; omega)
+      (by omega_nf) conv
+  refine IRS.mono (K := (12 + offerFK) + 2) (IRS.ifF h1 ?_) (by omega_nf)
     (fun _ h => h)
   by_cases h2 : c.nreg K1 < c.nreg lD
   · exact (IRS.ifT h2 (eqOffer_irs (Or.inr rfl) (Or.inl rfl) hk hI hK hG hW3 hctx hNF hacc htag
@@ -257,7 +247,7 @@ theorem scanBody_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x 
   obtain ⟨k, hkdef⟩ : ∃ k, k = (N.region r).chords.getD (c.nreg sT) 0 := ⟨_, rfl⟩
   rw [← hkdef]
   have hkmem : k ∈ (N.region r).chords := by
-    rw [hkdef, List.getD_eq_getElem _ _ hT]; exact List.getElem_mem hT
+    simp_all
   have hNF := hS.hNF
   obtain ⟨-, -, -, reg, -, -, -, hRegs, -, hhlt, -⟩ := hNF
   have hk : k < N.nChords := (((hRegs r hr).1 k).1 hkmem).1
@@ -270,71 +260,70 @@ theorem scanBody_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x 
   have b2 := robust_addr3 (b := B + 7) (a := B + 5) (o := 5 * r + 3) (t := c.nreg sT) (v := k)
     (fun m' hm' => by
       have := ((hNW m' hm').2.2.2.2.2.2.2.1 r hrl).2.2.2.2 _ hT
-      rw [← hkdef] at this
-      simpa only [Nat.add_assoc] using this) b1.1 (by omega)
+      grind) b1.1 (by omega)
   have b3 := NFLoc.robust_addr2 (b := B + 3) (o := 5 * k + 2) (fun m' hm' => by
     simpa only [Nat.add_assoc] using ((hNW m' hm').2.2.2.2.2.1 k hkl).2.2.1)
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hhk := hhlt k hk
   rw [hQn] at hhk
   have hW3 := hS.hW3
-  have hAW : c.nreg ALLOC ≤ W := by unfold scanBodyK at hroom; omega
+  have hAW : c.nreg ALLOC ≤ W := by omega
   have e2 : c.nmem (B + 5) + 5 * r + 3 = c.nmem (B + 5) + (5 * r + 3) := by ring
-  have hb : c.nreg sCl + c.nreg sT ≤ W := by rw [hCl, e2]; omega
-  have hb2 : c.nreg sC3 + 5 * c.nmem (c.nreg sCl + c.nreg sT) + 2 ≤ W := by rw [hC3, rk]; omega
+  have hb : c.nreg sCl + c.nreg sT ≤ W := by grind
+  have hb2 : c.nreg sC3 + 5 * c.nmem (c.nreg sCl + c.nreg sT) + 2 ≤ W := by omega
   have hb3 : c.nmem (c.nreg sC3 + 5 * c.nmem (c.nreg sCl + c.nreg sT)) + 1 ≤ W := by
-    rw [hC3, rk, wh]; omega
+    grind
   have hok := scanReadL_ok c.nmem c.nreg hk1 hb hb2 hb3
   unfold scanBody
   refine IRS.seq (K₂ := scanTestK + 1) (IRS.block _ hI hok) ?_ |>.mono
-    (by simp only [scanReadL, List.length_cons, List.length_nil, scanBodyK]; omega) (fun _ h => h)
+    (by grind [scanReadL, List.length_cons, List.length_nil, scanBodyK]) (fun _ h => h)
   rintro c₁ hI₁ - - hc1
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
   have kk : ∀ q, ¬ RSet q → c₁.nreg q = c.nreg q := fun q hq => by
     rw [hc1]; exact scanReadL_other' _ _ hq
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := kk ALLOC (by unfold RSet sX sY sK sCh sLp sRp sH1 ALLOC sw; omega)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := kk ALLOC (by omega_nf)
   obtain ⟨v1, v2, v3⟩ := scanReadL_val c.nmem c.nreg hk1
   have vLp : c₁.nreg sLp = (N.chord k).lp := by
-    rw [hc1]; show regB c.nmem scanReadL c.nreg sLp = _; rw [v1, hC3, rk, wl]
+    rw [hc1]; grind
   have vRp : c₁.nreg sRp = (N.chord k).rp := by
-    rw [hc1]; show regB c.nmem scanReadL c.nreg sRp = _; rw [v2, hC3, rk, wr]
+    rw [hc1]; grind
   have vH1 : c₁.nreg sH1 = (N.chord k).h + 1 := by
-    rw [hc1]; show regB c.nmem scanReadL c.nreg sH1 = _; rw [v3, hC3, rk, wh]
+    rw [hc1]; grind
   have hS₁ : SEnv P W C N Mod R₀ x d c₁ := hS.transport (fun q hq => kk q (by
       rcases hq with rfl | rfl | rfl | rfl | rfl | rfl <;>
-        simp only [RSet, sX, sY, sK, sCh, sLp, sRp, sH1, lCD, lT, lN, lE, lH, lD, sw] <;> omega))
+        omega_nf <;> omega))
     (fun a _ => by rw [hm1]) hA1.ge
   have hacc₁ := hacc.transport (c' := c₁) (fun j hj => kk _ (by
     unfold RSet sX sY sK sCh sLp sRp sH1 accA sw; omega))
   refine IRS.seq (K₂ := 1) (scanTest_irs hI₁ hK hS₁ hk hacc₁ vLp vRp vH1
-    (by rw [hA1]; unfold scanBodyK at hroom; omega)) ?_
+    (by ram_grind)) ?_
   rintro c₂ hI₂ - - ⟨hst, fr2⟩
   have t2 : c₂.nreg sT = c.nreg sT := by
-    rw [fr2.1 sT (not_oracle_sw (by unfold sT sw; norm_num) (by unfold sT sw; norm_num))
-      (by unfold sT sFe sFh sw; omega) (by unfold sT accA sw; omega) (by unfold sT lO sw; omega)
-      (by unfold sT lO sw; omega) (by unfold sT ALLOC sw; omega)]
-    exact kk sT (by unfold RSet sX sY sK sCh sLp sRp sH1 sT sw; omega)
+    rw [fr2.1 sT (not_oracle_sw (by omega_nf) (by omega_nf))
+      (by omega_nf) (by omega_nf) (by omega_nf)
+      (by omega_nf) (by grind)]
+    exact kk sT (by omega_nf)
   have k12 : c₂.nreg K1 = 1 := (hK.fix hI₂).2.1
   have hok3 : okB W c₂.nmem [.addN sT sT K1] c₂.nreg :=
-    ⟨⟨iscr_sw (by unfold sT sw; norm_num) (by unfold sT sw; norm_num), by
-      rw [t2, k12]; rw [hCl, e2] at hb; omega⟩, trivial⟩
+    ⟨⟨iscr_sw (by omega_nf) (by omega_nf), by
+      omega⟩, trivial⟩
   refine (IRS.block _ hI₂ hok3).mono le_rfl ?_
   intro c₃ hc3
   have r3 : ∀ q, q ≠ sT → c₃.nreg q = c₂.nreg q := by
     intro q hq; rw [hc3]; show regB c₂.nmem [.addN sT sT K1] c₂.nreg q = _
-    simp only [regB, regI]; rw [upd_other _ _ _ hq]
+    simp only [regB, regI]; ram_simp
   have t3 : c₃.nreg sT = c₂.nreg sT + 1 := by
     rw [hc3]; show regB c₂.nmem [.addN sT sT K1] c₂.nreg sT = _
     simp only [regB, regI, upd_same]; rw [k12]
   have hm3 : c₃.nmem = c₂.nmem := by rw [hc3]
-  refine ⟨hst.transport (fun j hj => r3 _ (by unfold sT accA sw; omega)), by rw [t3, t2], ?_,
+  refine ⟨hst.transport (fun j hj => r3 _ (by omega_nf)), by rw [t3, t2], ?_,
     ?_, ?_⟩
   · intro q hq hX hqa hqo hqo1 hqA
     rw [r3 q (fun h => hX (Or.inr h)), fr2.1 q hq (fun h => hX (Or.inl (Or.inr h))) hqa hqo hqo1 hqA]
-    exact kk q (fun h => hX (Or.inl (Or.inl h)))
-  · rw [r3 ALLOC (by unfold sT ALLOC sw; omega), ← hA1]; exact fr2.2.1
+    ram_grind
+  · rw [r3 ALLOC (by grind), ← hA1]; exact fr2.2.1
   · intro a ha
-    rw [hm3, fr2.2.2 a (by rw [hA1]; exact ha), hm1]
+    rw [hm3, fr2.2.2 a (by omega), hm1]
 
 /-! ## The head of the loop over the chords of a region -/
 
@@ -345,18 +334,18 @@ def HdSet (q : ℕ) : Prop := q = sX ∨ q = sY ∨ q = sNc ∨ q = sCl ∨ q = 
 def ScanW (q : ℕ) : Prop := WSet q ∨ HdSet q
 
 theorem scanW_sset {q : ℕ} (h : ScanW q) : SSet q := by
-  rcases h with ((h | h | h | h | h | h | h) | h | h) | (h | h | h | h | h) <;> subst h <;>
-    simp only [SSet, sX, sY, sK, sCh, sLp, sRp, sH1, sFe, sFh, sNc, sCl, sT, sw] <;> omega
+  omega_nf
 
 theorem scanHeadL_other (m f : ℕ → ℕ) (rr : ℕ) {q : ℕ} (h : ¬ HdSet q) :
     regB m (scanHeadL rr) f q = f q :=
   regB_other m (scanHeadL rr) f (fun i hi => by
     simp only [scanHeadL, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp only [dstI] <;> intro he <;> subst he <;> apply h <;> simp [HdSet])
+    core_grind)
 
-theorem scanHeadL_val (m f : ℕ → ℕ) {rr : ℕ} (hrr : ¬ SSet rr) (hk2 : f K2 = 2)
-    (hk3 : f K3 = 3) :
+section
+variable (m f : ℕ → ℕ) {rr : ℕ} (hrr : ¬ SSet rr) (hk2 : f K2 = 2) (hk3 : f K3 = 3)
+include hrr hk2 hk3
+theorem scanHeadL_val :
     regB m (scanHeadL rr) f sNc = m (f sR5 + 5 * f rr + 2) ∧
     regB m (scanHeadL rr) f sCl = m (f sR5 + 5 * f rr + 3) ∧
     regB m (scanHeadL rr) f sT = 0 := by
@@ -364,28 +353,24 @@ theorem scanHeadL_val (m f : ℕ → ℕ) {rr : ℕ} (hrr : ¬ SSet rr) (hk2 : f
   have e3 : f 240616 = 3 := hk3
   unfold SSet sw at hrr
   have n1 : rr ≠ 241130 := by omega
-  have n2 : rr ≠ 241131 := by omega
+  
   simp only [scanHeadL, regB, regI, upd, sX, sY, sR5, sNc, sCl, sT, K2, K3, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e2, e3, n1]
-  exact ⟨congrArg m (by ring), congrArg m (by ring), trivial⟩
+  grind
 
-theorem scanHeadL_ok (m f : ℕ → ℕ) {rr : ℕ} (hrr : ¬ SSet rr) (hk2 : f K2 = 2)
-    (hk3 : f K3 = 3) (hb : f sR5 + 5 * f rr + 3 ≤ W) : okB W m (scanHeadL rr) f := by
+theorem scanHeadL_ok (hb : f sR5 + 5 * f rr + 3 ≤ W) : okB W m (scanHeadL rr) f := by
   have e2 : f 240615 = 2 := hk2
   have e3 : f 240616 = 3 := hk3
-  have hb' : f 241142 + 5 * f rr + 3 ≤ W := hb
+  
   unfold SSet sw at hrr
   have n1 : rr ≠ 241130 := by omega
-  have n2 : rr ≠ 241131 := by omega
+  
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
     iscr_sw (by omega) (by omega)
   simp only [scanHeadL, okB, okI, regI, upd, sX, sY, sR5, sNc, sCl, sT, K2, K3, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e2, e3, n1]
-  refine ⟨⟨s 1130 (by norm_num) (by norm_num), by omega⟩, ⟨s 1130 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 1130 (by norm_num) (by norm_num), by omega⟩, ⟨s 1130 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 1131 (by norm_num) (by norm_num), by omega⟩, s 1132 (by norm_num) (by norm_num),
-    ⟨s 1131 (by norm_num) (by norm_num), by omega⟩, s 1133 (by norm_num) (by norm_num),
-    ⟨s 1134 (by norm_num) (by norm_num), by omega⟩, trivial⟩
+  ram_grind
+
+
+end
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 20000 in
@@ -407,11 +392,11 @@ theorem scanHead_irs {rr : ℕ} (hrr : ¬ SSet rr) {N : NF} (hI : IInv W c₀ c)
   have hk3 : c.nreg K3 = 3 := hKc.2.2.2.2.2.2
   have b1 : B + 5 < E ∧ c.nmem (B + 5) + (5 * r + 4) < E := NFLoc.robust_addr2 (fun m' hm' => by
     simpa only [Nat.add_assoc] using ((hNW m' hm').2.2.2.2.2.2.2.1 r hrl).2.2.1)
-  have hok := scanHeadL_ok (W := W) c.nmem c.nreg hrr hk2 hk3 (by rw [hR5, hrv]; omega)
+  have hok := scanHeadL_ok (W := W) c.nmem c.nreg hrr hk2 hk3 (by omega)
   obtain ⟨v1, v2, v3⟩ := scanHeadL_val c.nmem c.nreg hrr hk2 hk3
   unfold scanHead
   refine IRS.seq (K₂ := 3) (IRS.block _ hI hok) ?_ |>.mono
-    (by simp only [scanHeadL, List.length_cons, List.length_nil]; omega) (fun _ h => h)
+    (by grind [scanHeadL, List.length_cons, List.length_nil]) (fun _ h => h)
   rintro c₁ hI₁ - - hc1
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
   have kk : ∀ q, ¬ HdSet q → c₁.nreg q = c.nreg q := fun q hq => by
@@ -420,11 +405,9 @@ theorem scanHead_irs {rr : ℕ} (hrr : ¬ SSet rr) {N : NF} (hI : IInv W c₀ c)
     rw [hc1]; show regB c.nmem (scanHeadL rr) c.nreg sNc = _
     rw [v1, hR5, hrv]; exact (hN.2.2.2.2.2.2.2.1 r hrl).2.1
   have w2 : c₁.nreg sCl = c.nmem (c.nmem (B + 5) + 5 * r + 3) := by
-    rw [hc1]; show regB c.nmem (scanHeadL rr) c.nreg sCl = _
-    rw [v2, hR5, hrv]
+    simp_all
   have w3 : c₁.nreg sT = 0 := by
-    rw [hc1]; show regB c.nmem (scanHeadL rr) c.nreg sT = _
-    rw [v3]
+    simp_all
   have k0 : c₁.nreg K0 = 0 := (hK.fix hI₁).1
   by_cases hpos : c₁.nreg K0 < c₁.nreg sNc
   · have hn0 : 0 < (N.region r).chords.length := by omega
@@ -432,25 +415,24 @@ theorem scanHead_irs {rr : ℕ} (hrr : ¬ SSet rr) {N : NF} (hI : IInv W c₀ c)
       (v := (N.region r).chords.getD 0 0)
       (fun m' hm' => by
         have := ((hNW m' hm').2.2.2.2.2.2.2.1 r hrl).2.2.2.2 0 hn0
-        simpa only [Nat.add_assoc] using this) b1.1 (by omega)
+        omega) b1.1 (by omega)
     have e2 : c.nmem (B + 5) + 5 * r + 3 = c.nmem (B + 5) + (5 * r + 3) := by ring
     have l7 : c₁.nreg sL7 = c.nmem (B + 7) := by
-      rw [kk sL7 (by simp only [HdSet, sX, sY, sNc, sCl, sT, sL7, sw]; omega), hL7]
+      grind [HdSet, sX, sY, sNc, sCl, sT, sL7, sw]
     have hok2 : okI W c₁.nreg (.addN sCl sCl sL7) :=
-      ⟨iscr_sw (by unfold sCl sw; norm_num) (by unfold sCl sw; norm_num), by
-        rw [w2, l7, e2]; omega⟩
+      ⟨iscr_sw (by omega_nf) (by omega_nf), by
+        grind⟩
     refine (IRS.ifT hpos (IRS.instr1 hI₁ hok2)).mono le_rfl ?_
     intro c' hc'
     have r' : ∀ q, q ≠ sCl → c'.nreg q = c₁.nreg q := by
-      intro q hq; rw [hc']; show regI c₁.nmem (.addN sCl sCl sL7) c₁.nreg q = _
-      simp only [regI]; rw [upd_other _ _ _ hq]
-    refine ⟨by rw [r' sNc (by unfold sNc sCl sw; omega), w1], fun _ => ?_,
-      by rw [r' sT (by unfold sT sCl sw; omega), w3], fun q hq => ?_, by rw [hc', hm1]⟩
+      simp_all [regI]
+    refine ⟨by ram_grind, fun _ => ?_,
+      by ram_grind, fun q hq => ?_, by simp_all⟩
     · rw [hc']; show regI c₁.nmem (.addN sCl sCl sL7) c₁.nreg sCl = _
-      simp only [regI, upd_same]; rw [w2, l7]; ring
-    · rw [r' q (fun h => hq (Or.inr (Or.inr (Or.inr (Or.inl h))))), kk q hq]
+      simp only [regI, upd_same]; omega
+    ram_grind
   · refine (IRS.ifF hpos (IRS.skip hI₁ ?_)).mono le_rfl (fun _ h => h)
-    refine ⟨w1, fun h => absurd (by omega : c₁.nreg K0 < c₁.nreg sNc) hpos, w3, kk, hm1⟩
+    simp_all
 
 /-! ## The loop over the chords of a region -/
 
@@ -459,7 +441,7 @@ def scanRK (n : ℕ) : ℕ := 12 + ((scanBodyK + 2) * n + 2)
 
 theorem XFr.of_regs {X : ℕ → Prop} {c c' : Config} (hr : ∀ q, ¬ X q → c'.nreg q = c.nreg q)
     (hX : ¬ X ALLOC) (hm : c'.nmem = c.nmem) : XFr X c c' :=
-  ⟨fun q _ hq _ _ _ _ => hr q hq, (hr ALLOC hX).ge, fun a _ => by rw [hm]⟩
+  by grind [Chazelle.Core.SweepIo.XFr]
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 20000 in
@@ -478,28 +460,26 @@ theorem scanR_irs {rr : ℕ} (hrr : ¬ SSet rr) {C : Chain} {N : NF} {Mod : ℕ 
   have hrl : r < N.regions.length := hr
   have b1 : B + 5 < E ∧ c.nmem (B + 5) + (5 * r + 4) < E := NFLoc.robust_addr2 (fun m' hm' => by
     simpa only [Nat.add_assoc] using ((hNW m' hm').2.2.2.2.2.2.2.1 r hrl).2.2.1)
-  have hAW : c.nreg ALLOC ≤ W := by unfold scanRK at hroom; omega
+  have hAW : c.nreg ALLOC ≤ W := by omega
   unfold scanR
   refine IRS.seq (K₂ := (scanBodyK + 2) * n + 2)
     (scanHead_irs hrr hI hK hNW hEA hAW hr hrv hR5 hL7) ?_
   rintro c₁ hI₁ - - ⟨w1, w2, w3, kk, hm1⟩
   rw [← hn] at w1 w2
   have fr1 : XFr ScanW c c₁ := XFr.of_regs (fun q hq => kk q (fun h => hq (Or.inr h)))
-    (by simp only [ScanW, WSet, RSet, HdSet, sX, sY, sK, sCh, sLp, sRp, sH1, sFe, sFh, sNc, sCl, sT,
-      ALLOC, sw]; omega) hm1
+    (by omega_nf) hm1
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC :=
-    kk ALLOC (by simp only [HdSet, sX, sY, sNc, sCl, sT, ALLOC, sw]; omega)
+    kk ALLOC (by omega_nf)
   have c31 : c₁.nreg sC3 = c.nreg sC3 :=
-    kk sC3 (by simp only [HdSet, sX, sY, sNc, sCl, sT, sC3, sw]; omega)
+    kk sC3 (by omega_nf)
   have hS₁ : SEnv P W C N Mod R₀ x d c₁ := hS.keep (fr1.mono fun q h => scanW_sset h)
   have hacc₁ := hacc.transport (c' := c₁) (fun j hj => kk _ (by
-    simp only [HdSet, sX, sY, sNc, sCl, sT, accA, sw]; omega))
+    grind [HdSet, sX, sY, sNc, sCl, sT, accA, sw]))
   have hreg : ∀ c', XFr (fun q => WSet q ∨ q = sT) c₁ c' → ∀ q, q = sNc ∨ q = sCl ∨ q = sC3 →
       c'.nreg q = c₁.nreg q := by
     intro c' fr q hq
     refine fr.1 q (not_oracle_sw ?_ ?_) ?_ ?_ ?_ ?_ ?_ <;> rcases hq with rfl | rfl | rfl <;>
-      simp only [WSet, RSet, sX, sY, sK, sCh, sLp, sRp, sH1, sFe, sFh, sNc, sCl, sC3, sT, accA, lO,
-        ALLOC, sw] <;> omega
+      omega_nf <;> omega
   have hmem : ∀ c', XFr (fun q => WSet q ∨ q = sT) c₁ c' → ∀ a, a < c.nreg ALLOC →
       c'.nmem a = c.nmem a := by
     intro c' fr a ha; rw [fr.2.2 a (by omega), hm1]
@@ -510,19 +490,17 @@ theorem scanR_irs {rr : ℕ} (hrr : ¬ SSet rr) {C : Chain} {N : NF} {Mod : ℕ 
   have hW := IRS.while (P := P) (W := W) (c₀ := c₀) (a := sT) (b := sNc) (body := scanBody) I
     (fun c' => n - c'.nreg sT) scanBodyK
     (fun c' hc ht => by
-      obtain ⟨fr, -, -⟩ := hc
-      rw [hreg c' fr sNc (Or.inl rfl), w1] at ht
-      omega)
+      grind)
     (fun c' hI' hc ht hroom' => by
       obtain ⟨fr, hle, hst⟩ := hc
       rw [hreg c' fr sNc (Or.inl rfl), w1] at ht
       have hn0 : 0 < n := by omega
-      have hn0' : 0 < (N.region r).chords.length := by rw [← hn]; exact hn0
+      have hn0' : 0 < (N.region r).chords.length := by omega
       have b2 := robust_addr3 (b := B + 7) (a := B + 5) (o := 5 * r + 3) (t := 0)
         (v := (N.region r).chords.getD 0 0)
         (fun m' hm' => by
           have := ((hNW m' hm').2.2.2.2.2.2.2.1 r hrl).2.2.2.2 0 hn0'
-          simpa only [Nat.add_assoc] using this) b1.1 (by omega)
+          omega) b1.1 (by omega)
       have m' := hmem c' fr
       have hS' : SEnv P W C N Mod R₀ x d c' :=
         hS₁.keep (fr.mono fun q h => scanW_sset (hsub q h))
@@ -530,35 +508,29 @@ theorem scanR_irs {rr : ℕ} (hrr : ¬ SSet rr) {C : Chain} {N : NF} {Mod : ℕ 
       have hEA' : E ≤ c'.nreg ALLOC := by have := fr.2.1; omega
       have e2 : c.nmem (B + 5) + 5 * r + 3 = c.nmem (B + 5) + (5 * r + 3) := by ring
       have hC3' : c'.nreg sC3 = c'.nmem (B + 3) := by
-        rw [hreg c' fr sC3 (Or.inr (Or.inr rfl)), c31, hC3, m' _ (by omega)]
+        grind
       have hCl' : c'.nreg sCl = c'.nmem (B + 7) + c'.nmem (c'.nmem (B + 5) + 5 * r + 3) := by
-        rw [hreg c' fr sCl (Or.inr (Or.inl rfl)), w2 hn0, m' (B + 7) (by omega),
-          m' (B + 5) (by omega), m' _ (by rw [e2]; omega)]
+        grind
       obtain ⟨L', a', s', g', d'⟩ := hst
-      refine (scanBody_irs hI' hK hS' hr hNW' hEA' hC3' hCl' (by rw [← hn]; exact ht) a'
+      refine (scanBody_irs hI' hK hS' hr hNW' hEA' hC3' hCl' (by omega) a'
         hroom').mono le_rfl ?_
       rintro c'' ⟨hst2, t2, fr2⟩
-      refine ⟨⟨fr.trans fr2, by rw [t2]; omega, ?_⟩, by rw [t2]; omega⟩
-      rw [t2, take_succ_getD (l := (N.region r).chords) (by rw [← hn]; exact ht)]
+      refine ⟨⟨fr.trans fr2, by omega, ?_⟩, by omega⟩
+      rw [t2, take_succ_getD (l := (N.region r).chords) (by omega)]
       exact AccStep.trans s' g' d' hst2)
-    hI₁ ⟨XFr.refl _ _, by rw [w3]; omega, by rw [w3]; exact AccStep.init hacc₁⟩ (by
-      rw [w3, hA1, Nat.sub_zero]; unfold scanRK at hroom; omega)
+    hI₁ ⟨XFr.refl _ _, by omega, by rw [w3]; exact AccStep.init hacc₁⟩ (by
+      rw [w3, hA1, Nat.sub_zero]; ram_grind)
   rw [w3, Nat.sub_zero] at hW
   refine hW.mono le_rfl ?_
-  rintro c' ⟨⟨fr, hle, hst⟩, hnot⟩
-  rw [hreg c' fr sNc (Or.inl rfl), w1] at hnot
-  have ht : c'.nreg sT = n := by omega
-  rw [ht, hn, List.take_length] at hst
-  exact ⟨hst, fr1.trans (fr.mono hsub)⟩
+  grind [Chazelle.Core.SweepIo.XFr.mono, Chazelle.Core.SweepIo.XFr.trans]
 
 /-! ## The scan of the three regions -/
 
 theorem robust_addr1 {E : ℕ} {m : ℕ → ℕ} {b v : ℕ} (h : Robust E m fun m' => m' b = v) :
     b < E := by
   by_contra hge
-  have := h (Function.update m b (v + 1)) (fun x hx => by rw [Function.update_of_ne (by omega)])
-  simp only [Function.update_self] at this
-  omega
+  have := h (Function.update m b (v + 1)) (fun x hx => by grind)
+  simp_all
 
 /-- The registers written by the initialisation of the scan. -/
 def ISet (q : ℕ) : Prop := q = sX ∨ q = sR5 ∨ q = sL7 ∨ q = sC3
@@ -566,39 +538,35 @@ def ISet (q : ℕ) : Prop := q = sX ∨ q = sR5 ∨ q = sL7 ∨ q = sC3
 theorem scanInitL_other (m f : ℕ → ℕ) {q : ℕ} (h : ¬ ISet q) : regB m scanInitL f q = f q :=
   regB_other m scanInitL f (fun i hi => by
     simp only [scanInitL, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp only [dstI] <;> intro he <;> subst he <;> apply h <;> simp [ISet])
+    core_grind)
 
-theorem scanInitL_val (m f : ℕ → ℕ) (hk2 : f K2 = 2) (hk3 : f K3 = 3) (hk5 : f K5 = 5) :
+section
+variable (m f : ℕ → ℕ) (hk2 : f K2 = 2) (hk3 : f K3 = 3) (hk5 : f K5 = 5)
+include hk2 hk3 hk5
+theorem scanInitL_val :
     regB m scanInitL f sR5 = m (f lNF + 5) ∧ regB m scanInitL f sL7 = m (f lNF + 7) ∧
     regB m scanInitL f sC3 = m (f lNF + 3) := by
-  have e2 : f 240615 = 2 := hk2
-  have e3 : f 240616 = 3 := hk3
-  have e5 : f 240614 = 5 := hk5
-  simp only [scanInitL, regB, regI, upd, sX, sR5, sL7, sC3, lNF, K2, K3, K5, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e2, e3, e5]
-  exact ⟨trivial, trivial, trivial⟩
+  simp_all [scanInitL, regB, regI, upd, sX, sR5, sL7, sC3, lNF, K2, K3, K5, sw, Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
 
-theorem scanInitL_ok (m f : ℕ → ℕ) (hk2 : f K2 = 2) (hk3 : f K3 = 3) (hk5 : f K5 = 5)
+theorem scanInitL_ok
     (hb : f lNF + 7 ≤ W) : okB W m scanInitL f := by
   have e2 : f 240615 = 2 := hk2
   have e3 : f 240616 = 3 := hk3
   have e5 : f 240614 = 5 := hk5
-  have hb' : f 241102 + 7 ≤ W := hb
+  
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
     iscr_sw (by omega) (by omega)
   simp only [scanInitL, okB, okI, regI, upd, sX, sR5, sL7, sC3, lNF, K2, K3, K5, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e2, e3, e5]
-  exact ⟨⟨s 1130 (by norm_num) (by norm_num), by omega⟩, s 1142 (by norm_num) (by norm_num),
-    ⟨s 1130 (by norm_num) (by norm_num), by omega⟩, s 1143 (by norm_num) (by norm_num),
-    ⟨s 1130 (by norm_num) (by norm_num), by omega⟩, s 1144 (by norm_num) (by norm_num), trivial⟩
+  ram_grind
+
+
+end
 
 theorem XFr.scanKeep {c c' : Config} (fr : XFr ScanW c c') {q : ℕ}
     (hq : q = sR5 ∨ q = sL7 ∨ q = sC3 ∨ q = lR0 ∨ q = lR1 ∨ q = lR2) : c'.nreg q = c.nreg q := by
   refine fr.1 q (not_oracle_sw ?_ ?_) ?_ ?_ ?_ ?_ ?_ <;>
     rcases hq with rfl | rfl | rfl | rfl | rfl | rfl <;>
-    simp only [ScanW, WSet, RSet, HdSet, sX, sY, sK, sCh, sLp, sRp, sH1, sFe, sFh, sNc, sCl, sT,
-      sR5, sL7, sC3, lR0, lR1, lR2, accA, lO, ALLOC, sw] <;> omega
+    omega_nf <;> omega
 
 /-- The cost of the scan of the three regions. -/
 def lhScanK (n0 n1 n2 : ℕ) : ℕ := 6 + (scanRK n0 + (scanRK n1 + scanRK n2))
@@ -621,47 +589,47 @@ theorem lhScan_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : 
       XFr SSet c c') := by
   have hKc := hK.fix hI
   have hB11 : B + 11 < E := robust_addr1 (fun m' hm' => (hNW m' hm').2.2.2.2.1)
-  have hAW : c.nreg ALLOC ≤ W := by unfold lhScanK at hroom; omega
+  have hAW : c.nreg ALLOC ≤ W := by omega
   have hok : okB W c.nmem scanInitL c.nreg := scanInitL_ok c.nmem c.nreg hKc.2.2.2.2.2.1
-    hKc.2.2.2.2.2.2 hKc.2.2.2.2.1 (by rw [hB]; omega)
+    hKc.2.2.2.2.2.2 hKc.2.2.2.2.1 (by omega)
   obtain ⟨v1, v2, v3⟩ := scanInitL_val c.nmem c.nreg hKc.2.2.2.2.2.1 hKc.2.2.2.2.2.2
     hKc.2.2.2.2.1
   unfold lhScan
   refine IRS.seq (K₂ := scanRK (N.region r0).chords.length + (scanRK (N.region r1).chords.length +
     scanRK (N.region r2).chords.length)) (IRS.block _ hI hok) ?_ |>.mono
-    (by simp only [scanInitL, List.length_cons, List.length_nil, lhScanK]; omega) (fun _ h => h)
+    (by grind [scanInitL, List.length_cons, List.length_nil, lhScanK]) (fun _ h => h)
   rintro c₁ hI₁ - - hc1
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
   have kk : ∀ q, ¬ ISet q → c₁.nreg q = c.nreg q := fun q hq => by
     rw [hc1]; exact scanInitL_other _ _ hq
   have fr1 : XFr SSet c c₁ := XFr.of_regs (fun q hq => kk q (fun h => hq (by
-      rcases h with rfl | rfl | rfl | rfl <;> simp only [SSet, sX, sR5, sL7, sC3, sw] <;> omega)))
-    (by simp only [SSet, ALLOC, sw]; omega) hm1
+      omega_nf)))
+    (by omega_nf) hm1
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := kk ALLOC (by
-    simp only [ISet, sX, sR5, sL7, sC3, ALLOC, sw]; omega)
+    omega_nf)
   have w5 : c₁.nreg sR5 = c.nmem (B + 5) := by
-    rw [hc1]; show regB c.nmem scanInitL c.nreg sR5 = _; rw [v1, hB]
+    simp_all
   have w7 : c₁.nreg sL7 = c.nmem (B + 7) := by
-    rw [hc1]; show regB c.nmem scanInitL c.nreg sL7 = _; rw [v2, hB]
+    simp_all
   have w3 : c₁.nreg sC3 = c.nmem (B + 3) := by
-    rw [hc1]; show regB c.nmem scanInitL c.nreg sC3 = _; rw [v3, hB]
+    simp_all
   have hS₁ := hS.keep fr1
   have hacc₁ := hacc.transport (c' := c₁) (fun j hj => kk _ (by
-    simp only [ISet, sX, sR5, sL7, sC3, accA, sw]; omega))
+    grind [ISet, sX, sR5, sL7, sC3, accA, sw]))
   have nr : ∀ q, q = lR0 ∨ q = lR1 ∨ q = lR2 → ¬ SSet q := by
-    intro q hq; rcases hq with rfl | rfl | rfl <;> simp only [SSet, lR0, lR1, lR2, sw] <;> omega
+    omega_nf
   have g0 : c₁.nreg lR0 = r0 := by
-    rw [kk lR0 (by simp only [ISet, sX, sR5, sL7, sC3, lR0, sw]; omega), h0]
+    grind [ISet, sX, sR5, sL7, sC3, lR0, sw]
   have g1 : c₁.nreg lR1 = r1 := by
-    rw [kk lR1 (by simp only [ISet, sX, sR5, sL7, sC3, lR1, sw]; omega), h1]
+    grind [ISet, sX, sR5, sL7, sC3, lR1, sw]
   have g2 : c₁.nreg lR2 = r2 := by
-    rw [kk lR2 (by simp only [ISet, sX, sR5, sL7, sC3, lR2, sw]; omega), h2]
+    grind [ISet, sX, sR5, sL7, sC3, lR2, sw]
   -- region `r0`
   refine IRS.seq (K₂ := scanRK (N.region r1).chords.length + scanRK (N.region r2).chords.length)
     (scanR_irs (nr lR0 (Or.inl rfl)) hI₁ hK hS₁ hr0
       (hNW.transport (fun a ha => by rw [hm1])) (by omega) g0 (by rw [w5, hm1])
       (by rw [w7, hm1]) (by rw [w3, hm1]) hacc₁
-      (by rw [hA1]; unfold lhScanK at hroom; omega)) ?_
+      (by ram_grind)) ?_
   rintro c₂ hI₂ hA2 hA2' ⟨hst2, fr2⟩
   obtain ⟨L₁, a₁, s₁, gg₁, d₁⟩ := hst2
   have m2 : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
@@ -674,7 +642,7 @@ theorem lhScan_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : 
       (by rw [fr2.scanKeep (by simp), w5, m2 _ (by omega)])
       (by rw [fr2.scanKeep (by simp), w7, m2 _ (by omega)])
       (by rw [fr2.scanKeep (by simp), w3, m2 _ (by omega)]) a₁
-      (by unfold lhScanK at hroom; omega)) ?_
+      (by grind [lhScanK])) ?_
   rintro c₃ hI₃ hA3 hA3' ⟨hst3, fr3⟩
   obtain ⟨L₂, a₂, s₂, gg₂, d₂⟩ := hst3
   have m3 : ∀ a, a < c.nreg ALLOC → c₃.nmem a = c.nmem a := fun a ha => by
@@ -686,7 +654,7 @@ theorem lhScan_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : 
       (by rw [fr3.scanKeep (by simp), fr2.scanKeep (by simp), w5, m3 _ (by omega)])
       (by rw [fr3.scanKeep (by simp), fr2.scanKeep (by simp), w7, m3 _ (by omega)])
       (by rw [fr3.scanKeep (by simp), fr2.scanKeep (by simp), w3, m3 _ (by omega)]) a₂
-      (by unfold lhScanK at hroom; omega)).mono le_rfl ?_
+      (by grind [lhScanK])).mono le_rfl ?_
   rintro c₄ ⟨hst4, fr4⟩
   refine ⟨AccStep.trans s₁ gg₁ d₁ (AccStep.trans s₂ gg₂ d₂ hst4), ?_⟩
   exact fr1.trans ((fr2.mono fun q h => scanW_sset h).trans

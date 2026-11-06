@@ -59,27 +59,28 @@ section helpers
 
 variable {P : Polygon} {W : ℕ}
 
+section
+variable {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n) (d s : ℕ)
+include hc b hA
 /-- Spec of `wvS`: cost `≤ 3`, `d := wv b n s`. -/
-theorem wvS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n)
-    (d s : ℕ) :
+theorem wvS_spec :
     ∃ c' k, Exec P W (wvS d s) c c' k ∧ k ≤ 3 ∧
       c' = { c with nreg := upd c.nreg d (wv b n (c.nreg s)) } := by
   obtain ⟨-, -, h2, h3, h17, -⟩ := hA
   unfold wvS
   cases b
-  · refine spec_ifLtN_false (by rw [h2, h3]; decide) (spec_instr (Exec.copyN hc d s) fun _ => ?_)
-    exact ⟨by omega, by simp [wv]⟩
-  · refine spec_ifLtN_true (by rw [h2, h3]; decide) (spec_instr (Exec.subN hc d 220017 s) fun _ => ?_)
-    exact ⟨by omega, by simp [wv, h17]⟩
+  · refine spec_ifLtN_false (by simp_all) (spec_instr (Exec.copyN hc d s) fun _ => ?_)
+    aesop
+  · refine spec_ifLtN_true (by simp_all) (spec_instr (Exec.subN hc d 220017 s) fun _ => ?_)
+    aesop
 
 /-- Spec of `nxtS`: cost `≤ 4`, `d := nxt n s`. -/
-theorem nxtS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n)
-    (d s : ℕ) (hd0 : d ≠ 220000) (_hd1 : d ≠ 220001) (hs : c.nreg s < n) (hn : n ≤ W) :
+theorem nxtS_spec (hd0 : d ≠ 220000) (_hd1 : d ≠ 220001) (hs : c.nreg s < n) (hn : n ≤ W) :
     ∃ c' k, Exec P W (nxtS d s) c c' k ∧ k ≤ 4 ∧
       c' = { c with nreg := upd c.nreg d (nxt n (c.nreg s)) } := by
   obtain ⟨h0, h1, -, -, -, -⟩ := hA
   unfold nxtS
-  refine spec_seq (spec_instr (Exec.addN hc d s 220001 (by rw [h1]; omega)) fun hw₁ => ?_)
+  refine spec_seq (spec_instr (Exec.addN hc d s 220001 (by omega)) fun hw₁ => ?_)
   by_cases hlt : c.nreg s + 1 < n
   · refine spec_ifLtN_true (by
       simp only [Machine.upd_same, Machine.upd_other _ _ _ (Ne.symm hd0), h0, h1]
@@ -93,32 +94,29 @@ theorem nxtS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA 
     simp [nxt, hlt]
 
 /-- Spec of `inpS`: cost `≤ 6`, `d := inp b n s`; only `d` and `220116` written. -/
-theorem inpS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n)
-    (d s : ℕ) (_hd : d ≠ 220116) (hsX : s ≠ 220116) (hs : c.nreg s < n) (hn : n ≤ W) :
+theorem inpS_spec (_hd : d ≠ 220116) (hsX : s ≠ 220116) (hs : c.nreg s < n) (hn : n ≤ W) :
     ∃ c' k, Exec P W (inpS d s) c c' k ∧ k ≤ 6 ∧ c'.nreg d = inp b n (c.nreg s) ∧
       SignK.FrameB (fun r => decide (r = d ∨ r = 220116)) c c' := by
   obtain ⟨h0, h1, h2, h3, h17, h18⟩ := hA
   unfold inpS
   cases b
-  · refine spec_ifLtN_false (by rw [h2, h3]; decide) (spec_instr (Exec.copyN hc d s) fun _ => ?_)
+  · refine spec_ifLtN_false (by simp_all) (spec_instr (Exec.copyN hc d s) fun _ => ?_)
     refine ⟨by omega, by simp [inp], fun r hr => ?_, fun _ _ => rfl, rfl, rfl, rfl⟩
-    simp only [decide_eq_false_iff_not, not_or] at hr
-    simp [hr.1]
-  · refine spec_ifLtN_true (by rw [h2, h3]; decide)
-      (spec_seq (spec_instr (Exec.addN hc 220116 s 220001 (by rw [h1]; omega)) fun hw₁ => ?_))
+    simp_all
+  · refine spec_ifLtN_true (by simp_all)
+      (spec_seq (spec_instr (Exec.addN hc 220116 s 220001 (by omega)) fun hw₁ => ?_))
     by_cases hlt : c.nreg s + 1 < n
-    · refine spec_ifLtN_true (by simp [h0, h1, hlt])
+    · refine spec_ifLtN_true (by simp_all)
         (spec_instr (Exec.subN hw₁ d 220018 s) fun _ => ?_)
       refine ⟨by omega, ?_, fun r hr => ?_, fun _ _ => rfl, rfl, rfl, rfl⟩
-      · simp [inp, hlt, h18, hsX]
-      · simp only [decide_eq_false_iff_not, not_or] at hr
-        simp [hr.1, hr.2]
-    · refine spec_ifLtN_false (by simp [h0, h1, hlt])
+      all_goals (aesop (add simp [inp, decide_eq_false_iff_not, not_or]) (add safe (by omega)))
+    · refine spec_ifLtN_false (by simp_all)
         (spec_instr (Exec.copyN hw₁ d 220017) fun _ => ?_)
       refine ⟨by omega, ?_, fun r hr => ?_, fun _ _ => rfl, rfl, rfl, rfl⟩
-      · simp [inp, hlt, h17]
-      · simp only [decide_eq_false_iff_not, not_or] at hr
-        simp [hr.1, hr.2]
+      all_goals (aesop (add simp [inp, decide_eq_false_iff_not, not_or]) (add safe (by omega)))
+
+
+end
 
 end helpers
 
@@ -159,8 +157,11 @@ section chord
 
 variable {P : Polygon} {W : ℕ}
 
+section
+variable {c : Config} (hc : WordsBounded W c) (hW : 1 ≤ W)
+include hc hW
 /-- Spec of `dnS`: a top chord sets the top flag and vertex, a bottom chord the bottom ones. -/
-theorem dnS_spec {c : Config} (hc : WordsBounded W c) (hW : 1 ≤ W) :
+theorem dnS_spec :
     ∃ c' k, Exec P W dnS c c' k ∧ k ≤ 6 ∧
       c' = if c.nreg 220107 = c.nreg 220010 then
         { c with nreg := upd (upd c.nreg 220108 1) 220112 (c.nreg 220104) }
@@ -169,19 +170,16 @@ theorem dnS_spec {c : Config} (hc : WordsBounded W c) (hW : 1 ≤ W) :
   rcases lt_trichotomy (c.nreg 220107) (c.nreg 220010) with h | h | h
   · refine spec_ifLtN_true h ?_
     exec_block
-    · exact hW
-    · exact ⟨by omega, by rw [Setup.iteF h.ne]⟩
+    all_goals aesop
   · refine spec_ifLtN_false (by omega) (spec_ifLtN_false (by omega) ?_)
     exec_block
-    · exact hW
-    · exact ⟨by omega, by rw [Setup.iteT h]⟩
+    all_goals simp_all
   · refine spec_ifLtN_false (by omega) (spec_ifLtN_true h ?_)
     exec_block
-    · exact hW
-    · exact ⟨by omega, by rw [Setup.iteF h.ne']⟩
+    all_goals aesop
 
 /-- Spec of `lrS`: when `wv p ≠ h`, set the flag `F` and `V := S`. -/
-theorem lrS_spec {c : Config} (hc : WordsBounded W c) (hW : 1 ≤ W) (F V S : ℕ) (hSF : S ≠ F) :
+theorem lrS_spec (F V S : ℕ) (hSF : S ≠ F) :
     ∃ c' k, Exec P W (lrS F V S) c c' k ∧ k ≤ 6 ∧
       c' = if c.nreg 220116 = c.nreg 220104 then c
       else { c with nreg := upd (upd c.nreg F 1) V (c.nreg S) } := by
@@ -189,16 +187,15 @@ theorem lrS_spec {c : Config} (hc : WordsBounded W c) (hW : 1 ≤ W) (F V S : �
   rcases lt_trichotomy (c.nreg 220116) (c.nreg 220104) with h | h | h
   · refine spec_ifLtN_true h ?_
     exec_block
-    · exact hW
-    · refine ⟨by omega, ?_⟩
-      rw [Setup.iteF h.ne, Machine.upd_other _ _ _ hSF]
+    all_goals aesop
   · refine spec_ifLtN_false (by omega) (spec_ifLtN_false (by omega) (spec_skip hc ?_))
-    exact ⟨by omega, by rw [Setup.iteT h]⟩
+    simp_all
   · refine spec_ifLtN_false (by omega) (spec_ifLtN_true h ?_)
     exec_block
-    · exact hW
-    · refine ⟨by omega, ?_⟩
-      rw [Setup.iteF h.ne', Machine.upd_other _ _ _ hSF]
+    all_goals aesop
+
+
+end
 
 end chord
 
@@ -220,10 +217,10 @@ theorem loadS_spec {c : Config} (hc : WordsBounded W c) {lb off t cb kk : ℕ}
   exec_block
   all_goals try (config_simp; simp only [hLB, hOFF, hTI, hCB, h1, h19, hK]; omega)
   refine ⟨rfl, ?_, ?_, ?_, ?_, fun r hr1 hr2 => ?_, rfl, rfl, rfl, rfl⟩
-  · config_simp; simp only [hLB, hOFF, hTI, hCB, hK]; congr 1; omega
-  · config_simp; simp only [hLB, hOFF, hTI, hCB, hK, h1]; congr 1; omega
-  · config_simp; simp only [hLB, hOFF, hTI, hCB, hK, h1]; congr 1; omega
-  · config_simp; simp only [hLB, hOFF, hTI, hCB, hK, h1, h19]; congr 1; omega
+  · config_simp; grind
+  · config_simp; grind
+  · config_simp; grind
+  · config_simp; grind
   · simp (disch := omega) only [Machine.upd_other]
 
 end chord2
@@ -259,8 +256,8 @@ theorem chordBody_spec {c : Config} (hc : WordsBounded W c) {b : Bool}
   have hw2 := e2.wb_right
   have hA2' : ArithRegs c2 b n := by
     subst hc2; split_ifs <;>
-    exact ⟨by simp [f1, hA0], by simp [f1, hA1], by simp [f1, hA2], by simp [f1, hA3],
-      by simp [f1, hA17], by simp [f1, hA18]⟩
+    exact ⟨by simp_all, by simp_all, by simp_all, by simp_all,
+      by simp_all, by simp_all⟩
   obtain ⟨c3, k3, e3, hk3, hc3⟩ := wvS_spec (P := P) hw2 hA2' 220116 220105
   have hw3 := e3.wb_right
   obtain ⟨c4, k4, e4, hk4, hc4⟩ := lrS_spec (P := P) hw3 hW 220110 220114 220105 (by decide)
@@ -319,16 +316,22 @@ section loop
 
 variable {P : Polygon} {W : ℕ}
 
+section
+variable (b : Bool) (n ri : ℕ) (N : NF) (L : List ℕ)
+include b n ri N L
 /-- The scan of the first `t` chords of the list `L`. -/
-def scanAcc (b : Bool) (n ri : ℕ) (N : NF) (L : List ℕ) (t : ℕ) : Acc :=
+def scanAcc (t : ℕ) : Acc :=
   ((L.take t).map N.chord).foldl (accStep b n ri) Acc.init
 
 /-- One more chord of the list. -/
-theorem scanAcc_succ (b : Bool) (n ri : ℕ) (N : NF) (L : List ℕ) {t : ℕ} (ht : t < L.length) :
+theorem scanAcc_succ {t : ℕ} (ht : t < L.length) :
     scanAcc b n ri N L (t + 1) = accStep b n ri (scanAcc b n ri N L t) (N.chord (L.getD t 0)) := by
   unfold scanAcc
   rw [List.take_add_one, List.map_append, List.foldl_append, List.getElem?_eq_getElem ht]
   simp [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht]
+
+
+end
 
 /-- The invariant of the scan loop (`cs` the configuration on entry). -/
 def ScanInv (W : ℕ) (b : Bool) (n ri : ℕ) (N : NF) (L : List ℕ) (cs c : Config) : Prop :=
@@ -407,9 +410,11 @@ section fin
 
 variable {P : Polygon} {W : ℕ}
 
+section
+variable {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n) (hn : n ≤ W)
+include hc hA hn
 /-- Spec of `pickS`: cost `≤ 8`. -/
-theorem pickS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n)
-    (hn : n ≤ W) (d f x g y z : ℕ) (hd0 : d ≠ 220000) (hd1 : d ≠ 220001) {bf bg : Bool}
+theorem pickS_spec (d f x g y z : ℕ) (hd0 : d ≠ 220000) (hd1 : d ≠ 220001) {bf bg : Bool}
     (hf : c.nreg f = bf.toNat) (hg : c.nreg g = bg.toNat)
     (hz : bf = false → bg = false → c.nreg z < n) :
     ∃ c' k, Exec P W (pickS d f x g y z) c c' k ∧ k ≤ 8 ∧
@@ -430,8 +435,7 @@ theorem pickS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA
     exact ⟨by omega, by simp⟩
 
 /-- Spec of `cornerS`: cost `≤ 9`; only `d` and `220117` written. -/
-theorem cornerS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n)
-    (hn : n ≤ W) (d f x z : ℕ) (_hd : d ≠ 220117) {bf : Bool} (hf : c.nreg f = bf.toNat)
+theorem cornerS_spec (d f x z : ℕ) (_hd : d ≠ 220117) {bf : Bool} (hf : c.nreg f = bf.toNat)
     (hz : bf = false → c.nreg z < n) :
     ∃ c' k, Exec P W (cornerS d f x z) c c' k ∧ k ≤ 9 ∧
       c'.nreg d = (if bf then c.nreg x else wv b n (nxt n (c.nreg z))) ∧
@@ -453,6 +457,9 @@ theorem cornerS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (
     refine ⟨by omega, by simp, fun r hr => ?_, fun _ _ => rfl, rfl, rfl, rfl⟩
     simp only [decide_eq_false_iff_not, not_or] at hr
     simp [hr.1]
+
+
+end
 
 end fin
 
@@ -484,7 +491,7 @@ theorem finS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA 
       c'.nreg 220122 = (finish b n a).top ∧ c'.nreg 220123 = (finish b n a).bot ∧
       SignK.FrameB finB c c' := by
   obtain ⟨a1, a2, a3, a4, a5, a6, a7, a8⟩ := hacc
-  have hn1 : 0 < n := lt_of_le_of_lt (Nat.zero_le _) hpl
+  
   set PLv := (if a.hL then a.pl else if a.hT then wv b n a.vt else nxt n a.pr) with hPLv
   have hPL : PLv < n := by
     rw [hPLv]; split_ifs
@@ -553,15 +560,20 @@ end fin2
 /-! ## Reading a robust normal form -/
 
 /-- The memory `m` below `A`, the constant `X` above. -/
-def mX (A : ℕ) (m : ℕ → ℕ) (X : ℕ) (y : ℕ) : ℕ := if y < A then m y else X
+def mX (A : ℕ) (m : ℕ → ℕ) (X y : ℕ) : ℕ := if y < A then m y else X
 
+section
+variable {A : ℕ} {m : ℕ → ℕ} {X y : ℕ}
 /-- `mX` below `A`. -/
-theorem mX_of_lt {A : ℕ} {m : ℕ → ℕ} {X y : ℕ} (h : y < A) : mX A m X y = m y := by
+theorem mX_of_lt (h : y < A) : mX A m X y = m y := by
   simp [mX, h]
 
 /-- `mX` at or above `A`. -/
-theorem mX_of_ge {A : ℕ} {m : ℕ → ℕ} {X y : ℕ} (h : A ≤ y) : mX A m X y = X := by
+theorem mX_of_ge (h : A ≤ y) : mX A m X y = X := by
   simp [mX, not_lt.2 h]
+
+
+end
 
 /-- The facts of a normal form in memory that the output program reads, with the addresses it
 computes below `A`. -/
@@ -637,8 +649,11 @@ def preB (r : ℕ) : Bool := decide (r = 220014 ∨ r = 220015 ∨ (220100 ≤ r
 /-- `regPre` writes only its own registers. -/
 theorem wr_regPre : SignK.wr preB regPre = true := by decide
 
+section
+variable {c : Config} (hc : WordsBounded W c)
+include hc
 /-- Spec of `regPre`: the length and offset of the chord list of the region, the scan reset; cost `13`. -/
-theorem regPre_spec {c : Config} (hc : WordsBounded W c) {ra : ℕ} (h19 : c.nreg 220019 = 2)
+theorem regPre_spec {ra : ℕ} (h19 : c.nreg 220019 = 2)
     (h20 : c.nreg 220020 = 3) (hRA : c.nreg 220013 = ra) (hb : ra + 3 ≤ W) :
     ∃ c' k, Exec P W regPre c c' k ∧ k = 13 ∧ c'.nreg 220014 = c.nmem (ra + 2) ∧
       c'.nreg 220015 = c.nmem (ra + 3) ∧ c'.nreg 220100 = 0 ∧ AccIn c' Acc.init ∧
@@ -658,7 +673,7 @@ theorem regPre_spec {c : Config} (hc : WordsBounded W c) {ra : ℕ} (h19 : c.nre
   exact ⟨c', k, ex, hk, h1, h2, h3, h4, SignK.exec_frameB ex wr_regPre⟩
 
 /-- Spec of `storeS`: the four words of the record at the output address, the addresses and the allocator advanced; cost `11`. -/
-theorem storeS_spec {c : Config} (hc : WordsBounded W c) {o ra ri al : ℕ}
+theorem storeS_spec {o ra ri al : ℕ}
     (h1 : c.nreg 220001 = 1) (h11 : c.nreg 220011 = 4) (h12 : c.nreg 220012 = 5)
     (hO : c.nreg 220016 = o) (hRA : c.nreg 220013 = ra) (hRI : c.nreg 220010 = ri)
     (hAL : c.nreg 9999 = al) (hb1 : o + 4 ≤ W) (hb2 : ra + 5 ≤ W) (hb3 : ri + 1 ≤ W)
@@ -682,14 +697,19 @@ theorem storeS_spec {c : Config} (hc : WordsBounded W c) {o ra ri al : ℕ}
   · config_simp; simp only [hAL, h11]
   · simp (disch := omega) only [Machine.upd_other]
 
+
+end
+
 end region
 
 section region2
 
 variable {P : Polygon} {W : ℕ}
 
+section
+variable (b : Bool) (n ri : ℕ)
 /-- The values of the scan stay below `n`. -/
-theorem fold_lt (b : Bool) (n ri : ℕ) (L : List CRec) (hL : ∀ c ∈ L, c.h < n ∧ c.lp < n ∧ c.rp < n)
+theorem fold_lt (L : List CRec) (hL : ∀ c ∈ L, c.h < n ∧ c.lp < n ∧ c.rp < n)
     (a : Acc) (ha : a.vt < n ∧ a.vb < n ∧ a.pl < n ∧ a.pr < n) :
     (L.foldl (accStep b n ri) a).vt < n ∧ (L.foldl (accStep b n ri) a).vb < n ∧
       (L.foldl (accStep b n ri) a).pl < n ∧ (L.foldl (accStep b n ri) a).pr < n := by
@@ -703,9 +723,12 @@ theorem fold_lt (b : Bool) (n ri : ℕ) (L : List CRec) (hL : ∀ c ∈ L, c.h <
     refine ⟨?_, ?_, ?_, ?_⟩ <;> simp only [accStep] <;> split_ifs <;> assumption
 
 /-- The scan of the whole list is `accOf`. -/
-theorem scanAcc_length (b : Bool) (n ri : ℕ) (N : NF) :
+theorem scanAcc_length (N : NF) :
     scanAcc b n ri N (N.region ri).chords (N.region ri).chords.length = accOf b n N ri := by
   unfold scanAcc accOf; rw [List.take_length]
+
+
+end
 
 /-- The record `rec` is stored at `A` (four words). -/
 def TrapAt (m : ℕ → ℕ) (A : ℕ) (rec : Final.TrapRec) : Prop :=
@@ -765,7 +788,7 @@ theorem regionBody_spec {c0 c : Config} {b : Bool} {n B T0 rb lb cb : ℕ} {N : 
   have c12 : c.nreg 220012 = 5 := by rw [g _ (by unfold regFree; omega), h5]
   have c6 : c.nreg 220006 = cb := by rw [g _ (by unfold regFree; omega), hcb']
   have c8 : c.nreg 220008 = lb := by rw [g _ (by unfold regFree; omega), hlb']
-  have hT0W : T0 ≤ W := by omega
+  
   obtain ⟨hlenm, hlenA⟩ := hRd.regs ri ht
   rw [hrb] at hlenm hlenA
   -- stage 1

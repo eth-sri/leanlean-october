@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildWt
 public import Chazelle.Core.NFBuildCmpRam
 public import Chazelle.Core.GranPzExec
@@ -40,36 +42,19 @@ theorem arcWtNat_eq_wtF {lo hi ea eb pz lt : ℕ} {fa fb : ℝ} {counted : ℕ �
     arcWtNat lo hi ea fa eb fb = wtF lo hi ea eb pz lt := by
   unfold arcWtNat wtF keyCeil
   by_cases hl : (ea : ℝ) + fa < eb + fb
-  · rw [ite_eq_left hl, ite_eq_left (hlt.2 hl)]
-    by_cases hcb : counted eb
-    · by_cases hf : fb = 0
-      · have : pz = 0 := by
-          by_contra h; have := hpz.1 (by omega); exact this.2 hf
-        rw [ite_eq_left hf, this, Nat.add_zero]
-      · have : pz = 1 := hpz.2 ⟨hcb, hf⟩
-        rw [ite_eq_right hf, this]
-    · have : pz = 0 := by by_contra h; exact hcb (hpz.1 (by omega)).1
-      rw [this, Nat.add_zero]
-      have hn := (not_congr hc).1 hcb
-      split_ifs <;> omega
-  · rw [ite_eq_right hl, ite_eq_right (fun h => hl (hlt.1 h))]
-    by_cases hcb : counted eb
-    · by_cases hf : fb = 0
-      · have : pz = 0 := by
-          by_contra h; have := hpz.1 (by omega); exact this.2 hf
-        rw [ite_eq_left hf, this, Nat.add_zero]
-      · have : pz = 1 := hpz.2 ⟨hcb, hf⟩
-        rw [ite_eq_right hf, this]
-    · have : pz = 0 := by by_contra h; exact hcb (hpz.1 (by omega)).1
-      rw [this, Nat.add_zero]
-      have hn := (not_congr hc).1 hcb
-      split_ifs <;> omega
+  all_goals ram_grind
 
+section
+variable (m : ℕ → ℕ)
+include m
 /-- The counted interval of a described model. -/
-def loOf (m : ℕ → ℕ) (D : ℕ) : ℕ := if m D = 0 then 6 else 0
+def loOf (D : ℕ) : ℕ := if m D = 0 then 6 else 0
 
 /-- The end of the counted interval of a described model. -/
-def hiOf (m : ℕ → ℕ) (D n : ℕ) : ℕ := if m D = 0 then 2 * m (D + 3) + 6 else n
+def hiOf (D n : ℕ) : ℕ := if m D = 0 then 2 * m (D + 3) + 6 else n
+
+
+end
 
 /-- **The counted edges of a described model** form `[loOf, hiOf)`, within the walk. -/
 theorem countedIv {m : ℕ → ℕ} {D : ℕ} {P : Polygon} {M : Model}
@@ -78,22 +63,26 @@ theorem countedIv {m : ℕ → ℕ} {D : ℕ} {P : Polygon} {M : Model}
       hiOf m D P.n ≤ M.W.n := by
   rcases hM with ⟨h0, H, C, hC, rfl⟩ | ⟨h1, -, rfl⟩
   · have hm : m (D + 1 + 2) = C.m := hC.2.2.2.1
-    unfold loOf hiOf
-    rw [ite_eq_left h0, ite_eq_left h0, show D + 3 = D + 1 + 2 by omega, hm, chainModel_n]
-    exact ⟨fun p hp => chainModel_counted_iff C p (by rw [chainModel_n]; exact hp), by omega⟩
+    aesop (add simp [loOf, hiOf, chainModel_n]) (add safe (by omega))
   · have hn : (Qof P).n = P.n := shear_n _ _
     unfold loOf hiOf
     rw [ite_eq_right (by omega), ite_eq_right (by omega), interiorModel_n, hn]
     refine ⟨fun p hp => ?_, le_rfl⟩
-    rw [interiorModel_counted_iff _ p (by rw [interiorModel_n, hn]; exact hp), hn]
+    rw [interiorModel_counted_iff _ p (by simp_all [interiorModel_n] ), hn]
 
 /-! ## The counted interval on the machine -/
 
+section
+variable (m : ℕ → ℕ) (D n : ℕ)
+include m D n
 /-- The length of the counted interval of a described model. -/
-def hdOf (m : ℕ → ℕ) (D n : ℕ) : ℕ := if m D = 0 then 2 * m (D + 3) else n
+def hdOf : ℕ := if m D = 0 then 2 * m (D + 3) else n
 
-theorem hdOf_eq (m : ℕ → ℕ) (D n : ℕ) : hdOf m D n = hiOf m D n - loOf m D := by
+theorem hdOf_eq : hdOf m D n = hiOf m D n - loOf m D := by
   unfold hdOf hiOf loOf; split_ifs <;> omega
+
+
+end
 
 /-- The counted interval: `r44020 = lo`, `r44021 = hi - lo`; also `r41023` the model kind and
 `r41019 = 1` (the parameter test reads them). -/
@@ -126,24 +115,17 @@ theorem lohiS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
   · omega
   by_cases h0 : d.nmem D = 0
   · have hW' := hW h0
-    refine spec_ifLtN_true (by config_simp; rw [hD, h0]; omega) ?_
+    refine spec_ifLtN_true (by simp_all) ?_
     exec_block
     · omega
     · omega
-    · config_simp; rw [hD]; omega
-    · config_simp; rw [hD, show 3 + D = D + 3 by omega]; omega
+    · omega_nf
+    · simp_all +arith
     · refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
-      · unfold loOf; rw [ite_eq_left h0]
-      · unfold hdOf; rw [ite_eq_left h0, hD, show 3 + D = D + 3 by omega]; ring
-      · rw [hD]
-  · refine spec_ifLtN_false (by config_simp; rw [hD]; omega) ?_
+      all_goals (grind [loOf, hdOf])
+  · refine spec_ifLtN_false (by simp_all) ?_
     exec_block
-    · omega
-    · omega
-    · refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
-      · unfold loOf; rw [ite_eq_right h0]
-      · unfold hdOf; rw [ite_eq_right h0]
-      · rw [hD]
+    all_goals (simp_all [loOf, hdOf] )
 
 /-! ## The parameter test in band `bBuild` -/
 
@@ -154,15 +136,12 @@ def pzR : Stmt := Stmt.ren σ Gran.pzStmt
 def BpzR (r : ℕ) : Bool := Gran.Bpz (σ r)
 
 theorem wr_pzR : wr BpzR pzR = true := by
-  rw [pzR, wr_ren σ_σ]
-  have : (fun r => BpzR (σ r)) = Gran.Bpz := by funext r; simp [BpzR, σ_σ]
-  rw [this]; exact Gran.wr_pzStmt
+  aesop (add simp [pzR, BpzR, σ_σ]) (add safe (by omega))
 
 theorem BpzR_true {r : ℕ} (h : BpzR r = true) :
     (10000 ≤ r ∧ r < 10503) ∨ (40000 < r ∧ r < 40100) ∨ (41110 ≤ r ∧ r < 41120) := by
   simp only [BpzR, Gran.Bpz, Bdir, Bool.or_eq_true, decide_eq_true_eq] at h
-  unfold σ at h
-  split_ifs at h <;> omega
+  grind [σ]
 
 /-- **The parameter test**: `r41112 = 1` iff the edge `r41110` is counted and the position
 `⟨r41110, r41111⟩` has a nonzero parameter. -/
@@ -179,11 +158,9 @@ theorem pzR_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n 
   refine ⟨cfgRen σ c', k, exec_of_ren σ_σ ex, hk, ⟨fun r hr => ?_, fun r hr => ?_, hfr.2.2.1,
     hfr.2.2.2.1, hfr.2.2.2.2⟩, h1, h2⟩
   · have := hfr.1 (σ r) hr
-    simp only [cfgRen_nreg, σ_σ] at this ⊢
-    exact this
+    simp_all [cfgRen_nreg, σ_σ] 
   · have := hfr.2.1 (σ r) hr
-    simp only [cfgRen, σ_σ] at this ⊢
-    exact this
+    simp_all [cfgRen, σ_σ] 
 
 /-! ## The weight on the machine -/
 
@@ -198,9 +175,8 @@ theorem wtF_eq_wtG {lo hi ea eb pz lt : ℕ} (hlh : lo ≤ hi) (hpz : pz = 1 →
   unfold wtF wtG
   have : pz = 0 ∨ pz = 1 := by omega
   rcases this with rfl | rfl
-  · split_ifs <;> simp only [Nat.min_def, Nat.max_def] <;> split_ifs <;> omega
-  · have := hpz rfl
-    split_ifs <;> simp only [Nat.min_def, Nat.max_def] <;> split_ifs <;> omega
+  · split_ifs <;> ram_grind <;> split_ifs 
+  ram_grind
 
 /-- `wtG` of `lo = r44020`, `h = r44021`, `ea = r42110`, `eb = r42113`, `pz = r41112`,
 `lt = r43120` into `r43121`. -/
@@ -230,40 +206,38 @@ theorem wtS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
   unfold wtS wtG
   refine spec_seq ?_
   exec_block
-  · config_simp; exact hs
+  · omega_nf
   set t := d.nreg 42113 - d.nreg 44020 + d.nreg 41112 with ht
   set u := d.nreg 42110 - d.nreg 44020 with hu
   by_cases hl : d.nreg 43120 < 1
-  · refine spec_ifLtN_true (by config_simp; rw [h1]; exact hl) ?_
+  · refine spec_ifLtN_true (by ram_simp) ?_
     rw [ite_eq_right (by omega)]
     refine spec_seq ?_
     by_cases a1 : u < d.nreg 44021
-    · refine spec_ifLtN_true (by config_simp; exact a1)
+    · refine spec_ifLtN_true (by omega_nf)
+        (spec_instr (Exec.copyN ‹_› _ _) fun hw₂ => ?_)
+      exec_block
+      omega_nf
+    · refine spec_ifLtN_false (by omega_nf)
         (spec_instr (Exec.copyN ‹_› _ _) fun hw₂ => ?_)
       exec_block
       refine ⟨by omega, ?_⟩
       config_simp
-      rw [min_eq_left a1.le]
-    · refine spec_ifLtN_false (by config_simp; exact a1)
-        (spec_instr (Exec.copyN ‹_› _ _) fun hw₂ => ?_)
-      exec_block
-      refine ⟨by omega, ?_⟩
-      config_simp
-      rw [min_eq_right (not_lt.1 a1)]
-  · refine spec_ifLtN_false (by config_simp; rw [h1]; exact hl) ?_
+      omega
+  · refine spec_ifLtN_false (by ram_simp) ?_
     rw [ite_eq_left (by omega)]
     refine spec_seq ?_
     by_cases a1 : t < d.nreg 44021
-    · refine spec_ifLtN_true (by config_simp; exact a1)
+    · refine spec_ifLtN_true (by omega_nf)
         (spec_instr (Exec.copyN ‹_› _ _) fun hw₂ => ?_)
       refine spec_instr (Exec.subN hw₂ _ _ _) fun _ => ⟨by omega, ?_⟩
       config_simp
-      rw [min_eq_left a1.le]
-    · refine spec_ifLtN_false (by config_simp; exact a1)
+      omega
+    · refine spec_ifLtN_false (by omega_nf)
         (spec_instr (Exec.copyN ‹_› _ _) fun hw₂ => ?_)
       refine spec_instr (Exec.subN hw₂ _ _ _) fun _ => ⟨by omega, ?_⟩
       config_simp
-      rw [min_eq_right (not_lt.1 a1)]
+      omega
 
 end
 

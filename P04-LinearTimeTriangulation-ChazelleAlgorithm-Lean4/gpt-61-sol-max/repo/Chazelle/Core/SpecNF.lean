@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SpecBase
 
 /-!
@@ -110,16 +112,22 @@ def lpos (c : CRec) : WPos := ⟨c.lp, c.h + 1⟩
 /-- The walk position of the right endpoint. -/
 def rpos (c : CRec) : WPos := ⟨c.rp, c.h + 1⟩
 
+section
+variable (M : Model) (Q : Polygon) (c : CRec)
+include M Q c
 /-- **The Euclidean chord** of a record in the model `M` with heights from `Q`. -/
-noncomputable def toSet (M : Model) (Q : Polygon) (c : CRec) : Set Point :=
+noncomputable def toSet : Set Point :=
   Visibility.hseg (Q.vtx c.h).2 (M.pos Q c.lpos).1 (M.pos Q c.rpos).1
 
 /-- The record names the walk positions at which its chord is attached (side-aware,
 `Chazelle.Chain.SideAttach`): the walk edges `lp`, `rp` are the ones whose left sector the chord
 enters, not the other side of the same point. -/
-def Attached (M : Model) (Q : Polygon) (c : CRec) : Prop :=
+def Attached : Prop :=
   Chazelle.Chain.SideAttach M.W (c.toSet M Q) c.lp (M.param Q c.lpos) ∧
     Chazelle.Chain.SideAttach M.W (c.toSet M Q) c.rp (M.param Q c.rpos)
+
+
+end
 
 end CRec
 
@@ -171,16 +179,19 @@ end NF
 
 /-! ## Validity -/
 
+section
+variable (M : Model) (Q : Polygon) (N : NF) (reg : ℕ → Set Point)
+include M Q N reg
 /-- **The region correspondence**: `reg` maps region indices bijectively onto the regions of the
 chord family. -/
-def RegionCorr (M : Model) (Q : Polygon) (N : NF) (reg : ℕ → Set Point) : Prop :=
+def RegionCorr : Prop :=
   (∀ r, r < N.nRegions → reg r ∈ M.regions (N.F M Q)) ∧
     (∀ r r', r < N.nRegions → r' < N.nRegions → reg r = reg r' → r = r') ∧
     (∀ U ∈ M.regions (N.F M Q), ∃ r, r < N.nRegions ∧ reg r = U)
 
 /-- The chord records describe their regions: the region above (below) the chord `i` contains the
 points just above (below) every point of its open part in the domain. -/
-def ChordSidesOK (M : Model) (Q : Polygon) (N : NF) (reg : ℕ → Set Point) : Prop :=
+def ChordSidesOK : Prop :=
   ∀ i, i < N.nChords →
     (N.chord i).up < N.nRegions ∧ (N.chord i).dn < N.nRegions ∧
     ∀ z ∈ (N.chord i).toSet M Q, z ∈ M.D →
@@ -189,7 +200,7 @@ def ChordSidesOK (M : Model) (Q : Polygon) (N : NF) (reg : ℕ → Set Point) : 
 
 /-- The arc records are exactly the arcs of the regions, each listed once, and the region records
 list them. -/
-def ArcsOK (M : Model) (Q : Polygon) (N : NF) (reg : ℕ → Set Point) : Prop :=
+def ArcsOK : Prop :=
   (∀ j, j < N.arcs.length → (N.arc j).reg < N.nRegions ∧
     M.IsArc (N.F M Q) (reg (N.arc j).reg) (M.key Q (N.arc j).s) (M.key Q (N.arc j).e)) ∧
   (∀ j j', j < N.arcs.length → j' < N.arcs.length →
@@ -200,22 +211,28 @@ def ArcsOK (M : Model) (Q : Polygon) (N : NF) (reg : ℕ → Set Point) : Prop :
   (∀ r, r < N.nRegions → ∀ j, (j ∈ (N.region r).arcs ↔ j < N.arcs.length ∧ (N.arc j).reg = r))
 
 /-- The region records list their exit chords and weights. -/
-def RegionsOK (M : Model) (Q : Polygon) (N : NF) (reg : ℕ → Set Point) : Prop :=
+def RegionsOK : Prop :=
   ∀ r, r < N.nRegions →
     (∀ i, (i ∈ (N.region r).chords ↔
       i < N.nChords ∧ TouchesIn M.D ((N.chord i).toSet M Q) (reg r))) ∧
     (N.region r).chords.Nodup ∧ (N.region r).arcs.Nodup ∧
     (N.region r).wt = M.weight (N.F M Q) (reg r)
 
+
+end
+
+section
+variable (M : Model) (Q : Polygon)
+include M Q
 /-- The arc-sequence table lists every arc once, by nondecreasing start key. -/
-def SeqOK (M : Model) (Q : Polygon) (N : NF) : Prop :=
+def SeqOK (N : NF) : Prop :=
   N.seq.Perm (List.range N.arcs.length) ∧
     N.seq.Pairwise (fun j j' => M.key Q (N.arc j).s ≤ M.key Q (N.arc j').s)
 
 /-- **A position of the walk proper** whose height code is in range: parameter in `[0, 1)`, code
 `≤ n` (review finding C6; formerly `WalkKey.ProperPos`).  Keys of such positions are compared by
 at most one sign-kernel height test (`WalkKey.keyDec_iff`). -/
-def ProperPos (M : Model) (Q : Polygon) (n : ℕ) (x : WPos) : Prop :=
+def ProperPos (n : ℕ) (x : WPos) : Prop :=
   0 ≤ M.param Q x ∧ M.param Q x < 1 ∧ x.hgt ≤ n
 
 /-- **Validity of a normal form** (without the decomposition): the chord records describe an
@@ -227,7 +244,7 @@ chord's vertex would not be recoverable); both ends of every arc record are stor
 of the walk proper (`ProperPos`, review finding C6: otherwise an arc start could be stored with a
 parameter outside `[0, 1)` on the previous walk edge, and comparing its key would need a ratio
 test outside the sign kernel; the ends are passed to the oracles as subarc ends). -/
-def IsNF (M : Model) (Q : Polygon) (N : NF) : Prop :=
+def IsNF (N : NF) : Prop :=
   M.ChordFamily Q (N.F M Q) ∧
     (∀ i i', i < N.nChords → i' < N.nChords →
       (N.chord i).toSet M Q = (N.chord i').toSet M Q → i = i') ∧
@@ -236,6 +253,9 @@ def IsNF (M : Model) (Q : Polygon) (N : NF) : Prop :=
       ArcsOK M Q N reg ∧ RegionsOK M Q N reg ∧ SeqOK M Q N ∧
       (∀ i, i < N.nChords → (N.chord i).h < Q.n) ∧
       ∀ j, j < N.arcs.length → ProperPos M Q Q.n (N.arc j).s ∧ ProperPos M Q Q.n (N.arc j).e
+
+
+end
 
 /-- **A valid tree decomposition** (§2.3) of depth at most `d`: every chord has a node; the
 children of the node of chord `k` split the leaves below it along the two sides of `k`; every
@@ -291,10 +311,13 @@ def Host.pts (n : ℕ) (H : Host) : List SymPt := H.flatMap (HostItem.pts n)
 noncomputable def Host.poly (Q : Polygon) (H : Host) : Polygon :=
   ⟨(H.pts Q.n).map (SymPt.eval Q)⟩
 
+section
+variable (n : ℕ)
+include n
 /-- **Well-formed host** (review finding C8; formerly `NFLoc.HostWF`): runs start and extend
 within `n`, points are in range (so every host point is a symbolic point the sign kernel
 accepts). -/
-def HostWF (n : ℕ) (H : Host) : Prop :=
+def HostWF (H : Host) : Prop :=
   ∀ it ∈ H, match it with
     | .run a ℓ => a < n ∧ ℓ < n
     | .pt x => x.Lt n
@@ -302,7 +325,7 @@ def HostWF (n : ℕ) (H : Host) : Prop :=
 /-- Two consecutive host points span a piece of an edge of `Q` or a horizontal chord edge (both
 ends at the height of one vertex): consecutive input vertices, a vertex and a point of an
 incident edge, two points of one edge, or two points at the height of one vertex. -/
-def HostEdgeOK (n : ℕ) : SymPt → SymPt → Prop
+def HostEdgeOK : SymPt → SymPt → Prop
   | .vtx i, .vtx j => j = (i + 1) % n ∨ i = (j + 1) % n
   | .vtx i, .onEdge e _ => i = e ∨ i = (e + 1) % n
   | .onEdge e _, .vtx j => j = e ∨ j = (e + 1) % n
@@ -312,15 +335,18 @@ def HostEdgeOK (n : ℕ) : SymPt → SymPt → Prop
 of `Q` or a horizontal chord edge, so every non-box walk position of a chain of the host at a
 vertex height is a symbolic point of `Q` (the shooters accept it as an origin).  The up-phase host
 and the region boundaries `R*` of the down phase are regular. -/
-def HostRegular (n : ℕ) (H : Host) : Prop :=
+def HostRegular (H : Host) : Prop :=
   ∀ i, i < (H.pts n).length →
     HostEdgeOK n ((H.pts n).getD i (.vtx 0)) ((H.pts n).getD ((i + 1) % (H.pts n).length) (.vtx 0))
+
+
+end
 
 /-- A well-formed host has at most `n` points per item. -/
 theorem Host.pts_length_le {n : ℕ} {H : Host} (h : HostWF n H) :
     (H.pts n).length ≤ H.length * n := by
   induction H with
-  | nil => simp [Host.pts]
+  | nil => aesop
   | cons it H ih =>
     have hit := h it (by simp)
     have ih' := ih fun it' hit' => h it' (List.mem_cons_of_mem _ hit')
@@ -329,23 +355,20 @@ theorem Host.pts_length_le {n : ℕ} {H : Host} (h : HostWF n H) :
     have hi : (it.pts n).length ≤ n := by
       cases it with
       | run a l =>
-        simp only [HostItem.pts, List.length_map, List.length_range]
-        exact hit.2
+        core_grind
       | pt x =>
         simp only [HostItem.pts, List.length_singleton]
         cases x with
-        | vtx i => simp only [SymPt.Lt] at hit; omega
-        | onEdge e' h' => simp only [SymPt.Lt] at hit; omega
-    rw [e, List.length_cons, Nat.succ_mul]
-    omega
+        | vtx i => simp_all [SymPt.Lt] <;> omega_nf
+        | onEdge e' h' => simp_all [SymPt.Lt] <;> omega_nf
+    grind [List.length_cons, Nat.succ_mul]
 
 /-- The host of the up phase: the geometry polygon itself. -/
 def Host.whole (n : ℕ) : Host := [.run 0 (n - 1)]
 
 /-- The whole host has one symbolic vertex per input vertex. -/
 theorem Host.whole_pts_length (n : ℕ) (hn : 1 ≤ n) : ((Host.whole n).pts n).length = n := by
-  simp [Host.whole, Host.pts, HostItem.pts]
-  omega
+  core_grind [HostItem.pts]
 
 end
 

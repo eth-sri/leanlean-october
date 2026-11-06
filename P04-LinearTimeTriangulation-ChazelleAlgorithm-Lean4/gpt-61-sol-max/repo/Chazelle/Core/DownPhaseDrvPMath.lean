@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvPDrop
 public import Chazelle.Core.DownPhaseMathLevel
 public import Chazelle.Core.GranArcs
@@ -27,10 +29,12 @@ open BuildRegions (famOf)
 
 theorem chain_eq {C C' : Chain} (hP : C.P = C'.P) (hs : C.s = C'.s) (hm : C.m = C'.m) :
     C = C' := by
-  cases C; cases C'; simp only at hP hs hm; subst hP hs hm; rfl
+  cases C; simp_all
 
+section
+variable {P : Polygon}
 /-- **A leaf is a box twin** of the chain of `Q` over the same vertices. -/
-theorem twin_leaf {P : Polygon} {H : Host} {CQ CH : Chain} {a : ℕ} (hQ : CQ.P = Qof P)
+theorem twin_leaf {H : Host} {CQ CH : Chain} {a : ℕ} (hQ : CQ.P = Qof P)
     (hsQ : CQ.s = a) (hm : CQ.m = CH.m) (hCH : CH.P = H.poly (Qof P))
     (hsm : CH.s + CH.m < (H.pts P.n).length) (han : a + CH.m < P.n)
     (hpt : ∀ k, k ≤ CH.m → pt H P.n (CH.s + k) = .vtx (a + k)) : BoxT.Twin CQ CH := by
@@ -41,7 +45,7 @@ theorem twin_leaf {P : Polygon} {H : Host} {CQ CH : Chain} {a : ℕ} (hQ : CQ.P 
   rfl
 
 /-- **The transported list of a leaf.** -/
-theorem leaf_list {P : Polygon} {CQ CH : Chain} {N₀ : NF} {γ' : ℕ} (hG : GoodEnv P)
+theorem leaf_list {CQ CH : Chain} {N₀ : NF} {γ' : ℕ} (hG : GoodEnv P)
     (hQ : CQ.P = Qof P) (hT : BoxT.Twin CQ CH) (hP' : CH.P.Simple)
     (hN₀ : IsCanonicalNF (chainModel CQ) (Qof P) N₀ γ' 4) :
     ChordTriplesOK (chainModel CH) (Qof P) (BoxT.dropWalls (DrvT.triplesOf N₀)) ∧
@@ -54,19 +58,17 @@ theorem leaf_list {P : Polygon} {CQ CH : Chain} {N₀ : NF} {γ' : ℕ} (hG : Go
   exact BoxT.boxTransport_nf hT hP hP' hNF hdeg hgran.semigranular
 
 /-- **The empty list of a connector.** -/
-theorem conn_list {P : Polygon} {CH : Chain} {γ : ℕ} (hP' : CH.P.Simple) (h2m : 2 * CH.m ≤ γ) :
+theorem conn_list {CH : Chain} {γ : ℕ} (hP' : CH.P.Simple) (h2m : 2 * CH.m ≤ γ) :
     ChordTriplesOK (chainModel CH) (Qof P) [] ∧
       (chainModel CH).DegLe (famOf (chainModel CH) (Qof P) []) 4 ∧
       (chainModel CH).Semigranular (famOf (chainModel CH) (Qof P) []) γ := by
   have he : famOf (chainModel CH) (Qof P) [] = ∅ := by
-    ext c; simp [famOf]
+    grind [famOf]
   have hM := walkAx_chainModel hP'
   refine ⟨⟨⟨?_, ?_, ?_⟩, by simp, by simp, by simp⟩, ?_, ?_⟩
-  · have : {c | ∃ x ∈ ([] : List (ℕ × ℕ × ℕ)), c = (recOf x).toSet (chainModel CH) (Qof P)} =
-        (∅ : Set (Set Point)) := by ext c; simp
-    rw [this]; exact finite_empty
-  · intro c hc; simp at hc
-  · intro c hc; simp at hc
+  · simp_all
+  · simp_all
+  · simp_all
   · rw [he]; intro U _
     unfold Model.deg
     simp
@@ -74,11 +76,14 @@ theorem conn_list {P : Polygon} {CH : Chain} {γ : ℕ} (hP' : CH.P.Simple) (h2m
     rw [Gran.weight_empty hM hU, DownMath.chainModel_size]
     exact h2m
 
+
+end
+
 theorem isDecomp_mono {N : NF} {d d' : ℕ} (h : IsDecomp N d) (hd : d ≤ d') : IsDecomp N d' := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10⟩ := h
   refine ⟨h1, h2, h3, h4, h5, h6, fun x hx => ?_, h8, h9, h10⟩
   obtain ⟨j, hj, e⟩ := h7 x hx
-  exact ⟨j, hj.trans hd, e⟩
+  ram_grind
 
 /-- **A canonical normal form of cap `4` has every cap `D ≥ 4`.** -/
 theorem canonical_cap {M : Model} {Q : Polygon} {N : NF} {γ D : ℕ}

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoClass
 
 /-!
@@ -33,8 +35,10 @@ def SymIn (P : Polygon) (W : ℕ) (C : Chain) (c : Config) : Prop :=
     (c.nreg 50201 = 2 * C.m + 6 ∧
       (chainModel C).param (Qof P) ⟨c.nreg 50201, c.nreg 50202⟩ = 0))
 
-theorem symVtx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
-    (hE : CEnv P W H C c) {e hc : ℕ} (h01 : c.nreg 50201 = e) (he6 : 6 ≤ e)
+section
+variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config) (hE : CEnv P W H C c)
+include hE
+theorem symVtx_exec {e hc : ℕ} (h01 : c.nreg 50201 = e) (he6 : 6 ≤ e)
     (hen : e < 2 * C.m + 7) (hpar : (chainModel C).param (Qof P) ⟨e, hc⟩ = 0) :
     ∃ c' k, Exec P W absVtx c c' k ∧ k ≤ 27 * H.length + 45 ∧
       c'.nreg 50210 = 1 ∧ ∃ sp : SymPt, SymPtIn c' 50211 sp ∧ sp.Lt P.n ∧
@@ -45,13 +49,12 @@ theorem symVtx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     (by simp [h01, hE.r81]) (by omega) (dst := 50211) (by norm_num)
   have e₃ := Exec.constN (P := P) e₂.wb_right 50210 1 (by have := hE.hW; omega)
   have hv : (chainModel C).pos (Qof P) ⟨e, hc⟩ = (chainModel C).W.vtx (e - 6 + 6) := by
-    rw [SweepPrim.pos_eq_sidePt, hpar, Chazelle.Chain.sidePt_zero, show e - 6 + 6 = e by omega]
+    simp_all [SweepPrim.pos_eq_sidePt, Chazelle.Chain.sidePt_zero] 
   refine ⟨_, _, .seq e₁ (.seq e₂ e₃), by omega, by simp, sp,
     symPtIn_of_eq isp fun j h1 h2 => by simp [show j ≠ 50210 by omega], lsp, ?_⟩
   rw [vsp, hv]
 
-theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
-    (hE : CEnv P W H C c) (hreg : HostRegular P.n H) {e hc : ℕ} (h01 : c.nreg 50201 = e)
+theorem symInt_exec (hreg : HostRegular P.n H) {e hc : ℕ} (h01 : c.nreg 50201 = e)
     (h02 : c.nreg 50202 = hc) (he6 : 6 ≤ e) (hen : e < 2 * C.m + 6)
     (ht : 0 < (chainModel C).param (Qof P) ⟨e, hc⟩) (ht1 : (chainModel C).param (Qof P) ⟨e, hc⟩ < 1)
     (hhn : hc ≤ P.n) :
@@ -59,7 +62,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       c'.nreg 50210 = 1 ∧ ∃ sp : SymPt, SymPtIn c' 50211 sp ∧ sp.Lt P.n ∧
         sp.eval (Qof P) = (chainModel C).pos (Qof P) ⟨e, hc⟩ := by
   have hW := hE.hW
-  have hm1 := C.one_le
+  
   have hNW := hE.NW
   have hNn := hE.n_eq
   have hmN := C.m_lt
@@ -70,7 +73,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     exec_block
     · config_simp; rw [hE.r53]; omega
     · refine ⟨rfl, by config_simp; rw [h01, hE.r81], by config_simp; rw [hE.r53]; ring,
-        fun r h1 h2 => by simp [h1, h2]⟩
+        fun r h1 h2 => by simp_all⟩
   obtain ⟨q20, q43, r₁⟩ := q
   have hE₁ : CEnv P W H C c₁ := hE.keep e₁.wb_right
     (exec_frameB e₁ (B := fun r => r == 50120 || r == 50143) (by decide)).2.2.1
@@ -100,7 +103,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have q32 : c₅.nreg 50032 = 1 := by
     rw [r₅ _ (by decide) (by decide) (by decide), hE₄.r32]
   obtain ⟨hEi, hx⟩ := tour_abs hE.hG hE.hP hreg hNn hlt x₁ x₂ l₁ l₂ v₁ v₂
-    (hc := hc) (by rw [show i + 6 = e by omega]; exact ht)
+    (hc := hc) (by grind)
   have hc1 : 1 ≤ hc := by
     rcases Nat.eq_zero_or_pos hc with rfl | h
     · exact absurd (show (chainModel C).param (Qof P) ⟨e, 0⟩ = 0 from rfl) (ne_of_gt ht)
@@ -112,20 +115,23 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     exec_block
     all_goals try omega
     refine ⟨rfl, by config_simp, by config_simp, by config_simp; exact v₅, ?_⟩
-    config_simp; rw [q02, q32]
+    config_simp; omega
   obtain ⟨q10, q11⟩ := q
   have ex : Exec P W absInt c c₆ (k₁ + (k₂ + (1 + (k₄ + (k₅ + k₆))) + 1)) :=
-    .seq e₁ (.ifLtN_true (by rw [q20, q43]; exact hlt) (.seq e₂ (.seq e₃ (.seq e₄
+    .seq e₁ (.ifLtN_true (by omega) (.seq e₂ (.seq e₃ (.seq e₄
       (.seq e₅ e₆)))))
-  refine ⟨c₆, _, ex, by have := hE.hlen; omega, q10, _, q11, ⟨hEi, by omega⟩, ?_⟩
+  refine ⟨c₆, _, ex, by omega, q10, _, q11, ⟨hEi, by omega⟩, ?_⟩
   have hne := ne_of_param_pos ht
   have hy : ((chainModel C).pos (Qof P) ⟨e, hc⟩).2 = ((Qof P).vtx (hc - 1)).2 := by
     rw [Model.pos_snd (Q := Qof P) (x := ⟨e, hc⟩) hne]
     obtain ⟨h', rfl⟩ : ∃ h', hc = h' + 1 := ⟨hc - 1, by omega⟩
     rfl
   apply Prod.ext
-  · rw [show e = i + 6 by omega, hx]
+  · grind
   · rw [hy]; rfl
+
+
+end
 
 /-- **Contract of `absKey` for tour and top positions: the symbolic point of the position.** -/
 theorem symKey_meets : Meets absKey primBands (PrimPre SymIn) (PrimPost SymOut)
@@ -143,9 +149,7 @@ theorem symKey_meets : Meets absKey primBands (PrimPre SymIn) (PrimPost SymOut)
       (by omega) hpar)
     (fun c₂ hE₂ g₂ _ h6 hpos => symInt_exec c₂ hE₂ hregH (g₂ 50201 (by norm_num) (by norm_num))
       (g₂ 50202 (by norm_num) (by norm_num)) h6 (by
-        rcases hcls with ⟨-, h⟩ | ⟨h, h'⟩
-        · exact h
-        · rw [h'] at hpos; exact absurd hpos (lt_irrefl _)) hpos hp1 hhn)
+        ram_grind) hpos hp1 hhn)
   exact ⟨c', k, ex, by omega, hr⟩
 
 end

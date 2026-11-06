@@ -33,8 +33,6 @@ open Std
 
 @[expose] public section
 
-/-- A polygon with rational vertex coordinates, in boundary order. -/
-abbrev QPolygon : Type := List (ℚ × ℚ)
 
 /-- A machine configuration over `ℚ`.  Register files and memories are hash maps; an absent key
 denotes the value `0`, exactly like the all-zero initial configuration of the specification. -/
@@ -54,22 +52,22 @@ structure QConfig where
 
 namespace QConfig
 
-/-- Read natural register `r`. -/
-def nr (c : QConfig) (r : ℕ) : ℕ := c.nreg.getD r 0
+section
+variable (c : QConfig)
+include c
 
 /-- Read rational register `r`. -/
-def rr (c : QConfig) (r : ℕ) : ℚ := c.rreg.getD r 0
+def rr (r : ℕ) : ℚ := c.rreg.getD r 0
 
-/-- Read natural memory cell `a`. -/
-def nm (c : QConfig) (a : ℕ) : ℕ := c.nmem.getD a 0
 
 /-- Read rational memory cell `a`. -/
-def rm (c : QConfig) (a : ℕ) : ℚ := c.rmem.getD a 0
+def rm (a : ℕ) : ℚ := c.rmem.getD a 0
+
+
+end
 
 end QConfig
 
-/-- Vertex lookup for a list-shaped rational polygon (as in `Polygon.vtx`). -/
-def listVtx (Pq : QPolygon) : ℕ → ℚ × ℚ := fun i => Pq.getD i (0, 0)
 
 /-! ## Basic facts -/
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoBruteMath
 
 /-!
@@ -51,7 +53,9 @@ accumulator. -/
 def SRegOK (r : ℕ) : Prop :=
   240000 ≤ r ∧ r < 250000 ∧ (r < 241300 ∨ 241600 ≤ r) ∧ (r < 242000 ∨ 242012 < r)
 
-theorem sPrepL_val (m f : ℕ → ℕ) {md base cnt : ℕ} (_h1 : md < 241300 ∨ 241309 < md)
+section
+variable (m f : ℕ → ℕ)
+theorem sPrepL_val {md base cnt : ℕ} (_h1 : md < 241300 ∨ 241309 < md)
     (h2 : base < 241300 ∨ 241309 < base) (h3 : cnt < 241300 ∨ 241309 < cnt) :
     regB m (sPrepL md base cnt) f 241300 = f md ∧ regB m (sPrepL md base cnt) f 241301 = f base ∧
     regB m (sPrepL md base cnt) f 241302 = f cnt ∧ regB m (sPrepL md base cnt) f 241303 = f sO ∧
@@ -62,18 +66,16 @@ theorem sPrepL_val (m f : ℕ → ℕ) {md base cnt : ℕ} (_h1 : md < 241300 �
     (∀ q, (q < 241300 ∨ 241309 < q) → regB m (sPrepL md base cnt) f q = f q) := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun q hq => regB_other _ _ _ (fun i hi => by
     simp only [sPrepL, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;>
-      omega)⟩ <;>
+    core_grind)⟩ <;>
   · simp only [sPrepL, regB, regI, upd, sO, qD, sw]
-    simp (disch := omega) only [ite_eq_right, ite_true, Nat.reduceAdd]
+    grind
 
-theorem sPrepL_ok (m f : ℕ → ℕ) (md base cnt : ℕ) (hW : 0 ≤ W) : okB W m (sPrepL md base cnt) f := by
+theorem sPrepL_ok (md base cnt : ℕ) (hW : 0 ≤ W) : okB W m (sPrepL md base cnt) f := by
   simp only [sPrepL, okB, okI]
-  exact ⟨iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
-    iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
-    iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
-    iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
-    iscr_sw (by norm_num) (by norm_num), ⟨iscr_sw (by norm_num) (by norm_num), hW⟩, trivial⟩
+  core_grind
+
+
+end
 
 set_option maxHeartbeats 8000000 in
 set_option maxRecDepth 20000 in
@@ -108,10 +110,10 @@ theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
         (∀ r, bandOf r ∉ oracleBands → ¬ (RS ≤ r ∧ r < RS + 300) → (r < accA ∨ accA + 12 < r) →
           r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
         c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
-  have hK₀ := hK.fix hI
+  
   set σ := dirOf (c.nreg qD) with hσ
   set K := c.nreg cnt with hKd
-  have hσ' : σ = 1 ∨ σ = -1 := by rw [hσ]; unfold dirOf; split_ifs <;> simp
+  have hσ' : σ = 1 ∨ σ = -1 := by grind [dirOf]
   have hP : C.P.Simple := hctx.2.2.2.2.1
   obtain ⟨rmd, rbase, rcnt, rdsc, rtg⟩ := hr
   -- 1. prepare the shot block
@@ -120,20 +122,20 @@ theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       (by simp [sPrepL, symShotK]) (fun _ h => h)
   rintro c₁ hI₁ - - hc1
   obtain ⟨p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, po⟩ := sPrepL_val c.nmem c.nreg
-    (md := md) (base := base) (cnt := cnt) (by unfold SRegOK at rmd; omega)
-    (by unfold SRegOK at rbase; omega) (by unfold SRegOK at rcnt; omega)
+    (md := md) (base := base) (cnt := cnt) (by grind [SRegOK])
+    (by grind [SRegOK]) (by grind [SRegOK])
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
   have q1 : ∀ q, (q < 241300 ∨ 241309 < q) → c₁.nreg q = c.nreg q := fun q hq => by
-    rw [hc1]; exact po q hq
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := q1 _ (by unfold ALLOC; omega)
+    ram_simp
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := q1 _ (by omega_nf)
   have c0 : c₁.nreg RS = c.nreg md := by rw [hc1]; exact p0
   have c1' : c₁.nreg (RS + 1) = c.nreg base := by rw [hc1]; exact p1
   have c2' : c₁.nreg (RS + 2) = K := by rw [hc1]; exact p2
   have c6 : c₁.nreg (RS + 6) = c.nreg qD := by rw [hc1]; exact p6
   have c7 : c₁.nreg (RS + 7) = c₀.nreg (sw 5) := by
-    rw [hc1]; show regB _ _ _ 241307 = _; rw [p7]; exact hI.hin _ (by unfold IFix sw; omega)
+    rw [hc1]; show regB _ _ _ 241307 = _; rw [p7]; exact hI.hin _ (by omega_nf)
   have c8 : c₁.nreg (RS + 8) = c₀.nreg (sw 10) := by
-    rw [hc1]; show regB _ _ _ 241308 = _; rw [p8]; exact hI.hin _ (by unfold IFix sw; omega)
+    rw [hc1]; show regB _ _ _ 241308 = _; rw [p8]; exact hI.hin _ (by omega_nf)
   have c9 : c₁.nreg (RS + 9) = 0 := by rw [hc1]; exact p9
   have hhl : ShotList.holeList c₁ RS = [] := by
     unfold ShotList.holeList; rw [c9]; rfl
@@ -150,27 +152,25 @@ theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     rw [c7, c8, hXl P c₀.nmem c₁.nmem _ _ (fun a ha => hlow a ha) hX]; exact hcap
   have hev : Origin.eval (chainModel C) (Qof P) (Origin.sym s) = z := hz
   have pre : ShotList.ShotPre X Ok RS P W c₁ := by
-    refine ⟨hG, hWh, hX1, hcap1, by rw [c0, hm1, hA1]; exact hmdW, by rw [c0, hm1]; exact hmd0,
-      by rw [c1', c2', hA1]; exact hAB, by rw [c9]; omega, H, C, by rw [c0, hm1]; exact hmdC,
+    refine ⟨hG, hWh, hX1, hcap1, by grind, by grind,
+      by omega, by omega, H, C, by grind,
       fun H' hH' => ?_, hOk, hctx.2.2.2.2.2, fun j hj => ?_, fun j hj => ?_, .sym s, hori, hsl,
       Or.inr ⟨by rw [hev]; exact innerPt_box C hz1 hz2, fun x hx => by cases hx⟩,
-      by rw [hev]; exact hz2, ?_⟩
+      by grind, ?_⟩
     · rw [c0, hm1] at hH'
       rw [← NFLoc.hostAt_unique hmdC.1 hH']
       exact hreg
-    · rw [c2'] at hj
-      rw [c1', hm1, c7]
-      exact harcs j hj
-    · rw [c9] at hj; omega
+    · grind
+    · omega
     · rw [hhl, hev]
       intro p t hp ht0 ht1 hpt
       exact absurd hpt (walk_ne_of_dom C hP hzD hp ht0 ht1)
   -- 3. the shot
   refine IRS.seq (shot_irs hsh hBs hXl hI₁ pre (by
-    rw [c7, c2', hA1]; unfold symShotK at hroom; omega)) ?_ |>.mono (by rw [c7, c2']) (fun _ h => h)
+    grind [symShotK])) ?_ |>.mono (by rw [c7, c2']) (fun _ h => h)
   rintro c₂ hI₂ - hAb ⟨hpost, k2, hA2, hm2⟩
   have hmdC1 : ModelDescAt c₁.nmem (c₁.nreg RS) (Qof P) (chainModel C) := by
-    rw [c0, hm1]; exact hmdA
+    grind
   obtain ⟨hfl, A, hlo, hhi, hyes, hno⟩ := hpost (chainModel C) (.sym s) hmdC1 hori
   rw [c6, hev] at hyes hno
   rw [c1', c2', hhl, hm1] at hlo
@@ -185,21 +185,21 @@ theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   -- registers after the shot
   have keep2 : ∀ r, 240000 ≤ r → r < 250000 → ¬ (RS ≤ r ∧ r < RS + 300) →
       c₂.nreg r = c₁.nreg r :=
-    fun r h1 h2 h3 => k2 r (not_oracle_sw h1 h2) (by unfold ALLOC; omega) h3
+    fun r h1 h2 h3 => k2 r (not_oracle_sw h1 h2) (by omega_nf) h3
   have keepc : ∀ r, 240000 ≤ r → r < 250000 → (r < RS ∨ RS + 299 < r) →
       c₂.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => (keep2 r h1 h2 (by omega)).trans (q1 r (by unfold RS at h3; omega))
+    fun r h1 h2 h3 => (keep2 r h1 h2 (by omega)).trans (q1 r (by grind [RS]))
   have t2 : c₂.nreg tg = c.nreg tg := keepc _ rtg.1 rtg.2.1 (by unfold RS; have := rtg.2.2.1; omega)
-  have d2 : c₂.nreg qD = c.nreg qD := keepc _ (by unfold qD sw; norm_num)
-    (by unfold qD sw; norm_num) (by unfold qD RS sw; omega)
+  have d2 : c₂.nreg qD = c.nreg qD := keepc _ (by omega_nf)
+    (by omega_nf) (by omega_nf)
   have cd2 : c₂.nreg dsc = c.nreg dsc :=
     keepc _ rdsc.1 rdsc.2.1 (by unfold RS; have := rdsc.2.2.1; omega)
   have a2 : ∀ j, j ≤ 12 → c₂.nreg (accA + j) = c.nreg (accA + j) := fun j hj =>
-    keepc _ (by unfold accA sw; omega) (by unfold accA sw; omega) (by unfold accA RS sw; omega)
+    keepc _ (by omega_nf) (by omega_nf) (by omega_nf)
   have hacc2 : AccOK P accA Mod R₀ z σ L c₂ := hacc.transport a2
   have hA2' : c.nreg ALLOC ≤ c₂.nreg ALLOC := hA1 ▸ hA2
   have hm2' : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
-    rw [hm2 a (by omega), hm1]
+    ram_simp
   have hctx2 : ChainCtx P W c₂ dsc C := hctx.transport cd2 hm2' hA2'
   have k0₂ : c₂.nreg K0 = 0 := (hK.fix hI₂).1
   -- the completeness of the shot
@@ -223,23 +223,23 @@ theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     obtain ⟨t, hFH, hpp2, he2, hpos2⟩ := hyes h1
     have hroom2 : c₂.nreg ALLOC + offerK ≤ W := by
       rw [c7, c2', hA1] at hAb; unfold symShotK at hroom; omega
-    refine (IRS.ifT (by rw [k0₂]; exact hflag) (offer_irs (L := L) (τ := t) (Mod := Mod) hI₂ hK hG
+    refine (IRS.ifT (by omega) (offer_irs (L := L) (τ := t) (Mod := Mod) hI₂ hK hG
       (by unfold hostWords at hWh; omega)
-      ⟨by unfold accA sw; norm_num, by unfold accA sw; norm_num⟩
+      ⟨by omega_nf, by omega_nf⟩
       ⟨rdsc.1, rdsc.2.1, by norm_num, by norm_num, by norm_num, by norm_num, rtg.1, rtg.2.1,
-        by unfold qD sw; norm_num, by unfold qD sw; norm_num⟩
-      ⟨by unfold accA; have := rdsc.2.2.2; unfold sw; omega, by unfold accA sw; omega,
-        by unfold accA sw; omega, by unfold accA; have := rtg.2.2.2; unfold sw; omega,
-        by unfold qD accA sw; omega⟩
-      (by rw [d2]; exact hacc2) (by rw [t2]; exact htag) (by rw [t2, hMod]; exact hctx2)
-      (by rw [t2, hMod]; exact hR) (by rw [t2, hMod]; exact he2)
+        by omega_nf, by omega_nf⟩
+      ⟨by unfold accA; have := rdsc.2.2.2; omega_nf, by omega_nf,
+        by omega_nf, by unfold accA; have := rtg.2.2.2; omega_nf,
+        by omega_nf⟩
+      (by rw [d2]; exact hacc2) (by omega) (by grind)
+      (by grind) (by rw [t2, hMod]; exact he2)
       (by rw [t2, hMod]; exact hpp2) (by rw [t2, hMod, d2]; exact hpos2)
-      (by rw [← hR]; exact hz2) hroom2)).mono (by omega) ?_
+      (by grind) hroom2)).mono (by omega) ?_
     rintro c' ⟨hacc', k3, hA3, hm3⟩
     rw [d2] at hacc'
     refine ⟨insert t L, hacc', Or.inr ⟨t, rfl, hFH.1, ?_⟩, fun hf hlo' => ?_,
       fun r hr hrs hra hrA => ?_, hA2'.trans hA3, fun a ha => by
-        rw [hm3 a (by omega)]; exact hm2' a ha⟩
+        ram_simp⟩
     · rw [← hpos2]
       refine walk_hit_onCB C (Qof P) he2 hpp2 ?_
       rw [hpos2, rayPt_snd]; exact hzt
@@ -249,8 +249,7 @@ theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     · rw [k3 r hr hra hrA]; exact frame2 r hr hrs hrA
   · refine (IRS.ifF hflag (IRS.skip (K := offerK) hI₂ ⟨L, hacc2, Or.inl rfl, fun hf hlo' => ?_,
       fun r hr hrs hra hrA => frame2 r hr hrs hrA, hA2', hm2'⟩)).mono (by omega) (fun _ h => h)
-    rw [k0₂] at hflag
-    exact absurd (complete hf hlo').1 (by omega)
+    grind
 
 end
 

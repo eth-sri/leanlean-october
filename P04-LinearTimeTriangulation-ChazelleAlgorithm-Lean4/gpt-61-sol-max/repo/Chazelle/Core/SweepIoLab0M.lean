@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoCand0L
 public import Chazelle.Core.SweepIoBruteShot
 public import Chazelle.Core.SweepIoS0CandBsSpec
@@ -40,16 +42,14 @@ theorem sideInArc_eventually_sub {a b x : ℝ} (h : sideInArc a b x) :
     ∀ᶠ s in 𝓝[>] (0 : ℝ), sideInArc a b (x - s) := by
   unfold sideInArc at h ⊢
   split_ifs at h ⊢ with hab
-  · filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT (show (0 : ℝ) < x - a by linarith [h.1])]
+  · filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT (show (0 : ℝ) < x - a by simp_all)]
       with s hs hs'
-    have : (0 : ℝ) < s := hs
-    exact ⟨by linarith [hs'.2], by linarith [h.2]⟩
+    ram_grind
   · rcases h with h | h
     · filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < x - a by linarith)] with s hs
-      left; linarith [hs.2]
+      ram_grind
     · filter_upwards [self_mem_nhdsWithin] with s hs
-      have : (0 : ℝ) < s := hs
-      right; linarith
+      aesop (add safe (by nlinarith))
 
 /-- An interval of `𝓝[>] 0`. -/
 theorem exists_Ioo_of_eventually {p : ℝ → Prop} (h : ∀ᶠ s in 𝓝[>] (0 : ℝ), p s) :
@@ -83,7 +83,7 @@ theorem gap_reg {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF}
   · obtain ⟨c, hc, -⟩ := id hcut
     have hne : F.Nonempty := ⟨c, hc⟩
     obtain ⟨hfa, hfb⟩ := faced_arcs hM hF hfin hp (le_refl (0 : ℝ)) zero_lt_one (fun _ => hp1)
-      (by rw [hp']; exact hcut) hV
+      (by simp_all) hV
     obtain ⟨r, hr, rfl⟩ := regOf_surj hN hV
     refine ⟨r, ?_, rfl⟩
     rcases hW with hW | hW
@@ -98,11 +98,10 @@ theorem gap_reg {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF}
     have hin : sideInArc (sk M Q N j) (ek M Q N j) (p : ℝ) := by
       rcases hloc1 hcut with hF0 | hin
       · rcases harc0.2.2.2.2.1 with ⟨⟨c, hc, -⟩, -⟩ | ⟨-, ha, hb⟩
-        · rw [← hFdef, hF0] at hc; exact absurd hc (Set.notMem_empty c)
-        · have hk0 : (0 : ℝ) < p := by exact_mod_cast hp1
+        · ram_grind
+        · have hk0 : (0 : ℝ) < p := by positivity
           show sideInArc (M.key Q (N.arc (sj N j)).s) (M.key Q (N.arc (sj N j)).e) (p : ℝ)
-          rw [ha, hb]
-          unfold sideInArc; rw [ite_eq_right (lt_irrefl _)]; exact Or.inl hk0
+          ram_grind
       · exact hin
     set U₀ := regOf M Q N (N.arc (sj N j)).reg with hU₀
     have hU₀m : U₀ ∈ M.regions F := hRC.1 _ hr0
@@ -128,7 +127,7 @@ theorem gap_reg {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF}
         rw [hpm]
         refine harc0.2.2.2.2.2.2 (p - 1) (1 - s) (by omega) (by linarith) (by linarith) ?_
         have e : ((p - 1 : ℕ) : ℝ) + (1 - s) = (p : ℝ) - s := by
-          rw [Nat.cast_sub hp1]; push_cast; ring
+          rw [Nat.cast_sub hp1]; ram_grind
         rw [e]; exact hsub s hs0 hsu'
       exact before_unique (le_refl _) hU₀m hV hB0 hW
 
@@ -149,15 +148,14 @@ theorem gap_pos (J : Merge.Junction) {S₂ : Set (Set Point)} {V : Set Point}
   have key : rL1 J = 2 * J.right.m - tpos J.right 0 ∧ rδ J = 7 := by
     unfold rδ at hδ
     unfold rL1 rδ
-    split_ifs at hδ ⊢ with h1 h2 <;> first | omega
+    split_ifs at hδ ⊢ with h1 h2 <;> omega
   obtain ⟨k1, k2⟩ := key
   have e1 : (6 + tpos J.right 0 + rL1 J) % (chainModel J.right).W.n = 2 * J.right.m + 6 := by
     rw [hn, k1, Nat.mod_eq_of_lt (by omega)]; omega
   have e2 : (6 + tpos J.right 0 + rL1 J + rδ J) % (chainModel J.right).W.n = 6 := by
     rw [hn, k1, k2, show 6 + tpos J.right 0 + (2 * J.right.m - tpos J.right 0) + 7 =
       6 + (2 * J.right.m + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-  rw [e1, e2] at hW
-  exact hW
+  ram_grind
 
 /-! ## The log entry of the query key -/
 
@@ -172,8 +170,7 @@ theorem logKey_eq {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)} {m
     logKey J (Qof P) N₂ ls i = (chainModel J.whole).key (Qof P) (S0C.logPos m AL i) := by
   obtain ⟨a1, a2⟩ := S0C.logOf_getD J (Qof P) N₂ hi
   obtain ⟨m1, m2, -⟩ := hls i hi
-  unfold logKey Model.key S0C.logPos
-  rw [a1, a2, m1, m2]
+  simp_all [logKey, Model.key, S0C.logPos] 
 
 /-- **The log entry of the key of `x`** is the result `t` of the binary search or `t - 1`. -/
 theorem logIdx_cases (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {x : WPos} {t i : ℕ}
@@ -187,7 +184,7 @@ theorem logIdx_cases (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {x : WPos} {t i :
   obtain ⟨hil, hle, hlt⟩ := hi
   have hg := S0C.aenv_gW hA
   have hoW : ∀ y, oW J y = off (chainModel J.whole).W.n (c₀.nreg (sw 40)) y := fun y => by
-    unfold oW; rw [hg]
+    grind [oW]
   by_contra hne
   rcases (show i + 1 < t ∨ t < i by omega) with h | h
   · have h1 := ht1 (i + 1) h
@@ -234,7 +231,7 @@ theorem exit_mem_gather {P : Polygon} {C : Chain} (hP : C.P.Simple) {N : NF}
     have hmem' : i₀ ∈ regArcs N rs := List.mem_flatMap.2 ⟨r, hrs, hmem⟩
     obtain ⟨k, hk, hki⟩ := List.mem_iff_getElem.1 hmem'
     refine List.mem_map.2 ⟨k, List.mem_range.2 hk, ?_⟩
-    have hg : (regArcs N rs).getD k 0 = i₀ := by rw [List.getD_eq_getElem _ _ hk, hki]
+    have hg : (regArcs N rs).getD k 0 = i₀ := by simp_all
     rw [harcs k hk, hg]
     obtain ⟨⟨hps, -, -⟩, ⟨hpe, -, -⟩⟩ := arc_end_facts hP hN hi₀
     unfold nArc

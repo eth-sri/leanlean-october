@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvAnchor2
 
 /-!
@@ -29,8 +31,11 @@ section Det
 
 variable {J : Merge.Junction}
 
+section
+variable (hP : J.P.Simple)
+include hP
 /-- **A chord without attachment in the open right stretch is a stop chord.** -/
-theorem stop_of_out (hP : J.P.Simple) {S₂ : Set (Set Point)}
+theorem stop_of_out {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {e : Set Point}
     (he : e ∈ F₂plus J S₂)
     (hout : ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s →
@@ -41,7 +46,7 @@ theorem stop_of_out (hP : J.P.Simple) {S₂ : Set (Set Point)}
   exact hout pB tB hB ⟨h1, h2⟩
 
 /-- **Completeness of the detection from the invariant.** -/
-theorem det_of_evInv (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
+theorem det_of_evInv {Q : Polygon} {S₂ : Set (Set Point)}
     (hS₂ : (chainModel J.right).ChordFamily Q S₂)
     (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {oK : ℝ} {Λ : Set (Set Point)}
     (hLK : (Lst J : ℝ) ≤ oK) (hInv : EvInv J S₂ oK Λ) {pK : ℕ} {tK : ℝ}
@@ -60,7 +65,7 @@ theorem det_of_evInv (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hS₂f := hS₂.1
   have hC := corr_right0 J hP hS₂a hS₂f
   have hM := hC.hM
-  have hL0 : (0 : ℝ) ≤ Lst J := Nat.cast_nonneg _
+  
   -- a non-cut position just before `K*`, after `K`
   obtain ⟨Rb, hRb, -, w, u, hw, hu, hncw, hfw, h1, h2, hgw⟩ := before_region_exists' hP hS₂a hS₂f
     hpK htK0 htK1 (by linarith) (show 0 < oW J (pK + tK) - oK by linarith)
@@ -71,34 +76,34 @@ theorem det_of_evInv (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     left
     obtain ⟨e', he', qa, qb, sa, sb, hA, hB, hAB, hLa, hay, hby⟩ := hE
     have hqa : oW J (qa + sa) ≤ oK := by
-      by_contra h; push Not at h; exact hgap e' he' qa sa hA ⟨h, by linarith⟩
+      grind
     rcases hby with hby | hby
     · -- a bracket
       have hqb : oW J (pK + tK) ≤ oW J (qb + sb) := by
-        by_contra h; push Not at h; exact hgap e' he' qb sb hB ⟨by linarith, h⟩
+        grind
       rcases hqb.lt_or_eq with hqb | hqb
       · -- `K*` strictly inside: `e` is a bracket
         refine ⟨e, he, heK, stop_of_out hP hS₂a hS₂f he fun q s hQ h => ?_⟩
         by_cases hee : e' = e
         · subst hee
           rcases key_of_two hM (hC.hF he') hA hB hAB hQ with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
-            linarith [h.2]
+            linarith
         · have := closed_nested hP hS₂a hS₂f he' he hee hA hB (by linarith) heK (by linarith) hqb hQ
-          linarith [this.1, h.2]
+          linarith
       · -- `K*` is the closer: the bracket chord itself is a stop
         obtain ⟨rfl, rfl⟩ := pos_eq_of_oW hP hS₂a hS₂f hB.1 hpK hB.2.1 hB.2.2.1 htK0 htK1 hqb.symm
         refine ⟨e', he', hB, stop_of_out hP hS₂a hS₂f he' fun q s hQ h => ?_⟩
         rcases key_of_two hM (hC.hF he') hA hB hAB hQ with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
-          linarith [h.2]
+          linarith
     · -- a pocket: the chords after it are stops
       refine ⟨e, he, heK, stop_of_out hP hS₂a hS₂f he fun q s hQ h => ?_⟩
       have hee : e' ≠ e := by
         rintro rfl
         rcases key_of_two hM (hC.hF he') hA hB hAB heK with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> linarith
       -- the other attachment of `e` in `(0, Lst)` would put `K*` inside `[0, A]`
-      have := closed_nested hP hS₂a hS₂f he' he hee hB hA (by linarith) hQ (by linarith [h.1])
-        (by linarith [h.2]) heK
-      linarith [this.2]
+      have := closed_nested hP hS₂a hS₂f he' he hee hB hA (by linarith) hQ (by linarith)
+        (by linarith) heK
+      linarith
   · -- a valid label: the next event of `next_event_origin`
     obtain ⟨L, hL, hLr, hv⟩ := hval Rb hRb hfw
     by_cases hstop : ∃ s ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W s pK tK ∧ StopChord J S₂ s
@@ -115,17 +120,15 @@ theorem det_of_evInv (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       right
       have hV : V ∈ (chainModel J.right).regions S₂ ∧ (V ∈ Λ ∨ GapLab J S₂ V) := by
         rcases hLV with rfl | hg
-        · rcases hL with hL | hL
-          · exact ⟨hLr, Or.inl hL⟩
-          · exact ⟨hLr, Or.inr hL⟩
-        · exact ⟨hg.2.1, Or.inr hg⟩
-      exact ⟨_, hh, hhK, a, σ, c, V, hc, hV.1, hV.2, hT, hac, ha, hav, hatop, hfree, rfl⟩
+        · ram_grind
+        ram_grind
+      grind
     · subst hat
       exact Or.inl ⟨_, hh, hhK, Or.inr ⟨σ, hσ, hfree, rfl⟩⟩
 
 /-- **The partner at a tie** (beyond the start): a second chord `e'` at the key of a chord `e`
 inside `c ∈ S₂` is the chord seen from an end of `c`. -/
-theorem partner_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
+theorem partner_of_parent {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) (hNTV : NoTieV J S₂)
     {e e' c : Set Point} (he : e ∈ F₂plus J S₂) (he' : e' ∈ F₂plus J S₂) (hne : e ≠ e')
     (hc : c ∈ S₂) (hec : e ⊆ c) {p : ℕ} {t : ℝ} (hA : SideAttach (chainModel J.whole).W e p t)
@@ -134,7 +137,7 @@ theorem partner_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
       (FreeAt J.whole (Merge.rend c) (-1) ∧ e' = Merge.shoot J.whole (Merge.rend c) (-1)) := by
   have hC := corr_right0 J hP hS₂ hS₂f
   have hD : sidePt (chainModel J.whole).W p t ∈ J.right.dom := by
-    rcases tie_dom hP hS₂ hS₂f he he' hne hA hA' (fun h => by linarith [h.2]) with h | h
+    rcases tie_dom hP hS₂ hS₂f he he' hne hA hA' (fun h => by linarith) with h | h
     · exact h
     · exact (hNTV e he e' he' hne p t hA hA' h hL).elim
   obtain ⟨c', hc', hec', he'c'⟩ := tie_parent J hP hS₂ he he' (Ne.symm hne) hA hA' hD
@@ -144,6 +147,9 @@ theorem partner_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hec hB.2.2.2.1) (hec hA.2.2.2.1)
   subst hcc
   exact piece_of_parent J hP hS₂ he' hc' he'c' hA' hD
+
+
+end
 
 end Det
 

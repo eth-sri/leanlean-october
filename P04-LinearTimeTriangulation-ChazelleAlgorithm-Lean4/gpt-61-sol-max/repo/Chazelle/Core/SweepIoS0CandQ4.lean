@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoS0CandQ3
 
 /-!
@@ -45,10 +47,10 @@ theorem key_of_match {i zp zh : ℕ} {m : ℕ → ℕ} {AL : ℕ} (h1 : m (AL + 
       (chainModel J.whole).param (Qof P) ⟨zp, zh⟩) :
     (chainModel J.whole).key (Qof P) (logPos m AL i) =
       (chainModel J.whole).key (Qof P) ⟨zp, zh⟩ := by
-  unfold Model.key; rw [h2]; unfold logPos; simp only; rw [h1]
+  simp_all [Model.key, logPos] 
 
 theorem gW_lt_nat (J : Merge.Junction) : gW J < (chainModel J.whole).W.n := by
-  have := gW_lt J; exact_mod_cast this
+  have := gW_lt J; simp_all
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 20000 in
@@ -83,15 +85,15 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   have hAW : c.nreg ALLOC ≤ W := hI.hw.1 ALLOC
   have hA0 := hI.hA
   have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := hI.hm
-  have hALc : c.nreg (sw 300) = AL := hI.hin _ (by unfold IFix sw; omega)
-  have hb2 : AL + 7 * rd c₀ bSweep 301 ≤ c₀.nreg ALLOC := b2
+  have hALc : c.nreg (sw 300) = AL := hI.hin _ (by omega_nf)
+  
   -- the search result is the log record at the query position, if there is one
   have hmatch : ∀ i, i < rd c₀ bSweep 301 → c₀.nmem (AL + 7 * i) = zp →
       (chainModel J.whole).param (Qof P) (logPos c₀.nmem AL i) =
         (chainModel J.whole).param (Qof P) ⟨zp, zh⟩ → t = i := fun i hi h1 h2 =>
     search_eq hA hs1 hs2 hi (key_of_match h1 h2)
   -- the address block
-  have hok1 : okB W c.nmem cAddr c.nreg := cAddr_ok _ _ hKc.2.1 (by rw [hALc]; nlinarith)
+  have hok1 : okB W c.nmem cAddr c.nreg := cAddr_ok _ _ hKc.2.1 (by omega)
   refine IRS.seq (K₁ := cAddr.length) (K₂ := 11008 + (2 + (2 + hitK)))
     (IRS.block cAddr hI hok1) ?_ |>.mono (by simp [cAddr, checkK]) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' rfl
@@ -99,26 +101,25 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   rw [hALc] at v1E v1H
   set c₁ : Config := { c with nreg := regB c.nmem cAddr c.nreg } with hc₁
   have nk1 : ∀ q, (q < sw 4100 ∨ sw 4102 < q) → c₁.nreg q = c.nreg q := fun q hq =>
-    k1 q (by unfold kA sw at *; omega) (by unfold kE sw at *; omega) (by unfold kH sw at *; omega)
+    k1 q (by grind [kA, sw]) (by grind [kE, sw]) (by grind [kH, sw])
   have hlp := log_posW hA ht
   have hE1 : c₁.nreg kE = c₀.nmem (AL + 7 * t) := by
-    show regB c.nmem cAddr c.nreg kE = _; rw [v1E, hm _ (by nlinarith)]
+    grind
   have hH1 : c₁.nreg kH = c₀.nmem (AL + 7 * t + 1) := by
-    show regB c.nmem cAddr c.nreg kH = _; rw [v1H, hm _ (by nlinarith)]
-  have hxE1 : c₁.nreg lsxE = zp := by rw [nk1 _ (by unfold lsxE sw; omega)]; exact hxE
-  have hxH1 : c₁.nreg lsxH = zh := by rw [nk1 _ (by unfold lsxH sw; omega)]; exact hxH
-  have hG1 : c₁.nreg (sw 40) = G := hI₁.hin _ (by unfold IFix sw; omega)
+    grind
+  have hxE1 : c₁.nreg lsxE = zp := by grind [lsxE, sw]
+  have hxH1 : c₁.nreg lsxH = zh := by grind [lsxH, sw]
+  have hG1 : c₁.nreg (sw 40) = G := hI₁.hin _ (by omega_nf)
   have h6z : zh = 0 → 6 ≤ zp := fun h0 => query_h6 hz harr h0
   -- the comparison
   refine IRS.seq (K₁ := 11008) (callOff_irs (C := J.whole) (dsc := sw 2) (ex := kE) (hx := kH)
     (ey := lsxE) (hy := lsxH) (g := sw 40) (o := kO) hI₁ (hA.ctxW hI₁)
-    (by unfold kE kH lsxE lsxH sw; omega) (by unfold kO sw; omega)
-    (by rw [hE1]; exact hlp.1) (by rw [hxE1]; exact hzP)
+    (by omega_nf) (by omega_nf)
+    (by rw [hE1]; exact hlp.1) (by omega)
     (by rw [hG1, hGdef, aenv_gW hA]; exact gW_lt_nat J)
-    (by rw [hE1, hH1]; exact hlp.2.1) (by rw [hxE1, hxH1]; exact hzPp)
-    (by rw [hE1, hH1]; exact hlp.2.2) (by rw [hxE1, hxH1]; exact h6z)
-    (by unfold checkK hitK offerFK offerK at hroom; rw [show c₁.nreg ALLOC = c.nreg ALLOC from
-      nk1 _ (by unfold ALLOC sw; omega)]; omega)) ?_
+    (by rw [hE1, hH1]; exact hlp.2.1) (by ram_grind)
+    (by rw [hE1, hH1]; exact hlp.2.2) (by omega)
+    (by grind [checkK, hitK, offerFK, offerK, ALLOC, sw])) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨hb1, hb2', k2, hal2, hm2⟩
   rw [hE1, hH1, hxE1, hxH1, hG1] at hb1 hb2'
   set kt := (chainModel J.whole).key (Qof P) (logPos c₀.nmem AL t) with hkt
@@ -129,22 +130,20 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   have nk2 : ∀ q, (q < sw 4100 ∨ sw 4105 < q) → bandOf q ∉ oracleBands → q ≠ ALLOC →
       c₂.nreg q = c.nreg q :=
     fun q hq hb hqa => by
-      rw [k2 q hb (by unfold kO sw at *; omega) (by unfold kO sw at *; omega) hqa]
-      exact nk1 q (by unfold sw at *; omega)
+      rw [k2 q hb (by grind [kO, sw]) (by grind [kO, sw]) hqa]
+      ram_grind
   have hfr2 : FrQ c c₂ := ⟨fun r hr hq hra => by
-      rw [k2 r hr (fun h => hq (by subst h; right; unfold kO sw; omega))
-        (fun h => hq (by subst h; right; unfold kO sw; omega)) hra]
-      exact k1 r (fun h => hq (by subst h; right; unfold kA sw; omega))
-        (fun h => hq (by subst h; right; unfold kE sw; omega))
-        (fun h => hq (by subst h; right; unfold kH sw; omega)),
-    by rw [show c₁.nreg ALLOC = c.nreg ALLOC from nk1 _ (by unfold ALLOC sw; omega)] at hal2
-       exact hal2,
-    fun a ha => hm2 a (by rw [show c₁.nreg ALLOC = c.nreg ALLOC from
-      nk1 _ (by unfold ALLOC sw; omega)]; exact ha)⟩
+      rw [k2 r hr (fun h => hq (by subst h; omega_nf))
+        (fun h => hq (by subst h; omega_nf)) hra]
+      exact k1 r (fun h => hq (by subst h; omega_nf))
+        (fun h => hq (by subst h; omega_nf))
+        (fun h => hq (by subst h; omega_nf)),
+    by omega,
+    fun a ha => hm2 a (by omega)⟩
   have hk0₂ : c₂.nreg K0 = 0 := (hK.fix hI₂).1
   have hacc₂ : AccOK P accA (ModB J 1 1) J.whole.radius z (dirOf d) L c₂ :=
-    hacc.transport (fun j hj => nk2 (accA + j) (by unfold accA sw; omega)
-      (nob (by unfold accA sw; omega) (by unfold accA sw; omega)) (by unfold accA ALLOC sw; omega))
+    hacc.transport (fun j hj => nk2 (accA + j) (by omega_nf)
+      (nob (by omega_nf) (by omega_nf)) (by omega_nf))
   -- no offer when the record found is not at the query position
   have noOffer : ¬ (off (chainModel J.whole).W.n G kt = off (chainModel J.whole).W.n G kx) →
       ∀ K, IRS P W c₀ .skip c₂ K (fun c' => ∃ L', AccOK P accA (ModB J 1 1) J.whole.radius z
@@ -160,7 +159,7 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   · rw [hk0₂] at hc1
     have hlt : off (chainModel J.whole).W.n G kt < off (chainModel J.whole).W.n G kx :=
       hb1.2.1 (by have := hb1.1; omega)
-    exact (IRS.ifT (by rw [hk0₂]; exact hc1) (noOffer (ne_of_lt hlt) 0)).mono (by omega)
+    exact (IRS.ifT (by omega) (noOffer (ne_of_lt hlt) 0)).mono (by omega)
       (fun _ h => h)
   · refine (IRS.ifF hc1 ?_).mono (K := 2 + hitK + 2) (by omega) (fun _ h => h)
     rw [hk0₂] at hc1
@@ -170,7 +169,7 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
     · rw [hk0₂] at hc2
       have hlt : off (chainModel J.whole).W.n G kx < off (chainModel J.whole).W.n G kt :=
         hb2'.2.1 (by have := hb2'.1; omega)
-      exact (IRS.ifT (by rw [hk0₂]; exact hc2) (noOffer (ne_of_gt hlt) 0)).mono (by omega)
+      exact (IRS.ifT (by omega) (noOffer (ne_of_gt hlt) 0)).mono (by omega)
         (fun _ h => h)
     · refine (IRS.ifF (K := hitK) hc2 ?_).mono (by omega) (fun _ h => h)
       rw [hk0₂] at hc2
@@ -180,16 +179,14 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
       obtain ⟨he, hpar⟩ := bits_eq (x := logPos c₀.nmem AL t) hA hlp.1 hzP hlp.2.1 hzPp hn1 hn2
       have hpt : logPt P J c₀.nmem AL t = z := by
         unfold logPt; rw [he, hpar]; exact harr.2.2.2.1
-      have ht₂ : c₂.nreg lsI = t := nk2 _ (by unfold lsI sw; omega)
-        (nob (by unfold lsI sw; omega) (by unfold lsI sw; omega)) (by unfold lsI ALLOC sw; omega)
-      have hd₂ : c₂.nreg qD = d := nk2 _ (by unfold qD sw; omega)
-        (nob (by unfold qD sw; omega) (by unfold qD sw; omega)) (by unfold qD ALLOC sw; omega)
+      have ht₂ : c₂.nreg lsI = t := nk2 _ (by omega_nf)
+        (nob (by omega_nf) (by omega_nf)) (by omega_nf)
+      have hd₂ : c₂.nreg qD = d := nk2 _ (by omega_nf)
+        (nob (by omega_nf) (by omega_nf)) (by omega_nf)
       refine (hit_irs hA hXc hI₂
-        (by rw [ht₂]; exact ht) (by rw [ht₂]; exact hpt) hz hzs hz2
+        (by omega) (by ram_grind) hz hzs hz2
         (by rw [hd₂]; exact hacc₂)
-        (by unfold checkK at hroom; have := hA₂'
-            rw [show c₁.nreg ALLOC = c.nreg ALLOC from nk1 _ (by unfold ALLOC sw; omega)] at this
-            omega)).mono le_rfl ?_
+        (by grind [checkK, ALLOC, sw])).mono le_rfl ?_
       rintro c' ⟨L', hacc', hLL, hsnd, hcmp, hfr'⟩
       rw [hd₂] at hacc' hsnd
       rw [hd₂, ht₂] at hcmp

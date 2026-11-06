@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseBoxTransfer
 
 /-!
@@ -36,18 +38,23 @@ theorem mem_dropWalls {L : List (ℕ × ℕ × ℕ)} {x : ℕ × ℕ × ℕ} :
     x ∈ dropWalls L ↔ x ∈ L ∧ ¬ WallRec x := by
   simp [dropWalls]
 
+section
+variable {M : Model} {Q : Polygon}
 /-- A sublist of a valid chord list is valid. -/
-theorem chordTriplesOK_sublist {M : Model} {Q : Polygon} {L L' : List (ℕ × ℕ × ℕ)}
+theorem chordTriplesOK_sublist {L L' : List (ℕ × ℕ × ℕ)}
     (hs : L' <+ L) (hL : ChordTriplesOK M Q L) : ChordTriplesOK M Q L' := by
   obtain ⟨⟨hfin, hadm, hht⟩, hnd, hatt, hh⟩ := hL
   have sub : {c | ∃ x ∈ L', c = (recOf x).toSet M Q} ⊆ {c | ∃ x ∈ L, c = (recOf x).toSet M Q} := by
-    rintro c ⟨x, hx, rfl⟩; exact ⟨x, hs.subset hx, rfl⟩
+    ram_grind
   exact ⟨⟨hfin.subset sub, sub.trans hadm, fun c hc => hht c (sub hc)⟩,
     hnd.sublist (hs.map _), fun x hx => hatt x (hs.subset hx), fun x hx => hh x (hs.subset hx)⟩
 
-theorem chordTriplesOK_dropWalls {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)}
+theorem chordTriplesOK_dropWalls {L : List (ℕ × ℕ × ℕ)}
     (hL : ChordTriplesOK M Q L) : ChordTriplesOK M Q (dropWalls L) :=
   chordTriplesOK_sublist filter_sublist hL
+
+
+end
 
 variable {C C' : Chain}
 
@@ -64,7 +71,7 @@ theorem band_of_edge {e : ℕ} (he : e < (C.sideWalk C.sideBeta).n) (h1 : e ≠ 
   have hn : (C.sideWalk C.sideBeta).n = 2 * C.m + 7 := C.sideWalk_n _
   have htop := h.abs_le_of_mem C.top_mem_set
   have hbR : bnd C C' < C.radius := bnd_lt
-  have htR : C.top.2 < C.radius := by linarith [(abs_le.1 htop.2).2]
+  have htR : C.top.2 < C.radius := by grind
   have hR := abs_lt.1 hyR
   unfold sidePt at hpy
   rw [Geometry.lerp_snd] at hpy
@@ -74,43 +81,42 @@ theorem band_of_edge {e : ℕ} (he : e < (C.sideWalk C.sideBeta).n) (h1 : e ≠ 
     rw [hmod] at hpy
     interval_cases e
     · rw [C.sideWalk_vtx_zero, C.sideWalk_vtx_one] at hpy
-      simp only [Chain.slitTop] at hpy
-      linarith
-    · exact absurd rfl h1
+      grind [Chain.slitTop]
+    · omega
     · rw [C.sideWalk_vtx_two, C.sideWalk_vtx_three] at hpy
-      simp only at hpy
       linarith
-    · exact absurd rfl h3
+    · omega
     · rw [C.sideWalk_vtx_four, C.sideWalk_vtx_five] at hpy
-      simp only [Chain.slitTop] at hpy
-      linarith
+      grind [Chain.slitTop]
     · rw [C.sideWalk_vtx_five, C.sideWalk_vtx_six] at hpy
       simp only [Chain.slitTop] at hpy
       nlinarith
   · rcases Nat.lt_or_ge e (2 * C.m + 6) with h' | h'
     · have hmod : (e + 1) % (C.sideWalk C.sideBeta).n = e + 1 := by
-        rw [hn]; exact Nat.mod_eq_of_lt (by omega)
+        simp_all +arith
       rw [hmod] at hpy
       have hu := h.abs_le_of_mem (tour_mem C h6 (by omega))
       have hv := h.abs_le_of_mem (tour_mem C (by omega : 6 ≤ e + 1) (by omega))
       have hb := abs_lerp_le hu hv ht.1 ht.2.le
-      rw [Geometry.lerp_snd, hpy] at hb
-      exact hb.2
+      simp_all
     · have he' : e = 2 * C.m + 6 := by omega
       subst he'
       rw [C.sideWalk_vtx_wrap, walk_last] at hpy
       simp only [Chain.slitTop] at hpy
       have hy : y = C.top.2 := by nlinarith
-      rw [hy]; exact htop.2
+      simp_all
 
+section
+variable {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} (hL : ChordTriplesOK (chainModel C) Q L)
+include hL
 /-- The height of a chord of a valid chord list of a chain, at an end off the side walls, is in
 the fixed band. -/
-theorem band_of_end {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} (hL : ChordTriplesOK (chainModel C) Q L)
+theorem band_of_end
     {x : ℕ × ℕ × ℕ} (hx : x ∈ L) {w : WPos} (hw : w = (recOf x).lpos ∨ w = (recOf x).rpos)
     (h1 : w.edge ≠ 1) (h3 : w.edge ≠ 3) : |(Q.vtx x.1).2| ≤ bnd C C' - 1 / 2 := by
   obtain ⟨hl, hr⟩ := hL.2.2.1 x hx
   have hA : SideAttach (C.sideWalk C.sideBeta) ((recOf x).toSet (chainModel C) Q) w.edge
-      ((chainModel C).param Q w) := by rcases hw with rfl | rfl <;> assumption
+      ((chainModel C).param Q w) := by aesop
   obtain ⟨hp, ht0, ht1, hmem, -⟩ := hA
   obtain ⟨y', a, b, hh, hyt, e⟩ := hL.1.2.1 ⟨x, hx, rfl⟩
   have hmem' := hmem
@@ -126,8 +132,7 @@ theorem band_of_end {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} (hL : ChordTrip
   exact h.band_of_edge hp h1 h3 ⟨ht0, ht1⟩ hy2 hyt hR
 
 /-- **The chords off the side walls are in the band.** -/
-theorem inBand_dropWalls {Q : Polygon} {L : List (ℕ × ℕ × ℕ)}
-    (hL : ChordTriplesOK (chainModel C) Q L) : InBand C C' Q (dropWalls L) := by
+theorem inBand_dropWalls : InBand C C' Q (dropWalls L) := by
   intro x hx
   obtain ⟨hx, hw⟩ := mem_dropWalls.1 hx
   have hb : bnd C C' - 1 / 2 < bnd C C' := by linarith
@@ -138,6 +143,9 @@ theorem inBand_dropWalls {Q : Polygon} {L : List (ℕ × ℕ × ℕ)}
     exact lt_of_le_of_lt (h.band_of_end hL hx (Or.inr rfl) hr.1 hr.2) hb
   · rw [not_or] at hl
     exact lt_of_le_of_lt (h.band_of_end hL hx (Or.inl rfl) hl.1 hl.2) hb
+
+
+end
 
 end Twin
 

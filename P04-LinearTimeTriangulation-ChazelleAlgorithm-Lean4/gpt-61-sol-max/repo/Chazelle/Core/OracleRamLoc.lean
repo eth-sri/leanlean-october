@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleRamChord
 public import Chazelle.Core.NFLocateSpec
 
@@ -91,16 +93,13 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
     unfold locSetup
     exec_block
     · omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
-    · refine ⟨rfl, ?_⟩
-      config_simp
-      rw [b1, b2, b3, m₁]
-      exact ⟨rfl, rfl, rfl, hA1, rfl, rfl, hA1⟩
+    · config_simp; omega
+    · config_simp; omega
+    · config_simp; omega
+    · config_simp; omega
+    · config_simp; omega
+    · config_simp; omega
+    ram_simp 
   obtain ⟨q500, q501, q502, q503, q504, q505, q103, q104⟩ := q
   have w₂ := e₂.wb_right
   have f₂ := exec_frameB e₂ wr_locSetup
@@ -110,18 +109,18 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
   -- 3. the search
   set d := dirCode M x.edge with hd
   have hJ₂ : CmpJ x d AB A SB TB c.nmem c₂ :=
-    ⟨q500, q501, by rw [q502, d₁], q503, q504, q505, fun a _ => by rw [m₂]⟩
+    ⟨q500, q501, by omega, q503, q504, q505, fun a _ => by rw [m₂]⟩
   have hcmp := keyCmp_predOK hG hW x hx.2.2 d AB A SB TB c.nmem hAB (by omega)
   have hpr : ∀ i, i < A → (cmpPr P x d AB A c.nmem (c.nmem (SB + i)) = true ↔
       KeyPred M (Qof P) x (N.arc (N.seq.getD i 0)).s) := fun i hi => by
     rw [hseq i hi]
     exact cmpPr_eq hN x hx hst (seq_lt hNF hi)
   obtain ⟨c₃, k₃, e₃, hk₃, hJ₃, hL₃, m₃, a₃, ht₃, hpre₃, hpost₃⟩ := tsearch_exec (P := P) hcmp
-    (by decide) (rT := 120041) (rL := 120042) (T := TB) (L := L) (by unfold bandOf bLocate; omega)
-    (by unfold bandOf bLocate; omega) w₂ hJ₂ (cmpJ_stable x d AB A SB TB c.nmem)
+    (by decide) (rT := 120041) (rL := 120042) (T := TB) (L := L) (by omega_nf)
+    (by omega_nf) w₂ hJ₂ (cmpJ_stable x d AB A SB TB c.nmem)
     (by rw [R₂ _ (by decide) (by decide)]; exact hTBr) (by rw [R₂ _ (by decide) (by decide)]; exact hLr)
-    (fun j hj => by rw [m₂]; exact htab j hj) (by rw [q104]; exact hbig)
-    (by rw [q103, q104]; exact hSB) hTW
+    (fun j hj => by ram_grind) (by omega)
+    (by omega) hTW
     (fun i j hij hj hprj => by
       rw [q103, m₂] at hprj ⊢
       rw [q104] at hj
@@ -135,9 +134,7 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
   have hpick := locate_pick (fun y hy => hcov2 y hy) hNF x hA0 ht₃
     (fun i hi => (hpr i (by omega)).1 (hpre₃ i hi))
     (fun hi hk => by
-      have := (hpr t hi).2 hk
-      rw [hpost₃ hi] at this
-      exact Bool.false_ne_true this)
+      grind)
   have w₃ := e₃.wb_right
   have c12 : c₃.nreg 120012 = 0 := by
     rw [hL₃.1 _ (by simp [bSign, bandOf]) (by simp [bandOf, bLocate]) (by decide),
@@ -149,24 +146,24 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
       c₄.nreg 120170 = (if 0 < t then t - 1 else A - 1) := by
     unfold myFinish
     by_cases h0 : 0 < t
-    · exact ⟨_, _, .ifLtN_true (by rw [c12]; exact h0) (Exec.subN w₃ _ _ _), by omega,
-        by config_simp; rw [c11, ite_eq_left h0]⟩
-    · exact ⟨_, _, .ifLtN_false (by rw [c12]; exact h0) (Exec.subN w₃ _ _ _), by omega,
+    · exact ⟨_, _, .ifLtN_true (by omega) (Exec.subN w₃ _ _ _), by omega,
+        by config_simp; ram_grind⟩
+    · exact ⟨_, _, .ifLtN_false (by omega) (Exec.subN w₃ _ _ _), by omega,
         by config_simp; rw [c11, h504, ite_eq_right h0]⟩
   have ex : Exec P W myLoc c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
   have f₃ := exec_frameB e₃ (B := fun r => Bcmp r || decide (50100 ≤ r ∧ r ≤ 50116)) (by decide)
   have f₄ := exec_frameB e₄ (B := fun r => decide (r = 120170)) (by decide)
   have fr : FrameB BL c c₄ :=
-    (FrameB.mono f₁ fun r hr => by simp [BL, hr]).trans
-      ((FrameB.mono f₂ fun r hr => by simp [BL, hr]).trans
+    (FrameB.mono f₁ fun r hr => by grind [BL]).trans
+      ((FrameB.mono f₂ fun r hr => by grind [BL]).trans
         ((FrameB.mono f₃ fun r hr => by
           simp only [Bool.or_eq_true] at hr
-          rcases hr with hr | hr <;> simp [BL, hr]).trans
-          (FrameB.mono f₄ fun r hr => by simp only [decide_eq_true_eq] at hr; simp [BL, hr])))
+          grind [BL]).trans
+          (FrameB.mono f₄ fun r hr => by simp only [decide_eq_true_eq] at hr; grind [BL])))
   refine ⟨c₄, _, ex, ?_, fr, ?_, ?_⟩
   · omega
   · rw [v₄]; split_ifs <;> omega
-  · rw [v₄]; exact hpick.2
+  ram_grind
 end
 
 end OracleR

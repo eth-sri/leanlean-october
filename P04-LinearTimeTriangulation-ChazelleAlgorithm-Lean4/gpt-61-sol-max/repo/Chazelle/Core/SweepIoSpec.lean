@@ -177,23 +177,27 @@ def CandOut (P : Polygon) (J : Merge.Junction) (z : Point) (c c' : Config) : Pro
     (∀ τ ∈ L, 0 < τ ∧ OnCB J.whole (rayPt z (dirOf (c.nreg qD)) τ)) ∧
     J.whole.hitParam z (dirOf (c.nreg qD)) ∈ L
 
+section
+variable (J : Merge.Junction) (Q : Polygon) (N : NF) (ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ))
+include J Q N ls
 /-- The key of the log entry `i` (its offset is compared with the offset of a position). -/
-noncomputable def logKey (J : Merge.Junction) (Q : Polygon) (N : NF)
-    (ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)) (i : ℕ) : ℝ :=
+noncomputable def logKey (i : ℕ) : ℝ :=
   ((logOf J Q N ls).getD i (0, 0, ∅)).1 + ((logOf J Q N ls).getD i (0, 0, ∅)).2.1
 
 /-- The label set of the log entry `i`. -/
-noncomputable def logLab (J : Merge.Junction) (Q : Polygon) (N : NF)
-    (ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)) (i : ℕ) : Set (Set Point) :=
+noncomputable def logLab (i : ℕ) : Set (Set Point) :=
   ((logOf J Q N ls).getD i (0, 0, ∅)).2.2
 
 /-- **`i` is the log entry of the key `x`**: the last log key whose offset is not after it. -/
-def LogIdx (J : Merge.Junction) (Q : Polygon) (N : NF) (ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ))
+def LogIdx
     (x : ℝ) (i : ℕ) : Prop :=
   i < ls.length ∧ oW J (logKey J Q N ls i) ≤ oW J x ∧
     (i + 1 < ls.length → oW J x < oW J (logKey J Q N ls (i + 1)))
 
 /-! ## Contract 1: the cases of a side-0 query (mathematics) -/
+
+
+end
 
 /-- **The cases of the first hit of a side-0 query** `z` (a point of `C₁` other than the shared
 vertex, not above the top of `C₂`, with a free direction `σ` for `C`), from its arrival position

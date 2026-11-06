@@ -43,15 +43,15 @@ theorem cross_sides {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀
   obtain ⟨r, hr, hstrip⟩ := Chazelle.Jordan.strip hP hi ht₀
   have hcont1 : Continuous (fun δ : ℝ => offset u v t₀ δ) := by unfold offset; fun_prop
   have hcont2 : Continuous (fun δ : ℝ => offset u v t₀ (-δ)) := by unfold offset; fun_prop
-  have h0 : offset u v t₀ 0 = w := by simp [offset, hw]
-  have h0' : offset u v t₀ (-0) = w := by simp [offset, hw]
+  have h0 : offset u v t₀ 0 = w := by simp_all
+  have h0' : offset u v t₀ (-0) = w := by simp_all
   have hev1 : ∀ᶠ δ in 𝓝[>] (0 : ℝ), offset u v t₀ δ ∈ ball w r :=
     (hcont1.tendsto 0).mono_left nhdsWithin_le_nhds (by rw [h0]; exact ball_mem_nhds w hr)
   have hev2 : ∀ᶠ δ in 𝓝[>] (0 : ℝ), offset u v t₀ (-δ) ∈ ball w r :=
     (hcont2.tendsto 0).mono_left nhdsWithin_le_nhds (by rw [h0']; exact ball_mem_nhds w hr)
   obtain ⟨δ, hδs, hδ1, hδ2, hδ0⟩ := ((Chazelle.Jordan.edge_sides hP hi ht₀).and
     (hev1.and (hev2.and self_mem_nhdsWithin))).exists
-  have hδ0' : (0 : ℝ) < δ := hδ0
+  
   have huv : u ≠ v := fun e => hh (by rw [e])
   have hsq := Chazelle.Jordan.sqLen_pos huv
   -- the two half-disks
@@ -75,22 +75,18 @@ theorem cross_sides {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀
     intro σ hσ
     rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq, sub_self, abs_zero,
       show w.1 + σ * ε - w.1 = σ * ε by ring, abs_mul, abs_of_pos hε0]
-    rcases hσ with rfl | rfl <;> norm_num <;> exact ⟨hεr, hr⟩
+    rcases hσ with rfl | rfl <;> norm_num <;> grind
   have hdet : ∀ σ : ℝ, Chazelle.det u v ((w.1 + σ * ε, w.2) : Point) =
       -(σ * ε) * (v.2 - u.2) := by
-    intro σ
-    have := hdw
-    unfold Chazelle.det at this ⊢
-    simp only
-    linear_combination this
+    grind [Chazelle.det]
   have hm := hdist (-1) (Or.inr rfl)
   have hp := hdist 1 (Or.inl rfl)
   rw [show w.1 + -1 * ε = w.1 - ε by ring] at hm
   rw [show w.1 + 1 * ε = w.1 + ε by ring] at hp
   have hdm : Chazelle.det u v ((w.1 - ε, w.2) : Point) = ε * (v.2 - u.2) := by
-    have := hdet (-1); rw [show w.1 + -1 * ε = w.1 - ε by ring] at this; rw [this]; ring
+    have := hdet (-1); grind
   have hdp : Chazelle.det u v ((w.1 + ε, w.2) : Point) = -(ε * (v.2 - u.2)) := by
-    have := hdet 1; rw [show w.1 + 1 * ε = w.1 + ε by ring] at this; rw [this]; ring
+    have := hdet 1; grind
   have hLR : offset u v t₀ δ ∈ P.filled ↔ offset u v t₀ (-δ) ∉ P.filled := hδs
   rcases lt_or_gt_of_ne (sub_ne_zero.2 (Ne.symm hh)) with hneg | hpos
   · -- `v.2 < u.2`: the right neighbour is on the positive side
@@ -100,10 +96,7 @@ theorem cross_sides {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀
       show 0 < -1 * _; rw [hdm]; nlinarith⟩
     have e1 := FactsInterior.filled_iff_of_preconnected hP (hpre 1) (hsub 1) hpH hL
     have e2 := FactsInterior.filled_iff_of_preconnected hP (hpre (-1)) (hsub (-1)) hmH hR
-    rw [e1, e2]
-    constructor
-    · intro h1 h2; exact hLR.1 h2 h1
-    · intro h1; by_contra h2; exact h1 (hLR.2 h2)
+    grind
   · -- `u.2 < v.2`: the left neighbour is on the positive side
     have hmH : ((w.1 - ε, w.2) : Point) ∈ Hp := ⟨hm, by
       show 0 < 1 * _; rw [hdm]; nlinarith⟩
@@ -111,7 +104,7 @@ theorem cross_sides {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀
       show 0 < -1 * _; rw [hdp]; nlinarith⟩
     have e1 := FactsInterior.filled_iff_of_preconnected hP (hpre 1) (hsub 1) hmH hL
     have e2 := FactsInterior.filled_iff_of_preconnected hP (hpre (-1)) (hsub (-1)) hpH hR
-    rw [e1, e2]; exact hLR
+    grind
 
 variable {Q : Polygon} {C : Chain}
 
@@ -132,7 +125,7 @@ theorem sub_chord {y a b x : ℝ} (hab : a ≤ x ∧ x ≤ b)
   have hAbdd : BddAbove A := ⟨x, fun t ht => ht.1.2⟩
   have ha'A := hAc.csSup_mem hAne hAbdd
   set a' := sSup A with ha'
-  have ha'x : a' < x := lt_of_le_of_ne ha'A.1.2 (fun e => ha'A.2 (by rw [e]; exact hx))
+  have ha'x : a' < x := lt_of_le_of_ne ha'A.1.2 (fun e => ha'A.2 (by grind))
   have hleft : ∀ t, a' < t → t ≤ x → ((t, y) : Point) ∈ Q.filled \ Q.boundary := by
     intro t ht1 ht2
     by_contra hn
@@ -145,7 +138,7 @@ theorem sub_chord {y a b x : ℝ} (hab : a ≤ x ∧ x ≤ b)
   have hBbdd : BddBelow B := ⟨x, fun t ht => ht.1.1⟩
   have hb'B := hBc.csInf_mem hBne hBbdd
   set b' := sInf B with hb'
-  have hxb' : x < b' := lt_of_le_of_ne hb'B.1.1 (fun e => hb'B.2 (by rw [← e]; exact hx))
+  have hxb' : x < b' := lt_of_le_of_ne hb'B.1.1 (fun e => hb'B.2 (by grind))
   have hright : ∀ t, x ≤ t → t < b' → ((t, y) : Point) ∈ Q.filled \ Q.boundary := by
     intro t ht1 ht2
     by_contra hn
@@ -153,9 +146,7 @@ theorem sub_chord {y a b x : ℝ} (hab : a ≤ x ∧ x ≤ b)
     linarith
   refine ⟨a', b', ha'A.1.1, ha'x, hxb', hb'B.1.2,
     ⟨by linarith, ha'A.2, hb'B.2, fun t ht1 ht2 => ?_⟩⟩
-  rcases le_or_gt t x with h | h
-  · exact hleft t ht1 h
-  · exact hright t h.le ht2
+  grind
 
 /-- **One piece per chord.**  A horizontal chord of the domain of the top chain contains at most
 one interior chord of `Q`, when the last edge of `Q` is not horizontal. -/
@@ -183,25 +174,12 @@ theorem one_piece (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0
     have hf : ((e, y) : Point) ∈ Q.filled :=
       closure_minimal (fun z hz => hz.1) (Chazelle.Jordan.isClosed_filled Q) hcl
     have hbd : ((e, y) : Point) ∈ Q.boundary := by
-      by_contra h; exact hnD ⟨hf, h⟩
+      grind
     exact T.boundary_dom hbd (hc.open_mem e hae heb)
   -- the parameter on `e_{n-1}` is determined by the height
   have hs_eq : ∀ e e' s s' : ℝ, ((e, y) : Point) = lerp (Q.vtx C.m) (Q.vtx 0) s →
       ((e', y) : Point) = lerp (Q.vtx C.m) (Q.vtx 0) s' → s = s' ∧ e = e' := by
-    intro e e' s s' h h'
-    have h2 := congrArg Prod.snd h
-    have h2' := congrArg Prod.snd h'
-    have h1 := congrArg Prod.fst h
-    have h1' := congrArg Prod.fst h'
-    simp only [Chazelle.Geometry.lerp_fst, Chazelle.Geometry.lerp_snd] at h1 h1' h2 h2'
-    have hne : (Q.vtx 0).2 - (Q.vtx C.m).2 ≠ 0 := sub_ne_zero.2 (Ne.symm hh)
-    have hss : s = s' := by
-      have : (s - s') * ((Q.vtx 0).2 - (Q.vtx C.m).2) = 0 := by linarith
-      rcases mul_eq_zero.1 this with h | h
-      · linarith
-      · exact absurd h hne
-    subst hss
-    exact ⟨rfl, by linarith⟩
+    grind [Chazelle.Geometry.lerp_fst, Chazelle.Geometry.lerp_snd]
   -- closure points
   have hclL : ∀ {a' b' : ℝ}, IsHChordIn (Q.filled \ Q.boundary) y a' b' →
       ((b', y) : Point) ∈ closure (Q.filled \ Q.boundary) := by
@@ -209,24 +187,24 @@ theorem one_piece (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0
     refine Metric.mem_closure_iff.2 fun ε hε => ?_
     set m := min (ε / 2) ((b' - a') / 2)
     have hm0 : 0 < m := lt_min (by linarith) (by linarith [hc'.lt])
-    have hm1 : m < ε := by have := min_le_left (ε / 2) ((b' - a') / 2); linarith
-    have hm2 : m < b' - a' := by have := min_le_right (ε / 2) ((b' - a') / 2); linarith [hc'.lt]
+    have hm1 : m < ε := by grind
+    have hm2 : m < b' - a' := by grind
     refine ⟨(b' - m, y), hc'.open_mem _ (by linarith) (by linarith), ?_⟩
     rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq, sub_self, abs_zero,
       show b' - (b' - m) = m by ring, abs_of_pos hm0]
-    exact max_lt hm1 hε
+    grind
   have hclR : ∀ {a' b' : ℝ}, IsHChordIn (Q.filled \ Q.boundary) y a' b' →
       ((a', y) : Point) ∈ closure (Q.filled \ Q.boundary) := by
     intro a' b' hc'
     refine Metric.mem_closure_iff.2 fun ε hε => ?_
     set m := min (ε / 2) ((b' - a') / 2)
     have hm0 : 0 < m := lt_min (by linarith) (by linarith [hc'.lt])
-    have hm1 : m < ε := by have := min_le_left (ε / 2) ((b' - a') / 2); linarith
-    have hm2 : m < b' - a' := by have := min_le_right (ε / 2) ((b' - a') / 2); linarith [hc'.lt]
+    have hm1 : m < ε := by grind
+    have hm2 : m < b' - a' := by grind
     refine ⟨(a' + m, y), hc'.open_mem _ (by linarith) (by linarith), ?_⟩
     rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq, sub_self, abs_zero,
       show a' - (a' + m) = -m by ring, abs_neg, abs_of_pos hm0]
-    exact max_lt hm1 hε
+    grind
   -- two distinct pieces would be separated by a crossing with the interior on both sides
   have key : ∀ {a₁ b₁ a₂ b₂ : ℝ}, IsHChordIn (Q.filled \ Q.boundary) y a₁ b₁ →
       IsHChordIn (Q.filled \ Q.boundary) y a₂ b₂ → a ≤ a₁ → b₂ ≤ b → b₁ ≤ a₂ → False := by
@@ -238,7 +216,7 @@ theorem one_piece (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0
     obtain ⟨rfl, rfl⟩ := hs_eq _ _ _ _ e e'
     have hmn : C.m < Q.n := by have := T.hm; omega
     have hsucc : (C.m + 1) % Q.n = 0 := by rw [T.hm, Nat.mod_self]
-    have hh' : (Q.vtx C.m).2 ≠ (Q.vtx ((C.m + 1) % Q.n)).2 := by rw [hsucc]; exact hh
+    have hh' : (Q.vtx C.m).2 ≠ (Q.vtx ((C.m + 1) % Q.n)).2 := by grind
     obtain ⟨ε₀, hε₀, hcross⟩ := cross_sides hQ hmn hs hh'
     rw [hsucc, ← e] at hcross
     set ε := min (ε₀ / 2) (min ((b₁ - a₁) / 2) ((b₂ - b₁) / 2)) with hεd
@@ -246,10 +224,10 @@ theorem one_piece (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0
     have hε1 : ε < ε₀ := by have := min_le_left (ε₀ / 2) (min ((b₁ - a₁) / 2) ((b₂ - b₁) / 2)); linarith
     have hε2 : ε < b₁ - a₁ := by
       have := min_le_right (ε₀ / 2) (min ((b₁ - a₁) / 2) ((b₂ - b₁) / 2))
-      have := min_le_left ((b₁ - a₁) / 2) ((b₂ - b₁) / 2); linarith [hc₁.lt]
+      have := min_le_left ((b₁ - a₁) / 2) ((b₂ - b₁) / 2); linarith
     have hε3 : ε < b₂ - b₁ := by
       have := min_le_right (ε₀ / 2) (min ((b₁ - a₁) / 2) ((b₂ - b₁) / 2))
-      have := min_le_right ((b₁ - a₁) / 2) ((b₂ - b₁) / 2); linarith [hc₂.lt]
+      have := min_le_right ((b₁ - a₁) / 2) ((b₂ - b₁) / 2); linarith
     have hl := hc₁.open_mem (b₁ - ε) (by linarith) (by linarith)
     have hr := hc₂.open_mem (b₁ + ε) (by linarith) (by linarith)
     exact ((hcross ε hε0 hε1).1 hl.1) hr.1
@@ -257,7 +235,7 @@ theorem one_piece (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0
   · have hb₁a₂ : b₁ ≤ a₂ := by
       by_contra hlt; push Not at hlt
       exact hc₂.left_not (hc₁.open_mem a₂ h hlt)
-    exact (key hc₁ hc₂ ha₁ hb₂ hb₁a₂).elim
+    grind
   · subst h
     rcases lt_trichotomy b₁ b₂ with h' | h' | h'
     · exact absurd (hc₂.open_mem b₁ hc₁.lt h') hc₁.right_not
@@ -266,7 +244,7 @@ theorem one_piece (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0
   · have hb₂a₁ : b₂ ≤ a₁ := by
       by_contra hlt; push Not at hlt
       exact hc₁.left_not (hc₂.open_mem a₁ h hlt)
-    exact (key hc₂ hc₁ ha₂ hb₁ hb₂a₁).elim
+    grind
 
 /-- **The pieces** of a chain family: the interior chords of `Q` inside its chords. -/
 def pieces (Q : Polygon) (F₀ : Set (Set Point)) : Set (Set Point) :=
@@ -290,7 +268,7 @@ theorem chordFamily_pieces (T : Top Q C) {F₀ : Set (Set Point)}
     rw [hcab] at s1 s2
     exact one_piece hQ T hh hc h₁.1 h₂.1 s1 s2
   have hfin : (pieces Q F₀).Finite :=
-    Set.Finite.of_finite_image (hF₀.1.subset (by rintro _ ⟨d, hd, rfl⟩; exact hf d hd)) hinj
+    Set.Finite.of_finite_image (hF₀.1.subset (by grind)) hinj
   refine ⟨⟨hfin, fun d hd => hd.1, fun d hd => ?_⟩, ?_⟩
   · obtain ⟨c, hc, hdc⟩ := hd.2
     obtain ⟨h, hh', a, b, rfl⟩ := hF₀.2.2 c hc

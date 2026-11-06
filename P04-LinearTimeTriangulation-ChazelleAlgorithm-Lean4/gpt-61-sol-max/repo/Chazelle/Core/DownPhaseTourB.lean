@@ -32,25 +32,31 @@ variable {C β}
 
 theorem tourB_lt (k : ℕ) : tourB C β k < 2 * C.m := TourA.tourA_lt _
 
-theorem sideIdx_tourB {k : ℕ} (hk : k < C.m) : C.sideIdx β (tourB C β k) = k + 1 := by
+section
+variable {k : ℕ} (hk : k < C.m)
+include hk
+theorem sideIdx_tourB : C.sideIdx β (tourB C β k) = k + 1 := by
   unfold tourB
   rw [Chain.sideIdx_eq, TourA.mod_tourA (by omega)]
-  unfold sideE; split_ifs <;> omega
+  grind [sideE]
 
-theorem sideIdx_tourB_succ {k : ℕ} (hk : k < C.m) : C.sideIdx β (tourB C β k + 1) = k := by
+theorem sideIdx_tourB_succ : C.sideIdx β (tourB C β k + 1) = k := by
   unfold tourB
   rw [C.sideIdx_succ, TourA.mod_tourA (by omega)]
-  unfold sideE; rw [ite_eq_right (by omega)]; omega
+  grind [sideE]
 
-theorem vtx_tourB {k : ℕ} (hk : k < C.m) :
+theorem vtx_tourB :
     (C.sideWalk β).vtx (tourB C β k + 6) = C.vertex (k + 1) := by
   rw [C.sideWalk_vtx_tour β (tourB_lt k).le]
   unfold Chain.sideTour; rw [sideIdx_tourB hk]
 
-theorem vtx_tourB_succ {k : ℕ} (hk : k < C.m) :
+theorem vtx_tourB_succ :
     (C.sideWalk β).vtx ((tourB C β k + 6 + 1) % (C.sideWalk β).n) = C.vertex k := by
   rw [C.sideWalk_next_tour β (tourB_lt k), C.sideWalk_vtx_tour β (tourB_lt k)]
   unfold Chain.sideTour; rw [sideIdx_tourB_succ hk]
+
+
+end
 
 /-- **Contiguity of side `B`**: the pass of edge `k` follows the pass of edge `k + 1`, except at
 the tour start. -/
@@ -58,9 +64,8 @@ theorem tourB_succ {k : ℕ} (hk : k + 1 < C.m) (hne : 2 * C.m - (k + 1) ≠ sA 
     tourB C β k = tourB C β (k + 1) + 1 := by
   unfold tourB
   have := TourA.tourA_succ (C := C) (β := β) (k := 2 * C.m - (k + 2)) (by omega)
-    (by rw [show 2 * C.m - (k + 2) + 1 = 2 * C.m - (k + 1) by omega]; exact hne)
-  rw [show 2 * C.m - (k + 2) + 1 = 2 * C.m - (k + 1) by omega] at this
-  rw [this, show 2 * C.m - (k + 1 + 1) = 2 * C.m - (k + 2) by omega]
+    (by omega)
+  grind
 
 end
 

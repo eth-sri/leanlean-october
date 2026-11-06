@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvInv
 
 /-!
@@ -31,10 +33,13 @@ section Comp
 
 variable {M : Model}
 
+section
+variable (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) {c Z : Set Point}
+include hM hF
 /-- **A region on a side of a chord lies in the component of the chord's attachment** (with
 respect to the split by another chord `c`): if `Z ∈ F`, `Z ≠ c`, is attached at `P` and the small
 left sector at `P` lies in the component `K` of `D \ c`, every region on a side of `Z` meets `K`. -/
-theorem side_meets_comp (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) {c Z : Set Point}
+theorem side_meets_comp
     (hZ : Z ∈ F) {pz : ℕ} {tz : ℝ} (hP : SideAttach M.W Z pz tz) {k : Point}
     (hsec : SideSectorIn M.W (connectedComponentIn (M.D \ c) k) pz tz)
     (hcl : IsClosed c) {ρ : ℝ} {R : Set Point} (hRs : SideOf M ρ Z R) :
@@ -48,10 +53,9 @@ theorem side_meets_comp (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   obtain ⟨e, f, hef, hZef, hPe, hopen'⟩ : ∃ e f : Point, e ≠ f ∧ Z = Chazelle.segment e f ∧
       sidePt M.W pz tz = e ∧ ∀ s ∈ Ioo (0 : ℝ) 1, Geometry.lerp e f s ∈ M.D := by
     rcases hM.attach_endpoint hopen hPZ with h | h
-    · exact ⟨a, b, hab, hZab, h, hopen⟩
+    · ram_grind
     · refine ⟨b, a, hab.symm, by rw [hZab]; exact Chazelle.Jordan.segment_comm a b, h, fun s hs => ?_⟩
-      rw [Geometry.lerp_symm]
-      exact hopen (1 - s) ⟨by linarith [hs.2], by linarith [hs.1]⟩
+      grind [Geometry.lerp_symm]
   have hcont : Tendsto (fun s : ℝ => Geometry.lerp e f s) (𝓝[>] (0 : ℝ)) (𝓝 e) := by
     have := (Geometry.continuous_lerp e f).tendsto 0
     rw [Geometry.lerp_zero] at this
@@ -70,9 +74,9 @@ theorem side_meets_comp (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     exact hM.trace pz (by have := hPZ.1; exact this) tz hPZ.2.1 hPZ.2.2.1.le (hPe ▸ hzD')
   have hdist : dist z e < min r r' := hsb
   have hzL : Chazelle.Chain.sideLeft M.W pz tz z :=
-    hleft z hzZ (by rw [hPe]; exact hze) (by rw [hPe]; exact lt_of_lt_of_le hdist (min_le_right _ _))
+    hleft z hzZ (by ram_grind) (by grind)
   have hzK : z ∈ connectedComponentIn (M.D \ c) k :=
-    hs z (by rw [mem_ball, hPe]; exact lt_of_lt_of_le hdist (min_le_left _ _)) hzL
+    hs z (by grind [mem_ball]) hzL
   -- the component is open, so the points just beside `z` are in it
   have hKo : IsOpen (connectedComponentIn (M.D \ c) k) :=
     (hM.isOpen.sdiff hcl).connectedComponentIn
@@ -86,7 +90,7 @@ theorem side_meets_comp (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   exact ⟨_, h1, h2⟩
 
 /-- **A region on a side of a chord attached in one arc of `c` is not faced in the other arc.** -/
-theorem side_comp (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) {c Z : Set Point}
+theorem side_comp
     (hc : c ∈ F) (hZ : Z ∈ F) {pa pb : ℕ} {ta tb : ℝ} (hA : SideAttach M.W c pa ta)
     (hB : SideAttach M.W c pb tb) (hAB : sidePt M.W pa ta ≠ sidePt M.W pb tb) {pz : ℕ} {tz : ℝ}
     (hP : SideAttach M.W Z pz tz) (hPin : sideInArc (pb + tb) (pa + ta) (pz + tz)) {ρ : ℝ}
@@ -102,6 +106,9 @@ theorem side_comp (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) {c Z 
   have hw1 := hR1 hwR
   exact hne ((connectedComponentIn_eq hw1).trans (connectedComponentIn_eq hw2).symm)
 
+
+end
+
 end Comp
 
 /-! ## The junction: offsets -/
@@ -110,11 +117,13 @@ section Junction
 
 variable {J : Merge.Junction}
 
+section
+variable (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite)
+include hP hS₂ hS₂f
 /-- **`side_comp` in offsets** (from the base `gW`): `c` attached at offsets `oA < oB`, `Z ≠ c`
 attached at an offset outside `[oA, oB]`; a region on a side of `Z` is not faced at a position with
 offset in `(oA, oB)`. -/
-theorem side_comp_off (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {c Z : Set Point}
+theorem side_comp_off {c Z : Set Point}
     (hc : c ∈ F₂plus J S₂) (hZ : Z ∈ F₂plus J S₂) {pa pb : ℕ} {ta tb : ℝ}
     (hA : SideAttach (chainModel J.whole).W c pa ta) (hB : SideAttach (chainModel J.whole).W c pb tb)
     (hAB : oW J (pa + ta) < oW J (pb + tb)) {pz : ℕ} {tz : ℝ}
@@ -136,14 +145,13 @@ theorem side_comp_off (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hAB' : sidePt (chainModel J.whole).W pa ta ≠ sidePt (chainModel J.whole).W pb tb := by
     intro h
     obtain ⟨rfl, rfl⟩ := hC.hM.attach_unique (hC.hF hc) hA hB h
-    exact lt_irrefl _ hAB
+    ram_grind
   refine side_comp hC.hM hC.hF hc hZ hA hB hAB' hPz
     ((sideInArc_rev_iff_off hg0 hgn a0 a1 b0 b1 z0 z1 hAB).2 hPout) hR hRs hpy hty
     ((sideInArc_iff_off hg0 hgn a0 a1 b0 b1 y0 y1 hAB).2 ⟨hy1, hy2⟩) hfy
 
 /-- Two attachments of a chord with distinct offsets have distinct points. -/
-theorem pt_ne_of_off_ne (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {c : Set Point}
+theorem pt_ne_of_off_ne {c : Set Point}
     (hc : c ∈ F₂plus J S₂) {pa pb : ℕ} {ta tb : ℝ}
     (hA : SideAttach (chainModel J.whole).W c pa ta) (hB : SideAttach (chainModel J.whole).W c pb tb)
     (hne : oW J (pa + ta) ≠ oW J (pb + tb)) :
@@ -151,13 +159,12 @@ theorem pt_ne_of_off_ne (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hC := corr_right0 J hP hS₂ hS₂f
   intro h
   obtain ⟨rfl, rfl⟩ := hC.hM.attach_unique (hC.hF hc) hA hB h
-  exact hne rfl
+  simp_all
 
 /-- **Regions between two non-enclosed positions** (`GL`): two non-cut positions on the walk, not
 enclosed, with only bracket chords attached at offsets strictly between them, face the same
 region. -/
-theorem evGL (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right)
-    (hS₂f : S₂.Finite) {p p' : ℕ} {t t' : ℝ} (hp : p < (chainModel J.whole).W.n)
+theorem evGL {p p' : ℕ} {t t' : ℝ} (hp : p < (chainModel J.whole).W.n)
     (hp' : p' < (chainModel J.whole).W.n) (ht : t ∈ Ioo (0 : ℝ) 1) (ht' : t' ∈ Ioo (0 : ℝ) 1)
     (hnc : ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p + t))
     (hnc' : ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p' + t'))
@@ -181,7 +188,7 @@ theorem evGL (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.
   obtain ⟨y0, y1⟩ := Corr.key_mem hp' ht'.1.le ht'.2
   have hk := WalkAx.key_ne_of_pt_ne (M := chainModel J.whole) hA hB hAB
   have hxy : (p : ℝ) + t ≠ p' + t' := by
-    intro h; rw [h] at hlt; exact lt_irrefl _ hlt
+    ram_grind
   have hxa : (p : ℝ) + t ≠ pa + ta := fun h => hnc ⟨c, hc, pa, ta, hA, h⟩
   have hxb : (p : ℝ) + t ≠ pb + tb := fun h => hnc ⟨c, hc, pb, tb, hB, h⟩
   have hya : (p' : ℝ) + t' ≠ pa + ta := fun h => hnc' ⟨c, hc, pa, ta, hA, h⟩
@@ -207,7 +214,7 @@ theorem evGL (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.
     · rcases lt_or_gt_of_ne h3 with h6 | h6
       · -- the other end before `x`: `x` is enclosed
         exact hE ⟨c, hc, qb, qa, sb, sa, hQB, hQA, hQAB.symm, hbrk qb sb hQB, h6, Or.inl h1⟩
-      · exact hout ⟨h6, h5⟩
+      ram_grind
     · -- the other end after `y`: `y` is enclosed
       exact hE' ⟨c, hc, qa, qb, sa, sb, hQA, hQB, hQAB, hbrk qa sa hQA, h2, Or.inl h5⟩
   unfold Btw at hs
@@ -223,14 +230,17 @@ theorem evGL (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.
           (oW J (p' + t') < oW J (pa + ta) ∧ oW J (pa + ta) < oW J (p + t))) := by
         rintro (h | h)
         · exact ha h
-        · linarith [h.1, h.2]
+        linarith
       have h2 : ¬ ((oW J (p + t) < oW J (pb + tb) ∧ oW J (pb + tb) < oW J (p' + t')) ∨
           (oW J (p' + t') < oW J (pb + tb) ∧ oW J (pb + tb) < oW J (p + t))) := by
         rintro (h | h)
         · exact hb h
-        · linarith [h.1, h.2]
+        linarith
       exact h1 (hs.2 h2)
     exact key hB hA hAB.symm hb.1 hb.2 hoxa.symm hoya.symm ha
+
+
+end
 
 end Junction
 

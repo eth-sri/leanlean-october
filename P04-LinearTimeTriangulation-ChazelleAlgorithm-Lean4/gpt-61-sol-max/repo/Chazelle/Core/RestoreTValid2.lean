@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreTValid
 
 /-!
@@ -51,17 +53,10 @@ theorem condTurn_rs {f : ℕ} {t : Stmt} {Kt : ℕ} {turn : Prop}
   by_cases a : c.nreg f < 1
   · exact RS.ifT (by omega) (leaf_skip hI (by omega))
   · refine RS.ifF (by omega) (RS.seq (RS.op (ht c hI hroom)) fun c₁ hI₁ _ ⟨v₁, h8₁⟩ =>
-      (setIf1_rs (by unfold Scr; omega) hI₁).mono le_rfl fun c₂ ⟨u1, u2, a₂⟩ => ?_)
+      (setIf1_rs (by omega_nf) hI₁).mono le_rfl fun c₂ ⟨u1, u2, a₂⟩ => ?_)
     have e52 : c₁.nreg 83052 = c.nreg 83052 := h8₁ _ (by norm_num) (by norm_num)
-    refine ⟨?_, fun h => u2 (by rw [e52]; exact h), (Agr.of_band h8₁ []).trans a₂⟩
-    rw [u1, e52, v₁]
-    constructor
-    · rintro (h | h)
-      · exact Or.inl h
-      · exact Or.inr ⟨by omega, h⟩
-    · rintro (h | ⟨-, h⟩)
-      · exact Or.inl h
-      · exact Or.inr h
+    refine ⟨?_, fun h => u2 (by omega), (Agr.of_band h8₁ []).trans a₂⟩
+    grind
 
 /-- **The vertex case**: an arc begins (ends) at the vertex with a positive turn, and no exit
 chord leaves the vertex in the direction. -/
@@ -88,20 +83,20 @@ theorem vertexCase_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK
           Clear M P N (c₀.nreg 83002) (xOf c₀) (c₀.nreg 83008)) ∧ Agr c c' validScr) := by
   have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rw [hI.h23] at this; exact this
   unfold vertexCase vertexK
-  refine RS.seq (RS.const hI (r := 83052) (v := 0) (by unfold Scr; omega) (by omega))
+  refine RS.seq (RS.const hI (r := 83052) (v := 0) (by omega_nf) (by omega))
     fun c₁ hI₁ hA₁ h₁ => ?_
-  have q43 : c₁.nreg 83043 = c.nreg 83043 := by rw [h₁, upd_ne (by norm_num)]
-  have q44 : c₁.nreg 83044 = c.nreg 83044 := by rw [h₁, upd_ne (by norm_num)]
-  refine RS.seq (condTurn_rs (fun c h1 h2 => hT.1 P W M N c₀ c hE h1 h2) hI₁ (by rw [q43]; exact h43)
-    (by unfold vertexK at hroom; omega)) fun c₂ hI₂ hA₂ ⟨u1, u2, a₂⟩ => ?_
+  have q43 : c₁.nreg 83043 = c.nreg 83043 := by ram_simp
+  have q44 : c₁.nreg 83044 = c.nreg 83044 := by ram_simp
+  refine RS.seq (condTurn_rs (fun c h1 h2 => hT.1 P W M N c₀ c hE h1 h2) hI₁ (by omega)
+    (by omega_nf)) fun c₂ hI₂ hA₂ ⟨u1, u2, a₂⟩ => ?_
   have q44' : c₂.nreg 83044 = c.nreg 83044 := by
     rw [a₂ _ (by norm_num) (by norm_num) (by simp), q44]
-  refine RS.seq (condTurn_rs (fun c h1 h2 => hT.2 P W M N c₀ c hE h1 hv h2) hI₂ (by rw [q44']; exact h44)
-    (by unfold vertexK at hroom; omega)) fun c₃ hI₃ hA₃ ⟨v1, v2, a₃⟩ => ?_
-  have e52 : c₁.nreg 83052 = 0 := by rw [h₁, upd_eq]
+  refine RS.seq (condTurn_rs (fun c h1 h2 => hT.2 P W M N c₀ c hE h1 hv h2) hI₂ (by omega)
+    (by omega_nf)) fun c₃ hI₃ hA₃ ⟨v1, v2, a₃⟩ => ?_
+  have e52 : c₁.nreg 83052 = 0 := by ram_simp
   have ok : c₃.nreg 83052 = 1 ↔ ((c.nreg 83043 = 1 ∧ TurnNB M (xOf c₀) (c₀.nreg 83008)) ∨
       (c.nreg 83044 = 1 ∧ TurnPB M (xOf c₀) (c₀.nreg 83008))) := by
-    rw [v1, u1, e52, q43, q44']; simp
+    simp_all
   have ok1 : c₃.nreg 83052 ≤ 1 := v2 (u2 (by omega))
   have a13 : Agr c c₃ [83052] := (((Agr.of_upd h₁).trans a₂).trans a₃).mono (by simp)
   have e10 : c₃.nreg 83010 = 0 := by rw [a13 _ (by norm_num) (by norm_num) (by simp), h10]
@@ -112,37 +107,26 @@ theorem vertexCase_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK
         (c.nreg 83044 = 1 ∧ TurnPB M (xOf c₀) (c₀.nreg 83008))) ∧
         Clear M P N (c₀.nreg 83002) (xOf c₀) (c₀.nreg 83008)) ∧ Agr c c' validScr)
       ⟨by omega, ?_, a13.mono (by simp [validScr])⟩)).mono (by omega) (fun _ h => h)
-    rw [e10]
-    constructor
-    · intro h; omega
-    · rintro ⟨h, -⟩; have := ok.2 h; omega
+    grind
   · refine RS.ifF (by omega) ?_
-    refine RS.seq (exitScan_rs hK hE hI₃ (by unfold vertexK at hroom; omega))
+    refine RS.seq (exitScan_rs hK hE hI₃ (by grind [vertexK]))
       fun c₄ hI₄ hA₄ ⟨b1, b2, a₄⟩ => ?_
     have e10' : c₄.nreg 83010 = 0 := by rw [a₄ _ (by norm_num) (by norm_num) (by simp), e10]
     have h1' : c₄.nreg 83023 = 1 := hI₄.h23
     have hok' : c₃.nreg 83052 = 1 := by omega
     have agr : Agr c c₄ validScr := (a13.trans a₄).mono (by simp [validScr])
     by_cases hb : c₄.nreg 83046 < c₄.nreg 83023
-    · refine (RS.ifT hb (RS.const hI₄ (r := 83010) (v := 1) (by unfold Scr; omega)
-        hW1)).mono (by norm_num) fun c' h' => ⟨by rw [h', upd_eq], ?_, ?_⟩
+    · refine (RS.ifT hb (RS.const hI₄ (r := 83010) (v := 1) (by omega_nf)
+        hW1)).mono (by norm_num) fun c' h' => ⟨by ram_simp, ?_, ?_⟩
       · rw [h', upd_eq]
-        simp only [true_iff]
-        refine ⟨ok.1 hok', ?_⟩
-        by_contra hc
-        have := b2.2 hc
-        omega
+        grind
       · exact agr.trans (Agr.of_upd h') |>.mono (by simp [validScr])
     · refine (RS.ifF hb (RS.skip (K := 0) hI₄ (Q := fun c' => c'.nreg 83010 ≤ 1 ∧
         (c'.nreg 83010 = 1 ↔ ((c.nreg 83043 = 1 ∧ TurnNB M (xOf c₀) (c₀.nreg 83008)) ∨
           (c.nreg 83044 = 1 ∧ TurnPB M (xOf c₀) (c₀.nreg 83008))) ∧
           Clear M P N (c₀.nreg 83002) (xOf c₀) (c₀.nreg 83008)) ∧ Agr c c' validScr)
         ⟨by omega, ?_, agr⟩)).mono (by omega) (fun _ h => h)
-      rw [e10']
-      constructor
-      · intro h; omega
-      · rintro ⟨-, hc⟩
-        exact absurd (b2.1 (by omega)) (not_not.2 hc)
+      grind
 
 
 /-- **The validity check.** -/
@@ -167,18 +151,18 @@ theorem valid_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : Ke
         Agr c c' validScr) := by
   have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rw [hI.h23] at this; exact this
   unfold validS validK
-  refine RS.seq (RS.const hI (r := 83010) (v := 0) (by unfold Scr; omega) (by omega))
+  refine RS.seq (RS.const hI (r := 83010) (v := 0) (by omega_nf) (by omega))
     fun c₁ hI₁ hA₁ h₁ => ?_
-  refine RS.seq (RS.op (tRegLen_exec (f := 2) (Or.inr rfl) hE hI₁ (by unfold validK at hroom; omega)))
+  refine RS.seq (RS.op (tRegLen_exec (f := 2) (Or.inr rfl) hE hI₁ (by ram_grind)))
     fun c₂ hI₂ hA₂ ⟨v₂, h8₂⟩ => ?_
-  refine RS.seq (RS.copy hI₂ (r := 83050) (a := 50210) (by unfold Scr; omega))
+  refine RS.seq (RS.copy hI₂ (r := 83050) (a := 50210) (by omega_nf))
     fun c₃ hI₃ hA₃ h₃ => ?_
   have a₃ : Agr c c₃ [83010, 83050] :=
     (((Agr.of_upd h₁).trans (Agr.of_band h8₂ [])).trans (Agr.of_upd h₃)).mono (by simp)
   have e50 : c₃.nreg 83050 = (N.region (c₀.nreg 83002)).chords.length := by
     rw [h₃, upd_eq, v₂]; rfl
   have e10 : c₃.nreg 83010 = 0 := by
-    rw [h₃, upd_ne (by norm_num), h8₂ _ (by norm_num) (by norm_num), h₁, upd_eq]
+    ram_simp
   have h1 : c₃.nreg 83023 = 1 := hI₃.h23
   -- no exit chord: invalid
   by_cases hD0 : c₃.nreg 83050 < c₃.nreg 83023
@@ -188,24 +172,22 @@ theorem valid_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : Ke
       (fun _ h => h)
     rw [e10]
     refine ⟨fun h => by omega, fun ⟨hne, _⟩ => ?_⟩
-    have : (N.region (c₀.nreg 83002)).chords.length = 0 := by omega
-    rw [List.length_eq_zero_iff] at this
-    exact absurd this hne
+    grind [List.length_eq_zero_iff]
   refine RS.ifF hD0 ?_
   have hne : (N.region (c₀.nreg 83002)).chords ≠ [] := by
-    intro h; rw [h] at e50; simp at e50; omega
+    grind
   have hFne : (N.F M (Qof P)).Nonempty := by
     obtain ⟨i, hi⟩ : ∃ i, i ∈ (N.region (c₀.nreg 83002)).chords := by
       rcases hl : (N.region (c₀.nreg 83002)).chords with _ | ⟨a, l⟩
-      · exact absurd hl hne
+      · grind
       · exact ⟨a, by simp⟩
     obtain ⟨-, -, -, reg, -, -, -, hregs, -⟩ := hE.hNF
     exact ⟨_, chord_toSet_mem' (((hregs _ hE.hr).1 i).1 hi).1⟩
-  refine RS.seq (RS.op (hL P W M N c₀ c₃ hE hI₃ (by unfold validK at hroom; omega)))
+  refine RS.seq (RS.op (hL P W M N c₀ c₃ hE hI₃ (by grind [validK])))
     fun c₄ hI₄ hA₄ ⟨bL, h8₄⟩ => ?_
   have h1' : c₄.nreg 83023 = 1 := hI₄.h23
   have a₄ : Agr c c₄ [83010, 83050] := (a₃.trans (Agr.of_band h8₄ [])).mono (by simp)
-  have e10' : c₄.nreg 83010 = 0 := by rw [h8₄ _ (by norm_num) (by norm_num), e10]
+  have e10' : c₄.nreg 83010 = 0 := by grind
   by_cases hL0 : c₄.nreg 50210 < c₄.nreg 83023
   · refine (RS.ifT hL0 (RS.skip (K := 0) hI₄ (Q := fun c' => c'.nreg 83010 ≤ 1 ∧
       (c'.nreg 83010 = 1 ↔ ValidB M P N (c₀.nreg 83002) (xOf c₀) (c₀.nreg 83008)) ∧
@@ -217,7 +199,7 @@ theorem valid_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : Ke
     omega
   have hLt : LeftB M P (xOf c₀) (c₀.nreg 83008) := bL.2.1 (by have := bL.1; omega)
   refine RS.ifF hL0 ?_
-  refine RS.seq (arcScan_rs hK hE hFne hI₄ (by unfold validK at hroom; omega))
+  refine RS.seq (arcScan_rs hK hE hFne hI₄ (by grind [validK]))
     fun c₅ hI₅ hA₅ ⟨f1, f2, f3, i1, i2, i3, a₅⟩ => ?_
   have agr5 : Agr c c₅ validScr := (a₄.trans a₅).mono (by simp [validScr])
   have e10'' : c₅.nreg 83010 = 0 := by
@@ -235,29 +217,24 @@ theorem valid_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : Ke
       exact WalkKey.param_of_code_zero h0
   by_cases hin : c₅.nreg 83042 < c₅.nreg 83023
   · refine RS.ifT hin ?_
-    have nIn : ¬ FIn M P N (c₀.nreg 83002) (xOf c₀) := fun h => by have := i1.2 h; omega
+    have nIn : ¬ FIn M P N (c₀.nreg 83002) (xOf c₀) := fun h => by grind
     by_cases hv : c₅.nreg 83006 < c₅.nreg 83023
-    · refine (RS.ifT hv (vertexCase_rs hK hT hE hI₅ (by rw [← i6]; omega) e10'' f2 f3
-        (by unfold validK at hroom; omega))).mono (by omega) fun c' ⟨v1, v2, a'⟩ =>
-        ⟨v1, ?_, agr5.trans a' |>.mono (by simp [validScr])⟩
+    · refine (RS.ifT hv (vertexCase_rs hK hT hE hI₅ (by omega) e10'' f2 f3
+        (by grind [validK]))).mono (by omega) fun c' ⟨v1, v2, a'⟩ =>
+        ⟨v1, ?_, agr5.trans a' |>.mono (by grind)⟩
       rw [v2, i2, i3]
       unfold ValidB
-      have h0 : M.param (Qof P) (xOf c₀) = 0 := hz.2 (by omega)
-      simp only [nIn, false_or, h0, true_and]
-      exact ⟨fun h => ⟨hne, hLt, h⟩, fun ⟨_, _, h⟩ => h⟩
+      grind
     · refine (RS.ifF hv (RS.skip (K := 0) hI₅ (Q := fun c' => c'.nreg 83010 ≤ 1 ∧
         (c'.nreg 83010 = 1 ↔ ValidB M P N (c₀.nreg 83002) (xOf c₀) (c₀.nreg 83008)) ∧
         Agr c c' validScr) ⟨by omega, ?_, agr5⟩)).mono (by omega) (fun _ h => h)
       rw [e10'']
-      refine ⟨fun h => by omega, fun ⟨_, _, h⟩ => ?_⟩
-      rcases h with h | ⟨h0, -⟩
-      · exact absurd h nIn
-      · have := hz.1 h0; omega
-  · refine (RS.ifF hin (RS.const hI₅ (r := 83010) (v := 1) (by unfold Scr; omega) hW1)).mono
-      (by omega) fun c' h' => ⟨by rw [h', upd_eq], ?_, ?_⟩
+      ram_grind
+  · refine (RS.ifF hin (RS.const hI₅ (r := 83010) (v := 1) (by omega_nf) hW1)).mono
+      (by omega) fun c' h' => ⟨by ram_simp, ?_, ?_⟩
     · rw [h', upd_eq]
       simp only [true_iff]
-      exact ⟨hne, hLt, Or.inl (i1.1 (by omega))⟩
+      ram_grind
     · exact (agr5.trans (Agr.of_upd h')).mono (by simp [validScr])
 
 end

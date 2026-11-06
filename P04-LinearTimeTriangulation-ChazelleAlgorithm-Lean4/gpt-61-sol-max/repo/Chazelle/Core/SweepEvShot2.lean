@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvShot
 public import Chazelle.Core.SweepEvCand
 
@@ -34,8 +36,7 @@ theorem origin_mem_left_dom {J : Merge.Junction} (hP : J.P.Simple) {a : Point}
 
 /-- The direction of a code `≤ 1` and of its complement. -/
 theorem dirOf_rev {d : ℕ} (hd : d ≤ 1) : -dirOf (1 - d) = dirOf d := by
-  unfold dirOf
-  rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hd with rfl | rfl <;> norm_num
+  core_grind
 
 set_option maxHeartbeats 8000000 in
 set_option maxRecDepth 200000 in
@@ -67,9 +68,9 @@ theorem evShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   set a := s.eval (Qof P) with ha
   set σ := dirOf (c.nreg oD) with hσ
   set K := L.length with hKd
-  have hσ' : σ = 1 ∨ σ = -1 := by rw [hσ]; unfold dirOf; split_ifs <;> simp
-  have hW2 : 2 ≤ W := by unfold hostWords at hWh; have := hG.1.1; nlinarith
-  have hPW : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
+  have hσ' : σ = 1 ∨ σ = -1 := by grind [dirOf]
+  have hW2 : 2 ≤ W := by grind [hostWords]
+  
   have haD : a ∈ J.left.dom := origin_mem_left_dom hP haR hav ha₁
   have hR₁ : J.left.radius = J.right.radius := rfl
   have hay : |a.2| < J.left.radius := by
@@ -83,24 +84,24 @@ theorem evShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
       iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
       iscr_sw (by norm_num) (by norm_num), ⟨iscr_sw (by norm_num) (by norm_num), by omega⟩,
-      iscr_sw (by unfold eRD sw; norm_num) (by unfold eRD sw; norm_num), trivial⟩
+      iscr_sw (by omega_nf) (by omega_nf), trivial⟩
   refine IRS.seq (K₂ := ShotList.shotCost (F (c₀.nreg (sw 5))) K + 49989)
     (IRS.block evPrepL hI hok) ?_ |>.mono
-    (by simp only [evPrepL, evShotK, List.length_cons, List.length_nil]; omega) (fun _ h => h)
+    (by grind [evPrepL, evShotK, List.length_cons, List.length_nil]) (fun _ h => h)
   rintro c₁ hI₁ - - hc1
   obtain ⟨p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, pR, po⟩ := evPrepL_val c.nmem c.nreg
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
   have q1 : ∀ q, (q < 241300 ∨ 241309 < q) → q ≠ eRD → c₁.nreg q = c.nreg q := fun q hq hq' => by
-    rw [hc1]; exact po q hq hq'
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := q1 _ (by unfold ALLOC; omega) (by unfold eRD ALLOC sw; omega)
+    ram_simp
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := q1 _ (by omega_nf) (by omega_nf)
   have c0 : c₁.nreg RS = c.nreg MD₁ := by rw [hc1]; exact p0
   have c1' : c₁.nreg (RS + 1) = c.nreg wGB := by rw [hc1]; exact p1
   have c2' : c₁.nreg (RS + 2) = K := by rw [hc1]; show regB _ _ _ 241302 = _; rw [p2, hgK]
   have c6 : c₁.nreg (RS + 6) = c.nreg oD := by rw [hc1]; exact p6
   have c7 : c₁.nreg (RS + 7) = c₀.nreg (sw 5) := by
-    rw [hc1]; show regB _ _ _ 241307 = _; rw [p7]; exact hI.hin _ (by unfold IFix sw; omega)
+    rw [hc1]; show regB _ _ _ 241307 = _; rw [p7]; exact hI.hin _ (by omega_nf)
   have c8 : c₁.nreg (RS + 8) = c₀.nreg (sw 10) := by
-    rw [hc1]; show regB _ _ _ 241308 = _; rw [p8]; exact hI.hin _ (by unfold IFix sw; omega)
+    rw [hc1]; show regB _ _ _ 241308 = _; rw [p8]; exact hI.hin _ (by omega_nf)
   have c9 : c₁.nreg (RS + 9) = 0 := by rw [hc1]; exact p9
   have cR : c₁.nreg eRD = 1 - c.nreg oD := by
     rw [hc1]; show regB c.nmem evPrepL c.nreg eRD = _; rw [pR, show c.nreg K1 = 1 from hK.2.1]
@@ -120,13 +121,13 @@ theorem evShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have hreg := hctx.hostReg
   obtain ⟨-, -, -, ⟨H, hCD, -⟩, -, hWm⟩ := id hctx
   have hmD : ModelDescAt c₁.nmem (c₁.nreg RS) (Qof P) (chainModel J.left) := by
-    rw [c0, hm1]; exact hmd
+    grind
   have hRS1 : c₁.nreg RS + 1 = c.nreg CD₁ := by rw [c0, hcd]
   have pre : ShotList.ShotPre X Ok RS P W c₁ := by
-    refine ⟨hG, hWh, hX1, hcap1, by rw [c0, hm1, hA1]; exact hmwf, by rw [c0, hm1]; exact hm0,
-      by rw [c1', c2', hA1]; exact hAB, by rw [c9]; norm_num, H, J.left,
-      by rw [hRS1, hm1]; exact hCD, by rw [hRS1, hm1]; exact hreg, hOk, hWm, fun j hj => ?_,
-      fun j hj => by rw [c9] at hj; omega, .sym s, hori, hsl,
+    refine ⟨hG, hWh, hX1, hcap1, by grind, by grind,
+      by omega, by omega, H, J.left,
+      by grind, by grind, hOk, hWm, fun j hj => ?_,
+      fun j hj => by omega, .sym s, hori, hsl,
       Or.inr ⟨IOrc.innerPt_chain J.left ?_ ?_, fun x hx => by cases hx⟩, hay, ?_⟩
     · rw [c2'] at hj
       rw [c1', hm1, harcs j hj, c7]
@@ -145,7 +146,7 @@ theorem evShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       rw [this, hpt]; exact haD
   -- 3. the shot
   refine IRS.seq (K₂ := 49989 - 11 + 11)
-    (shot_irs hsh hBs hXl hI₁ pre (by rw [c7, c2', hA1]; unfold evShotK at hroom; omega)) ?_
+    (shot_irs hsh hBs hXl hI₁ pre (by grind [evShotK])) ?_
     |>.mono (by rw [c7, c2']) (fun _ h => h)
   rintro c₂ hI₂ - hAb ⟨hpost, k2, hA2, hm2⟩
   obtain ⟨hfl, A, hlo, hhi, hyes, hno⟩ := hpost (chainModel J.left) (.sym s) hmD hori
@@ -164,29 +165,29 @@ theorem evShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   -- registers after the shot
   have keep2 : ∀ r, 240000 ≤ r → r < 250000 → ¬ (RS ≤ r ∧ r < RS + 300) →
       c₂.nreg r = c₁.nreg r :=
-    fun r h1 h2 h3 => k2 r (not_oracle_sw h1 h2) (by unfold ALLOC; omega) h3
+    fun r h1 h2 h3 => k2 r (not_oracle_sw h1 h2) (by omega_nf) h3
   have hA2' : c.nreg ALLOC ≤ c₂.nreg ALLOC := hA1 ▸ hA2
   have hm2' : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
-    rw [hm2 a (by omega), hm1]
+    ram_simp
   have cd2 : c₂.nreg CD₁ = c.nreg CD₁ :=
-    (keep2 _ (by unfold CD₁ sw; norm_num) (by unfold CD₁ sw; norm_num) (by unfold CD₁ RS sw; omega)).trans
-      (q1 _ (by unfold CD₁ sw; omega) (by unfold CD₁ eRD sw; omega))
+    (keep2 _ (by omega_nf) (by omega_nf) (by omega_nf)).trans
+      (q1 _ (by omega_nf) (by omega_nf))
   have hctx2 : ChainCtx P W c₂ CD₁ J.left := hctx.transport cd2 hm2' hA2'
   have eR2 : c₂.nreg eRD = 1 - c.nreg oD :=
-    (keep2 _ (by unfold eRD sw; norm_num) (by unfold eRD sw; norm_num) (by unfold eRD RS sw; omega)).trans cR
+    (keep2 _ (by omega_nf) (by omega_nf) (by omega_nf)).trans cR
   -- the frame so far
   have fr2 : EFr ShW c c₂ := by
     refine ⟨fun r hr hX hra => ?_, hA2', hm2'⟩
     by_cases hsw : 240000 ≤ r ∧ r < 250000
     · rw [keep2 r hsw.1 hsw.2 (fun h => hX (Or.inl h))]
       exact q1 r (by
-        by_contra h; push Not at h; exact hX (Or.inl ⟨by unfold RS; omega, by unfold RS; omega⟩))
-        (fun h => hX (Or.inr ⟨by rw [h]; unfold eF eRD sw; omega, by rw [h]; unfold eNo eRD sw; omega⟩))
+        by_contra h; push Not at h; exact hX (Or.inl ⟨by omega_nf, by omega_nf⟩))
+        (fun h => hX (Or.inr ⟨by rw [h]; omega_nf, by rw [h]; omega_nf⟩))
     · rw [k2 r hr hra (fun h => hsw ⟨by unfold RS at h; omega, by unfold RS at h; omega⟩)]
       exact q1 r (by omega) (fun h => hsw ⟨by unfold eRD sw at h; omega, by unfold eRD sw at h; omega⟩)
   -- 4. copy the flag
   have hok3 : okB W c₂.nmem [.copyN eF 241320] c₂.nreg :=
-    ⟨iscr_sw (by unfold eF sw; norm_num) (by unfold eF sw; norm_num), trivial⟩
+    ⟨iscr_sw (by omega_nf) (by omega_nf), trivial⟩
   refine IRS.seq (K₁ := 1) (K₂ := 49977) (IRS.block [.copyN eF 241320] hI₂ hok3) ?_ |>.mono
     (by norm_num) (fun _ h => h)
   rintro c₃ hI₃ - - hc3
@@ -195,9 +196,9 @@ theorem evShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have k3 : ∀ r, r ≠ eF → c₃.nreg r = c₂.nreg r := fun r hr => by
     rw [hc3]; simp only [regB, regI]; exact upd_other _ _ _ hr
   have hm3 : c₃.nmem = c₂.nmem := by rw [hc3]
-  have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := k3 _ (by unfold eF ALLOC sw; omega)
+  have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := k3 _ (by omega_nf)
   have fr3 : EFr ShW c c₃ := fr2.trans ⟨fun r _ hX _ => k3 r (fun h => hX (Or.inr ⟨by rw [h], by
-      rw [h]; unfold eF eNo sw; omega⟩)), hA3.ge, fun a _ => by rw [hm3]⟩
+      rw [h]; omega_nf⟩)), hA3.ge, fun a _ => by rw [hm3]⟩
   have hk0 : c₃.nreg K0 = 0 := (hK₀.fix hI₃).1
   -- the uniqueness of the hit parameter for genuine hits
   have huniq : ∀ t, FirstHit A a σ t → ∀ τ₀, Genuine J.left a σ τ₀ →
@@ -223,39 +224,39 @@ theorem evShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       hpos2
     have he2' : c₂.nreg 241321 < (chainModel J.left).W.n := he2
     have hpp2' : ProperPos (chainModel J.left) (Qof P) P.n ⟨c₂.nreg 241321, c₂.nreg 241322⟩ := hpp2
-    have e3 : c₃.nreg 241321 = c₂.nreg 241321 := k3 _ (by unfold eF sw; omega)
-    have h3' : c₃.nreg 241322 = c₂.nreg 241322 := k3 _ (by unfold eF sw; omega)
+    have e3 : c₃.nreg 241321 = c₂.nreg 241321 := k3 _ (by omega_nf)
+    have h3' : c₃.nreg 241322 = c₂.nreg 241322 := k3 _ (by omega_nf)
     have hctx3 : ChainCtx P W c₃ CD₁ J.left :=
-      hctx2.transport (k3 _ (by unfold CD₁ eF sw; omega)) (fun a _ => by rw [hm3]) hA3.ge
-    have eR3 : c₃.nreg eRD = 1 - c.nreg oD := (k3 _ (by unfold eRD eF sw; omega)).trans eR2
+      hctx2.transport (k3 _ (by omega_nf)) (fun a _ => by rw [hm3]) hA3.ge
+    have eR3 : c₃.nreg eRD = 1 - c.nreg oD := (k3 _ (by omega_nf)).trans eR2
     have hK1 : evShotK (F (c₀.nreg (sw 5))) K = ShotList.shotCost (F (c₀.nreg (sw 5))) K + 50000 :=
       rfl
     rw [c7, c2', hA1] at hAb
     rw [hK1] at hroom
     generalize ShotList.shotCost (F (c₀.nreg (sw 5))) K = S at hAb hroom
-    have hroom3 : c₃.nreg ALLOC + 35007 ≤ W := by rw [hA3]; omega
-    refine IRS.mono (K := 49975 + 2) (IRS.ifT (by rw [hk0, v3]; exact hf) ?_) (by norm_num)
+    have hroom3 : c₃.nreg ALLOC + 35007 ≤ W := by grind
+    refine IRS.mono (K := 49975 + 2) (IRS.ifT (by omega) ?_) (by norm_num)
       (fun _ h => h)
     refine IRS.seq (K₁ := 35007) (K₂ := 14968) (callArr_irs (dsc := CD₁) (re := 241321) (rh := 241322)
       (rd := eRD) (o := eA) hI₃ hctx3
-      ⟨by unfold CD₁ sw; norm_num, by unfold CD₁ sw; norm_num, by norm_num, by norm_num, by norm_num,
-        by norm_num, by unfold eRD sw; norm_num, by unfold eRD sw; norm_num⟩
-      ⟨by unfold eA sw; norm_num, by unfold eA sw; norm_num⟩ (by rw [e3]; exact he2')
-      (by rw [e3, h3']; exact hpp2') (by rw [e3, h3', hpos2']; exact hay) hroom3) ?_ |>.mono
+      ⟨by omega_nf, by omega_nf, by norm_num, by norm_num, by norm_num,
+        by norm_num, by omega_nf, by omega_nf⟩
+      ⟨by omega_nf, by omega_nf⟩ (by omega)
+      (by grind) (by rw [e3, h3', hpos2']; exact hay) hroom3) ?_ |>.mono
       (by norm_num) (fun _ h => h)
     rintro c₄ hI₄ hA₄ hA₄' ⟨harr, k4, hal4, hm4⟩
     unfold ArrAt at harr
     rw [e3, h3', eR3, hpos2'] at harr
     rw [dirOf_rev hD] at harr
     have k4' : ∀ r, bandOf r ∉ oracleBands → (r < eA ∨ eA + 2 < r) → r ≠ ALLOC →
-        c₄.nreg r = c₃.nreg r := fun r hr h hra => k4 r hr (by rcases h with h | h <;> omega)
-          (by rcases h with h | h <;> omega) (by rcases h with h | h <;> omega) hra
+        c₄.nreg r = c₃.nreg r := fun r hr h hra => k4 r hr (by omega)
+          (by omega) (by omega) hra
     have fr4 : EFr ShW c c₄ := fr3.trans ⟨fun r hr hX hra => k4' r hr (by
       by_contra h; push Not at h; exact hX (Or.inr ⟨by unfold eF eA sw at *; omega,
         by unfold eA eNo sw at *; omega⟩)) hra, hal4, hm4⟩
     have eF4 : c₄.nreg eF = 1 := by
-      rw [k4' eF (not_oracle_sw (by unfold eF sw; norm_num) (by unfold eF sw; norm_num))
-        (by unfold eF eA sw; omega) (by unfold eF ALLOC sw; omega), v3, h1]
+      rw [k4' eF (not_oracle_sw (by omega_nf) (by omega_nf))
+        (by omega_nf) (by omega_nf), v3, h1]
     obtain ⟨hfA, hA1', hA0⟩ := harr
     have hk04 : c₄.nreg K0 = 0 := (hK₀.fix hI₄).1
     by_cases ha4 : c₄.nreg K0 < c₄.nreg eA
@@ -264,14 +265,14 @@ theorem evShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       have hfa1 : c₄.nreg eA = 1 := by omega
       obtain ⟨hpe, hppA, hArr⟩ := hA1' hfa1
       have hctx4 : ChainCtx P W c₄ CD₁ J.left := hctx3.transport (k4' _
-        (not_oracle_sw (by unfold CD₁ sw; norm_num) (by unfold CD₁ sw; norm_num))
-        (by unfold CD₁ eA sw; omega) (by unfold CD₁ ALLOC sw; omega)) hm4 hal4
-      refine (IRS.ifT (by rw [hk04]; exact ha4) (normS_irs (dsc := CD₁) (pe := eA + 1) (ph := eA + 2)
+        (not_oracle_sw (by omega_nf) (by omega_nf))
+        (by omega_nf) (by omega_nf)) hm4 hal4
+      refine (IRS.ifT (by omega) (normS_irs (dsc := CD₁) (pe := eA + 1) (ph := eA + 2)
         (o := eNo) hI₄ (hK₀.fix hI₄) hctx4
-        ⟨by unfold CD₁ sw; norm_num, by unfold CD₁ sw; norm_num, by unfold eA sw; norm_num,
-          by unfold eA sw; norm_num, by unfold eA sw; norm_num, by unfold eA sw; norm_num⟩
-        ⟨by unfold eNo sw; norm_num, by unfold eNo sw; norm_num, by unfold eNo eA sw; norm_num,
-          by unfold eNo eA sw; norm_num, by unfold eNo eA sw; norm_num, by unfold eNo eA sw; norm_num,
+        ⟨by omega_nf, by omega_nf, by omega_nf,
+          by omega_nf, by omega_nf, by omega_nf⟩
+        ⟨by omega_nf, by omega_nf, by omega_nf,
+          by omega_nf, by omega_nf, by omega_nf,
           by norm_num⟩ hpe hppA (fun _ _ _ _ => by
             have e : (chainModel J.left).pos (Qof P) ⟨c₄.nreg (eA + 1), c₄.nreg (eA + 2)⟩ =
                 sidePt (chainModel J.left).W (c₄.nreg (eA + 1))
@@ -284,22 +285,22 @@ theorem evShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
           c₅.nreg r = c₄.nreg r := k5
       obtain ⟨hppN, hparN, hposN, hnz⟩ := nhgt_facts hppA
       have eA5 : c₅.nreg eA = 1 := by
-        rw [k5' eA (not_oracle_sw (by unfold eA sw; norm_num) (by unfold eA sw; norm_num))
-          (by unfold eA; omega) (by unfold eA eNo sw; omega) (by unfold eA eNo sw; omega)
-          (by unfold eA ALLOC sw; omega), hfa1]
+        rw [k5' eA (not_oracle_sw (by omega_nf) (by omega_nf))
+          (by omega) (by omega_nf) (by omega_nf)
+          (by omega_nf), hfa1]
       have eF5 : c₅.nreg eF = 1 := by
-        rw [k5' eF (not_oracle_sw (by unfold eF sw; norm_num) (by unfold eF sw; norm_num))
-          (by unfold eF eA sw; omega) (by unfold eF eNo sw; omega) (by unfold eF eNo sw; omega)
-          (by unfold eF ALLOC sw; omega), eF4]
+        rw [k5' eF (not_oracle_sw (by omega_nf) (by omega_nf))
+          (by omega_nf) (by omega_nf) (by omega_nf)
+          (by omega_nf), eF4]
       refine ⟨⟨by rw [eF5], fun _ _ _ => eF5, fun _ => ⟨t, hFH.1, huniq t hFH, by rw [eA5],
         fun _ => ?_, fun h => absurd eA5 h⟩⟩, fr4.trans ⟨fun r hr hX hra => k5' r hr ?_ ?_ ?_ hra,
           hal5, hm5⟩⟩
       · rw [n1, n2]
         refine ⟨hpe, hppN, ?_, hnz⟩
         rw [hparN]; exact hArr
-      · intro h; exact hX (Or.inr ⟨by rw [h]; unfold eF eA sw; omega, by rw [h]; unfold eA eNo sw; omega⟩)
-      · intro h; exact hX (Or.inr ⟨by rw [h]; unfold eF eNo sw; omega, by rw [h]; omega⟩)
-      · intro h; exact hX (Or.inr ⟨by rw [h]; unfold eF eNo sw; omega, by rw [h]⟩)
+      · intro h; exact hX (Or.inr ⟨by rw [h]; omega_nf, by rw [h]; omega_nf⟩)
+      · intro h; exact hX (Or.inr ⟨by rw [h]; omega_nf, by omega⟩)
+      · intro h; exact hX (Or.inr ⟨by rw [h]; omega_nf, by rw [h]⟩)
     · refine (IRS.ifF ha4 (IRS.skip (K := 0) hI₄ rfl)).mono (by norm_num) ?_
       rintro c' rfl
       rw [hk04] at ha4
@@ -311,7 +312,7 @@ theorem evShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     rintro c' rfl
     rw [hk0, v3] at hf
     have h0 : c₂.nreg 241320 ≠ 1 := by omega
-    refine ⟨⟨by rw [v3]; exact hfl, fun τ₀ hg hτ₀ => absurd (hcompl τ₀ hg hτ₀) h0,
+    refine ⟨⟨by omega, fun τ₀ hg hτ₀ => absurd (hcompl τ₀ hg hτ₀) h0,
       fun h => absurd (v3 ▸ h) h0⟩, fr3⟩
 
 end

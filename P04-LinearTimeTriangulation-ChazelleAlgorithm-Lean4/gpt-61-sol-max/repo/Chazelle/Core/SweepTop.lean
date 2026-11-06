@@ -36,12 +36,14 @@ section Top
 
 variable (J : Merge.Junction)
 
+section
+variable (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {d : ℕ}
+include hP hS₂ hS₂f
 /-- **`RLabel` from the positions just before a vertex position of the stretch** (offset
 `1 ≤ d ≤ rL1 + rL2`): the corresponding positions of the walk of `C₂` are those just before the
 position following the counterpart of `d - 1`.  This covers the split vertex (`d = rL1`, case G)
 and the end of the stretch (`d = rL1 + rL2`). -/
-theorem rlabel_before0 (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {d : ℕ} (hd1 : 1 ≤ d)
+theorem rlabel_before0 (hd1 : 1 ≤ d)
     (hd : d ≤ rL1 J + rL2 J) {G V : Set Point}
     (hW : BeforeFaces (chainModel J.whole)
       ((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n) 0 G)
@@ -69,18 +71,17 @@ theorem rlabel_before0 (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hs1 : s < δ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_left _ _))
   have hs2 : s < δ₂ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_right _ _))
   have hs3 : s < 1 := lt_of_lt_of_le hs.2 (min_le_right _ _)
-  refine ⟨d - 1, by omega, 1 - s, ⟨by linarith, by linarith [hs.1]⟩, ?_, ?_, ?_⟩
-  · rw [hPm, show ((P' : ℕ) : ℝ) + (1 - s) = ((P' : ℕ) : ℝ) + 1 - s by ring]; exact hnc
+  refine ⟨d - 1, by omega, 1 - s, ⟨by linarith, by grind⟩, ?_, ?_, ?_⟩
+  · grind
   · rw [hPm]; exact h1b rfl s hs.1 hs1
-  · rw [hPm₂]; exact h2b rfl s hs.1 hs2
+  grind
 
 /-- **The label of a faced side.**  If the region `G` is the faced side `ρ` of a chord going in
 direction `dir` at a position of the right stretch, its label is the region of `S₂` faced on the
 same side of the corresponding position of the walk of `C₂` (just after it if `ρ · dir = -1`,
 just before it if `ρ · dir = 1`; at a vertex position, just before the position following the
 counterpart of the predecessor). -/
-theorem rlabel_of_faced (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {d : ℕ}
+theorem rlabel_of_faced
     (hd : d < rL1 J + rL2 J) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) {ρ dir : ℝ} {G : Set Point}
     (hfac : FacedSide (chainModel J.whole)
       ((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n) t ρ dir G) :
@@ -99,6 +100,9 @@ theorem rlabel_of_faced (hP : J.P.Simple) {S₂ : Set (Set Point)}
   · exact rlabel_before J hP hS₂ hS₂f hd ht0 ht1 (fun h0 => absurd h0 htp.ne') (hfac.2 h) hV
   · subst ht
     exact rlabel_before0 J hP hS₂ hS₂f hd1 hd.le (hfac.2 h) hV
+
+
+end
 
 /-- **The middle region of a tie leaving the stretch has no label.**  Let two distinct chords of
 `F₂⁺` be attached at a vertex position inside the right stretch (not its base), with far
@@ -165,8 +169,7 @@ theorem tie_unlabelled (hP : J.P.Simple) {Q : Polygon}
   have hoA := hC.off_M hd (t := 0) le_rfl zero_lt_one
   have hA0 : 0 < off W.n (g : ℝ) ((A : ℝ) + 0) := by
     rw [hoA]
-    have : (1 : ℝ) ≤ d := by exact_mod_cast Nat.one_le_iff_ne_zero.2 hd0
-    linarith
+    positivity
   have hAL : off W.n (g : ℝ) ((A : ℝ) + 0) < ((rL1 J + rL2 J : ℕ) : ℝ) := by
     rw [hoA]
     have : (d : ℝ) + 1 ≤ ((rL1 J + rL2 J : ℕ) : ℝ) := by exact_mod_cast hd
@@ -174,17 +177,14 @@ theorem tie_unlabelled (hP : J.P.Simple) {Q : Polygon}
   have hpre : ∀ {q : ℕ} {s : ℝ}, ¬ (0 < off W.n (g : ℝ) (q + s) ∧
       off W.n (g : ℝ) (q + s) < ((rL1 J + rL2 J : ℕ) : ℝ)) →
       ((rL1 J + rL2 J : ℕ) : ℝ) ≤ off W.n (g : ℝ) (q + s) ∨ off W.n (g : ℝ) (q + s) ≤ 0 := by
-    intro q s h
-    by_contra hc
-    push Not at hc
-    exact h ⟨hc.2, hc.1⟩
+    grind
   have hb1 := chord_bound hM hFs he heA hB (Ne.symm hBne) hρ hG hS hθ hori hg0 hgn hA0 hAL
     (fun _ _ _ _ _ _ _ _ => Or.inr (hpre hout))
   have hb2 := chord_bound hM hFs he' heA' hB' (Ne.symm hBne') hρ hG hS' hθ' hori' hg0 hgn hA0
     hAL (fun _ _ _ _ _ _ _ _ => Or.inr (hpre hout'))
   have ho := hC.off_M hd'' ht''.1.le ht''.2
   have hpos : 0 < off W.n (g : ℝ) ((((g + d'') % W.n : ℕ) : ℝ) + t'') := by
-    rw [ho]; have : (0 : ℝ) ≤ d'' := Nat.cast_nonneg _; linarith [ht''.1]
+    rw [ho];  linarith [ht''.1]
   have hlt : off W.n (g : ℝ) ((((g + d'') % W.n : ℕ) : ℝ) + t'') <
       ((rL1 J + rL2 J : ℕ) : ℝ) := by
     rw [ho]; have : (d'' : ℝ) + 1 ≤ ((rL1 J + rL2 J : ℕ) : ℝ) := by exact_mod_cast hd''
@@ -227,18 +227,19 @@ theorem touches_of_sideOf {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augCh
   obtain ⟨y, a, b, hH, -, hcdef, -, -⟩ := Merge.augChords_spec (hS₂ hc)
   have hab := hH.lt
   have hz : (((a + b) / 2, y) : Point) ∈ c := by
-    rw [hcdef]; exact ⟨rfl, by simp only; linarith, by simp only; linarith⟩
+    rw [hcdef]; exact ⟨rfl, by linarith, by linarith⟩
   have hzD : (((a + b) / 2, y) : Point) ∈ (chainModel J.right).D :=
     hH.open_mem _ (by linarith) (by linarith)
   exact touches_of_side hz hzD (hVs _ hz hzD)
 
+section
+variable (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂) (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂))
+include hP Q hS₂ hF
 /-- **Detection in an unlabelled region** (the bracket lemma in terms of virtual labels): for a
 region without a label with a virtual label `V`, and a non-cut position of the `C₁` part facing
 it, the next chord of `F₂⁺` with an attachment inside the right stretch is a chord in a chord of
 `S₂` with `V` on the side of the region, or ends at the shared vertex. -/
-theorem detect_unlabelled (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {G V : Set Point}
+theorem detect_unlabelled {G V : Set Point}
     (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
     (hV : V ∈ (chainModel J.right).regions S₂) (hU : ∀ V', ¬ RLabel J S₂ G V')
     (hVL : VLabel J S₂ G V) {p₀ : ℕ} {t₀ : ℝ} (hp₀ : p₀ < (chainModel J.whole).W.n)
@@ -258,9 +259,7 @@ attachments off the stretch, with `G` on the same side of both (`fb` oriented by
 `1`), and a non-cut position of the `C₁` part facing `G`: the far attachment of `ff` is after
 that position (or at offset `0`), and no chord of `F₂⁺` with an attachment inside the stretch
 (not at offset `0`) is attached between them. -/
-theorem bracket_tie (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1)
+theorem bracket_tie {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1)
     {G : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
     {fb ff : Set Point} (hfb : fb ∈ F₂plus J S₂) (hff : ff ∈ F₂plus J S₂) (hbf : fb ≠ ff)
     {pa : ℕ}
@@ -325,8 +324,7 @@ theorem bracket_tie (hP : J.P.Simple) {Q : Polygon}
   have hef : e ≠ ff := by
     rintro rfl
     rcases key_of_two hM (hFs he) hfA hfF hfne hW with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-    · linarith
-    · rcases hoZ with h | h <;> linarith
+    all_goals grind
   -- non-crossing with `fb`: the stretch attachment of `e` is before the tie
   have hBA : o (pb + tb) < o (pa + 0) := by
     have hle : o (pb + tb) ≤ o (pa + 0) := by
@@ -334,27 +332,29 @@ theorem bracket_tie (hP : J.P.Simple) {Q : Polygon}
       push Not at hc
       have := no_cross_off hM hFs hF.1 hfb he (Ne.symm heb) hbA hbB hbne hB hW hg0 hgn
         (by linarith) hc (by linarith)
-      linarith [this.2]
+      linarith
     rcases hle.lt_or_eq with h | h
     · exact h
     · exfalso
       have hk := off_inj hg0 hgn kB0 kB1 kA0 kA1 h
       obtain ⟨rfl, rfl⟩ := sideKey_inj hB.2.1 hB.2.2.1 hbA.2.1 hbA.2.2.1 hk
       rcases tie_third hM hFs hfb hff he hbf hbA hfA hB with h' | h'
-      · exact heb h'
-      · exact hef h'
+      all_goals grind
   rcases hfe with hz | ⟨hLz, hz⟩
   · have hB0' : 0 < o (pb + tb) := lt_of_le_of_ne (off_nonneg kB0 hgn) (Ne.symm hB0)
     have := no_cross_off hM hFs hF.1 hff he (Ne.symm hef) hfF hfA (Ne.symm hfne) hB hW hg0 hgn
-      (by rw [hz]; linarith) (by rw [hz]; exact hB0') hBA
-    linarith [this.2]
+      (by linarith) (by grind) hBA
+    linarith
   · rcases hoZ with h | h
     · linarith
     · have := no_cross_off hM hFs hF.1 hff he (Ne.symm hef) hfA hfF hfne hW hB hg0 hgn
         (by linarith) (by linarith) h
-      linarith [this.1]
+      linarith
 
 /-! ## Transparent brackets -/
+
+
+end
 
 end Top
 

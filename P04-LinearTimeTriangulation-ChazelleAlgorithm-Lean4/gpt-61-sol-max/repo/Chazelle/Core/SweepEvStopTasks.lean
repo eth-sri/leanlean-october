@@ -40,15 +40,21 @@ def rawRec (m : ℕ → ℕ) (RB i : ℕ) : ℕ × ℕ × ℕ × ℕ × ℕ :=
   (m (RB + 11 * i), m (RB + 11 * i + 1), m (RB + 11 * i + 3), m (RB + 11 * i + 4),
     m (RB + 11 * i + 5))
 
+section
+variable (m : ℕ → ℕ) (RB i : ℕ)
+include m RB i
 /-- The leaving direction code of the raw record `i`. -/
-def rawDc (m : ℕ → ℕ) (RB i : ℕ) : ℕ := m (RB + 11 * i + 2)
+def rawDc : ℕ := m (RB + 11 * i + 2)
 
 /-- The auxiliary record `(anc, nl, l₀, l₁, par)` of the raw record `i`. -/
-def rawAux (m : ℕ → ℕ) (RB i : ℕ) : ℕ × ℕ × ℕ × ℕ × ℕ :=
+def rawAux : ℕ × ℕ × ℕ × ℕ × ℕ :=
   (m (RB + 11 * i + 6), m (RB + 11 * i + 7), m (RB + 11 * i + 8), m (RB + 11 * i + 9),
     m (RB + 11 * i + 10))
 
 /-! ## Sort and dedupe (RAM) -/
+
+
+end
 
 /-- The registers the sort may write (besides the oracle bands and the allocator). -/
 def SoR (r : ℕ) : Prop :=
@@ -88,16 +94,22 @@ def SortTask : Prop :=
 
 /-! ## The labels (mathematics) -/
 
+section
+variable (J : Merge.Junction) (d : ℕ)
+include J d
 /-- The position of the walk of `C₂` corresponding to the offset `d` of the right stretch, just
 after the position (`dq d`). -/
-noncomputable def cpA (J : Merge.Junction) (d : ℕ) : ℕ :=
+noncomputable def cpA : ℕ :=
   (6 + tpos J.right 0 + dq (rL1 J) (rδ J) d) % (chainModel J.right).W.n
 
 /-- The position of the walk of `C₂` just before the vertex at offset `d` of the right stretch
 (`dq (d - 1) + 1`: the end of the previous edge; it differs from `cpA d` only at the split
 vertex). -/
-noncomputable def cpB (J : Merge.Junction) (d : ℕ) : ℕ :=
+noncomputable def cpB : ℕ :=
   (6 + tpos J.right 0 + (dq (rL1 J) (rδ J) (d - 1) + 1)) % (chainModel J.right).W.n
+
+
+end
 
 /-- **Task L (mathematics): the side labels of an anchored stop chord** `e` (not a pocket),
 attached on the `C₁` part, with an attachment at the position `(gW + d, t)` of the open right

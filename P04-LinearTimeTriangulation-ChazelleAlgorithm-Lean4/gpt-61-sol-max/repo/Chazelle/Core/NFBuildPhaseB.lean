@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildPhaseB2
 
 /-!
@@ -31,21 +33,19 @@ theorem wr_phaseB : wrM BphaseB phaseB = true := by
     simp only [BsetupB, decide_eq_true_eq, List.mem_cons, List.not_mem_nil, or_false] at hr
     simp only [BphaseB, decide_eq_true_eq]; omega) wr_setupB)
   have h2 : wrM BphaseB lohiS = true := wrM_of_wr (wr_mono (fun r hr => by
-    simp only [decide_eq_true_eq] at hr
-    simp only [BphaseB, decide_eq_true_eq]; omega) wr_lohiS)
+    simp_all [decide_eq_true_eq, BphaseB] <;> omega_nf) wr_lohiS)
   have h3 : wrM BphaseB passLoop = true := by
     have := wrM_mono (B' := BphaseB) (fun r hr => ?_) wr_passBody
-    · simp only [passLoop, wrM]; exact this
+    · grind [passLoop, wrM]
     · cases hb : Bpass r
-      · rw [hb] at hr; exact absurd hr (by simp)
+      · simp_all
       · by_contra hc
         simp only [BphaseB, decide_eq_true_eq, not_or, not_and, not_lt] at hc
         have : Bpass r = false := Bpass_false (by omega)
-        rw [this] at hb; exact absurd hb (by simp)
+        simp_all
   have h4 : wrM BphaseB regPhase = true := wrM_mono (fun r hr => by
-    simp only [BregPhase, Bool.or_eq_true, decide_eq_true_eq] at hr
-    simp only [BphaseB, decide_eq_true_eq]; omega) wr_regPhase
-  simp only [phaseB, phaseB1, wrM, h1, h2, h3, h4, Bool.and_self]
+    simp_all [BregPhase, Bool.or_eq_true, decide_eq_true_eq, BphaseB] <;> omega_nf) wr_regPhase
+  simp_all [phaseB, phaseB1, wrM, Bool.and_self] <;> omega_nf
 
 section exec
 
@@ -80,14 +80,14 @@ theorem phaseB_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     rw [List.take_of_length_le (by simp [cw])]
   -- the tables of the pass
   have hkey : ∀ j, j < A → c₃.nmem (H + 12 + 5 * K + 5 * j) = keyA M (Qof P) L E j := fun j hj => by
-    have := (I.arcs j (by rw [hgs]; exact hj)).1 0 (by norm_num)
+    have := (I.arcs j (by grind)).1 0 (by norm_num)
     rw [Nat.add_zero, hgs] at this
     rw [this]; rfl
   have hkR : ∀ j, j < A → keyA M (Qof P) L E j < K + 1 := fun j _ => by
     unfold keyA; rw [BuildNF.arcRec_eq]; have := BuildNF.topR_le hI ((gapStarts M (Qof P) L E).getD j 0 + 1)
-    simp only; omega
+    grind
   have hwt : ∀ j, j < A → c₃.nmem (H + 17 + 28 * K + j) = wA M (Qof P) L E j := fun j hj => by
-    have := (I.arcs j (by rw [hgs]; exact hj)).2
+    have := (I.arcs j (by grind)).2
     rw [hgs] at this
     rw [this]; rfl
   have hch : ∀ i, i < K → ∀ f, f < 5 → c₃.nmem (H + 12 + 5 * i + f) = cf (chordRec M (Qof P) L E i) f :=
@@ -106,7 +106,7 @@ theorem phaseB_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     C₃ hA₃ hAle hkey hkR hwt hu hv huR hvR hroom
   have C' := C₃.frame f' (by decide)
   have X : Exec P W phaseB c c' (k₃ + k) := .seq x₃ x
-  refine ⟨c', _, X, by omega, by unfold sizeB; omega, w', exec_frameM X wr_phaseB, h40003, C'.rA,
+  refine ⟨c', _, X, by omega, by omega_nf, w', exec_frameM X wr_phaseB, h40003, C'.rA,
     fun a ha => by rw [T2 a (Or.inl ha), I.low a ha], ?_⟩
   -- the normal form
   intro m' hm'
@@ -116,30 +116,29 @@ theorem phaseB_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   have hK0 : K ≠ 0 := by omega
   refine BuildNF.nfAt_of_tables hI hK0 (H := H) (CT := H + 12) (AT := H + 12 + 5 * K)
     (RT := H + 12 + 15 * K) (QT := H + 17 + 20 * K) (LT := H + 17 + 22 * K)
-    (fun f hf => by rw [hm' _ (by unfold sizeB; omega), T1 f hf])
+    (fun f hf => by rw [hm' _ (by omega_nf), T1 f hf])
     (fun i hi f hf => by
-      rw [hm' _ (by unfold sizeB; omega), T2 _ (Or.inr (by omega)), hch i hi f hf])
+      rw [hm' _ (by omega_nf), T2 _ (Or.inr (by omega)), hch i hi f hf])
     (fun j hj f hf => by
-      rw [hm' _ (by unfold sizeB; omega), T2 _ (Or.inr (by omega))]
-      have := (I.arcs j (by rw [hgs]; exact hj)).1 f hf
-      rw [hgs] at this
-      rw [show H + 12 + 5 * K + 5 * j + f = H + 12 + 5 * K + 5 * j + f from rfl, this])
-    (fun r hr f hf => by rw [hm' _ (by unfold sizeB; omega), T3 r hr f hf])
+      rw [hm' _ (by omega_nf), T2 _ (Or.inr (by omega))]
+      have := (I.arcs j (by grind)).1 f hf
+      ram_grind)
+    (fun r hr f hf => by rw [hm' _ (by omega_nf), T3 r hr f hf])
     (fun r hr t ht => by
       simp only [← hAdef, ← hKdef] at ht hr ⊢
       have := offF_succ (cntF (keyA M (Qof P) L E) A)
         (cnt2F (upC M (Qof P) L E) (dnC M (Qof P) L E) K) r
       have := offF_mono (cntF (keyA M (Qof P) L E) A)
         (cnt2F (upC M (Qof P) L E) (dnC M (Qof P) L E) K) (show r + 1 ≤ K + 1 by omega)
-      rw [hm' _ (by unfold sizeB; omega), T4 r hr t ht])
+      rw [hm' _ (by omega_nf), T4 r hr t ht])
     (fun r hr t ht => by
       simp only [← hAdef, ← hKdef] at ht hr ⊢
       have := offF_succ (cntF (keyA M (Qof P) L E) A)
         (cnt2F (upC M (Qof P) L E) (dnC M (Qof P) L E) K) r
       have := offF_mono (cntF (keyA M (Qof P) L E) A)
         (cnt2F (upC M (Qof P) L E) (dnC M (Qof P) L E) K) (show r + 1 ≤ K + 1 by omega)
-      rw [hm' _ (by unfold sizeB; omega), T5 r hr t ht])
-    (fun j hj => by rw [hm' _ (by unfold sizeB; omega), T6 j hj])
+      rw [hm' _ (by omega_nf), T5 r hr t ht])
+    (fun j hj => by rw [hm' _ (by omega_nf), T6 j hj])
 
 end exec
 

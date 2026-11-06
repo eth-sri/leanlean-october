@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterSplitStep
 
 /-!
@@ -23,28 +25,13 @@ theorem cntS3_le {s0 s1 s2 : ℕ → Prop} {lo hi : ℕ}
   classical
   unfold cntS
   have d01 : Disjoint ((Finset.Ico lo hi).filter s0) ((Finset.Ico lo hi).filter s1) := by
-    rw [Finset.disjoint_left]
-    intro i h0 h1
-    obtain ⟨hi0, a0⟩ := Finset.mem_filter.mp h0
-    obtain ⟨-, a1⟩ := Finset.mem_filter.mp h1
-    obtain ⟨b1, b2⟩ := Finset.mem_Ico.mp hi0
-    exact (h i b1 b2).1 ⟨a0, a1⟩
+    simp_all [Finset.disjoint_left] 
   have d2 : Disjoint ((Finset.Ico lo hi).filter s0 ∪ (Finset.Ico lo hi).filter s1)
       ((Finset.Ico lo hi).filter s2) := by
-    rw [Finset.disjoint_left]
-    intro i h01 h2
-    obtain ⟨hi2, a2⟩ := Finset.mem_filter.mp h2
-    obtain ⟨b1, b2⟩ := Finset.mem_Ico.mp hi2
-    rcases Finset.mem_union.mp h01 with h0 | h1
-    · exact (h i b1 b2).2.1 ⟨(Finset.mem_filter.mp h0).2, a2⟩
-    · exact (h i b1 b2).2.2 ⟨(Finset.mem_filter.mp h1).2, a2⟩
+    grind [Finset.disjoint_left]
   rw [← Finset.card_union_of_disjoint d01, ← Finset.card_union_of_disjoint d2, ← Nat.card_Ico]
   refine Finset.card_le_card (fun i hi' => ?_)
-  rcases Finset.mem_union.mp hi' with h01 | h2
-  · rcases Finset.mem_union.mp h01 with h0 | h1
-    · exact (Finset.mem_filter.mp h0).1
-    · exact (Finset.mem_filter.mp h1).1
-  · exact (Finset.mem_filter.mp h2).1
+  grind
 
 /-- The stack does not read above its top. -/
 theorem stkList_congr {m m' : ℕ → ℕ} {b : ℕ} (n : ℕ)
@@ -52,9 +39,7 @@ theorem stkList_congr {m m' : ℕ → ℕ} {b : ℕ} (n : ℕ)
   induction n with
   | zero => rfl
   | succ n ih =>
-    simp only [stkList]
-    rw [h _ (by omega) (by omega), h _ (by omega) (by omega),
-      ih (fun x hx hx' => h x hx (by omega))]
+    core_grind
 
 /-- The pushed entry, if any. -/
 def optSeg (s a b : ℕ) : List (ℕ × ℕ) := if s < b - a then [(a, b)] else []
@@ -69,20 +54,8 @@ theorem pushF_stk {bS s a b : ℕ} {q : (ℕ → ℕ) × ℕ} {L : List (ℕ × 
   unfold pushF optSeg
   by_cases hs : s < b - a
   · simp only [ite_eq_left hs, List.singleton_append, List.length_cons]
-    refine ⟨?_, by rw [htp]; ring, fun x hx => ?_⟩
-    · simp only [stkList]
-      have e1 : upd (upd q.1 (bS + q.2) a) (bS + q.2 + 1) b (bS + 2 * L.length) = a := by
-        rw [upd_apply, upd_apply, ite_eq_right (by omega), ite_eq_left (by omega)]
-      have e2 : upd (upd q.1 (bS + q.2) a) (bS + q.2 + 1) b (bS + 2 * L.length + 1) = b := by
-        rw [upd_apply, ite_eq_left (by omega)]
-      rw [e1, e2]
-      congr 1
-      rw [stkList_congr _ (fun x _ hx => by rw [upd_apply, upd_apply, ite_eq_right (by omega),
-        ite_eq_right (by omega)])]
-      exact hL
-    · rw [upd_apply, upd_apply, ite_eq_right (by omega), ite_eq_right (by omega)]
-  · simp only [ite_eq_right hs, List.nil_append]
-    refine ⟨hL, htp, ?_⟩; simp
+    core_grind [Chazelle.Core.Cluster.stkList_congr, upd_apply]
+  ram_grind
 
 section
 
@@ -126,16 +99,16 @@ theorem stepMem {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m2 : ℕ → ℕ} {
   intro s0 s1 s2 e1 e2 e3 mS
   have := hL.hACT; have := hL.hPOS; have := hL.hTMP; have := hL.hDF; have := hL.hμU
   have hit : ∀ i, lo ≤ i → i < hi → m2 (S.bTMP + i) < S.μ := fun i a b => by
-    rw [h2tmp i a b]; exact hact i a b
+    grind
   have hinj2 : ∀ i i', lo ≤ i → i < hi → lo ≤ i' → i' < hi → m2 (S.bTMP + i) = m2 (S.bTMP + i') →
-      i = i' := fun i i' a b c d e => hinj i i' a b c d (by rw [← h2tmp i a b, ← h2tmp i' c d]; exact e)
+      i = i' := fun i i' a b c d e => hinj i i' a b c d (by grind)
   obtain ⟨A1, A2, A3, A4, A5, A6⟩ := passes_spec hL (f := f) hlh hhi hit hinj2 hsum
   have hu : ∀ i t t', lo ≤ i → i < hi → ((t = 0 ∧ s0 i) ∨ (t = 1 ∧ s1 i) ∨ (t = 2 ∧ s2 i)) →
       ((t' = 0 ∧ s0 i) ∨ (t' = 1 ∧ s1 i) ∨ (t' = 2 ∧ s2 i)) → t = t' := by
     intro i t t' a b h1 h2
     obtain ⟨u1, u2, u3⟩ := huniq i a b
     rcases h1 with ⟨rfl, h1⟩ | ⟨rfl, h1⟩ | ⟨rfl, h1⟩ <;>
-      rcases h2 with ⟨rfl, h2⟩ | ⟨rfl, h2⟩ | ⟨rfl, h2⟩ <;> first | rfl | tauto
+      grind <;> first | rfl | tauto
   obtain ⟨P0, P1, P2⟩ := A6 hu
   set mP := (passC m2 S lo hi f).1 with hmP
   -- `TMP` and the marks are untouched by the passes

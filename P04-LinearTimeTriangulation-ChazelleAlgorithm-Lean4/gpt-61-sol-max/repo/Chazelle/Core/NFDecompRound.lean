@@ -27,7 +27,6 @@ namespace Chazelle.Core.Dec
 
 open Relation Finset
 
-set_option linter.unusedSectionVars false
 
 /-- The state of the decomposition between rounds. -/
 structure RS where
@@ -62,13 +61,19 @@ def code (best pch : ℕ → ℕ) (x : ℕ) : ℕ := if best x = x then 2 * x + 
 abbrev Chosen (σ : RS) (top best chOf : ℕ → ℕ) (e : ℕ) : Prop :=
   σ.rem e ≠ 1 ∧ σ.act (top (chOf e)) = 1 ∧ best (top (chOf e)) = chOf e
 
+section
+variable (prg isdn chOf top : ℕ → ℕ) (e : ℕ)
+include prg isdn chOf top e
 /-- The top of the low child component of a chord cut in the previous round. -/
-def loTop (prg isdn chOf top : ℕ → ℕ) (e : ℕ) : ℕ :=
+def loTop : ℕ :=
   if isdn (chOf e) = 1 then chOf e else top (prg (chOf e))
 
 /-- The top of the high child component of a chord cut in the previous round. -/
-def hiTop (prg isdn chOf top : ℕ → ℕ) (e : ℕ) : ℕ :=
+def hiTop : ℕ :=
   if isdn (chOf e) = 1 then top (prg (chOf e)) else chOf e
+
+
+end
 
 /-- Chord pass: the new `pend`. -/
 def nPend (K : ℕ) (chOf top best : ℕ → ℕ) (σ : RS) (e : ℕ) : ℕ :=

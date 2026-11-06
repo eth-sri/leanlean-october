@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvXRamDef
 
 /-!
@@ -42,50 +44,48 @@ theorem hltS_exec (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) :
     refine spec_seq ?_
     exec_block
     by_cases hy : (P.vtx (d.nreg 217160)).2 < (P.vtx (d.nreg 217161)).2
-    · refine spec_ifLtR_true (by config_simp; exact hy) ?_
+    · refine spec_ifLtR_true (by ram_simp) ?_
       exec_block
       · omega
       · refine ⟨by omega, ?_⟩
         config_simp
         rw [ite_eq_left (show Mountain.ylexLT _ _ from Or.inl hy)]
-    · refine spec_ifLtR_false (by config_simp; exact hy) ?_
+    · refine spec_ifLtR_false (by ram_simp) ?_
       by_cases hy' : (P.vtx (d.nreg 217161)).2 < (P.vtx (d.nreg 217160)).2
-      · refine spec_ifLtR_true (by config_simp; exact hy') ?_
+      · refine spec_ifLtR_true (by ram_simp) ?_
         exec_block
         · omega
         · refine ⟨by omega, ?_⟩
           config_simp
           rw [ite_eq_right (show ¬ Mountain.ylexLT _ _ from ?_)]
           rintro (h | ⟨h, -⟩)
-          · exact hy h
-          · rw [h] at hy'; exact lt_irrefl _ hy'
-      · refine spec_ifLtR_false (by config_simp; exact hy') ?_
+          all_goals simp_all
+      · refine spec_ifLtR_false (by ram_simp) ?_
         have heq : (P.vtx (d.nreg 217160)).2 = (P.vtx (d.nreg 217161)).2 :=
           le_antisymm (not_lt.1 hy') (not_lt.1 hy)
         refine spec_seq ?_
         exec_block
         by_cases hx : (P.vtx (d.nreg 217160)).1 < (P.vtx (d.nreg 217161)).1
-        · refine spec_ifLtR_true (by config_simp; exact hx) ?_
+        · refine spec_ifLtR_true (by ram_simp) ?_
           exec_block
           · omega
           · refine ⟨by omega, ?_⟩
             config_simp
             rw [ite_eq_left (show Mountain.ylexLT _ _ from Or.inr ⟨heq, hx⟩)]
-        · refine spec_ifLtR_false (by config_simp; exact hx) ?_
+        · refine spec_ifLtR_false (by ram_simp) ?_
           exec_block
           · omega
           · refine ⟨by omega, ?_⟩
             config_simp
             rw [ite_eq_right (show ¬ Mountain.ylexLT _ _ from ?_)]
             rintro (h | ⟨-, h⟩)
-            · exact hy h
-            · exact hx h
+            all_goals simp_all
   exact ⟨d', k, ex, hk, h1, exec_frameB ex wr_hlt⟩
 
 /-- The register value of the `li` bit. -/
 def liV (li : Bool) : ℕ := if li then 1 else 0
 
-theorem liV_le (li : Bool) : liV li ≤ 1 := by unfold liV; split_ifs <;> omega
+theorem liV_le (li : Bool) : liV li ≤ 1 := by core_grind
 
 set_option maxHeartbeats 1000000 in
 /-- **`ivBS`**: `dst := ivB li n src`. -/
@@ -97,16 +97,15 @@ theorem ivBS_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ} {li : B
       d'.nmem = d.nmem ∧ d'.rmem = d.rmem ∧ d'.output = d.output := by
   unfold ivBS
   cases li
-  · refine spec_ifLtN_true (by rw [h26, h27]; simp [liV]) ?_
+  · refine spec_ifLtN_true (by simp_all [liV] <;> omega_nf) ?_
     refine spec_step (Machine.Exec.subN hw _ _ _) (fun hw₁ => ?_)
     refine spec_step (Machine.Exec.subN hw₁ _ _ _) (fun hw₂ => ?_)
     refine spec_nil hw₂ ⟨by omega, ?_, rfl, rfl, rfl, rfl⟩
-    simp only [Machine.upd_same, Machine.upd_other _ _ _ hsd, h20, h27,
-      Machine.upd_upd_same, DrvR.ivB, Bool.false_eq_true, ite_false]
-  · refine spec_ifLtN_false (by rw [h26, h27]; simp [liV]) ?_
+    simp_all [Machine.upd_same, Machine.upd_upd_same, DrvR.ivB, Bool.false_eq_true, ite_false] 
+  · refine spec_ifLtN_false (by simp_all [liV] <;> omega_nf) ?_
     refine spec_step (Machine.Exec.copyN hw _ _) (fun hw₁ => ?_)
     refine spec_nil hw₁ ⟨by omega, ?_, rfl, rfl, rfl, rfl⟩
-    simp [DrvR.ivB]
+    aesop
 
 set_option maxHeartbeats 1000000 in
 /-- **`succS`**: `dst := (src + 1) mod n` for `src < n`. -/
@@ -118,19 +117,16 @@ theorem succS_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ}
       d'.nmem = d.nmem ∧ d'.rmem = d.rmem ∧ d'.output = d.output := by
   unfold succS
   refine spec_seq ?_
-  refine spec_step (Machine.Exec.addN hw _ _ _ (by rw [h27]; omega)) (fun hw₁ => ?_)
+  refine spec_step (Machine.Exec.addN hw _ _ _ (by omega)) (fun hw₁ => ?_)
   refine spec_nil hw₁ ?_
   by_cases h : d.nreg src + 1 < n
-  · refine spec_ifLtN_true (by simp only [Machine.upd_same,
-      Machine.upd_other _ _ _ hd20.symm, h20, h27]; exact h) ?_
+  · refine spec_ifLtN_true (by ram_simp) ?_
     refine spec_skip hw₁ ⟨by omega, ?_, rfl, rfl, rfl, rfl⟩
     rw [h27, Nat.mod_eq_of_lt h]
-  · refine spec_ifLtN_false (by simp only [Machine.upd_same,
-      Machine.upd_other _ _ _ hd20.symm, h20, h27]; exact h) ?_
+  · refine spec_ifLtN_false (by ram_simp) ?_
     refine spec_step (Machine.Exec.constN hw₁ _ _ (by omega)) (fun hw₂ => ?_)
     refine spec_nil hw₂ ⟨by omega, ?_, rfl, rfl, rfl, rfl⟩
-    simp only [Machine.upd_upd_same, h27]
-    rw [show d.nreg src + 1 = n by omega, Nat.mod_self]
+    grind [Machine.upd_upd_same, Nat.mod_self]
 
 set_option maxHeartbeats 1000000 in
 /-- **`qES`**: `dst := qE li n src` (scratch `217104`). -/
@@ -144,18 +140,18 @@ theorem qES_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ} {li : Bo
       d'.nmem = d.nmem ∧ d'.rmem = d.rmem ∧ d'.output = d.output := by
   unfold qES
   cases li
-  · refine spec_ifLtN_true (by rw [h26, h27]; simp [liV]) ?_
+  · refine spec_ifLtN_true (by simp_all [liV] <;> omega_nf) ?_
     refine spec_seq ?_
-    refine spec_step (Machine.Exec.addN hw _ _ _ (by rw [h27]; omega)) (fun hw₁ => ?_)
+    refine spec_step (Machine.Exec.addN hw _ _ _ (by omega)) (fun hw₁ => ?_)
     refine spec_nil hw₁ ?_
     set f := upd d.nreg 217104 (d.nreg src + d.nreg 217027) with hf
     have g : ∀ r, r ≠ 217104 → f r = d.nreg r := fun r hr => Machine.upd_other _ _ _ hr
-    have g04 : f 217104 = d.nreg src + 1 := by rw [hf, Machine.upd_same, h27]
-    have g20 : f 217020 = n := by rw [g 217020 (by decide), h20]
-    have g27 : f 217027 = 1 := by rw [g 217027 (by decide), h27]
+    have g04 : f 217104 = d.nreg src + 1 := by ram_simp
+    have g20 : f 217020 = n := by simp_all
+    have g27 : f 217027 = 1 := by simp_all
     have gs : f src = d.nreg src := g src hs04
     by_cases h : d.nreg src + 1 < n
-    · refine spec_ifLtN_true (by show f 217104 < f 217020; rw [g04, g20]; exact h) ?_
+    · refine spec_ifLtN_true (by ram_simp) ?_
       refine spec_step (Machine.Exec.subN hw₁ _ _ _) (fun hw₂ => ?_)
       refine spec_step (Machine.Exec.subN hw₂ _ _ _) (fun hw₃ => ?_)
       refine spec_step (Machine.Exec.subN hw₃ _ _ _) (fun hw₄ => ?_)
@@ -164,18 +160,17 @@ theorem qES_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ} {li : Bo
           Machine.upd_other _ _ _ hsd, Machine.upd_other _ _ _ hd27.symm, g20, g27, gs, DrvR.qE, Bool.false_eq_true, ite_false,
           ite_eq_left h]
         omega
-      · simp only [Machine.upd_other _ _ _ h1, g _ h2]
-    · refine spec_ifLtN_false (by show ¬ f 217104 < f 217020; rw [g04, g20]; exact h) ?_
+      · ram_simp
+    · refine spec_ifLtN_false (by ram_simp) ?_
       refine spec_step (Machine.Exec.subN hw₁ _ _ _) (fun hw₂ => ?_)
       refine spec_nil hw₂ ⟨by omega, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-      · simp only [Machine.upd_same, g20, g27, DrvR.qE, Bool.false_eq_true,
-          ite_false, ite_eq_right h]
-      · simp only [Machine.upd_other _ _ _ h1, g _ h2]
-  · refine spec_ifLtN_false (by rw [h26, h27]; simp [liV]) ?_
+      · simp_all [Machine.upd_same, DrvR.qE, Bool.false_eq_true, ite_false] 
+      simp_all
+  · refine spec_ifLtN_false (by simp_all [liV] <;> omega_nf) ?_
     refine spec_step (Machine.Exec.copyN hw _ _) (fun hw₁ => ?_)
     refine spec_nil hw₁ ⟨by omega, ?_, fun r h1 _ => ?_, rfl, rfl, rfl, rfl⟩
     · simp [DrvR.qE]
-    · simp only [Machine.upd_other _ _ _ h1]
+    · ram_simp
 
 open Classical in
 /-- The value computed by `posLtS`. -/
@@ -202,28 +197,28 @@ theorem posLtCore_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool
   -- `u1 := ivB ae`
   obtain ⟨d1, k1, e1, hk1, n1, r1, m1, -, -⟩ := ivBS_exec (P := P) d hw (src := 217150)
     (dst := 217160) h20 h26 h27 (by decide) (by decide) (by decide)
-  have v1 : ∀ r, r ≠ 217160 → d1.nreg r = d.nreg r := fun r hr => by rw [n1, Machine.upd_other _ _ _ hr]
+  have v1 : ∀ r, r ≠ 217160 → d1.nreg r = d.nreg r := fun r hr => by ram_simp
   -- `q1 := (ae + 1) mod n`
   obtain ⟨d2, k2, e2, hk2, n2, -, -, -, -⟩ := succS_exec (P := P) d1 e1.wb_right (src := 217150)
-    (dst := 217155) (by rw [v1 _ (by decide), h20]) (by rw [v1 _ (by decide), h27])
-    (by rw [v1 _ (by decide)]; exact hae) hnW (by decide)
-  have v2 : ∀ r, r ≠ 217155 → d2.nreg r = d1.nreg r := fun r hr => by rw [n2, Machine.upd_other _ _ _ hr]
+    (dst := 217155) (by ram_simp) (by ram_simp)
+    (by ram_simp) hnW (by decide)
+  have v2 : ∀ r, r ≠ 217155 → d2.nreg r = d1.nreg r := fun r hr => by simp_all
   -- `u2 := ivB q1`
   obtain ⟨d3, k3, e3, hk3, n3, -, -, -, -⟩ := ivBS_exec (P := P) d2 e2.wb_right (src := 217155)
     (dst := 217161) (by rw [v2 _ (by decide), v1 _ (by decide), h20])
-    (by rw [v2 _ (by decide), v1 _ (by decide), h26]) (by rw [v2 _ (by decide), v1 _ (by decide), h27])
+    (by simp_all +arith) (by ram_simp)
     (by decide) (by decide) (by decide)
-  have v3 : ∀ r, r ≠ 217161 → d3.nreg r = d2.nreg r := fun r hr => by rw [n3, Machine.upd_other _ _ _ hr]
+  have v3 : ∀ r, r ≠ 217161 → d3.nreg r = d2.nreg r := fun r hr => by simp_all
   have a160 : d3.nreg 217160 = DrvR.ivB li n (d.nreg 217150) := by
-    rw [v3 _ (by decide), v2 _ (by decide), n1, Machine.upd_same]
+    simp_all
   have a161 : d3.nreg 217161 = DrvR.ivB li n ((d.nreg 217150 + 1) % n) := by
-    rw [n3, Machine.upd_same, n2, Machine.upd_same, v1 _ (by decide)]
+    simp_all
   -- `up`
   obtain ⟨d4, k4, e4, hk4, up4, f4⟩ := hltS_exec (P := P) d3 e3.wb_right hW
   have v4 : ∀ r, Bhlt r = false → d4.nreg r = d3.nreg r := f4.1
   have g4 : ∀ r, Bhlt r = false → r ≠ 217155 → d4.nreg r = d.nreg r := fun r hr h55 => by
-    rw [v4 r hr, v3 r (by simp only [Bhlt, decide_eq_false_iff_not] at hr; omega),
-      v2 r h55, v1 r (by simp only [Bhlt, decide_eq_false_iff_not] at hr; omega)]
+    rw [v4 r hr, v3 r (by grind [Bhlt, decide_eq_false_iff_not]),
+      v2 r h55, v1 r (by grind [Bhlt, decide_eq_false_iff_not])]
   -- heights
   obtain ⟨d5, k5, e5, hk5, a56, a60, a61, g5⟩ : ∃ d5 k5, Exec P W (block [.copyN 217156 217162,
       .subN 217160 217151 217027, .subN 217161 217153 217027]) d4 d5 k5 ∧ k5 = 3 ∧
@@ -251,17 +246,17 @@ theorem posLtCore_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool
     · refine spec_ifLtN_true c1 ?_
       exec_block
       · omega
-      · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right (by omega)]
+      · omega_nf
     · refine spec_ifLtN_false c1 ?_
       by_cases c2 : d6.nreg 217162 < d6.nreg 217156
       · refine spec_ifLtN_true c2 ?_
         exec_block
         · omega
-        · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right (by omega)]
+        · omega_nf
       · refine spec_ifLtN_false c2 ?_
         exec_block
         · omega
-        · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left (by omega)]
+        · omega_nf
   refine ⟨d7, k1 + (k2 + (k3 + (k4 + (k5 + (k6 + k7))))),
     .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 (.seq e6 e7))))), by omega, ?_⟩
   rw [h7, b56, hc6]
@@ -281,32 +276,26 @@ theorem posLtS_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool}
     by_cases c1 : d.nreg 217150 < d.nreg 217152
     · refine spec_ifLtN_true c1 ?_
       exec_block
-      · omega
-      · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left c1]
+      all_goals simp_all
     · refine spec_ifLtN_false c1 ?_
       by_cases c2 : d.nreg 217152 < d.nreg 217150
       · refine spec_ifLtN_true c2 ?_
         exec_block
-        · omega
-        · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right c1, ite_eq_left c2]
+        all_goals simp_all
       · refine spec_ifLtN_false c2 ?_
         by_cases c3 : d.nreg 217151 < d.nreg 217153
         · refine spec_ifLtN_true c3 ?_
           refine spec_use (posLtCore_exec d hw h20 h26 h27 hae hnW hW) ?_
-          intro d' k hk _ hv
-          refine ⟨by omega, ?_⟩
-          rw [hv, ite_eq_right c1, ite_eq_right c2, ite_eq_right (show ¬ d.nreg 217151 = d.nreg 217153 by omega)]
+          grind
         · refine spec_ifLtN_false c3 ?_
           by_cases c4 : d.nreg 217153 < d.nreg 217151
           · refine spec_ifLtN_true c4 ?_
             refine spec_use (posLtCore_exec d hw h20 h26 h27 hae hnW hW) ?_
-            intro d' k hk _ hv
-            refine ⟨by omega, ?_⟩
-            rw [hv, ite_eq_right c1, ite_eq_right c2, ite_eq_right (show ¬ d.nreg 217151 = d.nreg 217153 by omega)]
+            grind
           · refine spec_ifLtN_false c4 ?_
             exec_block
             · omega
-            · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right c1, ite_eq_right c2, ite_eq_left (show d.nreg 217151 = d.nreg 217153 by omega)]
+            · refine ⟨by omega, ?_⟩; config_simp; grind
   exact ⟨d', k, ex, hk, hv, exec_frameB ex wr_posLt⟩
 
 end exec

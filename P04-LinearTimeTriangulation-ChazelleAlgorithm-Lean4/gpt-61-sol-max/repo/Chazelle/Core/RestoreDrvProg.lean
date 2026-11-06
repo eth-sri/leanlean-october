@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFind
 public import Chazelle.Core.RestoreRound
 public import Chazelle.Core.RestoreCost
@@ -81,16 +83,22 @@ def appS : Stmt := block [.storeN 80043 81008, .addN 80043 80043 80020, .storeN 
   .addN 80043 80043 80020, .storeN 80043 81010, .addN 80043 80043 80020,
   .addN 80018 80018 80020]
 
+section
+variable (sF : Stmt)
+include sF
 /-- Call the splitting step and append its chord if it found one. -/
-def callS (sF : Stmt) : Stmt := .seq argS (.seq sF (.ifLtN 80024 81007 appS .skip))
+def callS : Stmt := .seq argS (.seq sF (.ifLtN 80024 81007 appS .skip))
 
 /-- The step of the region loop. -/
-def regBody (sF : Stmt) : Stmt :=
+def regBody : Stmt :=
   .seq (block [.loadN 80042 80041]) (.seq (.ifLtN 80003 80042 (callS sF) .skip)
     (block [.addN 80041 80041 80023, .addN 80040 80040 80020]))
 
 /-- The region loop. -/
-def regS (sF : Stmt) : Stmt := .whileLtN 80040 80014 (regBody sF)
+def regS : Stmt := .whileLtN 80040 80014 (regBody sF)
+
+
+end
 
 /-- Build the normal form of the list. -/
 def buildS (sB : Stmt) : Stmt :=
@@ -126,31 +134,30 @@ def RF (bands : Finset ℕ) (A₀ : ℕ) (c c' : Config) (k : ℕ) : Prop :=
 
 theorem RF.trans {B : Finset ℕ} {A₀ : ℕ} {c c₁ c₂ : Config} {k₁ k₂ : ℕ} (h₁ : RF B A₀ c c₁ k₁)
     (h₂ : RF B A₀ c₁ c₂ k₂) : RF B A₀ c c₂ (k₁ + k₂) := by
-  obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := h₁
-  obtain ⟨r₂, rr₂, m₂, rm₂, o₂, a₂, b₂⟩ := h₂
-  exact ⟨fun r hr hra => (r₂ r hr hra).trans (r₁ r hr hra), fun r hr => (rr₂ r hr).trans (rr₁ r hr),
-    fun a ha => (m₂ a ha).trans (m₁ a ha), fun a ha => (rm₂ a ha).trans (rm₁ a ha),
-    o₂.trans o₁, a₁.trans a₂, by omega⟩
+  grind [Chazelle.Core.Restore.RF]
 
 theorem RF.mono {B B' : Finset ℕ} {A₀ : ℕ} {c c' : Config} {k k' : ℕ} (h : RF B A₀ c c' k)
     (hB : B ⊆ B') (hk : k ≤ k') : RF B' A₀ c c' k' := by
-  obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := h
-  exact ⟨fun r hr hra => r₁ r (fun h => hr (hB h)) hra, fun r hr => rr₁ r (fun h => hr (hB h)),
-    m₁, rm₁, o₁, a₁, by omega⟩
+  core_grind
 
-theorem RF.of_frame {B : Finset ℕ} {A₀ : ℕ} {c c' : Config} {k : ℕ} (h : Frame B c c' k)
+section
+variable {B : Finset ℕ}
+theorem RF.of_frame {A₀ : ℕ} {c c' : Config} {k : ℕ} (h : Frame B c c' k)
     (hA : A₀ ≤ c.nreg ALLOC) : RF B A₀ c c' k := by
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := h
-  exact ⟨r₁, rr₁, fun a ha => m₁ a (by omega), fun a ha => rm₁ a (by omega), o₁, a₁, b₁⟩
+  core_grind
 
-theorem RF.to_frame {B : Finset ℕ} {c c' : Config} {k : ℕ} (h : RF B (c.nreg ALLOC) c c' k) :
+theorem RF.to_frame {c c' : Config} {k : ℕ} (h : RF B (c.nreg ALLOC) c c' k) :
     Frame B c c' k := h
+
+
+end
 
 /-- The bands of the driver. -/
 def dBands : Finset ℕ := restoreBands ∪ oracleBands
 
 theorem band8 {r : ℕ} (h1 : 80000 ≤ r) (h2 : r < 90000) : bandOf r = bRestore := by
-  unfold bandOf bRestore; omega
+  omega_nf
 
 theorem mem_dBands_8 : bRestore ∈ dBands := by decide
 
@@ -192,10 +199,10 @@ theorem rf_of_regs' {A₀ : ℕ} {c c' : Config} {k : ℕ}
     fun a _ => by rw [hrm], ho, by omega, by omega⟩
 
 theorem RF.refl {B : Finset ℕ} {A₀ : ℕ} (c : Config) (k : ℕ) : RF B A₀ c c k :=
-  ⟨fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, by omega⟩
+  by core_grind
 
 /-- **A loop with a bounded body keeps the relative frame.** -/
-theorem whileLtN_frame {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} {B : Finset ℕ} {A₀ : ℕ}
+theorem whileLtN_frame {P : Polygon} {W a b : ℕ} {body : Stmt} {B : Finset ℕ} {A₀ : ℕ}
     (I : Config → Prop) (μ : Config → ℕ) (Kb : ℕ) (hI : ∀ c, I c → WordsBounded W c)
     (hbody : ∀ c, I c → c.nreg a < c.nreg b →
       ∃ c' k, Exec P W body c c' k ∧ I c' ∧ RF B A₀ c c' k ∧ k ≤ Kb ∧ μ c' < μ c)
@@ -210,8 +217,7 @@ theorem whileLtN_frame {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} {B : Fi
       refine ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht',
         (hF₁.trans hF₂).mono subset_rfl (by omega), ?_⟩
       have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * n := Nat.mul_le_mul_left _ (by omega)
-      rw [Nat.mul_add, Nat.mul_one] at this
-      omega
+      grind
     · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, RF.refl c 2, by omega⟩
 
 end

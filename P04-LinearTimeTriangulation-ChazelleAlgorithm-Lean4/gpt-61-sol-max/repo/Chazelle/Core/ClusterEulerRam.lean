@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterEuler
 public import Chazelle.Core.ClusterPhase
 
@@ -121,9 +123,7 @@ end ELay
 
 theorem Regs_of_pfr {L : ELay} {c0 c : Config} (h : L.Regs c0) (hf : PFr ERG L.WR c0 c) :
     L.Regs c := by
-  have k : ∀ r, ¬ ERG r → c.nreg r = c0.nreg r := hf.1
-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8⟩ := h
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> (rwa [k _ (by unfold ERG; omega)])
+  ram_grind
 
 /-! ## Proofs -/
 
@@ -131,21 +131,22 @@ section proofs
 
 variable {P : Polygon} {W : ℕ} {L : ELay} {c0 : Config}
 
-theorem ELay.tree_root (m : ℕ → ℕ) : (L.tree m).root = m L.bQ := by
-  simp [BTree.root, ELay.tree]
+section
+variable (m : ℕ → ℕ)
 
 /-- The view of an array after a store at one of its cells. -/
-theorem fun_upd (m : ℕ → ℕ) (b x v : ℕ) :
+theorem fun_upd (b x v : ℕ) :
     (fun g => upd m (b + x) v (b + g)) = Function.update (fun g => m (b + g)) x v := by
-  funext g
-  rw [Machine.upd_apply]
-  by_cases h : g = x
-  · subst h; simp
-  · rw [ite_eq_right (by omega), Function.update_of_ne h]
+  ram_all <;> ram_grind
 
+
+end
+
+section
+variable (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.nmem).OK) {c : Config} (hw : WordsBounded W c) (hf : PFr ERG L.WR c0 c)
+include hL hR0 hR hw hf
 /-- **One step of the size loop.** -/
-theorem sizeBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.nmem).OK)
-    {c : Config} (hw : WordsBounded W c) (hf : PFr ERG L.WR c0 c) {i : ℕ}
+theorem sizeBody_exec {i : ℕ}
     (hi : c.nreg 130210 = i + 1) (hi0 : 0 < i) (hin : i < L.n)
     (hS : (L.tree c0.nmem).SizeInv (fun g => c.nmem (L.bSz + g)) (i + 1)) :
     ∃ c' k, Exec P W sizeBody c c' k ∧ k = 13 ∧ WordsBounded W c' ∧ PFr ERG L.WR c0 c' ∧
@@ -157,7 +158,7 @@ theorem sizeBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
   have hqr : R.q i ≠ R.root := by
     intro h; have := hR.q_inj i hin 0 hR.n_pos h; omega
   have hqr' : c0.nmem (L.bQ + i) ≠ c0.nmem L.bQ := by
-    rw [← L.tree_root c0.nmem]; exact hqr
+    aesop
   have hpn : R.par (R.q i) < L.n := (hR.par_spec hqn hqr).1
   -- reads
   have r1 : c.nmem (L.bQ + i) = R.q i := hf.2.2.2.2 _ (hL.rq i hin)
@@ -166,8 +167,8 @@ theorem sizeBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
   have r3 : c.nmem (L.bVert + c0.nmem (L.bPar + R.q i)) = R.par (R.q i) :=
     hf.2.2.2.2 _ (hL.rvert _ hqn hqr').1
   have hvw := (hL.rvert _ hqn hqr').2
-  have hszp := hS.le hR hpn
-  have := hL.wQ; have := hL.wPar; have := hL.wSz; have := hL.wn
+  
+  have := hL.wQ; have := hL.wPar; have := hL.wSz; 
   -- the new size of the parent is at most the true size
   have hstep := hS.step hR hi0 hin
   have hnew := hstep.le hR hpn
@@ -179,17 +180,16 @@ theorem sizeBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
     Nat.add_sub_cancel, r1, r2, r3]; omega)
   refine ⟨rfl, ‹_›, ?_, by config_simp; rw [hi, hRc.one]; omega, ?_⟩
   · refine PFr.nreg_nmem hf (fun r hr => ?_) ?_
-    · simp only [Machine.upd_apply]; unfold ERG at hr; split_ifs <;> omega
+    · simp only [Machine.upd_apply]; grind [ERG]
     · simp only [hRc.rQ, hRc.rPar, hRc.rVert, hRc.rSz, hi, hRc.one, Nat.add_sub_cancel, r1, r2, r3]
-      unfold ELay.WR; omega
+      omega_nf
   · config_simp
     simp only [hRc.rQ, hRc.rPar, hRc.rVert, hRc.rSz, hi, hRc.one, Nat.add_sub_cancel, r1, r2, r3]
     rw [fun_upd]
     exact hstep
 
 /-- **The size loop**: afterwards `SZ` holds the subtree sizes. -/
-theorem sizeLoop_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.nmem).OK)
-    {c : Config} (hw : WordsBounded W c) (hf : PFr ERG L.WR c0 c)
+theorem sizeLoop_exec
     (h1 : ∀ g, g < L.n → c.nmem (L.bSz + g) = 1) :
     ∃ c' k, Exec P W sizeLoop c c' k ∧ k ≤ 15 * L.n + 3 ∧ WordsBounded W c' ∧
       PFr ERG L.WR c0 c' ∧
@@ -198,7 +198,7 @@ theorem sizeLoop_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
   have e0 := Exec.copyN (P := P) hw 130210 130206
   set c1 := { c with nreg := upd c.nreg 130210 (c.nreg 130206) }
   have hf1 : PFr ERG L.WR c0 c1 := PFr.nreg hf (fun r hr => by
-    simp only [Machine.upd_apply]; unfold ERG at hr; split_ifs <;> omega)
+    ram_simp)
   obtain ⟨c', k, e, ⟨hw', hf', i, hi, hi1, hin, hS⟩, htest, hk⟩ := Exec.whileLtN_potential
     (P := P) (W := W) (a := 130001) (b := 130210) (body := sizeBody)
     (fun c' => WordsBounded W c' ∧ PFr ERG L.WR c0 c' ∧ ∃ i, c'.nreg 130210 = i ∧ 1 ≤ i ∧
@@ -210,7 +210,7 @@ theorem sizeLoop_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
       obtain ⟨i', rfl⟩ : ∃ i', i = i' + 1 := ⟨i - 1, by omega⟩
       obtain ⟨c3, k3, e3, hk3, hw3, hf3, hi3, hS3⟩ :=
         sizeBody_exec (P := P) hL hR0 hR hw2 hf2 hi (by omega) (by omega) hS
-      exact ⟨c3, k3, e3, ⟨hw3, hf3, i', hi3, by omega, by omega, hS3⟩, by rw [hi3, hi]; omega⟩)
+      grind)
     ⟨e0.wb_right, hf1, L.n, by simp [c1, hRc.rn], hR.n_pos, le_rfl,
       BTree.SizeInv.init (fun g hg => h1 g hg) hR⟩
   have hone := (Regs_of_pfr hR0 hf').one
@@ -219,12 +219,10 @@ theorem sizeLoop_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
   subst hi1'
   refine ⟨c', 1 + k, .seq e0 e, ?_, hw', hf', fun g hg => hS.final hR hg⟩
   have : c1.nreg 130210 = L.n := by simp [c1, hRc.rn]
-  rw [this] at hk
   omega
 
 /-- **One entry of the preorder loop.** -/
-theorem preBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.nmem).OK)
-    {c : Config} (hw : WordsBounded W c) (hf : PFr ERG L.WR c0 c) {i : ℕ}
+theorem preBody_exec {i : ℕ}
     (hi : c.nreg 130210 = i) (hin : i < L.n)
     (hsz : ∀ g, g < L.n → c.nmem (L.bSz + g) = ((L.tree c0.nmem).sub g).card)
     (hP : (L.tree c0.nmem).PreInv (view c.nmem L.bPre L.n) (view c.nmem L.bSlot L.n) i) :
@@ -238,10 +236,9 @@ theorem preBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
   have hqr : R.q i ≠ R.root := by
     intro h; have := hR.q_inj i hin 0 hR.n_pos h; omega
   have hqr' : c0.nmem (L.bQ + i) ≠ c0.nmem L.bQ := by
-    rw [← L.tree_root c0.nmem]; exact hqr
+    aesop
   have hpn : R.par (R.q i) < L.n := (hR.par_spec hqn hqr).1
-  have hpq : R.par (R.q i) ≠ R.q i := by
-    intro h; have := (hR.par_spec hqn hqr).2; rw [h] at this; omega
+  
   -- reads
   have r1 : c.nmem (L.bQ + i) = R.q i := hf.2.2.2.2 _ (hL.rq i hin)
   have r2 : c.nmem (L.bPar + R.q i) = c0.nmem (L.bPar + R.q i) :=
@@ -250,7 +247,7 @@ theorem preBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
     hf.2.2.2.2 _ (hL.rvert _ hqn hqr').1
   have r4 : c.nmem (L.bSlot + R.par (R.q i)) = view c.nmem L.bSlot L.n (R.par (R.q i)) := by
     rw [view_lt hpn]
-  have r5 : c.nmem (L.bSz + R.q i) = (R.sub (R.q i)).card := hsz _ hqn
+  
   have hvw := (hL.rvert _ hqn hqr').2
   have := hL.wQ; have := hL.wPar; have := hL.wSz; have := hL.wn; have := hL.wPre; have := hL.wSlot
   have hstep := hP.step hR hin
@@ -261,23 +258,23 @@ theorem preBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
   have d1 := hL.dSz; have d2 := hL.dSl; have d3 := hL.dPS
   unfold Disj at d1 d2 d3
   have r5' : ∀ X, upd c.nmem (L.bPre + R.q i) X (L.bSz + R.q i) = (R.sub (R.q i)).card := by
-    intro X; rw [Machine.upd_other _ _ _ (by omega), r5]
+    ram_simp
   unfold preBody
   exec_block
   all_goals try (config_simp; simp only [hRc.rQ, hRc.rPar, hRc.rVert, hRc.rSz, hRc.rPre,
     hRc.rSlot, hi, hRc.one, r1, r2, r3, r4, r5']; omega)
   refine ⟨rfl, ‹_›, ?_, by config_simp; rw [hi, hRc.one], ?_, ?_⟩
   · refine PFr.of_eq hf (fun r hr => ?_) (fun a ha => ?_)
-    · simp only [Machine.upd_apply]; unfold ERG at hr; split_ifs <;> omega
+    · simp only [Machine.upd_apply]; grind [ERG]
     · simp only [hRc.rQ, hRc.rPar, hRc.rVert, hRc.rSz, hRc.rPre, hRc.rSlot, hi, hRc.one, r1, r2,
         r3, r4, r5', Machine.upd_apply]
       unfold ELay.WR at ha
-      split_ifs <;> omega
+      grind
   · intro g hg
     config_simp
     simp only [hRc.rQ, hRc.rPar, hRc.rVert, hRc.rSz, hRc.rPre, hRc.rSlot, hi, hRc.one, r1, r2,
       r3, r4, r5', Machine.upd_apply]
-    split_ifs <;> first | omega | exact hsz g hg
+    grind
   · config_simp
     simp only [hRc.rQ, hRc.rPar, hRc.rVert, hRc.rSz, hRc.rPre, hRc.rSlot, hi, hRc.one, r1, r2,
       r3, r4, r5']
@@ -293,12 +290,10 @@ theorem preBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
       intro X Y Z
       rw [view_upd_in _ _ _ _ _ hqn, view_upd_in _ _ _ _ _ hpn,
         view_upd_out _ L.bSlot L.n (L.bPre + R.q i) X (by omega)]
-    rw [hv1, hv2]
-    exact hstep
+    grind
 
 /-- The root of the preorder. -/
-theorem preInit_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.nmem).OK)
-    {c : Config} (hw : WordsBounded W c) (hf : PFr ERG L.WR c0 c)
+theorem preInit_exec
     (hsz : ∀ g, g < L.n → c.nmem (L.bSz + g) = ((L.tree c0.nmem).sub g).card) :
     ∃ c' k, Exec P W preInit c c' k ∧ k = 9 ∧ WordsBounded W c' ∧ PFr ERG L.WR c0 c' ∧
       c'.nreg 130210 = 1 ∧ (∀ g, g < L.n → c'.nmem (L.bSz + g) = ((L.tree c0.nmem).sub g).card) ∧
@@ -307,7 +302,7 @@ theorem preInit_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
   set R := L.tree c0.nmem with hRdef
   have hrn : R.root < L.n := hR.root_lt
   have r1 : c.nmem (L.bQ + 0) = R.root := hf.2.2.2.2 _ (hL.rq 0 hR.n_pos)
-  have := hL.wQ; have := hL.wPre; have := hL.wSlot; have := hL.wSz; have := hL.wn
+  have := hL.wQ; have := hL.wPre; have := hL.wSlot;  
   have d1 := hL.dSz; have d2 := hL.dSl; have d3 := hL.dPS
   unfold Disj at d1 d2 d3
   unfold preInit
@@ -316,19 +311,21 @@ theorem preInit_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
   all_goals try (config_simp; simp only [hRc.rQ, hRc.rPre, hRc.rSlot, r1]; omega)
   refine ⟨rfl, ‹_›, ?_, by config_simp, ?_, ?_⟩
   · refine PFr.of_eq hf (fun r hr => ?_) (fun a ha => ?_)
-    · simp only [Machine.upd_apply]; unfold ERG at hr; split_ifs <;> omega
+    · grind [Machine.upd_apply, ERG]
     · simp only [hRc.rQ, hRc.rPre, hRc.rSlot, r1, Machine.upd_apply]
-      unfold ELay.WR at ha
-      split_ifs <;> omega
+      grind [ELay.WR]
   · intro g hg
     config_simp
     simp only [hRc.rQ, hRc.rPre, hRc.rSlot, r1, Machine.upd_apply]
-    split_ifs <;> first | omega | exact hsz g hg
+    grind
   · config_simp
     simp only [hRc.rQ, hRc.rPre, hRc.rSlot, r1, hRc.one]
     refine BTree.PreInv.init hR ?_ ?_
     · rw [view_lt hrn, Machine.upd_other _ _ _ (by omega), Machine.upd_same]
     · rw [view_lt hrn, Machine.upd_same]
+
+
+end
 
 /-- **Preorder intervals on the RAM.**  With a good layout and a well-formed tree read from
 memory, `eulerStmt` runs in at most `45 n + 20` steps, writes only the arrays `SZ`, `PRE`, `SLOT`
@@ -354,14 +351,13 @@ theorem eulerStmt_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c
     · simp [hR0.rSz]
     · simp [hR0.rn]
     · simp
-    · refine PFr.nreg (PFr.refl c0) (fun r hr => ?_)
-      simp only [Machine.upd_apply]; unfold ERG at hr; split_ifs <;> omega
+    grind [Chazelle.Core.Cluster.PFr, Machine.upd_apply, ERG]
   have hone1 : c1.nreg 130001 = 1 := (Regs_of_pfr hR0 hr1).one
   obtain ⟨c2, k2, e2, hk2, hf2, hfill⟩ := fillStmt_exec (P := P) hw1 hone1
-    (by rw [h150, h151]; exact hL.wSz) (by rw [h151]; omega)
+    (by omega) (by omega)
   have hr2 : PFr ERG L.WR c0 c2 := hr1.trans (hf2.mono (fun r hr => by
-    unfold FillScr at hr; unfold ERG; omega) (fun a ha => by
-      rw [h150, h151] at ha; unfold ELay.WR; omega))
+    omega_nf) (fun a ha => by
+      omega_nf))
   rw [h150, h151, h152] at hfill
   rw [h151] at hk2
   obtain ⟨c3, k3, e3, hk3, hw3, hr3, hsz3⟩ := sizeLoop_exec (P := P) hL hR0 hR e2.wb_right hr2

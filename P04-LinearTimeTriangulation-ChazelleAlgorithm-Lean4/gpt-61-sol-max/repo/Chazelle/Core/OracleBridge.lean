@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleArcs
 public import Chazelle.Core.FactsTree
 
@@ -44,9 +46,11 @@ theorem ZipRel.symm {C : Chain} {Q : Polygon} {N : NF} {p q : ℕ} (h : ZipRel C
   obtain ⟨p₁, p₂, t₁, t₂, h1, h2, h3, h4, h5, h6, hx, he, i1, i2⟩ := h
   exact ⟨p₂, p₁, t₂, t₁, h2, h1, h5, h6, h3, h4, he ▸ hx, he.symm, i2, i1⟩
 
+section
+variable (C : Chain)
 /-- **A crossing point lies on no chord**: the points of the line just before and just after
 it are in regions. -/
-theorem not_mem_chord_of_crossAdj (C : Chain) {F : Set (Set Point)}
+theorem not_mem_chord_of_crossAdj {F : Set (Set Point)}
     (hF : F ⊆ Merge.augChords C) {A B : Set Point} (hA : A ∈ (chainModel C).regions F)
     (hB : B ∈ (chainModel C).regions F) {x : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
     (hAe : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt x (-σ) t ∈ A)
@@ -72,28 +76,20 @@ theorem not_mem_chord_of_crossAdj (C : Chain) {F : Set (Set Point)}
       by_contra hlt
       push Not at hlt
       obtain ⟨t, ht, ht'⟩ := (hfree.and (Ioo_mem_nhdsGT (sub_pos.2 hlt))).exists
-      exact ht ⟨Visibility.hseg y a b, hc, by simp [Visibility.hseg, rayPt, hy]; constructor <;>
-        linarith [ht'.1, ht'.2]⟩
+      grind [Visibility.hseg, rayPt]
     · intro hτ1
       subst hτ1
       by_contra hlt
       push Not at hlt
       obtain ⟨t, ht, ht'⟩ := (hfree.and (Ioo_mem_nhdsGT (sub_pos.2 hlt))).exists
-      exact ht ⟨Visibility.hseg y a b, hc, by simp [Visibility.hseg, rayPt, hy]; constructor <;>
-        linarith [ht'.1, ht'.2]⟩
-  have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
+      grind [Visibility.hseg, rayPt]
+  have hnσ : -σ = 1 ∨ -σ = -1 := by grind
   have e1 := hmem σ hσ hfreeB
   have e2 := hmem (-σ) hnσ hfreeA
-  rcases hσ with rfl | rfl
-  · have := e1.1 rfl
-    have := e2.2 (by norm_num)
-    linarith
-  · have := e1.2 rfl
-    have := e2.1 (by norm_num)
-    linarith
+  grind
 
 /-- **Both regions of a crossing have an arc through the crossing point.** -/
-theorem arcHit_of_crossAdj (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
+theorem arcHit_of_crossAdj (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
     (hFam : (chainModel C).ChordFamily Q F) {A B : Set Point}
     (hA : A ∈ (chainModel C).regions F) (hB : B ∈ (chainModel C).regions F)
     {x : Point} (hx : x ∈ C.set) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
@@ -101,20 +97,19 @@ theorem arcHit_of_crossAdj (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set 
     (hBe : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt x σ t ∈ B) : ArcHit C F A x ∧ ArcHit C F B x := by
   have hz : x.2 ≤ C.top.2 := C.snd_le_top_of_mem_set hx
   have hxd : x ∉ C.dom := fun h => C.not_mem_set_of_mem_dom h hx
-  have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
-  have e0 : ∀ τ : ℝ, rayPt x τ 0 = x := fun τ => by simp [rayPt]
+  have hnσ : -σ = 1 ∨ -σ = -1 := by grind
+  
   obtain ⟨εA, hεA, hsubA⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hAe
   obtain ⟨εB, hεB, hsubB⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hBe
   have h1 := arcHit_right C hP hFam hA hz hnσ (s := 0) (b := εA) hεA
-    (fun t h0 h1 => hsubA ⟨h0, h1⟩) (by rw [e0]; exact hxd)
+    (fun t h0 h1 => hsubA ⟨h0, h1⟩) (by simp_all)
   have h2 := arcHit_right C hP hFam hB hz hσ (s := 0) (b := εB) hεB
-    (fun t h0 h1 => hsubB ⟨h0, h1⟩) (by rw [e0]; exact hxd)
-  rw [e0] at h1 h2
-  exact ⟨h1, h2⟩
+    (fun t h0 h1 => hsubB ⟨h0, h1⟩) (by simp_all)
+  simp_all
 
 /-- **An arc through a point of the chain off the chords contains in its interior the key of a
 position at that point** (for a nonempty family). -/
-theorem interior_of_arcHit (C : Chain) {F : Set (Set Point)} (hne : F.Nonempty) {V : Set Point}
+theorem interior_of_arcHit {F : Set (Set Point)} (hne : F.Nonempty) {V : Set Point}
     {a b : ℝ} (harc : (chainModel C).IsArc F V a b) {x : Point} (hx : x ∈ C.set)
     (hxF : ∀ c ∈ F, x ∉ c) (hmem : x ∈ (chainModel C).arcSet a b) :
     ∃ p : ℕ, ∃ t : ℝ, p < (chainModel C).W.n ∧ 0 ≤ t ∧ t < 1 ∧
@@ -128,7 +123,7 @@ theorem interior_of_arcHit (C : Chain) {F : Set (Set Point)} (hne : F.Nonempty) 
     rintro q s hs0 hs1 hq ⟨c, hc, q', s', hatt, hk⟩
     obtain ⟨-, hs'0, hs'1, hin, -⟩ := hatt
     obtain ⟨rfl, rfl⟩ := Chazelle.Chain.sideKey_inj hs0 hs1 hs'0 hs'1 hk
-    exact hxF c hc (hq ▸ hin)
+    simp_all
   rcases eq_or_lt_of_le ht1 with h1 | h1
   · -- the end of the walk edge: the start of the next one
     subst h1
@@ -139,14 +134,7 @@ theorem interior_of_arcHit (C : Chain) {F : Set (Set Point)} (hne : F.Nonempty) 
         show (chainModel C).W.vtx (p + 1) = (chainModel C).W.vtx ((p + 1) % (chainModel C).W.n)
         rw [Nat.mod_eq_of_lt hlast]
       have hnc := hnocut (p + 1) 0 le_rfl one_pos hpt
-      refine ⟨p + 1, 0, hlast, le_rfl, one_pos, hpt, ?_⟩
-      have e : (((p + 1 : ℕ) : ℝ) + 0) = (p : ℝ) + 1 := by push_cast; ring
-      rw [e]
-      rw [e] at hnc
-      rcases hkey with h | h | h
-      · exact h
-      · exact absurd (h ▸ hca) hnc
-      · exact absurd (h ▸ hcb) hnc
+      ram_grind
     · exfalso
       have hp1 : p + 1 = (chainModel C).W.n := by omega
       have hv : Geometry.lerp ((chainModel C).wa p) ((chainModel C).wb p) 1 = C.slitTop := by
@@ -154,7 +142,7 @@ theorem interior_of_arcHit (C : Chain) {F : Set (Set Point)} (hne : F.Nonempty) 
         show (C.sideWalk C.sideBeta).vtx ((p + 1) % (C.sideWalk C.sideBeta).n) = C.slitTop
         have : (p + 1) % (C.sideWalk C.sideBeta).n = 0 := by
           show (p + 1) % (chainModel C).W.n = 0
-          rw [hp1, Nat.mod_self]
+          grind [Nat.mod_self]
         rw [this, C.sideWalk_vtx_zero]
       rw [hv] at hx
       have := C.snd_le_top_of_mem_set hx
@@ -162,15 +150,12 @@ theorem interior_of_arcHit (C : Chain) {F : Set (Set Point)} (hne : F.Nonempty) 
       linarith [C.top_snd_lt_radius]
   · have hnc := hnocut p t ht0 h1 rfl
     refine ⟨p, t, hp, ht0, h1, rfl, ?_⟩
-    rcases hkey with h | h | h
-    · exact h
-    · exact absurd (h ▸ hca) hnc
-    · exact absurd (h ▸ hcb) hnc
+    grind
 
 /-- **The bridge from crossings to zipper edges.**  If two distinct regions face each other
 across the chain, arcs of them at two spine positions meet at a point of the chain
 (`ZipRel`). -/
-theorem cross_zip (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
+theorem cross_zip (hP : C.P.Simple) {Q : Polygon} {N : NF}
     (hN : IsNF (chainModel C) Q N) {reg : ℕ → Set Point}
     (hR : RegionCorr (chainModel C) Q N reg) (hA : ArcsOK (chainModel C) Q N reg)
     {A B : Set Point} (hAr : A ∈ (chainModel C).regions (N.F (chainModel C) Q))
@@ -189,9 +174,7 @@ theorem cross_zip (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     obtain ⟨hfin, hcard, -⟩ := regionTree _ Q F hGM hFam
     rw [hF, Set.ncard_empty, zero_add] at hcard
     obtain ⟨U, hU⟩ := Set.ncard_eq_one.1 hcard
-    have h1 : A = U := by rw [hF, hU] at hAr; exact hAr
-    have h2 : B = U := by rw [hF, hU] at hBr; exact hBr
-    exact hAB (h1.trans h2.symm)
+    simp_all
   have hxF := not_mem_chord_of_crossAdj C hFam.2.1 hAr hBr hσ hAe hBe
   obtain ⟨hitA, hitB⟩ := arcHit_of_crossAdj C hP hFam hAr hBr hx hσ hAe hBe
   -- the arcs of the two regions through `x`, located on the spine
@@ -206,14 +189,17 @@ theorem cross_zip (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     obtain ⟨p, hp, hpj⟩ := NFLoc.seq_surj hN hj
     refine ⟨p, hp, ?_, p₁, t₁, hp₁, ht₀, ht₁, hpt, ?_⟩
     · show reg (N.arc (N.seq.getD p 0)).reg = reg r
-      rw [hpj, hjr]
+      simp_all
     · show sideInArc ((chainModel C).key Q (N.arc (N.seq.getD p 0)).s)
         ((chainModel C).key Q (N.arc (N.seq.getD p 0)).e) (p₁ + t₁)
-      rw [hpj, hja, hjb]; exact hin
+      simp_all
   obtain ⟨p, hp, hpA, p₁, t₁, hp₁, h10, h11, hpt₁, hin₁⟩ := locate A hAr hitA
   obtain ⟨q, hq, hqB, p₂, t₂, hp₂, h20, h21, hpt₂, hin₂⟩ := locate B hBr hitB
   exact ⟨p, q, hp, hq, hpA, hqB, p₁, p₂, t₁, t₂, hp₁, hp₂, h10, h11, h20, h21,
     hpt₁ ▸ hx, hpt₁.trans hpt₂.symm, hin₁, hin₂⟩
+
+
+end
 
 end OracleQ
 

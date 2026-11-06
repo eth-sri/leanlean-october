@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.BruteRam2
 public import Chazelle.Core.NFLocateHost
 
@@ -12,9 +14,6 @@ the tour start `S`, and the host `Host.whole n` at `A₀` with the model descrip
 `Ctx` and the memory facts.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -34,13 +33,11 @@ theorem bitS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
       (c'.nreg 180014 = 1 ↔ C.sideBeta = true) := by
   by_cases hT : 0 < C.topIdx
   · obtain ⟨c', k, e, hk, F, b, hb⟩ := bitGen_exec hG hW hW8 hC hsn hT c hw h0 h10 h11 h13
-    exact ⟨c', _, .ifLtN_true (by rw [h28, h13]; exact hT) e, by omega, F, b, hb⟩
+    exact ⟨c', _, .ifLtN_true (by omega) e, by omega, F, b, hb⟩
   · have e := Exec.constN (P := P) hw 180014 0 (by omega)
-    refine ⟨_, _, .ifLtN_false (by rw [h28, h13]; exact hT) e, by omega,
+    refine ⟨_, _, .ifLtN_false (by omega) e, by omega,
       ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩, by simp, ?_⟩
-    · unfold Bbit at hr
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-      simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+    · simp_all [Bbit, Bool.or_eq_false_iff, decide_eq_false_iff_not, Config.nreg_mk, Machine.upd_other]
     · rw [sideBeta_of_top_zero (by omega)]; simp
 
 /-- The tour start: `S = T` if the bit is set, else `2m - T`. -/
@@ -54,22 +51,18 @@ theorem sS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsBoun
       FrameB (fun r => decide (r = 180015)) c c' := by
   have fr : ∀ v, FrameB (fun r => decide (r = 180015)) c
       { c with nreg := upd c.nreg 180015 v } := fun v =>
-    ⟨fun r hr => by simp only [decide_eq_false_iff_not] at hr; simp [hr], fun r _ => rfl, rfl,
+    ⟨fun r hr => by simp_all, fun r _ => rfl, rfl,
       rfl, rfl⟩
   by_cases h : c.nreg 180014 < 1
   · have hf : C.sideBeta = false := by
-      cases hx : C.sideBeta with
-      | false => rfl
-      | true => have := hbit.2 hx; omega
-    refine ⟨_, _, .ifLtN_true (by rw [h11]; exact h) (Exec.subN hw 180015 180012 180013),
+      simp_all
+    refine ⟨_, _, .ifLtN_true (by omega) (Exec.subN hw 180015 180012 180013),
       by omega, ?_, fr _⟩
-    simp only [Config.nreg_mk, Machine.upd_same]
-    rw [h12, h13]; unfold tS Chain.sideS; rw [hf]; rfl
+    simp_all [Config.nreg_mk, Machine.upd_same, tS, Chain.sideS]
   · have ht : C.sideBeta = true := hbit.1 (by omega)
-    refine ⟨_, _, .ifLtN_false (by rw [h11]; exact h) (Exec.copyN hw 180015 180013),
+    refine ⟨_, _, .ifLtN_false (by omega) (Exec.copyN hw 180015 180013),
       by omega, ?_, fr _⟩
-    simp only [Config.nreg_mk, Machine.upd_same]
-    rw [h13]; unfold tS Chain.sideS; rw [ht]; rfl
+    simp_all [Config.nreg_mk, Machine.upd_same, tS, Chain.sideS]
 
 /-! ## Stores -/
 
@@ -83,11 +76,7 @@ theorem putS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold putS
   exec_block
-  · config_simp; rw [h11]; exact hroom
-  · refine ⟨rfl, ?_, rfl, fun r hr => ?_, rfl, rfl, rfl⟩
-    · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
-      rw [h11]
-    · simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+  all_goals simp_all
 
 /-- The host and the descriptor. -/
 def descS : Stmt :=
@@ -104,37 +93,31 @@ def DescMem (P : Polygon) (C : Chain) (m : ℕ → ℕ) (A₀ : ℕ) : Prop :=
     m (A₀ + 5) = A₀ ∧ m (A₀ + 6) = C.s ∧ m (A₀ + 7) = C.m ∧ m (A₀ + 8) = C.topIdx ∧
     (m (A₀ + 9) = 1 ↔ C.sideBeta = true)
 
-theorem descMem_agree {P : Polygon} {C : Chain} {m m' : ℕ → ℕ} {A₀ : ℕ} (h : DescMem P C m A₀)
+section
+variable {P : Polygon} {C : Chain}
+theorem descMem_agree {m m' : ℕ → ℕ} {A₀ : ℕ} (h : DescMem P C m A₀)
     (hm : ∀ a, a < A₀ + 10 → m' a = m a) : DescMem P C m' A₀ := by
-  obtain ⟨h0, h1, h2, h3, h4, h5, h6, h7, h8, h9⟩ := h
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  all_goals first
-    | (rwa [hm _ (by omega)])
-    | skip
+  core_grind
 
 /-- **The descriptor words describe the chain model**, and are well formed below `E`. -/
-theorem descMem_model {P : Polygon} {C : Chain} (hC : C.P = Qof P) (hn1 : 1 ≤ P.n)
+theorem descMem_model (hC : C.P = Qof P) (hn1 : 1 ≤ P.n)
     (hsn : C.s < P.n) {m : ℕ → ℕ} {A₀ : ℕ} (h : DescMem P C m A₀) {E : ℕ} (hE : A₀ + 10 ≤ E) :
     ModelDescAt m (A₀ + 4) (Qof P) (chainModel C) ∧ ModelDescWF P E m (A₀ + 4) := by
   obtain ⟨h0, h1, h2, h3, h4, h5, h6, h7, h8, h9⟩ := h
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hH : HostAt m A₀ (Host.whole (Qof P).n) := by
     refine ⟨by rw [h0]; rfl, fun i hi => ?_⟩
-    have hi0 : i = 0 := by simpa [Host.whole] using hi
-    subst hi0
-    simp only [Host.whole, List.getD_cons_zero]
-    refine ⟨by simpa using h1, by simpa using h2, ?_⟩
-    rw [show A₀ + 3 + 3 * 0 = A₀ + 3 by ring, h3, hQn]
+    simp_all [Host.whole, List.getD_cons_zero]
   have hCD : ChainDescAt m (A₀ + 4 + 1) (Qof P) (Host.whole (Qof P).n) C :=
-    ⟨by rw [show A₀ + 4 + 1 = A₀ + 5 by ring, h5]; exact hH,
-      by rw [hC, poly_whole _ (by rw [hQn]; exact hn1)],
-      by rw [show A₀ + 4 + 1 + 1 = A₀ + 6 by ring, h6],
-      by rw [show A₀ + 4 + 1 + 2 = A₀ + 7 by ring, h7],
-      by rw [show A₀ + 4 + 1 + 3 = A₀ + 8 by ring, h8],
-      by rw [show A₀ + 4 + 1 + 4 = A₀ + 9 by ring]; exact h9⟩
+    ⟨by simp_all,
+      by rw [hC, poly_whole _ (by omega)],
+      by omega,
+      by omega,
+      by omega,
+      by omega⟩
   refine ⟨Or.inl ⟨h4, _, _, hCD, rfl⟩, by omega, fun _ => ⟨by omega, fun H C' hC' => ?_⟩⟩
   have hHH : H = Host.whole (Qof P).n := by
-    have e5 : m (A₀ + 4 + 1) = A₀ := by rw [show A₀ + 4 + 1 = A₀ + 5 by ring, h5]
+    have e5 : m (A₀ + 4 + 1) = A₀ := by omega
     have := hC'.1
     rw [e5] at this
     exact NFLoc.hostAt_unique this hH
@@ -142,13 +125,15 @@ theorem descMem_model {P : Polygon} {C : Chain} (hC : C.P = Qof P) (hn1 : 1 ≤ 
   refine ⟨by simp [Host.whole], ?_, ?_, ?_⟩
   · intro it hit
     simp only [Host.whole, List.mem_cons, List.not_mem_nil, or_false] at hit
-    subst hit
-    exact ⟨by omega, by omega⟩
-  · rw [show A₀ + 4 + 1 = A₀ + 5 by ring, h5]; simp [Host.whole]; omega
+    grind
+  · core_grind
   · have e1 : C'.s = C.s := by
-      have := hC'.2.2.1; rw [show A₀ + 4 + 1 + 1 = A₀ + 6 by ring, h6] at this; exact this.symm
-    have e2 : C'.P = Qof P := by rw [hC'.2.1, poly_whole _ (by rw [hQn]; exact hn1)]
-    rw [e1, e2, hQn]; exact hsn
+      have := hC'.2.2.1; simp_all
+    have e2 : C'.P = Qof P := by rw [hC'.2.1, poly_whole _ (by omega)]
+    simp_all
+
+
+end
 
 /-- The memory after the ten stores of `descS`. -/
 def descMemory (m : ℕ → ℕ) (A₀ n s mm T b : ℕ) : ℕ → ℕ :=
@@ -229,7 +214,7 @@ theorem descS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsB
   rw [p3] at p4
   have K4 : ∀ r, r ≠ 180045 → r ≠ 180046 → r ≠ 180017 → d4.nreg r = c.nreg r :=
     fun r h1 h2 h3 => (R4 r h1).trans (K3 r h1 h2 h3)
-  have Q4 : d4.nreg 180046 = P.n - 1 := (R4 _ (by decide)).trans Q3
+  
   have eD := Exec.copyN (P := P) e4.wb_right 180017 180045
   set dD : Config := { d4 with nreg := upd d4.nreg 180017 (d4.nreg 180045) } with hdD
   have pD : dD.nreg 180045 = A₀ + 4 := by
@@ -238,8 +223,7 @@ theorem descS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsB
     rw [hdD]; simp only [Config.nreg_mk, upd_same]; rw [p4]
   have KD : ∀ r, r ≠ 180045 → r ≠ 180046 → r ≠ 180017 → dD.nreg r = c.nreg r := fun r h1 h2 h3 => by
     rw [hdD]; simp only [Config.nreg_mk]; rw [upd_other _ _ _ h3]; exact K4 r h1 h2 h3
-  have QD : dD.nreg 180046 = P.n - 1 := by
-    rw [hdD]; simp only [Config.nreg_mk]; rw [upd_other _ _ _ (by decide)]; exact Q4
+  
   have mD : dD.nmem = d4.nmem := rfl
   have u5 : dD.nreg 180011 = 1 := by rw [KD _ (by decide) (by decide) (by decide), h11]
   have w5 : dD.nreg 180028 = c.nreg 180028 := KD _ (by decide) (by decide) (by decide)
@@ -249,7 +233,7 @@ theorem descS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsB
   rw [pD] at p5
   have K5 : ∀ r, r ≠ 180045 → r ≠ 180046 → r ≠ 180017 → d5.nreg r = c.nreg r :=
     fun r h1 h2 h3 => (R5 r h1).trans (KD r h1 h2 h3)
-  have Q5 : d5.nreg 180046 = P.n - 1 := (R5 _ (by decide)).trans QD
+  
   have u6 : d5.nreg 180011 = 1 := by rw [K5 _ (by decide) (by decide) (by decide), h11]
   have w6 : d5.nreg 180016 = c.nreg 180016 := K5 _ (by decide) (by decide) (by decide)
   obtain ⟨d6, k6, e6, hk6, p6, m6, R6, rr6, rm6, o6⟩ := putS_exec (P := P) d5 e5.wb_right
@@ -258,7 +242,7 @@ theorem descS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsB
   rw [p5] at p6
   have K6 : ∀ r, r ≠ 180045 → r ≠ 180046 → r ≠ 180017 → d6.nreg r = c.nreg r :=
     fun r h1 h2 h3 => (R6 r h1).trans (K5 r h1 h2 h3)
-  have Q6 : d6.nreg 180046 = P.n - 1 := (R6 _ (by decide)).trans Q5
+  
   have u7 : d6.nreg 180011 = 1 := by rw [K6 _ (by decide) (by decide) (by decide), h11]
   have w7 : d6.nreg 180000 = c.nreg 180000 := K6 _ (by decide) (by decide) (by decide)
   obtain ⟨d7, k7, e7, hk7, p7, m7, R7, rr7, rm7, o7⟩ := putS_exec (P := P) d6 e6.wb_right
@@ -267,7 +251,7 @@ theorem descS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsB
   rw [p6] at p7
   have K7 : ∀ r, r ≠ 180045 → r ≠ 180046 → r ≠ 180017 → d7.nreg r = c.nreg r :=
     fun r h1 h2 h3 => (R7 r h1).trans (K6 r h1 h2 h3)
-  have Q7 : d7.nreg 180046 = P.n - 1 := (R7 _ (by decide)).trans Q6
+  
   have u8 : d7.nreg 180011 = 1 := by rw [K7 _ (by decide) (by decide) (by decide), h11]
   have w8 : d7.nreg 180001 = c.nreg 180001 := K7 _ (by decide) (by decide) (by decide)
   obtain ⟨d8, k8, e8, hk8, p8, m8, R8, rr8, rm8, o8⟩ := putS_exec (P := P) d7 e7.wb_right
@@ -276,7 +260,7 @@ theorem descS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsB
   rw [p7] at p8
   have K8 : ∀ r, r ≠ 180045 → r ≠ 180046 → r ≠ 180017 → d8.nreg r = c.nreg r :=
     fun r h1 h2 h3 => (R8 r h1).trans (K7 r h1 h2 h3)
-  have Q8 : d8.nreg 180046 = P.n - 1 := (R8 _ (by decide)).trans Q7
+  
   have u9 : d8.nreg 180011 = 1 := by rw [K8 _ (by decide) (by decide) (by decide), h11]
   have w9 : d8.nreg 180013 = c.nreg 180013 := K8 _ (by decide) (by decide) (by decide)
   obtain ⟨d9, k9, e9, hk9, p9, m9, R9, rr9, rm9, o9⟩ := putS_exec (P := P) d8 e8.wb_right
@@ -285,7 +269,7 @@ theorem descS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsB
   rw [p8] at p9
   have K9 : ∀ r, r ≠ 180045 → r ≠ 180046 → r ≠ 180017 → d9.nreg r = c.nreg r :=
     fun r h1 h2 h3 => (R9 r h1).trans (K8 r h1 h2 h3)
-  have Q9 : d9.nreg 180046 = P.n - 1 := (R9 _ (by decide)).trans Q8
+  
   have u10 : d9.nreg 180011 = 1 := by rw [K9 _ (by decide) (by decide) (by decide), h11]
   have w10 : d9.nreg 180014 = c.nreg 180014 := K9 _ (by decide) (by decide) (by decide)
   obtain ⟨d10, k10, e10, hk10, p10, m10, R10, rr10, rm10, o10⟩ := putS_exec (P := P) d9 e9.wb_right
@@ -294,7 +278,7 @@ theorem descS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsB
   rw [p9] at p10
   have K10 : ∀ r, r ≠ 180045 → r ≠ 180046 → r ≠ 180017 → d10.nreg r = c.nreg r :=
     fun r h1 h2 h3 => (R10 r h1).trans (K9 r h1 h2 h3)
-  have Q10 : d10.nreg 180046 = P.n - 1 := (R10 _ (by decide)).trans Q9
+  
   have q17 : d10.nreg 180017 = A₀ + 4 := by
     rw [R10 _ (by decide), R9 _ (by decide), R8 _ (by decide), R7 _ (by decide),
       R6 _ (by decide), R5 _ (by decide), qD]
@@ -345,7 +329,7 @@ theorem Ctx.keep {P : Polygon} {C : Chain} {γ A₀ : ℕ} {c c' : Config} (h : 
     (hk : ∀ r, CtxReg r → c'.nreg r = c.nreg r) : Ctx P C γ A₀ c' := by
   obtain ⟨h0, h1, h2, h10, h11, h12, h13, h15, h16, h17, h18, h23, h25, h26, h27, h28⟩ := h
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hk _ (by unfold CtxReg; omega)]; assumption)
+    ram_grind
 
 /-- The set-up phase. -/
 def setupS : Stmt := .seq initS (.seq topS (.seq bitS (.seq sS descS)))
@@ -366,11 +350,11 @@ theorem setup_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W)
   set A₀ := c.nreg ALLOC with hA₀
   -- constants
   obtain ⟨c₁, k₁, e₁, hk₁, i10, i11, i12, i16, i26, i27, i28, i23, i25, F₁⟩ :=
-    initS_exec (P := P) c hw (by rw [h1]; exact hW2)
+    initS_exec (P := P) c hw (by omega)
   have g : ∀ r, (r < 180010 ∨ 180030 ≤ r) → c₁.nreg r = c.nreg r := fun r hr =>
-    F₁.1 r (by simp only [decide_eq_false_iff_not]; omega)
-  have j0 : c₁.nreg 180000 = C.s := by rw [g _ (by omega), h0]
-  have j1 : c₁.nreg 180001 = C.m := by rw [g _ (by omega), h1]
+    F₁.1 r (by grind)
+  have j0 : c₁.nreg 180000 = C.s := by simp_all
+  have j1 : c₁.nreg 180001 = C.m := by simp_all
   rw [h1] at i12 i23 i25
   replace i16 : c₁.nreg 180016 = A₀ := i16
   -- top index
@@ -378,14 +362,14 @@ theorem setup_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W)
     j0 i11 i23 (by omega)
   have hT : c₂.nreg 180013 = C.topIdx := by
     refine (topIdx_eq_of_max hDH t13 fun i hi => ?_).symm
-    have e1 := vertex_eq (C := C) (k := i) (by rw [hn]; omega)
-    have e2 := vertex_eq (C := C) (k := c₂.nreg 180013) (by rw [hn]; omega)
-    rw [e1, e2, hC]; exact tmax i hi
+    have e1 := vertex_eq (C := C) (k := i) (by omega)
+    have e2 := vertex_eq (C := C) (k := c₂.nreg 180013) (by omega)
+    simp_all
   have kk2 : ∀ r, Btop r = false → c₂.nreg r = c₁.nreg r := F₂.1
   -- the bit
   obtain ⟨c₃, k₃, e₃, hk₃, F₃, b14, t14⟩ := bitS_exec (P := P) hG (by omega) (by omega) hC hsn c₂
-    e₂.wb_right (by rw [kk2 _ (by decide), j0]) (by rw [kk2 _ (by decide), i10])
-    (by rw [kk2 _ (by decide), i11]) hT (by rw [kk2 _ (by decide), i28])
+    e₂.wb_right (by ram_grind) (by ram_grind)
+    (by ram_grind) hT (by ram_grind)
   have kk3 : ∀ r, Bbit r = false → c₃.nreg r = c₂.nreg r := F₃.1
   -- the tour start
   obtain ⟨c₄, k₄, e₄, hk₄, s15, F₄⟩ := sS_exec (P := P) (C := C) c₃ e₃.wb_right
@@ -393,10 +377,10 @@ theorem setup_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W)
     (by rw [kk3 _ (by decide), kk2 _ (by decide), i12])
     (by rw [kk3 _ (by decide), hT]) b14 t14
   have kk4 : ∀ r, r ≠ 180015 → c₄.nreg r = c₃.nreg r := fun r hr =>
-    F₄.1 r (by simpa using hr)
+    F₄.1 r (by grind)
   -- a register untouched since `c₁`
   have up : ∀ r, Btop r = false → Bbit r = false → r ≠ 180015 → c₄.nreg r = c₁.nreg r :=
-    fun r h2 h3 h4 => by rw [kk4 r h4, kk3 r h3, kk2 r h2]
+    fun r h2 h3 h4 => by grind
   -- the descriptor
   obtain ⟨c₅, k₅, e₅, hk₅, hD, hlow, q17, q18, q24, q19, R₅, rr₅, rm₅, o₅⟩ :=
     descS_exec (P := P) (C := C) (A₀ := A₀) c₄ e₄.wb_right
@@ -407,7 +391,7 @@ theorem setup_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W)
     (by rw [kk4 _ (by decide), kk3 _ (by decide), hT])
     (by rw [up _ (by decide) (by decide) (by decide), i16])
     (by rw [up _ (by decide) (by decide) (by decide), i28])
-    (by rw [kk4 _ (by decide)]; exact t14) (by omega)
+    (by grind) (by omega)
   have ex : Exec P W setupS c c₅ (k₁ + (k₂ + (k₃ + (k₄ + k₅)))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
   -- the memory is unchanged before `descS`
@@ -416,36 +400,29 @@ theorem setup_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W)
     intro r hr
     have hr' : r < 10000 ∨ (10500 ≤ r ∧ r < 180000) ∨ 190000 ≤ r := by
       unfold Bm Bk at hr
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; omega
+      grind
     rw [R₅ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), kk4 r (by omega),
       kk3 r (by unfold Bbit Bk; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega),
       kk2 r (by unfold Btop Bk; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega),
       g r (by omega)]
-  refine ⟨c₅, _, ex, by omega, by omega, ?_, hD, fun a ha => by rw [hlow a ha, m4], q19,
+  refine ⟨c₅, _, ex, by omega, by omega, ?_, hD, fun a ha => by grind, q19,
     q24, all5, fun r hr => ?_, ?_, ?_⟩
   · refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, q17, q18, ?_, ?_, ?_, ?_, ?_⟩
-    all_goals first
-      | (rw [R₅ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide),
-          up _ (by decide) (by decide) (by decide)]; first | assumption | rfl |
-          (rw [g _ (by omega)]))
-      | (rw [R₅ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide),
-          kk4 _ (by decide), kk3 _ (by decide)]; exact hT)
-      | (rw [R₅ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)];
-          exact s15)
+    all_goals ram_grind
   · have hr' : r < 10000 ∨ (10500 ≤ r ∧ r < 180000) ∨ 190000 ≤ r := by
       unfold Bm Bk at hr
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; omega
+      grind
     have x4 : (fun q => decide (q = 180015)) r = false := by
-      simp only [decide_eq_false_iff_not]; omega
+      grind
     have x3 : Bbit r = false := by
       unfold Bbit Bk; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
     have x2 : Btop r = false := by
       unfold Btop Bk; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
     have x1 : (fun q => decide (180010 ≤ q ∧ q < 180030)) r = false := by
-      simp only [decide_eq_false_iff_not]; omega
+      grind
     rw [rr₅, F₄.2.1 r x4, F₃.2.1 r x3, F₂.2.1 r x2, F₁.2.1 r x1]
-  · rw [rm₅, F₄.2.2.2.1, F₃.2.2.2.1, F₂.2.2.2.1, F₁.2.2.2.1]
-  · rw [o₅, F₄.2.2.2.2, F₃.2.2.2.2, F₂.2.2.2.2, F₁.2.2.2.2]
+  · ram_grind
+  · ram_grind
 
 end
 

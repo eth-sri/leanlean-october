@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterSFacts
 
 /-!
@@ -89,13 +91,13 @@ theorem regsS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (b := 130300) (by decide) (by decide)
   have g1 : ∀ r, r < 130300 → c1.nreg r = c.nreg r := fun r hr =>
     h2 r (fun p hp h => by have := ((show ∀ p ∈ regCopies, 130300 ≤ p.1 by decide) p hp); omega)
-  have hG1 : GR g c1 := hG.frame (fun r hr => g1 r (by unfold GRReg at hr; omega))
+  have hG1 : GR g c1 := hG.frame (fun r hr => g1 r (by omega_nf))
   have cp : ∀ d s, (d, s) ∈ regCopies → c1.nreg d = c.nreg s := fun d s h => h1 _ h
   have e2 := Exec.addN (P := P) hw1 130681 130014 130014 (by rw [hG1.rN]; omega)
   set c2 := { c1 with nreg := upd c1.nreg 130681 (c1.nreg 130014 + c1.nreg 130014) } with hc2
   have k12 : ∀ r, r ≠ 130681 → c2.nreg r = c1.nreg r := fun r h => by
     simp only [c2]; rw [Machine.upd_other _ _ _ h]
-  have hG2 : GR g c2 := hG1.frame (fun r hr => k12 r (by unfold GRReg at hr; omega))
+  have hG2 : GR g c2 := hG1.frame (fun r hr => k12 r (by omega_nf))
   have h681 : c2.nreg 130681 = 2 * g.N := by
     simp only [c2, Machine.upd_same]; rw [hG1.rN]; ring
   obtain ⟨c3, k3, e3, hk3, ⟨hw3, h880, hL3, h327, h620, hk23, hm3, hr3, hrm3, ho3⟩⟩ := forN (P := P) (W := W)
@@ -115,29 +117,29 @@ theorem regsS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       rw [Nat.succ_mul] at hjN hjμ
       unfold mulBody
       exec_block
-      · rw [h4a, hN4]; omega
-      · config_simp; rw [h4b, hμ4]; omega
-      · config_simp; rw [h4i, h14]; omega
-      · refine ⟨le_refl _, ‹_›, by config_simp; rw [h4i, h14], by config_simp; exact h4n,
-          by config_simp; rw [h4a, hN4, Nat.succ_mul]; ring,
-          by config_simp; rw [h4b, hμ4, Nat.succ_mul]; ring, fun r a1 a2 a3 => ?_, h4m, h4rr,
+      · omega
+      · omega_nf
+      · omega_nf
+      · refine ⟨le_refl _, ‹_›, by omega_nf, by ram_simp,
+          by config_simp; ram_grind,
+          by config_simp; ring_nf <;> omega, fun r a1 a2 a3 => ?_, h4m, h4rr,
           h4rm, h4o⟩
         simp only
         rw [Machine.upd_other _ _ _ a3, Machine.upd_other _ _ _ a2, Machine.upd_other _ _ _ a1]
-        exact h4r r a1 a2 a3)
+        ram_grind)
     (j₀ := 0) ⟨e2.wb_right, by rw [k12 _ (by omega), cp 130880 130009 (by decide)]; exact hG.zero,
       hG2.rL, by rw [k12 _ (by omega), cp 130327 130085 (by decide), hG.rUP]; ring,
       by rw [k12 _ (by omega), cp 130620 130084 (by decide), hG.rbase 54 (by omega), g.base_eq]; ring,
       fun r _ _ _ => rfl, rfl, rfl, rfl, rfl⟩ (Nat.zero_le _)
   have kk3 : ∀ r, r ≠ 130327 → r ≠ 130620 → r ≠ 130880 → r ≠ 130681 → c3.nreg r = c1.nreg r :=
-    fun r a1 a2 a3 a4 => by rw [hk23 r a1 a2 a3, k12 r a4]
+    fun r a1 a2 a3 a4 => by ram_grind
   have R : ∀ d s, (d, s) ∈ regCopies → d ≠ 130327 → d ≠ 130620 → d ≠ 130880 → d ≠ 130681 →
-      c3.nreg d = c.nreg s := fun d s h a1 a2 a3 a4 => by rw [kk3 d a1 a2 a3 a4]; exact cp d s h
+      c3.nreg d = c.nreg s := fun d s h a1 a2 a3 a4 => by ram_grind
   have hlen : regCopies.length = 43 := rfl
   refine ⟨c3, regCopies.length + (1 + k3), .seq e1 (.seq e2 e3), by omega, hw3, ?_,
     by rw [R 130704 130009 (by decide) (by omega) (by omega) (by omega) (by omega)]; exact hG.zero,
-    fun r hr => ?_, by rw [hm3]; exact hm1, by rw [hr3]; exact hr1, by rw [hrm3]; exact hrm1,
-    by rw [ho3]; exact ho1⟩
+    fun r hr => ?_, by ram_grind, by ram_grind, by ram_grind,
+    by ram_grind⟩
   · refine ⟨by rw [kk3 _ (by omega) (by omega) (by omega) (by omega), g1 _ (by omega)]; exact hG.one,
       by rw [kk3 _ (by omega) (by omega) (by omega) (by omega), g1 _ (by omega)]; exact hG.zero,
       ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,

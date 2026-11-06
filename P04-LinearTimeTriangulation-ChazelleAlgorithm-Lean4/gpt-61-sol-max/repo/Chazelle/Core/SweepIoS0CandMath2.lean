@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoS0CandMath
 
 /-!
@@ -58,12 +60,11 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
   have hget : ∀ i (hi : i < es.length), es.getD i (0, 0, ∅) = es[i] := fun i hi => by
     rw [List.getD_eq_getElem _ _ hi]
   have hmemi : ∀ i, i < es.length → es.getD i (0, 0, ∅) ∈ es := fun i hi => by
-    rw [hget i hi]; exact List.getElem_mem _
+    grind
   have hK0 : oW J (K 0) ≤ oW J x := by
     have h := hhead (es.getD 0 (0, 0, ∅)) (by
       rw [hget 0 hlen, List.head?_eq_getElem?, List.getElem?_eq_getElem hlen]; rfl)
-    show oW J (K 0) ≤ _
-    rw [show K 0 = _ from rfl, h]; exact hst
+    grind
   -- the last key not after `x`
   set i := Nat.findGreatest (fun i => oW J (K i) ≤ oW J x) (es.length - 1) with hi
   have hiP : oW J (K i) ≤ oW J x := Nat.findGreatest_spec (P := fun i => oW J (K i) ≤ oW J x)
@@ -72,12 +73,11 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
     have : i ≤ es.length - 1 := Nat.findGreatest_le _
     omega
   have hKi := hmem _ (hmemi i hil)
-  have hKi0 : 0 ≤ K i := by have := hKi.2.1; have : (0 : ℝ) ≤ (es.getD i (0, 0, ∅)).1 := by positivity
-                            simp only [K]; linarith
+  have hKi0 : 0 ≤ K i := by grind
   have hKin : K i < n := by
-    have h1 := hKi.1; have h2 := hKi.2.2.1
+    have h1 := hKi.1; 
     have : ((es.getD i (0, 0, ∅)).1 : ℝ) + 1 ≤ n := by exact_mod_cast h1
-    simp only [K]; linarith
+    linarith
   have hgW0 : (0 : ℝ) ≤ gW J := by positivity
   have heq : oW J (K i) = oW J x := by
     rcases hiP.lt_or_eq with hlt | h
@@ -90,12 +90,12 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
       · have hlast' : es.getLast? = some (es.getD i (0, 0, ∅)) := by
           rw [List.getLast?_eq_getElem?, hget i hil]
           rw [show es.length - 1 = i by omega, List.getElem?_eq_getElem hil]
-        have := hlast _ (by rw [hlast']; rfl) x hcut hx0 hxn
+        have := hlast _ (by omega) x hcut hx0 hxn
         exact this ⟨hlt, off_lt hxn hgW0⟩
     · exact h
   have hkx : K i = x := off_inj hgW0 (gW_lt J) hKi0 hKin hx0 hxn heq
   obtain ⟨h1, h2⟩ := key_split hKi.2.1 hKi.2.2.1 ht0 ht1 hkx
-  exact ⟨i, hil, h1, h2⟩
+  grind
 
 /-! ## Records in memory -/
 
@@ -105,25 +105,25 @@ theorem stopRecs_unique {m : ℕ → ℕ} {A : ℕ} {rs rs' : List (ℕ × ℕ �
   intro i hi hi'
   obtain ⟨a1, a2, a3, a4, a5⟩ := h i hi
   obtain ⟨b1, b2, b3, b4, b5⟩ := h' i hi'
-  rw [List.getD_eq_getElem _ _ hi] at a1 a2 a3 a4 a5
-  rw [List.getD_eq_getElem _ _ hi'] at b1 b2 b3 b4 b5
-  ext <;> simp only [← a1, ← a2, ← a3, ← a4, ← a5, b1, b2, b3, b4, b5]
+  grind
 
+section
+variable (J : Merge.Junction)
 /-- The key of a log record in the event log. -/
-theorem logOf_getD (J : Merge.Junction) (Q : Polygon) (N : NF)
+theorem logOf_getD (Q : Polygon) (N : NF)
     {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)} {i : ℕ} (hi : i < ls.length) :
     ((logOf J Q N ls).getD i (0, 0, ∅)).1 = (ls.getD i (0, 0, 0, 0, 0, 0, 0)).1 ∧
       ((logOf J Q N ls).getD i (0, 0, ∅)).2.1 = (chainModel J.whole).param Q
         ⟨(ls.getD i (0, 0, 0, 0, 0, 0, 0)).1, (ls.getD i (0, 0, 0, 0, 0, 0, 0)).2.1⟩ := by
-  unfold logOf
-  rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_eq_getElem hi,
-    List.getD_eq_getElem _ _ hi]
-  simp
+  simp_all [logOf, List.getD_eq_getElem?_getD, List.getElem?_map] 
 
 /-! ## The candidates of the stops and the table -/
 
+section
+variable {Q : Polygon} {N : NF}
+include Q N
 /-- **A stop record gives a candidate origin** at its position, attached at a log key. -/
-theorem stop_cand (J : Merge.Junction) {Q : Polygon} {N : NF}
+theorem stop_cand
     (hN : IsNF (chainModel J.right) Q N) {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
     (hS : StopsOK J (N.F (chainModel J.right) Q) (stopsOf J Q N rs))
     {r : ℕ × ℕ × ℕ × ℕ × ℕ} (hr : r ∈ rs) (hkind : r.2.2.1 ≤ 2)
@@ -136,14 +136,14 @@ theorem stop_cand (J : Merge.Junction) {Q : Polygon} {N : NF}
       (Lst J : ℝ) ≤ oW J (r.1 + (chainModel J.whole).param Q ⟨r.1, r.2.1⟩) := by
   have hs : (r.1, (chainModel J.whole).param Q ⟨r.1, r.2.1⟩,
       stopSet J Q N r.2.2.1 r.2.2.2.1 r.2.2.2.2) ∈ stopsOf J Q N rs := by
-    unfold stopsOf; exact List.mem_map.2 ⟨r, hr, rfl⟩
+    grind [stopsOf]
   obtain ⟨hF, -, hA, hL⟩ := hS.1 _ hs
   obtain ⟨n1, n2⟩ := stopOrig_not_dom J hN (b := r.2.2.2.2) hkind hk
   refine ⟨⟨n2, n1, ?_⟩, hF, hA, hL⟩
   rw [← stopSet_eq]; exact hA.2.2.2.1
 
 /-- **A regular table entry gives a candidate origin** at its position, attached at a log key. -/
-theorem tab_cand (J : Merge.Junction) {Q : Polygon} {N : NF} {T : ℕ → Option (ℕ × ℝ)}
+theorem tab_cand {T : ℕ → Option (ℕ × ℝ)}
     (hT : TabOK J Q N T) {j : ℕ} (hj : j < 2 * N.nChords) (hon : endOrigin J Q N j ∈ J.right.set)
     (hsh : endOrigin J Q N j ≠ J.shared) (htop : endOrigin J Q N j ≠ J.right.top) {p : ℕ}
     {t : ℝ} (hTj : T j = some (p, t)) :
@@ -164,17 +164,18 @@ theorem tab_cand (J : Merge.Junction) {Q : Polygon} {N : NF} {T : ℕ → Option
     unfold endOrigin endDir at hfree ⊢
     by_cases h : j % 2 = 0
     · simp only [h, ite_true] at hfree ⊢
-      left; left
-      exact ⟨_, Or.inr hc, hfree, rfl⟩
+      left; grind
     · simp only [h, ite_false] at hfree ⊢
-      left; right
-      exact ⟨_, Or.inr hc, hfree, rfl⟩
+      left; grind
 
 /-! ## Regular origins by their positions -/
 
+
+end
+
 /-- **The regular origins**: on `C₂`, neither the shared vertex nor the top, by a normalised walk
 position of the model of `C₂`. -/
-theorem valid_iff (J : Merge.Junction) (hP : J.right.P.Simple) (Q : Polygon) {x : WPos}
+theorem valid_iff (hP : J.right.P.Simple) (Q : Polygon) {x : WPos}
     (hx : x.edge < (chainModel J.right).W.n) (h0 : 0 ≤ (chainModel J.right).param Q x)
     (h1 : (chainModel J.right).param Q x < 1)
     (hnorm : x.hgt = 0 ↔ (chainModel J.right).param Q x = 0) :
@@ -186,34 +187,10 @@ theorem valid_iff (J : Merge.Junction) (hP : J.right.P.Simple) (Q : Polygon) {x 
   have hmem := pos_mem_set_iff J.right hP (Q := Q) hx h0 h1 hnorm
   have hsh := atEnd_iff J.right hP (k := 0) (Or.inl rfl) Q hx h0 h1
   have htop := atTop_iff J.right hP Q hx h0 h1
-  rw [Merge.Junction.right_vertex_zero] at hsh
-  rw [hmem]
-  constructor
-  · rintro ⟨hm, hs, ht⟩
-    rcases hm with ⟨h6, h5⟩ | ⟨he, hh⟩
-    · refine ⟨h6, h5, ?_⟩
-      by_cases hh : x.hgt = 0
-      · right
-        have hp0 := hnorm.1 hh
-        refine ⟨fun h => ht (htop.2 ⟨hp0, Or.inl h⟩), fun h => hs (hsh.2 ⟨hp0, Or.inl h⟩),
-          fun h => ht (htop.2 ⟨hp0, Or.inr (Or.inr h)⟩)⟩
-      · left; exact hh
-    · exact absurd (htop.2 ⟨hnorm.1 hh, Or.inr (Or.inl he)⟩) ht
-  · rintro ⟨h6, h5, hc⟩
-    refine ⟨Or.inl ⟨h6, h5⟩, fun h => ?_, fun h => ?_⟩
-    · obtain ⟨hp0, he⟩ := hsh.1 h
-      rcases hc with hc | ⟨-, hc, -⟩
-      · exact hc (hnorm.2 hp0)
-      · rcases he with he | ⟨he, -⟩
-        · exact hc he
-        · omega
-    · obtain ⟨hp0, he⟩ := htop.1 h
-      rcases hc with hc | ⟨hc1, -, hc3⟩
-      · exact hc (hnorm.2 hp0)
-      · rcases he with he | he | he
-        · exact hc1 he
-        · omega
-        · exact hc3 he
+  grind [Merge.Junction.right_vertex_zero]
+
+
+end
 
 end
 

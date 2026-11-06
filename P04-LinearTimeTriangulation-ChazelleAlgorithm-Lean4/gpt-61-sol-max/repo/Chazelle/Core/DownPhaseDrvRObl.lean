@@ -88,12 +88,18 @@ def OkInt (P : Polygon) (M : Model) : Prop := M = interiorModel (Qof P)
 /-- The bands of the interior oracles: the oracle bands and the band `bUp` (finding E7-B1). -/
 def ioBandsD : Finset ℕ := insert bUp oracleBands
 
+section
+variable (κ γ : ℕ)
+include κ γ
 /-- The shooter cost of `ShootCutSpec`, with constant `κ`. -/
-noncomputable def shCost (κ : ℕ) (γ : ℕ) : ℕ :=
+noncomputable def shCost : ℕ :=
   κ * (Nat.clog 2 γ + 1) * rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3) + κ
 
 /-- The cutter cost of `ShootCutSpec` (number of pieces), with constant `κ`. -/
-def cuCost (κ : ℕ) (γ : ℕ) : ℕ := κ * (Nat.clog 2 γ + 1)
+def cuCost : ℕ := κ * (Nat.clog 2 γ + 1)
+
+
+end
 
 /-- **Obligation (interior oracles, firm): the interior oracles.**  A shooter and a cutter serving
 the interior model of `Qof P` on `gradeCtx O`, writing `insert bUp oracleBands`, with the cost
@@ -109,20 +115,26 @@ theorem oracleBands_subset_ioBandsD : oracleBands ⊆ ioBandsD := Finset.subset_
 
 /-! ## 2.1 The host of a region -/
 
+section
+variable (li : Bool)
+include li
 /-- The vertex of `Q` at walk vertex `p` of the interior walk (`li` the `LeftInside` bit). -/
-def ivB (li : Bool) (n p : ℕ) : ℕ := if li then p else n - 1 - p
+def ivB (n p : ℕ) : ℕ := if li then p else n - 1 - p
 
 /-- The edge of `Q` carrying the walk edge `e` of the interior walk. -/
-def qE (li : Bool) (n e : ℕ) : ℕ := if li then e else if e + 1 < n then n - 2 - e else n - 1
+def qE (n e : ℕ) : ℕ := if li then e else if e + 1 < n then n - 2 - e else n - 1
 
 /-- The position is at the walk vertex starting its edge (distinct heights: its height vertex is
 that vertex). -/
-def atVtx (li : Bool) (n : ℕ) (x : WPos) : Bool := decide (x.hgt - 1 = ivB li n x.edge)
+def atVtx (n : ℕ) (x : WPos) : Bool := decide (x.hgt - 1 = ivB li n x.edge)
 
 /-- The host point of a walk position; `isEnd`: the position ends an arc. -/
-def ptI (li : Bool) (n : ℕ) (x : WPos) (isEnd : Bool) : HostItem :=
+def ptI (n : ℕ) (x : WPos) (isEnd : Bool) : HostItem :=
   .pt (.onEdge (qE li n (if isEnd && atVtx li n x then (x.edge + n - 1) % n else x.edge))
     (x.hgt - 1))
+
+
+end
 
 /-- The other end of the exit chord of region `r` attached at `x` (`x` itself if none). -/
 def partner (N : NF) (r : ℕ) (x : WPos) : WPos :=
@@ -131,33 +143,39 @@ def partner (N : NF) (r : ℕ) (x : WPos) : WPos :=
   | some i => if (N.chord i).lpos = x then (N.chord i).rpos else (N.chord i).lpos
   | none => x
 
+section
+variable (li : Bool) (n : ℕ)
+include li n
 /-- The number of walk vertices strictly inside the arc from `s` to `e`. -/
-def runCnt (li : Bool) (n : ℕ) (s e : WPos) : ℕ :=
+def runCnt (s e : WPos) : ℕ :=
   (e.edge + (if atVtx li n e then 0 else 1) + n - 1 - s.edge) % n
 
 /-- The run of walk vertices strictly inside the arc from `s` to `e` (as host items, empty or one
 `.run` in increasing index of `Q`). -/
-def runItems (li : Bool) (n : ℕ) (s e : WPos) : List HostItem :=
+def runItems (s e : WPos) : List HostItem :=
   if runCnt li n s e = 0 then []
   else if li then [.run ((s.edge + 1) % n) (runCnt li n s e - 1)]
   else [.run (n - 1 - (s.edge + runCnt li n s e) % n) (runCnt li n s e - 1)]
 
 /-- The items of arc `j` after its predecessor arc `jp` (junction point, start, run, end). -/
-def arcItems (li : Bool) (n : ℕ) (N : NF) (r jp j : ℕ) : List HostItem :=
+def arcItems (N : NF) (r jp j : ℕ) : List HostItem :=
   (if partner N r (N.arc jp).e = (N.arc j).s then [] else [ptI li n (partner N r (N.arc jp).e) false]) ++
     [ptI li n (N.arc j).s false] ++ runItems li n (N.arc j).s (N.arc j).e ++
     [ptI li n (N.arc j).e true]
 
 /-- The host items of region `r` in walk order, starting after the end of its first arc. -/
-def walkItems (li : Bool) (n : ℕ) (N : NF) (r : ℕ) : List HostItem :=
+def walkItems (N : NF) (r : ℕ) : List HostItem :=
   (List.range (N.region r).arcs.length).flatMap fun t =>
     arcItems li n N r ((N.region r).arcs.getD t 0)
       ((N.region r).arcs.getD ((t + 1) % (N.region r).arcs.length) 0)
 
 /-- **The host description of region `r`** written by the driver (items in increasing index of
 `Q`). -/
-def regHost (li : Bool) (n : ℕ) (N : NF) (r : ℕ) : Host :=
+def regHost (N : NF) (r : ℕ) : Host :=
   if li then walkItems li n N r else (walkItems li n N r).reverse
+
+
+end
 
 /-- **Obligation H-R1/H-R2 (mathematics, firm).**  For region `r` of `N = buildNF I Q L E` (valid
 sorted input, at least one chord, degree `≤ 4`) and the region correspondence `reg` of `N`, the

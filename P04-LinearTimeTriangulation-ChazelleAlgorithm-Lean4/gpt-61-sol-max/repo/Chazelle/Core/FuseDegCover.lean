@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseDegChain
 
 /-!
@@ -66,15 +68,13 @@ theorem attach_sup {W : Polygon} {f c : Set Point} {p : ℕ} {t : ℝ} (hA : Sid
   rw [hdist se hse0] at hd
   have hbq : 0 < dist b q := by
     rcases (dist_nonneg : 0 ≤ dist b q).lt_or_eq with h | h
-    · exact h
-    · rw [← h, mul_zero] at hd; exact absurd hd (lt_irrefl _)
+    all_goals grind
   have hsse : s < se := lt_of_mul_lt_mul_right hxd' hbq.le
   have hse : 0 < se := lt_of_le_of_lt hs0 hsse
   rw [hfe, hese]
   refine Geometry.mem_segment_iff_lerp.2 ⟨s / se, div_nonneg hs0 hse.le,
     (div_le_one hse).2 hsse.le, ?_⟩
-  apply Geometry.point_ext <;> simp only [Geometry.lerp_fst, Geometry.lerp_snd] <;>
-    field_simp <;> ring
+  grind [Geometry.lerp_fst, Geometry.lerp_snd]
 
 /-- An agreement with a side walk, with the lengths in range, is a piece. -/
 theorem pieceAt_of_agree {C' : Chain} (hC'P : C'.P = J.P) {g g' L : ℕ}
@@ -87,7 +87,7 @@ theorem pieceAt_of_agree {C' : Chain} (hC'P : C'.P = J.P) {g g' L : ℕ}
   rw [counted_iff_box _ (Nat.mod_lt _ (by omega))]
   rw [mod_succ_mod] at hc ⊢
   rw [hA d hd.le, hA (d + 1) hd] at hc
-  rw [hR]; exact hc
+  simp_all
 
 /-- The offset from a later base of a stretch. -/
 theorem dOf_shift {n g s p : ℕ} (hg : g < n) (hp : p < n) (hs : s ≤ dOf n g p) :
@@ -125,8 +125,8 @@ theorem side_two_pieces (_hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
   have hτ'lt := tpos_lt C' J₀'
   set g := 6 + τ with hg_def
   set g' := 6 + τ' with hg'_def
-  have hg : g < W.n := by rw [hn]; omega
-  have hg' : g' < W'.n := by rw [hn']; omega
+  have hg : g < W.n := by grind
+  have hg' : g' < W'.n := by grind
   set s := 2 * C.m - τ with hs_def
   set s' := 2 * C'.m - τ' with hs'_def
   have hstart : W.vtx g = J.shared := by
@@ -137,25 +137,22 @@ theorem side_two_pieces (_hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
   · -- case Sh
     have hss : s = s' := (hbox hsl).symm
     have hA := agree_Sh hT hR.symm hℓ.le hℓ' hss hsl
-    have hpc := pieceAt_of_agree J hC'P hg hg' (by rw [hn]; omega) (by rw [hn']; omega) hA
-    refine ⟨g, g', ℓ + 7, g, g', ℓ + 7, hpc, hpc, Or.inl hstart, Or.inl hstart,
-      fun p _ hin => Or.inl ?_⟩
-    rw [ite_eq_left hsl] at hin; exact hin
+    have hpc := pieceAt_of_agree J hC'P hg hg' (by grind) (by omega) hA
+    grind
   push Not at hsl
   by_cases hsl' : ℓ ≤ s'
   · -- case N
     have hA := agree_N hT hsl hsl'
-    have hpc := pieceAt_of_agree J hC'P hg hg' (by rw [hn]; omega) (by rw [hn']; omega) hA
-    refine ⟨g, g', ℓ, g, g', ℓ, hpc, hpc, Or.inl hstart, Or.inl hstart, fun p _ hin => Or.inl ?_⟩
-    rw [ite_eq_right (not_lt.2 hsl)] at hin; exact hin
+    have hpc := pieceAt_of_agree J hC'P hg hg' (by grind) (by omega) hA
+    grind
   -- case G
   push Not at hsl'
   have hA1 := agree_G1 hT hsl hsl'
   have hA2 := agree_G2 hT hℓ' hsl hsl'
-  have hpc1 := pieceAt_of_agree J hC'P hg hg' (by rw [hn]; omega) (by rw [hn']; omega) hA1
-  have hpc2 := pieceAt_of_agree J hC'P (Nat.mod_lt _ (by rw [hn]; omega))
-    (Nat.mod_lt _ (by rw [hn']; omega))
-    (by rw [hn]; omega) (by rw [hn']; omega) hA2
+  have hpc1 := pieceAt_of_agree J hC'P hg hg' (by grind) (by omega) hA1
+  have hpc2 := pieceAt_of_agree J hC'P (Nat.mod_lt _ (by grind))
+    (Nat.mod_lt _ (by omega))
+    (by grind) (by omega) hA2
   have hpt : W.vtx ((g + s') % W.n) = C'.top := by
     rw [hA1 s' le_rfl]
     have := walk_box C' J₀' 0 (by omega)
@@ -164,7 +161,7 @@ theorem side_two_pieces (_hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
   refine ⟨g, g', s', _, _, ℓ - s', hpc1, hpc2, Or.inl hstart, Or.inr hpt, fun p hp hin => ?_⟩
   rw [ite_eq_right (not_lt.2 hsl)] at hin
   by_cases hD : dOf W.n g p < s'
-  · exact Or.inl hD
+  · omega
   · push Not at hD
     right
     rw [dOf_shift hg hp hD]
@@ -191,17 +188,13 @@ theorem glue_subset_aug (hgen : SharedGeneric J) : glueChords J ⊆ Merge.augCho
           (by omega) (by omega) hτ0.le hτ1.le
     have hy : (capOrigin J).2 ≤ J.whole.top.2 := by
       have : (capOrigin J).2 = (capNear J).2 := by
-        unfold capOrigin
-        simp only [Geometry.lerp_snd]
-        exact hnear.symm
+        core_grind [Geometry.lerp_snd]
       rw [this]
       rcases hnf with ⟨hn, -⟩ | ⟨hn, -⟩
       · rw [hn]; exact J.whole.vertex_snd_le_top (by omega)
       · rw [hn]; exact J.whole.vertex_snd_le_top (by omega)
     have hdir : capDir J = 1 ∨ capDir J = -1 := by
-      unfold capDir; split_ifs
-      · exact Or.inr rfl
-      · exact Or.inl rfl
+      core_grind
     exact Merge.shoot_mem_augChords J.whole hy (fun h => J.whole.not_mem_set_of_mem_dom h hmem) hdir hfree
 
 
@@ -214,7 +207,7 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     (hjend : ∀ c ∈ Sj, ∀ q : Point, (q = Merge.lend c ∨ q = Merge.rend c) → q ∈ C'.set →
       q = J.shared)
     (hjnd : ∀ c ∈ Sj, Merge.lend c ∉ J.whole.dom ∧ Merge.rend c ∉ J.whole.dom)
-    {R : Set Point} {f : Set Point} (hf : f ∈ exits (chainModel J.whole) S' R)
+    {R f : Set Point} (hf : f ∈ exits (chainModel J.whole) S' R)
     (hpar : ∃ c ∈ Si ∪ Sj, f ⊆ c ∧ (Merge.lend c ∈ f ∨ Merge.rend c ∈ f))
     (hcnt : ∀ (pb : ℕ) (tb : ℝ), SideAttach (chainModel J.whole).W f pb tb →
       (chainModel J.whole).counted pb)
@@ -224,7 +217,7 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     (hadj : Adj (chainModel J.whole) S' R ((g + d) % (chainModel J.whole).W.n) t) :
     f ∈ TypeI J C' Si S' R g g' L ∨ f ∈ CrossX (chainModel J.whole) S' R g L := by
   obtain ⟨c, hc, hfc, hnear⟩ := hpar
-  have hpc' := hpc
+  
   obtain ⟨hg, hg', hLn, hLn', hAg, hcntP⟩ := hpc
   set M := chainModel J.whole with hMdef
   set M' := chainModel C' with hM'def
@@ -260,9 +253,9 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
       · have hqe : q = ((b, y) : Point) := Prod.ext h2 hq2
         refine attach_sup hAf' hfe he (b := ((a, y) : Point)) ?_ hec
         rw [hceq, hseg, Geometry.segment_comm, ← hqe]
-    · have hqe : q = ((a, y) : Point) := Prod.ext h1.symm hq2
+    · 
       refine attach_sup hAf' hfe he (b := ((b, y) : Point)) ?_ hec
-      rw [hceq, hseg, ← hqe]
+      grind
   · obtain ⟨pb, tb, hB, hBne⟩ := hM.other_attach hfA hA
     by_cases hX : off M.W.n g (pb + tb) = 0 ∨ (L : ℝ) ≤ off M.W.n g (pb + tb)
     · exact Or.inr ⟨hf, d, t, hd, ht0, ht1, hdt, hA, hadj, pb, tb, hB, hBne, hX⟩
@@ -274,11 +267,11 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     have hdBL : dB < L := by
       have : (dB : ℝ) < L := by rw [hoB] at hX; linarith [hX.2, hB.2.1]
       exact_mod_cast this
-    have hB' : SideAttach M.W f ((g + dB) % M.W.n) tb := by rw [hpb]; exact hB
+    
     -- the two attachment points of `f` are on `C'`
     have hmemB : sidePt M.W pb tb ∈ C'.set := by
       rw [← hpb, hAg.sidePt_eq hdBL tb]
-      exact counted_mem_set C' (Nat.mod_lt _ hn') (hcntP dB hdBL (by rw [hpb]; exact hcnt _ _ hB))
+      exact counted_mem_set C' (Nat.mod_lt _ hn') (hcntP dB hdBL (by grind))
         hB.2.1 hB.2.2.1.le
     have hmemA : sidePt M.W ((g + d) % M.W.n) t ∈ C'.set := by
       rw [hq']
@@ -288,21 +281,16 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     have hA0 := hends _ hA.2.2.2.1 (hM.trace _ hA.1 t ht0 ht1.le)
     have hB0 := hends _ hB.2.2.2.1 (hM.trace _ hB.1 tb hB.2.1 hB.2.2.1.le)
     obtain ⟨q₀, hq₀, hq₀f⟩ : ∃ q₀, (q₀ = Merge.lend c ∨ q₀ = Merge.rend c) ∧ q₀ ∈ f := by
-      rcases hnear with h | h
-      · exact ⟨_, Or.inl rfl, h⟩
-      · exact ⟨_, Or.inr rfl, h⟩
+      grind
     have hq₀D : q₀ ∉ M.D := by
       rcases hq₀ with rfl | rfl
       · exact (hjnd c hcj).1
       · exact (hjnd c hcj).2
     have hq0 := hends _ hq₀f hq₀D
     have hq₀C : q₀ ∈ C'.set := by
-      rcases hA0 with h1 | h1 <;> rcases hB0 with h2 | h2 <;> rcases hq0 with h3 | h3
-      all_goals first
-        | (rw [h3, ← h1]; exact hmemA)
-        | (rw [h3, ← h2]; exact hmemB)
-        | (exfalso; exact hBne (h2.trans h1.symm))
-    exact hsh (hjend c hcj q₀ hq₀ hq₀C ▸ hq₀f)
+      rcases hA0 with h1 | h1 <;> rcases hB0 with h2 | h2 <;> grind
+      all_goals grind
+    grind
 
 end FuseDeg
 

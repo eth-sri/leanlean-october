@@ -40,17 +40,14 @@ theorem countP_half (P : ℕ → Bool) (m : ℕ) :
   | succ m ih =>
     rw [show 2 * (m + 1) = 2 * m + 1 + 1 by ring, List.range_succ, List.range_succ,
       List.countP_append, List.countP_append, ih, List.range_succ, List.countP_append]
-    have h1 : 2 * m / 2 = m := by omega
-    have h2 : (2 * m + 1) / 2 = m := by omega
-    cases hP : P m <;> simp [h1, h2, hP]; omega
+    grind
 
 /-- Counting the indices of a list by a predicate on its entries. -/
 theorem countP_range_getD {α : Type*} (l : List α) (d : α) (p : α → Bool) :
     (List.range l.length).countP (fun i => p (l.getD i d)) = l.countP p := by
   have e : (List.range l.length).map (fun i => l.getD i d) = l := by
     apply List.ext_getElem (by simp)
-    intro i h1 h2
-    simp [List.getElem?_eq_getElem h2]
+    simp_all
   conv_rhs => rw [← e]
   rw [List.countP_map]
   rfl
@@ -63,32 +60,21 @@ theorem TL_countP (E : BEnv) (r s : ℕ) :
   | succ s ih =>
     rw [E.TL_succ, List.countP_append, ih, List.countP_map]
     by_cases hrs : r = s
-    · subst hrs
-      have : (List.countP ((fun x : ℕ × (ℕ × ℕ × ℕ) => decide (x.1 = r)) ∘ fun x => (r, x))
-          (E.recs r)) = (E.recs r).length := by
-        rw [List.countP_eq_length]; intro x _; simp
-      rw [this, ite_eq_right (lt_irrefl r), ite_eq_left (Nat.lt_succ_self r)]
-      omega
+    · simp_all
     · have : (List.countP ((fun x : ℕ × (ℕ × ℕ × ℕ) => decide (x.1 = r)) ∘ fun x => (s, x))
           (E.recs s)) = 0 := by
-        rw [List.countP_eq_zero]; intro x _; simp [Ne.symm hrs]
-      rw [this, add_zero]
-      by_cases h : r < s
-      · rw [ite_eq_left h, ite_eq_left (by omega)]
-      · rw [ite_eq_right h, ite_eq_right (by omega)]
+        aesop
+      grind
 
 /-- The tags of `TL s` are below `s`. -/
 theorem TL_mem_lt (E : BEnv) {s : ℕ} {x : ℕ × (ℕ × ℕ × ℕ)} (hx : x ∈ E.TL s) : x.1 < s := by
-  unfold BEnv.TL at hx
-  obtain ⟨r, hr, hxr⟩ := List.mem_flatMap.1 hx
-  obtain ⟨y, -, rfl⟩ := List.mem_map.1 hxr
-  exact List.mem_range.1 hr
+  aesop (add simp [BEnv.TL]) (add safe (by omega))
 
 /-- The bucket count as a count over the range. -/
 theorem bcnt_eq (bk : ℕ → ℕ) (n b : ℕ) :
     DrvR.bcnt bk n b = (List.range n).countP (fun q => decide (bk q = b)) := by
   unfold DrvR.bcnt DrvR.bfilt
-  rw [List.countP_eq_length_filter]
+  grind
 
 /-! ## The bucket mathematics -/
 
@@ -97,7 +83,7 @@ theorem bktMath : BktMathSpec := by
   intro E hE bk MX hbk hbk0 hMX
   set TLk := E.TL (E.K + 1) with hTLk
   have hnew : newLB E.li E.Q E.L E.E = TLk.map Prod.snd := rfl
-  have hlen : (newLB E.li E.Q E.L E.E).length = TLk.length := by rw [hnew, List.length_map]
+  have hlen : (newLB E.li E.Q E.L E.E).length = TLk.length := by simp_all
   rw [hlen]
   refine ⟨?_, ?_, ?_, ?_⟩
   · -- at most `2 n` new chords
@@ -107,8 +93,7 @@ theorem bktMath : BktMathSpec := by
       · rw [newLB_zero _ _ _ hK]; exact (newL0_ok hE.hQ hE.hDH hE.hli).2.1
       · rw [newLB_pos _ _ _ hK]
         have := (newL_ok (hE.ctx hK)).2.1
-        rw [List.map_append] at this
-        exact (List.nodup_append.1 this).2.1
+        grind
     · intro x hx
       rw [newLB_eq_flatMap] at hx
       obtain ⟨r, hr, hxr⟩ := List.mem_flatMap.1 hx
@@ -118,12 +103,12 @@ theorem bktMath : BktMathSpec := by
   · -- the buckets are at most the number of arcs
     intro q hq
     rcases Nat.eq_zero_or_pos E.K with hK | hK
-    · rw [hbk0 hK q hq]; exact Nat.zero_le _
+    · simp_all
     · exact ((hbk hK).key q hq).le
   · -- the buckets are ordered by the event comparator
     intro q q' hq hq' hbb
     rcases Nat.eq_zero_or_pos E.K with hK | hK
-    · rw [hbk0 hK q hq, hbk0 hK q' hq'] at hbb; exact absurd hbb (lt_irrefl 0)
+    · simp_all
     · have hB := hbk hK
       have hok' : ChordTriplesOK E.I E.Q (E.L ++ newLB E.li E.Q E.L E.E) := by
         rw [newLB_pos _ _ _ hK]; exact newL_ok (hE.ctx hK)
@@ -134,7 +119,7 @@ theorem bktMath : BktMathSpec := by
         intro q hq
         rw [DrvD.wposOf_new (by rw [hlen]; exact hq), hnew, DrvD.getD_map_snd]
       have hlen' : (E.L ++ newLB E.li E.Q E.L E.E).length = E.L.length + TLk.length := by
-        rw [List.length_append, hlen]
+        simp_all
       refine DrvD.codeLe_of_bkt hM hok' hK hE.hperm hE.hsort (by omega) (by rw [hlen']; omega)
         (by omega) (by rw [hlen']; omega) ?_ ?_ hbb
       · rw [hkey q hq]; exact hB.key q hq
@@ -150,7 +135,7 @@ theorem bktMath : BktMathSpec := by
         have e : TLk = (E.recs 0).map fun x => (0, x) := by
           rw [hTLk, hK, E.TL_succ]; simp [BEnv.TL]
         rw [e, List.length_map]
-        exact (regList_length_le _ _).trans (by have := hMX 0 (by omega); omega)
+        exact (regList_length_le _ _).trans (by simp_all)
       omega
     · have hB := hbk hK
       rw [bcnt_eq]
@@ -162,7 +147,7 @@ theorem bktMath : BktMathSpec := by
         have hreg : ∀ q, q < 2 * TLk.length → (TLk.getD (q / 2) DrvD.dflt).1 < E.N.nRegions := by
           intro q hq
           rw [hE.nRegions]
-          exact hmem _ (by omega)
+          grind
         -- the region of a code of bucket `b`
         have hone : ∀ q, q < 2 * TLk.length → bk q = b → (TLk.getD (q / 2) DrvD.dflt).1 = r₀ := by
           intro q hq hbq
@@ -178,8 +163,7 @@ theorem bktMath : BktMathSpec := by
             ≤ (List.range (2 * TLk.length)).countP
                 (fun q => decide ((TLk.getD (q / 2) DrvD.dflt).1 = r₀)) := by
               refine List.countP_mono_left fun q hq hbq => ?_
-              simp only [decide_eq_true_eq] at hbq ⊢
-              exact hone q (List.mem_range.1 hq) hbq
+              grind
           _ = 2 * TLk.countP (fun x => decide (x.1 = r₀)) := by
               rw [countP_half (fun i => decide ((TLk.getD i DrvD.dflt).1 = r₀)),
                 countP_range_getD TLk DrvD.dflt (fun x => decide (x.1 = r₀))]
@@ -191,9 +175,7 @@ theorem bktMath : BktMathSpec := by
               omega
       · push Not at hex
         have : (List.range (2 * TLk.length)).countP (fun q => decide (bk q = b)) = 0 := by
-          rw [List.countP_eq_zero]
-          intro q hq
-          simpa using hex q (List.mem_range.1 hq)
+          simp_all
         omega
 
 end

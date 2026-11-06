@@ -55,7 +55,7 @@ theorem valid_complete_int (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point
   have hav : ∀ c ∈ S, ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w σ s ∉ c := by
     intro c hc
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hT] with s hs hsT
-    exact hnot c hc s hs hsT.2
+    grind
   have hrayR : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w σ s ∈ R := by
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hT] with s hs hsT
     have hs0 : (0 : ℝ) < s := hs
@@ -70,7 +70,7 @@ theorem valid_complete_int (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point
     obtain ⟨r, hr, hloc⟩ := hA'.2.2.2.2
     set s := min d r / 2 with hs
     have hmin : 0 < min d r := lt_min hd hr
-    have hs0 : 0 < s := by rw [hs]; linarith
+    have hs0 : 0 < s := by linarith
     have hsd : s < d := by rw [hs]; linarith [min_le_left d r]
     have hsr : s < r := by rw [hs]; linarith [min_le_right d r]
     have hσ' : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
@@ -87,8 +87,7 @@ theorem valid_complete_int (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point
     have hev := ray_mem_region_of_arc hGM hFam hX hp ht0.le ht1 harc hin hσ hsec
     obtain ⟨s, h1, h2⟩ := (hev.and hrayR).exists
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hR with h | h
-    · subst h; exact ⟨l, r, harc, hin⟩
-    · exact absurd (Set.disjoint_left.1 h h1) (not_not.2 h2)
+    all_goals grind
 
 end
 

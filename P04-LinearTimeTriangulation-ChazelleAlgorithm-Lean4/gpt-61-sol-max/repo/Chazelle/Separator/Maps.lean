@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Separator.Perm
 public import Mathlib.GroupTheory.Perm.Cycle.Type
 public import Mathlib.Combinatorics.SimpleGraph.Basic
@@ -71,18 +73,23 @@ def fperm : Perm D := M.rot * M.opp
 /-- The head of a dart: the vertex of the opposite dart. -/
 def head (d : D) : V := M.vert (M.opp d)
 
+section
+variable (d : D)
 /-- The face permutation: `fperm d = rot (opp d)`. -/
-theorem fperm_apply (d : D) : M.fperm d = M.rot (M.opp d) := rfl
+theorem fperm_apply : M.fperm d = M.rot (M.opp d) := rfl
 
 /-- The face permutation preserves faces. -/
-theorem face_fperm_apply (d : D) : M.face (M.fperm d) = M.face d := M.face_fperm d
+theorem face_fperm_apply : M.face (M.fperm d) = M.face d := M.face_fperm d
 
 /-- The next dart along the face starts at the head of `d`. -/
-theorem vert_fperm (d : D) : M.vert (M.fperm d) = M.head d := M.vert_rot _
+theorem vert_fperm : M.vert (M.fperm d) = M.head d := M.vert_rot _
 
 /-- The head of the opposite dart is the tail. -/
-theorem head_opp (d : D) : M.head (M.opp d) = M.vert d := by
+theorem head_opp : M.head (M.opp d) = M.vert d := by
   simp [head, M.opp_opp]
+
+
+end
 
 /-- `opp` is injective. -/
 theorem opp_injective : Function.Injective M.opp := M.opp.injective
@@ -91,15 +98,7 @@ theorem opp_injective : Function.Injective M.opp := M.opp.injective
 theorem rot_eq_fperm_opp (d : D) : M.rot d = M.fperm (M.opp d) := by
   rw [fperm_apply, M.opp_opp]
 
-section Finite
 
-variable [Finite D]
-
-/-- Faces are the cycles of the face permutation. -/
-theorem face_eq_iff_sameCycle {d e : D} : M.face d = M.face e ↔ M.fperm.SameCycle d e :=
-  ⟨M.sameCycle_of_face d e, fun h => eq_of_sameCycle M.fperm M.face M.face_fperm h⟩
-
-end Finite
 
 /-! ### Maps from bare permutations -/
 
@@ -124,7 +123,7 @@ theorem card_darts_even (M : CombMap V F D) : 2 ∣ Fintype.card D := by
   have hs : M.opp.support = Finset.univ := by
     ext d; simp [Perm.mem_support, M.opp_ne]
   have := Perm.two_dvd_card_support h2
-  rwa [hs, Finset.card_univ] at this
+  simp_all
 
 omit [Fintype V] [Fintype F] in
 /-- Every edge has two darts: `|D| = 2E`. -/
@@ -136,7 +135,7 @@ theorem two_mul_numE : 2 * M.numE = Fintype.card D := by
 theorem two_mul_euler : 2 * M.euler =
     2 * (Fintype.card V : ℤ) - Fintype.card D + 2 * Fintype.card F := by
   have := M.two_mul_numE
-  unfold euler; push_cast [← this]; ring
+  core_grind
 
 variable [DecidableEq F]
 
@@ -160,7 +159,7 @@ everything. -/
 theorem Connected.of_fperm {M : CombMap V F D} (hM : M.Connected) (S : Set D)
     (hf : ∀ d ∈ S, M.fperm d ∈ S)
     (ho : ∀ d ∈ S, M.opp d ∈ S) {d : D} (hd : d ∈ S) (e : D) : e ∈ S :=
-  hM S (fun x hx => by rw [M.rot_eq_fperm_opp]; exact hf _ (ho _ hx)) ho d hd e
+  hM S (fun x hx => by rw [M.rot_eq_fperm_opp]; simp_all) ho d hd e
 
 /-- Connectivity through face labels. -/
 theorem Connected.of_face {M : CombMap V F D} (hM : M.Connected) (S : Set D)
@@ -202,22 +201,9 @@ def dual : CombMap F V D where
   vert_surj := M.face_surj
   face_surj := M.vert_surj
 
-/-- The vertices of the dual are the faces. -/
-@[simp] theorem dual_vert (d : D) : M.dual.vert d = M.face d := rfl
 
-/-- The faces of the dual are the vertices. -/
-@[simp] theorem dual_face (d : D) : M.dual.face d = M.vert d := rfl
 
-/-- The dual has the same edges. -/
-@[simp] theorem dual_opp (d : D) : M.dual.opp d = M.opp d := rfl
 
-/-! ### Edge bounds -/
-
-section Bounds
-
-variable [Fintype V] [Fintype F] [Fintype D] [DecidableEq F]
-
-end Bounds
 
 end CombMap
 

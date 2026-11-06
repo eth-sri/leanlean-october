@@ -37,8 +37,8 @@ theorem hostPt_mir (hQ : Q.Simple) {x' : ℝ} (hx0 : 0 ≤ x') (hxn : x' < (inte
   have ht1 : t < 1 := by rw [ht]; linarith [Nat.lt_floor_add_one x']
   have hpn : p < (interiorModel Q).W.n := by
     have : (p : ℝ) < (interiorModel Q).W.n := lt_of_le_of_lt (Nat.floor_le hx0) hxn
-    exact_mod_cast this
-  have hx : x' = p + t := by rw [ht]; ring
+    simp_all
+  have hx : x' = p + t := by simp_all
   have hkey := posMir_key hc hpn ht0 ht1
   obtain ⟨b1, b2, b3⟩ := posMir_bounds (c := Q.n - 1) (p' := p) hn ht0 ht1
   have hs := h.walk.sidePt_mir hpn t
@@ -78,7 +78,7 @@ theorem hostKeys_mir (hQ : Q.Simple) (_hFam : (interiorModel Q).ChordFamily Q S)
         rwa [image_mir_image_mir]
       rw [h.walk.sideAttach_mir hp hA'.2.1 hA'.2.2.1] at hA''
       refine ⟨mir '' c', mem_mirF.1 hc', ?_, _, _, hA'', ?_⟩
-      · rw [← hT, image_mir_image_mir]; exact ht'
+      · grind [image_mir_image_mir]
       · rw [posMir_key hc hp hA'.2.1 hA'.2.2.1]
     · -- a vertex key
       right
@@ -92,7 +92,7 @@ theorem hostKeys_mir (hQ : Q.Simple) (_hFam : (interiorModel Q).ChordFamily Q S)
       obtain ⟨k', hk'n, hkk⟩ := hnat k hk'
       refine ⟨k', hk'n, hkk, _, _, harc', ?_⟩
       rw [← hkk]
-      exact (sideInArc_rk hc ha0 han hb0 hbn (Nat.cast_nonneg k) (by exact_mod_cast hk')).1 hin'
+      exact (sideInArc_rk hc ha0 han hb0 hbn (Nat.cast_nonneg k) (by omega)).1 hin'
   · rintro (⟨c, hc', ht, p, t, hA, hx⟩ | ⟨k, hk, hkx, a, b, harc, hin⟩)
     · -- an exit key
       left
@@ -117,7 +117,7 @@ theorem hostKeys_mir (hQ : Q.Simple) (_hFam : (interiorModel Q).ChordFamily Q S)
       · rw [h.isArc hne R rb0 rbn ra0 ran, rk_rk hc hb0 hbn, rk_rk hc ha0 han]
         exact harc
       · rw [← hkk]
-        exact (sideInArc_rk hc ha0 han hb0 hbn (Nat.cast_nonneg k) (by exact_mod_cast hk)).1 hin
+        exact (sideInArc_rk hc ha0 han hb0 hbn (Nat.cast_nonneg k) (by grind)).1 hin
 
 /-- **The sorted host keys of the mirrored region**: the reflected host keys of `R` in reversed
 order, rotated (`a` the number of host keys `≤ c`). -/
@@ -148,15 +148,14 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
   have hlow : ∀ i, i < a → hk I S R i ≤ c := by
     intro i hi
     have := Nat.find_min hex hi
-    push Not at this
-    exact this.2
+    grind
   have hhigh : ∀ i, a ≤ i → i < K → (c : ℝ) < hk I S R i := by
     intro i hai hi
     rcases Nat.find_spec hex with h1 | h1
     · omega
     · rcases hai.lt_or_eq with h2 | h2
       · exact lt_trans h1 (hk_strictMono (U := R) hM hF hfin h2 hi)
-      · rw [← h2]; exact h1
+      grind
   -- the index map
   set σ : ℕ → ℕ := fun j => (a + K - 1 - j) % K with hσ
   have hσlo : ∀ j, j < a → σ j = a - 1 - j := by
@@ -176,17 +175,17 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
     · rw [hσhi i (by omega) hi, hσhi _ (by omega) (by omega)]; omega
   -- the reflected keys
   have hrklo : ∀ i, i < a → rk n c (hk I S R i) = c - hk I S R i := by
-    intro i hi; unfold rk; rw [ite_eq_left (hlow i hi)]
+    grind [rk]
   have hrkhi : ∀ i, a ≤ i → i < K → rk n c (hk I S R i) = c - hk I S R i + n := by
-    intro i hai hi; unfold rk; rw [ite_eq_right (not_le.2 (hhigh i hai hi))]
+    grind [rk]
   set L' : List ℝ := (List.range K).map fun j => rk n c (hk I S R (σ j)) with hL'
   have hL'len : L'.length = K := by simp [hL']
   have hL'get : ∀ j, j < K → L'.getD j 0 = rk n c (hk I S R (σ j)) := by
     intro j hj
-    rw [List.getD_eq_getElem _ _ (by rw [hL'len]; exact hj)]
+    rw [List.getD_eq_getElem _ _ (by omega)]
     simp [hL']
   -- strictly increasing
-  have hcn : (c : ℝ) < n := by exact_mod_cast hc
+  
   have hmono : ∀ j j', j < j' → j' < K → L'.getD j 0 < L'.getD j' 0 := by
     intro j j' hjj hj'
     rw [hL'get j (by omega), hL'get j' hj']
@@ -217,7 +216,7 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
       rw [hostKeys_mir hQ hFam hne hR r0 rn, rk_rk hc hb'.1 hb'.2]
       exact hk_mem hM hF hfin (hσlt j hj)
     · intro hx
-      have hM' : WalkAx I' := walkAx_interiorModel (mir_simple Q hQ)
+      
       have hxb := hostKeys_bounds hx
       rw [h.n_eq] at hxb
       have := (hostKeys_mir hQ hFam hne hR hxb.1 hxb.2).1 hx
@@ -232,7 +231,7 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
   have hsortL' : L'.Pairwise (· < ·) := by
     rw [List.pairwise_iff_getElem]
     intro j j' hj hj' hjj
-    have := hmono j j' hjj (by rw [← hL'len]; exact hj')
+    have := hmono j j' hjj (by omega)
     rwa [List.getD_eq_getElem _ _ hj, List.getD_eq_getElem _ _ hj'] at this
   have heq : hostKeyList I' (mirF S) (mir '' R) = L' := by
     rw [hostKeyList_eq hfin']
@@ -242,7 +241,7 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
     intro x
     rw [Finset.mem_sort, Set.Finite.mem_toFinset, hmem]
   refine ⟨a, ?_, haK, fun j hj => ?_⟩
-  · unfold nk; rw [heq, hL'len]
+  · unfold nk; grind
   · have e : hk I' (mirF S) (mir '' R) j = (hostKeyList I' (mirF S) (mir '' R)).getD j 0 := rfl
     rw [e, heq, hL'get j hj]
 
@@ -277,8 +276,8 @@ theorem chordGap_mir {g : ℕ} (hC : ChordGap (interiorModel Q) S R g) {j : ℕ}
   obtain ⟨hB', hk', hs'⟩ := hmir p' t' hA'
   obtain ⟨hB, hk0, hs⟩ := hmir p t hA
   refine ⟨mir '' c0, image_mem_mirF.2 hc0, _, _, _, _, hB', hB, ?_, ?_, ?_⟩
-  · rw [h1, e2, hk']
-  · rw [h2, e1, hk0]
+  · grind
+  · grind
   · rw [hs', hs]; exact fun e => hne' (mir_injective e).symm
 
 end

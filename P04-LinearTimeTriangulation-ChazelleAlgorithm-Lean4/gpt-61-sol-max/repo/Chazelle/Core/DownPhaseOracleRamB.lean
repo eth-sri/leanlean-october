@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseOracleRamA
 
 /-!
@@ -11,9 +13,6 @@ public import Chazelle.Core.DownPhaseOracleRamA
   `oSym_spec`: it is in range, evaluates to the origin, and lies within the coordinate bound.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -47,7 +46,7 @@ theorem edgeOf_iv (hn : 3 ≤ Q.n) {e : ℕ} (he : e < Q.n) :
       · intro hc
         rcases (show Q.n - 1 - e + 1 < Q.n ∨ Q.n - 1 - e + 1 = Q.n by omega) with h2 | h2
         · rw [Nat.mod_eq_of_lt h2] at hc; omega
-        · rw [h2, Nat.mod_self] at hc; omega
+        simp_all [Nat.mod_self] <;> omega_nf
     · rw [show e + 1 = Q.n by omega, Nat.mod_self]
       simp only [lt_irrefl, ↓reduceIte]
       rw [ite_eq_right]
@@ -70,13 +69,10 @@ theorem oSym_spec (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) {o : Origin}
       |(o.eval (interiorModel Q) Q).2| ≤ Jordan.coordBound Q := innerPt_interior_bound
   cases o with
   | sym p =>
-    refine ⟨hol, rfl, ?_⟩
-    rcases hof with ⟨q, hq⟩ | ⟨hin, -⟩
-    · exact absurd hq (by simp)
-    · exact hbd hin
+    aesop
   | walk x =>
     obtain ⟨e, h⟩ := x
-    have he : e < Q.n := by have := hol.1; rw [mi_n] at this; exact this
+    have he : e < Q.n := by have := hol.1; simp_all [mi_n] <;> omega_nf
     cases h with
     | zero =>
       have hv : Origin.eval (interiorModel Q) Q (.walk ⟨e, 0⟩) = Q.vtx (iv Q e) := by
@@ -87,9 +83,9 @@ theorem oSym_spec (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) {o : Origin}
         Jordan.abs_snd_vtx_le_coordBound Q (iv_lt he)⟩
     | succ h =>
       rcases hof with ⟨q, hq⟩ | ⟨hin, hpp⟩
-      · exact absurd hq (by simp)
+      · ram_all
       have hpp' := hpp ⟨e, h + 1⟩ rfl
-      have hh : h < Q.n := by have := hpp'.2.2; simp only at this; omega
+      have hh : h < Q.n := by have := hpp'.2.2; simp_all
       have hnh : ((interiorModel Q).wa e).2 ≠ ((interiorModel Q).wb e).2 := by
         rw [mi_wa he, mi_wb he]
         refine hD _ _ (iv_lt he) (iv_lt (Nat.mod_lt _ (by omega))) ?_
@@ -98,11 +94,11 @@ theorem oSym_spec (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) {o : Origin}
         · intro hc
           rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h3 | h3
           · rw [Nat.mod_eq_of_lt h3] at hc; omega
-          · rw [h3, Nat.mod_self] at hc; omega
+          grind [Nat.mod_self]
         · intro hc
           rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h3 | h3
           · rw [Nat.mod_eq_of_lt h3] at hc; omega
-          · rw [h3, Nat.mod_self] at hc; omega
+          simp_all [Nat.mod_self] <;> omega_nf
       have hok : HostEdgeOK Q.n (.vtx (iv Q e)) (.vtx (iv Q ((e + 1) % Q.n))) := by
         simp only [HostEdgeOK, iv]
         split_ifs
@@ -133,17 +129,14 @@ theorem ivF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   unfold ivF ivV
   by_cases h : c.nreg 170014 < c.nreg 170011
   · exact ⟨_, _, .ifLtN_true h (Exec.subN hw 170096 170019 170095), by omega,
-      by rw [ite_eq_left (by omega)]⟩
+      by ram_grind⟩
   · exact ⟨_, _, .ifLtN_false h (Exec.copyN hw 170096 170095), by omega,
-      by rw [ite_eq_right (by omega)]⟩
+      by ram_grind⟩
 
 /-- `ivV` is `iv` for the orientation bit of `Q`. -/
 theorem ivV_eq {b : ℕ} (hb : b = 1 ↔ Mountain.LeftInside Q) (hb1 : b ≤ 1) (p : ℕ) :
     ivV b (Q.n - 1) p = iv Q p := by
-  unfold ivV iv
-  by_cases hL : Mountain.LeftInside Q
-  · rw [ite_eq_left hL, ite_eq_right (by have := hb.2 hL; omega)]
-  · rw [ite_eq_right hL, ite_eq_left (by by_contra h; exact hL (hb.1 (by omega)))]
+  core_grind
 
 /-- `170096 := iEdge 170095` (the walk edge carrying an edge of `Q`). -/
 def iEdgeF : Stmt :=
@@ -168,32 +161,24 @@ theorem iEdgeF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   · refine spec_ifLtN_true h ?_
     refine spec_seq ?_
     exec_block
-    · config_simp; omega
+    · omega
     by_cases h2 : c.nreg 170095 + 1 < P.n
-    · refine spec_ifLtN_true (by config_simp; omega) ?_
+    · refine spec_ifLtN_true (by ram_simp) ?_
       exec_block
       refine ⟨by omega, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-      · config_simp; rw [ite_eq_left (by omega), ite_eq_left h2, h19, h11]
-      · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
-    · refine spec_ifLtN_false (by config_simp; omega) ?_
+      · config_simp; grind
+      · ram_simp
+    · refine spec_ifLtN_false (by ram_simp) ?_
       exec_block
-      refine ⟨by omega, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-      · config_simp; rw [ite_eq_left (by omega), ite_eq_right h2, h19]
-      · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+      simp_all
   · refine spec_ifLtN_false h ?_
     exec_block
-    refine ⟨by omega, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-    · config_simp; rw [ite_eq_right (by omega)]
-    · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+    simp_all
 
 /-- `iEdgeV` is `iEdge` for the orientation bit of `Q`. -/
 theorem iEdgeV_eq {b : ℕ} (hb : b = 1 ↔ Mountain.LeftInside Q) (hb1 : b ≤ 1) (p : ℕ) :
     iEdgeV b Q.n p = iEdge Q p := by
-  unfold iEdgeV iEdge
-  by_cases hL : Mountain.LeftInside Q
-  · rw [ite_eq_left hL, ite_eq_right (by have := hb.2 hL; omega)]
-  · rw [ite_eq_right hL, ite_eq_left (by by_contra h; exact hL (hb.1 (by omega)))]
-    split_ifs <;> omega
+  grind [iEdgeV, iEdge]
 
 /-! ## The static environment -/
 
@@ -220,11 +205,8 @@ structure Stat where
 /-- The host record `Host.whole n` at `A`: one run item `0 … n - 1`. -/
 theorem hostAt_whole {m : ℕ → ℕ} {A n : ℕ} (h0 : m A = 1) (h1 : m (A + 1) = 0) (h2 : m (A + 2) = 0)
     (h3 : m (A + 3) = n - 1) : HostAt m A (Host.whole n) := by
-  refine ⟨by simp [Host.whole, h0], fun i hi => ?_⟩
-  simp only [Host.whole, List.length_cons, List.length_nil] at hi
-  obtain rfl : i = 0 := by omega
-  simp only [Host.whole, List.getD_cons_zero]
-  exact ⟨by simpa using h1, by simpa using h2, by simpa using h3⟩
+  refine ⟨by core_grind, fun i hi => ?_⟩
+  simp_all [Host.whole, List.length_cons, List.length_nil, List.getD_cons_zero] <;> omega_nf
 
 /-- **The static environment** of the adapter at `c`: the saved inputs and constants in band
 `17`, the symbolic origin, the entry memory below `A₀`, the host record at `A₀`, the grade
@@ -263,9 +245,12 @@ namespace SEnv
 
 variable {P : Polygon} {W : ℕ} {O : OracleIface} {s : Stat} {c c' : Config}
 
+section
+variable (h : SEnv P W O s c)
+include h
 /-- **The static environment survives** every step that keeps the registers `170000 … 170029`,
 the memory below the allocator, and does not lower the allocator. -/
-theorem keep (h : SEnv P W O s c) (hr : ∀ r, 170000 ≤ r → r < 170030 → c'.nreg r = c.nreg r)
+theorem keep (hr : ∀ r, 170000 ≤ r → r < 170030 → c'.nreg r = c.nreg r)
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) (ha : c.nreg ALLOC ≤ c'.nreg ALLOC) :
     SEnv P W O s c' := by
   have k : ∀ r, 170000 ≤ r → r < 170030 → c'.nreg r = c.nreg r := hr
@@ -276,7 +261,7 @@ theorem keep (h : SEnv P W O s c) (hr : ∀ r, 170000 ≤ r → r < 170030 → c
     (k _ (by omega) (by omega)).trans h.r13, (k _ (by omega) (by omega)).trans h.r10,
     (k _ (by omega) (by omega)).trans h.r11, (k _ (by omega) (by omega)).trans h.r12,
     (k _ (by omega) (by omega)).trans h.r18, (k _ (by omega) (by omega)).trans h.r19,
-    by rw [k _ (by omega) (by omega)]; exact h.lb, by rw [k _ (by omega) (by omega)]; exact h.lb1,
+    by ram_grind, by ram_grind,
     (k _ (by omega) (by omega)).trans h.r15, (k _ (by omega) (by omega)).trans h.r16,
     (k _ (by omega) (by omega)).trans h.r17,
     NFLoc.symPtIn_copy h.org (k _ (by omega) (by omega)) (k _ (by omega) (by omega))
@@ -285,22 +270,31 @@ theorem keep (h : SEnv P W O s c) (hr : ∀ r, 170000 ≤ r → r < 170030 → c
     (hm _ (by omega)).trans h.host1, (hm _ (by omega)).trans h.host2,
     (hm _ (by omega)).trans h.host3, by omega, h.grade, h.cap⟩
 
-theorem n3 (h : SEnv P W O s c) : 3 ≤ P.n := Chazelle.Jordan.simple_three_le h.good.1
+theorem n3 : 3 ≤ P.n := Chazelle.Jordan.simple_three_le h.good.1
 
-theorem nW (h : SEnv P W O s c) : P.n + 3 ≤ W := by have := h.hW; unfold hostWords at this; omega
+theorem nW : P.n + 3 ≤ W := by have := h.hW; grind [hostWords]
 
-theorem hostAt (h : SEnv P W O s c) : HostAt c.nmem s.A₀ (Host.whole P.n) :=
+theorem hostAt : HostAt c.nmem s.A₀ (Host.whole P.n) :=
   hostAt_whole h.host0 h.host1 h.host2 h.host3
+
+
+end
 
 theorem qn : (Qof P).n = P.n := shear_n _ _
 
-theorem ivv (h : SEnv P W O s c) (p : ℕ) :
+section
+variable (h : SEnv P W O s c) (p : ℕ)
+include h
+theorem ivv :
     ivV (c.nreg 170014) (c.nreg 170019) p = iv (Qof P) p := by
   rw [h.r19, ← qn]; exact ivV_eq h.lb h.lb1 p
 
-theorem iev (h : SEnv P W O s c) (p : ℕ) :
+theorem iev :
     iEdgeV (c.nreg 170014) P.n p = iEdge (Qof P) p := by
   rw [← qn]; exact iEdgeV_eq h.lb h.lb1 p
+
+
+end
 
 end SEnv
 
@@ -320,7 +314,9 @@ def originI : Stmt :=
 def BorgR (r : ℕ) : Prop :=
   r = 170020 ∨ r = 170021 ∨ r = 170022 ∨ r = 170092 ∨ r = 170095 ∨ r = 170096
 
-theorem originI_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+section
+variable {P : Polygon} {W : ℕ}
+theorem originI_exec (c : Config) (hw : WordsBounded W c)
     (hn : 3 ≤ P.n) (h11 : c.nreg 170011 = 1) (h10 : c.nreg 170010 = P.n)
     (h12 : c.nreg 170012 = 0) (h18 : c.nreg 170018 = 2) (h19 : c.nreg 170019 = P.n - 1)
     (hlb : c.nreg 170014 = 1 ↔ Mountain.LeftInside (Qof P)) (hlb1 : c.nreg 170014 ≤ 1)
@@ -345,59 +341,55 @@ theorem originI_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
     exec_block
     refine ⟨by omega, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
     · refine NFLoc.symPtIn_copy ho (by config_simp) (by config_simp) (by config_simp)
-    · unfold BorgR at hr; simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+    simp_all [BorgR, Config.nreg_mk, upd] <;> omega_nf
   | walk x =>
     obtain ⟨e, hh⟩ := x
     obtain ⟨k2, k6, k7⟩ := ho
     have k6' : c.nreg 170006 = e := k6
     have k7' : c.nreg 170007 = hh := k7
-    have hk : ¬ c.nreg 170005 < c.nreg 170018 := by rw [k2, h18]; omega
+    have hk : ¬ c.nreg 170005 < c.nreg 170018 := by omega
     refine spec_ifLtN_false hk ?_
-    have he : e < P.n := by have := hol.1; rw [mi_n, hQ] at this; exact this
+    have he : e < P.n := by have := hol.1; simp_all [mi_n] <;> omega_nf
     have hhn : hh ≤ P.n := hol.2
     cases hh with
     | zero =>
-      refine spec_ifLtN_false (by rw [h12, k7']; omega) ?_
+      refine spec_ifLtN_false (by omega) ?_
       refine spec_seq ?_
       exec_block
       all_goals first | omega | skip
       refine spec_seq ?_
-      obtain ⟨c₁, k₁, e₁, hk₁, rfl⟩ := ivF_exec (P := P) _ ‹_› (by config_simp; exact h11)
+      obtain ⟨c₁, k₁, e₁, hk₁, rfl⟩ := ivF_exec (P := P) _ ‹_› (by ram_simp)
       refine ⟨_, _, e₁, ?_⟩
       have w₁ := e₁.wb_right
       exec_block
       refine ⟨by omega, ⟨by config_simp, ?_⟩, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-      · config_simp
-        rw [k6', hvv e]
-      · unfold BorgR at hr; simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+      · simp_all
+      simp_all [BorgR, Config.nreg_mk, upd] <;> omega_nf
     | succ h =>
-      refine spec_ifLtN_true (by rw [h12, k7']; omega) ?_
+      refine spec_ifLtN_true (by omega) ?_
       refine spec_seq ?_
       exec_block
       all_goals first | omega | skip
       refine spec_seq ?_
       obtain ⟨c₁, k₁, e₁, hk₁, q96, q, qm, qr, qrm, qo⟩ := iEdgeF_exec (P := P) _ ‹_›
-        (by config_simp; exact h11) (by config_simp; exact h10) (by config_simp; exact h19)
-        (by config_simp; rw [k6']; omega)
+        (by ram_simp) (by ram_simp) (by omega_nf)
+        (by omega_nf)
       refine ⟨_, _, e₁, ?_⟩
       have w₁ := e₁.wb_right
       exec_block
       refine ⟨by omega, ⟨?_, ?_, ?_⟩, fun r hr => ?_, by rw [qm], by rw [qr], by rw [qrm],
         by rw [qo]⟩
-      · config_simp; rw [q _ (by omega) (by omega)]; try config_simp
-      · config_simp; rw [q96]; config_simp; rw [k6', hev]
-      · config_simp; rw [q _ (by omega) (by omega)]; config_simp; rw [k7', h11]; try rfl
+      · ram_simp
+      · ram_simp
+      · config_simp; rw [q _ (by omega) (by omega)]; config_simp; omega
       · unfold BorgR at hr
         simp only [Config.nreg_mk, upd]
-        split_ifs with h1
-        · omega
-        · rw [q r (by omega) (by omega)]; config_simp
-          simp only [upd]; split_ifs <;> first | rfl | omega
+        grind [upd]
 
 /-! ## Conditional assignments -/
 
 /-- **A conditional assignment**: both branches assign the register `r`. -/
-theorem exec_ite_upd {P : Polygon} {W : ℕ} {a b r : ℕ} {s₁ s₂ : Stmt} {v₁ v₂ K : ℕ} (c : Config)
+theorem exec_ite_upd {a b r : ℕ} {s₁ s₂ : Stmt} {v₁ v₂ K : ℕ} (c : Config)
     (h₁ : c.nreg a < c.nreg b → ∃ k, Exec P W s₁ c { c with nreg := upd c.nreg r v₁ } k ∧ k ≤ K)
     (h₂ : ¬ c.nreg a < c.nreg b → ∃ k, Exec P W s₂ c { c with nreg := upd c.nreg r v₂ } k ∧ k ≤ K) :
     ∃ k, Exec P W (.ifLtN a b s₁ s₂) c
@@ -408,26 +400,35 @@ theorem exec_ite_upd {P : Polygon} {W : ℕ} {a b r : ℕ} {s₁ s₂ : Stmt} {v
   · obtain ⟨k, e, hk⟩ := h₂ h
     exact ⟨k + 2, by rw [ite_eq_right h]; exact .ifLtN_false h e, by omega⟩
 
-theorem exec_skip_upd {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (r : ℕ) :
+
+end
+
+section
+variable {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
+include hw
+theorem exec_skip_upd (r : ℕ) :
     Exec P W .skip c { c with nreg := upd c.nreg r (c.nreg r) } 0 := by
   rw [upd_eq_self]; exact .skip hw
 
-theorem exec_constN_upd {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (r v : ℕ)
+theorem exec_constN_upd (r v : ℕ)
     (hv : v ≤ W) : Exec P W (block [.constN r v]) c { c with nreg := upd c.nreg r v } 1 :=
   Exec.block_cons (Exec.constN hw r v hv) (Exec.block_nil (Exec.constN (P := P) hw r v hv).wb_right)
 
-theorem exec_copyN_upd {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (r a : ℕ) :
+theorem exec_copyN_upd (r a : ℕ) :
     Exec P W (block [.copyN r a]) c { c with nreg := upd c.nreg r (c.nreg a) } 1 :=
   Exec.block_cons (Exec.copyN hw r a) (Exec.block_nil (Exec.copyN (P := P) hw r a).wb_right)
 
-theorem exec_subN_upd {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (r a b : ℕ) :
+theorem exec_subN_upd (r a b : ℕ) :
     Exec P W (block [.subN r a b]) c { c with nreg := upd c.nreg r (c.nreg a - c.nreg b) } 1 :=
   Exec.block_cons (Exec.subN hw r a b) (Exec.block_nil (Exec.subN (P := P) hw r a b).wb_right)
 
-theorem exec_addN_upd {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (r a b : ℕ)
+theorem exec_addN_upd (r a b : ℕ)
     (hv : c.nreg a + c.nreg b ≤ W) :
     Exec P W (block [.addN r a b]) c { c with nreg := upd c.nreg r (c.nreg a + c.nreg b) } 1 :=
   Exec.block_cons (Exec.addN hw r a b hv) (Exec.block_nil (Exec.addN (P := P) hw r a b hv).wb_right)
+
+
+end
 
 end
 

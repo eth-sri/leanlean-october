@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterPhase
 
 /-!
@@ -51,35 +53,28 @@ theorem firstStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 13000
         c'.nmem (bF + u) < j ∧ c.nmem (bV + c'.nmem (bF + u)) = u)
     N 5 (fun j c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c2 hj ⟨hw2, hi2, hn2, hf2, hI2⟩ => by
-      have r1 : c2.nreg 130221 = bV := (hf2.1 _ (by unfold FirstRG; omega)).trans hbV
-      have r2 : c2.nreg 130222 = bF := (hf2.1 _ (by unfold FirstRG; omega)).trans hbF
-      have r3 : c2.nreg 130001 = 1 := (hf2.1 _ (by unfold FirstRG; omega)).trans hone
+      have r1 : c2.nreg 130221 = bV := (hf2.1 _ (by omega_nf)).trans hbV
+      have r2 : c2.nreg 130222 = bF := (hf2.1 _ (by omega_nf)).trans hbF
+      have r3 : c2.nreg 130001 = 1 := (hf2.1 _ (by omega_nf)).trans hone
       have rv : c2.nmem (bV + j) = c.nmem (bV + j) := hf2.2.2.2.2 _ (by omega)
       have hvj := hvlt j hj
       unfold firstBody
       exec_block
-      · rw [r1, hi2]; omega
-      · config_simp; rw [r2, r1, hi2, rv]; omega
-      · config_simp; rw [hi2, r3]; omega
-      · refine ⟨le_refl _, ‹_›, by config_simp; rw [hi2, r3], by config_simp; exact hn2, ?_, ?_⟩
+      · omega
+      · config_simp; ram_grind
+      · config_simp; omega
+      · refine ⟨le_refl _, ‹_›, by ram_simp, by ram_simp, ?_, ?_⟩
         · refine PFr.of_eq hf2 (fun r hr => ?_) (fun a ha => ?_)
-          · simp only [Machine.upd_apply]; unfold FirstRG at hr; split_ifs <;> omega
-          · rw [r2, r1, hi2, rv, Machine.upd_other _ _ _ (by omega)]
+          · simp only [Machine.upd_apply]; grind [FirstRG]
+          ram_simp
         · intro u hu hex
           config_simp
           rw [r2, r1, hi2, rv, Machine.upd_apply]
           split_ifs with h
-          · have hu' : c.nmem (bV + j) = u := by omega
-            exact ⟨by omega, hu'⟩
-          · obtain ⟨d, hd, hdu⟩ := hex
-            have hdj : d < j := by
-              rcases Nat.lt_succ_iff_lt_or_eq.mp hd with hd | rfl
-              · exact hd
-              · exact absurd (by rw [hdu]) h
-            have := hI2 u hu ⟨d, hdj, hdu⟩
-            exact ⟨by omega, this.2⟩)
+          · omega
+          grind)
     (j₀ := 0) ⟨e0.wb_right, by simp, by simp [hN], PFr.nreg (PFr.refl c) (fun r hr => by
-      simp only [Machine.upd_apply]; unfold FirstRG at hr; split_ifs <;> omega),
+      ram_simp),
       fun u hu ⟨d, hd, _⟩ => absurd hd (Nat.not_lt_zero d)⟩ (Nat.zero_le _)
   refine ⟨c', 1 + k, .seq e0 e, by omega, hf', fun u hu => hI u hu (hsurj u hu)⟩
 

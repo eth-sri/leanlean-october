@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvBSpec
 public import Chazelle.Core.DownPhaseDrvDRound3
 public import Chazelle.Core.DownPhaseBaseMain
@@ -71,44 +73,55 @@ def topS (sR sD sB : Stmt) : Stmt :=
 
 /-! ## Write sets -/
 
+section
+variable (r : ℕ)
+include r
 /-- The registers `tPre` writes. -/
-def Bpre (r : ℕ) : Bool := decide (r = 212019) || decide (219300 ≤ r ∧ r ≤ 219303)
+def Bpre : Bool := decide (r = 212019) || decide (219300 ≤ r ∧ r ≤ 219303)
 
 /-- The registers of the reservation. -/
-def Bres (r : ℕ) : Bool := decide (r = 219302) || decide (r = 9999)
+def Bres : Bool := decide (r = 219302) || decide (r = 9999)
 
 /-- The registers `tArgs` writes. -/
-def Bargs (r : ℕ) : Bool := decide (210020 ≤ r ∧ r ≤ 210024) || decide (219300 ≤ r ∧ r ≤ 219307)
+def Bargs : Bool := decide (210020 ≤ r ∧ r ≤ 210024) || decide (219300 ≤ r ∧ r ≤ 219307)
 
-theorem bres_false {r : ℕ} (h1 : r ≠ 219302) (h2 : r ≠ 9999) : Bres r = false := by
-  simp only [Bres, Bool.or_eq_false_iff, decide_eq_false_iff_not]; exact ⟨h1, h2⟩
 
-theorem bpre_false {r : ℕ} (h1 : r ≠ 212019) (h2 : r < 219300 ∨ 219303 < r) : Bpre r = false := by
-  simp only [Bpre, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+end
 
-theorem bargs_false {r : ℕ} (h1 : r < 210020 ∨ 210024 < r) (h2 : r < 219300 ∨ 219307 < r) :
+section
+variable {r : ℕ}
+theorem bres_false (h1 : r ≠ 219302) (h2 : r ≠ 9999) : Bres r = false := by
+  simp_all [Bres, Bool.or_eq_false_iff, decide_eq_false_iff_not] 
+
+theorem bpre_false (h1 : r ≠ 212019) (h2 : r < 219300 ∨ 219303 < r) : Bpre r = false := by
+  core_grind
+
+theorem bargs_false (h1 : r < 210020 ∨ 210024 < r) (h2 : r < 219300 ∨ 219307 < r) :
     Bargs r = false := by
-  simp only [Bargs, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+  core_grind
+
+
+end
 
 theorem inDrv_pre : DrvD.InDrv Bpre := by
   intro r hr
   simp only [Bpre, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by omega_nf⟩
 
 theorem inDrv_args : DrvD.InDrv Bargs := by
   intro r hr
   simp only [Bargs, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by omega_nf⟩
 
 theorem inDrv_drop : DrvD.InDrv (fun r => decide (200000 ≤ r ∧ r ≤ 200003)) := by
   intro r hr
   simp only [decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by omega_nf⟩
 
 theorem inDrv_bld : DrvD.InDrv (fun r => decide (40000 ≤ r ∧ r ≤ 40004)) := by
   intro r hr
   simp only [decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by omega_nf⟩
 
 section exec
 
@@ -206,7 +219,7 @@ theorem tDrop_exec (c : Config) (hw : WordsBounded W c) :
         c'.nreg 200002 = c.nreg 210003 ∧ c'.nreg 200003 = c.nreg 210004) := by
     unfold tDrop
     exec_block
-    refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp
+    simp_all
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (by decide)⟩
 
 set_option maxHeartbeats 1000000 in
@@ -221,7 +234,7 @@ theorem tBld_exec (c : Config) (hw : WordsBounded W c) :
         c'.nreg 40002 = c.nreg 200005 ∧ c'.nreg 40004 = c.nreg 200006) := by
     unfold tBld
     exec_block
-    refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp
+    simp_all
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (by decide)⟩
 
 /-- `tOut`. -/
@@ -232,7 +245,7 @@ theorem tOut_exec (c : Config) (hw : WordsBounded W c) :
       c'.nreg 210006 = c.nreg 40003 := by
     unfold tOut
     exec_block
-    refine ⟨rfl, ?_⟩; config_simp
+    simp_all
   exact ⟨c', k, ex, hk, q, exec_frameB ex (by decide)⟩
 
 end exec

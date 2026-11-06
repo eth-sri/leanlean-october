@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFTest
 
 /-!
@@ -35,33 +37,35 @@ def halfS : Stmt :=
 
 /-! ## Register effects -/
 
-theorem halfBody_eff (m f : ℕ → ℕ) :
+section
+variable (m f : ℕ → ℕ)
+theorem halfBody_eff :
     regB m halfBodyL f 81120 = f 81120 - f 81022 ∧
       regB m halfBodyL f 81121 = f 81121 + f 81023 ∧
       ∀ q, q ≠ 81120 → q ≠ 81121 → regB m halfBodyL f q = f q := by
-  refine ⟨by simp [halfBodyL, regB, regI, upd], by simp [halfBodyL, regB, regI, upd],
-    fun q h1 h2 => regB_other m _ f (fun i hi => ?_)⟩
-  simp only [halfBodyL, List.mem_cons, List.not_mem_nil, or_false] at hi
-  rcases hi with rfl | rfl <;> simp only [dstI] <;> omega
+  simp_all [halfBodyL, regB, regI, upd, List.mem_cons, List.not_mem_nil, or_false, dstI] 
 
-theorem halfEnd_eff (m f : ℕ → ℕ) :
+theorem halfEnd_eff :
     regB m halfEndL f 81121 = f 81121 + m (m (f 81004 + f 81014) + f 81120) ∧
       regB m halfEndL f 81122 =
         f 81123 - (f 81121 + m (m (f 81004 + f 81014) + f 81120) +
           (f 81121 + m (m (f 81004 + f 81014) + f 81120))) ∧
       ∀ q, q ≠ 81121 → q ≠ 81122 → q ≠ 81124 → regB m halfEndL f q = f q := by
-  refine ⟨by simp [halfEndL, regB, regI, upd], by simp [halfEndL, regB, regI, upd],
-    fun q h1 h2 h3 => regB_other m _ f (fun i hi => ?_)⟩
-  simp only [halfEndL, List.mem_cons, List.not_mem_nil, or_false] at hi
-  rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> omega
+  simp_all [halfEndL, regB, regI, upd, List.mem_cons, List.not_mem_nil, or_false, dstI] 
+
+
+end
 
 /-- The cost bound of a halving of `x`. -/
 def halfK (n x : ℕ) : ℕ := 4 * (x / (2 * (n / 2))) + 11
 
 variable {E : FEnv} {c₀ c : Config}
 
+section
+variable (hE : FGood E c₀)
+include hE
 /-- The halving table in a configuration of the search. -/
-theorem halves_at (hE : FGood E c₀) (hI : FInv E.W c₀ c) :
+theorem halves_at (hI : FInv E.W c₀ c) :
     c.nreg 81004 + 3 < c.nreg ALLOC ∧ ∀ x, x ≤ E.P.n →
       c.nmem (c.nreg 81004 + 3) + x < c.nreg ALLOC ∧
       c.nmem (c.nmem (c.nreg 81004 + 3) + x) = x / 2 := by
@@ -69,12 +73,12 @@ theorem halves_at (hE : FGood E c₀) (hI : FInv E.W c₀ c) :
   have hA := hI.allocA hE
   have hX : E.X.holds E.P c.nmem E.g (c.nreg ALLOC) :=
     E.X.mono _ _ _ _ _ hA (E.X.local_ _ _ _ _ _ (fun a ha => (hag a ha).symm) hE.hX)
-  have g4 : c.nreg 81004 = E.g := by rw [hI.hin _ (by unfold FFix; omega), hE.i4]
+  have g4 : c.nreg 81004 = E.g := by rw [hI.hin _ (by omega_nf), hE.i4]
   rw [g4]
   exact hE.hhalf _ _ _ _ hX
 
 /-- **Halving** as a run step of the search. -/
-theorem halfS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FInv E.W c₀ c)
+theorem halfS_fs {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FInv E.W c₀ c)
     {x : ℕ} (hx : c.nreg 81120 = x) (hroom : c.nreg ALLOC + halfK E.P.n x ≤ E.W) :
     FRS B E.P E.W c₀ halfS c (halfK E.P.n x) (fun c' => c'.nreg 81121 = x / 2 ∧
       c'.nreg 81122 = x % 2 ∧ ∀ q, q ≠ 81120 → q ≠ 81121 → q ≠ 81122 → q ≠ 81123 →
@@ -82,17 +86,17 @@ theorem halfS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
   have hn3 : 3 ≤ E.P.n := hE.hG.1.1
   have fx : ∀ c', FInv E.W c₀ c' → c'.nreg 81020 = E.P.n ∧ c'.nreg 81022 = 2 * (E.P.n / 2) ∧
       c'.nreg 81023 = E.P.n / 2 ∧ c'.nreg 81014 = 3 := fun c' hI' =>
-    ⟨by rw [hI'.hin _ (by unfold FFix; omega), hE.pn],
-      by rw [hI'.hin _ (by unfold FFix; omega), hE.nE],
-      by rw [hI'.hin _ (by unfold FFix; omega), hE.hE2],
-      by rw [hI'.hin _ (by unfold FFix; omega), hE.k3]⟩
+    ⟨by rw [hI'.hin _ (by omega_nf), hE.pn],
+      by rw [hI'.hin _ (by omega_nf), hE.nE],
+      by rw [hI'.hin _ (by omega_nf), hE.hE2],
+      by rw [hI'.hin _ (by omega_nf), hE.k3]⟩
   have hxW : x ≤ E.W := by rw [← hx]; exact hI.hw.1 81120
   set nE := 2 * (E.P.n / 2) with hnE
   have hnE2 : 2 ≤ nE := by omega
   have ok0 : okB E.W c.nmem [.copyN 81123 81120, .constN 81121 0] c.nreg := by
     simp [okB, okI, FScr, FOut]
   refine (FRS.seq (K₂ := 4 * (x / nE) + 9) (FRS.block hB _ hI ok0)
-    (fun c₁ hI₁ _ h₁ => ?_)).mono (by simp [halfK, hnE]; omega) (fun _ h => h)
+    (fun c₁ hI₁ _ h₁ => ?_)).mono (by grind [halfK]) (fun _ h => h)
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem [.copyN 81123 81120, .constN 81121 0] c.nreg q :=
     fun q => by rw [h₁]
   have c1a : c₁.nreg 81123 = x := by rw [e₁]; simp [regB, regI, upd, hx]
@@ -100,12 +104,12 @@ theorem halfS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
   have c1c : c₁.nreg 81120 = x := by rw [e₁]; simp [regB, regI, upd, hx]
   have c1fr : ∀ q, q ≠ 81121 → q ≠ 81123 → c₁.nreg q = c.nreg q := fun q h1 h2 => by
     rw [e₁]; simp [regB, regI, upd, h1, h2]
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := c1fr _ (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega)
+  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := c1fr _ (by omega_nf)
+    (by omega_nf)
   -- the loop
   let I : Config → Prop := fun c' => c'.nreg 81123 = x ∧ c'.nreg 81120 + 2 * c'.nreg 81121 = x ∧
     ∀ q, q ≠ 81120 → q ≠ 81121 → q ≠ 81122 → q ≠ 81123 → q ≠ 81124 → c'.nreg q = c.nreg q
-  have hI1 : I c₁ := ⟨c1a, by rw [c1c, c1b]; omega, fun q h1 h2 _ h4 _ => c1fr q h2 h4⟩
+  have hI1 : I c₁ := ⟨c1a, by omega, fun q h1 h2 _ h4 _ => c1fr q h2 h4⟩
   obtain ⟨f20, f22, f23, f14⟩ := fx c hI
   have hpos : ∀ c', I c' → c'.nreg 81020 < c'.nreg 81120 → 0 < c'.nreg 81120 / nE := by
     intro c' hc' ht
@@ -130,17 +134,14 @@ theorem halfS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
     have e'' : ∀ q, c''.nreg q = regB c'.nmem halfBodyL c'.nreg q := fun q => by rw [h'']
     rw [g22] at b0
     rw [g23] at b1
-    refine ⟨⟨by rw [e'', bfr _ (by omega) (by omega)]; exact i1, ?_, fun q h1 h2 h3 h4 h5 => ?_⟩,
+    refine ⟨⟨by ram_grind, ?_, fun q h1 h2 h3 h4 h5 => ?_⟩,
       ?_⟩
-    · rw [e'', e'', b0, b1]; omega
-    · rw [e'', bfr q h1 h2]; exact i3 q h1 h2 h3 h4 h5
+    · grind
+    · grind
     · have hsd := Nat.sub_mul_div (c'.nreg 81120) nE 1
-      rw [Nat.mul_one] at hsd
-      rw [e'', b0, hsd]
-      have : 1 ≤ c'.nreg 81120 / nE := Nat.div_pos (by omega) (by omega)
-      omega
+      ram_grind
   have hroom₁ : c₁.nreg ALLOC + (2 + 2) * (c₁.nreg 81120 / nE) ≤ E.W := by
-    rw [hA₁, c1c]; unfold halfK at hroom; rw [← hnE] at hroom; omega
+    grind [halfK]
   refine FRS.seq (K₂ := 7) ((FRS.while I (fun c' => c'.nreg 81120 / nE) 2 hpos hbody hI₁ hI1
     hroom₁).mono (K' := 4 * (x / nE) + 2) (by rw [c1c]) (fun _ h => h))
     (fun c₂ hI₂ _ ⟨⟨j1, j2, j3⟩, jt⟩ => ?_)
@@ -152,7 +153,7 @@ theorem halfS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
   have hAW : c₂.nreg ALLOC ≤ E.W := hI₂.hw.1 ALLOC
   have ok : okB E.W c₂.nmem halfEndL c₂.nreg := by
     simp only [halfEndL, okB, okI, regI, FScr, FOut]
-    refine ⟨⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by rw [g14]; omega⟩,
+    refine ⟨⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by omega⟩,
       Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), ?_⟩,
       Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), ?_⟩,
       ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), ?_⟩, Or.inl (Or.inl ⟨by norm_num, by norm_num⟩),
@@ -163,6 +164,9 @@ theorem halfS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
   rw [g14, ht2] at e1 e2
   refine ⟨by rw [e₃, e1]; omega, by rw [e₃, e2, j1]; omega, fun q h1 h2 h3 h4 h5 => ?_⟩
   rw [e₃, efr q h2 h3 h5]; exact j3 q h1 h2 h3 h4 h5
+
+
+end
 
 end
 

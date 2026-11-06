@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SortRam
 public import Chazelle.Core.FuseAsmColl
 
@@ -30,25 +32,26 @@ def tle (x y : ℕ × ℕ × ℕ) : Prop :=
 instance (x y : ℕ × ℕ × ℕ) : Decidable (tle x y) := by unfold tle; infer_instance
 
 theorem tle_antisymm {x y : ℕ × ℕ × ℕ} (h1 : tle x y) (h2 : tle y x) : x = y := by
-  obtain ⟨a, b, c⟩ := x; obtain ⟨d, e, f⟩ := y
-  unfold tle at h1 h2; simp only at h1 h2
-  have : a = d ∧ b = e ∧ c = f := by omega
-  obtain ⟨rfl, rfl, rfl⟩ := this; rfl
+  ram_grind
 
 /-- The order of the items. -/
 def le3 (m : ℕ → ℕ) (T K a b : ℕ) : Bool :=
   if a < K then (if b < K then decide (tle (trip m T a) (trip m T b)) else true)
   else (if b < K then false else decide (a ≤ b))
 
-theorem le3_total (m : ℕ → ℕ) (T K a b : ℕ) : (le3 m T K a b || le3 m T K b a) = true := by
+section
+variable (m : ℕ → ℕ)
+theorem le3_total (T K a b : ℕ) : (le3 m T K a b || le3 m T K b a) = true := by
   unfold le3 tle
-  split_ifs <;> simp only [Bool.or_eq_true, decide_eq_true_eq, Bool.or_true,
-    Bool.or_false] <;> omega
+  ram_grind
 
-theorem le3_trans (m : ℕ → ℕ) (T K a b c : ℕ) (h1 : le3 m T K a b = true)
+theorem le3_trans (T K a b c : ℕ) (h1 : le3 m T K a b = true)
     (h2 : le3 m T K b c = true) : le3 m T K a c = true := by
   unfold le3 tle at *
-  split_ifs at h1 h2 ⊢ <;> simp only [decide_eq_true_eq] at h1 h2 ⊢ <;> omega
+  ram_grind
+
+
+end
 
 /-- Load the triples of the two items into `70210 … 70215`. -/
 def ld3 : Stmt := block [.addN 70210 30000 30000, .addN 70210 70210 30000,
@@ -76,19 +79,21 @@ def cmp3 : Stmt :=
     (.ifLtN 30001 70217 (.instr (.constN 30002 0))
       (.ifLtN 30001 30000 (.instr (.constN 30002 0)) (.instr (.constN 30002 1))))
 
+section
+variable (m₀ : ℕ → ℕ) (A₀ T K : ℕ) (g : ℕ → ℕ)
+include m₀ A₀ T K g
 /-- The invariant of the comparator: the base, the bound and the memory below `A₀`. -/
-def Cmp3J (m₀ : ℕ → ℕ) (A₀ T K : ℕ) (g : ℕ → ℕ) (c : Config) : Prop :=
+def Cmp3J (c : Config) : Prop :=
   c.nreg 70216 = T ∧ c.nreg 70217 = K ∧ (∀ a, a < A₀ → c.nmem a = m₀ a) ∧
     ∀ r, 70000 ≤ r → r < 70105 → c.nreg r = g r
 
-theorem cmp3J_stable (m₀ : ℕ → ℕ) (A₀ T K : ℕ) (g : ℕ → ℕ) :
+theorem cmp3J_stable :
     SortR.JStable (Cmp3J m₀ A₀ T K g) A₀ := by
   intro c c' ⟨h1, h2, h3, h4⟩ hr _ hm _ _
-  have hb : ∀ r, 70000 ≤ r → r < 80000 → c'.nreg r = c.nreg r := fun r a b =>
-    hr r (by unfold bandOf bSort; omega) (by unfold ALLOC; omega)
-  exact ⟨by rw [hb _ (by norm_num) (by norm_num)]; exact h1,
-    by rw [hb _ (by norm_num) (by norm_num)]; exact h2, fun a ha => (hm a ha).trans (h3 a ha),
-    fun r a b => by rw [hb r a (by omega)]; exact h4 r a b⟩
+  ram_grind
+
+
+end
 
 set_option maxHeartbeats 4000000 in
 theorem ld3_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {T a b : ℕ}
@@ -108,7 +113,7 @@ theorem ld3_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {T
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, hT, ha, hb]
-  all_goals first | rfl | (congr 1; ring)
+  all_goals ram_grind
 
 set_option maxHeartbeats 4000000 in
 theorem cmpT_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W)
@@ -121,24 +126,24 @@ theorem cmpT_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold cmpT tle
   by_cases c1 : x0 < y0
-  · refine spec_ifLtN_true (by rw [h11, h14]; exact c1) (spec_instr (Exec.constN hw _ _ hW)
+  · refine spec_ifLtN_true (by omega) (spec_instr (Exec.constN hw _ _ hW)
       fun _ => ⟨by omega, by simp [c1], fun r hr _ => by simp [hr], rfl, rfl, rfl, rfl⟩)
-  refine spec_ifLtN_false (by rw [h11, h14]; exact c1) ?_
+  refine spec_ifLtN_false (by omega) ?_
   by_cases c2 : y0 < x0
-  · refine spec_ifLtN_true (by rw [h11, h14]; exact c2) (spec_instr (Exec.constN hw _ _
+  · refine spec_ifLtN_true (by omega) (spec_instr (Exec.constN hw _ _
       (Nat.zero_le _)) fun _ => ⟨by omega, ?_, fun r hr _ => by simp [hr], rfl, rfl, rfl, rfl⟩)
-    simp only [upd_same]; rw [ite_eq_right]; omega
-  refine spec_ifLtN_false (by rw [h11, h14]; exact c2) ?_
+    simp_all +zetaDelta <;> omega
+  refine spec_ifLtN_false (by omega) ?_
   by_cases c3 : x1 < y1
-  · refine spec_ifLtN_true (by rw [h12, h15]; exact c3) (spec_instr (Exec.constN hw _ _ hW)
+  · refine spec_ifLtN_true (by omega) (spec_instr (Exec.constN hw _ _ hW)
       fun _ => ⟨by omega, ?_, fun r hr _ => by simp [hr], rfl, rfl, rfl, rfl⟩)
-    simp only [upd_same]; rw [ite_eq_left]; omega
-  refine spec_ifLtN_false (by rw [h12, h15]; exact c3) ?_
+    simp_all [upd_same, ite_eq_left] <;> omega_nf
+  refine spec_ifLtN_false (by omega) ?_
   by_cases c4 : y1 < x1
-  · refine spec_ifLtN_true (by rw [h12, h15]; exact c4) (spec_instr (Exec.constN hw _ _
+  · refine spec_ifLtN_true (by omega) (spec_instr (Exec.constN hw _ _
       (Nat.zero_le _)) fun _ => ⟨by omega, ?_, fun r hr _ => by simp [hr], rfl, rfl, rfl, rfl⟩)
-    simp only [upd_same]; rw [ite_eq_right]; omega
-  refine spec_ifLtN_false (by rw [h12, h15]; exact c4) ?_
+    simp_all +zetaDelta <;> omega
+  refine spec_ifLtN_false (by omega) ?_
   obtain ⟨c₁, k₁, e₁, hk₁, v14, v13, r₁, m₁, rr₁, rm₁, o₁⟩ : ∃ c₁ k₁, Exec P W
       (block [.addN 70210 30001 30001, .addN 70210 70210 30001, .addN 70210 70210 70216,
         .constN 70214 2, .addN 70210 70210 70214, .loadN 70214 70210]) c c₁ k₁ ∧ k₁ = 6 ∧
@@ -147,25 +152,20 @@ theorem cmpT_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
       c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     exec_block
     all_goals try omega
-    all_goals try (simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, hT, hb]; omega)
-    refine ⟨rfl, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-    all_goals simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, hT, hb, h13]
-    congr 1; ring
+    all_goals (grind [Machine.upd_same, Machine.upd_other])
   have w₁ := e₁.wb_right
   refine spec_seq ⟨c₁, k₁, e₁, ?_⟩
   by_cases c5 : c.nmem (T + 3 * b + 2) < x2
-  · refine spec_ifLtN_true (by rw [v14, v13]; exact c5) (spec_instr (Exec.constN w₁ _ _
+  · refine spec_ifLtN_true (by omega) (spec_instr (Exec.constN w₁ _ _
       (Nat.zero_le _)) fun _ => ⟨by omega, ?_, fun r hr hr' => ?_, by rw [m₁], by rw [rr₁],
         by rw [rm₁], by rw [o₁]⟩)
-    · simp only [upd_same]; rw [ite_eq_right]; omega
-    · simp only [upd_other _ _ _ hr]; exact r₁ r hr'
-  · refine spec_ifLtN_false (by rw [v14, v13]; exact c5) (spec_instr (Exec.constN w₁ _ _ hW)
+    · omega_nf
+    · ram_simp
+  · refine spec_ifLtN_false (by omega) (spec_instr (Exec.constN w₁ _ _ hW)
       fun _ => ⟨by omega, ?_, fun r hr hr' => ?_, by rw [m₁], by rw [rr₁], by rw [rm₁],
         by rw [o₁]⟩)
-    · simp only [upd_same]; rw [ite_eq_left]; omega
-    · simp only [upd_other _ _ _ hr]; exact r₁ r hr'
+    · omega_nf
+    simp_all
 
 set_option maxHeartbeats 4000000 in
 /-- **The contract of the comparator.** -/
@@ -180,23 +180,18 @@ theorem cmp3_ok {P : Polygon} {W : ℕ} {m₀ : ℕ → ℕ} {A₀ T K : ℕ} {g
     obtain ⟨c', k, ex, hk, hbit⟩ := H
     have f := exec_frameB ex hwr
     have fr := WalkKey.exec_rframe ex (B := fun _ => false) (by decide)
-    refine ⟨c', k, ex, hk, ⟨?_, ?_, fun a ha => by rw [f.2.2.1]; exact j3 a ha,
-      fun r a b => by rw [f.1 r (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)]
-                      exact j4 r a b⟩, hbit,
+    refine ⟨c', k, ex, hk, ⟨?_, ?_, fun a ha => by ram_grind,
+      fun r a b => by ram_grind⟩, hbit,
       fun r h0 h1 h2 hb => f.1 r ?_, fun r _ => fr r rfl, f.2.2.1, f.2.2.2.1, f.2.2.2.2⟩
     · rw [f.1 _ (by decide)]; exact j1
     · rw [f.1 _ (by decide)]; exact j2
-    · simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]
-      refine ⟨h2, fun h => ?_⟩
-      rcases hb with hb | hb
-      · exact hb (by rw [Finset.mem_singleton]; unfold bandOf bFuse; omega)
-      · unfold ALLOC at hb; omega
-  have h1 : c.nreg 70217 = K := j2
+    grind [Bool.or_eq_false_iff, decide_eq_false_iff_not, Finset.mem_singleton, bandOf, bFuse, ALLOC]
+  
   unfold cmp3 le3
   by_cases ha : c.nreg 30000 < K
-  · refine spec_ifLtN_true (by rw [h1]; exact ha) ?_
+  · refine spec_ifLtN_true (by omega) ?_
     by_cases hb : c.nreg 30001 < K
-    · refine spec_ifLtN_true (by rw [h1]; exact hb) ?_
+    · refine spec_ifLtN_true (by omega) ?_
       obtain ⟨a, ha'⟩ : ∃ a, c.nreg 30000 = a := ⟨_, rfl⟩
       obtain ⟨b, hb'⟩ : ∃ b, c.nreg 30001 = b := ⟨_, rfl⟩
       have haK : a < K := ha' ▸ ha
@@ -212,24 +207,24 @@ theorem cmp3_ok {P : Polygon} {W : ℕ} {m₀ : ℕ → ℕ} {A₀ T K : ℕ} {g
       by_cases ht : tle (m₀ (T + 3 * a), m₀ (T + 3 * a + 1), m₀ (T + 3 * a + 2))
           (m₀ (T + 3 * b), m₀ (T + 3 * b + 1), m₀ (T + 3 * b + 2))
       · have ht' : tle (trip m₀ T a) (trip m₀ T b) := ht
-        simp [haK, hbK, ht, ht']
+        ram_grind
       · have ht' : ¬ tle (trip m₀ T a) (trip m₀ T b) := ht
-        simp [haK, hbK, ht, ht']
-    · refine spec_ifLtN_false (by rw [h1]; exact hb) (spec_instr (Exec.constN hw _ _ hW)
+        ram_grind
+    · refine spec_ifLtN_false (by omega) (spec_instr (Exec.constN hw _ _ hW)
         fun _ => ⟨by omega, ?_⟩)
-      simp [ha, hb]
-  · refine spec_ifLtN_false (by rw [h1]; exact ha) ?_
+      simp_all
+  · refine spec_ifLtN_false (by omega) ?_
     by_cases hb : c.nreg 30001 < K
-    · refine spec_ifLtN_true (by rw [h1]; exact hb) (spec_instr (Exec.constN hw _ _ (by omega))
+    · refine spec_ifLtN_true (by omega) (spec_instr (Exec.constN hw _ _ (by omega))
         fun _ => ⟨by omega, ?_⟩)
-      simp [ha, hb]
-    · refine spec_ifLtN_false (by rw [h1]; exact hb) ?_
+      simp_all
+    · refine spec_ifLtN_false (by omega) ?_
       by_cases hc : c.nreg 30001 < c.nreg 30000
       · refine spec_ifLtN_true hc (spec_instr (Exec.constN hw _ _ (by omega)) fun _ =>
           ⟨by omega, ?_⟩)
         simp [ha, hb]; omega
       · refine spec_ifLtN_false hc (spec_instr (Exec.constN hw _ _ hW) fun _ => ⟨by omega, ?_⟩)
-        simp [ha, hb]; omega
+        simp_all
 
 end
 

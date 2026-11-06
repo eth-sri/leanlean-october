@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.WalkKey
 
 /-!
@@ -51,9 +53,7 @@ def SymSrc.Out : SymSrc → Prop
 theorem FrameB.mono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' := by
   refine ⟨fun r hr => h.1 r ?_, fun r hr => h.2.1 r ?_, h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩ <;>
-  · by_contra h'
-    simp only [Bool.not_eq_false] at h'
-    rw [hB r h'] at hr; exact Bool.noConfusion hr
+  grind
 
 instance (s : SymSrc) : Decidable s.Out := by
   cases s <;> unfold SymSrc.Out <;> infer_instance
@@ -71,18 +71,18 @@ theorem wr_load (t : ℕ) (ht : 10000 ≤ t ∧ t + 2 < 10500) (s : SymSrc) :
 theorem holds_congr {c c' : Config} {s : SymSrc} {p : SymPt} (hs : s.Out)
     (hc : ∀ r, Bk r = false → c'.nreg r = c.nreg r) (h : s.Holds c p) : s.Holds c' p := by
   cases s with
-  | vtx r => simp only [SymSrc.Holds] at h ⊢; rw [hc r hs]; exact h
+  | vtx r => simp only [SymSrc.Holds] at h ⊢; ram_grind
   | edge re rh =>
-    simp only [SymSrc.Holds] at h ⊢; rw [hc re hs.1, hc rh hs.2]; exact h
+    simp only [SymSrc.Holds] at h ⊢; ram_grind
   | regs r =>
     simp only [SymSrc.Holds] at h ⊢
     cases p with
     | vtx i =>
       simp only [SymPtIn] at h ⊢
-      rw [hc r hs.1, hc (r + 1) hs.2.1]; exact h
+      ram_grind
     | onEdge e h' =>
       simp only [SymPtIn] at h ⊢
-      rw [hc r hs.1, hc (r + 1) hs.2.1, hc (r + 2) hs.2.2]; exact h
+      ram_grind
 
 /-- Close a goal about explicit register updates by case analysis. -/
 macro "upd_solve" : tactic =>
@@ -102,12 +102,7 @@ theorem load_exec {P : Polygon} {W : ℕ} (t : ℕ) (hW : 1 ≤ W) (s : SymSrc) 
     simp only [SymSrc.load]
     exec_block
     · omega
-    · refine ⟨by omega, ?_, fun r' h1' h2' h3' => ?_⟩
-      · simp only [SymPtIn]
-        config_simp
-        refine ⟨?_, ?_⟩ <;> upd_solve
-      · config_simp
-        upd_solve
+    simp_all [SymPtIn] 
   | edge re rh =>
     simp only [SymSrc.Holds] at hp
     subst hp
@@ -117,15 +112,12 @@ theorem load_exec {P : Polygon} {W : ℕ} (t : ℕ) (hW : 1 ≤ W) (s : SymSrc) 
     exec_block
     · omega
     · refine ⟨by omega, ?_, fun r' h1' h2' h3' => ?_⟩
-      · simp only [SymPtIn]
-        config_simp
-        refine ⟨?_, ?_, ?_⟩ <;> upd_solve
-      · config_simp
-        upd_solve
+      · simp_all [SymPtIn] 
+      simp_all
   | regs r =>
     simp only [SymSrc.Holds] at hp
-    have h1 := hts r hs.1
-    have h2 := hts (r + 1) hs.2.1
+    
+    
     have h3 := hts (r + 2) hs.2.2
     simp only [SymSrc.load]
     exec_block
@@ -145,8 +137,7 @@ theorem load_exec {P : Polygon} {W : ℕ} (t : ℕ) (hW : 1 ≤ W) (s : SymSrc) 
 
 theorem Bk_false_ne {r : ℕ} (h : Bk r = false) (t : ℕ) (ht : 10000 ≤ t ∧ t + 2 < 10500) :
     r ≠ t ∧ r ≠ t + 1 ∧ r ≠ t + 2 := by
-  simp only [Bk, decide_eq_false_iff_not, not_and, not_lt] at h
-  omega
+  ram_grind
 
 /-- **The sign kernel on three sources.** -/
 theorem sgnS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (op : ℕ)
@@ -177,12 +168,9 @@ theorem sgnS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
     intro d t q hq d' hd
     cases q with
     | vtx i =>
-      simp only [SymPtIn] at hq ⊢
-      rw [hd t (Or.inl rfl), hd (t + 1) (Or.inr (Or.inl rfl))]; exact hq
+      core_grind
     | onEdge e h =>
-      simp only [SymPtIn] at hq ⊢
-      rw [hd t (Or.inl rfl), hd (t + 1) (Or.inr (Or.inl rfl)), hd (t + 2) (Or.inr (Or.inr rfl))]
-      exact hq
+      core_grind
   have j₁ : SymPtIn c₄ 10000 p₁ := keep c₁ 10000 p₁ i₁ c₄ fun r hr => by
     rw [hc₄]; config_simp
     rw [Machine.upd_other _ _ _ (by omega), r₃ r (by omega) (by omega) (by omega),
@@ -195,7 +183,7 @@ theorem sgnS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
     rw [Machine.upd_other _ _ _ (by omega)]
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, bit₅, sig₅⟩ := sig_exec (P := P) c₄ w₄ hG hW
     (by rw [hc₄]; config_simp; omega) l₁ l₂ l₃ j₁ j₂ j₃
-  have op₄ : c₄.nreg 10009 = op := by rw [hc₄]; config_simp
+  have op₄ : c₄.nreg 10009 = op := by ram_simp 
   rw [op₄] at sig₅
   have f₄ : FrameB Bk c₃ c₄ := by
     refine ⟨fun r hr => ?_, fun _ _ => rfl, rfl, rfl, rfl⟩

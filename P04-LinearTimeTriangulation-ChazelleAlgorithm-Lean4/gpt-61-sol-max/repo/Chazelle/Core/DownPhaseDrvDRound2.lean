@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvDRound
 
 /-!
@@ -22,33 +24,28 @@ open SortL (seg)
 
 theorem RF.base {B : Finset ℕ} {A A' : ℕ} {c c' : Config} {k : ℕ} (h : Restore.RF B A c c' k)
     (hA : A' ≤ A) : Restore.RF B A' c c' k :=
-  ⟨h.1, h.2.1, fun a ha => h.2.2.1 a (by omega), fun a ha => h.2.2.2.1 a (by omega),
-    h.2.2.2.2.1, h.2.2.2.2.2.1, h.2.2.2.2.2.2⟩
+  by core_grind
 
 /-- `buildNF` has at most `2 K + 1` arcs. -/
 theorem arcs_length_le {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     (hE : E.length = 2 * L.length) : (BuildNF.buildNF M Q L E).arcs.length ≤ 2 * L.length + 1 := by
   show (BuildNF.arcList M Q L E).length ≤ _
-  unfold BuildNF.arcList
-  split_ifs with h
-  · simp
-  · rw [List.length_map]
-    unfold BuildNF.gapStarts
-    exact (List.length_filter_le _ _).trans (by simp [hE])
+  grind [BuildNF.arcList, List.length_map, BuildNF.gapStarts]
 
-theorem chordListAt_robust {m : ℕ → ℕ} {A B : ℕ} {L : List (ℕ × ℕ × ℕ)}
+section
+variable {m : ℕ → ℕ}
+theorem chordListAt_robust {A B : ℕ} {L : List (ℕ × ℕ × ℕ)}
     (h : ChordListAt m A L) (hB : A + 3 * L.length ≤ B) :
     Robust B m (fun m' => ChordListAt m' A L) := by
   intro m' hm' i hi
-  obtain ⟨a1, a2, a3⟩ := h i hi
-  refine ⟨?_, ?_, ?_⟩
-  · rw [hm' _ (by omega)]; exact a1
-  · rw [hm' _ (by omega)]; exact a2
-  · rw [hm' _ (by omega)]; exact a3
+  ram_grind
 
-theorem seg_robust {m : ℕ → ℕ} {a n B : ℕ} (hB : a + n ≤ B) :
+theorem seg_robust {a n B : ℕ} (hB : a + n ≤ B) :
     Robust B m (fun m' => seg m' a n = seg m a n) :=
   fun m' hm' => SortL.seg_congr fun i hi => hm' _ (by omega)
+
+
+end
 
 theorem desc_robust {P : Polygon} {A A' : ℕ} {m₀ m : ℕ → ℕ} {D : ℕ} {M : Model}
     (hwf : ModelDescWF P A m₀ D) (hM : ModelDescAt m₀ D (Qof P) M)
@@ -98,10 +95,10 @@ theorem round_A {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E t 
   set H := c.nreg 210005 with hH
   set N := BuildNF.buildNF E.M E.Q L Ev with hN
   set R := L.length + 1 with hR
-  have hGM : GoodModel E.M := Or.inr ⟨E.Q, (shearInvariance (epsOf E.P) E.P).1 hE.hG.1, rfl⟩
+  
   have hareas := Gran.nf_areas hNW
   have hNAt := hNW.nfAt
-  have hRN : N.regions.length = R := by simp [hN, BuildNF.buildNF, hR]
+  have hRN : N.regions.length = R := by grind [BuildNF.buildNF]
   have hW := hI.wb
   have hBW : B₀ ≤ E.W := hW.1 ALLOC
   have hRKc : R ≤ E.Kc := by
@@ -118,37 +115,37 @@ theorem round_A {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E t 
   have h5R : 10 * R ≤ (E.Bf + 10) * R := Nat.mul_le_mul_right _ (by omega)
   -- 1. the header
   obtain ⟨c₁, k₁, e₁, hk₁, a12, a17, a13, a14, a15, a16, a18, a21, a20, a23, f₁⟩ :=
-    hdS_exec (P := E.P) c hW (H := H) rfl hI.r02 hI.r05 (by have := hareas.1; omega)
+    hdS_exec (P := E.P) c hW (H := H) rfl hI.r02 hI.r05 (by  omega)
   have w₁ := e₁.wb_right
   have g₁ : ∀ q, ¬ (216012 ≤ q ∧ q ≤ 216033) → c₁.nreg q = c.nreg q := fun q hq =>
-    f₁.1 q (by simpa using hq)
+    f₁.1 q (by omega_nf)
   have m₁ : c₁.nmem = c.nmem := f₁.2.2.1
   rw [hNAt.2.2.1, hRN] at a13
   rw [hNAt.2.1] at a17
   -- 2. the reservation
   obtain ⟨c₂, k₂, e₂, hk₂, A₂, r23, f₂, RF₂⟩ := resS_exec (P := E.P) w₁ a13 a23
-    (by rw [g₁ _ (by omega), hI.r02]) (by rw [g₁ _ (by unfold ALLOC; omega)]; omega) E.A₀
+    (by rw [g₁ _ (by omega), hI.r02]) (by rw [g₁ _ (by omega_nf)]; omega) E.A₀
   have w₂ := e₂.wb_right
   have g₂ : ∀ q, q ≠ 216023 → q ≠ 9999 → c₂.nreg q = c₁.nreg q := fun q h1 h2 =>
-    f₂.1 q (by simp [Bres, h1, h2])
+    f₂.1 q (by grind [Bres])
   have m₂ : c₂.nmem = c₁.nmem := f₂.2.2.1
-  have A₁ : c₁.nreg ALLOC = B₀ := g₁ _ (by unfold ALLOC; omega)
+  have A₁ : c₁.nreg ALLOC = B₀ := g₁ _ (by omega_nf)
   rw [A₁] at A₂
   -- 3. the set-up
   obtain ⟨c₃, k₃, e₃, hk₃, b19, b22, b30, b31, f₃⟩ := midS_exec (P := E.P) c₂ w₂ (R := R)
-    (B := B₀) (RB := c.nmem (H + 5)) (by rw [g₂ _ (by norm_num) (by norm_num), a13])
-    (by rw [g₂ _ (by norm_num) (by norm_num), a18])
-    (by rw [g₂ _ (by norm_num) (by norm_num), a15])
+    (B := B₀) (RB := c.nmem (H + 5)) (by ram_grind)
+    (by ram_grind)
+    (by ram_grind)
     (by rw [g₂ _ (by norm_num) (by norm_num), g₁ _ (by omega), hI.r05]) (by omega)
     (by have := hareas.2.2.1 0 (by rw [show N.nRegions = N.regions.length from rfl, hRN]; omega)
         omega)
   have w₃ := e₃.wb_right
   have g₃ : ∀ q, q ≠ 216019 → q ≠ 216022 → q ≠ 216030 → q ≠ 216031 → q ≠ 216033 →
-      c₃.nreg q = c₂.nreg q := fun q h1 h2 h3 h4 h5 => f₃.1 q (by simp [h1, h2, h3, h4, h5])
+      c₃.nreg q = c₂.nreg q := fun q h1 h2 h3 h4 h5 => f₃.1 q (by grind)
   have m₃ : c₃.nmem = c.nmem := by rw [f₃.2.2.1, m₂, m₁]
   have A₃ : c₃.nreg ALLOC = B₀ + 5 * R := by
-    rw [g₃ _ (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
-      (by unfold ALLOC; omega) (by unfold ALLOC; omega), A₂]
+    rw [g₃ _ (by omega_nf) (by omega_nf) (by omega_nf)
+      (by omega_nf) (by omega_nf), A₂]
   -- the kept registers
   have K3 : ∀ q, (210000 ≤ q ∧ q < 216012) ∨ (216034 ≤ q ∧ q < 220000) ∨ q = 230001 →
       c₃.nreg q = c.nreg q := fun q hq => by
@@ -161,11 +158,11 @@ theorem round_A {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E t 
   have RF₁ : Restore.RF DrvR.drvBands E.A₀ c c₁ k₁ :=
     rf_of_frameB (fun r hr => by
       simp only [decide_eq_true_eq] at hr
-      exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩) f₁
+      exact ⟨mem_drvBands (by omega) (by omega), by omega_nf⟩) f₁
   have RF₃ : Restore.RF DrvR.drvBands E.A₀ c₂ c₃ k₃ :=
     rf_of_frameB (fun r hr => by
       simp only [decide_eq_true_eq] at hr
-      exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩) f₃
+      exact ⟨mem_drvBands (by omega) (by omega), by omega_nf⟩) f₃
   have hlow : ∀ a, a < E.A₀ → c₃.nmem a = E.m₀ a := fun a ha => by rw [m₃]; exact hI.low a ha
   have hA0B : E.A₀ ≤ B₀ := hI.alloc
   refine ⟨c₃, k₁ + (k₂ + k₃), fun rest c' k' h => (Exec.seq e₁ (Exec.seq e₂ (Exec.seq e₃ h))).cast
@@ -207,9 +204,7 @@ theorem round_A {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E t 
     rw [K3' _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
       (by norm_num) (by norm_num), a18]
   · show c₃.nreg 216019 = B₀ + 3 * R; exact b19
-  · show c₃.nreg 216020 = 0
-    rw [K3' _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num), a20]
+  · ram_simp
   · show c₃.nreg 216021 = B₀
     rw [K3' _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
       (by norm_num) (by norm_num), a21]
@@ -217,7 +212,7 @@ theorem round_A {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E t 
   · exact b30
   · show c₃.nreg 216031 = c₃.nmem (H + 5) + 2; rw [b31, m₃]
   · show c₃.nreg 230001 = E.ctx; rw [K3 _ (Or.inr (Or.inr rfl)), hI.rctx]
-  · show B₀ + 3 * R + 2 * R ≤ c₃.nreg ALLOC; rw [A₃]; omega
+  · show B₀ + 3 * R + 2 * R ≤ c₃.nreg ALLOC; ram_grind
   · show c₃.nreg ALLOC + (E.Bf + 2) * R + 2 ≤ E.W
     rw [A₃]
     have : (E.Bf + 10) * R = (E.Bf + 2) * R + 8 * R := by ring

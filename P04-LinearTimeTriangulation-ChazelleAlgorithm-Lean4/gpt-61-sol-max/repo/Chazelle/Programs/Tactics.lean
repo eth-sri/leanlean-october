@@ -133,37 +133,44 @@ theorem spec_seq {s t : Stmt} {c : Config} {Q : Config → ℕ → Prop}
   obtain ⟨c₁, k₁, e₁, c', k₂, e₂, q⟩ := h
   exact ⟨c', k₁ + k₂, .seq e₁ e₂, q⟩
 
+section
+variable {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → Prop}
 /-- `ifLtN`, test true: cost `k + 1`. -/
-theorem spec_ifLtN_true {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → Prop}
+theorem spec_ifLtN_true
     (ht : c.nreg a < c.nreg b) (h : ∃ c' k, Exec P W t c c' k ∧ Q c' (k + 1)) :
     ∃ c' k, Exec P W (.ifLtN a b t e) c c' k ∧ Q c' k := by
   obtain ⟨c', k, ex, q⟩ := h
   exact ⟨c', k + 1, .ifLtN_true ht ex, q⟩
 
 /-- `ifLtN`, test false: cost `k + 2`. -/
-theorem spec_ifLtN_false {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → Prop}
+theorem spec_ifLtN_false
     (ht : ¬ c.nreg a < c.nreg b) (h : ∃ c' k, Exec P W e c c' k ∧ Q c' (k + 2)) :
     ∃ c' k, Exec P W (.ifLtN a b t e) c c' k ∧ Q c' k := by
   obtain ⟨c', k, ex, q⟩ := h
   exact ⟨c', k + 2, .ifLtN_false ht ex, q⟩
 
 /-- `ifLtR`, test true: cost `k + 1`. -/
-theorem spec_ifLtR_true {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → Prop}
+theorem spec_ifLtR_true
     (ht : c.rreg a < c.rreg b) (h : ∃ c' k, Exec P W t c c' k ∧ Q c' (k + 1)) :
     ∃ c' k, Exec P W (.ifLtR a b t e) c c' k ∧ Q c' k := by
   obtain ⟨c', k, ex, q⟩ := h
   exact ⟨c', k + 1, .ifLtR_true ht ex, q⟩
 
 /-- `ifLtR`, test false: cost `k + 2`. -/
-theorem spec_ifLtR_false {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → Prop}
+theorem spec_ifLtR_false
     (ht : ¬ c.rreg a < c.rreg b) (h : ∃ c' k, Exec P W e c c' k ∧ Q c' (k + 2)) :
     ∃ c' k, Exec P W (.ifLtR a b t e) c c' k ∧ Q c' k := by
   obtain ⟨c', k, ex, q⟩ := h
   exact ⟨c', k + 2, .ifLtR_false ht ex, q⟩
 
+
+end
+
+section
+variable {s : Stmt} {c : Config}
 /-- Plug in a spec lemma for a sub-statement: its cost bound and postcondition are all
 that the continuation may use. -/
-theorem spec_use {s : Stmt} {c : Config} {K : ℕ} {post : Config → Prop}
+theorem spec_use {K : ℕ} {post : Config → Prop}
     {Q : Config → ℕ → Prop}
     (h : ∃ c' k, Exec P W s c c' k ∧ k ≤ K ∧ post c')
     (hQ : ∀ c' k, k ≤ K → WordsBounded W c' → post c' → Q c' k) :
@@ -172,35 +179,36 @@ theorem spec_use {s : Stmt} {c : Config} {K : ℕ} {post : Config → Prop}
   exact ⟨c', k, ex, hQ c' k hk ex.wb_right hp⟩
 
 /-- Weaken the postcondition. -/
-theorem spec_imp {s : Stmt} {c : Config} {Q Q' : Config → ℕ → Prop}
+theorem spec_imp {Q Q' : Config → ℕ → Prop}
     (h : ∃ c' k, Exec P W s c c' k ∧ Q c' k) (hQ : ∀ c' k, Q c' k → Q' c' k) :
     ∃ c' k, Exec P W s c c' k ∧ Q' c' k := by
-  obtain ⟨c', k, ex, q⟩ := h
-  exact ⟨c', k, ex, hQ c' k q⟩
+  grind
+
+
+end
 
 end spec
 
 /-! ### Simp support -/
 
+section
+variable (pc : ℕ) (nreg : ℕ → ℕ) (rreg : ℕ → ℝ) (nmem : ℕ → ℕ) (rmem : ℕ → ℝ) (output : List Polygon.Triangle)
 /-- Reading a field of an explicitly built configuration. -/
-@[simp] theorem Config.nreg_mk (pc : ℕ) (nreg : ℕ → ℕ) (rreg : ℕ → ℝ) (nmem : ℕ → ℕ)
-    (rmem : ℕ → ℝ) (output : List Polygon.Triangle) :
+@[simp] theorem Config.nreg_mk :
     (Config.mk pc nreg rreg nmem rmem output).nreg = nreg := rfl
-@[simp] theorem Config.rreg_mk (pc : ℕ) (nreg : ℕ → ℕ) (rreg : ℕ → ℝ) (nmem : ℕ → ℕ)
-    (rmem : ℕ → ℝ) (output : List Polygon.Triangle) :
+@[simp] theorem Config.rreg_mk :
     (Config.mk pc nreg rreg nmem rmem output).rreg = rreg := rfl
-@[simp] theorem Config.nmem_mk (pc : ℕ) (nreg : ℕ → ℕ) (rreg : ℕ → ℝ) (nmem : ℕ → ℕ)
-    (rmem : ℕ → ℝ) (output : List Polygon.Triangle) :
+@[simp] theorem Config.nmem_mk :
     (Config.mk pc nreg rreg nmem rmem output).nmem = nmem := rfl
-@[simp] theorem Config.rmem_mk (pc : ℕ) (nreg : ℕ → ℕ) (rreg : ℕ → ℝ) (nmem : ℕ → ℕ)
-    (rmem : ℕ → ℝ) (output : List Polygon.Triangle) :
+@[simp] theorem Config.rmem_mk :
     (Config.mk pc nreg rreg nmem rmem output).rmem = rmem := rfl
-@[simp] theorem Config.output_mk (pc : ℕ) (nreg : ℕ → ℕ) (rreg : ℕ → ℝ) (nmem : ℕ → ℕ)
-    (rmem : ℕ → ℝ) (output : List Polygon.Triangle) :
+@[simp] theorem Config.output_mk :
     (Config.mk pc nreg rreg nmem rmem output).output = output := rfl
-@[simp] theorem Config.pc_mk (pc : ℕ) (nreg : ℕ → ℕ) (rreg : ℕ → ℝ) (nmem : ℕ → ℕ)
-    (rmem : ℕ → ℝ) (output : List Polygon.Triangle) :
+@[simp] theorem Config.pc_mk :
     (Config.mk pc nreg rreg nmem rmem output).pc = pc := rfl
+
+
+end
 
 /-- `simp only` with the configuration-projection and `upd` lemmas.  Reduces
 `({ c with nreg := upd c.nreg 0 5, … } : Config).nreg 0` to `5`, and `.nreg 1` to `c.nreg 1`

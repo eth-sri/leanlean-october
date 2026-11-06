@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvXRamB
 
 /-!
@@ -29,7 +31,7 @@ theorem NRegs.other {d d' : Config} {r v : ℕ} (h : NRegs d d' (upd d.nreg r v)
 theorem seqs_one (s : Stmt) : seqs [s] = s := rfl
 
 theorem tS_le {m T : ℕ} (β : Bool) (hT : T ≤ m) : tS m T β ≤ 2 * m := by
-  unfold tS; split_ifs <;> omega
+  core_grind
 
 theorem red_red {x M : ℕ} (_hM : 0 < M) (hx : x < 3 * M) :
     (if (if x < M then x else x - M) < M then (if x < M then x else x - M)
@@ -48,7 +50,7 @@ def Bcls (r : ℕ) : Bool :=
     (217090 ≤ r ∧ r ≤ 217097))
 
 theorem Blook_cls {r : ℕ} (h : Bcls r = false) : Blook r = false := by
-  simp only [Bcls, Blook, decide_eq_false_iff_not] at h ⊢; omega
+  core_grind
 
 section cls
 
@@ -77,9 +79,9 @@ theorem clsS_exec (d : Config) (hw : WordsBounded W d) {n m T HB h p : ℕ} {β 
       .addN 217061 217025 217061]) d d1 k1 ∧ k1 ≤ 2 ∧
       NRegs d d1 (upd d.nreg 217061 (tS m T β + (p - 6))) := by
     exec_block
-    · config_simp; rw [h25, h60, h41]; omega
+    · config_simp; omega
     · refine ⟨by omega, ?_, rfl, rfl, rfl, rfl⟩
-      config_simp; rw [h25, h60, h41]
+      simp_all
   have hw1 := e1.wb_right
   have f1 : FrameB Bcls d d1 := exec_frameB e1 (by decide)
   -- reduce twice
@@ -119,15 +121,13 @@ theorem clsS_exec (d : Config) (hw : WordsBounded W d) {n m T HB h p : ℕ} {β 
   have u4 : d4.nreg 217061 = tU m T β p := by rw [n4.other (by decide), v3]
   have v5 : d5.nreg 217062 = tK m T β p := by
     rw [n5.same, u4, g21 f4, g22 f4]
-    unfold tK Chazelle.Chain.sideE
-    have := tU_lt (T := T) β hm1 p
-    split_ifs <;> omega
+    grind [tK, Chazelle.Chain.sideE]
   -- lookup
   obtain ⟨d6, k6, e6, hk6, n6⟩ := x_copy (P := P) d5 hw5 217090 217062
   have hw6 := e6.wb_right
   have f6 : FrameB Bcls d d6 := f5.trans (exec_frameB e6 (by decide))
   have m6 : d6.nmem = d.nmem := f6.2.2.1
-  obtain ⟨d7, k7, e7, hk7, enc7, f7'⟩ := lookS_exec (P := P) d6 hw6 (by rw [m6]; exact hH) hwf hlen
+  obtain ⟨d7, k7, e7, hk7, enc7, f7'⟩ := lookS_exec (P := P) d6 hw6 (by grind) hwf hlen
     hHB (by omega) (by omega) ((f6.1 _ (by decide)).trans h20)
     ((f6.1 _ (by decide)).trans h27) ((f6.1 _ (by decide)).trans h34)
     ((f6.1 _ (by decide)).trans h35)
@@ -161,8 +161,7 @@ theorem clsS_exec (d : Config) (hw : WordsBounded W d) {n m T HB h p : ℕ} {β 
   have v9 : d9.nreg 217065 =
       if tZ n H m T β h p then 1 else 0 := by
     rw [n9.same, v8, (f8.1 _ (by decide)).trans h50]
-    unfold tZ
-    split_ifs <;> omega
+    grind [tZ]
   -- the regular-inner bit
   obtain ⟨d10, k10, e10, hk10, n10⟩ := x_const (P := P) d9 hw9 217064 1 (by omega)
   have hw10 := e10.wb_right
@@ -221,9 +220,7 @@ theorem clsS_exec (d : Config) (hw : WordsBounded W d) {n m T HB h p : ℕ} {β 
   obtain ⟨zb, hzb⟩ : ∃ zb : ℕ, zb = if tZ n H m T β h p then 1 else 0 := ⟨_, rfl⟩
   have hz1 : zb ≤ 1 := by rw [hzb]; split_ifs <;> omega
   have hzt : tZ n H m T β h p ↔ zb = 1 := by
-    rw [hzb]; constructor
-    · intro hz; rw [ite_eq_left hz]
-    · intro hz; by_contra hz'; rw [ite_eq_right hz'] at hz; omega
+    grind
   have t65 : d12.nreg 217065 = zb := by
     rw [n12.other (by decide), n11.other (by decide), n10.other (by decide), v9, hzb]
   have t65' : d13.nreg 217065 = zb := by
@@ -238,7 +235,7 @@ theorem clsS_exec (d : Config) (hw : WordsBounded W d) {n m T HB h p : ℕ} {β 
       f7'.1 _ (by decide), n6.other (by decide), n5.other (by decide), v4]
   have w11 : d11.nreg 217064 = if 6 ≤ p then 1 else 0 := by
     rw [n11.same, q60 f10, q41 f10, n10.same]
-    split_ifs <;> omega
+    grind
   have w12 : d12.nreg 217064 = if 6 ≤ p then 1 else 0 := by
     rw [n12.same, q60 f11, q42 f11, w11, ite_eq_right (show ¬ (2 * m + 6 < p) by omega)]
   have w13 : d13.nreg 217064 = if 6 ≤ p ∧ (p = 2 * m + 6 → zb = 1) then 1 else 0 := by
@@ -260,7 +257,7 @@ theorem clsS_exec (d : Config) (hw : WordsBounded W d) {n m T HB h p : ℕ} {β 
       ¬ (zb = 1 ∧ (tK m T β p = 0 ∨ tK m T β p = m))) ∧ (tU m T β p < m ↔ liV li = 1)) ↔
         RegIn n H li m T β h p := by
     unfold RegIn
-    have hl : liV li = 1 ↔ li = true := by cases li <;> simp [liV]
+    have hl : liV li = 1 ↔ li = true := by grind [liV]
     rw [hl, ← hzt]
     constructor
     · rintro ⟨⟨h6, hlast, hirr⟩, hside⟩; exact ⟨h6, hp, hlast, hirr, hside⟩
@@ -311,40 +308,38 @@ theorem peS_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool} {s :
     | vtx j =>
       simp only [Enc] at henc
       simp only [SymPt.Lt] at hs
-      refine spec_ifLtN_true (by rw [henc.1, h44]; omega) ?_
+      refine spec_ifLtN_true (by omega) ?_
       obtain ⟨d1, k1, e1, hk1, n1, -⟩ := ivBS_exec (P := P) d hw (src := 217071) (dst := 217100)
         h20 h26 h27 (by decide) (by decide) (by decide)
-      exact ⟨d1, k1, e1, by omega, by rw [n1, Machine.upd_same, henc.2]; rfl⟩
+      exact ⟨d1, k1, e1, by omega, by aesop⟩
     | onEdge e h =>
       simp only [Enc] at henc
       simp only [SymPt.Lt] at hs
-      refine spec_ifLtN_false (by rw [henc.1, h44]; omega) ?_
+      refine spec_ifLtN_false (by omega) ?_
       obtain ⟨d1, k1, e1, hk1, a1, o1, -, m1, -⟩ := qES_exec (P := P) d hw (src := 217071)
-        (dst := 217101) h20 h26 h27 (by rw [henc.2.1]; exact hs.1) hnW (by decide) (by decide)
+        (dst := 217101) h20 h26 h27 (by omega) hnW (by decide) (by decide)
         (by decide) (by decide) (by decide)
       have hq : DrvR.qE li n e < n := DownMath.qE_lt li hs.1
       rw [henc.2.1] at a1
       obtain ⟨d2, k2, e2, hk2, n2, -⟩ := succS_exec (P := P) d1 e1.wb_right (src := 217101)
-        (dst := 217102) (n := n) (by rw [o1 _ (by decide) (by decide), h20])
-        (by rw [o1 _ (by decide) (by decide), h27]) (by rw [a1]; exact hq) hnW (by decide)
-      have b2 : d2.nreg 217102 = (DrvR.qE li n e + 1) % n := by rw [n2, Machine.upd_same, a1]
-      have o2 : ∀ r, r ≠ 217102 → d2.nreg r = d1.nreg r := fun r hr => by
-        rw [n2, Machine.upd_other _ _ _ hr]
+        (dst := 217102) (n := n) (by simp_all)
+        (by simp_all) (by omega) hnW (by decide)
+      
+      
       obtain ⟨d3, k3, e3, hk3, n3, -⟩ := ivBS_exec (P := P) d2 e2.wb_right (src := 217102)
         (dst := 217103) (n := n) (li := li)
-        (by rw [o2 _ (by decide), o1 _ (by decide) (by decide), h20])
-        (by rw [o2 _ (by decide), o1 _ (by decide) (by decide), h26])
-        (by rw [o2 _ (by decide), o1 _ (by decide) (by decide), h27])
+        (by simp_all)
+        (by simp_all)
+        (by simp_all)
         (by decide) (by decide) (by decide)
       have b3 : d3.nreg 217103 = DrvR.ivB li n ((DrvR.qE li n e + 1) % n) := by
-        rw [n3, Machine.upd_same, b2]
-      have o3 : ∀ r, r ≠ 217103 → d3.nreg r = d2.nreg r := fun r hr => by
-        rw [n3, Machine.upd_other _ _ _ hr]
+        simp_all
+      
       have b72 : d3.nreg 217072 = h := by
-        rw [o3 _ (by decide), o2 _ (by decide), o1 _ (by decide) (by decide), henc.2.2]
+        simp_all
       have b101 : d3.nreg 217101 = DrvR.qE li n e := by
-        rw [o3 _ (by decide), o2 _ (by decide), a1]
-      have b102 : d3.nreg 217102 = (DrvR.qE li n e + 1) % n := by rw [o3 _ (by decide), b2]
+        simp_all
+      have b102 : d3.nreg 217102 = (DrvR.qE li n e + 1) % n := by simp_all
       have hw3 := e3.wb_right
       obtain ⟨d4, k4, e4, hk4, n4⟩ := x_ifR (P := P) (W := W) (a := 217072) (b := 217103)
         (r := 217100) (t := block [.copyN 217100 217101])

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepCh
 public import Chazelle.Core.ShearInv
 
@@ -39,35 +41,30 @@ def wrRS (B : ℕ → Bool) : Stmt → Bool
 theorem exec_rframeS {P : Polygon} {W : ℕ} {B : ℕ → Bool} {s : Stmt} {c c' : Config} {k : ℕ}
     (h : Exec P W s c c' k) (hs : wrRS B s = true) : ∀ r, B r = false → c'.rreg r = c.rreg r := by
   induction h with
-  | skip _ => exact fun _ _ => rfl
+  | skip _ => simp_all
   | @instr ins c c' _ he _ _ =>
     simp only [wrRS] at hs
     cases ins <;> simp only [wrRSOK, wrROK, Bool.false_eq_true] at hs <;>
       simp only [Instr.effect, Option.some.injEq] at he <;>
-      (try split at he) <;> (try simp only [Option.some.injEq, reduceCtorEq] at he) <;> subst he <;>
+      (try split at he) <;> simp_all <;> subst he <;>
       intro j hj <;>
-      first
-      | rfl
-      | (simp only [upd]; split_ifs with hh
-         · subst hh; simp_all
-         · rfl)
+      aesop (add simp [upd]) (add safe (by omega))
   | seq _ _ ih₁ ih₂ =>
-    simp only [wrRS, Bool.and_eq_true] at hs
-    exact fun r hr => (ih₂ hs.2 r hr).trans (ih₁ hs.1 r hr)
+    simp_all [wrRS, Bool.and_eq_true] <;> omega_nf
   | ifLtN_true _ _ ih =>
-    simp only [wrRS, Bool.and_eq_true] at hs; exact ih hs.1
+    simp_all [wrRS, Bool.and_eq_true] <;> omega_nf
   | ifLtN_false _ _ ih =>
-    simp only [wrRS, Bool.and_eq_true] at hs; exact ih hs.2
+    simp_all [wrRS, Bool.and_eq_true] <;> omega_nf
   | ifLtR_true _ _ ih =>
-    simp only [wrRS, Bool.and_eq_true] at hs; exact ih hs.1
+    simp_all [wrRS, Bool.and_eq_true] <;> omega_nf
   | ifLtR_false _ _ ih =>
-    simp only [wrRS, Bool.and_eq_true] at hs; exact ih hs.2
-  | whileLtN_false _ _ => exact fun _ _ => rfl
+    simp_all [wrRS, Bool.and_eq_true] <;> omega_nf
+  | whileLtN_false _ _ => simp_all
   | whileLtN_true _ _ _ ih₁ ih₂ =>
-    exact fun r hr => (ih₂ hs r hr).trans (ih₁ (by simpa [wrRS] using hs) r hr)
-  | whileLtR_false _ _ => exact fun _ _ => rfl
+    simp_all [wrRS] <;> omega_nf
+  | whileLtR_false _ _ => simp_all
   | whileLtR_true _ _ _ ih₁ ih₂ =>
-    exact fun r hr => (ih₂ hs r hr).trans (ih₁ (by simpa [wrRS] using hs) r hr)
+    simp_all [wrRS] <;> omega_nf
 
 /-- The registers of `PLoaded`. -/
 def PLReg (r : ℕ) : Prop :=
@@ -78,18 +75,18 @@ theorem PLoaded.congr {P : Polygon} {D NB s mm ti bb A K CB AB RB SB LB : ℕ} {
     (h : PLoaded P D NB s mm ti bb A K CB AB RB SB LB c)
     (hr : ∀ r, PLReg r → c'.nreg r = c.nreg r) : PLoaded P D NB s mm ti bb A K CB AB RB SB LB c' := by
   have g : ∀ r, PLReg r → ∀ v, c.nreg r = v → c'.nreg r = v := fun r h v hv => (hr r h).trans hv
-  exact ⟨g _ (by unfold PLReg; omega) _ h.n, g _ (by unfold PLReg; omega) _ h.one,
-    g _ (by unfold PLReg; omega) _ h.zero, g _ (by unfold PLReg; omega) _ h.two,
-    g _ (by unfold PLReg; omega) _ h.six, g _ (by unfold PLReg; omega) _ h.rD,
-    g _ (by unfold PLReg; omega) _ h.rNB, g _ (by unfold PLReg; omega) _ h.rs,
-    g _ (by unfold PLReg; omega) _ h.rm, g _ (by unfold PLReg; omega) _ h.rti,
-    g _ (by unfold PLReg; omega) _ h.rbb, g _ (by unfold PLReg; omega) _ h.twoM,
-    g _ (by unfold PLReg; omega) _ h.nW, g _ (by unfold PLReg; omega) _ h.tEnd,
-    g _ (by unfold PLReg; omega) _ h.sS, g _ (by unfold PLReg; omega) _ h.tv,
-    g _ (by unfold PLReg; omega) _ h.rA, g _ (by unfold PLReg; omega) _ h.rK,
-    g _ (by unfold PLReg; omega) _ h.rCB, g _ (by unfold PLReg; omega) _ h.rAB,
-    g _ (by unfold PLReg; omega) _ h.rRB, g _ (by unfold PLReg; omega) _ h.rSB,
-    g _ (by unfold PLReg; omega) _ h.rLB⟩
+  exact ⟨g _ (by omega_nf) _ h.n, g _ (by omega_nf) _ h.one,
+    g _ (by omega_nf) _ h.zero, g _ (by omega_nf) _ h.two,
+    g _ (by omega_nf) _ h.six, g _ (by omega_nf) _ h.rD,
+    g _ (by omega_nf) _ h.rNB, g _ (by omega_nf) _ h.rs,
+    g _ (by omega_nf) _ h.rm, g _ (by omega_nf) _ h.rti,
+    g _ (by omega_nf) _ h.rbb, g _ (by omega_nf) _ h.twoM,
+    g _ (by omega_nf) _ h.nW, g _ (by omega_nf) _ h.tEnd,
+    g _ (by omega_nf) _ h.sS, g _ (by omega_nf) _ h.tv,
+    g _ (by omega_nf) _ h.rA, g _ (by omega_nf) _ h.rK,
+    g _ (by omega_nf) _ h.rCB, g _ (by omega_nf) _ h.rAB,
+    g _ (by omega_nf) _ h.rRB, g _ (by omega_nf) _ h.rSB,
+    g _ (by omega_nf) _ h.rLB⟩
 
 /-- A neutral origin and direction, and the granularity saved in `120049`. -/
 def setA : Stmt :=
@@ -108,17 +105,13 @@ theorem sS_of_desc {m : ℕ → ℕ} {D : ℕ} {Q : Polygon} {H : Host} {C : Cha
     (hD : ChainDescAt m D Q H C) :
     (if m (D + 4) = 1 then C.topIdx else 2 * C.m - C.topIdx) = C.sideS C.sideBeta := by
   obtain ⟨-, -, -, -, -, hd4⟩ := hD
-  unfold Chain.sideS
-  by_cases hb : C.sideBeta = true
-  · rw [ite_eq_left (hd4.2 hb), ite_eq_left hb]
-  · rw [ite_eq_right (fun h => hb (hd4.1 h)), ite_eq_right hb]
+  simp_all [Chain.sideS] 
 
 /-- The chord order only reads the chord area, the chain and the top vertex of the values. -/
 theorem chLe_V_congr {P : Polygon} {C : Chain} {V V' : QV} {m : ℕ → ℕ} {i j : ℕ}
     (hCB : V.CB = V'.CB) (hm : V.m = V'.m) (hs : V.s = V'.s) (htv : V.tv = V'.tv) :
     ChLe P C V m i j ↔ ChLe P C V' m i j := by
-  unfold ChLe xpX' xpSym chH chL
-  rw [hCB, hm, hs, htv]
+  grind [ChLe, xpX', xpSym, chH, chL]
 
 theorem arcs_pos {C : Chain} {Q : Polygon} {N : NF} (hs : C.P.Simple)
     (hN : IsNF (chainModel C) Q N) : 0 < N.arcs.length := by
@@ -178,9 +171,9 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   have hLle : Nat.clog 2 (N.arcs.length + N.chords.length + 1) ≤
       N.arcs.length + N.chords.length + 1 := by
     rw [Nat.clog_le_iff_le_pow (by norm_num)]; exact (Nat.lt_two_pow_self).le
-  have hmn : C.m < P.n := by have := C.m_lt; rw [hCQ, hQn] at this; exact this
+  have hmn : C.m < P.n := by have := C.m_lt; simp_all
   have hm1 := C.one_le
-  have hsc := SortR.sortCost_ge 500 N.chords.length
+  
   -- 1. the constants
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, PL₁⟩ := pLoad_exec (P := P) c hw hD hCQ hsl hNF (by omega)
     (by omega) hW
@@ -206,7 +199,7 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       by config_simp; exact F₁.1 _ (by decide),
       by config_simp; rw [F₁.1 _ (by decide), hAl]⟩
   have PL₂ := PL₁.congr fun r hr => F₂.1 r (by
-    unfold PLReg at hr; simp only [decide_eq_false_iff_not]; omega)
+    grind [PLReg, decide_eq_false_iff_not])
   have a9₂ : c₂.nreg 9999 = A₀ := by rw [F₂.1 _ (by decide), F₁.1 _ (by decide), hAl]
   have hm₂ : c₂.nmem = c.nmem := F₂.2.2.1.trans F₁.2.2.1
   -- 3. the chord table
@@ -214,8 +207,8 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     (by rw [PL₂.twoM, PL₂.rm]) (by rw [PL₂.nW, PL₂.rm]) (by rw [PL₂.tEnd, PL₂.rm]) s25
   have hv₂ : QVOK P C (qvOf c₂) :=
     ⟨hCQ, PL₂.rs, PL₂.rm, by show c₂.nreg 120021 = _; rw [PL₂.sS]; exact sS_of_desc hD,
-      by show c₂.nreg 120023 < P.n; rw [s23]; omega, by show c₂.nreg 120024 ≤ 1; rw [s24]; omega,
-      by show c₂.nreg 120015 < P.n; rw [PL₂.rs]; rw [hCQ, hQn] at hsl; exact hsl⟩
+      by show c₂.nreg 120023 < P.n; omega, by show c₂.nreg 120024 ≤ 1; omega,
+      by show c₂.nreg 120015 < P.n; rw [PL₂.rs]; simp_all⟩
   have hK₂ : (qvOf c₂).K = N.chords.length := PL₂.rK
   have hCB₂ : (qvOf c₂).CB = c.nmem (c.nreg 110001 + 3) := PL₂.rCB
   have hrec : ∀ i, i < (qvOf c₂).K → (qvOf c₂).CB + 5 * i + 2 ≤ A₀ := fun i hi => by
@@ -223,19 +216,19 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     have h1 : Robust A₀ c.nmem fun m' => m' (m' (c.nreg 110001 + 3) + (5 * i + 4)) =
         (N.chord i).dn := fun m' hm' => by
       have := ((hNFw m' hm').2.2.2.2.2.1 i hi).2.2.2.2
-      simpa only [Nat.add_assoc] using this
+      omega
     have := (NFLoc.robust_addr2 h1).2
-    rw [hCB₂]; omega
+    omega
   have hh : ∀ i, i < (qvOf c₂).K → c₂.nmem ((qvOf c₂).CB + 5 * i) < P.n := fun i hi => by
     rw [hK₂] at hi
     rw [hm₂, hCB₂, (hNF.2.2.2.2.2.1 i hi).1]
     obtain ⟨-, -, -, -, -, -, -, -, -, hhh, -⟩ := hN
-    have := hhh i hi; rwa [hQn] at this
+    have := hhh i hi; omega
   have htv : (qvOf c₂).tv < P.n := by
     show c₂.nreg 120022 < P.n; rw [PL₂.tv]; exact Nat.mod_lt _ (by omega)
   obtain ⟨c₃, k₃, e₃, hk₃, F₃, al3a, al3b, R6₃, R12₃, ch1, ch2, chlt, chinj, chsort⟩ :=
     chSort_exec (P := P) hG hW e₂.wb_right hv₂ hq₂ a9₂ hrec hh htv (by omega)
-      (by rw [hK₂]; omega)
+      (by grind)
   rw [hK₂] at hk₃ al3a al3b ch1 ch2 chlt chinj chsort
   rw [hAL] at al3a al3b ch2
   set A₁ := c₃.nreg 9999 with hA₁
@@ -271,7 +264,7 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   -- 7. the inverse table
   have mem₆ : ∀ a, a < A₀ → c₆.nmem a = c.nmem a := fun a ha => by
     rw [F₆.2.2.1 _ (by omega), F₅.2.2.1 _ (by omega), F₄.2.2.1,
-      F₃.2.2.1 a (by rw [hAL, a9₂]; exact ha), hm₂]
+      F₃.2.2.1 a (by grind), hm₂]
   have hseq : ∀ p, p < N.arcs.length →
       c₆.nmem (c.nmem (c.nreg 110001 + 6) + p) = N.seq.getD p 0 := fun p hp => by
     rw [mem₆ _ (by omega)]
@@ -311,8 +304,8 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       (by show c₂.nreg 120016 = c₈.nreg 120016; rw [PL₂.rm, PL₈.rm])
       (by show c₂.nreg 120015 = c₈.nreg 120015; rw [PL₂.rs, PL₈.rs])
       (by show c₂.nreg 120022 = c₈.nreg 120022; rw [PL₂.tv, PL₈.tv])
-  refine ⟨c₈, _, ex, by omega, ?_, by rw [hCH]; exact ch1, by rw [hCH, hMD]; exact ch2,
-    by rw [hMD]; exact al3b, ?_, PL₈, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, Alt, Klt, ?_, ?_,
+  refine ⟨c₈, _, ex, by omega, ?_, by omega, by grind,
+    by grind, ?_, PL₈, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, Alt, Klt, ?_, ?_,
     ?_, ?_, ?_, ?_⟩
   · -- the frame
     have hband : ∀ r, (110000 ≤ r ∧ r < 130000) → bandOf r ∈ aBands := by
@@ -346,10 +339,10 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       (fun r hr => by
         simp only [BMD, BTB, BPT, BPI, Bool.or_eq_true, decide_eq_true_eq] at hr
         by_cases h9 : r = 9999
-        · exact Or.inr h9
+        · omega
         · left; exact hband r (by omega)) (hrr₂ _)
-    have hA₂ : c.nreg ALLOC ≤ c₂.nreg ALLOC := by rw [hAL, a9₂, hAl]
-    exact (FA.trans FB hA₂).trans FC (by rw [hAL, hAl]; show A₀ ≤ A₁; omega)
+    have hA₂ : c.nreg ALLOC ≤ c₂.nreg ALLOC := by grind
+    exact (FA.trans FB hA₂).trans FC (by grind)
   · rw [F₈.1 _ (by decide), a9₇, hMD]
   · rw [K58 _ (by decide) (by decide) (by decide) (by decide), F₄.1 _ (by decide),
       R12₃ _ (by omega) (by omega), s25]
@@ -365,7 +358,7 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   · rw [hMD, F₈.2.2.1, F₇.2.2.1 _ (by omega), F₆.2.2.1 _ (by omega), m0₅]
   · intro i hi
     rw [hMD, F₈.2.2.1, F₇.2.2.1 _ (by omega), F₆.2.2.1 _ (by omega), mi₅ i hi, F₄.2.2.1,
-      F₃.2.2.1 _ (by rw [hAL, a9₂]; omega), hm₂]
+      F₃.2.2.1 _ (by grind), hm₂]
   · rw [F₈.1 _ (by decide), F₇.1 _ (by decide), tb₆, hMD]
   · rw [F₈.1 _ (by decide), F₇.1 _ (by decide), l₆]
   · intro j hj

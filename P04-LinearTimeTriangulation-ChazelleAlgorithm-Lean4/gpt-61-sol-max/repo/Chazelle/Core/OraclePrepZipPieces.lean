@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepZipMath
 
 /-!
@@ -41,16 +43,14 @@ theorem arcPosS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
       c'.nreg 110101 = c.nmem (AB + 5 * c.nmem (SB + p) + o + 1) := by
     unfold arcPosS
     exec_block
-    · rw [hSB, hp]; omega
-    · config_simp; rw [hSB, hp]; omega
-    · config_simp; rw [hSB, hp]; omega
-    · config_simp; rw [hSB, hp]; omega
-    · config_simp; rw [hSB, hp, hAB]; omega
-    · config_simp; rw [hSB, hp, hAB, ho]; omega
-    · config_simp; rw [hSB, hp, hAB, ho, h1]; omega
-    · refine ⟨rfl, ?_, ?_⟩
-      · config_simp; rw [hSB, hp, hAB, ho]; congr 1; ring
-      · config_simp; rw [hSB, hp, hAB, ho, h1]; congr 1; ring
+    · omega
+    · simp_all +zetaDelta <;> omega
+    · simp_all +zetaDelta <;> omega
+    · simp_all +zetaDelta <;> omega
+    · simp_all +zetaDelta <;> omega
+    · simp_all +zetaDelta <;> omega
+    · config_simp; ram_grind
+    simp_all +arith
   exact ⟨c', k, e, hk, exec_frameB e (by decide), v1, v2⟩
 
 /-- The flag of equal keys into `110213`. -/
@@ -72,14 +72,14 @@ theorem eqS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   by_cases h1 : c.nreg 110212 = c.nreg 110210
   · by_cases h2 : c.nreg 110103 = c.nreg 110211
     · exact ⟨_, _, ifEq_eq_exec h1 (ifEq_eq_exec h2 (Exec.constN hw 110213 1 hW)), by omega,
-        by rw [ite_eq_left ⟨h1, h2⟩]; config_simp⟩
+        by ram_simp⟩
     · obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (P := P) (W := W) (S := .instr (.constN 110213 1)) h2
         (Exec.constN hw 110213 0 (Nat.zero_le _))
-      exact ⟨_, _, ifEq_eq_exec h1 e', by omega, by rw [ite_eq_right (fun h => h2 h.2)]; config_simp⟩
+      exact ⟨_, _, ifEq_eq_exec h1 e', by omega, by ram_simp⟩
   · obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (P := P) (W := W)
       (S := ifEq 110103 110211 (.instr (.constN 110213 1)) (.instr (.constN 110213 0))) h1
       (Exec.constN hw 110213 0 (Nat.zero_le _))
-    exact ⟨_, _, e', by omega, by rw [ite_eq_right (fun h => h1 h.1)]; config_simp⟩
+    exact ⟨_, _, e', by omega, by ram_simp⟩
 
 /-- The arc before (`true`) or after (`false`) the located arc, when the flag is set, into
 `110214`. -/
@@ -116,36 +116,36 @@ theorem adjS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
     cases d
     · simp only [Bool.false_eq_true, ite_false]
       unfold adjS
-      have e1 := Exec.addN (P := P) hw 110214 120170 120011 (by rw [hqd, h1]; omega)
+      have e1 := Exec.addN (P := P) hw 110214 120170 120011 (by omega)
       have w1 := e1.wb_right
       unfold succP
       by_cases hs : q + 1 < A
       · have ht : ({ c with nreg := upd c.nreg 110214 (c.nreg 120170 + c.nreg 120011) } :
             Config).nreg 110214 < ({ c with nreg := upd c.nreg 110214 (c.nreg 120170 +
-            c.nreg 120011) } : Config).nreg 120030 := by config_simp; rw [hqd, h1, hA]; exact hs
+            c.nreg 120011) } : Config).nreg 120030 := by ram_simp
         exact ⟨_, _, ifEq_eq_exec he' (.seq e1 (.ifLtN_true ht (.skip w1))), by omega,
-          by rw [ite_eq_left hs]; config_simp; rw [hqd, h1]⟩
+          by ram_simp⟩
       · have ht : ¬ ({ c with nreg := upd c.nreg 110214 (c.nreg 120170 + c.nreg 120011) } :
             Config).nreg 110214 < ({ c with nreg := upd c.nreg 110214 (c.nreg 120170 +
-            c.nreg 120011) } : Config).nreg 120030 := by config_simp; rw [hqd, h1, hA]; exact hs
+            c.nreg 120011) } : Config).nreg 120030 := by ram_simp
         exact ⟨_, _, ifEq_eq_exec he' (.seq e1 (.ifLtN_false ht
           (Exec.constN w1 110214 0 (Nat.zero_le _)))), by omega,
-          by rw [ite_eq_right hs]; config_simp⟩
+          by ram_simp⟩
     · simp only [ite_true]
       unfold adjS predP
       by_cases hz : q = 0
-      · have ht : ¬ c.nreg 120012 < c.nreg 120170 := by rw [h0, hqd, hz]; exact Nat.lt_irrefl 0
+      · have ht : ¬ c.nreg 120012 < c.nreg 120170 := by omega
         exact ⟨_, _, ifEq_eq_exec he' (.ifLtN_false ht (Exec.subN hw 110214 120030 120011)),
-          by omega, by rw [ite_eq_left hz]; config_simp; rw [hA, h1]⟩
-      · have ht : c.nreg 120012 < c.nreg 120170 := by rw [h0, hqd]; omega
+          by omega, by simp_all⟩
+      · have ht : c.nreg 120012 < c.nreg 120170 := by omega
         exact ⟨_, _, ifEq_eq_exec he' (.ifLtN_true ht (Exec.subN hw 110214 120170 120011)),
-          by omega, by rw [ite_eq_right hz]; config_simp; rw [hqd, h1]⟩
-  · have he' : c.nreg 110213 ≠ c.nreg 120011 := by rw [h1]; exact he
+          by omega, by simp_all⟩
+  · have he' : c.nreg 110213 ≠ c.nreg 120011 := by omega
     rw [ite_eq_right he]
     cases d <;>
     · unfold adjS
       obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (P := P) (W := W) he' (Exec.copyN hw 110214 120170)
-      exact ⟨_, _, e', by omega, by config_simp; exact hqd⟩
+      exact ⟨_, _, e', by omega, by ram_simp⟩
 
 /-- The normalised pair of `110299` and `110214`: minimum `110291`, maximum `110292`, flag
 `110290` (`1` iff the minimum plus two is at most the maximum). -/
@@ -174,24 +174,18 @@ theorem normS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       c₁.nreg 110291 = min a b ∧ c₁.nreg 110292 = max a b ∧
       (∀ r, r ≠ 110291 → r ≠ 110292 → c₁.nreg r = c.nreg r) := by
     by_cases h : a < b
-    · have ht : c.nreg 110299 < c.nreg 110214 := by rw [ha, hb]; exact h
+    · have ht : c.nreg 110299 < c.nreg 110214 := by omega
       refine spec_ifLtN_true ht ?_
       exec_block
-      refine ⟨by omega, ?_, ?_, fun r h1 h2 => ?_⟩
-      · config_simp; rw [ha, min_eq_left h.le]
-      · config_simp; rw [hb, max_eq_right h.le]
-      · config_simp; upd_solve
-    · have ht : ¬ c.nreg 110299 < c.nreg 110214 := by rw [ha, hb]; exact h
+      simp_all +zetaDelta <;> omega
+    · have ht : ¬ c.nreg 110299 < c.nreg 110214 := by omega
       refine spec_ifLtN_false ht ?_
       exec_block
-      refine ⟨by omega, ?_, ?_, fun r h1 h2 => ?_⟩
-      · config_simp; rw [hb, min_eq_right (by omega)]
-      · config_simp; rw [ha, max_eq_left (by omega)]
-      · config_simp; upd_solve
+      simp_all
   have w₁ := e₁.wb_right
-  have g1 : c₁.nreg 120011 = 1 := by rw [r₁ _ (by decide) (by decide), h1]
+  have g1 : c₁.nreg 120011 = 1 := by ram_simp
   have e₂ := Exec.addN (P := P) w₁ 110215 110291 120011 (by
-    rw [v1, g1]; have := min_le_left a b; omega)
+    omega)
   have w₂ := e₂.wb_right
   set c₂ : Config := { c₁ with nreg := upd c₁.nreg 110215 (c₁.nreg 110291 + c₁.nreg 120011) }
     with hc₂
@@ -199,20 +193,18 @@ theorem normS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have x92 : c₂.nreg 110292 = max a b := by rw [hc₂]; config_simp; exact v2
   have x91 : c₂.nreg 110291 = min a b := by rw [hc₂]; config_simp; exact v1
   by_cases hf : min a b + 2 ≤ max a b
-  · have ht : c₂.nreg 110215 < c₂.nreg 110292 := by rw [x15, x92]; omega
+  · have ht : c₂.nreg 110215 < c₂.nreg 110292 := by omega
     have ex := Exec.seq e₁ (Exec.seq e₂ (Exec.ifLtN_true (e := .instr (.constN 110290 0)) ht
       (Exec.constN w₂ 110290 1 (by omega))))
     refine ⟨_, _, ex, by omega, exec_frameB ex hwr, fun hn => ?_, fun x hx => ?_⟩
-    · unfold normP at hn; rw [ite_eq_left hf] at hn; cases hn
+    · grind [normP]
     · unfold normP at hx; rw [ite_eq_left hf] at hx; cases hx
-      refine ⟨by config_simp, ?_, ?_⟩
-      · config_simp; exact x91
-      · config_simp; exact x92
-  · have ht : ¬ c₂.nreg 110215 < c₂.nreg 110292 := by rw [x15, x92]; omega
+      omega_nf
+  · have ht : ¬ c₂.nreg 110215 < c₂.nreg 110292 := by omega
     have ex := Exec.seq e₁ (Exec.seq e₂ (Exec.ifLtN_false (t := .instr (.constN 110290 1)) ht
       (Exec.constN w₂ 110290 0 (Nat.zero_le _))))
     refine ⟨_, _, ex, by omega, exec_frameB ex hwr, fun _ => by config_simp, fun x hx => ?_⟩
-    unfold normP at hx; rw [ite_eq_right hf] at hx; cases hx
+    grind [normP]
 
 end
 

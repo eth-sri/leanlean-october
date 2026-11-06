@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepMachine7
 
 /-!
@@ -85,30 +87,30 @@ theorem stretch_end (hP : J.P.Simple)
       hM.ends e hA
     have hxab : x = a ∨ x = b := by
       by_cases hxa : x = a
-      · exact Or.inl hxa
+      · simp_all
       · right
         rw [hcab] at hxe
         exact seg_end hxe hxD hopen hxa
     rcases hxab with rfl | rfl
     · refine ⟨pa, ta, hAa, ?_⟩
-      have := off_right_pt J hP hS₂ hS₂f hAa.1 hAa.2.1 hAa.2.2.1 (by rw [hAa']; exact hx)
-        (by rw [hAa']; exact hxv)
-      exact ⟨this.1, this.2, by rw [hAa']; exact hx, by rw [hAa']; exact hxv⟩
+      have := off_right_pt J hP hS₂ hS₂f hAa.1 hAa.2.1 hAa.2.2.1 (by simp_all)
+        (by simp_all)
+      ram_grind
     · refine ⟨pb, tb, hBb, ?_⟩
-      have := off_right_pt J hP hS₂ hS₂f hBb.1 hBb.2.1 hBb.2.2.1 (by rw [hBb']; exact hx)
-        (by rw [hBb']; exact hxv)
-      exact ⟨this.1, this.2, by rw [hBb']; exact hx, by rw [hBb']; exact hxv⟩
+      have := off_right_pt J hP hS₂ hS₂f hBb.1 hBb.2.1 hBb.2.2.1 (by simp_all)
+        (by simp_all)
+      ram_grind
   -- a chord through the shared vertex is a shared chord, a stop chord
   have hshared : J.shared ∉ e := by
     intro hv'
     obtain ⟨σ, hσ, hfree, heq⟩ := chord_eq_shoot_of_end J.whole hA hv' hvD
     exact hns (Or.inl ⟨σ, hσ, hfree, heq⟩)
   rcases he with ((⟨c', hc', hfree, rfl⟩ | ⟨c', hc', hfree, rfl⟩) | hsh) | htop
-  · have hc'S : c' ∈ S₂ := by simpa using hc'
+  · have hc'S : c' ∈ S₂ := by grind
     by_cases hr : Merge.lend c' ∈ J.right.set
     · exact key _ (origin_mem J) hr (fun h => hshared (h ▸ origin_mem J))
     · exact absurd (Or.inr ⟨c', hc'S, _, 1, Or.inl ⟨rfl, rfl⟩, hr, hfree, rfl⟩) hns
-  · have hc'S : c' ∈ S₂ := by simpa using hc'
+  · have hc'S : c' ∈ S₂ := by grind
     by_cases hr : Merge.rend c' ∈ J.right.set
     · exact key _ (origin_mem J) hr (fun h => hshared (h ▸ origin_mem J))
     · exact absurd (Or.inr ⟨c', hc'S, _, -1, Or.inr ⟨rfl, rfl⟩, hr, hfree, rfl⟩) hns
@@ -154,20 +156,18 @@ theorem next_event_origin (hP : J.P.Simple)
         ((∃ c ∈ S₂, (∃ V, LabS J S₂ L V ∧ Chazelle.Chain.TouchesIn (chainModel J.right).D c V) ∧
           ((σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c)) ∧
           a ∈ J.right.set ∧ a ≠ J.shared) ∨ a = J.right.top) := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hF.2.1
-  have hvD : J.shared ∉ J.whole.dom := fun hd =>
-    J.whole.not_mem_set_of_mem_dom hd (J.left_set_subset J.shared_mem_left)
+  
+  
+  
   -- the stretch attachment of `e`
   obtain ⟨pB, tB, heB, hB0, hBL, hBr, hBv⟩ :=
     stretch_end J hP hS₂.2.1 hS₂.1 he (hstop e he heK)
-  have hLK : ((rL1 J + rL2 J : ℕ) : ℝ) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK) := by linarith
+  
   have heKB : sidePt (chainModel J.whole).W pK tK ≠ sidePt (chainModel J.whole).W pB tB := by
     intro h
-    have := off_right_pt J hP hS₂.2.1 hS₂.1 hpK htK0 htK1 (by rw [h]; exact hBr)
-      (by rw [h]; exact hBv)
-    linarith [this.2]
+    have := off_right_pt J hP hS₂.2.1 hS₂.1 hpK htK0 htK1 (by grind)
+      (by grind)
+    linarith
   have hnobr : ∀ e' ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e' pK tK →
       ∃ (pb : ℕ) (tb : ℝ), SideAttach (chainModel J.whole).W e' pb tb ∧
         off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) <
@@ -175,7 +175,7 @@ theorem next_event_origin (hP : J.P.Simple)
     intro e' he' heK'
     obtain ⟨pb, tb, hb, -, hbL, -⟩ :=
       stretch_end J hP hS₂.2.1 hS₂.1 he' (hstop e' he' heK')
-    exact ⟨pb, tb, hb, hbL⟩
+    grind
   obtain ⟨h, hh, hhK⟩ := next_event_detected J hP hS₂ hF hG hL hvalid hp₀ ht₀ hnc₀ hfG₀ ho₀
     hpK htK0 htK1 hoK hgap he heK heB heKB hB0 hBL hnobr
   have hhF : h ∈ F₂plus J S₂ := hh.1
@@ -188,14 +188,14 @@ theorem next_event_origin (hP : J.P.Simple)
       · by_contra hr
         exact hns (Or.inr ⟨c, hc, _, 1, Or.inl ⟨rfl, rfl⟩, hr, hfree, rfl⟩)
       · intro hlv
-        exact hns (Or.inl ⟨1, Or.inl rfl, by rw [← hlv]; exact hfree, by rw [hlv]⟩)
+        exact hns (Or.inl ⟨1, Or.inl rfl, by grind, by rw [hlv]⟩)
     · refine ⟨_, -1, Or.inr rfl, hfree, rfl, Or.inl ⟨c, hc, htouch, Or.inr ⟨rfl, rfl⟩, ?_, ?_⟩⟩
       · by_contra hr
         exact hns (Or.inr ⟨c, hc, _, -1, Or.inr ⟨rfl, rfl⟩, hr, hfree, rfl⟩)
       · intro hlv
-        exact hns (Or.inl ⟨-1, Or.inr rfl, by rw [← hlv]; exact hfree, by rw [hlv]⟩)
+        exact hns (Or.inl ⟨-1, Or.inr rfl, by grind, by rw [hlv]⟩)
   · exact absurd (Or.inl ⟨σ, hσ, hfree, rfl⟩) hns
-  · exact ⟨_, σ, hσ, hfree, rfl, Or.inr rfl⟩
+  grind
 
 end Machine
 

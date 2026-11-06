@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoLab0R
 
 /-!
@@ -45,47 +47,44 @@ def LocAt (C : Chain) (Q : Polygon) (N : NF) (p j : ℕ) : Prop :=
     ((chainModel C).IsCut (N.F (chainModel C) Q) (p : ℝ) →
       sk (chainModel C) Q N j = (p : ℝ) ∨ ek (chainModel C) Q N j = (p : ℝ))
 
-theorem key_zero (M : Model) (Q : Polygon) (p : ℕ) : M.key Q ⟨p, 0⟩ = (p : ℝ) := by
-  show (p : ℝ) + M.param Q ⟨p, 0⟩ = p
-  have : M.param Q ⟨p, 0⟩ = 0 := rfl
-  rw [this, add_zero]
+section
+variable (M : Model) (Q : Polygon)
+theorem key_zero (p : ℕ) : M.key Q ⟨p, 0⟩ = (p : ℝ) := by
+  simp_all
 
-theorem pp_zero (M : Model) (Q : Polygon) (n p : ℕ) : ProperPos M Q n ⟨p, 0⟩ := by
+theorem pp_zero (n p : ℕ) : ProperPos M Q n ⟨p, 0⟩ := by
   have : M.param Q ⟨p, 0⟩ = 0 := rfl
-  exact ⟨by rw [this], by rw [this]; exact zero_lt_one, Nat.zero_le _⟩
+  exact ⟨by rw [this], by simp_all, Nat.zero_le _⟩
 
-theorem gS0_val (m f : ℕ → ℕ) :
+
+end
+
+section
+variable (m f : ℕ → ℕ)
+theorem gS0_val :
     regB m gS0 f gL = f ALLOC ∧ regB m gS0 f lMD = f (sw 31) ∧
     regB m gS0 f lCD = f (sw 31) + f K1 ∧ regB m gS0 f lNF = f (sw 4) ∧
     regB m gS0 f lE = f (sw 34) - f K1 ∧ regB m gS0 f lH = 0 ∧
     ∀ q, q ≠ gL → ¬ (sw 1100 ≤ q ∧ q ≤ sw 1119) → regB m gS0 f q = f q := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, fun q h1 h2 => regB_other _ _ _ (fun i hi => ?_)⟩
-  · simp only [gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
+  · aesop
+  · aesop
+  · aesop
+  · aesop
+  · aesop
+  · aesop
   · simp only [gS0, List.mem_cons, List.not_mem_nil, or_false] at hi
-    unfold gL lMD lCD lNF lE lH sw at *
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> omega
+    core_grind
 
-theorem gS0_ok (m f : ℕ → ℕ) (hb : f (sw 31) + f K1 ≤ W) : okB W m gS0 f := by
+theorem gS0_ok (hb : f (sw 31) + f K1 ≤ W) : okB W m gS0 f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
     iscr_sw (by omega) (by omega)
   have hb' : f 240031 + f 240611 ≤ W := hb
   simp only [gS0, okB, okI, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  exact ⟨s 1001 (by norm_num) (by norm_num), s 1100 (by norm_num) (by norm_num),
-    ⟨s 1101 (by norm_num) (by norm_num), hb'⟩, s 1102 (by norm_num) (by norm_num),
-    s 1103 (by norm_num) (by norm_num), ⟨s 1104 (by norm_num) (by norm_num), Nat.zero_le _⟩,
-    trivial⟩
+  simp_all +arith
+
+
+end
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 20000 in
@@ -106,12 +105,12 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
   have hS := sideD₂ hA
   have hK := hA.hK
   have hfix : ∀ q, IFix q → c.nreg q = c₀.nreg q := fun q hq => hI.hin q hq
-  have e31 : c.nreg (sw 31) = c₀.nreg (sw 31) := hfix _ (by unfold IFix sw; omega)
-  have e4 : c.nreg (sw 4) = c₀.nreg (sw 4) := hfix _ (by unfold IFix sw; omega)
-  have e34 : c.nreg (sw 34) = 2 * J.right.m + 7 := (hfix _ (by unfold IFix sw; omega)).trans hS.hnr
+  have e31 : c.nreg (sw 31) = c₀.nreg (sw 31) := hfix _ (by omega_nf)
+  have e4 : c.nreg (sw 4) = c₀.nreg (sw 4) := hfix _ (by omega_nf)
+  have e34 : c.nreg (sw 34) = 2 * J.right.m + 7 := (hfix _ (by omega_nf)).trans hS.hnr
   have k1 : c.nreg K1 = 1 := (hK.fix hI).2.1
   have hmdW : c.nreg (sw 31) + c.nreg K1 ≤ W := by
-    rw [e31, k1]; have := hS.hmwf.1; have := hI.hA; have := hI.hw.1 ALLOC; omega
+    rw [e31, k1]; have := hS.hmwf.1; ram_grind
   unfold gapS gapK
   unfold gapK at hroom
   refine IRS.seq (K₁ := 6) (K₂ := lh1K (c₀.nreg TLR) + (1 + lh1K (c₀.nreg TLR)))
@@ -120,30 +119,30 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
   obtain ⟨v1, v2, v3, v4, v5, v6, vo⟩ := gS0_val c.nmem c.nreg
   set c₁ : Config := { c with nreg := regB c.nmem gS0 c.nreg } with hc₁
   have eA1 : c₁.nreg ALLOC = c.nreg ALLOC :=
-    vo ALLOC (by unfold ALLOC gL sw; omega) (by unfold ALLOC sw; omega)
-  have eT1 : c₁.nreg TLR = c₀.nreg TLR := hI₁.hin _ (by unfold IFix TLR sw; omega)
+    vo ALLOC (by omega_nf) (by omega_nf)
+  have eT1 : c₁.nreg TLR = c₀.nreg TLR := hI₁.hin _ (by omega_nf)
   have hL₁ : LCtx P W J.right N₂ E c₁ := lctx_of hS hI₁ hA.htab hA.hTB hA.hTW
-    (by show regB _ _ _ _ = _; rw [v2, e31])
-    (by show regB _ _ _ _ = _; rw [v3, e31, k1])
-    (by show regB _ _ _ _ = _; rw [v4, e4])
+    (by ram_grind)
+    (by ram_grind)
+    (by ram_grind)
   have hE1 : c₁.nreg lE = 2 * J.right.m + 6 := by
-    show regB _ _ _ _ = _; rw [v5, e34, k1]; omega
+    grind
   have hH1 : c₁.nreg lH = 0 := v6
   have hn₂ : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
   refine IRS.seq (K₁ := lh1K (c₀.nreg TLR)) (K₂ := 1 + lh1K (c₀.nreg TLR))
-    ((lh1_irs hI₁ hK hL₁ (by rw [hE1, hn₂]; omega) (by rw [hH1]; exact pp_zero _ _ _ _)
-      (by rw [eT1, eA1]; omega)).mono (by rw [eT1]) (fun _ h => h)) ?_
+    ((lh1_irs hI₁ hK hL₁ (by omega) (by rw [hH1]; exact pp_zero _ _ _ _)
+      (by ram_grind)).mono (by rw [eT1]) (fun _ h => h)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨hj1, hl1, hl2, hLL2, hAl2, hlist2, hm2, fr2, -, -, -⟩
   have fr2' : ∀ q, bandOf q ∉ oracleBands → ¬ (sw 1108 ≤ q ∧ q ≤ sw 1119) → q ≠ ALLOC →
       c₂.nreg q = c₁.nreg q := fun q h1 h2 h3 => fr2 q h1 h2 h3
   refine IRS.seq (K₁ := 1) (K₂ := lh1K (c₀.nreg TLR))
-    (IRS.block [.constN lE 6] hI₂ ⟨⟨iscr_sw (by unfold lE sw; omega) (by unfold lE sw; omega),
-      by have := hA.hWm; omega⟩, trivial⟩) ?_
+    (IRS.block [.constN lE 6] hI₂ ⟨⟨iscr_sw (by omega_nf) (by omega_nf),
+      by omega⟩, trivial⟩) ?_
   rintro c₃ hI₃ hA₃ hA₃' rfl
   set c₃ : Config := { c₂ with nreg := regB c₂.nmem [.constN lE 6] c₂.nreg } with hc₃
   have o3 : ∀ q, q ≠ lE → c₃.nreg q = c₂.nreg q := fun q hq => by
     simp only [hc₃, regB, regI]; exact upd_other _ _ _ hq
-  have hE3 : c₃.nreg lE = 6 := by simp only [hc₃, regB, regI]; exact upd_same _ _ _
+  have hE3 : c₃.nreg lE = 6 := by simp only [hc₃, regB, regI]; ram_simp
   have nO : ∀ q, 240000 ≤ q → q < 250000 → bandOf q ∉ oracleBands := fun q h1 h2 =>
     not_oracle_sw h1 h2
   have k32 : ∀ q, (q = lMD ∨ q = lCD ∨ q = lNF ∨ q = lH ∨ q = gL) → c₃.nreg q = c₁.nreg q := by
@@ -152,36 +151,35 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
       (rw [o3 _ (by decide)]
        exact fr2' _ (nO _ (by decide) (by decide)) (by decide) (by decide))
   have hL₃ : LCtx P W J.right N₂ E c₃ := lctx_of hS hI₃ hA.htab hA.hTB hA.hTW
-    (by rw [k32 _ (Or.inl rfl)]; show regB _ _ _ _ = _; rw [v2, e31])
-    (by rw [k32 _ (Or.inr (Or.inl rfl))]; show regB _ _ _ _ = _; rw [v3, e31, k1])
-    (by rw [k32 _ (Or.inr (Or.inr (Or.inl rfl)))]; show regB _ _ _ _ = _; rw [v4, e4])
-  have hH3 : c₃.nreg lH = 0 := by rw [k32 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl)))), hH1]
-  have eT3 : c₃.nreg TLR = c₀.nreg TLR := hI₃.hin _ (by unfold IFix TLR sw; omega)
+    (by ram_grind)
+    (by ram_grind)
+    (by ram_grind)
+  have hH3 : c₃.nreg lH = 0 := by ram_grind
+  have eT3 : c₃.nreg TLR = c₀.nreg TLR := hI₃.hin _ (by omega_nf)
   have eA3 : c₃.nreg ALLOC = c.nreg ALLOC + 3 := by
-    rw [o3 _ (by unfold lE ALLOC sw; omega), hAl2, eA1]
-  refine ((lh1_irs hI₃ hK hL₃ (by rw [hE3, hn₂]; omega) (by rw [hH3]; exact pp_zero _ _ _ _)
-      (by rw [eT3, eA3]; omega)).mono (by rw [eT3]) ?_)
+    ram_grind
+  refine ((lh1_irs hI₃ hK hL₃ (by omega) (by rw [hH3]; exact pp_zero _ _ _ _)
+      (by ram_grind)).mono (by rw [eT3]) ?_)
   rintro c₄ ⟨hj4, hl4, hl4', hLL4, hAl4, hlist4, hm4, fr4, -, -, -⟩
   have fr4' : ∀ q, bandOf q ∉ oracleBands → ¬ (sw 1108 ≤ q ∧ q ≤ sw 1119) → q ≠ ALLOC →
       c₄.nreg q = c₃.nreg q := fun q h1 h2 h3 => fr4 q h1 h2 h3
-  have hm3 : c₃.nmem = c₂.nmem := rfl
-  refine ⟨?_, by rw [hAl4, eA3], fun a ha => ?_, fun r h1 h2 h3 h4 => ?_, c₂.nreg lJ, c₄.nreg lJ,
+  
+  refine ⟨?_, by omega, fun a ha => ?_, fun r h1 h2 h3 h4 => ?_, c₂.nreg lJ, c₄.nreg lJ,
     ⟨hj1, ?_, ?_⟩, ⟨hj4, ?_, ?_⟩, fun i hi => ⟨?_, ?_⟩⟩
   · rw [fr4' gL (nO _ (by decide) (by decide)) (by decide) (by decide),
       k32 _ (Or.inr (Or.inr (Or.inr (Or.inr rfl))))]
-    show regB _ _ _ _ = _; rw [v1]
-  · rw [hm4 a (by rw [eA3]; omega), hm3, hm2 a (by rw [eA1]; exact ha)]
+    omega
+  · grind
   · have h3' : ¬ (sw 1108 ≤ r ∧ r ≤ sw 1119) :=
       fun h => h3 ⟨le_trans (show sw 1100 ≤ sw 1108 by decide) h.1, h.2⟩
     have h3e : r ≠ lE := by rintro rfl; exact h3 (by decide)
     rw [fr4' r h1 h3' h4, o3 r h3e, fr2' r h1 h3' h4]
-    show regB _ _ _ _ = _
-    exact vo r h2 h3
+    ram_grind
   · intro hc; rw [hE1, hH1, key_zero] at hl1; exact hl1 hc
   · intro hc; rw [hE1, hH1, key_zero] at hl2; exact hl2 hc
   · intro hc; rw [hE3, hH3, key_zero] at hl4; exact hl4 hc
-  · intro hc; rw [hE3, hH3, key_zero] at hl4'; exact hl4' hc
-  · rw [hm4 _ (by rw [eA3]; omega), hm3, ← eA1, hlist2 i hi]
+  · intro hc; rw [hE3, hH3, key_zero] at hl4'; ram_grind
+  · grind
   · rw [show c.nreg ALLOC + 3 + i = c₃.nreg ALLOC + i by rw [eA3], hlist4 i hi]
 
 end

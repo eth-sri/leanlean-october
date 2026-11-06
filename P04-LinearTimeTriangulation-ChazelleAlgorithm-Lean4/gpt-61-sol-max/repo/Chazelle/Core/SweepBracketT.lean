@@ -33,11 +33,13 @@ section ChainWalk2
 
 variable (J : Merge.Junction)
 
+section
+variable (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
+include hP Q hS₂
 /-- The facts at a tie step: a chord with an attachment in the `C₁` part is not the chord `f`
 arriving at the tie, is not attached at the tie unless it is `f'`, and the two attachments of
 `f` have distinct offsets. -/
-theorem tie_step_facts2 (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
+theorem tie_step_facts2
     {f f' : Set Point} {pn : ℕ} {tn : ℝ} {pf : ℕ} (hf : f ∈ F₂plus J S₂)
     (hf' : f' ∈ F₂plus J S₂) (hne : f' ≠ f) (hfA : SideAttach (chainModel J.whole).W f pn tn)
     (hfF : SideAttach (chainModel J.whole).W f pf 0)
@@ -73,14 +75,14 @@ theorem tie_step_facts2 (hP : J.P.Simple) {Q : Polygon}
   · have hk := off_inj hg0 hgn b0 b1 f0 f1 heq
     obtain ⟨rfl, rfl⟩ := sideKey_inj hB.2.1 hB.2.2.1 hfF.2.1 hfF.2.2.1 hk
     rcases tie_third hM hFs hf hf' he (Ne.symm hne) hfF hA' hB with h | h
-    · exact hef h
-    · exact hne' h
+    all_goals grind
   · exact WalkAx.key_ne_of_pt_ne hfA hfF hNF (off_inj hg0 hgn n0 n1 f0 f1 heq)
 
+section
+variable (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂))
+include hF
 /-- The forward invariant propagates across ties. -/
-theorem propag_I2 (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {lo : ℝ}
+theorem propag_I2 {lo : ℝ}
     (hlo : ((rL1 J + rL2 J : ℕ) : ℝ) ≤ lo) : Propag J S₂ (PhiI J S₂ lo) := by
   intro f f' pn tn pf pb tb hf hf' hne hfA hfF hNF hA' hB hBne hn0 hnL hf0 hfL hΦ e he hne'
     pw tw pb' tb' hW hB' hWB hoW hoB
@@ -97,12 +99,10 @@ theorem propag_I2 (hP : J.P.Simple) {Q : Polygon}
     push Not at hc
     have := no_cross_off hC.hM hC.hF hF.1 hf he (Ne.symm hef) hfF hfA (Ne.symm hNF) hB' hW hg0
       hgn h (lt_of_le_of_ne hc (Ne.symm hBF)) h1
-    linarith [this.2]
+    linarith
 
 /-- The backward invariant propagates across ties. -/
-theorem propag_K2 (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) (oA : ℝ) :
+theorem propag_K2 (oA : ℝ) :
     Propag J S₂ (PhiK J S₂ oA) := by
   intro f f' pn tn pf pb tb hf hf' hne hfA hfF hNF hA' hB hBne hn0 hnL hf0 hfL hΦ e he hne'
     pw tw pb' tb' hW hB' hWB hoW hoB hle
@@ -121,21 +121,23 @@ theorem propag_K2 (hP : J.P.Simple) {Q : Polygon}
       exfalso
       have := no_cross_off hC.hM hC.hF hF.1 hf he (Ne.symm hef) hfA hfF hNF hB' hW hg0 hgn h
         hb hlt
-      linarith [this.2]
+      linarith
   · exact hΦ e he hef pw tw pb' tb' hW hB' hWB hoW hoB (by linarith)
 
 /-! ## The ends of a chain -/
 
+
+
+end
+
+end
+
+section
+variable (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂) {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1) {G : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂)) {h : Set Point} (hh : h ∈ F₂plus J S₂) {ph pz : ℕ} {th tz : ℝ} (hPa : SideAttach (chainModel J.whole).W h ph th) (hZa : SideAttach (chainModel J.whole).W h pz tz) (hne : sidePt (chainModel J.whole).W ph th ≠ sidePt (chainModel J.whole).W pz tz) (hS : SideOf (chainModel J.whole) ρ h G)
+include hP Q hS₂ hρ hG h hh hPa hZa hne hS
 /-- **The backward end** of a chain (orientation `-1`) lies in the `C₁` part before every
 non-cut position facing `G` there. -/
-theorem back_end2 (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂) {ρ : ℝ}
-    (hρ : ρ = 1 ∨ ρ = -1) {G : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    {h : Set Point} (hh : h ∈ F₂plus J S₂) {ph pz : ℕ} {th tz : ℝ}
-    (hPa : SideAttach (chainModel J.whole).W h ph th)
-    (hZa : SideAttach (chainModel J.whole).W h pz tz)
-    (hne : sidePt (chainModel J.whole).W ph th ≠ sidePt (chainModel J.whole).W pz tz)
-    (hS : SideOf (chainModel J.whole) ρ h G)
+theorem back_end2
     (hori : 0 < -1 * ρ * ((sidePt (chainModel J.whole).W ph th).1 -
       (sidePt (chainModel J.whole).W pz tz).1))
     (hPL : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
@@ -167,7 +169,7 @@ theorem back_end2 (hP : J.P.Simple) {Q : Polygon}
     by_contra hlt
     push Not at hlt
     rcases hZ0.lt_or_eq with hpos | hzero
-    · exact hZout ⟨hpos, hlt⟩
+    · grind
     · apply hsa
       rcases hP0.lt_or_eq with hP0' | hP0'
       · exact (sideInArc_rev_iff_off hg0 hgn kZ0 kZ1 kP0 kP1 kx0 kx1 (by linarith)).2
@@ -189,14 +191,7 @@ theorem back_end2 (hP : J.P.Simple) {Q : Polygon}
 
 /-- **The forward end** of a chain (orientation `1`) is the shared vertex copy at offset `0`, or
 lies in the `C₁` part after every non-cut position facing `G` there. -/
-theorem fwd_end2 (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂) {ρ : ℝ}
-    (hρ : ρ = 1 ∨ ρ = -1) {G : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    {h : Set Point} (hh : h ∈ F₂plus J S₂) {ph pz : ℕ} {th tz : ℝ}
-    (hPa : SideAttach (chainModel J.whole).W h ph th)
-    (hZa : SideAttach (chainModel J.whole).W h pz tz)
-    (hne : sidePt (chainModel J.whole).W ph th ≠ sidePt (chainModel J.whole).W pz tz)
-    (hS : SideOf (chainModel J.whole) ρ h G)
+theorem fwd_end2
     (hori : 0 < 1 * ρ * ((sidePt (chainModel J.whole).W ph th).1 -
       (sidePt (chainModel J.whole).W pz tz).1))
     (hPL : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
@@ -227,9 +222,7 @@ theorem fwd_end2 (hP : J.P.Simple) {Q : Polygon}
   · right
     have hLZ : ((rL1 J + rL2 J : ℕ) : ℝ) ≤
         off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by
-      by_contra hlt
-      push Not at hlt
-      exact hZout ⟨hpos, hlt⟩
+      grind
     refine ⟨hLZ, ?_⟩
     have hPZ : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
         off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by linarith
@@ -241,8 +234,11 @@ theorem fwd_end2 (hP : J.P.Simple) {Q : Polygon}
     rcases hle.lt_or_eq with hq | hq
     · exact hq
     · exact absurd ⟨h, hh, pz, tz, hZa, off_inj hg0 hgn kx0 kx1 kZ0 kZ1 hq⟩ hnc₀
-  · exact Or.inl hzero.symm
+  grind
 
+
+
+end
 
 /-- **The kind of the last chord of a chain**: inside a chord of `S₂` whose side `ρ` is the region
 `V` of the start, or (with `V`) a gap label; or a shared chord; or a top chord. -/
@@ -251,14 +247,16 @@ def ChainKind (S₂ : Set (Set Point)) (ρ : ℝ) (V h : Set Point) : Prop :=
       (V' = V ∨ (GapLab J S₂ V ∧ GapLab J S₂ V')) ∧ SideOf (chainModel J.right) ρ c V') ∨
     J.shared ∈ h ∨ J.right.top ∈ h
 
+section
+variable (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite)
+include hP hS₂ hS₂f
 /-- **A chord of `F₂⁺` inside a chord of `S₂x`** is inside a chord of `S₂` (that chord), or is
 the chord itself, a shared or a top chord. -/
-theorem kind_of_S₂x (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {f c : Set Point}
+theorem kind_of_S₂x {f c : Set Point}
     (hf : f ∈ F₂plus J S₂) (hc : c ∈ S₂x J S₂) (hfc : f ⊆ c) :
     c ∈ S₂ ∨ J.shared ∈ f ∨ J.right.top ∈ f := by
   rcases hc with hc | ⟨hcF, hcA⟩
-  · exact Or.inl hc
+  · simp_all
   have hC := corr_right0 J hP hS₂ hS₂f
   have hfe : f = c := hC.nest f hf c hcF hfc
   subst hfe
@@ -266,12 +264,11 @@ theorem kind_of_S₂x (hP : J.P.Simple) {S₂ : Set (Set Point)}
   · left
     have := s2_eq_of_sub J (S₂ := Merge.augChords J.right) subset_rfl hcA (hS₂ hc₀)
       (F₂plus_subset J hS₂ hf) subset_rfl hfc₀
-    rw [this]; exact hc₀
-  · exact Or.inr h
+    simp_all
+  simp_all
 
 /-- The kind of the last chord from the tracked data. -/
-theorem chainKind_of (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {ρ : ℝ} {V₀ V h : Set Point}
+theorem chainKind_of {ρ : ℝ} {V₀ V h : Set Point}
     (hh : h ∈ F₂plus J S₂) (hV : V ∈ (chainModel J.right).regions S₂)
     (hrel : V = V₀ ∨ (GapLab J S₂ V₀ ∧ GapLab J S₂ V))
     (htr : (∃ c ∈ S₂x J S₂, h ⊆ c ∧ SideOf (chainModel J.right) ρ c V) ∨
@@ -279,9 +276,11 @@ theorem chainKind_of (hP : J.P.Simple) {S₂ : Set (Set Point)}
     ChainKind J S₂ ρ V₀ h := by
   rcases htr with ⟨c, hc, hhc, hVs⟩ | hk
   · rcases kind_of_S₂x J hP hS₂ hS₂f hh hc hhc with hc' | hk
-    · exact Or.inl ⟨c, hc', hhc, V, hV, hrel, hVs⟩
-    · exact Or.inr hk
+    all_goals (grind [Chazelle.Core.Sweep.ChainKind])
   · exact Or.inr hk
+
+
+end
 
 /-- **The end of a chain** (without `TopStrict`): as `ChainEnd`, with the kind of the last chord
 (`ChainKind`). -/
@@ -387,17 +386,13 @@ theorem chain_gen2 (hP : J.P.Simple) {Q : Polygon}
           (beyond (F₂plus J S₂) (θ * ρ) Pf).ncard := by
         refine Set.ncard_lt_ncard ?_ (hF.1.subset fun h hh => hh.1)
         refine ⟨fun h ⟨hh, z, hz, hz'⟩ => ⟨hh, z, hz, ?_⟩, fun hsub => ?_⟩
-        · have e : θ * ρ * (Pf.1 - z.1) = θ * ρ * (Pf.1 - Bp.1) + θ * ρ * (Bp.1 - z.1) := by
-            ring
-          rw [e]
-          exact add_pos hori' hz'
+        · grind
         · obtain ⟨-, z, hz, hz'⟩ := hsub ⟨hf', Bp, hB.2.2.2.1, hori'⟩
           obtain ⟨hseg', -, -, -, -⟩ := hM.attach_seg (hFs hf') hA' hB (Ne.symm hBne)
           rw [hseg'] at hz
           obtain ⟨s, hs0, hs1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hz
           simp only [Geometry.lerp_fst] at hz'
-          have : θ * ρ * (Bp.1 - (Pf.1 + s * (Bp.1 - Pf.1))) =
-              (1 - s) * (θ * ρ * (Bp.1 - Pf.1)) := by ring
+          
           nlinarith
       exact ih _ (lt_of_lt_of_le hlt hN) f' ((g + d') % W.n) 0 pb tb V' hV' hrel' le_rfl hf'
         hA' hB (Ne.symm hBne) hS' hori' (Or.inl ⟨c', hc', hfc', hVs'⟩) hin.1 hin.2 hΦ'
@@ -414,12 +409,10 @@ theorem chain_gen2 (hP : J.P.Simple) {Q : Polygon}
       omega
     rcases split_step J hP hS₂ hF hδ hf hc hfc hfF hρ hG hV hS hVs with
       hRL | ⟨-, Vg, -, hRLg⟩ | ⟨hgV, f', hf', hne, hA', hS', hpart⟩
-    · exact absurd hRL (hU V)
-    · exact absurd hRLg (hU Vg)
+    · grind
+    · grind
     · have hgV₀ : GapLab J S₂ V₀ := by
-        rcases hrel with rfl | ⟨h, -⟩
-        · exact hgV
-        · exact h
+        grind
       rcases hpart with ⟨c', hc', hfc', V', hV', hVs', hgV'⟩ | hoff
       · exact hstep f' V' rfl hf' hne hA' hS' hV' (Or.inr ⟨hgV₀, hgV'⟩)
           (Or.inl ⟨c', hc', hfc', hVs'⟩)
@@ -432,7 +425,7 @@ theorem chain_gen2 (hP : J.P.Simple) {Q : Polygon}
       simp at hin1
     rcases local_step2 J hP hS₂ hF hd' hfF.2.1 hfF.2.2.1 hsec' hf hc hfc hfF hρ hG hV hS hVs
       with hRL | ⟨htf0, f', hf', hne, hA', hS', hpart⟩
-    · exact absurd hRL (hU V)
+    · grind
     · subst htf0
       exact hstep f' V rfl hf' hne hA' hS' hV hrel hpart
 
@@ -459,15 +452,15 @@ def BracketConcl2 (S₂ : Set (Set Point)) (ρ : ℝ) (V : Set Point) (o₀ : �
         ((rL1 J + rL2 J : ℕ) : ℝ) →
       off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) ≠ 0 → False
 
+section
+variable (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂) (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1) {G V : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
+include hP Q hS₂ hF hρ hG
 /-- **The bracket lemma, from a tie.**  Let `fb`, `ff` be the two chords of `F₂⁺` of a tie at a
 position `A` inside the right stretch, with the region `G` (without a label) on their side `ρ`,
 `fb` oriented by `-1` and `ff` by `1`, each contained in a chord of `S₂` with `V` on its side `ρ`
 (or ending at the shared vertex).  Then for every non-cut position of the `C₁` part facing `G`,
 the conclusion `BracketConcl2` holds. -/
-theorem bracket_core2 (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1)
-    {G V : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
+theorem bracket_core2
     (hU : ∀ V', ¬ RLabel J S₂ G V')
     {fb ff : Set Point} (hfb : fb ∈ F₂plus J S₂) (hff : ff ∈ F₂plus J S₂) (hbf : fb ≠ ff)
     {pa : ℕ}
@@ -530,9 +523,9 @@ theorem bracket_core2 (hP : J.P.Simple) {Q : Polygon}
     intro pw tw hW hoW
     rcases key_of_two hM (hFs hfb) hbA hbB hbne hW with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
     · linarith
-    · have hout : ¬ (0 < o (pw + tw) ∧ o (pw + tw) < L) := fun h => by linarith [h.2]
+    · have hout : ¬ (0 < o (pw + tw) ∧ o (pw + tw) < L) := fun h => by linarith
       have := back_end2 J hP hS₂ hρ hG hfb hbA hbB hbne hbS hbo hAL hout hp₀ ht₀ hnc₀ hfG₀ ho₀
-      linarith [this.2]
+      linarith
   -- the base of the forward run
   have hbase : PhiI J S₂ o₀ ff oA := by
     intro e he hne pw tw pb tb hW hB hWB hoW hoB
@@ -546,7 +539,7 @@ theorem bracket_core2 (hP : J.P.Simple) {Q : Polygon}
       push Not at hc
       have := no_cross_off hM hFs hF.1 hhb he (Ne.symm hehb) hPa hZa hPZ hB hW hg0 hgn
         (by linarith) hc (by linarith)
-      linarith [this.2]
+      linarith
     have hle := hΦb e he hehb pw tw pb tb hW hB hWB (by linarith) hoB hBP
     rcases hle.lt_or_eq with h | h
     · exact h
@@ -554,8 +547,7 @@ theorem bracket_core2 (hP : J.P.Simple) {Q : Polygon}
       have hk := off_inj hg0 hgn kB0 kB1 kA0 kA1 h
       obtain ⟨rfl, rfl⟩ := sideKey_inj hB.2.1 hB.2.2.1 hbA.2.1 hbA.2.2.1 hk
       rcases tie_third hM hFs hff hfb he (Ne.symm hbf) hfA hbA hB with h' | h'
-      · exact hne h'
-      · exact heb h'
+      all_goals grind
   -- the forward run
   obtain ⟨hf, hhf, qP, sP, qZ, sZ, hQa, hZa', hQZ, hSf, horif, hTf, hQ0, hQL, hZout', hΦf⟩ :=
     chain_gen2 J hP hS₂ hF hρ (Or.inl rfl) hG hU (PhiI J S₂ o₀)
@@ -570,28 +562,25 @@ theorem bracket_core2 (hP : J.P.Simple) {Q : Polygon}
     rintro rfl
     rcases key_of_two hM (hFs he) hQa hZa' hQZ hW with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
     · linarith
-    · rcases hoZ with h | h <;> linarith
+    grind
   have h1 := hΦf e he hehf pw tw pb tb hW hB hWB hoW hoB
   rcases hfe with hz | ⟨hLz, hz⟩
   · have hB0' : 0 < o (pb + tb) := lt_of_le_of_ne (off_nonneg kB0 hgn) (Ne.symm hB0)
     have := no_cross_off hM hFs hF.1 hhf he (Ne.symm hehf) hZa' hQa (Ne.symm hQZ) hB hW hg0 hgn
-      (by rw [hz]; exact hQ0) (by rw [hz]; exact hB0') h1
-    linarith [this.2]
+      (by grind) (by grind) h1
+    linarith
   · rcases hoZ with h | h
     · linarith
     · have := no_cross_off hM hFs hF.1 hhf he (Ne.symm hehf) hQa hZa' hQZ hW hB hg0 hgn
         (by linarith) (by linarith) h
-      linarith [this.1]
+      linarith
 
 /-- **The bracket lemma.**  Let `G` be a region of `F₂⁺` without a label, on the side `ρ` of a
 chord `e ⊆ c ∈ S₂` of `F₂⁺` attached at a position of the right stretch (not the base or the
 split vertex), with `V` on the side `ρ` of `c`.  Then for every non-cut position of the `C₁` part
 facing `G`, the next chord of `F₂⁺` with an attachment in the right stretch is a chord in a
 chord of `S₂` with `V` on the side of `G` (or ends at the shared vertex) — `BracketConcl2`. -/
-theorem bracket2 (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1)
-    {G V : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
+theorem bracket2
     (hV : V ∈ (chainModel J.right).regions S₂) (hU : ∀ V', ¬ RLabel J S₂ G V')
     {e c : Set Point} (he : e ∈ F₂plus J S₂) (hc : c ∈ S₂) (hec : e ⊆ c) {d : ℕ}
     (hd : d < rL1 J + rL2 J) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
@@ -612,7 +601,7 @@ theorem bracket2 (hP : J.P.Simple) {Q : Polygon}
   have hcx : c ∈ S₂x J S₂ := subset_S₂x J S₂ hc
   rcases local_step2 J hP hS₂ hF hd ht0 ht1 hsec he hcx hec heA hρ hG hV hGs hVs with
     hRL | ⟨rfl, f', hf', hne, hA', hS', hpart⟩
-  · exact absurd hRL (hU V)
+  · simp_all
   have hd0 : d ≠ 0 := (hsec rfl).1
   set W := (chainModel J.whole).W with hWdef
   set g := 6 + tpos J.whole J.m₁ with hgdef
@@ -645,8 +634,7 @@ theorem bracket2 (hP : J.P.Simple) {Q : Polygon}
   have hoA := hC.off_M hd (t := 0) le_rfl zero_lt_one
   have hA0 : 0 < off W.n (g : ℝ) ((A : ℝ) + 0) := by
     rw [hoA]
-    have : (1 : ℝ) ≤ d := by exact_mod_cast Nat.one_le_iff_ne_zero.2 hd0
-    linarith
+    positivity
   have hAL : off W.n (g : ℝ) ((A : ℝ) + 0) < ((rL1 J + rL2 J : ℕ) : ℝ) := by
     rw [hoA]
     have : (d : ℝ) + 1 ≤ ((rL1 J + rL2 J : ℕ) : ℝ) := by exact_mod_cast hd
@@ -656,7 +644,7 @@ theorem bracket2 (hP : J.P.Simple) {Q : Polygon}
         ¬ (0 < off W.n (g : ℝ) (pb' + tb') ∧ off W.n (g : ℝ) (pb' + tb') <
           ((rL1 J + rL2 J : ℕ) : ℝ))) := by
     rcases hpart with h | ⟨hk, h⟩
-    · exact Or.inl h
+    · grind
     · exact Or.inr ⟨hk, h pb' tb' hB' hBne'⟩
   rcases hθ with rfl | rfl
   · exact bracket_core2 J hP hS₂ hF hρ hG hU hf' he hne hA0 hAL hA' heA hB' hB
@@ -666,6 +654,9 @@ theorem bracket2 (hP : J.P.Simple) {Q : Polygon}
       (Ne.symm hBne) (Ne.symm hBne') hGs hS' hori (by linarith) hV hV (Or.inl rfl)
       (Or.inl ⟨c, hcx, hec, hVs⟩) hTf' hp₀ ht₀ hnc₀ hfG₀ ho₀
 
+
+
+end
 
 end ChainWalk2
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvWinM
 
 /-!
@@ -45,23 +47,35 @@ def win_Upd (c c' : Config) (r v : ℕ) : Prop :=
 
 theorem win_upd_of_eq {c' : Config} {r v : ℕ} (h : c' = { c with nreg := upd c.nreg r v }) :
     win_Upd c c' r v := by
-  subst h; exact ⟨by simp, fun q hq => by simp [upd_other _ _ _ hq], rfl⟩
+  subst h; exact ⟨by simp, fun q hq => by simp_all, rfl⟩
 
-theorem win_irs_add {r a b : ℕ} (hI : IInv W c₀ c) (hr : IScr r) (hw : c.nreg a + c.nreg b ≤ W) :
+section
+variable {r a b : ℕ} (hI : IInv W c₀ c) (hr : IScr r)
+include hI hr
+theorem win_irs_add (hw : c.nreg a + c.nreg b ≤ W) :
     IRS P W c₀ (.instr (.addN r a b)) c 1 (fun c' => win_Upd c c' r (c.nreg a + c.nreg b)) :=
   (IRS.reg hI hr (Exec.addN hI.hw r a b hw)).mono le_rfl fun _ h => win_upd_of_eq h
 
-theorem win_irs_sub {r a b : ℕ} (hI : IInv W c₀ c) (hr : IScr r) :
+theorem win_irs_sub :
     IRS P W c₀ (.instr (.subN r a b)) c 1 (fun c' => win_Upd c c' r (c.nreg a - c.nreg b)) :=
   (IRS.reg hI hr (Exec.subN hI.hw r a b)).mono le_rfl fun _ h => win_upd_of_eq h
 
-theorem win_irs_copy {r a : ℕ} (hI : IInv W c₀ c) (hr : IScr r) :
+
+end
+
+section
+variable {r a : ℕ} (hI : IInv W c₀ c) (hr : IScr r)
+include hI hr
+theorem win_irs_copy :
     IRS P W c₀ (.instr (.copyN r a)) c 1 (fun c' => win_Upd c c' r (c.nreg a)) :=
   (IRS.reg hI hr (Exec.copyN hI.hw r a)).mono le_rfl fun _ h => win_upd_of_eq h
 
-theorem win_irs_load {r a : ℕ} (hI : IInv W c₀ c) (hr : IScr r) :
+theorem win_irs_load :
     IRS P W c₀ (.instr (.loadN r a)) c 1 (fun c' => win_Upd c c' r (c.nmem (c.nreg a))) :=
   (IRS.reg hI hr (Exec.loadN hI.hw r a)).mono le_rfl fun _ h => win_upd_of_eq h
+
+
+end
 
 theorem win_irs_const' {r v : ℕ} (hI : IInv W c₀ c) (hr : IScr r) (hv : v ≤ W) :
     IRS P W c₀ (.instr (.constN r v)) c 1 (fun c' => win_Upd c c' r v) :=
@@ -82,7 +96,7 @@ theorem win_condSub_mod {x n : ℕ} (h : x < 2 * n) :
   · rw [Nat.mod_eq_of_lt h']
   · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
 
-theorem win_sw_ne {i j : ℕ} (h : i ≠ j) : sw i ≠ sw j := by unfold sw; omega
+theorem win_sw_ne {i j : ℕ} (h : i ≠ j) : sw i ≠ sw j := by omega_nf
 
 /-- Distinct registers. -/
 macro "rne" : tactic => `(tactic| (simp only [wD, wE1, wO, wT, wA, wR, wEE, wEH, wL, wC, wCh,
@@ -108,15 +122,14 @@ theorem wKeyS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hM₀ : MapK J c₀
   have hM := hM₀.fix hI
   set n := (chainModel J.whole).W.n with hn
   set n₁ := (chainModel J.left).W.n with hn₁
-  have hn0 : 0 < n := by have := win_gW_lt (J := J); omega
-  have hn7 : 7 ≤ n := by rw [hn, win_n_eq]; omega
-  have hgl : (gW J + Lst J) % n < n := Nat.mod_lt _ hn0
+  have hn0 : 0 < n := by omega
+  have hn7 : 7 ≤ n := by grind [win_n_eq]
+  
   have hn₁n : n₁ ≤ n := by
-    rw [hn₁, hn, win_n₁_eq, win_n_eq]; have : J.whole.m = J.m₁ + J.m₂ := rfl
-    have : J.left.m = J.m₁ := rfl; omega
+    rw [hn₁, hn, win_n₁_eq, win_n_eq]; simp_all
   have sD : IScr wD := iscr_sw' (by norm_num) (by norm_num)
   have wsE : IScr wE1 := iscr_sw' (by norm_num) (by norm_num)
-  have nDE : wE1 ≠ wD := win_sw_ne (by norm_num)
+  
   have hkr : kr J (c.nreg kE) < n := dOf_lt hn0 _ _
   have hkd : kd J (c.nreg kE) < n₁ := lt_of_lt_of_le hkdE (E₁_le hP)
   unfold wKeyS
@@ -137,12 +150,12 @@ theorem wKeyS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hM₀ : MapK J c₀
       (fun c' => win_Upd c₃ c' wD (kd J (c.nreg kE))) := by
     by_cases h : c₃.nreg wD < c₃.nreg cLL
     · refine (IRS.ifT h (IRS.skip (K := 1) hI₃ ⟨?_, fun _ _ => rfl, rfl⟩)).mono (by norm_num) (fun _ h => h)
-      rw [vr]; rw [vr, hM₃.ll] at h; unfold kd d0Of; rw [ite_eq_right (by omega)]
+      rw [vr]; rw [vr, hM₃.ll] at h; grind [kd, d0Of]
     · refine (IRS.ifF h (win_irs_add hI₃ sD ?_)).mono (by norm_num) ?_
       · rw [vr, hM₃.ld]; rcases win_lδ_cases (J := J) with h' | h' <;> rw [h'] <;> omega
       · rintro c' ⟨a, b, d⟩
         refine ⟨?_, b, d⟩
-        rw [a, vr, hM₃.ld]; rw [vr, hM₃.ll] at h; unfold kd d0Of; rw [ite_eq_left (by omega)]
+        rw [a, vr, hM₃.ld]; rw [vr, hM₃.ll] at h; grind [kd, d0Of]
   refine IRS.seq (K₂ := 4) step ?_ |>.mono (by norm_num) (fun _ h => h)
   rintro c₄ hI₄ - - ⟨v4, o4, m4⟩
   have hM₄ := hM₀.fix hI₄
@@ -156,7 +169,7 @@ theorem wKeyS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hM₀ : MapK J c₀
   rw [v5, hM₅.n1, win_condSub_mod (by have := b₁_lt (J := J); omega)] at v6
   have fr : ∀ r, r ≠ wD → r ≠ wE1 → c₆.nreg r = c.nreg r := fun r h1 h2 => by
     rw [o6 r h2, o5 r h2, o4 r h1, o3 r h1, o2 r h1, o1 r h1]
-  refine ⟨?_, v6, fr, by rw [m6, m5, m4, m3, m2, m1]⟩
+  refine ⟨?_, v6, fr, by grind⟩
   rw [o6 _ (by rne), o5 _ (by rne), v4]
 
 
@@ -169,7 +182,9 @@ def arcL : List Instr :=
 
 def arcS : Stmt := block arcL
 
-theorem arcL_val (m f : ℕ → ℕ) (k6 : f K6 = 6) (k4 : f K4 = 4) (k3 : f K3 = 3) (k1 : f K1 = 1) :
+section
+variable (m f : ℕ → ℕ)
+theorem arcL_val (k6 : f K6 = 6) (k4 : f K4 = 4) (k3 : f K3 = 3) (k1 : f K1 = 1) :
     regB m arcL f wA = m (m (f (sw 3) + 6) + f wO) ∧
     regB m arcL f wR = m (m (f (sw 3) + 4) + 5 * m (m (f (sw 3) + 6) + f wO)) ∧
     regB m arcL f wEE = m (m (f (sw 3) + 4) + 5 * m (m (f (sw 3) + 6) + f wO) + 3) ∧
@@ -179,17 +194,16 @@ theorem arcL_val (m f : ℕ → ℕ) (k6 : f K6 = 6) (k4 : f K4 = 4) (k3 : f K3 
   have e3 : f 240616 = 3 := k3
   have e1 : f 240611 = 1 := k1
   simp only [arcL, regB, regI, upd, wT, wA, wR, wEE, wEH, wO, K6, K4, K3, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e6, e4, e3, e1]
-  refine ⟨?_, ?_, ?_, ?_⟩ <;> first | trivial | exact congrArg m (by ring)
+  grind
 
-theorem arcL_other (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ wT) (h2 : q ≠ wA) (h3 : q ≠ wR)
+theorem arcL_other {q : ℕ} (h1 : q ≠ wT) (h2 : q ≠ wA) (h3 : q ≠ wR)
     (h4 : q ≠ wEE) (h5 : q ≠ wEH) : regB m arcL f q = f q :=
   regB_other m arcL f (fun i hi => by
     simp only [arcL, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-      rfl | rfl | rfl <;> simp only [dstI] <;> intro h <;> subst h <;> simp_all)
+      rfl | rfl | rfl <;> core_grind <;> intro h <;> subst h <;> simp_all)
 
-theorem arcL_ok (m f : ℕ → ℕ) (k6 : f K6 = 6) (k4 : f K4 = 4) (k3 : f K3 = 3) (k1 : f K1 = 1)
+theorem arcL_ok (k6 : f K6 = 6) (k4 : f K4 = 4) (k3 : f K3 = 3) (k1 : f K1 = 1)
     (hb1 : f (sw 3) + 6 ≤ W) (hb2 : m (f (sw 3) + 6) + f wO ≤ W)
     (hb3 : m (f (sw 3) + 4) + 5 * m (m (f (sw 3) + 6) + f wO) + 4 ≤ W) : okB W m arcL f := by
   have e6 : f 240612 = 6 := k6
@@ -205,11 +219,11 @@ theorem arcL_ok (m f : ℕ → ℕ) (k6 : f K6 = 6) (k4 : f K4 = 4) (k3 : f K3 =
   have hb2' : m (f 240003 + 6) + f 243002 ≤ W := hb2
   have hb3' : m (f 240003 + 4) + 5 * m (m (f 240003 + 6) + f 243002) + 4 ≤ W := hb3
   simp only [arcL, okB, okI, regI, upd, wT, wA, wR, wEE, wEH, wO, K6, K4, K3, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e6, e4, e3, e1] at s1 s2 s3 s4 s5 ⊢
-  refine ⟨⟨s1, hb1'⟩, s1, ⟨s1, hb2'⟩, s2, ⟨s1, by omega⟩, s1, ⟨s1, by omega⟩, ⟨s1, by omega⟩,
-    ⟨s1, by omega⟩, ⟨s1, by omega⟩, ⟨s1, by omega⟩, s3, ⟨s1, by omega⟩, s4, ⟨s1, by omega⟩, s5,
-    trivial⟩
+  grind
 
+
+
+end
 
 /-- **The arc at the spine position `wO`.** -/
 theorem arcS_irs {M : Model} {Q : Polygon} {N : NF} (hI : IInv W c₀ c) (hK : Consts c)
@@ -229,7 +243,7 @@ theorem arcS_irs {M : Model} {Q : Polygon} {N : NF} (hI : IInv W c₀ c) (hK : C
   have hal := NFLoc.seq_lt hNF ho
   have hrec := hNA.2.2.2.2.2.2.1 _ hal
   unfold OracleQ.sj at hsj hal hrec ⊢
-  have hok := arcL_ok (W := W) c.nmem c.nreg k6 k4 k3 k1 (by omega) (by omega) (by rw [hsj]; omega)
+  have hok := arcL_ok (W := W) c.nmem c.nreg k6 k4 k3 k1 (by omega) (by omega) (by omega)
   refine (IRS.block arcL hI hok).mono (by simp [arcL]) ?_
   rintro c' rfl
   obtain ⟨vA, vR, vE, vH⟩ := arcL_val c.nmem c.nreg k6 k4 k3 k1
@@ -278,18 +292,22 @@ def DecOut (J : Merge.Junction) (Pw : Prop) (d₀ eE hE : ℕ) (c' : Config) : P
 
 theorem win_lL1_lt_n {J : Merge.Junction} : lL1 J < (chainModel J.whole).W.n := by
   rw [win_n_eq]; have := J.one_le_m₂; have : J.whole.m = J.m₁ + J.m₂ := rfl
-  have := tpos_lt J.left J.m₁
-  unfold lL1; split_ifs <;> omega
+  grind [lL1]
 
 theorem win_n₁_le_n {J : Merge.Junction} : (chainModel J.left).W.n ≤ (chainModel J.whole).W.n := by
-  rw [win_n₁_eq, win_n_eq]; have : J.whole.m = J.m₁ + J.m₂ := rfl
-  have : J.left.m = J.m₁ := rfl; omega
+  simp_all [win_n₁_eq, win_n_eq] 
 
-theorem decW_X {q : ℕ} (h : ¬ DecW q) : q ≠ wX := fun e => h (Or.inl e)
-theorem decW_E {q : ℕ} (h : ¬ DecW q) : q ≠ wE := fun e => h (Or.inr (Or.inl e))
-theorem decW_H {q : ℕ} (h : ¬ DecW q) : q ≠ wH := fun e => h (Or.inr (Or.inr (Or.inl e)))
-theorem decW_D {q : ℕ} (h : ¬ DecW q) : q ≠ wDE := fun e => h (Or.inr (Or.inr (Or.inr (Or.inl e))))
-theorem decW_P {q : ℕ} (h : ¬ DecW q) : q ≠ wPs := fun e => h (Or.inr (Or.inr (Or.inr (Or.inr e))))
+section
+variable {q : ℕ} (h : ¬ DecW q)
+include h
+theorem decW_X : q ≠ wX := fun e => h (Or.inl e)
+theorem decW_E : q ≠ wE := fun e => h (Or.inr (Or.inl e))
+theorem decW_H : q ≠ wH := fun e => h (Or.inr (Or.inr (Or.inl e)))
+theorem decW_D : q ≠ wDE := fun e => h (Or.inr (Or.inr (Or.inr (Or.inl e))))
+theorem decW_P : q ≠ wPs := fun e => h (Or.inr (Or.inr (Or.inr (Or.inr e))))
+
+
+end
 
 theorem wsX : IScr wX := iscr_sw' (by norm_num) (by norm_num)
 theorem wsE : IScr wE := iscr_sw' (by norm_num) (by norm_num)
@@ -297,8 +315,10 @@ theorem wsH : IScr wH := iscr_sw' (by norm_num) (by norm_num)
 theorem wsDE : IScr wDE := iscr_sw' (by norm_num) (by norm_num)
 theorem wsP : IScr wPs := iscr_sw' (by norm_num) (by norm_num)
 
-theorem clipE_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hM₀ : MapK J c₀)
-    (hWn : 2 * (chainModel J.whole).W.n ≤ W) :
+section
+variable {J : Merge.Junction} (hI : IInv W c₀ c) (hM₀ : MapK J c₀) (hWn : 2 * (chainModel J.whole).W.n ≤ W)
+include hI hM₀ hWn
+theorem clipE_irs :
     IRS P W c₀ clipE c 6 (fun c' =>
       c'.nreg wE = (((gW J + Lst J) % (chainModel J.whole).W.n) + lL1 J) %
         (chainModel J.whole).W.n ∧ c'.nreg wH = 0 ∧ c'.nreg wX = 0 ∧
@@ -318,12 +338,11 @@ theorem clipE_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hM₀ : MapK J c₀
   rintro c₃ hI₃ - - ⟨v3, o3, m3⟩
   refine (win_irs_const' hI₃ wsX (Nat.zero_le _)).mono le_rfl ?_
   rintro c₄ ⟨v4, o4, m4⟩
-  refine ⟨by rw [o4 _ (by rne), o3 _ (by rne), v2], by rw [o4 _ (by rne), v3], v4,
-    fun q hq => ?_, by rw [m4, m3, m2, m1]⟩
+  refine ⟨by rw [o4 _ (by rne), o3 _ (by rne), v2], by grind, v4,
+    fun q hq => ?_, by simp_all⟩
   rw [o4 q (decW_X hq), o3 q (decW_H hq), o2 q (decW_E hq), o1 q (decW_E hq)]
 
-theorem normE_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hM₀ : MapK J c₀)
-    (hWn : 2 * (chainModel J.whole).W.n ≤ W) (hDE : c.nreg wDE < (chainModel J.whole).W.n) :
+theorem normE_irs (hDE : c.nreg wDE < (chainModel J.whole).W.n) :
     IRS P W c₀ normE c 10 (fun c' =>
       c'.nreg wE = (((gW J + Lst J) % (chainModel J.whole).W.n) +
         (if c.nreg wDE < lL1 J + lδ J then c.nreg wDE else c.nreg wDE - lδ J)) %
@@ -331,7 +350,7 @@ theorem normE_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hM₀ : MapK J c₀
       (∀ q, ¬ DecW q → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
   have hM := hM₀.fix hI
   have hgl : (gW J + Lst J) % (chainModel J.whole).W.n < (chainModel J.whole).W.n :=
-    Nat.mod_lt _ (by have := win_gW_lt (J := J); omega)
+    Nat.mod_lt _ (by omega)
   unfold normE
   have step : IRS P W c₀ (.ifLtN wDE cLE (.instr (.copyN wPs wDE)) (.instr (.subN wPs wDE cLD))) c 3
       (fun c' => win_Upd c c' wPs
@@ -339,28 +358,31 @@ theorem normE_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hM₀ : MapK J c₀
     by_cases h : c.nreg wDE < c.nreg cLE
     · refine (IRS.ifT h (win_irs_copy hI wsP)).mono (by norm_num) ?_
       rintro c' ⟨a, b, d⟩
-      rw [hM.le] at h; exact ⟨by rw [a, ite_eq_left h], b, d⟩
+      rw [hM.le] at h; exact ⟨by simp_all, b, d⟩
     · refine (IRS.ifF h (win_irs_sub hI wsP)).mono (by norm_num) ?_
       rintro c' ⟨a, b, d⟩
       rw [hM.le] at h; exact ⟨by rw [a, ite_eq_right h, hM.ld], b, d⟩
   refine IRS.seq (K₂ := 7) step ?_ |>.mono (by norm_num) (fun _ h => h)
   rintro c₁ hI₁ - - ⟨v1, o1, m1⟩
-  refine IRS.seq (K₂ := 6) (win_irs_add hI₁ wsE (by rw [v1, o1 _ (by rne), hM.gl]; split_ifs <;> omega))
+  refine IRS.seq (K₂ := 6) (win_irs_add hI₁ wsE (by rw [v1, o1 _ (by rne), hM.gl]; grind))
     ?_ |>.mono (by norm_num) (fun _ h => h)
   rintro c₂ hI₂ - - ⟨v2, o2, m2⟩
   refine IRS.seq (K₂ := 3) (win_condSub_irs (b := cNW) hI₂ wsE) ?_ |>.mono (by norm_num) (fun _ h => h)
   rintro c₃ hI₃ - - ⟨v3, o3, m3⟩
   rw [v2, v1, o1 _ (by rne), hM.gl, o2 _ (by rne), o1 _ (by rne), hM.nw,
-    win_condSub_mod (by split_ifs <;> omega)] at v3
+    win_condSub_mod (by grind)] at v3
   refine IRS.seq (K₂ := 1) (win_irs_copy hI₃ wsH) ?_ |>.mono (by norm_num) (fun _ h => h)
   rintro c₄ hI₄ - - ⟨v4, o4, m4⟩
   refine (win_irs_const' hI₄ wsX (Nat.zero_le _)).mono le_rfl ?_
   rintro c₅ ⟨v5, o5, m5⟩
   refine ⟨by rw [o5 _ (by rne), o4 _ (by rne), v3], ?_, v5, fun q hq => ?_,
-    by rw [m5, m4, m3, m2, m1]⟩
+    by grind⟩
   · rw [o5 _ (by rne), v4, o3 _ (by rne), o2 _ (by rne), o1 _ (by rne)]
   · rw [o5 q (decW_X hq), o4 q (decW_H hq), o3 q (decW_E hq), o2 q (decW_E hq), o1 q (decW_P hq)]
 
+
+
+end
 
 set_option maxHeartbeats 4000000 in
 /-- **The decision.** -/
@@ -399,15 +421,15 @@ theorem decS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c₀)
   have hK₃ := hK₀.fix hI₃
   have o3' : ∀ q, ¬ DecW q → c₃.nreg q = c.nreg q := fun q hq => by
     rw [o3 q (decW_D hq), o2 q (decW_D hq), o1 q (decW_D hq)]
-  have m3' : c₃.nmem = c.nmem := by rw [m3, m2, m1]
+  have m3' : c₃.nmem = c.nmem := by grind
   have hdn : dE < (chainModel J.left).W.n := dOf_lt (by omega) _ _
   by_cases hb2 : c₃.nreg wDE < c₃.nreg cE1
   · rw [vd, hM₃.e1] at hb2
     refine IRS.mono (K := 18 + 2) (IRS.ifT (by rw [vd, hM₃.e1]; exact hb2) ?_) (by norm_num)
       (fun _ h => h)
     unfold midS
-    have eD : c₃.nreg wD = c.nreg wD := o3' _ (by unfold DecW; rne)
-    have eH : c₃.nreg wEH = c.nreg wEH := o3' _ (by unfold DecW; rne)
+    have eD : c₃.nreg wD = c.nreg wD := o3' _ (by omega_nf)
+    have eH : c₃.nreg wEH = c.nreg wEH := o3' _ (by omega_nf)
     have finN : ∀ c', (c'.nreg wE = (((gW J + Lst J) % (chainModel J.whole).W.n) +
         (if c₃.nreg wDE < lL1 J + lδ J then c₃.nreg wDE else c₃.nreg wDE - lδ J)) %
         (chainModel J.whole).W.n ∧ c'.nreg wH = c₃.nreg wEH ∧ c'.nreg wX = 0 ∧

@@ -226,14 +226,20 @@ def Model.arcSet (M : Model) (a b : ℝ) : Set Point :=
     (sideInArc a b (p + t) ∨ (p : ℝ) + t = a ∨ (p : ℝ) + t = b) ∧
       x = Geometry.lerp (M.wa p) (M.wb p) t}
 
+section
+variable (A : Set Point) (p : Point)
+include A p
 /-- The first hit of the horizontal ray from `p` in direction `σ` on the set `A` is at
 parameter `t`. -/
-def FirstHit (A : Set Point) (p : Point) (σ t : ℝ) : Prop :=
+def FirstHit (σ t : ℝ) : Prop :=
   0 < t ∧ Visibility.rayPt p σ t ∈ A ∧ ∀ t', 0 < t' → t' < t → Visibility.rayPt p σ t' ∉ A
 
 /-- The horizontal ray from `p` in direction `σ` misses `A`. -/
-def NoHit (A : Set Point) (p : Point) (σ : ℝ) : Prop :=
+def NoHit (σ : ℝ) : Prop :=
   ∀ t, 0 < t → Visibility.rayPt p σ t ∉ A
+
+
+end
 
 /-- The direction coded by a register value (`1` right, otherwise left). -/
 def dirOf (v : ℕ) : ℝ := if v = 1 then 1 else -1
@@ -466,25 +472,30 @@ def OracleIface.Valid (O : OracleIface) : Prop :=
 
 /-! ## WP-I: clusters of a planar map in memory -/
 
+section
+variable (m : ℕ → ℕ)
+include m
 /-- A combinatorial map with `μ` vertices and `2 E` darts stored at `B`: the bases of the
 `opp`, `rot`, `vert` arrays at `B`, `B + 1`, `B + 2`; it is planar. -/
-def PlanarMapAt (m : ℕ → ℕ) (B μ E : ℕ) : Prop :=
+def PlanarMapAt (B μ E : ℕ) : Prop :=
   ∃ (F : Type) (_ : Fintype F) (_ : DecidableEq F)
     (M : Separator.CombMap (Fin μ) F (Fin (2 * E))), M.Planar ∧
       ∀ d : Fin (2 * E), m (m B + d) = M.opp d ∧ m (m (B + 1) + d) = M.rot d ∧
         m (m (B + 2) + d) = M.vert d
 
 /-- A dart of the map stored at `B` goes from `u` to `v`. -/
-def MemDart (m : ℕ → ℕ) (B E : ℕ) (u v : ℕ) : Prop :=
+def MemDart (B E u v : ℕ) : Prop :=
   ∃ d, d < 2 * E ∧ m (m (B + 2) + d) = u ∧ m (m (B + 2) + m (m B + d)) = v
 
 /-- The (simple) graph of the map stored at `B`, on the vertices `Fin μ`. -/
-def memGraph (m : ℕ → ℕ) (B μ E : ℕ) : SimpleGraph (Fin μ) where
+def memGraph (B μ E : ℕ) : SimpleGraph (Fin μ) where
   Adj u v := u ≠ v ∧ (MemDart m B E u v ∨ MemDart m B E v u)
   symm := ⟨by
-    rintro u v ⟨hne, h⟩
-    exact ⟨hne.symm, h.symm⟩⟩
+    grind⟩
   loopless := ⟨fun u h => h.1 rfl⟩
+
+
+end
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseBaseList
 public import Chazelle.Core.SortRam
 
@@ -109,12 +111,13 @@ def mem1 (m₀ : ℕ → ℕ) (li : Bool) (n : ℕ) (L : List (ℕ × ℕ × ℕ
   else if X ≤ a ∧ a < X + 2 * i then tbl li n L (a - X) else m₀ a
 
 theorem rankF_le (f : ℕ × ℕ × ℕ → Bool) (L : List (ℕ × ℕ × ℕ)) (i : ℕ) : rankF f L i ≤ i := by
-  unfold rankF
-  exact (List.length_filter_le _ _).trans (List.length_take_le _ _)
+  core_grind
 
+section
+variable {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {B' X i : ℕ} (hm : ∀ a, m a = mem1 m₀ li n L B' X i a) (hi : i < L.length) (hBX : B' + 3 * L.length ≤ X)
+include hm hi hBX
 /-- The memory step of a kept chord. -/
-theorem mem1_keep {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {B' X i : ℕ}
-    (hm : ∀ a, m a = mem1 m₀ li n L B' X i a) (hi : i < L.length) (hBX : B' + 3 * L.length ≤ X)
+theorem mem1_keep
     (hk : keepX li n (L.getD i (0, 0, 0)) = true) (a : ℕ) :
     (if a = X + 2 * i + 1 then 2 * rankF (keepX li n) L i + 2
       else if a = X + 2 * i then 2 * rankF (keepX li n) L i + 1
@@ -129,9 +132,9 @@ theorem mem1_keep {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   have hg := getD_keepL (li := li) (n := n) hi hk
   rw [← hj] at hg
   have hkc : ∀ s, s < 2 → keptC li n L (2 * i + s) = true := fun s hs => by
-    unfold keptC; rw [show (2 * i + s) / 2 = i by omega]; exact hk
+    core_grind
   have hnc : ∀ s, s < 2 → newCode li n L (2 * i + s) = 2 * j + s := fun s hs => by
-    unfold newCode; rw [show (2 * i + s) / 2 = i by omega, ← hj]; omega
+    grind [newCode]
   rw [hm a]
   unfold mem1
   rw [hr]
@@ -148,8 +151,7 @@ theorem mem1_keep {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   have htw : ∀ s, s < 3 → tw (keepL li n L) (3 * j + s) =
       if s = 0 then (L.getD i (0, 0, 0)).1 else if s = 1 then (L.getD i (0, 0, 0)).2.1
       else (L.getD i (0, 0, 0)).2.2 := fun s hs => by
-    unfold tw
-    rw [show (3 * j + s) % 3 = s by omega, show (3 * j + s) / 3 = j by omega, hg]
+    grind [tw]
   by_cases h3 : a = B' + 3 * j + 2
   · subst h3
     rw [ite_eq_left rfl, ite_eq_left (by omega), show B' + 3 * j + 2 - B' = 3 * j + 2 by omega,
@@ -165,43 +167,22 @@ theorem mem1_keep {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
     rw [ite_eq_right h3, ite_eq_right h4, ite_eq_left rfl, ite_eq_left (by omega),
       show B' + 3 * j - B' = 3 * j + 0 by omega, htw 0 (by norm_num)]
     simp
-  rw [ite_eq_right h3, ite_eq_right h4, ite_eq_right h5]
-  split_ifs <;> first | rfl | omega
+  grind
 
 /-- The memory step of a dropped chord. -/
-theorem mem1_drop {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {B' X i : ℕ}
-    (hm : ∀ a, m a = mem1 m₀ li n L B' X i a) (hi : i < L.length) (hBX : B' + 3 * L.length ≤ X)
+theorem mem1_drop
     (hk : keepX li n (L.getD i (0, 0, 0)) = false) (a : ℕ) :
     (if a = X + 2 * i + 1 then 0 else if a = X + 2 * i then 0 else m a) =
       mem1 m₀ li n L B' X (i + 1) a := by
   have hr := rankF_succ (keepX li n) (0, 0, 0) hi
   rw [hk] at hr
   simp only [Bool.false_eq_true, ite_false, Nat.add_zero] at hr
-  have hle := rankF_le (keepX li n) L i
-  have hkc : ∀ s, s < 2 → keptC li n L (2 * i + s) = false := fun s hs => by
-    unfold keptC; rw [show (2 * i + s) / 2 = i by omega]; exact hk
-  rw [hm a]
-  unfold mem1
-  rw [hr]
-  by_cases h1 : a = X + 2 * i + 1
-  · subst h1
-    rw [ite_eq_left rfl, ite_eq_right (by omega), ite_eq_left (by omega), show X + 2 * i + 1 - X = 2 * i + 1 by
-      omega, tbl, hkc 1 (by norm_num)]
-    simp
-  by_cases h2 : a = X + 2 * i
-  · subst h2
-    rw [ite_eq_right h1, ite_eq_left rfl, ite_eq_right (by omega), ite_eq_left (by omega), show X + 2 * i - X = 2 * i + 0
-      by omega, tbl, hkc 0 (by norm_num)]
-    simp
-  rw [ite_eq_right h1, ite_eq_right h2]
-  by_cases h6 : B' ≤ a ∧ a < B' + 3 * rankF (keepX li n) L i
-  · rw [ite_eq_left h6, ite_eq_left h6]
-  · rw [ite_eq_right h6, ite_eq_right h6]
-    by_cases h7 : X ≤ a ∧ a < X + 2 * i
-    · rw [ite_eq_left h7, ite_eq_left (by omega)]
-    · rw [ite_eq_right h7, ite_eq_right (by omega)]
+  grind [Chazelle.Core.DownBase.rankF_le, keptC, mem1, tbl]
 
 /-! ## The pieces of one chord -/
+
+
+end
 
 section exec
 
@@ -225,25 +206,27 @@ theorem dLoad_exec (c : Config) (hw : WordsBounded W c) {a : ℕ} (h111 : c.nreg
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h111, h100]
 
+section
+variable (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W)
+include hw hW
 /-- The equality test of the flag. -/
-theorem dEq_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) :
+theorem dEq_exec :
     ∃ c' k, Exec P W (.ifLtN 200112 200116 .skip (.ifLtN 200116 200112 .skip
         (.instr (.constN 200115 1)))) c c' k ∧ k ≤ 5 ∧
       c'.nreg 200115 = (if c.nreg 200112 = c.nreg 200116 then 1 else c.nreg 200115) ∧
       (∀ r, r ≠ 200115 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧
       c'.rmem = c.rmem ∧ c'.output = c.output := by
   by_cases h1 : c.nreg 200112 < c.nreg 200116
-  · exact ⟨c, _, .ifLtN_true h1 (.skip hw), by omega, by rw [ite_eq_right (by omega)],
+  · exact ⟨c, _, .ifLtN_true h1 (.skip hw), by omega, by grind,
       fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
   by_cases h2 : c.nreg 200116 < c.nreg 200112
   · exact ⟨c, _, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw)), by omega,
-      by rw [ite_eq_right (by omega)], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
+      by grind, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
   have e := Exec.constN (P := P) hw 200115 1 hW
-  exact ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 e), by omega, by simp [show c.nreg 200112 =
-    c.nreg 200116 by omega], fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
+  exact ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 e), by omega, by omega_nf, fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
 
 /-- **The start-vertex test.** -/
-theorem dTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {li : Bool} {n p : ℕ}
+theorem dTest_exec {li : Bool} {n p : ℕ}
     (_hp1 : p ≠ 200116) (h101 : c.nreg 200101 = 0)
     (hbit : c.nreg 200103 = if li then 1 else 0) (h104 : c.nreg 200104 = n - 1) :
     ∃ c' k, Exec P W (dTest p) c c' k ∧ k ≤ 8 ∧
@@ -256,16 +239,19 @@ theorem dTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {li : Boo
       (∀ r, r ≠ 200116 → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧
       c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     cases li
-    · have h : ¬ c.nreg 200101 < c.nreg 200103 := by rw [h101, hbit]; simp
+    · have h : ¬ c.nreg 200101 < c.nreg 200103 := by ram_simp
       exact ⟨_, _, .ifLtN_false h (Exec.subN hw 200116 200104 p), by omega,
-        by simp [wStart, h104], fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
-    · have h : c.nreg 200101 < c.nreg 200103 := by rw [h101, hbit]; simp
+        by aesop, fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
+    · have h : c.nreg 200101 < c.nreg 200103 := by ram_grind
       exact ⟨_, _, .ifLtN_true h (Exec.copyN hw 200116 p), by omega,
-        by simp [wStart], fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
+        by aesop, fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, r₂, m₂, rr₂, rm₂, o₂⟩ := dEq_exec (P := P) c₁ e₁.wb_right hW
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_, fun r a b => by rw [r₂ r a, r₁ r b], by rw [m₂, m₁],
-    by rw [rr₂, rr₁], by rw [rm₂, rm₁], by rw [o₂, o₁]⟩
-  rw [v₂, v₁, r₁ _ (by norm_num), r₁ _ (by norm_num)]
+  refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_, fun r a b => by ram_simp, by rw [m₂, m₁],
+    by ram_simp, by ram_simp, by rw [o₂, o₁]⟩
+  simp_all
+
+
+end
 
 set_option maxHeartbeats 4000000 in
 /-- **A kept chord.** -/
@@ -299,12 +285,7 @@ theorem dDrop_exec (c : Config) (hw : WordsBounded W c) {x : ℕ} (h117 : c.nreg
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold dDrop
   exec_block
-  all_goals try (simp (disch := omega) only [Machine.upd_same,
-    Machine.upd_other, h117, h100]; omega)
-  refine ⟨rfl, ?_, fun r a1 => ?_, fun a => ?_, rfl, rfl, rfl⟩
-  all_goals simp (disch := omega) only [Machine.upd_same,
-    Machine.upd_other, h117, h100, h101]
-  simp only [Machine.upd_apply]
+  all_goals (simp_all [Machine.upd_same, Machine.upd_other, Machine.upd_apply] <;> omega_nf)
 
 end exec
 

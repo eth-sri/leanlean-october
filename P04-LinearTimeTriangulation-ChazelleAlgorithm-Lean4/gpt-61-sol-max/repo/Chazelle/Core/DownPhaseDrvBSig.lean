@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.BruteSig
 public import Chazelle.Core.DownPhaseDrvRLib
 
@@ -29,21 +31,18 @@ theorem symPtIn_copy {c c' : Config} {x s : ℕ} {p : SymPt} (h : SymPtIn c x p)
     (h0 : c'.nreg s = c.nreg x) (h1 : c'.nreg (s + 1) = c.nreg (x + 1))
     (h2 : c'.nreg (s + 2) = c.nreg (x + 2)) : SymPtIn c' s p := by
   cases p with
-  | vtx i => exact ⟨h0.trans h.1, h1.trans h.2⟩
-  | onEdge e hh => exact ⟨h0.trans h.1, h1.trans h.2.1, h2.trans h.2.2⟩
+  | vtx i => core_grind
+  | onEdge e hh => core_grind
 
 /-- Register frames compose. -/
 theorem fbTrans {B : ℕ → Bool} {c₁ c₂ c₃ : Config} (h₁ : FrameB B c₁ c₂) (h₂ : FrameB B c₂ c₃) :
     FrameB B c₁ c₃ :=
-  ⟨fun r hr => (h₂.1 r hr).trans (h₁.1 r hr), fun r hr => (h₂.2.1 r hr).trans (h₁.2.1 r hr),
-    h₂.2.2.1.trans h₁.2.2.1, h₂.2.2.2.1.trans h₁.2.2.2.1, h₂.2.2.2.2.trans h₁.2.2.2.2⟩
+  by core_grind
 
 /-- A register frame for fewer registers is one for more. -/
 theorem fbMono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' :=
-  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
-    fun r hr => h.2.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
-    h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
+  by core_grind
 
 /-- Copy a register triple into the kernel registers from `s`. -/
 def ldP (s x : ℕ) : List Instr := [.copyN s x, .copyN (s + 1) (x + 1), .copyN (s + 2) (x + 2)]
@@ -98,7 +97,7 @@ theorem tstR_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {op : ℕ} (hop : op ≤
       fr.2.2.2.1, fr.2.2.2.2⟩⟩
     · have : r < 10000 ∨ 10500 ≤ r := by unfold Bk at hr; simp at hr; omega
       exact fr.1 r (by omega)
-  have i₁' := i₁
+  
   -- the kernel
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, b₂, s₂'⟩ := sig_exec (P := P) c₁ e₁.wb_right hG hW
     (by rw [q₉]; exact hop) l₁ l₂ l₃ q₁ q₂ q₃

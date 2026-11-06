@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvLoopStartP
 
 /-!
@@ -20,9 +22,7 @@ open Machine Machine.Stmt Programs SweepIo SweepPrim WalkEmbed SweepRam Sweep
 theorem stHead_val (m f : ℕ → ℕ) :
     regB m stHead f kE = f cGL ∧ regB m stHead f kH = 0 ∧ regB m stHead f kN = 0 ∧
       regB m stHead f sP = 0 ∧ regB m stHead f aF = 0 ∧ regB m stHead f dF = 0 := by
-  simp only [stHead, regB, regI, upd, kE, kH, kN, sP, aF, dF, cGL, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  exact ⟨trivial, trivial, trivial, trivial, trivial, trivial⟩
+  simp_all [stHead, regB, regI, upd, kE, kH, kN, sP, aF, dF, cGL, sw, Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false] <;> omega_nf
 
 /-- The registers of the head. -/
 def HdR (q : ℕ) : Prop := q = kE ∨ q = kH ∨ q = kN ∨ q = sP ∨ q = aF ∨ q = dF
@@ -30,16 +30,13 @@ def HdR (q : ℕ) : Prop := q = kE ∨ q = kH ∨ q = kN ∨ q = sP ∨ q = aF �
 theorem stHead_other (m f : ℕ → ℕ) {q : ℕ} (h : ¬ HdR q) : regB m stHead f q = f q :=
   regB_other m stHead f (fun i hi => by
     simp only [stHead, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> intro he <;>
-      subst he <;> exact h (by simp [HdR]))
+    core_grind)
 
 theorem hdR_stR {q : ℕ} (h : HdR q) : StR q := by
-  unfold HdR at h; unfold StR
-  simp only [kE, kH, kN, kL, gN, gR, sP, dF, lC, aF, sw] at h ⊢
-  omega
+  core_grind
 
-theorem zX_stR : StR zX := by unfold StR zX; simp [kE, kH, kN, kL, gN, gR, sP, dF, lC, sw]
-theorem lC_stR : StR lC := by unfold StR; simp [kE, kH, kN, kL, gN, gR, sP, dF, lC, sw]
+theorem zX_stR : StR zX := by omega_nf
+theorem lC_stR : StR lC := by omega_nf
 
 /-- A register outside all write sets of the start keeps its value along the parts. -/
 def Untouched (q : ℕ) : Prop :=
@@ -56,8 +53,8 @@ theorem untouched_sw {j : ℕ} (hj : j < 10000)
     (h : ¬ (2400 ≤ j ∧ j ≤ 2406) ∧ ¬ (2440 ≤ j ∧ j ≤ 2442) ∧ j ≠ 2450 ∧ j ≠ 2451 ∧ j ≠ 2431 ∧
       ¬ (2480 ≤ j ∧ j < 2500) ∧ ¬ (700 ≤ j ∧ j < 2200) ∧ ¬ (2610 ≤ j ∧ j ≤ 2612) ∧
       ¬ (3000 ≤ j ∧ j < 6000)) : Untouched (sw j) := by
-  refine untouched_of (not_oracle_sw (by unfold sw; omega) (by unfold sw; omega)) ?_
-    (by unfold ALLOC sw; omega)
+  refine untouched_of (not_oracle_sw (by omega_nf) (by omega_nf)) ?_
+    (by omega_nf)
   unfold StR
   simp only [kE, kH, kN, kL, gN, gR, sP, dF, lC, sw]
   omega
@@ -73,7 +70,7 @@ theorem start_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     (hlB : c₀.nreg ALLOC ≤ c.nreg lB) (hlB7 : c.nreg lB + 7 ≤ c.nreg ALLOC)
     (hroom : c.nreg ALLOC + startK (c₀.nreg TLR) ≤ W) :
     IRS P W c₀ start c (startK (c₀.nreg TLR)) (SRaw P J N₂ rs ax c) := by
-  have hK₀ := E.hK.fix hI
+  
   have hP := E.hP
   have hNF := E.hNF₂
   have hst := hSD.2.2.2.2.1
@@ -84,12 +81,7 @@ theorem start_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   -- 1. the head
   have hokH : okB W c.nmem stHead c.nreg := by
     simp only [stHead, okB, okI]
-    exact ⟨iscr_sw (by simp [kE, sw]) (by simp [kE, sw]),
-      ⟨iscr_sw (by simp [kH, sw]) (by simp [kH, sw]), Nat.zero_le _⟩,
-      ⟨iscr_sw (by simp [kN, sw]) (by simp [kN, sw]), Nat.zero_le _⟩,
-      ⟨iscr_sw (by simp [sP, sw]) (by simp [sP, sw]), Nat.zero_le _⟩,
-      ⟨iscr_sw (by simp [aF, sw]) (by simp [aF, sw]), Nat.zero_le _⟩,
-      ⟨iscr_sw (by simp [dF, sw]) (by simp [dF, sw]), Nat.zero_le _⟩, trivial⟩
+    core_grind
   refine IRS.seq (K₁ := stHead.length) (K₂ := stStepK + (stStepK + ((fposK 3 (c₀.nreg TLR) + 4) +
     ((fposK 1 (c₀.nreg TLR) + fposK 2 (c₀.nreg TLR) + 5) + 16)))) (IRS.block stHead hI hokH) ?_ |>.mono
     (by simp [stHead]) (fun _ h => h)
@@ -100,38 +92,37 @@ theorem start_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have m2 : c₂.nmem = c.nmem := by rw [hc₂]
   have e2E : c₂.nreg kE = pK0 J := by
     rw [hc₂]; show regB _ _ _ kE = _; rw [vE, (E.hM.fix hI).gl]; rfl
-  have e2H : c₂.nreg kH = 0 := by rw [hc₂]; exact vH
-  have e2N : c₂.nreg kN = 0 := by rw [hc₂]; exact vN
-  have e2P : c₂.nreg sP = 0 := by rw [hc₂]; exact vP
-  have e2A : c₂.nreg aF = 0 := by rw [hc₂]; exact vA
-  have e2D : c₂.nreg dF = 0 := by rw [hc₂]; exact vD
+  have e2H : c₂.nreg kH = 0 := by simp_all
+  have e2N : c₂.nreg kN = 0 := by simp_all
+  have e2P : c₂.nreg sP = 0 := by simp_all
+  have e2A : c₂.nreg aF = 0 := by simp_all
+  have e2D : c₂.nreg dF = 0 := by simp_all
   have nh : ∀ j, j = 2600 ∨ j = 2601 ∨ j = 2602 ∨ j = 2430 → ¬ HdR (sw j) := by
-    rintro j (rfl | rfl | rfl | rfl) <;> simp [HdR, kE, kH, kN, sP, aF, dF, sw]
-  have hA2 : c₂.nreg ALLOC = c.nreg ALLOC := o2 _ (by simp [HdR, kE, kH, kN, sP, aF, dF, ALLOC, sw])
+    core_grind
+  have hA2 : c₂.nreg ALLOC = c.nreg ALLOC := o2 _ (by omega_nf)
   have sC2 : c₂.nreg sC = c.nreg sC := o2 _ (nh 2601 (by norm_num))
   have sB2 : c₂.nreg sB = c.nreg sB := o2 _ (nh 2600 (by norm_num))
   have aB2 : c₂.nreg aB = c.nreg aB := o2 _ (nh 2602 (by norm_num))
   have hSD2 : StopData P J N₂ c₂ rs ax := stopData_transport hSD sC2 sB2 aB2 hlay
     (fun a _ => by rw [m2])
   have hlay2 : c₂.nreg sB + 5 * c₂.nreg sC ≤ c₂.nreg ALLOC ∧
-      c₂.nreg aB + 5 * c₂.nreg sC ≤ c₂.nreg ALLOC := by rw [sC2, sB2, aB2, hA2]; exact hlay
+      c₂.nreg aB + 5 * c₂.nreg sC ≤ c₂.nreg ALLOC := by omega
   have hS2 : StI P J N₂ rs ax c₂ := by
-    have hl : lblOf c₂ kN kL = [] := by simp [lblOf, e2N]
-    refine ⟨by omega, by omega, by omega, fun i hi h => by omega, by rw [hl]; simp,
-      fun i h => by omega, fun v hv => by rw [hl] at hv; simp at hv, by omega, ?_⟩
-    rw [e2A, e2P]
-    simp
+    have hl : lblOf c₂ kN kL = [] := by core_grind
+    refine ⟨by omega, by omega, by omega, fun i hi h => by omega, by simp_all,
+      fun i h => by omega, fun v hv => by simp_all, by omega, ?_⟩
+    omega
   -- 2. the first stop step
-  refine IRS.seq (K₁ := stStepK) (stStep_irs E hI₂ hSD2 hlay2 hS2 e2E e2H (by rw [hA2]; omega)) ?_
+  refine IRS.seq (K₁ := stStepK) (stStep_irs E hI₂ hSD2 hlay2 hS2 e2E e2H (by omega)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨S3, a3, b3, fr3, A3, m3⟩
   have ws : ∀ j, j = 2600 ∨ j = 2601 ∨ j = 2602 ∨ j = 2430 ∨ j = 2400 ∨ j = 2401 ∨ j = 2451 →
       ¬ WS (sw j) := by
     rintro j (rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;>
-      simp [WS, LblR, zX, zE, zH, zO, zA, zN, zL, zM, aF, sP, kN, kL, sw]
+      omega_nf
   have kp3 : ∀ j, (j = 2600 ∨ j = 2601 ∨ j = 2602 ∨ j = 2430 ∨ j = 2400 ∨ j = 2401 ∨ j = 2451) →
       c₃.nreg (sw j) = c₂.nreg (sw j) := fun j hj =>
-    fr3 _ (not_oracle_sw (by unfold sw; omega) (by unfold sw; rcases hj with h|h|h|h|h|h|h <;> omega))
-      (ws j hj) (by unfold ALLOC sw; rcases hj with h|h|h|h|h|h|h <;> omega)
+    fr3 _ (not_oracle_sw (by omega_nf) (by omega_nf))
+      (ws j hj) (by omega_nf)
   have hSD3 : StopData P J N₂ c₃ rs ax := stopData_transport hSD2 (kp3 2601 (by norm_num))
     (kp3 2600 (by norm_num)) (kp3 2602 (by norm_num)) hlay2 m3
   have hlay3 : c₃.nreg sB + 5 * c₃.nreg sC ≤ c₃.nreg ALLOC ∧
@@ -139,17 +130,13 @@ theorem start_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     have e1 : c₃.nreg sC = c₂.nreg sC := kp3 2601 (by norm_num)
     have e2 : c₃.nreg sB = c₂.nreg sB := kp3 2600 (by norm_num)
     have e3 : c₃.nreg aB = c₂.nreg aB := kp3 2602 (by norm_num)
-    rw [e1, e2, e3]
-    exact ⟨hlay2.1.trans A3, hlay2.2.trans A3⟩
+    omega
   have e3E : c₃.nreg kE = pK0 J := (kp3 2400 (by norm_num)).trans e2E
   have e3H : c₃.nreg kH = 0 := (kp3 2401 (by norm_num)).trans e2H
   -- 3. the second stop step
   refine IRS.seq (K₁ := stStepK) (stStep_irs E hI₃ hSD3 hlay3 S3 e3E e3H (by omega)) ?_
   rintro c₄ hI₄ hA₄ hA₄' ⟨S4, a4, b4, fr4, A4, m4⟩
-  have kp4 : ∀ j, (j = 2600 ∨ j = 2601 ∨ j = 2602 ∨ j = 2430 ∨ j = 2400 ∨ j = 2401 ∨ j = 2451) →
-      c₄.nreg (sw j) = c₃.nreg (sw j) := fun j hj =>
-    fr4 _ (not_oracle_sw (by unfold sw; omega) (by unfold sw; rcases hj with h|h|h|h|h|h|h <;> omega))
-      (ws j hj) (by unfold ALLOC sw; rcases hj with h|h|h|h|h|h|h <;> omega)
+  
   -- the pointer
   have hptr : ∀ i (hi : i < rs.length), i < c₄.nreg sP ↔ soff P J rs[i] = Lst J := by
     obtain ⟨h1a, h1b⟩ := stepRes a3 b3 0 e2P.symm
@@ -168,7 +155,7 @@ theorem start_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     rw [fr6 q hq h3 h5 hqa, fr5 q hq h3 h4 hqa, fr4 q hq h2 hqa, fr3 q hq h2 hqa, o2 q h1]
   have lB6 : c₆.nreg lB = c.nreg lB := u _ (untouched_sw (j := 2430) (by norm_num) (by omega))
   -- 6. the log record
-  refine (stLog_irs E.hK hI₆ (by rw [lB6]; exact hlB) (by rw [lB6]; have := hI.hw.1 ALLOC; omega)).mono
+  refine (stLog_irs E.hK hI₆ (by omega) (by omega)).mono
     le_rfl ?_
   rintro c₇ ⟨lc7, fr7, mem7, r70, r71, r72, r73⟩
   rw [lB6] at mem7 r70 r71 r72 r73
@@ -176,9 +163,9 @@ theorem start_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have k7 : ∀ q, q ≠ zX → q ≠ lC → c₇.nreg q = c₆.nreg q := fr7
   have nP : ∀ q, (q = sP ∨ q = aF) → ¬ FPR q ∧ ¬ LblR kN kL q ∧ ¬ GapR q ∧ q ≠ zX ∧ q ≠ lC ∧
       bandOf q ∉ oracleBands ∧ q ≠ ALLOC := by
-    rintro q (rfl | rfl) <;> refine ⟨?_, ?_, ?_, ?_, ?_, not_oracle_sw (by simp [sP, aF, sw])
-      (by simp [sP, aF, sw]), by simp [sP, aF, ALLOC, sw]⟩ <;>
-      simp [FPR, FR, LblR, GapR, zT, fE, fA, fR, kN, kL, gN, gR, sP, aF, zX, lC, sw]
+    rintro q (rfl | rfl) <;> refine ⟨?_, ?_, ?_, ?_, ?_, not_oracle_sw (by omega_nf)
+      (by omega_nf), by omega_nf⟩ <;>
+      omega_nf
   have sP7 : c₇.nreg sP = c₄.nreg sP := by
     obtain ⟨h1, h2, h3, h4, h5, h6, h7⟩ := nP sP (Or.inl rfl)
     rw [k7 _ h4 h5, fr6 _ h6 h1 h3 h7, fr5 _ h6 h1 h2 h7]
@@ -188,9 +175,9 @@ theorem start_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have hd : ∀ j, (j = 2400 ∨ j = 2401 ∨ j = 2451) → c₇.nreg (sw j) = c₂.nreg (sw j) := by
     intro j hj
     have hj' : 2400 ≤ j ∧ j ≤ 2451 := by omega
-    rw [k7 _ (by unfold zX sw; omega) (by unfold lC sw; omega)]
-    refine u2 _ (not_oracle_sw (by unfold sw; omega) (by unfold sw; omega)) ?_ ?_ ?_ ?_
-      (by unfold ALLOC sw; omega)
+    rw [k7 _ (by omega_nf) (by omega_nf)]
+    refine u2 _ (not_oracle_sw (by omega_nf) (by omega_nf)) ?_ ?_ ?_ ?_
+      (by omega_nf)
     · unfold WS LblR; simp only [zX, zE, zH, zO, zA, zN, zL, zM, aF, sP, kN, kL, sw]; omega
     · unfold FPR FR; simp only [zT, fE, fA, fR, sw]; omega
     · unfold LblR; simp only [kN, kL, sw]; omega
@@ -199,10 +186,10 @@ theorem start_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     intro q hq
     have hq' : 242402 ≤ q ∧ q ≤ 242406 := by
       unfold LblR at hq; simp only [kN, kL, sw] at hq; omega
-    rw [k7 q (by unfold zX sw; omega) (by unfold lC sw; omega)]
+    rw [k7 q (by omega_nf) (by omega_nf)]
     exact fr6 q (not_oracle_sw (by omega) (by omega))
       (by unfold FPR FR; simp only [zT, fE, fA, fR, sw]; omega)
-      (by unfold GapR; simp only [gN, gR, sw]; omega) (by unfold ALLOC; omega)
+      (by omega_nf) (by omega_nf)
   have hlbl7 : lblOf c₇ kN kL = lblOf c₅ kN kL := lblOf_congrK hl57
   have hg67 : ∀ q, GapR q → c₇.nreg q = c₆.nreg q := fun q hq => by
     unfold GapR at hq
@@ -219,8 +206,8 @@ theorem start_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     intro hall h1
     obtain ⟨i, hi, hia⟩ := aFi4.1 h1
     exact hall i (by omega) ((hptr i (by omega)).1 hi) hia
-  have hA7 : c₇.nreg ALLOC = c₆.nreg ALLOC := k7 _ (by simp [ALLOC, zX, sw]) (by simp [ALLOC, lC, sw])
-  refine ⟨?_, ?_, ?_, lc7, by rw [sP7]; exact sPl4, fun i hi => by rw [sP7]; exact hptr i hi, ?_,
+  have hA7 : c₇.nreg ALLOC = c₆.nreg ALLOC := k7 _ (by omega_nf) (by omega_nf)
+  refine ⟨?_, ?_, ?_, lc7, by omega, fun i hi => by rw [sP7]; exact hptr i hi, ?_,
     ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact (hd 2400 (Or.inl rfl)).trans e2E
   · exact (hd 2401 (Or.inr (Or.inl rfl))).trans e2H
@@ -228,7 +215,7 @@ theorem start_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   · rw [hN75]
     by_cases h : c₄.nreg aF = 1
     · rw [l5a h kN (Or.inl rfl)]; exact sN4
-    · rw [(l5b h).1]; norm_num
+    omega
   · intro v hv
     rw [hlbl7] at hv
     by_cases h : c₄.nreg aF = 1
@@ -236,7 +223,7 @@ theorem start_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     · obtain ⟨h1, h2, -⟩ := l5b h
       rw [one c₅ h1] at hv
       simp only [List.mem_singleton] at hv
-      rw [hv]; exact h2
+      omega
   · intro i hi hik hia v hv
     have hi' : i < c₄.nreg sP := (hptr i hi).2 hik
     have h1 : c₄.nreg aF = 1 := aFi4.2 ⟨i, hi', hia⟩
@@ -244,23 +231,23 @@ theorem start_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     exact sLab4 i hi' v hv
   · intro hall
     obtain ⟨h1, h2, h3⟩ := l5b (hnot hall)
-    exact ⟨by rw [hN75]; exact h1, by rw [hL75]; exact h2, by rw [hL75]; exact h3⟩
+    exact ⟨by omega, by omega, by rw [hL75]; exact h3⟩
   · rw [hg67 gN (Or.inl rfl)]; exact g1
   · intro i hi
     rw [hg67 gN (Or.inl rfl)] at hi
     have hi2 : i < 2 := by omega
-    rw [hg67 (gR + i) (by unfold GapR; omega)]
+    rw [hg67 (gR + i) (by omega_nf)]
     exact g2 i hi
   · intro V hV
     obtain ⟨i, hi, hiV⟩ := g3 V hV
     have hi2 : i < 2 := by omega
     exact ⟨i, by rw [hg67 gN (Or.inl rfl)]; exact hi,
-      by rw [hg67 (gR + i) (by unfold GapR; omega)]; exact hiV⟩
-  · rw [r70, k7 kE (by simp [kE, zX, sw]) (by simp [kE, lC, sw])]
-  · rw [r71, k7 kH (by simp [kH, zX, sw]) (by simp [kH, lC, sw])]
-  · rw [r72, k7 kN (by simp [kN, zX, sw]) (by simp [kN, lC, sw])]
+      by rw [hg67 (gR + i) (by omega_nf)]; exact hiV⟩
+  · rw [r70, k7 kE (by omega_nf) (by omega_nf)]
+  · rw [r71, k7 kH (by omega_nf) (by omega_nf)]
+  · rw [r72, k7 kN (by omega_nf) (by omega_nf)]
   · intro i hi
-    rw [r73 i hi, k7 (kL + i) (by unfold kL zX sw; omega) (by unfold kL lC sw; omega)]
+    rw [r73 i hi, k7 (kL + i) (by omega_nf) (by omega_nf)]
   · intro x hx hx'
     rw [mem7 x hx', m6 x (by omega), m5 x (by omega), m4 x (by omega), m3 x (by omega), m2]
   · intro r hr hs hra

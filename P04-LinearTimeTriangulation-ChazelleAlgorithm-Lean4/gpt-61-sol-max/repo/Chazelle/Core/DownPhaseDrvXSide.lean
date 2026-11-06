@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvXCtx
 public import Chazelle.Core.DownPhaseDrvXWalk
 
@@ -35,19 +37,17 @@ def sig (li : Bool) (K i0 k : ℕ) : ℕ := (i0 + rho li K k) % K
 
 theorem sig_lt (li : Bool) {K : ℕ} (hK : 0 < K) (i0 k : ℕ) : sig li K i0 k < K := Nat.mod_lt _ hK
 
+section
+variable {li : Bool} {K i0 k : ℕ} (hk : k < K)
+include hk
 /-- The next host point along the inner side is the next host key. -/
-theorem sig_next {li : Bool} {K i0 k : ℕ} (hk : k < K) (hn : kNext li k < K)
+theorem sig_next (hn : kNext li k < K)
     (h0 : li = false → 1 ≤ k) : sig li K i0 (kNext li k) = (sig li K i0 k + 1) % K := by
   unfold sig rho kNext
-  rw [Nat.mod_add_mod]
-  cases li
-  · have := h0 rfl
-    simp only [Bool.false_eq_true, ite_false] at hn ⊢
-    congr 1; omega
-  · simp only [ite_true]; congr 1
+  grind
 
 /-- The previous host point along the inner side is the previous host key. -/
-theorem sig_prev {li : Bool} {K i0 k : ℕ} (hk : k < K) (hp : kPrev li k < K)
+theorem sig_prev (hp : kPrev li k < K)
     (h0 : li = true → 1 ≤ k) : sig li K i0 (kPrev li k) = (sig li K i0 k + K - 1) % K := by
   unfold sig rho kPrev
   unfold kPrev at hp
@@ -59,6 +59,9 @@ theorem sig_prev {li : Bool} {K i0 k : ℕ} (hk : k < K) (hp : kPrev li k < K)
   · have := h0 rfl
     simp only [ite_true] at hp ⊢
     rw [show i0 + k + (K - 1) = i0 + (k - 1) + K by omega, Nat.add_mod_right]
+
+
+end
 
 section
 
@@ -74,7 +77,7 @@ set_option quotPrecheck false in
 local notation "xG" => hostPoly (Qof P) xS (reg r)
 
 theorem det_neg_of {a b x : Point} (h1 : 0 < det a b x) (h2 : 0 < det b a x) : False := by
-  rw [Chazelle.Geometry.det_swap12] at h2; linarith
+  grind [Chazelle.Geometry.det_swap12]
 
 namespace XCtx
 
@@ -104,13 +107,15 @@ theorem kn_le (_Y : XCtx P li L E reg r C NR i0 g) {p : ℕ} :
   have hu := tU_lt (T := C.topIdx) C.sideBeta hm1 p
   unfold kNext
   by_cases h : tU C.m C.topIdx C.sideBeta p < C.m
-  · rw [decide_eq_true h, tK_eq_of_lt h]; simp only [ite_true]
-    exact ⟨by omega, fun h' => absurd h' (by decide)⟩
+  · rw [decide_eq_true h, tK_eq_of_lt h]; simp_all
   · rw [decide_eq_false h, tK_eq_of_ge (not_lt.1 h)]
-    simp only [Bool.false_eq_true, ite_false]; omega
+    grind
 
+section
+variable {p : ℕ} (h6 : 6 ≤ p)
+include h6
 /-- **Inner position inside a tour edge**: a position of `G` with the same left half-plane. -/
-theorem inner_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1)
+theorem inner_edge (hp : p < 2 * C.m + 6) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1)
     (hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = li) :
     sidePt (C.sideWalk C.sideBeta) p t = sidePt xG (sig li xK i0 (tK C.m C.topIdx C.sideBeta p)) t ∧
       ∀ x, sideLeft (C.sideWalk C.sideBeta) p t x ↔
@@ -135,7 +140,7 @@ theorem inner_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht
       Y.gn]
 
 /-- **Inner position at a tour vertex** (regular): a vertex position of `G`, sector inside. -/
-theorem inner_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
+theorem inner_vtx (hp : p ≤ 2 * C.m + 6)
     (hu0 : tU C.m C.topIdx C.sideBeta p ≠ 0) (hum : tU C.m C.topIdx C.sideBeta p ≠ C.m)
     (hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = li) :
     sidePt (C.sideWalk C.sideBeta) p 0 = sidePt xG (sig li xK i0 (tK C.m C.topIdx C.sideBeta p)) 0 ∧
@@ -152,8 +157,8 @@ theorem inner_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
     walk_sector_vtx Y.cpSimple Y.X.hCs Y.X.hCm h6 hp hu0 hum hx
   generalize tK C.m C.topIdx C.sideBeta p = kc at hkc_le hk0 hkm hv0 hsv ⊢
   rw [hA] at hsv
-  have hnx : kNext li kc ≤ C.m := by unfold kNext; split_ifs <;> omega
-  have hpv : kPrev li kc ≤ C.m := by unfold kPrev; split_ifs <;> omega
+  have hnx : kNext li kc ≤ C.m := by grind [kNext]
+  have hpv : kPrev li kc ≤ C.m := by grind [kPrev]
   have hsn := sig_next (i0 := i0) (show kc < xK by omega) (show kNext li kc < xK by omega)
     (fun _ => by omega)
   have hsp := sig_prev (i0 := i0) (show kc < xK by omega) (show kPrev li kc < xK by omega)
@@ -166,7 +171,7 @@ theorem inner_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
     exact h
 
 /-- **Outer position inside a tour edge**: the reversed position of `G`, opposite half-plane. -/
-theorem outer_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1)
+theorem outer_edge (hp : p < 2 * C.m + 6) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1)
     (hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = !li) :
     sidePt (C.sideWalk C.sideBeta) p t = sidePt xG (sig li xK i0
       (kNext (decide (tU C.m C.topIdx C.sideBeta p < C.m)) (tK C.m C.topIdx C.sideBeta p))) (1 - t) ∧
@@ -188,19 +193,18 @@ theorem outer_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht
     unfold kNext
     cases li
     · simp only [Bool.not_false, ite_true, Bool.false_eq_true, ite_false]; omega
-    · simp only [Bool.not_true, Bool.false_eq_true, ite_false, ite_true]
-      have := hk1 rfl; omega
+    grind
   have hkn' : kNext (!li) kc < xK := by omega
   have hsn : sig li xK i0 kc = (sig li xK i0 (kNext (!li) kc) + 1) % xK := by
     conv_lhs => rw [← hback]
-    refine sig_next hkn' (by rw [hback]; omega) (fun hl => ?_)
-    subst hl; unfold kNext; simp only [Bool.not_false, ite_true]; omega
+    refine sig_next hkn' (by omega) (fun hl => ?_)
+    subst hl; unfold kNext; simp_all
   rw [Y.vtx_sig (by omega)] at hv0
   rw [Y.vtx_sig hkn'] at hv1
   have hne : (xG).vtx (sig li xK i0 (kNext (!li) kc)) ≠
       (xG).vtx ((sig li xK i0 (kNext (!li) kc) + 1) % (xG).n) :=
     Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple (by rw [Y.gn]; exact sig_lt li (by omega) _ _)
-  have ht' : 1 - t ∈ Ioo (0 : ℝ) 1 := ⟨by linarith [ht.2], by linarith [ht.1]⟩
+  have ht' : 1 - t ∈ Ioo (0 : ℝ) 1 := ⟨by grind, by grind⟩
   refine ⟨?_, fun x hx hx' => ?_⟩
   · unfold sidePt; rw [hv0, hv1, Y.gn, ← hsn, ← Chazelle.Geometry.lerp_symm]
   · rw [hse, Y.vtx_sig (by omega), Y.vtx_sig hkn'] at hx
@@ -208,7 +212,7 @@ theorem outer_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht
     exact det_neg_of hx hx'
 
 /-- **Outer position at a tour vertex** (regular): the sector is disjoint from that of `G`. -/
-theorem outer_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
+theorem outer_vtx (hp : p ≤ 2 * C.m + 6)
     (hu0 : tU C.m C.topIdx C.sideBeta p ≠ 0) (hum : tU C.m C.topIdx C.sideBeta p ≠ C.m)
     (hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = !li) :
     sidePt (C.sideWalk C.sideBeta) p 0 = sidePt xG (sig li xK i0 (tK C.m C.topIdx C.sideBeta p)) 0 ∧
@@ -225,10 +229,10 @@ theorem outer_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
     walk_sector_vtx Y.cpSimple Y.X.hCs Y.X.hCm h6 hp hu0 hum hx
   generalize tK C.m C.topIdx C.sideBeta p = kc at hkc_le hk0 hkm hv0 hsv ⊢
   rw [hA] at hsv
-  have e1 : kPrev (!li) kc = kNext li kc := by unfold kPrev kNext; cases li <;> simp
-  have e2 : kNext (!li) kc = kPrev li kc := by unfold kPrev kNext; cases li <;> simp
-  have hnx : kNext li kc ≤ C.m := by unfold kNext; split_ifs <;> omega
-  have hpv : kPrev li kc ≤ C.m := by unfold kPrev; split_ifs <;> omega
+  have e1 : kPrev (!li) kc = kNext li kc := by core_grind
+  have e2 : kNext (!li) kc = kPrev li kc := by core_grind
+  have hnx : kNext li kc ≤ C.m := by grind [kNext]
+  have hpv : kPrev li kc ≤ C.m := by grind [kPrev]
   have hsn := sig_next (i0 := i0) (show kc < xK by omega) (show kNext li kc < xK by omega)
     (fun _ => by omega)
   have hsp := sig_prev (i0 := i0) (show kc < xK by omega) (show kPrev li kc < xK by omega)
@@ -246,6 +250,9 @@ theorem outer_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
     rw [Y.gn] at hns hB
     unfold sideLeftOf at h hx'
     exact Chazelle.Chain.sideCcw_asymm hB hns hx' h
+
+
+end
 
 /-- The points of `G` are below the top vertex and inside the coordinate square of `C.P`. -/
 theorem g_bound {q : ℕ} (hq : q < xK) {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s ≤ 1) :
@@ -291,7 +298,7 @@ theorem meet_of_attach (Y : XCtx P li L E reg r C NR i0 g) {c : Set Point}
     DownDrv.interiorWalk_hostPoly Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
   have hReq := DownDrv.region_eq_intHost Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
   obtain ⟨hq, hs0, hs1, hmem, rA, hrA, hsec⟩ := hA
-  obtain ⟨r', hr', hcl⟩ := hMH.clean q (by rw [hW]; exact hq) s hs0 hs1
+  obtain ⟨r', hr', hcl⟩ := hMH.clean q (by grind) s hs0 hs1
   rw [hW] at hcl
   obtain ⟨y₀, a, b, hab, rfl⟩ := hc
   obtain ⟨x, hxc, hne, hxd⟩ := Extract.exists_near_mem hab hmem (lt_min hrA hr')

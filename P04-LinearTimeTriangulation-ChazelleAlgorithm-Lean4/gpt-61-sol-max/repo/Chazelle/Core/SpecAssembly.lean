@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SpecRam
 
 /-!
@@ -46,8 +48,7 @@ def FinalStageSpec : Prop :=
 theorem runsWithin_mono {prog : Program} {P : Polygon} {W s s' : ℕ}
     {out : List Polygon.Triangle} (h : RunsWithin prog P W s out) (hs : s ≤ s') :
     RunsWithin prog P W s' out := by
-  obtain ⟨k, hk, h1, h2⟩ := h
-  exact ⟨k, hk.trans hs, h1, h2⟩
+  core_grind
 
 /-- **The final assembly.**  The two stage specifications and shear invariance give the target
 theorem. -/
@@ -61,17 +62,14 @@ theorem linear_of_core (hcore : CoreStageSpec) (hfin : FinalStageSpec)
   have hW : (K₁ + C₁ + K₂ + 1) * (P.n + 1) =
       K₁ * (P.n + 1) + C₁ * (P.n + 1) + K₂ * (P.n + 1) + (P.n + 1) := by ring
   obtain ⟨c₁, k₁, e₁, hk₁, halloc, Q, hPQ, hQ, hready⟩ :=
-    h₁ P hP ((K₁ + C₁ + K₂ + 1) * (P.n + 1)) (by rw [hW]; omega)
+    h₁ P hP ((K₁ + C₁ + K₂ + 1) * (P.n + 1)) (by omega)
   obtain ⟨c₂, k₂, e₂, hk₂, htri⟩ := h₂ P Q hP hQ hPQ ((K₁ + C₁ + K₂ + 1) * (P.n + 1)) c₁
-    e₁.wb_right hready (by rw [hW]; omega)
+    e₁.wb_right hready (by omega)
   refine ⟨c₂.output, ?_, ?_⟩
   · have hr := Machine.runsWithin_of_exec (Exec.seq e₁ e₂)
-    refine runsWithin_mono hr ?_
-    have hC : (C₁ + C₂ + 1) * (P.n + 1) = C₁ * (P.n + 1) + C₂ * (P.n + 1) + (P.n + 1) := by ring
-    rw [hC]
-    omega
+    grind [Chazelle.Core.runsWithin_mono]
   · obtain ⟨ε, -, rfl, -⟩ := hPQ
-    exact ((hsh ε P).2 _).1 htri
+    ram_grind
 
 end
 

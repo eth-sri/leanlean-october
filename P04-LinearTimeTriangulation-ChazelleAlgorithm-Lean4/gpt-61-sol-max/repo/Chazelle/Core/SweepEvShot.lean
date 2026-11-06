@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvOrg3
 public import Chazelle.Core.SweepIoLHit2
 
@@ -41,23 +43,28 @@ def eNo : ℕ := sw 2247
 
 /-! ## The frame of the stage-3 components -/
 
+section
+variable (X : ℕ → Prop)
+include X
 /-- **The frame of a component**: registers outside the oracle bands and the set `X` (and the
 allocator) are unchanged, the allocator grows, the memory below it is kept. -/
-def EFr (X : ℕ → Prop) (c c' : Config) : Prop :=
+def EFr (c c' : Config) : Prop :=
   (∀ r, bandOf r ∉ oracleBands → ¬ X r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
     c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)
 
-theorem EFr.refl (X : ℕ → Prop) (c : Config) : EFr X c c :=
-  ⟨fun _ _ _ _ => rfl, le_rfl, fun _ _ => rfl⟩
+theorem EFr.refl (c : Config) : EFr X c c :=
+  by core_grind
+
+
+end
 
 theorem EFr.trans {X : ℕ → Prop} {c₁ c₂ c₃ : Config} (h₁ : EFr X c₁ c₂) (h₂ : EFr X c₂ c₃) :
     EFr X c₁ c₃ :=
-  ⟨fun r a b d => (h₂.1 r a b d).trans (h₁.1 r a b d), h₁.2.1.trans h₂.2.1,
-    fun a ha => (h₂.2.2 a (lt_of_lt_of_le ha h₁.2.1)).trans (h₁.2.2 a ha)⟩
+  by core_grind
 
 theorem EFr.mono {X Y : ℕ → Prop} {c c' : Config} (h : EFr X c c') (hXY : ∀ r, X r → Y r) :
     EFr Y c c' :=
-  ⟨fun r a b d => h.1 r a (fun hx => b (hXY r hx)) d, h.2.1, h.2.2⟩
+  by core_grind
 
 /-! ## The program -/
 
@@ -90,8 +97,8 @@ theorem evPrepL_val (m f : ℕ → ℕ) :
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun q hq hq' => regB_other _ _ _ (fun i hi => by
     simp only [evPrepL, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp only [dstI] <;> first | omega)⟩ <;>
-  · simp only [evPrepL, regB, regI, upd, MD₁, wGB, wGK, oSym, oD, eRD, K1, sw]; simp
+      core_grind <;> first | omega)⟩ <;>
+  aesop
 
 /-! ## The contract -/
 
@@ -128,12 +135,10 @@ theorem nhgt_facts {M : Model} {Q : Polygon} {n : ℕ} {u : WPos} (hu : ProperPo
     unfold nhgt; rw [← hedge]
   rw [he]
   have hpar : M.param Q (Restore.normOf M Q u) = M.param Q u := by
-    unfold Model.key at hkey; rw [hedge] at hkey; linarith
+    simp_all [Model.key] <;> omega_nf
   refine ⟨hpp, hpar, hpos, ⟨fun h => ?_, fun h => ?_⟩⟩
   · rw [← he, h]; rfl
-  · rcases hcase with h0 | h0
-    · exact h0
-    · rw [h] at h0; exact absurd h0 (lt_irrefl 0)
+  grind
 
 end
 

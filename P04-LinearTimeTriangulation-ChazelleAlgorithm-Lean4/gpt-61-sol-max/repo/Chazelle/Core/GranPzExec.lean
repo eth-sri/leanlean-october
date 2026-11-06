@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranPzRam
 public import Chazelle.Core.NFLocateSpec
 public import Chazelle.Core.ShearInv
@@ -66,7 +68,7 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
       unfold chHead
       exec_block
       all_goals try omega
-      all_goals try (config_simp; rw [d₀]; omega)
+      all_goals try (config_simp; omega)
       refine ⟨rfl, ?_⟩
       config_simp
       rw [d₀]
@@ -135,7 +137,7 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
       refine ⟨c₇, _, .seq e₀ (.ifLtN_true t0 (.seq e₁ (.ifLtN_false ns (.seq e₂
         (.ifLtN_true (by rw [q57, p53]; exact hg)
           (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))))))), ?_, b₇, ?_⟩
-      · have : H.length ≤ 64 := hlen
+      · 
         omega
       rw [i₇, q111', q113, q114, q115]
       -- the mathematics

@@ -21,9 +21,14 @@ namespace ShootCut
 /-- The memory `m` below `A`, the value `Z` from `A` on. -/
 def pad (m : ℕ → ℕ) (A Z : ℕ) : ℕ → ℕ := fun a => if a < A then m a else Z
 
-theorem pad_lt {m : ℕ → ℕ} {A Z a : ℕ} (h : a < A) : pad m A Z a = m a := ite_eq_left h
+section
+variable {m : ℕ → ℕ} {A Z a : ℕ}
+theorem pad_lt (h : a < A) : pad m A Z a = m a := ite_eq_left h
 
-theorem pad_ge {m : ℕ → ℕ} {A Z a : ℕ} (h : A ≤ a) : pad m A Z a = Z := ite_eq_right (by omega)
+theorem pad_ge (h : A ≤ a) : pad m A Z a = Z := ite_eq_right (by omega)
+
+
+end
 
 theorem robust_pad {A : ℕ} {m : ℕ → ℕ} {Φ : (ℕ → ℕ) → Prop} (h : Robust A m Φ) (Z : ℕ) :
     Φ (pad m A Z) := h _ fun _ ha => pad_lt ha
@@ -85,47 +90,36 @@ theorem grade_entry (hR : Robust A m fun m' => GradeRaw O P m' h A) {g i : ℕ} 
     rintro Z hZA hZn D hD ⟨H, C, hC, hm⟩
     have e2 := hC.2.2.2.1
     rw [pad_ge (by omega)] at e2
-    have : gradeLen P.n g i ≤ P.n := by unfold gradeLen; omega
-    omega
+    grind [gradeLen]
   have h2 : h + 2 < A := by
     by_contra hA
     set Z := A + P.n + 1
     obtain ⟨H, C, N, hC, -, -, -, -, -, hm, -⟩ := (robust_pad hR Z).2.2.2 g i
       (by rw [pad_lt hh]; exact hg) hi
-    refine key Z (by omega) (by omega) _ ?_ ⟨H, C, hC, hm⟩
-    simp only [pad_ge (show A ≤ h + 2 by omega)]
-    rw [pad_ge (show A ≤ Z + g by omega), pad_ge (show A ≤ Z + 3 * i by omega)]
-    omega
+    grind [Chazelle.Core.ShootCut.pad_ge]
   have hr : m (h + 2) + g < A := by
     by_contra hA
     set Z := A + P.n + 1
     obtain ⟨H, C, N, hC, -, -, -, -, -, hm, -⟩ := (robust_pad hR Z).2.2.2 g i
       (by rw [pad_lt hh]; exact hg) hi
-    refine key Z (by omega) (by omega) _ ?_ ⟨H, C, hC, hm⟩
-    rw [pad_lt h2, pad_ge (show A ≤ m (h + 2) + g by omega), pad_ge (show A ≤ Z + 3 * i by omega)]
-    omega
+    grind [Chazelle.Core.ShootCut.pad_ge, Chazelle.Core.ShootCut.pad_lt]
   have hE : entryAddr m h g i < A := by
     by_contra hA
     set Z := A + P.n + 1
     obtain ⟨H, C, N, hC, -, -, -, -, -, hm, -⟩ := (robust_pad hR Z).2.2.2 g i
       (by rw [pad_lt hh]; exact hg) hi
-    refine key Z (by omega) (by omega) _ ?_ ⟨H, C, hC, hm⟩
-    unfold entryAddr at hA
-    rw [pad_lt h2, pad_lt hr, pad_ge (show A ≤ m (m (h + 2) + g) + 3 * i by omega)]
-    omega
+    grind [Chazelle.Core.ShootCut.pad_ge, Chazelle.Core.ShootCut.pad_lt, entryAddr]
   -- the descriptor word is below the bound (`ChainWF`)
   obtain ⟨H₀, C₀, N₀, -, hwf₀, -⟩ := hR.holds.2.2.2 g i hg hi
-  have hD : m (entryAddr m h g i) + 5 ≤ A := by unfold entryAddr; exact hwf₀.1
+  
   have hE2 : entryAddr m h g i + 2 < A := by
     by_contra hA
     set Z := A + m (entryAddr m h g i) + 1
     obtain ⟨H, C, N, -, -, -, -, -, -, -, -, -, -, e1, -⟩ := (robust_pad hR Z).2.2.2 g i
       (by rw [pad_lt hh]; exact hg) hi
     have eE : m (m (h + 2) + g) + 3 * i = entryAddr m h g i := rfl
-    rw [pad_lt h2, pad_lt hr, eE, pad_ge (show A ≤ entryAddr m h g i + 2 by omega),
-      pad_ge (show A ≤ Z by omega), pad_lt hE] at e1
-    omega
-  exact ⟨h2, hr, hE2⟩
+    grind [Chazelle.Core.ShootCut.pad_ge, Chazelle.Core.ShootCut.pad_lt]
+  omega
 
 end ShootCut
 

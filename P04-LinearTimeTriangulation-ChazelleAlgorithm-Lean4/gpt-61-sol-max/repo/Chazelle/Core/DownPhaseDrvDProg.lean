@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRSplH
 public import Chazelle.Core.NFBuildCmpRam
 
@@ -114,18 +116,24 @@ def stB : Stmt := block [.storeN 216022 216053, .addN 216022 216022 216002]
 def appS : Stmt :=
   .seq appT (.seq scanS (.seq stB (.seq (.instr (.copyN 216040 81010)) (.seq scanS stB))))
 
+section
+variable (sF : Stmt)
+include sF
 /-- Call the splitting step on region `r` and append its chord, if any. -/
-def callS (sF : Stmt) : Stmt := .seq argS (.seq sF (.ifLtN 216003 81007 appS .skip))
+def callS : Stmt := .seq argS (.seq sF (.ifLtN 216003 81007 appS .skip))
 
 /-- The step of the region loop. -/
-def regBody (sF : Stmt) : Stmt :=
+def regBody : Stmt :=
   .seq (.instr (.loadN 216032 216031)) (.seq (.ifLtN 216004 216032 (callS sF) .skip)
     (block [.addN 216031 216031 216006, .addN 216030 216030 216002]))
 
 /-- The region loop. -/
-def regS (sF : Stmt) : Stmt := .whileLtN 216030 216013 (regBody sF)
+def regS : Stmt := .whileLtN 216030 216013 (regBody sF)
 
 /-! ## A round, and the rounds -/
+
+
+end
 
 /-- The arguments of the splice. -/
 def splArgs : Stmt := block [.copyN 210020 216018, .copyN 210021 216020, .copyN 210022 216019,
@@ -148,9 +156,7 @@ def Bscan (r : ℕ) : Bool :=
 /-- A register frame for fewer registers is one for more. -/
 theorem fbMono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' :=
-  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
-    fun r hr => h.2.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
-    h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
+  by grind [Chazelle.Core.SignK.FrameB]
 
 /-- The registers `ldArc` writes. -/
 def BldArc (r : ℕ) : Bool :=
@@ -162,19 +168,14 @@ theorem wr_ldArc : wr BldArc ldArc = true := by decide
 theorem wr_decS : wr (fun r => decide (r = 216053)) decS = true := by decide
 
 theorem bldArc_scan (r : ℕ) (h : BldArc r = true) : Bscan r = true := by
-  simp only [BldArc, Bscan, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  simp_all [BldArc, Bscan, Bool.or_eq_true, decide_eq_true_eq] <;> omega_nf
 
 theorem b53_scan (r : ℕ) (h : decide (r = 216053) = true) : Bscan r = true := by
-  simp only [Bscan, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  simp_all [Bscan, Bool.or_eq_true, decide_eq_true_eq] 
 
 theorem bhalf_scan {dd dst : ℕ} (hdd : 42100 ≤ dd ∧ dd < 42110) (hdst : 42100 ≤ dst ∧ dst < 42110)
     (r : ℕ) (h : BuildRam.BhalfS dd dst r = true) : Bscan r = true := by
-  simp only [BuildRam.BhalfS, Bool.or_eq_true, decide_eq_true_eq] at h
-  simp only [Bscan, Bool.or_eq_true, decide_eq_true_eq]
-  rcases h with (h | h) | h
-  · exact Or.inr h
-  · subst h; exact Or.inl (Or.inr hdd)
-  · subst h; exact Or.inl (Or.inr hdst)
+  aesop (add simp [BuildRam.BhalfS, Bool.or_eq_true, decide_eq_true_eq, Bscan]) (add safe (by omega))
 
 end
 

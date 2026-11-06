@@ -95,28 +95,7 @@ variable (C : Chain)
 
 /-! ### Arcs and the paper's weight -/
 
-/-- `ArcNext S x y`: the piece `y` follows the piece `x` along the double boundary `∂C` —
-on the same side of the same edge across a cut parameter, across the vertex `k + 1` on the same
-side, or around one of the two endpoints of the chain to the other side. -/
-def ArcNext (S : Set (Set Point)) (x y : ℕ × Bool × ℝ) : Prop :=
-  (y.1 = x.1 ∧ y.2.1 = x.2.1 ∧ y.2.2 = C.nextCut S x.1 x.2.2 ∧ y.2.2 < 1) ∨
-  (y.1 = x.1 + 1 ∧ y.2.1 = x.2.1 ∧ C.nextCut S x.1 x.2.2 = 1 ∧ y.2.2 = 0) ∨
-  (x.1 + 1 = C.m ∧ y.1 = x.1 ∧ y.2.1 = !x.2.1 ∧ C.nextCut S x.1 x.2.2 = 1 ∧
-    C.nextCut S y.1 y.2.2 = 1) ∨
-  (x.1 = 0 ∧ y.1 = 0 ∧ y.2.1 = !x.2.1 ∧ x.2.2 = 0 ∧ y.2.2 = 0)
 
-/-- Two pieces are *linked* when they are consecutive along `∂C` and face the same region. -/
-def ArcLink (S : Set (Set Point)) (x y : ℕ × Bool × ℝ) : Prop :=
-  x ∈ C.pieces S ∧ y ∈ C.pieces S ∧ (C.ArcNext S x y ∨ C.ArcNext S y x) ∧
-    ∃ R ∈ C.regionsOf S, C.PieceFaces S x R ∧ C.PieceFaces S y R
-
-/-- The *arc* through the piece `x`: the pieces reachable from `x` by links. -/
-def arcOf (S : Set (Set Point)) (x : ℕ × Bool × ℝ) : Set (ℕ × Bool × ℝ) :=
-  {y | Relation.ReflTransGen (C.ArcLink S) x y}
-
-/-! ### Conformality and granularity -/
-
-/-! ### Lemma 2.3 -/
 
 end
 

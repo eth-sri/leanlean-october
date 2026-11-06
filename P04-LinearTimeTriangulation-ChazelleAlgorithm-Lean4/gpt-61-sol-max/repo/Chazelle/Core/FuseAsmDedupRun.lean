@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmScan
 
 /-!
@@ -38,29 +40,30 @@ def ddRun : Stmt :=
 /-- The stored triples. -/
 def tlist (m : ℕ → ℕ) (T K : ℕ) : List (ℕ × ℕ × ℕ) := (List.range K).map (trip m T)
 
-theorem tle_of_le3 {m : ℕ → ℕ} {T K a b : ℕ} (ha : a < K) (hb : b < K)
+section
+variable {m : ℕ → ℕ}
+theorem tle_of_le3 {T K a b : ℕ} (ha : a < K) (hb : b < K)
     (h : le3 m T K a b = true) : tle (trip m T a) (trip m T b) := by
-  unfold le3 at h; simp only [ha, hb, ite_true, decide_eq_true_eq] at h; exact h
+  simp_all [le3, ite_true, decide_eq_true_eq] 
 
 /-- The scanned list of a sorted permutation of the indices: same elements, no repetition. -/
-theorem dd_spec {m : ℕ → ℕ} {T K : ℕ} {L' : List ℕ} (hp : L'.Perm (List.range K))
+theorem dd_spec {T K : ℕ} {L' : List ℕ} (hp : L'.Perm (List.range K))
     (hs : L'.Pairwise fun a b => le3 m T K a b = true) :
     (∀ x, x ∈ dd (L'.map (trip m T)) (0, 0, 0) ↔ x ∈ tlist m T K) ∧
       (dd (L'.map (trip m T)) (0, 0, 0)).Nodup ∧
       (dd (L'.map (trip m T)) (0, 0, 0)).length ≤ K := by
   have hlt : ∀ a ∈ L', a < K := fun a ha => List.mem_range.1 (hp.subset ha)
   refine ⟨fun x => ?_, ?_, ?_⟩
-  · rw [mem_dd, tlist]
-    simp only [List.mem_map]
-    constructor
-    · rintro ⟨a, ha, rfl⟩; exact ⟨a, hp.subset ha, rfl⟩
-    · rintro ⟨a, ha, rfl⟩; exact ⟨a, hp.symm.subset ha, rfl⟩
+  · core_grind [mem_dd, List.mem_map]
   · refine dd_nodup (r := tle) (fun x y h1 h2 => tle_antisymm h1 h2) ?_ _
     rw [List.pairwise_map]
     exact hs.imp_of_mem fun {a b} ha hb h => tle_of_le3 (hlt a ha) (hlt b hb) h
   · unfold dd
     refine (ddp_length_le _ _ _).trans ?_
     rw [List.length_map, hp.length_eq, List.length_range]
+
+
+end
 
 /-- The cost bound of `ddRun`. -/
 def ddCost (K : ℕ) : ℕ := SortR.sortCost 40 K + 70 * K + 30
@@ -72,12 +75,7 @@ theorem frameFS_of_regs {c c' : Config} {k : ℕ}
     (hrm : ∀ a, a < c.nreg ALLOC → c'.rmem a = c.rmem a) (ho : c'.output = c.output)
     (ha1 : c.nreg ALLOC ≤ c'.nreg ALLOC) (ha2 : c'.nreg ALLOC ≤ c.nreg ALLOC + k) :
     Frame {bFuse, bSort} c c' k := by
-  refine ⟨fun r hb hra => hr r ?_ hra, hrr, hm, hrm, ho, ha1, ha2⟩
-  by_contra h
-  push Not at h
-  apply hb
-  simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bFuse, bSort]
-  omega
+  grind [Chazelle.Core.Frame, Finset.mem_insert, Finset.mem_singleton, bandOf, bFuse, bSort]
 
 set_option maxHeartbeats 8000000 in
 /-- **The deduplication procedure.** -/
@@ -104,14 +102,10 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     unfold ddInit
     exec_block
     all_goals try omega
-    refine ⟨rfl, ?_⟩
-    simp (disch := omega) only [Machine.upd_same, Machine.upd_other, h40, h41, hA', ALLOC]
-    and_intros
-    all_goals first | trivial | rfl |
-      (intro r hr ha; simp (disch := omega) only [Machine.upd_other])
+    grind [Machine.upd_same, Machine.upd_other, ALLOC]
   obtain ⟨q05, q08, q16, q17, q01, q30, q00, q02, qA, qr, qm, qrr, qrm, qo⟩ := q
   -- the indices
-  have I0 : IXI W K A₀ c₁ c₁ := ⟨e₁.wb_right, by omega, by rw [qA, q00]; rfl, fun _ _ _ => rfl,
+  have I0 : IXI W K A₀ c₁ c₁ := ⟨e₁.wb_right, by omega, by omega, fun _ _ _ => rfl,
     fun _ _ => rfl, fun j hj => by omega, rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, hk₂', I₂, h₂⟩ := ixLoop_exec (P := P) q05 q01 (by omega) K c₁ I0
     (by omega)
@@ -124,30 +118,27 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
         (∀ r, r ≠ 30003 → r ≠ 30004 → c₃.nreg r = c₂.nreg r) ∧ c₃.nmem = c₂.nmem ∧
         c₃.rreg = c₂.rreg ∧ c₃.rmem = c₂.rmem ∧ c₃.output = c₂.output) := by
     have hw₂ := I₂.wb
-    have r02 : c₂.nreg 70202 = A₀ := by rw [g₂ _ (by decide) (by decide), q02]
+    have r02 : c₂.nreg 70202 = A₀ := by ram_grind
     have r41 : c₂.nreg 70241 = K := by
-      rw [g₂ _ (by decide) (by decide), qr _ (by norm_num) (by decide), h41]
+      grind
     unfold ddMid
     exec_block
-    refine ⟨rfl, ?_⟩
-    simp (disch := omega) only [Machine.upd_same, Machine.upd_other, r02, r41]
-    and_intros
-    all_goals first | trivial | rfl | (intro r h1 h2; simp (disch := omega) only [Machine.upd_other])
+    grind [Machine.upd_same, Machine.upd_other]
   obtain ⟨s03, s04, sr₃, sm₃, srr₃, srm₃, so₃⟩ := q3
   have a₃ : c₃.nreg ALLOC = A₀ + K := by rw [sr₃ _ (by decide) (by decide), a₂]
   have cmp := cmp3_ok (P := P) (W := W) (m₀ := c₃.nmem) (A₀ := A₀ + K) (T := T) (K := K)
     (g := c₃.nreg)
     (by omega) (by omega) (by omega)
   have hJ : Cmp3J c₃.nmem (A₀ + K) T K c₃.nreg c₃ := ⟨by
-      rw [sr₃ _ (by decide) (by decide), g₂ _ (by decide) (by decide), q16],
-    by rw [sr₃ _ (by decide) (by decide), g₂ _ (by decide) (by decide), q17],
+      grind,
+    by grind,
     fun _ _ => rfl, fun _ _ _ => rfl⟩
   obtain ⟨c₄, k₄, e₄, hk₄, hJ₄, fr₄, b₄, b₄', L', hL', hperm, hsorted⟩ :=
     SortR.sortStmt_exec (P := P) cmp (by decide) (le3_trans c₃.nmem T K)
       (le3_total c₃.nmem T K) e₃.wb_right hJ (by rw [a₃]; exact cmp3J_stable _ _ _ _ _)
-      (List.range K) (by rw [List.length_range, s03, sm₃]; exact hseg)
-      (by rw [List.length_range, s04]) (by rw [List.length_range, s03, a₃])
-      (by rw [List.length_range, a₃]; omega)
+      (List.range K) (by grind)
+      (by grind) (by grind)
+      (by grind)
   rw [List.length_range] at hk₄ b₄' hL'
   -- the scan
   obtain ⟨B', hB'⟩ : ∃ x, c₄.nreg 30005 = x := ⟨_, rfl⟩
@@ -166,25 +157,25 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     refine ⟨rfl, ?_⟩
     simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hLB', hB', j16, j17, ALLOC]
     and_intros
-    all_goals first | trivial | rfl | (intro r h1; simp (disch := omega) only [Machine.upd_other])
+    all_goals ram_simp
   obtain ⟨t42, t20, t21, t19, t05, t08, t30, t16, tr₅, tm₅, trr₅, trm₅, to₅⟩ := q5
   have hitems : ∀ j, j < K → c₅.nmem (B' + j) < K := by
     intro j hj
     have hmem : c₅.nmem (B' + j) ∈ L' := by
       rw [← hL', tm₅, ← hB']
       simp only [SortL.seg, List.mem_map, List.mem_range]
-      exact ⟨j, hj, rfl⟩
-    exact List.mem_range.1 (hperm.subset hmem)
-  have a₅ : c₅.nreg ALLOC = LB := by rw [tr₅ _ (by decide), hLB]
-  have hK4 : k₄ ≤ SortR.sortCost 40 K := hk₄
+      grind
+    grind
+  have a₅ : c₅.nreg ALLOC = LB := by ram_simp
+  
   have hLBb : LB ≤ A₀ + K + k₄ := by rw [← hLB, ← a₃]; exact fr₄.2.2.2.2.2.2
-  have hBL : B' + K ≤ LB := by rw [← hB', ← hLB]; exact b₄'
+  have hBL : B' + K ≤ LB := by grind
   have D0 : DSI W K T B' LB c₅.nmem c₅ c₅ := by
-    refine ⟨e₅.wb_right, by rw [t20]; omega, by rw [t21, t20]; simp, fun h => by rw [t20] at h; omega,
-      by rw [a₅, t20]; simp [ddp], by rw [t20]; intro i hi; simp [ddp] at hi,
-      by rw [t19, t20]; simp [ddp], fun _ _ => rfl, fun _ _ _ => rfl, rfl, rfl, rfl⟩
+    refine ⟨e₅.wb_right, by grind, by omega, fun h => by omega,
+      by grind [ddp], by rw [t20]; intro i hi; simp [ddp] at hi,
+      by grind [ddp], fun _ _ => rfl, fun _ _ _ => rfl, rfl, rfl, rfl⟩
   obtain ⟨c₆, k₆, e₆, hk₆, hk₆', D₆, h₆⟩ := dsLoop_exec (P := P) (m₀ := c₅.nmem) t05 t08 t16 t30
-    hitems (by omega) hBL (by omega) K c₅ D0 (by rw [t20]; simp)
+    hitems (by omega) hBL (by omega) K c₅ D0 (by omega)
   -- assembling
   have ex : Exec P W ddRun c c₆ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k₆))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
@@ -198,7 +189,7 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       have haK : a < K := List.mem_range.1 (hperm.subset ha)
       unfold trip
       have hm : ∀ x, x < A₀ → c₄.nmem x = c.nmem x := fun x hx => by
-        rw [fr₄.2.2.1 x (by rw [a₃]; omega), sm₃, I₂.low x hx, qm]
+        rw [fr₄.2.2.1 x (by grind), sm₃, I₂.low x hx, qm]
       rw [hm _ (by omega), hm _ (by omega), hm _ (by omega)]
     rw [hD, e1]; unfold dd; rw [List.length_map, hperm.length_eq, List.length_range]
   have hsorted' : L'.Pairwise fun a b => le3 c.nmem T K a b = true := by
@@ -209,8 +200,7 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     have ht : ∀ y, y < K → trip c₃.nmem T y = trip c.nmem T y := fun y hy => by
       unfold trip; rw [hm _ (by omega), hm _ (by omega), hm _ (by omega)]
     unfold le3 at h ⊢
-    simp only [haK, hbK, ite_true] at h ⊢
-    rw [← ht a haK, ← ht b hbK]; exact h
+    grind
   obtain ⟨hmemD, hnodD, hlenD⟩ := dd_spec (m := c.nmem) (T := T) hperm hsorted'
   rw [← hDdd] at hmemD hnodD hlenD
   have hc6 := D₆.cnt
@@ -220,28 +210,26 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   have ha6 := D₆.alloc
   rw [h₆] at ha6
   have r42 : c₆.nreg 70242 = LB := by rw [D₆.regs _ (by norm_num) (by decide), t42]
-  refine ⟨c₆, _, ex, ?_, ?_, fun r h1 h2 => ?_, ?_, ?_, D, by rw [r42]; exact hl6, hc6, hlenD,
+  refine ⟨c₆, _, ex, ?_, ?_, fun r h1 h2 => ?_, ?_, ?_, D, by grind, hc6, hlenD,
     hmemD, hnodD⟩
-  · have := hlenD; unfold ddCost; omega
-  · have a4 : A₀ + K ≤ LB := by rw [← hLB, ← a₃]; exact fr₄.2.2.2.2.2.1
+  ·  unfold ddCost; omega
+  · have a4 : A₀ + K ≤ LB := by grind
     have hA6 : c₆.nreg ALLOC = LB + 3 * D.length := ha6
     refine frameFS_of_regs (fun r hr ha => ?_) (fun r hr => ?_) (fun a ha => ?_) (fun a ha => ?_)
-      ?_ (by omega) (by rw [hA6, hA₀]; have := hlenD; omega)
+      ?_ (by omega) (by grind)
     · rw [D₆.regs r (by omega) ha, tr₅ r (by omega),
         fr₄.1 r (by simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort, bFuse]; omega)
           ha, sr₃ r (by omega) (by omega), g₂ r (by omega) ha, qr r (by omega) ha]
-    · rw [D₆.rr, trr₅, fr₄.2.1 r (by simp only [Finset.mem_insert, Finset.mem_singleton] at hr ⊢; tauto), srr₃, I₂.rr, qrr]
+    · rw [D₆.rr, trr₅, fr₄.2.1 r (by grind [Finset.mem_insert, Finset.mem_singleton]), srr₃, I₂.rr, qrr]
     · rw [hA₀] at ha
-      rw [D₆.low a (by omega), tm₅, fr₄.2.2.1 a (by rw [a₃]; omega), sm₃, I₂.low a ha, qm]
+      rw [D₆.low a (by omega), tm₅, fr₄.2.2.1 a (by grind), sm₃, I₂.low a ha, qm]
     · rw [hA₀] at ha
-      rw [D₆.rm, trm₅, fr₄.2.2.2.1 a (by rw [a₃]; omega), srm₃, I₂.rm, qrm]
+      rw [D₆.rm, trm₅, fr₄.2.2.2.1 a (by grind), srm₃, I₂.rm, qrm]
     · rw [D₆.out, to₅, fr₄.2.2.2.2.1, so₃, I₂.out, qo]
-  · have hA : r ≠ ALLOC := by unfold ALLOC; omega
+  · have hA : r ≠ ALLOC := by omega_nf
     rw [D₆.regs r (by omega) hA, tr₅ r (by omega), j5 r h1 h2, sr₃ r (by omega) (by omega),
       g₂ r (by omega) hA, qr r (by omega) hA]
-  · rw [r42, hA₀]; have : A₀ + K ≤ LB := by rw [← hLB, ← a₃]; exact fr₄.2.2.2.2.2.1
-    omega
-  · rw [r42, hc6, ha6]
+  all_goals grind
 
 end
 

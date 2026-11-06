@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepMachine20
 
 /-!
@@ -42,7 +44,7 @@ variable (J : Merge.Junction)
 
 /-- The direction of a direction code. -/
 theorem dirOf_cases (v : ℕ) : dirOf v = 1 ∨ dirOf v = -1 := by
-  unfold dirOf; split_ifs <;> simp
+  core_grind
 
 /-! ## The first hit of `C`, one theorem per kind of query -/
 

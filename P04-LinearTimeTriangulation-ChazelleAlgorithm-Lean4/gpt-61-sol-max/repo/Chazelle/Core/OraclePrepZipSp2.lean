@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepZipSp
 
 /-!
@@ -42,12 +44,12 @@ theorem emit1_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   cases ho : o with
   | none =>
     have hf := hn ho
-    have ht : c.nreg 110290 < c.nreg 120011 := by rw [hf, h1]; exact Nat.zero_lt_one
+    have ht : c.nreg 110290 < c.nreg 120011 := by omega
     exact ⟨c, 1, .ifLtN_true ht (.skip hw), by omega, fun _ _ _ => rfl, rfl, rfl, rfl,
       by rw [hc]; rfl, fun t ht => by simp at ht, fun _ _ => rfl⟩
   | some z =>
     obtain ⟨hf, hv1, hv2⟩ := hs z ho
-    have ht : ¬ c.nreg 110290 < c.nreg 120011 := by rw [hf, h1]; exact Nat.lt_irrefl 1
+    have ht : ¬ c.nreg 110290 < c.nreg 120011 := by omega
     obtain ⟨c', k, e, hk, n', m', rr', rm', o'⟩ : ∃ c' k, Exec P W (block [.addN 110296 110293 110295,
         .storeN 110296 110291, .addN 110296 110294 110295, .storeN 110296 110292,
         .addN 110295 110295 120011]) c c' k ∧ k = 5 ∧
@@ -55,22 +57,17 @@ theorem emit1_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
         c'.nmem = upd (upd c.nmem (R1 + c₀) z.1) (R2 + c₀) z.2 ∧ c'.rreg = c.rreg ∧
         c'.rmem = c.rmem ∧ c'.output = c.output := by
       exec_block
-      · rw [hR1, hc]; omega
-      · config_simp; rw [hR2, hc]; omega
-      · config_simp; rw [hc, h1]; omega
-      · refine ⟨rfl, ?_, ?_, rfl, rfl, rfl⟩
-        · config_simp; rw [hR2, hc, h1]
-        · config_simp; rw [hR1, hc, hv1, hR2, hv2]
+      · omega
+      · omega_nf
+      · omega_nf
+      simp_all
     refine ⟨c', _, .ifLtN_false ht e, by omega, fun r a b => ?_, rr', rm', o', ?_, fun t ht' => ?_,
       fun a ha => ?_⟩
-    · rw [n', upd_other _ _ _ a, upd_other _ _ _ b]
-    · rw [n']; simp [upd]
+    · ram_simp
+    · ram_simp
     · simp only [Option.toList_some, List.length_cons, List.length_nil] at ht'
       have : t = 0 := by omega
-      subst this
-      rw [m']
-      simp only [Nat.add_zero, Option.toList_some, List.getD_cons_zero]
-      exact ⟨by rw [upd_other _ _ _ (by omega), upd_same], by rw [upd_same]⟩
+      ram_simp 
     · simp only [Option.toList_some, List.length_cons, List.length_nil] at ha
       rw [m', upd_other _ _ _ (by omega), upd_other _ _ _ (by omega)]
 
@@ -109,33 +106,31 @@ theorem emitG_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     unfold gOpt
     by_cases hg0 : g = 0
     · have ht : ¬ c₁.nreg 120012 < c₁.nreg 110245 := by
-        rw [R₁ _ (by omega) (by omega), R₁ _ (by omega) (by omega), h0, hg, hg0]
-        exact Nat.lt_irrefl 0
+        grind
       refine ⟨_, _, .ifLtN_false ht (Exec.constN w₁ 110290 0 (Nat.zero_le _)), by omega,
-        (fun _ => by config_simp), (fun z hz => by rw [ite_eq_left hg0] at hz; cases hz),
+        (fun _ => by config_simp), (fun z hz => by grind),
         (fun r hr => by config_simp; rw [upd_other _ _ _ hr]), rfl, rfl, rfl, rfl⟩
     · have ht : c₁.nreg 120012 < c₁.nreg 110245 := by
-        rw [R₁ _ (by omega) (by omega), R₁ _ (by omega) (by omega), h0, hg]; omega
+        grind
       refine ⟨_, _, .ifLtN_true ht (.skip w₁), by omega, fun hn => ?_, fun z hz => ?_,
         fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
-      · rw [ite_eq_right hg0] at hn; exact n₁ hn
-      · rw [ite_eq_right hg0] at hz; exact s₁ z hz
+      all_goals grind
   rw [hg]
-  have g1 : c₂.nreg 120011 = 1 := by rw [R₂.1 _ (by decide), R₁ _ (by omega) (by omega), h1]
-  have g93 : c₂.nreg 110293 = R1 := by rw [R₂.1 _ (by decide), R₁ _ (by omega) (by omega), hR1]
-  have g94 : c₂.nreg 110294 = R2 := by rw [R₂.1 _ (by decide), R₁ _ (by omega) (by omega), hR2]
-  have g95 : c₂.nreg 110295 = c₀ := by rw [R₂.1 _ (by decide), R₁ _ (by omega) (by omega), hc]
+  have g1 : c₂.nreg 120011 = 1 := by grind
+  have g93 : c₂.nreg 110293 = R1 := by grind
+  have g94 : c₂.nreg 110294 = R2 := by grind
+  have g95 : c₂.nreg 110295 = c₀ := by grind
   obtain ⟨c₃, k₃, e₃, hk₃, r₃, rr₃, rm₃, o₃, cnt₃, pr₃, mm₃⟩ := emit1_exec (P := P) e₂.wb_right g1 g93
     g94 g95 _ n₂ s₂ hR12 hRW
   have hm₁ : c₁.nmem = c.nmem := f₁.2.2.1
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, fun r a b c' d => ?_, ?_, ?_, ?_, cnt₃, pr₃,
     fun x hx => ?_⟩
-  · rw [r₃ r a b, R₂.1 r (by omega), R₁ r d c']
+  · grind
   · rw [rr₃, R₂.2.2.1]; funext r
     exact WalkKey.exec_rframe e₁ (B := fun _ => false) (by decide) r rfl
-  · rw [rm₃, R₂.2.2.2.1, f₁.2.2.2.1]
-  · rw [o₃, R₂.2.2.2.2, f₁.2.2.2.2]
-  · rw [mm₃ x hx, R₂.2.1, hm₁]
+  · ram_grind
+  · ram_grind
+  grind
 
 /-! ## The special pairs from the analyses of the three top keys -/
 
@@ -154,7 +149,9 @@ def spRam (R _bef6 aft6 j6 s6 befT aftT jT sT bef2 _aft2 j2 s2 : ℕ) : List (Op
     gOpt (if 0 < R ∧ s6 + sT = 0 then 1 else 0) j6 jT,
     gOpt (if sT + s2 = 0 then 1 else 0) jT j2, gOpt (if s6 + s2 = 0 then 1 else 0) j6 j2]
 
-theorem inArc_iff {C : Chain} {Q : Polygon} {N : NF} {X : ℝ} {bef aft j s : ℕ}
+section
+variable {C : Chain} {Q : Polygon} {N : NF}
+theorem inArc_iff {X : ℝ} {bef aft j s : ℕ}
     (hK : KInfo C Q N X bef aft j s) (hne : (N.F (chainModel C) Q).Nonempty) :
     (s = 0 ↔ InArc C Q N X) ∧ (InArc C Q N X → inArcIdx C Q N X = j) := by
   obtain ⟨-, -, hj, hK⟩ := hK
@@ -162,10 +159,10 @@ theorem inArc_iff {C : Chain} {Q : Polygon} {N : NF} {X : ℝ} {bef aft j s : �
   refine ⟨⟨fun h0 => ⟨j, hj, hs.1 h0⟩, fun ⟨q, hq, hin⟩ => hs.2 (hu q hq hin ▸ hin)⟩,
     fun hin => ?_⟩
   obtain ⟨a, b⟩ := inArcIdx_spec C Q N hin
-  exact hu _ a b
+  grind
 
 /-- **The special pairs**: the options of the analyses are those of `zipSpO`. -/
-theorem spRam_eq {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) Q N)
+theorem spRam_eq (hN : IsNF (chainModel C) Q N)
     (hP : C.P.Simple) {bef6 aft6 j6 s6 befT aftT jT sT bef2 aft2 j2 s2 : ℕ}
     (h6 : KInfo C Q N 6 bef6 aft6 j6 s6) (hT : KInfo C Q N (κT C) befT aftT jT sT)
     (h2 : KInfo C Q N (2 * C.m + 6) bef2 aft2 j2 s2) :
@@ -199,35 +196,20 @@ theorem spRam_eq {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) Q 
       unfold sp1 gOpt
       by_cases hr : 0 < rT C
       · rw [ite_eq_left hr, ite_eq_right one_ne_zero, ite_eq_left ⟨hr, ⟨aft6, a6, A6⟩, ⟨befT, bT, BT⟩⟩, eA6, eBT]
-      · rw [ite_eq_right hr, ite_eq_left rfl, ite_eq_right (fun h => hr h.1)]
+      grind
     have e2 : gOpt 1 aftT bef2 = sp2 C Q N := by
       unfold sp2 gOpt
       rw [ite_eq_right one_ne_zero, ite_eq_left ⟨⟨aftT, aT, AT⟩, ⟨bef2, b2, B2⟩⟩, eAT, eB2]
     have e3 : gOpt (if 0 < rT C ∧ s6 + sT = 0 then 1 else 0) j6 jT = sp3 C Q N := by
       unfold sp3 gOpt
-      by_cases hc : 0 < rT C ∧ s6 + sT = 0
-      · have c6 : s6 = 0 := by omega
-        have cT : sT = 0 := by omega
-        rw [ite_eq_left hc, ite_eq_right one_ne_zero, ite_eq_left ⟨hc.1, i6.1 c6, iT.1 cT⟩, x6 (i6.1 c6), xT (iT.1 cT)]
-      · rw [ite_eq_right hc, ite_eq_left rfl,
-          ite_eq_right (fun h => hc ⟨h.1, by rw [i6.2 h.2.1, iT.2 h.2.2]⟩)]
+      grind
     have e4 : gOpt (if sT + s2 = 0 then 1 else 0) jT j2 = sp4 C Q N := by
       unfold sp4 gOpt
-      by_cases hc : sT + s2 = 0
-      · have cT : sT = 0 := by omega
-        have c2 : s2 = 0 := by omega
-        rw [ite_eq_left hc, ite_eq_right one_ne_zero, ite_eq_left ⟨iT.1 cT, i2.1 c2⟩, xT (iT.1 cT), x2 (i2.1 c2)]
-      · rw [ite_eq_right hc, ite_eq_left rfl,
-          ite_eq_right (fun h => hc (by rw [iT.2 h.1, i2.2 h.2]))]
+      grind
     have e5 : gOpt (if s6 + s2 = 0 then 1 else 0) j6 j2 = sp5 C Q N := by
       unfold sp5 gOpt
-      by_cases hc : s6 + s2 = 0
-      · have c6 : s6 = 0 := by omega
-        have c2 : s2 = 0 := by omega
-        rw [ite_eq_left hc, ite_eq_right one_ne_zero, ite_eq_left ⟨i6.1 c6, i2.1 c2⟩, x6 (i6.1 c6), x2 (i2.1 c2)]
-      · rw [ite_eq_right hc, ite_eq_left rfl,
-          ite_eq_right (fun h => hc (by rw [i6.2 h.1, i2.2 h.2]))]
-    rw [e1, e2, e3, e4, e5]
+      grind
+    grind
   · have hA := arcs_le_one_of_empty hN hGM (Set.not_nonempty_iff_eq_empty.1 hne)
     obtain ⟨b6, a6, j6l, -⟩ := h6
     obtain ⟨bT, aT, jTl, -⟩ := hT
@@ -247,16 +229,17 @@ theorem spRam_eq {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) Q 
       have n5 := normP_none_of_le_one hA (inArcIdx_lt C Q N 6) (inArcIdx_lt C Q N (2 * C.m + 6))
       simp only [zipSpO, List.mem_cons, List.mem_nil_iff, or_false] at ho
       rcases ho with rfl | rfl | rfl | rfl | rfl
-      · unfold sp1; split_ifs <;> simp_all
-      · unfold sp2; split_ifs <;> simp_all
-      · unfold sp3; split_ifs <;> simp_all
-      · unfold sp4; split_ifs <;> simp_all
-      · unfold sp5; split_ifs <;> simp_all
+      · unfold sp1; simp_all
+      · unfold sp2; simp_all
+      all_goals (grind [sp3, sp4, sp5])
     have hz : (zipSpO C Q N).filterMap id = [] := by
-      rw [List.filterMap_eq_nil_iff]; intro o ho; simp [hs o ho]
+      grind [List.filterMap_eq_nil_iff]
     unfold zipSpO at hz
     rw [hz, hn _ _ _ a6 bT, hn _ _ _ aT b2, hn _ _ _ j6l jTl, hn _ _ _ jTl j2l, hn _ _ _ j6l j2l]
     rfl
+
+
+end
 
 end
 

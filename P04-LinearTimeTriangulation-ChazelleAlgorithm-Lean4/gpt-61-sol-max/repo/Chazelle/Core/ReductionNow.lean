@@ -31,17 +31,20 @@ public section
 /-- **WP-E: restoring conformality**, unconditionally. -/
 theorem restoreSpec : RestoreSpec := restoreSpec_of_find buildNF Restore.findSpec
 
+section
+variable (hS : SweepSpecH)
+include hS
 /-- **The merge (Lemma 3.5) from the sweep.** -/
-theorem mergeSpec_of_sweep (hS : SweepSpecH) : MergeSpec :=
+theorem mergeSpec_of_sweep : MergeSpec :=
   MergeAsm.mergeSpec_of (FuseAsm.fuseSpec_of hS buildNF) restoreSpec (Gran.granularize' buildNF)
 
 /-- **The up phase from the sweep**, for every valid oracle interface. -/
-theorem upPhase_of_sweep (hS : SweepSpecH) {O : OracleIface} (hV : O.Valid) :
+theorem upPhase_of_sweep {O : OracleIface} (hV : O.Valid) :
     UpPhaseSpec (gradeCtx O) :=
   Up.upPhase_of' (mergeSpec_of_sweep hS) hV (ShootCut.shootCutSpec O hV) brute
 
 /-- **Reduction of the main theorem** to the sweep (WP-D) and the down phase (WP-M). -/
-theorem linear_of_sweep_down (hS : SweepSpecH)
+theorem linear_of_sweep_down
     (hD : ∀ O : OracleIface, O.Valid → DownPhaseSpecH (gradeCtx O)) :
     LinearTimeTriangulation := by
   obtain ⟨O, hV⟩ := oracleSpec
@@ -49,6 +52,9 @@ theorem linear_of_sweep_down (hS : SweepSpecH)
     (core_of_phasesH setupSpec ⟨gradeCtx O, upPhase_of_sweep hS hV, hD O hV⟩ outputSpecH
       goodShearExists shearInvariance)
     Chazelle.Final.finalStage shearInvariance
+
+
+end
 
 end
 

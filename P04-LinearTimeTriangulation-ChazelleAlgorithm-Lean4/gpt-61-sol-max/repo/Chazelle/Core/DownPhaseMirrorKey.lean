@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Chain.Sides
 
 /-!
@@ -33,42 +35,49 @@ macro "mcyc" : tactic => `(tactic| (
 
 variable {n c : ℕ}
 
-theorem rk_bounds (hc : c < n) {x : ℝ} (hx0 : 0 ≤ x) (hxn : x < n) : 0 ≤ rk n c x ∧ rk n c x < n := by
-  have hc' : (c : ℝ) < n := by exact_mod_cast hc
-  unfold rk; split_ifs with h <;> constructor <;> linarith
+section
+variable (hc : c < n) {x : ℝ} (hx0 : 0 ≤ x) (hxn : x < n)
+include hc hx0 hxn
+theorem rk_bounds : 0 ≤ rk n c x ∧ rk n c x < n := by
+  have hc' : (c : ℝ) < n := by simp_all
+  core_grind
 
-theorem rk_rk (hc : c < n) {x : ℝ} (hx0 : 0 ≤ x) (hxn : x < n) : rk n c (rk n c x) = x := by
-  have hc' : (c : ℝ) < n := by exact_mod_cast hc
-  unfold rk
-  split_ifs with h1 h2 h2 <;> linarith
+theorem rk_rk : rk n c (rk n c x) = x := by
+  core_grind
 
+
+end
+
+section
+variable (hc : c < n) {p : ℕ} (hp : p < n)
+include hc hp
 /-- The reflected key of a walk vertex. -/
-theorem rk_nat (hc : c < n) {p : ℕ} (hp : p < n) : rk n c p = ((c + n - p) % n : ℕ) := by
+theorem rk_nat : rk n c p = ((c + n - p) % n : ℕ) := by
   unfold rk
   split_ifs with h
-  · have h' : p ≤ c := by exact_mod_cast h
+  · have h' : p ≤ c := by simp_all
     rw [show (c + n - p) % n = c - p by
       rw [show c + n - p = (c - p) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]]
-    push_cast [h']; ring
+    simp_all
   · have h' : c < p := by
-      by_contra hh; push Not at hh; exact h (by exact_mod_cast hh)
+      simp_all
     rw [Nat.mod_eq_of_lt (by omega : c + n - p < n)]
     push_cast [show p ≤ c + n by omega]; ring
 
 /-- The reflected key of an interior point of a walk edge. -/
-theorem rk_edge (hc : c < n) {p : ℕ} (hp : p < n) {t : ℝ} (ht0 : 0 < t) (ht1 : t < 1) :
+theorem rk_edge {t : ℝ} (ht0 : 0 < t) (ht1 : t < 1) :
     rk n c (p + t) = ((c + 2 * n - 1 - p) % n : ℕ) + (1 - t) := by
   unfold rk
   split_ifs with h
   · have h' : p < c := by
       by_contra hh; push Not at hh
-      have : (c : ℝ) ≤ p := by exact_mod_cast hh
+      have : (c : ℝ) ≤ p := by simp_all
       linarith
     rw [show (c + 2 * n - 1 - p) % n = c - 1 - p by
       rw [show c + 2 * n - 1 - p = (c - 1 - p) + n * 2 by omega, Nat.add_mul_mod_self_left,
         Nat.mod_eq_of_lt (by omega)]]
     have e : ((c - 1 - p : ℕ) : ℝ) = (c : ℝ) - 1 - p := by
-      rw [Nat.cast_sub (by omega), Nat.cast_sub (by omega)]; push_cast; ring
+      rw [Nat.cast_sub (by omega), Nat.cast_sub (by omega)]; simp_all
     rw [e]; ring
   · have h' : c ≤ p := by
       by_contra hh; push Not at hh
@@ -78,14 +87,17 @@ theorem rk_edge (hc : c < n) {p : ℕ} (hp : p < n) {t : ℝ} (ht0 : 0 < t) (ht1
       rw [show c + 2 * n - 1 - p = (c + n - 1 - p) + n * 1 by omega, Nat.add_mul_mod_self_left,
         Nat.mod_eq_of_lt (by omega)]]
     have e : ((c + n - 1 - p : ℕ) : ℝ) = (c : ℝ) + n - 1 - p := by
-      rw [Nat.cast_sub (by omega), Nat.cast_sub (by omega)]; push_cast; ring
+      rw [Nat.cast_sub (by omega), Nat.cast_sub (by omega)]; simp_all
     rw [e]; ring
+
+
+end
 
 /-- **The reflection reverses the cyclic order.** -/
 theorem sideInArc_rk (hc : c < n) {a b x : ℝ} (ha0 : 0 ≤ a) (han : a < n) (hb0 : 0 ≤ b)
     (hbn : b < n) (hx0 : 0 ≤ x) (hxn : x < n) :
     sideInArc a b x ↔ sideInArc (rk n c b) (rk n c a) (rk n c x) := by
-  have hc' : (c : ℝ) < n := by exact_mod_cast hc
+  
   unfold rk sideInArc
   split_ifs <;> constructor <;> intro h <;> mcyc
 

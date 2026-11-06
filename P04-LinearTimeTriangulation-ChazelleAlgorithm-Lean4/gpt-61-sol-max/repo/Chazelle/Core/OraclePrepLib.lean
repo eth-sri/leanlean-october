@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepLoad
 public import Mathlib.Data.List.GetD
 
@@ -31,7 +33,7 @@ def forS (ri rn r1 : ℕ) (body : Stmt) : Stmt :=
   .seq (.instr (.constN ri 0)) (.whileLtN ri rn (.seq body (.instr (.addN ri ri r1))))
 
 /-- **The counting loop.**  `I i c`: the invariant after `i` rounds. -/
-theorem forS_exec {P : Polygon} {W : ℕ} {ri rn r1 : ℕ} {body : Stmt} (_hir : ri ≠ rn)
+theorem forS_exec {P : Polygon} {W ri rn r1 : ℕ} {body : Stmt} (_hir : ri ≠ rn)
     (_hi1 : ri ≠ r1) {n κ : ℕ} (I : ℕ → Config → Prop)
     (hI : ∀ i c, I i c → WordsBounded W c ∧ c.nreg rn = n ∧ c.nreg r1 = 1)
     (hstab : ∀ i c v, I i c → WordsBounded W { c with nreg := upd c.nreg ri v } →
@@ -59,15 +61,15 @@ theorem forS_exec {P : Polygon} {W : ℕ} {ri rn r1 : ℕ} {body : Stmt} (_hir :
       rw [hri, hrn] at ht
       obtain ⟨d₁, k₁, e₁, hk₁, hr₁, hI₁⟩ := hbody i d ht hId hri
       obtain ⟨hw₁, hrn₁, hr1₁⟩ := hI (i + 1) d₁ hI₁
-      have e₂ := Exec.addN (P := P) hw₁ ri ri r1 (by rw [hr₁, hr1₁]; omega)
+      have e₂ := Exec.addN (P := P) hw₁ ri ri r1 (by omega)
       refine ⟨_, _, .seq e₁ e₂, ⟨i + 1, ?_, ?_, by omega⟩, ?_, ?_⟩
       · exact hstab _ _ _ hI₁ e₂.wb_right
-      · simp only [upd_same]; rw [hr₁, hr1₁]
+      · ram_simp
       · simp only [upd_same]; rw [hr₁, hr1₁, hri]
         have : (n - (i + 1)) * (κ + 3) + (κ + 3) = (n - i) * (κ + 3) := by
-          rw [← Nat.succ_mul]; congr 1; omega
+          rw [← Nat.succ_mul]; grind
         omega
-      · simp only [upd_same]; rw [hr₁, hr1₁, hri]; omega)
+      · simp only [upd_same]; omega)
     ⟨0, I₀, by rw [hc₀]; simp, Nat.zero_le _⟩
   obtain ⟨-, hrn, -⟩ := hI i c' hI'
   rw [hi, hrn] at hstop
@@ -76,40 +78,40 @@ theorem forS_exec {P : Polygon} {W : ℕ} {ri rn r1 : ℕ} {body : Stmt} (_hir :
   have : c₀.nreg ri = 0 := by rw [hc₀]; simp
   rw [this] at hk hψ
   refine ⟨c', _, .seq x₀ ex, ?_, hI', hi, ?_⟩
-  · simp only [Nat.sub_zero] at hk
-    omega
-  · rw [hi] at hψ; omega
+  all_goals grind
 
 /-! ## Scattering values into memory -/
 
 /-- The memory after the stores `g i ↦ f i` for `i < n`, in order. -/
-def scat (m : ℕ → ℕ) (g f : ℕ → ℕ) : ℕ → ℕ → ℕ
+def scat (m g f : ℕ → ℕ) : ℕ → ℕ → ℕ
   | 0 => m
   | i + 1 => upd (scat m g f i) (g i) (f i)
 
-theorem scat_other {m : ℕ → ℕ} {g f : ℕ → ℕ} {n a : ℕ} (h : ∀ i, i < n → g i ≠ a) :
+section
+variable {m g f : ℕ → ℕ}
+theorem scat_other {n a : ℕ} (h : ∀ i, i < n → g i ≠ a) :
     scat m g f n a = m a := by
   induction n with
   | zero => rfl
   | succ n ih =>
     simp only [scat]
     rw [upd_other _ _ _ (fun e => h n (by omega) e.symm)]
-    exact ih fun i hi => h i (by omega)
+    grind
 
-theorem scat_at {m : ℕ → ℕ} {g f : ℕ → ℕ} {n i : ℕ} (hi : i < n)
+theorem scat_at {n i : ℕ} (hi : i < n)
     (hg : ∀ j, j < n → i < j → g j ≠ g i) : scat m g f n (g i) = f i := by
   induction n with
   | zero => omega
   | succ n ih =>
     simp only [scat]
-    by_cases hin : i = n
-    · subst hin; exact upd_same _ _ _
-    · rw [upd_other _ _ _ (fun e => hg n (by omega) (by omega) e.symm)]
-      exact ih (by omega) fun j hj hij => hg j (by omega) hij
+    core_grind
 
-theorem scat_below {m : ℕ → ℕ} {g f : ℕ → ℕ} {n lo : ℕ} (hg : ∀ i, i < n → lo ≤ g i) {a : ℕ}
+theorem scat_below {n lo : ℕ} (hg : ∀ i, i < n → lo ≤ g i) {a : ℕ}
     (ha : a < lo) : scat m g f n a = m a :=
-  scat_other fun i hi e => by have := hg i hi; omega
+  scat_other fun i hi e => by grind
+
+
+end
 
 /-- **A scatter loop**: `body` computes an address in `ra` and a value in `rv`; they are stored. -/
 def scatS (ri rn r1 ra rv : ℕ) (body : Stmt) : Stmt :=
@@ -118,7 +120,7 @@ def scatS (ri rn r1 ra rv : ℕ) (body : Stmt) : Stmt :=
 /-- **The scatter loop.**  The body writes only registers of `B` (not the counter, the bound, the
 constant `1`) and no memory, and computes the address `g i ≥ lo` and the value `f i`; `J` is an
 invariant insensitive to the registers of `B`, the counter and the memory from `lo` on. -/
-theorem scatS_exec {P : Polygon} {W : ℕ} {ri rn r1 ra rv : ℕ} {body : Stmt} {B : ℕ → Bool}
+theorem scatS_exec {P : Polygon} {W ri rn r1 ra rv : ℕ} {body : Stmt} {B : ℕ → Bool}
     (hBi : B ri = false) (hBn : B rn = false) (hB1 : B r1 = false) (hir : ri ≠ rn) (hi1 : ri ≠ r1)
     (J : Config → Prop) (lo : ℕ)
     (hJ : ∀ c c', J c → (∀ r, B r = false → r ≠ ri → c'.nreg r = c.nreg r) →
@@ -138,25 +140,25 @@ theorem scatS_exec {P : Polygon} {W : ℕ} {ri rn r1 ra rv : ℕ} {body : Stmt} 
     d.rmem = c.rmem ∧ d.output = c.output ∧ J d
   obtain ⟨c', k, ex, hk, ⟨_, h2, h3, h4, h5, h6, h7⟩, hi, -⟩ := forS_exec (P := P) (W := W)
     (body := .seq body (.instr (.storeN ra rv))) hir hi1 (n := n) (κ := κ + 1) I
-    (fun i d ⟨hw, hr, _⟩ => ⟨hw, by rw [hr rn hBn (Ne.symm hir)]; exact hn,
-      by rw [hr r1 hB1 (Ne.symm hi1)]; exact h1⟩)
+    (fun i d ⟨hw, hr, _⟩ => ⟨hw, by grind,
+      by grind⟩)
     (fun i d v ⟨_, hr, hrr, hm, hrm, ho, hJd⟩ hw' => ⟨hw', fun r hB hri => by
-        simp only; rw [upd_other _ _ _ hri]; exact hr r hB hri, hrr, hm, hrm, ho,
-      hJ d _ hJd (fun r _ hri => by simp only; rw [upd_other _ _ _ hri])
+        ram_simp, hrr, hm, hrm, ho,
+      hJ d _ hJd (fun r _ hri => by ram_simp)
         (fun _ _ => rfl)⟩)
     (fun i d hin ⟨hwd, hr, hrr, hm, hrm, ho, hJd⟩ hri => by
       obtain ⟨d₁, k₁, e₁, hk₁, f₁, ha₁, hv₁⟩ := hbody i d hin hJd hwd hri
       have e₂ := Exec.storeN (P := P) e₁.wb_right ra rv
-      refine ⟨_, _, .seq e₁ e₂, by omega, by rw [f₁.1 _ hBi]; exact hri, e₂.wb_right, ?_, ?_, ?_,
+      refine ⟨_, _, .seq e₁ e₂, by omega, by ram_grind, e₂.wb_right, ?_, ?_, ?_,
         ?_, ?_, ?_⟩
-      · intro r hB hr'; exact (f₁.1 r hB).trans (hr r hB hr')
-      · intro r hB; exact (f₁.2.1 r hB).trans (hrr r hB)
-      · simp only [scat]; rw [ha₁, hv₁, f₁.2.2.1, hm]
-      · exact f₁.2.2.2.1.trans hrm
-      · exact f₁.2.2.2.2.trans ho
+      · ram_grind
+      · ram_grind
+      · simp only [scat]; ram_grind
+      · ram_grind
+      · ram_grind
       · refine hJ d _ hJd (fun r hB _ => f₁.1 r hB) (fun a ha => ?_)
         simp only
-        rw [ha₁, upd_other _ _ _ (fun e => by have := hg i hin; omega), f₁.2.2.1])
+        rw [ha₁, upd_other _ _ _ (fun e => by grind), f₁.2.2.1])
     hw hnW (fun d hwd h0 hr hm hrr hrm ho => ⟨hwd, fun r _ hri => hr r hri,
       fun r _ => by rw [hrr], by rw [hm]; rfl, hrm, ho,
       hJ c d hJc (fun r _ hri => hr r hri) (fun a _ => by rw [hm])⟩)
@@ -167,20 +169,21 @@ theorem scatS_exec {P : Polygon} {W : ℕ} {ri rn r1 ra rv : ℕ} {body : Stmt} 
 /-- The pairs emitted by the first `i` rounds. -/
 def emitted (φ : ℕ → Option (ℕ × ℕ)) (i : ℕ) : List (ℕ × ℕ) := (List.range i).filterMap φ
 
-theorem emitted_succ (φ : ℕ → Option (ℕ × ℕ)) (i : ℕ) :
+section
+variable (φ : ℕ → Option (ℕ × ℕ)) (i : ℕ)
+theorem emitted_succ :
     emitted φ (i + 1) = emitted φ i ++ (φ i).toList := by
-  unfold emitted
-  rw [List.range_succ, List.filterMap_append]
-  cases h : φ i <;> simp [h]
+  core_grind [List.range_succ, List.filterMap_append]
 
-theorem emitted_length_le (φ : ℕ → Option (ℕ × ℕ)) (i : ℕ) : (emitted φ i).length ≤ i := by
-  induction i with
-  | zero => simp [emitted]
-  | succ i ih => rw [emitted_succ]; cases φ i <;> simp <;> omega
+theorem emitted_length_le : (emitted φ i).length ≤ i := by
+  core_grind
+
+
+end
 
 theorem mem_emitted {φ : ℕ → Option (ℕ × ℕ)} {i : ℕ} {x : ℕ × ℕ} :
     x ∈ emitted φ i ↔ ∃ j, j < i ∧ φ j = some x := by
-  unfold emitted; simp [List.mem_filterMap]
+  core_grind
 
 /-- Pairs stored in two arrays from the given bases. -/
 def PairsAt (m : ℕ → ℕ) (R1 R2 : ℕ) (l : List (ℕ × ℕ)) : Prop :=
@@ -196,7 +199,7 @@ def emitS (ri rn r1 rf rv1 rv2 rR1 rR2 rc rt : ℕ) (body : Stmt) : Stmt :=
 memory, and sets the flag and the pair of `φ i`; `J` is insensitive to the registers of `B`, the
 counter, the output counter, the scratch and the memory from `lo` on.  The pairs are appended
 after `c₀` entries to the arrays at `R1`, `R2` (with room for `n` more entries in the first). -/
-theorem emitS_exec {P : Polygon} {W : ℕ} {ri rn r1 rf rv1 rv2 rR1 rR2 rc rt : ℕ} {body : Stmt}
+theorem emitS_exec {P : Polygon} {W ri rn r1 rf rv1 rv2 rR1 rR2 rc rt : ℕ} {body : Stmt}
     {B : ℕ → Bool} (hreg : [ri, rn, r1, rc, rR1, rR2, rt].Nodup ∧ rt ≠ rv1 ∧ rt ≠ rv2 ∧
       rf ≠ rt ∧ rf ≠ rc)
     (hBi : B ri = false) (hBn : B rn = false) (hB1 : B r1 = false) (hBc : B rc = false)
@@ -237,12 +240,12 @@ theorem emitS_exec {P : Polygon} {W : ℕ} {ri rn r1 rf rv1 rv2 rR1 rR2 rc rt : 
     (body := .seq body (.ifLtN rf r1 .skip
       (block [.addN rt rR1 rc, .storeN rt rv1, .addN rt rR2 rc, .storeN rt rv2, .addN rc rc r1])))
     hin hi1 (n := n) (κ := κ + 7) I
-    (fun i d ⟨hw, hr, _⟩ => ⟨hw, by rw [hr rn hBn (Ne.symm hin) hnc hnt]; exact hn,
-      by rw [hr r1 hB1 (Ne.symm hi1) h1c h1t]; exact h1⟩)
+    (fun i d ⟨hw, hr, _⟩ => ⟨hw, by grind,
+      by grind⟩)
     (fun i d v ⟨_, hr, hrr, hc, hp, hm, hrm, ho, hJd⟩ hw' => ⟨hw', fun r hB hri hrc hrt => by
-        simp only; rw [upd_other _ _ _ hri]; exact hr r hB hri hrc hrt, hrr,
+        ram_simp, hrr,
       by simp only; rw [upd_other _ _ _ (Ne.symm hic)]; exact hc, hp, hm, hrm,
-      ho, hJ d _ hJd (fun r _ hri _ _ => by simp only; rw [upd_other _ _ _ hri])
+      ho, hJ d _ hJd (fun r _ hri _ _ => by ram_simp)
         (fun _ _ => rfl)⟩)
     (fun i d hin' ⟨hwd, hr, hrr, hc, hp, hm, hrm, ho, hJd⟩ hri => by
       obtain ⟨d₁, k₁, e₁, hk₁, f₁, hn₁, hs₁⟩ := hbody i d hin' hJd hwd hri
@@ -259,7 +262,7 @@ theorem emitS_exec {P : Polygon} {W : ℕ} {ri rn r1 rf rv1 rv2 rR1 rR2 rc rt : 
       cases hφ : φ i with
       | none =>
         have hf0 := hn₁ hφ
-        refine ⟨d₁, k₁ + 1, .seq e₁ (.ifLtN_true (by rw [hf0, h1₁]; exact Nat.zero_lt_one)
+        refine ⟨d₁, k₁ + 1, .seq e₁ (.ifLtN_true (by omega)
           (.skip w₁)), by omega, hri₁, w₁, fun r hB a b c => (f₁.1 r hB).trans (hr r hB a b c),
           fun r hB => (f₁.2.1 r hB).trans (hrr r hB), ?_, ?_, ?_, f₁.2.2.2.1.trans hrm,
           f₁.2.2.2.2.trans ho, hJ d d₁ hJd (fun r hB _ _ _ => f₁.1 r hB)
@@ -283,19 +286,18 @@ theorem emitS_exec {P : Polygon} {W : ℕ} {ri rn r1 rf rv1 rv2 rR1 rR2 rc rt : 
           have u5 := upd_other d₁.nreg rt (d₁.nreg rR2 + d₁.nreg rc) hct
           have u6 := upd_other d₁.nreg rt (d₁.nreg rR2 + d₁.nreg rc) h1t
           exec_block
-          · rw [hR1₁, hc₁]; omega
-          · config_simp; rw [u1, u2, hR2₁, hc₁]; omega
-          · config_simp; rw [u1, u2, u5, u6, hc₁, h1₁]; omega
+          · omega
+          · grind
+          · grind
           · refine ⟨rfl, ?_, ?_, rfl, rfl, rfl⟩
-            · config_simp
-              rw [u1, u2, u5, u6, hR2₁, hc₁, h1₁]
+            · ram_simp
             · config_simp
               rw [u3, u1, u2, u4, hR1₁, hR2₁, hc₁, hv1, hv2]
         have hne12 : ∀ t, t < n → R1 + c₀ + t ≠ R2 + (c₀ + L.length) := fun t ht => by omega
-        refine ⟨d₂, k₁ + (k₂ + 2), .seq e₁ (.ifLtN_false (by rw [hf1, h1₁]; exact Nat.lt_irrefl 1)
+        refine ⟨d₂, k₁ + (k₂ + 2), .seq e₁ (.ifLtN_false (by omega)
           e₂), by omega, ?_, e₂.wb_right, ?_, ?_, ?_, ?_, ?_, by rw [rm₂]; exact f₁.2.2.2.1.trans hrm,
           by rw [o₂]; exact f₁.2.2.2.2.trans ho, ?_⟩
-        · rw [n₂, upd_other _ _ _ hic, upd_other _ _ _ hit]; exact hri₁
+        · ram_simp
         · intro r hB a b c'
           rw [n₂, upd_other _ _ _ b, upd_other _ _ _ c']; exact (f₁.1 r hB).trans (hr r hB a b c')
         · intro r hB; rw [rr₂]; exact (f₁.2.1 r hB).trans (hrr r hB)
@@ -329,45 +331,43 @@ theorem emitS_exec {P : Polygon} {W : ℕ} {ri rn r1 rf rv1 rv2 rR1 rR2 rc rt : 
           · rw [n₂, upd_other _ _ _ hrc, upd_other _ _ _ hrt]; exact f₁.1 r hB
           · rw [m₂, f₁.2.2.1, upd_other _ _ _ (by omega), upd_other _ _ _ (by omega)])
     hw (by omega) (fun d hwd h0 hr hm hrr hrm ho => ⟨hwd, fun r _ hri _ _ => hr r hri,
-      fun r _ => by rw [hrr], by rw [hr rc (Ne.symm hic), hc₀]; simp [emitted],
-      fun t ht => by simp [emitted] at ht, fun a _ => by rw [hm], hrm, ho,
+      fun r _ => by rw [hrr], by grind [emitted],
+      fun t ht => by grind [emitted], fun a _ => by rw [hm], hrm, ho,
       hJ c d hJc (fun r _ hri _ _ => hr r hri) (fun a _ => by rw [hm])⟩)
   exact ⟨c', k, ex, by nlinarith, h2, h3, h4, h5, h6, h7, h8, h9⟩
 
 /-- Pairs at two bases, then more pairs after them. -/
 theorem PairsAt.append {m : ℕ → ℕ} {R1 R2 : ℕ} {l l' : List (ℕ × ℕ)} (h : PairsAt m R1 R2 l)
     (h' : PairsAt m (R1 + l.length) (R2 + l.length) l') : PairsAt m R1 R2 (l ++ l') := by
-  intro t ht
-  rw [List.length_append] at ht
-  rcases Nat.lt_or_ge t l.length with h1 | h1
-  · rw [List.getD_append _ _ _ _ h1]; exact h t h1
-  · rw [List.getD_append_right _ _ _ _ h1]
-    have := h' (t - l.length) (by omega)
-    rwa [show R1 + l.length + (t - l.length) = R1 + t by omega,
-      show R2 + l.length + (t - l.length) = R2 + t by omega] at this
+  grind [Chazelle.Core.OracleR.PairsAt]
 
 /-- Pairs survive memory changes away from their cells. -/
 theorem PairsAt.congr {m m' : ℕ → ℕ} {R1 R2 : ℕ} {l : List (ℕ × ℕ)} (h : PairsAt m R1 R2 l)
     (hm : ∀ t, t < l.length → m' (R1 + t) = m (R1 + t) ∧ m' (R2 + t) = m (R2 + t)) :
     PairsAt m' R1 R2 l := fun t ht => by
-  rw [(hm t ht).1, (hm t ht).2]; exact h t ht
+  ram_grind
 
 /-! ## Invariants of the loops: kept registers and old memory -/
 
+section
+variable (c₀ : Config) (K : ℕ → Bool) (lo : ℕ)
+include c₀ K lo
 /-- The registers of `K` keep their values of `c₀` and the memory below `lo` is that of `c₀`. -/
-def JK (c₀ : Config) (K : ℕ → Bool) (lo : ℕ) (d : Config) : Prop :=
+def JK (d : Config) : Prop :=
   (∀ r, K r = true → d.nreg r = c₀.nreg r) ∧ (∀ a, a < lo → d.nmem a = c₀.nmem a)
 
-theorem JK.refl (c₀ : Config) (K : ℕ → Bool) (lo : ℕ) : JK c₀ K lo c₀ :=
+theorem JK.refl : JK c₀ K lo c₀ :=
   ⟨fun _ _ => rfl, fun _ _ => rfl⟩
+
+
+end
 
 /-- `JK` survives writes to registers outside `K` and to memory from `lo` on. -/
 theorem JK.stable {c₀ : Config} {K : ℕ → Bool} {lo : ℕ} {B : ℕ → Bool} {rs : List ℕ}
     (hK : ∀ r, K r = true → B r = false ∧ r ∉ rs) {c c' : Config} (h : JK c₀ K lo c)
     (hr : ∀ r, B r = false → r ∉ rs → c'.nreg r = c.nreg r)
     (hm : ∀ a, a < lo → c'.nmem a = c.nmem a) : JK c₀ K lo c' :=
-  ⟨fun r hr' => by rw [hr r (hK r hr').1 (hK r hr').2]; exact h.1 r hr',
-    fun a ha => by rw [hm a ha]; exact h.2 a ha⟩
+  by core_grind
 
 /-! ## The frame of a stage -/
 
@@ -380,16 +380,11 @@ def PF (B : ℕ → Bool) (lo : ℕ) (c c' : Config) : Prop :=
 
 theorem PF.trans {B : ℕ → Bool} {lo : ℕ} {c₁ c₂ c₃ : Config} (h₁ : PF B lo c₁ c₂)
     (h₂ : PF B lo c₂ c₃) : PF B lo c₁ c₃ :=
-  ⟨fun r hr => (h₂.1 r hr).trans (h₁.1 r hr), fun r hr => (h₂.2.1 r hr).trans (h₁.2.1 r hr),
-    fun a ha => (h₂.2.2.1 a ha).trans (h₁.2.2.1 a ha),
-    fun a ha => (h₂.2.2.2.1 a ha).trans (h₁.2.2.2.1 a ha), h₂.2.2.2.2.trans h₁.2.2.2.2⟩
+  by core_grind
 
 theorem PF.mono {B B' : ℕ → Bool} {lo lo' : ℕ} {c c' : Config} (h : PF B lo c c')
     (hB : ∀ r, B r = true → B' r = true) (hlo : lo' ≤ lo) : PF B' lo' c c' := by
-  have hf : ∀ r, B' r = false → B r = false := fun r hr => by
-    by_contra h'; simp only [Bool.not_eq_false] at h'; rw [hB r h'] at hr; exact Bool.noConfusion hr
-  exact ⟨fun r hr => h.1 r (hf r hr), fun r hr => h.2.1 r (hf r hr),
-    fun a ha => h.2.2.1 a (by omega), fun a ha => h.2.2.2.1 a (by omega), h.2.2.2.2⟩
+  core_grind
 
 /-- **A frame without the allocator bounds.** -/
 def FrameN (S : Finset ℕ) (c c' : Config) : Prop :=
@@ -399,14 +394,11 @@ def FrameN (S : Finset ℕ) (c c' : Config) : Prop :=
 
 theorem FrameN.trans {S : Finset ℕ} {c c₁ c₂ : Config} (h₁ : FrameN S c c₁) (h₂ : FrameN S c₁ c₂)
     (hA : c.nreg ALLOC ≤ c₁.nreg ALLOC) : FrameN S c c₂ :=
-  ⟨fun r hr ha => (h₂.1 r hr ha).trans (h₁.1 r hr ha), fun r hr => (h₂.2.1 r hr).trans (h₁.2.1 r hr),
-    fun a ha => (h₂.2.2.1 a (by omega)).trans (h₁.2.2.1 a ha),
-    fun a ha => (h₂.2.2.2.1 a (by omega)).trans (h₁.2.2.2.1 a ha), h₂.2.2.2.2.trans h₁.2.2.2.2⟩
+  by core_grind
 
 theorem FrameN.mono {S S' : Finset ℕ} {c c' : Config} (h : FrameN S c c') (hS : S ⊆ S') :
     FrameN S' c c' :=
-  ⟨fun r hr ha => h.1 r (fun h' => hr (hS h')) ha, fun r hr => h.2.1 r (fun h' => hr (hS h')),
-    h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
+  by core_grind
 
 theorem Frame.toN {S : Finset ℕ} {c c' : Config} {k : ℕ} (h : Frame S c c' k) : FrameN S c c' :=
   ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1, h.2.2.2.2.1⟩
@@ -415,18 +407,7 @@ theorem Frame.toN {S : Finset ℕ} {c c' : Config} {k : ℕ} (h : Frame S c c' k
 theorem PF.frameN {B : ℕ → Bool} {S : Finset ℕ} {c c' : Config} (h : PF B (c.nreg ALLOC) c c')
     (hB : ∀ r, B r = true → bandOf r ∈ S ∨ r = ALLOC) (hrA : c'.rreg ALLOC = c.rreg ALLOC) :
     FrameN S c c' := by
-  refine ⟨fun r hr hra => h.1 r ?_, fun r hr => ?_, h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
-  · by_contra h'; simp only [Bool.not_eq_false] at h'
-    rcases hB r h' with h'' | h''
-    · exact hr h''
-    · exact hra h''
-  · by_cases hra : r = ALLOC
-    · rw [hra]; exact hrA
-    refine h.2.1 r ?_
-    by_contra h'; simp only [Bool.not_eq_false] at h'
-    rcases hB r h' with h'' | h''
-    · exact hr h''
-    · exact hra h''
+  grind [Chazelle.Core.OracleR.FrameN, Chazelle.Core.OracleR.PF]
 
 end
 

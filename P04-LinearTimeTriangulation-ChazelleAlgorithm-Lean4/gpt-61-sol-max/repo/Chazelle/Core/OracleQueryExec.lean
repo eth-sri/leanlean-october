@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleQFacts
 
 /-!
@@ -81,16 +83,11 @@ theorem qry_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤
       intro t hpart hnd bD hD hbD kk hkk
       obtain ⟨X, hX⟩ := sel_facts (hA'.chordRec hT) hs hA.simple hpart hnd hD hbD
       obtain ⟨h1, h2⟩ := hX.stop.1 kk hkk
-      exact ⟨by rw [walk_n]; exact h1, h2⟩)
+      simp_all [walk_n] <;> omega_nf)
   rw [m₁] at hk₂ tr
   have hk₂' : k₂ ≤ 715 * V.L + 700 + dstarCost m V' + 4 * candCost V' NC CS + 500 := hk₂
   refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_, ?_⟩
-  · refine ⟨fun r hr => ?_, fun r hr => ?_, f₂.2.2.1.trans f₁.2.2.1,
-      f₂.2.2.2.1.trans f₁.2.2.2.1, f₂.2.2.2.2.trans f₁.2.2.2.2⟩
-    · simp only [BQ, Bool.or_eq_false_iff] at hr
-      rw [f₂.1 r hr.2, f₁.1 r hr.1]
-    · simp only [BQ, Bool.or_eq_false_iff] at hr
-      rw [f₂.2.1 r hr.2, f₁.2.1 r hr.1]
+  · grind [Chazelle.Core.SignK.FrameB, BQ, Bool.or_eq_false_iff]
   · have := rest_answer (hA'.mainCtx hT) hs tr
     rwa [show sgnOf V'.σb = dirOf (c.nreg 120004) from sgnOf_σbOf _] at this
 

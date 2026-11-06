@@ -49,10 +49,7 @@ theorem open_of_mem {y a b : ℝ} (h : IsHChordIn (Q.filled \ Q.boundary) y a b)
     (hz : z ∈ hseg y a b) (hzD : z ∈ Q.filled \ Q.boundary) : a < z.1 ∧ z.1 < b := by
   obtain ⟨hzy, hza, hzb⟩ := hz
   refine ⟨lt_of_le_of_ne hza fun e => h.left_not ?_, lt_of_le_of_ne hzb fun e => h.right_not ?_⟩
-  · have : ((a, y) : Point) = z := point_ext e hzy.symm
-    rw [this]; exact hzD
-  · have : ((b, y) : Point) = z := point_ext e.symm hzy.symm
-    rw [this]; exact hzD
+  all_goals grind
 
 /-- Two chords sharing a point of the domain are equal. -/
 theorem eq_of_common {c c' : Set Point} (hc : HC Q c) (hc' : HC Q c') {z : Point} (hz : z ∈ c)
@@ -64,8 +61,11 @@ theorem eq_of_common {c c' : Set Point} (hc : HC Q c) (hc' : HC Q c') {z : Point
   · exact absurd (h1 ▸ hzD) h.left_not
   · exact absurd (h1 ▸ hzD) h.right_not
 
+section
+variable {y a b : ℝ} (h : IsHChordIn (Q.filled \ Q.boundary) y a b)
+include h
 /-- **A chord contains every point of its line joined to it inside the domain.** -/
-theorem mem_of_joined {y a b : ℝ} (h : IsHChordIn (Q.filled \ Q.boundary) y a b) {z : Point}
+theorem mem_of_joined {z : Point}
     (hz : z ∈ hseg y a b) (hzD : z ∈ Q.filled \ Q.boundary) {w : Point} (hw : w.2 = y)
     (hj : ∀ s : ℝ, min z.1 w.1 ≤ s → s ≤ max z.1 w.1 → ((s, y) : Point) ∈ Q.filled \ Q.boundary) :
     w ∈ hseg y a b := by
@@ -73,19 +73,22 @@ theorem mem_of_joined {y a b : ℝ} (h : IsHChordIn (Q.filled \ Q.boundary) y a 
   refine ⟨hw, ?_, ?_⟩
   · by_contra hwa
     push Not at hwa
-    exact h.left_not (hj a (by have := min_le_right z.1 w.1; linarith) (by
-      have := le_max_left z.1 w.1; linarith))
+    exact h.left_not (hj a (by grind) (by
+      grind))
   · by_contra hwb
     push Not at hwb
-    exact h.right_not (hj b (by have := min_le_left z.1 w.1; linarith) (by
-      have := le_max_right z.1 w.1; linarith))
+    exact h.right_not (hj b (by grind) (by
+      grind))
 
 /-- The points of a chord between two of its domain points are in the domain. -/
-theorem between_mem {y a b : ℝ} (h : IsHChordIn (Q.filled \ Q.boundary) y a b) {z z' : Point}
+theorem between_mem {z z' : Point}
     (hz : z ∈ hseg y a b) (hzD : z ∈ Q.filled \ Q.boundary) (hz' : z' ∈ hseg y a b)
     (hz'D : z' ∈ Q.filled \ Q.boundary) {s : ℝ} (h1 : z.1 ≤ s) (h2 : s ≤ z'.1) :
     ((s, y) : Point) ∈ Q.filled \ Q.boundary :=
   h.open_mem s (by linarith [(open_of_mem h hz hzD).1]) (by linarith [(open_of_mem h hz' hz'D).2])
+
+
+end
 
 /-- **A boundary point near which the points on one side (`τ = ±1`) are in the domain is a
 vertex**, for a polygon with distinct heights. -/
@@ -108,7 +111,7 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
   have hδ0 : 0 < δ := by
     rw [hδ]; have := lt_min (lt_min ht.1 (sub_pos.2 ht.2)) (div_pos hε hL0); linarith
   have hδm : δ < min (min t (1 - t)) (ε / L) := by
-    rw [hδ]; have := lt_min (lt_min ht.1 (sub_pos.2 ht.2)) (div_pos hε hL0); linarith
+    linarith
   have hδt : δ < t := hδm.trans_le ((min_le_left _ _).trans (min_le_left _ _))
   have hδt' : δ < 1 - t := hδm.trans_le ((min_le_left _ _).trans (min_le_right _ _))
   have hδε : δ * L < ε := by
@@ -120,9 +123,7 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
     rw [hσ]
     have hτd : τ * (v.2 - u.2) ≠ 0 := mul_ne_zero (by rcases hτ with rfl | rfl <;> norm_num) hd
     split_ifs with h
-    · linarith
-    · have : τ * (v.2 - u.2) < 0 := lt_of_le_of_ne (not_lt.1 h) hτd
-      nlinarith
+    all_goals grind
   set s := t + σ * δ with hs
   have hs0 : 0 ≤ s := by rcases hσ1 with h | h <;> rw [hs, h] <;> linarith
   have hs1 : s ≤ 1 := by rcases hσ1 with h | h <;> rw [hs, h] <;> linarith
@@ -134,8 +135,7 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
     rw [this, norm_smul, Real.norm_eq_abs, abs_mul, abs_of_pos hδ0, ← dist_eq_norm, dist_comm]
     have : |σ| = 1 := by rcases hσ1 with h | h <;> rw [h] <;> norm_num
     rw [this, one_mul]
-    calc δ * dist u v ≤ δ * L := by rw [hL]; nlinarith
-      _ < ε := hδε
+    linarith
   · simp only [lerp_snd, hs]
     have : u.2 + (t + σ * δ) * (v.2 - u.2) - (u.2 + t * (v.2 - u.2)) =
         δ * (σ * (v.2 - u.2)) := by ring
@@ -145,12 +145,12 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
 /-- A vertex at a given height is unique. -/
 theorem vtx_eq_of_height (hDH : DistinctHeights Q) {m k : ℕ} (hm : m < Q.n) (hk : k < Q.n)
     (h : (Q.vtx m).2 = (Q.vtx k).2) : m = k := by
-  by_contra hne; exact hDH m k hm hk hne h
+  by_contra hne; aesop
 
 /-- **Two chords touching a region from one horizontal side of a trapezoid, on the same side of
 the vertex at that height, are equal.** -/
 theorem side_chords_eq (hQ : Q.Simple) (hDH : DistinctHeights Q) {T : Set Point}
-    (hT : T ⊆ Q.filled \ Q.boundary) {y₀ xl xr : ℝ} {τ : ℝ} (hτ : τ = 1 ∨ τ = -1)
+    (hT : T ⊆ Q.filled \ Q.boundary) {y₀ xl xr τ : ℝ} (hτ : τ = 1 ∨ τ = -1)
     (hcl : ∀ x, xl < x → x < xr → ((x, y₀) : Point) ∈ Q.filled)
     (hnear : ∀ x, xl < x → x < xr →
       ∀ᶠ p' in 𝓝 ((x, y₀) : Point), 0 < τ * (p'.2 - y₀) → p' ∈ T)
@@ -168,33 +168,25 @@ theorem side_chords_eq (hQ : Q.Simple) (hDH : DistinctHeights Q) {T : Set Point}
     obtain ⟨y, a, b, h, rfl⟩ := hc
     have hy : y = y₀ := by rw [← hzy, hz.1]
     by_cases hall : ∀ s : ℝ, z.1 ≤ s → s ≤ z'.1 → ((s, y₀) : Point) ∈ Q.filled \ Q.boundary
-    · have hz'c : z' ∈ hseg y a b := mem_of_joined h hz hzD (by rw [hz'y, hy]) (fun s h1 h2 => by
-        rw [min_eq_left hle] at h1; rw [max_eq_right hle] at h2
-        rw [hy]; exact hall s h1 h2)
+    · have hz'c : z' ∈ hseg y a b := mem_of_joined h hz hzD (by grind) (fun s h1 h2 => by
+        grind)
       exact eq_of_common ⟨y, a, b, h, rfl⟩ hc' hz'c hz' hz'D
     · exfalso
       push Not at hall
       obtain ⟨s, hs1, hs2, hsD⟩ := hall
       have hs1' : z.1 < s := lt_of_le_of_ne hs1 fun e => hsD (by
-        rw [← e, ← hzy]; exact hzD)
+        grind)
       have hs2' : s < z'.1 := lt_of_le_of_ne hs2 fun e => hsD (by
-        rw [e, ← hz'y]; exact hz'D)
+        grind)
       have hsl : xl < s := by linarith
       have hsr : s < xr := by linarith
       have hb : ((s, y₀) : Point) ∈ Q.boundary := by
-        by_contra hb; exact hsD ⟨hcl s hsl hsr, hb⟩
+        grind
       obtain ⟨m, hm, hwm⟩ := vertex_of_side hQ hDH hb hτ
         ((hnear s hsl hsr).mono fun p' hp' hpos => hT (hp' hpos))
-      have hmk : m = k₀ := vtx_eq_of_height hDH hm hk₀ (by rw [← hwm, hk₀y])
-      subst hmk
-      have hsx : s = (Q.vtx m).1 := by rw [← hwm]
-      rw [hsx] at hs1' hs2'
-      by_cases h1 : z.1 < (Q.vtx m).1
-      · have := hside.1 h1; linarith
-      · exact h1 hs1'
-  rcases le_total z.1 z'.1 with h | h
-  · exact key hc hc' hz hz' hzD hz'D hzy hz'y hzx.1 hz'x.2 h hside
-  · exact (key hc' hc hz' hz hz'D hzD hz'y hzy hz'x.1 hzx.2 h hside.symm).symm
+      have hmk : m = k₀ := vtx_eq_of_height hDH hm hk₀ (by grind)
+      grind
+  grind
 
 /-- The side of a chord point relative to a vertex, read off from the chord. -/
 theorem side_iff {c : Set Point} (hc : HC Q c) {y₀ : ℝ} {w₀ : Point}
@@ -208,12 +200,10 @@ theorem side_iff {c : Set Point} (hc : HC Q c) {y₀ : ℝ} {w₀ : Point}
     by_contra hge
     push Not at hge
     have hne : z.1 ≠ w₀.1 := fun e => hw₀ (by
-      have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rw [this]; exact hzD)
+      grind)
     have := between_mem h hz' hz'D hz hzD hlt.le (lt_of_le_of_ne hge (Ne.symm hne)).le
-    apply hw₀
-    have e : ((w₀.1, y) : Point) = w₀ := point_ext rfl (by rw [hy, hw₀y])
-    rw [← e]; exact this
-  · intro hlt; exact ⟨z, hz, hzD, hzy, hlt⟩
+    grind
+  grind
 
 /-- **Degree `≤ 4`** in the interior visibility map augmented by finitely many horizontal chords,
 for a simple polygon with distinct vertex heights. -/
@@ -314,9 +304,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         rintro c ⟨hc, z, hz, hzD, hzU, hzc⟩
         have hz0 := hclle _ hU0 z hzU
         have hmz : q.2 < z.2 ∧ z.2 < y₂ := by
-          rcases hzc with e | e
-          · rw [e] at hz0; linarith
-          · exact e
+          grind
         have hzT := hmid z hzD (hcl hzU) (hqy₁.trans hmz.1) hmz.2
         have hUz := hbelow c hc z hz hzT hmz.1
         have hz0' := hclle _ hUz z₀ hz₀U
@@ -324,7 +312,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         have hz₀c := hslice c hc z hz hzT z₀ hz₀T heq
         exact eq_of_common (hG c hc) (hG c₀ hc₀.1) hz₀c hz₀ hz₀D
       calc E₁.ncard ≤ ({c₀} : Set (Set Point)).ncard := ncard_le_ncard hsub1 (finite_singleton _)
-        _ ≤ 2 := by rw [ncard_singleton]; norm_num
+        _ ≤ 2 := by grind [ncard_singleton]
     · push Not at hA
       obtain ⟨k₀, hk₀, hk₀y, -⟩ := h.top_vertex
       set w₀ := Q.vtx k₀ with hw₀
@@ -343,9 +331,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         have h1 := side_iff (hG c hc.1) hw₀D hk₀y hz hzD hzy
         have h2 := side_iff (hG c' hc'.1) hw₀D hk₀y hz' hz'D hz'y
         have hside : z.1 < w₀.1 ↔ z'.1 < w₀.1 := by
-          rw [← h1, ← h2]
-          simp only [f, decide_eq_decide] at hff
-          exact hff
+          grind
         obtain ⟨-, -, hzl, hzr⟩ := hcl hzU
         obtain ⟨-, -, hz'l, hz'r⟩ := hcl hz'U
         rw [hzy] at hzl hzr
@@ -367,9 +353,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         rintro c ⟨hc, z, hz, hzD, hzU, hzc⟩
         have hz0 := hclge _ hU0 z hzU
         have hmz : y₁ < z.2 ∧ z.2 < q.2 := by
-          rcases hzc with e | e
-          · rw [e] at hz0; linarith
-          · exact e
+          grind
         have hzT := hmid z hzD (hcl hzU) hmz.1 (hmz.2.trans hqy₂)
         have hUz := habove c hc z hz hzT hmz.2
         have hz0' := hclge _ hUz z₀ hz₀U
@@ -377,7 +361,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         have hz₀c := hslice c hc z hz hzT z₀ hz₀T heq
         exact eq_of_common (hG c hc) (hG c₀ hc₀.1) hz₀c hz₀ hz₀D
       calc E₂.ncard ≤ ({c₀} : Set (Set Point)).ncard := ncard_le_ncard hsub1 (finite_singleton _)
-        _ ≤ 2 := by rw [ncard_singleton]; norm_num
+        _ ≤ 2 := by grind [ncard_singleton]
     · push Not at hA
       obtain ⟨k₀, hk₀, hk₀y, -⟩ := h.bot_vertex
       set w₀ := Q.vtx k₀ with hw₀
@@ -396,9 +380,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         have h1 := side_iff (hG c hc.1) hw₀D hk₀y hz hzD hzy
         have h2 := side_iff (hG c' hc'.1) hw₀D hk₀y hz' hz'D hz'y
         have hside : z.1 < w₀.1 ↔ z'.1 < w₀.1 := by
-          rw [← h1, ← h2]
-          simp only [f, decide_eq_decide] at hff
-          exact hff
+          grind
         obtain ⟨-, -, hzl, hzr⟩ := hcl hzU
         obtain ⟨-, -, hz'l, hz'r⟩ := hcl hz'U
         rw [hzy] at hzl hzr

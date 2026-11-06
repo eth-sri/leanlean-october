@@ -61,15 +61,17 @@ theorem exists_chord_pt (hM : WalkAx M) (hN : IsNF M Q N) {i : ℕ} (hi : i < N.
   rw [heq]; exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
 
 /-- A preconnected subset of `D \ c` meeting a component of `D \ c` lies in it. -/
-theorem sub_comp {A : Set Point} {X : Set Point} (hX : IsPreconnected X) (hXA : X ⊆ A)
+theorem sub_comp {A X : Set Point} (hX : IsPreconnected X) (hXA : X ⊆ A)
     {z w : Point} (hz : z ∈ X) (hzw : z ∈ connectedComponentIn A w) :
     X ⊆ connectedComponentIn A w := by
   rw [connectedComponentIn_eq hzw]
   exact hX.subset_connectedComponentIn hz hXA
 
+section
+variable (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg) (hR : ∀ r, r < N.nRegions → reg r ∈ M.regions (N.F M Q))
+include hM hN hS hR
 /-- **Neighbours through another chord are in the same component.** -/
-theorem adj_same_comp (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
-    (hR : ∀ r, r < N.nRegions → reg r ∈ M.regions (N.F M Q)) {k i : ℕ} (hk : k < N.nChords)
+theorem adj_same_comp {k i : ℕ} (hk : k < N.nChords)
     (hi : i < N.nChords) (_hik : i ≠ k) (hne : (N.chord i).toSet M Q ≠ (N.chord k).toSet M Q)
     {w : Point} :
     reg (N.chord i).up ⊆ connectedComponentIn (M.D \ (N.chord k).toSet M Q) w ↔
@@ -91,11 +93,11 @@ theorem adj_same_comp (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N
   have hbu : ((z.1, z.2 + ε) : Point) ∈ ball z ρ := by
     rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
     simp only [sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hε0]
-    rw [max_eq_right hε0.le]; linarith [min_le_right (ε₀ / 2) (ρ / 2)]
+    grind
   have hbd : ((z.1, z.2 - ε) : Point) ∈ ball z ρ := by
     rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
     simp only [sub_self, abs_zero, sub_sub_cancel_left, abs_neg, abs_of_pos hε0]
-    rw [max_eq_right hε0.le]; linarith [min_le_right (ε₀ / 2) (ρ / 2)]
+    grind
   have hregsub : ∀ r, r < N.nRegions → reg r ⊆ M.D \ c := fun r hr x hx =>
     ⟨(regionsIn_subset (hR r hr) hx).1, fun hxc => (regionsIn_subset (hR r hr) hx).2 ⟨c, hck, hxc⟩⟩
   have hballP : IsPreconnected (ball z ρ) := (convex_ball z ρ).isPreconnected
@@ -108,8 +110,7 @@ theorem adj_same_comp (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N
     exact sub_comp (regionsIn_isPreconnected (hR _ hup)) (hregsub _ hup) hu (hb hbu)
 
 /-- The components of `D \ c` of the regions below and above a chord `c`. -/
-theorem comps_of (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
-    (hR : ∀ r, r < N.nRegions → reg r ∈ M.regions (N.F M Q)) {k : ℕ} (hk : k < N.nChords) :
+theorem comps_of {k : ℕ} (hk : k < N.nChords) :
     ∃ zd zu : Point,
       reg (N.chord k).dn ⊆ connectedComponentIn (M.D \ (N.chord k).toSet M Q) zd ∧
       reg (N.chord k).up ⊆ connectedComponentIn (M.D \ (N.chord k).toSet M Q) zu ∧
@@ -138,8 +139,7 @@ theorem comps_of (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
 
 /-- **The regions of the low side lie in the component of the region below the chord** (and
 those of the high side in the component of the region above). -/
-theorem side_sub (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
-    (hR : ∀ r, r < N.nRegions → reg r ∈ M.regions (N.F M Q))
+theorem side_sub
     (hinj : ∀ i i', i < N.nChords → i' < N.nChords →
       (N.chord i).toSet M Q = (N.chord i').toSet M Q → i = i')
     {k : ℕ} (hk : k < N.nChords) {w : Point} {r₀ : ℕ}
@@ -150,11 +150,10 @@ theorem side_sub (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
   | refl => exact h₀
   | @tail s s' _ hadj ih =>
     obtain ⟨i, hi, hik, hh⟩ := hadj
-    have hne : (N.chord i).toSet M Q ≠ (N.chord k).toSet M Q := fun e => hik (hinj i k hi hk e)
-    have key := adj_same_comp hM hN hS hR hk hi hik hne (w := w)
-    rcases hh with ⟨h1, h2⟩ | ⟨h1, h2⟩
-    · rw [← h2]; rw [← h1] at ih; exact key.1 ih
-    · rw [← h1]; rw [← h2] at ih; exact key.2 ih
+    grind [Chazelle.Core.Restore.adj_same_comp]
+
+
+end
 
 /-- **Deciding the side of a region.**  Let the walk position `(p, t)` inside an edge face the
 region `reg r`, and the position `(p₀, t₀)` inside an edge face the region below the chord `k`.

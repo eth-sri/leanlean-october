@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreTHoles
 public import Chazelle.Core.RestoreTXCmp
 public import Chazelle.Core.DownPhaseOracleHit
@@ -38,7 +40,7 @@ open Chazelle.Geometry (lerp)
 
 theorem iv_inj {Q : Polygon} {p q : ℕ} (hp : p < Q.n) (hq : q < Q.n) (h : IOrc.iv Q p = IOrc.iv Q q) :
     p = q := by
-  unfold IOrc.iv at h; split_ifs at h <;> omega
+  core_grind
 
 /-- **A point strictly inside an edge of the interior walk is an inner point** of the interior
 model, when `Q` has distinct heights: its height is strictly between the heights of the edge's
@@ -68,17 +70,17 @@ theorem innerPt_mi_edge {Q : Polygon} (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) 
   simp only [Geometry.lerp_fst, Geometry.lerp_snd]
   refine ⟨?_, ?_⟩
   · rcases lt_or_gt_of_ne hy with hab | hab
-    · refine ⟨p, (p + 1) % Q.n, by rw [hn']; exact hp, by rw [hn']; exact hq, ?_, ?_⟩
-      · rw [va]; nlinarith
+    · refine ⟨p, (p + 1) % Q.n, by omega, by omega, ?_, ?_⟩
+      · simp_all
       · rw [vb]; nlinarith
-    · refine ⟨(p + 1) % Q.n, p, by rw [hn']; exact hq, by rw [hn']; exact hp, ?_, ?_⟩
+    · refine ⟨(p + 1) % Q.n, p, by omega, by omega, ?_, ?_⟩
       · rw [vb]; nlinarith
       · rw [va]; nlinarith
   · rcases le_total a.1 b.1 with hab | hab
-    · refine ⟨p, (p + 1) % Q.n, by rw [hn']; exact hp, by rw [hn']; exact hq, ?_, ?_⟩
-      · rw [va]; nlinarith
+    · refine ⟨p, (p + 1) % Q.n, by omega, by omega, ?_, ?_⟩
+      · simp_all
       · rw [vb]; nlinarith
-    · refine ⟨(p + 1) % Q.n, p, by rw [hn']; exact hq, by rw [hn']; exact hp, ?_, ?_⟩
+    · refine ⟨(p + 1) % Q.n, p, by omega, by omega, ?_, ?_⟩
       · rw [vb]; nlinarith
       · rw [va]; nlinarith
 
@@ -95,20 +97,21 @@ theorem chain_vtx_abs_fst (C : Chain) {p : ℕ} (hp : p < (chainModel C).W.n) :
   rw [hW]
   rcases (by omega : p = 0 ∨ p = 1 ∨ p = 2 ∨ p = 3 ∨ p = 4 ∨ p = 5 ∨ 6 ≤ p) with
     rfl | rfl | rfl | rfl | rfl | rfl | h6
-  · rw [C.sideWalk_vtx_zero]; exact htop
-  · rw [C.sideWalk_vtx_one]; simp only [abs_neg]; exact (abs_of_nonneg hRp).le
-  · rw [C.sideWalk_vtx_two]; simp only [abs_neg]; exact (abs_of_nonneg hRp).le
-  · rw [C.sideWalk_vtx_three]; exact (abs_of_nonneg hRp).le
-  · rw [C.sideWalk_vtx_four]; exact (abs_of_nonneg hRp).le
-  · rw [C.sideWalk_vtx_five]; exact htop
+  · aesop
+  · rw [C.sideWalk_vtx_one]; grind
+  · rw [C.sideWalk_vtx_two]; grind
+  · rw [C.sideWalk_vtx_three]; grind
+  · rw [C.sideWalk_vtx_four]; grind
+  · aesop
   · obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by omega⟩
     rw [C.sideWalk_vtx_tour _ (by omega), Chain.sideTour]
     exact (C.abs_le_coordBound_of_mem_set (C.vertex_mem_set (C.sideIdx_le _ _))).1.trans hR.le
 
+section
+variable (C : Chain) (Q : Polygon) {x : WPos} (he : x.edge < (chainModel C).W.n) (h0 : 0 ≤ (chainModel C).param Q x) (h1 : (chainModel C).param Q x ≤ 1)
+include he h0 h1
 /-- **A point of the walk of a chain model is within the vertical sides of the box.** -/
-theorem chain_pos_abs_fst (C : Chain) (Q : Polygon) {x : WPos}
-    (he : x.edge < (chainModel C).W.n) (h0 : 0 ≤ (chainModel C).param Q x)
-    (h1 : (chainModel C).param Q x ≤ 1) : |((chainModel C).pos Q x).1| ≤ C.radius := by
+theorem chain_pos_abs_fst : |((chainModel C).pos Q x).1| ≤ C.radius := by
   have hn : 0 < (chainModel C).W.n := by omega
   unfold Model.pos
   simp only [Model.wa, Model.wb, Geometry.lerp_fst]
@@ -119,9 +122,7 @@ theorem chain_pos_abs_fst (C : Chain) (Q : Polygon) {x : WPos}
 
 /-- **An inner point of a chain model**: a point of the walk strictly inside the height band of
 the box. -/
-theorem innerPt_chain_walk (C : Chain) (Q : Polygon) {x : WPos}
-    (he : x.edge < (chainModel C).W.n) (h0 : 0 ≤ (chainModel C).param Q x)
-    (h1 : (chainModel C).param Q x ≤ 1) (hy : |((chainModel C).pos Q x).2| < C.radius) :
+theorem innerPt_chain_walk (hy : |((chainModel C).pos Q x).2| < C.radius) :
     (chainModel C).InnerPt ((chainModel C).pos Q x) := by
   have hx := abs_le.1 (chain_pos_abs_fst C Q he h0 h1)
   have hy' := abs_lt.1 hy
@@ -130,10 +131,10 @@ theorem innerPt_chain_walk (C : Chain) (Q : Polygon) {x : WPos}
   have v2 : (chainModel C).W.vtx 2 = (-C.radius, -C.radius) := rfl
   have v3 : (chainModel C).W.vtx 3 = (C.radius, -C.radius) := rfl
   refine ⟨⟨2, 1, by omega, by omega, ?_, ?_⟩, ⟨1, 3, by omega, by omega, ?_, ?_⟩⟩
-  · rw [v2]; simp only; linarith
-  · rw [v1]; simp only; linarith
-  · rw [v1]; simp only; linarith
-  · rw [v3]; simp only; linarith
+  all_goals simp_all
+
+
+end
 
 /-- **The box vertices are on the boundary of the height band**: walk vertices `0 … 5` of a
 chain model are at height `± radius`. -/
@@ -146,10 +147,10 @@ theorem chain_box_vtx_abs (C : Chain) {p : ℕ} (hp : p < 6) :
   rcases (by omega : p = 0 ∨ p = 1 ∨ p = 2 ∨ p = 3 ∨ p = 4 ∨ p = 5) with
     rfl | rfl | rfl | rfl | rfl | rfl
   · rw [C.sideWalk_vtx_zero]; exact abs_of_nonneg hR
-  · rw [C.sideWalk_vtx_one]; exact abs_of_nonneg hR
-  · rw [C.sideWalk_vtx_two]; simp only [abs_neg]; exact abs_of_nonneg hR
-  · rw [C.sideWalk_vtx_three]; simp only [abs_neg]; exact abs_of_nonneg hR
-  · rw [C.sideWalk_vtx_four]; exact abs_of_nonneg hR
+  · rw [C.sideWalk_vtx_one]; simp_all
+  · rw [C.sideWalk_vtx_two]; simp_all
+  · rw [C.sideWalk_vtx_three]; simp_all
+  · rw [C.sideWalk_vtx_four]; simp_all
   · rw [C.sideWalk_vtx_five]; exact abs_of_nonneg hR
 
 /-- **A position the tests compare**: a proper position inside the height band of the box (for
@@ -164,10 +165,10 @@ theorem posG_of_band {M : Model} {Q : Polygon} {n : ℕ} {x : WPos} (he : x.edge
     simp only at h0
     subst h0
     show Geometry.lerp (M.wa e) (M.wb e) 0 = _
-    simp [Geometry.lerp, Model.wa]
+    aesop
   have := hy C hM
   rw [hv, hM, chain_box_vtx_abs C (by omega)] at this
-  exact lt_irrefl _ this
+  simp_all
 
 /-! ## The arcs of the region are pieces of the shot -/
 
@@ -175,9 +176,12 @@ section arcs
 
 variable {P : Polygon} {W : ℕ} {M : Model} {N : NF} {c₀ : Config}
 
+section
+variable (hE : TGood P W M N c₀)
+include hE
 /-- **One end of an arc record**, normalised: a normalised position on a walk edge, a vertex or
 an inner point. -/
-theorem TGood.end_ok (hE : TGood P W M N c₀) {x : WPos}
+theorem TGood.end_ok {x : WPos}
     (hx : ProperPos M (Qof P) (Qof P).n x) (hk : M.key (Qof P) x < M.W.n)
     (hy : ∀ C : Chain, M = chainModel C → |(M.pos (Qof P) x).2| < C.radius) :
     NormPos M (Qof P) P.n (normOf M (Qof P) x) ∧ (normOf M (Qof P) x).edge < M.W.n ∧
@@ -188,10 +192,10 @@ theorem TGood.end_ok (hE : TGood P W M N c₀) {x : WPos}
   have hkey : M.key (Qof P) x = x.edge + M.param (Qof P) x := rfl
   have hxe : x.edge < M.W.n := by
     have : (x.edge : ℝ) < M.W.n := by linarith [hx.1]
-    exact_mod_cast this
-  refine ⟨hN, by rw [he]; exact hxe, ?_⟩
+    simp_all
+  refine ⟨hN, by omega, ?_⟩
   rcases hcase with h0 | hp
-  · exact Or.inl h0
+  · omega
   right
   rw [hpos]
   have hp' : 0 < M.param (Qof P) x := by
@@ -205,10 +209,10 @@ theorem TGood.end_ok (hE : TGood P W M N c₀) {x : WPos}
     have hn3 : 3 ≤ (Qof P).n := by rw [hQn]; exact hE.hG.1.1
     obtain ⟨e, h⟩ := x
     exact innerPt_mi_edge (ShootCut.goodEnv_distinct hE.hG) hn3
-      (by rw [IOrc.mi_n] at hxe; exact hxe) hp' hx.2.1
+      (by grind [IOrc.mi_n]) hp' hx.2.1
 
 /-- **The arcs of the region are pieces of the shot** of weight at most `γ`. -/
-theorem TGood.arc_piece (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) {γ : ℕ}
+theorem TGood.arc_piece (hne : (N.F M (Qof P)).Nonempty) {γ : ℕ}
     (hsg : M.Semigranular (N.F M (Qof P)) γ) {t : ℕ}
     (ht : t < (N.region (c₀.nreg 83002)).arcs.length) :
     PieceOK M (Qof P) P.n (nArc M (Qof P) N (c₀.nreg 83002) t) ∧
@@ -219,8 +223,7 @@ theorem TGood.arc_piece (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempt
   obtain ⟨-, -, -, reg, hRC, -, hArcs, -, -, -, hpp⟩ := hE.hNF
   set j := arcAt N r t with hjdef
   have hjm : j ∈ (N.region r).arcs := by
-    rw [hjdef, arcAt, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
-    exact List.getElem_mem ht
+    simp_all [arcAt, List.getD_eq_getElem?_getD, Option.getD_some] 
   obtain ⟨hj, -⟩ := (hArcs.2.2.2 r hr j).1 hjm
   obtain ⟨hjr, harc⟩ := hArcs.1 j hj
   have hU := hRC.1 _ hjr
@@ -228,14 +231,17 @@ theorem TGood.arc_piece (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempt
   have hs := hE.end_ok (hpp j hj).1 ha (hE.arc_abs hne hj).1
   have he := hE.end_ok (hpp j hj).2 hb (hE.arc_abs hne hj).2
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hps : ProperPos M (Qof P) P.n (N.arc j).s := by rw [← hQn]; exact (hpp j hj).1
-  have hpe : ProperPos M (Qof P) P.n (N.arc j).e := by rw [← hQn]; exact (hpp j hj).2
+  have hps : ProperPos M (Qof P) P.n (N.arc j).s := by simp_all
+  have hpe : ProperPos M (Qof P) P.n (N.arc j).e := by simp_all
   have hks := (normOf_facts hps).2.2.2.1
   have hke := (normOf_facts hpe).2.2.2.1
   refine ⟨⟨hs.1, he.1, hs.2.1, he.2.1, hs.2.2, he.2.2⟩, ?_⟩
   simp only [nArc]
   rw [hks, hke]
   exact (BoxT.arcWt_le_weight (hArcs.1 j hj).2).trans (hsg _ hU)
+
+
+end
 
 end arcs
 
@@ -268,7 +274,7 @@ theorem shPrep_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
           q (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;> simp)
     (by simp [shL])
   obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.constN e₁.wb_right 84003 2 (by
-    have := hE.hW; unfold hostWords at this; omega))
+    have := hE.hW; grind [hostWords]))
   have o₁ : Out c c₁ shW := ⟨fun r hr => h2 r (by
     simp only [shW, shL, List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil,
       or_false] at hr ⊢; omega), h3, h4, h5, h6⟩
@@ -277,8 +283,8 @@ theorem shPrep_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
   refine RS.out hI shW_scr (.seq e₁ e₂) (by simp [shL]) ho ⟨fun p hp => ?_, v₂, ho⟩
   have hp1 : p.1 ≠ 84003 := by
     simp only [shL, List.mem_cons, List.not_mem_nil, or_false] at hp
-    rcases hp with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp
-  rw [o₂.1 _ (by simpa using hp1), h1 p hp]
+    grind
+  rw [o₂.1 _ (by grind), h1 p hp]
 
 /-- **The precondition of the shot wrapper** at a configuration of the run whose shot block is
 filled: model descriptor, arc array of the region (`arcBuild`), origin the candidate, direction,
@@ -314,7 +320,7 @@ theorem shotPre_of {X : MemCtx} {Ok : Polygon → Model → Prop} (hE : TGood P 
   have horig : (∃ q, Origin.walk x = .walk ⟨q, 0⟩) ∨ (M.InnerPt ((Origin.walk x).eval M (Qof P)) ∧
       ∀ y, Origin.walk x = .walk y → ProperPos M (Qof P) P.n y) := by
     rcases hE.hxc with h0 | hp
-    · exact Or.inl ⟨c₀.nreg 83005, by rw [hxdef, h0]⟩
+    · simp_all
     right
     refine ⟨?_, fun y hy => by cases hy; exact hE.hxp⟩
     show M.InnerPt (M.pos (Qof P) x)
@@ -333,15 +339,15 @@ theorem shotPre_of {X : MemCtx} {Ok : Polygon → Model → Prop} (hE : TGood P 
     intro g hg
     simp only [ShotList.holeList, List.mem_map, List.mem_range] at hg
     obtain ⟨j, hj, rfl⟩ := hg
-    exact ⟨rfl, (hhl j (by have : j < min (c.nreg 84009) 3 := hj; omega)).1⟩
+    exact ⟨rfl, (hhl j (by simp_all)).1⟩
   refine ⟨hE.hG, hE.hW, ?_, ?_, ?_, ?_, ?_, hI, hOk, ?_, h9, ?_, hhl, Origin.walk x,
     ⟨h03, h04, h05⟩, ⟨hE.hxe, hE.hxp.2.2⟩, horig, hyR, ?_⟩
-  · show X.holds P c.nmem (c.nreg 84008) (c.nreg ALLOC); rw [h08]; exact hX'
-  · show c.nreg 84007 ≤ X.cap P c.nmem (c.nreg 84008); rw [h07, h08, hcap']; exact hcap
-  · show ModelDescWF P (c.nreg ALLOC) c.nmem (c.nreg 84000); rw [h00]; exact hwf
-  · show ModelDescAt c.nmem (c.nreg 84000) (Qof P) M; rw [h00]; exact hMD
-  · show HReg P c.nmem (c.nreg 84000); rw [h00]; exact hreg
-  · show c.nreg 84001 + 4 * c.nreg 84002 ≤ c.nreg ALLOC; rw [h01, h02]; exact hB
+  · omega_nf
+  · show c.nreg 84007 ≤ X.cap P c.nmem (c.nreg 84008); grind
+  · omega_nf
+  · show ModelDescAt c.nmem (c.nreg 84000) (Qof P) M; grind
+  · show HReg P c.nmem (c.nreg 84000); grind
+  · omega_nf
   · intro j hj
     change j < c.nreg 84002 at hj
     rw [h02] at hj
@@ -369,8 +375,7 @@ def tArrC : Stmt := .seq (.instr (.subN 83120 83023 83008)) (.seq (.seq (block (
 def tArr : Stmt := .ifLtN 83021 83023 tArrC .skip
 
 theorem rho_dir {v : ℕ} (hv : v ≤ 1) : -dirOf (1 - v) = dirOf v := by
-  have : 1 - v = if v = 1 then 0 else 1 := by split_ifs <;> omega
-  rw [this, SweepPrim.neg_dirOf_flip]
+  core_grind
 
 /-- **The arrival step.**  From a proper position `f` (registers `83012`, `83013`) of a point at
 which, in a chain model, an arrival position of the ray exists: in a chain model the registers
@@ -401,10 +406,10 @@ theorem tArr_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
     -- ρ = 1 - σb
     obtain ⟨c₁, e₁, v₁, o₁⟩ := out_instr (P := P) (Exec.subN hI.hw 83120 83023 83008)
     obtain ⟨hI₁, rf₁⟩ := hI.regs e₁.wb_right (fun r hr => o₁.1 r (by
-      simp only [List.mem_singleton]; omega)) o₁.2.1 o₁.2.2.1 o₁.2.2.2.1 o₁.2.2.2.2 (k := 1)
-    have k₁ : ∀ r, r ≠ 83120 → c₁.nreg r = c.nreg r := fun r hr => o₁.1 r (by simpa using hr)
+      grind)) o₁.2.1 o₁.2.2.1 o₁.2.2.2.1 o₁.2.2.2.2 (k := 1)
+    have k₁ : ∀ r, r ≠ 83120 → c₁.nreg r = c.nreg r := fun r hr => o₁.1 r (by grind)
     have r120 : c₁.nreg 83120 = 1 - c₀.nreg 83008 := by rw [v₁, hI.h23, h8]
-    have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := k₁ _ (by unfold ALLOC; omega)
+    have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := k₁ _ (by omega_nf)
     have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 83020) (Qof P) H C := by
       rw [o₁.2.2.1, k₁ 83020 (by norm_num)]; exact hC
     have hwf₁ : ChainWF P (c₁.nreg ALLOC) c₁.nmem (c₁.nreg 83020) := by
@@ -413,16 +418,16 @@ theorem tArr_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
     have f13 : c₁.nreg 83013 = c.nreg 83013 := k₁ _ (by omega)
     obtain ⟨c₂', c₂, k₂, q, -, -, ex₂, hk₂, hout, hf₂⟩ := callPrim SweepPrim.arrivalPos_meets arrL
       (by simp only [arrL, List.mem_cons, List.not_mem_nil, or_false]
-          rintro q (rfl | rfl | rfl | rfl) r (rfl | rfl | rfl | rfl) <;> simp)
+          grind)
       (by simp [arrL]) (by simp [arrL]) (src := 83020) (by simp [arrL]) e₁.wb_right hE.hG hE.hW
       hwf₁ hC₁ (fun c' h1 _ _ => by
         have q1 := h1 (50201, 83012) (by simp [arrL])
         have q2 := h1 (50202, 83013) (by simp [arrL])
         simp only at q1 q2
-        refine ⟨⟨by rw [q1, f12]; exact he, by rw [q1, q2, f12, f13]; exact hp, ?_⟩, ?_, ?_⟩
-        · rw [q1, q2, f12, f13]; exact hy C rfl
+        refine ⟨⟨by omega, by grind, ?_⟩, ?_, ?_⟩
+        · grind
         · exact hsimp
-        · exact hE.hWm C rfl) (by rw [hA₁]; omega)
+        · exact hE.hWm C rfl) (by omega)
     have q1 := q (50201, 83012) (by simp [arrL])
     have q2 := q (50202, 83013) (by simp [arrL])
     have q3 := q (50203, 83120) (by simp [arrL])
@@ -431,30 +436,28 @@ theorem tArr_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
     rw [q1, q2, q3, f12, f13, r120, rho_dir hσ] at hout
     obtain ⟨hfl, hyes, hno⟩ := hout
     have hflag : c₂.nreg 50210 = 1 := by
-      by_contra hne
-      obtain ⟨p', t', ha⟩ := hex C rfl
-      exact hno hne p' t' ha
+      grind
     obtain ⟨hpe, hpp, harr⟩ := hyes hflag
     have T₂ := hI₁.prim ex₂.wb_right hf₂
     -- copy the arrival position back
     obtain ⟨c₃, e₃, v₃, o₃⟩ := out_instr (P := P) (Exec.copyN ex₂.wb_right 83012 50211)
     obtain ⟨hI₃, rf₃⟩ := T₂.1.regs e₃.wb_right (fun r hr => o₃.1 r (by
-      simp only [List.mem_singleton]; omega)) o₃.2.1 o₃.2.2.1 o₃.2.2.2.1 o₃.2.2.2.2 (k := 1)
+      grind)) o₃.2.1 o₃.2.2.1 o₃.2.2.2.1 o₃.2.2.2.2 (k := 1)
     obtain ⟨c₄, e₄, v₄, o₄⟩ := out_instr (P := P) (Exec.copyN e₃.wb_right 83013 50212)
     obtain ⟨hI₄, rf₄⟩ := hI₃.regs e₄.wb_right (fun r hr => o₄.1 r (by
-      simp only [List.mem_singleton]; omega)) o₄.2.1 o₄.2.2.1 o₄.2.2.2.1 o₄.2.2.2.2 (k := 1)
+      grind)) o₄.2.1 o₄.2.2.1 o₄.2.2.2.1 o₄.2.2.2.2 (k := 1)
     have w12 : c₄.nreg 83012 = c₂.nreg 50211 := by rw [o₄.1 _ (by simp), v₃]
     have w13 : c₄.nreg 83013 = c₂.nreg 50212 := by rw [v₄, o₃.1 _ (by simp)]
     refine ⟨c₄, 1 + (k₂ + (1 + 1)) + 1,
       .ifLtN_true g21 (.seq e₁ (.seq ex₂ (.seq e₃ e₄))), ?_, hI₄,
       ((rf₁.trans (T₂.2.1.trans (rf₃.trans rf₄)))).mono subset_rfl (by omega), ?_⟩
-    · simp [arrL] at hk₂; omega
+    · grind [arrL]
     show _ ∧ _
     rw [w12, w13]
     refine ⟨hpp, hpe, harr.2.2.2.1, fun _ _ => harr, fun h => absurd h
       (chainModel_ne_interior C (Qof P)), fun r h1 h2 hr => ?_⟩
     simp only [List.mem_cons, List.not_mem_nil, or_false, not_or] at hr
-    rw [o₄.1 r (by simpa using hr.2.1), o₃.1 r (by simpa using hr.1),
+    rw [o₄.1 r (by grind), o₃.1 r (by grind),
       T₂.2.2 r h1 h2, k₁ r hr.2.2]
   · -- the interior model: nothing to do
     have g21 : ¬ c.nreg 83021 < c.nreg 83023 := by rw [hI.h21, hI.h23, h1]; omega

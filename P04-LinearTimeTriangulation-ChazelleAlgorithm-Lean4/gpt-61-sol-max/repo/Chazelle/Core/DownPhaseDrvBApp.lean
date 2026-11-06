@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvBFar2
 public import Chazelle.Core.DownPhaseDrvDCall3
 
@@ -57,12 +59,18 @@ def Brec (r : ℕ) : Bool := decide (81008 ≤ r ∧ r ≤ 81010) || decide (r =
 
 theorem wr_recS : wr Brec recS = true := by decide
 
+section
+variable (r : ℕ)
+include r
 /-- The registers `emitS` writes. -/
-def Bemit (r : ℕ) : Bool := Brec r || DrvD.Bapp r
+def Bemit : Bool := Brec r || DrvD.Bapp r
 
-theorem bemit_rec (r : ℕ) (h : Brec r = true) : Bemit r = true := by simp [Bemit, h]
+theorem bemit_rec (h : Brec r = true) : Bemit r = true := by simp [Bemit, h]
 
-theorem bemit_app (r : ℕ) (h : DrvD.Bapp r = true) : Bemit r = true := by simp [Bemit, h]
+theorem bemit_app (h : DrvD.Bapp r = true) : Bemit r = true := by simp [Bemit, h]
+
+
+end
 
 section exec
 
@@ -80,51 +88,48 @@ theorem recS_exec (c : Config) (hw : WordsBounded W c) {li : Bool} {n i d w : �
   have e₁ := Exec.copyN (P := P) hw 81008 212070
   set c₁ : Config := { c with nreg := upd c.nreg 81008 (c.nreg 212070) } with hc₁
   have w₁ := e₁.wb_right
-  have g₁ : ∀ r, r ≠ 81008 → c₁.nreg r = c.nreg r := fun r h => by rw [hc₁]; simp [h]
+  
   -- `ivB`
   obtain ⟨c₂, k₂, e₂, hk₂, v46, g₂⟩ : ∃ c₂ k₂, Exec P W ivS c₁ c₂ k₂ ∧ k₂ ≤ 4 ∧
       c₂.nreg 212046 = ivB li n i ∧ ∀ r, r ≠ 212046 → c₂.nreg r = c₁.nreg r := by
     cases li with
     | true =>
       have a := Exec.copyN (P := P) w₁ 212046 212070
-      refine ⟨_, _, .ifLtN_true (by rw [g₁ _ (by norm_num), g₁ _ (by norm_num), c1, hli]; simp) a,
+      refine ⟨_, _, .ifLtN_true (by simp_all) a,
         by omega, ?_, fun r h => by simp [h]⟩
-      simp only [Machine.upd_same]; rw [g₁ _ (by norm_num), hi]; rfl
+      aesop (add simp [Machine.upd_same]) (add safe (by omega))
     | false =>
       obtain ⟨c₂, k₂, e₂, hk₂, v⟩ : ∃ c₂ k₂, Exec P W (block [.subN 212046 212010 212000,
           .subN 212046 212046 212070]) c₁ c₂ k₂ ∧ k₂ = 2 ∧ (c₂.nreg 212046 = n - 1 - i ∧
           ∀ r, r ≠ 212046 → c₂.nreg r = c₁.nreg r) := by
         exec_block
-        refine ⟨rfl, ?_, fun r h => ?_⟩
-        · config_simp; rw [g₁ _ (by norm_num), g₁ _ (by norm_num), g₁ _ (by norm_num), hn, c0, hi]
-        · config_simp; simp [h]
-      exact ⟨c₂, _, .ifLtN_false (by rw [g₁ _ (by norm_num), g₁ _ (by norm_num), c1, hli]; simp)
+        simp_all +zetaDelta 
+      exact ⟨c₂, _, .ifLtN_false (by simp_all)
         e₂, by omega, by rw [v.1]; rfl, v.2⟩
   have w₂ := e₂.wb_right
   -- the ends
-  have hd' : c₂.nreg 212086 = d := by rw [g₂ _ (by norm_num), g₁ _ (by norm_num), hd]
-  have c1' : c₂.nreg 212001 = 0 := by rw [g₂ _ (by norm_num), g₁ _ (by norm_num), c1]
-  have hw' : c₂.nreg 212097 = w := by rw [g₂ _ (by norm_num), g₁ _ (by norm_num), hw97]
-  have h81 : c₂.nreg 81008 = i := by
-    rw [g₂ _ (by norm_num), hc₁]; simp only [Machine.upd_same]; exact hi
+  have hd' : c₂.nreg 212086 = d := by simp_all
+  have c1' : c₂.nreg 212001 = 0 := by simp_all
+  
+  
   rcases (by omega : d = 0 ∨ d = 1) with rfl | rfl
   · obtain ⟨c₃, k₃, e₃, hk₃, v⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 81009 212046,
         .copyN 81010 212097]) c₂ c₃ k₃ ∧ k₃ = 2 ∧ (c₃.nreg 81009 = ivB li n i ∧
         c₃.nreg 81010 = w ∧ c₃.nreg 81008 = i) := by
       exec_block
-      refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [v46, hw', h81]
-    have ex : Exec P W recS c c₃ _ := .seq e₁ (.seq e₂ (.ifLtN_false (by rw [c1', hd']; omega) e₃))
+      simp_all
+    have ex : Exec P W recS c c₃ _ := .seq e₁ (.seq e₂ (.ifLtN_false (by omega) e₃))
     exact ⟨c₃, _, ex, by omega, v.2.2, v.1, v.2.1, exec_frameB ex wr_recS⟩
   · obtain ⟨c₃, k₃, e₃, hk₃, v⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 81009 212097,
         .copyN 81010 212046]) c₂ c₃ k₃ ∧ k₃ = 2 ∧ (c₃.nreg 81009 = w ∧
         c₃.nreg 81010 = ivB li n i ∧ c₃.nreg 81008 = i) := by
       exec_block
-      refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [v46, hw', h81]
-    have ex : Exec P W recS c c₃ _ := .seq e₁ (.seq e₂ (.ifLtN_true (by rw [c1', hd']; omega) e₃))
+      simp_all
+    have ex : Exec P W recS c c₃ _ := .seq e₁ (.seq e₂ (.ifLtN_true (by omega) e₃))
     exact ⟨c₃, _, ex, by omega, v.2.2, v.1, v.2.1, exec_frameB ex wr_recS⟩
 
 theorem vtrip_fst (li : Bool) (n i d w : ℕ) : (vtrip li n i d w).1 = i := by
-  unfold vtrip; split_ifs <;> rfl
+  core_grind
 
 set_option maxHeartbeats 8000000 in
 /-- **Appending an emitted chord**: the record `x = vtrip li n i d w` is appended at
@@ -169,7 +174,7 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
   set t := T.length with ht
   set BK := B₂ + 3 * Kmax with hBK
   set p := m₀ (H + 5) + 2 + 5 * r with hpd
-  have hW3 : P.n + 3 ≤ W := by have := hWh; unfold hostWords at this; omega
+  have hW3 : P.n + 3 ≤ W := by grind [hostWords]
   -- 1. the record
   obtain ⟨c₁, k₁, e₁, hk₁, r1, r2, r3, f₁⟩ := recS_exec (P := P) c hw hn hi hin hd hd1 hw97 hli c0 c1
   have w₁ := e₁.wb_right
@@ -182,7 +187,7 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
     (by rw [g₁ _ (by decide), d31]) (by rw [g₁ _ (by decide), d16]) (by omega) (by omega)
     (by omega) (by rw [f₁.2.2.1, show p - 1 = m₀ (H + 5) + 5 * r + 1 by omega,
       hlow _ (by omega)]; exact hLB)
-    (by rw [r1, vtrip_fst]; omega) (by omega)
+    (by grind [vtrip_fst]) (by omega)
   have w₂ := e₂.wb_right
   rw [f₁.2.2.1, show p - 2 = m₀ (H + 5) + 5 * r by omega, hlow _ (by omega), ← hnA] at d42
   rw [f₁.2.2.1, show p - 1 = m₀ (H + 5) + 5 * r + 1 by omega, hlow _ (by omega)] at d43
@@ -196,9 +201,9 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
   -- the list
   have hL₂ : ChordListAt c₂.nmem B₂ ((T ++ [(r, x)]).map Prod.snd) := by
     rw [List.map_append]
-    have hlen : (T.map Prod.snd).length = t := by rw [List.length_map]
+    have hlen : (T.map Prod.snd).length = t := by grind
     refine Gran.ChordListAt.snoc hlist (fun a h1 h2 => ?_) ?_ ?_ ?_
-    · rw [hlen] at h2; exact m₂' a (by omega)
+    · grind
     · rw [hlen, m₂, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
         Machine.upd_same, r1]
     · rw [hlen, m₂, Machine.upd_other _ _ _ (by omega), Machine.upd_same, r2]
@@ -220,14 +225,14 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
     set c₃ : Config := { c₂ with nreg := upd c₂.nreg 216053 0 } with hc₃
     have g₃ : ∀ q, q ≠ 216053 → c₃.nreg q = c₂.nreg q := fun q h => by rw [hc₃]; simp [h]
     obtain ⟨c₄, k₄, e₄, hk₄, m₄, d22₄, f₄⟩ := DrvD.stB_exec (P := P) c₃ e₃.wb_right
-      (d := BK + 2 * t) (by rw [g₃ _ (by norm_num), d22₂]) (by rw [g₃ _ (by norm_num), d02₂])
+      (d := BK + 2 * t) (by grind) (by grind)
       (by omega)
     obtain ⟨c₅, k₅, e₅, hk₅, m₅, d22₅, f₅⟩ := DrvD.stB_exec (P := P) c₄ e₄.wb_right
       (d := BK + 2 * t + 1) d22₄ (by rw [f₄.1 _ (by decide), g₃ _ (by norm_num), d02₂])
       (by omega)
     have v53 : c₄.nreg 216053 = 0 := by rw [f₄.1 _ (by decide), hc₃]; simp
     have ex : Exec P W emitS c c₅ (k₁ + (k₂ + (1 + (k₄ + k₅) + 2))) :=
-      .seq e₁ (.seq e₂ (.ifLtN_false (by rw [c1₂, hK₂, hK0]; omega) (.seq e₃ (.seq e₄ e₅))))
+      .seq e₁ (.seq e₂ (.ifLtN_false (by omega) (.seq e₃ (.seq e₄ e₅))))
     have m₅' : c₅.nmem = upd (upd c₂.nmem (BK + 2 * t) 0) (BK + 2 * t + 1) 0 := by
       rw [m₅, m₄, v53]; rfl
     have FM₃ : FrameM Bemit c₂ c₅ := (((FrameB.toM (exec_frameB e₃ (by decide :
@@ -236,16 +241,15 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
       ((f₄.mono fun q h => by simp only [decide_eq_true_eq] at h; subst h; decide).trans
         (f₅.mono fun q h => by simp only [decide_eq_true_eq] at h; subst h; decide)))
     have G5 : ∀ q, q ≠ 216053 → q ≠ 216022 → c₅.nreg q = c₂.nreg q := fun q h1 h2 => by
-      rw [f₅.1 q (by simpa using h2), f₄.1 q (by simpa using h2), g₃ q h1]
+      rw [f₅.1 q (by grind), f₄.1 q (by grind), g₃ q h1]
     refine ⟨c₅, _, ex, ?_, FM₁.trans (FM₂.trans FM₃), e₅.wb_right, fun a ha => ?_, ?_, ?_, ?_,
       ?_, fun h => absurd hK0 (by omega), fun _ q hq => ?_⟩
-    · have : 0 ≤ 2 * (DrvD.scanK + 2) * (N.region r).arcs.length := Nat.zero_le _
-      omega
+    · omega
     · rw [m₅', Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
         m₂' a (by omega)]
     · rw [G5 _ (by norm_num) (by norm_num), d20']
     · rw [G5 _ (by norm_num) (by norm_num), d21']; ring
-    · rw [d22₅]; ring
+    · omega
     · refine Gran.ChordListAt.congr hL₂ fun a h1 h2 => ?_
       rw [hlen₂] at h2
       rw [m₅', Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
@@ -260,7 +264,7 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
   · -- `K > 0`: the arc scans
     have S1 := hscan hKp c₂.nmem hlow₂ w₂.2 0 (by norm_num)
     obtain ⟨c₃, k₃, e₃, hk₃, fd₀, f₃⟩ := DrvD.scanS_exec S1 c₂ w₂ rfl
-      (by rw [d40]; rfl) (by rw [d41]; simp [DrvD.endPos, vtrip_fst, hx]) (by rw [d42])
+      (by rw [d40]; rfl) (by grind [DrvD.endPos, vtrip_fst]) (by rw [d42])
       (by rw [d43]) (by rw [K2 _ (by decide) (by decide), d14])
       (by rw [K2 _ (by decide) (by decide), d17]) d02₂
       (by rw [K2 _ (by decide) (by decide), d03]) (by rw [d400]) (hex hKp 0 (by norm_num))
@@ -270,7 +274,7 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
       (d := BK + 2 * t) (by rw [g₃ _ (by decide), d22₂]) (by rw [g₃ _ (by decide), d02₂])
       (by omega)
     have w₄ := e₄.wb_right
-    have g₄ : ∀ q, q ≠ 216022 → c₄.nreg q = c₃.nreg q := fun q h => f₄.1 q (by simpa using h)
+    have g₄ : ∀ q, q ≠ 216022 → c₄.nreg q = c₃.nreg q := fun q h => f₄.1 q (by grind)
     have e₅ := Exec.copyN (P := P) w₄ 216040 81010
     set c₅ : Config := { c₄ with nreg := upd c₄.nreg 216040 (c₄.nreg 81010) } with hc₅
     have w₅ := e₅.wb_right
@@ -301,11 +305,11 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
       (by rw [f₆.1 _ (by decide), K3 _ (by decide) (by norm_num) (by norm_num), d02₂])
       (by omega)
     have ex : Exec P W emitS c c₇ (k₁ + (k₂ + ((k₃ + (k₄ + (1 + (k₆ + k₇)))) + 1))) :=
-      .seq e₁ (.seq e₂ (.ifLtN_true (by rw [c1₂, hK₂]; exact hKp)
+      .seq e₁ (.seq e₂ (.ifLtN_true (by omega)
         (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))))
     have m₇' : c₇.nmem = upd (upd c₂.nmem (BK + 2 * t) (c₃.nreg 216053)) (BK + 2 * t + 1)
         (c₆.nreg 216053) := by
-      rw [m₇, f₆.2.2.1]; show upd c₄.nmem _ _ = _; rw [m₄']
+      rw [m₇, f₆.2.2.1]; grind
     have FM₃ : FrameM Bemit c₂ c₇ :=
       (((FrameB.toM f₃).mono fun q h => bemit_app q (DrvD.bapp_of_scan q h)).trans
       ((f₄.mono fun q h => bemit_app q (DrvD.bapp_of_22 q h)).trans
@@ -315,19 +319,16 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
       (((FrameB.toM f₆).mono fun q h => bemit_app q (DrvD.bapp_of_scan q h)).trans
       (f₇.mono fun q h => bemit_app q (DrvD.bapp_of_22 q h))))))
     have G7 : ∀ q, DrvD.Bscan q = false → q ≠ 216022 → q ≠ 216040 → c₇.nreg q = c₂.nreg q :=
-      fun q h1 h2 h3 => by rw [f₇.1 q (by simpa using h2), f₆.1 q h1, K3 q h1 h2 h3]
-    have hnA' : (N.region r).arcs.length = (N.region r).arcs.length := rfl
+      fun q h1 h2 h3 => by rw [f₇.1 q (by grind), f₆.1 q h1, K3 q h1 h2 h3]
+    
     refine ⟨c₇, _, ex, ?_, FM₁.trans (FM₂.trans FM₃), e₇.wb_right, fun a ha => ?_, ?_, ?_, ?_,
       ?_, fun _ => ?_, fun h => absurd h (by omega)⟩
-    · have : 2 * (DrvD.scanK + 2) * (N.region r).arcs.length =
-          (DrvD.scanK + 2) * (N.region r).arcs.length +
-            (DrvD.scanK + 2) * (N.region r).arcs.length := by ring
-      omega
+    · grind
     · rw [m₇', Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
         m₂' a (by omega)]
     · rw [G7 _ (by decide) (by norm_num) (by norm_num), d20']
     · rw [G7 _ (by decide) (by norm_num) (by norm_num), d21']; ring
-    · rw [d22₇]; ring
+    · omega
     · refine Gran.ChordListAt.congr hL₂ fun a h1 h2 => ?_
       rw [hlen₂] at h2
       rw [m₇', Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]

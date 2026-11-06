@@ -24,13 +24,15 @@ open Chazelle.Chain (SideAttach sidePt)
 
 variable {J : Merge.Junction}
 
-theorem slb_evVal {S₂ : Set (Set Point)} {Λ : Set (Set Point)} {G L : Set Point} (hL : L ∈ Λ)
+theorem slb_evVal {S₂ Λ : Set (Set Point)} {G L : Set Point} (hL : L ∈ Λ)
     (hR : L ∈ (chainModel J.right).regions S₂) (hV : Valid J S₂ G L) : EvVal J S₂ Λ G :=
   ⟨L, Or.inl hL, hR, hV⟩
 
+section
+variable (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
+include hP Q hS₂
 /-- **A chord inside a chord of `S₂`, away from the split vertex.** -/
-theorem slb_part1 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂)
+theorem slb_part1
     (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {e c : Set Point}
     (he : e ∈ F₂plus J S₂) (hc : c ∈ S₂) (hec : e ⊆ c) {d : ℕ} (hd : d < Lst J) {t : ℝ}
     (ht0 : 0 ≤ t) (ht1 : t < 1) (hsec : t = 0 → d ≠ 0 ∧ d ≠ rL1 J)
@@ -46,8 +48,7 @@ theorem slb_part1 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       (sideLabel_fused J hP hS₂ hF he hc hec hd ht0 ht1 hsec hA (Or.inr rfl) hVd hsd G hG hS)
 
 /-- **A faced region** has the label faced at the counterpart position. -/
-theorem slb_faced (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂) {d : ℕ} (hd : d < Lst J) {t : ℝ}
+theorem slb_faced {d : ℕ} (hd : d < Lst J) {t : ℝ}
     (ht0 : 0 ≤ t) (ht1 : t < 1) (hd1 : t = 0 → 1 ≤ d) {ρ dir : ℝ} {G : Set Point}
     (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
     (hfac : FacedSide (chainModel J.whole) ((gW J + d) % (chainModel J.whole).W.n) t ρ dir G)
@@ -67,6 +68,9 @@ theorem slb_faced (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
         (valid_of_rlabel J hP hS₂.2.1 hS₂.1 hG hVb ((R2 h Vb).2 rfl (hd1 rfl) (hb1 rfl)))
   · exact slb_evVal (Set.mem_insert _ _) hVa
       (valid_of_rlabel J hP hS₂.2.1 hS₂.1 hG hVa (R1 h Va ha))
+
+
+end
 
 end
 

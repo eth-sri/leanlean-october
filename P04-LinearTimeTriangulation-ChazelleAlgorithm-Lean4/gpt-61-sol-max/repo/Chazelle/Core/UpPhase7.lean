@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.UpPhase6
 public import Chazelle.Core.UpPhaseArith
 
@@ -49,35 +51,29 @@ theorem lenS_exec {c : Config} (hw : WordsBounded W c) {n1 s pg : ℕ}
       c1.nreg 170033 = n1 - s ∧ (∀ r, r ≠ 170033 → c1.nreg r = c.nreg r) ∧
       c1.nmem = c.nmem ∧ c1.rreg = c.rreg ∧ c1.rmem = c.rmem ∧ c1.output = c.output := by
     exec_block
-    refine ⟨rfl, ‹_›, by config_simp; rw [h28, h16], fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
-  have c10 : c1.nreg 170010 = pg := by rw [fr1 _ (by decide)]; exact h10
+    simp_all
+  have c10 : c1.nreg 170010 = pg := by ram_simp
   by_cases h : c1.nreg 170033 < c1.nreg 170010
   · obtain ⟨c2, k2, e2, hk2, hw2, i17, fr2, hm2, hrr2, hrm2, ho2⟩ : ∃ c2 k2, Exec P W
         (block [.copyN 170017 170033]) c1 c2 k2 ∧ k2 = 1 ∧ WordsBounded W c2 ∧
         c2.nreg 170017 = c1.nreg 170033 ∧ (∀ r, r ≠ 170017 → c2.nreg r = c1.nreg r) ∧
         c2.nmem = c1.nmem ∧ c2.rreg = c1.rreg ∧ c2.rmem = c1.rmem ∧ c2.output = c1.output := by
       exec_block
-      refine ⟨rfl, ‹_›, by config_simp, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
-      simp only
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      simp_all
     refine ⟨c2, k1 + (k2 + 1), .seq e1 (.ifLtN_true h e2), by omega, hw2, ?_,
-      fun r a1 a2 => by rw [fr2 r a1, fr1 r a2], by rw [hm2, hm1], by rw [hrr2, hrr1],
-      by rw [hrm2, hrm1], by rw [ho2, ho1]⟩
-    rw [i17, i33]; rw [i33, c10] at h; omega
+      fun r a1 a2 => by ram_simp, by ram_simp, by ram_simp,
+      by ram_simp, by ram_simp⟩
+    omega
   · obtain ⟨c2, k2, e2, hk2, hw2, i17, fr2, hm2, hrr2, hrm2, ho2⟩ : ∃ c2 k2, Exec P W
         (block [.copyN 170017 170010]) c1 c2 k2 ∧ k2 = 1 ∧ WordsBounded W c2 ∧
         c2.nreg 170017 = c1.nreg 170010 ∧ (∀ r, r ≠ 170017 → c2.nreg r = c1.nreg r) ∧
         c2.nmem = c1.nmem ∧ c2.rreg = c1.rreg ∧ c2.rmem = c1.rmem ∧ c2.output = c1.output := by
       exec_block
-      refine ⟨rfl, ‹_›, by config_simp, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
-      simp only
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      simp_all
     refine ⟨c2, k1 + (k2 + 2), .seq e1 (.ifLtN_false h e2), by omega, hw2, ?_,
-      fun r a1 a2 => by rw [fr2 r a1, fr1 r a2], by rw [hm2, hm1], by rw [hrr2, hrr1],
-      by rw [hrm2, hrm1], by rw [ho2, ho1]⟩
-    rw [i17, c10]; rw [i33, c10] at h; omega
+      fun r a1 a2 => by ram_simp, by ram_simp, by ram_simp,
+      by ram_simp, by ram_simp⟩
+    omega
 
 set_option maxHeartbeats 16000000 in
 /-- **The descriptor of a grade-0 chain** (the edge `v_i v_{i+1}`). -/
@@ -108,14 +104,14 @@ theorem descU_exec0 (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
   have hH1 : HostAt c1.nmem hp (Host.whole P.n) :=
     hostAt_agree (A := TD) hH rfl (by omega) fun a ha => hm1 a (Or.inl ha)
-  refine ⟨c2, k1 + k2 + 1, .ifLtN_true (by rw [h07, h20]; omega) (.seq e1 e2), by omega, hw2,
-    by rw [fr2 _ (by rw [hAl]; decide)]; exact h1A, by rw [o30, h160], by rw [hm2]; exact w0,
+  refine ⟨c2, k1 + k2 + 1, .ifLtN_true (by omega) (.seq e1 e2), by omega, hw2,
+    by grind, by omega, by grind,
     fun C hCP hCs hCm => by
-      rw [hm2]; refine hdesc C hCP (by rw [hCs]; unfold gradeStart; simp) ?_ hH1
-      rw [hCm]; unfold gradeLen; simp only [pow_zero, Nat.mul_one]; omega,
-    fun a ha => by rw [hm2, hm1 a ha], fun r h1 h2 h3 h4 h5 => by
-      rw [fr2 r h2, fr1 r h1 h3 h4 h5],
-    fun r h1 h2 h3 => by rw [hrr2, frr1 r h1 h2 h3], by rw [hrm2, hrm1], by rw [ho2, ho1]⟩
+      rw [hm2]; refine hdesc C hCP (by grind [gradeStart]) ?_ hH1
+      rw [hCm]; unfold gradeLen; omega,
+    fun a ha => by grind, fun r h1 h2 h3 h4 h5 => by
+      grind,
+    fun r h1 h2 h3 => by grind, by grind, by grind⟩
 
 set_option maxHeartbeats 16000000 in
 /-- **The descriptor of a chain of grade `g ≥ 1`** from its children. -/
@@ -148,7 +144,7 @@ theorem descU_execG (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
   have hAl : ALLOC = 9999 := rfl
   have hgg : g - 1 + 1 = g := by omega
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hnot : ¬ c.nreg 170007 < c.nreg 170020 := by rw [h07, h20]; omega
+  have hnot : ¬ c.nreg 170007 < c.nreg 170020 := by omega
   -- the left child
   obtain ⟨c1, k1, e1, hk1, hw1, l34, l35, fr1, hm1, hrr1, hrm1, ho1⟩ : ∃ c1 k1, Exec P W
       (block [.addN 170034 170014 170035, .loadN 160035 170034]) c c1 k1 ∧ k1 = 2 ∧
@@ -157,56 +153,55 @@ theorem descU_execG (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
       c1.rreg = c.rreg ∧ c1.rmem = c.rmem ∧ c1.output = c.output := by
     exec_block
     all_goals try (config_simp; (try simp only [h14, h35]); omega)
-    refine ⟨rfl, ‹_›, by config_simp; simp only [h14, h35], by config_simp; simp only [h14, h35],
+    refine ⟨rfl, ‹_›, by ram_simp, by ram_simp,
       fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
-  have g1 : ∀ r, r ≠ 170034 → r ≠ 160035 → c1.nreg r = c.nreg r := fr1
+    ram_simp 
+  
   set BL := c.nmem (R + 6 * i) with hBL
   have hs0 : gradeStart g i = gradeStart (g - 1) (2 * i) := by
-    rw [← gradeStart_succ, hgg]
+    core_grind
   by_cases hr : 2 * i + 1 < cnt
   · -- two children
     have htest : c1.nreg 170036 < c1.nreg 170012 := by
-      rw [g1 _ (by decide) (by decide), g1 _ (by decide) (by decide), h36, h12]; exact hr
+      grind
     obtain ⟨c2, k2, e2, hk2, hw2, l34', l36, fr2, hm2, hrr2, hrm2, ho2⟩ : ∃ c2 k2, Exec P W
         (block [.addN 170034 170034 170022, .loadN 160036 170034]) c1 c2 k2 ∧ k2 = 2 ∧
         WordsBounded W c2 ∧ c2.nreg 170034 = R + 6 * i + 3 ∧
         c2.nreg 160036 = c.nmem (R + 6 * i + 3) ∧
         (∀ r, r ≠ 170034 → r ≠ 160036 → c2.nreg r = c1.nreg r) ∧ c2.nmem = c1.nmem ∧
         c2.rreg = c1.rreg ∧ c2.rmem = c1.rmem ∧ c2.output = c1.output := by
-      have c22 : c1.nreg 170022 = 3 := by rw [g1 _ (by decide) (by decide)]; exact h22
+      have c22 : c1.nreg 170022 = 3 := by grind
       exec_block
       all_goals try (config_simp; (try simp only [l34, c22]); omega)
-      refine ⟨rfl, ‹_›, by config_simp; simp only [l34, c22],
-        by config_simp; simp only [l34, c22, hm1], fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
+      refine ⟨rfl, ‹_›, by ram_simp,
+        by ram_simp, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
       simp only
       repeat (rw [Machine.upd_other _ _ _ (by omega)])
     set BR := c.nmem (R + 6 * i + 3) with hBR
     obtain ⟨hl2, hsum, hsR⟩ := gradeLen_succ_two (n := P.n) (g := g - 1) (i := i) hn
-      (by rw [← hcnt]; exact hr)
+      (by omega)
     rw [hgg] at hsum
     obtain ⟨CL, hCLP, hCLs, hCLm⟩ : ∃ C : Chain, C.P = Qof P ∧
         C.s = gradeStart (g - 1) (2 * i) ∧ C.m = gradeLen P.n (g - 1) (2 * i) := by
       have hfit := gradeLen_fit (n := P.n) (g := g - 1) (i := 2 * i) hn (by omega)
-      exact ⟨⟨Qof P, _, _, gradeLen_pos hn (by omega), by rw [hQn]; omega⟩, rfl, rfl, rfl⟩
+      exact ⟨⟨Qof P, _, _, gradeLen_pos hn (by omega), by omega⟩, rfl, rfl, rfl⟩
     obtain ⟨CR, hCRP, hCRs, hCRm⟩ : ∃ C : Chain, C.P = Qof P ∧
         C.s = gradeStart (g - 1) (2 * i + 1) ∧ C.m = gradeLen P.n (g - 1) (2 * i + 1) := by
       have hfit := gradeLen_fit (n := P.n) (g := g - 1) (i := 2 * i + 1) hn (by omega)
-      exact ⟨⟨Qof P, _, _, gradeLen_pos hn (by omega), by rw [hQn]; omega⟩, rfl, rfl, rfl⟩
+      exact ⟨⟨Qof P, _, _, gradeLen_pos hn (by omega), by omega⟩, rfl, rfl, rfl⟩
     have hfitR := gradeLen_fit (n := P.n) (g := g - 1) (i := 2 * i + 1) hn (by omega)
     have g2 : ∀ r, r ≠ 170034 → r ≠ 160035 → r ≠ 160036 → c2.nreg r = c.nreg r :=
-      fun r a1 a2 a3 => by rw [fr2 r a1 a3, g1 r a1 a2]
+      fun r a1 a2 a3 => by grind
     obtain ⟨c3, k3, e3, hk3, hw3, u3A, u37, u3h, udesc, hm3, fr3, frr3, hrm3, ho3⟩ :=
       unionS_exec (P := P) hG hWn hw2 (pl := BL) (pr := BR) (TD := TD) (hp := hp)
         (C₁ := CL) (C₂ := CR)
-        (by rw [g2 _ (by rw [hAl]; decide) (by rw [hAl]; decide) (by rw [hAl]; decide)]; exact hA)
-        (by rw [fr2 _ (by decide) (by decide)]; exact l35) l36
-        (by rw [g2 _ (by decide) (by decide) (by decide)]; exact h23)
-        (by rw [hm2, hm1]; exact hL CL hCLP hCLs hCLm)
-        (by rw [hm2, hm1]; exact hR hr CR hCRP hCRs hCRm)
-        (by rw [hm2, hm1]; exact hLh) (by rw [hm2, hm1]; exact hRh hr) hhp hCLP hCRP
-        (by rw [hCRs, hCLs, hCLm, hsR]) (by rw [hCLs, hCLm, hCRm, ← hsR]; omega) hL5 (hR5 hr) hW
+        (by grind)
+        (by grind) l36
+        (by grind)
+        (by grind)
+        (by grind)
+        (by grind) (by grind) hhp hCLP hCRP
+        (by omega) (by omega) hL5 (hR5 hr) hW
     obtain ⟨c4, k4, e4, hk4, hw4, o30, fr4, hm4, hrr4, hrm4, ho4⟩ : ∃ c4 k4, Exec P W
         (block [.copyN 170030 160037]) c3 c4 k4 ∧ k4 = 1 ∧ WordsBounded W c4 ∧
         c4.nreg 170030 = c3.nreg 160037 ∧ (∀ r, r ≠ 170030 → c4.nreg r = c3.nreg r) ∧
@@ -215,21 +210,20 @@ theorem descU_execG (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
       refine ⟨rfl, ‹_›, by config_simp, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
       simp only
       repeat (rw [Machine.upd_other _ _ _ (by omega)])
-    have hA4 : c4.nreg ALLOC = TD + 5 := by rw [fr4 _ (by rw [hAl]; decide)]; exact u3A
+    have hA4 : c4.nreg ALLOC = TD + 5 := by grind
     refine ⟨c4, k1 + (k2 + (k3 + k4) + 1) + 2,
       .ifLtN_false hnot (.seq e1 (.ifLtN_true htest (.seq e2 (.seq e3 e4)))), by omega, hw4,
-      by omega, by omega, by rw [o30, u37, hA4], by rw [o30, u37, hm4]; exact u3h,
+      by omega, by omega, by omega, by grind,
       fun C hCP hCs hCm => by
-        rw [o30, u37, hm4]
-        exact udesc C hCP (by rw [hCs, hs0, hCLs]) (by rw [hCm, hsum, hCLm, hCRm]),
-      fun a ha => by rw [hm4, hm3 a (Or.inl ha), hm2, hm1],
+        grind,
+      fun a ha => by grind,
       fun r h1 h2 h3 h4 h5 h6 h7 h8 h9 => by
-        rw [fr4 r h7, fr3 r h1 h2 h5 h6 h9]; exact g2 r h8 h3 h4,
-      fun r h1 h2 => by rw [hrr4, frr3 r h1 h2, hrr2, hrr1], by rw [hrm4, hrm3, hrm2, hrm1],
-      by rw [ho4, ho3, ho2, ho1]⟩
+        grind,
+      fun r h1 h2 => by grind, by grind,
+      by grind⟩
   · -- one child
     have htest : ¬ c1.nreg 170036 < c1.nreg 170012 := by
-      rw [g1 _ (by decide) (by decide), g1 _ (by decide) (by decide), h36, h12]; exact hr
+      grind
     obtain ⟨c2, k2, e2, hk2, hw2, o30, fr2, hm2, hrr2, hrm2, ho2⟩ : ∃ c2 k2, Exec P W
         (block [.copyN 170030 160035]) c1 c2 k2 ∧ k2 = 1 ∧ WordsBounded W c2 ∧
         c2.nreg 170030 = c1.nreg 160035 ∧ (∀ r, r ≠ 170030 → c2.nreg r = c1.nreg r) ∧
@@ -238,21 +232,19 @@ theorem descU_execG (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
       refine ⟨rfl, ‹_›, by config_simp, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
       simp only
       repeat (rw [Machine.upd_other _ _ _ (by omega)])
-    have hlen1 := gradeLen_succ_one (n := P.n) (g := g - 1) (i := i) hn (by rw [hgg]; exact hi)
-      (by rw [← hcnt]; omega)
+    have hlen1 := gradeLen_succ_one (n := P.n) (g := g - 1) (i := i) hn (by grind)
+      (by omega)
     rw [hgg] at hlen1
     have hA2 : c2.nreg ALLOC = TD := by
-      rw [fr2 _ (by rw [hAl]; decide), g1 _ (by rw [hAl]; decide) (by rw [hAl]; decide)]
-      exact hA
+      grind
     refine ⟨c2, k1 + (k2 + 2) + 2, .ifLtN_false hnot (.seq e1 (.ifLtN_false htest e2)),
-      by omega, hw2, by omega, by omega, by rw [o30, l35, hA2]; exact hL5,
-      by rw [o30, l35, hm2, hm1]; exact hLh,
+      by omega, hw2, by omega, by omega, by omega,
+      by grind,
       fun C hCP hCs hCm => by
-        rw [o30, l35, hm2, hm1]
-        exact hL C hCP (by rw [hCs, hs0]) (by rw [hCm, hlen1]),
-      fun a ha => by rw [hm2, hm1], fun r h1 h2 h3 h4 h5 h6 h7 h8 h9 => by
-        rw [fr2 r h7]; exact g1 r h8 h3,
-      fun r h1 h2 => by rw [hrr2, hrr1], by rw [hrm2, hrm1], by rw [ho2, ho1]⟩
+        grind,
+      fun a ha => by grind, fun r h1 h2 h3 h4 h5 h6 h7 h8 h9 => by
+        grind,
+      fun r h1 h2 => by grind, by grind, by grind⟩
 
 end proofs
 

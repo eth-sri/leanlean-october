@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvTasks
 public import Chazelle.Core.SweepEvKey
 
@@ -34,9 +36,7 @@ theorem Lst_lt_n (J : Merge.Junction) : Lst J < (chainModel J.whole).W.n := by
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   have h1 := J.one_le_m₁
   have hL : Lst J = rlen J := rL1_add_rL2 J
-  rw [hn, hL, hm]
-  unfold rlen
-  split_ifs <;> omega
+  grind [rlen]
 
 /-- The offset of the start key is `Lst`. -/
 theorem oW_start (J : Merge.Junction) (hP : J.P.Simple) {S₂ : Set (Set Point)}
@@ -45,8 +45,7 @@ theorem oW_start (J : Merge.Junction) (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hC := corr_right0 J hP hS₂ hS₂f
   have h := off_key (n := (chainModel J.whole).W.n) (g := gW J) (d := Lst J) hC.hg (Lst_lt_n J)
     (t := 0) le_rfl one_pos
-  rw [oW_def]
-  simpa only [add_zero] using h
+  simp_all [oW_def, add_zero] <;> omega_nf
 
 /-- **Task D2: the invariant at the start.** -/
 theorem startTask : StartTask := by
@@ -65,7 +64,7 @@ theorem startTask : StartTask := by
   right
   intro G hG hf
   obtain ⟨R, hR, hWR, q, u, hq, hu, hncq, hfq, h1, h2, hgap⟩ :=
-    before_region_exists' hP hS₂a hS₂f hpK le_rfl one_pos (by rw [hoK]; exact hL0) hL0
+    before_region_exists' hP hS₂a hS₂f hpK le_rfl one_pos (by grind) hL0
   rw [hoK] at h1 h2 hgap
   -- the position before the start is not enclosed
   have hEq : ¬ EvEncl J S₂ (oW J (q + u)) := by

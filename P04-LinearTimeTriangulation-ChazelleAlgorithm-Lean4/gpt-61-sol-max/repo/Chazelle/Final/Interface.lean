@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Mountain.Decompose
 
 /-!
@@ -73,8 +75,10 @@ def IsTrapTable (P : Polygon) (T : TrapTable) : Prop :=
 
 /-! ### The record depends only on the region -/
 
+section
+variable {P : Polygon}
 /-- Two trapezoid data with the same region have the same heights. -/
-theorem heights_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
+theorem heights_eq_of_region_eq (hP : P.Simple) (D D' : TrapData P)
     (h : D.region = D'.region) : D.y₁ = D'.y₁ ∧ D.y₂ = D'.y₂ := by
   have hd := TrapData.diag_eq_of_region_eq hP D D' h
   have htop : D.top = D'.top := congrArg Prod.fst hd
@@ -84,34 +88,39 @@ theorem heights_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P
 
 /-- A point on the line of a side edge, strictly inside the height range, is not a vertex
 unless it is off the closed corridor; used to separate two side edges. -/
-theorem not_vtx_on_side {P : Polygon} (D : TrapData P) {y : ℝ}
+theorem not_vtx_on_side (D : TrapData P) {y : ℝ}
     (h1 : D.y₁ < y) (h2 : y < D.y₂) {x : ℝ} (hx1 : edgeX P D.i y ≤ x) (hx2 : x ≤ edgeX P D.j y)
     {m : ℕ} (hm : m < P.n) (hmp : P.vtx m = (x, y)) : False := by
-  have e1 : (P.vtx m).1 = x := by rw [hmp]
-  have e2 : (P.vtx m).2 = y := by rw [hmp]
-  exact D.isTrap.no_vertex m hm (by rw [e2]; exact h1) (by rw [e2]; exact h2)
-    (by rw [e1, e2]; exact hx1) (by rw [e1, e2]; exact hx2)
+  
+  
+  exact D.isTrap.no_vertex m hm (by simp_all) (by simp_all)
+    (by simp_all) (by simp_all)
 
 /-- A point of two distinct edges of a simple polygon is a vertex. -/
-theorem exists_vtx_of_mem_two_edges {P : Polygon} (hP : P.Simple) {a b : ℕ} (ha : a < P.n)
+theorem exists_vtx_of_mem_two_edges (hP : P.Simple) {a b : ℕ} (ha : a < P.n)
     (hb : b < P.n) (hab : a ≠ b) {p : Point} (hpa : p ∈ P.edge a) (hpb : p ∈ P.edge b) :
     ∃ m < P.n, P.vtx m = p := by
   have hc : p ∈ P.commonEndpoints a b := by
-    rw [← simple_edge_inter hP ha hb hab]; exact ⟨hpa, hpb⟩
+    rw [← simple_edge_inter hP ha hb hab]; simp_all
   rcases hc.1 with e | e
-  · exact ⟨a, ha, e.symm⟩
+  · grind
   · exact ⟨(a + 1) % P.n, Nat.mod_lt _ (by omega), e.symm⟩
 
+
+end
+
+section
+variable {P : Polygon} (hP : P.Simple) (D D' : TrapData P) (h : D.region = D'.region)
+include P hP h
 /-- **The left side edge depends only on the region.** -/
-theorem left_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
-    (h : D.region = D'.region) : D.i = D'.i := by
+theorem left_eq_of_region_eq : D.i = D'.i := by
   obtain ⟨hy1, hy2⟩ := heights_eq_of_region_eq hP D D' h
   have h12 : D.y₁ < D.y₂ := D.isTrap.bot_lt.trans D.isTrap.lt_top
   set y := (D.y₁ + D.y₂) / 2 with hydef
-  have hyl : D.y₁ < y := by rw [hydef]; linarith
-  have hyr : y < D.y₂ := by rw [hydef]; linarith
+  have hyl : D.y₁ < y := by linarith
+  have hyr : y < D.y₂ := by linarith
   have hy : y ∈ Icc D.y₁ D.y₂ := ⟨hyl.le, hyr.le⟩
-  have hy' : y ∈ Icc D'.y₁ D'.y₂ := by rw [← hy1, ← hy2]; exact hy
+  have hy' : y ∈ Icc D'.y₁ D'.y₂ := by simp_all
   have e1 := D.isTrap.left_le_of_subset hP D.free D'.isTrap h.subset y hy
   have e2 := D'.isTrap.left_le_of_subset hP D'.free D.isTrap h.symm.subset y hy'
   have heq : edgeX P D.i y = edgeX P D'.i y := le_antisymm e2 e1
@@ -124,15 +133,14 @@ theorem left_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
   exact not_vtx_on_side D hyl hyr le_rfl hlt.le hm hmp
 
 /-- **The right side edge depends only on the region.** -/
-theorem right_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
-    (h : D.region = D'.region) : D.j = D'.j := by
+theorem right_eq_of_region_eq : D.j = D'.j := by
   obtain ⟨hy1, hy2⟩ := heights_eq_of_region_eq hP D D' h
   have h12 : D.y₁ < D.y₂ := D.isTrap.bot_lt.trans D.isTrap.lt_top
   set y := (D.y₁ + D.y₂) / 2 with hydef
-  have hyl : D.y₁ < y := by rw [hydef]; linarith
-  have hyr : y < D.y₂ := by rw [hydef]; linarith
+  have hyl : D.y₁ < y := by linarith
+  have hyr : y < D.y₂ := by linarith
   have hy : y ∈ Icc D.y₁ D.y₂ := ⟨hyl.le, hyr.le⟩
-  have hy' : y ∈ Icc D'.y₁ D'.y₂ := by rw [← hy1, ← hy2]; exact hy
+  have hy' : y ∈ Icc D'.y₁ D'.y₂ := by simp_all
   have e1 := D.isTrap.right_le_of_subset hP D.free D'.isTrap h.subset y hy
   have e2 := D'.isTrap.right_le_of_subset hP D'.free D.isTrap h.symm.subset y hy'
   have heq : edgeX P D.j y = edgeX P D'.j y := le_antisymm e1 e2
@@ -145,8 +153,7 @@ theorem right_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
   exact not_vtx_on_side D hyl hyr hlt.le le_rfl hm hmp
 
 /-- **The record depends only on the region.** -/
-theorem trapRecOf_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
-    (h : D.region = D'.region) : trapRecOf D = trapRecOf D' := by
+theorem trapRecOf_eq_of_region_eq : trapRecOf D = trapRecOf D' := by
   have hd := TrapData.diag_eq_of_region_eq hP D D' h
   show (⟨D.i, D.j, D.top, D.bot⟩ : TrapRec) = ⟨D'.i, D'.j, D'.top, D'.bot⟩
   rw [left_eq_of_region_eq hP D D' h, right_eq_of_region_eq hP D D' h,
@@ -154,39 +161,45 @@ theorem trapRecOf_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData
 
 /-! ### Properties of a trapezoid table -/
 
+
+end
+
+section
+variable {P : Polygon}
 /-- The records of a trapezoid table are the records of trapezoid data. -/
-theorem IsTrapTable.exists_of_mem {P : Polygon} {T : TrapTable} (hT : IsTrapTable P T)
+theorem IsTrapTable.exists_of_mem {T : TrapTable} (hT : IsTrapTable P T)
     {r : TrapRec} (hr : r ∈ T) : ∃ D : TrapData P, trapRecOf D = r := by
   obtain ⟨L, rfl, -, -⟩ := hT
-  obtain ⟨D, -, rfl⟩ := List.mem_map.1 hr
-  exact ⟨D, rfl⟩
+  grind
 
 /-- The record of any trapezoid data is in a trapezoid table. -/
-theorem IsTrapTable.mem_of_trapData {P : Polygon} (hP : P.Simple) {T : TrapTable}
+theorem IsTrapTable.mem_of_trapData (hP : P.Simple) {T : TrapTable}
     (hT : IsTrapTable P T) (D : TrapData P) : trapRecOf D ∈ T := by
   obtain ⟨L, rfl, -, hreg⟩ := hT
   obtain ⟨D', hD', hreg'⟩ := (hreg D.region).1 (D.region_mem_regions hP)
   rw [← trapRecOf_eq_of_region_eq hP D' D hreg']
-  exact List.mem_map_of_mem hD'
+  grind
 
 /-- **A trapezoid table has one record per region.** -/
-theorem IsTrapTable.length_eq {P : Polygon} {T : TrapTable}
+theorem IsTrapTable.length_eq {T : TrapTable}
     (hT : IsTrapTable P T) : T.length = (regions P).ncard := by
   classical
   obtain ⟨L, rfl, hnd, hreg⟩ := hT
   have hset : ((L.map TrapData.region).toFinset : Set (Set Point)) = regions P := by
-    ext R
-    rw [Finset.mem_coe, List.mem_toFinset, hreg, List.mem_map]
+    grind [Finset.mem_coe, List.mem_toFinset, List.mem_map]
   rw [List.length_map, ← hset, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd,
     List.length_map]
 
 /-- A trapezoid table has at most `2 n + 1` records. -/
-theorem IsTrapTable.length_le {P : Polygon} (hP : P.Simple) {T : TrapTable}
+theorem IsTrapTable.length_le (hP : P.Simple) {T : TrapTable}
     (hT : IsTrapTable P T) : T.length ≤ 2 * P.n + 1 := by
   rw [hT.length_eq]
   exact regions_ncard_le hP
 
 /-! ### The vertex-chord table -/
+
+
+end
 
 /-- The horizontal direction coded by a boolean: `true` is right (`1`), `false` is left (`-1`). -/
 noncomputable def dirSign (b : Bool) : ℝ := if b then 1 else -1
@@ -194,8 +207,7 @@ noncomputable def dirSign (b : Bool) : ℝ := if b then 1 else -1
 /-- A coded direction is `1` or `-1`. -/
 theorem dirSign_cases (b : Bool) : dirSign b = 1 ∨ dirSign b = -1 := by
   cases b
-  · right; rfl
-  · left; rfl
+  all_goals aesop
 
 /-- A record of the vertex-chord table: the chord of vertex `src` in direction `dir` ends at
 vertex `dst`. -/
@@ -244,8 +256,7 @@ theorem IsVtxChordTable.length_le {P : Polygon} {C : List ChordRec} (hC : IsVtxC
     rw [Finset.mem_product, Finset.mem_range]
     exact ⟨((hmem c).1 hc).1, Finset.mem_univ _⟩
   have h3 := Finset.card_le_card h2
-  rw [Finset.card_product, Finset.card_range, Finset.card_univ, Fintype.card_bool, h1] at h3
-  omega
+  simp_all +arith
 
 /-! ### The final-stage input: the list of inserted diagonals -/
 
@@ -257,17 +268,7 @@ theorem sortPair_eq_iff {e d : ℕ × ℕ} (he : e.1 ≠ e.2) :
     sortPair e = d ↔ d.1 < d.2 ∧ (e = d ∨ e = d.swap) := by
   obtain ⟨a, b⟩ := e
   obtain ⟨x, y⟩ := d
-  simp only [sortPair, Prod.mk.injEq, Prod.swap_prod_mk] at he ⊢
-  constructor
-  · rintro ⟨rfl, rfl⟩
-    rcases lt_or_gt_of_ne he with h | h
-    · refine ⟨by rw [min_eq_left h.le, max_eq_right h.le]; exact h, Or.inl ?_⟩
-      rw [min_eq_left h.le, max_eq_right h.le]; exact ⟨rfl, rfl⟩
-    · refine ⟨by rw [min_eq_right h.le, max_eq_left h.le]; exact h, Or.inr ?_⟩
-      rw [min_eq_right h.le, max_eq_left h.le]; exact ⟨rfl, rfl⟩
-  · rintro ⟨hxy, ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩⟩
-    · exact ⟨min_eq_left hxy.le, max_eq_right hxy.le⟩
-    · exact ⟨min_eq_right hxy.le, max_eq_left hxy.le⟩
+  simp_all [sortPair, Prod.mk.injEq, Prod.swap_prod_mk] <;> omega_nf
 
 /-- Whether the top and bottom vertices of a record are non-adjacent in a polygon with `n`
 vertices. -/
@@ -302,7 +303,7 @@ theorem mem_trapPairs_iff {P : Polygon} (hP : P.Simple) {T : TrapTable} (hT : Is
   · rintro ⟨D, hD, rfl⟩
     refine ⟨trapRecOf D, List.mem_filter.2 ⟨hT.mem_of_trapData hP D, ?_⟩, rfl⟩
     show decide (D.bot ≠ (D.top + 1) % P.n ∧ D.top ≠ (D.bot + 1) % P.n) = true
-    exact decide_eq_true hD
+    aesop
 
 /-- The chord pairs of a valid table are exactly the vertex-to-vertex chords. -/
 theorem mem_chordPairs_iff {P : Polygon} {C : List ChordRec} (hC : IsVtxChordTable P C)
@@ -315,17 +316,21 @@ theorem mem_chordPairs_iff {P : Polygon} {C : List ChordRec} (hC : IsVtxChordTab
   · rintro ⟨c, hc, rfl⟩
     exact ⟨c, (hC.1 c).2 hc, rfl⟩
 
+section
+variable {P : Polygon} (hP : P.Simple) {T : TrapTable} {C : List ChordRec} (hT : IsTrapTable P T) (hC : IsVtxChordTable P C)
+include hP hT hC
 /-- The concatenated pairs are exactly the inserted diagonals. -/
-theorem mem_pairs_iff {P : Polygon} (hP : P.Simple) {T : TrapTable} {C : List ChordRec}
-    (hT : IsTrapTable P T) (hC : IsVtxChordTable P C) {d : ℕ × ℕ} :
+theorem mem_pairs_iff {d : ℕ × ℕ} :
     d ∈ trapPairs P T ++ chordPairs C ↔ d ∈ allDiagonals P := by
   rw [List.mem_append, mem_trapPairs_iff hP hT, mem_chordPairs_iff hC]
   rfl
 
+section
+variable (d : ℕ × ℕ)
+include d
 /-- **Specification of the final-stage input**: the members of `diagList P T C` are exactly the
 normal forms (as unordered pairs) of the inserted diagonals `allDiagonals P`. -/
-theorem diagList_spec {P : Polygon} (hP : P.Simple) {T : TrapTable} {C : List ChordRec}
-    (hT : IsTrapTable P T) (hC : IsVtxChordTable P C) (d : ℕ × ℕ) :
+theorem diagList_spec :
     d ∈ diagList P T C ↔ ∃ e ∈ allDiagonals P, sortPair e = d := by
   unfold diagList
   rw [List.mem_dedup, List.mem_map]
@@ -337,27 +342,29 @@ theorem diagList_spec {P : Polygon} (hP : P.Simple) {T : TrapTable} {C : List Ch
 
 /-- **Membership in the final-stage input**: `d ∈ diagList P T C` iff `d.1 < d.2` and `d` or
 its swap is an inserted diagonal. -/
-theorem diagList_mem_iff {P : Polygon} (hP : P.Simple) {T : TrapTable} {C : List ChordRec}
-    (hT : IsTrapTable P T) (hC : IsVtxChordTable P C) (d : ℕ × ℕ) :
+theorem diagList_mem_iff :
     d ∈ diagList P T C ↔ d.1 < d.2 ∧ (d ∈ allDiagonals P ∨ d.swap ∈ allDiagonals P) := by
   rw [diagList_spec hP hT hC]
   constructor
   · rintro ⟨e, he, hed⟩
     rw [sortPair_eq_iff (allDiagonals_lt hP he).2.2] at hed
-    obtain ⟨hlt, rfl | rfl⟩ := hed
-    · exact ⟨hlt, Or.inl he⟩
-    · exact ⟨hlt, Or.inr he⟩
+    grind
   · rintro ⟨hlt, h | h⟩
     · exact ⟨d, h, (sortPair_eq_iff (allDiagonals_lt hP h).2.2).2 ⟨hlt, Or.inl rfl⟩⟩
     · exact ⟨d.swap, h, (sortPair_eq_iff (allDiagonals_lt hP h).2.2).2 ⟨hlt, Or.inr rfl⟩⟩
 
+
+end
+
 /-- The members of the final-stage input are pairs of distinct vertex indices, smaller first. -/
-theorem diagList_lt {P : Polygon} (hP : P.Simple) {T : TrapTable} {C : List ChordRec}
-    (hT : IsTrapTable P T) (hC : IsVtxChordTable P C) {d : ℕ × ℕ} (hd : d ∈ diagList P T C) :
+theorem diagList_lt {d : ℕ × ℕ} (hd : d ∈ diagList P T C) :
     d.1 < d.2 ∧ d.2 < P.n := by
   obtain ⟨hlt, h | h⟩ := (diagList_mem_iff hP hT hC d).1 hd
   · exact ⟨hlt, (allDiagonals_lt hP h).2.1⟩
   · exact ⟨hlt, (allDiagonals_lt hP h).1⟩
+
+
+end
 
 /-- **No duplicates** (as unordered pairs: every member is in normal form). -/
 theorem diagList_nodup (P : Polygon) (T : TrapTable) (C : List ChordRec) :
@@ -371,9 +378,7 @@ theorem diagList_length_le {P : Polygon} (hP : P.Simple) {T : TrapTable} {C : Li
   unfold diagList
   have h1 := (List.dedup_sublist ((trapPairs P T ++ chordPairs C).map sortPair)).length_le
   have h2 : (trapPairs P T).length ≤ T.length := by
-    unfold trapPairs
-    rw [List.length_map]
-    exact List.length_filter_le _ _
+    core_grind
   have h3 : (chordPairs C).length = C.length := List.length_map _
   rw [List.length_map, List.length_append] at h1
   have h4 := hT.length_le hP

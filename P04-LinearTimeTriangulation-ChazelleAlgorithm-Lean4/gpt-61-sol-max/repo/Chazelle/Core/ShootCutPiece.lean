@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.WalkEmbedChain
 public import Chazelle.Core.NFBuildWt
 
@@ -32,11 +34,16 @@ namespace ShootCut
 
 /-! ## The point set of a key interval between two walk vertices -/
 
+section
+variable (M : Model) (Q : Polygon) (p : ℕ)
 /-- The parameter of a walk vertex position is `0`. -/
-@[simp] theorem param_hgt0 (M : Model) (Q : Polygon) (p : ℕ) : M.param Q ⟨p, 0⟩ = 0 := rfl
+@[simp] theorem param_hgt0 : M.param Q ⟨p, 0⟩ = 0 := rfl
 
-@[simp] theorem key_hgt0 (M : Model) (Q : Polygon) (p : ℕ) : M.key Q ⟨p, 0⟩ = p := by
+@[simp] theorem key_hgt0 : M.key Q ⟨p, 0⟩ = p := by
   simp [Model.key]
+
+
+end
 
 theorem lerp_mem_segment {a b : Point} {t : ℝ} (h0 : 0 ≤ t) (h1 : t ≤ 1) :
     lerp a b t ∈ Chazelle.segment a b := ⟨t, h0, h1, rfl⟩
@@ -46,16 +53,13 @@ the segments of the walk edges `p₀, …, p₀ + w - 1`. -/
 theorem arcSet_nat {M : Model} {p₀ w : ℕ} (hw : 1 ≤ w) (hn : p₀ + w < M.W.n) (x : Point) :
     x ∈ M.arcSet (p₀ : ℝ) ((p₀ + w : ℕ) : ℝ) ↔
       ∃ d, d < w ∧ x ∈ Chazelle.segment (M.W.vtx (p₀ + d)) (M.W.vtx (p₀ + d + 1)) := by
-  have hab : (p₀ : ℝ) < ((p₀ + w : ℕ) : ℝ) := by exact_mod_cast (by omega : p₀ < p₀ + w)
+  have hab : (p₀ : ℝ) < ((p₀ + w : ℕ) : ℝ) := by simp_all +arith
   have hwb : ∀ p, p + 1 < M.W.n → M.wb p = M.W.vtx (p + 1) := fun p hp => by
     unfold Model.wb; rw [Nat.mod_eq_of_lt hp]
   constructor
   · rintro ⟨p, t, hp, ht0, ht1, hc, rfl⟩
     have hrange : (p₀ : ℝ) ≤ p + t ∧ (p : ℝ) + t ≤ ((p₀ + w : ℕ) : ℝ) := by
-      rcases hc with hc | hc | hc
-      · unfold sideInArc at hc; rw [ite_eq_left hab] at hc; exact ⟨hc.1.le, hc.2.le⟩
-      · exact ⟨hc.ge, by linarith⟩
-      · exact ⟨by linarith, hc.le⟩
+      ram_grind
     push_cast at hrange
     by_cases hlo : p < p₀
     · -- `p = p₀ - 1`, `t = 1`: the vertex `p₀`
@@ -66,9 +70,7 @@ theorem arcSet_nat {M : Model} {p₀ w : ℕ} (hw : 1 ≤ w) (hn : p₀ + w < M.
         have : p₀ ≤ p + 1 := by exact_mod_cast this
         omega
       refine ⟨0, by omega, 0, le_rfl, zero_le_one, ?_⟩
-      unfold Model.wa
-      rw [ht, hwb p (by omega), hpp]
-      simp [lerp]
+      grind [Model.wa, lerp]
     by_cases hhi : p₀ + w ≤ p
     · -- `p = p₀ + w`, `t = 0`: the vertex `p₀ + w`
       have h1 : ((p₀ + w : ℕ) : ℝ) ≤ p := by exact_mod_cast hhi
@@ -79,57 +81,54 @@ theorem arcSet_nat {M : Model} {p₀ w : ℕ} (hw : 1 ≤ w) (hn : p₀ + w < M.
         have : p ≤ p₀ + w := by exact_mod_cast this
         omega
       refine ⟨w - 1, by omega, 1, zero_le_one, le_rfl, ?_⟩
-      unfold Model.wa
-      rw [ht, hpp, show p₀ + (w - 1) + 1 = p₀ + w by omega]
-      simp [lerp]
+      grind [Model.wa, lerp]
     · refine ⟨p - p₀, by omega, t, ht0, ht1, ?_⟩
       unfold Model.wa
       rw [hwb p (by omega), show p₀ + (p - p₀) = p by omega]
       rfl
   · rintro ⟨d, hd, t, ht0, ht1, rfl⟩
     refine ⟨p₀ + d, t, by omega, ht0, ht1, ?_, ?_⟩
-    · have hk0 : (p₀ : ℝ) ≤ ((p₀ + d : ℕ) : ℝ) + t := by push_cast; linarith [(Nat.cast_nonneg d : (0 : ℝ) ≤ d)]
+    · have hk0 : (p₀ : ℝ) ≤ ((p₀ + d : ℕ) : ℝ) + t := by grind
       have hk1 : ((p₀ + d : ℕ) : ℝ) + t ≤ ((p₀ + w : ℕ) : ℝ) := by
         have : ((d : ℕ) : ℝ) + 1 ≤ w := by exact_mod_cast hd
-        push_cast; linarith
-      rcases hk0.lt_or_eq with hk0 | hk0
-      · rcases hk1.lt_or_eq with hk1 | hk1
-        · left; unfold sideInArc; rw [ite_eq_left hab]; exact ⟨hk0, hk1⟩
-        · right; right; exact hk1
-      · right; left; exact hk0.symm
+        grind
+      core_grind
     · unfold Model.wa
       rw [hwb (p₀ + d) (by omega)]
       rfl
 
 /-! ## Stretches along the tour of a chain -/
 
-theorem tourV_up (Cα : Chain) {d : ℕ} (hd : d ≤ Cα.m) : WalkEmbed.tourV Cα 0 d = Cα.vertex d := by
+section
+variable (Cα : Chain) {d : ℕ} (hd : d ≤ Cα.m)
+include hd
+theorem tourV_up : WalkEmbed.tourV Cα 0 d = Cα.vertex d := by
   unfold WalkEmbed.tourV
   have := Cα.one_le
   rw [zero_add, Nat.mod_eq_of_lt (by omega)]
-  unfold sideE; rw [ite_eq_left hd]
+  grind [sideE]
 
-theorem tourV_down (Cα : Chain) {d : ℕ} (hd : d ≤ Cα.m) :
+theorem tourV_down :
     WalkEmbed.tourV Cα Cα.m d = Cα.vertex (Cα.m - d) := by
   unfold WalkEmbed.tourV
   have := Cα.one_le
   rcases hd.lt_or_eq with hd | rfl
   · rw [Nat.mod_eq_of_lt (by omega)]
-    unfold sideE
-    by_cases h : Cα.m + d ≤ Cα.m
-    · have : d = 0 := by omega
-      subst this; simp
-    · rw [ite_eq_right h]; congr 1; omega
-  · rw [show Cα.m + Cα.m = 2 * Cα.m by ring, Nat.mod_self]
-    unfold sideE; simp
+    grind [sideE]
+  grind [Nat.mod_self, sideE]
+
+
+end
 
 theorem segment_mem_set (Cα : Chain) {k : ℕ} (hk : k < Cα.m) {x : Point}
     (hx : x ∈ Chazelle.segment (Cα.vertex k) (Cα.vertex (k + 1))) : x ∈ Cα.set :=
   ⟨k, hk, by rw [Cα.chainEdge_eq]; exact hx⟩
 
+section
+variable {M : Model} {Cα : Chain} {p₀ J : ℕ}
 /-- **The point set of a kind-1 piece**: a stretch of `Cα.m` walk edges whose vertices are those
 of the tour of `Cα` read upward (`J = 0`) or downward (`J = Cα.m`) has the point set `Cα.set`. -/
-theorem arcSet_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hJ : J = 0 ∨ J = Cα.m)
+theorem arcSet_tour (hJ : J = 0 ∨ J = Cα.m)
     (hn : p₀ + Cα.m < M.W.n)
     (hV : ∀ d, d ≤ Cα.m → M.W.vtx (p₀ + d) = WalkEmbed.tourV Cα J d) :
     M.arcSet (p₀ : ℝ) ((p₀ + Cα.m : ℕ) : ℝ) = Cα.set := by
@@ -140,14 +139,10 @@ theorem arcSet_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hJ : J = 0 ∨ J =
   · have hV' : ∀ d, d ≤ Cα.m → M.W.vtx (p₀ + d) = Cα.vertex d := fun d hd => by
       rw [hV d hd, tourV_up Cα hd]
     constructor
-    · rintro ⟨d, hd, hx⟩
-      rw [hV' d hd.le, show p₀ + d + 1 = p₀ + (d + 1) by ring, hV' (d + 1) hd] at hx
-      exact segment_mem_set Cα hd hx
+    · grind [Chazelle.Core.ShootCut.segment_mem_set]
     · rintro ⟨k, hk, hx⟩
       rw [Cα.chainEdge_eq] at hx
-      refine ⟨k, hk, ?_⟩
-      rw [hV' k hk.le, show p₀ + k + 1 = p₀ + (k + 1) by ring, hV' (k + 1) hk]
-      exact hx
+      ram_grind
   · have hV' : ∀ d, d ≤ Cα.m → M.W.vtx (p₀ + d) = Cα.vertex (Cα.m - d) := fun d hd => by
       rw [hV d hd, tourV_down Cα hd]
     constructor
@@ -155,7 +150,7 @@ theorem arcSet_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hJ : J = 0 ∨ J =
       rw [hV' d hd.le, show p₀ + d + 1 = p₀ + (d + 1) by ring, hV' (d + 1) hd,
         Chazelle.Geometry.segment_comm] at hx
       refine segment_mem_set Cα (k := Cα.m - (d + 1)) (by omega) ?_
-      rwa [show Cα.m - (d + 1) + 1 = Cα.m - d by omega]
+      grind
     · rintro ⟨k, hk, hx⟩
       rw [Cα.chainEdge_eq] at hx
       refine ⟨Cα.m - (k + 1), by omega, ?_⟩
@@ -166,10 +161,10 @@ theorem arcSet_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hJ : J = 0 ∨ J =
 
 /-- **The walk of a kind-1 piece** (`PieceWalk`, finding E5): a stretch of `Cα.m` walk edges of
 `M` agreeing with the tour of `Cα` read from any tour position `J`. -/
-theorem pieceWalk_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hp₀ : p₀ < M.W.n)
+theorem pieceWalk_tour (hp₀ : p₀ < M.W.n)
     (hV : ∀ d, d ≤ Cα.m → M.W.vtx ((p₀ + d) % M.W.n) = WalkEmbed.tourV Cα J d) :
     PieceWalk M Cα ⟨p₀, 0⟩ ⟨(p₀ + Cα.m) % M.W.n, 0⟩ := by
-  have h1 := Cα.one_le
+  
   have ht := WalkEmbed.tpos_lt Cα J
   have hn' := WalkEmbed.cm_n Cα
   refine ⟨rfl, rfl, hp₀, rfl, ?_⟩
@@ -183,7 +178,7 @@ theorem pieceWalk_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hp₀ : p₀ < 
       rw [hV d (by omega), WalkEmbed.walk_tour Cα J d (by omega)]
     · intro d hd
       have e1 : ((p₀ + L₁) % M.W.n + d) % M.W.n = (p₀ + (L₁ + d)) % M.W.n := by
-        rw [Nat.mod_add_mod, Nat.add_assoc]
+        simp_all +arith
       have e2 : (6 + d) % (chainModel Cα).W.n =
           (6 + WalkEmbed.tpos Cα J + (2 * Cα.m - WalkEmbed.tpos Cα J) + 7 + d) %
             (chainModel Cα).W.n := by
@@ -193,18 +188,20 @@ theorem pieceWalk_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hp₀ : p₀ < 
 
 /-! ## Weights in a chain model -/
 
+
+end
+
 /-- **The weight of a stretch of counted edges** in a chain model: `w`. -/
 theorem arcWt_chain_nat (C : Chain) {p₀ w : ℕ} (hw : 1 ≤ w) (h6 : 6 ≤ p₀)
     (hn : p₀ + w ≤ 2 * C.m + 6) :
     (chainModel C).arcWt (p₀ : ℝ) ((p₀ + w : ℕ) : ℝ) = w := by
   have h := (chainModel C).arcWt_closed (lo := 6) (hi := 2 * C.m + 6)
-    (fun p hp => chainModel_counted_iff C p hp) (by rw [chainModel_n]; omega)
+    (fun p hp => chainModel_counted_iff C p hp) (by grind [chainModel_n])
     (ea := p₀) (eb := p₀ + w) (fa := 0) (fb := 0) ⟨le_rfl, zero_lt_one⟩ ⟨le_rfl, zero_lt_one⟩
   simp only [add_zero] at h
   rw [h]
   unfold arcWtNat keyCeil
-  rw [ite_eq_left (by exact_mod_cast (by omega : p₀ < p₀ + w)), ite_eq_left rfl]
-  omega
+  simp_all +arith
 
 end ShootCut
 

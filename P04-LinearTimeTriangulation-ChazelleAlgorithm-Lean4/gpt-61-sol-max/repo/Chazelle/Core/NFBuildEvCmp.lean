@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildCmpRam
 
 /-!
@@ -31,22 +33,26 @@ noncomputable def evLeB (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ))
   if a < N then (if b < N then decide (codeLe M Q L a b) else true)
   else (if b < N then false else decide (a ≤ b))
 
-theorem evLeB_total (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (N a b : ℕ) :
+section
+variable (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ))
+theorem evLeB_total (N a b : ℕ) :
     (evLeB M Q L N a b || evLeB M Q L N b a) = true := by
   unfold evLeB
   split_ifs <;> simp_all
   · rcases BuildNF.codeLe_total M Q L a b with h | h <;> simp [h]
   · omega
 
-theorem evLeB_trans (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (N a b c : ℕ)
+theorem evLeB_trans (N a b c : ℕ)
     (h1 : evLeB M Q L N a b = true) (h2 : evLeB M Q L N b c = true) :
     evLeB M Q L N a c = true := by
   unfold evLeB at *
   split_ifs at h1 h2 ⊢ <;> simp_all
-  · exact BuildNF.codeLe_trans M Q L h1 h2
-  · omega
+  all_goals (grind [Chazelle.Core.BuildNF.codeLe])
 
 /-! ## The records -/
+
+
+end
 
 /-- **The event records** at `T`: the walk position, the parity and the chord of each code. -/
 def RecsAt (m : ℕ → ℕ) (T : ℕ) (L : List (ℕ × ℕ × ℕ)) : Prop :=
@@ -95,20 +101,24 @@ theorem wposOf_hgt (L : List (ℕ × ℕ × ℕ)) (c : ℕ) :
     (wposOf L c).hgt = (L.getD (c / 2) (0, 0, 0)).1 + 1 := by
   unfold wposOf; split_ifs <;> rfl
 
+section
+variable (hL : ChordTriplesOK M (Qof P) L) {c : ℕ} (hc : c < 2 * L.length)
+include hL hc
 /-- The walk positions of the events are positions of the walk proper. -/
-theorem properPos_ev (hL : ChordTriplesOK M (Qof P) L) {c : ℕ} (hc : c < 2 * L.length) :
+theorem properPos_ev :
     ProperPos M (Qof P) P.n (wposOf L c) := by
   have hA := BuildNF.attach_wposOf hL hc
   have hi : c / 2 < L.length := by omega
   have hh := hL.2.2.2 _ (BuildOrder.getD_mem hi)
   have hn : (Qof P).n = P.n := shear_n _ _
   refine ⟨hA.2.1, hA.2.2.1, ?_⟩
-  rw [wposOf_hgt]
-  have : (L.getD (c / 2) (0, 0, 0)).1 < (Qof P).n := hh
-  omega
+  simp_all [wposOf_hgt]
 
-theorem edge_lt (hL : ChordTriplesOK M (Qof P) L) {c : ℕ} (hc : c < 2 * L.length) :
+theorem edge_lt :
     (wposOf L c).edge < M.W.n := (BuildNF.attach_wposOf hL hc).1
+
+
+end
 
 /-- The machine decision against an event position is the order of keys. -/
 theorem keyDec_ev (hL : ChordTriplesOK M (Qof P) L) {a b : ℕ} (ha : a < 2 * L.length)
@@ -116,22 +126,15 @@ theorem keyDec_ev (hL : ChordTriplesOK M (Qof P) L) {a b : ℕ} (ha : a < 2 * L.
     keyDec (Qof P) P.n (wposOf L b) (dirCode M (wposOf L b).edge) (wposOf L a) = true ↔
       M.key (Qof P) (wposOf L a) ≤ M.key (Qof P) (wposOf L b) := by
   rw [keyDec_iff (properPos_ev hL hb) (properPos_ev hL ha)]
-  unfold KeyPred
-  rw [ite_eq_right (by rw [wposOf_hgt]; omega)]
+  core_grind [wposOf_hgt]
 
 /-- The tie bit from the direction code. -/
 theorem tieBit_eq (M : Model) (L : List (ℕ × ℕ × ℕ)) (c : ℕ) :
     tieBit M L c = (if dirCode M (wposOf L c).edge = 2 then 1 - c % 2 else c % 2) := by
-  unfold tieBit dirCode
-  by_cases h1 : (M.wa (wposOf L c).edge).2 < (M.wb (wposOf L c).edge).2
-  · rw [ite_eq_right (not_lt.2 h1.le), ite_eq_left h1, ite_eq_right (by norm_num)]
-  · rw [ite_eq_right h1]
-    by_cases h2 : (M.wb (wposOf L c).edge).2 < (M.wa (wposOf L c).edge).2
-    · rw [ite_eq_left h2, ite_eq_left h2, ite_eq_left rfl]
-    · rw [ite_eq_right h2, ite_eq_right h2, ite_eq_right (by norm_num)]
+  grind [tieBit, dirCode]
 
 theorem dirCode_le (M : Model) (e : ℕ) : dirCode M e ≤ 2 := by
-  unfold dirCode; split_ifs <;> omega
+  grind [dirCode]
 
 end math
 
@@ -141,8 +144,11 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
+section
+variable (d : Config) (hw : WordsBounded W d)
+include hw
 /-- Loading a record. -/
-theorem loadRec_exec (d : Config) (hw : WordsBounded W d) {src ad o : ℕ} {c T : ℕ}
+theorem loadRec_exec {src ad o c T : ℕ}
     (hs : d.nreg src = c) (hT : d.nreg 42000 = T) (h1 : d.nreg 42102 = 1)
     (_hsrc : src ≠ ad) (hsT : ad ≠ 42000) (h102 : ad ≠ 42102) (hc : T + 4 * c + 2 ≤ W)
     (ho : o ≠ ad ∧ o + 1 ≠ ad ∧ o + 2 ≠ ad) (ho2 : 42102 < o ∨ o + 2 < 42102) :
@@ -155,65 +161,48 @@ theorem loadRec_exec (d : Config) (hw : WordsBounded W d) {src ad o : ℕ} {c T 
   obtain ⟨o1, o2, o3⟩ := ho
   unfold loadRec
   exec_block
-  · rw [hs]; omega
-  · config_simp; rw [hs]; omega
-  · config_simp
-    simp (disch := omega) only [upd_other]
-    rw [hs, hT]; omega
-  · config_simp
-    simp (disch := omega) only [upd_other, upd_same]
-    rw [hs, hT, h1]; omega
-  · config_simp
-    simp (disch := omega) only [upd_other, upd_same]
-    rw [hs, hT, h1]; omega
-  · refine ⟨rfl, ?_, ?_, ?_, fun r r1 r2 r3 r4 => ?_, rfl, rfl, rfl, rfl, ?_⟩
-    · simp (disch := omega) only [upd_other, upd_same]
-      rw [hs, hT]; congr 1; omega
-    · simp (disch := omega) only [upd_other, upd_same]
-      rw [hs, hT, h1]; congr 1; omega
-    · simp (disch := omega) only [upd_other, upd_same]
-      rw [hs, hT, h1]; congr 1; omega
-    · simp (disch := omega) only [upd_other]
-    · simp (disch := omega) only [upd_other, upd_same]
-      rw [hs, hT, h1]; omega
+  all_goals (grind [upd_other, upd_same])
 
 /-- The tie bit on the machine. -/
-theorem tbS_exec (d : Config) (hw : WordsBounded W d) {dd par dst : ℕ} (h1 : d.nreg 42102 = 1)
+theorem tbS_exec {dd par dst : ℕ} (h1 : d.nreg 42102 = 1)
     (h2 : d.nreg 42104 = 2) (hd : d.nreg dd ≤ 2) :
     ∃ d' k, Exec P W (tbS dd par dst) d d' k ∧ k ≤ 5 ∧
       d'.nreg dst = (if d.nreg dd = 2 then 1 - d.nreg par else d.nreg par) := by
   unfold tbS
   by_cases a1 : d.nreg dd < 2
-  · refine spec_ifLtN_true (by rw [h2]; exact a1)
+  · refine spec_ifLtN_true (by omega)
       (spec_instr (Exec.copyN hw _ _) fun _ => ⟨by omega, ?_⟩)
-    simp only [upd_same]; rw [ite_eq_right (by omega)]
+    ram_simp
   · have : d.nreg dd = 2 := by omega
-    refine spec_ifLtN_false (by rw [h2]; exact a1)
-      (spec_ifLtN_false (by rw [h2, this]; omega)
+    refine spec_ifLtN_false (by omega)
+      (spec_ifLtN_false (by omega)
         (spec_instr (Exec.subN hw _ _ _) fun _ => ⟨by omega, ?_⟩))
-    simp only [upd_same]; rw [ite_eq_left this, h1]
+    simp_all
 
 
 /-- The final decision of `inCmp`. -/
-theorem final_exec (d : Config) (hw : WordsBounded W d) (h1 : d.nreg 42102 = 1) :
+theorem final_exec (h1 : d.nreg 42102 = 1) :
     ∃ d' k, Exec P W (.ifLtN 42117 42102 (.instr (.constN 30002 0))
       (.ifLtN 42119 42102 (.instr (.constN 30002 1))
         (.ifLtN 42121 42120 (.instr (.constN 30002 0)) (.instr (.constN 30002 1))))) d d' k ∧
       k ≤ 7 ∧ d'.nreg 30002 = (if d.nreg 42117 < 1 then 0 else if d.nreg 42119 < 1 then 1 else
         if d.nreg 42121 < d.nreg 42120 then 0 else 1) := by
   by_cases a1 : d.nreg 42117 < 1
-  · exact spec_ifLtN_true (by rw [h1]; exact a1) (spec_instr (Exec.constN hw _ _ (by
-      have := hw.1 42102; omega)) fun _ => ⟨by omega, by rw [ite_eq_left a1]; simp⟩)
-  refine spec_ifLtN_false (by rw [h1]; exact a1) ?_
+  · exact spec_ifLtN_true (by omega) (spec_instr (Exec.constN hw _ _ (by
+      omega)) fun _ => ⟨by omega, by simp_all⟩)
+  refine spec_ifLtN_false (by omega) ?_
   by_cases a2 : d.nreg 42119 < 1
-  · exact spec_ifLtN_true (by rw [h1]; exact a2) (spec_instr (Exec.constN hw _ _ (by
-      have := hw.1 42102; omega)) fun _ => ⟨by omega, by rw [ite_eq_right a1, ite_eq_left a2]; simp⟩)
-  refine spec_ifLtN_false (by rw [h1]; exact a2) ?_
+  · exact spec_ifLtN_true (by omega) (spec_instr (Exec.constN hw _ _ (by
+      have := hw.1 42102; omega)) fun _ => ⟨by omega, by simp_all⟩)
+  refine spec_ifLtN_false (by omega) ?_
   by_cases a3 : d.nreg 42121 < d.nreg 42120
   · exact spec_ifLtN_true a3 (spec_instr (Exec.constN hw _ _ (by
-      have := hw.1 42102; omega)) fun _ => ⟨by omega, by rw [ite_eq_right a1, ite_eq_right a2, ite_eq_left a3]; simp⟩)
+      omega)) fun _ => ⟨by omega, by simp_all⟩)
   · exact spec_ifLtN_false a3 (spec_instr (Exec.constN hw _ _ (by
-      have := hw.1 42102; omega)) fun _ => ⟨by omega, by rw [ite_eq_right a1, ite_eq_right a2, ite_eq_right a3]; simp⟩)
+      have := hw.1 42102; omega)) fun _ => ⟨by omega, by simp_all⟩)
+
+
+end
 
 /-- The registers `inCmp` writes. -/
 def BinCmp (r : ℕ) : Bool :=
@@ -224,8 +213,7 @@ theorem wr_inCmp : wr BinCmp inCmp = true := by
   have h1 : ∀ qe qh se sh dd dst : ℕ, 42100 ≤ dd → dd < 42200 → 42100 ≤ dst → dst < 42200 →
       wr BinCmp (halfS qe qh se sh dd dst) = true := fun _ _ _ _ _ _ h1 h2 h3 h4 =>
     wr_mono (fun r hr => by
-      simp only [BhalfS, Bhalf, Bool.or_eq_true, decide_eq_true_eq] at hr
-      simp only [BinCmp, Bool.or_eq_true, decide_eq_true_eq]; omega) wr_halfS
+      simp_all [BhalfS, Bhalf, Bool.or_eq_true, decide_eq_true_eq, BinCmp] <;> omega_nf) wr_halfS
   have e1 := h1 42113 42114 42110 42111 42116 42117 (by norm_num) (by norm_num) (by norm_num)
     (by norm_num)
   have e2 := h1 42110 42111 42113 42114 42118 42119 (by norm_num) (by norm_num) (by norm_num)
@@ -240,26 +228,14 @@ theorem wr_tbS2 : wr (fun r => decide (r = 42121)) (tbS 42116 42115 42121) = tru
 
 open Classical in
 /-- The comparison bit from the four machine bits. -/
-theorem codeLe_bits {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {a b : ℕ} {x y ta tb : ℕ}
+theorem codeLe_bits {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {a b x y ta tb : ℕ}
     (hx : x = if M.key Q (wposOf L a) ≤ M.key Q (wposOf L b) then 1 else 0)
     (hy : y = if M.key Q (wposOf L b) ≤ M.key Q (wposOf L a) then 1 else 0)
     (hta : ta = tieBit M L a) (htb : tb = tieBit M L b) :
     (if x < 1 then 0 else if y < 1 then 1 else if tb < ta then 0 else 1) =
       (if codeLe M Q L a b then 1 else 0) := by
   unfold codeLe
-  subst hx hy hta htb
-  by_cases h1 : M.key Q (wposOf L a) ≤ M.key Q (wposOf L b)
-  · by_cases h2 : M.key Q (wposOf L b) ≤ M.key Q (wposOf L a)
-    · have he := le_antisymm h1 h2
-      simp only [he, lt_irrefl, false_or, true_and]
-      by_cases h3 : tieBit M L b < tieBit M L a
-      · simp [h3, not_le.2 h3]
-      · simp [h3, not_lt.1 h3]
-    · have hl := lt_of_le_not_ge h1 h2
-      simp [h1, h2, hl]
-  · have n1 : ¬ M.key Q (wposOf L a) < M.key Q (wposOf L b) := fun h => h1 h.le
-    have n2 : ¬ M.key Q (wposOf L a) = M.key Q (wposOf L b) := fun h => h1 h.le
-    simp [h1, n1, n2]
+  grind
 
 open Classical in
 /-- **Both codes in range**: the comparison bit of `codeLe`. -/
@@ -283,58 +259,53 @@ theorem inCmp_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (d : Config) (hw : Word
     exact ⟨_, _, .seq y1 (.seq y2 (.skip y2.wb_right)), rfl, rfl⟩
   have w₀ := x₀.wb_right
   have g₀ : ∀ r, r ≠ 42102 → r ≠ 42104 → d₀.nreg r = d.nreg r := fun r h1 h2 => by
-    rw [r₀]; simp [upd_other _ _ _ h1, upd_other _ _ _ h2]
-  have o₀ : d₀.nreg 42102 = 1 := by rw [r₀]; simp
-  have t₀ : d₀.nreg 42104 = 2 := by rw [r₀]; simp
+    simp_all
+  have o₀ : d₀.nreg 42102 = 1 := by simp_all
+  have t₀ : d₀.nreg 42104 = 2 := by simp_all
   have m₀ : d₀.nmem = d.nmem := by rw [r₀]
   -- record of `a`
   obtain ⟨ha1, ha2, ha3, -⟩ := hR a ha
   obtain ⟨hb1, hb2, hb3, -⟩ := hR b hb
   obtain ⟨d₁, k₁, x₁, hk₁, e₁, h₁, p₁, g₁, m₁, -, -, -⟩ := loadRec_exec (P := P) d₀ w₀
     (src := 30000) (ad := 42101) (o := 42110) (c := a) (T := T)
-    (by rw [g₀ _ (by norm_num) (by norm_num)]) (by rw [g₀ _ (by norm_num) (by norm_num), hT])
+    (by simp_all) (by simp_all)
     o₀ (by norm_num) (by norm_num) (by norm_num) (by omega) (by norm_num) (by norm_num)
   have w₁ := x₁.wb_right
   obtain ⟨d₂, k₂, x₂, hk₂, e₂, h₂, p₂, g₂, m₂, -, -, -⟩ := loadRec_exec (P := P) d₁ w₁
     (src := 30001) (ad := 42103) (o := 42113) (c := b) (T := T)
-    (by rw [g₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      g₀ _ (by norm_num) (by norm_num)])
-    (by rw [g₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      g₀ _ (by norm_num) (by norm_num), hT])
-    (by rw [g₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num), o₀])
+    (by grind)
+    (by grind)
+    (by grind)
     (by norm_num) (by norm_num) (by norm_num) (by omega) (by norm_num) (by norm_num)
   have w₂ := x₂.wb_right
-  have mm₂ : d₂.nmem = d.nmem := by rw [m₂, m₁, m₀]
+  have mm₂ : d₂.nmem = d.nmem := by grind
   -- register values after the loads
   have g₂₁ : ∀ r, r ≠ 42101 → r ≠ 42103 → r ≠ 42102 → r ≠ 42104 → (r < 42110 ∨ 42115 < r) →
       d₂.nreg r = d.nreg r := fun r i1 i2 i3 i4 i5 => by
-    rw [g₂ r i2 (by omega) (by omega) (by omega), g₁ r i1 (by omega) (by omega) (by omega),
-      g₀ r i3 i4]
+    grind
   have v10 : d₂.nreg 42110 = (wposOf L a).edge := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num), e₁, m₀, ha1]
+    grind
   have v11 : d₂.nreg 42111 = (wposOf L a).hgt := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num), h₁, m₀, ha2]
+    grind
   have v12 : d₂.nreg 42112 = a % 2 := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num), p₁, m₀, ha3]
-  have v13 : d₂.nreg 42113 = (wposOf L b).edge := by rw [e₂, m₁, m₀, hb1]
-  have v14 : d₂.nreg 42114 = (wposOf L b).hgt := by rw [h₂, m₁, m₀, hb2]
-  have v15 : d₂.nreg 42115 = b % 2 := by rw [p₂, m₁, m₀, hb3]
+    grind
+  have v13 : d₂.nreg 42113 = (wposOf L b).edge := by grind
+  have v14 : d₂.nreg 42114 = (wposOf L b).hgt := by grind
+  have v15 : d₂.nreg 42115 = b % 2 := by grind
   have o₂ : d₂.nreg 42102 = 1 := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      g₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num), o₀]
+    grind
   have t₂ : d₂.nreg 42104 = 2 := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      g₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num), t₀]
+    grind
   have D₂ : d₂.nreg 40000 = D := by
-    rw [g₂₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), hD]
+    grind
   have ppa := properPos_ev hL ha
   have ppb := properPos_ev hL hb
-  have hn : (Qof P).n = P.n := shear_n _ _
+  
   -- first half: key a ≤ key b
   obtain ⟨d₃, k₃, x₃, hk₃, dd₃, dst₃, f₃⟩ := halfS_exec (P := P) hG hW d₂ w₂
     (qe := 42113) (qh := 42114) (se := 42110) (sh := 42111) (dd := 42116) (dst := 42117)
-    (by decide) (by decide) (by decide) (by rw [D₂]; exact hDW) (by rw [D₂, mm₂]; exact hCW)
-    (M := M) (by rw [D₂, mm₂]; exact hM) (by rw [v13]; exact edge_lt hL hb)
+    (by decide) (by decide) (by decide) (by omega) (by grind)
+    (M := M) (by grind) (by rw [v13]; exact edge_lt hL hb)
     (by rw [v14]; exact ppb.2.2)
   have w₃ := x₃.wb_right
   have g₃ : ∀ r, BhalfS 42116 42117 r = false → d₃.nreg r = d₂.nreg r := f₃.1
@@ -343,8 +314,8 @@ theorem inCmp_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (d : Config) (hw : Word
   -- second half: key b ≤ key a
   obtain ⟨d₄, k₄, x₄, hk₄, dd₄, dst₄, f₄⟩ := halfS_exec (P := P) hG hW d₃ w₃
     (qe := 42110) (qh := 42111) (se := 42113) (sh := 42114) (dd := 42118) (dst := 42119)
-    (by decide) (by decide) (by decide) (by rw [D₃]; exact hDW) (by rw [D₃, mm₃]; exact hCW)
-    (M := M) (by rw [D₃, mm₃]; exact hM) (by rw [g₃ _ (by decide), v10]; exact edge_lt hL ha)
+    (by decide) (by decide) (by decide) (by omega) (by grind)
+    (M := M) (by grind) (by rw [g₃ _ (by decide), v10]; exact edge_lt hL ha)
     (by rw [g₃ _ (by decide), v11]; exact ppa.2.2)
   have w₄ := x₄.wb_right
   have g₄ : ∀ r, BhalfS 42118 42119 r = false → d₄.nreg r = d₃.nreg r := f₄.1
@@ -410,32 +381,27 @@ theorem exec_frameR {P : Polygon} {W : ℕ} {BN BR : ℕ → Bool} {s : Stmt} {c
     (h : Exec P W s c c' k) (hs : wr2 BN BR s = true) :
     ∀ r, BR r = false → c'.rreg r = c.rreg r := by
   induction h with
-  | skip _ => exact fun _ _ => rfl
+  | skip _ => simp_all
   | @instr ins c c' _ he _ _ =>
     simp only [wr2] at hs
     cases ins <;> simp only [wrOK2, Bool.false_eq_true] at hs <;>
       simp only [Instr.effect, Option.some.injEq] at he <;>
-      (try split at he) <;> (try simp only [Option.some.injEq, reduceCtorEq] at he) <;> subst he <;>
+      (try split at he) <;> simp_all <;> subst he <;>
       intro j hj <;>
-      first
-      | rfl
-      | (simp only [upd]; split_ifs with hh
-         · subst hh; simp_all
-         · rfl)
+      aesop (add simp [upd]) (add safe (by omega))
   | seq _ _ ih₁ ih₂ =>
-    simp only [wr2, Bool.and_eq_true] at hs
-    exact fun r hr => (ih₂ hs.2 r hr).trans (ih₁ hs.1 r hr)
+    aesop (add simp [wr2, Bool.and_eq_true]) (add safe (by omega))
   | ifLtN_true _ _ ih =>
-    simp only [wr2, Bool.and_eq_true] at hs; exact ih hs.1
+    simp only [wr2, Bool.and_eq_true] at hs; simp_all
   | ifLtN_false _ _ ih =>
-    simp only [wr2, Bool.and_eq_true] at hs; exact ih hs.2
+    simp only [wr2, Bool.and_eq_true] at hs; simp_all
   | ifLtR_true _ _ ih =>
-    simp only [wr2, Bool.and_eq_true] at hs; exact ih hs.1
+    simp only [wr2, Bool.and_eq_true] at hs; simp_all
   | ifLtR_false _ _ ih =>
-    simp only [wr2, Bool.and_eq_true] at hs; exact ih hs.2
-  | whileLtN_false _ _ => exact fun _ _ => rfl
+    simp only [wr2, Bool.and_eq_true] at hs; simp_all
+  | whileLtN_false _ _ => simp_all
   | whileLtN_true _ _ _ ih₁ ih₂ => exact fun r hr => (ih₂ hs r hr).trans (ih₁ hs r hr)
-  | whileLtR_false _ _ => exact fun _ _ => rfl
+  | whileLtR_false _ _ => simp_all
   | whileLtR_true _ _ _ ih₁ ih₂ => exact fun r hr => (ih₂ hs r hr).trans (ih₁ hs r hr)
 
 /-- A single write set gives both. -/
@@ -446,16 +412,16 @@ theorem wr2_of_wr {B BN BR : ℕ → Bool} (hN : ∀ r, B r = true → BN r = tr
   | instr i =>
     simp only [wr] at h
     simp only [wr2]
-    cases i <;> simp only [wrOK] at h <;> simp only [wrOK2] <;>
+    cases i <;> simp_all [wrOK] <;> simp_all [wrOK2] <;>
       first | exact hN _ h | exact hR _ h | exact h
   | seq s t ihs iht =>
-    simp only [wr, Bool.and_eq_true] at h; simp only [wr2, ihs h.1, iht h.2, Bool.and_self]
+    simp_all [wr, Bool.and_eq_true, wr2, Bool.and_self]
   | ifLtN a b s t ihs iht =>
-    simp only [wr, Bool.and_eq_true] at h; simp only [wr2, ihs h.1, iht h.2, Bool.and_self]
+    simp_all [wr, Bool.and_eq_true, wr2, Bool.and_self]
   | ifLtR a b s t ihs iht =>
-    simp only [wr, Bool.and_eq_true] at h; simp only [wr2, ihs h.1, iht h.2, Bool.and_self]
-  | whileLtN a b s ih => simp only [wr] at h; simp only [wr2, ih h]
-  | whileLtR a b s ih => simp only [wr] at h; simp only [wr2, ih h]
+    simp_all [wr, Bool.and_eq_true, wr2, Bool.and_self]
+  | whileLtN a b s ih => core_grind
+  | whileLtR a b s ih => core_grind
 
 /-- The real registers the comparator may write: bands `bSign` and `bBuild`. -/
 def BRb (r : ℕ) : Bool := decide (bandOf r = bSign ∨ bandOf r = bBuild)
@@ -465,12 +431,10 @@ theorem wr2_evCmp : wr2 BinCmp BRb evCmp = true := by
       wr2 BinCmp BRb (halfS qe qh se sh dd dst) = true := fun _ _ _ _ _ _ h1 h2 h3 h4 =>
     wr2_of_wr (B := BhalfS _ _)
       (fun r hr => by
-        simp only [BhalfS, Bhalf, Bool.or_eq_true, decide_eq_true_eq] at hr
-        simp only [BinCmp, Bool.or_eq_true, decide_eq_true_eq]; omega)
+        simp_all [BhalfS, Bhalf, Bool.or_eq_true, decide_eq_true_eq, BinCmp] <;> omega_nf)
       (fun r hr => by
         simp only [BhalfS, Bhalf, Bool.or_eq_true, decide_eq_true_eq] at hr
-        rw [BRb, decide_eq_true_iff]; unfold bandOf bSign bBuild
-        omega) wr_halfS
+        rw [BRb, decide_eq_true_iff]; omega_nf) wr_halfS
   have e1 := h1 42113 42114 42110 42111 42116 42117 (by norm_num) (by norm_num) (by norm_num)
     (by norm_num)
   have e2 := h1 42110 42111 42113 42114 42118 42119 (by norm_num) (by norm_num) (by norm_num)
@@ -490,17 +454,12 @@ def EvJ (m₀ : ℕ → ℕ) (A₀ D T N : ℕ) (R : ℕ → ℕ) (d : Config) :
 theorem evJ_stable (m₀ : ℕ → ℕ) (A₀ D T N : ℕ) (R : ℕ → ℕ) :
     SortR.JStable (EvJ m₀ A₀ D T N R) A₀ := by
   intro c c' ⟨h1, h2, h3, h4, h5⟩ hr _ hm _ _
-  refine ⟨?_, ?_, ?_, fun a ha => (hm a ha).trans (h4 a ha), fun r r1 r2 => ?_⟩
-  · rw [hr _ (by unfold bandOf bSort; norm_num) (by unfold ALLOC; norm_num), h1]
-  · rw [hr _ (by unfold bandOf bSort; norm_num) (by unfold ALLOC; norm_num), h2]
-  · rw [hr _ (by unfold bandOf bSort; norm_num) (by unfold ALLOC; norm_num), h3]
-  · rw [hr _ (by unfold bandOf bSort; omega) (by unfold ALLOC; omega), h5 r r1 r2]
+  grind [Chazelle.Core.BuildRam.EvJ, bandOf, bSort, ALLOC]
 
 theorem binCmp_band {r : ℕ} (h : BinCmp r = true) : bandOf r ∈ ({bSign, bBuild} : Finset ℕ) ∨
     r = 30002 := by
   simp only [BinCmp, Bool.or_eq_true, decide_eq_true_eq] at h
-  simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bSign, bBuild]
-  omega
+  core_grind
 
 /-- **The comparator contract** of the event sort. -/
 theorem evCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWn : hostWords P.n ≤ W)
@@ -510,8 +469,8 @@ theorem evCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWn : hostWords P.n �
     (R : ℕ → ℕ) : SortR.CmpOK P W evCmp {bSign, bBuild} (EvJ m₀ A₀ D T (2 * L.length) R)
       (evLeB M (Qof P) L (2 * L.length)) 11010 := by
   intro d hw ⟨j1, j2, j3, j4, j5⟩
-  have hW1 : 1 ≤ W := by unfold hostWords at hWn; omega
-  have hW : P.n + 3 ≤ W := by unfold hostWords at hWn; omega
+  have hW1 : 1 ≤ W := by omega_nf
+  have hW : P.n + 3 ≤ W := by omega_nf
   -- the frame part, from the write set
   have wr_ev : wr BinCmp evCmp = true := by
     simp only [evCmp, wr, wr_inCmp, Bool.true_and]; decide
@@ -522,46 +481,38 @@ theorem evCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWn : hostWords P.n �
     obtain ⟨d', k, x, hk, hv⟩ := H
     have f := exec_frameB x wr_ev
     refine ⟨d', k, x, hk, ⟨?_, ?_, ?_, fun a ha => ?_, fun r r1 r2 => ?_⟩, hv, fun r r0 r1 r2 hr => ?_,
-      fun r hr => exec_frameR x wr2_ev r (by simpa [BRb, Finset.mem_insert, Finset.mem_singleton] using hr), f.2.2.1, f.2.2.2.1, f.2.2.2.2⟩
+      fun r hr => exec_frameR x wr2_ev r (by core_grind), f.2.2.1, f.2.2.2.1, f.2.2.2.2⟩
     · rw [f.1 _ (by decide), j1]
     · rw [f.1 _ (by decide), j2]
     · rw [f.1 _ (by decide), j3]
-    · rw [f.2.2.1]; exact j4 a ha
-    · rw [f.1 r (by simp only [BinCmp, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega),
+    · rw [f.2.2.1]; simp_all
+    · rw [f.1 r (by core_grind),
         j5 r r1 r2]
     · apply f.1
-      by_contra hb
-      rcases binCmp_band (Bool.not_eq_false _ ▸ hb) with h | h
-      · rcases hr with hr | hr
-        · exact hr h
-        · rw [hr] at h; simp [bandOf, ALLOC, bSign, bBuild] at h
-      · exact r2 h
+      grind [Chazelle.Core.BuildRam.binCmp_band, bandOf, ALLOC, bSign, bBuild]
   unfold evCmp evLeB
   by_cases ha : d.nreg 30000 < 2 * L.length
-  · refine spec_ifLtN_true (by rw [j3]; exact ha) ?_
+  · refine spec_ifLtN_true (by omega) ?_
     by_cases hb : d.nreg 30001 < 2 * L.length
-    · refine spec_ifLtN_true (by rw [j3]; exact hb) ?_
+    · refine spec_ifLtN_true (by omega) ?_
       have hm : ∀ a, a < A₀ → d.nmem a = m₀ a := j4
       obtain ⟨hM', hwf'⟩ := desc_agree hwf hM hm
       obtain ⟨hDW, hCW⟩ := locChainWF_of hwf' hAW hWn
       have hR' : RecsAt d.nmem T L := fun c hc => by
         obtain ⟨e1, e2, e3, e4⟩ := hR c hc
-        refine ⟨(hm _ (by omega)).trans e1, (hm _ (by omega)).trans e2, (hm _ (by omega)).trans e3,
-          (hm _ (by omega)).trans e4⟩
+        grind
       obtain ⟨d', k, x, hk, hv, -⟩ := inCmp_exec hG hW d hw j1 hDW hCW hM' hL j2 hR'
         (by omega) ha hb
-      refine ⟨d', k, x, by omega, ?_⟩
-      rw [hv, ite_eq_left ha, ite_eq_left hb]
-      by_cases hc : codeLe M (Qof P) L (d.nreg 30000) (d.nreg 30001) <;> simp [hc]
-    · refine spec_ifLtN_false (by rw [j3]; exact hb) (spec_instr (Exec.constN hw _ _ hW1)
+      grind
+    · refine spec_ifLtN_false (by omega) (spec_instr (Exec.constN hw _ _ hW1)
         fun _ => ⟨by omega, ?_⟩)
-      simp [ha, hb]
-  · refine spec_ifLtN_false (by rw [j3]; exact ha) ?_
+      simp_all
+  · refine spec_ifLtN_false (by omega) ?_
     by_cases hb : d.nreg 30001 < 2 * L.length
-    · refine spec_ifLtN_true (by rw [j3]; exact hb) (spec_instr (Exec.constN hw _ _ (by omega))
+    · refine spec_ifLtN_true (by omega) (spec_instr (Exec.constN hw _ _ (by omega))
         fun _ => ⟨by omega, ?_⟩)
-      simp [ha, hb]
-    · refine spec_ifLtN_false (by rw [j3]; exact hb) ?_
+      simp_all
+    · refine spec_ifLtN_false (by omega) ?_
       by_cases hc : d.nreg 30001 < d.nreg 30000
       · refine spec_ifLtN_true hc (spec_instr (Exec.constN hw _ _ (by omega))
           fun _ => ⟨by omega, ?_⟩)

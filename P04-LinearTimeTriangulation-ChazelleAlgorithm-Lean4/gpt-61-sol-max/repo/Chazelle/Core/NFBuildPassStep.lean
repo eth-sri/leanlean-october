@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildPass
 public import Chazelle.Core.SortRam
 
@@ -22,8 +24,7 @@ open BuildNF (wposOf chordRec arcRec arcW cw stk topR gapP gapsB cf af)
 theorem wr5_in (m : ℕ → ℕ) (b v0 v1 v2 v3 v4 f : ℕ) (hf : f < 5) :
     wr5 m b v0 v1 v2 v3 v4 (b + f) =
       if f = 0 then v0 else if f = 1 then v1 else if f = 2 then v2 else if f = 3 then v3 else v4 := by
-  unfold wr5
-  interval_cases f <;> simp
+  grind [wr5]
 
 theorem wr5_out (m : ℕ → ℕ) (b v0 v1 v2 v3 v4 a : ℕ) (ha : a < b ∨ b + 5 ≤ a) :
     wr5 m b v0 v1 v2 v3 v4 a = m a := by
@@ -41,23 +42,18 @@ theorem PassInv.top {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     (I : PassInv F c₀ d m) :
     (if d.nreg 43101 = 0 then 0 else d.nmem (d.nreg 44006 + d.nreg 43101 - 1)) = topR E m := by
   rw [BuildNF.topR_eq, I.r101, I.rST]
-  split_ifs with h
-  · rfl
-  · rw [show ST + (stk E m).length - 1 = ST + ((stk E m).length - 1) by omega]
-    exact I.stack _ (by omega)
+  ram_grind
 
 end exec
 
 theorem wr_passBody : wrM Bpass passBody = true := by
   have h1 : wrM Bpass curS = true := wrM_of_wr (wr_mono (fun r hr => by
-    simp only [decide_eq_true_eq] at hr
-    simp only [Bpass, Bool.or_eq_true, decide_eq_true_eq]; omega) wr_curS)
+    aesop) wr_curS)
   have h2 : ∀ dst, (dst = 43115 ∨ dst = 43117) → wrM Bpass (topS dst) = true := fun dst hd =>
     wrM_of_wr (wr_mono (fun r hr => by
-      simp only [decide_eq_true_eq] at hr
-      simp only [Bpass, Bool.or_eq_true, decide_eq_true_eq]; omega) (wr_topS dst))
-  have h3 : wrM Bpass stepS = true := wrM_mono (fun r hr => by simp [Bpass, hr]) wr_stepS
-  have h4 : wrM Bpass gapS = true := wrM_mono (fun r hr => by simp [Bpass, hr]) wr_gapS
+      aesop) (wr_topS dst))
+  have h3 : wrM Bpass stepS = true := wrM_mono (fun r hr => by grind [Bpass]) wr_stepS
+  have h4 : wrM Bpass gapS = true := wrM_mono (fun r hr => by grind [Bpass]) wr_gapS
   simp only [passBody, wrM, block, h1, h2 43115 (Or.inl rfl), h2 43117 (Or.inr rfl), h3, h4,
     Bool.and_true, Bool.true_and]
   decide
@@ -73,9 +69,7 @@ theorem Bpass_false {r : ℕ} (h : r < 10000 ∨ (10503 ≤ r ∧ r ≤ 40000) �
 
 theorem getD_dropLast {l : List ℕ} {k : ℕ} (hk : k < l.dropLast.length) :
     l.dropLast.getD k 0 = l.getD k 0 := by
-  have hne : l ≠ [] := by rintro rfl; simp at hk
-  conv_rhs => rw [← List.dropLast_append_getLast hne]
-  rw [List.getD_append _ _ _ _ hk]
+  core_grind
 
 section step
 
@@ -103,15 +97,14 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
   -- 1. the current code
   obtain ⟨d₁, k₁, x₁, hk₁, v10, v11, v12, v13, v14, f₁⟩ := curS_exec (P := P) d hw (c := c)
     (T := T) (by rw [I.r103, lowd _ (by omega), F.codes m hm]) I.rT I.r1a I.r1 (by omega)
-    (by rw [lowd _ (by omega), rch]; omega)
+    (by grind)
   rw [lowd _ (by omega), re] at v10
   rw [lowd _ (by omega), rh] at v11
   rw [lowd _ (by omega), rpar] at v12
   rw [lowd _ (by omega), rch] at v13 v14
   have w₁ := x₁.wb_right
   have g₁ : ∀ r, Bpass r = false → d₁.nreg r = d.nreg r := fun r hr => f₁.1 r (by
-    simp only [Bpass, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-    simp only [decide_eq_false_iff_not]; omega)
+    grind [Bpass, Bool.or_eq_false_iff, decide_eq_false_iff_not])
   have mm₁ : d₁.nmem = d.nmem := f₁.2.2.1
   have s₁ : d₁.nreg 43101 = d.nreg 43101 := f₁.1 _ (by decide)
   -- 2. the label before
@@ -122,12 +115,12 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
   rw [g₁ 44006 (Bpass_false (by omega)), s₁, mm₁, I.top] at v15
   have w₂ := x₂.wb_right
   have g₂ : ∀ r, r ≠ 43115 → r ≠ 43116 → d₂.nreg r = d₁.nreg r := fun r a1 a2 => f₂.1 r (by
-    simp only [decide_eq_false_iff_not]; omega)
+    grind)
   have mm₂ : d₂.nmem = d.nmem := by rw [f₂.2.2.1, mm₁]
   -- 3. the stack step
-  have x13 : d₂.nreg 43113 = x := by rw [g₂ _ (by norm_num) (by norm_num), v13]
-  have x14 : d₂.nreg 43114 = x + 1 := by rw [g₂ _ (by norm_num) (by norm_num), v14]
-  have x12 : d₂.nreg 42112 = c % 2 := by rw [g₂ _ (by norm_num) (by norm_num), v12]
+  have x13 : d₂.nreg 43113 = x := by grind
+  have x14 : d₂.nreg 43114 = x + 1 := by grind
+  have x12 : d₂.nreg 42112 = c % 2 := by grind
   have b₂ : d₂.nreg 43001 = B := by
     rw [g₂ _ (by norm_num) (by norm_num), g₁ 43001 (Bpass_false (by omega)), I.rB]
   have ct₂ : d₂.nreg 44001 = CT := by
@@ -140,8 +133,8 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     rw [g₂ _ (by norm_num) (by norm_num), s₁, I.r101]
   have hsp := I.sp_le
   obtain ⟨d₃, k₃, x₃, hk₃, f₃, hpop, hpush⟩ := stepS_exec (P := P) d₂ w₂ (x := x) (B := B)
-    (CT := CT) (ST := ST) x13 b₂ ct₂ st₂ o₂ (by omega) (by omega) (by rw [sp₂]; omega)
-    (by rw [sp₂]; omega)
+    (CT := CT) (ST := ST) x13 b₂ ct₂ st₂ o₂ (by omega) (by omega) (by omega)
+    (by omega)
   have w₃ := x₃.wb_right
   have hpopiff : d₂.nreg 43115 = d₂.nreg 43114 ↔ x ∈ (cw E).take m := by
     rw [v15, x14]; exact F.inp.pop_iff hm
@@ -156,9 +149,9 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
       obtain ⟨p1, p2⟩ := hpop (hpopiff.2 hin)
       have hh := (BuildNF.topR_eq_succ_iff E m x).1 ((F.inp.pop_iff hm).2 hin)
       obtain ⟨e1, e2⟩ := BuildNF.stk_pop hm hh
-      refine ⟨by rw [p1, sp₂]; omega, by omega, fun k hk => ?_, fun a _ => by rw [p2, mm₂],
+      refine ⟨by omega, by omega, fun k hk => ?_, fun a _ => by rw [p2, mm₂],
         fun x' hx' hin' f hf => ?_⟩
-      · rw [p2, mm₂, I.stack k (by omega), e1, getD_dropLast (by rw [← e1]; exact hk)]
+      · rw [p2, mm₂, I.stack k (by omega), e1, getD_dropLast (by grind)]
       · rw [p2, mm₂]
         rw [htake, List.mem_append, List.mem_singleton] at hin'
         rcases hin' with h' | h'
@@ -169,10 +162,10 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
       have hh : ¬ (BuildStack.run ((cw E).take m)).head? = some (E.getD m 0 / 2) := fun h' =>
         hin ((F.inp.pop_iff hm).1 ((BuildNF.topR_eq_succ_iff E m x).2 h'))
       have e1 := BuildNF.stk_push hm hh
-      have hlen : (stk E (m + 1)).length = (stk E m).length + 1 := by rw [e1]; simp
+      have hlen : (stk E (m + 1)).length = (stk E m).length + 1 := by grind
       unfold pushMem at p2
       rw [sp₂, x14, x12, v15] at p2
-      refine ⟨by rw [p1, sp₂, hlen], by omega, fun k hk => ?_, fun a ha => ?_,
+      refine ⟨by omega, by omega, fun k hk => ?_, fun a ha => ?_,
         fun x' hx' hin' f hf => ?_⟩
       · rw [p2]
         by_cases hk' : k = (stk E m).length
@@ -190,7 +183,7 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
         · subst h'
           rw [wr5_in _ _ _ _ _ _ _ _ hf, F.inp.chordRec_new hm hxK hin, BuildNF.cf_mk, mm₂]
           obtain ⟨l1, l2, l3⟩ := F.chl x hxK
-          rw [lowd _ (by omega), lowd _ (by omega), lowd _ (by omega), l1, l2, l3]
+          grind
   obtain ⟨sp₃, spl₃, stk₃, oth₃, ch₃⟩ := S₃
   have g₃ : ∀ r, (r < 43101 ∨ (43101 < r ∧ r < 43116) ∨ (43116 < r ∧ r < 43130) ∨ 43134 < r) →
       d₃.nreg r = d₂.nreg r := fun r hr => f₃.1 r (by
@@ -202,7 +195,7 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     exact f₁.1 r (by simp only [decide_eq_false_iff_not]; omega)
   obtain ⟨d₄, k₄, x₄, hk₄, v17, f₄⟩ := topS_exec (P := P) d₃ w₃ (dst := 43117)
     (by rw [g₃ 43010 (by omega), G₂ 43010 (by omega), I.r0])
-    (by rw [g₃ 43011 (by omega), o₂])
+    (by grind)
     (by rw [g₃ 44006 (by omega), st₂, sp₃]; omega)
   have top₃ : (if d₃.nreg 43101 = 0 then 0 else d₃.nmem (d₃.nreg 44006 + d₃.nreg 43101 - 1)) =
       topR E (m + 1) := by
@@ -214,7 +207,7 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
   rw [top₃] at v17
   have w₄ := x₄.wb_right
   have g₄ : ∀ r, r ≠ 43117 → r ≠ 43116 → d₄.nreg r = d₃.nreg r := fun r a1 a2 => f₄.1 r (by
-    simp only [decide_eq_false_iff_not]; omega)
+    grind)
   have mm₄ : d₄.nmem = d₃.nmem := f₄.2.2.1
   have G₄ : ∀ r, (r < 42110 ∨ (42112 < r ∧ r < 43101) ∨ (43101 < r ∧ r < 43110) ∨
       (43111 < r ∧ r < 43113) ∨ (43117 < r ∧ r < 43130) ∨ 43134 < r) →
@@ -267,11 +260,11 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
       d₆.nreg 43100 = m + 1 ∧ d₆.nreg 43103 = SE + (m + 1) ∧
       (∀ r, r ≠ 43100 → r ≠ 43103 → d₆.nreg r = d₅.nreg r) ∧ d₆.nmem = d₅.nmem := by
     exec_block
-    · rw [a100, a011]; omega
-    · config_simp; rw [a103, a011]; omega
+    · omega
+    · config_simp; omega
     · refine ⟨rfl, ?_, ?_, fun r r1 r2 => ?_, rfl⟩ <;> config_simp
-      · rw [a100, a011]
-      · rw [a103, a011]; omega
+      · omega
+      · omega
       · simp (disch := omega) only [upd_other]
   have X : Exec P W passBody d d₆ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k₆))))) :=
     .seq x₁ (.seq x₂ (.seq x₃ (.seq x₄ (.seq x₅ x₆))))
@@ -287,7 +280,7 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
   have hhd : d₄.nreg 44021 = hd := by rw [G₄ 44021 (by omega), I.rhd]
   have oth₄ : ∀ a, (a < CT ∨ (CT + 5 * K ≤ a ∧ a < ST) ∨ ST + N ≤ a) → d₄.nmem a = d.nmem a :=
     fun a ha => by rw [mm₄, oth₃ a ha]
-  have ch₄ : ∀ a, a < AT → d₄.nmem a = d₃.nmem a := fun a _ => by rw [mm₄]
+  
   -- the new memory and arc count
   have M₆ : d₆.nreg 43102 = (gapsB M (Qof P) L E (m + 1)).length ∧
       (∀ a, a < AT → d₆.nmem a = d₃.nmem a) ∧ (∀ a, ST ≤ a → a < WT → d₆.nmem a = d₃.nmem a) ∧
@@ -306,7 +299,7 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
       · rw [upd_other _ _ _ (by omega), wr5_out _ _ _ _ _ _ _ _ (by omega), mm₄]
       · rw [upd_other _ _ _ (by omega), wr5_out _ _ _ _ _ _ _ _ (by omega), mm₄]
       · by_cases hjA : j < A
-        · rw [List.getD_append _ _ _ _ (by rw [hAdef] at hjA; exact hjA)]
+        · rw [List.getD_append _ _ _ _ (by omega)]
           obtain ⟨o1, o2⟩ := I.arcs j hjA
           refine ⟨fun f hf => ?_, ?_⟩
           · rw [upd_other _ _ _ (by omega), wr5_out _ _ _ _ _ _ _ _ (by omega),
@@ -394,7 +387,7 @@ theorem passLoop_exec {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
   have : m' = E.length := by omega
   subst this
   refine ⟨d', k, e, ?_, ?_, hw', I'⟩
-  · rw [I.r100] at hk; omega
+  · omega
   · rw [I.r100, hm'] at hψ
     omega
 

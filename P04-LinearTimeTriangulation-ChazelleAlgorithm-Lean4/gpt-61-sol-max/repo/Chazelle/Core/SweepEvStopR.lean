@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopLH
 
 /-!
@@ -51,14 +53,14 @@ theorem MCtx.transport {C : Chain} {N : NF} {E md cd nf : ℕ} {c c' : Config}
   have rTL := hr TLR (Or.inr (Or.inr (Or.inr (Or.inr rfl))))
   rcases hmd with ⟨-, H, C', hC', hMC⟩ | ⟨h1, -⟩
   swap
-  · rw [hm0] at h1; omega
+  · omega
   obtain ⟨w1, w2, w3⟩ := ShotList.modelDesc_keep hmwf hm0 hC' hm hA
-  refine ⟨hctx.transport rCD hm hA, by rw [rCD, rMD]; exact hcd,
-    by rw [rMD]; exact Or.inl ⟨w2, H, C', w3, hMC⟩, by rw [rMD]; exact w1, by rw [rMD]; exact w2,
+  refine ⟨hctx.transport rCD hm hA, by omega,
+    by ram_grind, by simp_all, by simp_all,
     by rw [rNF]; exact hNW.transport fun b hb => hm b (by omega), le_trans hE hA,
     fun j hj => by
-      rw [rTL] at hj; rw [rTB, hm _ (by omega)]; exact htab j hj,
-    by rw [rTL]; exact hbig, by rw [rTB]; exact hTB, by rw [rTB, rTL]; omega⟩
+      ram_grind,
+    by simp_all, by omega, by omega⟩
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {J : Merge.Junction} {N₁ N₂ : NF}
@@ -66,15 +68,15 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 /-- **The context of the model of `C₁`.** -/
 theorem mctx1 (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c) :
     MCtx P W J.left N₁ (c₀.nreg TBR) MD₁ CD₁ (sw 3) c := by
-  have hTBR : c.nreg TBR = c₀.nreg TBR := hI.hin _ (by unfold IFix TBR sw; omega)
-  have hTLR : c.nreg TLR = c₀.nreg TLR := hI.hin _ (by unfold IFix TLR sw; omega)
-  have h3 : c.nreg (sw 3) = c₀.nreg (sw 3) := hI.hin _ (by unfold IFix sw; omega)
+  have hTBR : c.nreg TBR = c₀.nreg TBR := hI.hin _ (by omega_nf)
+  have hTLR : c.nreg TLR = c₀.nreg TLR := hI.hin _ (by omega_nf)
+  have h3 : c.nreg (sw 3) = c₀.nreg (sw 3) := hI.hin _ (by omega_nf)
   obtain ⟨md1, md2, md3, md4⟩ := E.md hI
   have hTA := E.hTBR
-  refine ⟨E.ctx1' hI, md4, md1, md2, md3, ?_, by have := hI.hA; omega, fun j hj => ?_,
-    by rw [hTLR]; exact E.hbig₁, by rw [hTBR], by rw [hTBR, hTLR]; have := hI.hA; omega⟩
+  refine ⟨E.ctx1' hI, md4, md1, md2, md3, ?_, by ram_grind, fun j hj => ?_,
+    by ram_grind, by rw [hTBR], by ram_grind⟩
   · rw [h3]; exact E.hNT₁.transport fun b hb => hI.hm b (by omega)
-  · rw [hTLR] at hj; rw [hTBR, hI.hm _ (by omega)]; exact E.htab j hj
+  ram_grind
 
 /-! ## The model descriptor of `C₂` -/
 
@@ -110,12 +112,12 @@ theorem md2Init_exec (c : Config) (hw : WordsBounded W c) (k0 : c.nreg 240610 = 
   all_goals try (config_simp; omega)
   refine ⟨rfl, by config_simp; omega, by config_simp, by config_simp; omega, fun r h1 h2 h3 h4 h5 => ?_,
     ?_, fun j hj => ?_, fun a ha => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp [upd, h1, h2, h3, h4, h5]
-  · config_simp; simp only [upd]; split_ifs <;> first | omega
+  · ram_simp 
+  · config_simp; simp only [upd]; grind
   · config_simp
     simp only [upd]
-    interval_cases j <;> split_ifs <;> first | omega | (· simp_all)
-  · config_simp; simp only [upd]; split_ifs <;> first | omega
+    grind
+  · config_simp; simp only [upd]; grind
 
 /-- **The model descriptor of `C₂`** as a run step: the context of the model of `C₂` at
 `gMD2, gCD2, sw 4`. -/
@@ -131,7 +133,7 @@ theorem md2Init_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   obtain ⟨hG, hWh, hwf, ⟨H, hC, hreg⟩, hPs, hWm⟩ := hctx
   have hB : c.nreg 240021 + 5 ≤ c.nreg 9999 := hwf.1
   obtain ⟨c', k, ex, hk, a1, a2, a3, hreg', m0, mc, mlo, rr, rm, ro⟩ :=
-    md2Init_exec (P := P) c hI.hw k0 k1 (by unfold ALLOC at hroom; omega) hB
+    md2Init_exec (P := P) c hI.hw k0 k1 (by omega_nf) hB
   have a1' : c'.nreg ALLOC = c.nreg ALLOC + 6 := a1
   have a2' : c'.nreg gMD2 = c.nreg ALLOC := a2
   have a3' : c'.nreg gCD2 = c.nreg ALLOC + 1 := a3
@@ -143,41 +145,41 @@ theorem md2Init_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   obtain ⟨hMD, hMWF, hCD⟩ := SweepRam.modelDesc_of_copy (E' := c'.nreg ALLOC) hwf' hC'
     le_rfl mlo' m0' mc' (by rw [a1'])
   have hTBR : c'.nreg TBR = c₀.nreg TBR := by
-    rw [hreg' _ (by unfold TBR sw; omega) (by unfold TBR sw; omega) (by unfold TBR sw; omega)
-      (by unfold TBR sw; omega) (by unfold TBR sw; omega)]
-    exact hI.hin _ (by unfold IFix TBR sw; omega)
+    rw [hreg' _ (by omega_nf) (by omega_nf) (by omega_nf)
+      (by omega_nf) (by omega_nf)]
+    exact hI.hin _ (by omega_nf)
   have hTLR : c'.nreg TLR = c₀.nreg TLR := by
-    rw [hreg' _ (by unfold TLR sw; omega) (by unfold TLR sw; omega) (by unfold TLR sw; omega)
-      (by unfold TLR sw; omega) (by unfold TLR sw; omega)]
-    exact hI.hin _ (by unfold IFix TLR sw; omega)
+    rw [hreg' _ (by omega_nf) (by omega_nf) (by omega_nf)
+      (by omega_nf) (by omega_nf)]
+    exact hI.hin _ (by omega_nf)
   have h4 : c'.nreg (sw 4) = c₀.nreg (sw 4) := by
-    rw [hreg' _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega)
-      (by unfold sw; omega) (by unfold sw; omega)]
-    exact hI.hin _ (by unfold IFix sw; omega)
-  have hA : c.nreg ALLOC ≤ c'.nreg ALLOC := by show c.nreg 9999 ≤ c'.nreg 9999; omega
+    rw [hreg' _ (by omega_nf) (by omega_nf) (by omega_nf)
+      (by omega_nf) (by omega_nf)]
+    exact hI.hin _ (by omega_nf)
+  have hA : c.nreg ALLOC ≤ c'.nreg ALLOC := by omega
   have hTA := E.hTBR
   have hmem : ∀ a, a < c₀.nreg ALLOC → c'.nmem a = c₀.nmem a := fun a ha => by
-    rw [mlo a (by have := hI.hA; show a < c.nreg 9999; unfold ALLOC at *; omega)]; exact hI.hm a ha
+    rw [mlo a (by have := hI.hA; ram_grind)]; exact hI.hm a ha
   have hI' : IInv W c₀ c' := by
     refine ⟨ex.wb_right, fun q hq => ?_, le_trans hI.hA hA, hmem, fun a ha => by rw [rm]; exact hI.hrm a ha⟩
     unfold IFix at hq
     rw [hreg' q (by omega) (by omega) (by omega) (by omega) (by omega)]
-    exact hI.hin q (by unfold IFix; omega)
+    exact hI.hin q (by omega_nf)
   refine ⟨c', k, ex, by omega, hI', ⟨fun r hr hra => ?_, fun r _ => by rw [rr], ro, hA,
-    by show c'.nreg 9999 ≤ c.nreg 9999 + k; omega⟩, ?_, fun r hr hra => ?_, hA, fun a ha => mlo' a ha⟩
+    by omega⟩, ?_, fun r hr hra => ?_, hA, fun a ha => mlo' a ha⟩
   · have : ¬ (240000 ≤ r ∧ r < 250000) := fun h => hr (scr_band (iscr_sw (by
       by_contra h'; exact hr (by
-        unfold ioBands sweepBands; rw [band_sw h.1 h.2]; decide)) h.2))
+        unfold ioBands sweepBands; omega_nf)) h.2))
     exact hreg' r hra (by omega) (by omega) (by omega) (by omega)
-  · refine ⟨⟨hG, hWh, ?_, ⟨H, ?_, hreg⟩, hPs, hWm⟩, by rw [a3', a2'], by rw [a2']; exact hMD,
-      by rw [a2']; exact hMWF, by rw [a2']; exact m0', by rw [h4]; exact E.hNT₂.transport (fun b hb =>
+  · refine ⟨⟨hG, hWh, ?_, ⟨H, ?_, hreg⟩, hPs, hWm⟩, by omega, by ram_grind,
+      by ram_grind, by ram_grind, by rw [h4]; exact E.hNT₂.transport (fun b hb =>
         hmem b (by omega)), by have := hI.hA; omega, fun j hj => ?_, by rw [hTLR]; exact E.hbig₂,
       by rw [hTBR], by rw [hTBR, hTLR]; have := hI.hA; omega⟩
     · rw [a3']; exact hMWF.2 m0'
-    · rw [a3']; exact hCD
+    · ram_grind
     · rw [hTLR] at hj; rw [hTBR, hmem _ (by omega)]; exact E.htab j hj
   · unfold MD2W gMD2 gCD2 gTP gTV sw at hr
-    exact hreg' r hra (by omega) (by omega) (by omega) (by omega)
+    ram_grind
 
 end
 

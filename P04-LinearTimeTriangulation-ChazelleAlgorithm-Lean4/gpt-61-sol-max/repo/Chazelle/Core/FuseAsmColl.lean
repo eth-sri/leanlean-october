@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmList
 
 /-!
@@ -31,28 +33,9 @@ theorem chordListAt_append {m : ℕ → ℕ} {A : ℕ} {L : List (ℕ × ℕ × 
   intro i hi
   rw [List.length_append, List.length_singleton] at hi
   rcases Nat.lt_or_ge i L.length with hlt | hge
-  · have e : (L ++ [x]).getD i (0, 0, 0) = L.getD i (0, 0, 0) := by
-      simp [List.getD_eq_getElem?_getD, List.getElem?_append_left hlt]
-    rw [e]; exact h i hlt
-  · have hi' : i = L.length := by omega
-    subst hi'
-    have e : (L ++ [x]).getD L.length (0, 0, 0) = x := by
-      simp [List.getD_eq_getElem?_getD]
-    rw [e]
-    exact ⟨h0, h1, h2⟩
+  · ram_grind
+  ram_grind
 
-/-- The invariant of the collection loop. -/
-structure CLI (W : ℕ) (R : List (ℕ × ℕ × ℕ × ℕ)) (RB LB : ℕ) (c₀ c : Config) : Prop where
-  wb : WordsBounded W c
-  i_le : c.nreg 70112 ≤ R.length
-  cur : c.nreg 70113 = RB + 4 * c.nreg 70112
-  alloc : c.nreg ALLOC = LB + 3 * (collect (R.take (c.nreg 70112))).length
-  regs : ∀ r, r ≠ 70112 → r ≠ 70113 → r ≠ 70114 → r ≠ 70119 → r ≠ ALLOC → c.nreg r = c₀.nreg r
-  low : ∀ a, a < LB → c.nmem a = c₀.nmem a
-  list : ChordListAt c.nmem LB (collect (R.take (c.nreg 70112)))
-  rr : c.rreg = c₀.rreg
-  rm : c.rmem = c₀.rmem
-  out : c.output = c₀.output
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Programs.Tactics
 
 /-!
@@ -34,37 +36,32 @@ namespace Chazelle.Core.Cluster
 def view (m : ℕ → ℕ) (b n : ℕ) : ℕ → ℕ := fun i => if i < n then m (b + i) else 0
 
 theorem view_lt {m : ℕ → ℕ} {b n i : ℕ} (h : i < n) : view m b n i = m (b + i) := by
-  simp [view, h]
+  core_grind
 
+section
+variable (m : ℕ → ℕ)
 /-- A write outside the array does not change its view. -/
-theorem view_upd_out (m : ℕ → ℕ) (b n a x : ℕ) (h : a < b ∨ b + n ≤ a) :
+theorem view_upd_out (b n a x : ℕ) (h : a < b ∨ b + n ≤ a) :
     view (upd m a x) b n = view m b n := by
   funext i
   unfold view
-  split_ifs with hi
-  · rw [Machine.upd_other _ _ _ (by omega)]
-  · rfl
+  ram_simp 
 
 /-- A write inside the array updates its view. -/
-theorem view_upd_in (m : ℕ → ℕ) (b n w x : ℕ) (hw : w < n) :
+theorem view_upd_in (b n w x : ℕ) (hw : w < n) :
     view (upd m (b + w) x) b n = Function.update (view m b n) w x := by
   funext i
   unfold view
   by_cases hiw : i = w
-  · subst hiw; simp [hw]
-  · rw [Function.update_of_ne hiw]
-    split_ifs with hi
-    · rw [Machine.upd_other _ _ _ (by omega)]
-    · rfl
+  all_goals simp_all
+
+
+end
 
 /-- Views agreeing memories: agreement on `[b, b + n)` gives equal views. -/
 theorem view_congr {m m' : ℕ → ℕ} {b n : ℕ} (h : ∀ i, i < n → m' (b + i) = m (b + i)) :
     view m' b n = view m b n := by
-  funext i
-  unfold view
-  split_ifs with hi
-  · exact h i hi
-  · rfl
+  core_grind
 
 /-! ## Iterating an injective self-map of `[0, N)` -/
 
@@ -77,12 +74,15 @@ def InjOn : Prop := (∀ x, x < N → f x < N) ∧ ∀ x, x < N → ∀ y, y < N
 
 variable {f N}
 
-theorem InjOn.iterate_lt (hf : InjOn f N) (n : ℕ) {x : ℕ} (hx : x < N) : f^[n] x < N := by
+section
+variable (hf : InjOn f N) (n : ℕ)
+include hf
+theorem InjOn.iterate_lt {x : ℕ} (hx : x < N) : f^[n] x < N := by
   induction n generalizing x with
   | zero => exact hx
-  | succ n ih => rw [Function.iterate_succ_apply]; exact ih (hf.1 x hx)
+  | succ n ih => simp_all [Function.iterate_succ_apply] <;> omega_nf
 
-theorem InjOn.iterate_inj (hf : InjOn f N) (n : ℕ) {x y : ℕ} (hx : x < N) (hy : y < N)
+theorem InjOn.iterate_inj {x y : ℕ} (hx : x < N) (hy : y < N)
     (h : f^[n] x = f^[n] y) : x = y := by
   induction n generalizing x y with
   | zero => exact h
@@ -90,16 +90,22 @@ theorem InjOn.iterate_inj (hf : InjOn f N) (n : ℕ) {x y : ℕ} (hx : x < N) (h
     rw [Function.iterate_succ_apply, Function.iterate_succ_apply] at h
     exact hf.2 x hx y hy (ih (hf.1 x hx) (hf.1 y hy) h)
 
+
+end
+
+section
+variable (hf : InjOn f N) {x : ℕ} (hx : x < N)
+include hf hx
 /-- Cancel a common prefix of iterations. -/
-theorem InjOn.iterate_cancel (hf : InjOn f N) {x : ℕ} (hx : x < N) {i j : ℕ} (hij : i ≤ j)
+theorem InjOn.iterate_cancel {i j : ℕ} (hij : i ≤ j)
     (h : f^[i] x = f^[j] x) : f^[j - i] x = x := by
   have : f^[j] x = f^[i] (f^[j - i] x) := by
-    rw [← Function.iterate_add_apply]; congr 1; omega
+    rw [← Function.iterate_add_apply]; simp_all
   rw [this] at h
   exact (hf.iterate_inj i hx (hf.iterate_lt _ hx) h).symm
 
 /-- **Every point returns** within `N` steps. -/
-theorem exists_iterate_eq_self (hf : InjOn f N) {x : ℕ} (hx : x < N) :
+theorem exists_iterate_eq_self :
     ∃ p, 0 < p ∧ p ≤ N ∧ f^[p] x = x := by
   classical
   have hmaps : ∀ i ∈ Finset.range (N + 1), f^[i] x ∈ Finset.range N := fun i _ =>
@@ -111,28 +117,37 @@ theorem exists_iterate_eq_self (hf : InjOn f N) {x : ℕ} (hx : x < N) :
   · exact ⟨j - i, by omega, by omega, hf.iterate_cancel hx h.le heq⟩
   · exact ⟨i - j, by omega, by omega, hf.iterate_cancel hx h.le heq.symm⟩
 
+
+end
+
 open Classical in
 /-- The minimal period of `x` (`1` if `x` is out of range). -/
 noncomputable def per (f : ℕ → ℕ) (_N x : ℕ) : ℕ :=
   if h : ∃ p, 0 < p ∧ f^[p] x = x then Nat.find h else 1
 
-theorem per_spec (hf : InjOn f N) {x : ℕ} (hx : x < N) :
+section
+variable (hf : InjOn f N) {x : ℕ} (hx : x < N)
+include hf hx
+theorem per_spec :
     0 < per f N x ∧ per f N x ≤ N ∧ f^[per f N x] x = x := by
   classical
   obtain ⟨p, hp, hpN, hpx⟩ := exists_iterate_eq_self hf hx
   have hex : ∃ p, 0 < p ∧ f^[p] x = x := ⟨p, hp, hpx⟩
   have hper : per f N x = Nat.find hex := by
-    unfold per; rw [dite_eq_left hex]
+    grind [per]
   rw [hper]
   refine ⟨(Nat.find_spec hex).1, le_trans (Nat.find_min' hex ⟨hp, hpx⟩) hpN,
     (Nat.find_spec hex).2⟩
 
-theorem iterate_per (hf : InjOn f N) {x : ℕ} (hx : x < N) : f^[per f N x] x = x :=
+theorem iterate_per : f^[per f N x] x = x :=
   (per_spec hf hx).2.2
 
-theorem per_pos (hf : InjOn f N) {x : ℕ} (hx : x < N) : 0 < per f N x := (per_spec hf hx).1
+theorem per_pos : 0 < per f N x := (per_spec hf hx).1
 
-theorem per_le (hf : InjOn f N) {x : ℕ} (hx : x < N) : per f N x ≤ N := (per_spec hf hx).2.1
+theorem per_le : per f N x ≤ N := (per_spec hf hx).2.1
+
+
+end
 
 /-- No return before the period. -/
 theorem iterate_ne_of_lt_per (_hf : InjOn f N) {x : ℕ} (_hx : x < N) {j : ℕ} (hj0 : 0 < j)
@@ -140,12 +155,13 @@ theorem iterate_ne_of_lt_per (_hf : InjOn f N) {x : ℕ} (_hx : x < N) {j : ℕ}
   classical
   intro h
   have hex : ∃ p, 0 < p ∧ f^[p] x = x := ⟨j, hj0, h⟩
-  have hper : per f N x = Nat.find hex := by unfold per; rw [dite_eq_left hex]
-  have := Nat.find_min' hex ⟨hj0, h⟩
-  omega
+  simp_all [per] 
 
+section
+variable (hf : InjOn f N) {x : ℕ} (hx : x < N)
+include hf hx
 /-- The iterates below the period are distinct. -/
-theorem iterate_inj_of_lt_per (hf : InjOn f N) {x : ℕ} (hx : x < N) {i j : ℕ}
+theorem iterate_inj_of_lt_per {i j : ℕ}
     (hi : i < per f N x) (hj : j < per f N x) (h : f^[i] x = f^[j] x) : i = j := by
   rcases Nat.lt_trichotomy i j with hij | hij | hij
   · exact absurd (hf.iterate_cancel hx hij.le h) (iterate_ne_of_lt_per hf hx (by omega) (by omega))
@@ -154,7 +170,7 @@ theorem iterate_inj_of_lt_per (hf : InjOn f N) {x : ℕ} (hx : x < N) {i j : ℕ
       (iterate_ne_of_lt_per hf hx (by omega) (by omega))
 
 /-- Iterates reduce modulo the period. -/
-theorem iterate_mod_per (hf : InjOn f N) {x : ℕ} (hx : x < N) (n : ℕ) :
+theorem iterate_mod_per (n : ℕ) :
     f^[n] x = f^[n % per f N x] x := by
   conv_lhs => rw [← Nat.mod_add_div n (per f N x)]
   rw [Function.iterate_add_apply]
@@ -165,9 +181,12 @@ theorem iterate_mod_per (hf : InjOn f N) {x : ℕ} (hx : x < N) (n : ℕ) :
     rw [Nat.mul_succ, Function.iterate_add_apply, iterate_per hf hx, ih]
 
 /-- Every iterate is an iterate below the period. -/
-theorem exists_lt_per_of_iterate (hf : InjOn f N) {x : ℕ} (hx : x < N) (n : ℕ) :
+theorem exists_lt_per_of_iterate (n : ℕ) :
     ∃ j, j < per f N x ∧ f^[n] x = f^[j] x :=
   ⟨n % per f N x, Nat.mod_lt _ (per_pos hf hx), iterate_mod_per hf hx n⟩
+
+
+end
 
 end Iter
 
@@ -237,16 +256,10 @@ theorem OK.sum_deg (h : G.OK) : ∑ u ∈ Finset.range G.nv, G.deg u = G.N := by
         = Finset.range G.N := by
       ext d
       simp only [Finset.mem_biUnion, Finset.mem_range, Finset.mem_filter]
-      constructor
-      · rintro ⟨_, _, hd, _⟩; exact hd
-      · intro hd; exact ⟨G.vert d, h.vert_lt d hd, hd, rfl⟩
-    rw [this, Finset.card_range]
+      ram_all <;> ram_grind
+    simp_all
   · intro u _ v _ huv
-    simp only [Function.onFun]
-    rw [Finset.disjoint_left]
-    intro d h1 h2
-    simp only [Finset.mem_filter] at h1 h2
-    exact huv (h1.2.symm.trans h2.2)
+    simp_all [Function.onFun, Finset.disjoint_left, Finset.mem_filter] 
 
 /-- The degree sum over a set of distinct vertices is at most `N`. -/
 theorem OK.sum_deg_le (h : G.OK) (S : Finset ℕ) (hS : ∀ u ∈ S, u < G.nv) :
@@ -256,8 +269,11 @@ theorem OK.sum_deg_le (h : G.OK) (S : Finset ℕ) (hS : ∀ u ∈ S, u < G.nv) :
           (fun _ _ _ => Nat.zero_le _)
     _ = G.N := h.sum_deg
 
+section
+variable (h : G.OK) {u : ℕ} (hu : u < G.nv)
+include h hu
 /-- **The rotation orbit of `first u` is the fibre of `u`.** -/
-theorem OK.orbit_iff (h : G.OK) {u : ℕ} (hu : u < G.nv) {e : ℕ} :
+theorem OK.orbit_iff {e : ℕ} :
     (e < G.N ∧ G.vert e = u) ↔ ∃ j, j < per G.rot G.N (G.first u) ∧
       G.rot^[j] (G.first u) = e := by
   have hf := h.first_lt u hu
@@ -265,12 +281,12 @@ theorem OK.orbit_iff (h : G.OK) {u : ℕ} (hu : u < G.nv) {e : ℕ} :
   · rintro ⟨he, hve⟩
     obtain ⟨n, hn⟩ := h.orbit _ hf e he (by rw [h.vert_first u hu, hve])
     obtain ⟨j, hj, hjn⟩ := exists_lt_per_of_iterate h.injOn hf n
-    exact ⟨j, hj, hjn ▸ hn⟩
+    ram_grind
   · rintro ⟨j, -, rfl⟩
     exact ⟨h.injOn.iterate_lt j hf, by rw [h.vert_iterate j hf, h.vert_first u hu]⟩
 
 /-- **The period of `first u` is the degree of `u`.** -/
-theorem OK.per_first (h : G.OK) {u : ℕ} (hu : u < G.nv) :
+theorem OK.per_first :
     per G.rot G.N (G.first u) = G.deg u := by
   have hf := h.first_lt u hu
   unfold deg
@@ -285,6 +301,9 @@ theorem OK.per_first (h : G.OK) {u : ℕ} (hu : u < G.nv) :
   exact iterate_inj_of_lt_per h.injOn hf hi hj hij
 
 /-! ## The graph of unblocked darts -/
+
+
+end
 
 variable (G)
 

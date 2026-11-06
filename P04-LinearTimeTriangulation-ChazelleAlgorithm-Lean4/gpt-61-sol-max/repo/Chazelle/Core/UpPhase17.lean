@@ -124,7 +124,7 @@ theorem gamS_exec {c : Config} (hw : WordsBounded W c) {S p g1 : ℕ}
   have hG2 := (hS (Cost.ceilBeta g1) (by omega)).1
   obtain ⟨c1, k1, e1, hk1, hw1, i24, i80, i21, i03, i32, fr1, hm1, hrr1, hrm1, ho1⟩ :=
     gamA_exec (P := P) hw h00 h02 h07 h21 h25 hcb hG2 (by omega) (by omega) hW8
-  have hGg : 2 ^ Cost.ceilBeta g1 ≤ gradeGran g1 := by unfold gradeGran; omega
+  
   obtain ⟨c2, k2, e2, hk2, hw2, j04, fr2, hm2, hrr2, hrm2, ho2⟩ :=
     clogS_exec (P := P) hw1 i21 i03 i24 (fun i hi => by rw [hm1]; exact (hS i (by omega)).1)
       hg1 (by omega)

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvKey2Skip
 
 /-!
@@ -72,12 +74,7 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 /-- A copy of a label list. -/
 theorem kqLblOf_copy {c c' : Config} {N L N' L' : ℕ} (hN : c'.nreg N' = c.nreg N)
     (hL : ∀ i, i < 4 → c'.nreg (L' + i) = c.nreg (L + i)) : lblOf c' N' L' = lblOf c N L := by
-  unfold lblOf
-  rw [hN]
-  apply List.map_congr_left
-  intro i hi
-  rw [List.mem_range] at hi
-  exact hL i (by omega)
+  simp_all [lblOf, List.mem_range] 
 
 set_option maxHeartbeats 16000000 in
 set_option maxRecDepth 100000 in
@@ -104,18 +101,18 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
         by omega⟩, ⟨iscr_sw' (by norm_num) (by norm_num), by omega⟩, trivial⟩)) ?_).mono le_rfl
     (fun _ h => h)
   rintro d₁ hI₁ hA₁ hA₁' hd₁
-  have v1 : d₁.nreg kE = d.nreg kqE := by rw [hd₁]; simp [setKL, regB, regI, upd, kE, kH, dF, kqB, kqA, kqE, sw]
-  have v2 : d₁.nreg kH = d.nreg kqH := by rw [hd₁]; simp [setKL, regB, regI, upd, kE, kH, dF, kqB, kqA, kqH, sw]
+  have v1 : d₁.nreg kE = d.nreg kqE := by aesop
+  have v2 : d₁.nreg kH = d.nreg kqH := by aesop
   have v3 : d₁.nreg dF = 0 := by rw [hd₁]; simp [setKL, regB, regI, upd, kE, kH, dF, kqB, kqA, sw]
   have v4 : d₁.nreg kqB = 0 := by rw [hd₁]; simp [setKL, regB, regI, upd, kE, kH, dF, kqB, kqA, sw]
   have v5 : d₁.nreg kqA = 0 := by rw [hd₁]; simp [setKL, regB, regI, upd, kE, kH, dF, kqB, kqA, sw]
   have fr1 : EFr PreR d d₁ := by
-    rw [hd₁]; exact kqEfr_block _ (by simp [setKL, dstI, PreR]) (by unfold PreR; kqr)
+    rw [hd₁]; exact kqEfr_block _ (by simp [setKL, dstI, PreR]) (by omega_nf)
   have kp1 : ∀ r, ¬ PreR r → 240000 ≤ r ∧ r < 250000 → d₁.nreg r = d.nreg r := fun r h1 h2 =>
     fr1.kkeep h1 h2
-  have eBF : d₁.nreg bF = d.nreg bF := kp1 _ (by unfold PreR; kqr) (by kqr)
-  have eBE : d₁.nreg bE = d.nreg bE := kp1 _ (by unfold PreR; kqr) (by kqr)
-  have eBH : d₁.nreg bH = d.nreg bH := kp1 _ (by unfold PreR; kqr) (by kqr)
+  have eBF : d₁.nreg bF = d.nreg bF := kp1 _ (by omega_nf) (by kqr)
+  have eBE : d₁.nreg bE = d.nreg bE := kp1 _ (by omega_nf) (by kqr)
+  have eBH : d₁.nreg bH = d.nreg bH := kp1 _ (by omega_nf) (by kqr)
   have hK₁ := E.hK.fix hI₁
   -- the flag
   have hB : IRS P W c₀ bestAt d₁ 11015 (fun d₂ => EFr PreR d₁ d₂ ∧ d₂.nreg kqB ≤ 1 ∧
@@ -130,11 +127,11 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
       have hgw₁' : ((d₁.nreg cGW : ℕ) : ℝ) = (gW J : ℝ) := by rw [hgw₁]
       refine IRS.seq (K₁ := 11008) (K₂ := 3) (callOff_irs (dsc := sw 2) (ex := kE) (hx := kH)
         (ey := bE) (hy := bH) (g := cGW) (o := kqO) hI₁ (E.ctxW' hI₁)
-        ⟨by norm_num [sw], by norm_num [sw], by unfold kE sw; norm_num, by unfold kE sw; norm_num,
-          by unfold kH sw; norm_num, by unfold kH sw; norm_num, by unfold bE sw; norm_num,
-          by unfold bE sw; norm_num, by unfold bH sw; norm_num, by unfold bH sw; norm_num,
-          by unfold cGW sw; norm_num, by unfold cGW sw; norm_num⟩
-        ⟨by unfold kqO sw; norm_num, by unfold kqO sw; norm_num⟩ (by rw [v1]; exact hpk.1)
+        ⟨by omega_nf, by omega_nf, by omega_nf, by omega_nf,
+          by omega_nf, by omega_nf, by omega_nf,
+          by omega_nf, by omega_nf, by omega_nf,
+          by omega_nf, by omega_nf⟩
+        ⟨by omega_nf, by omega_nf⟩ (by rw [v1]; exact hpk.1)
         (by rw [eBE]; exact hbp.1) (by rw [hgw₁]; exact kqGW_lt J) (by rw [v1, v2]; exact hpk.2.1)
         (by rw [eBE, eBH]; exact hbp.2.1) (by rw [v1, v2]; exact hpk.2.2)
         (by rw [eBE, eBH]; exact hbp.2.2) (by omega)) ?_
@@ -148,43 +145,40 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
       have kp2 : ∀ r, r = kE ∨ r = kH ∨ r = dF ∨ r = kqA ∨ r = kqB → d₂.nreg r = d₁.nreg r := by
         intro r hr
         have hr' : r = 242400 ∨ r = 242401 ∨ r = 242451 ∨ r = 242488 ∨ r = 242487 := by
-          simp only [kE, kH, dF, kqA, kqB, sw] at hr; omega
-        exact k₂ r (not_oracle_sw (by omega) (by omega)) (by unfold kqO sw; omega)
-          (by unfold kqO sw; omega) (by unfold ALLOC; omega)
+          grind [kE, kH, dF, kqA, kqB, sw]
+        exact k₂ r (not_oracle_sw (by omega) (by omega)) (by omega_nf)
+          (by omega_nf) (by omega_nf)
       have k02 : d₂.nreg K0 = 0 := (E.hK.fix hI₂).1
       by_cases h2 : d₂.nreg K0 < d₂.nreg kqO
       · rw [k02] at h2
         have hlt := b1.2.1 (by have := b1.1; omega)
-        refine IRS.mono (K := 0 + 2) (IRS.ifT (by rw [k02]; exact h2) (IRS.skip hI₂ rfl))
+        refine IRS.mono (K := 0 + 2) (IRS.ifT (by omega) (IRS.skip hI₂ rfl))
           (by norm_num) ?_
-        rintro d' rfl
-        have eB : d₂.nreg kqB = 0 := (kp2 _ (by simp)).trans v4
-        refine ⟨fr2, by omega, ⟨fun h => by omega, fun ⟨_, h⟩ => absurd h (ne_of_gt hlt)⟩,
-          fun r hr => kp2 r (by tauto)⟩
+        grind
       · rw [k02] at h2
         have hnlt : ¬ offK P J (d.nreg kqE) (d.nreg kqH) < offK P J (d.nreg bE) (d.nreg bH) :=
           fun h => by have := b1.2.2 h; omega
         have heq : offK P J (d.nreg bE) (d.nreg bH) = offK P J (d.nreg kqE) (d.nreg kqH) :=
           le_antisymm (not_lt.1 hnlt) (hmin h1)
-        refine IRS.mono (K := 1 + 2) (IRS.ifF (by rw [k02]; exact h2) (IRS.block _ hI₂
+        refine IRS.mono (K := 1 + 2) (IRS.ifF (by omega) (IRS.block _ hI₂
           ⟨⟨iscr_sw' (by norm_num) (by norm_num), hW⟩, trivial⟩)) (by norm_num) ?_
         rintro d' hd'
         have w1 : d'.nreg kqB = 1 := by rw [hd']; simp [regB, regI]
         have w2 : ∀ r, r ≠ kqB → d'.nreg r = d₂.nreg r := fun r hr => by
           rw [hd']; simp [regB, regI, upd, hr]
         refine ⟨fr2.trans ⟨fun r _ hr _ => w2 r (fun h => hr (Or.inr (Or.inr (Or.inr (Or.inl h))))),
-          by rw [w2 ALLOC (by kqr)], fun a _ => by rw [hd']⟩, by omega,
+          by grind, fun a _ => by rw [hd']⟩, by omega,
           ⟨fun _ => ⟨h1, heq⟩, fun _ => w1⟩, fun r hr => ?_⟩
         rw [w2 r (by rcases hr with rfl | rfl | rfl | rfl <;> kqr)]
-        exact kp2 r (by tauto)
+        grind
     · rw [eBF] at h1
       exact ⟨EFr.refl _ _, by omega, ⟨fun h => by omega, fun h => absurd h.1 h1⟩,
         fun _ _ => rfl⟩
   refine IRS.seq (K₁ := 11015) (K₂ := 10) hB ?_
   rintro d₂ hI₂ hA₂ hA₂' ⟨fr2, hb1, hbiff, kp2⟩
   have hK₂ := E.hK.fix hI₂
-  have eBN : d₂.nreg bN = d.nreg bN := (fr2.kkeep (by unfold PreR; kqr) (by kqr)).trans
-    (kp1 _ (by unfold PreR; kqr) (by kqr))
+  have eBN : d₂.nreg bN = d.nreg bN := (fr2.kkeep (by omega_nf) (by kqr)).trans
+    (kp1 _ (by omega_nf) (by kqr))
   have eBL : ∀ i, i < 4 → d₂.nreg (bL + i) = d.nreg (bL + i) := fun i hi =>
     (fr2.kkeep (by unfold PreR; kqr) (by kqr)).trans (kp1 _ (by unfold PreR; kqr) (by kqr))
   have common : ∀ d' : Config, EFr PreR d₂ d' → d'.nreg kqB = d₂.nreg kqB →
@@ -194,11 +188,10 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
       (d'.nreg kqB = 1 ↔ (d.nreg bF = 1 ∧
         offK P J (d.nreg bE) (d.nreg bH) = offK P J (d.nreg kqE) (d.nreg kqH))) := by
     intro d' fr hB' hk
-    refine ⟨fr1.trans (fr2.trans fr), ?_, ?_, ?_, ?_, by omega, by rw [hB']; exact hbiff⟩
-    · rw [hk _ (Or.inl rfl), kp2 _ (Or.inl rfl), v1]
-    · rw [hk _ (Or.inr (Or.inl rfl)), kp2 _ (Or.inr (Or.inl rfl)), v2]
-    · rw [hk _ (Or.inr (Or.inr (Or.inl rfl))), kp2 _ (Or.inr (Or.inr (Or.inl rfl))), v3]
-    · rw [hk _ (Or.inr (Or.inr (Or.inr rfl))), kp2 _ (Or.inr (Or.inr (Or.inr rfl))), v5]
+    refine ⟨fr1.trans (fr2.trans fr), ?_, ?_, ?_, ?_, by omega, by grind⟩
+    · grind
+    · grind
+    all_goals grind
   unfold initLab
   by_cases h3 : d₂.nreg K0 < d₂.nreg kqB
   · rw [hK₂.1] at h3
@@ -206,13 +199,13 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
     refine IRS.mono (K := 5 + 2) (IRS.ifT (by rw [hK₂.1]; exact h3) (IRS.block cpBestL hI₂ (by
       simp only [cpBestL, okB, okI]
       exact ⟨iscr_sw' (by norm_num) (by norm_num), iscr_sw' (by norm_num) (by norm_num),
-        iscr_sw (by unfold kqL sw; norm_num) (by unfold kqL sw; norm_num),
-        iscr_sw (by unfold kqL sw; norm_num) (by unfold kqL sw; norm_num),
-        iscr_sw (by unfold kqL sw; norm_num) (by unfold kqL sw; norm_num), trivial⟩)))
+        iscr_sw (by omega_nf) (by omega_nf),
+        iscr_sw (by omega_nf) (by omega_nf),
+        iscr_sw (by omega_nf) (by omega_nf), trivial⟩)))
       (by norm_num) ?_
     rintro d' hd'
     have fr3 : EFr PreR d₂ d' := by
-      rw [hd']; exact kqEfr_block _ (by simp [cpBestL, dstI, PreR, LblR, kqN, kqL, sw]) (by unfold PreR; kqr)
+      rw [hd']; exact kqEfr_block _ (by simp [cpBestL, dstI, PreR, LblR, kqN, kqL, sw]) (by omega_nf)
     have w0 : ∀ r, r = kE ∨ r = kH ∨ r = dF ∨ r = kqA ∨ r = kqB → d'.nreg r = d₂.nreg r := by
       intro r hr
       rw [hd']
@@ -226,22 +219,20 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
       interval_cases i <;> simp [cpBestL, regB, regI, upd, kqN, kqL, bN, bL, sw]
     obtain ⟨c1, c2, c3, c4, c5, c6, c7⟩ := common d' fr3 (w0 _ (by simp)) (fun r hr => w0 r (by tauto))
     refine ⟨c1, c2, c3, c4, c5, c6, c7, fun _ => ⟨wN, kqLblOf_copy wN wL⟩, fun h => ?_⟩
-    rw [w0 _ (by simp)] at h; exact absurd hB1 h
+    grind
   · rw [hK₂.1] at h3
     have hB0 : d₂.nreg kqB ≠ 1 := by omega
-    refine IRS.mono (K := 1 + 2) (IRS.ifF (by rw [hK₂.1]; exact h3) (IRS.block _ hI₂
+    refine IRS.mono (K := 1 + 2) (IRS.ifF (by omega) (IRS.block _ hI₂
       ⟨⟨iscr_sw' (by norm_num) (by norm_num), by omega⟩, trivial⟩)) (by norm_num) ?_
     rintro d' hd'
     have fr3 : EFr PreR d₂ d' := by
-      rw [hd']; exact kqEfr_block _ (by simp [dstI, PreR, LblR]) (by unfold PreR; kqr)
+      rw [hd']; exact kqEfr_block _ (by simp [dstI, PreR, LblR]) (by omega_nf)
     have wN : d'.nreg kqN = 0 := by rw [hd']; simp [regB, regI]
     have w0 : ∀ r, r ≠ kqN → d'.nreg r = d₂.nreg r := fun r hr => by
       rw [hd']; simp [regB, regI, upd, hr]
     obtain ⟨c1, c2, c3, c4, c5, c6, c7⟩ := common d' fr3 (w0 _ (by kqr))
       (fun r hr => w0 r (by rcases hr with rfl | rfl | rfl | rfl <;> kqr))
-    refine ⟨c1, c2, c3, c4, c5, c6, c7, fun h => ?_, fun _ => ⟨?_, wN⟩⟩
-    · rw [w0 _ (by kqr)] at h; exact absurd h hB0
-    · unfold lblOf; rw [wN]; rfl
+    grind [lblOf]
 
 set_option maxHeartbeats 4000000 in
 /-- **The new label list.** -/
@@ -260,12 +251,12 @@ theorem fin_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hB : d.nreg kqB ≤
     refine (IRS.block cpLabL hId (by
       simp only [cpLabL, okB, okI]
       exact ⟨iscr_sw' (by norm_num) (by norm_num), iscr_sw' (by norm_num) (by norm_num),
-        iscr_sw (by unfold kL sw; norm_num) (by unfold kL sw; norm_num),
-        iscr_sw (by unfold kL sw; norm_num) (by unfold kL sw; norm_num),
-        iscr_sw (by unfold kL sw; norm_num) (by unfold kL sw; norm_num), trivial⟩)).mono le_rfl ?_
+        iscr_sw (by omega_nf) (by omega_nf),
+        iscr_sw (by omega_nf) (by omega_nf),
+        iscr_sw (by omega_nf) (by omega_nf), trivial⟩)).mono le_rfl ?_
     rintro d' hd'
     have wN : d'.nreg kN = d.nreg kqN := by
-      rw [hd']; simp [cpLabL, regB, regI, upd, kN, kL, kqN, kqL, sw]
+      simp_all [cpLabL, regB, regI, upd, kN, kL, kqN, kqL, sw] 
     refine ⟨fun r hr => ?_, by rw [hd'], fun _ => ⟨kqLblOf_copy wN fun i hi => ?_, wN⟩⟩
     · have h0 : r ≠ kN := fun h => hr (Or.inl h)
       have h1 : r ≠ kL := fun h => hr (Or.inr ⟨by omega, by omega⟩)
@@ -274,18 +265,17 @@ theorem fin_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hB : d.nreg kqB ≤
       have h4 : r ≠ kL + 3 := fun h => hr (Or.inr ⟨by omega, by omega⟩)
       rw [hd']
       simp only [cpLabL, regB, regI]
-      rw [upd_other _ _ _ h4, upd_other _ _ _ h3, upd_other _ _ _ h2, upd_other _ _ _ h1,
-        upd_other _ _ _ h0]
+      simp_all
     · rw [hd']
-      interval_cases i <;> simp [cpLabL, regB, regI, upd, kN, kL, kqN, kqL, sw]
+      interval_cases i <;> aesop
   unfold finLab
   by_cases h1 : d.nreg K0 < d.nreg kqB
   · refine (IRS.ifT h1 cp).mono (by norm_num) (fun _ ⟨a, b, e⟩ => ⟨a, b, e, fun h => ?_⟩)
-    rw [hK.1] at h1; exact absurd (Or.inl (by omega)) h
+    omega
   · refine (IRS.ifF (K := 5 + 2) h1 ?_).mono (by norm_num) (fun _ h => h)
     by_cases h2 : d.nreg K0 < d.nreg kqA
     · refine (IRS.ifT h2 cp).mono le_rfl (fun _ ⟨a, b, e⟩ => ⟨a, b, e, fun h => ?_⟩)
-      rw [hK.1] at h2; exact absurd (Or.inr (by omega)) h
+      omega
     · refine IRS.ifF h2 (IRS.skip hId ⟨fun _ _ => rfl, rfl, fun h => ?_, fun _ _ => rfl⟩)
       rw [hK.1] at h1 h2; omega
 
@@ -302,7 +292,7 @@ theorem writeLog_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hA : c₀.nreg
       (∀ y, (y < d.nreg lB + 7 * d.nreg lC ∨ d.nreg lB + 7 * d.nreg lC + 7 ≤ y) →
         d'.nmem y = d.nmem y)) := by
   have hK := hK₀.fix hId
-  have hK1 := hK.2.1
+  
   unfold writeLog
   refine IRS.seq (K₁ := 5) (K₂ := 15) (IRS.block logAddrL hId (by
     simp only [lC, lB, sw, Nat.reduceAdd] at hW
@@ -317,7 +307,7 @@ theorem writeLog_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hA : c₀.nreg
   have hK₁ := hK₀.fix hI₁
   refine IRS.seq (K₁ := 14) (K₂ := 1) (storeL_irs (x := kqX) (iscr_sw' (by norm_num) (by norm_num))
     (by kqr) logRegs hI₁ hK₁.2.1 (by simp [logRegs, kE, kH, kN, kL, kqX, sw])
-    (by rw [a1]; omega) (by rw [a1]; simp [logRegs]; omega)) ?_
+    (by omega) (by simp_all [logRegs] )) ?_
   rintro d₂ hI₂ - - ⟨s1, s2, s3⟩
   have hK₂ := hK₀.fix hI₂
   have eLC : d₂.nreg lC = d.nreg lC := (s3 _ (by kqr)).trans (a2 _ (by kqr) (by kqr))
@@ -336,11 +326,11 @@ theorem writeLog_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hA : c₀.nreg
     rw [wm, ← a1, s1 i h, a2]
     · interval_cases i <;> simp [logRegs, kE, kH, kN, kL, kqX, sw]
     · interval_cases i <;> simp [logRegs, kE, kH, kN, kL, kqY, sw]
-  refine ⟨by rw [hd']; simp [regB, regI, hK₂.2.1, eLC], fun r h1 h2 h3 => by rw [w2 r h3, kr r h1 h2],
+  refine ⟨by rw [hd']; simp [regB, regI, hK₂.2.1, eLC], fun r h1 h2 h3 => by grind,
     by simpa [logRegs] using st 0 (by simp [logRegs]), by simpa [logRegs] using st 1 (by simp [logRegs]),
     by simpa [logRegs] using st 2 (by simp [logRegs]), fun i hi => ?_,
     fun y hy => by rw [wm, s2 y (by rw [a1]; simpa [logRegs] using hy), m1]⟩
-  have := st (3 + i) (by simp [logRegs]; omega)
+  have := st (3 + i) (by core_grind)
   rw [← Nat.add_assoc] at this
   rw [this]
   interval_cases i <;> simp [logRegs]

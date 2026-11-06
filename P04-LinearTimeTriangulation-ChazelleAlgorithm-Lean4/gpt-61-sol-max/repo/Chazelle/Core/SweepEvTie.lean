@@ -38,7 +38,7 @@ theorem attach_snd_eq (hP : J.P.Simple) {f : Set Point} (hf : f ∈ Merge.augCho
     intro w hw
     rw [hfab] at hw
     obtain ⟨s, -, -, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hw
-    simp only [Geometry.lerp_snd, hy, sub_self, mul_zero, add_zero]
+    simp_all
   rw [key z hz, key _ hA.2.2.2.1]
 
 /-- **The point of a tie off the open right stretch** is in the domain of `C₂` or is the shared
@@ -82,10 +82,10 @@ theorem tie_dom (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Mer
   have hR : J.right.radius = J.whole.radius := FuseMath.radius_of_P J (C' := J.right) rfl
   have hy : x.2 ≤ J.right.top.2 := F₂plus_snd_le J hS₂ he hA.2.2.2.1
   by_cases hxd : x ∈ J.right.dom
-  · exact Or.inl hxd
+  · grind
   · right
     rcases (Merge.not_mem_dom_iff J.right hy).1 hxd with h | h
-    · exact absurd (hR ▸ hbox) h
+    · grind
     · by_contra hv
       exact hout (off_right_pt J hP hS₂ hS₂f hA.1 hA.2.1 hA.2.2.1 h hv)
 
@@ -102,22 +102,15 @@ theorem parent_unique {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords
     intro y a b hu hw
     obtain ⟨-, h1, h2⟩ := hu
     obtain ⟨-, h3, h4⟩ := hw
-    refine ⟨⟨rfl, by simp only; linarith, by simp only; linarith⟩, fun h => ?_, fun h => ?_⟩
-    · have := congrArg Prod.fst h
-      simp only at this
-      rcases lt_or_gt_of_ne hx with h5 | h5 <;> linarith
-    · have := congrArg Prod.fst h
-      simp only at this
-      rcases lt_or_gt_of_ne hx with h5 | h5 <;> linarith
+    refine ⟨⟨rfl, by linarith, by linarith⟩, fun h => ?_, fun h => ?_⟩
+    all_goals grind
   have hyy : y = y' := hu.1.symm.trans hu'.1
   subst hyy
   obtain ⟨hm, hma, hmb⟩ := hconv hu hw
   obtain ⟨hm', -, -⟩ := hconv hu' hw'
   rcases Chain.hchordIn_inter hH hH' hm hm' with ⟨-, rfl, rfl⟩ | ⟨h1, -⟩
   · rfl
-  · rcases h1 with h | h
-    · exact absurd h hma
-    · exact absurd h hmb
+  grind
 
 /-- **At most two pieces of a chord of `S₂`**: three chords of `F₂⁺` inside `c ∈ S₂`, attached at
 points of the domain of `C₂`, are not pairwise distinct. -/

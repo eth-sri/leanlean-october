@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FactsL23
 
 /-!
@@ -39,16 +41,16 @@ theorem chordSides_of_system {D : Set Point} {F : Set (Set Point)} (hF : ChordSy
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 hRo z₀ (hcR ⟨hz₀c, hz₀D⟩)
   obtain ⟨ε₀, hε₀, hsep⟩ := hF.chord_separates_in subset_rfl hc hz₀c hz₀D
   set ε := min r ε₀ / 2 with hε
-  have hε0 : 0 < ε := by rw [hε]; have := lt_min hr hε₀; linarith
+  have hε0 : 0 < ε := by positivity
   have hεr : ε < r := by rw [hε]; have := min_le_left r ε₀; linarith
-  have hεε : ε < ε₀ := by rw [hε]; have := min_le_right r ε₀; linarith
+  have hεε : ε < ε₀ := by grind
   obtain ⟨hp, hm, hpm⟩ := hsep ε hε0 hεε
   set U := connectedComponentIn (freeIn D F) (z₀.1, z₀.2 + ε) with hU
   set V := connectedComponentIn (freeIn D F) (z₀.1, z₀.2 - ε) with hV
   have hUr : U ∈ regionsIn D F := ⟨_, hp, rfl⟩
   have hVr : V ∈ regionsIn D F := ⟨_, hm, rfl⟩
-  have hUr' : U ∈ regionsIn D (insert c S) := by rw [hins]; exact hUr
-  have hVr' : V ∈ regionsIn D (insert c S) := by rw [hins]; exact hVr
+  have hUr' : U ∈ regionsIn D (insert c S) := by grind
+  have hVr' : V ∈ regionsIn D (insert c S) := by grind
   -- the half-disks at `z₀`
   have hhalf : ∀ τ : ℝ, (τ = 1 ∨ τ = -1) → ∀ X ∈ regionsIn D (insert c S),
       ((z₀.1, z₀.2 + τ * ε) : Point) ∈ X → halfDisk z₀ r τ ⊆ X := by
@@ -79,17 +81,15 @@ theorem chordSides_of_system {D : Set Point} {F : Set (Set Point)} (hF : ChordSy
   refine ⟨U, V, hUr, hVr, hUne, fun z hzc hzD => ?_, fun W hW => ?_⟩
   · filter_upwards [hall 1 (Or.inl rfl) U hUr' hUhalf z hzc hzD,
       hall (-1) (Or.inr rfl) V hVr' hVhalf z hzc hzD] with δ h1 h2
-    rw [one_mul] at h1
-    rw [show z.2 + -1 * δ = z.2 - δ by ring] at h2
-    exact ⟨h1, h2⟩
+    ram_grind
   · have hU12 := (htouch U hUr).1 hcU
     have hV12 := (htouch V hVr).1 hcV
     rw [htouch W hW]
     rcases hU12 with h1 | h1 <;> rcases hV12 with h2 | h2
-    · exact absurd (h1.trans h2.symm) hUne
+    · ram_grind
     · rw [h1, h2]
     · rw [h1, h2]; exact Or.comm
-    · exact absurd (h1.trans h2.symm) hUne
+    ram_grind
 
 /-- **WP-B: the two sides of a chord** (`ChordSidesSpec`). -/
 theorem chordSides : ChordSidesSpec := by
@@ -108,7 +108,7 @@ theorem regionTree : RegionTreeSpec := by
   refine Relation.ReflTransGen.mono (r := (Chazelle.Chain.dualGraphIn M.D F).Adj) ?_ _ _ h
   intro A B hAB
   obtain ⟨-, -, -, c, hc, h1, h2⟩ := hAB
-  exact ⟨c, hc, h1, h2⟩
+  ram_grind
 
 end
 

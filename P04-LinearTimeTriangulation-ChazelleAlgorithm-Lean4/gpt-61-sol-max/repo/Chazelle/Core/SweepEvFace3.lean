@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvFace2
 
 /-!
@@ -41,7 +43,7 @@ def face : Stmt :=
 
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
-theorem iscr_fR : IScr fR := iscr_sw (by unfold fR sw; norm_num) (by unfold fR sw; norm_num)
+theorem iscr_fR : IScr fR := iscr_sw (by omega_nf) (by omega_nf)
 
 theorem faceChk_irs {xe xh src : ℕ} (hI : IInv W c₀ c) (hk0 : c.nreg K0 = 0) :
     IRS P W c₀ (faceChk xe xh src) c 7 (fun c' =>
@@ -51,22 +53,18 @@ theorem faceChk_irs {xe xh src : ℕ} (hI : IInv W c₀ c) (hk0 : c.nreg K0 = 0)
   by_cases h1 : c.nreg xe < c.nreg fE
   · refine (IRS.ifT h1 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).mono (by omega)
       (fun _ h => h)
-    rw [ite_eq_right (by omega)]
+    ram_grind
   by_cases h2 : c.nreg fE < c.nreg xe
   · refine (IRS.ifF h1 (IRS.ifT h2 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩))).mono
       (by omega) (fun _ h => h)
-    rw [ite_eq_right (by omega)]
+    ram_grind
   by_cases h3 : c.nreg K0 < c.nreg xh
   · refine (IRS.ifF h1 (IRS.ifF h2 (IRS.ifT h3 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩))))
       |>.mono (by omega) (fun _ h => h)
-    rw [ite_eq_right (by omega)]
+    ram_grind
   · refine (IRS.ifF h1 (IRS.ifF h2 (IRS.ifF h3 (IRS.block [.copyN fR src] hI
       ⟨iscr_fR, trivial⟩)))).mono (by simp) ?_
-    rintro c' rfl
-    refine ⟨?_, fun r hr => ?_, rfl⟩
-    · simp only [regB, regI, upd, ite_true]
-      rw [ite_eq_left ⟨by omega, by omega⟩]
-    · simp only [regB, regI, upd, ite_eq_right hr]
+    simp_all [regB, regI, upd, ite_true] <;> omega_nf
 
 theorem faceSel_irs (hI : IInv W c₀ c) (hk0 : c.nreg K0 = 0) :
     IRS P W c₀ faceSel c 10 (fun c' =>
@@ -79,51 +77,33 @@ theorem faceSel_irs (hI : IInv W c₀ c) (hk0 : c.nreg K0 = 0) :
     (by norm_num) (fun _ h => h)
   rintro c₁ hI₁ - - hc1
   have v1 : c₁.nreg fR = c.nreg lR1 := by
-    rw [hc1]; simp only [regB, regI, upd, ite_true]
+    simp_all [regB, regI, upd, ite_true] <;> omega_nf
   have o1 : ∀ r, r ≠ fR → c₁.nreg r = c.nreg r := by
-    intro r hr; rw [hc1]; simp only [regB, regI, upd, ite_eq_right hr]
+    simp_all [regB, regI, upd] <;> omega_nf
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
   have n : ∀ q, (q = fA ∨ q = K1 ∨ q = K0 ∨ q = fSE ∨ q = fSH ∨ q = fEE ∨ q = fEH ∨ q = fE ∨
       q = lR0 ∨ q = lR1 ∨ q = lR2) → c₁.nreg q = c.nreg q := by
     intro q hq
     apply o1
-    rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp [fR, fA, K1, K0, fSE, fSH, fEE, fEH, fE, lR0, lR1, lR2, sw]
-  have hk0' : c₁.nreg K0 = 0 := by rw [n K0 (by simp)]; exact hk0
+    omega_nf
+  have hk0' : c₁.nreg K0 = 0 := by ram_grind
   by_cases hA : c₁.nreg fA < c₁.nreg K1
   · refine (IRS.ifT hA (faceChk_irs hI₁ hk0')).mono le_rfl ?_
-    rintro c' ⟨h1, h2, h3⟩
-    rw [n fA (by simp), n K1 (by simp)] at hA
-    refine ⟨?_, fun r hr => (h2 r hr).trans (o1 r hr), h3.trans hm1⟩
-    rw [h1, ite_eq_left hA, v1, n fSE (by simp), n fSH (by simp), n fE (by simp), n lR0 (by simp)]
+    ram_grind
   · refine (IRS.ifF hA (faceChk_irs hI₁ hk0')).mono le_rfl ?_
-    rintro c' ⟨h1, h2, h3⟩
-    rw [n fA (by simp), n K1 (by simp)] at hA
-    refine ⟨?_, fun r hr => (h2 r hr).trans (o1 r hr), h3.trans hm1⟩
-    rw [h1, ite_eq_right hA, v1, n fEE (by simp), n fEH (by simp), n fE (by simp), n lR2 (by simp)]
+    ram_grind
 
 /-! ## The task -/
 
 set_option maxRecDepth 20000 in
 theorem face_cost (L : ℕ) : faceLocK L + (11015 + (11015 + 10)) ≤ 30000 * (L + 1) := by
-  unfold faceLocK; omega
+  omega_nf
 
 set_option maxRecDepth 20000 in
 theorem face_room1 {a L W : ℕ} (h : a + 30000 * (L + 1) ≤ W) : a + faceLocK L ≤ W := by
   unfold faceLocK; omega
 
-set_option maxRecDepth 20000 in
-theorem face_room2 {a L W : ℕ} (h : a + 30000 * (L + 1) ≤ W) : a + 11015 ≤ W := by
-  have h1 : 30000 ≤ 30000 * (L + 1) := Nat.le_mul_of_pos_right _ (Nat.succ_pos L)
-  generalize 30000 * (L + 1) = X at h h1
-  omega
 
-set_option maxRecDepth 20000 in
-theorem face_room3 {a b L W : ℕ} (h : a + 30000 * (L + 1) ≤ W) (hb : b ≤ a + 11015) :
-    b + 11015 ≤ W := by
-  have h1 : 30000 ≤ 30000 * (L + 1) := Nat.le_mul_of_pos_right _ (Nat.succ_pos L)
-  generalize 30000 * (L + 1) = X at h h1
-  omega
 
 end
 

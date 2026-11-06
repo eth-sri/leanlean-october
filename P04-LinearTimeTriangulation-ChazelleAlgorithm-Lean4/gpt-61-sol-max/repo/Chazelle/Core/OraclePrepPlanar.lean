@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepRotMath
 
 /-!
@@ -29,7 +31,7 @@ theorem inj_of_surj {M : ℕ} {s : ℕ → ℕ} (hlt : ∀ t, t < M → s t < M)
     exact ⟨⟨t, ht⟩, Fin.ext e⟩
   have hinj := Finite.injective_iff_surjective.2 hsurj
   have := hinj (a₁ := ⟨t, ht⟩) (a₂ := ⟨t', ht'⟩) (Fin.ext h)
-  exact congrArg Fin.val this
+  simp_all
 
 theorem sortedDarts_of {M : ℕ} {G K s : ℕ → ℕ}
     (hsort : SortedSeq (fun d => (G d, K d)) s M) (hlt : ∀ t, t < M → s t < M)
@@ -40,11 +42,11 @@ theorem sortedDarts_of {M : ℕ} {G K s : ℕ → ℕ}
   have h := hsort t t' htt.le ht'
   unfold PLe at h; unfold PLt; simp only at h ⊢
   rcases h with h | ⟨h1, h2⟩
-  · exact Or.inl h
+  · omega
   · rcases eq_or_lt_of_le h2 with e | e
     · have := hinj _ _ (hlt t (by omega)) (hlt t' ht') h1 e
       exact absurd (inj_of_surj hlt hs (by omega) ht' this) (by omega)
-    · exact Or.inr ⟨h1, e⟩
+    omega
 
 variable {B : BookData}
 
@@ -79,14 +81,13 @@ theorem memGraph_eq {m : ℕ → ℕ} {Bh : ℕ}
     intro u v
     constructor
     · rintro ⟨d, hd, h1, h2⟩
-      refine ⟨d, hd, by rw [← h1, hvt d hd], ?_⟩
+      refine ⟨d, hd, by simp_all, ?_⟩
       rw [hopp d hd, hvt _ (oppN_lt hd), view_oppN, View.tail_rev] at h2
       exact h2
     · rintro ⟨d, hd, h1, h2⟩
-      refine ⟨d, hd, by rw [hvt d hd, h1], ?_⟩
+      refine ⟨d, hd, by simp_all, ?_⟩
       rw [hopp d hd, hvt _ (oppN_lt hd), view_oppN, View.tail_rev, h2]
-  ext u v
-  simp only [memGraph, OracleQ.bookGraph, hdart]
+  simp_all [memGraph, OracleQ.bookGraph] <;> omega_nf
 
 end
 

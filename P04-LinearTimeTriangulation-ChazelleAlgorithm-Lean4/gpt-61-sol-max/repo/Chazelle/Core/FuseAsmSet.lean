@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SpecMerge
 
 /-!
@@ -23,11 +25,11 @@ namespace FuseAsm
 
 @[expose] public section
 
-open Chazelle.Merge (lend rend FreeAt shoot freeAt_vertex shoot_vertex)
+open Chazelle.Merge (lend rend FreeAt shoot freeAt_vertex             )
 
 theorem getD_lt {α : Type*} {l : List α} {i : ℕ} (h : i < l.length) (d : α) :
     l.getD i d = l[i] := by
-  simp [List.getD_eq_getElem?_getD, h]
+  simp_all
 
 variable (J : Merge.Junction)
 
@@ -38,13 +40,7 @@ def shots (Z : Set (Point × ℝ)) : Set (Set Point) :=
 theorem shots_union (Z Z' : Set (Point × ℝ)) : shots J (Z ∪ Z') = shots J Z ∪ shots J Z' := by
   ext d
   simp only [shots, Set.mem_union, Set.mem_ofPred_eq]
-  constructor
-  · rintro ⟨x, hx | hx, h⟩
-    · exact Or.inl ⟨x, hx, h⟩
-    · exact Or.inr ⟨x, hx, h⟩
-  · rintro (⟨x, hx, h⟩ | ⟨x, hx, h⟩)
-    · exact ⟨x, Or.inl hx, h⟩
-    · exact ⟨x, Or.inr hx, h⟩
+  ram_grind
 
 /-- Queries whose direction is not free contribute nothing: dropping them keeps the shots. -/
 theorem shots_eq_of {Z Z' : Set (Point × ℝ)} (hsub : Z ⊆ Z')
@@ -70,68 +66,39 @@ def capQ : Set (Point × ℝ) := {x | SharedExtremum J ∧ x = (capOrigin J, cap
 theorem shots_vtxQ (k : ℕ) :
     shots J (vtxQ J k) = {d | ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ J.whole.DirFree k σ ∧
       d = J.whole.chordSet k σ} := by
-  ext d
-  simp only [shots, vtxQ, Set.mem_insert_iff, Set.mem_singleton_iff, Set.mem_ofPred_eq]
-  constructor
-  · rintro ⟨x, hx, hf, rfl⟩
-    rcases hx with rfl | rfl
-    · exact ⟨1, Or.inl rfl, (freeAt_vertex _ _ _).1 hf, (shoot_vertex _ _ _)⟩
-    · exact ⟨-1, Or.inr rfl, (freeAt_vertex _ _ _).1 hf, (shoot_vertex _ _ _)⟩
-  · rintro ⟨σ, hσ | hσ, hf, rfl⟩ <;> subst hσ
-    · exact ⟨_, Or.inl rfl, (freeAt_vertex _ _ _).2 hf, (shoot_vertex _ _ _).symm⟩
-    · exact ⟨_, Or.inr rfl, (freeAt_vertex _ _ _).2 hf, (shoot_vertex _ _ _).symm⟩
+  aesop (add simp [shots, vtxQ, Set.mem_insert_iff, Set.mem_singleton_iff, Set.mem_ofPred_eq]) (add safe (by omega))
 
 theorem shared_eq_shots : J.sharedChords = shots J (vtxQ J J.m₁) := by
   rw [shots_vtxQ]; rfl
 
 theorem top_eq_shots : topChords J = shots J (topQ J) := by
-  rw [topQ, shots_union, shots_vtxQ, shots_vtxQ]
-  ext d
-  simp only [topChords, topIdxs, Finset.mem_insert, Finset.mem_singleton, Set.mem_union,
-    Set.mem_ofPred_eq]
-  constructor
-  · rintro ⟨k, hk | hk, h⟩ <;> subst hk
-    · exact Or.inl h
-    · exact Or.inr h
-  · rintro (h | h)
-    · exact ⟨_, Or.inl rfl, h⟩
-    · exact ⟨_, Or.inr rfl, h⟩
+  aesop (add simp [topQ, shots_union, shots_vtxQ, topChords, topIdxs, Finset.mem_insert, Finset.mem_singleton, Set.mem_union, Set.mem_ofPred_eq]) (add safe (by omega))
 
 theorem cap_eq_shots : capChords J = shots J (capQ J) := by
   ext d
   simp only [capChords, shots, capQ, Set.mem_ofPred_eq]
-  constructor
-  · rintro ⟨he, hf, rfl⟩; exact ⟨_, ⟨he, rfl⟩, hf, rfl⟩
-  · rintro ⟨x, ⟨he, rfl⟩, hf, rfl⟩; exact ⟨he, hf, rfl⟩
+  simp_all
 
-theorem fusion_eq_shots (S₁ S₂ : Set (Set Point)) :
+section
+variable (S₁ S₂ : Set (Set Point))
+theorem fusion_eq_shots :
     J.fusion S₁ S₂ = shots J (endQ (S₁ ∪ S₂)) ∪ shots J (vtxQ J J.m₁) := by
   rw [← shared_eq_shots, endQ, shots_union]
   ext d
   simp only [Merge.Junction.fusion, shots, Set.mem_union, Set.mem_ofPred_eq]
-  constructor
-  · rintro ((⟨c, hc, hf, rfl⟩ | ⟨c, hc, hf, rfl⟩) | h)
-    · exact Or.inl (Or.inl ⟨_, ⟨c, hc, rfl⟩, hf, rfl⟩)
-    · exact Or.inl (Or.inr ⟨_, ⟨c, hc, rfl⟩, hf, rfl⟩)
-    · exact Or.inr h
-  · rintro ((⟨x, ⟨c, hc, rfl⟩, hf, rfl⟩ | ⟨x, ⟨c, hc, rfl⟩, hf, rfl⟩) | h)
-    · exact Or.inl (Or.inl ⟨c, hc, hf, rfl⟩)
-    · exact Or.inl (Or.inr ⟨c, hc, hf, rfl⟩)
-    · exact Or.inr h
+  simp_all
 
 /-- **The fused family as a set of shots.** -/
-theorem fused_eq_shots (S₁ S₂ : Set (Set Point)) :
+theorem fused_eq_shots :
     J.fusion S₁ S₂ ∪ glueChords J =
       shots J (endQ (S₁ ∪ S₂) ∪ vtxQ J J.m₁ ∪ topQ J ∪ capQ J) := by
-  rw [fusion_eq_shots, glueChords, top_eq_shots, cap_eq_shots, shots_union, shots_union,
-    shots_union]
-  ac_rfl
+  grind [fusion_eq_shots, glueChords, top_eq_shots, cap_eq_shots, shots_union]
 
 /-! ## The answers of the sweep -/
 
-/-- The triples of the answers with flag `1`. -/
-def collect (R : List (ℕ × ℕ × ℕ × ℕ)) : List (ℕ × ℕ × ℕ) :=
-  (R.filter (fun r => r.1 == 1)).map (fun r => r.2)
+
+end
+
 
 /-- The geometric queries of a query list of side `i`. -/
 def geoQ (Q : Polygon) (i : ℕ) (L : List (ℕ × ℕ × ℕ)) : Set (Point × ℝ) :=

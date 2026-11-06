@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShotListMath
 public import Chazelle.Core.SweepPrimOff
 
@@ -40,16 +42,17 @@ def NormPos (M : Model) (Q : Polygon) (n : ℕ) (x : WPos) : Prop :=
 /-- The interior bit of a position (`1` iff its height code is positive). -/
 def ibit (x : WPos) : ℕ := if 0 < x.hgt then 1 else 0
 
-theorem param_of_norm {M : Model} {Q : Polygon} {n : ℕ} {x : WPos} (h : NormPos M Q n x) :
+section
+variable {M : Model} {Q : Polygon}
+theorem param_of_norm {n : ℕ} {x : WPos} (h : NormPos M Q n x) :
     (x.hgt = 0 → M.param Q x = 0) ∧ (0 < x.hgt → 0 < M.param Q x) := by
-  refine ⟨fun h0 => by unfold Model.param; rw [h0], fun hp => ?_⟩
+  refine ⟨fun h0 => by grind [Model.param], fun hp => ?_⟩
   rcases h.2 with h0 | h0
-  · omega
-  · exact h0
+  all_goals omega
 
 /-- **The order of two normalised keys**, when they are not both inside one edge: lexicographic
 in the edge and the interior bit. -/
-theorem key_lt_iff {M : Model} {Q : Polygon} {n : ℕ} {x y : WPos} (hx : NormPos M Q n x)
+theorem key_lt_iff {n : ℕ} {x y : WPos} (hx : NormPos M Q n x)
     (hy : NormPos M Q n y) (hne : ¬ (x.edge = y.edge ∧ 0 < x.hgt ∧ 0 < y.hgt)) :
     M.key Q x < M.key Q y ↔ x.edge < y.edge ∨ (x.edge = y.edge ∧ ibit x < ibit y) := by
   have px := param_of_norm hx
@@ -60,42 +63,27 @@ theorem key_lt_iff {M : Model} {Q : Polygon} {n : ℕ} {x y : WPos} (hx : NormPo
   constructor
   · intro h
     rcases lt_trichotomy x.edge y.edge with he | he | he
-    · exact Or.inl he
-    · refine Or.inr ⟨he, ?_⟩
-      rw [he] at h
-      have hlt : M.param Q x < M.param Q y := by linarith
-      by_cases hxh : 0 < x.hgt
-      · by_cases hyh : 0 < y.hgt
-        · exact absurd ⟨he, hxh, hyh⟩ hne
-        · rw [py.1 (by omega)] at hlt; linarith
-      · by_cases hyh : 0 < y.hgt
-        · simp [hxh, hyh]
-        · rw [px.1 (by omega), py.1 (by omega)] at hlt; exact absurd hlt (lt_irrefl _)
+    · omega
+    · grind
     · exfalso
       have : (y.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast he
       linarith
   · rintro (he | ⟨he, hi⟩)
     · have : (x.edge : ℝ) + 1 ≤ y.edge := by exact_mod_cast he
       linarith
-    · rw [he]
-      split_ifs at hi with h1 h2 h2 <;> try omega
-      rw [px.1 (by omega)]
-      have := py.2 h2
-      linarith
+    grind
 
 /-- The order of two keys is the order of their offsets from `0`. -/
-theorem key_lt_iff_off {M : Model} {Q : Polygon} {x y : WPos} (hx0 : 0 ≤ M.param Q x)
+theorem key_lt_iff_off {x y : WPos} (hx0 : 0 ≤ M.param Q x)
     (hy0 : 0 ≤ M.param Q y) :
     M.key Q x < M.key Q y ↔
       WalkEmbed.off M.W.n 0 (M.key Q x) < WalkEmbed.off M.W.n 0 (M.key Q y) := by
-  have k0 : (0 : ℝ) ≤ M.key Q x := by
-    unfold Model.key; have : (0 : ℝ) ≤ x.edge := Nat.cast_nonneg _; linarith
-  have k1 : (0 : ℝ) ≤ M.key Q y := by
-    unfold Model.key; have : (0 : ℝ) ≤ y.edge := Nat.cast_nonneg _; linarith
-  unfold WalkEmbed.off
-  simp [k0, k1]
+  grind [Model.key, WalkEmbed.off]
 
 /-! ## The comparison blocks -/
+
+
+end
 
 /-- The interior bit of a height code. -/
 def ibv (h : ℕ) : ℕ := if 0 < h then 1 else 0
@@ -111,7 +99,7 @@ def kltB (eu hu ev hv d z : ℕ) : Stmt :=
         (.ifLtN z hv (.instr (.constN d 1)) (.instr (.constN d 0)))))
 
 /-- The registers `kltB` writes. -/
-def Bone (d : ℕ) (r : ℕ) : Bool := r == d
+def Bone (d r : ℕ) : Bool := r == d
 
 theorem wr_kltB (eu hu ev hv d z : ℕ) : wr (Bone d) (kltB eu hu ev hv d z) = true := by
   simp [wr, kltB, wrOK, Bone]
@@ -139,17 +127,16 @@ theorem kltB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
   · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ :=
       .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true h3 e0))
     refine ⟨_, _, ex, by omega, v0 _ ?_, exec_frameB ex wk⟩
-    rw [hz] at h3; simp only [h3, ↓reduceIte]; split_ifs <;> omega
+    grind
   by_cases h4 : c.nreg z < c.nreg hv
   · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ :=
       .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_false h3 (.ifLtN_true h4 e1)))
     refine ⟨_, _, ex, by omega, v1 _ ?_, exec_frameB ex wk⟩
-    rw [hz] at h3 h4; simp only [h4, ↓reduceIte, show ¬ 0 < c.nreg hu from h3]; omega
+    grind
   · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ :=
       .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_false h3 (.ifLtN_false h4 e0)))
     refine ⟨_, _, ex, by omega, v0 _ ?_, exec_frameB ex wk⟩
-    rw [hz] at h3 h4
-    simp only [show ¬ 0 < c.nreg hv from h4, show ¬ 0 < c.nreg hu from h3, ↓reduceIte]; omega
+    simp_all
 
 /-! ## The selection of the pieces -/
 
@@ -184,35 +171,8 @@ theorem cutK_eq_selT {α : Type} (ka kb kx ky : ℝ) (a b x y : α) {c1 c2 c3 c4
   unfold cutK selT
   simp only [Bool.not_true, Bool.false_eq_true, ↓reduceIte]
   by_cases q1 : sideInArc kx ky ka
-  · have := h1.2 q1
-    simp only [q1, this, ↓reduceIte]
-    by_cases q2 : sideInArc ka kb ky
-    · have := h2.2 q2
-      simp only [q2, this, ↓reduceIte]
-      by_cases q3 : sideInArc ky kb kx
-      · simp [q3, h3.2 q3, End.val]
-      · have : c3 = false := by cases c3 <;> simp_all
-        simp [q3, this, End.val]
-    · have : c2 = false := by cases c2 <;> simp_all
-      simp [q2, this]
-  · have e1 : c1 = false := by cases c1 <;> simp_all
-    simp only [q1, e1, ↓reduceIte, Bool.false_eq_true]
-    by_cases q4 : sideInArc ka kb kx
-    · simp only [q4, h4.2 q4, ↓reduceIte]
-      by_cases q5 : sideInArc kx kb ky
-      · simp [q5, h5.2 q5, End.val]
-      · have : c5 = false := by cases c5 <;> simp_all
-        simp [q5, this, End.val]
-    · have e4 : c4 = false := by cases c4 <;> simp_all
-      simp only [q4, e4, ↓reduceIte, Bool.false_eq_true]
-      by_cases q6 : kx = ka
-      · simp only [q6, ↓reduceIte, h6.2 q6]
-        by_cases q2 : sideInArc ka kb ky
-        · simp [q2, h2.2 q2, End.val]
-        · have : c2 = false := by cases c2 <;> simp_all
-          simp [q2, this]
-      · have e6 : c6 = false := by cases c6 <;> simp_all
-        simp [q6, e6, End.val]
+  · core_grind
+  core_grind
 
 /-- The register pair of an end: `A = (L, L + 1)`, `B = (L + 2, L + 3)`, `X = (hx, z)`,
 `Y = (hy, z)`. -/
@@ -246,25 +206,34 @@ def selB (L hx hy z N S Cn hpA hpB c1 c2 c3 c4 c5 c6 : ℕ) : Stmt :=
         (.ifLtN z c6 (.ifLtN z c2 (lf [(.Y, .B)]) (lf [])) (lf [(.A, .B)]))))
     (lf [(.A, .B)])
 
+section
+variable (c : Config)
+include c
 /-- The walk position in the registers `e`, `h`. -/
-def posR (c : Config) (r : ℕ × ℕ) : WPos := ⟨c.nreg r.1, c.nreg r.2⟩
+def posR (r : ℕ × ℕ) : WPos := ⟨c.nreg r.1, c.nreg r.2⟩
 
 /-- The piece in the registers `d … d + 3`. -/
-def pieceR (c : Config) (d : ℕ) : WPos × WPos := (posR c (d, d + 1), posR c (d + 2, d + 3))
+def pieceR (d : ℕ) : WPos × WPos := (posR c (d, d + 1), posR c (d + 2, d + 3))
 
 /-- **The pieces in the registers**: their number in `Cn`, the first in `N …`, the second in
 `S …`. -/
-def PiecesAt (c : Config) (N S Cn : ℕ) (ps : List (WPos × WPos)) : Prop :=
+def PiecesAt (N S Cn : ℕ) (ps : List (WPos × WPos)) : Prop :=
   c.nreg Cn = ps.length ∧ ps.length ≤ 2 ∧ (∀ p, ps[0]? = some p → pieceR c N = p) ∧
     (∀ p, ps[1]? = some p → pieceR c S = p)
+
+
+end
 
 /-- The output registers of the selection avoid the input registers. -/
 def SelDisj (L hx hy z N S Cn : ℕ) : Prop :=
   ∀ e : End, ∀ o, (o = Cn ∨ (N ≤ o ∧ o < N + 4) ∨ (S ≤ o ∧ o < S + 4)) →
     (End.regs L hx hy z e).1 ≠ o ∧ (End.regs L hx hy z e).2 ≠ o
 
+section
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include hw
 /-- **Writing a piece**: the ends read from `u`, `v` (not overwritten before they are read). -/
-theorem putPiece_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {d : ℕ}
+theorem putPiece_exec {d : ℕ}
     {u v : ℕ × ℕ} (hu : u.2 ≠ d) (hv1 : v.1 ≠ d ∧ v.1 ≠ d + 1)
     (hv2 : v.2 ≠ d ∧ v.2 ≠ d + 1 ∧ v.2 ≠ d + 2) :
     ∃ c' k, Exec P W (block (putPiece d u v)) c c' k ∧ k = 4 ∧
@@ -277,11 +246,9 @@ theorem putPiece_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   unfold putPiece
   exec_block
   refine ⟨by omega, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-  · simp only [pieceR, posR, Prod.mk.injEq, WPos.mk.injEq]
-    refine ⟨⟨?_, ?_⟩, ?_, ?_⟩ <;> simp only [upd] <;> split_ifs <;> first | rfl | omega
-  · simp only [upd]; split_ifs <;> first | rfl | omega
+  all_goals (grind [pieceR, posR, Prod.mk.injEq, WPos.mk.injEq, upd])
 
-theorem selLeaf_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W)
+theorem selLeaf_exec (hW : 2 ≤ W)
     {L hx hy z N S Cn : ℕ} (hd : SelDisj L hx hy z N S Cn) (hNS : N + 4 ≤ S ∨ S + 4 ≤ N)
     (hC : Cn < N ∨ N + 4 ≤ Cn) (hC' : Cn < S ∨ S + 4 ≤ Cn) (tl : List (End × End))
     (htl : tl.length ≤ 2) :
@@ -297,7 +264,7 @@ theorem selLeaf_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
     unfold selLeaf
     exec_block
     · omega
-    · refine ⟨by omega, ⟨by simp, by simp, by simp, by simp⟩, fun r h1 _ _ => by simp [upd, h1],
+    · refine ⟨by omega, ⟨by simp, by simp, by simp, by simp⟩, fun r h1 _ _ => by ram_simp,
         rfl, rfl, rfl, rfl⟩
   | [p], _ =>
     obtain ⟨u, v⟩ := p
@@ -318,8 +285,7 @@ theorem selLeaf_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       simp only [pieceR, posR]
       have : Cn ≠ N ∧ Cn ≠ N + 1 ∧ Cn ≠ N + 2 ∧ Cn ≠ N + 3 := by omega
       simp [upd, this.1.symm, this.2.1.symm, this.2.2.1.symm, this.2.2.2.symm]
-    · simp only [upd, h1, ↓reduceIte]
-      exact r₁ r h2
+    ram_simp
   | [p, q], _ =>
     obtain ⟨u, v⟩ := p
     obtain ⟨u', v'⟩ := q
@@ -367,8 +333,10 @@ theorem selLeaf_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       have : Cn ≠ S ∧ Cn ≠ S + 1 ∧ Cn ≠ S + 2 ∧ Cn ≠ S + 3 := by omega
       simp only [upd, ↓reduceIte, this.1.symm, this.2.1.symm, this.2.2.1.symm,
         this.2.2.2.symm, and_self]
-    · simp only [upd, h1, ↓reduceIte]
-      rw [r₂ r h3, r₁ r h2]
+    ram_simp
+
+
+end
 
 /-- The pieces of the selection, as walk positions read in `c`. -/
 def selPos (c : Config) (L hx hy z : ℕ) (tl : List (End × End)) : List (WPos × WPos) :=
@@ -486,47 +454,42 @@ theorem kltSeq_exec {P : Polygon} {W : ℕ} (hW : 1 ≤ W) (z : ℕ) :
   | [], c, hw, _, _ => ⟨c, 0, .skip hw, by simp, by simp, FrameB.refl _ _⟩
   | (eu, hu, ev, hv, d) :: t, c, hw, hz, ⟨hzo, hnd, hin⟩ => by
     have hd : d ∉ cmpOuts t := by
-      simp only [cmpOuts, List.map_cons, List.nodup_cons] at hnd; exact hnd.1
+      grind [cmpOuts, List.map_cons, List.nodup_cons]
     have hok : CmpOK z t := by
       refine ⟨fun h => hzo ?_, (List.nodup_cons.1 hnd).2, fun u hu' => ?_⟩
-      · simp only [cmpOuts, List.map_cons, List.mem_cons] at h ⊢
-        exact Or.inr h
+      · grind [cmpOuts, List.map_cons, List.mem_cons]
       · obtain ⟨a1, a2, a3, a4⟩ := hin u (List.mem_cons_of_mem _ hu')
         simp only [cmpOuts, List.map_cons, List.mem_cons, not_or] at a1 a2 a3 a4 ⊢
-        exact ⟨a1.2, a2.2, a3.2, a4.2⟩
+        grind
     obtain ⟨c₁, k₁, e₁, hk₁, b₁, f₁⟩ := kltB_exec (P := P) c hw hW eu hu ev hv d z hz
     have hzd : z ≠ d := by
-      intro h; apply hzo; rw [h]; simp [cmpOuts]
+      grind [cmpOuts]
     have z₁ : c₁.nreg z = 0 := by
-      have g : Bone d z = false := by simp [Bone, hzd]
-      rw [f₁.1 z g]; exact hz
+      ram_grind
     obtain ⟨c₂, k₂, e₂, hk₂, b₂, f₂⟩ := kltSeq_exec hW z t c₁ e₁.wb_right z₁ hok
     have keep1 : ∀ r, r ∉ cmpOuts ((eu, hu, ev, hv, d) :: t) → c₂.nreg r = c.nreg r := by
       intro r hr
       simp only [cmpOuts, List.map_cons, List.mem_cons, not_or] at hr
       have g2 : Bouts t r = false := by
         simp only [Bouts, List.contains_eq_mem, decide_eq_false_iff_not]; exact hr.2
-      have g1 : Bone d r = false := by simp [Bone, hr.1]
-      rw [f₂.1 r g2, f₁.1 r g1]
-    refine ⟨c₂, _, .seq e₁ e₂, by simp only [List.length_cons]; omega, fun u hu' => ?_, ?_⟩
+      ram_grind
+    refine ⟨c₂, _, .seq e₁ e₂, by grind, fun u hu' => ?_, ?_⟩
     · rcases List.mem_cons.1 hu' with rfl | hu'
       · refine b₁.of_eq (f₂.1 _ ?_)
-        simp only [Bouts, List.contains_eq_mem, decide_eq_false_iff_not]; exact hd
+        grind [Bouts, List.contains_eq_mem, decide_eq_false_iff_not]
       · have := b₂ u hu'
         obtain ⟨a1', a2', a3', a4'⟩ := hin u (List.mem_cons_of_mem _ hu')
         simp only [cmpOuts, List.map_cons, List.mem_cons, not_or] at a1' a2' a3' a4'
-        rwa [f₁.1 _ (by simp [Bone, a1'.1]), f₁.1 _ (by simp [Bone, a2'.1]),
-          f₁.1 _ (by simp [Bone, a3'.1]), f₁.1 _ (by simp [Bone, a4'.1])] at this
+        rwa [f₁.1 _ (by grind [Bone]), f₁.1 _ (by grind [Bone]),
+          f₁.1 _ (by grind [Bone]), f₁.1 _ (by grind [Bone])] at this
     · refine ⟨fun r hr => ?_, fun r hr => ?_, f₂.2.2.1.trans f₁.2.2.1,
         f₂.2.2.2.1.trans f₁.2.2.2.1, f₂.2.2.2.2.trans f₁.2.2.2.2⟩
-      · simp only [Bouts, List.contains_eq_mem, decide_eq_false_iff_not] at hr
-        exact keep1 r hr
+      · grind [Bouts, List.contains_eq_mem, decide_eq_false_iff_not]
       · simp only [Bouts, List.contains_eq_mem, decide_eq_false_iff_not, cmpOuts,
           List.map_cons, List.mem_cons, not_or] at hr
         have g2 : Bouts t r = false := by
           simp only [Bouts, List.contains_eq_mem, decide_eq_false_iff_not]; exact hr.2
-        have g1 : Bone d r = false := by simp [Bone, hr.1]
-        rw [f₂.2.1 r g2, f₁.2.1 r g1]
+        ram_grind
 
 end
 

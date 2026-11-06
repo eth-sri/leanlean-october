@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoConv
 
 /-!
@@ -26,17 +28,25 @@ open Chazelle.Chain (sidePt sideLeft sideInArc sideLeftOf sideCcw sideCross side
 theorem absy_lt (C : Chain) {p : Point} (hp : p ∈ C.set) : |p.2| < C.radius :=
   lt_of_le_of_lt (C.abs_le_coordBound_of_mem_set hp).2 C.coordBound_lt_radius
 
+section
+variable (C : Chain) (Q : Polygon) (x : WPos)
+include C Q x
 /-- **The positions converted to the model of `C`.** -/
-def PosClass (C : Chain) (Q : Polygon) (x : WPos) : Prop :=
+def PosClass : Prop :=
   (x.edge = 1 ∨ x.edge = 3) ∨ (6 ≤ x.edge ∧ x.edge < 2 * C.m + 6) ∨
     (x.edge = 2 * C.m + 6 ∧ (chainModel C).param Q x = 0)
 
-theorem pos_eq_sidePt' (C : Chain) (Q : Polygon) (x : WPos) :
+theorem pos_eq_sidePt' :
     (chainModel C).pos Q x = sidePt (chainModel C).W x.edge ((chainModel C).param Q x) := rfl
 
+
+end
+
+section
+variable {C : Chain} {Q : Polygon} {x : WPos}
 /-- **Points of the chain or of the box on a ray strictly inside the height band** have positions
 of the class. -/
-theorem posClass_of {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainModel C).W.n)
+theorem posClass_of (he : x.edge < (chainModel C).W.n)
     (h0 : 0 ≤ (chainModel C).param Q x) (h1 : (chainModel C).param Q x < 1)
     (hy : |((chainModel C).pos Q x).2| < C.radius)
     (hc : ((chainModel C).pos Q x).2 ≤ C.top.2 ∨ |((chainModel C).pos Q x).1| = C.radius) :
@@ -55,28 +65,27 @@ theorem posClass_of {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMo
     omega) with hlt | hmid | hend
   · rcases (show x.edge = 0 ∨ x.edge = 1 ∨ x.edge = 2 ∨ x.edge = 3 ∨ x.edge = 4 ∨ x.edge = 5 by
       omega) with h | h | h | h | h | h
-    · rw [h, b0] at hy; simp only at hy; rw [abs_of_pos hR] at hy; exact absurd hy (lt_irrefl _)
-    · exact Or.inl (Or.inl h)
-    · rw [h, b2] at hy; simp only at hy; rw [abs_neg, abs_of_pos hR] at hy
-      exact absurd hy (lt_irrefl _)
-    · exact Or.inl (Or.inr h)
-    · rw [h, b4] at hy; simp only at hy; rw [abs_of_pos hR] at hy; exact absurd hy (lt_irrefl _)
+    · ram_grind
+    · omega
+    · ram_grind
+    · omega
+    · ram_grind
     · exfalso
       rw [h, b5] at hy hc; simp only at hy hc
       rcases hc with hc | hc
       · nlinarith
-      · rw [hc] at htx; exact lt_irrefl _ htx
-  · exact Or.inr (Or.inl hmid)
+      simp_all
+  · omega
   · refine Or.inr (Or.inr ⟨hend, ?_⟩)
     rw [hend, b6] at hc; simp only at hc
     rcases hc with hc | hc
     · rcases h0.lt_or_eq with h0 | h0
       · nlinarith
-      · exact h0.symm
-    · rw [hc] at htx; exact absurd htx (lt_irrefl _)
+      simp_all
+    simp_all
 
 /-- **The points of the class** are points of the chain or of a vertical side of the box. -/
-theorem posClass_pt {C : Chain} {Q : Polygon} {x : WPos} (hx : PosClass C Q x)
+theorem posClass_pt (hx : PosClass C Q x)
     (h0 : 0 ≤ (chainModel C).param Q x) (h1 : (chainModel C).param Q x < 1)
     (hy : |((chainModel C).pos Q x).2| < C.radius) :
     (chainModel C).pos Q x ∈ C.set ∨
@@ -88,18 +97,19 @@ theorem posClass_pt {C : Chain} {Q : Polygon} {x : WPos} (hx : PosClass C Q x)
   have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
   rw [hW] at hy ⊢
   rcases hx with (h | h) | ⟨h6, hlt⟩ | ⟨hend, hz⟩
-  · right; rw [h, b1]; simp only; rw [abs_neg, abs_of_pos hR]
-    exact ⟨rfl, by rw [h, b1] at hy; exact hy⟩
-  · right; rw [h, b3]; simp only; rw [abs_of_pos hR]
-    exact ⟨rfl, by rw [h, b3] at hy; exact hy⟩
+  · ram_grind
+  · ram_grind
   · left
     have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6) (t := t) (by omega)
       (fun h => by omega) h0 h1
-    rwa [show x.edge - 6 + 6 = x.edge by omega] at this
+    simp_all
   · left
     rw [hend, ht, hz]
     exact C.sideWalk_tour_pt_mem C.sideBeta (i := 2 * C.m) (t := 0) le_rfl (fun _ => rfl) le_rfl
       one_pos
+
+
+end
 
 /-- **The bottom corners of the box have no horizontal direction in their left sector.** -/
 theorem not_sideLeft_bottom (C : Chain) {σ : ℝ} (_hσ : σ = 1 ∨ σ = -1) {p : ℕ}
@@ -115,7 +125,7 @@ theorem not_sideLeft_bottom (C : Chain) {σ : ℝ} (_hσ : σ = 1 ∨ σ = -1) {
   · rw [show (2 + (C.sideWalk C.sideBeta).n - 1) % (C.sideWalk C.sideBeta).n = 1 by
         rw [hn, show 2 + (2 * C.m + 7) - 1 = 1 + (2 * C.m + 7) by omega, Nat.add_mod_right,
           Nat.mod_eq_of_lt (by omega)],
-      show (2 + 1) % (C.sideWalk C.sideBeta).n = 3 by rw [hn]; exact Nat.mod_eq_of_lt (by omega),
+      show (2 + 1) % (C.sideWalk C.sideBeta).n = 3 by simp_all,
       C.sideWalk_vtx_one, C.sideWalk_vtx_two, C.sideWalk_vtx_three]
     simp only [sideCross, Chazelle.Chain.sideDot, rayPt, Prod.fst_sub, Prod.snd_sub]
     intro h
@@ -123,7 +133,7 @@ theorem not_sideLeft_bottom (C : Chain) {σ : ℝ} (_hσ : σ = 1 ∨ σ = -1) {
   · rw [show (3 + (C.sideWalk C.sideBeta).n - 1) % (C.sideWalk C.sideBeta).n = 2 by
         rw [hn, show 3 + (2 * C.m + 7) - 1 = 2 + (2 * C.m + 7) by omega, Nat.add_mod_right,
           Nat.mod_eq_of_lt (by omega)],
-      show (3 + 1) % (C.sideWalk C.sideBeta).n = 4 by rw [hn]; exact Nat.mod_eq_of_lt (by omega),
+      show (3 + 1) % (C.sideWalk C.sideBeta).n = 4 by simp_all,
       C.sideWalk_vtx_two, C.sideWalk_vtx_three, C.sideWalk_vtx_four]
     simp only [sideCross, Chazelle.Chain.sideDot, rayPt, Prod.fst_sub, Prod.snd_sub]
     intro h
@@ -140,7 +150,7 @@ theorem query_abs {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMode
   have hR := C.radius_pos
   have htR := C.top_snd_lt_radius
   have htm : |C.top.2| < C.radius := absy_lt C C.top_mem_set
-  have htl := (abs_lt.1 htm).1
+  
   set t := (chainModel C).param Q x with ht
   rw [pos_eq_sidePt' C Q x, ← ht] at htop hsec ⊢
   obtain ⟨b0, b1, b2, b3, b4, b5, b6⟩ := C.sidePt_box C.sideBeta t
@@ -149,7 +159,7 @@ theorem query_abs {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMode
     omega) with hlt | hmid | hend
   · rcases (show x.edge = 0 ∨ x.edge = 1 ∨ x.edge = 2 ∨ x.edge = 3 ∨ x.edge = 4 ∨ x.edge = 5 by
       omega) with h | h | h | h | h | h
-    · rw [hW, h, b0] at htop; simp only at htop; linarith
+    · grind
     · rw [hW, h, b1]; simp only
       rw [hW, h, b1] at htop; simp only at htop
       rw [abs_lt]; constructor <;> nlinarith
@@ -158,10 +168,10 @@ theorem query_abs {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMode
         rcases h0.lt_or_eq with h0 | h0
         · exfalso
           apply Sweep.not_sideLeft_horizontal h0 h1 (W := (chainModel C).W) (p := 2) _ σ
-          · rw [← h]; exact hsec
+          · grind
           · rw [hW, C.sideWalk_vtx_two, show (2 + 1) % (C.sideWalk C.sideBeta).n = 3 by
-              rw [C.sideWalk_n]; exact Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_three]
-        · exact h0.symm
+              simp_all, C.sideWalk_vtx_three]
+        simp_all
       rw [h, ht0] at hsec
       exact not_sideLeft_bottom C hσ (Or.inl rfl) hsec
     · rcases h0.lt_or_eq with h0' | h0'
@@ -170,16 +180,16 @@ theorem query_abs {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMode
       · exfalso
         rw [h, ← h0'] at hsec
         exact not_sideLeft_bottom C hσ (Or.inr rfl) hsec
-    · rw [hW, h, b4] at htop; simp only at htop; linarith
+    · grind
     · rw [hW, h, b5] at htop; simp only at htop; nlinarith
   · have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6) (t := t) (by omega)
       (fun h => by omega) h0 h1
     rw [show x.edge - 6 + 6 = x.edge by omega] at this
-    exact absy_lt C (by rw [hW]; exact this)
+    exact absy_lt C (by simp_all)
   · rw [hW, hend, b6] at htop ⊢; simp only at htop ⊢
-    have : t * (C.radius - C.top.2) ≤ 0 := by linarith
+    
     have ht0 : t = 0 := by nlinarith
-    rw [ht0, zero_mul, add_zero]; exact htm
+    grind
 
 end
 

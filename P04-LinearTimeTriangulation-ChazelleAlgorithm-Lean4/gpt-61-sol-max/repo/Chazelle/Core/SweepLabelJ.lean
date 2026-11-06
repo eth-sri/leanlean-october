@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepLabelGap
 public import Chazelle.Core.FuseMath
 
@@ -58,16 +60,11 @@ theorem pos_eq_vertex (hP : C.P.Simple) (β : Bool) {p : ℕ} (hp : p < (C.sideW
   rcases C.sideWalk_pos_cases β hp ht with (hp5 | ⟨rfl, htp⟩) | ⟨i, hi, rfl, hit⟩
   · exfalso
     interval_cases p
-    · rw [h0] at h; have := congrArg Prod.snd h; simp only at this
-      have := (abs_le.1 hb.2).2; linarith
-    · rw [h1] at h; have := congrArg Prod.fst h; simp only at this
-      have := (abs_le.1 hb.1).1; linarith
-    · rw [h2] at h; have := congrArg Prod.snd h; simp only at this
-      have := (abs_le.1 hb.2).1; linarith
-    · rw [h3] at h; have := congrArg Prod.fst h; simp only at this
-      have := (abs_le.1 hb.1).2; linarith
-    · rw [h4] at h; have := congrArg Prod.snd h; simp only at this
-      have := (abs_le.1 hb.2).2; linarith
+    · ram_grind
+    · ram_grind
+    · ram_grind
+    · ram_grind
+    · ram_grind
     · rw [h5] at h; have := congrArg Prod.snd h; simp only at this
       nlinarith
   · exfalso
@@ -76,9 +73,7 @@ theorem pos_eq_vertex (hP : C.P.Simple) (β : Bool) {p : ℕ} (hp : p < (C.sideW
   · rcases ht.lt_or_eq with htp | rfl
     · exfalso
       have hi2 : i < 2 * C.m := by
-        rcases lt_or_eq_of_le hi with h' | h'
-        · exact h'
-        · exact absurd (hit h') htp.ne'
+        ram_grind
       rw [C.sidePt_tour β hi2] at h
       unfold Chain.sideTour at h
       rcases C.sideTour_step β i with hs | hs
@@ -88,7 +83,7 @@ theorem pos_eq_vertex (hP : C.P.Simple) (β : Bool) {p : ℕ} (hp : p < (C.sideW
         have e : Geometry.lerp (C.vertex (C.sideIdx β (i + 1) + 1)) (C.vertex (C.sideIdx β (i + 1)))
             t = Geometry.lerp (C.vertex (C.sideIdx β (i + 1))) (C.vertex (C.sideIdx β (i + 1) + 1))
             (1 - t) := by
-          apply Geometry.point_ext <;> simp [Geometry.lerp] <;> ring
+          grind [Geometry.lerp]
         rw [e] at h
         exact C.sideOpen_ne_vertex hP ⟨by linarith, by linarith⟩ h
     · refine ⟨rfl, i, hi, rfl, ?_⟩
@@ -107,13 +102,13 @@ theorem vertex0_arith {m b i : ℕ} (hm : 0 < m) (hb : b ≤ 2 * m) (hi : i ≤ 
     by_contra hc; push Not at hc; nlinarith
   have hτ : (0 + 2 * m - b) % (2 * m) = if b = 0 then 0 else 2 * m - b := by
     split_ifs with hb0
-    · subst hb0; simp
+    · simp_all
     · rw [Nat.mod_eq_of_lt (show 0 + 2 * m - b < 2 * m by omega)]; omega
   rw [hτ]
   have key : ∀ x, x < 2 * (2 * m + 7) →
       x % (2 * m + 7) = if x < 2 * m + 7 then x else x - (2 * m + 7) := by
     intro x hx; split_ifs with h
-    · exact Nat.mod_eq_of_lt h
+    · simp_all
     · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
   interval_cases q <;> split_ifs with hb0 <;> rw [key _ (by omega)] <;> split_ifs <;> omega
 
@@ -127,7 +122,7 @@ theorem off_vertex0 (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) {t
   have hn := cm_n C
   have hτ := tpos_lt C 0
   have hm := C.two_m_pos
-  rw [off_key' (by rw [hn]; omega) hp le_rfl zero_lt_one, add_zero]
+  rw [off_key' (by omega) hp le_rfl zero_lt_one, add_zero]
   have h0 : (bS C + i) % (2 * C.m) = 0 := by
     rw [Chain.sideIdx_eq] at hidx
     unfold Chain.sideE at hidx
@@ -141,7 +136,7 @@ theorem off_vertex0 (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) {t
   unfold tpos
   rcases this with h | ⟨h1, h2⟩
   · left; rw [h]; simp
-  · right; exact ⟨h1, by rw [h2]; push_cast; ring⟩
+  · right; exact ⟨h1, by rw [h2]; ram_grind⟩
 
 end Vertex
 
@@ -165,17 +160,22 @@ def F₂plus (S₂ : Set (Set Point)) : Set (Set Point) := J.fusion ∅ S₂ ∪
 theorem topChords₂_subset_chords : topChords₂ J ⊆ J.whole.chords := by
   rintro d ⟨σ, hσ, hfree, rfl⟩
   have := J.right.topIdx_le
-  exact ⟨_, σ, by simp only [Merge.Junction.whole_m, Merge.Junction.right_m] at this ⊢; omega,
+  exact ⟨_, σ, by simp_all,
     hσ, hfree, rfl⟩
 
-theorem F₂plus_subset {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) :
+section
+variable {S₂ : Set (Set Point)}
+theorem F₂plus_subset (hS₂ : S₂ ⊆ Merge.augChords J.right) :
     F₂plus J S₂ ⊆ Merge.augChords J.whole := by
   rintro e (he | he)
   · exact J.fusion_subset_augChords (empty_subset _) hS₂ he
   · exact Merge.chords_subset_augChords _ (topChords₂_subset_chords J he)
 
-theorem F₂plus_finite {S₂ : Set (Set Point)} (hS₂ : S₂.Finite) : (F₂plus J S₂).Finite :=
+theorem F₂plus_finite (hS₂ : S₂.Finite) : (F₂plus J S₂).Finite :=
   (J.fusion_finite finite_empty hS₂).union (J.whole.chords_finite.subset (topChords₂_subset_chords J))
+
+
+end
 
 /-- Distinct augmented chords are not nested. -/
 theorem augChords_nest {C : Chain} {e e' : Set Point} (he : e ∈ Merge.augChords C)
@@ -184,11 +184,9 @@ theorem augChords_nest {C : Chain} {e e' : Set Point} (he : e ∈ Merge.augChord
   obtain ⟨y', a', b', hh', -, rfl⟩ := he'
   have hab := hh.lt
   have hp : (((a + b) / 2, y) : Point) ∈ Visibility.hseg y a b :=
-    ⟨rfl, by simp only; linarith, by simp only; linarith⟩
+    ⟨rfl, by linarith, by linarith⟩
   rcases Chain.hchordIn_inter hh hh' hp (h hp) with ⟨rfl, rfl, rfl⟩ | ⟨h1, -⟩
-  · rfl
-  · exfalso
-    rcases h1 with h1 | h1 <;> have := congrArg Prod.fst h1 <;> simp only at this <;> linarith
+  all_goals ram_grind
 
 /-- **Endpoints of the chords of `S₂`** other than the shared vertex lie on chords of the fusion
 inside them. -/
@@ -200,13 +198,12 @@ theorem trans_right (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆
   obtain ⟨hq2, hqa, hqb⟩ := hq
   rcases hqa.lt_or_eq with h1 | h1
   · rcases hqb.lt_or_eq with h2 | h2
-    · exact absurd (by rw [show q = (q.1, y) from Prod.ext rfl hq2]; exact hH.open_mem q.1 h1 h2)
-        hqD
-    · have hqr : Merge.rend (Visibility.hseg y a b) = q := by rw [hr]; exact Prod.ext h2.symm hq2.symm
+    · ram_grind
+    · have hqr : Merge.rend (Visibility.hseg y a b) = q := by ram_grind
       rw [hqr] at hR
       obtain ⟨e, he, hqe, hec⟩ := hR hqv
       exact ⟨e, Or.inl he, hqe, hec⟩
-  · have hql : Merge.lend (Visibility.hseg y a b) = q := by rw [hl]; exact Prod.ext h1 hq2.symm
+  · have hql : Merge.lend (Visibility.hseg y a b) = q := by ram_grind
     rw [hql] at hL
     obtain ⟨e, he, hqe, hec⟩ := hL hqv
     exact ⟨e, Or.inl he, hqe, hec⟩
@@ -245,10 +242,7 @@ noncomputable def rδ : ℕ :=
   else 7
 
 theorem rL1_add_rL2 : rL1 J + rL2 J = rlen J := by
-  have := tpos_lt J.right 0
-  have hm2 : J.right.m = J.m₂ := rfl
-  unfold rL1 rL2 rlen
-  split_ifs <;> omega
+  grind [rL1, rL2, rlen]
 
 end CorrRight
 

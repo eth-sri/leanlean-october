@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseBoxMap
 public import Chazelle.Chain.Sides
 public import Mathlib.Data.List.GetD
@@ -33,14 +35,20 @@ structure Twin (C C' : Chain) : Prop where
   m_eq : C.m = C'.m
   vtx_eq : ∀ k, k ≤ C.m → C.vertex k = C'.vertex k
 
+section
+variable (C C' : Chain)
+include C C'
 /-- The fixed band `[-B, B]` of the stretch. -/
-noncomputable def bnd (C C' : Chain) : ℝ := min C.radius C'.radius - 1 / 2
+noncomputable def bnd : ℝ := min C.radius C'.radius - 1 / 2
 
 /-- The slope of the stretch. -/
-noncomputable def kk (C C' : Chain) : ℝ := slope (bnd C C') C.radius C'.radius
+noncomputable def kk : ℝ := slope (bnd C C') C.radius C'.radius
 
 /-- **The box stretch of twin chains.** -/
-noncomputable def phi (C C' : Chain) : Point → Point := stretchPt (bnd C C') (kk C C')
+noncomputable def phi : Point → Point := stretchPt (bnd C C') (kk C C')
+
+
+end
 
 variable {C C' : Chain}
 
@@ -49,13 +57,13 @@ theorem one_le_radius (C : Chain) : 1 ≤ C.radius := by
 
 theorem bnd_nonneg : 0 ≤ bnd C C' := by
   unfold bnd; have := one_le_radius C; have := one_le_radius C'
-  have := le_min (one_le_radius C) (one_le_radius C'); linarith
+  grind
 
 theorem bnd_lt : bnd C C' < C.radius := by
-  unfold bnd; have := min_le_left C.radius C'.radius; linarith
+  core_grind
 
 theorem bnd_lt' : bnd C C' < C'.radius := by
-  unfold bnd; have := min_le_right C.radius C'.radius; linarith
+  core_grind
 
 theorem kk_pos : 0 < kk C C' := slope_pos bnd_lt bnd_lt'
 
@@ -83,11 +91,7 @@ theorem abs_le_of_mem {p : Point} (hp : p ∈ C.set) :
     |p.1| ≤ bnd C C' - 1 / 2 ∧ |p.2| ≤ bnd C C' - 1 / 2 := by
   have h1 := C.abs_le_coordBound_of_mem_set hp
   have h2 := C'.abs_le_coordBound_of_mem_set (h.set_eq ▸ hp)
-  unfold bnd Chain.radius
-  rcases le_total (Chazelle.Jordan.coordBound C.P + 1) (Chazelle.Jordan.coordBound C'.P + 1)
-    with hle | hle
-  · rw [min_eq_left hle]; constructor <;> linarith [h1.1, h1.2]
-  · rw [min_eq_right hle]; constructor <;> linarith [h2.1, h2.2]
+  core_grind [Chain.radius]
 
 theorem topIdx_eq : C.topIdx = C'.topIdx := by
   have hm := h.m_eq
@@ -104,7 +108,7 @@ theorem top_eq : C.top = C'.top := by
 
 theorem phi_fix {p : Point} (hp : p ∈ C.set) : phi C C' p = p := by
   have := h.abs_le_of_mem hp
-  exact stretchPt_of_le bnd_nonneg (by linarith [this.1]) (by linarith [this.2])
+  exact stretchPt_of_le bnd_nonneg (by linarith) (by linarith)
 
 omit h in
 theorem stretch_fix (_h : Twin C C') {x : ℝ} (hx : |x| ≤ bnd C C') : stretch (bnd C C')
@@ -143,8 +147,8 @@ theorem eq_of_phi_mem {p : Point} (hp : phi C C' p ∈ C.set) : phi C C' p = p :
     (kk_pos (C := C) (C' := C')) p.1
   have e2 := stretch_inv (B := bnd C C') (k := kk C C') (bnd_nonneg (C := C) (C' := C'))
     (kk_pos (C := C) (C' := C')) p.2
-  rw [stretch_of_abs_le bnd_nonneg (by linarith [hb.1])] at e1
-  rw [stretch_of_abs_le bnd_nonneg (by linarith [hb.2])] at e2
+  rw [stretch_of_abs_le bnd_nonneg (by linarith)] at e1
+  rw [stretch_of_abs_le bnd_nonneg (by linarith)] at e2
   exact Prod.ext e1 e2
 
 theorem phi_mem_set_iff (p : Point) : phi C C' p ∈ C'.set ↔ p ∈ C.set := by
@@ -159,15 +163,7 @@ theorem phi_mem_slit_iff (p : Point) : phi C C' p ∈ C'.slit ↔ p ∈ C.slit :
   have ht1 := h.stretch_fix (x := C.top.1) (by linarith [h.top_abs.1])
   have ht2 := h.stretch_fix (x := C.top.2) (by linarith [h.top_abs.2])
   simp only [phi, stretchPt]
-  constructor
-  · rintro ⟨e1, e2, e3⟩
-    refine ⟨h.stretch_inj (e1.trans ht1.symm), ?_, ?_⟩
-    · rw [← ht2] at e2; exact h.stretch_le_iff.1 e2
-    · rw [← h.stretch_radius_eq] at e3; exact h.stretch_le_iff.1 e3
-  · rintro ⟨e1, e2, e3⟩
-    refine ⟨by rw [e1, ht1], ?_, ?_⟩
-    · rw [← ht2]; exact h.stretch_le_iff.2 e2
-    · rw [← h.stretch_radius_eq]; exact h.stretch_le_iff.2 e3
+  grind [Chazelle.Core.BoxT.Twin.stretch_inj, Chazelle.Core.BoxT.Twin.stretch_le_iff, Chazelle.Core.BoxT.Twin.stretch_radius_eq]
 
 omit h in
 theorem phi_mem_box_iff (_h : Twin C C')
@@ -248,14 +244,10 @@ theorem phi_walk_vtx (i : ℕ) :
   rcases Nat.lt_or_ge i 6 with hi | hi
   · interval_cases i
     · rw [Chain.sideWalk_vtx_zero, Chain.sideWalk_vtx_zero, h.phi_slitTop]
-    · rw [Chain.sideWalk_vtx_one, Chain.sideWalk_vtx_one]
-      simp only [phi, stretchPt, hR, hRn]
-    · rw [Chain.sideWalk_vtx_two, Chain.sideWalk_vtx_two]
-      simp only [phi, stretchPt, hRn]
-    · rw [Chain.sideWalk_vtx_three, Chain.sideWalk_vtx_three]
-      simp only [phi, stretchPt, hR, hRn]
-    · rw [Chain.sideWalk_vtx_four, Chain.sideWalk_vtx_four]
-      simp only [phi, stretchPt, hR]
+    · simp_all [Chain.sideWalk_vtx_one, phi, stretchPt] 
+    · simp_all [Chain.sideWalk_vtx_two, phi, stretchPt] 
+    · simp_all [Chain.sideWalk_vtx_three, phi, stretchPt] 
+    · simp_all [Chain.sideWalk_vtx_four, phi, stretchPt] 
     · rw [Chain.sideWalk_vtx_five, Chain.sideWalk_vtx_five, h.phi_slitTop]
   · rcases Nat.lt_or_ge (i - 6) (2 * C.m + 1) with hi' | hi'
     · have e : i = (i - 6) + 6 := by omega
@@ -264,8 +256,8 @@ theorem phi_walk_vtx (i : ℕ) :
       rw [← h.sideIdx_eq, ← h.vtx_eq _ (h.sideIdx_le _),
         h.phi_fix (C.vertex_mem_set (h.sideIdx_le _))]
     · -- beyond the walk: the default vertex `(0, 0)`, fixed by the stretch
-      have hn : (C.sideWalk C.sideBeta).n ≤ i := by rw [Chain.sideWalk_n]; omega
-      have hn' : (C'.sideWalk C'.sideBeta).n ≤ i := by rw [Chain.sideWalk_n]; omega
+      have hn : (C.sideWalk C.sideBeta).n ≤ i := by grind [Chain.sideWalk_n]
+      have hn' : (C'.sideWalk C'.sideBeta).n ≤ i := by grind [Chain.sideWalk_n]
       unfold Polygon.vtx
       rw [List.getD_eq_default _ _ hn, List.getD_eq_default _ _ hn']
       exact (stretchPt_of_le bnd_nonneg (by simp [bnd_nonneg]) (by simp [bnd_nonneg])).symm

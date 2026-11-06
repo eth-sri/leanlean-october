@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepPrimJun
 
 /-!
@@ -35,8 +37,10 @@ theorem dOf_inj {n g p q : ℕ} (hg : g < n) (hp : p < n) (hq : q < n) (h : dOf 
     p = q := by
   rw [← add_dOf hg hp, ← add_dOf hg hq, h]
 
+section
+variable (M : Model) (Q : Polygon)
 /-- **The order of the offsets** of two proper positions. -/
-theorem off_lt_iff (M : Model) (Q : Polygon) {g : ℕ} (hg : g < M.W.n) {x y : WPos}
+theorem off_lt_iff {g : ℕ} (hg : g < M.W.n) {x y : WPos}
     (hx : x.edge < M.W.n) (hx0 : 0 ≤ M.param Q x) (hx1 : M.param Q x < 1)
     (hy : y.edge < M.W.n) (hy0 : 0 ≤ M.param Q y) (hy1 : M.param Q y < 1) :
     off M.W.n g (M.key Q x) < off M.W.n g (M.key Q y) ↔
@@ -46,53 +50,34 @@ theorem off_lt_iff (M : Model) (Q : Polygon) {g : ℕ} (hg : g < M.W.n) {x y : W
   constructor
   · intro h
     rcases lt_trichotomy (dOf M.W.n g x.edge) (dOf M.W.n g y.edge) with h' | h' | h'
-    · exact Or.inl h'
+    · omega
     · refine Or.inr ⟨dOf_inj hg hx hy h', ?_⟩
-      rw [h'] at h; linarith
+      simp_all
     · exfalso
       have : (dOf M.W.n g y.edge : ℝ) + 1 ≤ dOf M.W.n g x.edge := by exact_mod_cast h'
       linarith
   · rintro (h | ⟨h, h'⟩)
     · have : (dOf M.W.n g x.edge : ℝ) + 1 ≤ dOf M.W.n g y.edge := by exact_mod_cast h
       linarith
-    · rw [h]; linarith
+    simp_all
 
 /-- The parameters of two positions on one edge compare like their keys. -/
-theorem param_lt_iff_same_edge (M : Model) (Q : Polygon) {x y : WPos} (he : x.edge = y.edge) :
+theorem param_lt_iff_same_edge {x y : WPos} (he : x.edge = y.edge) :
     M.param Q x < M.param Q y ↔
       (dirCode M x.edge = 1 ∧ M.hgtY Q x < M.hgtY Q y) ∨
         (dirCode M x.edge = 2 ∧ M.hgtY Q y < M.hgtY Q x) := by
   by_cases hh : (M.wa x.edge).2 = (M.wb x.edge).2
   · have hy : (M.wa y.edge).2 = (M.wb y.edge).2 := he ▸ hh
     rw [Model.param_horizontal hh, Model.param_horizontal hy]
-    have : dirCode M x.edge = 0 := by unfold dirCode; rw [hh]; simp
-    rw [this]; simp
+    simp_all [dirCode]
   · have hk := Model.key_lt_key_iff_of_same_edge (M := M) (Q := Q) he hh
-    unfold Model.key at hk
-    rw [he, add_lt_add_iff_left] at hk
-    rw [← he] at hk
-    rw [hk]
-    unfold dirCode
-    constructor
-    · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
-      · exact Or.inl ⟨by rw [ite_eq_left h1], h2⟩
-      · exact Or.inr ⟨by rw [ite_eq_right (not_lt.2 h1.le), ite_eq_left h1], h2⟩
-    · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
-      · left
-        refine ⟨?_, h2⟩
-        by_contra hc
-        rw [ite_eq_right hc] at h1
-        split_ifs at h1; omega
-      · right
-        have hn : ¬ (M.wa x.edge).2 < (M.wb x.edge).2 := fun h => by rw [ite_eq_left h] at h1; omega
-        rw [ite_eq_right hn] at h1
-        refine ⟨?_, h2⟩
-        by_contra hc
-        rw [ite_eq_right hc] at h1
-        omega
+    grind [Model.key, add_lt_add_iff_left, dirCode]
 
 
 /-! ## The machine -/
+
+
+end
 
 /-- The height of the position `(50201, 50202)` as a symbolic point in `50130`: the tour vertex
 `e - 6` for the code `0`, the vertex `h - 1` of `Q` otherwise. -/
@@ -117,24 +102,24 @@ theorem yLoadX_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     have hE₁ : CEnv P W H C _ := hE.step e₁ (by decide)
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := e - 6)
       (by simp [he, hE.r81]) (by omega) (dst := 50130) (by norm_num)
-    refine ⟨c₂, _, .ifLtN_true (by rw [hh, hE.r32]; exact hc) (e₁.seq e₂), by omega, hE₂,
+    refine ⟨c₂, _, .ifLtN_true (by ram_grind) (e₁.seq e₂), by omega, hE₂,
       fun r hr => ?_, fun r h1 h2 h3 => ?_, sp, isp, lsp, ?_⟩
-    · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
-      simp only; rw [upd_other _ _ _ (by omega)]
-    · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
-      simp only; rw [upd_other _ _ _ (by omega)]
+    · rw [f₂.1 r (by grind [Btv, Btvi, Bhost])]
+      ram_simp
+    · rw [f₂.1 r (by core_grind [Btvi, Bhost])]
+      ram_simp
     · rw [vsp, h00, show e - 6 + 6 = e by omega]; rfl
-  · refine spec_ifLtN_false (by rw [hh, hE.r32]; exact hc) ?_
+  · refine spec_ifLtN_false (by ram_grind) ?_
     exec_block
     all_goals try omega
     refine ⟨by omega, ?_, fun r hr => ?_, fun r h1 h2 h3 => ?_, .vtx (h - 1), ⟨by config_simp,
-      ?_⟩, by show h - 1 < P.n; omega, ?_⟩
+      ?_⟩, by grind [Chazelle.Core.SymPt.Lt], ?_⟩
     · exact hE.keep ‹_› rfl (fun r hr => by
         simp only [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
-        simp only [upd]; split_ifs <;> first | rfl | omega)
-    · simp only [upd]; split_ifs <;> first | rfl | omega
-    · simp only [upd]; split_ifs <;> first | rfl | omega
-    · config_simp; rw [hh, hE.r32]
+        simp only [upd]; split_ifs <;> omega)
+    · grind [upd]
+    · grind [upd]
+    · config_simp; ram_grind
     · obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
       rfl
 
@@ -161,24 +146,24 @@ theorem yLoadY_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     have hE₁ : CEnv P W H C _ := hE.step e₁ (by decide)
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := e - 6)
       (by simp [he, hE.r81]) (by omega) (dst := 50136) (by norm_num)
-    refine ⟨c₂, _, .ifLtN_true (by rw [hh, hE.r32]; exact hc) (e₁.seq e₂), by omega, hE₂,
+    refine ⟨c₂, _, .ifLtN_true (by ram_grind) (e₁.seq e₂), by omega, hE₂,
       fun r hr => ?_, fun r h1 h2 h3 => ?_, sp, isp, lsp, ?_⟩
-    · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
-      simp only; rw [upd_other _ _ _ (by omega)]
-    · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
-      simp only; rw [upd_other _ _ _ (by omega)]
+    · rw [f₂.1 r (by grind [Btv, Btvi, Bhost])]
+      ram_simp
+    · rw [f₂.1 r (by core_grind [Btvi, Bhost])]
+      ram_simp
     · rw [vsp, h00, show e - 6 + 6 = e by omega]; rfl
-  · refine spec_ifLtN_false (by rw [hh, hE.r32]; exact hc) ?_
+  · refine spec_ifLtN_false (by ram_grind) ?_
     exec_block
     all_goals try omega
     refine ⟨by omega, ?_, fun r hr => ?_, fun r h1 h2 h3 => ?_, .vtx (h - 1), ⟨by config_simp,
-      ?_⟩, by show h - 1 < P.n; omega, ?_⟩
+      ?_⟩, by grind [Chazelle.Core.SymPt.Lt], ?_⟩
     · exact hE.keep ‹_› rfl (fun r hr => by
         simp only [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
-        simp only [upd]; split_ifs <;> first | rfl | omega)
-    · simp only [upd]; split_ifs <;> first | rfl | omega
-    · simp only [upd]; split_ifs <;> first | rfl | omega
-    · config_simp; rw [hh, hE.r32]
+        simp only [upd]; split_ifs <;> omega)
+    · grind [upd]
+    · grind [upd]
+    · config_simp; ram_grind
     · obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
       rfl
 
@@ -245,8 +230,8 @@ theorem offOut_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   unfold offOut
   exec_block
   all_goals try omega
-  exact ⟨rfl, ⟨by config_simp; omega, by config_simp; exact hp⟩,
-    ⟨by config_simp; omega, by config_simp; exact hq⟩⟩
+  exact ⟨rfl, ⟨by simp_all, by simp_all⟩,
+    ⟨by simp_all, by simp_all⟩⟩
 
 /-- **Contract of `offCmp`** (at most `11000` steps). -/
 theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
@@ -256,9 +241,9 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
   unfold OffOut
   dsimp only
   have i01 := hinp 50201 (by norm_num) (by norm_num)
-  have i02 := hinp 50202 (by norm_num) (by norm_num)
+  
   have i03 := hinp 50203 (by norm_num) (by norm_num)
-  have i04 := hinp 50204 (by norm_num) (by norm_num)
+  
   have i05 := hinp 50205 (by norm_num) (by norm_num)
   set px := c₀.nreg 50201
   set qx := c₀.nreg 50202
@@ -294,39 +279,30 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
     (fun r hr => r₁ r (ne_of_mem_of_not_mem hr (by decide)) (ne_of_mem_of_not_mem hr (by decide)))
   obtain ⟨c₂, k₂, e₂, hk₂, v42, r₂⟩ := candR_exec (P := P) (j := 50201) (s := 50205) (d := 50143)
     (dst := 50142) c₁ e₁.wb_right (by
-      rw [r₁ _ (by decide) (by decide), r₁ _ (by decide) (by decide), q43, i01, i05]
-      intro h; omega)
+      grind)
   obtain ⟨c₃, k₃, e₃, hk₃, v44, r₃⟩ := candR_exec (P := P) (j := 50203) (s := 50205) (d := 50143)
     (dst := 50144) c₂ e₂.wb_right (by
-      rw [r₂ _ (by decide), r₂ _ (by decide), r₂ _ (by decide), r₁ _ (by decide) (by decide),
-        r₁ _ (by decide) (by decide), q43, i03, i05]
-      intro h; omega)
+      grind)
   have d42 : c₃.nreg 50142 = dOf M.W.n g px := by
-    rw [r₃ _ (by decide), v42, r₁ _ (by decide) (by decide), r₁ _ (by decide) (by decide), q43,
-      i01, i05, dOf_eq hg hx]
+    grind [Chazelle.Core.SweepPrim.dOf_eq]
   have d44 : c₃.nreg 50144 = dOf M.W.n g py := by
-    rw [v44, r₂ _ (by decide), r₂ _ (by decide), r₂ _ (by decide), r₁ _ (by decide) (by decide),
-      r₁ _ (by decide) (by decide), q43, i03, i05, dOf_eq hg hy]
+    grind [Chazelle.Core.SweepPrim.dOf_eq]
   have hE₃ : CEnv P W H C c₃ := hE₁.keep e₃.wb_right
     (by rw [(exec_frameB e₃ (B := fun r => r == 50144) (by simp [candR, wr, wrOK])).2.2.1,
       (exec_frameB e₂ (B := fun r => r == 50142) (by simp [candR, wr, wrOK])).2.2.1])
     (fun r hr => by rw [r₃ r (ne_of_mem_of_not_mem hr (by decide)),
       r₂ r (ne_of_mem_of_not_mem hr (by decide))])
   have g3 : ∀ r, 50200 ≤ r → r < 50210 → c₃.nreg r = c₀.nreg r := fun r h1 h2 => by
-    rw [r₃ r (by omega), r₂ r (by omega), r₁ r (by omega) (by omega), hinp r h1 h2]
+    grind
   have eH : Exec P W offHead c c₃ (k₁ + (k₂ + k₃)) := e₁.seq (e₂.seq e₃)
   by_cases hd1 : c₃.nreg 50142 < c₃.nreg 50144
   · rw [d42, d44] at hd1
     obtain ⟨c₄, k₄, e₄, hk₄, b0, b1⟩ := offOut_exec (P := P) c₃ e₃.wb_right (a := 1) (b := 0)
       le_rfl (by omega) (by omega) (p := off M.W.n g (M.key (Qof P) x) < off M.W.n g
         (M.key (Qof P) y)) (q := off M.W.n g (M.key (Qof P) y) < off M.W.n g (M.key (Qof P) x))
-      (by rw [hlt]; simp [hd1]) (by
-        rw [hgt]; constructor
-        · intro h; omega
-        · rintro (h | ⟨h, -⟩)
-          · omega
-          · rw [h] at hd1; omega)
-    exact ⟨c₄, _, .seq eH (.ifLtN_true (by rw [d42, d44]; exact hd1) e₄),
+      (by grind) (by
+        grind)
+    exact ⟨c₄, _, .seq eH (.ifLtN_true (by omega) e₄),
       by omega, b0, b1⟩
   have t1 : ¬ c₃.nreg 50142 < c₃.nreg 50144 := hd1
   rw [d42, d44] at hd1
@@ -336,32 +312,20 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
       (by omega) le_rfl (by omega) (p := off M.W.n g (M.key (Qof P) x) < off M.W.n g
         (M.key (Qof P) y)) (q := off M.W.n g (M.key (Qof P) y) < off M.W.n g (M.key (Qof P) x))
       (by
-        rw [hlt]; constructor
-        · intro h; omega
-        · rintro (h | ⟨h, -⟩)
-          · omega
-          · rw [h] at hd2; omega)
-      (by rw [hgt]; simp [hd2])
+        grind)
+      (by grind)
     exact ⟨c₄, _, .seq eH (.ifLtN_false t1
-      (.ifLtN_true (by rw [d42, d44]; exact hd2) e₄)), by omega, b0, b1⟩
+      (.ifLtN_true (by omega) e₄)), by omega, b0, b1⟩
   have t2 : ¬ c₃.nreg 50144 < c₃.nreg 50142 := hd2
   rw [d42, d44] at hd2
   -- the same walk edge
   have hpq : px = py := dOf_inj hg hx hy (by omega)
   have hlt' : off M.W.n g (M.key (Qof P) x) < off M.W.n g (M.key (Qof P) y) ↔
       M.param (Qof P) x < M.param (Qof P) y := by
-    rw [hlt]; constructor
-    · rintro (h | ⟨-, h⟩)
-      · omega
-      · exact h
-    · intro h; exact Or.inr ⟨hpq, h⟩
+    grind
   have hgt' : off M.W.n g (M.key (Qof P) y) < off M.W.n g (M.key (Qof P) x) ↔
       M.param (Qof P) y < M.param (Qof P) x := by
-    rw [hgt]; constructor
-    · rintro (h | ⟨-, h⟩)
-      · omega
-      · exact h
-    · intro h; exact Or.inr ⟨hpq.symm, h⟩
+    grind
   have hpx := param_lt_iff_same_edge M (Qof P) (x := x) (y := y) hpq
   have hpy := param_lt_iff_same_edge M (Qof P) (x := y) (y := x) hpq.symm
   rw [hlt', hpx]
@@ -374,24 +338,23 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
   have hE₄ : CEnv P W H C c₄ := hE₃.frame (exec_frameB e₄ (B := fun r => r == 50002)
     (by decide)) e₄.wb_right (by decide)
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, hE₅, d₅⟩ := dirAt_exec c₄ hE₄ (e := px)
-    (by show upd c₃.nreg 50002 (c₃.nreg 50201) 50002 = px
-        rw [upd_same]; exact g3 50201 (by norm_num) (by norm_num)) (by omega)
+    (by ram_simp) (by omega)
   rw [← hM] at d₅
   have g5 : ∀ r, 50200 ≤ r → r < 50210 → c₅.nreg r = c₀.nreg r := fun r h1 h2 => by
-    rw [f₅.1 r (by simp only [Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega), hc₄]
+    rw [f₅.1 r (by grind [Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]), hc₄]
     simp only
     rw [upd_other _ _ _ (by omega), g3 r h1 h2]
   have hdl := dirCode_le_two M px
   by_cases hd0 : c₅.nreg 10502 < c₅.nreg 50032
   · rw [hE₅.r32, d₅] at hd0
-    have h0 : dirCode M px = 0 := by omega
+    
     obtain ⟨c₆, k₆, e₆, hk₆, b0, b1⟩ := offOut_exec (P := P) c₅ e₅.wb_right (a := 0) (b := 0)
       (by omega) (by omega) (by omega)
       (p := (dirCode M px = 1 ∧ M.hgtY (Qof P) ⟨px, qx⟩ < M.hgtY (Qof P) ⟨px, qy⟩) ∨
         (dirCode M px = 2 ∧ M.hgtY (Qof P) ⟨px, qy⟩ < M.hgtY (Qof P) ⟨px, qx⟩))
       (q := (dirCode M px = 1 ∧ M.hgtY (Qof P) ⟨px, qy⟩ < M.hgtY (Qof P) ⟨px, qx⟩) ∨
         (dirCode M px = 2 ∧ M.hgtY (Qof P) ⟨px, qx⟩ < M.hgtY (Qof P) ⟨px, qy⟩))
-      (by rw [h0]; simp) (by rw [h0]; simp)
+      (by omega) (by omega)
     exact ⟨c₆, _, .seq eH (.ifLtN_false t1 (.ifLtN_false t2
       (.seq e₄ (.seq e₅ (.ifLtN_true (by rw [hE₅.r32, d₅]; omega) e₆))))), by omega, b0, b1⟩
   have t3 : ¬ c₅.nreg 10502 < c₅.nreg 50032 := hd0
@@ -404,7 +367,7 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
     (e := px) (h := qy)
     ((f6a _ (by omega)).trans ((g5 50203 (by norm_num) (by norm_num)).trans hpq.symm))
     ((f6a _ (by omega)).trans (g5 50204 (by norm_num) (by norm_num)))
-    (fun h => ⟨by rw [hpq]; exact hy6 h, by omega⟩) hyn
+    (fun h => ⟨by grind, by omega⟩) hyn
   have ix₇ : SymPtIn c₇ 50130 sx := symPtIn_of_eq ix fun j h1 h2 => f7b j (by omega) (by omega)
     (by omega)
   obtain ⟨c₈, k₈, e₈, hk₈, f₈, b₈, t₈⟩ := kbit_exec (op := 1) (dst := 50150) hE.hG hW c₇
@@ -421,12 +384,10 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
     e₉.wb_right (by decide)).r32
   have B50 : BitIs c₉ 50150 (M.hgtY (Qof P) ⟨px, qx⟩ < M.hgtY (Qof P) ⟨px, qy⟩) := by
     have := BitIs.keep ⟨b₈, t₈⟩ f₉ (by decide)
-    simp only [SignTest] at this
-    rw [vx, vy] at this; exact this
+    grind [SignTest]
   have B51 : BitIs c₉ 50151 (M.hgtY (Qof P) ⟨px, qy⟩ < M.hgtY (Qof P) ⟨px, qx⟩) := by
     have : BitIs c₉ 50151 _ := ⟨b₉, t₉⟩
-    simp only [SignTest] at this
-    rw [vx, vy] at this; exact this
+    grind [SignTest]
   have w₉ := e₉.wb_right
   by_cases hd2' : c₉.nreg 50032 < c₉.nreg 10502
   · rw [p32, p10502] at hd2'
@@ -434,10 +395,10 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
     obtain ⟨c₁₀, k₁₀, e₁₀, hk₁₀, q⟩ : ∃ c₁₀ k₁₀, Exec P W (block [.copyN 50210 50151,
         .copyN 50211 50150]) c₉ c₁₀ k₁₀ ∧ k₁₀ = 2 ∧ c₁₀.nreg 50210 = c₉.nreg 50151 ∧
         c₁₀.nreg 50211 = c₉.nreg 50150 := by
-      exec_block; exact ⟨rfl, by config_simp, by config_simp⟩
+      exec_block; ram_simp
     obtain ⟨q10, q11⟩ := q
     have eF : Exec P W (.ifLtN 50032 10502 (block [.copyN 50210 50151, .copyN 50211 50150])
-        (block [.copyN 50210 50150, .copyN 50211 50151])) c₉ c₁₀ _ := .ifLtN_true (show c₉.nreg 50032 < c₉.nreg 10502 by rw [p32, p10502]; omega) e₁₀
+        (block [.copyN 50210 50150, .copyN 50211 50151])) c₉ c₁₀ _ := .ifLtN_true (show c₉.nreg 50032 < c₉.nreg 10502 by omega) e₁₀
     have eAll : Exec P W offCore c c₁₀ _ := .seq eH (.ifLtN_false t1 (.ifLtN_false t2
       (.seq e₄ (.seq e₅ (.ifLtN_false t3 (e₆.seq (e₇.seq (e₈.seq (e₉.seq eF)))))))))
     refine ⟨c₁₀, _, eAll, by omega, ?_, ?_⟩
@@ -448,10 +409,10 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
     obtain ⟨c₁₀, k₁₀, e₁₀, hk₁₀, q⟩ : ∃ c₁₀ k₁₀, Exec P W (block [.copyN 50210 50150,
         .copyN 50211 50151]) c₉ c₁₀ k₁₀ ∧ k₁₀ = 2 ∧ c₁₀.nreg 50210 = c₉.nreg 50150 ∧
         c₁₀.nreg 50211 = c₉.nreg 50151 := by
-      exec_block; exact ⟨rfl, by config_simp, by config_simp⟩
+      exec_block; ram_simp
     obtain ⟨q10, q11⟩ := q
     have eF : Exec P W (.ifLtN 50032 10502 (block [.copyN 50210 50151, .copyN 50211 50150])
-        (block [.copyN 50210 50150, .copyN 50211 50151])) c₉ c₁₀ _ := .ifLtN_false (show ¬ c₉.nreg 50032 < c₉.nreg 10502 by rw [p32, p10502]; omega) e₁₀
+        (block [.copyN 50210 50150, .copyN 50211 50151])) c₉ c₁₀ _ := .ifLtN_false (show ¬ c₉.nreg 50032 < c₉.nreg 10502 by omega) e₁₀
     have eAll : Exec P W offCore c c₁₀ _ := .seq eH (.ifLtN_false t1 (.ifLtN_false t2
       (.seq e₄ (.seq e₅ (.ifLtN_false t3 (e₆.seq (e₇.seq (e₈.seq (e₉.seq eF)))))))))
     refine ⟨c₁₀, _, eAll, by omega, ?_, ?_⟩

@@ -32,26 +32,29 @@ open Chazelle.Visibility (rayPt)
 /-- The capacity of the log (records). -/
 def logCap (N₁ N₂ : NF) : ℕ := 16 * (N₁.nChords + N₂.nChords + 1)
 
+section
+variable (P : Polygon) (J : Merge.Junction)
+include P J
 /-- The offset of the current key. -/
-noncomputable def keyOff (P : Polygon) (J : Merge.Junction) (c : Config) : ℝ :=
+noncomputable def keyOff (c : Config) : ℝ :=
   offK P J (c.nreg kE) (c.nreg kH)
 
 /-- The label set of the current key. -/
-noncomputable def curLab (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c : Config) :
+noncomputable def curLab (N₂ : NF) (c : Config) :
     Set (Set Point) :=
   labSet J (Qof P) N₂ (c.nreg kN) (c.nreg kL) (c.nreg (kL + 1)) (c.nreg (kL + 2))
     (c.nreg (kL + 3))
 
 /-- The offsets of all possible keys (`CountTask`). -/
-def keyS (P : Polygon) (J : Merge.Junction) (N₁ N₂ : NF) : Set ℝ :=
+def keyS (N₁ N₂ : NF) : Set ℝ :=
   cutOffs J (N₂.F (chainModel J.right) (Qof P)) ∪ winOffs P J N₁
 
 /-- The offset of stop `i`. -/
-noncomputable def stopOff (P : Polygon) (J : Merge.Junction) (c : Config) (i : ℕ) : ℝ :=
+noncomputable def stopOff (c : Config) (i : ℕ) : ℝ :=
   offK P J (stopE c i) (stopH c i)
 
 /-- **The stops of stage 2** in the configuration `c` (the body of `StopOut`). -/
-def StopData (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c : Config)
+def StopData (N₂ : NF) (c : Config)
     (rs ax : List (ℕ × ℕ × ℕ × ℕ × ℕ)) : Prop :=
   rs.length = c.nreg sC ∧ ax.length = rs.length ∧
     StopRecsAt c.nmem (c.nreg sB) rs ∧ AuxRecsAt c.nmem (c.nreg aB) ax ∧
@@ -62,6 +65,9 @@ def StopData (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c : Config)
       (stopSet J (Qof P) N₂ (rs.getD i (0, 0, 0, 0, 0)).2.2.1 (rs.getD i (0, 0, 0, 0, 0)).2.2.2.1
         (rs.getD i (0, 0, 0, 0, 0)).2.2.2.2) (ax.getD i (0, 0, 0, 0, 0))) ∧
     rs.length ≤ 4 * N₂.nChords + 8
+
+
+end
 
 /-- **The log so far**: `LogOK` without the condition after the last key. -/
 def LogPre (J : Merge.Junction) (S₂ : Set (Set Point)) (es : List (ℕ × ℝ × Set (Set Point))) :
@@ -76,8 +82,11 @@ def LogPre (J : Merge.Junction) (S₂ : Set (Set Point)) (es : List (ℕ × ℝ 
       (oW J ((es.getD (i + 1) (0, 0, ∅)).1 + (es.getD (i + 1) (0, 0, ∅)).2.1))) ∧
   ∀ x ∈ es, LabIn J S₂ x.1 x.2.1 x.2.2
 
+section
+variable (P : Polygon) (J : Merge.Junction) (N₂ : NF)
+include P J N₂
 /-- The word facts of the log records (as in `Out`). -/
-def LogWords (P : Polygon) (J : Merge.Junction) (N₂ : NF)
+def LogWords
     (ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)) : Prop :=
   ∀ r ∈ ls, PosW P J r.1 r.2.1 ∧ r.2.2.1 ≤ 4 ∧
     (0 < r.2.2.1 → r.2.2.2.1 < N₂.nRegions) ∧ (1 < r.2.2.1 → r.2.2.2.2.1 < N₂.nRegions) ∧
@@ -86,7 +95,7 @@ def LogWords (P : Polygon) (J : Merge.Junction) (N₂ : NF)
 /-- **The table up to the offset `o`**: flags `≤ 1`; a flag `1` holds an accepted position
 (`CandOK`); every valid query whose chord meets `C₁` first, attached on the `C₁` part beyond the
 start at an offset `≤ o`, has flag `1`. -/
-def TabInv (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c : Config) (o : ℝ) : Prop :=
+def TabInv (c : Config) (o : ℝ) : Prop :=
   ∀ j, j < 2 * N₂.nChords →
     c.nmem (c.nreg cTB + 3 * j) ≤ 1 ∧
     (c.nmem (c.nreg cTB + 3 * j) = 1 →
@@ -100,6 +109,9 @@ def TabInv (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c : Config) (o : ℝ)
         sidePt (chainModel J.whole).W p t = rayPt (endOrigin J (Qof P) N₂ j) (endDir j)
           (J.whole.hitParam (endOrigin J (Qof P) N₂ j) (endDir j)) →
         (Lst J : ℝ) < oW J (p + t) → oW J (p + t) ≤ o → c.nmem (c.nreg cTB + 3 * j) = 1)
+
+
+end
 
 /-- **The invariant of the event loop** at the start of an iteration (configuration `c`, start of
 the run steps `c₀`). -/

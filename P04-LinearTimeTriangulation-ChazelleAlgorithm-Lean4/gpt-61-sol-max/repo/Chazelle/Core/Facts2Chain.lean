@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.Facts2TrapDeg
 public import Chazelle.Core.FactsFullDegInt
 
@@ -48,24 +50,15 @@ theorem seg_ord (u w : Point) : seg (ord u w) = Chazelle.segment u w := by
   · exact Geometry.segment_comm _ _
 
 theorem ord_up {u w : Point} (h : u.2 ≠ w.2) : (ord u w).1.2 < (ord u w).2.2 := by
-  unfold ord
-  split_ifs with h'
-  · exact h'
-  · exact lt_of_le_of_ne (not_lt.1 h') (Ne.symm h)
+  grind [ord]
 
 theorem ord_ends (u w : Point) :
     (u = (ord u w).1 ∨ u = (ord u w).2) ∧ (w = (ord u w).1 ∨ w = (ord u w).2) := by
-  unfold ord
-  split_ifs
-  · exact ⟨Or.inl rfl, Or.inr rfl⟩
-  · exact ⟨Or.inr rfl, Or.inl rfl⟩
+  aesop (add simp [ord]) (add safe (by omega))
 
 theorem ord_cases (u w : Point) {v : Point} (h : v = (ord u w).1 ∨ v = (ord u w).2) :
     v = u ∨ v = w := by
-  unfold ord at h
-  split_ifs at h
-  · exact h
-  · exact h.symm
+  grind [ord]
 
 variable (C : Chain)
 
@@ -100,9 +93,8 @@ theorem vertex_snd_ne (hDH : DistinctHeights C.P) {j k : ℕ} (hj : j ≤ C.m) (
 
 theorem side_seg_fst {R : ℝ} (hR : 0 < R) {x : ℝ} {p : Point}
     (hp : p ∈ seg (((x, -R), (x, R)) : Point × Point)) : p.1 = x ∧ |p.2| ≤ R := by
-  obtain ⟨h1, h2, h3⟩ := (mem_seg_iff (s := ((x, -R), (x, R))) (by simp only; linarith)).1 hp
-  simp only at h1 h2
-  refine ⟨by rw [h3]; simp [xAt], abs_le.2 ⟨h1, h2⟩⟩
+  obtain ⟨h1, h2, h3⟩ := (mem_seg_iff (s := ((x, -R), (x, R))) (by simp_all)).1 hp
+  grind [xAt]
 
 /-- Where a point of an obstacle segment lies. -/
 theorem seg_cases {s : Point × Point} (hs : s ∈ segs C) {p : Point} (hp : p ∈ seg s) :
@@ -132,10 +124,10 @@ theorem dom_eq : dom C.radius (segs C) = C.dom := by
   refine and_congr_right fun hbox => not_congr ⟨fun hp => ?_, fun hp => ?_⟩
   · obtain ⟨s, hs, hps⟩ := mem_iUnion₂.1 hp
     rcases seg_cases hs hps with ⟨h, -⟩ | ⟨-, h⟩ | ⟨-, h, -⟩ | ⟨-, h, -⟩
-    · exact Or.inl h
-    · exact Or.inr h
-    · have := hbox.1; rw [h, abs_neg, abs_of_pos C.radius_pos] at this; exact absurd this (lt_irrefl _)
-    · have := hbox.1; rw [h, abs_of_pos C.radius_pos] at this; exact absurd this (lt_irrefl _)
+    · simp_all
+    · simp_all
+    · have := hbox.1; grind
+    · have := hbox.1; grind
   · rcases hp with ⟨k, hk, hpk⟩ | hp
     · refine seg_subset_obs (Or.inl ⟨k, hk, rfl⟩) ?_
       rw [seg_ord, ← C.chainEdge_eq]; exact hpk
@@ -147,16 +139,14 @@ theorem vert_eq_vertex {v : Point} (hv : IsVert (segs C) v) (hvR : |v.2| < C.rad
   obtain ⟨s, hs, hvs⟩ := hv
   rcases hs with ⟨k, hk, rfl⟩ | hs
   · rcases ord_cases _ _ hvs with rfl | rfl
-    · exact ⟨k, by omega, rfl⟩
-    · exact ⟨k + 1, by omega, rfl⟩
+    all_goals grind
   · simp only [mem_insert_iff, mem_singleton_iff] at hs
     have hR := C.radius_pos
     rcases hs with rfl | rfl | rfl
     · rcases hvs with rfl | rfl
       · exact ⟨C.topIdx, C.topIdx_le, rfl⟩
-      · simp [slitSeg, Chain.slitTop, abs_of_pos hR] at hvR
-    · rcases hvs with rfl | rfl <;> simp [sideL, abs_of_pos hR] at hvR
-    · rcases hvs with rfl | rfl <;> simp [sideR, abs_of_pos hR] at hvR
+      grind [slitSeg, Chain.slitTop]
+    all_goals (grind [sideL, sideR])
 
 /-- **The segment obstacles of a chain model are good** (simple host, distinct heights). -/
 theorem good (hP : C.P.Simple) (hDH : DistinctHeights C.P) : Good C.radius (segs C) := by
@@ -167,23 +157,21 @@ theorem good (hP : C.P.Simple) (hDH : DistinctHeights C.P) : Good C.radius (segs
   · refine Set.Finite.union (((Set.finite_Iio C.m).image
       fun k => ord (C.vertex k) (C.vertex (k + 1))).subset ?_) (Set.toFinite _)
     rintro s ⟨k, hk, rfl⟩
-    exact ⟨k, hk, rfl⟩
+    grind
   · intro s hs
     rcases hs with ⟨k, hk, rfl⟩ | hs
     · exact ord_up (vertex_snd_ne hDH (by omega) (by omega) (by omega))
     · simp only [mem_insert_iff, mem_singleton_iff] at hs
       rcases hs with rfl | rfl | rfl
       · exact htop
-      · simp only [sideL]; linarith
-      · simp only [sideR]; linarith
+      all_goals (simp_all [sideL, sideR] )
   · intro s hs p hp
     rcases seg_cases hs hp with ⟨h, -⟩ | ⟨-, h⟩ | ⟨-, h, h'⟩ | ⟨-, h, h'⟩
     · have := C.abs_le_coordBound_of_mem_set h
       exact ⟨this.1.trans C.coordBound_lt_radius.le, this.2.trans C.coordBound_lt_radius.le⟩
     · rw [C.mem_slit_iff] at h
-      refine ⟨by rw [h.1]; exact abs_top_fst_lt.le, abs_le.2 ⟨by linarith [h.2.1], h.2.2⟩⟩
-    · exact ⟨by rw [h, abs_neg, abs_of_pos hR], h'⟩
-    · exact ⟨by rw [h, abs_of_pos hR], h'⟩
+      refine ⟨by rw [h.1]; exact abs_top_fst_lt.le, abs_le.2 ⟨by linarith, h.2.2⟩⟩
+    all_goals grind
   · intro s hs s' hs' hne p hp hp'
     have hslit : ∀ {p : Point}, p ∈ C.set → p ∈ C.slit → IsVert (segs C) p := by
       intro p h1 h2
@@ -194,25 +182,25 @@ theorem good (hP : C.P.Simple) (hDH : DistinctHeights C.P) : Good C.radius (segs
     have hsetL : ∀ {p : Point}, p ∈ C.set → p.1 = -C.radius → False := by
       intro p h1 h2
       have := abs_fst_lt_of_set h1
-      rw [h2, abs_neg, abs_of_pos hR] at this; exact lt_irrefl _ this
+      grind
     have hsetR : ∀ {p : Point}, p ∈ C.set → p.1 = C.radius → False := by
       intro p h1 h2
       have := abs_fst_lt_of_set h1
-      rw [h2, abs_of_pos hR] at this; exact lt_irrefl _ this
+      grind
     have hslitL : ∀ {p : Point}, p ∈ C.slit → p.1 = -C.radius → False := by
       intro p h1 h2
       rw [C.mem_slit_iff] at h1
       have := abs_top_fst_lt (C := C)
-      rw [← h1.1, h2, abs_neg, abs_of_pos hR] at this; exact lt_irrefl _ this
+      grind
     have hslitR : ∀ {p : Point}, p ∈ C.slit → p.1 = C.radius → False := by
       intro p h1 h2
       rw [C.mem_slit_iff] at h1
       have := abs_top_fst_lt (C := C)
-      rw [← h1.1, h2, abs_of_pos hR] at this; exact lt_irrefl _ this
+      grind
     rcases seg_cases hs hp with ⟨h1, k, hk, rfl⟩ | ⟨rfl, h1⟩ | ⟨rfl, h1, -⟩ | ⟨rfl, h1, -⟩ <;>
       rcases seg_cases hs' hp' with ⟨h2, j, hj, rfl⟩ | ⟨rfl, h2⟩ | ⟨rfl, h2, -⟩ | ⟨rfl, h2, -⟩
     · -- two chain edges
-      have hkj : k ≠ j := by rintro rfl; exact hne rfl
+      have hkj : k ≠ j := by grind
       have hidx : C.edgeIdx k ≠ C.edgeIdx j := fun h => hkj (C.edgeIdx_inj hk hj h)
       have hmem : p ∈ C.P.edge (C.edgeIdx k) ∩ C.P.edge (C.edgeIdx j) := by
         refine ⟨?_, ?_⟩
@@ -222,9 +210,9 @@ theorem good (hP : C.P.Simple) (hDH : DistinctHeights C.P) : Good C.radius (segs
       obtain ⟨h | h, -⟩ := hmem
       · rw [h]; exact ⟨_, Or.inl ⟨k, hk, rfl⟩, (ord_ends _ _).1⟩
       · rw [h, ← C.vertex_succ_eq]; exact ⟨_, Or.inl ⟨k, hk, rfl⟩, (ord_ends _ _).2⟩
-    · exact hslit h1 h2
-    · exact (hsetL h1 h2).elim
-    · exact (hsetR h1 h2).elim
+    · grind
+    · grind
+    · grind
     · exact hslit h2 h1
     · exact (hne rfl).elim
     · exact (hslitL h1 h2).elim
@@ -237,11 +225,7 @@ theorem good (hP : C.P.Simple) (hDH : DistinctHeights C.P) : Good C.radius (segs
     · exact (hslitR h2 h1).elim
     · rw [h1] at h2; linarith
     · exact (hne rfl).elim
-  · intro v w hv hw hvR hvw
-    obtain ⟨j, hj, rfl⟩ := vert_eq_vertex hv hvR
-    obtain ⟨k, hk, rfl⟩ := vert_eq_vertex hw (hvw ▸ hvR)
-    by_contra hne
-    exact vertex_snd_ne hDH hj hk (fun e => hne (by rw [e])) hvw
+  grind [Chazelle.Core.ChainObs.vert_eq_vertex, Chazelle.Core.ChainObs.vertex_snd_ne]
 
 /-- **The vertex chords of a chain are full** for the segment obstacles: a domain point seen
 horizontally from a chain vertex lies on the chord of that vertex in that direction. -/
@@ -259,21 +243,17 @@ theorem fullAt {G : Set (Set Point)} (hG : C.chords ⊆ G) : FullAt C.radius (se
     rcases lt_or_gt_of_ne hzv1 with h | h
     · refine ⟨-1, Or.inr rfl, v.1 - z.1, by linarith, point_ext (by simp) (by simp [hzv]),
         fun t ht1 ht2 => ?_⟩
-      have := hbet (v.1 - t) (by rw [min_eq_right h.le]; linarith)
-        (by rw [max_eq_left h.le]; linarith)
-      simpa [rayPt, sub_eq_add_neg] using this
+      grind [rayPt, sub_eq_add_neg]
     · refine ⟨1, Or.inl rfl, z.1 - v.1, by linarith, point_ext (by simp) (by simp [hzv]),
         fun t ht1 ht2 => ?_⟩
-      have := hbet (v.1 + t) (by rw [min_eq_left h.le]; linarith)
-        (by rw [max_eq_right h.le]; linarith)
-      simpa [rayPt] using this
+      grind [rayPt]
   have hfree : C.DirFree j σ := by
     have e1 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 d := Ioo_mem_nhdsGT hd
     exact e1.mono fun t ht => hint t ht.1 ht.2
   have hle : d ≤ C.chordParam j σ := (C.hit_of_initial hvbox hσ hd hint).1
   have hzc : z ∈ C.chordSet j σ := by
     rw [C.chordSet_eq_image hj hσ hfree]
-    exact ⟨d, ⟨hd.le, hle⟩, hzd.symm⟩
+    grind
   exact ⟨_, hG ⟨j, σ, hj, hσ, hfree, rfl⟩, hzc⟩
 
 end ChainObs
@@ -287,12 +267,12 @@ theorem fullDegLe_chain {C : Chain} (hP : C.P.Simple) (hDH : DistinctHeights C.P
   show {c | c ∈ C.chords ∪ F ∧ TouchesIn C.dom c U}.ncard ≤ 4
   rw [← hdom]
   refine SegObs.deg_le_four (ChainObs.good hP hDH) (G := C.chords ∪ F) ?_
-    (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by rw [hdom]; exact hU)
+    (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by aesop)
   rintro c (hc | hc)
   · obtain ⟨k, σ, -, -, -, rfl, hh⟩ := C.chords_spec hc
-    exact ⟨_, _, _, by rw [hdom]; exact hh, C.chordSet_eq_hseg k σ⟩
+    exact ⟨_, _, _, by grind, C.chordSet_eq_hseg k σ⟩
   · obtain ⟨y, a, b, hh, -, rfl⟩ := hF.2.1 hc
-    exact ⟨y, a, b, by rw [hdom]; exact hh, rfl⟩
+    core_grind
 
 /-- **WP-B: `FullDegSpec`** — the full augmented maps of every chain model of the geometry
 polygon and of its interior model have degree at most `4`. -/
@@ -301,7 +281,7 @@ theorem fullDegSpec : FullDegSpec := by
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hP
   have hDH : DistinctHeights (Qof P) := (goodShear_epsOf hε).2.1
   refine ⟨fun C hC => ?_, fullDeg_interior P hP hε⟩
-  exact fullDegLe_chain (by rw [hC]; exact hQ) (by rw [hC]; exact hDH) (Qof P)
+  exact fullDegLe_chain (by simp_all) (by simp_all) (Qof P)
 
 end
 

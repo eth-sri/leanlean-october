@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoS0MathA
 
 /-!
@@ -31,7 +33,7 @@ theorem gW_lt : gW J < (chainModel J.whole).W.n := by
 
 theorem getD_mem {α : Type*} {l : List α} {i : ℕ} (hi : i < l.length) (d : α) :
     l.getD i d ∈ l := by
-  rw [List.getD_eq_getElem _ _ hi]; exact List.getElem_mem hi
+  simp_all
 
 set_option maxHeartbeats 2000000 in
 /-- **The labels of the region faced at a position, from the event log.** -/
@@ -53,13 +55,13 @@ theorem labels_of_log (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hfin : (F₂plus J S₂).Finite := F₂plus_finite J hS₂f
   have hg := gW_lt J
   have hg0 : (0 : ℝ) ≤ (gW J : ℝ) := Nat.cast_nonneg _
-  have hgn : (gW J : ℝ) < (chainModel J.whole).W.n := by exact_mod_cast hg
+  have hgn : (gW J : ℝ) < (chainModel J.whole).W.n := by simp_all
   set d : ℕ × ℝ × Set (Set Point) := (0, 0, ∅) with hd
   have hent : ∀ j, j < es.length → (es.getD j d).1 < (chainModel J.whole).W.n ∧
       0 ≤ (es.getD j d).2.1 ∧ (es.getD j d).2.1 < 1 :=
     fun j hj => by
       obtain ⟨h1, h2, h3, -⟩ := hlog.2.1 _ (getD_mem hj d)
-      exact ⟨h1, h2, h3⟩
+      simp_all
   have hlab : ∀ j, j < es.length →
       LabIn J S₂ (es.getD j d).1 (es.getD j d).2.1 (es.getD j d).2.2 :=
     fun j hj => hlog.2.2.2.2.2.2 _ (getD_mem hj d)
@@ -90,8 +92,8 @@ theorem labels_of_log (hP : J.P.Simple) {S₂ : Set (Set Point)}
         V ∈ (es.getD i d).2.2 ∨ (0 < i ∧ V ∈ (es.getD (i - 1) d).2.2) ∨ GapLab J S₂ V := by
     intro hA V hV hl
     rcases hlab i hi U hU hA V hV hl with h | h
-    · exact Or.inl h
-    · exact Or.inr (Or.inr h)
+    · ram_grind
+    ram_grind
   -- the region after a non-cut position after the entry
   have viaNear : ∀ (q : ℕ) (u : ℝ), q < (chainModel J.whole).W.n → u ∈ Ioo (0 : ℝ) 1 →
       ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (q + u) → (chainModel J.whole).Faces q u U →
@@ -107,29 +109,25 @@ theorem labels_of_log (hP : J.P.Simple) {S₂ : Set (Set Point)}
         near_after hM hF hfin hg hpz htz0 htz1 hA (ε := ub - x) (by linarith)
       have hoff' : oW J ((pz : ℝ) + (tz + s)) = x + s := hoff
       refine finI (viaNear pz (tz + s) hpz hts hnc hf ?_ ?_)
-      · rw [hoff']; linarith
-      · rw [hoff']; linarith
-    · obtain ⟨e1, e2⟩ := hpos_eq heq.symm
-      rw [e1, e2] at hA
-      exact finI hA
+      all_goals linarith
+    ram_grind
   · rcases hlo.lt_or_eq with hlt | heq
     · obtain ⟨q, u, hq, hu, hnc, hf, h1, h2⟩ := faces_near_before hM hF hfin hg hpz htz0 htz1
         (show (0 : ℝ) < x from lt_of_le_of_lt (Nat.cast_nonneg _) hLst) hB (ε := x - k) (by linarith)
       have h1' : x - (x - k) < oW J ((q : ℝ) + u) := h1
       have h2' : oW J ((q : ℝ) + u) < x := h2
-      exact finI (viaNear q u hq hu hnc hf (by linarith) (by linarith))
+      grind
     · -- the position is the entry `i`: `i > 0` and the entry `i - 1` faces the region
       have hi0 : 0 < i := by
         by_contra h0
         push Not at h0
-        have hi0 : i = 0 := by omega
+        
         have hhead : es.getD 0 d ∈ es.head? := by
           cases es with
           | nil => simp at hi
           | cons a l => simp [hd]
         have := hlog.2.2.1 _ hhead
-        have hk' : k = oW J (((es.getD 0 d).1 : ℝ) + (es.getD 0 d).2.1) := by rw [hk, hi0]
-        linarith
+        grind
       have hi1 : i - 1 < es.length := by omega
       have hcons : i - 1 + 1 < es.length := by omega
       have hgap' := hlog.2.2.2.2.1 (i - 1) hcons
@@ -149,11 +147,11 @@ theorem labels_of_log (hP : J.P.Simple) {S₂ : Set (Set Point)}
         (show oW J _ < oW J ((q : ℝ) + u) by linarith)
         (fun y hy hy0 hyn ⟨a1, a2⟩ => hgap' y hy hy0 hyn ⟨a1, by
           have a2' : oW J y < oW J ((q : ℝ) + u) := a2
-          show oW J y < k; linarith⟩)
+          grind⟩)
       intro V hV hl
       rcases hlab (i - 1) hi1 U hU hA' V hV hl with h | h
-      · exact Or.inr (Or.inl ⟨hi0, h⟩)
-      · exact Or.inr (Or.inr h)
+      · ram_grind
+      ram_grind
 
 end
 

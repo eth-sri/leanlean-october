@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutShWt
 
 /-!
@@ -34,22 +36,19 @@ theorem walk_x_bounds {q : ℕ} (hq : q < 2 * C.m + 7) :
   · show -C.radius ≤ ((C.sideWalk C.sideBeta).vtx q).1 ∧
       ((C.sideWalk C.sideBeta).vtx q).1 ≤ C.radius
     interval_cases q
-    · rw [C.sideWalk_vtx_zero]; unfold Chazelle.Chain.slitTop
-      exact ⟨by linarith [ht.1], by linarith [ht.2]⟩
-    · rw [C.sideWalk_vtx_one]; exact ⟨le_rfl, by linarith⟩
-    · rw [C.sideWalk_vtx_two]; exact ⟨le_rfl, by linarith⟩
-    · rw [C.sideWalk_vtx_three]; exact ⟨by linarith, le_rfl⟩
-    · rw [C.sideWalk_vtx_four]; exact ⟨by linarith, le_rfl⟩
-    · rw [C.sideWalk_vtx_five]; unfold Chazelle.Chain.slitTop
-      exact ⟨by linarith [ht.1], by linarith [ht.2]⟩
+    · rw [C.sideWalk_vtx_zero]; core_grind
+    · rw [C.sideWalk_vtx_one]; ram_grind
+    · rw [C.sideWalk_vtx_two]; ram_grind
+    · rw [C.sideWalk_vtx_three]; ram_grind
+    · rw [C.sideWalk_vtx_four]; ram_grind
+    · rw [C.sideWalk_vtx_five]; core_grind
   · obtain ⟨i, rfl⟩ : ∃ i, q = i + 6 := ⟨q - 6, by omega⟩
     show -C.radius ≤ ((C.sideWalk C.sideBeta).vtx (i + 6)).1 ∧
       ((C.sideWalk C.sideBeta).vtx (i + 6)).1 ≤ C.radius
     rw [C.sideWalk_vtx_tour _ (by omega)]
     have hb := C.set_subset_box (C.vertex_mem_set (C.sideIdx_le C.sideBeta i))
     have := abs_lt.1 hb.1
-    unfold Chazelle.Chain.sideTour
-    constructor <;> linarith [this.1, this.2]
+    core_grind
 
 /-- **An inner point of a chain model** lies strictly inside the height range of the box and
 inside its abscissa range. -/
@@ -62,7 +61,7 @@ theorem innerPt_bounds {z : Point} (h : (chainModel C).InnerPt z) :
   have b := walk_y_bounds C hq
   have a' := walk_x_bounds C hp'
   have b' := walk_x_bounds C hq'
-  exact ⟨abs_lt.2 ⟨by linarith, by linarith⟩, abs_le.2 ⟨by linarith, by linarith⟩⟩
+  ram_grind
 
 /-- **A position inside the slit**: a position of the walk strictly inside the box that is
 neither on a tour edge (edges `6 … 2m + 5`) nor a vertex lies above the top of the chain. -/
@@ -73,7 +72,7 @@ theorem walk_above {Q : Polygon} {N e hc : ℕ} (hp : ProperPos (chainModel C) Q
     (hno : ¬ (6 ≤ e ∧ (e < 2 * C.m + 6 ∨ (chainModel C).param Q ⟨e, hc⟩ = 0))) :
     C.top.2 < ((chainModel C).pos Q ⟨e, hc⟩).2 := by
   have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
-  have hR := C.radius_pos
+  
   have htop := C.top_snd_lt_radius
   have t0 := hp.1
   have t1 := hp.2.1
@@ -91,22 +90,21 @@ theorem walk_above {Q : Polygon} {N e hc : ℕ} (hp : ProperPos (chainModel C) Q
   · rw [Nat.mod_eq_of_lt (by omega)] at hx hy ⊢
     interval_cases e
     · simp only [V, C.sideWalk_vtx_zero, C.sideWalk_vtx_one, Chazelle.Chain.slitTop] at hy
-      linarith [hy.2]
+      linarith
     · simp only [V, C.sideWalk_vtx_one, C.sideWalk_vtx_two] at hx
-      linarith [hx.1]
+      linarith
     · simp only [V, C.sideWalk_vtx_two, C.sideWalk_vtx_three] at hy
-      linarith [hy.1]
+      linarith
     · simp only [V, C.sideWalk_vtx_three, C.sideWalk_vtx_four] at hx
-      linarith [hx.2]
+      linarith
     · simp only [V, C.sideWalk_vtx_four, C.sideWalk_vtx_five, Chazelle.Chain.slitTop] at hy
-      linarith [hy.2]
+      linarith
     · rw [show (5 : ℕ) + 1 = 6 from rfl, V6, V, C.sideWalk_vtx_five]
       unfold Chazelle.Chain.slitTop
       dsimp only
       nlinarith [mul_pos (show (0 : ℝ) < 1 - t by linarith) (show 0 < C.radius - C.top.2 by linarith)]
   · have he : e = 2 * C.m + 6 := by
-      by_contra hc'
-      exact hno ⟨h6, Or.inl (by omega)⟩
+      omega
     have ht0 : t ≠ 0 := fun h => hno ⟨h6, Or.inr h⟩
     have tp : 0 < t := lt_of_le_of_ne t0 (Ne.symm ht0)
     subst he

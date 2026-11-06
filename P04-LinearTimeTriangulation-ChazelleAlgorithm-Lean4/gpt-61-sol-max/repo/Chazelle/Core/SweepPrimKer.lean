@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepPrimBool
 public import Chazelle.Core.NFLocateChain
 
@@ -75,9 +77,8 @@ def Bkb (dst r : ℕ) : Bool := Bk r || r == dst
 theorem wr_signProg : wr Bk signProg = true := by decide
 
 theorem wr_kbit (a b d op dst : ℕ) : wr (Bkb dst) (kbit a b d op dst) = true := by
-  have h := wr_mono wr_signProg (B' := Bkb dst) (fun r hr => by simp [Bkb, hr])
-  simp only [kbit, copies, List.map_cons, List.map_nil, block_cons, block_nil, wr, wrOK, h]
-  simp [Bkb, Bk]
+  have h := wr_mono wr_signProg (B' := Bkb dst) (fun r hr => by core_grind)
+  simp_all [kbit, copies, List.map_cons, List.map_nil, block_cons, block_nil, wr, wrOK, Bkb, Bk]
 
 /-- **Execution of one kernel bit** (at most `241` steps). -/
 theorem kbit_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config)
@@ -92,7 +93,7 @@ theorem kbit_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
       (10005, b + 2), (10006, d), (10007, d + 1), (10008, d + 2)] c hw
     (by intro p hp q hq; simp only [List.mem_cons, List.not_mem_nil, or_false] at hp hq
         rcases hp with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-        rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp <;> omega)
+        grind <;> simp )
     (by simp)
   have w₁ := e₁.wb_right
   have i1 : SymPtIn c₁ 10000 sa := symPtIn_copy hsa (h1 (10000, a) (by simp))
@@ -119,8 +120,7 @@ theorem kbit_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
   have ex : Exec P W (kbit a b d op dst) c _ (9 + (1 + (k₃ + 1))) :=
     .seq e₁ (.seq e₂ (.seq e₃ e₄))
   refine ⟨_, _, ex, by omega, exec_frameB ex (wr_kbit a b d op dst), ?_, ?_⟩
-  · simp only [upd_same]; exact bit₃
-  · simp only [upd_same]; rw [sig₃, o2]
+  all_goals (grind [upd_same])
 
 /-! ## The chain environment -/
 
@@ -158,16 +158,19 @@ namespace CEnv
 
 variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {c c' : Config}
 
-theorem wb (h : CEnv P W H C c) : WordsBounded W c := h.host.wb
+section
+variable (h : CEnv P W H C c)
+include h
+theorem wb : WordsBounded W c := h.host.wb
 
 /-- The number of points of the host polygon is the number of host points. -/
-theorem n_eq (h : CEnv P W H C c) : C.P.n = (H.pts P.n).length := by
+theorem n_eq : C.P.n = (H.pts P.n).length := by
   rw [h.hP]
   show ((H.pts (Qof P).n).map (SymPt.eval (Qof P))).length = _
   rw [List.length_map, show (Qof P).n = P.n from shear_n _ _]
 
 /-- **The environment survives** a step that keeps its registers and the memory. -/
-theorem keep (h : CEnv P W H C c) (hw : WordsBounded W c') (hm : c'.nmem = c.nmem)
+theorem keep (hw : WordsBounded W c') (hm : c'.nmem = c.nmem)
     (hr : ∀ r ∈ envRegs, c'.nreg r = c.nreg r) : CEnv P W H C c' := by
   have g := fun r (hr' : r ∈ envRegs) => hr r hr'
   have e60 : c'.nreg 50060 = c.nreg 50060 := g _ (by decide)
@@ -178,8 +181,8 @@ theorem keep (h : CEnv P W H C c) (hw : WordsBounded W c') (hm : c'.nmem = c.nme
   · rw [g _ (by decide)]; exact h.host.h67
   · rw [g _ (by decide)]; exact h.host.h68
   · rw [g _ (by decide)]; exact h.host.h69
-  · rw [hm, e60]; exact h.hH
-  · rw [e60]; exact h.aW
+  · ram_grind
+  · ram_grind
   · rw [g _ (by decide)]; exact h.r32
   · rw [g _ (by decide)]; exact h.r52
   · rw [g _ (by decide)]; exact h.r53
@@ -192,6 +195,9 @@ theorem keep (h : CEnv P W H C c) (hw : WordsBounded W c') (hm : c'.nmem = c.nme
   · rw [g _ (by decide)]; exact h.r85
   · rw [g _ (by decide)]; exact h.r87
 
+
+end
+
 /-- The environment survives a register frame avoiding its registers. -/
 theorem frame {B : ℕ → Bool} (h : CEnv P W H C c) (hf : FrameB B c c') (hw : WordsBounded W c')
     (hB : ∀ r ∈ envRegs, B r = false) : CEnv P W H C c' :=
@@ -200,17 +206,7 @@ theorem frame {B : ℕ → Bool} (h : CEnv P W H C c) (hf : FrameB B c c') (hw :
 /-- The environment survives the host routines. -/
 theorem of_host (h : CEnv P W H C c) (E : HostEnv W (c.nreg 50060) H.length c.nmem c')
     (hf : FrameB Bhost c c') : CEnv P W H C c' := by
-  have hm : c'.nmem = c.nmem := hf.2.2.1
-  refine h.keep E.wb hm fun r hr => ?_
-  simp only [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
-  rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl
-  all_goals first
-    | exact hf.1 _ (by decide)
-    | (rw [E.h61, h.host.h61])
-    | (rw [E.h67, h.host.h67])
-    | (rw [E.h68, h.host.h68])
-    | (rw [E.h69, h.host.h69])
+  ram_grind
 
 end CEnv
 
@@ -310,11 +306,11 @@ theorem tour_idx {m S i : ℕ} (hm : 1 ≤ m) (hS : S ≤ 2 * m) (hi : i ≤ 2 *
   · rw [Nat.mod_eq_of_lt (by omega)]
   · by_cases h2 : i - (2 * m - S) < 2 * m
     · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-      congr 1; omega
+      grind
     · have e1 : i - (2 * m - S) = 2 * m := by omega
       have e2 : S + i = 2 * m + 2 * m := by omega
       rw [e1, e2, Nat.add_mod_right, Nat.mod_self]
-      unfold sideE; split_ifs <;> omega
+      core_grind
 
 /-- **The chain vertex index of tour step `i`** (in `50120`) into `50091`. -/
 def tvIdx : Stmt :=
@@ -342,7 +338,7 @@ theorem tvIdx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have hw := hE.wb
   have hm1 := C.one_le
   have hmN : C.m < (H.pts P.n).length := by rw [← hE.n_eq]; exact C.m_lt
-  have hT := C.topIdx_le
+  
   set m := C.m
   set T := C.topIdx
   set S := C.sideS C.sideBeta with hSdef
@@ -350,85 +346,81 @@ theorem tvIdx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have h53 := hE.r53
   have h54 := hE.r54
   have h32 := hE.r32
-  have e₁ := Exec.addN (P := P) hw 50058 50053 50053 (by rw [h53]; have := hE.NW; omega)
+  have e₁ := Exec.addN (P := P) hw 50058 50053 50053 (by ram_grind)
   set c₁ : Config := { c with nreg := upd c.nreg 50058 (c.nreg 50053 + c.nreg 50053) } with hc₁
   have w₁ : WordsBounded W c₁ := e₁.wb_right
-  have q58 : c₁.nreg 50058 = 2 * m := by rw [hc₁]; config_simp; rw [h53]; ring
-  have q : ∀ r, r ≠ 50058 → c₁.nreg r = c.nreg r := fun r hr => by rw [hc₁]; simp [hr]
+  have q58 : c₁.nreg 50058 = 2 * m := by ram_simp <;> omega_nf
+  have q : ∀ r, r ≠ 50058 → c₁.nreg r = c.nreg r := fun r hr => by simp_all
   obtain ⟨c₂, k₂, e₂, hk₂, q59, r₂⟩ : ∃ c₂ k₂, Exec P W (.ifLtN 50055 50032
       (.instr (.subN 50059 50058 50054))
       (.ifLtN 50032 50055 (.instr (.subN 50059 50058 50054)) (.instr (.copyN 50059 50054))))
       c₁ c₂ k₂ ∧ k₂ ≤ 5 ∧ c₂.nreg 50059 = S ∧ ∀ r, r ≠ 50059 → c₂.nreg r = c₁.nreg r := by
-    have b32 : c₁.nreg 50032 = 1 := by rw [q _ (by omega), h32]
-    have b54 : c₁.nreg 50054 = T := by rw [q _ (by omega), h54]
+    have b32 : c₁.nreg 50032 = 1 := by simp_all
+    have b54 : c₁.nreg 50054 = T := by grind
     have hb := hE.r55
     have b55 : c₁.nreg 50055 = c.nreg 50055 := q _ (by omega)
     by_cases h0 : c.nreg 50055 < 1
     · have hβ : C.sideBeta = false := by
-        cases hβ : C.sideBeta
-        · rfl
-        · exact absurd (hb.2 hβ) (by omega)
-      refine spec_ifLtN_true (by rw [b55, b32]; exact h0)
+        simp_all
+      refine spec_ifLtN_true (by omega)
         (spec_instr (Exec.subN w₁ _ _ _) fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
-      config_simp; rw [q58, b54, hSdef]; unfold Chain.sideS; rw [hβ]; rfl
-    · refine spec_ifLtN_false (by rw [b55, b32]; exact h0) ?_
+      config_simp; grind [Chain.sideS]
+    · refine spec_ifLtN_false (by omega) ?_
       by_cases h2 : 1 < c.nreg 50055
       · have hβ : C.sideBeta = false := by
-          cases hβ : C.sideBeta
-          · rfl
-          · exact absurd (hb.2 hβ) (by omega)
-        refine spec_ifLtN_true (by rw [b55, b32]; exact h2)
+          grind
+        refine spec_ifLtN_true (by omega)
           (spec_instr (Exec.subN w₁ _ _ _) fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
-        config_simp; rw [q58, b54, hSdef]; unfold Chain.sideS; rw [hβ]; rfl
+        config_simp; grind [Chain.sideS]
       · have hβ : C.sideBeta = true := hb.1 (by omega)
-        refine spec_ifLtN_false (by rw [b55, b32]; exact h2)
+        refine spec_ifLtN_false (by omega)
           (spec_instr (Exec.copyN w₁ _ _) fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
-        config_simp; rw [b54, hSdef]; unfold Chain.sideS; rw [hβ]; rfl
+        simp_all [Chain.sideS]
   have w₂ := e₂.wb_right
   have e₃ := Exec.subN (P := P) w₂ 50089 50058 50059
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50089 (c₂.nreg 50058 - c₂.nreg 50059) }
     with hc₃
   have w₃ : WordsBounded W c₃ := e₃.wb_right
   have t89 : c₃.nreg 50089 = 2 * m - S := by
-    rw [hc₃]; config_simp; rw [q59, r₂ _ (by omega), q58]
+    rw [hc₃]; config_simp; grind
   have t : ∀ r, r ≠ 50089 → c₃.nreg r = c₂.nreg r := fun r hr => by rw [hc₃]; simp [hr]
   have t120 : c₃.nreg 50120 = i := by
-    rw [t _ (by omega), r₂ _ (by omega), q _ (by omega), h120]
-  have t59 : c₃.nreg 50059 = S := by rw [t _ (by omega), q59]
+    grind
+  have t59 : c₃.nreg 50059 = S := by grind
   obtain ⟨c₄, k₄, e₄, hk₄, j4, r₄⟩ : ∃ c₄ k₄, Exec P W (.ifLtN 50120 50089
       (.instr (.addN 50077 50059 50120)) (.instr (.subN 50077 50120 50089))) c₃ c₄ k₄ ∧
       k₄ ≤ 3 ∧ c₄.nreg 50077 = (if i < 2 * m - S then S + i else i - (2 * m - S)) ∧
       ∀ r, r ≠ 50077 → c₄.nreg r = c₃.nreg r := by
     by_cases hc : i < 2 * m - S
-    · refine spec_ifLtN_true (by rw [t120, t89]; exact hc) (spec_instr (Exec.addN w₃ _ _ _
-        (by rw [t59, t120]; have := hE.NW; omega)) fun _ =>
+    · refine spec_ifLtN_true (by omega) (spec_instr (Exec.addN w₃ _ _ _
+        (by ram_grind)) fun _ =>
           ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
-      config_simp; rw [t59, t120, ite_eq_left hc]
-    · refine spec_ifLtN_false (by rw [t120, t89]; exact hc) (spec_instr (Exec.subN w₃ _ _ _)
+      config_simp; grind
+    · refine spec_ifLtN_false (by omega) (spec_instr (Exec.subN w₃ _ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
-      config_simp; rw [t89, t120, ite_eq_right hc]
+      config_simp; grind
   have w₄ := e₄.wb_right
   set j := (if i < 2 * m - S then S + i else i - (2 * m - S)) with hj
   have u53 : c₄.nreg 50053 = m := by
-    rw [r₄ _ (by omega), t _ (by omega), r₂ _ (by omega), q _ (by omega), h53]
+    grind
   have u58 : c₄.nreg 50058 = 2 * m := by
-    rw [r₄ _ (by omega), t _ (by omega), r₂ _ (by omega), q58]
+    grind
   obtain ⟨c₅, k₅, e₅, hk₅, k91, r₅⟩ : ∃ c₅ k₅, Exec P W (.ifLtN 50053 50077
       (.instr (.subN 50091 50058 50077)) (.instr (.copyN 50091 50077))) c₄ c₅ k₅ ∧
       k₅ ≤ 3 ∧ c₅.nreg 50091 = sideE m j ∧ ∀ r, r ≠ 50091 → c₅.nreg r = c₄.nreg r := by
     rw [sideE_eq]
     by_cases hc : m < j
-    · refine spec_ifLtN_true (by rw [u53, j4]; exact hc) (spec_instr (Exec.subN w₄ _ _ _)
+    · refine spec_ifLtN_true (by omega) (spec_instr (Exec.subN w₄ _ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
-      config_simp; rw [u58, j4, ite_eq_left hc]
-    · refine spec_ifLtN_false (by rw [u53, j4]; exact hc) (spec_instr (Exec.copyN w₄ _ _)
+      config_simp; grind
+    · refine spec_ifLtN_false (by omega) (spec_instr (Exec.copyN w₄ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
-      config_simp; rw [j4, ite_eq_right hc]
+      config_simp; grind
   have ex : Exec P W tvIdx c c₅ (1 + (k₂ + (1 + (k₄ + k₅)))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
-  refine ⟨c₅, _, ex, by omega, exec_frameB ex wr_tvIdx, ?_, by rw [r₅ _ (by omega), u58],
-    by rw [r₅ _ (by omega), r₄ _ (by omega), t59], by rw [r₅ _ (by omega), r₄ _ (by omega), t89],
-    by rw [r₅ _ (by omega), j4]⟩
+  refine ⟨c₅, _, ex, by omega, exec_frameB ex wr_tvIdx, ?_, by grind,
+    by grind, by grind,
+    by grind⟩
   rw [k91, hj, tour_idx hm1 hS2 hi, C.sideIdx_eq]
 
 /-- **Load the walk vertex `6 + i`** (`i` in `50120`) into the slot `dst`. -/
@@ -439,11 +431,9 @@ def tvLoad (dst : ℕ) : Stmt :=
 def Btv (dst r : ℕ) : Bool := Btvi r || Bhost r || decide (dst ≤ r ∧ r < dst + 3)
 
 theorem wr_tvLoad (dst : ℕ) : wr (Btv dst) (tvLoad dst) = true := by
-  have h1 := wr_mono wr_tvIdx (B' := Btv dst) (fun r hr => by simp [Btv, hr])
-  have h2 := wr_mono wr_hostPt (B' := Btv dst) (fun r hr => by simp [Btv, hr])
-  simp only [tvLoad, copies, List.map_cons, List.map_nil, block_cons, block_nil, wr, wrOK, h1,
-    h2]
-  simp [Btv]
+  have h1 := wr_mono wr_tvIdx (B' := Btv dst) (fun r hr => by simp_all [Btv])
+  have h2 := wr_mono wr_hostPt (B' := Btv dst) (fun r hr => by simp_all [Btv])
+  simp_all [tvLoad, copies, List.map_cons, List.map_nil, block_cons, block_nil, wr, wrOK, Btv]
 
 /-- The walk vertex `6 + i` of the chain model is the chain vertex of tour step `i`. -/
 theorem walk_vtx_tour (C : Chain) {i : ℕ} (hi : i ≤ 2 * C.m) :
@@ -470,7 +460,7 @@ theorem tvLoad_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   obtain ⟨c₃, e₃, h3, h3', _h3r, h3m, _h3rm, _h3o⟩ := copies_exec (P := P)
     [(dst, 50046), (dst + 1, 50047), (dst + 2, 50048)] c₂ e₂.wb_right
     (by intro p hp q hq; simp only [List.mem_cons, List.not_mem_nil, or_false] at hp hq
-        rcases hp with rfl | rfl | rfl <;> rcases hq with rfl | rfl | rfl <;> simp <;> omega)
+        grind)
     (by simp)
   have ex : Exec P W (tvLoad dst) c c₃ (k₁ + (k₂ + 3)) := .seq e₁ (.seq e₂ e₃)
   refine ⟨c₃, _, ex, by omega, exec_frameB ex (wr_tvLoad dst), ?_, sp, ?_, ?_, ?_, ?_⟩

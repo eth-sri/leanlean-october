@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvWinR3
 
 /-!
@@ -62,8 +64,8 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
   have ht00 : 0 ≤ t₀ := hpw.2.1.1
   have ht01 : t₀ < 1 := hpw.2.1.2.1
   have hu0 : off M.W.n (b₁ J) x₀ = (kd J e : ℝ) + t₀ := key₁_off hP hpw hL
-  have hoL : offK P J e h = (Lst J : ℝ) + ψ J (kd J e) + t₀ := by rw [hoff, hψ0]
-  have hn₁ : 0 < M.W.n := by rw [hMd, win_n₁_eq]; omega
+  have hoL : offK P J e h = (Lst J : ℝ) + ψ J (kd J e) + t₀ := by grind
+  have hn₁ : 0 < M.W.n := by grind [win_n₁_eq]
   have hke : ke₁ J e < M.W.n := Nat.mod_lt _ hn₁
   have hppx : ProperPos M (Qof P) P.n ⟨ke₁ J e, h⟩ := by
     refine ⟨?_, ?_, hpw.2.1.2.2⟩ <;> rw [hpar] <;> [exact ht00; exact ht01]
@@ -77,7 +79,7 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
     rw [hl, regArcs_single] at hj
     obtain ⟨-, -, -, reg, -, -, hA, -⟩ := hNF
     exact ((hA.2.2.2 _ hreg j).1 hj).1
-  have hol : a ∈ l := by rw [hl, regArcs_single]; exact hmem
+  have hol : a ∈ l := by grind [regArcs_single]
   -- the valid offsets beyond the key are beyond it in the walk of `C₁`
   have hbeyond : ∀ (d : ℕ) (t : ℝ), MValid J d t → 0 ≤ t → t < 1 →
       offK P J e h < (Lst J : ℝ) + ψ J d + t → off M.W.n (b₁ J) x₀ < d + t := by
@@ -96,16 +98,12 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
     obtain ⟨reg, -, -, harc⟩ := OracleQ.isArc_sj hNF ho'
     have hab0 : OracleQ.sk M (Qof P) N₁ o' = 0 ∧ OracleQ.ek M (Qof P) N₁ o' = 0 := by
       rcases harc.2.2.2.2.1 with ⟨⟨c, hc, -⟩, -⟩ | ⟨-, h1, h2⟩
-      · rw [hF] at hc; exact absurd hc (Set.notMem_empty c)
-      · exact ⟨h1, h2⟩
+      all_goals grind
     refine mem_loSet hg hll hpp hol (Nat.mod_lt _ hn₁) ht0 ht1.le ?_
     show CIn (OracleQ.sk M (Qof P) N₁ o') (OracleQ.ek M (Qof P) N₁ o') _
     rw [hab0.1, hab0.2]
     unfold CIn sideInArc
-    rcases lt_trichotomy ((((b₁ J + d) % M.W.n : ℕ) : ℝ) + t) 0 with h' | h' | h'
-    · left; rw [ite_eq_right (lt_irrefl 0)]; right; exact h'
-    · right; left; exact h'
-    · left; rw [ite_eq_right (lt_irrefl 0)]; left; exact h'
+    ram_grind
   have hFne : (N₁.F M (Qof P)).Nonempty := Set.nonempty_iff_ne_empty.2 hF
   obtain ⟨hin, hdec⟩ := hne hFne
   have hab := (OracleQ.arc_facts hNF hFne ho').2.2.1
@@ -124,34 +122,32 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
       ((d : ℝ) + t ≤ dE + tE ∨ (dE : ℝ) + tE < kd J e + t₀) →
       sidePt M.W ((b₁ J + d) % M.W.n) t ∈ ShotList.loSet M (Qof P) c'.nmem (c'.nreg wGB) l.length [] :=
     fun d t hd ht0 ht1 hlt hup => cover_arc hP hNF hg hll ho' hol hxr.1 hxr.2 hab hin hd ht0 ht1
-      (by rw [hu0]; exact hlt) (by rw [hUE, hu0]; exact hup)
+      (by grind) (by grind)
   rw [hUE', hUx] at hdec
   rcases hdec with ⟨hX, hc⟩ | ⟨hX, hnp, hδ, hd0, hl1d, hdE, hwE, hwH⟩ |
       ⟨hX, hnp, hncl, hdE, hwE, hwH⟩
   · -- part end
     rw [← hMd] at hc
     refine ⟨by omega, fun h0 => by omega, fun d t hv ht0 ht1 hlt _ => ?_⟩
-    refine cov d t hv.1 ht0 ht1 (by rw [← hu0]; exact hbeyond d t hv ht0 ht1 hlt) ?_
+    refine cov d t hv.1 ht0 ht1 (by grind) ?_
     rcases hc with hp | hE
-    · exact Or.inr hp
+    · grind
     · left
       have : d + 1 ≤ dE := by have := hv.1; omega
       have : ((d + 1 : ℕ) : ℝ) ≤ dE := by exact_mod_cast this
-      push_cast at this; linarith
+      grind
   · -- the gap start
     rw [← hMd] at hl1d hdE
     obtain ⟨hPW, hoffG⟩ := wend_gap (P := P) hP hδ
-    have hψk : ψ J (kd J e) = kd J e := by unfold ψ; rw [ite_eq_right (by omega)]
+    have hψk : ψ J (kd J e) = kd J e := by unfold ψ; ram_grind
     have hkl : (kd J e : ℝ) + t₀ < lL1 J := by
       have : ((kd J e + 1 : ℕ) : ℝ) ≤ lL1 J := by exact_mod_cast hd0
-      push_cast at this; linarith
+      grind
     have hlE : (lL1 J : ℝ) ≤ dE + tE := by
       have : (lL1 J : ℝ) ≤ dE := by exact_mod_cast hl1d
       linarith
     refine ⟨by omega, fun _ => ?_, fun d t hv ht0 ht1 hlt hle => ?_⟩
-    · rw [hwE, hwH]
-      refine ⟨hPW, ?_, Or.inl hoffG⟩
-      rw [hoffG, hoL, hψk]; linarith
+    · ram_grind
     · have hle' := hle hX
       rw [hwE, hwH, hoffG] at hle'
       have hb := hbeyond d t hv ht0 ht1 hlt
@@ -160,8 +156,8 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
       · exact cov d t hv.1 ht0 ht1 hb (Or.inl (by linarith))
       · subst h1; subst h2
         rw [gap_pt hP hδ]
-        exact cov (lL1 J) 0 (lt_of_le_of_lt hl1d hdE) le_rfl one_pos (by simpa using hkl)
-          (Or.inl (by simpa using hlE))
+        exact cov (lL1 J) 0 (lt_of_le_of_lt hl1d hdE) le_rfl one_pos (by grind)
+          (Or.inl (by grind))
   · -- an arc end
     rw [← hMd] at hncl hdE hwE
     have hne' : ¬ ((dE : ℝ) + tE = kd J e + t₀) := by
@@ -180,19 +176,15 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
       exact_mod_cast Nat.lt_succ_iff.1 (by exact_mod_cast this)
     have hgE : GapOut J dE := by
       intro hδ
-      by_cases h1 : dE < lL1 J
-      · exact Or.inl h1
-      · right
-        have : ¬ kd J e < lL1 J := fun h2 => hncl ⟨hδ, h2, by omega⟩
-        rcases hgap0 hδ with h3 | h3 <;> omega
+      omega
     have hψE : (if dE < lL1 J + lδ J then dE else dE - lδ J) = ψ J dE := by
       unfold ψ
       rcases win_lδ_cases (J := J) with h7 | h7
-      · split_ifs <;> omega
+      · ram_simp
       · have := hgE (by omega)
         split_ifs <;> omega
     have hwE' : c'.nreg wE = mEdge J dE := by
-      rw [hwE, hψE]; unfold mEdge; rw [Nat.mod_add_mod, add_assoc]
+      rw [hwE, hψE]; unfold mEdge; grind
     have heE : (b₁ J + dE) % M.W.n = eE := add_dOf b₁_lt hee
     have hy := (Restore.arc_abs_lt hP₁ hNF hFne hal).2
     obtain ⟨hPW, hoffE⟩ := wend_map (P := P) hP hdE hgE heE hpe hy
@@ -207,23 +199,20 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
           linarith
       · rw [hoffE]
         refine wend_cut hdE heE htE0 htE1.le hcutE hgE (fun h0' => have h0 : tE = 0 := h0'; ⟨?_, ?_, ?_⟩) (hdn _ hdE)
-        · have : (kd J e : ℝ) + t₀ < dE := by rw [h0] at hlt0; simpa using hlt0
-          have : (0 : ℝ) < dE := by have := (Nat.cast_nonneg (kd J e) : (0 : ℝ) ≤ _); linarith
+        · have : (kd J e : ℝ) + t₀ < dE := by grind
+          have : (0 : ℝ) < dE := by  linarith
           exact_mod_cast this
         · intro he0
           have hpos : M.pos (Qof P) (N₁.arc a).e = M.W.vtx eE := by
             rw [win_pos_eq_sidePt, ← htEd, h0]; exact Chazelle.Chain.sidePt_zero _ _
           rw [hpos, he0, Restore.chain_box_vtx_abs J.left (by norm_num)] at hy
-          exact lt_irrefl _ hy
+          grind
         · intro hδ
           by_cases h1 : dE < lL1 J
-          · exact Or.inl h1
+          · omega
           · right
             have : ¬ kd J e < lL1 J := fun h2 => hncl ⟨hδ, h2, by omega⟩
-            have h3 : lL1 J + lδ J ≤ kd J e := by rcases hgap0 hδ with h3 | h3 <;> omega
-            have : (kd J e : ℝ) < dE := by rw [h0] at hlt0; linarith
-            have : kd J e < dE := by exact_mod_cast this
-            omega
+            grind
     · have hle' := hle hX
       rw [hwE', hwH, hoffE] at hle'
       have hb := hbeyond d t hv ht0 ht1 hlt

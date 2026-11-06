@@ -62,21 +62,24 @@ noncomputable def oW (x : ℝ) : ℝ := off (chainModel J.whole).W.n (gW J : ℝ
 /-- The length of the right stretch: the `C₁` part is the offsets `[Lst, n)`. -/
 noncomputable def Lst : ℕ := rL1 J + rL2 J
 
+section
+variable (S₂ : Set (Set Point))
+include S₂
 /-- No cut of `F₂⁺` has its offset strictly between `a` and `b`. -/
-def NoCutIn (S₂ : Set (Set Point)) (a b : ℝ) : Prop :=
+def NoCutIn (a b : ℝ) : Prop :=
   ∀ x, (chainModel J.whole).IsCut (F₂plus J S₂) x → 0 ≤ x → x < (chainModel J.whole).W.n →
     ¬ (a < oW J x ∧ oW J x < b)
 
 /-- **The label set** `Λ` contains every label of the region faced just after `(p, t)`, up to the
 gap labels. -/
-def LabIn (S₂ : Set (Set Point)) (p : ℕ) (t : ℝ) (Λ : Set (Set Point)) : Prop :=
+def LabIn (p : ℕ) (t : ℝ) (Λ : Set (Set Point)) : Prop :=
   ∀ G ∈ (chainModel J.whole).regions (F₂plus J S₂), AfterFaces (chainModel J.whole) p t G →
     ∀ V ∈ (chainModel J.right).regions S₂, RLabel J S₂ G V → V ∈ Λ ∨ GapLab J S₂ V
 
 /-! ## Stage 3 → 4: the event log -/
 
 /-- **The event log** (keys `(p, t)` of the walk of `C`, label sets). -/
-def LogOK (S₂ : Set (Set Point)) (es : List (ℕ × ℝ × Set (Set Point))) : Prop :=
+def LogOK (es : List (ℕ × ℝ × Set (Set Point))) : Prop :=
   es ≠ [] ∧
   (∀ x ∈ es, x.1 < (chainModel J.whole).W.n ∧ 0 ≤ x.2.1 ∧ x.2.1 < 1 ∧
     (Lst J : ℝ) ≤ oW J (x.1 + x.2.1)) ∧
@@ -92,14 +95,14 @@ def LogOK (S₂ : Set (Set Point)) (es : List (ℕ × ℝ × Set (Set Point))) :
 
 /-- **The stop chords**: the shared chords and the wall pieces (`StopChord`), and the top chords
 (chords of `C` through the top of `C₂`, shot from it). -/
-def StopChord2 (S₂ : Set (Set Point)) (e : Set Point) : Prop :=
+def StopChord2 (e : Set Point) : Prop :=
   StopChord J S₂ e ∨
     ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ FreeAt J.whole J.right.top σ ∧
       e = Merge.shoot J.whole J.right.top σ
 
 /-- **The stop list**: exactly the attachments on the `C₁` part of the stop chords of `F₂⁺`,
 sorted by offset (keys `(p, t)` and chords). -/
-def StopsOK (S₂ : Set (Set Point)) (ss : List (ℕ × ℝ × Set Point)) : Prop :=
+def StopsOK (ss : List (ℕ × ℝ × Set Point)) : Prop :=
   (∀ s ∈ ss, s.2.2 ∈ F₂plus J S₂ ∧ StopChord2 J S₂ s.2.2 ∧
     SideAttach (chainModel J.whole).W s.2.2 s.1 s.2.1 ∧ (Lst J : ℝ) ≤ oW J (s.1 + s.2.1)) ∧
   (∀ e ∈ F₂plus J S₂, StopChord2 J S₂ e → ∀ (p : ℕ) (t : ℝ),
@@ -107,6 +110,9 @@ def StopsOK (S₂ : Set (Set Point)) (ss : List (ℕ × ℝ × Set Point)) : Pro
   ss.Pairwise (fun x y => oW J (x.1 + x.2.1) ≤ oW J (y.1 + y.2.1)) ∧ ss.Nodup
 
 /-! ## Stage 3 → side-1 answers: the endpoint table -/
+
+
+end
 
 /-- The origin of the endpoint query `j` of a chord list in the model `M₂`: the left end of chord
 `j / 2` for even `j`, its right end for odd `j`. -/
@@ -148,10 +154,7 @@ theorem regOf_spec {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) :
       ArcsOK M Q N (regOf M Q N) ∧ RegionsOK M Q N (regOf M Q N) ∧ SeqOK M Q N ∧
       (∀ i, i < N.nChords → (N.chord i).h < Q.n) ∧
       ∀ j, j < N.arcs.length → ProperPos M Q Q.n (N.arc j).s ∧ ProperPos M Q Q.n (N.arc j).e := by
-  classical
-  unfold regOf
-  rw [dite_eq_left h]
-  exact Classical.choose_spec h.2.2.2
+  grind [regOf]
 
 /-! ## Memory layouts -/
 
@@ -188,22 +191,28 @@ def LogRecsAt (m : ℕ → ℕ) (A : ℕ) (rs : List (ℕ × ℕ × ℕ × ℕ �
     m (A + 7 * i + 5) = (rs.getD i (0, 0, 0, 0, 0, 0, 0)).2.2.2.2.2.1 ∧
     m (A + 7 * i + 6) = (rs.getD i (0, 0, 0, 0, 0, 0, 0)).2.2.2.2.2.2
 
+section
+variable (Q : Polygon)
+include Q
 /-- The label set of a log record: the regions (`regOf`) of its first `n ≤ 4` labels. -/
-noncomputable def labSet (Q : Polygon) (N : NF) (n l₀ l₁ l₂ l₃ : ℕ) : Set (Set Point) :=
+noncomputable def labSet (N : NF) (n l₀ l₁ l₂ l₃ : ℕ) : Set (Set Point) :=
   (regOf (chainModel J.right) Q N) ''
     {l | (0 < n ∧ l = l₀) ∨ (1 < n ∧ l = l₁) ∨ (2 < n ∧ l = l₂) ∨ (3 < n ∧ l = l₃)}
 
 /-- The event log of the records. -/
-noncomputable def logOf (Q : Polygon) (N : NF) (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)) :
+noncomputable def logOf (N : NF) (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)) :
     List (ℕ × ℝ × Set (Set Point)) :=
   rs.map fun r => (r.1, (chainModel J.whole).param Q ⟨r.1, r.2.1⟩,
     labSet J Q N r.2.2.1 r.2.2.2.1 r.2.2.2.2.1 r.2.2.2.2.2.1 r.2.2.2.2.2.2)
 
 /-- The endpoint table at `A`: three words `(f, e, h)` per query. -/
-noncomputable def tabOf (Q : Polygon) (m : ℕ → ℕ) (A : ℕ) (j : ℕ) : Option (ℕ × ℝ) :=
+noncomputable def tabOf (m : ℕ → ℕ) (A j : ℕ) : Option (ℕ × ℝ) :=
   if m (A + 3 * j) = 1 then
     some (m (A + 3 * j + 1), (chainModel J.whole).param Q ⟨m (A + 3 * j + 1), m (A + 3 * j + 2)⟩)
   else none
+
+
+end
 
 end Sweep
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopL
 
 /-!
@@ -67,23 +69,23 @@ theorem orig_attach {kind k b : ℕ} (hD : OrgD P J N kind k b) :
     rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
     · rw [dirOf_zero] at hT ⊢
       obtain ⟨h1, h2⟩ := ends_shoot_neg J.whole hT.le
-      simp [h1, h2]
+      simp_all
     · rw [dirOf_one] at hT ⊢
       obtain ⟨h1, h2⟩ := ends_shoot_pos J.whole hT.le
-      simp [h1, h2]
+      simp_all
   refine ⟨fun p t hA => ⟨attach_of_origin hP ha haD hσ hf hA, by rw [hends.1]; exact hA.2.2.2.1⟩,
     fun p t hA => ⟨attach_of_far hP ha haD hσ hf hA, by rw [hends.2]; exact hA.2.2.2.1⟩,
     fun p t hA => ?_⟩
   rcases attach_cases hP ha hσ hf hA with ⟨-, h⟩ | ⟨-, h⟩
-  · exact Or.inl h
-  · exact Or.inr h
+  all_goals simp_all
 
+section
+variable {kind k b : ℕ} (hD : OrgD P J N kind k b) {p₀ p₁ : ℕ} {t₀ t₁ : ℝ} (h₀ : Arrival (chainModel J.whole).W (stOrig J (Qof P) N kind k b) (-dirOf b) p₀ t₀) (h₁ : Arrival (chainModel J.whole).W
+      (farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b)) (dirOf b) p₁ t₁)
+include hD h₀ h₁
 /-- **The two attachments** of a stop chord: any attachment is the arrival position of the
 origin or that of the far end. -/
-theorem attach_two {kind k b : ℕ} (hD : OrgD P J N kind k b) {p₀ p₁ : ℕ} {t₀ t₁ : ℝ}
-    (h₀ : Arrival (chainModel J.whole).W (stOrig J (Qof P) N kind k b) (-dirOf b) p₀ t₀)
-    (h₁ : Arrival (chainModel J.whole).W
-      (farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b)) (dirOf b) p₁ t₁)
+theorem attach_two
     {q : ℕ} {s : ℝ} (hA : SideAttach (chainModel J.whole).W (stopSet J (Qof P) N kind k b) q s) :
     (q = p₀ ∧ s = t₀) ∨ (q = p₁ ∧ s = t₁) := by
   obtain ⟨i1, i2, i3⟩ := orig_attach hP hN hD
@@ -92,14 +94,11 @@ theorem attach_two {kind k b : ℕ} (hD : OrgD P J N kind k b) {p₀ p₁ : ℕ}
   have ha : stopSet J (Qof P) N kind k b ∈ (chainModel J.whole).Adm :=
     F₂plus_subset J hN.1.2.1 hm
   rcases i3 q s hA with h | h
-  · exact Or.inl (hM.attach_unique ha hA (i1 p₀ t₀ h₀).1 (by rw [h.2.2.2.1, h₀.2.2.2.1]))
-  · exact Or.inr (hM.attach_unique ha hA (i2 p₁ t₁ h₁).1 (by rw [h.2.2.2.1, h₁.2.2.2.1]))
+  · exact Or.inl (hM.attach_unique ha hA (i1 p₀ t₀ h₀).1 (by simp_all))
+  · exact Or.inr (hM.attach_unique ha hA (i2 p₁ t₁ h₁).1 (by simp_all))
 
 /-- **Anchored, pocket**: from the offsets of the two attachments. -/
-theorem anc_pocket_iff {kind k b : ℕ} (hD : OrgD P J N kind k b) {p₀ p₁ : ℕ} {t₀ t₁ : ℝ}
-    (h₀ : Arrival (chainModel J.whole).W (stOrig J (Qof P) N kind k b) (-dirOf b) p₀ t₀)
-    (h₁ : Arrival (chainModel J.whole).W
-      (farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b)) (dirOf b) p₁ t₁) :
+theorem anc_pocket_iff :
     (¬ EvBrk J (stopSet J (Qof P) N kind k b) ↔
       oW J (p₀ + t₀) < Lst J ∨ oW J (p₁ + t₁) < Lst J) ∧
     ((∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W (stopSet J (Qof P) N kind k b) q s →
@@ -108,21 +107,21 @@ theorem anc_pocket_iff {kind k b : ℕ} (hD : OrgD P J N kind k b) {p₀ p₁ : 
   have hA₀ := (i1 p₀ t₀ h₀).1
   have hA₁ := (i2 p₁ t₁ h₁).1
   refine ⟨⟨fun h => ?_, fun h hb => ?_⟩, ⟨fun h => ⟨h _ _ hA₀, h _ _ hA₁⟩, fun h q s hA => ?_⟩⟩
-  · unfold EvBrk at h
-    push Not at h
-    obtain ⟨q, s, hA, hlt⟩ := h
-    rcases attach_two hP hN hD h₀ h₁ hA with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-    · exact Or.inl hlt
-    · exact Or.inr hlt
+  · grind [Chazelle.Core.SweepStop.attach_two, EvBrk]
   · rcases h with h | h
     · exact absurd (hb _ _ hA₀) (not_le.2 h)
     · exact absurd (hb _ _ hA₁) (not_le.2 h)
   · rcases attach_two hP hN hD h₀ h₁ hA with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-    · exact h.1
-    · exact h.2
+    all_goals grind
 
+
+end
+
+section
+variable {kind k b : ℕ} (hD : OrgD P J N kind k b)
+include hD
 /-- The origin and the far end of a stop chord are distinct points of it. -/
-theorem orig_far_ne {kind k b : ℕ} (hD : OrgD P J N kind k b) :
+theorem orig_far_ne :
     stOrig J (Qof P) N kind k b ≠ farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b) ∧
       stOrig J (Qof P) N kind k b ∈ stopSet J (Qof P) N kind k b ∧
       farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b) ∈ stopSet J (Qof P) N kind k b := by
@@ -138,15 +137,17 @@ theorem orig_far_ne {kind k b : ℕ} (hD : OrgD P J N kind k b) :
     simp only [rayPt_fst] at this
     rcases hσ with h' | h' <;> rw [h'] at this hT <;> linarith
   · have := rayPt_mem_shoot J.whole (stOrig J (Qof P) N kind k b) (dirOf b) le_rfl hT.le
-    rwa [show rayPt (stOrig J (Qof P) N kind k b) (dirOf b) 0 = stOrig J (Qof P) N kind k b by
-      apply Geometry.point_ext <;> simp [rayPt]] at this
+    simp_all
 
 /-- **At most one parent**: two chords of `S₂` containing a stop chord are equal. -/
-theorem parent_eq {kind k b : ℕ} (hD : OrgD P J N kind k b) {c c' : Set Point}
+theorem parent_eq {c c' : Set Point}
     (hc : c ∈ N.F (chainModel J.right) (Qof P)) (hc' : c' ∈ N.F (chainModel J.right) (Qof P))
     (h : stopSet J (Qof P) N kind k b ⊆ c) (h' : stopSet J (Qof P) N kind k b ⊆ c') : c = c' := by
   obtain ⟨hne, h1, h2⟩ := orig_far_ne hP hN hD
   exact parent_unique hN.1.2.1 hc hc' hne (h h1) (h h2) (h' h1) (h' h2)
+
+
+end
 
 omit hP hN in
 /-- **The parent of a wall piece** is its chord. -/
@@ -159,8 +160,8 @@ theorem parent_wall (_hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N
   rw [stopSet_eq]
   refine shoot_sub_end hN.1.2.1 (chord_mem hk) ?_
   rcases hcase with ⟨rfl, h⟩ | ⟨rfl, h⟩
-  · exact Or.inl ⟨dirOf_one, h⟩
-  · exact Or.inr ⟨dirOf_zero, h⟩
+  · aesop
+  aesop
 
 omit hP in
 omit hN in
@@ -180,7 +181,7 @@ theorem parent_vt_iff (_hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ 
     obtain ⟨y, l, r, hH, -, rfl, hl, hr⟩ := Merge.augChords_spec (hS₂ hc)
     have ha0 : a ∈ Visibility.hseg y l r := hsub (by
       have := rayPt_mem_shoot J.whole a (dirOf b) le_rfl hT.le
-      rwa [show rayPt a (dirOf b) 0 = a by apply Geometry.point_ext <;> simp [rayPt]] at this)
+      simp_all)
     have haD : a ∉ J.right.dom := fun hd => J.right.not_mem_set_of_mem_dom hd haR
     obtain ⟨hay, hal, har⟩ := ha0
     -- `a` is an end of the chord
@@ -189,7 +190,7 @@ theorem parent_vt_iff (_hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ 
       push Not at hne
       exact haD (by
         have := hH.open_mem a.1 (lt_of_le_of_ne hal (Ne.symm hne.1)) (lt_of_le_of_ne har hne.2)
-        rwa [show ((a.1, y) : Point) = a from Prod.ext rfl hay.symm] at this)
+        grind)
     -- the points just after `a` along the ray are in the chord
     set s : ℝ := min (J.whole.hitParam a (dirOf b)) ((r - l) / 2) with hs
     have hs0 : 0 < s := lt_min hT (by linarith [hH.lt])
@@ -198,17 +199,9 @@ theorem parent_vt_iff (_hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ 
     simp only [rayPt_fst] at h1 h2
     rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
     · rw [dirOf_zero] at h1 h2
-      right; refine ⟨rfl, ?_⟩
-      rw [hr]; refine Prod.ext ?_ hay.symm
-      rcases hend with h | h
-      · exfalso; linarith
-      · exact h.symm
+      ram_grind
     · rw [dirOf_one] at h1 h2
-      left; refine ⟨rfl, ?_⟩
-      rw [hl]; refine Prod.ext ?_ hay.symm
-      rcases hend with h | h
-      · exact h.symm
-      · exfalso; linarith
+      ram_grind
   · rintro (⟨rfl, h⟩ | ⟨rfl, h⟩)
     · exact shoot_sub_end hS₂ hc (Or.inl ⟨dirOf_one, h.symm⟩)
     · exact shoot_sub_end hS₂ hc (Or.inr ⟨dirOf_zero, h.symm⟩)

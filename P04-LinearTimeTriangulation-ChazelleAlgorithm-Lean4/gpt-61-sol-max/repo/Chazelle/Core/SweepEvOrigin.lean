@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvTasks2
 public import Chazelle.Core.SweepEvLabM
 public import Chazelle.Core.SweepMachine14
@@ -50,8 +52,7 @@ theorem start_key_pt (hP : J.P.Simple) :
   · obtain ⟨hv, -, hτ, hL⟩ := caseB_facts J hlt
     have e : (gW J + Lst J) % (chainModel J.whole).W.n = 2 * J.whole.m + 6 := by
       unfold gW
-      rw [hL, hn, Nat.mod_eq_of_lt (by omega)]
-      omega
+      simp_all +arith
     rw [e, (sidePt_top_copies J.whole).2, shared_eq_top J hv]
   · have hlo : lOff J = Lst J := by
       by_cases hv : VNotTop J
@@ -81,15 +82,15 @@ theorem Lst_lt_of_dom (hP : J.P.Simple) {p : ℕ} {t : ℝ} (hp : p < (chainMode
       have e : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) ((p : ℝ) + t) =
           (D : ℝ) + t := hoW
       exact stretch_not_dom₂ J hP (S₂ := ∅) (empty_subset _) finite_empty hp ht0 ht1
-        ⟨by rw [e]; exact h0, by rw [e]; exact hL⟩ hD
+        ⟨by grind, by rw [e]; exact hL⟩ hD
     · -- at the start key: the shared vertex
       have hDL : D = Lst J := by
         have h1 : (D : ℝ) ≤ Lst J := by linarith
         have h2 : (Lst J : ℝ) < D + 1 := by linarith
-        have h1' : D ≤ Lst J := by exact_mod_cast h1
+        have h1' : D ≤ Lst J := by simp_all
         have h2' : Lst J < D + 1 := by exact_mod_cast h2
         omega
-      have ht : t = 0 := by rw [hDL] at hL; linarith
+      have ht : t = 0 := by simp_all
       have hpD : p = (gW J + Lst J) % (chainModel J.whole).W.n := by
         rw [← hDL, hDdef, add_dOf hg hp]
       rw [hpD, ht, start_key_pt hP] at hD
@@ -98,44 +99,44 @@ theorem Lst_lt_of_dom (hP : J.P.Simple) {p : ℕ} {t : ℝ} (hp : p < (chainMode
     have := sidePt_off_zero J hP (S₂ := ∅) (empty_subset _) finite_empty hp ht0 ht1
       (show off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) ((p : ℝ) + t) = 0
         from hoW.trans h0.symm)
-    rw [this] at hD
-    exact hvD hD
+    grind
 
+section
+variable (hP : J.P.Simple) {c : Set Point} (hc : c ∈ Merge.augChords J.right) {a : Point} {σ : ℝ} (ha : (σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c)) (haR : a ∈ J.right.set) (hav : a ≠ J.shared) (hlt : J.whole.hitParam a σ < J.right.hitParam a σ)
+include hP c hc ha haR hav hlt
 /-- **The first hit from a valid origin**: the direction is free for `C`, the hit parameter is
 positive, the hit point is off the domain of `C` and in the domain of `C₂`, and the points before
 it are in the domain of `C`. -/
-theorem origin_hit (hP : J.P.Simple) {c : Set Point} (hc : c ∈ Merge.augChords J.right)
-    {a : Point} {σ : ℝ} (ha : (σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c))
-    (haR : a ∈ J.right.set) (hav : a ≠ J.shared)
-    (hlt : J.whole.hitParam a σ < J.right.hitParam a σ) :
+theorem origin_hit :
     (σ = 1 ∨ σ = -1) ∧ FreeAt J.whole a σ ∧ 0 < J.whole.hitParam a σ ∧
       rayPt a σ (J.whole.hitParam a σ) ∉ J.whole.dom ∧
       (∀ s, 0 < s → s < J.whole.hitParam a σ → rayPt a σ s ∈ J.whole.dom) ∧
       rayPt a σ (J.whole.hitParam a σ) ∈ J.right.dom := by
-  have hσ : σ = 1 ∨ σ = -1 := by rcases ha with ⟨h, -⟩ | ⟨h, -⟩ <;> simp [h]
+  have hσ : σ = 1 ∨ σ = -1 := by grind
   obtain ⟨hfr, ha₂, -, -, -, -⟩ := right_hit_end hc ha
   have hfree := whole_free_end hP haR hav hfr
   obtain ⟨hτ, hwD, hint⟩ := Merge.hit_of_freeAt J.whole (le_trans ha₂ J.right_top_le) hσ hfree
   obtain ⟨-, -, hint₂⟩ := Merge.hit_of_freeAt J.right ha₂ hσ hfr
-  exact ⟨hσ, hfree, hτ, hwD, hint, hint₂ _ hτ hlt⟩
+  simp_all
 
 /-- A point of the chord from a valid origin, off the domain of `C` and other than the origin, is
 the hit point. -/
-theorem origin_end (hP : J.P.Simple) {c : Set Point} (hc : c ∈ Merge.augChords J.right)
-    {a : Point} {σ : ℝ} (ha : (σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c))
-    (haR : a ∈ J.right.set) (hav : a ≠ J.shared)
-    (hlt : J.whole.hitParam a σ < J.right.hitParam a σ) {b : Point}
+theorem origin_end {b : Point}
     (hb : b ∈ Merge.shoot J.whole a σ) (hbD : b ∉ J.whole.dom) (hba : b ≠ a) :
     b = rayPt a σ (J.whole.hitParam a σ) := by
   obtain ⟨-, -, hτ, -, hint, -⟩ := origin_hit hP hc ha haR hav hlt
   unfold Merge.shoot at hb
   refine seg_end hb hbD (fun s hs => ?_) hba
-  rw [lerp_rayPt]
-  exact hint _ (mul_pos hs.1 hτ) (by nlinarith [hs.2])
+  simp_all [lerp_rayPt] 
 
+
+end
+
+section
+variable (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) {c : Set Point}
+include hP hS₂
 /-- **The chord from a valid origin is not a stop chord.** -/
-theorem origin_not_stop (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) {c : Set Point} (hc : c ∈ Merge.augChords J.right)
+theorem origin_not_stop (hc : c ∈ Merge.augChords J.right)
     {a : Point} {σ : ℝ} (ha : (σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c))
     (haR : a ∈ J.right.set) (hav : a ≠ J.shared) (hat : a ≠ J.right.top)
     (hlt : J.whole.hitParam a σ < J.right.hitParam a σ) :
@@ -165,8 +166,7 @@ theorem origin_not_stop (hP : J.P.Simple) {S₂ : Set (Set Point)}
 
 /-- **The attachment of the chord from a valid origin at its hit point**, beyond the start, not
 at the shared vertex. -/
-theorem origin_attach (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) {c : Set Point} (hc : c ∈ S₂)
+theorem origin_attach (hc : c ∈ S₂)
     {a : Point} {σ : ℝ} (ha : (σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c))
     (haR : a ∈ J.right.set) (hav : a ≠ J.shared)
     (hlt : J.whole.hitParam a σ < J.right.hitParam a σ) :
@@ -182,10 +182,13 @@ theorem origin_attach (hP : J.P.Simple) {S₂ : Set (Set Point)}
     Geometry.right_mem_segment _ _
   obtain ⟨p, t, hA, hpt⟩ := endpoint_attach hM hadm hw hwD
   refine ⟨p, t, hA.1, hA.2.1, hA.2.2.1, hA, hpt,
-    Lst_lt_of_dom hP hA.1 hA.2.1 hA.2.2.1 (by rw [hpt]; exact hwR), fun h => ?_⟩
+    Lst_lt_of_dom hP hA.1 hA.2.1 hA.2.2.1 (by simp_all), fun h => ?_⟩
   rw [hpt] at h
   rw [h] at hwR
   exact J.right.not_mem_set_of_mem_dom hwR J.shared_mem_right
+
+
+end
 
 /-- **A chord of `C₂` is determined by an end and the direction along it.** -/
 theorem chord_of_end {c c' : Set Point} (hc : c ∈ Merge.augChords J.right)
@@ -196,24 +199,7 @@ theorem chord_of_end {c c' : Set Point} (hc : c ∈ Merge.augChords J.right)
   obtain ⟨-, -, -, hR', -, -⟩ := right_hit_end hc' ha'
   obtain ⟨y, l, r, -, -, rfl, hl, hr⟩ := Merge.augChords_spec hc
   obtain ⟨y', l', r', -, -, rfl, hl', hr'⟩ := Merge.augChords_spec hc'
-  rw [hl, hr] at hR
-  rw [hl', hr'] at hR'
-  simp only at hR hR'
-  rcases ha with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-  · rcases ha' with ⟨-, h⟩ | ⟨h, -⟩
-    · rw [hl, hl'] at h
-      obtain ⟨h1, h2⟩ := Prod.ext_iff.1 h
-      simp only at h1 h2
-      subst h1 h2
-      rw [show r = r' by linarith]
-    · norm_num at h
-  · rcases ha' with ⟨h, -⟩ | ⟨-, h⟩
-    · norm_num at h
-    · rw [hr, hr'] at h
-      obtain ⟨h1, h2⟩ := Prod.ext_iff.1 h
-      simp only at h1 h2
-      subst h1 h2
-      rw [show l = l' by linarith]
+  grind
 
 /-- **The chord from a valid origin determines the origin, the direction and the chord of `C₂`.** -/
 theorem origin_inj (hP : J.P.Simple) {c c' : Set Point} (hc : c ∈ Merge.augChords J.right)
@@ -248,10 +234,7 @@ theorem origin_inj (hP : J.P.Simple) {c c' : Set Point} (hc : c ∈ Merge.augCho
   rw [rayPt_fst, rayPt_fst] at h1
   have hσσ : σ = σ' := by
     rcases hσ with rfl | rfl <;> rcases hσ' with rfl | rfl
-    · rfl
-    · nlinarith
-    · nlinarith
-    · rfl
+    all_goals linarith
   subst hσσ
   exact ⟨rfl, rfl, chord_of_end hc hc' ha ha'⟩
 
@@ -266,11 +249,8 @@ theorem query_chord {Q : Polygon} {N : NF} {j : ℕ} (hj : j < 2 * N.nChords) :
   refine ⟨⟨N.chord (j / 2), ?_, rfl⟩, ?_⟩
   · unfold NF.chord
     rw [NFLoc.getD_of_lt _ hk]
-    exact List.getElem_mem _
-  · unfold endDir endOrigin
-    by_cases h : j % 2 = 0
-    · exact Or.inl ⟨by simp [h], by simp [h]⟩
-    · exact Or.inr ⟨by simp [h], by simp [h]⟩
+    grind
+  simp_all [endDir, endOrigin] <;> omega_nf
 
 end Origin
 
@@ -290,11 +270,7 @@ theorem originTask : SweepEv.OriginTask := by
     have hpar : j % 2 = j' % 2 := by
       have e1 := (endOrigin_eq J hN hj).2
       have e2 := (endOrigin_eq J hN hj').2
-      rw [hσ] at e1
-      by_cases h : j % 2 = 0
-      · have := e2.1 (e1.2 h); omega
-      · have h' : j' % 2 ≠ 0 := fun h' => h (e1.1 (e2.2 h'))
-        omega
+      grind
     omega
 
 end Sweep

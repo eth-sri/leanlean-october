@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepMap
 public import Chazelle.Core.ClusterMeets
 
@@ -37,7 +39,10 @@ def kS : Stmt :=
 /-- The registers written by `kS`. -/
 def BK3 (r : ℕ) : Bool := decide (60090 ≤ r ∧ r ≤ 60092)
 
-theorem kBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {j μ : ℕ}
+section
+variable {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
+include hw
+theorem kBody_exec {j μ : ℕ}
     (h0 : c.nreg 60090 = j) (h1 : c.nreg 60091 = j ^ 2) (h2 : c.nreg 60092 = j ^ 3)
     (hone : c.nreg 120011 = 1) (hj : 1 ≤ j) (hlt : j ^ 3 < μ) (hW : 8 * μ ≤ W) :
     ∃ c' k, Exec P W kBody c c' k ∧ k = 11 ∧ FrameB BK3 c c' ∧ c'.nreg 60090 = j + 1 ∧
@@ -49,15 +54,15 @@ theorem kBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
     exact ⟨c', k, ex, hk, exec_frameB ex hwr, a, b, d⟩
   have e3 : (j + 1) ^ 3 = j ^ 3 + 3 * j ^ 2 + 3 * j + 1 := by ring
   have hb : (j + 1) ^ 3 ≤ 8 * j ^ 3 := by nlinarith [sq_nonneg j, pow_pos (by omega : 0 < j) 2]
-  have hsq : 0 ≤ j ^ 2 := Nat.zero_le _
+  
   unfold kBody
   exec_block
   all_goals (try config_simp)
-  all_goals (try rw [h0, h1, h2, hone])
+  all_goals ram_grind
   all_goals (try nlinarith)
   all_goals (try (refine ⟨rfl, ?_, ?_⟩ <;> ring))
 
-theorem kS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {μ : ℕ}
+theorem kS_exec {μ : ℕ}
     (hμ : c.nreg 60034 = μ) (hone : c.nreg 120011 = 1) (hW : 8 * μ + 8 ≤ W) :
     ∃ c' k, Exec P W kS c c' k ∧ k ≤ 16 * μ + 5 ∧ FrameB BK3 c c' ∧
       1 ≤ c'.nreg 60090 ∧ μ ≤ c'.nreg 60090 ^ 3 ∧
@@ -68,17 +73,12 @@ theorem kS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {μ
       c₁.nreg 60090 = 1 ∧ c₁.nreg 60091 = 1 ∧ c₁.nreg 60092 = 1 ∧
       (∀ r, BK3 r = false → c₁.nreg r = c.nreg r) := by
     exec_block
-    · omega
-    · omega
-    · omega
-    · refine ⟨rfl, by config_simp, by config_simp, by config_simp, fun r hr => ?_⟩
-      unfold BK3 at hr; simp only [decide_eq_false_iff_not] at hr
-      config_simp; simp only [upd_apply]; rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
+    all_goals (grind [BK3, decide_eq_false_iff_not, upd_apply])
   let I : Config → Prop := fun d => WordsBounded W d ∧ d.nreg 60034 = μ ∧ d.nreg 120011 = 1 ∧
     ∃ j, 1 ≤ j ∧ d.nreg 60090 = j ∧ d.nreg 60091 = j ^ 2 ∧ d.nreg 60092 = j ^ 3 ∧
       (j = 1 ∨ (j - 1) ^ 3 < μ)
-  have hI₁ : I c₁ := ⟨e₁.wb_right, by rw [R₁ _ (by decide), hμ], by rw [R₁ _ (by decide), hone],
-    1, le_rfl, a0, by rw [a1]; norm_num, by rw [a2]; norm_num, Or.inl rfl⟩
+  have hI₁ : I c₁ := ⟨e₁.wb_right, by ram_grind, by ram_grind,
+    1, le_rfl, a0, by omega, by omega, Or.inl rfl⟩
   obtain ⟨c₂, k₂, e₂, ⟨-, -, -, j, hj1, b0, -, b2, hjm⟩, hn, hk₂, -⟩ :=
     SortR.whileLtN_potential_lb (P := P) (W := W) (a := 60092) (b := 60034) (body := kBody) I
       (fun d => 16 * (μ - d.nreg 60090)) (fun _ => 0) (fun d h => h.1)
@@ -86,18 +86,21 @@ theorem kS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {μ
         rw [dcu, dμ] at ht
         obtain ⟨d', k, ex, hk, F, v0, v1, v2⟩ := kBody_exec (P := P) hwd d0 dsq dcu d1 hj1 ht (by omega)
         have hjμ : j < μ := lt_of_le_of_lt (by nlinarith [pow_pos (by omega : 0 < j) 2]) ht
-        refine ⟨d', k, ex, ⟨ex.wb_right, by rw [F.1 _ (by decide), dμ], by rw [F.1 _ (by decide), d1],
-          j + 1, by omega, v0, v1, v2, Or.inr (by simpa using ht)⟩, ?_, Nat.zero_le _⟩
-        rw [v0, d0]; omega) hI₁
-  refine ⟨c₂, _, .seq e₁ e₂, ?_, exec_frameB (.seq e₁ e₂) hwr, by rw [b0]; exact hj1, ?_, ?_⟩
-  · rw [a0] at hk₂; omega
+        refine ⟨d', k, ex, ⟨ex.wb_right, by ram_grind, by ram_grind,
+          j + 1, by omega, v0, v1, v2, Or.inr (by simp_all)⟩, ?_, Nat.zero_le _⟩
+        omega) hI₁
+  refine ⟨c₂, _, .seq e₁ e₂, ?_, exec_frameB (.seq e₁ e₂) hwr, by omega, ?_, ?_⟩
+  · omega
   · rw [b0]; rw [b2] at hn
     have : c₂.nreg 60034 = μ := by
       rw [(exec_frameB e₂ (B := BK3) (by decide)).1 _ (by decide), R₁ _ (by decide), hμ]
-    rw [this] at hn; omega
-  · rw [b0]; exact hjm
+    omega
+  simp_all
 
 /-! ## The call -/
+
+
+end
 
 /-- The inputs of the cluster decomposition. -/
 def clSet : Stmt :=
@@ -118,7 +121,7 @@ theorem card_fin_filter (n : ℕ) (p : ℕ → Prop) [DecidablePred p]
   simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and, Fin.valEmbedding_apply,
     Finset.mem_range]
   constructor
-  · rintro ⟨v, hv, rfl⟩; exact ⟨v.2, hv⟩
+  · ram_grind
   · rintro ⟨h, hp⟩; exact ⟨⟨x, h⟩, hp, rfl⟩
 
 set_option maxHeartbeats 2000000 in
@@ -157,12 +160,12 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
     have w₁ := e₁.wb_right
     unfold clSet
     exec_block
-    exact ⟨rfl, by config_simp; rw [F₁.1 _ (by decide), hBh],
-      by config_simp; rw [F₁.1 _ (by decide), hμ], by config_simp; rw [F₁.1 _ (by decide), hE],
-      by config_simp; rfl⟩
+    exact ⟨rfl, by config_simp; ram_grind,
+      by config_simp; ram_grind, by config_simp; ram_grind,
+      by ram_simp⟩
   have m₂ : c₂.nmem = c.nmem := F₂.2.2.1.trans F₁.2.2.1
   have A₂ : c₂.nreg ALLOC = A := by
-    rw [hAL, F₂.1 _ (by decide), F₁.1 _ (by decide)]; exact hA
+    ram_grind
   have r0 : rd c₂ bCluster 0 = Bh := s0
   have r1 : rd c₂ bCluster 1 = B.N := s1
   have r2 : rd c₂ bCluster 2 = B.E := s2
@@ -171,9 +174,9 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
       (Nat.clog 2 (rd c₂ bCluster 1 + rd c₂ bCluster 2) + 1) + 1) ≤ W := by
     rw [A₂, r1, r2]; exact hroom
   obtain ⟨c₃, k₃, e₃, hk₃, post, F₃⟩ := clusterProg_meets P W c₂ e₂.wb_right
-    ⟨hPW, by rw [r3]; exact kpos, by rw [r1, r3]; exact kcube, fun m' hm' => by
+    ⟨hPW, by omega, by simp_all, fun m' hm' => by
       rw [r0, r1, r2]
-      exact (hR m' (fun a ha => by rw [hm' a (by rw [A₂]; exact ha), m₂])).1⟩ hcost
+      exact (hR m' (fun a ha => by ram_simp)).1⟩ hcost
   beta_reduce at hk₃
   rw [r1, r2] at hk₃
   obtain ⟨p4, p5, p4', p5', pcard, pwalk, pclus⟩ := post
@@ -183,13 +186,13 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
   rw [r0, r1, r2, r3, hG]
   intro p4' p5' pcard pwalk pclus
   have K6 : ∀ r, bandOf r = 6 → c₃.nreg r = c₂.nreg r := fun r hr =>
-    F₃.1 r (by simp [hr, bCluster]) (by rw [hAL]; intro h; rw [h] at hr; simp [bandOf] at hr)
+    F₃.1 r (by grind [bCluster]) (by grind [bandOf])
   have k3 : c₃.nreg 60090 = kk := by
-    rw [K6 _ (by unfold bandOf; norm_num), F₂.1 _ (by decide)]
-  have A₃a : A ≤ c₃.nreg ALLOC := by have := F₃.2.2.2.2.2.1; omega
-  have A₃b : c₃.nreg ALLOC ≤ A + k₃ := by have := F₃.2.2.2.2.2.2; omega
+    rw [K6 _ (by omega_nf), F₂.1 _ (by decide)]
+  have A₃a : A ≤ c₃.nreg ALLOC := by omega
+  have A₃b : c₃.nreg ALLOC ≤ A + k₃ := by ram_grind
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by unfold clCost; omega, ?_, A₃a, by omega, ?_,
-    by rw [k3]; exact kpos, by rw [k3]; exact kcube, by rw [k3]; exact kmin,
+    by omega, by ram_grind, by ram_grind,
     by rw [← A₂]; exact p4, by rw [← A₂]; exact p5, p4', p5', ?_, pwalk, ?_⟩
   · have FA : FrameN {bDecomp, bCluster} c c₂ :=
       PF.frameN (B := fun r => BK3 r || decide (130000 ≤ r ∧ r ≤ 130003))
@@ -199,19 +202,16 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
         fun r hr => by
           simp only [Bool.or_eq_false_iff] at hr
           rw [F₂.2.1 r hr.2, F₁.2.1 r hr.1],
-        fun a _ => by rw [m₂], fun a _ => by rw [F₂.2.2.2.1, F₁.2.2.2.1],
-        by rw [F₂.2.2.2.2, F₁.2.2.2.2]⟩
+        fun a _ => by rw [m₂], fun a _ => by ram_grind,
+        by ram_grind⟩
         (fun r hr => by
           simp only [BK3, Bool.or_eq_true, decide_eq_true_eq] at hr
-          left
-          rcases hr with h | h
-          · simp [bDecomp, bandOf]; omega
-          · simp [bCluster, bandOf]; omega)
+          grind [bDecomp, bandOf, bCluster])
         (by rw [hAL, F₂.2.1 _ (by decide), F₁.2.1 _ (by decide)])
-    exact FA.trans (FrameN.mono (Frame.toN F₃) (by decide)) (by rw [A₂, ← hA])
+    exact FA.trans (FrameN.mono (Frame.toN F₃) (by decide)) (by omega)
   · intro r hr hr'
-    rw [K6 r hr, F₂.1 r (by simp only [decide_eq_false_iff_not]; unfold bandOf at hr; omega),
-      F₁.1 r (by unfold BK3; simp only [decide_eq_false_iff_not]; omega)]
+    rw [K6 r hr, F₂.1 r (by ram_grind),
+      F₁.1 r (by omega_nf)]
   · rw [k3]; refine le_trans (le_of_eq ?_) pcard
     refine Eq.trans ?_ (card_fin_filter B.N (fun v => c₃.nmem (c₃.nreg 130004 + v) = 1)).symm
     congr 1

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterDriverRam
 public import Chazelle.Core.ClusterPrimal
 
@@ -55,12 +57,7 @@ theorem inputFacts {m : ℕ → ℕ} {A B μ E : ℕ}
       exact ⟨fun g => by
         obtain ⟨d, -⟩ := M.face_surj g
         exact absurd d.2 (by omega)⟩
-    have hE : M.numE = 0 := by
-      unfold CombMap.numE
-      simp [hE0]
-    unfold CombMap.euler at hEuler
-    rw [hV, hF, hE] at hEuler
-    norm_num at hEuler
+    simp_all [CombMap.numE, CombMap.euler] 
   have hμ : 0 < μ := (M.vert ⟨0, hN⟩).pos
   have hμN : μ ≤ 2 * E := by
     have := Fintype.card_le_of_surjective M.vert M.vert_surj
@@ -73,24 +70,16 @@ theorem inputFacts {m : ℕ → ℕ} {A B μ E : ℕ}
     set X := 2 * E + μ + 1
     let m' : ℕ → ℕ := fun a => if a = B + i then Z else if Z ≤ a then X else m a
     obtain ⟨F', _, _, M', -, hA'⟩ := PlanarMapAt.exists_arrays (h m' (fun a ha => by
-      simp only [m']
-      rw [ite_eq_right (by omega), ite_eq_right (by omega)]))
+      grind))
     have e1 : m' (B + i) = Z := by simp [m']
-    have e2 : m' (Z + 0) = X := by simp only [m']; rw [ite_eq_right (by omega), ite_eq_left (by omega)]
+    have e2 : m' (Z + 0) = X := by grind
     rcases (show i = 0 ∨ i = 1 ∨ i = 2 by omega) with rfl | rfl | rfl
     · have := hA'.opp hN
-      rw [show B + 0 = B by omega] at e1
-      rw [e1, e2] at this
-      have := (M'.opp ⟨0, hN⟩).2
-      omega
+      grind
     · have := hA'.rot hN
-      rw [e1, e2] at this
-      have := (M'.rot ⟨0, hN⟩).2
-      omega
+      grind
     · have := hA'.vert hN
-      rw [e1, e2] at this
-      have := (M'.vert ⟨0, hN⟩).2
-      omega
+      grind
   -- the arrays lie below `A`
   have harr : ∀ i, i ≤ 2 → m (B + i) + 2 * E ≤ A := by
     intro i hi
@@ -99,27 +88,18 @@ theorem inputFacts {m : ℕ → ℕ} {A B μ E : ℕ}
     set X := 2 * E + μ + 1
     let m' : ℕ → ℕ := fun a => if a = m (B + i) + d then X else m a
     obtain ⟨F', _, _, M', -, hA'⟩ := PlanarMapAt.exists_arrays (h m' (fun a ha => by
-      simp only [m']
-      rw [ite_eq_right (by omega)]))
+      grind))
     have eB : ∀ j, j ≤ 2 → m' (B + j) = m (B + j) := fun j hj => by
-      simp only [m']; rw [ite_eq_right (by omega)]
+      grind
     have e2 : m' (m (B + i) + d) = X := by simp [m']
     have hd : d < 2 * E := by omega
     rcases (show i = 0 ∨ i = 1 ∨ i = 2 by omega) with rfl | rfl | rfl
     · have := hA'.opp hd
-      have eB0 := eB 0 (by omega)
-      simp only [Nat.add_zero] at e2 eB0
-      rw [eB0, e2] at this
-      have := (M'.opp ⟨d, hd⟩).2
-      omega
+      grind
     · have := hA'.rot hd
-      rw [eB 1 (by omega), e2] at this
-      have := (M'.rot ⟨d, hd⟩).2
-      omega
+      grind
     · have := hA'.vert hd
-      rw [eB 2 le_rfl, e2] at this
-      have := (M'.vert ⟨d, hd⟩).2
-      omega
+      grind
   exact ⟨F, i1, i2, M, hM, hA, hμ, by omega, hμN, hbase, by simpa using harr 0 (by omega),
     harr 1 (by omega), harr 2 le_rfl⟩
 
@@ -185,13 +165,7 @@ def GRReg (r : ℕ) : Prop := r = 130001 ∨ r = 130009 ∨ (130010 ≤ r ∧ r 
 
 theorem GR.frame {g : GV} {c c' : Config} (h : GR g c)
     (hr : ∀ r, GRReg r → c'.nreg r = c.nreg r) : GR g c' := by
-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19,
-    h20⟩ := h
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun j hj => ?_, ?_,
-    ?_⟩
-  all_goals first
-    | (rw [hr _ (by unfold GRReg; omega)]; assumption)
-    | (rw [hr _ (by unfold GRReg; omega)]; exact h18 j hj)
+  ram_grind
 
 end
 

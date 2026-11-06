@@ -27,7 +27,7 @@ theorem not_free_of_none (J : Merge.Junction) (hP : J.P.Simple) (i : ℕ) {z : P
     (hnone : ∀ p t, ¬ Sweep.Arrival (chainModel (sideChain J i)).W z (-σ) p t) :
     ¬ Merge.FreeAt J.whole z σ := fun hf => by
   obtain ⟨p, t, h⟩ := arrival_of_free J hP i hσ hz hz2 hf
-  exact hnone p t h
+  simp_all
 
 end
 

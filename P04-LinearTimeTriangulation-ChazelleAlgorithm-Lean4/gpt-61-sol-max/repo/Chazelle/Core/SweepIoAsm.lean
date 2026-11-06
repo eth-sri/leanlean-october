@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoSpec2
 public import Chazelle.Core.SweepRamStage0
 
@@ -27,22 +29,20 @@ variable {P : Polygon} {W : ℕ}
 
 /-! ## Descriptors -/
 
+section
+variable {m m' : ℕ → ℕ}
 /-- A model descriptor survives a change of the memory above its bound. -/
-theorem asm_modelDesc {m m' : ℕ → ℕ} {D E E' : ℕ} {M : Model}
+theorem asm_modelDesc {D E E' : ℕ} {M : Model}
     (hd : ModelDescAt m D (Qof P) M) (hwf : ModelDescWF P E m D)
     (he : ∀ a, a < E → m' a = m a) (hE : E ≤ E') :
     ModelDescAt m' D (Qof P) M ∧ ModelDescWF P E' m' D := by
   rcases hd with ⟨h0, H, C, hC, rfl⟩ | ⟨h1, hL, hM⟩
   · obtain ⟨w1, w2, w3⟩ := ShotList.modelDesc_keep hwf h0 hC he hE
-    exact ⟨Or.inl ⟨w2, H, C, w3, rfl⟩, w1⟩
-  · have hD6 := hwf.1
-    have e0 : m' D = m D := he _ (by omega)
-    have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
-    refine ⟨Or.inr ⟨by rw [e0, h1], by rw [e1]; exact hL, hM⟩, by omega, fun h => ?_⟩
-    rw [e0, h1] at h; exact absurd h one_ne_zero
+    ram_grind
+  · ram_grind
 
 /-- A junction survives a change of the memory above its bound. -/
-theorem asm_junction {m m' : ℕ → ℕ} {b0 b1 b2 E E' : ℕ} {H : Host} {J : Merge.Junction}
+theorem asm_junction {b0 b1 b2 E E' : ℕ} {H : Host} {J : Merge.Junction}
     (hJ : JunctionAt m b0 b1 b2 (Qof P) H J) (hwf : JunctionWF P E m b0 b1 b2)
     (he : ∀ a, a < E → m' a = m a) (hE : E ≤ E') :
     JunctionAt m' b0 b1 b2 (Qof P) H J ∧ JunctionWF P E' m' b0 b1 b2 := by
@@ -60,8 +60,14 @@ theorem asm_junction {m m' : ℕ → ℕ} {b0 b1 b2 E E' : ℕ} {H : Host} {J : 
 
 /-! ## The stage-0 state -/
 
+
+end
+
+section
+variable {c c' : Config} {H : Host} {J : Merge.Junction} (h : SweepEv.St0S P c H J)
+include h
 /-- **`St0S` with new model descriptors.** -/
-theorem st0S_md {c c' : Config} {H : Host} {J : Merge.Junction} (h : SweepEv.St0S P c H J)
+theorem st0S_md
     (hr : ∀ j, j < 96 → j ≠ 11 → j ≠ 30 → j ≠ 31 → c'.nreg (sw j) = c.nreg (sw j))
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC)
     (md30 : ModelDescAt c'.nmem (c'.nreg (sw 30)) (Qof P) (chainModel J.left))
@@ -71,45 +77,39 @@ theorem st0S_md {c c' : Config} {H : Host} {J : Merge.Junction} (h : SweepEv.St0
     SweepEv.St0S P c' H J := by
   obtain ⟨h90, h91, h92, h93, hJ, hwf, d20, w20, d21, w21, h23, h24, h40, h45, h33, h34, h35,
     -, -, -, -⟩ := h
-  have r : ∀ j, j < 96 → j ≠ 11 → j ≠ 30 → j ≠ 31 → c'.nreg (sw j) = c.nreg (sw j) := hr
+  
   obtain ⟨hJ', hwf'⟩ := asm_junction hJ hwf hm hA
   obtain ⟨d20', w20'⟩ := chainDesc_keep w20 d20 hm hA
   obtain ⟨d21', w21'⟩ := chainDesc_keep w21 d21 hm hA
-  refine ⟨by rw [r 90 (by omega) (by omega) (by omega) (by omega), h90],
-    by rw [r 91 (by omega) (by omega) (by omega) (by omega), h91],
-    by rw [r 92 (by omega) (by omega) (by omega) (by omega), h92],
-    by rw [r 93 (by omega) (by omega) (by omega) (by omega), h93], ?_, ?_, ?_, ?_, ?_, ?_,
-    by rw [r 23 (by omega) (by omega) (by omega) (by omega), r 3 (by omega) (by omega) (by omega) (by omega), h23],
-    by rw [r 24 (by omega) (by omega) (by omega) (by omega), r 4 (by omega) (by omega) (by omega) (by omega), h24],
-    fun k hk => by rw [r (40 + k) (by omega) (by omega) (by omega) (by omega)]; exact h40 k hk,
-    fun k hk => by rw [r (45 + k) (by omega) (by omega) (by omega) (by omega)]; exact h45 k hk,
-    by rw [r 33 (by omega) (by omega) (by omega) (by omega), h33],
-    by rw [r 34 (by omega) (by omega) (by omega) (by omega), h34],
-    by rw [r 35 (by omega) (by omega) (by omega) (by omega), h35], md30, w30, md31, w31⟩
-  · rw [r 0 (by omega) (by omega) (by omega) (by omega), r 1 (by omega) (by omega) (by omega) (by omega),
-      r 2 (by omega) (by omega) (by omega) (by omega)]; exact hJ'
-  · rw [r 0 (by omega) (by omega) (by omega) (by omega), r 1 (by omega) (by omega) (by omega) (by omega),
-      r 2 (by omega) (by omega) (by omega) (by omega)]; exact hwf'
-  · rw [r 20 (by omega) (by omega) (by omega) (by omega)]; exact d20'
-  · rw [r 20 (by omega) (by omega) (by omega) (by omega)]; exact w20'
-  · rw [r 21 (by omega) (by omega) (by omega) (by omega)]; exact d21'
-  · rw [r 21 (by omega) (by omega) (by omega) (by omega)]; exact w21'
+  refine ⟨by grind,
+    by grind,
+    by grind,
+    by grind, ?_, ?_, ?_, ?_, ?_, ?_,
+    by grind,
+    by grind,
+    fun k hk => by grind,
+    fun k hk => by grind,
+    by grind,
+    by grind,
+    by grind, md30, w30, md31, w31⟩
+  · grind
+  · grind
+  · grind
+  all_goals grind
 
 /-- **`St0S` survives** a step keeping `sw 0 … 99`, the memory below the allocator, and growing
 the allocator. -/
-theorem st0S_transport {c c' : Config} {H : Host} {J : Merge.Junction}
-    (h : SweepEv.St0S P c H J) (hr : ∀ j, j < 100 → j ≠ 11 → c'.nreg (sw j) = c.nreg (sw j))
+theorem st0S_transport (hr : ∀ j, j < 100 → j ≠ 11 → c'.nreg (sw j) = c.nreg (sw j))
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) :
     SweepEv.St0S P c' H J := by
   have h' := h
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, d30, w30, d31, w31⟩ := h'
-  obtain ⟨d30', w30'⟩ := asm_modelDesc d30 w30 hm hA
-  obtain ⟨d31', w31'⟩ := asm_modelDesc d31 w31 hm hA
-  rw [← hr 30 (by omega) (by omega)] at d30' w30'
-  rw [← hr 31 (by omega) (by omega)] at d31' w31'
-  exact st0S_md h (fun j hj h11 _ _ => hr j (by omega) h11) hm hA d30' w30' d31' w31'
+  grind [Chazelle.Core.SweepIo.asm_modelDesc, Chazelle.Core.SweepIo.st0S_md]
 
 /-! ## The outputs of stages 2/3 -/
+
+
+end
 
 /-- **The outputs of stages 2/3 survive** a step keeping their registers and the memory below the
 allocator. -/
@@ -137,12 +137,12 @@ theorem out_transport {c c' : Config} {J : Merge.Junction} {N₂ : NF}
     rw [hm _ (by omega), hm (rd c bSweep 302 + 3 * j + 1) (by omega),
       hm (rd c bSweep 302 + 3 * j + 2) (by omega)]
   refine ⟨rs, ls, hrl, fun i hi => ?_, hsok, hrw, hll, fun i hi => ?_, hlok, hlw, ?_, fun j hj => ?_⟩
-  · have hi' : i < rd c bSweep 201 := by rw [← hrl]; exact hi
+  · 
     rw [hm _ (by omega), hm (rd c bSweep 200 + 5 * i + 1) (by omega),
       hm (rd c bSweep 200 + 5 * i + 2) (by omega), hm (rd c bSweep 200 + 5 * i + 3) (by omega),
       hm (rd c bSweep 200 + 5 * i + 4) (by omega)]
     exact hrs i hi
-  · have hi' : i < rd c bSweep 301 := by rw [← hll]; exact hi
+  · 
     rw [hm _ (by omega), hm (rd c bSweep 300 + 7 * i + 1) (by omega),
       hm (rd c bSweep 300 + 7 * i + 2) (by omega), hm (rd c bSweep 300 + 7 * i + 3) (by omega),
       hm (rd c bSweep 300 + 7 * i + 4) (by omega), hm (rd c bSweep 300 + 7 * i + 5) (by omega),
@@ -150,10 +150,10 @@ theorem out_transport {c c' : Config} {J : Merge.Junction} {N₂ : NF}
     exact hls i hi
   · intro j hj h1 h2 h3
     have := htab j hj h1 h2 h3
-    rw [htabeq j hj]; exact this
+    grind
   · rw [hm _ (by omega), hm (rd c bSweep 302 + 3 * j + 1) (by omega),
       hm (rd c bSweep 302 + 3 * j + 2) (by omega)]
-    exact htw j hj
+    grind
 
 /-! ## The environment of the answer phase -/
 
@@ -178,7 +178,7 @@ theorem aenv_transport {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge
   have e31 := r 31 (by omega) (by omega)
   have eTB : c'.nreg TBR = c.nreg TBR := r 600 (by omega) (by omega)
   have eTL : c'.nreg TLR = c.nreg TLR := r 601 (by omega) (by omega)
-  have hmE : ∀ a, a < E → c'.nmem a = c.nmem a := fun a ha => hm a (by have := h.hE; omega)
+  have hmE : ∀ a, a < E → c'.nmem a = c.nmem a := fun a ha => hm a (by ram_grind)
   have h3 : ∀ j, j < 5 → c.nreg (sw 30) + 1 + j < c.nreg ALLOC := by
     intro j hj; have := h.hst.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1.1; omega
   have h3' : ∀ j, j < 5 → c.nreg (sw 31) + 1 + j < c.nreg ALLOC := by

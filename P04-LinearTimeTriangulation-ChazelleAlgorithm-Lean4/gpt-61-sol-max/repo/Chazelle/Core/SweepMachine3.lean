@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepMachine2
 
 /-!
@@ -71,10 +73,7 @@ theorem no_label_of_pocket (hP : J.P.Simple) {S₂ : Set (Set Point)}
     linarith [ht.2]
   have hy0 : (0 : ℝ) < d + t := by have := ht.1; positivity
   have hxy : (px : ℝ) + tx ≠ (((g + d) % n : ℕ) : ℝ) + t := by
-    intro h
-    have := congrArg (off n g) h
-    rw [hoy] at this
-    linarith
+    grind
   have hxa : (px : ℝ) + tx ≠ pa + ta := fun h => hcx ⟨e, he, pa, ta, hA, h⟩
   have hxb : (px : ℝ) + tx ≠ pb + tb := fun h => hcx ⟨e, he, pb, tb, hB, h⟩
   have hya : (((g + d) % n : ℕ) : ℝ) + t ≠ pa + ta := fun h => hc ⟨e, he, pa, ta, hA, h⟩
@@ -82,11 +81,7 @@ theorem no_label_of_pocket (hP : J.P.Simple) {S₂ : Set (Set Point)}
   refine (sep_iff_btw hg0 hgn a0 a1 b0 b1 x0 x1 y0 y1 hk13 hxy hxa hxb hya hyb).2 ?_
   rw [hoy, hBo]
   unfold Btw
-  constructor
-  · intro _ h2
-    rcases h2 with ⟨h3, h4⟩ | ⟨h3, h4⟩ <;> linarith
-  · intro _
-    right; constructor <;> linarith
+  ram_grind
 
 /-- **The two attachments of a chord are its two ends**: the chord leaves them in opposite
 directions. -/
@@ -105,16 +100,16 @@ theorem dir_opposite {M : Model} (hM : WalkAx M) {e : Set Point} (he : e ∈ M.A
   rw [hcab'] at hAe hBe ⊢
   intro z hz
   obtain ⟨s, hs0, hs1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hz
-  have ha'e : a' ∈ e := by rw [hcab']; exact Geometry.left_mem_segment _ _
-  have hb'e : b' ∈ e := by rw [hcab']; exact Geometry.right_mem_segment _ _
+  have ha'e : a' ∈ e := by grind
+  have hb'e : b' ∈ e := by grind
   have h1 := hdA a' ha'e
   have h2 := hdA b' hb'e
   simp only [Geometry.lerp_fst]
   rcases hA' with hA' | hA' <;> rcases hB' with hB' | hB'
-  · exact absurd (hA'.trans hB'.symm) hAB
+  · simp_all
   · rw [hB']; rw [hA'] at h2; nlinarith
   · rw [hB']; rw [hA'] at h1; nlinarith
-  · exact absurd (hA'.trans hB'.symm) hAB
+  simp_all
 
 /-- **The initial label**: the region faced just before the start of the `C₁` part (the copy of the
 shared vertex at offset `L`) has the label `λ₀` faced in the model of `C₂` just before the end of

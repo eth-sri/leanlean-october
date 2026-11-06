@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvDRound3
 public import Chazelle.Core.DownPhaseOracleIO
 public import Chazelle.Core.RestoreFindOK
@@ -44,7 +46,7 @@ theorem initS_exec (c : Config) (hw : WordsBounded W c) (hW : 5 ≤ W) :
     unfold initS
     exec_block
     all_goals try omega
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+    simp_all
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2,
     exec_frameB ex (by decide)⟩
 
@@ -62,12 +64,7 @@ theorem stateAt_congr {P : Polygon} {c c' : Config} {L : List (ℕ × ℕ × ℕ
   have e3 := hr 3 (by norm_num) (by norm_num)
   have e4 := hr 4 (by norm_num) (by norm_num)
   have e5 := hr 5 (by norm_num) (by norm_num)
-  simp only [Nat.reduceAdd] at e1 e2 e3 e4 e5
-  simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at h1 h2 h3 h4 h5 h6 h7 h11 ⊢
-  unfold DrvR.StateAt
-  simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd]
-  rw [e1, e2, e3, e4, e5, hm, hA]
-  exact ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11⟩
+  simp_all [Nat.reduceAdd, rd, bandReg, bDownDrv, Nat.reduceMul, DrvR.StateAt] 
 
 /-- **All rounds.** -/
 theorem rounds_exec {E : DEnv} (hE : DGood E) {c : Config} (hI : RInv E 0 c) :
@@ -86,16 +83,22 @@ theorem rounds_exec {E : DEnv} (hE : DGood E) {c : Config} (hI : RInv E 0 c) :
   subst ht
   refine ⟨c', k, e, I', RFl, ?_⟩
   rw [hI.r10] at hk
-  simpa using hk
+  omega
 
 /-! ## The cost -/
 
+section
+variable (κf : ℕ → ℕ)
+include κf
 /-- The per-round constant. -/
-def C2 (κf : ℕ → ℕ) (κB d0 : ℕ) : ℕ :=
+def C2 (κB d0 : ℕ) : ℕ :=
   κf d0 + 2 * ((scanK + 2) * (d0 + 1)) + 70 + 8 * DrvR.κSpl κB
 
 /-- **The constant of the rounds.** -/
-def κR (κf : ℕ → ℕ) (κB : ℕ) (d0 : ℕ) : ℕ := 20 + d0 * (42 + C2 κf κB d0 * 2 ^ d0)
+def κR (κB d0 : ℕ) : ℕ := 20 + d0 * (42 + C2 κf κB d0 * 2 ^ d0)
+
+
+end
 
 /-- The round bound is linear in the chord count, with the oracle factor. -/
 theorem Br_le (E : DEnv) (hA : 1 ≤ E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog 2 E.γ + 1)) :
@@ -107,8 +110,8 @@ theorem Br_le (E : DEnv) (hA : 1 ≤ E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog
   have hBr : E.Br = 40 + (E.Bf + 10) * (T * K1) + 8 * DrvR.κSpl E.κB * (T * K1) := rfl
   have hBf : E.Bf = E.κf E.d0 * A + 2 * ((scanK + 2) * (E.d0 + 1)) + 60 := by
     show Restore.costF E.κf E.F E.G E.Hc E.d0 E.γ + _ + 60 = _
-    unfold Restore.costF; rw [hAd]; ring
-  have hTK : 1 ≤ T * K1 := Nat.one_le_iff_ne_zero.2 (by positivity)
+    grind [Restore.costF]
+  
   have h1 : E.Bf + 10 ≤ (E.κf E.d0 + 2 * ((scanK + 2) * (E.d0 + 1)) + 70) * A := by
     have e : (E.κf E.d0 + 2 * ((scanK + 2) * (E.d0 + 1)) + 70) * A =
         E.κf E.d0 * A + (2 * ((scanK + 2) * (E.d0 + 1)) + 70) * A := by ring
@@ -125,12 +128,9 @@ theorem Br_le (E : DEnv) (hA : 1 ≤ E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog
           8 * DrvR.κSpl E.κB * A * (T * K1) := by unfold C2; ring
     omega
   have h6 : 42 ≤ 42 * K1 * A := by
-    have : 1 ≤ K1 * A := Nat.one_le_iff_ne_zero.2 (by positivity)
-    have e : 42 * K1 * A = 42 * (K1 * A) := by ring
-    omega
+    grind
   have h7 : (42 + C2 E.κf E.κB E.d0 * T) * K1 * A =
       42 * K1 * A + C2 E.κf E.κB E.d0 * A * (T * K1) := by ring
-  rw [h7, hBr]
   omega
 
 /-! ## The contract -/
@@ -163,7 +163,7 @@ theorem roundsSpec_of {sF sB : Stmt} {κf : ℕ → ℕ} {κB : ℕ} {F G H : �
     refine ⟨hF, hB, hG, hWh, hXh, fun m hm => ?_, ⟨hD6, fun h0 => ?_⟩, hMD, hd4⟩
     · show c.nreg 216001 ≤ X.cap P m (c.nreg 230001)
       rw [hloc P c.nmem m _ _ hm hXh]; omega
-    · exact absurd (hone.symm.trans h0) (by norm_num)
+    simp_all
   -- the cost factor
   have hA1 : 1 ≤ F (c.nreg 216001) * G (c.nreg 216001) *
       (H (c.nreg 216001) + Nat.clog 2 (c.nreg 216001) + 1) := by
@@ -175,7 +175,7 @@ theorem roundsSpec_of {sF sB : Stmt} {κf : ℕ → ℕ} {κB : ℕ} {F G H : �
     (H (c.nreg 216001) + Nat.clog 2 (c.nreg 216001) + 1) with hAd
   have hcost : κR κf κB (c.nreg 216000) * (c.nreg 210003 + 1) * F (c.nreg 216001) *
       G (c.nreg 216001) * (H (c.nreg 216001) + Nat.clog 2 (c.nreg 216001) + 1) =
-      κR κf κB (c.nreg 216000) * (L₀.length + 1) * A := by rw [hK, hAd]; ring
+      κR κf κB (c.nreg 216000) * (L₀.length + 1) * A := by grind
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at hroom ⊢
   rw [hcost] at hroom ⊢
   have hBig : (E.Br + 2) * E.d0 + 10 ≤ κR κf κB (c.nreg 216000) * (L₀.length + 1) * A := by
@@ -188,31 +188,30 @@ theorem roundsSpec_of {sF sB : Stmt} {κf : ℕ → ℕ} {κB : ℕ} {F G H : �
     have h3 : 1 ≤ (L₀.length + 1) * A := Nat.one_le_iff_ne_zero.2 (by positivity)
     omega
   -- initialisation
-  have hW5 : 5 ≤ W := le_trans (by unfold hostWords; omega) hWh
+  have hW5 : 5 ≤ W := le_trans (by omega_nf) hWh
   obtain ⟨c₁, k₁, e₁, hk₁, i02, i03, i04, i05, i06, i10, f₁⟩ := initS_exec (P := P) c hw hW5
   have g₁ : ∀ q, ¬ (216002 ≤ q ∧ q ≤ 216010) → c₁.nreg q = c.nreg q := fun q hq =>
-    f₁.1 q (by simpa using hq)
+    f₁.1 q (by grind)
   have m₁ : c₁.nmem = c.nmem := f₁.2.2.1
-  have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by unfold ALLOC; omega)
+  have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by omega_nf)
   have hI0 : RInv E 0 c₁ := by
     refine ⟨e₁.wb_right, g₁ _ (by omega), g₁ _ (by omega), g₁ _ (by omega), i02, i03, i04, i05,
-      i06, i10, g₁ _ (by omega), fun q hq => g₁ q (by unfold KeepR at hq; omega),
+      i06, i10, g₁ _ (by omega), fun q hq => g₁ q (by grind [KeepR]),
       ⟨L₀, E₀, stateAt_congr hSt (fun i h1 h2 => g₁ _ (by omega)) m₁ A₁, subset_rfl,
-        Model.DegLe.mono _ hdeg (by show c.nreg 216000 ≤ max 4 (c.nreg 216000 - 0); omega), hsg,
-        by show L₀.length + 1 ≤ 2 ^ 0 * (L₀.length + 1); simp⟩, fun a _ => by rw [m₁], by rw [A₁],
+        Model.DegLe.mono _ hdeg (by grind), hsg,
+        by grind⟩, fun a _ => by rw [m₁], by rw [A₁],
       Nat.zero_le _, ?_⟩
     rw [A₁]
     show c.nreg ALLOC + (c.nreg 216000 - 0) * (E.Br + 2) + 3 ≤ W
     have : (c.nreg 216000 - 0) * (E.Br + 2) = (E.Br + 2) * E.d0 := by
-      show (c.nreg 216000 - 0) * (E.Br + 2) = (E.Br + 2) * c.nreg 216000
-      rw [Nat.sub_zero, mul_comm]
+      grind
     omega
   -- the rounds
   obtain ⟨c₂, k₂, e₂, I₂, RF₂, hk₂⟩ := rounds_exec hE hI0
   have RF₁ : Restore.RF DrvR.drvBands (c.nreg ALLOC) c c₁ k₁ :=
     rf_of_frameB (fun r hr => by
       simp only [decide_eq_true_eq] at hr
-      exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩) f₁
+      exact ⟨mem_drvBands (by omega) (by omega), by omega_nf⟩) f₁
   refine ⟨c₂, k₁ + k₂, Exec.seq e₁ e₂, by omega, ⟨fun r hr => I₂.keep r hr, fun L E hSt' => ?_⟩,
     (RF₁.trans RF₂).to_frame⟩
   -- the post
@@ -220,32 +219,31 @@ theorem roundsSpec_of {sF sB : Stmt} {κf : ℕ → ℕ} {κB : ℕ} {F G H : �
   obtain ⟨-, -, hK', -, hLa', -, hEa', -, -, -, -⟩ := hSt''
   obtain ⟨-, -, -, -, hLa, -, hEa, -, -, -, -⟩ := hSt
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at hK' hLa' hEa' hLa hEa
-  have hLL : L₀ = L := BuildNF.chordListAt_unique hLa.holds hLa'.holds (by rw [← hK, hK'])
+  have hLL : L₀ = L := BuildNF.chordListAt_unique hLa.holds hLa'.holds (by omega)
   subst hLL
   have hEE : E₀ = E := hEa.holds.symm.trans hEa'.holds
   subst hEE
   obtain ⟨L', E', hSt₂, hsub, hdeg₂, hsg₂, hcnt₂⟩ := I₂.state
-  refine ⟨L', E', hSt₂, hsub, Model.DegLe.mono _ hdeg₂ (by show max 4 (E.d0 - E.d0) ≤ 4; simp),
-    hsg₂, hcnt₂⟩
+  grind
 
 /-! ## The restoration rounds of the down phase -/
 
-theorem shCost_mono (κ γ : ℕ) : DrvR.shCost κ γ ≤ DrvR.shCost (κ + 1) γ := by
-  unfold DrvR.shCost
-  have := Nat.mul_le_mul_right (rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3))
-    (Nat.mul_le_mul_right (Nat.clog 2 γ + 1) (show κ ≤ κ + 1 by omega))
-  omega
+section
+variable (κ γ : ℕ)
+theorem shCost_mono : DrvR.shCost κ γ ≤ DrvR.shCost (κ + 1) γ := by
+  grind [DrvR.shCost]
 
-theorem cuCost_mono (κ γ : ℕ) : DrvR.cuCost κ γ ≤ DrvR.cuCost (κ + 1) γ := by
-  unfold DrvR.cuCost
-  exact Nat.mul_le_mul_right _ (show κ ≤ κ + 1 by omega)
+theorem cuCost_mono : DrvR.cuCost κ γ ≤ DrvR.cuCost (κ + 1) γ := by
+  omega_nf
 
-theorem shCost_pos (κ γ : ℕ) : 1 ≤ DrvR.shCost (κ + 1) γ := by
+theorem shCost_pos : 1 ≤ DrvR.shCost (κ + 1) γ := by
   unfold DrvR.shCost; omega
 
-theorem cuCost_pos (κ γ : ℕ) : 1 ≤ DrvR.cuCost (κ + 1) γ := by
-  unfold DrvR.cuCost
-  exact Nat.one_le_iff_ne_zero.2 (by positivity)
+theorem cuCost_pos : 1 ≤ DrvR.cuCost (κ + 1) γ := by
+  core_grind
+
+
+end
 
 /-- **D8: the restoration rounds of a down-phase level**, from the interior oracles. -/
 theorem roundsSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) :

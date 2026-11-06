@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStepL7
 
 /-!
@@ -28,7 +30,7 @@ theorem stp_le_last {α : Type*} {f : α → ℝ} {l : List α} {y : α}
   intro a ha
   rcases List.mem_append.1 ha with h | h
   · exact (List.pairwise_append.1 hpw).2.2 a h y (List.mem_singleton_self y) |>.le
-  · rw [List.mem_singleton] at h; rw [h]
+  simp_all
 
 namespace SCtx
 
@@ -67,7 +69,7 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
     fun x h1 h2 => stp_c'_mem S.L S.hI S.hd x (by omega) (by omega) (Or.inl h2)
   set r' : ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ := (c'.nreg kE, c'.nreg kH, c'.nreg kN, c'.nreg kL,
     c'.nreg (kL + 1), c'.nreg (kL + 2), c'.nreg (kL + 3)) with hr'
-  refine ⟨ls ++ [r'], by simp [hlen, hlC'], ?_, ?_, ?_, List.getLast?_concat⟩
+  refine ⟨ls ++ [r'], by grind, ?_, ?_, ?_, List.getLast?_concat⟩
   · -- the records
     intro i hi
     simp only [List.length_append, List.length_singleton] at hi
@@ -75,35 +77,23 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
     rcases Nat.lt_or_ge i ls.length with h | h
     · rw [List.getD_append _ _ _ _ h]
       obtain ⟨a0, a1, a2, a3, a4, a5, a6⟩ := hrec i h
-      have hi' : i < c.nreg lC := hlen ▸ h
-      refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-      · rw [hm _ (by omega) (by omega)]; exact a0
-      · rw [hm _ (by omega) (by omega)]; exact a1
-      · rw [hm _ (by omega) (by omega)]; exact a2
-      · rw [hm _ (by omega) (by omega)]; exact a3
-      · rw [hm _ (by omega) (by omega)]; exact a4
-      · rw [hm _ (by omega) (by omega)]; exact a5
-      · rw [hm _ (by omega) (by omega)]; exact a6
+      ram_grind
     · have hil : i = ls.length := by omega
       rw [List.getD_append_right _ _ _ _ h, show i - ls.length = 0 by omega, hil, hlen]
       simp only [List.getD_cons_zero]
       refine ⟨r0, r1, r2, ?_, ?_, ?_, ?_⟩
-      · have := r3 0 (by norm_num); simpa using this
+      · have := r3 0 (by norm_num); omega
       · have := r3 1 (by norm_num)
-        rwa [show c.nreg lB + 7 * c.nreg lC + 3 + 1 = c.nreg lB + 7 * c.nreg lC + 4 by ring] at this
+        omega
       · have := r3 2 (by norm_num)
-        rwa [show c.nreg lB + 7 * c.nreg lC + 3 + 2 = c.nreg lB + 7 * c.nreg lC + 5 by ring] at this
+        omega
       · have := r3 3 (by norm_num)
-        rwa [show c.nreg lB + 7 * c.nreg lC + 3 + 3 = c.nreg lB + 7 * c.nreg lC + 6 by ring] at this
+        omega
   · -- the word facts
     intro r hr
     rcases List.mem_append.1 hr with h | h
     · exact hwords r h
-    · rw [List.mem_singleton] at h
-      subst h
-      refine ⟨hpw, hkN4, fun h => ?_, fun h => hlabR 1 h, fun h => hlabR 2 h, fun h => hlabR 3 h⟩
-      have := hlabR 0 h
-      simpa using this
+    grind
   · -- the log so far
     obtain ⟨hne, hall, hhead, hpwl, hcons, hlab⟩ := hpre
     set es := logOf J (Qof P) N₂ ls with hes
@@ -117,14 +107,14 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
       (chainModel J.whole).param (Qof P) ⟨c.nreg kE, c.nreg kH⟩, curLab P J N₂ c) with hxc
     have hlastE : es.getLast? = some xc := by
       rw [hes, logOf, List.getLast?_map, hlast]
-      simp [hxc, curLab]
+      grind [curLab]
     have hxcoff : oW J (xc.1 + xc.2.1) = keyOff P J c := rfl
     have hx'off : oW J (x'.1 + x'.2.1) = keyOff P J c' := rfl
     obtain ⟨ys, hys⟩ := List.getLast?_eq_some_iff.1 hlastE
     refine ⟨by simp, ?_, ?_, ?_, ?_, ?_⟩
     · intro x hx
       rcases List.mem_append.1 hx with h | h
-      · exact hall x h
+      · grind
       · rw [List.mem_singleton] at h
         subst h
         exact ⟨hpw.1, hpw.2.1.1, hpw.2.1.2.1, by rw [hx'off]; linarith [S.L.keyL]⟩
@@ -140,15 +130,13 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
       subst hb
       have := stp_le_last (f := fun x : ℕ × ℝ × Set (Set Point) => oW J (x.1 + x.2.1)) hpwl
         hlastE a ha
-      rw [hx'off]
-      rw [hxcoff] at this
-      linarith
+      grind
     · intro i hi
       simp only [List.length_append, List.length_singleton] at hi
       rcases Nat.lt_or_ge (i + 1) es.length with h | h
       · rw [List.getD_append _ _ _ _ (by omega), List.getD_append _ _ _ _ h]
         exact hcons i h
-      · have hi' : i + 1 = es.length := by omega
+      · 
         have hlen' : es.length = ys.length + 1 := by rw [hys]; simp
         have e1 : (es ++ [x']).getD i (0, 0, ∅) = xc := by
           rw [List.getD_append _ _ _ _ (by omega), hys,
@@ -161,7 +149,7 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
         exact no_cut_iter S.E S.L S.hI
     · intro x hx
       rcases List.mem_append.1 hx with h | h
-      · exact hlab x h
+      · grind
       · rw [List.mem_singleton] at h
         subst h
         exact labIn_of_evInv hP hS₂.2.1 hS₂.1 hpw.1 hpw.2.1.1 hpw.2.1.2.1 hinv

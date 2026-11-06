@@ -38,15 +38,21 @@ def dd (c j : ℕ) : Bool :=
   (decide (j = st.nd0 c) && decide (st.cnt (st.nd0 c) = 1)) ||
     (decide (j = st.nd1 c) && decide (st.cnt (st.nd1 c) = 1))
 
+section
+variable (c k : ℕ)
+include c k
 /-- The live predecessor of `k` after the removal of `c` (skipping one dead position). -/
-def prD (c k : ℕ) : ℕ := if st.dd c (st.prv k) then st.prv (st.prv k) else st.prv k
+def prD : ℕ := if st.dd c (st.prv k) then st.prv (st.prv k) else st.prv k
 
 /-- The live successor of `k` after the removal of `c`. -/
-def suD (c k : ℕ) : ℕ := if st.dd c (st.nxt k) then st.nxt (st.nxt k) else st.nxt k
+def suD : ℕ := if st.dd c (st.nxt k) then st.nxt (st.nxt k) else st.nxt k
 
 /-- The weight of the gap around position `k` after the removal of `c`, if `k` dies. -/
-def jw (c k : ℕ) : ℕ :=
+def jw : ℕ :=
   if st.cnt k = 1 then gwt E.sz st.eg st.pz (st.prD c k) (st.suD c k) else 0
+
+
+end
 
 /-- **The merged weight** (the weight of the region of the new submap merging the two classes of
 `c`). -/
@@ -61,7 +67,10 @@ variable {E : Env} {st : St}
 
 /-! ## Popping -/
 
-theorem Inv.pop_of (h : Inv E st) (htop : 0 < st.top)
+section
+variable (h : Inv E st) (htop : 0 < st.top)
+include h htop
+theorem Inv.pop_of
     (hc : st.cur ∈ st.L E → ¬ Merge.Removable E.M.D E.M.weight E.γ (st.F E)
       (cs E.M E.Q E.N st.cur)) : Inv E st.pop := by
   show Inv E { st with top := st.top - 1 }
@@ -77,15 +86,18 @@ theorem Inv.pop_of (h : Inv E st) (htop : 0 < st.top)
       · exact hno t (by simp only; omega)
 
 /-- **Popping a dead chord.** -/
-theorem Inv.pop_dead (h : Inv E st) (htop : 0 < st.top) (hd : st.live st.cur ≠ 1) :
+theorem Inv.pop_dead (hd : st.live st.cur ≠ 1) :
     Inv E st.pop := h.pop_of htop fun hi => absurd hi.2 hd
 
 /-- **Popping a live chord that is not removable.** -/
-theorem Inv.pop_keep (h : Inv E st) (htop : 0 < st.top)
+theorem Inv.pop_keep
     (hnr : ¬ Merge.Removable E.M.D E.M.weight E.γ (st.F E) (cs E.M E.Q E.N st.cur)) :
     Inv E st.pop := h.pop_of htop fun _ => hnr
 
 /-! ## Gaps -/
+
+
+end
 
 /-- **Two gaps containing the same key coincide.** -/
 theorem gap_unique {M : Model} {G : Set (Set Point)} {l r l' r' x : ℝ} (hg : Gap M G l r)
@@ -140,8 +152,11 @@ theorem card_filter_two (K : ℕ) (P₀ P₁ : ℕ → Prop) [DecidablePred P₀
       · exact (h i hi hic).2 hp
     rw [e0, e1]; rfl
 
+section
+variable (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E)
+include hE h hc
 /-- The two positions of a live chord differ. -/
-theorem Inv.nd_ne (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) :
+theorem Inv.nd_ne :
     st.nd0 c ≠ st.nd1 c := by
   intro e
   have h0 := (h.stat.nd0 c hc.1).2
@@ -150,7 +165,7 @@ theorem Inv.nd_ne (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) :
   exact lkey_ne_rkey hE.hNF hE.hM hc.1 h0.symm
 
 /-- **A position of a live chord `c` has count `1` iff no other live chord is attached there.** -/
-theorem Inv.cnt_eq_one_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {j : ℕ}
+theorem Inv.cnt_eq_one_iff {j : ℕ}
     (hj : j = st.nd0 c ∨ j = st.nd1 c) :
     st.cnt j = 1 ↔ ∀ i ∈ st.L E, i ≠ c → st.nd0 i ≠ j ∧ st.nd1 i ≠ j := by
   have hjA : j < E.A := by
@@ -178,6 +193,9 @@ theorem Inv.cnt_eq_one_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st
 
 /-! ## The submap without `c` -/
 
+
+end
+
 /-- The live set without `c`. -/
 theorem fam_diff (hE : E.Good) {c : ℕ} (hc : c ∈ st.L E) :
     fam E.M E.Q E.N (st.L E \ {c}) = st.F E \ {cs E.M E.Q E.N c} := by
@@ -189,8 +207,11 @@ theorem fam_diff (hE : E.Good) {c : ℕ} (hc : c ∈ st.L E) :
   · rintro ⟨⟨i, hiL, hi, rfl⟩, hne⟩
     exact ⟨i, ⟨hiL, fun e => hne (by rw [mem_singleton_iff] at e; subst e; rfl)⟩, hi, rfl⟩
 
+section
+variable (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E)
+include hE h c hc
 /-- **The cuts after the removal of `c`**: the start keys of the live positions that do not die. -/
-theorem Inv.cut_sdiff_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) (k : ℝ) :
+theorem Inv.cut_sdiff_iff (k : ℝ) :
     E.M.IsCut (st.F E \ {cs E.M E.Q E.N c}) k ↔
       ∃ j, j < E.A ∧ st.Lv j ∧ st.dd c j = false ∧ E.key j = k := by
   rw [← fam_diff hE hc, isCut_fam_iff hE.hNF hE.hM]
@@ -261,12 +282,12 @@ theorem Inv.cut_sdiff_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.
 
 /-! ## The removal split of a live chord -/
 
-theorem Inv.cl_mem (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) :
+theorem Inv.cl_mem :
     st.cl E (st.s0 c) ∈ E.M.regions (st.F E) ∧ st.cl E (st.s1 c) ∈ E.M.regions (st.F E) :=
   ⟨(St.cl_spec hE (h.sides c hc).1).1, (St.cl_spec hE (h.sides c hc).2.1).1⟩
 
 /-- **Removing a live chord merges its two classes.** -/
-theorem Inv.split (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) :
+theorem Inv.split :
     ∃ P, Merge.IsSplit E.M.D (st.F E \ {cs E.M E.Q E.N c}) (cs E.M E.Q E.N c) P
       (st.cl E (st.s0 c)) (st.cl E (st.s1 c)) := by
   have hsys := hE.hM.sys _ (St.F_adm (st := st) hE) (St.F_finite (st := st) hE)
@@ -286,7 +307,7 @@ theorem Inv.split (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) :
   · exact absurd (e1.trans e2.symm) hne
 
 /-- **Removability from the state.** -/
-theorem Inv.removable_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {P : Set Point}
+theorem Inv.removable_iff {P : Set Point}
     (hs : Merge.IsSplit E.M.D (st.F E \ {cs E.M E.Q E.N c}) (cs E.M E.Q E.N c) P
       (st.cl E (st.s0 c)) (st.cl E (st.s1 c))) :
     Merge.Removable E.M.D E.M.weight E.γ (st.F E) (cs E.M E.Q E.N c) ↔
@@ -314,9 +335,11 @@ theorem Inv.removable_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.
 
 /-! ## The merged weight -/
 
+section
+variable {n : ℕ} (hn : n = st.nd0 c ∨ n = st.nd1 c)
+include n hn
 /-- The key of a position of a live chord is a cut of the current submap. -/
-theorem Inv.key_nd_cut (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {n : ℕ}
-    (hn : n = st.nd0 c ∨ n = st.nd1 c) : n < E.A ∧ st.Lv n ∧ E.M.IsCut (st.F E) (E.key n) := by
+theorem Inv.key_nd_cut : n < E.A ∧ st.Lv n ∧ E.M.IsCut (st.F E) (E.key n) := by
   have hnA : n < E.A := by
     rcases hn with rfl | rfl
     · exact (h.stat.nd0 c hc.1).1
@@ -326,8 +349,7 @@ theorem Inv.key_nd_cut (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E
   exact ⟨hnA, hL, (h.cut_iff hE _).2 ⟨n, hnA, hL, rfl⟩⟩
 
 /-- `dd` at a position of `c`. -/
-theorem Inv.dd_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {n : ℕ}
-    (hn : n = st.nd0 c ∨ n = st.nd1 c) : st.dd c n = true ↔ st.cnt n = 1 := by
+theorem Inv.dd_iff : st.dd c n = true ↔ st.cnt n = 1 := by
   have hne := h.nd_ne hE hc
   unfold St.dd
   simp only [Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq]
@@ -343,6 +365,12 @@ theorem Inv.dd_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {n
       · exact h1
     · intro h1; exact Or.inr ⟨rfl, h1⟩
 
+
+
+end
+
+end
+
 /-- The dying positions are the positions of `c` with count `1`. -/
 theorem Inv.dd_cases (_hE : E.Good) (_h : Inv E st) {c : ℕ} (_hc : c ∈ st.L E) {j : ℕ}
     (hj : st.dd c j = true) : (j = st.nd0 c ∨ j = st.nd1 c) ∧ st.cnt j = 1 := by
@@ -353,8 +381,11 @@ theorem Inv.dd_cases (_hE : E.Good) (_h : Inv E st) {c : ℕ} (_hc : c ∈ st.L 
   · exact ⟨Or.inl rfl, h1⟩
   · exact ⟨Or.inr rfl, h1⟩
 
+section
+variable (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E)
+include hE h hc
 /-- **The lost keys of `c`** are the start keys of its positions of count `1`. -/
-theorem Inv.lost_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {k : ℝ} :
+theorem Inv.lost_iff {k : ℝ} :
     k ∈ lostKeys E.M (st.F E) (cs E.M E.Q E.N c) ↔
       ∃ n, (n = st.nd0 c ∨ n = st.nd1 c) ∧ st.cnt n = 1 ∧ k = E.key n := by
   constructor
@@ -381,7 +412,7 @@ theorem Inv.lost_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) 
     exact Bool.noConfusion hdd
 
 /-- **The gap around a dying position** after the removal of `c`. -/
-theorem Inv.dead_gap (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E)
+theorem Inv.dead_gap
     (hne' : (st.F E \ {cs E.M E.Q E.N c}).Nonempty) {n : ℕ}
     (hn : n = st.nd0 c ∨ n = st.nd1 c) (h1 : st.cnt n = 1) :
     st.prD c n < E.A ∧ st.suD c n < E.A ∧
@@ -430,7 +461,7 @@ theorem Inv.dead_gap (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E)
   exact hfree j hj ⟨hjL, by simp [hjd]⟩ ((key_cyc_iff hE hpA hsA hj).1 hk')
 
 /-- **The merged weight** computed by the state is the weight of the merged region. -/
-theorem Inv.mu_eq (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {P : Set Point}
+theorem Inv.mu_eq {P : Set Point}
     (hs : Merge.IsSplit E.M.D (st.F E \ {cs E.M E.Q E.N c}) (cs E.M E.Q E.N c) P
       (st.cl E (st.s0 c)) (st.cl E (st.s1 c))) :
     st.mu E c = E.M.weight (st.F E \ {cs E.M E.Q E.N c}) P := by
@@ -493,6 +524,9 @@ theorem Inv.mu_eq (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {P 
       rcases hn with rfl | rfl
       · exact le_max_of_le_right (le_max_left _ _)
       · exact le_max_of_le_right (le_max_right _ _)
+
+
+end
 
 end
 

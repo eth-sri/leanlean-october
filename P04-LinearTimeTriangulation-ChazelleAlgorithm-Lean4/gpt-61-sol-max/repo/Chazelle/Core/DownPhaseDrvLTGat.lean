@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvLTProg
 public import Chazelle.Core.DownPhaseDrvLTMath
 public import Chazelle.Core.DownPhaseDrvDMain
@@ -23,7 +25,7 @@ open SortL (seg)
 theorem inDrv_BL : DrvD.InDrv BL := by
   intro r hr
   simp only [BL, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by omega_nf⟩
 
 theorem BL_mono {B : ℕ → Bool} (h : ∀ r, B r = true → BL r = true) {c c' : Config}
     (hf : FrameM B c c') : FrameM BL c c' := hf.mono h
@@ -44,7 +46,7 @@ theorem ltInit_exec (c : Config) (hw : WordsBounded W c) (hW : 3 ≤ W) :
     unfold ltInit
     exec_block
     all_goals try omega
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp; rfl
+    omega_nf
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (by decide)⟩
 
 /-- The registers of the reservation. -/
@@ -156,11 +158,9 @@ theorem ltB2_exec (e : Config) (hw : WordsBounded W e) {a ℓ b D₂ : ℕ}
         e'.nreg 210063 = D₂) := by
     unfold ltB2
     exec_block
-    all_goals try (config_simp; (try simp only [h13, h44, h45, h43, h14]); omega)
-    refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
-      (try simp only [h13, h44, h45, h43, h14])
+    all_goals simp_all
   have hf := exec_frameB ex (B := B2) (by decide)
-  exact ⟨e', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, hf.2.2.1, hf⟩
+  ram_grind
 
 /-- The registers `ltB3` writes. -/
 def B3 (r : ℕ) : Bool := decide (r = 211114) || decide (r = 211131) || decide (r = 211130)
@@ -177,11 +177,9 @@ theorem ltB3_exec (e : Config) (hw : WordsBounded W e) {D₂ ℓ p j : ℕ}
       (e'.nreg 211114 = D₂ + 2 * ℓ ∧ e'.nreg 211131 = p + 3 ∧ e'.nreg 211130 = j + 1) := by
     unfold ltB3
     exec_block
-    all_goals try (config_simp; (try simp only [h14, h45, h31, h01, h30, h00]); omega)
-    refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;>
-      (try simp only [h14, h45, h31, h01, h30, h00])
+    all_goals simp_all
   have hf := exec_frameB ex (B := B3) (by decide)
-  exact ⟨e', k, ex, hk, q.1, q.2.1, q.2.2, hf.2.2.1, hf⟩
+  ram_grind
 
 set_option maxHeartbeats 2000000 in
 theorem ltArgs_exec (c : Config) (hw : WordsBounded W c) {A K₂ BB K M : ℕ}
@@ -213,10 +211,9 @@ theorem ltRd_exec (c : Config) (hw : WordsBounded W c) (hW : 134 ≤ W) :
       (c'.nreg 216000 = 134 ∧ c'.nreg 216001 = c.nreg 211007) := by
     unfold ltRd
     exec_block
-    all_goals try omega
-    refine ⟨rfl, ?_, ?_⟩ <;> config_simp
+    all_goals simp_all
   have hf := exec_frameB ex (B := fun r => decide (r = 216000 ∨ r = 216001)) (by decide)
-  exact ⟨c', k, ex, hk, q.1, q.2, hf.2.2.1, hf⟩
+  ram_grind
 
 end exec
 

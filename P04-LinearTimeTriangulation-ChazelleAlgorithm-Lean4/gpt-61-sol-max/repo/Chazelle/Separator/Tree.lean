@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Separator.Maps
 public import Mathlib.Combinatorics.SimpleGraph.Metric
 
@@ -61,7 +63,7 @@ theorem parent_root : T.parent T.root = T.root := by simp [parent]
 
 /-- The parent of a non-root vertex is the head of its parent dart. -/
 theorem parent_of_ne {v : V} (hv : v ≠ T.root) : T.parent v = M.head (T.par v) := by
-  simp [parent, hv]
+  grind [parent]
 
 omit [DecidableEq V] in
 /-- Non-root vertices have positive level. -/
@@ -102,22 +104,27 @@ theorem IsAnc.trans {w v u : V} (h1 : T.IsAnc w v) (h2 : T.IsAnc v u) : T.IsAnc 
   obtain ⟨n, rfl⟩ := h2
   exact ⟨m + n, by rw [Function.iterate_add_apply]⟩
 
+section
+variable {v u : V}
 /-- Ancestors have smaller levels. -/
-theorem IsAnc.level_le {v u : V} (h : T.IsAnc v u) : T.level v ≤ T.level u := by
+theorem IsAnc.level_le (h : T.IsAnc v u) : T.level v ≤ T.level u := by
   obtain ⟨n, rfl⟩ := h
   rw [T.level_iterate_parent]; omega
 
 /-- An ancestor of the parent is an ancestor. -/
-theorem IsAnc.of_parent {v u : V} (h : T.IsAnc v (T.parent u)) : T.IsAnc v u :=
+theorem IsAnc.of_parent (h : T.IsAnc v (T.parent u)) : T.IsAnc v u :=
   h.trans T (T.isAnc_parent_self u)
 
 /-- If `v` is an ancestor of `u` but not of its parent, then `u = v`. -/
-theorem eq_of_isAnc_of_not_parent {v u : V} (h : T.IsAnc v u) (hp : ¬ T.IsAnc v (T.parent u)) :
+theorem eq_of_isAnc_of_not_parent (h : T.IsAnc v u) (hp : ¬ T.IsAnc v (T.parent u)) :
     u = v := by
   obtain ⟨n, hn⟩ := h
   rcases n with _ | n
   · exact hn
-  · exact absurd ⟨n, by rw [← Function.iterate_succ_apply]; exact hn⟩ hp
+  · exact absurd ⟨n, by simp_all⟩ hp
+
+
+end
 
 /-- A non-root vertex is not an ancestor of its parent. -/
 theorem not_isAnc_parent {v : V} (hv : v ≠ T.root) : ¬ T.IsAnc v (T.parent v) := by
@@ -132,13 +139,7 @@ theorem eq_of_isAnc_of_level_eq {v v' u : V} (h : T.IsAnc v u) (h' : T.IsAnc v' 
     (hl : T.level v = T.level v') : v = v' := by
   obtain ⟨n, rfl⟩ := h
   obtain ⟨n', rfl⟩ := h'
-  rw [T.level_iterate_parent, T.level_iterate_parent] at hl
-  by_cases hn : T.level u ≤ n
-  · rw [T.iterate_parent_eq_root hn, T.iterate_parent_eq_root (by omega)]
-  · by_cases hn' : T.level u ≤ n'
-    · omega
-    · have : n = n' := by omega
-      rw [this]
+  grind [Chazelle.Separator.CombMap.SpanTree.level_iterate_parent, Chazelle.Separator.CombMap.SpanTree.iterate_parent_eq_root]
 
 end Basic
 
@@ -149,8 +150,11 @@ section TreeDarts
 /-- A tree dart: `par v` or its opposite, for a non-root vertex `v`. -/
 def IsTreeDart (d : D) : Prop := ∃ v, v ≠ T.root ∧ (d = T.par v ∨ d = M.opp (T.par v))
 
+section
+variable {v w : V} (hv : v ≠ T.root) (hw : w ≠ T.root)
+include hv hw
 /-- A parent dart is never the opposite of a parent dart. -/
-theorem par_ne_opp_par {v w : V} (hv : v ≠ T.root) (hw : w ≠ T.root) :
+theorem par_ne_opp_par :
     T.par v ≠ M.opp (T.par w) := by
   intro h
   have h1 : T.level (M.head (T.par w)) + 1 = T.level w := T.level_head_par w hw
@@ -159,13 +163,15 @@ theorem par_ne_opp_par {v w : V} (hv : v ≠ T.root) (hw : w ≠ T.root) :
     rw [← T.vert_par v hv, h]; rfl
   have e2 : M.head (T.par v) = w := by
     rw [← T.vert_par w hw, h, head, M.opp_opp]
-  rw [e1] at h1; rw [e2] at h2
-  omega
+  grind
 
 /-- Parent darts of distinct vertices are distinct. -/
-theorem par_injective {v w : V} (hv : v ≠ T.root) (hw : w ≠ T.root) (h : T.par v = T.par w) :
+theorem par_injective (h : T.par v = T.par w) :
     v = w := by
   rw [← T.vert_par v hv, ← T.vert_par w hw, h]
+
+
+end
 
 variable [Fintype V] [DecidableEq V] [DecidableEq D]
 
@@ -178,19 +184,13 @@ def treeDarts : Finset D :=
 theorem mem_treeDarts {d : D} : d ∈ T.treeDarts ↔ T.IsTreeDart d := by
   simp only [treeDarts, Finset.mem_union, Finset.mem_image, Finset.mem_filter,
     Finset.mem_univ, true_and, IsTreeDart]
-  constructor
-  · rintro (⟨v, hv, rfl⟩ | ⟨v, hv, rfl⟩)
-    · exact ⟨v, hv, Or.inl rfl⟩
-    · exact ⟨v, hv, Or.inr rfl⟩
-  · rintro ⟨v, hv, rfl | rfl⟩
-    · exact Or.inl ⟨v, hv, rfl⟩
-    · exact Or.inr ⟨v, hv, rfl⟩
+  ram_grind
 
 /-- The tree darts form an edge set. -/
 theorem opp_mem_treeDarts {d : D} (hd : d ∈ T.treeDarts) : M.opp d ∈ T.treeDarts := by
   rw [mem_treeDarts] at hd ⊢
   obtain ⟨v, hv, rfl | rfl⟩ := hd
-  · exact ⟨v, hv, Or.inr rfl⟩
+  · grind [Chazelle.Separator.CombMap.SpanTree.IsTreeDart]
   · exact ⟨v, hv, Or.inl (M.opp_opp _)⟩
 
 /-- A spanning tree has `V - 1` edges: `|treeDarts| = 2 (V - 1)`. -/
@@ -209,11 +209,7 @@ theorem card_treeDarts : T.treeDarts.card = 2 * (Fintype.card V - 1) := by
       simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at hv hw
       exact T.par_injective hv hw h
   · rw [Finset.disjoint_left]
-    intro d hd hd'
-    simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and] at hd hd'
-    obtain ⟨v, hv, rfl⟩ := hd
-    obtain ⟨w, hw, h⟩ := hd'
-    exact T.par_ne_opp_par hv hw h.symm
+    grind [Chazelle.Separator.CombMap.SpanTree.par_ne_opp_par]
 
 end TreeDarts
 
@@ -242,7 +238,7 @@ theorem exists_dart_toward (hM : M.Connected) (r v : V) (hv : v ≠ r) :
     ∃ d, M.vert d = v ∧ M.graph.dist r (M.head d) + 1 = M.graph.dist r v := by
   obtain ⟨p, hp⟩ := (M.reachable_of_connected hM v r).exists_walk_length_eq_dist
   cases p with
-  | nil => exact absurd rfl hv
+  | nil => simp_all
   | cons hadj q =>
     rename_i w
     obtain ⟨_, d, hd, hdw⟩ := id hadj
@@ -267,12 +263,7 @@ theorem exists_bfsTree (hM : M.Connected) (r : V) :
   let par : V → D := fun v =>
     if hv : v = r then d0 else Classical.choose (M.exists_dart_toward hM r v hv)
   refine ⟨⟨r, fun v => M.graph.dist r v, par, by simp, ?_, ?_⟩, rfl, fun v => rfl⟩
-  · intro v hv
-    simp only [par, dite_eq_right hv]
-    exact (Classical.choose_spec (M.exists_dart_toward hM r v hv)).1
-  · intro v hv
-    simp only [par, dite_eq_right hv]
-    exact (Classical.choose_spec (M.exists_dart_toward hM r v hv)).2
+  all_goals grind
 
 end BFS
 

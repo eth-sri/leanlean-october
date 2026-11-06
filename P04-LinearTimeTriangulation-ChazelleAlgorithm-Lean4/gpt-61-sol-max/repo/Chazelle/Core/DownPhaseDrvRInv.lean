@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseNFSorted
 public import Chazelle.Core.SpecPhases
 public import Chazelle.Cost.DownPhase
@@ -81,11 +83,17 @@ def EnvD (X : MemCtx) (P : Polygon) (W : ℕ) (c : Config) : Prop :=
     X.holds P c.nmem (c.nreg (coreReg 1)) (c.nreg ALLOC) ∧
     P.n - 1 ≤ X.cap P c.nmem (c.nreg (coreReg 1))
 
-theorem coreReg_band (i : ℕ) (hi : i < 10000) : bandOf (coreReg i) = bCore := by
-  unfold coreReg; exact bandOf_bandReg _ _ hi
+section
+variable (i : ℕ) (hi : i < 10000)
+include hi
+theorem coreReg_band : bandOf (coreReg i) = bCore := by
+  omega_nf
 
-theorem coreReg_ne_alloc (i : ℕ) (hi : i < 10000) : coreReg i ≠ ALLOC := by
-  unfold coreReg bandReg bCore ALLOC; omega
+theorem coreReg_ne_alloc : coreReg i ≠ ALLOC := by
+  omega_nf
+
+
+end
 
 /-- The setup record survives a change of memory at or above its bound and a larger bound. -/
 theorem setup_transport {A A' : ℕ} {m m' : ℕ → ℕ} {S n : ℕ}
@@ -95,8 +103,11 @@ theorem setup_transport {A A' : ℕ} {m m' : ℕ → ℕ} {S n : ℕ}
   have := h m'' (fun a ha => (h'' a (lt_of_lt_of_le ha hA)).trans (hm a ha))
   exact ⟨this.1, this.2.1, this.2.2.1, le_trans this.2.2.2 hA⟩
 
+section
+variable {X : MemCtx} (hX : X.CapLocal) {P : Polygon} {W : ℕ}
+include hX
 /-- **The environment survives every frame that does not write the core band.** -/
-theorem EnvD.transport {X : MemCtx} (hX : X.CapLocal) {P : Polygon} {W : ℕ} {c c' : Config}
+theorem EnvD.transport {c c' : Config}
     (h : EnvD X P W c) (h0 : c'.nreg (coreReg 0) = c.nreg (coreReg 0))
     (h1 : c'.nreg (coreReg 1) = c.nreg (coreReg 1)) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC)
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) : EnvD X P W c' := by
@@ -108,7 +119,7 @@ theorem EnvD.transport {X : MemCtx} (hX : X.CapLocal) {P : Polygon} {W : ℕ} {c
   · rw [h1, hX P c.nmem c'.nmem _ _ hm hXh]; exact hcap
 
 /-- **The environment survives every frame that does not write the core band.** -/
-theorem EnvD.frame {X : MemCtx} (hX : X.CapLocal) {P : Polygon} {W : ℕ} {B : Finset ℕ}
+theorem EnvD.frame {B : Finset ℕ}
     {c c' : Config} {k : ℕ} (h : EnvD X P W c) (hf : Frame B c c' k) (hB : bCore ∉ B) :
     EnvD X P W c' := by
   have hr : ∀ i, i < 10000 → c'.nreg (coreReg i) = c.nreg (coreReg i) := fun i hi =>
@@ -116,6 +127,9 @@ theorem EnvD.frame {X : MemCtx} (hX : X.CapLocal) {P : Polygon} {W : ℕ} {B : F
   exact h.transport hX (hr 0 (by norm_num)) (hr 1 (by norm_num)) hf.2.2.2.2.2.1 hf.2.2.1
 
 /-! ## The level invariant -/
+
+
+end
 
 /-- **The level invariant `Inv(λ)`** (design §2), with count bound `cnt`.  Registers of band
 `bDownDrv`: `1` the interior model descriptor, `2` the chord list `L`, `3` its length `K`, `4`
@@ -147,25 +161,27 @@ def InvAt (cnt : ℕ → ℕ) (P : Polygon) (c : Config) (lam : ℕ) : Prop :=
       L.length * 2 ^ Cost.ceilBeta lam ≤
         cnt lam * (2 ^ topGrade P.n + 2 ^ Cost.ceilBeta lam)
 
+section
+variable {cnt : ℕ → ℕ} {P : Polygon}
 /-- **The invariant survives** when the registers `1 … 5` of `bDownDrv` are kept, the memory
 below the allocator is kept, and the allocator is not lowered. -/
-theorem InvAt.transport {cnt : ℕ → ℕ} {P : Polygon} {c c' : Config} {lam : ℕ}
+theorem InvAt.transport {c c' : Config} {lam : ℕ}
     (h : InvAt cnt P c lam) (hr : ∀ i, 1 ≤ i → i ≤ 5 → rd c' bDownDrv i = rd c bDownDrv i)
     (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) :
     InvAt cnt P c' lam := by
   obtain ⟨hD, hDa, L, E, hK, hLb, hLa, hEb, hEa, hok, hperm, hsort, hN, hdeg, hwt, hcnt⟩ := h
   have h1 := hr 1 le_rfl (by norm_num)
-  refine ⟨by rw [h1]; omega, by rw [h1]; exact (hDa.transport hm).mono hA, L, E, ?_, ?_, ?_, ?_, ?_, hok, hperm, hsort, ?_,
+  refine ⟨by omega, by grind [Chazelle.Core.Robust], L, E, ?_, ?_, ?_, ?_, ?_, hok, hperm, hsort, ?_,
     hdeg, hwt, hcnt⟩
-  · rw [hr 3 (by norm_num) (by norm_num)]; exact hK
-  · rw [hr 2 (by norm_num) (by norm_num)]; omega
-  · rw [hr 2 (by norm_num) (by norm_num)]; exact (hLa.transport hm).mono hA
-  · rw [hr 4 (by norm_num) (by norm_num)]; omega
-  · rw [hr 4 (by norm_num) (by norm_num)]; exact (hEa.transport hm).mono hA
+  · simp_all
+  · ram_grind
+  · grind [Chazelle.Core.Robust]
+  · ram_grind
+  · grind [Chazelle.Core.Robust]
   · rw [hr 5 (by norm_num) (by norm_num)]; exact (hN.transport hm).mono hA
 
 /-- (I3) as a bound on `K`: `K ≤ cnt λ (2^p + 2^⌈βλ⌉) / 2^⌈βλ⌉`. -/
-theorem InvAt.len_le {cnt : ℕ → ℕ} {P : Polygon} {c : Config} {lam : ℕ}
+theorem InvAt.len_le {c : Config} {lam : ℕ}
     (h : InvAt cnt P c lam) :
     rd c bDownDrv 3 ≤
       cnt lam * (2 ^ topGrade P.n + 2 ^ Cost.ceilBeta lam) / 2 ^ Cost.ceilBeta lam := by
@@ -175,10 +191,16 @@ theorem InvAt.len_le {cnt : ℕ → ℕ} {P : Polygon} {c : Config} {lam : ℕ}
 
 /-! ## The component contracts -/
 
+
+end
+
+section
+variable (X : MemCtx) (cnt : ℕ → ℕ)
+include X cnt
 /-- **D2, the transition** (design §4.1; math `Trans.transition`): from the input of
 `DownPhaseSpec` (with the environment), establish `Inv(p)`, `p = topGrade n`, in `κ (n + 1)`
 steps, writing only `drvBands`. -/
-def TransSpec (X : MemCtx) (cnt : ℕ → ℕ) : Prop :=
+def TransSpec : Prop :=
   ∃ (s : Stmt) (κ : ℕ), Meets s drvBands
     (fun P W c => EnvD X P W c ∧
       ∃ C N, TopChain P C ∧ Robust (c.nreg ALLOC) c.nmem (fun m => NFAt m (c.nreg (coreReg 2)) N) ∧
@@ -191,7 +213,7 @@ splice, rebuild, restoration rounds): from `Inv(λ)` with `16 ≤ λ ≤ p` and 
 register `0` of `bDownDrv`), establish `Inv(⌈βλ⌉ + 11)`, keeping register `0`, in
 `κ (K + 1) (lemma41Nat (⌈βλ⌉ + 11) + 1)` steps (`K` the chord count, register `3`): a constant
 number of Lemma 4.1 / merge budgets per region, and `K + 1` regions. -/
-def LevelSpec (X : MemCtx) (cnt : ℕ → ℕ) (n₀ : ℕ) : Prop :=
+def LevelSpec (n₀ : ℕ) : Prop :=
   ∃ (s : Stmt) (κ : ℕ), Meets s drvBands
     (fun P W c => EnvD X P W c ∧ n₀ ≤ P.n ∧ 16 ≤ rd c bDownDrv 0 ∧
       rd c bDownDrv 0 ≤ topGrade P.n ∧ InvAt cnt P c (rd c bDownDrv 0))
@@ -203,7 +225,7 @@ def LevelSpec (X : MemCtx) (cnt : ℕ → ℕ) (n₀ : ℕ) : Prop :=
 `buildNFSorted`): from `Inv(λ)` with `λ < 16` or `n < n₀`, write in register `6` of `bDownDrv`
 the handle of a normal form of the full interior visibility map of `Q`, robust below the
 allocator, in `κ (n + 1)` steps. -/
-def BaseSpec (X : MemCtx) (cnt : ℕ → ℕ) (n₀ : ℕ) : Prop :=
+def BaseSpec (n₀ : ℕ) : Prop :=
   ∃ (s : Stmt) (κ : ℕ), Meets s drvBands
     (fun P W c => EnvD X P W c ∧
       ∃ lam, lam ≤ topGrade P.n ∧ (lam < 16 ∨ P.n < n₀) ∧ InvAt cnt P c lam)
@@ -211,6 +233,9 @@ def BaseSpec (X : MemCtx) (cnt : ℕ → ℕ) (n₀ : ℕ) : Prop :=
       IsNF (interiorModel (Qof P)) (Qof P) N ∧
       N.F (interiorModel (Qof P)) (Qof P) = (interiorModel (Qof P)).Full)
     (fun P _ => κ * (P.n + 1))
+
+
+end
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoRec
 
 /-!
@@ -33,7 +35,7 @@ theorem vtx_pos_iff (C : Chain) (hP : C.P.Simple) {k : ℕ} (hk : k ≤ C.m) {p 
     rw [Chazelle.Chain.sidePt_zero]
     show (C.sideWalk C.sideBeta).vtx (i + 6) = _
     rw [C.sideWalk_vtx_tour _ hi]
-    unfold Chain.sideTour; rw [hidx]
+    grind [Chain.sideTour]
 
 /-- A residue of a number below `3 n`. -/
 theorem mod_three {a n : ℕ} (_hn : 0 < n) (ha : a < 3 * n) :
@@ -44,8 +46,11 @@ theorem mod_three {a n : ℕ} (_hn : 0 < n) (ha : a < 3 * n) :
   · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
     omega
 
+section
+variable (C : Chain)
+include C
 /-- **The tour positions of an end vertex.** -/
-theorem endIdx (C : Chain) {k : ℕ} (hk : k = 0 ∨ k = C.m) {i : ℕ} (hi : i ≤ 2 * C.m) :
+theorem endIdx {k : ℕ} (hk : k = 0 ∨ k = C.m) {i : ℕ} (hi : i ≤ 2 * C.m) :
     C.sideIdx C.sideBeta i = k ↔ i = tpos C k ∨ (i = 2 * C.m ∧ tpos C k = 0) := by
   have hS := C.sideS_lt C.sideBeta
   have hm := C.one_le
@@ -58,11 +63,11 @@ theorem endIdx (C : Chain) {k : ℕ} (hk : k = 0 ∨ k = C.m) {i : ℕ} (hi : i 
   rcases hk with rfl | rfl <;> split_ifs <;> omega
 
 /-- The middle visit of the top in the tour. -/
-noncomputable def midT (C : Chain) : ℕ :=
+noncomputable def midT : ℕ :=
   if C.sideBeta then 2 * C.m - 2 * C.topIdx else if C.topIdx < C.m then 2 * C.topIdx else 0
 
 /-- **The tour positions of the top vertex.** -/
-theorem topIdx_iff (C : Chain) {i : ℕ} (hi : i ≤ 2 * C.m) :
+theorem topIdx_iff {i : ℕ} (hi : i ≤ 2 * C.m) :
     C.sideIdx C.sideBeta i = C.topIdx ↔ i = 0 ∨ i = 2 * C.m ∨ i = midT C := by
   have hT := C.topIdx_le
   have hm := C.one_le
@@ -72,12 +77,15 @@ theorem topIdx_iff (C : Chain) {i : ℕ} (hi : i ≤ 2 * C.m) :
   cases hβ : C.sideBeta
   · simp only [Bool.false_eq_true, ite_false]
     rw [mod_three h2m (show 2 * C.m - C.topIdx + i < 3 * (2 * C.m) by omega)]
-    split_ifs <;> omega
+    ram_grind
   · simp only [ite_true]
     rw [mod_three h2m (show C.topIdx + i < 3 * (2 * C.m) by omega)]
-    split_ifs <;> omega
+    ram_grind
 
 /-! ## Positions -/
+
+
+end
 
 /-- The normalised height code is `0` iff the parameter is `0` (proper positions). -/
 theorem nhgt_eq_zero_iff (M : Model) (Q : Polygon) (u : WPos) :
@@ -89,26 +97,23 @@ theorem nhgt_eq_zero_iff (M : Model) (Q : Polygon) (u : WPos) :
     intro h0
     apply h
     obtain ⟨e, hh⟩ := u
-    simp only at h0
-    subst h0
-    rfl
+    simp_all
 
+section
+variable (C : Chain) (hP : C.P.Simple)
+include hP
 /-- **A position is at an end vertex** (`k = 0` or `k = m`) iff its parameter is `0` and its edge
 is `6 + tpos C k`, or `2m + 6` when `tpos C k = 0`. -/
-theorem atEnd_iff (C : Chain) (hP : C.P.Simple) {k : ℕ} (hk : k = 0 ∨ k = C.m) (Q : Polygon)
+theorem atEnd_iff {k : ℕ} (hk : k = 0 ∨ k = C.m) (Q : Polygon)
     {x : WPos} (hx : x.edge < (chainModel C).W.n) (h0 : 0 ≤ (chainModel C).param Q x)
     (h1 : (chainModel C).param Q x < 1) :
     (chainModel C).pos Q x = C.vertex k ↔ (chainModel C).param Q x = 0 ∧
       (x.edge = 6 + tpos C k ∨ (x.edge = 2 * C.m + 6 ∧ tpos C k = 0)) := by
-  have hkm : k ≤ C.m := by rcases hk with rfl | rfl <;> omega
+  have hkm : k ≤ C.m := by omega
   rw [pos_eq_sidePt' C Q x, vtx_pos_iff C hP hkm hx h0 h1]
   have hn := cm_n C
   constructor
-  · rintro ⟨ht, i, hi, hp, hidx⟩
-    refine ⟨ht, ?_⟩
-    rcases (endIdx C hk hi).1 hidx with h | ⟨h, h'⟩
-    · left; omega
-    · right; omega
+  · grind [Chazelle.Core.SweepIo.endIdx]
   · rintro ⟨ht, h | ⟨h, h'⟩⟩
     · have hτ := tpos_lt C k
       refine ⟨ht, tpos C k, by omega, by omega, (endIdx C hk (by omega)).2 (Or.inl rfl)⟩
@@ -116,24 +121,25 @@ theorem atEnd_iff (C : Chain) (hP : C.P.Simple) {k : ℕ} (hk : k = 0 ∨ k = C.
 
 /-- **A position is at the top** iff its parameter is `0` and its edge is `6`, `2m + 6` or
 `6 + midT`. -/
-theorem atTop_iff (C : Chain) (hP : C.P.Simple) (Q : Polygon) {x : WPos}
+theorem atTop_iff (Q : Polygon) {x : WPos}
     (hx : x.edge < (chainModel C).W.n) (h0 : 0 ≤ (chainModel C).param Q x)
     (h1 : (chainModel C).param Q x < 1) :
     (chainModel C).pos Q x = C.top ↔ (chainModel C).param Q x = 0 ∧
       (x.edge = 6 ∨ x.edge = 2 * C.m + 6 ∨ x.edge = 6 + midT C) := by
   have hn := cm_n C
   have hmid : midT C ≤ 2 * C.m := by
-    unfold midT; have := C.topIdx_le; split_ifs <;> omega
+    grind [midT]
   show _ = C.vertex C.topIdx ↔ _
   rw [pos_eq_sidePt' C Q x, vtx_pos_iff C hP C.topIdx_le hx h0 h1]
   constructor
-  · rintro ⟨ht, i, hi, hp, hidx⟩
-    refine ⟨ht, ?_⟩
-    rcases (topIdx_iff C hi).1 hidx with h | h | h <;> omega
+  · grind [Chazelle.Core.SweepIo.topIdx_iff]
   · rintro ⟨ht, h | h | h⟩
     · exact ⟨ht, 0, by omega, by omega, (topIdx_iff C (by omega)).2 (Or.inl rfl)⟩
     · exact ⟨ht, 2 * C.m, le_rfl, by omega, (topIdx_iff C le_rfl).2 (Or.inr (Or.inl rfl))⟩
     · exact ⟨ht, midT C, hmid, by omega, (topIdx_iff C hmid).2 (Or.inr (Or.inr rfl))⟩
+
+
+end
 
 end
 

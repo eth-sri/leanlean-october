@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmPtQ
 public import Chazelle.Core.FuseAsmFin
 public import Chazelle.Core.FuseAsmList
@@ -31,43 +33,32 @@ variable (J : Merge.Junction) (Q : Polygon)
 theorem geoQ_append (i : ℕ) (A B : List (ℕ × ℕ × ℕ)) :
     geoQ J Q i (A ++ B) = geoQ J Q i A ∪ geoQ J Q i B := by
   ext x; simp only [geoQ, List.mem_append, Set.mem_union, Set.mem_ofPred_eq]
-  constructor
-  · rintro ⟨q, hq | hq, rfl⟩
-    · exact Or.inl ⟨q, hq, rfl⟩
-    · exact Or.inr ⟨q, hq, rfl⟩
-  · rintro (⟨q, hq, rfl⟩ | ⟨q, hq, rfl⟩)
-    · exact ⟨q, Or.inl hq, rfl⟩
-    · exact ⟨q, Or.inr hq, rfl⟩
+  ram_grind
 
 theorem endQ_union (S₁ S₂ : Set (Set Point)) : endQ (S₁ ∪ S₂) = endQ S₁ ∪ endQ S₂ := by
   ext x; simp only [endQ, Set.mem_union, Set.mem_ofPred_eq]
-  constructor
-  · rintro (⟨c, hc | hc, rfl⟩ | ⟨c, hc | hc, rfl⟩)
-    · exact Or.inl (Or.inl ⟨c, hc, rfl⟩)
-    · exact Or.inr (Or.inl ⟨c, hc, rfl⟩)
-    · exact Or.inl (Or.inr ⟨c, hc, rfl⟩)
-    · exact Or.inr (Or.inr ⟨c, hc, rfl⟩)
-  · rintro ((⟨c, hc, rfl⟩ | ⟨c, hc, rfl⟩) | (⟨c, hc, rfl⟩ | ⟨c, hc, rfl⟩))
-    · exact Or.inl ⟨c, Or.inl hc, rfl⟩
-    · exact Or.inr ⟨c, Or.inl hc, rfl⟩
-    · exact Or.inl ⟨c, Or.inr hc, rfl⟩
-    · exact Or.inr ⟨c, Or.inr hc, rfl⟩
+  ram_grind
 
-theorem geo_ptAns {i : ℕ} {z : Point} {σ : ℝ} {l : List (ℕ × ℕ × ℕ)} (h : PtAns J Q i z σ l) :
+section
+variable {i : ℕ} {z : Point} {σ : ℝ} {l : List (ℕ × ℕ × ℕ)} (h : PtAns J Q i z σ l)
+include z σ h
+theorem geo_ptAns :
     geoQ J Q i l ⊆ {(z, σ)} ∧ (FreeAt J.whole z σ → (z, σ) ∈ geoQ J Q i l) := by
   refine ⟨?_, fun hf => ?_⟩
   · rintro x ⟨q, hq, rfl⟩
-    obtain ⟨-, -, hp, hd⟩ := h.1 q hq
-    rw [hp, hd]; rfl
+    ram_grind
   · cases l with
-    | nil => exact absurd hf (h.2 rfl)
+    | nil => ram_grind
     | cons q l =>
       obtain ⟨-, -, hp, hd⟩ := h.1 q (by simp)
       exact ⟨q, by simp, by rw [hp, hd]⟩
 
-theorem ok_ptAns {i : ℕ} {z : Point} {σ : ℝ} {l : List (ℕ × ℕ × ℕ)} (h : PtAns J Q i z σ l) :
+theorem ok_ptAns :
     ∀ q ∈ l, QueryOK J Q i q ∧ HeightOK J Q i q := fun q hq =>
   ⟨(h.1 q hq).1, (h.1 q hq).2.1⟩
+
+
+end
 
 /-- The chord-end queries have the heights of their codes. -/
 theorem endQL_height (i : ℕ) {N : NF} (hN : IsNF (chainModel (sideChain J i)) Q N) :
@@ -128,8 +119,8 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
   obtain ⟨gt₀, ft₀⟩ := geo_ptAns J Q hP.t₀
   obtain ⟨gs₁, fs₁⟩ := geo_ptAns J Q hP.t'₁
   obtain ⟨gs₀, fs₀⟩ := geo_ptAns J Q hP.t'₀
-  have hS : sideChain J 0 = J.left := rfl
-  have hS' : sideChain J 1 = J.right := rfl
+  
+  
   -- the cap pieces
   have gk : geoQ J Q 0 k₀ ∪ geoQ J Q 1 k₁ ⊆ capQ J ∧
       (∀ x ∈ capQ J, FreeAt J.whole x.1 x.2 → x ∈ geoQ J Q 0 k₀ ∪ geoQ J Q 1 k₁) := by
@@ -145,7 +136,7 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
           · simp at hq
           · have := g hx'; simp only [Set.mem_singleton_iff] at this; subst this
             exact ⟨hx, rfl⟩
-        · obtain ⟨-, rfl⟩ := hx'; exact Or.inr (f hf)
+        · obtain ⟨-, rfl⟩ := hx'; grind
       · obtain ⟨h0, e1⟩ := hn1 hu
         obtain ⟨g, f⟩ := geo_ptAns J Q h0
         subst e1
@@ -154,7 +145,7 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
           · have := g hx'; simp only [Set.mem_singleton_iff] at this; subst this
             exact ⟨hx, rfl⟩
           · simp at hq
-        · obtain ⟨-, rfl⟩ := hx'; exact Or.inl (f hf)
+        · obtain ⟨-, rfl⟩ := hx'; grind
     · obtain ⟨e0, e1⟩ := hc2 hx
       subst e0 e1
       refine ⟨fun x hx' => ?_, fun x hx' _ => absurd hx'.1 hx⟩
@@ -163,17 +154,8 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
       ∀ q ∈ k₁, QueryOK J Q 1 q ∧ HeightOK J Q 1 q := by
     obtain ⟨hc1, hc2⟩ := hP.cap
     by_cases hx : SharedExtremum J
-    · obtain ⟨hn1, hn2⟩ := hc1 hx
-      by_cases hu : NearU J
-      · obtain ⟨e0, h1⟩ := hn2 hu
-        subst e0
-        exact ⟨fun q hq => by simp at hq, ok_ptAns J Q h1⟩
-      · obtain ⟨h0, e1⟩ := hn1 hu
-        subst e1
-        exact ⟨ok_ptAns J Q h0, fun q hq => by simp at hq⟩
-    · obtain ⟨e0, e1⟩ := hc2 hx
-      subst e0 e1
-      exact ⟨fun q hq => by simp at hq, fun q hq => by simp at hq⟩
+    · grind [Chazelle.Core.FuseAsm.ok_ptAns]
+    grind
   set Z := fuseZ J (N₁.F (chainModel J.left) Q) (N₂.F (chainModel J.right) Q) with hZ
   have zv₁ : (J.whole.vertex J.m₁, (1 : ℝ)) ∈ Z := Or.inl (Or.inl (Or.inr (Or.inl rfl)))
   have zv₀ : (J.whole.vertex J.m₁, (-1 : ℝ)) ∈ Z := Or.inl (Or.inl (Or.inr (Or.inr rfl)))
@@ -186,13 +168,13 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
   have zs₀ : (J.whole.vertex (J.m₁ + J.right.topIdx), (-1 : ℝ)) ∈ Z :=
     Or.inl (Or.inr (Or.inr (Or.inr rfl)))
   have ze₁ : endQ (N₁.F (chainModel J.left) Q) ⊆ Z := fun x h =>
-    Or.inl (Or.inl (Or.inl (by rw [endQ_union]; exact Or.inl h)))
+    Or.inl (Or.inl (Or.inl (by grind [endQ_union])))
   have ze₂ : endQ (N₂.F (chainModel J.right) Q) ⊆ Z := fun x h =>
-    Or.inl (Or.inl (Or.inl (by rw [endQ_union]; exact Or.inr h)))
+    Or.inl (Or.inl (Or.inl (by grind [endQ_union])))
   have zk : capQ J ⊆ Z := fun x h => Or.inr h
   have sing : ∀ {i : ℕ} {l : List (ℕ × ℕ × ℕ)} {y : Point × ℝ}, geoQ J Q i l ⊆ {y} → y ∈ Z →
       geoQ J Q i l ⊆ Z := fun h hy x hx => by
-    have := h hx; rw [Set.mem_singleton_iff] at this; rw [this]; exact hy
+    grind
   have mono : ∀ {i : ℕ} {A B : List (ℕ × ℕ × ℕ)}, (∀ q ∈ A, q ∈ B) →
       geoQ J Q i A ⊆ geoQ J Q i B := fun h x ⟨q, hq, hx⟩ => ⟨q, h q hq, hx⟩
   refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
@@ -232,19 +214,19 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
   · intro q hq
     simp only [List.mem_append] at hq
     rcases hq with h | ((((h | h) | h) | h) | h)
-    · exact ⟨ok₁ q h, he₁ q h⟩
+    · ram_grind
     · exact ok_ptAns J Q hP.v₁ q h
     · exact ok_ptAns J Q hP.v₀ q h
     · exact ok_ptAns J Q hP.t₁ q h
     · exact ok_ptAns J Q hP.t₀ q h
-    · exact okk.1 q h
+    ram_grind
   · intro q hq
     simp only [List.mem_append] at hq
     rcases hq with h | ((h | h) | h)
-    · exact ⟨ok₂ q h, he₂ q h⟩
+    · ram_grind
     · exact ok_ptAns J Q hP.t'₁ q h
     · exact ok_ptAns J Q hP.t'₀ q h
-    · exact okk.2 q h
+    ram_grind
 
 end
 

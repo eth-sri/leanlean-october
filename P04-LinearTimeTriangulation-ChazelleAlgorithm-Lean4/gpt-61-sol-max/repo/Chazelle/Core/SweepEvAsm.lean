@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvInit5
 
 /-!
@@ -32,8 +34,7 @@ open Machine Machine.Stmt Programs SweepIo SweepPrim WalkEmbed SweepRam Sweep
 theorem list_ext_getD' {α : Type} {l l' : List α} (x : α) (hl : l.length = l'.length)
     (h : ∀ i, i < l.length → l.getD i x = l'.getD i x) : l = l' :=
   List.ext_getElem hl fun i h1 h2 => by
-    have := h i h1
-    rwa [List.getD_eq_getElem _ _ h1, List.getD_eq_getElem _ _ h2] at this
+    simp_all
 
 /-- **The layout and validity determine the records**: two valid normal forms readable at the
 same handle have the same chord, arc, region and sequence records. -/
@@ -57,8 +58,8 @@ theorem nf_recs_eq {m : ℕ → ℕ} {B : ℕ} {M M' : Model} {Q Q' : Polygon} {
   have hl' : N'.seq.length = N'.arcs.length := by rw [hS'.1.length_eq, List.length_range]
   refine ⟨list_ext_getD' ⟨0, 0, 0, 0, 0⟩ (by omega) fun i hi => ?_, hA,
     list_ext_getD' ⟨[], [], 0⟩ (by omega) fun q hq => ?_,
-    list_ext_getD' 0 (by rw [hl, hl', hA]) fun t ht => by
-      rw [← hs t ht, ← hs' t (by rw [hl', ← hA, ← hl]; exact ht)]⟩
+    list_ext_getD' 0 (by omega) fun t ht => by
+      rw [← hs t ht, ← hs' t (by omega)]⟩
   · obtain ⟨a1, a2, a3, a4, a5⟩ := hc i hi
     obtain ⟨b1, b2, b3, b4, b5⟩ := hc' i (by omega)
     change N.chord i = N'.chord i
@@ -86,10 +87,7 @@ theorem out_congr {P : Polygon} {J : Merge.Junction} {N N' : NF} {c : Config}
     (hc : N.chords = N'.chords) (ha : N.arcs = N'.arcs) (hr : N.regions = N'.regions)
     (hs : N.seq = N'.seq) : Out P J N c → Out P J N' c := by
   obtain ⟨c1, a, r, s, d, ro, l⟩ := N
-  obtain ⟨c', a', r', s', d', ro', l'⟩ := N'
-  simp only at hc ha hr hs
-  subst hc ha hr hs
-  exact id
+  aesop
 
 /-! ## The finalisation -/
 
@@ -100,23 +98,16 @@ theorem finCfg_val (c : Config) :
       (finCfg c).nreg (sw 302) = c.nreg cTB ∧
       ∀ r, r ≠ sw 200 → r ≠ sw 201 → r ≠ sw 300 → r ≠ sw 301 → r ≠ sw 302 →
         (finCfg c).nreg r = c.nreg r := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, fun r h1 h2 h3 h4 h5 => ?_⟩
-  all_goals simp only [finCfg, finL, regB, regI, Config.nreg_mk]
-  all_goals try simp only [sB, sC, lB, lC, cTB, sw, Nat.reduceAdd, upd_same, ne_eq, upd_other,
-    Nat.reduceEqDiff, not_false_eq_true]
-  simp only [sw, Nat.reduceAdd] at h1 h2 h3 h4 h5
-  rw [upd_other _ _ _ h5, upd_other _ _ _ h4, upd_other _ _ _ h3, upd_other _ _ _ h2,
-    upd_other _ _ _ h1]
+  simp_all [finCfg, finL, regB, regI, Config.nreg_mk, sB, sC, lB, lC, cTB, sw, Nat.reduceAdd, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true] 
 
 theorem fin_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) :
     Exec P W fin c (finCfg c) 5 :=
-  exec_regB finL hw (by simp only [finL, okW, okWI]; exact ⟨trivial, trivial, trivial, trivial,
-    trivial, trivial⟩)
+  exec_regB finL hw (by simp_all [finL, okW, okWI] )
 
 theorem fin_frame (c : Config) : Frame ioBands c (finCfg c) 5 := by
   obtain ⟨-, -, -, -, -, ho⟩ := finCfg_val c
   refine frame_regs 5 (fun r hr => ho r ?_ ?_ ?_ ?_ ?_) rfl rfl rfl rfl <;> rintro rfl <;>
-    exact hr (sw_io (by unfold sw; omega) (by unfold sw; omega))
+    exact hr (sw_io (by omega_nf) (by omega_nf))
 
 /-! ## Task Z -/
 
@@ -139,7 +130,7 @@ theorem asmTask : AsmTask := by
   have hIK : κI' * K ≤ κI' * K * M := Nat.le_mul_of_pos_right _ hM1
   have hRK : (κI' + κR D + 5) * K * M = κI' * K * M + κR D * K * M + 5 * K * M := by ring
   have hKM : 1 ≤ K * M := Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (by omega) (by omega))
-  have hKM5 : 5 ≤ 5 * K * M := by rw [Nat.mul_assoc]; omega
+  have hKM5 : 5 ≤ 5 * K * M := by grind
   obtain ⟨c₀, k₀, e₀, hk₀, fr₀, hw₀, hkeep, hEnv⟩ :=
     hI sh Bs F X Ok hXl hBs hsh P W c hw hpre (show c.nreg ALLOC + κI' * K ≤ W by omega)
   have hk₀' : k₀ ≤ κI' * K := hk₀
@@ -153,7 +144,7 @@ theorem asmTask : AsmTask := by
   have hA₀ : c₀.nreg ALLOC ≤ c.nreg ALLOC + k₀ := fr₀.2.2.2.2.2.2
   have hA₀' : c.nreg ALLOC ≤ c₀.nreg ALLOC := fr₀.2.2.2.2.2.1
   obtain ⟨c', k₁, e₁, hk₁, hII, hIFr, hout⟩ := hR sh Bs F X Ok P W c₀ J₀ N₁₀ N₂₀ E hw₀ (by
-    rw [e5, e6, hK1, hK2]; show c₀.nreg ALLOC + κR D * K * M ≤ W; omega)
+    ram_grind)
   rw [e5, e6, hK1, hK2] at hk₁
   have hk₁' : k₁ ≤ κR D * K * M := hk₁
   obtain ⟨hOut, s1, s2, l1, l2, t1, z1, z2⟩ := hout
@@ -161,34 +152,34 @@ theorem asmTask : AsmTask := by
   rw [hK2] at t1
   obtain ⟨f200, f201, f300, f301, f302, fo⟩ := finCfg_val c'
   have hw' := e₁.wb_right
-  have eTB : c'.nreg cTB = c₀.nreg cTB := hII.hin _ (by unfold IFix cTB sw; omega)
+  have eTB : c'.nreg cTB = c₀.nreg cTB := hII.hin _ (by omega_nf)
   refine ⟨finCfg c', k₀ + (k₁ + 5), .seq e₀ (.seq e₁ (fin_exec hw')), by omega,
     ⟨fun j hj => ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun H J N₂ hJ hN₂ hNF₂ => ?_⟩, ?_⟩
-  · rw [fo _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega)
-      (by unfold sw; omega) (by unfold sw; omega), hII.hin _ (by unfold IFix sw; omega)]
-    exact hkeep j hj
+  · rw [fo _ (by omega_nf) (by omega_nf) (by omega_nf)
+      (by omega_nf) (by omega_nf), hII.hin _ (by omega_nf)]
+    grind
   · show c.nreg ALLOC ≤ (finCfg c').nreg (sw 200)
-    rw [f200]; omega
+    omega
   · show (finCfg c').nreg (sw 200) + 5 * (finCfg c').nreg (sw 201) ≤ (finCfg c').nreg ALLOC
-    rw [f200, f201, fo _ (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)
-      (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)]
+    rw [f200, f201, fo _ (by omega_nf) (by omega_nf)
+      (by omega_nf) (by omega_nf) (by omega_nf)]
     exact s2
   · show c.nreg ALLOC ≤ (finCfg c').nreg (sw 300)
-    rw [f300]; omega
+    omega
   · show (finCfg c').nreg (sw 300) + 7 * (finCfg c').nreg (sw 301) ≤ (finCfg c').nreg ALLOC
-    rw [f300, f301, fo _ (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)
-      (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)]
+    rw [f300, f301, fo _ (by omega_nf) (by omega_nf)
+      (by omega_nf) (by omega_nf) (by omega_nf)]
     exact l2
   · show c.nreg ALLOC ≤ (finCfg c').nreg (sw 302)
     rw [f302, eTB]; have := E.hT; omega
   · show (finCfg c').nreg (sw 302) + 3 * (2 * c.nmem (rd c bSweep 4)) ≤ (finCfg c').nreg ALLOC
-    rw [f302, fo _ (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)
-      (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)]
+    rw [f302, fo _ (by omega_nf) (by omega_nf)
+      (by omega_nf) (by omega_nf) (by omega_nf)]
     exact t1
   · show (finCfg c').nreg (sw 201) ≤ _
-    rw [f201]; exact z1
+    omega
   · show (finCfg c').nreg (sw 301) ≤ _
-    rw [f301]; exact z2
+    omega
   · have hJJ : J₀ = J := junction_unique hpa.1 hJ
     subst hJJ
     obtain ⟨hc, ha, hr, hs⟩ := nf_recs_eq nN2 hN₂ hpa.2.2.2.2.2.2.2.1 hNF₂

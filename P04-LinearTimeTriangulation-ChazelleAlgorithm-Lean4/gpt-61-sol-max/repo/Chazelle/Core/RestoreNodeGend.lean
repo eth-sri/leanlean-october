@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreNodeEndMath
 public import Chazelle.Core.RestoreWitness
 
@@ -40,8 +42,7 @@ theorem rot_u (hS : Stretch M Cα g g' L) {a b : ℝ} (ha0 : 0 ≤ a) (han : a <
   rw [sideInArc_rot hg0 hgn ha0 han hb0 hbn hx0 hxn]
   have h := off_key (n := M.W.n) (g := g) (d := u) hS.hg (by have := hS.hLn; omega)
     (t := 0) le_rfl zero_lt_one
-  rw [add_zero, add_zero] at h
-  rw [h]
+  simp_all
 
 theorem ray_ne' {z : Point} {σ T : ℝ} (hσ : σ = 1 ∨ σ = -1) (hT : 0 < T) : z ≠ rayPt z σ T := by
   intro h
@@ -107,8 +108,7 @@ theorem end_gend (hS : Stretch M Cα g g' L) (hGα : WalkAx (chainModel Cα)) (h
     rw [add_zero] at hpr
     exact hpr
   · have hr := rot_u hS hkE0 hkEn hkF0 hkFn hu
-    rw [hoE] at hr
-    exact hr
+    ram_grind
 
 end
 

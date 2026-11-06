@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopTasks3
 
 /-!
@@ -61,9 +63,8 @@ theorem ray_lt_iff {a : Point} {b : ℕ} (hb : b ≤ 1) {τ₁ τ₂ : ℝ} :
       else (rayPt a (dirOf b) τ₂).1 < (rayPt a (dirOf b) τ₁).1) ↔ τ₁ < τ₂ := by
   rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
   · rw [ite_eq_right (by norm_num), rayPt_fst, rayPt_fst, dirOf_zero]
-    constructor <;> intro h <;> linarith
-  · rw [ite_eq_left rfl, rayPt_fst, rayPt_fst, dirOf_one]
-    constructor <;> intro h <;> linarith
+    grind
+  simp_all [rayPt_fst, dirOf_one] 
 
 theorem winCmp_irs (hI : IInv W c₀ c) (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hK : Consts c)
     {b : ℕ} (hb : b ≤ 1) (hB : c.nreg oB = b) {x₁ x₂ R : ℝ} (h₁ : AbsRec P c (r1F + 3) x₁ R)
@@ -73,55 +74,50 @@ theorem winCmp_irs (hI : IInv W c₀ c) (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (h
       EFr (fun r => r = wC1 ∨ r = wC2 ∨ r = wBit) c c') := by
   unfold winCmp
   refine IRS.seq (K₁ := 269) (K₂ := 272) (callAbsCmp_irs hI hG hW
-    ⟨by unfold r1F sw; omega, by unfold r1F sw; omega, by unfold r2F sw; omega,
-      by unfold r2F sw; omega⟩ ⟨by unfold wC1 sw; omega, by unfold wC1 sw; omega⟩ h₁ h₂
+    ⟨by omega_nf, by omega_nf, by omega_nf,
+      by omega_nf⟩ ⟨by omega_nf, by omega_nf⟩ h₁ h₂
     (by omega)) ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨hb1, k1, -, m1⟩
   have kr : ∀ r, 240000 ≤ r → r < 250000 → r ≠ wC1 → c₁.nreg r = c.nreg r := fun r h1 h2 h3 =>
-    k1 r (not_oracle_sw h1 h2) h3 (by unfold ALLOC; omega)
+    k1 r (not_oracle_sw h1 h2) h3 (by omega_nf)
   have h₁' : AbsRec P c₁ (r1F + 3) x₁ R := absRec_transport h₁
-    (kr _ (by unfold r1F sw; omega) (by unfold r1F sw; omega) (by unfold r1F wC1 sw; omega))
-    (kr _ (by unfold r1F sw; omega) (by unfold r1F sw; omega) (by unfold r1F wC1 sw; omega))
-    (kr _ (by unfold r1F sw; omega) (by unfold r1F sw; omega) (by unfold r1F wC1 sw; omega))
-    (kr _ (by unfold r1F sw; omega) (by unfold r1F sw; omega) (by unfold r1F wC1 sw; omega))
+    (kr _ (by omega_nf) (by omega_nf) (by omega_nf))
+    (kr _ (by omega_nf) (by omega_nf) (by omega_nf))
+    (kr _ (by omega_nf) (by omega_nf) (by omega_nf))
+    (kr _ (by omega_nf) (by omega_nf) (by omega_nf))
   have h₂' : AbsRec P c₁ (r2F + 3) x₂ R := absRec_transport h₂
-    (kr _ (by unfold r2F sw; omega) (by unfold r2F sw; omega) (by unfold r2F wC1 sw; omega))
-    (kr _ (by unfold r2F sw; omega) (by unfold r2F sw; omega) (by unfold r2F wC1 sw; omega))
-    (kr _ (by unfold r2F sw; omega) (by unfold r2F sw; omega) (by unfold r2F wC1 sw; omega))
-    (kr _ (by unfold r2F sw; omega) (by unfold r2F sw; omega) (by unfold r2F wC1 sw; omega))
+    (kr _ (by omega_nf) (by omega_nf) (by omega_nf))
+    (kr _ (by omega_nf) (by omega_nf) (by omega_nf))
+    (kr _ (by omega_nf) (by omega_nf) (by omega_nf))
+    (kr _ (by omega_nf) (by omega_nf) (by omega_nf))
   refine IRS.seq (K₁ := 269) (K₂ := 3) (callAbsCmp_irs hI₁ hG hW
-    ⟨by unfold r2F sw; omega, by unfold r2F sw; omega, by unfold r1F sw; omega,
-      by unfold r1F sw; omega⟩ ⟨by unfold wC2 sw; omega, by unfold wC2 sw; omega⟩ h₂' h₁'
+    ⟨by omega_nf, by omega_nf, by omega_nf,
+      by omega_nf⟩ ⟨by omega_nf, by omega_nf⟩ h₂' h₁'
     (by omega)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨hb2, k2, -, m2⟩
   have kr2 : ∀ r, 240000 ≤ r → r < 250000 → r ≠ wC1 → r ≠ wC2 → c₂.nreg r = c.nreg r :=
-    fun r h1 h2 h3 h4 => (k2 r (not_oracle_sw h1 h2) h4 (by unfold ALLOC; omega)).trans
+    fun r h1 h2 h3 h4 => (k2 r (not_oracle_sw h1 h2) h4 (by omega_nf)).trans
       (kr r h1 h2 h3)
   have c2B : c₂.nreg oB = b := by
-    rw [kr2 _ (by unfold oB sw; omega) (by unfold oB sw; omega) (by unfold oB wC1 sw; omega)
-      (by unfold oB wC2 sw; omega), hB]
+    grind [oB, sw, wC1, wC2]
   have c2K0 : c₂.nreg K0 = 0 := by
-    rw [kr2 _ (by unfold K0 sw; omega) (by unfold K0 sw; omega) (by unfold K0 wC1 sw; omega)
-      (by unfold K0 wC2 sw; omega)]; exact hK.1
+    rw [kr2 _ (by omega_nf) (by omega_nf) (by omega_nf)
+      (by omega_nf)]; exact hK.1
   have c2C1 : c₂.nreg wC1 = c₁.nreg wC1 :=
-    k2 _ (not_oracle_sw (by unfold wC1 sw; omega) (by unfold wC1 sw; omega))
-      (by unfold wC1 wC2 sw; omega) (by unfold wC1 ALLOC sw; omega)
+    k2 _ (not_oracle_sw (by omega_nf) (by omega_nf))
+      (by omega_nf) (by omega_nf)
   have fr : ∀ c', (∀ q, q ≠ wBit → c'.nreg q = c₂.nreg q) →
       c'.nmem = c₂.nmem → EFr (fun r => r = wC1 ∨ r = wC2 ∨ r = wBit) c c' := by
     intro c' hq hm
-    refine ⟨fun r hr hX hra => ?_, ?_, fun a ha => ?_⟩
-    · rw [hq r (fun h => hX (Or.inr (Or.inr h))), k2 r hr (fun h => hX (Or.inr (Or.inl h))) hra,
-        k1 r hr (fun h => hX (Or.inl h)) hra]
-    · rw [hq _ (by unfold ALLOC wBit sw; omega)]; omega
-    · rw [hm, m2 a (by omega), m1 a ha]
+    grind [Chazelle.Core.SweepEv.EFr, ALLOC, wBit, sw]
   refine IRS.ite (fun h => ?_) (fun h => ?_)
-  · have hb1' : b = 1 := by rw [c2K0, c2B] at h; omega
-    refine (copy1_irs hI₂ ⟨by unfold wBit sw; omega, by unfold wBit sw; omega⟩).mono le_rfl ?_
+  · have hb1' : b = 1 := by omega
+    refine (copy1_irs hI₂ ⟨by omega_nf, by omega_nf⟩).mono le_rfl ?_
     rintro c' ⟨a1, a2, a3⟩
     refine ⟨by rw [a1, c2C1]; exact hb1.1, ?_, fr c' a2 a3⟩
     rw [a1, c2C1, ite_eq_left hb1']; exact hb1.2
-  · have hb0 : b ≠ 1 := by rw [c2K0, c2B] at h; omega
-    refine (copy1_irs hI₂ ⟨by unfold wBit sw; omega, by unfold wBit sw; omega⟩).mono le_rfl ?_
+  · have hb0 : b ≠ 1 := by omega
+    refine (copy1_irs hI₂ ⟨by omega_nf, by omega_nf⟩).mono le_rfl ?_
     rintro c' ⟨a1, a2, a3⟩
     refine ⟨by rw [a1]; exact hb2.1, ?_, fr c' a2 a3⟩
     rw [a1, ite_eq_right hb0]; exact hb2.2
@@ -129,9 +125,7 @@ theorem winCmp_irs (hI : IInv W c₀ c) (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (h
 /-! ## The selected position -/
 
 theorem dirOf_rev' {b : ℕ} (hb : b ≤ 1) : dirOf (1 - b) = -dirOf b := by
-  rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
-  · rw [show 1 - 0 = 1 from rfl, dirOf_one, dirOf_zero]; norm_num
-  · rw [show 1 - 1 = 0 from rfl, dirOf_one, dirOf_zero]
+  core_grind
 
 /-- A candidate position: of the class of `convS`, its point on the chain or on a wall. -/
 theorem winPos {C : Chain} {Q : Polygon} {n : ℕ} {a : Point} {σ τ : ℝ} {x : WPos}
@@ -140,13 +134,13 @@ theorem winPos {C : Chain} {Q : Polygon} {n : ℕ} {a : Point} {σ τ : ℝ} {x 
     (hy : |a.2| < C.radius) :
     PosClass C Q x ∧ (rayPt a σ τ ∈ C.set ∨
       (|(rayPt a σ τ).1| = C.radius ∧ |(rayPt a σ τ).2| < C.radius)) := by
-  have hy' : |((chainModel C).pos Q x).2| < C.radius := by rw [hpos, rayPt_snd]; exact hy
+  have hy' : |((chainModel C).pos Q x).2| < C.radius := by simp_all
   rcases hon with h | h | h
   · refine ⟨posClass_of he hpp.1 hpp.2.1 hy' (Or.inl ?_), Or.inl h⟩
     rw [hpos]; exact C.snd_le_top_of_mem_set h
-  · refine ⟨posClass_of he hpp.1 hpp.2.1 hy' (Or.inr (by rw [hpos]; exact h)), Or.inr ⟨h, ?_⟩⟩
-    rw [rayPt_snd]; exact hy
-  · rw [rayPt_snd] at h; rw [h] at hy; exact absurd hy (lt_irrefl _)
+  · refine ⟨posClass_of he hpp.1 hpp.2.1 hy' (Or.inr (by simp_all)), Or.inr ⟨h, ?_⟩⟩
+    simp_all
+  simp_all
 
 /-- **The selected position in the walk of `C`.** -/
 theorem winConv_irs {J : Merge.Junction} (hP : J.P.Simple) (hI : IInv W c₀ c) (hK : Consts c₀)
@@ -166,40 +160,36 @@ theorem winConv_irs {J : Merge.Junction} (hP : J.P.Simple) (hI : IInv W c₀ c) 
       (∀ r, ¬ CvSet wnE r → r ≠ wnH → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
   unfold winConv
   refine IRS.ite (fun h => ?_) (fun h => ?_)
-  · have hw : c.nreg wBit = 1 := by rw [hK0] at h; omega
+  · have hw : c.nreg wBit = 1 := by omega
     obtain ⟨a1, a2, a3, a4⟩ := h1 hw
     refine IRS.seq (K₁ := 22) (K₂ := 1) (convL_irs hP hI hK hfx
-      ⟨by unfold r1F cX sw; omega, by unfold r1F cT sw; omega, by unfold r1F cDd sw; omega,
-        by unfold r1F sw; omega⟩
-      ⟨iscr_sw (by unfold wnE sw; omega) (by unfold wnE sw; omega), by unfold wnE cX sw; omega,
-        by unfold wnE cT sw; omega, by unfold wnE cDd sw; omega⟩ a3 hW) ?_
+      ⟨by omega_nf, by omega_nf, by omega_nf,
+        by omega_nf⟩
+      ⟨iscr_sw (by omega_nf) (by omega_nf), by omega_nf,
+        by omega_nf, by omega_nf⟩ a3 hW) ?_
     rintro c₁ hI₁ - - ⟨v1, v2, v3, k1, m1⟩
-    refine (copy1_irs hI₁ ⟨by unfold wnH sw; omega, by unfold wnH sw; omega⟩).mono le_rfl ?_
+    refine (copy1_irs hI₁ ⟨by omega_nf, by omega_nf⟩).mono le_rfl ?_
     rintro c' ⟨b1, b2, b3⟩
-    have eE : c'.nreg wnE = c₁.nreg wnE := b2 _ (by unfold wnE wnH sw; omega)
+    have eE : c'.nreg wnE = c₁.nreg wnE := b2 _ (by omega_nf)
     have eH : c'.nreg wnH = c.nreg (r1F + 2) := by
-      rw [b1, k1 _ (by unfold CvSet wnE cX cT cDd r1F sw; omega)]
-    refine ⟨by rw [eE]; exact v1, ?_, by rw [eE, eH, v3, a4], fun r hr hr2 => ?_, by rw [b3, m1]⟩
-    · rw [eE, eH]
-      exact ⟨by rw [v2]; exact a2.1, by rw [v2]; exact a2.2.1, a2.2.2⟩
-    · rw [b2 r hr2, k1 r hr]
-  · have hw : c.nreg wBit ≠ 1 := by rw [hK0] at h; omega
+      rw [b1, k1 _ (by omega_nf)]
+    refine ⟨by omega, ?_, by simp_all, fun r hr hr2 => ?_, by rw [b3, m1]⟩
+    all_goals (grind [Chazelle.Core.ProperPos])
+  · have hw : c.nreg wBit ≠ 1 := by omega
     obtain ⟨a1, a2, a3, a4⟩ := h0 hw
     refine IRS.seq (K₁ := 22) (K₂ := 1) (convR_irs hP hI hK hfx
-      ⟨by unfold r2F cX sw; omega, by unfold r2F cT sw; omega, by unfold r2F cDd sw; omega,
-        by unfold r2F sw; omega⟩
-      ⟨iscr_sw (by unfold wnE sw; omega) (by unfold wnE sw; omega), by unfold wnE cX sw; omega,
-        by unfold wnE cT sw; omega, by unfold wnE cDd sw; omega⟩ a3 hW) ?_
+      ⟨by omega_nf, by omega_nf, by omega_nf,
+        by omega_nf⟩
+      ⟨iscr_sw (by omega_nf) (by omega_nf), by omega_nf,
+        by omega_nf, by omega_nf⟩ a3 hW) ?_
     rintro c₁ hI₁ - - ⟨v1, v2, v3, k1, m1⟩
-    refine (copy1_irs hI₁ ⟨by unfold wnH sw; omega, by unfold wnH sw; omega⟩).mono le_rfl ?_
+    refine (copy1_irs hI₁ ⟨by omega_nf, by omega_nf⟩).mono le_rfl ?_
     rintro c' ⟨b1, b2, b3⟩
-    have eE : c'.nreg wnE = c₁.nreg wnE := b2 _ (by unfold wnE wnH sw; omega)
+    have eE : c'.nreg wnE = c₁.nreg wnE := b2 _ (by omega_nf)
     have eH : c'.nreg wnH = c.nreg (r2F + 2) := by
-      rw [b1, k1 _ (by unfold CvSet wnE cX cT cDd r2F sw; omega)]
-    refine ⟨by rw [eE]; exact v1, ?_, by rw [eE, eH, v3, a4], fun r hr hr2 => ?_, by rw [b3, m1]⟩
-    · rw [eE, eH]
-      exact ⟨by rw [v2]; exact a2.1, by rw [v2]; exact a2.2.1, a2.2.2⟩
-    · rw [b2 r hr2, k1 r hr]
+      grind [CvSet, wnE, cX, cT, cDd, r2F, sw]
+    refine ⟨by omega, ?_, by simp_all, fun r hr hr2 => ?_, by rw [b3, m1]⟩
+    all_goals (grind [Chazelle.Core.ProperPos])
 
 /-! ## The far end and its attachment -/
 
@@ -263,65 +253,64 @@ theorem stWin_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       EFr (fun r => r = wC1 ∨ r = wC2 ∨ r = wBit) c c₁) := by
     unfold winSel
     refine IRS.ite (fun h => ?_) (fun h => ?_)
-    · have hf1 : c.nreg r1F = 1 := by have := h1.1; rw [hK.1] at h; omega
+    · have hf1 : c.nreg r1F = 1 := by have := h1.1; omega
       obtain ⟨τ₁, t1p, t1on, t1e, t1pp, t1pos, t1abs, t1g⟩ := h1.2.1 hf1
-      refine (winCmp_irs (R := J.whole.radius) hI E.hG (by have := E.hWh; unfold hostWords at this; omega) hK hb hB
+      refine (winCmp_irs (R := J.whole.radius) hI E.hG (by have := E.hWh; grind [hostWords]) hK hb hB
         t1abs t2abs (by omega)).mono (by norm_num) ?_
       rintro c₁ ⟨w1, w2, w3⟩
       rw [ray_lt_iff hb] at w2
       refine ⟨w1, fun hw => ⟨τ₁, t1p, t1on, t1e, t1pp, t1pos, ?_⟩, fun hw => ?_, w3⟩
       · have hlt := w2.1 hw
         exact win_min ha2 hσ hf t1p t1on t1g t2p t2on t2h (Or.inl rfl) le_rfl hlt.le
-      · have hle : τ₂ ≤ τ₁ := by by_contra hc; exact hw (w2.2 (lt_of_not_ge hc))
+      · have hle : τ₂ ≤ τ₁ := by grind
         exact win_min ha2 hσ hf t1p t1on t1g t2p t2on t2h (Or.inr rfl) hle le_rfl
     · have hf0 : c.nreg r1F ≠ 1 := by rw [hK.1] at h; omega
-      refine (set1_irs (v := 0) hI ⟨by unfold wBit sw; omega, by unfold wBit sw; omega⟩
+      refine (set1_irs (v := 0) hI ⟨by omega_nf, by omega_nf⟩
         (Nat.zero_le _)).mono (by norm_num) ?_
       rintro c₁ ⟨w1, w2, w3⟩
-      refine ⟨by rw [w1]; norm_num, fun hw => by rw [w1] at hw; exact absurd hw (by norm_num),
+      refine ⟨by omega, fun hw => by omega,
         fun _ => win_only2 ha2 hσ hf (fun g => hf0 (hGood1 g)) t2h, ?_⟩
-      refine ⟨fun r _ hX _ => w2 r (fun h => hX (Or.inr (Or.inr h))), ?_, fun a _ => by rw [w3]⟩
-      rw [w2 _ (by unfold ALLOC wBit sw; omega)]
+      grind [Chazelle.Core.SweepEv.EFr, ALLOC, wBit, sw]
   refine IRS.seq (K₁ := 543) (K₂ := 25 + 35007) hsel ?_ |>.mono (by norm_num) (fun _ h => h)
   rintro c₁ hI₁ - hA₁ ⟨s1, s2, s3, s4⟩
   have k1 : ∀ r, 240000 ≤ r → r < 250000 → r ≠ wC1 → r ≠ wC2 → r ≠ wBit → c₁.nreg r = c.nreg r :=
-    fun r h1 h2 h3 h4 h5 => s4.1 r (not_oracle_sw h1 h2) (by tauto) (by unfold ALLOC; omega)
+    fun r h1 h2 h3 h4 h5 => s4.1 r (not_oracle_sw h1 h2) (by tauto) (by omega_nf)
   have kreg : ∀ i, i < 3 → c₁.nreg (r1F + i) = c.nreg (r1F + i) ∧
       c₁.nreg (r2F + i) = c.nreg (r2F + i) := fun i hi =>
-    ⟨k1 _ (by unfold r1F sw; omega) (by unfold r1F sw; omega) (by unfold r1F wC1 sw; omega)
-      (by unfold r1F wC2 sw; omega) (by unfold r1F wBit sw; omega),
-     k1 _ (by unfold r2F sw; omega) (by unfold r2F sw; omega) (by unfold r2F wC1 sw; omega)
-      (by unfold r2F wC2 sw; omega) (by unfold r2F wBit sw; omega)⟩
+    ⟨k1 _ (by omega_nf) (by omega_nf) (by omega_nf)
+      (by omega_nf) (by omega_nf),
+     k1 _ (by omega_nf) (by omega_nf) (by omega_nf)
+      (by omega_nf) (by omega_nf)⟩
   have hyL : |a.2| < J.left.radius := hay
   have hfar : farPt J.whole a σ = rayPt a σ (J.whole.hitParam a σ) := rfl
   have hc1 : c₁.nreg K0 = 0 := by
-    rw [k1 _ (by unfold K0 sw; omega) (by unfold K0 sw; omega) (by unfold K0 wC1 sw; omega)
-      (by unfold K0 wC2 sw; omega) (by unfold K0 wBit sw; omega)]; exact hK.1
+    rw [k1 _ (by omega_nf) (by omega_nf) (by omega_nf)
+      (by omega_nf) (by omega_nf)]; exact hK.1
   have hconv := winConv_irs (Z := farPt J.whole a σ) hP hI₁ E.hK (E.fx hI₁)
     (by have := E.hWn; omega)
     (fun hw => by
       obtain ⟨τ₁, t1p, t1on, t1e, t1pp, t1pos, t1h⟩ := s2 hw
       obtain ⟨t1cl, -⟩ := winPos t1e t1pp t1pos t1on hyL
       rw [(kreg 1 (by norm_num)).1, (kreg 2 (by norm_num)).1]
-      exact ⟨t1e, t1pp, t1cl, by rw [t1pos, hfar, t1h]⟩)
+      grind)
     (fun hw => by
       rw [(kreg 1 (by norm_num)).2, (kreg 2 (by norm_num)).2]
-      exact ⟨t2e, t2pp, t2cl, by rw [t2pos, hfar, s3 hw]⟩) hc1 s1
+      grind) hc1 s1
   refine IRS.seq (K₁ := 25) (K₂ := 35007) hconv ?_
   rintro c₂ hI₂ - hA₂ ⟨v1, v2, v3, k2, m2⟩
   have hfx₂ := E.fx hI₂
-  have kA : c₂.nreg ALLOC = c₁.nreg ALLOC := k2 _ (by unfold CvSet wnE cX cT cDd ALLOC sw; omega)
-    (by unfold wnH ALLOC sw; omega)
+  have kA : c₂.nreg ALLOC = c₁.nreg ALLOC := k2 _ (by omega_nf)
+    (by omega_nf)
   have c2NB : c₂.nreg oNB = 1 - b := by
-    rw [k2 _ (by unfold CvSet wnE cX cT cDd oNB sw; omega) (by unfold wnH oNB sw; omega),
-      k1 _ (by unfold oNB sw; omega) (by unfold oNB sw; omega) (by unfold oNB wC1 sw; omega)
-        (by unfold oNB wC2 sw; omega) (by unfold oNB wBit sw; omega), hNB]
+    rw [k2 _ (by omega_nf) (by omega_nf),
+      k1 _ (by omega_nf) (by omega_nf) (by omega_nf)
+        (by omega_nf) (by omega_nf), hNB]
   have hyZ : |((chainModel J.whole).pos (Qof P) ⟨c₂.nreg wnE, c₂.nreg wnH⟩).2| < J.whole.radius := by
-    rw [v3, hfar, rayPt_snd]; exact hay
-  refine (callArr_irs hI₂ hfx₂.ctxW ⟨by unfold sw; omega, by unfold sw; omega,
-    by unfold wnE sw; omega, by unfold wnE sw; omega, by unfold wnH sw; omega,
-    by unfold wnH sw; omega, by unfold oNB sw; omega, by unfold oNB sw; omega⟩
-    ⟨by unfold a1F sw; omega, by unfold a1F sw; omega⟩ v1 v2 hyZ (by omega)).mono le_rfl ?_
+    grind [rayPt_snd]
+  refine (callArr_irs hI₂ hfx₂.ctxW ⟨by omega_nf, by omega_nf,
+    by omega_nf, by omega_nf, by omega_nf,
+    by omega_nf, by omega_nf, by omega_nf⟩
+    ⟨by omega_nf, by omega_nf⟩ v1 v2 hyZ (by omega)).mono le_rfl ?_
   rintro c' ⟨⟨f1, f2, f3⟩, k3, hA3, m3⟩
   rw [v3, c2NB, dirOf_rev' hb, neg_neg] at f2 f3
   have hσ' : -σ = 1 ∨ -σ = -1 := SweepStop.neg_cases hσ
@@ -331,14 +320,14 @@ theorem stWin_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hf1 : c'.nreg a1F = 1 := by
     by_contra hne
     obtain ⟨p, t, hA⟩ := hexist
-    exact f3 hne p t hA
+    grind
   obtain ⟨e1, e2, e3⟩ := f2 hf1
   refine ⟨e1, e2, e3, fun r hr hX hra => ?_, ?_, fun x hx => ?_⟩
   · have hX' : ¬ ((sw 700 ≤ r ∧ r < sw 2200) ∨ (sw 3000 ≤ r ∧ r < sw 4000) ∨
       (sw 4047 ≤ r ∧ r ≤ sw 4052) ∨ (sw 4096 ≤ r ∧ r ≤ sw 4097)) := hX
-    rw [k3 r hr (by unfold a1F sw at *; omega) (by unfold a1F sw at *; omega)
-      (by unfold a1F sw at *; omega) hra,
-      k2 r (by unfold CvSet wnE cX cT cDd sw at *; omega) (by unfold wnH sw at *; omega),
+    rw [k3 r hr (by grind [a1F, sw]) (by grind [a1F, sw])
+      (by grind [a1F, sw]) hra,
+      k2 r (by unfold CvSet wnE cX cT cDd sw at *; omega) (by grind [wnH, sw]),
       s4.1 r hr (by unfold wC1 wC2 wBit sw at *; omega) hra]
   · have := s4.2.1; omega
   · rw [m3 x (by have := s4.2.1; omega), m2, s4.2.2 x hx]

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreTRead
 public import Chazelle.Core.RestoreTValidMath
 
@@ -38,15 +40,18 @@ def xOf (c₀ : Config) : WPos := ⟨c₀.nreg 83005, c₀.nreg 83006⟩
 
 variable {P : Polygon} {W : ℕ} {M : Model} {N : NF} {c₀ : Config}
 
+section
+variable (hE : TGood P W M N c₀)
+include hE
 /-- The chain of a chain model of the run is simple. -/
-theorem TGood.chain_simple (hE : TGood P W M N c₀) {C : Chain} (hM : M = chainModel C) :
+theorem TGood.chain_simple {C : Chain} (hM : M = chainModel C) :
     ∃ C' : Chain, C'.P.Simple ∧ M = chainModel C' := by
   rcases hE.hkind with ⟨H, C', -, -, -, hs, hM'⟩ | hI
-  · exact ⟨C', hs, hM'⟩
+  · ram_grind
   · exact absurd (hM.symm.trans hI) (chainModel_ne_interior C (Qof P))
 
 /-- **The candidate is a position the tests compare.** -/
-theorem TGood.xPosG (hE : TGood P W M N c₀) : PosG M (Qof P) P.n (xOf c₀) := by
+theorem TGood.xPosG : PosG M (Qof P) P.n (xOf c₀) := by
   refine ⟨hE.hxe, hE.hxp, fun C hM => ?_⟩
   have hy : |(M.pos (Qof P) (xOf c₀)).2| < C.radius :=
     lt_of_le_of_lt (C.abs_le_coordBound_of_mem_set (hE.hxC C hM)).2 C.coordBound_lt_radius
@@ -54,7 +59,7 @@ theorem TGood.xPosG (hE : TGood P W M N c₀) : PosG M (Qof P) P.n (xOf c₀) :=
   exact (posOK_of hE.hxe hE.hxp hy).2.2
 
 /-- **The ends of the chord records** are positions the tests compare. -/
-theorem TGood.chordPosG (hE : TGood P W M N c₀) {i : ℕ} (hi : i < N.nChords) :
+theorem TGood.chordPosG {i : ℕ} (hi : i < N.nChords) :
     PosG M (Qof P) P.n (N.chord i).lpos ∧ PosG M (Qof P) P.n (N.chord i).rpos := by
   have hp := chord_proper hE.hNF hi
   have hat := hE.hNF.2.2.1 i hi
@@ -66,7 +71,7 @@ theorem TGood.chordPosG (hE : TGood P W M N c₀) {i : ℕ} (hi : i < N.nChords)
     first | exact this.1.2.2 | exact this.2.2.2
 
 /-- **The ends of the arc records** of a nonempty family are positions the tests compare. -/
-theorem TGood.arcPosG (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) {j : ℕ}
+theorem TGood.arcPosG (hne : (N.F M (Qof P)).Nonempty) {j : ℕ}
     (hj : j < N.arcs.length) :
     PosG M (Qof P) P.n (N.arc j).s ∧ PosG M (Qof P) P.n (N.arc j).e := by
   have hQ : (Qof P).n = P.n := shear_n _ _
@@ -77,19 +82,22 @@ theorem TGood.arcPosG (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty)
   have hn' := harc.2.2.2.1
   have e1 : (N.arc j).s.edge < M.W.n := by
     have : ((N.arc j).s.edge : ℝ) < M.W.n := by
-      have := hs.1; unfold Model.key at hn; linarith
-    exact_mod_cast this
+      have := hs.1; grind [Model.key]
+    simp_all
   have e2 : (N.arc j).e.edge < M.W.n := by
     have : ((N.arc j).e.edge : ℝ) < M.W.n := by
-      have := he.1; unfold Model.key at hn'; linarith
-    exact_mod_cast this
-  refine ⟨⟨e1, by rw [← hQ]; exact hs, fun C hM => ?_⟩, ⟨e2, by rw [← hQ]; exact he, fun C hM => ?_⟩⟩
+      have := he.1; grind [Model.key]
+    simp_all
+  refine ⟨⟨e1, by simp_all, fun C hM => ?_⟩, ⟨e2, by simp_all, fun C hM => ?_⟩⟩
   all_goals
     obtain ⟨C', hsC, hM'⟩ := hE.chain_simple hM
     have hNF := hE.hNF
     rw [hM'] at hNF hne
     have := arc_posOK hsC hNF hne hj
     first | exact this.1.2.2 | exact this.2.2.2
+
+
+end
 
 /-- **Contract of a key comparison.** -/
 def KeyOK (kc : ℕ → ℕ → ℕ → ℕ → Stmt) (K : ℕ) : Prop :=

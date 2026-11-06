@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.Lemma41Node
 public import Chazelle.Core.Lemma41Ram5
 
@@ -91,7 +93,7 @@ theorem setupB_exec {c : Config} (hw : WordsBounded W c) :
     by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
     fun r hr => ?_, rfl, rfl, rfl, rfl⟩
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat ram_all <;> omega_nf
 
 set_option maxHeartbeats 8000000 in
 theorem postB_exec {c : Config} (hw : WordsBounded W c) {E TD f prev ptr i j : ℕ}
@@ -113,7 +115,7 @@ theorem postB_exec {c : Config} (hw : WordsBounded W c) {E TD f prev ptr i j : �
   rw [hAl] at hA ⊢
   unfold postB
   exec_block
-  all_goals try (config_simp; (try simp only [hA, h65, h62, h64, h24, h80, h83, h84]); omega)
+  all_goals try (config_simp; omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, fun a ha => ?_, ?_, ?_, ?_, ?_, ?_,
     fun r a1 a2 a3 a4 a5 a6 a7 => ?_, rfl, rfl, rfl⟩
   · config_simp; simp only [hA, h37, h24, Machine.upd_apply]; split_ifs <;> omega

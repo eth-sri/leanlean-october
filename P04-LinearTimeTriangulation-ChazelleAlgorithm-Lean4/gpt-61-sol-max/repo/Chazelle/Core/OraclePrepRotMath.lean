@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepGraph
 
 /-!
@@ -51,17 +53,20 @@ theorem fpN_spec (_h : SortedDarts M G K s) {t : ℕ} (ht : t < M) :
   obtain ⟨a, b⟩ := Nat.find_spec hex
   exact ⟨a, b, fun t' ht' e => Nat.find_min' hex ⟨ht', e⟩⟩
 
+section
+variable (h : SortedDarts M G K s)
+include h
 /-- Positions are ordered like the pairs. -/
-theorem pos_lt_of (h : SortedDarts M G K s) {t t' : ℕ} (ht : t < M) (_ht' : t' < M)
+theorem pos_lt_of {t t' : ℕ} (ht : t < M) (_ht' : t' < M)
     (hp : PLt (G (s t), K (s t)) (G (s t'), K (s t'))) : t < t' := by
   by_contra hc
   rcases eq_or_lt_of_le (not_lt.1 hc) with e | e
-  · subst e; unfold PLt at hp; simp at hp
+  · simp_all [PLt] <;> omega_nf
   · have := h.sorted t' t e ht
-    unfold PLt at hp this; simp only at hp this; omega
+    simp_all [PLt] <;> omega_nf
 
 /-- **The rotation is the cyclic successor in key order.** -/
-theorem rotN_spec (h : SortedDarts M G K s) {t : ℕ} (ht : t < M) :
+theorem rotN_spec {t : ℕ} (ht : t < M) :
     rotN M G s t < M ∧ G (rotN M G s t) = G (s t) ∧
       ((K (s t) < K (rotN M G s t) ∧ ∀ f, f < M → G f = G (s t) → K (s t) < K f →
           K (rotN M G s t) ≤ K f) ∨
@@ -72,13 +77,13 @@ theorem rotN_spec (h : SortedDarts M G K s) {t : ℕ} (ht : t < M) :
   · obtain ⟨h1, h2⟩ := hn
     refine ⟨h.lt _ h1, h2, Or.inl ⟨?_, fun f hf hg hk => ?_⟩⟩
     · have := h.sorted t (t + 1) (by omega) h1
-      unfold PLt at this; simp only at this; omega
+      simp_all [PLt] <;> omega_nf
     · obtain ⟨t', ht', rfl⟩ := h.surj f hf
       have hlt : t < t' := pos_lt_of h ht ht' (Or.inr ⟨hg.symm, hk⟩)
       rcases eq_or_lt_of_le (show t + 1 ≤ t' by omega) with e | e
-      · subst e; exact le_rfl
+      · simp_all
       · have := h.sorted (t + 1) t' e ht'
-        unfold PLt at this; simp only at this; omega
+        simp_all [PLt] <;> omega_nf
   · obtain ⟨f1, f2, f3⟩ := fpN_spec h ht
     refine ⟨h.lt _ f1, f2, Or.inr ⟨fun f hf hg => ?_, fun f hf hg => ?_⟩⟩
     · obtain ⟨t', ht', rfl⟩ := h.surj f hf
@@ -88,15 +93,18 @@ theorem rotN_spec (h : SortedDarts M G K s) {t : ℕ} (ht : t < M) :
       refine ⟨by omega, ?_⟩
       have a := h.sorted t (t + 1) (by omega) (by omega)
       rcases eq_or_lt_of_le (show t + 1 ≤ t' by omega) with e | e
-      · subst e; exact hg
+      · simp_all
       · have b := h.sorted (t + 1) t' e ht'
-        unfold PLt at a b; simp only at a b; omega
+        simp_all [PLt] <;> omega_nf
     · obtain ⟨t', ht', rfl⟩ := h.surj f hf
       have hle := f3 t' ht' hg
       rcases eq_or_lt_of_le hle with e | e
       · rw [e]
       · have := h.sorted _ t' e ht'
-        unfold PLt at this; simp only at this; rw [f2] at this; omega
+        simp_all [PLt] <;> omega_nf
+
+
+end
 
 end
 

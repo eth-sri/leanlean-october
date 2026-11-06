@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterPhase
 
 /-!
@@ -51,19 +53,17 @@ theorem mapLoop {ri rn : ℕ} {body : Stmt} {Rg : ℕ → Prop} (_hri : Rg ri) (
     n B (fun j c h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c hj ⟨hw, hi, hn, hf, hjj, hm⟩ => by
       obtain ⟨c', k, e, hk, hi', hr', hrr', hrm', ho', hm'⟩ := hbody j c hjj hj hw hi hf
-      refine ⟨c', k, e, hk, e.wb_right, hi', by rw [hr' rn hrn, hn], ⟨fun r hr => ?_,
+      refine ⟨c', k, e, hk, e.wb_right, hi', by grind, ⟨fun r hr => ?_,
         hrr'.trans hf.2.1, hrm'.trans hf.2.2.1, ho'.trans hf.2.2.2.1, fun a ha => ?_⟩,
         by omega, fun i hi1 hi2 => ?_⟩
       · rw [hr' r hr]; exact hf.1 r hr
-      · have hne : bOut + j ≠ a := fun h => ha (by simp only; omega)
+      · have hne : bOut + j ≠ a := fun h => ha (by omega)
         rw [hm', Machine.upd_other _ _ _ hne.symm]
         exact hf.2.2.2.2 a ha
       · rw [hm', Machine.upd_apply]
-        split_ifs with h
-        · rw [show i = j by omega]
-        · exact hm i hi1 (by omega))
+        grind)
     (j₀ := j₀) ⟨hw0, hi0, hn0, PFr.refl c0, le_rfl, fun i h1 h2 => by omega⟩ hj₀
-  exact ⟨c', k, e, hk, hw', hi', hf', hI.2⟩
+  grind
 
 end map
 
@@ -102,23 +102,21 @@ theorem parStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
       (∀ r, r ≠ 130504 → c1.nreg r = c.nreg r) ∧ c1.nreg 130504 = 1 ∧
       c1.rreg = c.rreg ∧ c1.rmem = c.rmem ∧ c1.output = c.output := by
     exec_block
-    refine ⟨rfl, ‹_›, by config_simp; rw [hOut, hzero], fun r hr => ?_, by config_simp; exact hone,
-      rfl, rfl, rfl⟩
-    simp only [Machine.upd_apply, hr, ite_false]
+    simp_all
   have hmem1 : ∀ a, a ≠ bOut → c1.nmem a = c.nmem a := by
-    intro a ha; rw [h1m, Machine.upd_other _ _ _ ha]
+    simp_all
   obtain ⟨c', k, e, hk, hw', -, hf', hI⟩ := mapLoop (P := P) (W := W) (ri := 130504)
-    (rn := 130503) (body := parBody) (Rg := ParRG) (by unfold ParRG; omega)
-    (by unfold ParRG; omega) (bOut := bOut) (n := n) (j₀ := 1) (B := 7)
+    (rn := 130503) (body := parBody) (Rg := ParRG) (by omega_nf)
+    (by omega_nf) (bOut := bOut) (n := n) (j₀ := 1) (B := 7)
     (fun x => c.nmem (bVA + c.nmem (bPA + x))) hw1 h1c
-    (by rw [h1r _ (by omega)]; exact hn) hn1
+    (by simp_all) hn1
     (fun j c2 hj1 hjn hw2 hi2 hf2 => by
       have r0 : ∀ r, ¬ ParRG r → c2.nreg r = c.nreg r := fun r hr =>
-        (hf2.1 r hr).trans (h1r r (fun h => hr (by rw [h]; unfold ParRG; omega)))
-      have rVA := (r0 130500 (by unfold ParRG; omega)).trans hVA
-      have rPA := (r0 130501 (by unfold ParRG; omega)).trans hPA
-      have rO := (r0 130502 (by unfold ParRG; omega)).trans hOut
-      have r1 := (r0 130001 (by unfold ParRG; omega)).trans hone
+        (hf2.1 r hr).trans (h1r r (fun h => hr (by omega_nf)))
+      have rVA := (r0 130500 (by omega_nf)).trans hVA
+      have rPA := (r0 130501 (by omega_nf)).trans hPA
+      have rO := (r0 130502 (by omega_nf)).trans hOut
+      have r1 := (r0 130001 (by omega_nf)).trans hone
       have m0 : ∀ a, ¬ (bOut + 1 ≤ a ∧ a < bOut + n) → a ≠ bOut → c2.nmem a = c.nmem a :=
         fun a h1 h2 => (hf2.2.2.2.2 a h1).trans (hmem1 a h2)
       have mP : c2.nmem (bPA + j) = c.nmem (bPA + j) := m0 _ (by omega) (by omega)
@@ -127,21 +125,20 @@ theorem parStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
         m0 _ (by omega) (by omega)
       unfold parBody
       exec_block
-      · rw [rPA, hi2]; omega
-      · config_simp; rw [rVA, rPA, hi2, mP]; exact hwv
-      · config_simp; rw [rO, hi2]; omega
-      · config_simp; rw [hi2, r1]; omega
-      · refine ⟨le_refl _, by config_simp; rw [hi2, r1], fun r hr => ?_, rfl, rfl, rfl, ?_⟩
-        · simp only [Machine.upd_apply]; unfold ParRG at hr; split_ifs <;> omega
-        · config_simp
-          rw [rO, hi2, rVA, rPA, mP, mV])
+      · omega
+      · config_simp; grind
+      · config_simp; omega
+      · config_simp; omega
+      · refine ⟨le_refl _, by ram_simp <;> omega_nf, fun r hr => ?_, rfl, rfl, rfl, ?_⟩
+        · simp only [Machine.upd_apply]; grind [ParRG]
+        grind)
   subst hk1
   refine ⟨c', 2 + k, .seq e1 e, by omega, hw', ⟨fun r hr => ?_, hf'.2.1.trans hrr1,
     hf'.2.2.1.trans hrm1, hf'.2.2.2.1.trans ho1, fun a ha => ?_⟩, ?_, fun x hx1 hxn => ?_⟩
-  · rw [hf'.1 r hr]; exact h1r r (fun h => hr (by rw [h]; unfold ParRG; omega))
-  · rw [hf'.2.2.2.2 a (by omega)]; exact hmem1 a (by omega)
+  · rw [hf'.1 r hr]; grind [ParRG]
+  · rw [hf'.2.2.2.2 a (by omega)]; grind
   · rw [hf'.2.2.2.2 bOut (by omega), h1m, Machine.upd_same]
-  · exact hI x hx1 hxn
+  grind
 
 end par
 
@@ -190,53 +187,53 @@ theorem rowBody_exec {c0 c4 : Config} (hw4 : WordsBounded W c4) {bT n L j : ℕ}
       PFr UpRG (fun a => bT ≤ a ∧ a < bT + L * n) c0 c5 ∧
       ∀ i, i < j + 1 → ∀ x, x < n → c5.nmem (bT + i * n + x) = up^[2 ^ i] x := by
   have hjn : (j - 1) * n + n = j * n := by
-    rw [← Nat.succ_mul]; congr 1; omega
+    rw [← Nat.succ_mul]; simp_all
   have hjLn : j * n + n ≤ L * n := by
     have := Nat.mul_le_mul_right n (show j + 1 ≤ L by omega)
-    rwa [Nat.succ_mul] at this
+    grind
   have e0 := Exec.constN (P := P) hw4 130517 0 (by omega)
   set c5 := { c4 with nreg := upd c4.nreg 130517 0 }
   have hf5 : PFr CellRG (fun a => bT + j * n + 0 ≤ a ∧ a < bT + j * n + n) c4 c5 :=
     PFr.nreg (PFr.refl c4) (fun r hr => by
-      simp only [Machine.upd_apply]; unfold CellRG at hr; split_ifs <;> omega)
+      ram_simp <;> omega_nf)
   obtain ⟨c6, k6, e6, hk6, hw6, hi6, hf6, hI6⟩ := mapLoop (P := P) (W := W) (ri := 130517)
-    (rn := 130512) (body := cellBody) (Rg := CellRG) (by unfold CellRG; omega)
-    (by unfold CellRG; omega) (bOut := bT + j * n) (n := n) (j₀ := 0) (B := 7)
+    (rn := 130512) (body := cellBody) (Rg := CellRG) (by omega_nf)
+    (by omega_nf) (bOut := bT + j * n) (n := n) (j₀ := 0) (B := 7)
     (fun x => up^[2 ^ j] x) e0.wb_right (by simp [c5]) (by simp [c5, hn]) (Nat.zero_le _)
     (fun x c7 _ hxn hw7 hi7 hf7 => by
       have hf57 := hf5.trans hf7
       have r0 : ∀ r, ¬ CellRG r → c7.nreg r = c4.nreg r := hf57.1
-      have ra := (r0 130515 (by unfold CellRG; omega)).trans h4a
-      have rb := (r0 130516 (by unfold CellRG; omega)).trans h4b
-      have r1 := (r0 130001 (by unfold CellRG; omega)).trans hone
+      have ra := (r0 130515 (by omega_nf)).trans h4a
+      have rb := (r0 130516 (by omega_nf)).trans h4b
+      have r1 := (r0 130001 (by omega_nf)).trans hone
       have hx1 : c7.nmem (bT + (j - 1) * n + x) = up^[2 ^ (j - 1)] x := by
-        rw [hf57.2.2.2.2 _ (by omega)]; exact hI4 (j - 1) (by omega) x hxn
+        rw [hf57.2.2.2.2 _ (by omega)]; grind
       set y := up^[2 ^ (j - 1)] x
       have hyn : y < n := hupl _ x hxn
       have hx2 : c7.nmem (bT + (j - 1) * n + y) = up^[2 ^ (j - 1)] y := by
-        rw [hf57.2.2.2.2 _ (by omega)]; exact hI4 (j - 1) (by omega) y hyn
+        rw [hf57.2.2.2.2 _ (by omega)]; grind
       have hval : up^[2 ^ (j - 1)] y = up^[2 ^ j] x := by
         simp only [y]
         rw [← Function.iterate_add_apply]
         congr 1
         rw [← two_mul, ← pow_succ']
-        congr 1; omega
+        grind
       unfold cellBody
       exec_block
-      · rw [ra, hi7]; omega
+      · omega
       · config_simp; rw [ra, hi7, hx1]; omega
-      · config_simp; rw [rb, hi7]; omega
-      · config_simp; rw [hi7, r1]; omega
-      · refine ⟨le_refl _, by config_simp; rw [hi7, r1], fun r hr => ?_, rfl, rfl, rfl, ?_⟩
+      · config_simp; omega
+      · config_simp; omega
+      · refine ⟨le_refl _, by ram_simp <;> omega_nf, fun r hr => ?_, rfl, rfl, rfl, ?_⟩
         · simp only [Machine.upd_apply]; unfold CellRG at hr; split_ifs <;> omega
         · config_simp
           rw [rb, hi7, ra, hx1, hx2, hval])
   have hf46 := hf5.trans hf6
   have r6 : ∀ r, ¬ CellRG r → c6.nreg r = c4.nreg r := hf46.1
-  have rn6 := (r6 130512 (by unfold CellRG; omega)).trans hn
-  have rj6 := (r6 130514 (by unfold CellRG; omega)).trans hj4
-  have rb6 := (r6 130516 (by unfold CellRG; omega)).trans h4b
-  have r16 := (r6 130001 (by unfold CellRG; omega)).trans hone
+  have rn6 := (r6 130512 (by omega_nf)).trans hn
+  have rj6 := (r6 130514 (by omega_nf)).trans hj4
+  have rb6 := (r6 130516 (by omega_nf)).trans h4b
+  have r16 := (r6 130001 (by omega_nf)).trans hone
   obtain ⟨c7, k7, e7, hk7, hw7, h7a, h7b, h7j, h7r, hrr7, hrm7, ho7, hm7⟩ : ∃ c7 k7, Exec P W
       (block [.copyN 130515 130516, .addN 130516 130516 130512, .addN 130514 130514 130001])
       c6 c7 k7 ∧ k7 = 3 ∧ WordsBounded W c7 ∧ c7.nreg 130515 = bT + j * n ∧
@@ -245,31 +242,30 @@ theorem rowBody_exec {c0 c4 : Config} (hw4 : WordsBounded W c4) {bT n L j : ℕ}
       c7.rreg = c6.rreg ∧ c7.rmem = c6.rmem ∧ c7.output = c6.output ∧ c7.nmem = c6.nmem := by
     exec_block
     all_goals first
-      | (config_simp; rw [rb6, rn6]; omega)
+      | (config_simp; omega)
       | (config_simp; rw [rj6, r16]; omega)
       | skip
-    · refine ⟨rfl, ‹_›, by config_simp; exact rb6, by config_simp; rw [rb6, rn6, Nat.succ_mul]; omega,
-        by config_simp; rw [rj6, r16], fun r h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
+    · refine ⟨rfl, ‹_›, by config_simp; exact rb6, by config_simp; grind,
+        by ram_simp , fun r h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
       simp only [Machine.upd_apply, h1, h2, h3, ite_false]
   subst hk7
   refine ⟨c7, 1 + (k6 + 3), .seq e0 (.seq e6 e7), by omega, hw7, h7j,
-    by rw [h7a]; simp, h7b, ⟨fun r hr => ?_, ?_, ?_, ?_, fun a ha => ?_⟩, fun i hi x hx => ?_⟩
-  · rw [h7r r (by unfold UpRG at hr; omega) (by unfold UpRG at hr; omega)
-      (by unfold UpRG at hr; omega), r6 r (by unfold CellRG UpRG at *; omega)]
+    by grind, h7b, ⟨fun r hr => ?_, ?_, ?_, ?_, fun a ha => ?_⟩, fun i hi x hx => ?_⟩
+  · rw [h7r r (by grind [UpRG]) (by grind [UpRG])
+      (by grind [UpRG]), r6 r (by grind [CellRG, UpRG])]
     exact hf4.1 r hr
   · rw [hrr7, hf46.2.1, hf4.2.1]
   · rw [hrm7, hf46.2.2.1, hf4.2.2.1]
   · rw [ho7, hf46.2.2.2.1, hf4.2.2.2.1]
-  · rw [hm7, hf46.2.2.2.2 a (by simp only at ha ⊢; omega)]; exact hf4.2.2.2.2 a ha
+  · rw [hm7, hf46.2.2.2.2 a (by omega)]; exact hf4.2.2.2.2 a ha
   · rw [hm7]
     rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi | rfl
     · have hle : i * n + n ≤ j * n := by
         have := Nat.mul_le_mul_right n (show i + 1 ≤ j by omega)
-        rwa [Nat.succ_mul] at this
-      rw [hf46.2.2.2.2 _ (by simp only; omega)]
-      exact hI4 i hi x hx
-    · have := hI6 x (Nat.zero_le _) hx
-      exact this
+        grind
+      rw [hf46.2.2.2.2 _ (by omega)]
+      grind
+    grind
 
 /-- **The binary-lifting table**: `TAB[j n + x] = up^[2^j] x` for `j < L`, `x < n`, where
 `up x = PARENT[x]` maps `[0, n)` into itself; cost `≤ 12 n L + 7 L + 12`. -/
@@ -285,44 +281,41 @@ theorem upStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
   set up : ℕ → ℕ := fun y => c.nmem (bPa + y) with hupdef
   have hupl : ∀ m x, x < n → up^[m] x < n := by
     intro m; induction m with
-    | zero => intro x hx; exact hx
-    | succ m ih => intro x hx; rw [Function.iterate_succ_apply]; exact ih _ (hup x hx)
+    | zero => simp_all
+    | succ m ih => simp_all
   have hLn : n ≤ L * n := Nat.le_mul_of_pos_left n (by omega)
   -- row 0
   have e0 := Exec.constN (P := P) hw 130517 0 (by omega)
   set c1 := { c with nreg := upd c.nreg 130517 0 }
   have hf1 : PFr UpRG (fun a => bT ≤ a ∧ a < bT + L * n) c c1 :=
     PFr.nreg (PFr.refl c) (fun r hr => by
-      simp only [Machine.upd_apply]; unfold UpRG at hr; split_ifs <;> omega)
+      ram_simp <;> omega_nf)
   obtain ⟨c2, k2, e2, hk2, hw2, -, hf2, hI2⟩ := mapLoop (P := P) (W := W) (ri := 130517)
-    (rn := 130512) (body := row0Body) (Rg := UpRG) (by unfold UpRG; omega)
-    (by unfold UpRG; omega) (bOut := bT) (n := n) (j₀ := 0) (B := 5) up e0.wb_right
-    (by simp only [c1, Machine.upd_same])
-    (by simp only [c1]; rw [Machine.upd_other _ _ _ (by omega)]; exact hn) (Nat.zero_le _)
+    (rn := 130512) (body := row0Body) (Rg := UpRG) (by omega_nf)
+    (by omega_nf) (bOut := bT) (n := n) (j₀ := 0) (B := 5) up e0.wb_right
+    (by ram_simp <;> omega_nf)
+    (by ram_simp ) (Nat.zero_le _)
     (fun j c3 _ hjn hw3 hi3 hf3 => by
       have r0 : ∀ r, ¬ UpRG r → c3.nreg r = c.nreg r := fun r hr =>
         (hf3.1 r hr).trans (hf1.1 r hr)
-      have rPa := (r0 130510 (by unfold UpRG; omega)).trans hPa
-      have rT := (r0 130511 (by unfold UpRG; omega)).trans hT
-      have r1 := (r0 130001 (by unfold UpRG; omega)).trans hone
+      have rPa := (r0 130510 (by omega_nf)).trans hPa
+      have rT := (r0 130511 (by omega_nf)).trans hT
+      have r1 := (r0 130001 (by omega_nf)).trans hone
       have mP : c3.nmem (bPa + j) = c.nmem (bPa + j) :=
-        (hf3.2.2.2.2 _ (by simp only; omega)).trans (hf1.2.2.2.2 _ (by omega))
+        (hf3.2.2.2.2 _ (by omega)).trans (hf1.2.2.2.2 _ (by omega))
       unfold row0Body
       exec_block
-      · rw [rPa, hi3]; omega
-      · config_simp; rw [rT, hi3]; omega
-      · config_simp; rw [hi3, r1]; omega
-      · refine ⟨le_refl _, by config_simp; rw [hi3, r1], fun r hr => ?_, rfl, rfl, rfl, ?_⟩
-        · simp only [Machine.upd_apply]; unfold UpRG at hr; split_ifs <;> omega
-        · config_simp; rw [rT, hi3, rPa, mP])
+      · omega
+      · config_simp; omega
+      all_goals (grind [Machine.upd_apply, UpRG]))
   have hf12 : PFr UpRG (fun a => bT ≤ a ∧ a < bT + L * n) c c2 :=
     hf1.trans (hf2.mono (fun r h => h) (fun a ha => by
-      obtain ⟨h1, h2⟩ := ha; exact ⟨by omega, by omega⟩))
+      omega))
   -- the row setup
   have hr2 : ∀ r, ¬ UpRG r → c2.nreg r = c.nreg r := hf12.1
-  have rT2 := (hr2 130511 (by unfold UpRG; omega)).trans hT
-  have rn2 := (hr2 130512 (by unfold UpRG; omega)).trans hn
-  have r12 := (hr2 130001 (by unfold UpRG; omega)).trans hone
+  have rT2 := (hr2 130511 (by omega_nf)).trans hT
+  have rn2 := (hr2 130512 (by omega_nf)).trans hn
+  have r12 := (hr2 130001 (by omega_nf)).trans hone
   obtain ⟨c3, k3, e3, hk3, hw3, h3a, h3b, h3j, h3r, hrr3, hrm3, ho3, hm3⟩ : ∃ c3 k3, Exec P W
       (block [.copyN 130515 130511, .addN 130516 130511 130512, .copyN 130514 130001]) c2 c3 k3 ∧
       k3 = 3 ∧ WordsBounded W c3 ∧ c3.nreg 130515 = bT ∧ c3.nreg 130516 = bT + n ∧
@@ -330,14 +323,14 @@ theorem upStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
       c3.rreg = c2.rreg ∧ c3.rmem = c2.rmem ∧ c3.output = c2.output ∧ c3.nmem = c2.nmem := by
     exec_block
     all_goals first
-      | (config_simp; rw [rT2, rn2]; omega)
+      | (config_simp; omega)
       | skip
-    · refine ⟨rfl, ‹_›, by config_simp; exact rT2, by config_simp; rw [rT2, rn2], by
+    · refine ⟨rfl, ‹_›, by config_simp; exact rT2, by ram_simp , by
         config_simp; exact r12, fun r h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
       simp only [Machine.upd_apply, h1, h2, h3, ite_false]
   have hf3 : PFr UpRG (fun a => bT ≤ a ∧ a < bT + L * n) c c3 :=
-    ⟨fun r hr => (h3r r (by unfold UpRG at hr; omega) (by unfold UpRG at hr; omega)
-      (by unfold UpRG at hr; omega)).trans (hf12.1 r hr), hrr3.trans hf12.2.1,
+    ⟨fun r hr => (h3r r (by grind [UpRG]) (by grind [UpRG])
+      (by grind [UpRG])).trans (hf12.1 r hr), hrr3.trans hf12.2.1,
       hrm3.trans hf12.2.2.1, ho3.trans hf12.2.2.2.1, fun a ha => by rw [hm3]; exact hf12.2.2.2.2 a ha⟩
   -- the rows
   obtain ⟨c', k, e, hk, hw', -, -, -, -, hf', -, hrows⟩ := forN (P := P) (W := W)
@@ -349,15 +342,14 @@ theorem upStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
     L (12 * n + 5) (fun j c4 h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c4 hjL ⟨hw4, hj4, hL4, h4a, h4b, hf4, hj1, hI4⟩ => by
       have r0 : ∀ r, ¬ UpRG r → c4.nreg r = c.nreg r := hf4.1
-      have rn := (r0 130512 (by unfold UpRG; omega)).trans hn
-      have r1 := (r0 130001 (by unfold UpRG; omega)).trans hone
+      have rn := (r0 130512 (by omega_nf)).trans hn
+      have r1 := (r0 130001 (by omega_nf)).trans hone
       obtain ⟨c5, k5, e5, hk5, hw5, h5j, h5a, h5b, hf5, hI5⟩ := rowBody_exec (P := P) hw4 up hupl
         r1 rn hj4 h4a h4b hj1 hjL hwT hLW hn1 hf4 hI4
-      exact ⟨c5, k5, e5, hk5, hw5, h5j, by rw [hf5.1 _ (by unfold UpRG; omega), hL], h5a, h5b,
+      exact ⟨c5, k5, e5, hk5, hw5, h5j, by rw [hf5.1 _ (by omega_nf), hL], h5a, h5b,
         hf5, by omega, hI5⟩)
-    (j₀ := 1) ⟨hw3, h3j, by rw [h3r _ (by omega) (by omega) (by omega),
-      hr2 _ (by unfold UpRG; omega), hL],
-      by rw [h3a]; simp, by rw [h3b]; simp, hf3, le_rfl, fun i hi x hx => by
+    (j₀ := 1) ⟨hw3, h3j, by grind [UpRG],
+      by omega, by omega, hf3, le_rfl, fun i hi x hx => by
         have : i = 0 := by omega
         subst this
         rw [hm3, Nat.zero_mul, add_zero, hI2 x (Nat.zero_le _) hx]
@@ -366,7 +358,7 @@ theorem upStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
   refine ⟨c', 1 + (k2 + (3 + k)), .seq e0 (.seq e2 (.seq e3 e)), ?_, hw', hf', hrows⟩
   have hLm : (12 * n + 5 + 2) * (L - 1) + (12 * n + 7) = 12 * n * L + 7 * L := by
     obtain ⟨L', rfl⟩ : ∃ L', L = L' + 1 := ⟨L - 1, by omega⟩
-    simp only [Nat.add_sub_cancel]; ring
+    grind
   omega
 
 end up

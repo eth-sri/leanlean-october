@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvGProg
 public import Chazelle.Core.DownPhaseDrvRPieceSpec
 
@@ -61,11 +63,9 @@ theorem pieceSpec_iff (O : OracleIface) : PieceSpec O ↔ ∃ sp κ, PcMeets O s
 theorem frame_band {B : ℕ → Bool} (hB : ∀ q, B q = true → bandOf q = bDownDrv) {c c' : Config}
     (hf : FrameM B c c') (hm : c'.nmem = c.nmem) (k : ℕ) : Frame drvBands c c' k := by
   have hA : c'.nreg ALLOC = c.nreg ALLOC := hf.1 ALLOC (by
-    cases h : B ALLOC
-    · rfl
-    · have := hB _ h; simp [bandOf, ALLOC, bDownDrv] at this)
+    grind [bandOf, ALLOC, bDownDrv])
   refine ⟨fun r hr _ => hf.1 r ?_, fun r hr => hf.2.1 r ?_, fun a _ => by rw [hm],
-    fun a _ => by rw [hf.2.2.1], hf.2.2.2, by omega, by omega⟩ <;>
+    fun a _ => by ram_grind, hf.2.2.2, by omega, by omega⟩ <;>
   · cases h : B r
     · rfl
     · exact absurd (hB r h ▸ bDownDrv_mem_drvBands) hr
@@ -90,8 +90,7 @@ theorem pcArgs_exec (d : Config) (hw : WordsBounded W d) (hW : 130 ≤ W) :
       d'.nreg 218008 = d.nreg 219205 ∧ d'.nmem = d.nmem := by
     unfold pcArgs
     exec_block
-    · exact hW
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp
+    all_goals simp_all
   exact ⟨d', k, ex, hk, h1, h2, h3, h4, h5, h6, h7, h8, h9, hm, exec_frameM ex (by decide)⟩
 
 /-- **One call of the piece procedure.** -/
@@ -127,32 +126,24 @@ theorem pcCall_exec {O : OracleIface} {sp : Stmt} {κP : ℕ} (hsp : PcMeets O s
     pcArgs_exec (P := P) d hw hW130
   have hA₁ : d₁.nreg ALLOC = d.nreg ALLOC := f₁.1 ALLOC (by decide)
   have fr₁ : Frame drvBands d d₁ k₁ := frame_band (fun q hq => by
-    simp only [decide_eq_true_eq] at hq; simp only [bandOf, bDownDrv]; omega) f₁ m₁ k₁
+    simp only [decide_eq_true_eq] at hq; core_grind) f₁ m₁ k₁
   have hHA : HostAt d.nmem HB H := hH.holds
-  have hpre : _ := hsp P W d₁ e₁.wb_right ⟨hG, hWn, by rw [a8, h05, m₁, hA₁]; exact hX,
-    by rw [a6]; omega, by rw [a2, h41]; exact hm1, by rw [a3, h42]; exact hk, H,
-    by rw [a0, h00, m₁, hA₁]; exact hH, by rw [a0, h00, hA₁]; exact hHB, hHl, hwf, hreg, hsimp,
-    by rw [a1, a2, h40, h41]; exact hsm,
+  have hpre : _ := hsp P W d₁ e₁.wb_right ⟨hG, hWn, by grind,
+    by omega, by omega, by omega, H,
+    by grind, by omega, hHl, hwf, hreg, hsimp,
+    by omega,
     fun h1 => by
-      rw [a3, h42] at h1
-      obtain ⟨b1, b2, b3, b4, b5⟩ := hleaf h1
-      rw [a2, a5, a8, a4, a7, a1, h41, h02, h05, h43, h04, h40, m₁]
-      exact ⟨b1, b2, b3, b4, b5⟩,
+      grind,
     fun h0 => by
-      rw [a3, h42] at h0
-      rw [a2, a7, h41, h04]; exact hcon h0⟩ (by beta_reduce; rw [a5, h02, hA₁]; exact hroom)
+      omega⟩ (by grind)
   obtain ⟨d', k₂, e₂, hk₂, ⟨q1, q2, q3, q4, q5⟩, fr₂⟩ := hpre
   beta_reduce at hk₂
   rw [a5, h02] at hk₂
-  refine ⟨d', k₁ + k₂, .seq e₁ e₂, by omega, fun q hq hq' => ?_, by rw [← hA₁]; exact q2,
-    by rw [← hA₁]; exact q3, q4, fun C hP hs hm => ?_, by
-      have := fr₁.trans fr₂; rwa [Finset.union_self] at this⟩
-  · rw [q1 q hq hq', f₁.1 q (by simp only [decide_eq_false_iff_not]; omega)]
-  · obtain ⟨r1, N, r2, r3⟩ := q5 H C (by rw [a0, h00, m₁]; exact hHA) hP (by rw [a1, h40]; exact hs)
-      (by rw [a2, h41]; exact hm)
-    rw [a7, a6, h04] at r3
-    refine ⟨?_, N, r2, r3⟩
-    rw [a0, h00] at r1; exact r1
+  refine ⟨d', k₁ + k₂, .seq e₁ e₂, by omega, fun q hq hq' => ?_, by omega,
+    by omega, q4, fun C hP hs hm => ?_, by
+      have := fr₁.trans fr₂; grind⟩
+  · rw [q1 q hq hq', f₁.1 q (by grind)]
+  grind
 
 end exec
 

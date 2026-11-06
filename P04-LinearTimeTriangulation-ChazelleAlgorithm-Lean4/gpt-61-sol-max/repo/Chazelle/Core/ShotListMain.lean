@@ -23,13 +23,18 @@ open Chazelle.Visibility (rayPt)
 def sofJ (M : Model) (Q : Polygon) (hs : List (WPos × WPos)) (m : ℕ → ℕ) (A j : ℕ) : Set Point :=
   ⋃ i ∈ Finset.range j, pcSet M Q (leaves (M.key Q) hs (arcAt m A i))
 
-theorem sofJ_zero (M : Model) (Q : Polygon) (hs : List (WPos × WPos)) (m : ℕ → ℕ) (A : ℕ) :
+section
+variable (M : Model) (Q : Polygon) (hs : List (WPos × WPos)) (m : ℕ → ℕ)
+theorem sofJ_zero (A : ℕ) :
     sofJ M Q hs m A 0 = ∅ := by simp [sofJ]
 
-theorem sofJ_succ (M : Model) (Q : Polygon) (hs : List (WPos × WPos)) (m : ℕ → ℕ) (A j : ℕ) :
+theorem sofJ_succ (A j : ℕ) :
     sofJ M Q hs m A (j + 1) = sofJ M Q hs m A j ∪ pcSet M Q (leaves (M.key Q) hs (arcAt m A j)) := by
   simp only [sofJ, Finset.range_add_one, Finset.set_biUnion_insert]
-  exact Set.union_comm _ _
+  grind
+
+
+end
 
 /-- The arc `j` read at the moving pointer. -/
 theorem arcAt_ptr (m : ℕ → ℕ) (A j : ℕ) : arcAt m (A + 4 * j) 0 = arcAt m A j := by

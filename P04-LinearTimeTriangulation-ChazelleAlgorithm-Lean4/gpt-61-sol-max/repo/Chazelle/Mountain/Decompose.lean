@@ -65,76 +65,92 @@ namespace TrapData
 
 variable {P : Polygon}
 
+section
+variable (D : TrapData P)
+include D
 /-- The region (open trapezoid) described by the data. -/
-def region (D : TrapData P) : Set Point := trapSet P D.i D.j D.y₁ D.y₂
+def region : Set Point := trapSet P D.i D.j D.y₁ D.y₂
 
 /-- The top vertex of the trapezoid (leftmost vertex of the closed top side). -/
-noncomputable def top (D : TrapData P) : ℕ := topVtx P D.i D.j D.y₂
+noncomputable def top : ℕ := topVtx P D.i D.j D.y₂
 
 /-- The bottom vertex of the trapezoid (rightmost vertex of the closed bottom side). -/
-noncomputable def bot (D : TrapData P) : ℕ := botVtx P D.i D.j D.y₁
+noncomputable def bot : ℕ := botVtx P D.i D.j D.y₁
 
 /-- The index pair of the diagonal of the trapezoid. -/
-noncomputable def diag (D : TrapData P) : ℕ × ℕ := (D.top, D.bot)
+noncomputable def diag : ℕ × ℕ := (D.top, D.bot)
 
 /-- The top and bottom vertices are not adjacent in `P`. -/
-def NonAdj (D : TrapData P) : Prop := D.bot ≠ (D.top + 1) % P.n ∧ D.top ≠ (D.bot + 1) % P.n
+def NonAdj : Prop := D.bot ≠ (D.top + 1) % P.n ∧ D.top ≠ (D.bot + 1) % P.n
 
-theorem region_mem_regions (hP : P.Simple) (D : TrapData P) : D.region ∈ regions P :=
+
+end
+
+section
+variable (hP : P.Simple) (D : TrapData P)
+include hP
+theorem region_mem_regions : D.region ∈ regions P :=
   ⟨D.q, D.free, (D.isTrap.region_eq hP D.free).symm⟩
 
-theorem region_subset_freeRegion (hP : P.Simple) (D : TrapData P) : D.region ⊆ freeRegion P :=
+theorem region_subset_freeRegion : D.region ⊆ freeRegion P :=
   D.isTrap.trapSet_subset_freeRegion hP D.free
 
-theorem region_subset_interior (hP : P.Simple) (D : TrapData P) :
+theorem region_subset_interior :
     D.region ⊆ P.filled \ P.boundary :=
   D.isTrap.trapSet_subset_interior hP D.free
 
-theorem top_lt (hP : P.Simple) (D : TrapData P) : D.top < P.n := D.isTrap.topVtx_lt hP D.free
+theorem top_lt : D.top < P.n := D.isTrap.topVtx_lt hP D.free
 
-theorem bot_lt (hP : P.Simple) (D : TrapData P) : D.bot < P.n := D.isTrap.botVtx_lt hP D.free
+theorem bot_lt : D.bot < P.n := D.isTrap.botVtx_lt hP D.free
 
-theorem top_ne_bot (hP : P.Simple) (D : TrapData P) : D.top ≠ D.bot :=
+theorem top_ne_bot : D.top ≠ D.bot :=
   D.isTrap.topVtx_ne_botVtx hP D.free
 
-theorem top_snd (hP : P.Simple) (D : TrapData P) : (P.vtx D.top).2 = D.y₂ :=
+theorem top_snd : (P.vtx D.top).2 = D.y₂ :=
   D.isTrap.topVtx_snd hP D.free
 
-theorem bot_snd (hP : P.Simple) (D : TrapData P) : (P.vtx D.bot).2 = D.y₁ :=
+theorem bot_snd : (P.vtx D.bot).2 = D.y₁ :=
   D.isTrap.botVtx_snd hP D.free
 
-theorem bot_snd_lt_top_snd (hP : P.Simple) (D : TrapData P) :
+theorem bot_snd_lt_top_snd :
     (P.vtx D.bot).2 < (P.vtx D.top).2 :=
   D.isTrap.botVtx_snd_lt hP D.free
 
 /-- No vertex lies in a region. -/
-theorem not_mem_region_of_vtx (hP : P.Simple) (D : TrapData P) {k : ℕ} (hk : k < P.n) :
+theorem not_mem_region_of_vtx {k : ℕ} (hk : k < P.n) :
     P.vtx k ∉ D.region :=
   fun h => (D.region_subset_interior hP h).2 (vtx_mem_boundary P hk)
+
+
+end
 
 /-- **The diagonal depends only on the region.** -/
 theorem diag_eq_of_region_eq (hP : P.Simple) (D D' : TrapData P) (h : D.region = D'.region) :
     D.diag = D'.diag := by
   obtain ⟨h1, h2⟩ := D.isTrap.topVtx_eq_of_trapSet_eq hP D.free D'.free D'.isTrap h
-  exact Prod.ext h1 h2
+  aesop
 
+section
+variable (hP : P.Simple) (D : TrapData P) (hD : D.NonAdj)
+include hP hD
 /-- A point of the closed diagonal (non-adjacent case) is an endpoint or lies in the region. -/
-theorem segment_cases (hP : P.Simple) (D : TrapData P) (hD : D.NonAdj) {p : Point}
+theorem segment_cases {p : Point}
     (hp : p ∈ diagSeg P D.diag) : p = P.vtx D.top ∨ p = P.vtx D.bot ∨ p ∈ D.region :=
   D.isTrap.diag_segment_cases hP D.free hD.1 hD.2 hp
 
 /-- **The diagonal is an interior diagonal** (non-adjacent case). -/
-theorem exists_isDiagonal (hP : P.Simple) (D : TrapData P) (hD : D.NonAdj) :
+theorem exists_isDiagonal :
     ∃ s L, IsDiagonal P s L ∧ s % P.n = D.top ∧ (s + L) % P.n = D.bot ∧
       diagSeg P D.diag ⊆ P.filled :=
   D.isTrap.exists_isDiagonal hP D.free hD.1 hD.2
 
-theorem eq_endpoint_of_mem_diagSeg (hP : P.Simple) (D : TrapData P) (hD : D.NonAdj) {p : Point}
+theorem eq_endpoint_of_mem_diagSeg {p : Point}
     (hp : p ∈ diagSeg P D.diag) (hnot : p ∉ D.region) : p = P.vtx D.top ∨ p = P.vtx D.bot := by
   rcases D.segment_cases hP hD hp with e | e | e
-  · exact Or.inl e
-  · exact Or.inr e
-  · exact absurd e hnot
+  all_goals simp_all
+
+
+end
 
 /-- **Every vertex of `P` in the closure of a region lies on the closed top or bottom side of
 the trapezoid.** -/
@@ -161,20 +177,25 @@ theorem TrapData.diag_mem_trapDiagonals {P : Polygon} (D : TrapData P) (hD : D.N
     D.diag ∈ trapDiagonals P :=
   ⟨D, hD, rfl⟩
 
+section
+variable {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd : d ∈ trapDiagonals P)
+include hP hd
 /-- Elementary properties of a trapezoid diagonal: indices in range, distinct, the first
 strictly above the second, not adjacent. -/
-theorem trapDiagonals_spec {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd : d ∈ trapDiagonals P) :
+theorem trapDiagonals_spec :
     d.1 < P.n ∧ d.2 < P.n ∧ d.1 ≠ d.2 ∧ (P.vtx d.2).2 < (P.vtx d.1).2 ∧
       d.2 ≠ (d.1 + 1) % P.n ∧ d.1 ≠ (d.2 + 1) % P.n := by
   obtain ⟨D, hD, rfl⟩ := hd
   exact ⟨D.top_lt hP, D.bot_lt hP, D.top_ne_bot hP, D.bot_snd_lt_top_snd hP, hD.1, hD.2⟩
 
 /-- **Each trapezoid diagonal is an interior diagonal.** -/
-theorem trapDiagonals_isDiagonal {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ}
-    (hd : d ∈ trapDiagonals P) :
+theorem trapDiagonals_isDiagonal :
     ∃ s L, IsDiagonal P s L ∧ s % P.n = d.1 ∧ (s + L) % P.n = d.2 ∧ diagSeg P d ⊆ P.filled := by
   obtain ⟨D, hD, rfl⟩ := hd
   exact D.exists_isDiagonal hP hD
+
+
+end
 
 theorem trapDiagonals_finite {P : Polygon} (hP : P.Simple) : (trapDiagonals P).Finite :=
   ((Set.finite_lt_nat P.n).prod (Set.finite_lt_nat P.n)).subset fun _ hd =>
@@ -189,9 +210,7 @@ noncomputable def regionOfDiag (P : Polygon) (d : ℕ × ℕ) : Set Point :=
 theorem regionOfDiag_spec {P : Polygon} {d : ℕ × ℕ} (hd : d ∈ trapDiagonals P) :
     ∃ D : TrapData P, D.NonAdj ∧ d = D.diag ∧ regionOfDiag P d = D.region := by
   have h : ∃ D : TrapData P, D.NonAdj ∧ d = D.diag := hd
-  refine ⟨Classical.choose h, (Classical.choose_spec h).1, (Classical.choose_spec h).2, ?_⟩
-  unfold regionOfDiag
-  rw [dite_eq_left h]
+  grind [regionOfDiag]
 
 /-- **Distinct trapezoid diagonals meet at most in common endpoints.** -/
 theorem trapDiagonals_inter {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ}
@@ -208,15 +227,15 @@ theorem trapDiagonals_inter {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ}
   have h1 : p ∉ D.region := by
     intro hpD
     rcases D'.segment_cases hP hD' hp' with e | e | e
-    · exact D.not_mem_region_of_vtx hP (D'.top_lt hP) (by rw [← e]; exact hpD)
-    · exact D.not_mem_region_of_vtx hP (D'.bot_lt hP) (by rw [← e]; exact hpD)
-    · exact Set.disjoint_left.1 hdisj hpD e
+    · exact D.not_mem_region_of_vtx hP (D'.top_lt hP) (by simp_all)
+    · exact D.not_mem_region_of_vtx hP (D'.bot_lt hP) (by simp_all)
+    grind
   have h1' : p ∉ D'.region := by
     intro hpD
     rcases D.segment_cases hP hD hp with e | e | e
-    · exact D'.not_mem_region_of_vtx hP (D.top_lt hP) (by rw [← e]; exact hpD)
-    · exact D'.not_mem_region_of_vtx hP (D.bot_lt hP) (by rw [← e]; exact hpD)
-    · exact Set.disjoint_right.1 hdisj hpD e
+    · exact D'.not_mem_region_of_vtx hP (D.top_lt hP) (by simp_all)
+    · exact D'.not_mem_region_of_vtx hP (D.bot_lt hP) (by simp_all)
+    simp_all
   simp only [mem_inter_iff, mem_insert_iff, mem_singleton_iff]
   exact ⟨D.eq_endpoint_of_mem_diagSeg hP hD hp h1, D'.eq_endpoint_of_mem_diagSeg hP hD' hp' h1'⟩
 
@@ -228,26 +247,35 @@ def vtxChords (P : Polygon) : Set (ℕ × ℕ) :=
   {d | d.1 < P.n ∧ d.2 < P.n ∧
     ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ DirInterior P d.1 σ ∧ chordEnd P d.1 σ = P.vtx d.2}
 
-theorem vtxChords_spec {P : Polygon} {d : ℕ × ℕ} (hd : d ∈ vtxChords P) :
+section
+variable {P : Polygon} {d : ℕ × ℕ} (hd : d ∈ vtxChords P)
+include hd
+theorem vtxChords_spec :
     ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ DirInterior P d.1 σ ∧ chordEnd P d.1 σ = P.vtx d.2 ∧
       diagSeg P d = chordSet P d.1 σ := by
   obtain ⟨-, -, σ, hσ, hdir, hend⟩ := hd
-  exact ⟨σ, hσ, hdir, hend, by unfold diagSeg chordSet; rw [hend]⟩
+  aesop (add simp [diagSeg, chordSet]) (add safe (by omega))
 
 /-- A vertex-to-vertex chord is a chord of the visibility map. -/
-theorem vtxChords_diagSeg_mem_chords {P : Polygon} {d : ℕ × ℕ} (hd : d ∈ vtxChords P) :
+theorem vtxChords_diagSeg_mem_chords :
     diagSeg P d ∈ chords P := by
   obtain ⟨σ, hσ, hdir, -, hseg⟩ := vtxChords_spec hd
   exact ⟨d.1, σ, hd.1, hσ, hdir, hseg⟩
 
 /-- The two endpoints of a vertex-to-vertex chord are at the same height. -/
-theorem vtxChords_snd_eq {P : Polygon} {d : ℕ × ℕ} (hd : d ∈ vtxChords P) :
+theorem vtxChords_snd_eq :
     (P.vtx d.1).2 = (P.vtx d.2).2 := by
   obtain ⟨σ, -, -, hend, -⟩ := vtxChords_spec hd
   rw [← hend]
   rfl
 
-theorem vtxChords_ne {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd : d ∈ vtxChords P) :
+
+end
+
+section
+variable {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd : d ∈ vtxChords P)
+include P hP hd
+theorem vtxChords_ne :
     d.1 ≠ d.2 := by
   obtain ⟨σ, -, hdir, hend, -⟩ := vtxChords_spec hd
   intro h
@@ -256,7 +284,7 @@ theorem vtxChords_ne {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd : d ∈ 
 
 /-- The endpoints of a vertex-to-vertex chord are not adjacent (the chord's open part is
 interior, so it is not an edge). -/
-theorem vtxChords_not_adjacent {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd : d ∈ vtxChords P) :
+theorem vtxChords_not_adjacent :
     d.2 ≠ (d.1 + 1) % P.n ∧ d.1 ≠ (d.2 + 1) % P.n := by
   obtain ⟨σ, hσ, hdir, hend, hseg⟩ := vtxChords_spec hd
   have hk := hd.1
@@ -267,7 +295,7 @@ theorem vtxChords_not_adjacent {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (h
   have hzi := openChordSet_subset_interior hP hk hdir hzo
   have hzs : rayPt (P.vtx d.1) σ (chordParam P d.1 σ / 2) ∈ diagSeg P d := by
     rw [hseg, chordSet_eq_openChordSet_union hP hk hdir]
-    exact Or.inl hzo
+    simp_all
   constructor
   · intro h
     apply hzi.2
@@ -277,7 +305,7 @@ theorem vtxChords_not_adjacent {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (h
     exact ⟨d.2, hm, by unfold Polygon.edge; rw [← h, segment_comm]; exact hzs⟩
 
 /-- **Each vertex-to-vertex chord is an interior diagonal.** -/
-theorem vtxChords_isDiagonal {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd : d ∈ vtxChords P) :
+theorem vtxChords_isDiagonal :
     ∃ s L, IsDiagonal P s L ∧ s % P.n = d.1 ∧ (s + L) % P.n = d.2 ∧ diagSeg P d ⊆ P.filled := by
   obtain ⟨σ, hσ, hdir, hend, hseg⟩ := vtxChords_spec hd
   have hk := hd.1
@@ -291,38 +319,44 @@ theorem vtxChords_isDiagonal {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd 
     intro p hp hp1 hp2
     have hp' : p ∈ chordSet P d.1 σ := by rw [← hseg]; exact hp
     rcases mem_chordSet_cases hP hk hdir hp' with e | e | e
-    · exact absurd e hp1
-    · exact absurd (e.trans hend) hp2
-    · exact e.2
+    all_goals simp_all
   · rw [hseg]
     exact chordSet_subset_filled hP hk hdir
+
+
+end
 
 /-- The index of a vertex point (`Classical.epsilon`; meaningful for vertices of a simple
 polygon, see `vtxIndex_vtx`). -/
 noncomputable def vtxIndex (P : Polygon) (p : Point) : ℕ :=
   Classical.epsilon fun m => m < P.n ∧ P.vtx m = p
 
-theorem vtxIndex_vtx {P : Polygon} (hP : P.Simple) {m : ℕ} (hm : m < P.n) :
+section
+variable {P : Polygon} (hP : P.Simple)
+include hP
+theorem vtxIndex_vtx {m : ℕ} (hm : m < P.n) :
     vtxIndex P (P.vtx m) = m := by
   have h := Classical.epsilon_spec (p := fun m' => m' < P.n ∧ P.vtx m' = P.vtx m) ⟨m, hm, rfl⟩
   exact simple_vtx_inj hP h.1 hm h.2
 
-theorem vtxChords_subset_image {P : Polygon} (hP : P.Simple) :
+theorem vtxChords_subset_image :
     vtxChords P ⊆ (fun x : ℕ × ℝ => (x.1, vtxIndex P (chordEnd P x.1 x.2))) ''
       ((↑(Finset.range P.n) : Set ℕ) ×ˢ ({1, -1} : Set ℝ)) := by
   rintro ⟨k, m⟩ ⟨hk, hm, σ, hσ, -, hend⟩
-  refine ⟨(k, σ), ⟨by simpa using hk, ?_⟩, ?_⟩
-  · simp only [mem_insert_iff, mem_singleton_iff]
-    exact hσ
+  refine ⟨(k, σ), ⟨by simp_all, ?_⟩, ?_⟩
+  · simp_all
   · show (k, vtxIndex P (chordEnd P k σ)) = (k, m)
     rw [hend, vtxIndex_vtx hP hm]
 
-theorem vtxChords_finite {P : Polygon} (hP : P.Simple) : (vtxChords P).Finite :=
+theorem vtxChords_finite : (vtxChords P).Finite :=
   ((Finset.range P.n).finite_toSet.prod ((finite_singleton (-1 : ℝ)).insert 1)).image _
     |>.subset (vtxChords_subset_image hP)
 
+section
+variable {d d' : ℕ × ℕ}
+include d d'
 /-- **A vertex-to-vertex chord meets a trapezoid diagonal at most in common endpoints.** -/
-theorem vtxChords_inter_trapDiagonals {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ}
+theorem vtxChords_inter_trapDiagonals
     (hd : d ∈ trapDiagonals P) (hd' : d' ∈ vtxChords P) :
     diagSeg P d ∩ diagSeg P d' ⊆
       ({P.vtx d.1, P.vtx d.2} : Set Point) ∩ {P.vtx d'.1, P.vtx d'.2} := by
@@ -330,7 +364,7 @@ theorem vtxChords_inter_trapDiagonals {P : Polygon} (hP : P.Simple) {d d' : ℕ 
   obtain ⟨σ, hσ, hdir, hend, hseg⟩ := vtxChords_spec hd'
   rintro p ⟨hp, hp'⟩
   have hpc : p ∈ chordUnion P :=
-    ⟨chordSet P d'.1 σ, ⟨d'.1, σ, hd'.1, hσ, hdir, rfl⟩, by rw [← hseg]; exact hp'⟩
+    ⟨chordSet P d'.1 σ, ⟨d'.1, σ, hd'.1, hσ, hdir, rfl⟩, by simp_all⟩
   have h1 : p ∉ D.region := fun h => (D.region_subset_freeRegion hP h).2 hpc
   have hend1 := D.eq_endpoint_of_mem_diagSeg hP hD hp h1
   have hpb : p ∈ P.boundary := by
@@ -339,16 +373,14 @@ theorem vtxChords_inter_trapDiagonals {P : Polygon} (hP : P.Simple) {d d' : ℕ 
     · exact vtx_mem_boundary P (D.bot_lt hP)
   have hmem : p ∈ ({P.vtx d'.1, chordEnd P d'.1 σ} : Set Point) := by
     rw [← chordSet_inter_boundary hP hd'.1 hdir]
-    exact ⟨by rw [← hseg]; exact hp', hpb⟩
+    simp_all
   simp only [mem_inter_iff, mem_insert_iff, mem_singleton_iff] at hmem ⊢
   refine ⟨hend1, ?_⟩
-  rcases hmem with e | e
-  · exact Or.inl e
-  · exact Or.inr (e.trans hend)
+  simp_all
 
 /-- **Two vertex-to-vertex chords with distinct segments meet at most in common endpoints.**
 (The pairs `(k, m)` and `(m, k)` name the same chord when both directions are recorded.) -/
-theorem vtxChords_inter {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ} (hd : d ∈ vtxChords P)
+theorem vtxChords_inter (hd : d ∈ vtxChords P)
     (hd' : d' ∈ vtxChords P) (hne : diagSeg P d ≠ diagSeg P d') :
     diagSeg P d ∩ diagSeg P d' ⊆
       ({P.vtx d.1, P.vtx d.2} : Set Point) ∩ {P.vtx d'.1, P.vtx d'.2} := by
@@ -357,36 +389,49 @@ theorem vtxChords_inter {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ} (hd : 
   rw [hseg, hseg'] at hne ⊢
   intro p hp
   have := chord_inter hP hd.1 hd'.1 hσ hσ' hdir hdir' hne hp
-  rw [hend, hend'] at this
-  exact this
+  simp_all
 
 /-! ### All inserted diagonals -/
+
+
+
+end
+
+end
 
 /-- **All inserted diagonals**: the trapezoid diagonals together with the vertex-to-vertex
 chords. -/
 def allDiagonals (P : Polygon) : Set (ℕ × ℕ) := trapDiagonals P ∪ vtxChords P
 
-theorem allDiagonals_finite {P : Polygon} (hP : P.Simple) : (allDiagonals P).Finite :=
+section
+variable {P : Polygon} (hP : P.Simple)
+include hP
+theorem allDiagonals_finite : (allDiagonals P).Finite :=
   (trapDiagonals_finite hP).union (vtxChords_finite hP)
 
+section
+variable {d : ℕ × ℕ} (hd : d ∈ allDiagonals P)
+include d hd
 /-- **Every inserted diagonal is an interior diagonal.** -/
-theorem allDiagonals_isDiagonal {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ}
-    (hd : d ∈ allDiagonals P) :
+theorem allDiagonals_isDiagonal :
     ∃ s L, IsDiagonal P s L ∧ s % P.n = d.1 ∧ (s + L) % P.n = d.2 ∧ diagSeg P d ⊆ P.filled := by
   rcases hd with hd | hd
   · exact trapDiagonals_isDiagonal hP hd
   · exact vtxChords_isDiagonal hP hd
 
 /-- Indices of an inserted diagonal are in range and distinct. -/
-theorem allDiagonals_lt {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd : d ∈ allDiagonals P) :
+theorem allDiagonals_lt :
     d.1 < P.n ∧ d.2 < P.n ∧ d.1 ≠ d.2 := by
   rcases hd with hd | hd
   · exact ⟨(trapDiagonals_spec hP hd).1, (trapDiagonals_spec hP hd).2.1,
       (trapDiagonals_spec hP hd).2.2.1⟩
   · exact ⟨hd.1, hd.2.1, vtxChords_ne hP hd⟩
 
+
+end
+
 /-- **Two inserted diagonals with distinct segments meet at most in common endpoints.** -/
-theorem allDiagonals_inter {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ} (hd : d ∈ allDiagonals P)
+theorem allDiagonals_inter {d d' : ℕ × ℕ} (hd : d ∈ allDiagonals P)
     (hd' : d' ∈ allDiagonals P) (hne : diagSeg P d ≠ diagSeg P d') :
     diagSeg P d ∩ diagSeg P d' ⊆
       ({P.vtx d.1, P.vtx d.2} : Set Point) ∩ {P.vtx d'.1, P.vtx d'.2} := by
@@ -395,7 +440,7 @@ theorem allDiagonals_inter {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ} (hd
   · exact vtxChords_inter_trapDiagonals hP hd hd'
   · intro p hp
     have := vtxChords_inter_trapDiagonals hP hd' hd ⟨hp.2, hp.1⟩
-    exact ⟨this.2, this.1⟩
+    simp_all
   · exact vtxChords_inter hP hd hd' hne
 
 /-! ### The mountain decomposition theorem: statement and plan
@@ -458,6 +503,9 @@ trapezoid and its top/bottom sides.  Auxiliary facts available here:
 or bottom side), `IsTrap.top_side` / `IsTrap.bot_side` (the open sides are boundary or chord
 points), `TrapData.top_eq_side_of_adjacent`, `TrapData.bot_eq_side_of_adjacent`.
 -/
+
+
+end
 
 end
 

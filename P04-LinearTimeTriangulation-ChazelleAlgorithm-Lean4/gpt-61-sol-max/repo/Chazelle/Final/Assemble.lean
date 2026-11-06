@@ -39,31 +39,21 @@ theorem triangulates_of_pairs (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : Enum
   rw [seqSplit_eq_splitAll (hD.diagSystem hP)] at hG
   have hG' := hG.perm hperm.symm
   have hnd : M'.Nodup := (pairwise_not_rotate_of_disj hG'.simple hG'.disj).imp fun h e =>
-    h 0 (by rw [List.rotate_zero]; exact e.symm)
-  have hpiece : ∀ m' ∈ M', IsPiece P m' := fun m' hm' => hD.isPiece hP (hperm.mem_iff.1 hm')
+    h 0 (by simp_all)
+  
   set g : List ℕ → List ℕ × List Polygon.Triangle := fun m' => acc.getD (M'.idxOf m') ([], [])
     with hg
   have hlen : M'.length = acc.length := hrot.length_eq
   have hMg : acc = M'.map g := by
     apply List.ext_getElem
-    · rw [List.length_map, hlen]
-    · intro t h1 h2
-      simp only [List.getElem_map, hg]
-      rw [hnd.idxOf_getElem, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h1,
-        Option.getD_some]
+    all_goals grind
   have hgmem : ∀ m' ∈ M', g m' ∈ acc := by
-    intro m' hm'
-    rw [hMg]; exact List.mem_map_of_mem hm'
+    grind
   have hgrot : ∀ m' ∈ M', ∃ r, (g m').1 = m'.rotate r := by
     intro m' hm'
     obtain ⟨t, ht, rfl⟩ := List.mem_iff_getElem.1 hm'
     have := List.forall₂_iff_get.1 hrot
-    obtain ⟨r, hr⟩ := this.2 t ht (by omega)
-    refine ⟨r, ?_⟩
-    simp only [hg]
-    rw [hnd.idxOf_getElem, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega),
-      Option.getD_some]
-    simpa using hr
+    grind
   set T' : List ℕ → List Polygon.Triangle := fun m' =>
     if h : ∃ r, (g m').1 = m'.rotate r then (g m').2.map (relabel (Classical.choose h) m'.length)
     else [] with hT'
@@ -75,12 +65,12 @@ theorem triangulates_of_pairs (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : Enum
     set r := Classical.choose h
     have hw0 : WeakTriangulates (subPoly P (g m').1) (g m').2 := hT _ (hgmem m' hm')
     have hw : WeakTriangulates ((subPoly P m').rotate r) (g m').2 := by
-      rw [← subPoly_rotate, ← hr]; exact hw0
+      grind [subPoly_rotate]
     have hw' := weakTriangulates_rotate _ r hw
     rw [n_subPoly] at hw'
     have e : T' m' = (g m').2.map (relabel r m'.length) := by
-      rw [hT']; simp only [dite_eq_left h]; rfl
-    refine ⟨by rw [e]; exact hw', ?_⟩
+      grind
+    refine ⟨by grind, ?_⟩
     rw [e, List.map_map]
     apply List.map_congr_left
     intro t ht
@@ -95,8 +85,7 @@ theorem triangulates_of_pairs (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : Enum
       M'.flatMap (fun m' => (T' m').map (relabelList m')) := by
     rw [hMg, List.flatMap_map]
     apply List.flatMap_congr
-    intro m' hm'
-    exact (hwT m' hm').2.symm
+    grind
   rw [heq]
   have hsplit : ∀ m ∈ splitAll (List.range P.n) D, WeakTriangulates (subPoly P m) (T' m) :=
     fun m hm => (hwT m (hperm.mem_iff.2 hm)).1

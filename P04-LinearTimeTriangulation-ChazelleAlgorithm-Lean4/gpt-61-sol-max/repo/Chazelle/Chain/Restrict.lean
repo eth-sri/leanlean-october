@@ -40,15 +40,10 @@ open Chazelle.Visibility (rayPt rayPt_fst rayPt_snd rayPt_zero continuous_rayPt 
 
 /-! ### The punctured chain -/
 
-/-- The chain of all edges of `P` except edge `e₀`, starting at `e₀ + 1`. -/
-def puncture (P : Polygon) (hn : 3 ≤ P.n) (e₀ : ℕ) : Chain :=
-  ⟨P, (e₀ + 1) % P.n, P.n - 1, by omega, by omega⟩
 
 variable {P : Polygon} {hn : 3 ≤ P.n} {e₀ : ℕ}
 
-@[simp] theorem puncture_P : (puncture P hn e₀).P = P := rfl
 
-@[simp] theorem puncture_m : (puncture P hn e₀).m = P.n - 1 := rfl
 
 /-! ### Interior directions are free -/
 

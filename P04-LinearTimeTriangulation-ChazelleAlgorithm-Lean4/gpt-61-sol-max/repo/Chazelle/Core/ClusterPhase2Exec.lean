@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterPhase2
 
 /-!
@@ -42,7 +44,7 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       ∃ (H D : Finset ℕ) (fin : Finset (ℕ × ℕ)) (nsp : ℕ),
         (∃ act, SInv g.μ g.k' g.s H (slabN T (g.k' - 1 - ρ) g.k') (AdjN M) act [] fin D nsp) ∧
         ∀ v, v < g.μ → (c'.nmem (g.base 48 + v) = 1 ↔ v ∈ D ∨ v ∈ H) := by
-  have hU := g.U_ge; have hE := g.END_eq
+  have hU := g.U_ge; 
   have b43 := g.base_eq 43; have b46 := g.base_eq 46; have b48 := g.base_eq 48
   have b49 := g.base_eq 49; have b3 := g.base_eq 3; have b36 := g.base_eq 36
   have b0 := g.base_eq 0; have b29 := g.base_eq 29; have b35 := g.base_eq 35
@@ -50,21 +52,21 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have hk' : 0 < g.k' := by show 0 < min g.k g.μ; omega
   have hkμ : g.k' ≤ g.μ := min_le_right _ _
   have hs : 0 < g.s := by
-    show 0 < min (g.k' * g.k') g.μ; have := Nat.mul_pos hk' hk'; omega
+    show 0 < min (g.k' * g.k') g.μ; simp_all
   have hP := g.two_pow_L
   set cs := g.k' - 1 - ρ with hcs
   unfold phase2a
   -- registers
   obtain ⟨c1, k1, e1, hk1, hw1, hR1, h704, hr1, hm1, hrr1, hrm1, ho1⟩ :=
     regsS_exec (P := P) hw hG hEND
-  have hG1 : GR g c1 := hG.frame (fun r hr => hr1 r (by unfold GRReg at hr; unfold RegRG; omega))
+  have hG1 : GR g c1 := hG.frame (fun r hr => hr1 r (by grind [GRReg, RegRG]))
   -- stack
   obtain ⟨c2, k2, e2, hk2, hw2, hf2, htp2, hstk2⟩ := stkS_exec (P := P) hw1 hG1
     (s := g.s) (bo := boOf g c.nmem) hR1.rs hR1.rSTK
     (fun b hb => by rw [hm1]; exact hD.cnt b hb) hEND
   have hR2 : (ssOf g).Regs c2 := hR1.of_frameR (fun r hr => hf2.1 r (by
-    unfold RegsR at hr; unfold StkRG; omega))
-  have hG2 : GR g c2 := hG1.frame (fun r hr => hf2.1 r (by unfold GRReg at hr; unfold StkRG; omega))
+    grind [RegsR, StkRG]))
+  have hG2 : GR g c2 := hG1.frame (fun r hr => hf2.1 r (by grind [GRReg, StkRG]))
   have hst2 : StaticEq g.A0 g.U c.nmem c2.nmem := fun x hx => by
     rw [hf2.2.2.2.2 x (by omega), hm1]
   have k2m : ∀ x, ¬ (g.base 46 ≤ x ∧ x < g.base 46 + 2 * g.μ) → c2.nmem x = c.nmem x :=
@@ -110,7 +112,7 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (fun v hv => by rw [k2m _ (by omega)]; exact hD.df v hv) hstk'
   have htp2' : c2.nreg 130701 = 2 * (segL g.s g.μ (boOf g c2.nmem) g.μ).length := by
     rw [segL_congr hbo2]; exact htp2
-  have hnsp2 : c2.nreg 130704 = 0 := by rw [hf2.1 _ (by unfold StkRG; omega)]; exact h704
+  have hnsp2 : c2.nreg 130704 = 0 := by rw [hf2.1 _ (by omega_nf)]; exact h704
   -- the driver
   obtain ⟨c3, K, e3, hK, hw3, hR3, ⟨fin, D, nsp, hI3⟩, htp3, hst3, hr3, hrr3, hrm3, ho3⟩ :=
     driver_exec (P := P) hw2 hR2 hSF2 hI htp2' hnsp2 hk' hs
@@ -125,8 +127,8 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       _ ≤ g.L * g.μ := Nat.mul_le_mul_left _ x2
   -- the flags
   obtain ⟨c4, k4, e4, hk4, hw4, hf4, hdf4⟩ := flagS_exec (P := P) hw3 hG3
-    (fun v hv => by rw [hst03 _ (by omega)]; exact hlevlt v hv) hEND
-  have hG4 : GR g c4 := hG3.frame (fun r hr => hf4.1 r (by unfold GRReg at hr; unfold FlRG; omega))
+    (fun v hv => by rw [hst03 _ (by omega)]; ram_grind) hEND
+  have hG4 : GR g c4 := hG3.frame (fun r hr => hf4.1 r (by unfold GRReg at hr; omega_nf))
   set H := Hset T cs g.k' with hH
   have hflag : ∀ v, v < g.μ → (c4.nmem (g.base 48 + v) = 1 ↔ v ∈ D ∨ v ∈ H) := fun v hv => by
     rw [hdf4 v hv, hst03 (g.base 3 + v) (by omega), hlevc v hv]
@@ -143,12 +145,10 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     by_cases hm : (T.level ⟨v, hv⟩ + cs) % g.k' < g.k' - 1
     · rw [ite_eq_left hm, ite_eq_left (show (0 : ℕ) < 1 by norm_num), hdf]
       constructor
-      · intro h; exact Or.inl h
-      · rintro (h | h)
-        · exact h
-        · omega
+      · grind
+      grind
     · rw [ite_eq_right hm, ite_eq_right (show ¬ (1 : ℕ) < 1 by norm_num)]
-      simp only [true_iff]; right; omega
+      omega
   -- the size of `D*`
   have hHcard : g.k' * H.card ≤ g.μ := by
     have e : H.card = cntBelow (fun v => c.nmem (g.base 3 + v) % g.k') g.μ ρ := by
@@ -167,9 +167,7 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have hsub : (Finset.range g.μ).filter (fun v => c4.nmem (g.base 48 + v) = 1) ⊆ D ∪ H :=
     fun v hv => by
       simp only [Finset.mem_filter, Finset.mem_range] at hv
-      rcases (hflag v hv.1).mp hv.2 with h | h
-      · exact Finset.mem_union_left _ h
-      · exact Finset.mem_union_right _ h
+      grind
   have hcard := (Finset.card_le_card hsub).trans (Finset.card_union_le D H)
   have hb := dstar_bound (k := g.k) (k' := g.k') (s := g.s) hk hμ hμk rfl rfl hDcard hHcard
   refine ⟨c4, k1 + (k2 + (K + k4)), .seq e1 (.seq e2 (.seq e3 e4)), ?_, hw4, hG4,
@@ -181,8 +179,8 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       le_trans hK (Nat.add_le_add_right (Nat.add_le_add (Nat.mul_le_mul_left 120 hsp)
         (le_of_eq (by rw [Nat.sub_zero]; rfl))) 2)
     omega
-  · rw [hf4.1 r (by unfold FlRG; omega), hr3 r (by unfold SplitRG; omega) (by omega) (by omega),
-      hf2.1 r (by unfold StkRG; omega), hr1 r (by unfold RegRG; omega)]
+  · rw [hf4.1 r (by omega_nf), hr3 r (by unfold SplitRG; omega) (by omega) (by omega),
+      hf2.1 r (by unfold StkRG; omega), hr1 r (by omega_nf)]
   · rw [hf4.2.2.2.2 x (by omega)]; exact hst03 x (by omega)
 
 end proofs

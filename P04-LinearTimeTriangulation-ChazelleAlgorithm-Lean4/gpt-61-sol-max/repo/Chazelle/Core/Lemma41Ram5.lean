@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.Lemma41Merge
 
 /-!
@@ -71,7 +73,7 @@ theorem l0Body_exec {c : Config} (hw : WordsBounded W c) {i p q Al : ℕ}
   rw [hAl] at hA ⊢
   unfold l0Body
   exec_block
-  all_goals try (config_simp; (try simp only [h70, h71, h72, hA, h24, h81, h82, h87]); omega)
+  all_goals try (config_simp; omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, fun a h1 h2 => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
   · config_simp; simp only [h70, h24]
   · config_simp; simp only [h71, h82]
@@ -107,11 +109,11 @@ theorem l0S_exec {c : Config} (hw : WordsBounded W c) {R0 j : ℕ}
       c1.rmem = c.rmem ∧ c1.output = c.output := by
     exec_block
     all_goals try omega
-    refine ⟨rfl, ‹_›, by config_simp, by config_simp; rw [← hAl, hA], by config_simp; exact h15,
+    refine ⟨rfl, ‹_›, by config_simp, by simp_all, by simp_all,
       fun r hr => ?_, rfl, rfl, rfl, rfl⟩
     unfold L0RG at hr
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat ram_simp 
   have r1 : ∀ r, ¬ L0RG r → c1.nreg r = c.nreg r := fr1
   let I : ℕ → Config → Prop := fun i c' => WordsBounded W c' ∧ c'.nreg 160070 = i ∧
     c'.nreg ALLOC = R0 + 8 * i ∧ c'.nreg 160071 = R0 + 6 * i ∧ c'.nreg 160072 = B0 + 2 * i ∧
@@ -126,44 +128,40 @@ theorem l0S_exec {c : Config} (hw : WordsBounded W c) {R0 j : ℕ}
       (fun c' => ∃ i, I i c' ∧ i ≤ j) (fun c' => 11 * (j - c'.nreg 160070))
       (fun c' => c'.nreg ALLOC) (fun c' ⟨i, h, _⟩ => h.1)
       (fun c2 ⟨i, ⟨hw2, h70, hA2, h71, h72, hent, hout, fr2, hrr2, hrm2, ho2⟩, hij⟩ htest => by
-        have g : ∀ r, ¬ L0RG r → r ≠ ALLOC → c2.nreg r = c.nreg r := fr2
+        
         have c14 : c2.nreg 160014 = j := by
-          rw [g _ (by unfold L0RG; omega) (by rw [hAl]; omega)]; exact h14
+          ram_grind
         rw [h70, c14] at htest
         obtain ⟨c3, k3, e3, hk3, hw3, q70, q71, q72, qA, qm0, qm1, qm, fr3, hrr3, hrm3, ho3⟩ :=
           l0Body_exec (P := P) hw2 h70 h71 h72 hA2
-            (by rw [g _ (by unfold L0RG; omega) (by rw [hAl]; omega)]; exact h24)
-            (by rw [g _ (by unfold L0RG; omega) (by rw [hAl]; omega)]; exact h81)
-            (by rw [g _ (by unfold L0RG; omega) (by rw [hAl]; omega)]; exact h82)
-            (by rw [g _ (by unfold L0RG; omega) (by rw [hAl]; omega)]; exact h87)
+            (by ram_grind)
+            (by ram_grind)
+            (by ram_grind)
+            (by ram_grind)
             (by omega) (by omega) (by omega) (by omega) (by omega)
         have hrec : c2.nmem (R0 + 6 * i + 5) = c.nmem (R0 + 6 * i + 5) :=
           hout _ (Or.inl (by omega))
-        refine ⟨c3, k3, e3, ⟨i + 1, ⟨hw3, q70, by rw [qA]; ring, by rw [q71]; ring,
-          by rw [q72]; ring, fun k hk => ?_, fun a ha => ?_, fun r h1 h2 => ?_,
-          by rw [hrr3, hrr2], by rw [hrm3, hrm2], by rw [ho3, ho2]⟩, by omega⟩, ?_, ?_⟩
+        refine ⟨c3, k3, e3, ⟨i + 1, ⟨hw3, q70, by omega, by omega,
+          by omega, fun k hk => ?_, fun a ha => ?_, fun r h1 h2 => ?_,
+          by ram_grind, by ram_grind, by ram_grind⟩, by omega⟩, ?_, ?_⟩
         · rcases Nat.lt_or_ge k i with hki | hki
-          · rw [qm _ (by omega) (by omega), qm _ (by omega) (by omega)]; exact hent k hki
-          · have : k = i := by omega
-            subst this
-            exact ⟨qm0, by rw [qm1, hrec]⟩
-        · rw [qm _ (by omega) (by omega)]; exact hout a (by omega)
-        · rw [fr3 r h1 h2]; exact fr2 r h1 h2
-        · show 11 * (j - c3.nreg 160070) + k3 + 2 ≤ 11 * (j - c2.nreg 160070)
-          rw [q70, h70]; omega
-        · show c3.nreg ALLOC ≤ c2.nreg ALLOC + k3
-          rw [qA]; omega)
-      ⟨0, ⟨hw1, h70, by rw [r1 _ (by unfold L0RG; rw [hAl]; omega), hA]; ring,
-        by rw [h71]; ring, by rw [h72]; ring, fun k hk => by omega, fun a _ => by rw [hm1],
+          · rw [qm _ (by omega) (by omega), qm _ (by omega) (by omega)]; ram_grind
+          ram_grind
+        · rw [qm _ (by omega) (by omega)]; ram_grind
+        · ram_grind
+        · omega
+        ram_grind)
+      ⟨0, ⟨hw1, h70, by ram_grind,
+        by omega, by omega, fun k hk => by omega, fun a _ => by rw [hm1],
         fun r h1 _ => r1 r h1, hrr1, hrm1, ho1⟩, Nat.zero_le _⟩
   have c14 : c'.nreg 160014 = j := by
-    rw [fr' _ (by unfold L0RG; omega) (by rw [hAl]; omega)]; exact h14
-  have hij' : i = j := by rw [h70', c14] at htest; omega
+    ram_grind
+  have hij' : i = j := by omega
   subst hij'
   have hk' : k ≤ 11 * i + 2 := by
-    have := hk; simp only [h70, Nat.sub_zero] at this; exact this
-  have hψ' : c'.nreg ALLOC ≤ c1.nreg ALLOC + k := hψ
-  have hA1 : c1.nreg ALLOC = R0 := by rw [r1 _ (by unfold L0RG; rw [hAl]; omega)]; exact hA
+    omega
+  
+  have hA1 : c1.nreg ALLOC = R0 := by ram_grind
   exact ⟨c', k1 + k, .seq e1 e, by omega, hw', hA', by omega, hent,
     fun a ha => hout a (by omega), fr', hrr', hrm', ho'⟩
 

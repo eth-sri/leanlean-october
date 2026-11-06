@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmCollStage
 
 /-!
@@ -69,14 +71,12 @@ theorem descF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     Machine.upd_other, hA', hbw, ALLOC]; omega)
   refine ⟨rfl, ?_, ?_, ?_, fun j hj => ?_, fun a ha => ?_, fun r h1 h2 => ?_, rfl, rfl,
     rfl⟩
-  · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hA', ALLOC]
-  · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hA', ALLOC]
-  · simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, hA', hbw, ALLOC]
+  · omega_nf
+  · omega_nf
+  · grind [Machine.upd_same, Machine.upd_other, ALLOC]
   · interval_cases j <;>
-      simp (disch := omega) only [Machine.upd_same,
-        Machine.upd_other, hA', hbw, ALLOC, add_zero]
-  · simp (disch := omega) only [Machine.upd_other, hA', hbw, ALLOC]
+      grind [Machine.upd_same, Machine.upd_other, ALLOC, add_zero]
+  · grind [Machine.upd_other, ALLOC]
   · have h2' : r ≠ 9999 := h2
     simp (disch := omega) only [Machine.upd_other]
 
@@ -110,63 +110,55 @@ theorem bldStage_exec {sB : Stmt} {κB : ℕ}
   rw [hbw] at hwf hC
   have h5 := hwf.1
   obtain ⟨c₁, k₁, e₁, hk₁, v60, a₁, m0, mc, mo, r₁, rr₁, rm₁, o₁⟩ :=
-    descF_exec (P := P) c hw hA hbw (by rw [hA] at h5; exact h5) (by omega)
+    descF_exec (P := P) c hw hA hbw (by omega) (by omega)
   have w₁ := e₁.wb_right
   have he : ∀ a, a < A → c₁.nmem a = c.nmem a := fun a ha => mo a (Or.inl ha)
   obtain ⟨hMD, hMWF⟩ := modelDesc_copy (E := A) (E' := c₁.nreg ALLOC) (A := A)
-    (by rw [← hA]; exact hwf) hC le_rfl he m0 mc (by rw [a₁])
+    (by omega_nf) hC le_rfl he m0 mc (by rw [a₁])
   have r42 : c₁.nreg 70242 = c.nreg 70242 := r₁ _ (Or.inr (by norm_num)) (by decide)
-  have r19 : c₁.nreg 70219 = D.length := by rw [r₁ _ (Or.inr (by norm_num)) (by decide), h19]
+  have r19 : c₁.nreg 70219 = D.length := by ram_grind
   obtain ⟨c₂, k₂, e₂, hk₂, q0, q1, q2, qr, qm, qrr, qrm, qo⟩ : ∃ c₂ k₂, Exec P W bldSet c₁ c₂ k₂ ∧
       k₂ = 3 ∧ c₂.nreg 40000 = A ∧ c₂.nreg 40001 = c.nreg 70242 ∧ c₂.nreg 40002 = D.length ∧
       (∀ r, (r < 40000 ∨ 40002 < r) → c₂.nreg r = c₁.nreg r) ∧ c₂.nmem = c₁.nmem ∧
       c₂.rreg = c₁.rreg ∧ c₂.rmem = c₁.rmem ∧ c₂.output = c₁.output := by
     unfold bldSet
     exec_block
-    refine ⟨rfl, ?_, ?_, ?_, fun r h => ?_, rfl, rfl, rfl, rfl⟩
-    all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other,
-      v60, r42, r19]
+    grind [Machine.upd_same, Machine.upd_other]
   have w₂ := e₂.wb_right
-  have a₂ : c₂.nreg ALLOC = A + 6 := by rw [qr _ (Or.inl (by decide)), a₁]
+  have a₂ : c₂.nreg ALLOC = A + 6 := by ram_grind
   have hL₂ : ChordListAt c₂.nmem (c.nreg 70242) D :=
-    chordList_agree (E := A) h42 (by rw [← hA]; exact hD) (fun a ha => by rw [qm]; exact he a ha)
+    chordList_agree (E := A) h42 (by omega) (fun a ha => by ram_grind)
   have hpre : BPre P W c₂ := by
     unfold BPre
     refine ⟨hG, hHW, ?_, chainModel J.whole, D, ?_, Or.inl ⟨J.whole, hP, rfl⟩, q2, ?_, ?_, hok⟩
-    · show ModelDescWF P (c₂.nreg ALLOC) c₂.nmem (c₂.nreg 40000)
-      rw [q0, qm, a₂, ← a₁]; exact hMWF
-    · show ModelDescAt c₂.nmem (c₂.nreg 40000) (Qof P) (chainModel J.whole)
-      rw [q0, qm]; exact hMD
+    · omega_nf
+    · omega_nf
     · show c₂.nreg 40001 + 3 * D.length ≤ c₂.nreg ALLOC
-      rw [q1, a₂]; omega
-    · show ChordListAt c₂.nmem (c₂.nreg 40001) D
-      rw [q1]; exact hL₂
+      omega
+    · omega_nf
   have hcost : BCost κB P c₂ = κB * (D.length * (Nat.clog 2 D.length + 1) + 1) := by
     show κB * (c₂.nreg 40002 * (Nat.clog 2 (c₂.nreg 40002) + 1) + 1) = _; rw [q2]
-  obtain ⟨c₃, k₃, e₃, hk₃, post, F₃⟩ := hB P W c₂ w₂ hpre (by rw [hcost, a₂]; omega)
+  obtain ⟨c₃, k₃, e₃, hk₃, post, F₃⟩ := hB P W c₂ w₂ hpre (by omega)
   rw [hcost] at hk₃
   obtain ⟨N, hN1, hN2, hN3, hN4, -⟩ := post (chainModel J.whole) D
-    (by show ModelDescAt c₂.nmem (c₂.nreg 40000) (Qof P) (chainModel J.whole)
-        rw [q0, qm]; exact hMD) q2 (by show ChordListAt c₂.nmem (c₂.nreg 40001) D; rw [q1]
-                                       exact hL₂)
+    (by omega_nf) q2 (by omega_nf)
   have w₃ := e₃.wb_right
   obtain ⟨c₄, k₄, e₄, hk₄, t7, tr, tm, trr, trm, tou⟩ : ∃ c₄ k₄, Exec P W bldOut c₃ c₄ k₄ ∧
       k₄ = 1 ∧ c₄.nreg 70007 = c₃.nreg 40003 ∧ (∀ r, r ≠ 70007 → c₄.nreg r = c₃.nreg r) ∧
       c₄.nmem = c₃.nmem ∧ c₄.rreg = c₃.rreg ∧ c₄.rmem = c₃.rmem ∧ c₄.output = c₃.output := by
     unfold bldOut
     exec_block
-    refine ⟨rfl, ?_, fun r h => ?_, rfl, rfl, rfl, rfl⟩
-    all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+    ram_simp
   have ex : Exec P W (bldStage sB) c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
   have F₁ : Frame FB c c₁ k₁ := ⟨fun r hr ha => r₁ r (by
       have : bandOf r ≠ bFuse := fun h => hr (h ▸ band7)
-      unfold bandOf bFuse at this; omega) ha, fun r _ => by rw [rr₁], fun a ha => mo a (Or.inl
-      (by rw [hA] at ha; exact ha)), fun a _ => by rw [rm₁], o₁, by rw [a₁, hA]; omega,
-      by rw [a₁, hA]; omega⟩
+      grind [bandOf, bFuse]) ha, fun r _ => by rw [rr₁], fun a ha => mo a (Or.inl
+      (by omega)), fun a _ => by rw [rm₁], o₁, by omega,
+      by omega⟩
   have F₂ : Frame FB c₁ c₂ k₂ := ⟨fun r hr ha => qr r (by
       have : bandOf r ≠ bBuild := fun h => hr (by rw [h]; decide)
-      unfold bandOf bBuild at this; omega), fun r _ => by rw [qrr], fun a _ => by rw [qm],
-      fun a _ => by rw [qrm], qo, by rw [a₂, a₁], by rw [a₂, a₁]; omega⟩
+      grind [bandOf, bBuild]), fun r _ => by rw [qrr], fun a _ => by rw [qm],
+      fun a _ => by rw [qrm], qo, by rw [a₂, a₁], by omega⟩
   have F₄ : Frame FB c₃ c₄ k₄ := ⟨fun r hr ha => tr r (fun h => hr (by rw [h]; exact band7)),
     fun r _ => by rw [trr], fun a _ => by rw [tm], fun a _ => by rw [trm], tou,
     by rw [tr _ (by decide)], by rw [tr _ (by decide)]; omega⟩
@@ -174,11 +166,11 @@ theorem bldStage_exec {sB : Stmt} {κB : ℕ}
     ftrF F₁ (ftrF F₂ (ftrF (F₃.mono (by decide) le_rfl) F₄))
   refine ⟨c₄, _, N, ex, by omega, ?_, ?_, hN3, hN4, Ft, fun r h1 h2 h3 => ?_⟩
   · have e3 : rd c₃ bBuild 3 = c₃.nreg 40003 := rfl
-    rw [t7]; rw [a₂, e3] at hN1; rw [hA]; omega
+    omega
   · rw [t7, tr _ (by decide), tm]; exact hN2
   · have hb3 : bandOf r ∉ ({bBuild, bSort, bSign} : Finset ℕ) := by rw [h1]; decide
     have hA' : r ≠ ALLOC := by intro h; rw [h] at h1; exact absurd h1 (by decide)
-    rw [tr r h2, F₃.1 r hb3 hA', qr r (by unfold bandOf bFuse at h1; omega), r₁ r h3 hA']
+    rw [tr r h2, F₃.1 r hb3 hA', qr r (by grind [bandOf, bFuse]), r₁ r h3 hA']
 
 end
 

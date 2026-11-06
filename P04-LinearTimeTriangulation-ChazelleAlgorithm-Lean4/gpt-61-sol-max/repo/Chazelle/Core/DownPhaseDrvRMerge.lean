@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRBSort
 public import Chazelle.Core.DownPhaseDrvSplice
 
@@ -26,16 +28,12 @@ theorem merge_congr {f g : ℕ → ℕ → Bool} :
       List.merge l₁ l₂ f = List.merge l₁ l₂ g := by
   intro l₁ l₂
   induction l₁ generalizing l₂ with
-  | nil => intro _; simp
+  | nil => simp_all
   | cons x xs ih =>
     induction l₂ with
-    | nil => intro _; simp
+    | nil => simp_all
     | cons y ys ih₂ =>
-      intro h
-      rw [List.cons_merge_cons, List.cons_merge_cons, h x (by simp) y (by simp)]
-      split_ifs
-      · rw [ih (y :: ys) fun a ha b hb => h a (by simp [ha]) b hb]
-      · rw [ih₂ fun a ha b hb => h a ha b (by simp [hb])]
+      grind [List.cons_merge_cons]
 
 /-- The merge registers. -/
 def mgSetup : Stmt :=
@@ -71,7 +69,7 @@ theorem mergeE_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       c'.rmem = c.rmem ∧ c'.output = c.output ∧
       c'.nreg 40000 = D ∧ c'.nreg 42000 = T ∧ c'.nreg 42001 = 2 * L.length ∧
       (∀ r, 43000 ≤ r → r < 44000 → c'.nreg r = c.nreg r) := by
-  have hW1 : 1 ≤ W := by unfold hostWords at hWn; omega
+  have hW1 : 1 ≤ W := by omega
   -- the registers
   obtain ⟨c₁, k₁, e₁, hk₁, v6, v7, v8, v11, v12, v13, v14, v15, g₁, m₁, rr₁, rm₁, o₁⟩ :
       ∃ c₁ k₁, Exec P W mgSetup c c₁ k₁ ∧ k₁ = 8 ∧ c₁.nreg 30006 = 1 ∧ c₁.nreg 30007 = S ∧
@@ -84,25 +82,25 @@ theorem mergeE_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     all_goals try omega
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩ <;>
       config_simp <;> (try simp only [h70, h71, h72, h73])
-    simp (disch := omega) only [Machine.upd_other]
+    grind [Machine.upd_other]
   have w₁ := e₁.wb_right
   -- the comparator
   have hcmp := evCmp_ok (P := P) (W := W) hG hWn (m₀ := c₁.nmem) (A₀ := Dst) (D := D) (T := T)
-    (M := M) (L := L) (by omega) (by rw [m₁]; exact hwf) (by rw [m₁]; exact hM) hL
-    (by rw [m₁]; exact hR) hTA c₁.nreg
+    (M := M) (L := L) (by omega) (by simp_all) (by simp_all) hL
+    (by simp_all) hTA c₁.nreg
   have hJ₁ : EvJ c₁.nmem Dst D T (2 * L.length) c₁.nreg c₁ :=
-    ⟨by rw [g₁ _ (by omega), h40], by rw [g₁ _ (by omega), h42], by rw [g₁ _ (by omega), h42'],
+    ⟨by simp_all, by simp_all, by simp_all,
       fun _ _ => rfl, fun _ _ _ => rfl⟩
   have hI : SortR.MergeInv W (EvJ c₁.nmem Dst D T (2 * L.length) c₁.nreg)
       (evLeB M (Qof P) L (2 * L.length)) {bSign, bBuild} Dst c₁ c₁ S Dst 0 mid hi E E₂ c₁ :=
     { wb := w₁, hJ := hJ₁, loc := SortR.Loc.refl _ _ _, one := v6, rsrc := v7, rdst := v8,
       rmid := v11, rhi := v12, keep := fun _ _ _ _ _ _ _ _ _ _ => rfl,
-      lo_i := by rw [v13], i_mid := by rw [v13]; omega, mid_j := by rw [v14],
-      j_hi := by rw [v14]; exact hmh, rk := by rw [v15, v13, v14],
+      lo_i := by rw [v13], i_mid := by omega, mid_j := by rw [v14],
+      j_hi := by omega, rk := by omega,
       bsrc := by omega, bdst := by omega, disj := Or.inl (by omega), dA := le_rfl,
-      ma := by rw [m₁, Nat.add_zero, Nat.sub_zero]; exact hE,
-      mb := by rw [m₁]; exact hE₂,
-      out := by rw [v15, v13, v14]; simp,
+      ma := by simp_all,
+      mb := by simp_all,
+      out := by simp_all,
       mem := fun _ _ => rfl }
   obtain ⟨c₂, k₂, e₂, I₂, hk₂, hseg⟩ := SortR.mergeLoop_inv (P := P) hcmp
     (evJ_stable _ _ _ _ _ _) (by decide) hI
@@ -114,21 +112,14 @@ theorem mergeE_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     fun r hr => ?_, by rw [l4, rm₁], by rw [l5, o₁], j1, j2, j3, fun r h1 h2 => ?_⟩
   · rw [hseg]
     refine merge_congr E E₂ fun x hx y hy => ?_
-    have hx' := hcodes x (List.mem_append_left _ hx)
-    have hy' := hcodes y (List.mem_append_right _ hy)
-    unfold evLeB DownDrv.codeLeB; rw [ite_eq_left hx', ite_eq_left hy']
+    grind [evLeB, DownDrv.codeLeB]
   · rcases ha with ha | ha
-    · rw [l3 a ha, m₁]
+    · ram_grind
     · rw [I₂.mem a (Or.inr (by omega)), m₁]
-  · have h1 : bandOf r ∉ ({bSign, bBuild} : Finset ℕ) := fun h => hr (by
-      simp only [Finset.mem_insert, Finset.mem_singleton] at h ⊢; tauto)
-    have h2 : bandOf r ≠ bSort := fun h => hr (by simp [h])
-    rw [l1 r h1 h2 hra]
-    exact g₁ r (by simp only [bandOf, bSort] at h2; omega)
+  · grind [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort]
   · rw [I₂.keep ALLOC (Or.inr rfl) (by decide) (by decide) (by decide) (by decide) (by decide)
       (by decide) (by decide) (by decide), g₁ _ (by decide)]
-  · rw [l2 r (by simpa [Finset.mem_insert, Finset.mem_singleton] using hr), rr₁]
-  · rw [j5 r h1 h2, g₁ r (by omega)]
+  all_goals grind
 
 end exec
 

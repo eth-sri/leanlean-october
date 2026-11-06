@@ -25,26 +25,34 @@ namespace DrvX
 open Set
 open Chazelle.Chain (sideE sidePt sideLeft sideLeftOf sideCcw)
 
+section
+variable (A : Bool) (k : ℕ)
+include A k
 /-- The next chain vertex along side `A` (up) or `B` (down). -/
-def kNext (A : Bool) (k : ℕ) : ℕ := if A then k + 1 else k - 1
+def kNext : ℕ := if A then k + 1 else k - 1
 
 /-- The previous chain vertex along side `A` (up) or `B` (down). -/
-def kPrev (A : Bool) (k : ℕ) : ℕ := if A then k - 1 else k + 1
+def kPrev : ℕ := if A then k - 1 else k + 1
+
+
+end
 
 variable {C : Chain}
 
 theorem chain_vertex_eq (hs : C.s = 0) {k : ℕ} (hk : k < C.P.n) : C.vertex k = C.P.vtx k := by
   unfold Chain.vertex Chain.edgeIdx; rw [hs, zero_add, Nat.mod_eq_of_lt hk]
 
-theorem sideIdx_eq_tK (β : Bool) (i : ℕ) : C.sideIdx β i = tK C.m C.topIdx β (i + 6) := by
-  rw [Chain.sideIdx_eq]
-  unfold tK tU tS
-  rw [Nat.add_sub_cancel]
-  rfl
+section
+variable (β : Bool) (i : ℕ)
+theorem sideIdx_eq_tK : C.sideIdx β i = tK C.m C.topIdx β (i + 6) := by
+  aesop
 
-theorem tU_eq (β : Bool) (i : ℕ) :
+theorem tU_eq :
     tU C.m C.topIdx β (i + 6) = (C.sideS β + i) % (2 * C.m) := by
-  unfold tU tS; rw [Nat.add_sub_cancel]; rfl
+  aesop
+
+
+end
 
 /-- **The tour vertex at the start of walk edge `p`.** -/
 theorem walk_vtx (hs : C.s = 0) (hm : C.m + 1 = C.P.n) (β : Bool) {p : ℕ} (h6 : 6 ≤ p)
@@ -57,9 +65,7 @@ theorem walk_vtx (hs : C.s = 0) (hm : C.m + 1 = C.P.n) (β : Bool) {p : ℕ} (h6
 theorem sideE_succ' {m u : ℕ} (hu : u < 2 * m) :
     sideE m (u + 1) = kNext (decide (u < m)) (sideE m u) := by
   unfold sideE kNext
-  by_cases h : u < m
-  · rw [decide_eq_true h]; simp only [ite_true]; split_ifs <;> omega
-  · rw [decide_eq_false h]; simp only [Bool.false_eq_true, ite_false]; split_ifs <;> omega
+  grind
 
 /-- **The tour vertex at the end of walk edge `p`.** -/
 theorem walk_next (hs : C.s = 0) (hm : C.m + 1 = C.P.n) (β : Bool) {p : ℕ} (h6 : 6 ≤ p)
@@ -77,9 +83,7 @@ theorem walk_next (hs : C.s = 0) (hm : C.m + 1 = C.P.n) (β : Bool) {p : ℕ} (h
 theorem sideE_pred' {m u : ℕ} (hu0 : 1 ≤ u) (hu : u < 2 * m) (hum : u ≠ m) :
     sideE m (u - 1) = kPrev (decide (u < m)) (sideE m u) := by
   unfold sideE kPrev
-  by_cases h : u < m
-  · rw [decide_eq_true h]; simp only [ite_true]; split_ifs <;> omega
-  · rw [decide_eq_false h]; simp only [Bool.false_eq_true, ite_false]; split_ifs <;> omega
+  grind
 
 theorem mod_pred {x M : ℕ} (hM : 0 < M) (hx : 1 ≤ x % M) : (x - 1) % M = x % M - 1 := by
   have h1 := Nat.div_add_mod x M
@@ -105,8 +109,11 @@ theorem walk_prev (hs : C.s = 0) (hm : C.m + 1 = C.P.n) (β : Bool) {p : ℕ} (h
 
 /-! ## Sectors -/
 
+section
+variable (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n)
+include hP hs hm
 /-- **Inside a tour edge** the left sector is the left half-plane of the chain edge. -/
-theorem walk_sector_edge (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n) (β : Bool)
+theorem walk_sector_edge (β : Bool)
     {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) (x : Point) :
     sideLeft (C.sideWalk β) p t x ↔
       0 < det (C.P.vtx (tK C.m C.topIdx β p))
@@ -123,7 +130,7 @@ theorem walk_sector_edge (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n)
 
 /-- **At a tour vertex** away from the chain ends, the left sector lies in the corner of the
 chain on the side of the position (at the top vertex: the sub-corner beside the slit). -/
-theorem walk_sector_vtx (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n) {p : ℕ}
+theorem walk_sector_vtx {p : ℕ}
     (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6) (hu0 : tU C.m C.topIdx C.sideBeta p ≠ 0)
     (hum : tU C.m C.topIdx C.sideBeta p ≠ C.m) {x : Point}
     (h : sideLeft (C.sideWalk C.sideBeta) p 0 x) :
@@ -145,7 +152,7 @@ theorem walk_sector_vtx (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n) 
       rw [C.sideWalk_prev_tour β (by omega) (by omega), C.sideWalk_vtx_tour β (by omega)] at e1
       rw [C.sideWalk_next_tour β (by omega), C.sideWalk_vtx_tour β (by omega)] at e2
       rw [C.sideWalk_vtx_tour β (by omega)] at e3
-      rw [← e1, ← e2, ← e3]; exact h
+      simp_all
     · -- the last position, up the slit
       subst hp'
       rw [C.sideLeft_tour_last] at h
@@ -158,9 +165,7 @@ theorem walk_sector_vtx (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n) 
       have hgood : sideCcw (C.sideTour β 1 - C.top) (C.slitTop - C.top)
           (C.sideTour β (2 * C.m - 1) - C.top) := by
         rcases C.sideGood_sideBeta hP with h' | h' | h'
-        · exact absurd h' hT0
-        · exact absurd h' hTm
-        · exact h'
+        all_goals omega
       have e1 := walk_prev hs hm β (show 7 ≤ 2 * C.m + 6 by omega) le_rfl hu0 hum
       rw [C.sideWalk_prev_tour β (by omega) le_rfl, C.sideWalk_vtx_tour β (by omega)] at e1
       have e2 := walk_next hs hm β (show 6 ≤ 6 by omega) (show 6 < 2 * C.m + 6 by omega)
@@ -189,13 +194,11 @@ theorem walk_sector_vtx (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n) 
     have hgood : sideCcw (C.sideTour β 1 - C.top) (C.slitTop - C.top)
         (C.sideTour β (2 * C.m - 1) - C.top) := by
       rcases C.sideGood_sideBeta hP with h' | h' | h'
-      · exact absurd h' hT0
-      · exact absurd h' hTm
-      · exact h'
+      all_goals omega
     have hU : tU C.m C.topIdx β (2 * C.m + 6) = tU C.m C.topIdx β 6 := tU_last _ _ _
     have hK6 : tK C.m C.topIdx β (2 * C.m + 6) = tK C.m C.topIdx β 6 := tK_last _ _ _
     have e1 := walk_prev hs hm β (show 7 ≤ 2 * C.m + 6 by omega) le_rfl
-      (by rw [hU]; exact hu0) (by rw [hU]; exact hum)
+      (by omega) (by omega)
     rw [C.sideWalk_prev_tour β (by omega) le_rfl, C.sideWalk_vtx_tour β (by omega), hU,
       hK6] at e1
     have e2 := walk_next hs hm β (show 6 ≤ 6 by omega) (show 6 < 2 * C.m + 6 by omega)
@@ -211,6 +214,9 @@ theorem walk_sector_vtx (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n) 
 
 /-! ## The box and the slit -/
 
+
+end
+
 /-- **The points of the box and slit edges** (and of the slit above the top vertex) are outside
 the square of the coordinates of `C.P`, or above all its vertices. -/
 theorem walk_box (β : Bool) {p : ℕ} {t : ℝ} (_ht0 : 0 ≤ t) (ht1 : t < 1)
@@ -224,13 +230,13 @@ theorem walk_box (β : Bool) {p : ℕ} {t : ℝ} (_ht0 : 0 ≤ t) (ht1 : t < 1)
   have htr := C.top_snd_lt_radius
   rcases hp with hp | ⟨rfl, ht⟩
   · interval_cases p
-    · right; left; rw [b0]; simp only; rw [abs_of_pos hr0]; exact hr
-    · left; rw [b1]; simp only; rw [abs_neg, abs_of_pos hr0]; exact hr
-    · right; left; rw [b2]; simp only; rw [abs_neg, abs_of_pos hr0]; exact hr
-    · left; rw [b3]; simp only; rw [abs_of_pos hr0]; exact hr
-    · right; left; rw [b4]; simp only; rw [abs_of_pos hr0]; exact hr
+    · simp_all
+    · grind
+    · grind
+    · grind
+    · simp_all
     · right; right; rw [b5]; simp only; nlinarith
-  · right; right; rw [b6]; simp only; nlinarith
+  simp_all
 
 end
 

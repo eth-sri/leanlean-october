@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranInitL4
 
 /-!
@@ -41,58 +43,44 @@ theorem exec_natOnly {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ
     (h : Exec P W s c c' k) (hs : natOnly s = true) :
     c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   induction h with
-  | skip _ => exact ⟨rfl, rfl, rfl⟩
+  | skip _ => simp_all
   | @instr ins c c' _ he _ _ =>
     simp only [natOnly] at hs
-    cases ins <;> simp only [natOK, Bool.false_eq_true] at hs <;>
-      simp only [Instr.effect, Option.some.injEq] at he <;>
+    cases ins <;> simp_all [natOK, Bool.false_eq_true] <;>
+      grind [Instr.effect, Option.some.injEq] <;>
       subst he <;>
       exact ⟨rfl, rfl, rfl⟩
   | seq _ _ ih₁ ih₂ =>
-    simp only [natOnly, Bool.and_eq_true] at hs
-    obtain ⟨a1, a2, a3⟩ := ih₁ hs.1
-    obtain ⟨b1, b2, b3⟩ := ih₂ hs.2
-    exact ⟨b1.trans a1, b2.trans a2, b3.trans a3⟩
+    simp_all [natOnly, Bool.and_eq_true]
   | ifLtN_true _ _ ih =>
-    simp only [natOnly, Bool.and_eq_true] at hs; exact ih hs.1
+    simp_all [natOnly, Bool.and_eq_true]
   | ifLtN_false _ _ ih =>
-    simp only [natOnly, Bool.and_eq_true] at hs; exact ih hs.2
+    simp_all [natOnly, Bool.and_eq_true]
   | ifLtR_true _ _ ih =>
-    simp only [natOnly, Bool.and_eq_true] at hs; exact ih hs.1
+    simp_all [natOnly, Bool.and_eq_true]
   | ifLtR_false _ _ ih =>
-    simp only [natOnly, Bool.and_eq_true] at hs; exact ih hs.2
-  | whileLtN_false _ _ => exact ⟨rfl, rfl, rfl⟩
+    simp_all [natOnly, Bool.and_eq_true]
+  | whileLtN_false _ _ => simp_all
   | whileLtN_true _ _ _ ih₁ ih₂ =>
     obtain ⟨a1, a2, a3⟩ := ih₁ hs
-    obtain ⟨b1, b2, b3⟩ := ih₂ hs
-    exact ⟨b1.trans a1, b2.trans a2, b3.trans a3⟩
-  | whileLtR_false _ _ => exact ⟨rfl, rfl, rfl⟩
+    simp_all
+  | whileLtR_false _ _ => simp_all
   | whileLtR_true _ _ _ ih₁ ih₂ =>
     obtain ⟨a1, a2, a3⟩ := ih₁ hs
-    obtain ⟨b1, b2, b3⟩ := ih₂ hs
-    exact ⟨b1.trans a1, b2.trans a2, b3.trans a3⟩
+    simp_all
 
 /-! ## Counting -/
 
 theorem cntInit_succ (i : ℕ) (f g : ℕ → ℕ) (j : ℕ) :
     cntInit (i + 1) f g j = cntInit i f g j + (if f i = j then 1 else 0) +
       (if g i = j then 1 else 0) := by
-  unfold cntInit
-  rw [Finset.range_add_one, Finset.filter_insert, Finset.filter_insert]
-  have h1 : i ∉ Finset.filter (fun u => f u = j) (Finset.range i) := by simp
-  have h2 : i ∉ Finset.filter (fun u => g u = j) (Finset.range i) := by simp
-  split_ifs with a b b
-  · rw [Finset.card_insert_of_notMem h1, Finset.card_insert_of_notMem h2]; ring
-  · rw [Finset.card_insert_of_notMem h1]; ring
-  · rw [Finset.card_insert_of_notMem h2]; ring
-  · ring
+  core_grind [Finset.range_add_one, Finset.filter_insert]
 
 theorem cntInit_congr {i : ℕ} {f g f' g' : ℕ → ℕ} (hf : ∀ u, u < i → f' u = f u)
     (hg : ∀ u, u < i → g' u = g u) (j : ℕ) : cntInit i f' g' j = cntInit i f g j := by
   unfold cntInit
   congr 2
-  · exact Finset.filter_congr fun u hu => by rw [hf u (Finset.mem_range.1 hu)]
-  · exact Finset.filter_congr fun u hu => by rw [hg u (Finset.mem_range.1 hu)]
+  all_goals grind
 
 /-! ## The program -/
 
@@ -125,7 +113,7 @@ def srchStore (bs : ℕ) : Stmt := .seq posStmt (ndStore bs)
 
 theorem band_ne {r : ℕ} (h : 90000 ≤ r) (h' : r < 100000) :
     bandOf r ∉ ({bLocate, bSign} : Finset ℕ) := by
-  unfold bandOf bLocate bSign; simp; omega
+  omega_nf
 
 theorem srchStore_exec {P : Polygon} {W MD NFH b0 : ℕ} {M : Model} {N : NF} {x : WPos}
     {c : Config} (hw : WordsBounded W c) {bs BS i Cb : ℕ}
@@ -158,28 +146,28 @@ theorem srchStore_exec {P : Polygon} {W MD NFH b0 : ℕ} {M : Model} {N : NF} {x
   have hN : NFAt c.nmem NFH N := hNW.holds
   obtain ⟨hNB, hNAB, hNSB⟩ := NFLoc.nfWithin_bounds hNW hNF hA0
   obtain ⟨hDW, hCWf⟩ := NFLoc.locChainWF_of hwf (by omega) hWh
-  have hW3 : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
+  have hW3 : P.n + 3 ≤ W := by omega_nf
   have hst : ∀ j, j < N.arcs.length → ProperPos M (Qof P) P.n (N.arc j).s := fun j hj => by
     obtain ⟨-, -, -, -, -, -, -, -, -, -, hpp⟩ := hNF
     have := (hpp j hj).1
     have hQn : (Qof P).n = P.n := shear_n _ _
-    rwa [hQn] at this
+    grind
   have hxe : x = ⟨c.nreg 50002, c.nreg 50003⟩ := by rw [h52, h53]
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, t0, tlt, tpk⟩ := pos_exec (P := P) (W := W) (c := c) hw
-    ⟨hG, hW3, by rw [h50]; exact hDW, by rw [h50]; exact hCWf, M, by rw [h50]; exact hMD,
-      by rw [h52]; exact he⟩ hG hW3 (M := M) (N := N) (by rw [h50]; exact hMD) hGM
-    (by rw [h51]; exact hN) hNF hne (by rw [← hxe]; exact hx) (by rw [h53]; exact hx1)
-    (by rw [← hxe]; exact hcut) hst (by rw [h51]; omega) (by rw [h51]; omega)
-    (by rw [h51]; omega) hroom
+    ⟨hG, hW3, by omega, by grind, M, by grind,
+      by omega⟩ hG hW3 (M := M) (N := N) (by grind) hGM
+    (by grind) hNF hne (by grind) (by grind)
+    (by grind) hst (by omega) (by grind)
+    (by grind) hroom
   rw [← hxe] at tpk
   obtain ⟨fr, frr, fm, frm, fo, fa1, fa2⟩ := F₁
   have w₁ := e₁.wb_right
   have g : ∀ r, 90000 ≤ r → r < 100000 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
-    fr r (band_ne h1 h2) (by unfold ALLOC; omega)
-  have c19 : c₁.nreg 90019 = 1 := by rw [g _ (by norm_num) (by norm_num), h19]
-  have c70 : c₁.nreg 90070 = i := by rw [g _ (by norm_num) (by norm_num), h70]
-  have c38 : c₁.nreg 90038 = Cb := by rw [g _ (by norm_num) (by norm_num), h38]
-  have cbs : c₁.nreg bs = BS := by rw [g _ b8 b9, hBS]
+    fr r (band_ne h1 h2) (by omega_nf)
+  have c19 : c₁.nreg 90019 = 1 := by grind
+  have c70 : c₁.nreg 90070 = i := by grind
+  have c38 : c₁.nreg 90038 = Cb := by grind
+  have cbs : c₁.nreg bs = BS := by grind
   have hne' := hdis (c₁.nreg 50105 - 1) tlt
   obtain ⟨c₂, k₂, e₂, hk₂, q⟩ : ∃ c₂ k₂, Exec P W (ndStore bs) c₁ c₂ k₂ ∧ k₂ = 7 ∧
       (c₂.nmem = upd (upd c₁.nmem (BS + i) (c₁.nreg 50105 - 1)) (Cb + (c₁.nreg 50105 - 1))
@@ -187,38 +175,33 @@ theorem srchStore_exec {P : Polygon} {W MD NFH b0 : ℕ} {M : Model} {N : NF} {x
         ∀ r, r ≠ 90072 → r ≠ 90092 → r ≠ 90093 → c₂.nreg r = c₁.nreg r) := by
     unfold ndStore
     exec_block
-    · simp (disch := omega) only [Machine.upd_other, cbs, c70]
-      omega
-    · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, c38, c19]
-      omega
+    · grind [Machine.upd_other]
+    · grind [Machine.upd_same, Machine.upd_other]
     · simp (disch := omega) only [Machine.upd_same,
         Machine.upd_other, cbs, c70, c38, c19]
-      rw [fm _ (by omega)]
-      exact hcntW _ tlt
+      grind
     · refine ⟨rfl, ?_, fun r a1 a2 a3 => ?_⟩
       · simp (disch := omega) only [Machine.upd_other, cbs, c70, c38, c19]
-      · simp (disch := omega) only [Machine.upd_other]
+      grind [Machine.upd_other]
   obtain ⟨q1, q2⟩ := q
   have NO := exec_natOnly e₂ (by simp [ndStore, natOnly, natOK, block])
   have a2' : c₂.nreg ALLOC = c₁.nreg ALLOC :=
-    q2 _ (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
+    q2 _ (by omega_nf) (by omega_nf) (by omega_nf)
   refine ⟨c₂, _, c₁.nreg 50105 - 1, .seq e₁ e₂, by omega, tlt, tpk, fun a ha => ?_,
-    fun r a1 a2 a3 a4 a5 => ?_, fun r hr => ?_, fun a ha => ?_, ?_, by rw [a2']; exact fa1, ?_⟩
+    fun r a1 a2 a3 a4 a5 => ?_, fun r hr => ?_, fun a ha => ?_, ?_, by omega, ?_⟩
   · rw [q1, fm (Cb + (c₁.nreg 50105 - 1)) (by omega)]
-    simp only [upd]
-    split_ifs
-    · rfl
-    · rfl
-    · exact fm a ha
-  · rw [q2 r a3 a4 a5]; exact fr r a1 a2
-  · rw [NO.1]; exact frr r hr
-  · rw [NO.2.1]; exact frm a ha
-  · rw [NO.2.2]; exact fo
-  · rw [a2']; omega
+    grind [upd]
+  · grind
+  · grind
+  · grind
+  all_goals grind
 
 /-! ## The query setups -/
 
-theorem ndA_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {MD NFH p h lp : ℕ}
+section
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include hw
+theorem ndA_exec {MD NFH p h lp : ℕ}
     (h00 : c.nreg 90000 = MD) (h01 : c.nreg 90001 = NFH) (h71 : c.nreg 90071 = p)
     (h19 : c.nreg 90019 = 1) (hh : c.nmem p = h) (hlp : c.nmem (p + 1) = lp)
     (hb : p + 1 ≤ W) (hhW : h + 1 ≤ W) :
@@ -228,13 +211,9 @@ theorem ndA_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {M
         r ≠ 90074 → c'.nreg r = c.nreg r) := by
   unfold ndA
   exec_block
-  all_goals try (simp (disch := omega) only [Machine.upd_same,
-    Machine.upd_other, h00, h01, h71, h19, hh]; omega)
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, rfl, fun r a1 a2 a3 a4 a5 a6 a7 => ?_⟩ <;>
-    simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, h00, h01, h71, h19, hh, hlp]
+  all_goals (grind [Machine.upd_same, Machine.upd_other])
 
-theorem ndC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {MD NFH p rp : ℕ}
+theorem ndC_exec {MD NFH p rp : ℕ}
     (h00 : c.nreg 90000 = MD) (h01 : c.nreg 90001 = NFH) (h71 : c.nreg 90071 = p)
     (h21 : c.nreg 90021 = 2) (hrp : c.nmem (p + 2) = rp) (hb : p + 2 ≤ W) :
     ∃ c' k, Exec P W ndC c c' k ∧ k = 5 ∧ c'.nreg 50000 = MD ∧ c'.nreg 50001 = NFH ∧
@@ -243,26 +222,21 @@ theorem ndC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {M
         c'.nreg r = c.nreg r) := by
   unfold ndC
   exec_block
-  all_goals try (simp (disch := omega) only [Machine.upd_same,
-    Machine.upd_other, h00, h01, h71, h21]; omega)
-  refine ⟨rfl, ?_, ?_, ?_, ?_, rfl, fun r a1 a2 a3 a4 a5 => ?_⟩ <;>
-    simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, h00, h01, h71, h21, hrp]
+  all_goals simp_all
 
-theorem ndE_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {p i : ℕ}
+theorem ndE_exec {p i : ℕ}
     (h71 : c.nreg 90071 = p) (h70 : c.nreg 90070 = i) (h76 : c.nreg 90076 = 5)
     (h19 : c.nreg 90019 = 1) (hb : p + 5 ≤ W) (hi : i + 1 ≤ W) :
     ∃ c' k, Exec P W ndE c c' k ∧ k = 2 ∧ c'.nreg 90071 = p + 5 ∧ c'.nreg 90070 = i + 1 ∧
       c'.nmem = c.nmem ∧ (∀ r, r ≠ 90070 → r ≠ 90071 → c'.nreg r = c.nreg r) := by
   unfold ndE
   exec_block
-  all_goals try (simp (disch := omega) only [Machine.upd_same,
-    Machine.upd_other, h71, h70, h76, h19]; omega)
-  refine ⟨rfl, ?_, ?_, rfl, fun r a1 a2 => ?_⟩ <;>
-    simp (disch := omega) only [Machine.upd_same, Machine.upd_other, h71, h70,
-      h76, h19]
+  all_goals simp_all
 
 /-! ## The loop -/
+
+
+end
 
 /-- The facts of the environment of the position search loop. -/
 structure NdEnv (P : Polygon) (W MD NFH CB : ℕ) (d : Dm) (M : Model) (N : NF) (c₀ : Config) :
@@ -316,11 +290,7 @@ structure NdI (P : Polygon) (W : ℕ) (d : Dm) (M : Model) (N : NF) (c₀ c : Co
     (a < d.b0 + d.oCnt ∨ d.b0 + d.oNxt ≤ a) → c.nmem a = c₀.nmem a
 
 theorem cntInit_le (i : ℕ) (f g : ℕ → ℕ) (j : ℕ) : cntInit i f g j ≤ 2 * i := by
-  unfold cntInit
-  have h1 := Finset.card_filter_le (Finset.range i) (fun u => f u = j)
-  have h2 := Finset.card_filter_le (Finset.range i) (fun u => g u = j)
-  rw [Finset.card_range] at h1 h2
-  omega
+  core_grind
 
 set_option maxHeartbeats 4000000 in
 theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : NF}
@@ -345,7 +315,6 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
   have hi1 : (i + 1) * (2 * L + 30) ≤ K * (2 * L + 30) := Nat.mul_le_mul_right _ (by omega)
   have hmi : i * (2 * L + 30) + (2 * L + 30) = (i + 1) * (2 * L + 30) := by ring
   have hK1 : 30 ≤ K * (2 * L + 30) := by
-    have : 1 * 30 ≤ K * (2 * L + 30) := Nat.mul_le_mul (by omega) (by omega)
     omega
   have hQn : (Qof P).n = P.n := shear_n _ _
   -- memory below `b0`
@@ -353,19 +322,19 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
     hm a (by omega) (by left; omega) (by left; omega)
   obtain ⟨ch0, ch1, ch2⟩ := hE.chords i ht
   rw [hE.r13] at hp
-  have v0 : c.nmem (CB + 5 * i) = (N.chord i).h := by rw [hb0 _ (by omega), ch0]
-  have v1 : c.nmem (CB + 5 * i + 1) = (N.chord i).lp := by rw [hb0 _ (by omega), ch1]
-  have v2 : c.nmem (CB + 5 * i + 2) = (N.chord i).rp := by rw [hb0 _ (by omega), ch2]
+  have v0 : c.nmem (CB + 5 * i) = (N.chord i).h := by grind
+  have v1 : c.nmem (CB + 5 * i + 1) = (N.chord i).lp := by grind
+  have v2 : c.nmem (CB + 5 * i + 2) = (N.chord i).rp := by grind
   have hBc : Bases c d := hE.bases.frame fun q a1 a2 => r9 q (by omega) (by omega)
-    (by simp [Binit]; omega)
+    (by grind [Binit])
   have c00 : c.nreg 90000 = MD := by rw [r9 _ (by norm_num) (by norm_num) (by decide), hE.r00]
   have c01 : c.nreg 90001 = NFH := by rw [r9 _ (by norm_num) (by norm_num) (by decide), hE.r01]
   have c19 : c.nreg 90019 = 1 := by rw [r9 _ (by norm_num) (by norm_num) (by decide), hE.r19]
   have c21 : c.nreg 90021 = 2 := by rw [r9 _ (by norm_num) (by norm_num) (by decide), hE.r21]
   have hhlt : (N.chord i).h < P.n := by
     obtain ⟨-, -, -, -, -, -, -, -, -, hh, -⟩ := hE.hNF
-    rw [← hQn]; exact hh i ht
-  have hWP : P.n + 3 ≤ W := by have := hE.hWh; unfold hostWords at this; omega
+    grind
+  have hWP : P.n + 3 ≤ W := by have := hE.hWh; grind [hostWords]
   -- 1. the left query
   obtain ⟨c₁, k₁, e₁, hk₁, a00, a01, a02, a03, a91, am, ar⟩ := ndA_exec (P := P) c hw c00 c01 hp
     c19 v0 v1 (by omega) (by omega)
@@ -373,9 +342,9 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
   have g₁ : ∀ r, 90000 ≤ r → r < 100000 → Binit r = false → c₁.nreg r = c.nreg r :=
     fun r h1 h2 h3 => ar r (by omega) (by omega) (by omega) (by omega)
       (by simp [Binit] at h3; omega) (by simp [Binit] at h3; omega) (by simp [Binit] at h3; omega)
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := ar _ (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
+  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := ar _ (by omega_nf)
+    (by omega_nf) (by omega_nf) (by omega_nf)
+    (by omega_nf) (by omega_nf) (by omega_nf)
   have hag₁ : ∀ a, a < d.b0 → c₁.nmem a = c₀.nmem a := fun a ha => by rw [am, hb0 a ha]
   obtain ⟨hdesc₁, hwf₁⟩ := desc_agree' hE.wf hE.desc hag₁
   have hNW₁ : NFWithin c₁.nmem NFH d.b0 N := hE.nfw.transport hag₁
@@ -403,17 +372,17 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
   have w₂ := e₂.wb_right
   have g₂ : ∀ r, 90000 ≤ r → r < 100000 → Binit r = false → c₂.nreg r = c.nreg r :=
     fun r h1 h2 h3 => by
-      rw [R2 r (band_ne h1 h2) (by unfold ALLOC; omega) (by simp [Binit] at h3; omega)
+      rw [R2 r (band_ne h1 h2) (by omega_nf) (by simp [Binit] at h3; omega)
         (by simp [Binit] at h3; omega) (by simp [Binit] at h3; omega), g₁ r h1 h2 h3]
   have c2_71 : c₂.nreg 90071 = CB + 5 * i := by
-    rw [R2 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+    rw [R2 _ (band_ne (by norm_num) (by norm_num)) (by grind) (by decide)
       (by decide) (by decide), ar _ (by decide) (by decide) (by decide) (by decide) (by decide)
       (by decide) (by decide), hp]
   have c2_91 : c₂.nreg 90091 = (N.chord i).h + 1 := by
-    rw [R2 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+    rw [R2 _ (band_ne (by norm_num) (by norm_num)) (by omega_nf) (by decide)
       (by decide) (by decide), a91]
   have c2_70 : c₂.nreg 90070 = i := by
-    rw [R2 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+    rw [R2 _ (band_ne (by norm_num) (by norm_num)) (by grind) (by decide)
       (by decide) (by decide), ar _ (by decide) (by decide) (by decide) (by decide) (by decide)
       (by decide) (by decide), hii]
   have m2b : ∀ a, a < d.b0 → c₂.nmem a = c₀.nmem a := fun a ha => by
@@ -427,9 +396,9 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
     (by rw [m2b _ (by omega), ch2]) (by omega)
   rw [c2_91] at b03
   have w₃ := e₃.wb_right
-  have hA₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := br _ (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega)
+  have hA₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := br _ (by omega_nf)
+    (by omega_nf) (by omega_nf) (by omega_nf)
+    (by omega_nf)
   have hag₃ : ∀ a, a < d.b0 → c₃.nmem a = c₀.nmem a := fun a ha => by rw [bm, m2b a ha]
   obtain ⟨hdesc₃, hwf₃⟩ := desc_agree' hE.wf hE.desc hag₃
   have hNW₃ : NFWithin c₃.nmem NFH d.b0 N := hE.nfw.transport hag₃
@@ -465,20 +434,20 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
   have w₄ := e₄.wb_right
   have g₄ : ∀ r, 90000 ≤ r → r < 100000 → Binit r = false → c₄.nreg r = c.nreg r :=
     fun r h1 h2 h3 => by
-      rw [R4 r (band_ne h1 h2) (by unfold ALLOC; omega) (by simp [Binit] at h3; omega)
+      rw [R4 r (band_ne h1 h2) (by omega_nf) (by simp [Binit] at h3; omega)
         (by simp [Binit] at h3; omega) (by simp [Binit] at h3; omega), g₃ r h1 h2 h3]
   have c4_71 : c₄.nreg 90071 = CB + 5 * i := by
-    rw [R4 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+    rw [R4 _ (band_ne (by norm_num) (by norm_num)) (by omega_nf) (by decide)
       (by decide) (by decide), br _ (by decide) (by decide) (by decide) (by decide) (by decide),
       c2_71]
   have c4_70 : c₄.nreg 90070 = i := by
-    rw [R4 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+    rw [R4 _ (band_ne (by norm_num) (by norm_num)) (by omega_nf) (by decide)
       (by decide) (by decide), br _ (by decide) (by decide) (by decide) (by decide) (by decide),
       c2_70]
   have c4_76 : c₄.nreg 90076 = 5 := by
-    rw [R4 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+    rw [R4 _ (band_ne (by norm_num) (by norm_num)) (by omega_nf) (by decide)
       (by decide) (by decide), br _ (by decide) (by decide) (by decide) (by decide) (by decide),
-      R2 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+      R2 _ (band_ne (by norm_num) (by norm_num)) (by omega_nf) (by decide)
       (by decide) (by decide), ar _ (by decide) (by decide) (by decide) (by decide) (by decide)
       (by decide) (by decide), h76]
   -- 3. advance
@@ -500,8 +469,8 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
   have NA := exec_natOnly e₁ (by simp [ndA, natOnly, natOK, block])
   have NC := exec_natOnly e₃ (by simp [ndC, natOnly, natOK, block])
   have NE := exec_natOnly e₅ (by simp [ndE, natOnly, natOK, block])
-  have hA₅ : c₅.nreg ALLOC = c₄.nreg ALLOC := dr _ (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega)
+  have hA₅ : c₅.nreg ALLOC = c₄.nreg ALLOC := dr _ (by omega_nf)
+    (by omega_nf)
   refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))),
     ⟨e₅.wb_right, by omega, by rw [d71, d70, hE.r13]; ring, ?_, fun r h1 h2 h3 => ?_,
       fun r h1 h2 => ?_, fun r h1 => ?_, fun a ha => ?_, ?_, ?_, ?_,
@@ -519,7 +488,7 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
       simp only [Finset.mem_insert, Finset.mem_singleton] at h ⊢
       rcases h with h | h
       · exact Or.inl h
-      · exact Or.inr (Or.inl h)
+      omega
     have hn5 : ¬ (50000 ≤ r ∧ r < 60000) := by
       intro h; apply h15; simp only [bandOf, bLocate, Finset.mem_insert, Finset.mem_singleton]
       omega
@@ -538,16 +507,13 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
       hm1]
     by_cases hui : u = i
     · subst hui
-      rw [Machine.upd_other _ _ _ (by omega)]; simp only [Machine.upd_same]
-      exact ⟨x0lt, x0pk⟩
+      rw [Machine.upd_other _ _ _ (by omega)]; ram_simp
     · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
       exact hnd0 u (by omega)
   · rw [d70] at hu
     rw [M5 _ (by omega), Machine.upd_other _ _ _ (by omega)]
     by_cases hui : u = i
-    · subst hui
-      simp only [Machine.upd_same]
-      exact ⟨x1lt, x1pk⟩
+    · ram_simp
     · rw [Machine.upd_other _ _ _ (by omega), hm1, Machine.upd_other _ _ _ (by omega),
         Machine.upd_other _ _ _ (by omega)]
       exact hnd1 u (by omega)
@@ -595,21 +561,17 @@ theorem ndLoop_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
     · refine ⟨rfl, ⟨by assumption, ?_, ?_, ?_, fun r h1 h2 h3 => ?_, fun r h1 h2 => ?_,
         fun r _ => rfl, fun a _ => rfl, rfl, ?_, ?_, fun u hu => ?_, fun u hu => ?_,
         fun j hj => ?_, fun a _ _ _ => rfl⟩, ?_⟩
-      · config_simp; omega
-      · config_simp; omega
+      · simp_all
+      · simp_all
       · config_simp
-      · simp only [Binit, decide_eq_false_iff_not] at h3
-        config_simp; simp only [upd]; split_ifs <;> first | rfl | omega
-      · have : r < 90000 ∨ 100000 ≤ r := by
-          by_contra hc; apply h1; simp only [bandOf, bGran, Finset.mem_insert,
-            Finset.mem_singleton]; omega
-        config_simp; simp only [upd]; split_ifs <;> first | rfl | omega
-      · config_simp; simp only [upd, ALLOC]; simp
-      · config_simp; simp only [upd, ALLOC]; simp
-      · simp [upd] at hu
-      · simp [upd] at hu
-      · config_simp; rw [hE.cnt0 j hj]; simp [cntInit]
-      · config_simp
+      · grind [Binit, decide_eq_false_iff_not, upd]
+      · grind [bandOf, bGran, Finset.mem_insert, Finset.mem_singleton, upd]
+      · omega_nf
+      · omega_nf
+      · simp_all
+      · simp_all
+      · config_simp; rw [hE.cnt0 j hj]; aesop
+      simp_all
   obtain ⟨c', k, e, I', hx, hk, hA'⟩ := SortR.whileLtN_potential_lb (P := P) (W := W)
     (a := 90070) (b := 90010) (body := ndBody) (NdI P W d M N c₀)
     (fun c => (N.nChords - c.nreg 90070) * (2 * NFLoc.locCost 5100 N.arcs.length + 32))
@@ -621,18 +583,15 @@ theorem ndLoop_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
       refine ⟨c', k, e, I', ?_, ha⟩
       rw [hi]
       have : N.nChords - c.nreg 90070 = (N.nChords - (c.nreg 90070 + 1)) + 1 := by omega
-      rw [this, Nat.add_mul, one_mul]
-      omega) q
+      grind [Nat.add_mul, one_mul]) q
   have hK' : c'.nreg 90070 = N.nChords := by
     rw [I'.r9 90010 (by norm_num) (by norm_num) (by decide), hE.r10] at hx
-    have := I'.i_le; omega
+    ram_grind
   refine ⟨c', _, .seq e₁ e, ?_, I', hK', ?_⟩
-  · rw [q0, Nat.sub_zero] at hk
-    omega
+  · grind
   · have h1 := q.al1
     have h2 := q.al2
-    rw [q0, Nat.zero_mul, Nat.add_zero] at h2
-    omega
+    grind
 
 end
 

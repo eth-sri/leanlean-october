@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreTIntKey
 
 /-!
@@ -29,8 +31,7 @@ theorem TGood.kind (hE : TGood P W M N c₀) :
     (c₀.nmem (c₀.nreg 83000) = 1 ∧ M = interiorModel (Qof P) ∧
       (c₀.nmem (c₀.nreg 83000 + 1) = 1 ↔ Mountain.LeftInside (Qof P))) := by
   rcases hE.hMD with ⟨h0, H, C, -, hM⟩ | ⟨h1, hbit, hM⟩
-  · exact Or.inl ⟨h0, C, hM⟩
-  · exact Or.inr ⟨h1, hM, hbit⟩
+  all_goals simp_all
 
 /-- The walk of the interior model has `n` vertices. -/
 theorem interior_n : (interiorModel (Qof P)).W.n = P.n := by
@@ -39,17 +40,7 @@ theorem interior_n : (interiorModel (Qof P)).W.n = P.n := by
 theorem Bik_band (r : ℕ) (h : Bik r = true) : bandOf r ∈ primBands ∧ r ≠ ALLOC := by
   unfold Bik at h
   simp only [Bool.or_eq_true, beq_iff_eq, Bool.and_eq_true, decide_eq_true_eq] at h
-  rcases h with ((((h | h) | h) | h) | h) | h
-  · have := Bdir_band r h
-    refine ⟨?_, this.2⟩
-    have h1 := this.1
-    simp only [Finset.mem_insert, Finset.mem_singleton] at h1
-    simp only [primBands, Finset.mem_insert, Finset.mem_singleton]
-    tauto
-  all_goals first
-    | (subst h; exact ⟨by simp [primBands, bandOf, bLocate], by unfold ALLOC; omega⟩)
-    | exact ⟨by simp only [primBands, bandOf, bLocate, bSign, Finset.mem_insert,
-        Finset.mem_singleton]; omega, by unfold ALLOC; omega⟩
+  core_grind [Chazelle.Core.NFLoc.Bdir, Finset.mem_insert, Finset.mem_singleton, bLocate, bSign]
 
 /-- **The key comparison of both models.** -/
 def gKey (a b d e : ℕ) : Stmt := .ifLtN 83021 83023 (keyCmp a b d e) (iKey a b d e)
@@ -64,32 +55,30 @@ theorem gKey_ok : KeyOK gKey 11010 := by
   · -- a chain model
     obtain ⟨H, C', hC, hM', hwf⟩ := hI.chain hE hM
     have hx' : PosOK C' (Qof P) P.n ⟨c.nreg a, c.nreg b⟩ := by
-      subst hM'; exact ⟨hx.1, hx.2.1, hx.2.2 C' rfl⟩
+      ram_grind
     have hy' : PosOK C' (Qof P) P.n ⟨c.nreg d, c.nreg e⟩ := by
-      subst hM'; exact ⟨hy.1, hy.2.1, hy.2.2 C' rfl⟩
-    obtain ⟨c', k, ex, hk, b1, b2, hf⟩ := keyCmp_exec (by unfold InR; omega) (by unfold InR; omega)
-      (by unfold InR; omega) (by unfold InR; omega) hI.hw hE.hG hE.hW hwf hC hI.h22 hx' hy'
+      ram_grind
+    obtain ⟨c', k, ex, hk, b1, b2, hf⟩ := keyCmp_exec (by omega_nf) (by omega_nf)
+      (by omega_nf) (by omega_nf) hI.hw hE.hG hE.hW hwf hC hI.h22 hx' hy'
       (hE.hWm C' hM') (by omega)
     obtain ⟨hI', hrf, h8⟩ := hI.prim ex.wb_right hf
-    refine ⟨c', k + 1, .ifLtN_true (by rw [h21, h23, h0]; omega) ex, by omega, ?_, ?_,
+    refine ⟨c', k + 1, .ifLtN_true (by omega) ex, by omega, ?_, ?_,
       hI', hrf.mono subset_rfl (by omega), h8⟩
-    · rw [hM']; exact b1
-    · rw [hM']; exact b2
+    all_goals simp_all
   · -- the interior model
     subst hMi
     have hn := interior_n (P := P)
     obtain ⟨hMD, hwf⟩ := hI.modelDesc hE
-    have hD : c.nreg 83000 + 1 ≤ W := by have := hwf.1; have := hI.hw.1 ALLOC; omega
+    have hD : c.nreg 83000 + 1 ≤ W := by ram_grind
     have hmd : c.nmem (c.nreg 83000 + 1) = c₀.nmem (c₀.nreg 83000 + 1) := by
-      rw [i0, hI.hm _ (by have := hE.hwfMD.1; omega)]
+      ram_grind
     obtain ⟨c', k, ex, hk, b1, b2⟩ := iKey_exec (P := P) (a := a) (b := b) (d := d) (e := e)
-      hE.hG (by have := hE.hW; unfold hostWords at this; omega) hI.hw hbit hmd hD
-      (by intro r hr; simp only [List.mem_cons, List.not_mem_nil, or_false] at hr
-          rcases hr with rfl | rfl | rfl | rfl <;> omega)
-      hx.2.1 hy.2.1 (by rw [← hn]; exact hx.1) (by rw [← hn]; exact hy.1)
+      hE.hG (by have := hE.hW; grind [hostWords]) hI.hw hbit hmd hD
+      (by simp_all)
+      hx.2.1 hy.2.1 (by ram_grind) (by ram_grind)
     have hfr : FrameB Bik c c' := exec_frameB ex (wr_iKey a b d e)
     obtain ⟨hI', hrf, h8⟩ := hI.prim ex.wb_right (frame_of_frameB hfr Bik_band k)
-    refine ⟨c', k + 2, .ifLtN_false (by rw [h21, h23, h1]; omega) ex, by omega, b1, b2,
+    refine ⟨c', k + 2, .ifLtN_false (by omega) ex, by omega, b1, b2,
       hI', hrf.mono subset_rfl (by omega), h8⟩
 
 end

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterAlloc
 
 /-!
@@ -25,18 +27,24 @@ def cost1 (g : GV) : ℕ := (7 * g.μ + 8 * g.L + 100) +
   ((280 * g.N + 12 * g.N * g.L + 7 * g.L + 120) + ((80 * g.μ + 6 * g.L + 60) +
   (40 * (g.μ + g.N) + 40)))))
 
+section
+variable (g : GV) (m : ℕ → ℕ)
+include g m
 /-- The block of a vertex, read from memory. -/
-def boOf (g : GV) (m : ℕ → ℕ) : ℕ → ℕ :=
+def boOf : ℕ → ℕ :=
   blkOf g.μ (fun v => m (g.base 3 + v)) (fun l => m (g.base 36 + l)) (fun l => m (g.base 35 + l))
 
 /-- The key of a vertex, read from memory. -/
-def keyOf' (g : GV) (m : ℕ → ℕ) : ℕ → ℕ := fun v => m (g.base 29 + m (g.base 0 + v))
+def keyOf' : ℕ → ℕ := fun v => m (g.base 29 + m (g.base 0 + v))
+
+
+end
 
 /-- **The facts after the first phase.** -/
 structure PostD (g : GV) {F : Type} [Fintype F] [DecidableEq F]
     (M : CombMap (Fin g.μ) F (Fin g.N)) (T : SpanTree M) (a : F → Fin g.N)
     (ha : ∀ f, M.face (a f) = f) (C : CoTree (starTree T a ha)) (R : BTree)
-    (first : Fin g.μ → Fin g.N) (preE slot : ℕ → ℕ) (ρ : ℕ) (W : ℕ) (m : ℕ → ℕ) : Prop where
+    (first : Fin g.μ → Fin g.N) (preE slot : ℕ → ℕ) (ρ W : ℕ) (m : ℕ → ℕ) : Prop where
   sf : SFacts M T a ha C R first preE slot (upTf T) g.k' (g.k' - 1 - ρ) (ssOf g) g.A0 g.U W m
   head : ∀ d : Fin g.N, T.level (M.head d) ≤ T.level (M.vert d) + 1
   lv : ∀ l, l < g.μ → LvOK g m (g.k' - 1 - ρ) l
@@ -54,8 +62,7 @@ structure PostD (g : GV) {F : Type} [Fintype F] [DecidableEq F]
 
 theorem B2F.congr {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     {M : CombMap (Fin g.μ) F (Fin g.N)} {T : SpanTree M} {a : F → Fin g.N}
-    {ha : ∀ f, M.face (a f) = f} {C : CoTree (starTree T a ha)} {R : BTree} {preE slot : ℕ → ℕ}
-    {m m' : ℕ → ℕ} (h : B2F g C R preE slot m)
+    {ha : ∀ f, M.face (a f) = f} {C : CoTree (starTree T a ha)} {R : BTree} {preE slot m m' : ℕ → ℕ} (h : B2F g C R preE slot m)
     (he : ∀ x, (g.base 26 ≤ x ∧ x < g.base 30) ∨
       (g.A0 + 54 * g.U + g.L * g.U ≤ x ∧ x < g.A0 + 54 * g.U + 2 * (g.L * g.U)) → m' x = m x) :
     B2F g C R preE slot m' := by
@@ -64,7 +71,7 @@ theorem B2F.congr {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have b30 := g.base_eq 30
   have hLN : ∀ j, j < g.L → ∀ x, x < g.N → j * g.N + x < g.L * g.U := fun j hj x hx => by
     have : (j + 1) * g.N ≤ g.L * g.U := Nat.mul_le_mul (by omega) (by omega)
-    rw [Nat.succ_mul] at this; omega
+    grind
   refine ⟨fun x hx => ?_, fun x hx => ?_, h.r0, fun x hx => ?_, fun x hx => ?_, h.R_ok, h.R_n,
     h.R_up, h.R_root, h.R_pre, fun j hj x hx => ?_⟩
   · have := x.2; rw [he _ (Or.inl ⟨by omega, by omega⟩)]; exact h.fpar x hx
@@ -83,15 +90,20 @@ theorem shift_div_lt {l cs k μ : ℕ} (hk : 0 < k) (hcs : cs < k) (_hkμ : k �
   have : t ≤ t * k := Nat.le_mul_of_pos_right _ hk
   omega
 
-theorem cntBelow_congr {f f' : ℕ → ℕ} {n r : ℕ} (h : ∀ v, v < n → f v = f' v) :
+section
+variable {f f' : ℕ → ℕ}
+theorem cntBelow_congr {n r : ℕ} (h : ∀ v, v < n → f v = f' v) :
     cntBelow f n r = cntBelow f' n r := by
   unfold cntBelow; congr 1
-  exact Finset.filter_congr (fun v hv => by rw [h v (Finset.mem_range.mp hv)])
+  grind
 
-theorem cntLt_congr {f f' : ℕ → ℕ} {n j : ℕ} (h : ∀ v, v < n → f v = f' v) :
+theorem cntLt_congr {n j : ℕ} (h : ∀ v, v < n → f v = f' v) :
     cntLt f n j = cntLt f' n j := by
   unfold cntLt; congr 1
-  exact Finset.filter_congr (fun v hv => by rw [h v (Finset.mem_range.mp hv)])
+  grind
+
+
+end
 
 theorem plPos_congr {μ : ℕ} {bo bo' key key' : ℕ → ℕ} (hb : ∀ w, w < μ → bo w = bo' w)
     (hk : ∀ w, w < μ → key w = key' w) {v : ℕ} (hv : v < μ) :
@@ -99,8 +111,7 @@ theorem plPos_congr {μ : ℕ} {bo bo' key key' : ℕ → ℕ} (hb : ∀ w, w < 
   unfold plPos rk
   rw [cntLt_congr hb, hb v hv]
   congr 2
-  exact Finset.filter_congr (fun w hw => by
-    simp only [hb w (Finset.mem_range.mp hw), hk w (Finset.mem_range.mp hw), hk v hv])
+  ram_grind
 
 end
 

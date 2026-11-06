@@ -36,10 +36,10 @@ theorem sideOf_rec {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N) {k : ℕ
   refine ⟨fun z hz hzD => ?_, fun z hz hzD => ?_⟩
   · obtain ⟨ε₀, hε₀, hε⟩ := h z hz hzD
     filter_upwards [Ioo_mem_nhdsGT hε₀] with δ hδ
-    simpa using (hε δ hδ.1 hδ.2).1
+    grind
   · obtain ⟨ε₀, hε₀, hε⟩ := h z hz hzD
     filter_upwards [Ioo_mem_nhdsGT hε₀] with δ hδ
-    simpa [sub_eq_add_neg] using (hε δ hδ.1 hδ.2).2
+    grind
 
 /-- **The side labels of a found chord.** -/
 theorem evSideLab_fused (hP : J.P.Simple) {Q : Polygon} {N : NF}
@@ -61,7 +61,7 @@ theorem evSideLab_fused (hP : J.P.Simple) {Q : Polygon} {N : NF}
     refine ⟨N.chord k, ?_, rfl⟩
     unfold NF.chord
     rw [NFLoc.getD_of_lt _ hk]
-    exact List.getElem_mem _
+    grind
   have hf : Merge.shoot J.whole a σ ∈ F₂plus J S₂ := shoot_end_mem hchm ha hfree
   have hfc : Merge.shoot J.whole a σ ⊆ ch := shoot_sub_end hS₂a hchm ha
   have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
@@ -69,10 +69,10 @@ theorem evSideLab_fused (hP : J.P.Simple) {Q : Polygon} {N : NF}
   have haD : a ∉ J.whole.dom := fun hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.right_set_subset haR)
   obtain ⟨pB, tB, hB, hpt⟩ := endpoint_attach hM hadm (origin_mem J) haD
-  have hoff := off_right_pt J hP hS₂a hS₂f hB.1 hB.2.1 hB.2.2.1 (by rw [hpt]; exact haR)
-    (by rw [hpt]; exact hav)
+  have hoff := off_right_pt J hP hS₂a hS₂f hB.1 hB.2.1 hB.2.2.1 (by simp_all)
+    (by simp_all)
   have hns : tB = 0 → sidePt (chainModel J.whole).W pB tB ≠ J.right.top := fun _ => by
-    rw [hpt]; exact hat
+    simp_all
   obtain ⟨hup, hdn⟩ := sideOf_rec hN hk
   obtain ⟨hreg, -⟩ := regOf_spec hN
   obtain ⟨hup', hdn', -⟩ := (regOf_spec hN).2.1 k hk

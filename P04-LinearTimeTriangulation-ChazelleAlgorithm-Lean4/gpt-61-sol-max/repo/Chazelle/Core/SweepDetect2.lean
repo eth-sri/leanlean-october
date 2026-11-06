@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepDetect
 public import Chazelle.Core.SweepQuery
 
@@ -57,16 +59,13 @@ theorem genuine_iff (C : Chain) {a : Point} (ha : a.2 ≤ C.top.2) {σ : ℝ} (h
   · rintro ⟨h0, hin, hout⟩
     have hfree : Merge.FreeAt C a σ := by
       filter_upwards [Ioo_mem_nhdsGT h0] with s hs
-      exact hin s hs.1 hs.2
+      simp_all
     refine ⟨hfree, ?_⟩
     obtain ⟨hT, hTD, hTdom⟩ := Merge.hit_of_freeAt C ha hσ hfree
-    rcases lt_trichotomy (C.hitParam a σ) τ with h | h | h
-    · exact absurd (hin _ hT h) hTD
-    · exact h
-    · exact absurd (hTdom τ h0 h) hout
+    ram_grind
   · rintro ⟨hfree, rfl⟩
     obtain ⟨hT, hTD, hTdom⟩ := Merge.hit_of_freeAt C ha hσ hfree
-    exact ⟨hT, hTdom, hTD⟩
+    ram_grind
 
 section ChainModel
 
@@ -88,9 +87,9 @@ theorem arrival_exists (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C.top.2) {σ 
     have := C.dom_subset_box (hdom (T / 2) (by linarith) (by linarith))
     simpa [rayPt] using this.2
   have he : w ∈ C.set ∨ (|w.1| = C.radius ∧ |w.2| < C.radius) := by
-    rcases (Merge.not_mem_dom_iff C (p := w) (by simpa [hw] using ha)).1 hwD with h | h
+    rcases (Merge.not_mem_dom_iff C (p := w) (by simp_all)).1 hwD with h | h
     · right
-      refine ⟨le_antisymm ?_ ?_, by simpa [hw] using hzR⟩
+      refine ⟨le_antisymm ?_ ?_, by simp_all⟩
       · by_contra hgt
         push Not at hgt
         set ε := min (T / 2) ((|w.1| - C.radius) / 2) with hε
@@ -99,28 +98,24 @@ theorem arrival_exists (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C.top.2) {σ 
         have hbox := C.dom_subset_box (hdom (T - ε) (by linarith) (by linarith))
         have h1 : |(rayPt a σ (T - ε)).1| < C.radius := hbox.1
         have h2 : |w.1| ≤ |(rayPt a σ (T - ε)).1| + ε := by
-          have e : w.1 = (rayPt a σ (T - ε)).1 + σ * ε := by simp [hw, rayPt]; ring
+          have e : w.1 = (rayPt a σ (T - ε)).1 + σ * ε := by core_grind
           rw [e]
           refine (abs_add_le _ _).trans ?_
-          rcases hσ with rfl | rfl <;> simp [abs_of_pos hε0]
-        have h3 : ε ≤ (|w.1| - C.radius) / 2 := min_le_right _ _
-        linarith
+          rcases hσ with rfl | rfl <;> grind
+        ram_grind
       · by_contra hlt
         push Not at hlt
-        exact h ⟨hlt, by simpa [hw] using hzR⟩
-    · exact Or.inl h
+        exact h ⟨hlt, by simp_all⟩
+    simp_all
   have hT2 : (0 : ℝ) < T / 2 := by linarith
   have hee : w ≠ rayPt w (-σ) (T / 2) := by
-    intro h
-    have := congrArg Prod.fst h
-    simp only [rayPt_fst] at this
-    rcases hσ with rfl | rfl <;> linarith
+    ram_grind
   have hopen : ∀ s ∈ Ioo (0 : ℝ) 1, lerp w (rayPt w (-σ) (T / 2)) s ∈ C.dom := by
     intro s hs
     have e : lerp w (rayPt w (-σ) (T / 2)) s = rayPt a σ (T - s * (T / 2)) := by
-      apply point_ext <;> simp [lerp, rayPt, hw]; ring
+      grind [lerp, rayPt]
     rw [e]
-    exact hdom _ (by nlinarith [hs.2]) (by nlinarith [hs.1])
+    exact hdom _ (by nlinarith [hs.2]) (by simp_all)
   obtain ⟨p, t, hp, ht, ht1, hpt, hl⟩ :=
     C.sideSees_chordEnd hP C.sideBeta hee (by simp [rayPt]) hopen he
   refine ⟨p, t, hp, ht, ht1, hpt, ?_⟩
@@ -137,7 +132,7 @@ theorem ray_chord_dichotomy {e : Set Point} (he : e ∈ Merge.augChords C) (w : 
     (hτ : τ = 1 ∨ τ = -1) :
     (∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w τ s ∈ e) ∨ (∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w τ s ∉ e) := by
   obtain ⟨y, l, r, hH, -, rfl, -, -⟩ := Merge.augChords_spec he
-  have hlr := hH.lt
+  
   by_cases hy : w.2 = y
   swap
   · right
@@ -146,34 +141,30 @@ theorem ray_chord_dichotomy {e : Set Point} (he : e ∈ Merge.augChords C) (w : 
   · by_cases h1 : w.1 < l
     · right
       filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < l - w.1 by linarith)] with s hs hm
-      have := hm.2.1; simp [rayPt] at this; linarith [hs.2]
+      have := hm.2.1; grind [rayPt]
     · by_cases h2 : w.1 < r
       · left
         filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < r - w.1 by linarith)] with s hs
-        refine ⟨by simp [rayPt, hy], ?_, ?_⟩ <;> simp [rayPt] <;> linarith [hs.1, hs.2]
+        refine ⟨by simp_all, ?_, ?_⟩ <;> simp [rayPt] <;> ram_grind
       · right
         filter_upwards [self_mem_nhdsWithin] with s hs hm
-        have := hm.2.2; simp [rayPt] at this
-        have hs' : (0 : ℝ) < s := hs
-        linarith
+        have := hm.2.2; grind [rayPt]
   · by_cases h1 : r < w.1
     · right
       filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < w.1 - r by linarith)] with s hs hm
-      have := hm.2.2; simp [rayPt] at this; linarith [hs.2]
+      have := hm.2.2; grind [rayPt]
     · by_cases h2 : l < w.1
       · left
         filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < w.1 - l by linarith)] with s hs
-        refine ⟨by simp [rayPt, hy], ?_, ?_⟩ <;> simp [rayPt] <;> linarith [hs.1, hs.2]
+        refine ⟨by simp_all, ?_, ?_⟩ <;> simp [rayPt] <;> ram_grind
       · right
         filter_upwards [self_mem_nhdsWithin] with s hs hm
-        have := hm.2.1; simp [rayPt] at this
-        have hs' : (0 : ℝ) < s := hs
-        linarith
+        have := hm.2.1; grind [rayPt]
 
 /-- The determinant of a walk edge against a horizontal shift of one of its points. -/
 theorem det_lerp_shift (u v : Point) (t α : ℝ) :
     det u v ((lerp u v t).1 + α, (lerp u v t).2) = -α * (v.2 - u.2) := by
-  simp only [det, Geometry.lerp_fst, Geometry.lerp_snd]; ring
+  grind [det, Geometry.lerp_fst, Geometry.lerp_snd]
 
 /-- **No cut inside a walk edge under an arriving ray off the chords**: at an arrival position
 inside a walk edge, if no chord of the family lies along the arriving ray, the key is not a
@@ -209,19 +200,18 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
     have := (hedge _).1 hsec
     have e : rayPt w (-σ) 1 = ((w.1 + -σ, w.2) : Point) := by
       apply point_ext <;> simp [rayPt]
-    rw [e, hshift] at this; linarith
+    grind
   have hlr := hH.lt
   set δ := min r₀ (r - l) / 2 with hδ
   have hδ0 : 0 < δ := by
-    have : 0 < min r₀ (r - l) := lt_min hr₀ (by linarith)
-    linarith
-  have hδr : δ < r₀ := by have := min_le_left r₀ (r - l); linarith
-  have hδl : δ < r - l := by have := min_le_right r₀ (r - l); linarith
+    grind
+  have hδr : δ < r₀ := by grind
+  have hδl : δ < r - l := by grind
   have hdist : ∀ α, |α| = δ → dist ((w.1 + α, w.2) : Point) w < r₀ := by
     intro α hα
     rw [Prod.dist_eq]
     simp only [dist_self, Real.dist_eq, add_sub_cancel_left]
-    rw [hα, max_eq_left hδ0.le]; exact hδr
+    grind
   have hno' := fun e he => hno e he
   -- `w` is an end of the chord
   rcases hwl.lt_or_eq with hl | hl
@@ -229,8 +219,8 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
     · exact hwD (by rw [show w = ((w.1, y) : Point) from Prod.ext rfl hwy]; exact hH.open_mem _ hl hr)
     · -- `w` is the right end: the chord leaves it to the left
       have hx : sideLeft (chainModel C).W p t ((w.1 + -δ, w.2) : Point) :=
-        hnear _ ⟨by simpa using hwy, by linarith, by linarith⟩
-          (fun h => by have := congrArg Prod.fst h; simp at this; linarith)
+        hnear _ ⟨by omega, by linarith, by linarith⟩
+          (fun h => by ram_grind)
           (hdist _ (by rw [abs_neg, abs_of_pos hδ0]))
       rw [hedge, hshift] at hx
       have hσ1 : σ = 1 := by
@@ -240,11 +230,11 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
       subst hσ1
       apply hno' _ hcF
       filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < r - l by linarith)] with s hs
-      refine ⟨by simp [rayPt, hwy], ?_, ?_⟩ <;> simp [rayPt] <;> linarith [hs.1, hs.2]
+      refine ⟨by grind [rayPt], ?_, ?_⟩ <;> simp [rayPt] <;> grind
   · -- `w` is the left end: the chord leaves it to the right
     have hx : sideLeft (chainModel C).W p t ((w.1 + δ, w.2) : Point) :=
-      hnear _ ⟨by simpa using hwy, by linarith, by linarith⟩
-        (fun h => by have := congrArg Prod.fst h; simp at this; linarith)
+      hnear _ ⟨by omega, by linarith, by linarith⟩
+        (fun h => by ram_grind)
         (hdist _ (abs_of_pos hδ0))
     rw [hedge, hshift] at hx
     have hσ1 : σ = -1 := by
@@ -254,7 +244,7 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
     subst hσ1
     apply hno' _ hcF
     filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < r - l by linarith)] with s hs
-    refine ⟨by simp [rayPt, hwy], ?_, ?_⟩ <;> simp [rayPt] <;> linarith [hs.1, hs.2]
+    refine ⟨by grind [rayPt], ?_, ?_⟩ <;> simp [rayPt] <;> grind
 
 end ChainModel
 

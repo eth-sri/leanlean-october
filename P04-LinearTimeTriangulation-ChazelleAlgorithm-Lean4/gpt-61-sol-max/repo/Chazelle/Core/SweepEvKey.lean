@@ -34,32 +34,37 @@ def DirAt (W : Polygon) (e : Set Point) (p : ℕ) (t d : ℝ) : Prop :=
 theorem DirAt.cases {W : Polygon} {e : Set Point} {p : ℕ} {t d : ℝ} (h : DirAt W e p t d) :
     d = 1 ∨ d = -1 := by
   rcases h with ⟨h, -⟩ | ⟨h, -⟩
-  · exact Or.inl h
-  · exact Or.inr h
+  all_goals simp_all
 
 section Key
 
 variable {M : Model}
 
+section
+variable (hM : WalkAx M)
+include hM
 /-- Every attached chord leaves its position in some direction. -/
-theorem dirAt_exists (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : ℕ} {t : ℝ}
+theorem dirAt_exists {c : Set Point} (hc : c ∈ M.Adm) {p : ℕ} {t : ℝ}
     (hA : SideAttach M.W c p t) : ∃ d, DirAt M.W c p t d := by
   rcases hM.attach_dir hc hA with h | h
   · exact ⟨1, Or.inl ⟨rfl, h⟩⟩
   · exact ⟨-1, Or.inr ⟨rfl, h⟩⟩
 
 /-- **The two sides of a chord are distinct regions.** -/
-theorem side_regions_ne (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
+theorem side_regions_ne {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
     {c : Set Point} (hc : c ∈ F) {p : ℕ} {t : ℝ} (hA : SideAttach M.W c p t) {U V : Set Point}
     (hU : U ∈ M.regions F) (hV : V ∈ M.regions F) (hSU : SideOf M 1 c U)
     (hSV : SideOf M (-1) c V) : U ≠ V := by
   obtain ⟨U', V', hU', hV', hne, hside, -⟩ := chordSides_of_system (hM.sys F hF hfin) hc
   obtain ⟨z, hz, hzD⟩ := exists_mem_dom hM (hF hc) hA
-  have hS1 : SideOf M 1 c U' := fun z hz hzD => (hside z hz hzD).mono fun δ h => by simpa using h.1
+  have hS1 : SideOf M 1 c U' := fun z hz hzD => (hside z hz hzD).mono fun δ h => by grind
   have hS2 : SideOf M (-1) c V' := fun z hz hzD => (hside z hz hzD).mono fun δ h => by
-    simpa [sub_eq_add_neg] using h.2
+    grind [sub_eq_add_neg]
   rw [sideOf_eq hU hU' hSU hS1 hz hzD, sideOf_eq hV hV' hSV hS2 hz hzD]
   exact hne
+
+
+end
 
 /-- **The local structure at a key.** -/
 theorem keyStruct {Q : Polygon} {F : Set (Set Point)} (hGM : GoodModel M)
@@ -81,8 +86,7 @@ theorem keyStruct {Q : Polygon} {F : Set (Set Point)} (hGM : GoodModel M)
         SideAttach M.W ce p t ∧ SideAttach M.W cw p t ∧ (∀ z ∈ ce, (sidePt M.W p t).1 ≤ z.1) ∧
         (∀ z ∈ cw, z.1 ≤ (sidePt M.W p t).1) ∧ cw ≠ ce := by
       rcases hM.tie_pair hF he he' hne.symm hA hA' with ⟨h1, h2⟩ | ⟨h1, h2⟩
-      · exact ⟨e, e', he, he', hA, hA', h1, h2, hne⟩
-      · exact ⟨e', e, he', he, hA', hA, h2, h1, hne.symm⟩
+      all_goals grind
     obtain ⟨-, hhor, hall⟩ := hM.tie_shape hF hce hcw hAe hAw hE hW
     have hT := fun {G} (hG : G ∈ M.regions F) => after_side_tie hGM hFam hce hcw hnew hAe hAw hE hW hG
     have mid := fun {ρ U} (hρ : ρ = 1 ∨ ρ = -1) (hU : U ∈ M.regions F) (hS : SideOf M ρ ce U) =>
@@ -105,9 +109,7 @@ theorem keyStruct {Q : Polygon} {F : Set (Set Point)} (hGM : GoodModel M)
         fun h => ((mid (Or.inr rfl) hR h).2.2.2 hup).1 rfl⟩
   · push Not at htie
     have huniq : ∀ e' ∈ F, SideAttach M.W e' p t → e' = e := by
-      intro e' he' hA'
-      by_contra hne
-      exact htie e' he' hne hA'
+      grind
     obtain ⟨d, hd⟩ := dirAt_exists hM (hF he) hA
     exact ⟨e, e, d, d, he, he, hA, hA, hd, hd, fun c hc hc' => Or.inl (huniq c hc hc'),
       fun R hR hR' => after_side hGM hFam he hA huniq hd hR hR',
@@ -134,9 +136,11 @@ section Junction
 
 variable {J : Merge.Junction}
 
+section
+variable (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite)
+include hP hS₂ hS₂f
 /-- **`faced_both_arcs` in offsets.** -/
-theorem faced_both_off (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {c : Set Point}
+theorem faced_both_off {c : Set Point}
     (hc : c ∈ F₂plus J S₂) {pa pb : ℕ} {ta tb : ℝ}
     (hA : SideAttach (chainModel J.whole).W c pa ta) (hB : SideAttach (chainModel J.whole).W c pb tb)
     (hAB : oW J (pa + ta) < oW J (pb + tb)) {R : Set Point}
@@ -160,8 +164,7 @@ theorem faced_both_off (hP : J.P.Simple) {S₂ : Set (Set Point)}
 
 /-- **A region faced just before a key of positive offset**, with non-cut positions facing it
 arbitrarily close before the key and no cut in between. -/
-theorem before_region_exists' (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {p : ℕ} {t : ℝ}
+theorem before_region_exists' {p : ℕ} {t : ℝ}
     (hp : p < (chainModel J.whole).W.n) (ht0 : 0 ≤ t) (ht1 : t < 1) (hpos : 0 < oW J (p + t))
     {ε : ℝ} (hε : 0 < ε) :
     ∃ R ∈ (chainModel J.whole).regions (F₂plus J S₂), BeforeFaces (chainModel J.whole) p t R ∧
@@ -186,41 +189,38 @@ theorem before_region_exists' (hP : J.P.Simple) {S₂ : Set (Set Point)}
         oW J (q + u) = oW J (p + t) - s := by
     intro s hs0 hs1 hst
     rcases ht0.lt_or_eq with htp | rfl
-    · refine ⟨p, t - s, hp, ⟨by linarith [hst htp], by linarith⟩, ?_, ?_⟩
-      · rw [hX, ite_eq_left (Or.inl htp)]; ring
+    · refine ⟨p, t - s, hp, ⟨by grind, by linarith⟩, ?_, ?_⟩
+      · grind
       · exact off_before_edge hg hp hs0 (hst htp) ht1
     · refine ⟨(p + n - 1) % n, 1 - s, Nat.mod_lt _ hn0, ⟨by linarith, by linarith⟩, ?_,
         off_before_vertex hg hp hs0 hs1 hpos⟩
       rcases Nat.eq_zero_or_pos p with rfl | hp1
       · rw [hX, ite_eq_right (by simp), show (0 + n - 1) % n = n - 1 by
           rw [Nat.mod_eq_of_lt (by omega)]; omega, Nat.cast_sub (by omega)]
-        push_cast; ring
+        grind
       · rw [hX, ite_eq_left (Or.inr (show 1 ≤ p by omega)), show (p + n - 1) % n = p - 1 by
           rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right,
             Nat.mod_eq_of_lt (by omega)], Nat.cast_sub (by omega)]
-        push_cast; ring
+        grind
   obtain ⟨δ₀, hδ₀, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (eventually_not_cut_before hM hC.hF hC.hfin X)
   have hδ₀' : (0 : ℝ) < δ₀ := hδ₀
   set δ := min (min δ₀ ε) (min 1 (if 0 < t then t else 1)) with hδ
-  have hT : 0 < (if 0 < t then t else 1) := by split_ifs with h <;> linarith
+  have hT : 0 < (if 0 < t then t else 1) := by grind
   have hδ0 : 0 < δ := lt_min (lt_min hδ₀' hε) (lt_min one_pos hT)
   have hδ1 : δ ≤ δ₀ := le_trans (min_le_left _ _) (min_le_left _ _)
   have hδ2 : δ ≤ ε := le_trans (min_le_left _ _) (min_le_right _ _)
   have hδ3 : δ ≤ 1 := le_trans (min_le_right _ _) (min_le_left _ _)
   have hδ4 : 0 < t → δ ≤ t := fun h => by
-    have := le_trans (min_le_right (min δ₀ ε) _) (min_le_right 1 (if 0 < t then t else 1))
-    rw [ite_eq_left h] at this
-    rw [hδ, ite_eq_left h]; exact this
+    grind
   have hnc : ∀ s, 0 < s → s < δ → ∀ (q : ℕ) (u : ℝ), (q : ℝ) + u = X - s →
       ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (q + u) := by
     intro s hs0 hs1 q u hqu
     have := hsub ⟨hs0, lt_of_lt_of_le hs1 hδ1⟩
-    rw [Set.mem_ofPred_eq] at this
-    rwa [hqu]
+    grind
   -- the position at `δ / 2`
   obtain ⟨q, u, hq, hu, hqu, hoff⟩ := hw (δ / 2) (by linarith) (by linarith)
-    (fun h => by linarith [hδ4 h])
+    (fun h => by grind)
   have hnc0 := hnc (δ / 2) (by linarith) (by linarith) q u hqu
   obtain ⟨R, hR, hfR⟩ := hM.exists_faces_of_not_cut hC.hF hC.hfin hq hu hnc0
   have hgap : ∀ x, (chainModel J.whole).IsCut (F₂plus J S₂) x → 0 ≤ x →
@@ -228,14 +228,17 @@ theorem before_region_exists' (hP : J.P.Simple) {S₂ : Set (Set Point)}
     rintro x hx hx0 hxn ⟨h1, h2⟩
     set s' := oW J (p + t) - oW J x with hs'
     obtain ⟨q', u', hq', hu', hqu', hoff'⟩ := hw s' (by linarith) (by linarith)
-      (fun h => by linarith [hδ4 h])
+      (fun h => by grind)
     have hk := Corr.key_mem hq' hu'.1.le hu'.2
     have hxeq : x = (q' : ℝ) + u' :=
       off_inj hg0 hgn hx0 hxn hk.1 hk.2 (by rw [← oW_eq, ← oW_eq, hoff', hs']; ring)
     exact hnc s' (by linarith) (by linarith) q' u' hqu' (hxeq ▸ hx)
   refine ⟨R, hR, before_faces_of_gap hM hC.hF hC.hfin hg0 hgn hR hq hu hnc0 hfR hp ht0 ht1
     (by rw [← oW_eq, ← oW_eq, hoff]; linarith) hgap, q, u, hq, hu, hnc0, hfR,
-    by rw [hoff]; linarith, by rw [hoff]; linarith, hgap⟩
+    by linarith, by linarith, hgap⟩
+
+
+end
 
 end Junction
 

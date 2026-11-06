@@ -37,7 +37,7 @@ theorem piece_stretches {M : Model} {Cα : Chain} {p₀ J : ℕ} (hp₀ : p₀ <
   · rw [hV d (by omega), WalkEmbed.walk_tour Cα J d (by omega)]
   · have e1 : ((p₀ + (2 * Cα.m - tpos Cα J)) % M.W.n + d) % M.W.n =
         (p₀ + ((2 * Cα.m - tpos Cα J) + d)) % M.W.n := by
-      rw [Nat.mod_add_mod, Nat.add_assoc]
+      simp_all +arith
     have e2 : (6 + d) % (chainModel Cα).W.n =
         (6 + tpos Cα J + (2 * Cα.m - tpos Cα J) + 7 + d) % (chainModel Cα).W.n := by
       rw [hn', show 6 + tpos Cα J + (2 * Cα.m - tpos Cα J) + 7 + d =
@@ -58,7 +58,7 @@ theorem dir_correct {M : Model} {Q : Polygon} (hDH : DistinctHeights Q) {Cα : C
   have v0 : Cα.vertex 0 = Q.vtx Cα.s := by
     unfold Chain.vertex Chain.edgeIdx; rw [hQ, Nat.add_zero, Nat.mod_eq_of_lt hsP]
   have vm : Cα.vertex Cα.m = Q.vtx ((Cα.s + Cα.m) % Q.n) := by
-    unfold Chain.vertex Chain.edgeIdx; rw [hQ]
+    grind [Chain.vertex, Chain.edgeIdx]
   have hs0 : (s + 0) % M.W.n = s := by rw [Nat.add_zero, Nat.mod_eq_of_lt hsn]
   rcases hdir with hu | hd
   · have e := hu 0 (Nat.zero_le _)
@@ -77,7 +77,7 @@ theorem dir_correct {M : Model} {Q : Polygon} (hDH : DistinctHeights Q) {Cα : C
       · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at h'; omega
     have hhs : h = (Cα.s + Cα.m) % Q.n := by
       by_contra hne'; exact hDH h _ hh hlt hne' (by rw [hy, e])
-    rw [ite_eq_right (by rw [hhs]; exact hne)]
+    rw [ite_eq_right (by omega)]
     intro d hd'; rw [hd d hd', ShootCut.tourV_down Cα hd']
 
 end

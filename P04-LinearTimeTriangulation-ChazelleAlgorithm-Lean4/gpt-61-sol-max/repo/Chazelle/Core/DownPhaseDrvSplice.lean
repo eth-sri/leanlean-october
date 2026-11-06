@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildCmp
 
 /-!
@@ -28,15 +30,17 @@ variable {M : Model} {Q : Polygon} {L L₂ : List (ℕ × ℕ × ℕ)} {E E₂ :
 
 /-! ## S-M1 -/
 
+section
+variable (hK : 0 < L.length)
+include hK
 /-- **The arcs of `buildNF` are the gaps of the event list, in order.** -/
-theorem buildNF_arcs (hK : 0 < L.length) :
+theorem buildNF_arcs :
     (buildNF M Q L E).arcs = (gapStarts M Q L E).map (arcRec M Q L E) := by
   show arcList M Q L E = _
-  unfold arcList
-  rw [ite_eq_right (by omega)]
+  grind [arcList]
 
 /-- Arc `j` runs from the event at `gapStarts j` to the next event. -/
-theorem buildNF_arc (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+theorem buildNF_arc {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
     (buildNF M Q L E).arcs.getD j ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ =
       { reg := (arcRec M Q L E ((gapStarts M Q L E).getD j 0)).reg,
         s := wposOf L (E.getD ((gapStarts M Q L E).getD j 0) 0),
@@ -44,27 +48,31 @@ theorem buildNF_arc (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).
   rw [buildNF_arcs hK, List.getD_eq_getElem?_getD, List.getElem?_map,
     List.getElem?_eq_getElem hj, Option.map_some, Option.getD_some,
     show (gapStarts M Q L E)[j] = (gapStarts M Q L E).getD j 0 by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some]]
+      simp_all]
   rfl
+
+
+end
 
 /-- The arc sequence of `buildNF` is the identity order. -/
 theorem buildNF_seq : (buildNF M Q L E).seq = List.range (buildNF M Q L E).arcs.length := rfl
 
 /-! ## S-M2 -/
 
-theorem getD_append_left {c : ℕ} (hc : c < 2 * L.length) :
-    (L ++ L₂).getD (c / 2) (0, 0, 0) = L.getD (c / 2) (0, 0, 0) := by
-  rw [List.getD_append _ _ _ _ (by omega)]
+section
+variable {c : ℕ} (hc : c < 2 * L.length)
+include hc
 
 /-- **Old event codes name the same walk positions after appending chords.** -/
-theorem wposOf_append {c : ℕ} (hc : c < 2 * L.length) : wposOf (L ++ L₂) c = wposOf L c := by
-  unfold wposOf
-  simp only [BuildRegions.crec]
-  rw [getD_append_left hc]
+theorem wposOf_append : wposOf (L ++ L₂) c = wposOf L c := by
+  grind [wposOf, BuildRegions.crec]
 
-theorem tieBit_append {c : ℕ} (hc : c < 2 * L.length) : tieBit M (L ++ L₂) c = tieBit M L c := by
+theorem tieBit_append : tieBit M (L ++ L₂) c = tieBit M L c := by
   unfold tieBit
   rw [wposOf_append hc]
+
+
+end
 
 theorem codeLe_append {c c' : ℕ} (hc : c < 2 * L.length) (hc' : c' < 2 * L.length) :
     codeLe M Q (L ++ L₂) c c' ↔ codeLe M Q L c c' := by
@@ -95,7 +103,7 @@ theorem splice_ok (hperm : E.Perm (List.range (2 * L.length)))
   · unfold splice
     refine (List.merge_perm_append (le := codeLeB M Q (L ++ L₂))).trans ?_
     rw [List.length_append, Nat.mul_add, List.range_add]
-    exact hperm.append hperm₂
+    grind
   · have hE : E.Pairwise (fun a b => codeLeB M Q (L ++ L₂) a b = true) := by
       refine hsort.imp_of_mem fun {a b} ha hb hab => ?_
       have ha' := List.mem_range.1 (hperm.mem_iff.1 ha)
@@ -107,7 +115,7 @@ theorem splice_ok (hperm : E.Perm (List.range (2 * L.length)))
     have h := List.pairwise_merge (le := codeLeB M Q (L ++ L₂))
       (fun a b c h1 h2 => by
         rw [codeLeB_iff] at h1 h2 ⊢
-        exact BuildNF.codeLe_trans M Q (L ++ L₂) h1 h2)
+        core_grind)
       (fun a b => by
         rcases BuildNF.codeLe_total M Q (L ++ L₂) a b with h | h
         · rw [(codeLeB_iff a b).2 h]; rfl

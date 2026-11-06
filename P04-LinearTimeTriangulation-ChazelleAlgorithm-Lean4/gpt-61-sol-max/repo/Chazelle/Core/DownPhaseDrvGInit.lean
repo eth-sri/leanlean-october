@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvGLoop
 
 /-!
@@ -30,7 +32,7 @@ theorem rgInit0_exec (c : Config) (hw : WordsBounded W c) :
       c'.nreg 219000 = c.nreg 219200 ∧ c'.nreg 219002 = c.nreg 219203 ∧ c'.nmem = c.nmem := by
     unfold rgInit0
     exec_block
-    refine ⟨rfl, ?_, ?_, rfl⟩ <;> config_simp
+    simp_all
   exact ⟨c', k, ex, hk, h1, h2, hm, exec_frameM ex (by decide),
     funext fun r => exec_frameM2 ex (BN := fun q => decide (q = 219000 ∨ q = 219002))
       (BR := fun _ => false) (by decide) r rfl⟩
@@ -45,18 +47,18 @@ theorem rgPadLoop_exec : ∀ (m : ℕ) (c : Config), WordsBounded W c → c.nreg
     refine ((Exec.whileLtN_false (by omega) hw).cast_end ?_)
     rw [← h, upd_eq_self]
   | m + 1, c, hw, h51, hle, hd => by
-    have e := Exec.addN (P := P) hw 219250 219250 219251 (by rw [h51]; have := hw.1 9999; omega)
+    have e := Exec.addN (P := P) hw 219250 219250 219251 (by ram_grind)
     have h1 : (upd c.nreg 219250 (c.nreg 219250 + c.nreg 219251)) 219251 = 1 := by
-      rw [upd_other _ _ _ (by decide), h51]
+      simp_all
     have h2 : (upd c.nreg 219250 (c.nreg 219250 + c.nreg 219251)) 9999 = c.nreg 9999 :=
       upd_other _ _ _ (by decide)
     have h3 : (upd c.nreg 219250 (c.nreg 219250 + c.nreg 219251)) 219250 = c.nreg 219250 + 1 := by
-      rw [upd_same, h51]
-    have e' := rgPadLoop_exec m _ e.wb_right h1 (by dsimp only; rw [h2, h3]; omega)
-      (by dsimp only; rw [h2, h3]; omega)
+      simp_all
+    have e' := rgPadLoop_exec m _ e.wb_right h1 (by ram_grind)
+      (by ram_grind)
     refine ((Exec.whileLtN_true (by omega) (Exec.seq e (.skip e.wb_right)) e').cast
       (by ring)).cast_end ?_
-    simp only [h2, upd_upd_same]
+    simp_all
 
 /-- **The padding**: exactly `3 (r9999 - r219003) + 4` steps. -/
 theorem rgPad_exec (c : Config) (hw : WordsBounded W c) (hs : c.nreg 219003 ≤ c.nreg 9999)
@@ -66,16 +68,14 @@ theorem rgPad_exec (c : Config) (hw : WordsBounded W c) (hs : c.nreg 219003 ≤ 
       c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have e₁ := Exec.copyN (P := P) hw 219250 219003
   have e₂ := Exec.constN (P := P) e₁.wb_right 219251 1 hW
-  have a50 : (upd (upd c.nreg 219250 (c.nreg 219003)) 219251 1) 219250 = c.nreg 219003 := by
-    rw [upd_other _ _ _ (by decide), upd_same]
+  
   have a51 : (upd (upd c.nreg 219250 (c.nreg 219003)) 219251 1) 219251 = 1 := upd_same _ _ _
-  have aA : (upd (upd c.nreg 219250 (c.nreg 219003)) 219251 1) 9999 = c.nreg 9999 := by
-    rw [upd_other _ _ _ (by decide), upd_other _ _ _ (by decide)]
-  have e₃ := rgPadLoop_exec (P := P) _ _ e₂.wb_right a51 (by dsimp only; rw [a50, aA]; exact hs)
+  
+  have e₃ := rgPadLoop_exec (P := P) _ _ e₂.wb_right a51 (by simp_all)
     rfl
   refine ⟨_, (Exec.seq (Exec.seq e₁ (Exec.seq e₂ (.skip e₂.wb_right))) e₃).cast
-    (by dsimp only; rw [a50, aA]; ring), fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-  simp only [upd_other _ _ _ h1, upd_other _ _ _ h2]
+    (by simp_all +arith), fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
+  simp_all
 
 /-- The registers `rgInit1` writes. -/
 def Bi1 (q : ℕ) : Bool :=

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopFinS1
 public import Chazelle.Core.SweepEvStopFace4
 public import Chazelle.Core.SweepEvNoParCut
@@ -47,17 +49,17 @@ theorem strLabTask : StrLabTask := by
   set t := (chainModel J.whole).param (Qof P) x0 with ht
   -- 1. the normalisation
   beta_reduce at hroom
-  have hT1 : 11041 ≤ 11041 * (T + 1) := Nat.le_mul_of_pos_right _ (Nat.succ_pos T)
+  
   have hsplit : (11041 + κF D) * (T + 1) = 11041 * (T + 1) + κF D * (T + 1) := by ring
   have hroom1 : c.nreg ALLOC + 11015 ≤ W := by omega
   unfold slProg
   refine IRS.seq (K₁ := 11015) (K₂ := 26 + κF D * (T + 1)) (normS_irs (C := J.whole) hI hK
-    hfx.ctxW ⟨by unfold sw; omega, by unfold sw; omega, by unfold slfSE sw; omega,
-      by unfold slfSE sw; omega, by unfold slfSH sw; omega, by unfold slfSH sw; omega⟩
-    ⟨by unfold sflN sw; omega, by unfold sflN sw; omega, by unfold sflN slfSE sw; omega,
-      by unfold sflN slfSH sw; omega, by unfold sflN slfSE sw; omega, by unfold sflN slfSH sw; omega,
-      by unfold slfSE slfSH sw; omega⟩ hE hpp (fun _ _ _ _ => hy) hroom1) ?_ |>.mono
-    (by show 11015 + (26 + κF D * (T + 1)) ≤ (11041 + κF D) * (T + 1); omega) (fun _ h => h)
+    hfx.ctxW ⟨by omega_nf, by omega_nf, by omega_nf,
+      by omega_nf, by omega_nf, by omega_nf⟩
+    ⟨by omega_nf, by omega_nf, by omega_nf,
+      by omega_nf, by omega_nf, by omega_nf,
+      by omega_nf⟩ hE hpp (fun _ _ _ _ => hy) hroom1) ?_ |>.mono
+    (by grind) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' ⟨n1, n2, n3, n4, n5⟩
   set H := nhgt (chainModel J.whole) (Qof P) x0 with hH
   obtain ⟨hppH, hparH, -, hH0⟩ := nhgt_facts hpp
@@ -69,7 +71,7 @@ theorem strLabTask : StrLabTask := by
       c₁.nreg r = c.nreg r := fun r h1 h2 h3 h4 h5 h6 => n3 r (not_oracle_sw h1 h2) h3 h4 h5 h6
   have hfx₁ := E.fx hI₁
   -- the offset
-  have hgn : gW J < (chainModel J.whole).W.n := by unfold gW; rw [hn]; omega
+  have hgn : gW J < (chainModel J.whole).W.n := by unfold gW; omega
   set d := dOf (chainModel J.whole).W.n (gW J) (c.nreg slfSE) with hd
   have hoff : oW J (c.nreg slfSE + t) = d + t := off_key' hgn hE hpp.1 hpp.2.1
   rw [hoff] at h0 hL
@@ -93,10 +95,10 @@ theorem strLabTask : StrLabTask := by
   have hK₁ := E.hK.fix hI₁
   refine IRS.seq (K₁ := 26) (K₂ := κF D * (T + 1)) (slAr_irs (n := (chainModel J.whole).W.n)
     (g := gW J) (g' := 6 + tpos J.right 0) (n₂ := (chainModel J.right).W.n) hI₁
-    (by rw [c1E]; exact hE) (by rw [hfx₁.nw, hn]) hfx₁.gw hgn e41 (by rw [hfx₁.n2, hn₂])
-    (by rw [hn₂]; omega) hK₁.1 hK₁.2.1 (by rw [e42, e44, c1E]; exact hq)
-    (by rw [e42, e44, c1E]; exact hq1) (by have := E.hWn; omega) (by rw [hn, hn₂]; omega)
-    (by rw [e44, hn₂]; omega)) ?_
+    (by omega) (by rw [hfx₁.nw, hn]) hfx₁.gw hgn e41 (by rw [hfx₁.n2, hn₂])
+    (by omega) hK₁.1 hK₁.2.1 (by ram_grind)
+    (by ram_grind) (by have := E.hWn; omega) (by omega)
+    (by omega)) ?_
   rintro c₂ hI₂ - - ⟨v1, v2, v3, v4, kp⟩
   simp only [e42, e44, c1E, c1H] at v1 v2 v3 v4
   have hcpA : c₂.nreg fpE = cpA J d := v1
@@ -108,7 +110,7 @@ theorem strLabTask : StrLabTask := by
   have hcpAn : cpA J d < (chainModel J.right).W.n := Nat.mod_lt _ (by omega)
   have hcpBn : cpB J d < (chainModel J.right).W.n := Nat.mod_lt _ (by omega)
   have hppB : ProperPos (chainModel J.right) (Qof P) P.n ⟨cpB J d, 0⟩ :=
-    ⟨le_refl (0 : ℝ), by show (0 : ℝ) < 1; norm_num, Nat.zero_le _⟩
+    ⟨le_refl (0 : ℝ), by positivity, Nat.zero_le _⟩
   -- the non-cut
   obtain ⟨e, he, hno, heA⟩ := hex
   have hnc : 0 < t → ¬ (chainModel J.right).IsCut (N₂.F (chainModel J.right) (Qof P))
@@ -116,15 +118,12 @@ theorem strLabTask : StrLabTask := by
     intro htp
     rw [fr_key, hpar]
     refine noParCut J (Qof P) _ e hP E.hNF₂.1 he hno d t hdL htp hpp.2.1 ?_
-    rw [← hEd]; exact heA
+    grind
   have hcases : t = 0 ∨ 0 < t := hpp.1.eq_or_lt.imp (fun h => h.symm) id
   have hfp : (chainModel J.right).param (Qof P) ⟨c₂.nreg fpE, c₂.nreg fpH⟩ = 0 ∨
       ¬ (chainModel J.right).IsCut (N₂.F (chainModel J.right) (Qof P))
         ((chainModel J.right).key (Qof P) ⟨c₂.nreg fpE, c₂.nreg fpH⟩) := by
-    rw [hcpA, v2]
-    rcases hcases with h | h
-    · exact Or.inl (by rw [hpar, h])
-    · exact Or.inr (hnc h)
+    ram_grind
   have hq_pos : (c₂.nreg fqE < (chainModel J.right).W.n ∧
       ProperPos (chainModel J.right) (Qof P) P.n ⟨c₂.nreg fqE, c₂.nreg fqH⟩ ∧
       ((chainModel J.right).param (Qof P) ⟨c₂.nreg fqE, c₂.nreg fqH⟩ = 0 ∨
@@ -134,26 +133,21 @@ theorem strLabTask : StrLabTask := by
     by_cases hH' : H = 0
     · rw [ite_eq_left hH', ite_eq_left hH']
       exact ⟨hcpBn, hppB, Or.inl rfl⟩
-    · rw [ite_eq_right hH', ite_eq_right hH']
-      have htp : 0 < t := by
-        rcases hcases with h | h
-        · exact absurd (hH0.2 (by rw [← h])) hH'
-        · exact h
-      exact ⟨hcpAn, hppA, Or.inr (hnc htp)⟩
-  have kA : c₂.nreg ALLOC = c₁.nreg ALLOC := kp.1 _ (by unfold SlArW ALLOC sw; omega)
-  refine (HF sh Bs F X Ok P W c₀ c₂ J N₁ N₂ E hI₂ (by rw [hcpA]; exact hcpAn)
-    (by rw [hcpA, v2]; exact hppA) hfp hq_pos.1 hq_pos.2.1 hq_pos.2.2 (by
-      rw [kA]; show c₁.nreg ALLOC + κF D * (T + 1) ≤ W; omega)).mono le_rfl ?_
+    ram_grind
+  have kA : c₂.nreg ALLOC = c₁.nreg ALLOC := kp.1 _ (by omega_nf)
+  refine (HF sh Bs F X Ok P W c₀ c₂ J N₁ N₂ E hI₂ (by omega)
+    (by ram_grind) hfp hq_pos.1 hq_pos.2.1 hq_pos.2.2 (by
+      ram_grind)).mono le_rfl ?_
   rintro c' ⟨f1, f2, f3, f4, f5, f6, f7⟩
   refine ⟨f1, f2, ⟨d, hdL, hd0, hEd, ?_, fun htp => ?_, fun ht0 => ?_⟩, fun a ha => ?_, ?_,
     fun r hr hS hrA => ?_⟩
-  · rw [hcpA, v2, hpar] at f3; exact f3
+  · grind
   · have hH' : H ≠ 0 := fun h => htp.ne' (hH0.1 h)
-    rw [hv3, v4, ite_eq_right hH', ite_eq_right hH', hpar] at f4; exact f4
+    grind
   · have hH' : H = 0 := hH0.2 ht0
     rw [hv3, v4, ite_eq_left hH', ite_eq_left hH'] at f4; exact f4
-  · rw [f5 a (by rw [kA]; omega), kp.2, n5 a ha]
-  · rw [kA] at f6; omega
+  · rw [f5 a (by omega), kp.2, n5 a ha]
+  · omega
   · have hS' : ¬ (FRR r ∨ (sw 4096 ≤ r ∧ r < sw 4100) ∨ (sw 4110 ≤ r ∧ r < sw 4200)) := hS
     have hband : 240000 ≤ r ∧ r < 250000 → True := fun _ => trivial
     rw [f7 r hr (fun h => hS' (Or.inl h)) hrA]
@@ -162,8 +156,8 @@ theorem strLabTask : StrLabTask := by
         k1 r hsw.1 hsw.2 (by unfold slfSH sw at *; omega) (by unfold sflN sw at *; omega)
           (by unfold sflN sw at *; omega) hrA]
     · rw [kp.1 r (by unfold SlArW sw at *; omega),
-        n3 r hr (by unfold slfSH sw at *; omega) (by unfold sflN sw at *; omega)
-          (by unfold sflN sw at *; omega) hrA]
+        n3 r hr (by omega_nf) (by omega_nf)
+          (by omega_nf) hrA]
 
 end
 

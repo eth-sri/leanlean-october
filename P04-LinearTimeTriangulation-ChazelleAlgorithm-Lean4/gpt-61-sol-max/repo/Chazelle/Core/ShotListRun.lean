@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShotListLeaf
 
 /-!
@@ -33,7 +35,7 @@ theorem modelDesc_keep {P : Polygon} {m m' : ℕ → ℕ} {D E E' : ℕ} {H : Ho
   obtain ⟨-, -, hEb, -⟩ := hcw.2 H C hC
   have hc : ∀ j, j < 5 → m' (D + 1 + j) = m (D + 1 + j) := fun j hj => he _ (by omega)
   have hC' := chainDescAt_copy hC hEb he hc
-  have h0' : m' D = 0 := by rw [he _ (by omega), h0]
+  have h0' : m' D = 0 := by grind
   refine ⟨⟨by omega, fun _ => chainWF_copy hcw hC he hc (by omega) hE⟩, h0', hC'⟩
 
 /-! ## The shooting context -/
@@ -50,15 +52,19 @@ def ShotCtx (P : Polygon) (W : ℕ) (X : MemCtx) (Ok : Polygon → Model → Pro
     Ok P (chainModel C) ∧ 2 * C.m + 7 ≤ W ∧ c.nreg (R + 30) = 0 ∧ c.nreg (R + 31) = 1 ∧
     BitIs c (R + 35) (c.nreg (R + 6) = 1)
 
-theorem ShotCtx.modelDesc {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
-    {R : ℕ} {c : Config} {H : Host} {C : Chain} (h : ShotCtx P W X Ok R c H C) :
+section
+variable {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop} {R : ℕ} {c : Config} {H : Host} {C : Chain} (h : ShotCtx P W X Ok R c H C)
+include W X Ok H C h
+theorem ShotCtx.modelDesc :
     ModelDescAt c.nmem (c.nreg R) (Qof P) (chainModel C) :=
   Or.inl ⟨h.2.2.2.2.2.1, H, C, h.2.2.2.2.2.2.1, rfl⟩
 
-theorem ShotCtx.chainWF {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
-    {R : ℕ} {c : Config} {H : Host} {C : Chain} (h : ShotCtx P W X Ok R c H C) :
+theorem ShotCtx.chainWF :
     ChainWF P (c.nreg ALLOC) c.nmem (c.nreg (R + 34)) := by
   rw [h.2.2.2.2.2.2.2.1]; exact h.2.2.2.2.1.2 h.2.2.2.2.2.1
+
+
+end
 
 /-- **The shooting context survives** a frame of the oracle bands that keeps the registers
 `R … R + 8` and `R + 30 … R + 35`. -/
@@ -73,9 +79,9 @@ theorem ShotCtx.frame {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Mod
   have r0 : c'.nreg R = c.nreg R := by simpa using hr 0 (Or.inl (by omega))
   obtain ⟨mw', h0', hC'⟩ := modelDesc_keep hmwf h0 hC he hA
   obtain ⟨-, -, hEb, -⟩ := (hmwf.2 h0).2 H C hC
-  refine ⟨hG, hHW, ?_, ?_, by rw [r0]; exact mw', by rw [r0]; exact h0', by rw [r0]; exact hC',
-    by rw [hr 34 (Or.inr (by omega)), r0, h34], ?_, hOk, hm, by rw [hr 30 (Or.inr (by omega)), h30],
-    by rw [hr 31 (Or.inr (by omega)), h31], ⟨by rw [hr 35 (Or.inr (by omega))]; exact hσ.1,
+  refine ⟨hG, hHW, ?_, ?_, by ram_simp, by omega_nf, by ram_simp,
+    by ram_simp, ?_, hOk, hm, by ram_simp,
+    by ram_simp, ⟨by rw [hr 35 (Or.inr (by omega))]; exact hσ.1,
       by rw [hr 35 (Or.inr (by omega)), hr 6 (Or.inl (by omega))]; exact hσ.2⟩⟩
   · rw [hr 8 (Or.inl (by omega))]
     exact X.mono P _ _ _ _ hA (X.local_ P _ _ _ _ (fun a ha => (he a ha).symm) hX)
@@ -93,7 +99,7 @@ theorem ShotCtx.frame {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Mod
 /-! ## Bands -/
 
 theorem rd_shoot (c : Config) (i : ℕ) : rd c bShoot i = c.nreg (140000 + i) := by
-  simp [rd, bandReg, bShoot]
+  aesop
 
 /-- The caller's registers are outside the oracle bands. -/
 theorem band_R {R : ℕ} (hR : RegsOK R) {i : ℕ} (hi : i < 300) : bandOf (R + i) ∉ oracleBands := by
@@ -102,31 +108,30 @@ theorem band_R {R : ℕ} (hR : RegsOK R) {i : ℕ} (hi : i < 300) : bandOf (R + 
     bCut, bCluster, Finset.mem_union, Finset.mem_insert, Finset.mem_singleton, bandOf]
   omega
 
-theorem band_prim {r : ℕ} (h : Bprim r = true) : bandOf r ∈ oracleBands := by
+section
+variable {r : ℕ}
+theorem band_prim (h : Bprim r = true) : bandOf r ∈ oracleBands := by
   have := (Bprim_band r h).1
-  simp only [primBands, oracleBands, kernelBands, Finset.mem_union, Finset.mem_insert,
-    Finset.mem_singleton] at this ⊢
-  tauto
+  grind [primBands, oracleBands, kernelBands, Finset.mem_union, Finset.mem_insert, Finset.mem_singleton]
 
-theorem band_locate {r : ℕ} (h : 50000 ≤ r ∧ r < 60000) : bandOf r ∈ oracleBands := by
-  simp only [oracleBands, kernelBands, bSign, bSort, bBuild, bLocate, bDecomp, bOQuery, bShoot,
-    bCut, bCluster, Finset.mem_union, Finset.mem_insert, Finset.mem_singleton, bandOf]
-  omega
+theorem band_locate (h : 50000 ≤ r ∧ r < 60000) : bandOf r ∈ oracleBands := by
+  grind [oracleBands, kernelBands, bSign, bSort, bBuild, bLocate, bDecomp, bOQuery, bShoot, bCut, bCluster, Finset.mem_union, Finset.mem_insert, Finset.mem_singleton, bandOf]
 
-theorem band_shoot {r : ℕ} (h : 140000 ≤ r ∧ r < 150000) : bandOf r ∈ oracleBands := by
-  simp only [oracleBands, kernelBands, bSign, bSort, bBuild, bLocate, bDecomp, bOQuery, bShoot,
-    bCut, bCluster, Finset.mem_union, Finset.mem_insert, Finset.mem_singleton, bandOf]
-  omega
+theorem band_shoot (h : 140000 ≤ r ∧ r < 150000) : bandOf r ∈ oracleBands := by
+  core_grind [kernelBands, bSign, bSort, bBuild, bLocate, bDecomp, bOQuery, bShoot, bCut, bCluster, Finset.mem_union, Finset.mem_insert, Finset.mem_singleton]
 
 /-! ## The leaf with the shooter -/
 
+
+end
+
 /-- The registers of the caller's block written by a leaf. -/
-def WrLeaf (R : ℕ) (r : ℕ) : Prop := (R + 20 ≤ r ∧ r < R + 28) ∨ (R + 240 ≤ r ∧ r < R + 250)
+def WrLeaf (R r : ℕ) : Prop := (R + 20 ≤ r ∧ r < R + 28) ∨ (R + 240 ≤ r ∧ r < R + 250)
 
 /-- **One shot at the piece of level `3`**: the running minimum extends to the piece. -/
 theorem leaf_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     {Ok : Polygon → Model → Prop} (hsh : ShooterOKE sh Bs F X Ok) (hBs : Bs ⊆ oracleBands)
-    (hXl : X.CapLocal) {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Config)
+    (hXl : X.CapLocal) {P : Polygon} {W R : ℕ} (hR : RegsOK R) (c : Config)
     (hw : WordsBounded W c) {H : Host} {C : Chain} (hctx : ShotCtx P W X Ok R c H C)
     (hp1 : ProperPos (chainModel C) (Qof P) P.n (pieceR c (R + 70)).1)
     (hp2 : ProperPos (chainModel C) (Qof P) P.n (pieceR c (R + 70)).2)
@@ -166,19 +171,15 @@ theorem leaf_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   obtain ⟨s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s13⟩ := v₁
   have k1 : ∀ r, ¬ (140000 ≤ r ∧ r < 140014) → c₁.nreg r = c.nreg r := fun r hr =>
     f₁.1 r (by simp [setList]; omega)
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by unfold ALLOC; omega)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by omega_nf)
   have hM1 : c₁.nmem = c.nmem := f₁.2.2.1
   have hR1 : ∀ i, i < 300 → c₁.nreg (R + i) = c.nreg (R + i) := fun i hi => k1 _ (by omega)
   have hMD := hctx.modelDesc
   obtain ⟨hG, hHW, hX, hcap, hmwf, h0, hC, h34, hreg, hOk, hm, h30, h31, hσb⟩ := hctx
   have hO1 : OriginIn c₁ (bandReg bShoot 5) o := by
-    refine originIn_copy ho ?_ ?_ ?_ <;> simp only [bandReg, bShoot] <;> norm_num
-    · exact s5
-    · exact s6
-    · exact s7
-  have hpc : pieceR c₁ 140001 = pieceR c (R + 70) := by
-    simp only [pieceR, posR, Prod.mk.injEq, WPos.mk.injEq]
-    exact ⟨⟨s1, s2⟩, s3, s4⟩
+    refine originIn_copy ho ?_ ?_ ?_ <;> omega_nf <;> norm_num
+    all_goals omega
+  
   -- the shot
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, fr₂⟩ := hsh P W c₁ e₁.wb_right
     ⟨hG, hHW, by rw [rd_shoot, s13, hM1, hA1]; exact hX,
@@ -193,7 +194,7 @@ theorem leaf_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       by rw [rd_shoot, rd_shoot, s1, s2]; exact hi1, by rw [rd_shoot, rd_shoot, s3, s4]; exact hi2,
       by rw [rd_shoot, rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4, s9]; exact hwt,
       o, hol, hO1, hof, by rw [rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4]; exact hon⟩
-    (by rw [hA1]; show _ + F (rd c₁ bShoot 9) ≤ W; rw [rd_shoot, s9]; omega)
+    (by rw [hA1]; show _ + F (rd c₁ bShoot 9) ≤ W; grind [rd_shoot])
   replace hk₂ : k₂ ≤ F (c.nreg (R + 7)) := by
     have h2 : k₂ ≤ F (rd c₁ bShoot 9) := hk₂
     rw [rd_shoot, s9] at h2; exact h2
@@ -215,9 +216,9 @@ theorem leaf_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     (hR2 22 (by omega)) (hR2 24 (by omega)) (hR2 25 (by omega)) (hR2 26 (by omega))
     (hR2 27 (by omega))
   have w₂ := e₂.wb_right
-  have c31 : c₂.nreg (R + 31) = 1 := by rw [hR2 31 (by omega), h31]
+  have c31 : c₂.nreg (R + 31) = 1 := by ram_simp
   have hA2 : c₂.nreg ALLOC ≤ c.nreg ALLOC + F (c.nreg (R + 7)) := by
-    have := F12.2.2.2.2.2.2; rw [hA1] at this; omega
+    have := F12.2.2.2.2.2.2; omega
   -- no hit
   have nohit : c₂.nreg 140010 ≠ 1 → BestOK P C R c₂ (S ∪ A) z σ := fun hne => by
     have hNA : NoHit A z σ := hnoh hne
@@ -237,9 +238,9 @@ theorem leaf_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   obtain ⟨t, htA, hpp, hpe, hpos⟩ := hhit hflag
   obtain ⟨-, hHW2, -, -, hmwf2, h02, hC2, h342, hreg2, -, -, h302, h312, hσb2⟩ := ctx₂
   obtain ⟨c₃, k₃, e₃, hk₃, best₃, f₃⟩ := leafHit_exec (P := P) hR c₂ w₂ hG hHW2
-    (H := H) (C := C) (by rw [h342]; exact hmwf2.2 h02) (by rw [h342]; exact hC2)
+    (H := H) (C := C) (by rw [h342]; exact hmwf2.2 h02) (by grind)
     (by rw [h342]; exact hreg2) htA hpe hpp hpos hoy h302 h312 hσb2
-    (by rw [hR2 6 (by omega)]) best₂ (by omega)
+    (by ram_simp) best₂ (by omega)
   refine ⟨c₃, _, .seq e₁ (.seq e₂ (.ifLtN_false g1 (.ifLtN_false g2 e₃))), by omega, best₃, ?_⟩
   have F23 : FrameR oracleBands (WrLeaf R) c₂ c₃ k₃ := FrameR.of_frameB f₃ (fun r hr => by
     simp only [Bhit, Bool.or_eq_true, decide_eq_true_eq] at hr

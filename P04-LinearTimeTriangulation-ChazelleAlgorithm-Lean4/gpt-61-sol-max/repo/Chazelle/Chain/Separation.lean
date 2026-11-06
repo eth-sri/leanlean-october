@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Chain.Chord
 public import Chazelle.Visibility.Submap
 
@@ -39,18 +41,20 @@ variable (C : Chain)
 /-- The polygon with vertices `W 0, …, W (N - 1)`. -/
 def funPoly (W : ℕ → Point) (N : ℕ) : Polygon := ⟨(List.range N).map W⟩
 
-@[simp] theorem funPoly_n (W : ℕ → Point) (N : ℕ) : (funPoly W N).n = N := by
+section
+variable (W : ℕ → Point)
+@[simp] theorem funPoly_n (N : ℕ) : (funPoly W N).n = N := by
   simp [funPoly, Polygon.n]
 
-theorem funPoly_vtx (W : ℕ → Point) {N i : ℕ} (hi : i < N) : (funPoly W N).vtx i = W i := by
-  simp [funPoly, Polygon.vtx, List.getD_eq_getElem?_getD, List.getElem?_range hi]
+theorem funPoly_vtx {N i : ℕ} (hi : i < N) : (funPoly W N).vtx i = W i := by
+  simp_all [funPoly, Polygon.vtx, List.getD_eq_getElem?_getD] 
 
-theorem funPoly_edge (W : ℕ → Point) {N i : ℕ} (hi : i + 1 < N) :
+theorem funPoly_edge {N i : ℕ} (hi : i + 1 < N) :
     (funPoly W N).edge i = Chazelle.segment (W i) (W (i + 1)) := by
   unfold Polygon.edge
   rw [funPoly_n, Nat.mod_eq_of_lt hi, funPoly_vtx W (by omega), funPoly_vtx W hi]
 
-theorem funPoly_edge_last (W : ℕ → Point) {N : ℕ} (hN : 0 < N) :
+theorem funPoly_edge_last {N : ℕ} (hN : 0 < N) :
     (funPoly W N).edge (N - 1) = Chazelle.segment (W (N - 1)) (W 0) := by
   unfold Polygon.edge
   rw [funPoly_n, Nat.sub_add_cancel hN, Nat.mod_self, funPoly_vtx W (by omega),
@@ -58,34 +62,41 @@ theorem funPoly_edge_last (W : ℕ → Point) {N : ℕ} (hN : 0 < N) :
 
 /-! ### Good paths in the obstacle -/
 
+
+end
+
+section
+variable (f : ℕ → Point) (L : ℕ)
+include f L
 /-- A path `f 0, f 1, …, f L` all of whose segments lie in the complement of the domain. -/
-def GoodPath (f : ℕ → Point) (L : ℕ) : Prop :=
+def GoodPath : Prop :=
   ∀ i, i < L → Chazelle.segment (f i) (f (i + 1)) ⊆ C.domᶜ
 
 /-- The reverse of the path `f 0, …, f L`. -/
-def revPath (f : ℕ → Point) (L : ℕ) (i : ℕ) : Point := f (L - i)
+def revPath (i : ℕ) : Point := f (L - i)
+
+
+end
 
 /-- The concatenation of the path `f 0, …, f L` with the path `g 0, …`. -/
-def concatPath (f g : ℕ → Point) (L : ℕ) (i : ℕ) : Point := if i ≤ L then f i else g (i - L)
+def concatPath (f g : ℕ → Point) (L i : ℕ) : Point := if i ≤ L then f i else g (i - L)
 
-theorem concatPath_zero (f g : ℕ → Point) (L : ℕ) : concatPath f g L 0 = f 0 := by
-  simp [concatPath]
+section
+variable (f g : ℕ → Point)
+theorem concatPath_zero (L : ℕ) : concatPath f g L 0 = f 0 := by
+  aesop
 
-theorem concatPath_last (f g : ℕ → Point) {L L' : ℕ} (hjoin : f L = g 0) :
+theorem concatPath_last {L L' : ℕ} (hjoin : f L = g 0) :
     concatPath f g L (L + L') = g L' := by
-  unfold concatPath
-  rcases Nat.eq_zero_or_pos L' with rfl | h
-  · rw [ite_eq_left (by omega), Nat.add_zero, hjoin]
-  · rw [ite_eq_right (by omega), Nat.add_sub_cancel_left]
+  simp_all [concatPath, Nat.add_zero, Nat.add_sub_cancel_left] 
+
+
+end
 
 /-- The reverse of a good path is a good path. -/
 theorem goodPath_reverse {f : ℕ → Point} {L : ℕ} (hf : C.GoodPath f L) :
     C.GoodPath (revPath f L) L := by
-  intro i hi
-  have : L - i = (L - (i + 1)) + 1 := by omega
-  simp only [revPath]
-  rw [this, Geometry.segment_comm]
-  exact hf _ (by omega)
+  core_grind [Geometry.segment_comm]
 
 /-- Concatenation of good paths meeting at the junction point. -/
 theorem goodPath_concat {f g : ℕ → Point} {L L' : ℕ} (hf : C.GoodPath f L) (hg : C.GoodPath g L')
@@ -101,11 +112,7 @@ theorem goodPath_concat {f g : ℕ → Point} {L L' : ℕ} (hf : C.GoodPath f L)
       have : i + 1 - L = (i - L) + 1 := by omega
       rw [this]
       exact hg _ (by omega)
-    · subst h'
-      rw [ite_eq_left (le_refl L), hjoin]
-      have : L + 1 - L = 0 + 1 := by omega
-      rw [this]
-      exact hg 0 (by omega)
+    aesop
 
 /-! ### Anchor paths -/
 
@@ -119,8 +126,8 @@ theorem Anchorable.not_mem_dom {q : Point} (hq : C.Anchorable q) : q ∉ C.dom :
   rcases hq with h | h | h | h
   · exact C.not_mem_set_of_mem_dom hd h
   · exact C.not_mem_slit_of_mem_dom hd h
-  · exact absurd hd.1.1 (by rw [h]; exact lt_irrefl _)
-  · exact absurd hd.1.2 (by rw [h]; exact lt_irrefl _)
+  · exact absurd hd.1.1 (by simp_all)
+  · exact absurd hd.1.2 (by simp_all)
 
 theorem slitTop_mem_slit : C.slitTop ∈ C.slit := Geometry.right_mem_segment _ _
 
@@ -133,8 +140,7 @@ theorem vertical_side_subset {p q : Point} (hpq : p.1 = q.1) (hp : |p.1| = C.rad
   have hx1 := fst_eq_of_mem_segment_vertical hpq hx
   intro hd
   have := hd.1.1
-  rw [hx1, hp] at this
-  exact lt_irrefl _ this
+  simp_all
 
 /-- A horizontal segment on a side `|y| = R` of the box is outside the domain. -/
 theorem horizontal_side_subset {p q : Point} (hpq : p.2 = q.2) (hp : |p.2| = C.radius) :
@@ -143,9 +149,7 @@ theorem horizontal_side_subset {p q : Point} (hpq : p.2 = q.2) (hp : |p.2| = C.r
   obtain ⟨t, -, -, rfl⟩ := hx
   intro hd
   have := hd.1.2
-  simp only at this
-  rw [← hpq, sub_self, mul_zero, add_zero, hp] at this
-  exact lt_irrefl _ this
+  simp_all
 
 /-- A segment inside a chain edge is outside the domain. -/
 theorem segment_subset_of_mem_chainEdge {j : ℕ} (hj : j < C.m) {p q : Point}
@@ -161,21 +165,23 @@ theorem slit_subset_dom_compl' : Chazelle.segment C.top C.slitTop ⊆ C.domᶜ :
 
 /-- The anchor path of a chain point `q` on edge `j`: `q, vertex j, vertex (j-1), …, vertex 0,
 vertex 1, …, vertex topIdx, slitTop`. -/
-noncomputable def chainAnchor (q : Point) (j : ℕ) (i : ℕ) : Point :=
+noncomputable def chainAnchor (q : Point) (j i : ℕ) : Point :=
   if i = 0 then q
   else if i ≤ j + 1 then C.vertex (j + 1 - i)
   else if i ≤ j + 1 + C.topIdx then C.vertex (i - (j + 1))
   else C.slitTop
 
-theorem chainAnchor_zero (q : Point) (j : ℕ) : C.chainAnchor q j 0 = q := by
-  simp [chainAnchor]
+section
+variable (q : Point) (j : ℕ)
+theorem chainAnchor_zero : C.chainAnchor q j 0 = q := by
+  aesop
 
-theorem chainAnchor_last (q : Point) (j : ℕ) :
+theorem chainAnchor_last :
     C.chainAnchor q j (j + 1 + C.topIdx + 1) = C.slitTop := by
-  simp only [chainAnchor]
-  rw [ite_eq_right (show ¬ (j + 1 + C.topIdx + 1 = 0) by omega),
-    ite_eq_right (show ¬ (j + 1 + C.topIdx + 1 ≤ j + 1) by omega),
-    ite_eq_right (show ¬ (j + 1 + C.topIdx + 1 ≤ j + 1 + C.topIdx) by omega)]
+  grind [chainAnchor]
+
+
+end
 
 /-- The vertices of the chain, seen from the anchor path, step along chain edges. -/
 theorem vertex_segment_subset {i : ℕ} (hi : i < C.m) :
@@ -209,7 +215,7 @@ theorem goodPath_chainAnchor {q : Point} {j : ℕ} (hj : j < C.m) (hq : q ∈ C.
       rw [ite_eq_right (show ¬ (j + 1 + 1 ≤ j + 1) by omega), Nat.sub_self]
       by_cases hT0 : C.topIdx = 0
       · rw [ite_eq_right (show ¬ (j + 1 + 1 ≤ j + 1 + C.topIdx) by omega)]
-        have htop : C.vertex 0 = C.top := by unfold top; rw [hT0]
+        have htop : C.vertex 0 = C.top := by grind [top]
         rw [htop]
         exact C.slit_subset_dom_compl'
       · rw [ite_eq_left (show j + 1 + 1 ≤ j + 1 + C.topIdx by omega), Nat.add_sub_cancel_left]
@@ -224,10 +230,10 @@ theorem goodPath_chainAnchor {q : Point} {j : ℕ} (hj : j < C.m) (hq : q ∈ C.
         exact C.vertex_segment_subset (by omega)
       · rw [ite_eq_right (show ¬ (i + 1 ≤ j + 1 + C.topIdx) by omega)]
         have htop : C.vertex (i - (j + 1)) = C.top := by
-          unfold top; congr 1; omega
+          grind [top]
         rw [htop]
         exact C.slit_subset_dom_compl'
-    · exfalso; omega
+    omega
 
 /-- **Every anchorable point has an anchor path**: a good path from it to the slit top. -/
 theorem exists_anchor {q : Point} (hq : C.Anchorable q) :
@@ -258,8 +264,7 @@ theorem exists_anchor {q : Point} (hq : C.Anchorable q) :
       simp only [one_ne_zero, ite_false, ite_true, show (1 + 1 : ℕ) = 2 from rfl,
         OfNat.ofNat_ne_zero, OfNat.ofNat_ne_one]
       apply C.horizontal_side_subset (p := (q.1, C.radius)) (q := C.slitTop) rfl
-      simp only
-      exact abs_of_pos C.radius_pos
+      grind
   · -- on a horizontal side: go to the right side, up to the corner, then along the top
     refine ⟨fun i => if i = 0 then q else if i = 1 then (C.radius, q.2)
       else if i = 2 then (C.radius, C.radius) else C.slitTop, 3, by simp, by simp, ?_⟩
@@ -282,33 +287,46 @@ theorem exists_anchor {q : Point} (hq : C.Anchorable q) :
 
 /-! ### The closed walk of a chord -/
 
+section
+variable (a : Point) (path : ℕ → Point)
+include a path
 /-- The closed walk of a segment `[a, b]`: `a` followed by a path `path 0 = b, …, path M = a`. -/
-def walkFun (a : Point) (path : ℕ → Point) (i : ℕ) : Point := if i = 0 then a else path (i - 1)
+def walkFun (i : ℕ) : Point := if i = 0 then a else path (i - 1)
 
 /-- The closed walk as a polygon with `M + 1` vertices `a, path 0, …, path (M - 1)`. -/
-def walkPoly (a : Point) (path : ℕ → Point) (M : ℕ) : Polygon := funPoly (walkFun a path) (M + 1)
+def walkPoly (M : ℕ) : Polygon := funPoly (walkFun a path) (M + 1)
 
-theorem walkFun_zero (a : Point) (path : ℕ → Point) : walkFun a path 0 = a := by simp [walkFun]
 
-theorem walkFun_succ (a : Point) (path : ℕ → Point) (i : ℕ) : walkFun a path (i + 1) = path i := by
-  simp [walkFun]
+end
 
-@[simp] theorem walkPoly_n (a : Point) (path : ℕ → Point) (M : ℕ) :
+section
+variable (a : Point) (path : ℕ → Point)
+theorem walkFun_zero : walkFun a path 0 = a := by aesop
+
+theorem walkFun_succ (i : ℕ) : walkFun a path (i + 1) = path i := by
+  aesop
+
+@[simp] theorem walkPoly_n (M : ℕ) :
     (walkPoly a path M).n = M + 1 := by simp [walkPoly]
 
 /-- The first edge of the walk is the segment `[a, path 0]`. -/
-theorem walkPoly_edge_zero (a : Point) (path : ℕ → Point) {M : ℕ} (hM : 0 < M) :
+theorem walkPoly_edge_zero {M : ℕ} (hM : 0 < M) :
     (walkPoly a path M).edge 0 = Chazelle.segment a (path 0) := by
   rw [walkPoly, funPoly_edge _ (by omega), walkFun_zero, walkFun_succ]
 
+
+end
+
+section
+variable {a : Point} {path : ℕ → Point} {M : ℕ} (hpath : C.GoodPath path M) (hend : path M = a)
+include hpath hend
 /-- Every edge of the walk other than the first lies in the obstacle. -/
-theorem walkPoly_edge_subset {a : Point} {path : ℕ → Point} {M : ℕ} (hpath : C.GoodPath path M)
-    (hend : path M = a) {k : ℕ} (hk0 : 0 < k) (hk : k < M + 1) :
+theorem walkPoly_edge_subset {k : ℕ} (hk0 : 0 < k) (hk : k < M + 1) :
     (walkPoly a path M).edge k ⊆ C.domᶜ := by
   obtain ⟨i, rfl⟩ : ∃ i, k = i + 1 := ⟨k - 1, by omega⟩
   rcases Nat.lt_or_ge (i + 1 + 1) (M + 1) with hlt | hge
   · rw [walkPoly, funPoly_edge _ hlt, walkFun_succ, walkFun_succ]
-    exact hpath i (by omega)
+    aesop
   · have hi : i + 1 = M + 1 - 1 := by omega
     have hiM : i = M - 1 := by omega
     have hM1 : M + 1 - 1 = i + 1 := by omega
@@ -316,11 +334,10 @@ theorem walkPoly_edge_subset {a : Point} {path : ℕ → Point} {M : ℕ} (hpath
       hiM]
     have hM : M = (M - 1) + 1 := by omega
     have := hpath (M - 1) (by omega)
-    rwa [← hM] at this
+    grind
 
 /-- The boundary of the walk lies in the obstacle together with the segment `[a, path 0]`. -/
-theorem walkPoly_boundary_subset {a : Point} {path : ℕ → Point} {M : ℕ}
-    (hpath : C.GoodPath path M) (hend : path M = a) (hM : 0 < M) :
+theorem walkPoly_boundary_subset (hM : 0 < M) :
     (walkPoly a path M).boundary ⊆ C.domᶜ ∪ Chazelle.segment a (path 0) := by
   rintro p ⟨k, hk, hp⟩
   rw [walkPoly_n] at hk
@@ -330,6 +347,9 @@ theorem walkPoly_boundary_subset {a : Point} {path : ℕ → Point} {M : ℕ}
     exact hp
   · left
     exact C.walkPoly_edge_subset hpath hend hk0 hk hp
+
+
+end
 
 /-- **The parity flip across a segment with anchorable endpoints.**  For a non-vertical segment
 `[a, b]` with `a, b` anchorable and a point `z` of the segment in the domain, there is a closed
@@ -344,24 +364,18 @@ theorem exists_walk_parity_flip {a b : Point} (ha : C.Anchorable a) (hb : C.Anch
   obtain ⟨fa, La, ha0, haL, hfa⟩ := C.exists_anchor ha
   obtain ⟨fb, Lb, hb0, hbL, hfb⟩ := C.exists_anchor hb
   set path := concatPath fb (revPath fa La) Lb with hpath_def
-  have hjoin : fb Lb = revPath fa La 0 := by simp [revPath, hbL, haL]
+  have hjoin : fb Lb = revPath fa La 0 := by grind [revPath]
   have hpath : C.GoodPath path (Lb + La) := C.goodPath_concat hfb (C.goodPath_reverse hfa) hjoin
   have hend : path (Lb + La) = a := by
     rw [hpath_def, concatPath_last _ _ hjoin]
-    simp [revPath, ha0]
-  have hp0 : path 0 = b := by rw [hpath_def, concatPath_zero, hb0]
+    grind [revPath]
+  have hp0 : path 0 = b := by grind [concatPath_zero]
   have hM : 0 < Lb + La := by
-    by_contra h
-    push Not at h
-    have hLa : La = 0 := by omega
-    have hLb : Lb = 0 := by omega
-    subst hLa hLb
-    apply hab
-    rw [← ha0, ← hb0, haL, hbL]
+    grind
   refine ⟨walkPoly a path (Lb + La), ?_, ?_⟩
   · rw [← hp0]
     exact C.walkPoly_boundary_subset hpath hend hM
-  · have h0n : 0 < (walkPoly a path (Lb + La)).n := by rw [walkPoly_n]; omega
+  · have h0n : 0 < (walkPoly a path (Lb + La)).n := by simp_all
     have hzΓ : z ∈ (walkPoly a path (Lb + La)).edge 0 := by
       rw [walkPoly_edge_zero a path hM, hp0]; exact hz
     have hv0 : (walkPoly a path (Lb + La)).vtx 0 = a := by
@@ -371,7 +385,7 @@ theorem exists_walk_parity_flip {a b : Point} (ha : C.Anchorable a) (hb : C.Anch
         walkFun_succ, hp0]
     have hne : ((walkPoly a path (Lb + La)).vtx 0).1 ≠
         ((walkPoly a path (Lb + La)).vtx ((0 + 1) % (walkPoly a path (Lb + La)).n)).1 := by
-      rw [hv0, hv1]; exact hab
+      simp_all
     have hzu : z ≠ (walkPoly a path (Lb + La)).vtx 0 := by
       rw [hv0]; rintro rfl; exact Anchorable.not_mem_dom C ha hzd
     have hzv : z ≠ (walkPoly a path (Lb + La)).vtx ((0 + 1) % (walkPoly a path (Lb + La)).n) := by
@@ -385,12 +399,7 @@ theorem exists_walk_parity_flip {a b : Point} (ha : C.Anchorable a) (hb : C.Anch
 
 /-! ### Submaps and chord separation -/
 
-/-- The free set of the submap `S`: the domain minus the chords of `S`. -/
-def freeOf (S : Set (Set Point)) : Set Point := C.dom \ ⋃₀ S
 
-/-- The regions of the submap `S`: the connected components of its free set. -/
-def regionsOf (S : Set (Set Point)) : Set (Set Point) :=
-  {U | ∃ z ∈ C.freeOf S, U = connectedComponentIn (C.freeOf S) z}
 
 end Chain
 

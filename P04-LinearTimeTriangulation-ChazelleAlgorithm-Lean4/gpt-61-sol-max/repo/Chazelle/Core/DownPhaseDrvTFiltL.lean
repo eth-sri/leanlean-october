@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvTFilt
 
 /-!
@@ -65,7 +67,7 @@ theorem fBody_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
   have hle := DownBase.rankF_le (keepT li n c₀) L₀ i
   obtain ⟨l1, l2, l3⟩ := hR i ht
   have hmL : ∀ q, q < 3 → d.nmem (CB + 5 * i + q) = m₀ (CB + 5 * i + q) := fun q hq => by
-    rw [hI.mem]; unfold memT; rw [ite_eq_right (by omega)]
+    rw [hI.mem]; grind [memT]
   have hW1 : 1 ≤ W := by omega
   clear hCB
   -- load
@@ -90,9 +92,7 @@ theorem fBody_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
     (by rw [r₂ _ (by norm_num), g₁ _ (by norm_num), hI.r15])
     (by rw [r₂ _ (by norm_num), g₁ _ (by norm_num), hI.r16])
   have hflag : d₃.nreg 190037 = if keepT li n c₀ x = true then 1 else 0 := by
-    rw [v₃, r₂ _ (by norm_num), r₂ _ (by norm_num), v₂, v37, v32, v33, v34]
-    unfold keepT
-    cases innerE li n c₀ x.1 x.2.1 <;> cases innerE li n c₀ x.1 x.2.2 <;> simp
+    grind [keepT]
   -- the two maps
   obtain ⟨d₄, k₄, e₄, hk₄, v₄, r₄, m₄, rr₄, rm₄, o₄⟩ := fMap_exec (P := P) d₃ e₃.wb_right
     (n := n) (c₀ := c₀) (d := 190038) (p := 190033) (by norm_num) (by norm_num) (by norm_num)
@@ -103,25 +103,22 @@ theorem fBody_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
   obtain ⟨d₅, k₅, e₅, hk₅, v₅, r₅, m₅, rr₅, rm₅, o₅⟩ := fMap_exec (P := P) d₄ e₄.wb_right
     (n := n) (c₀ := c₀) (d := 190039) (p := 190034) (by norm_num) (by norm_num) (by norm_num)
     (by norm_num)
-    (by rw [r₄ _ (by norm_num), r₃ _ (by norm_num), r₂ _ (by norm_num), g₁ _ (by norm_num),
-      hI.r10])
-    (by rw [r₄ _ (by norm_num), r₃ _ (by norm_num), r₂ _ (by norm_num), g₁ _ (by norm_num),
-      hI.r14])
-    (by rw [r₄ _ (by norm_num), r₃ _ (by norm_num), r₂ _ (by norm_num), g₁ _ (by norm_num),
-      hI.r15])
+    (by grind [Chazelle.Core.DrvT.FInv.r10])
+    (by grind [Chazelle.Core.DrvT.FInv.r14])
+    (by grind [Chazelle.Core.DrvT.FInv.r15])
   -- registers of `d₅`
   have g5 : ∀ r, r ≠ 190031 → r ≠ 190032 → r ≠ 190033 → r ≠ 190034 → r ≠ 190037 →
       r ≠ 190038 → r ≠ 190039 → d₅.nreg r = d.nreg r := fun r a1 a2 a3 a4 a5 a6 a7 => by
-    rw [r₅ r a7, r₄ r a6, r₃ r a5, r₂ r a5, r₁ r a1 a2 a3 a4 a5]
+    grind
   have e32 : d₅.nreg 190032 = x.1 := by
-    rw [r₅ _ (by norm_num), r₄ _ (by norm_num), r₃ _ (by norm_num), r₂ _ (by norm_num), v32]
+    grind
   have e38 : d₅.nreg 190038 = mapE n c₀ x.2.1 := by
-    rw [r₅ _ (by norm_num), v₄, r₃ _ (by norm_num), r₂ _ (by norm_num), v33]
+    ram_grind
   have e39 : d₅.nreg 190039 = mapE n c₀ x.2.2 := by
-    rw [v₅, r₄ _ (by norm_num), r₃ _ (by norm_num), r₂ _ (by norm_num), v34]
+    ram_grind
   have f5 : d₅.nreg 190037 = if keepT li n c₀ x = true then 1 else 0 := by
-    rw [r₅ _ (by norm_num), r₄ _ (by norm_num), hflag]
-  have hm5 : d₅.nmem = d.nmem := by rw [m₅, m₄, m₃, m₂, m₁]
+    ram_grind
+  have hm5 : d₅.nmem = d.nmem := by ram_grind
   -- the branch
   obtain ⟨d₆, k₆, e₆, hk₆, hk₆', g6, mem6, n35, n36, rr₆, rm₆, o₆⟩ : ∃ d₆ k₆,
       Exec P W (.ifLtN 190018 190037 fKeep .skip) d₅ d₆ k₆ ∧ 1 ≤ k₆ ∧ k₆ ≤ 8 ∧
@@ -146,40 +143,38 @@ theorem fBody_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
     cases hk : keepT li n c₀ x
     · rw [hk] at f5
       simp only [Bool.false_eq_true, ite_false] at f5
-      have hn : ¬ d₅.nreg 190018 < d₅.nreg 190037 := by rw [h18, f5]; omega
+      have hn : ¬ d₅.nreg 190018 < d₅.nreg 190037 := by omega
       rw [← hx, hk] at hr
       simp only [Bool.false_eq_true, ite_false, Nat.add_zero] at hr
       refine ⟨d₅, _, .ifLtN_false hn (.skip e₅.wb_right), by omega, by omega,
         fun _ _ _ => rfl, fun a => ?_, by rw [h35, hr], by rw [h36, hr], rfl, rfl, rfl⟩
       rw [hm5, hI.mem a, ← hi]
-      exact memT_drop ht (by rw [← hx]; exact hk) a
+      exact memT_drop ht (by omega) a
     · rw [hk] at f5
       simp only [ite_true] at f5
-      have hp : d₅.nreg 190018 < d₅.nreg 190037 := by rw [h18, f5]; omega
+      have hp : d₅.nreg 190018 < d₅.nreg 190037 := by omega
       have hjK : j + 1 ≤ L₀.length := by
-        have := DownBase.rankF_lt_length (keepT li n c₀) (0, 0, 0) ht (by rw [← hx]; exact hk)
-        have h2 := (List.length_filter_le (keepT li n c₀) L₀)
+        
+        
         omega
       obtain ⟨d₆, k₆, e₆', hk₆, w35, w36, r₆, mm₆, rr₆, rm₆, o₆⟩ :=
         fKeep_exec (P := P) d₅ e₅.wb_right h35 h36 h17 (by omega) (by omega)
       rw [← hx, hk] at hr
       simp only [ite_true] at hr
       refine ⟨d₆, _, .ifLtN_true hp e₆', by omega, by omega, r₆, fun a => ?_,
-        by rw [w35, hr]; ring, by rw [w36, hr], rr₆, rm₆, o₆⟩
+        by omega, by rw [w36, hr], rr₆, rm₆, o₆⟩
       rw [mm₆, e32, e38, e39, hm5]
       have := memT_keep (m₀ := m₀) (m := d.nmem) (B' := B') (hI.mem) ht
-        (by rw [← hx]; exact hk) a
+        (by omega) a
       rw [← hi, ← hj] at this
       rw [← this]
       simp only [trT, hx]
   -- the increment
   have h30 : d₆.nreg 190030 = i := by
-    rw [g6 _ (by norm_num) (by norm_num), g5 _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num) (by norm_num) (by norm_num)]
+    ram_grind
   have h17' : d₆.nreg 190017 = 1 := by
-    rw [g6 _ (by norm_num) (by norm_num), g5 _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num) (by norm_num) (by norm_num), hI.r17]
-  have e₇ := Exec.addN (P := P) e₆.wb_right 190030 190030 190017 (by rw [h30, h17']; omega)
+    grind [Chazelle.Core.DrvT.FInv.r17]
+  have e₇ := Exec.addN (P := P) e₆.wb_right 190030 190030 190017 (by omega)
   set d₇ : Config := { d₆ with nreg := upd d₆.nreg 190030 (d₆.nreg 190030 + d₆.nreg 190017) }
     with hd₇
   have g7 : ∀ r, r ≠ 190030 → d₇.nreg r = d₆.nreg r := fun r hr => by rw [hd₇]; simp [hr]
@@ -190,20 +185,7 @@ theorem fBody_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
   have X' : Exec P W fBody d d₇ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + 1)))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇)))))
   refine ⟨d₇, _, X', e₇.wb_right, ?_, v7, by omega, by omega⟩
-  refine ⟨by rw [v7]; omega, by rw [g _ (by norm_num), hI.rK], ?_, ?_, ?_,
-    by rw [g _ (by norm_num), hI.r10], by rw [g _ (by norm_num), hI.r14],
-    by rw [g _ (by norm_num), hI.r15], by rw [g _ (by norm_num), hI.r16],
-    by rw [g _ (by norm_num), hI.r17], by rw [g _ (by norm_num), hI.r18],
-    fun r hr => by rw [g r hr, hI.fr r hr], ?_, ?_, ?_, fun a => ?_⟩
-  · rw [v7, g7 _ (by norm_num), g6 _ (by norm_num) (by norm_num), r₅ _ (by norm_num),
-      r₄ _ (by norm_num), r₃ _ (by norm_num), r₂ _ (by norm_num), v31]
-    ring
-  · rw [v7, g7 _ (by norm_num), n35]
-  · rw [v7, g7 _ (by norm_num), n36]
-  · show d₆.rreg = cI.rreg; rw [rr₆, rr₅, rr₄, rr₃, rr₂, rr₁, hI.rr]
-  · show d₆.rmem = cI.rmem; rw [rm₆, rm₅, rm₄, rm₃, rm₂, rm₁, hI.rm]
-  · show d₆.output = cI.output; rw [o₆, o₅, o₄, o₃, o₂, o₁, hI.out]
-  · show d₆.nmem a = _; rw [v7, mem6]
+  ram_grind
 
 /-- **The filter pass.** -/
 theorem fLoop_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {CB B' : ℕ}
@@ -220,15 +202,12 @@ theorem fLoop_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
       obtain ⟨d', k, e, hw', hI', hi', hk1, hk2⟩ := fBody_exec hR hCB hBW hwd hId ht
       have := hId.rK
       refine ⟨d', k, e, ⟨hw', hI'⟩, ?_, ?_⟩
-      · rw [hi']; rw [this] at ht; omega
-      · rw [hi']; omega)
+      all_goals omega)
     ⟨hw, hI⟩
   have hi := hI'.i_le
   rw [hI'.rK] at htest
   refine ⟨d', k, e, hw', hI', by omega, ?_, ?_⟩
-  · rw [h0] at hψ; have : d'.nreg 190030 = L₀.length := by omega
-    rw [this] at hψ; omega
-  · rw [h0] at hk; omega
+  all_goals omega
 
 end exec
 

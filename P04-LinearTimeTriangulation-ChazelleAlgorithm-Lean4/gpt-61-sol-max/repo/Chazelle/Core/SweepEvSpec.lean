@@ -86,10 +86,8 @@ theorem st0S_of_st0 {P : Polygon} {c₀ c : Config} {H : Host} {J : Merge.Juncti
   simp only [h7, sideChain, ↓reduceIte, Nat.sub_zero, one_ne_zero, Nat.add_zero] at *
   refine ⟨h90, h91, h92, h93, hJ, hwf, d20, w20, d21, w21, ?_, ?_, fun k hk => ?_,
     fun k hk => ?_, h33, h34, h35, d30, w30, d31, w31⟩
-  · rw [h23, hlo 3 (by omega)]
-  · rw [h24, hlo 4 (by omega)]
-  · rw [h40 k hk]; simp [cstLb]
-  · rw [h45 k hk]; simp [cstQ]
+  · simp_all
+  all_goals (grind [cstLb, cstQ])
 
 /-- **The precondition of stages 2 and 3.** -/
 def Pre (X : MemCtx) (Ok : Polygon → Model → Prop) (P : Polygon) (W : ℕ) (c : Config) : Prop :=
@@ -109,17 +107,20 @@ def Pre (X : MemCtx) (Ok : Polygon → Model → Prop) (P : Polygon) (W : ℕ) (
       (chainModel J.right).Semigranular (N₂.F (chainModel J.right) (Qof P)) (rd c bSweep 5) ∧
       St0S P c H J
 
+section
+variable (P : Polygon)
+include P
 /-- **Word-level facts of a stored position** `(e, h)` of the walk of `C`: an edge of the walk, a
 proper position, and a height code `0` only on the tour (so that `offCmp`, `arrivalPos` and
 `absKey` accept it). -/
-def PosW (P : Polygon) (J : Merge.Junction) (e h : ℕ) : Prop :=
+def PosW (J : Merge.Junction) (e h : ℕ) : Prop :=
   e < (chainModel J.whole).W.n ∧ ProperPos (chainModel J.whole) (Qof P) P.n ⟨e, h⟩ ∧
     (h = 0 → 6 ≤ e)
 
 /-- **The outputs of stages 2 and 3** for one junction and normal form `N₂` of `S₂`: the stops,
 the event log and the endpoint table, in the memory of `c'` at the bases read in `c'`, with the
 word-level facts of the stored positions, codes and labels. -/
-def Out (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c' : Config) : Prop :=
+def Out (J : Merge.Junction) (N₂ : NF) (c' : Config) : Prop :=
   ∃ (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)) (ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)),
     rs.length = rd c' bSweep 201 ∧ Sweep.StopRecsAt c'.nmem (rd c' bSweep 200) rs ∧
     Sweep.StopsOK J (N₂.F (chainModel J.right) (Qof P)) (Sweep.stopsOf J (Qof P) N₂ rs) ∧
@@ -136,7 +137,7 @@ def Out (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c' : Config) : Prop :=
         PosW P J (c'.nmem (rd c' bSweep 302 + 3 * j + 1)) (c'.nmem (rd c' bSweep 302 + 3 * j + 2)))
 
 /-- **The postcondition of stages 2 and 3.** -/
-def Post (P : Polygon) (c c' : Config) : Prop :=
+def Post (c c' : Config) : Prop :=
   (∀ j, j < 200 → c'.nreg (sw j) = c.nreg (sw j)) ∧
     c.nreg ALLOC ≤ rd c' bSweep 200 ∧
     rd c' bSweep 200 + 5 * rd c' bSweep 201 ≤ c'.nreg ALLOC ∧
@@ -149,6 +150,9 @@ def Post (P : Polygon) (c c' : Config) : Prop :=
     ∀ H J N₂, JunctionAt c.nmem (rd c bSweep 0) (rd c bSweep 1) (rd c bSweep 2) (Qof P) H J →
       NFAt c.nmem (rd c bSweep 4) N₂ → IsNF (chainModel J.right) (Qof P) N₂ →
       Out P J N₂ c'
+
+
+end
 
 /-- **The cost of stages 2 and 3.** -/
 def cost (κ F : ℕ → ℕ) (_P : Polygon) (c : Config) : ℕ :=

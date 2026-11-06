@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SpecMerge
 public import Mathlib.Data.List.GetD
 
@@ -29,45 +31,51 @@ open Merge (Junction)
 
 /-! ## Host polygons -/
 
-theorem host_poly_n (Q : Polygon) (H : Host) : (H.poly Q).n = (H.pts Q.n).length := by
+section
+variable (Q : Polygon) (H : Host)
+theorem host_poly_n : (H.poly Q).n = (H.pts Q.n).length := by
   simp [Host.poly, Polygon.n]
 
 /-- The vertices of the host polygon are the evaluated host points. -/
-theorem host_poly_vtx (Q : Polygon) (H : Host) {i : ℕ} (hi : i < (H.pts Q.n).length) :
+theorem host_poly_vtx {i : ℕ} (hi : i < (H.pts Q.n).length) :
     (H.poly Q).vtx i = ((H.pts Q.n).getD i (.vtx 0)).eval Q := by
-  unfold Host.poly Polygon.vtx
-  rw [List.getD_eq_getElem _ _ (by simpa using hi), List.getElem_map,
-    List.getD_eq_getElem _ _ hi]
+  simp_all [Host.poly, Polygon.vtx, List.getElem_map] 
+
+
+end
 
 theorem pts_append (n : ℕ) (H₁ H₂ : Host) : (H₁ ++ H₂).pts n = H₁.pts n ++ H₂.pts n := by
   simp [Host.pts]
 
 theorem pts_cons (n : ℕ) (it : HostItem) (H : Host) :
     Host.pts n (it :: H) = it.pts n ++ H.pts n := by
-  simp [Host.pts]
+  aesop
 
 theorem run_pts_length (n a ℓ : ℕ) : ((HostItem.run a ℓ).pts n).length = ℓ + 1 := by
   simp [HostItem.pts]
 
 theorem run_pts_getD (n a ℓ : ℕ) {k : ℕ} (hk : k ≤ ℓ) :
     ((HostItem.run a ℓ).pts n).getD k (.vtx 0) = .vtx ((a + k) % n) := by
-  simp only [HostItem.pts]
-  rw [List.getD_eq_getElem _ _ (by simp; omega), List.getElem_map, List.getElem_range]
+  simp_all [HostItem.pts, List.getElem_map, List.getElem_range] 
 
+section
+variable (n : ℕ) (H₁ H₂ : Host) (a ℓ : ℕ)
 /-- **The points of a run item inside a host.** -/
-theorem pts_append_run (n : ℕ) (H₁ H₂ : Host) (a ℓ : ℕ) {k : ℕ} (hk : k ≤ ℓ) :
+theorem pts_append_run {k : ℕ} (hk : k ≤ ℓ) :
     ((H₁ ++ HostItem.run a ℓ :: H₂).pts n).getD ((H₁.pts n).length + k) (.vtx 0) =
       .vtx ((a + k) % n) := by
   rw [pts_append, pts_cons, List.getD_eq_getElem?_getD, List.getElem?_append_right (by omega),
-    Nat.add_sub_cancel_left, List.getElem?_append_left (by rw [run_pts_length]; omega),
+    Nat.add_sub_cancel_left, List.getElem?_append_left (by core_grind),
     ← List.getD_eq_getElem?_getD, run_pts_getD n a ℓ hk]
 
-theorem pts_append_run_length (n : ℕ) (H₁ H₂ : Host) (a ℓ : ℕ) :
+theorem pts_append_run_length :
     (H₁.pts n).length + ℓ + 1 ≤ ((H₁ ++ HostItem.run a ℓ :: H₂).pts n).length := by
-  rw [pts_append, pts_cons, List.length_append, List.length_append, run_pts_length]
-  omega
+  grind [pts_append, pts_cons, List.length_append, run_pts_length]
 
 /-! ## M-M1 -/
+
+
+end
 
 /-- The vertex `k` of a chain of a host polygon is the evaluated host point at index
 `(s + k) mod N`. -/
@@ -117,10 +125,8 @@ theorem mod_pred {x N j : ℕ} (hN : 0 < N) (h : (x + 1) % N = j) (hj : 1 ≤ j)
   · rw [Nat.mod_eq_of_lt h1] at h
     rcases Nat.lt_or_ge (x % N + 1) N with h2 | h2
     · rw [Nat.mod_eq_of_lt h2] at h; omega
-    · rw [show x % N + 1 = N by omega, Nat.mod_self] at h; omega
-  · have : N = 1 := by omega
-    subst this
-    simp at h; omega
+    grind [Nat.mod_self]
+  grind
 
 /-- `x mod N = j` with `j + 1 < N` gives `(x + 1) mod N = j + 1`. -/
 theorem mod_succ {x N j : ℕ} (h : x % N = j) (hj : j + 1 < N) : (x + 1) % N = j + 1 := by
@@ -135,7 +141,7 @@ theorem sharedGeneric_run {Q : Polygon} (hn : 3 ≤ Q.n) (hdh : DistinctHeights 
     (hj : (J.s + J.m₁) % J.P.n = (H₁.pts Q.n).length + k) : SharedGeneric J := by
   set H := H₁ ++ HostItem.run a ℓ :: H₂ with hH
   set N := (H.pts Q.n).length with hN
-  have hPn : J.P.n = N := by rw [hP, host_poly_n]
+  have hPn : J.P.n = N := by grind [host_poly_n]
   rw [hPn] at hj
   have hlen : (H₁.pts Q.n).length + ℓ + 1 ≤ N := pts_append_run_length Q.n H₁ H₂ a ℓ
   have hm1 := J.one_le_m₁

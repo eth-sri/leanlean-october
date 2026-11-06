@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutShOrgM
 
 /-!
@@ -18,10 +20,6 @@ pieces are queried (`OrgOK`): with a query origin (`140237 = 1`, origin in `1402
   chain.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -81,25 +79,28 @@ variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {z : Point} {σ : ℝ}
 theorem OrgOK.keep {c c' : Config} (h : OrgOK P C z σ c)
     (hr : ∀ r, 140234 ≤ r → r < 140241 → c'.nreg r = c.nreg r) : OrgOK P C z σ c' := by
   have e37 := hr 140237 (by norm_num) (by norm_num)
-  refine ⟨by rw [e37]; exact h.qk, fun h0 => h.q0 (by rw [← e37]; exact h0), fun h1 => ?_⟩
-  obtain ⟨a, o, ho, hl, hq⟩ := h.q1 (by rw [← e37]; exact h1)
-  exact ⟨by rw [hr _ (by norm_num) (by norm_num)]; exact a, o,
+  refine ⟨by ram_grind, fun h0 => h.q0 (by omega), fun h1 => ?_⟩
+  obtain ⟨a, o, ho, hl, hq⟩ := h.q1 (by omega)
+  exact ⟨by simp_all, o,
     qOriginIn_of_eq ho fun j h1 h2 => hr j (by omega) (by omega), hl, hq⟩
 
 theorem orgOK_zero {c : Config} (h : c.nreg 140237 = 0)
     (hN : ∀ S : Set Point, (∀ x ∈ S, InC C x) → NoHit S z σ) : OrgOK P C z σ c :=
-  ⟨by rw [h]; omega, fun _ => hN, fun h' => by rw [h] at h'; exact absurd h' (by norm_num)⟩
+  by ram_grind
 
 theorem orgOK_one {c : Config} (h : c.nreg 140237 = 1) (h34 : c.nreg 140234 = 1)
     (hq : ∃ o, QOriginIn c 140238 o ∧ o.Lt P.n ∧ QRel P C σ z o) : OrgOK P C z σ c :=
-  ⟨by rw [h], fun h' => by rw [h] at h'; exact absurd h' (by norm_num), fun _ => ⟨h34, hq⟩⟩
+  by ram_grind
 
 theorem dirOf_cases (v : ℕ) : dirOf v = 1 ∨ dirOf v = -1 := by
-  unfold dirOf; split_ifs <;> simp
+  grind [dirOf]
 
 /-! ## The pieces -/
 
-theorem oInit_exec (c : Config) (hw : WordsBounded W c) (hMD : c.nreg 140000 + 1 ≤ W) :
+section
+variable (c : Config) (hw : WordsBounded W c)
+include hw
+theorem oInit_exec (hMD : c.nreg 140000 + 1 ≤ W) :
     ∃ c' k, Exec P W oInit c c' k ∧ k ≤ 10 ∧ c'.nreg K1 = 1 ∧
       c'.nreg 140403 = c.nreg 140000 + 1 ∧ c'.nreg 140241 ≤ 1 ∧
       (c'.nreg 140241 = 1 ↔ dirOf (c.nreg 140008) = 1) ∧
@@ -111,38 +112,34 @@ theorem oInit_exec (c : Config) (hw : WordsBounded W c) (hMD : c.nreg 140000 + 1
       (∀ r, r ≠ 140401 → r ≠ 140403 → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem := by
     simp only [K1]
     exec_block
-    all_goals first | omega | (config_simp; omega) | skip
-    refine ⟨rfl, by config_simp, by config_simp, fun r h1 h2 => ?_, rfl⟩
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    all_goals (simp_all [upd] <;> omega_nf)
   have w₁ := e₁.wb_right
   have b08 : c₁.nreg 140008 = c.nreg 140008 := r₁ _ (by norm_num) (by norm_num)
   obtain ⟨c₂, k₂, e₂, hk₂, v41, r₂, m₂⟩ := ifEq_exec (P := P) (W := W) (a := 140008) (b := K1)
     (T := .instr (.constN 140241 1)) (E := .instr (.constN 140241 0)) c₁ (K := 1)
     (R := fun c' => (c'.nreg 140241 = if c.nreg 140008 = 1 then 1 else 0) ∧
       (∀ r, r ≠ 140241 → c'.nreg r = c₁.nreg r) ∧ c'.nmem = c₁.nmem)
-    (fun h => ⟨_, _, Exec.constN w₁ 140241 1 (by have := w₁; omega), le_rfl,
-      by simp only [Config.nreg_mk, upd_same]; rw [ite_eq_left (by rw [← b08, h]; exact a1)],
-      fun r hr => by simp [upd_other _ _ _ hr], rfl⟩)
+    (fun h => ⟨_, _, Exec.constN w₁ 140241 1 (by omega), le_rfl,
+      by simp_all [Config.nreg_mk, upd_same] <;> omega_nf,
+      fun r hr => by simp_all, rfl⟩)
     (fun h => by
-      have hne : c.nreg 140008 ≠ 1 := fun h' => h (by rw [b08, h']; exact a1.symm)
+      have hne : c.nreg 140008 ≠ 1 := fun h' => h (by ram_grind)
       exact ⟨_, _, Exec.constN w₁ 140241 0 (Nat.zero_le _), le_rfl,
-        by simp only [Config.nreg_mk, upd_same]; rw [ite_eq_right hne],
-        fun r hr => by simp [upd_other _ _ _ hr], rfl⟩)
+        by simp_all,
+        fun r hr => by simp_all, rfl⟩)
   refine ⟨c₂, k₁ + k₂, by unfold oInit; exact .seq e₁ e₂, by omega, ?_, ?_, ?_, ?_,
-    fun r h1 h2 h3 => by rw [r₂ r h3, r₁ r h1 h2], by rw [m₂, m₁]⟩
-  · show c₂.nreg 140401 = 1; rw [r₂ _ (by norm_num), a1]
-  · rw [r₂ _ (by norm_num), a3]
-  · rw [v41]; split_ifs <;> omega
-  · rw [v41]; by_cases hd : c.nreg 140008 = 1 <;> simp [dirOf, hd] <;> norm_num
+    fun r h1 h2 h3 => by simp_all, by rw [m₂, m₁]⟩
+  · ram_grind
+  all_goals (grind [dirOf])
 
-theorem oSym_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) (h1 : c.nreg K1 = 1)
+theorem oSym_exec (hW : 2 ≤ W) (h1 : c.nreg K1 = 1)
     {s : SymPt}
     (hs : SymPtIn c 140005 s) :
     ∃ c' k, Exec P W oSym c c' k ∧ k ≤ 20 ∧ c'.nreg 140230 = 1 ∧ SymPtIn c' 140231 s ∧
       c'.nreg 140234 = 1 ∧ c'.nreg 140235 = 0 ∧ c'.nreg 140236 = hIdx s ∧
       c'.nreg 140237 = 1 ∧ SymPtIn c' 140238 s ∧
       (∀ r, (r < 140230 ∨ 140241 ≤ r) → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
-  have h1' : c.nreg 140401 = 1 := h1
+  
   obtain ⟨c₁, k₁, e₁, hk₁, a30, a31, a32, a33, a34, a35, a37, a38, a39, a40, r₁, m₁⟩ :
       ∃ c₁ k₁, Exec P W (block [.constN 140230 1, .copyN 140231 140005, .copyN 140232 140006,
         .copyN 140233 140007, .constN 140234 1, .constN 140235 0, .constN 140237 1,
@@ -159,9 +156,9 @@ theorem oSym_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) (h1 : c.nr
     refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
       by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
       fun r hr => ?_, rfl⟩
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    simp only [upd]; split_ifs <;> omega
   have w₁ := e₁.wb_right
-  have b1 : c₁.nreg 140401 = 1 := by rw [r₁ _ (by omega), h1']
+  
   have b05 : c₁.nreg 140005 = c.nreg 140005 := r₁ _ (by omega)
   obtain ⟨c₂, k₂, e₂, hk₂, v36, r₂, m₂⟩ : ∃ c₂ k₂, Exec P W
       (.ifLtN 140005 K1 (.instr (.copyN 140236 140006)) (.instr (.copyN 140236 140007))) c₁ c₂ k₂ ∧
@@ -170,40 +167,48 @@ theorem oSym_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) (h1 : c.nr
     cases s with
     | vtx i =>
       obtain ⟨i0, i1⟩ := hs
-      refine ⟨_, _, .ifLtN_true (by show c₁.nreg 140005 < c₁.nreg 140401; rw [b05, i0, b1]; omega)
+      refine ⟨_, _, .ifLtN_true (by ram_grind)
         (Exec.copyN w₁ _ _), by norm_num, ?_, fun r hr => by simp [hr], rfl⟩
-      simp only [Config.nreg_mk, upd_same, hIdx]; rw [r₁ _ (by omega), i1]
+      simp_all [Config.nreg_mk, upd_same, hIdx]
     | onEdge e h =>
       obtain ⟨i0, i1, i2⟩ := hs
-      refine ⟨_, _, .ifLtN_false (by show ¬ c₁.nreg 140005 < c₁.nreg 140401; rw [b05, i0, b1]; omega)
+      refine ⟨_, _, .ifLtN_false (by ram_simp)
         (Exec.copyN w₁ _ _), by norm_num, ?_, fun r hr => by simp [hr], rfl⟩
-      simp only [Config.nreg_mk, upd_same, hIdx]; rw [r₁ _ (by omega), i2]
+      simp_all [Config.nreg_mk, upd_same, hIdx]
   have g₂ : ∀ r, r ≠ 140236 → c₂.nreg r = c₁.nreg r := r₂
-  refine ⟨c₂, k₁ + k₂, by unfold oSym; exact .seq e₁ e₂, by omega, by rw [g₂ _ (by omega), a30],
-    NFLoc.symPtIn_copy hs (by rw [g₂ _ (by omega), a31]) (by rw [g₂ _ (by omega), a32])
-      (by rw [g₂ _ (by omega), a33]),
-    by rw [g₂ _ (by omega), a34], by rw [g₂ _ (by omega), a35], v36, by rw [g₂ _ (by omega), a37],
-    NFLoc.symPtIn_copy hs (by rw [g₂ _ (by omega), a38]) (by rw [g₂ _ (by omega), a39])
-      (by rw [g₂ _ (by omega), a40]),
-    fun r hr => by rw [g₂ r (by omega), r₁ r (by omega)], by rw [m₂, m₁]⟩
+  refine ⟨c₂, k₁ + k₂, by unfold oSym; exact .seq e₁ e₂, by omega, by simp_all,
+    NFLoc.symPtIn_copy hs (by simp_all) (by simp_all)
+      (by simp_all),
+    by simp_all, by simp_all, v36, by simp_all,
+    NFLoc.symPtIn_copy hs (by simp_all) (by simp_all)
+      (by simp_all),
+    fun r hr => by grind, by rw [m₂, m₁]⟩
+
+
+end
 
 theorem wr_oFix : wr (fun r => r == 140237 || r == 140238 || r == 140239) oFix = true := by
   decide
 
-theorem qk0_exec (c : Config) (hw : WordsBounded W c) :
+section
+variable (c : Config) (hw : WordsBounded W c)
+include hw
+theorem qk0_exec :
     ∃ c' k, Exec P W qk0 c c' k ∧ k ≤ 1 ∧ c'.nreg 140237 = 0 := by
   exact ⟨_, _, Exec.constN hw 140237 0 (Nat.zero_le _), le_rfl, by simp⟩
 
-theorem oBox_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) :
+section
+variable (hW : 2 ≤ W)
+include hW
+theorem oBox_exec :
     ∃ c' k, Exec P W oBox c c' k ∧ k ≤ 3 ∧ c'.nreg 140237 = 1 ∧ c'.nreg 140238 = 2 ∧
       c'.nreg 140239 = c.nreg 140236 ∧ c'.nreg 140234 = c.nreg 140234 := by
   unfold oBox
   exec_block
-  all_goals first | omega | skip
-  exact ⟨by norm_num, by config_simp, by config_simp, by config_simp, by config_simp⟩
+  all_goals (aesop (add safe (by omega)))
 
 /-- **The query decision for a walk origin**, from its point record. -/
-theorem oFix_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) (h1 : c.nreg K1 = 1)
+theorem oFix_exec (h1 : c.nreg K1 = 1)
     (hσ : σ = 1 ∨ σ = -1) (hsig : c.nreg 140241 ≤ 1 ∧ (c.nreg 140241 = 1 ↔ σ = 1))
     (hrec : PtRecB P c 140230 z C.radius)
     (hsl : c.nreg 140237 ≠ 1 → |z.1| < C.radius → |z.2| < C.radius → C.top.2 < z.2) :
@@ -220,22 +225,21 @@ theorem oFix_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) (h1 : c.nr
       ∀ {s : Stmt}, (∀ {c' k}, Exec P W qk0 c c' k → ∃ k', Exec P W s c c' k' ∧ k' ≤ k + 5) →
       ∃ c' k, Exec P W s c c' k ∧ k ≤ 30 ∧ OrgOK P C z σ c' := fun hN s hs => by
     obtain ⟨c', k, ex, hk, v⟩ := qk0_exec (P := P) c hw
-    obtain ⟨k', ex', hk'⟩ := hs ex
-    exact ⟨c', k', ex', by omega, orgOK_zero v hN⟩
+    core_grind
   unfold oFix
   -- the height of the origin
   rcases hy with ⟨k0, hy0⟩ | ⟨k2, hy2⟩ | ⟨k1, hyR, h35, h36, hyv⟩
   · have hN : ∀ S : Set Point, (∀ x ∈ S, InC C x) → NoHit S z σ := fun S hS =>
-      noHit_ext (by rw [hy0, abs_neg, abs_of_pos hR]) hS
-    have u1 : c.nreg 140234 < c.nreg 140401 := by rw [k0, h1']; omega
+      noHit_ext (by grind) hS
+    have u1 : c.nreg 140234 < c.nreg 140401 := by grind
     exact noq hN fun ex => ⟨_, .ifLtN_true u1 ex, by omega⟩
   · have hN : ∀ S : Set Point, (∀ x ∈ S, InC C x) → NoHit S z σ := fun S hS =>
-      noHit_ext (by rw [hy2, abs_of_pos hR]) hS
-    have u1 : ¬ c.nreg 140234 < c.nreg 140401 := by rw [k2, h1']; omega
-    have u2 : c.nreg 140401 < c.nreg 140234 := by rw [k2, h1']; omega
+      noHit_ext (by grind) hS
+    have u1 : ¬ c.nreg 140234 < c.nreg 140401 := by grind
+    have u2 : c.nreg 140401 < c.nreg 140234 := by grind
     exact noq hN fun ex => ⟨_, .ifLtN_false u1 (.ifLtN_true u2 ex), by omega⟩
-  have t1 : ¬ c.nreg 140234 < c.nreg K1 := by rw [k1, h1]; omega
-  have t2 : ¬ c.nreg K1 < c.nreg 140234 := by rw [k1, h1]; omega
+  have t1 : ¬ c.nreg 140234 < c.nreg K1 := by grind
+  have t2 : ¬ c.nreg K1 < c.nreg 140234 := by grind
   obtain ⟨c', k, ex, hk, ok⟩ : ∃ c' k, Exec P W (ifEq 140237 K1 .skip oSide) c c' k ∧ k ≤ 20 + 4 ∧
       OrgOK P C z σ c' := by
     refine ifEq_exec (P := P) (W := W) c (K := 20) (fun hq => ?_) (fun hq => ?_)
@@ -243,55 +247,45 @@ theorem oFix_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) (h1 : c.nr
       have hq' : c.nreg 140237 = 1 := by rw [hq, h1]
       obtain ⟨s, hs, hl, hv⟩ := hf hq'
       exact ⟨c, 0, .skip hw, by omega, orgOK_one hq' k1 ⟨.sym s, hs, hl, hv⟩⟩
-    · have hq' : c.nreg 140237 ≠ 1 := by rw [h1] at hq; exact hq
+    · have hq' : c.nreg 140237 ≠ 1 := by omega
       unfold oSide
       obtain ⟨hRx, ak⟩ := ax
       rcases ak with ⟨a0, hx0⟩ | ⟨a2, hx2⟩ | ⟨a1, hx1, -⟩
-      · have t : c.nreg 140230 < c.nreg K1 := by rw [a0, h1]; omega
+      · have t : c.nreg 140230 < c.nreg K1 := by omega
         by_cases hs1 : σ = 1
         · have tb : ¬ c.nreg 140241 < c.nreg K1 := by
-            rw [h1, hsig.2.2 hs1]; omega
+            grind
           obtain ⟨c', k, ex, hk, v37, v38, v39, v34⟩ := oBox_exec (P := P) c hw hW
           refine ⟨c', _, .ifLtN_true t (.ifLtN_false tb ex), by omega,
             orgOK_one v37 (by rw [v34, k1]) ⟨.box (c.nreg (140234 + 2)), ⟨v38, v39⟩, h36, ?_⟩⟩
-          show z = (-σ * C.radius, ((Qof P).vtx (c.nreg (140234 + 2))).2)
-          ext
-          · rw [hx0, hs1]; ring
-          · exact hyv
-        · have hsm : σ = -1 := hσ.resolve_left hs1
+          ram_grind
+        · 
           have tb : c.nreg 140241 < c.nreg K1 := by
-            rw [h1]
-            have : c.nreg 140241 ≠ 1 := fun h => hs1 (hsig.2.1 h)
-            omega
+            grind
           have hN : ∀ S : Set Point, (∀ x ∈ S, InC C x) → NoHit S z σ := fun S hS =>
-            noHit_ahead_side hσ (by rw [hx0, hsm]; ring) hS
+            noHit_ahead_side hσ (by grind) hS
           obtain ⟨c', k, ex, hk, v⟩ := qk0_exec (P := P) c hw
           exact ⟨c', _, .ifLtN_true t (.ifLtN_true tb ex), by omega, orgOK_zero v hN⟩
-      · have t : ¬ c.nreg 140230 < c.nreg K1 := by rw [a2, h1]; omega
-        have t' : c.nreg K1 < c.nreg 140230 := by rw [a2, h1]; omega
+      · have t : ¬ c.nreg 140230 < c.nreg K1 := by omega
+        have t' : c.nreg K1 < c.nreg 140230 := by omega
         by_cases hs1 : σ = 1
         · have tb : ¬ c.nreg 140241 < c.nreg K1 := by
-            rw [h1, hsig.2.2 hs1]; omega
+            grind
           have hN : ∀ S : Set Point, (∀ x ∈ S, InC C x) → NoHit S z σ := fun S hS =>
-            noHit_ahead_side hσ (by rw [hx2, hs1]; ring) hS
+            noHit_ahead_side hσ (by grind) hS
           obtain ⟨c', k, ex, hk, v⟩ := qk0_exec (P := P) c hw
           exact ⟨c', _, .ifLtN_false t (.ifLtN_true t' (.ifLtN_false tb ex)), by omega,
             orgOK_zero v hN⟩
-        · have hsm : σ = -1 := hσ.resolve_left hs1
+        · 
           have tb : c.nreg 140241 < c.nreg K1 := by
-            rw [h1]
-            have : c.nreg 140241 ≠ 1 := fun h => hs1 (hsig.2.1 h)
-            omega
+            grind
           obtain ⟨c', k, ex, hk, v37, v38, v39, v34⟩ := oBox_exec (P := P) c hw hW
           refine ⟨c', _, .ifLtN_false t (.ifLtN_true t' (.ifLtN_true tb ex)), by omega,
             orgOK_one v37 (by rw [v34, k1]) ⟨.box (c.nreg (140234 + 2)), ⟨v38, v39⟩, h36, ?_⟩⟩
-          show z = (-σ * C.radius, ((Qof P).vtx (c.nreg (140234 + 2))).2)
-          ext
-          · rw [hx2, hsm]; ring
-          · exact hyv
+          ram_grind
       · -- inside the slit
-        have t : ¬ c.nreg 140230 < c.nreg K1 := by rw [a1, h1]; omega
-        have t' : ¬ c.nreg K1 < c.nreg 140230 := by rw [a1, h1]; omega
+        have t : ¬ c.nreg 140230 < c.nreg K1 := by omega
+        have t' : ¬ c.nreg K1 < c.nreg 140230 := by omega
         have hab := hsl hq' hx1 hyR
         have hN : ∀ S : Set Point, (∀ x ∈ S, InC C x) → NoHit S z σ := fun S hS =>
           noHit_above hab hS
@@ -301,8 +295,11 @@ theorem oFix_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) (h1 : c.nr
 
 /-! ## The origin -/
 
+
+end
+
 /-- **The origin of the ray**: the shooting environment and the query decision. -/
-theorem orig_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : hostWords P.n ≤ W)
+theorem orig_exec (hG : GoodEnv P) (hW : hostWords P.n ≤ W)
     (hD : ChainDescAt c.nmem (c.nreg 140000 + 1) (Qof P) H C)
     (hwf : ChainWF P (c.nreg ALLOC) c.nmem (c.nreg 140000 + 1))
     (hreg : ∀ H', HostAt c.nmem (c.nmem (c.nreg 140000 + 1)) H' → HostRegular P.n H')
@@ -314,7 +311,7 @@ theorem orig_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : ho
       ShEnv P W H C (o.eval (chainModel C) (Qof P)) (dirOf (c.nreg 140008)) c' ∧
       OrgOK P C (o.eval (chainModel C) (Qof P)) (dirOf (c.nreg 140008)) c' ∧
       FrameB Borg c c' ∧ c'.nreg 140403 = c.nreg 140000 + 1 := by
-  have hW2 : 2 ≤ W := by unfold hostWords at hW; omega
+  have hW2 : 2 ≤ W := by omega
   have hR := C.radius_pos
   have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
   set z := o.eval (chainModel C) (Qof P) with hz
@@ -325,8 +322,8 @@ theorem orig_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : ho
   have k₁' : ∀ r, 140000 ≤ r → r < 140010 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
     r₁ r (by omega) (by omega) (by omega)
   have bA : c₁.nreg ALLOC = c.nreg ALLOC := r₁ _ (by decide) (by decide) (by decide)
-  have L : LdEnv P W H C c₁ := ⟨hG, hW, by rw [m₁, b403]; exact hD,
-    by rw [m₁, b403, bA]; exact hwf, by rw [m₁, b403]; exact hreg⟩
+  have L : LdEnv P W H C c₁ := ⟨hG, hW, by grind,
+    by grind, by grind⟩
   have ex₀ : ∀ {c' k}, Exec P W (.ifLtN K1 140005 oWalk oSym) c₁ c' k →
       Exec P W orig c c' (k₁ + k) := fun ex => by unfold orig; exact .seq e₁ ex
   cases o with
@@ -334,52 +331,50 @@ theorem orig_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : ho
     have hs : SymPtIn c 140005 s := hoIn
     have hs₁ : SymPtIn c₁ 140005 s := symPtIn_of_eq hs fun j h1 h2 => k₁' j (by omega) (by omega)
     have hin : (chainModel C).InnerPt z := by
-      rcases hoK with ⟨p, hp⟩ | ⟨h, -⟩
-      · exact absurd hp (by simp)
-      · exact h
+      grind
     have hb := innerPt_bounds C hin
     have t : ¬ c₁.nreg K1 < c₁.nreg 140005 := by
       rw [b1]
       cases s with
-      | vtx i => rw [hs₁.1]; omega
-      | onEdge e h => rw [hs₁.1]; omega
+      | vtx i => ram_grind
+      | onEdge e h => ram_grind
     obtain ⟨c₂, k₂, e₂, hk₂, a30, a31, a34, a35, a36, a37, a38, r₂, m₂⟩ :=
       oSym_exec (P := P) c₁ w₁ hW2 b1 hs₁
     have ex := ex₀ (.ifLtN_false t e₂)
     have hl : s.Lt P.n := hoLt
     have hzs : z = s.eval (Qof P) := rfl
-    have k2 : ∀ r, 140241 ≤ r → c₂.nreg r = c₁.nreg r := fun r h => r₂ r (Or.inr h)
+    
     refine ⟨c₂, _, ex, by omega, ⟨hG, hW, ?_, ?_, ?_, ?_, ⟨hR, Or.inr (Or.inr ⟨a30, hb.2, s, a31, hl,
       by rw [hzs]⟩)⟩, Or.inr (Or.inr ⟨a34, hb.1, a35, by rw [a36]; exact hIdx_lt hl,
       by rw [a36, hzs]; exact hIdx_snd _ s⟩), ?_, hσ⟩,
-      orgOK_one a37 a34 ⟨.sym s, a38, hl, by show s.eval (Qof P) = z; rw [hzs]⟩,
-      exec_frameB ex wr_orig, by rw [k2 _ (by norm_num), b403]⟩
-    · rw [m₂, k2 140403 (by norm_num)]; exact L.hD
-    · rw [m₂, r₂ ALLOC (Or.inl (by decide)), k2 140403 (by norm_num)]; exact L.hwf
-    · rw [m₂, k2 140403 (by norm_num)]; exact L.hreg
-    · show c₂.nreg 140401 = 1; rw [k2 _ (by norm_num)]; exact b1
-    · rw [k2 _ le_rfl]; exact ⟨b41, b41'⟩
+      orgOK_one a37 a34 ⟨.sym s, a38, hl, by grind [Chazelle.Core.ShootCut.QRel]⟩,
+      exec_frameB ex wr_orig, by grind⟩
+    · grind
+    · ram_grind
+    · grind
+    · ram_simp
+    grind
   | walk x =>
     obtain ⟨o5, o6, o7⟩ : c.nreg 140005 = 2 ∧ c.nreg (140005 + 1) = x.edge ∧
         c.nreg (140005 + 2) = x.hgt := hoIn
-    have t : c₁.nreg K1 < c₁.nreg 140005 := by rw [b1, k₁' _ (by norm_num) (by norm_num), o5]; omega
-    have q6 : c₁.nreg 140006 = x.edge := by rw [k₁' _ (by norm_num) (by norm_num)]; exact o6
-    have q7 : c₁.nreg 140007 = x.hgt := by rw [k₁' _ (by norm_num) (by norm_num)]; exact o7
+    have t : c₁.nreg K1 < c₁.nreg 140005 := by grind
+    have q6 : c₁.nreg 140006 = x.edge := by grind
+    have q7 : c₁.nreg 140007 = x.hgt := by grind
     have hxe : x.edge < (chainModel C).W.n := hoLt.1
     have hxP : ProperPos (chainModel C) (Qof P) P.n x := by
       rcases hoK with ⟨p, hp⟩ | ⟨-, h⟩
       · cases hp
-        exact ⟨le_of_eq rfl, by show (0 : ℝ) < 1; norm_num, Nat.zero_le _⟩
-      · exact h x rfl
+        exact ⟨le_of_eq rfl, by positivity, Nat.zero_le _⟩
+      grind
     have hxy : x.hgt = 0 ∨ |((chainModel C).pos (Qof P) x).2| < C.radius := by
       rcases hoK with ⟨p, hp⟩ | ⟨h, -⟩
-      · cases hp; exact Or.inl rfl
+      · grind
       · exact Or.inr (innerPt_bounds C h).1
     have hzx : z = (chainModel C).pos (Qof P) x := rfl
     obtain ⟨c₂, k₂, e₂, hk₂, rec₂, f₂, fl₂⟩ := ptLoad_exec' (P := P) (W := W)
       (e := 140006) (h := 140007) (B := 140230) c₁ w₁ L (by norm_num) (by norm_num) (by norm_num)
-      (by rw [q6]; exact hxe) (by rw [q6, q7]; exact hxP) (by rw [q6, q7]; exact hxy)
-      (by rw [bA]; exact hroom)
+      (by omega) (by rw [q6, q7]; exact hxP) (by rw [q6, q7]; exact hxy)
+      (by omega)
     rw [q6, q7, ← hzx] at rec₂
     rw [q6, q7] at fl₂
     have kb : ∀ r, Bld 140230 r = false → c₂.nreg r = c₁.nreg r := f₂.1
@@ -388,34 +383,33 @@ theorem orig_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : ho
     have hsl : c₂.nreg (140230 + 7) ≠ 1 → |z.1| < C.radius → |z.2| < C.radius →
         C.top.2 < z.2 := fun hf hx hy => by
       rw [hzx] at hx hy ⊢
-      refine walk_above C hxP (by rw [← hn]; exact hxe) hx hy fun h => hf (fl₂ h.1 ?_)
-      rcases h.2 with h' | h'
-      · exact Or.inl h'
-      · exact Or.inr h'
+      refine walk_above C hxP (by omega) hx hy fun h => hf (fl₂ h.1 ?_)
+      grind
     obtain ⟨c₃, k₃, e₃, hk₃, ok, f₃⟩ := oFix_exec (P := P) (C := C) (z := z) (σ := σ) c₂
-      e₂.wb_right hW2 g1 hσ ⟨by rw [g41]; exact b41, by rw [g41]; exact b41'⟩ rec₂ hsl
+      e₂.wb_right hW2 g1 hσ ⟨by omega, by grind⟩ rec₂ hsl
     have ex := ex₀ (.ifLtN_true t (.seq e₂ e₃))
     have k3 : ∀ r, r ≠ 140237 → r ≠ 140238 → r ≠ 140239 → c₃.nreg r = c₂.nreg r :=
-      fun r h1 h2 h3 => f₃.1 r (by simp [h1, h2, h3])
+      fun r h1 h2 h3 => f₃.1 r (by grind)
     have m₃ : c₃.nmem = c.nmem := by rw [f₃.2.2.1, f₂.2.2.1, m₁]
     have g403 : c₃.nreg 140403 = c.nreg 140000 + 1 := by
       rw [k3 _ (by norm_num) (by norm_num) (by norm_num), kb _ (by decide), b403]
     have gA : c₃.nreg ALLOC = c.nreg ALLOC := by
       rw [k3 _ (by decide) (by decide) (by decide), kb _ (by decide), bA]
     obtain ⟨ax, hy, -⟩ := rec₂
-    refine ⟨c₃, _, ex, by omega, ⟨hG, hW, by rw [m₃, g403]; exact hD,
-      by rw [m₃, g403, gA]; exact hwf, by rw [m₃, g403]; exact hreg, ?_, ?_, ?_, ?_, hσ⟩,
+    refine ⟨c₃, _, ex, by omega, ⟨hG, hW, by grind,
+      by grind, by grind, ?_, ?_, ?_, ?_, hσ⟩,
       ok, exec_frameB ex wr_orig, g403⟩
     · show c₃.nreg 140401 = 1
-      rw [k3 _ (by norm_num) (by norm_num) (by norm_num)]; exact g1
+      ram_grind
     · exact AbsRecW.copy (r' := 140230) (AbsRec.weak ax) (k3 _ (by norm_num) (by norm_num) (by norm_num))
         (k3 _ (by norm_num) (by norm_num) (by norm_num))
         (k3 _ (by norm_num) (by norm_num) (by norm_num))
         (k3 _ (by norm_num) (by norm_num) (by norm_num))
-    · exact HRecS.copy (r' := 140234) hy (k3 _ (by norm_num) (by norm_num) (by norm_num))
-        (k3 _ (by norm_num) (by norm_num) (by norm_num))
-        (k3 _ (by norm_num) (by norm_num) (by norm_num))
-    · rw [k3 _ (by norm_num) (by norm_num) (by norm_num), g41]; exact ⟨b41, b41'⟩
+    · grind [Chazelle.Core.ShootCut.HRecS]
+    grind
+
+
+end
 
 end
 

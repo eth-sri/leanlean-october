@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmCtx
 
 /-!
@@ -75,51 +77,44 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       refine ⟨rfl, ?_⟩
       simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hHd, hA', ALLOC]
       and_intros
-      all_goals first | trivial | exact hKc | exact hCB |
-        (intro r h1 h2 h3 h4; simp (disch := omega) only [Machine.upd_other])
+      all_goals ram_simp <;> omega_nf
   obtain ⟨q05, q06, q08, qS, q00, q01, q02, qA, qr, qm, qrr, qrm, qo⟩ := q
   have w₁ := e₁.wb_right
   -- the loop
   have hIs' := hIs
   obtain ⟨-, -, -, -, -, -, -, -, -, hhQ, -⟩ := hIs'
   have hn : (Qof P).n = P.n := shear_n _ _
-  have I0 : QLI W K CB A₀ c₁ c₁ := ⟨w₁, by omega, by rw [q01, q02]; ring, by rw [qA, q02]; ring,
+  have I0 : QLI W K CB A₀ c₁ c₁ := ⟨w₁, by omega, by omega, by omega,
     fun _ _ _ _ _ _ _ => rfl, fun _ _ => rfl, fun i hi => by omega, rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, hk₂', I₂, h₂⟩ := qlLoop_exec (P := P) q05 q06 q08 q00
-    (fun i hi => by have := hch' i hi; omega)
+    (fun i hi => by grind)
     (fun i hi => by
-      rw [qm, (hch i hi).1]
-      have := hhQ i hi; rw [hn] at this; omega)
+      ram_grind)
     (by omega) (by omega) K c₁ I0 (by omega)
   have w₂ := I₂.wb
   have g₂ : ∀ r, r ≠ 70101 → r ≠ 70102 → r ≠ 70103 → r ≠ 70104 → r ≠ 70107 → r ≠ ALLOC →
       c₂.nreg r = c₁.nreg r := I₂.regs
   have r00 : c₂.nreg 70100 = K := by
-    rw [g₂ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide), q00]
+    ram_grind
   obtain ⟨c₃, k₃, e₃, hk₃, t28, tr, tm, trr, trm, tou⟩ : ∃ c₃ k₃, Exec P W sqMid c₂ c₃ k₃ ∧
       k₃ = 1 ∧ c₃.nreg 70128 = 2 * K ∧ (∀ r, r ≠ 70128 → c₃.nreg r = c₂.nreg r) ∧
       c₃.nmem = c₂.nmem ∧ c₃.rreg = c₂.rreg ∧ c₃.rmem = c₂.rmem ∧ c₃.output = c₂.output := by
     unfold sqMid
     exec_block
     all_goals try (simp only [r00]; omega)
-    refine ⟨rfl, ?_, fun r h => ?_, rfl, rfl, rfl, rfl⟩
-    all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other,
-      r00]
-    ring
+    grind [Machine.upd_same, Machine.upd_other]
   have ex : Exec P W (endPart S G) c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
   have hlen : (endQL N.chords).length = 2 * K := endQL_length _
   have hS' : S ≠ ALLOC := by rcases hS with rfl | rfl <;> decide
-  refine ⟨c₃, _, ex, by omega, by omega, ?_, ?_, by rw [t28, hlen], ?_, ?_, ?_, fun a ha => ?_,
+  refine ⟨c₃, _, ex, by omega, by omega, ?_, ?_, by omega, ?_, ?_, ?_, fun a ha => ?_,
     fun r hr => ?_, by rw [trr, I₂.rr, qrr], by rw [trm, I₂.rm, qrm], by rw [tou, I₂.out, qo]⟩
-  · rw [tr _ (by rcases hS with rfl | rfl <;> decide), g₂ _ (by rcases hS with rfl | rfl <;> decide)
-      (by rcases hS with rfl | rfl <;> decide) (by rcases hS with rfl | rfl <;> decide)
-      (by rcases hS with rfl | rfl <;> decide) (by rcases hS with rfl | rfl <;> decide) hS', qS,
+  · rw [tr _ (by omega), g₂ _ (by omega)
+      (by omega) (by omega)
+      (by omega) (by omega) hS', qS,
       hA₀]
   · rw [tr _ (by decide), I₂.alloc, h₂, hlen, hA₀]; ring
-  · rw [tr _ (by decide), g₂ _ (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide), q05]
-  · rw [tr _ (by decide), g₂ _ (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide), q08]
+  · ram_grind
+  · ram_grind
   · rw [tm, hA₀]
     have hdone := I₂.done
     rw [h₂] at hdone

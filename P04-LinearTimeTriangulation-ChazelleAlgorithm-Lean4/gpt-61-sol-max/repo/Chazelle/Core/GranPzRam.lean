@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranPz
 
 /-!
@@ -68,7 +70,7 @@ theorem chPts_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
       ∀ r, r ≠ 50087 → r ≠ 50091 → c₃.nreg r = c₂.nreg r := by
     have hw₂ := e₂.wb_right
     exec_block
-    refine ⟨rfl, by config_simp; exact n63, ?_, fun r h1 h2 => by simp [h1, h2]⟩
+    refine ⟨rfl, by ram_simp, ?_, fun r h1 h2 => by simp [h1, h2]⟩
     config_simp; rw [g₂ _ (by decide), k78]
   have E₃ : HostEnv W Hh H.length c.nmem c₃ :=
     ⟨e₃.wb_right, by rw [r₃ _ (by omega) (by omega), E₂.h60],
@@ -102,7 +104,7 @@ theorem chPts_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
   have s₅ : c₅.nreg 50052 = s := by
     rw [r₅ _ (by omega) (by omega) (by omega) (by omega), g₄ _ (by decide), s₃]
   have n₅ : c₅.nreg 50087 = N := by
-    rw [r₅ _ (by omega) (by omega) (by omega) (by omega), g₄ _ (by decide), q87]
+    ram_simp
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, -, sp₂, hsp₂, in₂⟩ := hostPt_exec (P := P) c₅ E₅ hH hwf
     (by omega) haW hNW s₅ n₅ q91' hs (by omega)
   have a₆ : SymPtIn c₆ 50040 sp₁ := symPtIn_copy a₅ (f₆.1 _ (by decide)) (f₆.1 _ (by decide))
@@ -133,27 +135,32 @@ theorem hvS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {d
   cases sp with
   | vtx i =>
     obtain ⟨h0, h1⟩ := hsp
-    exact ⟨_, _, .ifLtN_true (by rw [h0, h32]; omega) (Exec.copyN hw _ _), by omega,
-      by simp [upd, h1, hv], fun q hq => by simp [upd, hq], rfl⟩
+    exact ⟨_, _, .ifLtN_true (by omega) (Exec.copyN hw _ _), by omega,
+      by grind [upd, hv], fun q hq => by ram_all, rfl⟩
   | onEdge e k =>
     obtain ⟨h0, -, h2⟩ := hsp
-    exact ⟨_, _, .ifLtN_false (by rw [h0, h32]; omega) (Exec.copyN hw _ _), by omega,
-      by simp [upd, h2, hv], fun q hq => by simp [upd, hq], rfl⟩
+    exact ⟨_, _, .ifLtN_false (by omega) (Exec.copyN hw _ _), by omega,
+      by grind [upd, hv], fun q hq => by ram_all, rfl⟩
 
 /-- `s` if `r a ≠ r b`, else `t`. -/
 def ifNe (a b : ℕ) (s t : Stmt) : Stmt := .ifLtN a b s (.ifLtN b a s t)
 
-theorem ifNe_ne {P : Polygon} {W : ℕ} {a b : ℕ} {s t : Stmt} {c c' : Config} {k : ℕ}
+section
+variable {P : Polygon} {W a b : ℕ} {s t : Stmt} {c c' : Config} {k : ℕ}
+theorem ifNe_ne
     (h : c.nreg a ≠ c.nreg b) (e : Exec P W s c c' k) :
     ∃ k', Exec P W (ifNe a b s t) c c' k' ∧ k' ≤ k + 3 := by
   by_cases hlt : c.nreg a < c.nreg b
   · exact ⟨_, .ifLtN_true hlt e, by omega⟩
   · exact ⟨_, .ifLtN_false hlt (.ifLtN_true (by omega) e), by omega⟩
 
-theorem ifNe_eq {P : Polygon} {W : ℕ} {a b : ℕ} {s t : Stmt} {c c' : Config} {k : ℕ}
+theorem ifNe_eq
     (h : c.nreg a = c.nreg b) (e : Exec P W t c c' k) :
     Exec P W (ifNe a b s t) c c' (k + 2 + 2) :=
   .ifLtN_false (by omega) (.ifLtN_false (by omega) e)
+
+
+end
 
 /-- `r112 := 1` if `r111 ≠ 0`, `r ra ≠ r rb` and `r rc ≠ r rd` (else unchanged). -/
 def tail3 (ra rb rc rd : ℕ) : Stmt :=
@@ -167,23 +174,23 @@ theorem tail3_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       (∀ q, q ≠ 90112 → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem := by
   unfold tail3
   by_cases h0 : c.nreg 90111 = 0
-  · exact ⟨c, _, .ifLtN_true (by rw [h19]; omega) (.skip hw), by omega, by omega,
-      by simp [h0, h112], fun _ _ => rfl, rfl⟩
-  have e0 : ¬ c.nreg 90111 < c.nreg 90019 := by rw [h19]; omega
+  · exact ⟨c, _, .ifLtN_true (by omega) (.skip hw), by omega, by omega,
+      by omega, fun _ _ => rfl, rfl⟩
+  have e0 : ¬ c.nreg 90111 < c.nreg 90019 := by omega
   by_cases h1 : c.nreg ra = c.nreg rb
   · exact ⟨c, _, .ifLtN_false e0 (ifNe_eq h1 (.skip hw)), by omega, by omega,
-      by simp [h1, h112], fun _ _ => rfl, rfl⟩
+      by omega, fun _ _ => rfl, rfl⟩
   by_cases h2 : c.nreg rc = c.nreg rd
   · obtain ⟨k', e', hk'⟩ := ifNe_ne (s := ifNe rc rd (.instr (.constN 90112 1)) .skip)
       (t := .skip) h1 (ifNe_eq (P := P) (W := W) (s := .instr (.constN 90112 1)) h2 (.skip hw))
-    exact ⟨c, _, .ifLtN_false e0 e', by omega, by omega, by simp [h2, h112],
+    exact ⟨c, _, .ifLtN_false e0 e', by omega, by omega, by omega,
       fun _ _ => rfl, rfl⟩
   · obtain ⟨k₁, e₁, hk₁⟩ := ifNe_ne (s := .instr (.constN 90112 1)) (t := .skip) h2
       (Exec.constN (P := P) hw 90112 1 hW)
     obtain ⟨k', e', hk'⟩ := ifNe_ne (s := ifNe rc rd (.instr (.constN 90112 1)) .skip)
       (t := .skip) h1 e₁
-    exact ⟨_, _, .ifLtN_false e0 e', by omega, by simp [upd], by simp [upd, h0, h1, h2],
-      fun q hq => by simp [upd, hq], rfl⟩
+    exact ⟨_, _, .ifLtN_false e0 e', by omega, by simp [upd], by ram_simp,
+      fun q hq => by ram_simp, rfl⟩
 
 /-! ## The procedure -/
 

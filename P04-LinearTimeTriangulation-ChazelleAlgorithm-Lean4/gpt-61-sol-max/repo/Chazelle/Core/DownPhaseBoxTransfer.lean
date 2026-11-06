@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseBoxAttach
 public import Chazelle.Core.DownPhaseBoxBuild
 
@@ -37,12 +39,7 @@ theorem wposOf_mem {c : ℕ} (hc : c < 2 * L.length) :
     ∃ x ∈ L, wposOf L c = (recOf x).lpos ∨ wposOf L c = (recOf x).rpos := by
   have hi : c / 2 < L.length := by omega
   refine ⟨L[c / 2], getElem_mem _, ?_⟩
-  have hcr : crec L (c / 2) = recOf L[c / 2] := by
-    unfold crec; rw [getD_eq_getElem _ _ hi]
-  unfold wposOf
-  split_ifs
-  · left; rw [hcr]
-  · right; rw [hcr]
+  simp_all [crec, wposOf] <;> omega_nf
 
 /-- The facts about the ends of an attached band chord. -/
 theorem end_facts (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q L)
@@ -63,8 +60,11 @@ namespace Twin
 variable (h : Twin C C')
 include h
 
+section
+variable (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q L)
+include hband hL
 /-- The chords of the list in the model of `C'` are the stretched chords. -/
-theorem toSet_rec (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q L)
+theorem toSet_rec
     {x : ℕ × ℕ × ℕ} (hx : x ∈ L) :
     (recOf x).toSet (chainModel C') Q = phi C C' '' (recOf x).toSet (chainModel C) Q := by
   obtain ⟨hl, -, hml⟩ := end_facts hband hL hx (Or.inl rfl)
@@ -72,14 +72,14 @@ theorem toSet_rec (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) 
   exact h.toSet_eq (hband x hx) hl hr hml hmr
 
 /-- **The chord list is valid for the twin chain.** -/
-theorem chordTriplesOK (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q L) :
+theorem chordTriplesOK :
     ChordTriplesOK (chainModel C') Q L := by
   have hL0 := hL
   obtain ⟨⟨-, hadm, -⟩, hnd, hatt, hh⟩ := hL
   refine ⟨⟨?_, ?_, ?_⟩, ?_, ?_, hh⟩
   · refine ((List.finite_toSet L).image fun x => (recOf x).toSet (chainModel C') Q).subset ?_
     rintro c ⟨x, hx, rfl⟩
-    exact ⟨x, hx, rfl⟩
+    grind
   · rintro c ⟨x, hx, rfl⟩
     obtain ⟨hl, hbl, hml⟩ := end_facts hband hL0 hx (Or.inl rfl)
     obtain ⟨hr, hbr, hmr⟩ := end_facts hband hL0 hx (Or.inr rfl)
@@ -113,7 +113,7 @@ theorem chordTriplesOK (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainMode
         (h.param_eq_zero_iff hbr).symm (hatt x hx).2⟩
 
 /-- **The two chain models agree on the chord list.** -/
-theorem keyCongr (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q L) :
+theorem keyCongr :
     KeyCongr (chainModel C) (chainModel C') Q L where
   lt c c' hc hc' := by
     obtain ⟨x, hx, hw⟩ := wposOf_mem hc
@@ -135,6 +135,9 @@ theorem keyCongr (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q
   dir c _ := by
     rw [h.wa_eq, h.wb_eq]
     exact sig_lt_iff
+
+
+end
 
 end Twin
 

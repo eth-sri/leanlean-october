@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Existence.Rotate
 
 /-!
@@ -31,35 +33,38 @@ open Chazelle.Jordan
 
 /-! ### Elementary facts about vertices and edges -/
 
+section
+variable (P : Polygon)
 /-- Vertex `i` lies on edge `i`. -/
-theorem vtx_mem_edge (P : Polygon) (i : ℕ) : P.vtx i ∈ P.edge i :=
+theorem vtx_mem_edge (i : ℕ) : P.vtx i ∈ P.edge i :=
   left_mem_segment _ _
 
 /-- Every vertex with index in range lies on the boundary. -/
-theorem vtx_mem_boundary (P : Polygon) {i : ℕ} (hi : i < P.n) : P.vtx i ∈ P.boundary :=
+theorem vtx_mem_boundary {i : ℕ} (hi : i < P.n) : P.vtx i ∈ P.boundary :=
   ⟨i, hi, vtx_mem_edge P i⟩
 
 /-- The boundary is contained in the filled region. -/
-theorem boundary_subset_filled (P : Polygon) : P.boundary ⊆ P.filled :=
+theorem boundary_subset_filled : P.boundary ⊆ P.filled :=
   Set.subset_union_left
 
 /-- Every edge with index in range is contained in the boundary. -/
-theorem edge_subset_boundary (P : Polygon) {i : ℕ} (hi : i < P.n) : P.edge i ⊆ P.boundary :=
+theorem edge_subset_boundary {i : ℕ} (hi : i < P.n) : P.edge i ⊆ P.boundary :=
   fun _ hp => ⟨i, hi, hp⟩
 
 /-- `commonEndpoints` is symmetric. -/
-theorem commonEndpoints_comm (P : Polygon) (i j : ℕ) :
+theorem commonEndpoints_comm (i j : ℕ) :
     P.commonEndpoints i j = P.commonEndpoints j i := by
-  ext p
-  simp only [Polygon.commonEndpoints, Set.mem_ofPred_eq]
-  exact and_comm
+  grind [Polygon.commonEndpoints, Set.mem_ofPred_eq]
+
+
+end
 
 /-- In a simple polygon, a vertex lying on an edge is one of its endpoints. -/
 theorem eq_endpoint_of_vtx_mem_edge {P : Polygon} (hP : P.Simple) {k i : ℕ} (hk : k < P.n)
     (hi : i < P.n) (h : P.vtx k ∈ P.edge i) :
     P.vtx k = P.vtx i ∨ P.vtx k = P.vtx ((i + 1) % P.n) := by
   by_cases hki : k = i
-  · exact Or.inl (by rw [hki])
+  · simp_all
   · have hmem : P.vtx k ∈ P.edge i ∩ P.edge k := ⟨h, vtx_mem_edge P k⟩
     rw [hP.2.2 i k hi hk (Ne.symm hki)] at hmem
     exact hmem.1
@@ -79,19 +84,24 @@ variable (P : Polygon) (s L : ℕ)
 
 /-- Vertex `i ≤ L` of the arc is vertex `(s + i) % n` of `P`. -/
 theorem vtx_arc {i : ℕ} (hi : i ≤ L) : (P.arc s L).vtx i = P.vtx ((s + i) % P.n) := by
-  simp [Polygon.arc, Polygon.vtx, List.getD_eq_getElem?_getD,
-    List.getElem?_range (Nat.lt_succ_of_le hi)]
+  simp_all [Polygon.arc, Polygon.vtx, List.getD_eq_getElem?_getD] 
 
+section
+variable {i : ℕ} (hi : i < L)
+include hi
 /-- The successor vertex of the arc, for `i < L`. -/
-theorem vtx_arc_succ {i : ℕ} (hi : i < L) :
+theorem vtx_arc_succ :
     (P.arc s L).vtx ((i + 1) % (P.arc s L).n) = P.vtx (((s + i) % P.n + 1) % P.n) := by
   rw [n_arc, Nat.mod_eq_of_lt (by omega : i + 1 < L + 1), vtx_arc P s L (by omega),
     mod_add_one_mod]
 
 /-- Edge `i < L` of the arc is edge `(s + i) % n` of `P`. -/
-theorem edge_arc {i : ℕ} (hi : i < L) : (P.arc s L).edge i = P.edge ((s + i) % P.n) := by
+theorem edge_arc : (P.arc s L).edge i = P.edge ((s + i) % P.n) := by
   unfold Polygon.edge
   rw [vtx_arc P s L hi.le, vtx_arc_succ P s L hi]
+
+
+end
 
 /-- The last edge of the arc is the chord from vertex `(s + L) % n` to vertex `s % n`. -/
 theorem edge_arc_last :
@@ -131,7 +141,7 @@ theorem mem_boundary_arc_iff {p : Point} :
       exact Or.inr (by rw [← edge_arc_last P s L]; exact hp)
   · rintro (⟨i, hi, hp⟩ | hp)
     · exact ⟨i, by omega, by rw [edge_arc P s L hi]; exact hp⟩
-    · exact ⟨L, by omega, by rw [edge_arc_last]; exact hp⟩
+    grind [edge_arc_last]
 
 /-! ### The complementary arc -/
 
@@ -139,22 +149,28 @@ theorem mem_boundary_arc_iff {p : Point} :
 theorem compl_arc_index (i : ℕ) : ((s + L) % P.n + i) % P.n = (s + L + i) % P.n :=
   Nat.mod_add_mod _ _ _
 
+section
+variable (hL : L ≤ P.n)
+include hL
 /-- Index arithmetic for the complementary arc: its last vertex is vertex `s % n` of `P`. -/
-theorem compl_arc_last_index (hL : L ≤ P.n) :
+theorem compl_arc_last_index :
     ((s + L) % P.n + (P.n - L)) % P.n = s % P.n := by
-  rw [Nat.mod_add_mod, show s + L + (P.n - L) = s + P.n by omega, Nat.add_mod_right]
+  simp_all
 
 /-- Every vertex index of `P` is a vertex index of the arc or of the complementary arc. -/
-theorem vertex_index_cases (hL : L ≤ P.n) (hn : 0 < P.n) {i : ℕ} (hi : i < P.n) :
+theorem vertex_index_cases (hn : 0 < P.n) {i : ℕ} (hi : i < P.n) :
     (∃ k, k ≤ L ∧ (s + k) % P.n = i) ∨
       (∃ k, k ≤ P.n - L ∧ ((s + L) % P.n + k) % P.n = i) := by
   obtain ⟨k, hk, hki⟩ := exists_rot_index hn s i hi
   rcases Nat.lt_or_ge k (L + 1) with h | h
   · exact Or.inl ⟨k, by omega, hki⟩
   · refine Or.inr ⟨k - L, by omega, ?_⟩
-    rw [compl_arc_index, show s + L + (k - L) = s + k by omega, hki]
+    grind
 
 /-! ### Splitting the crossing sum along the chord -/
+
+
+end
 
 /-- The crossing sum of the arc: the sum over its non-chord edges plus the chord indicator. -/
 theorem crossSum_arc (z : Point) :
@@ -172,8 +188,11 @@ theorem crossSum_arc (z : Point) :
       vtx_arc P s L (by omega), mod_add_one_mod]
   · rw [Nat.mod_self, vtx_arc P s L le_rfl, vtx_arc P s L (Nat.zero_le L), Nat.add_zero s]
 
+section
+variable (hL : L ≤ P.n) (z : Point)
+include hL
 /-- The crossing sum of `P` splits over the edges `s, …, s + L - 1` and `s + L, …, s + n - 1`. -/
-theorem crossSum_eq_sum_split (hL : L ≤ P.n) (z : Point) :
+theorem crossSum_eq_sum_split :
     crossSum P z =
       (∑ i ∈ Finset.range L,
         crossInd z (P.vtx ((s + i) % P.n)) (P.vtx (((s + i) % P.n + 1) % P.n))) +
@@ -184,31 +203,22 @@ theorem crossSum_eq_sum_split (hL : L ≤ P.n) (z : Point) :
     unfold crossSum
     rw [sum_range_rot g s P.n]
   have h2 := Finset.sum_range_add (fun i => g ((s + i) % P.n)) L (P.n - L)
-  rw [show L + (P.n - L) = P.n by omega] at h2
-  rw [h1, h2]
-  congr 1
-  apply Finset.sum_congr rfl
-  intro i _
-  show g ((s + (L + i)) % P.n) = _
-  rw [← Nat.add_assoc]
+  grind
 
 /-- **Splitting along a chord.**  The crossing sum of `P` at `z` is the sum of the crossing
 sums of the arc `P.arc s L` and of the complementary arc `P.arc ((s + L) % n) (n - L)`: the
 two chord indicators cancel in `ZMod 2`. -/
-theorem crossSum_split (hL : L ≤ P.n) (z : Point) :
+theorem crossSum_split :
     crossSum P z =
       crossSum (P.arc s L) z + crossSum (P.arc ((s + L) % P.n) (P.n - L)) z := by
   rw [crossSum_arc, crossSum_arc, compl_arc_last_index P s L hL, Nat.mod_mod,
     crossInd_comm (u := P.vtx (s % P.n)), add_add_add_comm, zmod_two_add_self, add_zero,
     crossSum_eq_sum_split P s L hL z]
-  congr 1
-  apply Finset.sum_congr rfl
-  intro i _
-  rw [compl_arc_index P s L i]
+  simp_all
 
 /-- **Parity splits along a chord**: the parity with respect to `P` is the exclusive or of
 the parities with respect to the two arcs. -/
-theorem parity_split (hL : L ≤ P.n) (z : Point) :
+theorem parity_split :
     parity P z =
       Bool.xor (parity (P.arc s L) z) (parity (P.arc ((s + L) % P.n) (P.n - L)) z) := by
   unfold parity
@@ -219,6 +229,9 @@ theorem parity_split (hL : L ≤ P.n) (z : Point) :
   decide
 
 /-! ### Diagonals and simplicity of the arcs -/
+
+
+end
 
 /-- `(s, L)` names a diagonal of `P`: the chord from vertex `s % n` to vertex `(s + L) % n`
 with `2 ≤ L ≤ n - 2`, whose open part avoids the boundary of `P`.  (Whether the chord lies
@@ -233,8 +246,7 @@ theorem isDiagonal_compl (hd : IsDiagonal P s L) : IsDiagonal P ((s + L) % P.n) 
   obtain ⟨h2, hn, hch⟩ := hd
   refine ⟨by omega, by omega, ?_⟩
   rw [compl_arc_last_index P s L (by omega), Nat.mod_mod, segment_comm]
-  intro p hp h1 h2
-  exact hch p hp h2 h1
+  simp_all
 
 /-- Simplicity of an arc, from the chord condition alone (with `2 ≤ L` and `L + 1 ≤ n`). -/
 theorem simple_arc_of_chord (hP : P.Simple) (h2 : 2 ≤ L) (hLn : L + 1 ≤ P.n)
@@ -242,7 +254,7 @@ theorem simple_arc_of_chord (hP : P.Simple) (h2 : 2 ≤ L) (hLn : L + 1 ≤ P.n)
       p ≠ P.vtx (s % P.n) → p ≠ P.vtx ((s + L) % P.n) → p ∉ P.boundary) :
     (P.arc s L).Simple := by
   have hn : 0 < P.n := by omega
-  refine ⟨by rw [n_arc]; omega, ?_, ?_⟩
+  refine ⟨by simp_all, ?_, ?_⟩
   · intro i j hi hj hij
     rw [n_arc] at hi hj
     rw [vtx_arc P s L (by omega), vtx_arc P s L (by omega)] at hij
@@ -259,7 +271,7 @@ theorem simple_arc_of_chord (hP : P.Simple) (h2 : 2 ≤ L) (hLn : L + 1 ≤ P.n)
         have hab : p = P.vtx (s % P.n) ∨ p = P.vtx ((s + L) % P.n) := by
           by_contra hcon
           rw [not_or] at hcon
-          exact hch p (by rw [segment_comm]; exact hp2) hcon.1 hcon.2
+          exact hch p (by grind [segment_comm]) hcon.1 hcon.2
             ⟨_, Nat.mod_lt _ hn, hp1⟩
         refine ⟨?_, hab.symm⟩
         rcases hab with rfl | rfl
@@ -279,24 +291,25 @@ theorem simple_arc_of_chord (hP : P.Simple) (h2 : 2 ≤ L) (hLn : L + 1 ≤ P.n)
     · rw [edge_arc P s L hiL, edge_arc P s L hjL, commonEndpoints_arc P s L hiL hjL]
       exact hP.2.2 _ _ (Nat.mod_lt _ hn) (Nat.mod_lt _ hn)
         (fun h => hij (rot_index_inj (by omega) (by omega) h))
-    · have : j = L := by omega
-      subst this
-      exact key i hiL
-    · have : i = L := by omega
-      subst this
-      rw [Set.inter_comm, commonEndpoints_comm, key j hjL]
-    · omega
+    · grind
+    all_goals (grind [Set.inter_comm, commonEndpoints_comm])
 
+section
+variable (hP : P.Simple) (hd : IsDiagonal P s L)
+include hP hd
 /-- **The arc of a diagonal is simple.** -/
-theorem simple_arc (hP : P.Simple) (hd : IsDiagonal P s L) : (P.arc s L).Simple :=
+theorem simple_arc : (P.arc s L).Simple :=
   simple_arc_of_chord P s L hP hd.1 (by have := hd.2.1; omega) hd.2.2
 
 /-- **The complementary arc of a diagonal is simple.** -/
-theorem simple_arc_compl (hP : P.Simple) (hd : IsDiagonal P s L) :
+theorem simple_arc_compl :
     (P.arc ((s + L) % P.n) (P.n - L)).Simple :=
   simple_arc P _ _ hP (isDiagonal_compl P s L hd)
 
 /-! ### Boundaries -/
+
+
+end
 
 /-- The boundary of the arc lies in the boundary of `P` together with the chord. -/
 theorem boundary_arc_subset (hn : 0 < P.n) :
@@ -304,7 +317,7 @@ theorem boundary_arc_subset (hn : 0 < P.n) :
   intro p hp
   rcases (mem_boundary_arc_iff P s L).1 hp with ⟨i, _, hp⟩ | hp
   · exact Or.inl ⟨_, Nat.mod_lt _ hn, hp⟩
-  · exact Or.inr hp
+  simp_all
 
 /-- The boundary of `P` lies in the union of the boundaries of the two arcs. -/
 theorem boundary_subset_arcs (hL : L ≤ P.n) (hn : 0 < P.n) :
@@ -312,10 +325,9 @@ theorem boundary_subset_arcs (hL : L ≤ P.n) (hn : 0 < P.n) :
   rintro p ⟨j, hj, hp⟩
   obtain ⟨i, hi, hij⟩ := exists_rot_index hn s j hj
   rcases Nat.lt_or_ge i L with hiL | hiL
-  · exact Or.inl ((mem_boundary_arc_iff P s L).2 (Or.inl ⟨i, hiL, by rw [hij]; exact hp⟩))
+  · exact Or.inl ((mem_boundary_arc_iff P s L).2 (Or.inl ⟨i, hiL, by simp_all⟩))
   · refine Or.inr ((mem_boundary_arc_iff P _ _).2 (Or.inl ⟨i - L, by omega, ?_⟩))
-    rw [compl_arc_index, show s + L + (i - L) = s + i by omega, hij]
-    exact hp
+    simp_all
 
 /-- The chord lies in the boundary of the arc. -/
 theorem chord_subset_boundary_arc :
@@ -324,26 +336,31 @@ theorem chord_subset_boundary_arc :
 
 /-! ### Triangles of an arc -/
 
+section
+variable {t : Polygon.Triangle} (h : t.1 ≤ L ∧ t.2.1 ≤ L ∧ t.2.2 ≤ L)
+include h
 /-- A triangle of the arc with indices `≤ L` has the same point set as its relabelling. -/
-theorem triSet_arc {t : Polygon.Triangle} (h : t.1 ≤ L ∧ t.2.1 ≤ L ∧ t.2.2 ≤ L) :
+theorem triSet_arc :
     (P.arc s L).triSet t = P.triSet (relabel s P.n t) := by
   unfold Polygon.triSet Polygon.triVertices
   rw [vtx_arc P s L h.1, vtx_arc P s L h.2.1, vtx_arc P s L h.2.2]
   rfl
 
 /-- A triangle of the arc with indices `≤ L` has the same vertex set as its relabelling. -/
-theorem triVertices_arc {t : Polygon.Triangle} (h : t.1 ≤ L ∧ t.2.1 ≤ L ∧ t.2.2 ≤ L) :
+theorem triVertices_arc :
     (P.arc s L).triVertices t = P.triVertices (relabel s P.n t) := by
   unfold Polygon.triVertices
   rw [vtx_arc P s L h.1, vtx_arc P s L h.2.1, vtx_arc P s L h.2.2]
   rfl
 
+
+end
+
 /-- The indices of a valid triangle of the arc are at most `L`. -/
 theorem index_le_of_validTriangle_arc {t : Polygon.Triangle}
     (h : (P.arc s L).validTriangle t) : t.1 ≤ L ∧ t.2.1 ≤ L ∧ t.2.2 ≤ L := by
   obtain ⟨h1, h2, h3, -⟩ := h
-  rw [n_arc] at h1 h2 h3
-  omega
+  simp_all
 
 /-- A valid triangle of the arc relabels to a valid triangle of `P`. -/
 theorem validTriangle_arc (hn : 0 < P.n) {t : Polygon.Triangle}

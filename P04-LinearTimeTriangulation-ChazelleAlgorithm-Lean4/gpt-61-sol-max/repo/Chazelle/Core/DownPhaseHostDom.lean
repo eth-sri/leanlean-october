@@ -54,7 +54,7 @@ theorem hostEdge_not_mem (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q
         ¬ sideInArc (hk M S R i) (hk M S R ((i + 1) % nk M S R)) k := by
       intro k hk hkin
       exact hk_gap hM hF hfin hN2 hi
-        (Or.inr ⟨k, hk, rfl, a', b', harc, hsub k (Nat.cast_nonneg k) (by exact_mod_cast hk) hkin⟩)
+        (Or.inr ⟨k, hk, rfl, a', b', harc, hsub k (Nat.cast_nonneg k) (by simp_all) hkin⟩)
         hkin
     obtain ⟨q, hq, s, hs0, hs1, hzq, -⟩ := arcEdge_of_noVertex M.W hb1.1 hb1.2 hb2.1 hb2.2
       (hk_succ_ne hM hF hfin hN2 hi) hnv z hz
@@ -102,7 +102,7 @@ theorem region_sub_dom (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S
     set i := ((g + 1) % N + k) % N
     have hi : i < N := Nat.mod_lt _ hN
     have e : ((g + 1) % N + (k + 1)) % N = (i + 1) % N := by
-      rw [show (g + 1) % N + (k + 1) = (g + 1) % N + k + 1 by ring, ← Nat.mod_add_mod]
+      grind
     rw [e] at hzk
     exact hostEdge_not_mem hQ hFam hne hR hi hzk hz
   -- the slit

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildFinal
 public import Chazelle.Core.NFBuildPassStep
 
@@ -83,15 +85,7 @@ theorem BConst.frame {D T K B H lo hd kd : ℕ} {d d' : Config} {Bw : ℕ → Bo
   have g : ∀ r ∈ constRegs, d'.nreg r = d.nreg r := fun r hr => hf.1 r (hB r hr)
   simp only [constRegs, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp,
     forall_eq] at g
-  obtain ⟨g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12, g13, g14, g15, g16, g17, g18, g19,
-    g20, g21, g22, g23, g24, g25, g26⟩ := g
-  exact ⟨by rw [g1, h.rD], by rw [g2, h.rT], by rw [g3, h.rN], by rw [g4, h.r1a],
-    by rw [g5, h.rB], by rw [g6, h.rK], by rw [g7, h.r0], by rw [g8, h.r1], by rw [g9, h.r3],
-    by rw [g10, h.rR], by rw [g11, h.rH], by rw [g12, h.rCT], by rw [g13, h.rAT],
-    by rw [g14, h.rRT], by rw [g15, h.rQT], by rw [g16, h.rLT], by rw [g17, h.rST],
-    by rw [g18, h.rWT], by rw [g19, h.rCA], by rw [g20, h.rFA], by rw [g21, h.rFC],
-    by rw [g22, h.rA], by rw [g23, h.rlo], by rw [g24, h.rhd], by rw [g25, h.r19],
-    by rw [g26, h.r23]⟩
+  ram_grind
 
 section exec
 
@@ -123,7 +117,7 @@ theorem setupB_exec (d : Config) (hw : WordsBounded W d) {K H SE : ℕ}
   unfold setupB
   exec_block
   all_goals first
-    | (config_simp; simp (config := { failIfUnchanged := false }) only [hK, hN, h1, hH]; omega)
+    | (config_simp; omega)
     | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     ?_⟩ <;> config_simp

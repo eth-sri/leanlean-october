@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.UpPhase3
 
 /-!
@@ -39,14 +41,19 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-theorem band_brute {r : ℕ} (h1 : 180000 ≤ r) (h2 : r < 190000) : bandOf r = bBrute := by
-  unfold bandOf bBrute; omega
+section
+variable {r : ℕ}
+theorem band_brute (h1 : 180000 ≤ r) (h2 : r < 190000) : bandOf r = bBrute := by
+  omega_nf
 
-theorem band_l41' {r : ℕ} (h1 : 160000 ≤ r) (h2 : r < 170000) : bandOf r = bL41 := by
-  unfold bandOf bL41; omega
+theorem band_l41' (h1 : 160000 ≤ r) (h2 : r < 170000) : bandOf r = bL41 := by
+  omega_nf
 
-theorem band_prep {r : ℕ} (h1 : 110000 ≤ r) (h2 : r < 120000) : bandOf r = bOPrep := by
-  unfold bandOf bOPrep; omega
+theorem band_prep (h1 : 110000 ≤ r) (h2 : r < 120000) : bandOf r = bOPrep := by
+  omega_nf
+
+
+end
 
 set_option maxHeartbeats 16000000 in
 /-- **Brute force, called from the up phase.** -/
@@ -81,16 +88,15 @@ theorem bruteCall_exec {sB : Stmt} {κB : ℕ}
     exec_block
     refine ⟨rfl, ‹_›, by config_simp; exact h16, by config_simp; exact h17,
       by config_simp; exact h11, fun r a1 a2 a3 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
-  have hA1 : c1.nreg ALLOC = c.nreg ALLOC := fr1 _ (by rw [hAl]; decide) (by rw [hAl]; decide)
-    (by rw [hAl]; decide)
+    ram_simp <;> omega_nf
+  have hA1 : c1.nreg ALLOC = c.nreg ALLOC := fr1 _ (by omega) (by omega)
+    (by omega)
   obtain ⟨c2, k2, e2, hk2, ⟨C, N, hCP, hCs, hCm, hNW, hc⟩, fr2⟩ :=
     hB P W c1 hw1 ⟨hG, hWh, by show 1 ≤ c1.nreg 180001; omega,
       by show c1.nreg 180000 + c1.nreg 180001 + 1 ≤ P.n; omega,
       by show 1 ≤ c1.nreg 180002; omega,
       by show c1.nreg 180001 = 1 ∨ 2 ≤ c1.nreg 180002; omega⟩
-      (by show c1.nreg ALLOC + κB * (c1.nreg 180001 + 1) ^ 3 ≤ W; rw [hA1, i1]; exact hbud)
+      (by show c1.nreg ALLOC + κB * (c1.nreg 180001 + 1) ^ 3 ≤ W; ram_grind)
   replace hk2 : k2 ≤ κB * (c1.nreg 180001 + 1) ^ 3 := hk2
   rw [i1] at hk2
   obtain ⟨fr2r, fr2rr, fr2m, fr2rm, fr2o, fr2a, fr2b⟩ := fr2
@@ -103,19 +109,18 @@ theorem bruteCall_exec {sB : Stmt} {κB : ℕ}
     refine ⟨rfl, ‹_›, by config_simp, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
     simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
-  have hA3 : c3.nreg ALLOC = c2.nreg ALLOC := fr3 _ (by rw [hAl]; decide)
+  have hA3 : c3.nreg ALLOC = c2.nreg ALLOC := fr3 _ (by omega)
   have hbb : ∀ r, bandOf r ∉ bruteBands → r < 180000 ∨ 190000 ≤ r := by
     intro r hr
     by_contra hc
     exact hr (by rw [band_brute (by omega) (by omega)]; decide)
-  refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, hw3, by rw [hA3, ← hA1]; exact fr2a,
-    by rw [hA3, ← hA1]; omega, ⟨C, N, hCP, by rw [hCs]; exact i0, by rw [hCm]; exact i1,
+  refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, hw3, by omega,
+    by omega, ⟨C, N, hCP, by rw [hCs]; exact i0, by rw [hCm]; exact i1,
       by rw [o31, hm3, hA3]; exact hNW, by rw [← i2]; exact hc⟩,
-    fun a ha => by rw [hm3, fr2m a (by rw [hA1]; exact ha), hm1],
-    fun a ha => by rw [hrm3, fr2rm a (by rw [hA1]; exact ha), hrm1],
-    by rw [ho3, fr2o, ho1], fun r h1 h2 h3 => ?_, fun r h1 => by rw [hrr3, fr2rr r h1, hrr1]⟩
-  have := hbb r h1
-  rw [fr3 r h2, fr2r r h1 h3, fr1 r (by omega) (by omega) (by omega)]
+    fun a ha => by ram_grind,
+    fun a ha => by ram_grind,
+    by ram_grind, fun r h1 h2 h3 => ?_, fun r h1 => by ram_grind⟩
+  grind
 
 end proofs
 

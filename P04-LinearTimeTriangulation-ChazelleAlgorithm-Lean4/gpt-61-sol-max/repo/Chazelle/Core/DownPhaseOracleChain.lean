@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutPiece
 public import Chazelle.Core.Lemma41Host
 public import Chazelle.Core.DownPhaseTransSide
@@ -39,10 +41,10 @@ theorem subChain_vertex (k : ℕ) : (subChain Q a m hm1 hm).vertex k = Q.vtx ((a
 theorem okModel_sub {P : Polygon} (hG : GoodEnv P) {hm' : m + 1 ≤ (Qof P).n} :
     OkModel P (chainModel (subChain (Qof P) a m hm1 hm')) := by
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hn : 1 ≤ P.n := by have := hG.1.1; omega
+  have hn : 1 ≤ P.n := by omega
   refine ⟨Host.whole P.n, subChain (Qof P) a m hm1 hm', by simp [HostOk, Host.whole],
     by rw [hQn]; exact L41.hostRegular_whole hn, ?_, ?_, rfl⟩
-  · have := L41.poly_whole (Qof P) (by omega); rw [hQn] at this; exact this.symm
+  · have := L41.poly_whole (Qof P) (by omega); aesop
   · exact (shearInvariance (epsOf P) P).1 hG.1
 
 /-- The start of the interior walk's pass along the chain. -/
@@ -76,11 +78,10 @@ theorem sub_idx {n a m d : ℕ} (hn : 0 < n) (hd : d ≤ m) (hdn : d < n) :
   rcases Nat.lt_or_ge r d with h | h
   · obtain ⟨q', rfl⟩ : ∃ q', q = q' + 1 := by
       rcases Nat.eq_zero_or_pos q with h0 | h0
-      · subst h0; rw [mul_zero, zero_add] at h1; omega
-      · exact ⟨q - 1, by omega⟩
-    have e2 : n * (q' + 1) = n * q' + n := by rw [mul_add, mul_one]
+      all_goals (simp_all [mul_zero, zero_add] <;> omega_nf)
+    have e2 : n * (q' + 1) = n * q' + n := by grind
     have e : a + (m - d) = (r + n - d) + n * q' := by omega
-    rw [e, Nat.add_mul_mod_self_left]
+    simp_all
   · have e : a + (m - d) = (r - d) + n * q := by omega
     rw [e, Nat.add_mul_mod_self_left, show r + n - d = (r - d) + n by omega, Nat.add_mod_right]
 

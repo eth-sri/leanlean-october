@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoLab0M
 
 /-!
@@ -75,42 +77,34 @@ theorem put1_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 1 
       c'.nmem = upd c.nmem (c.nreg 9999) (c.nreg 244033) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
     exec_block
-    all_goals try (config_simp; omega)
-    refine ⟨rfl, ?_, fun r hr => ?_, ?_, rfl, rfl, rfl⟩
-    · config_simp; omega
-    · config_simp
-      simp only [upd, ite_eq_right hr]
-    · config_simp
+    all_goals simp_all
   obtain ⟨c', k, ex, hk, h1, h2, h3, h4, h5, h6⟩ := ex
   refine IRS.ofExec hI ex (by omega) (fun r _ hr => h2 r hr) h4 (fun a ha => ?_) h5 h6
-    (by show c.nreg 9999 ≤ c'.nreg 9999; omega) (by show c'.nreg 9999 ≤ c.nreg 9999 + k; omega)
+    (by grind) (by grind)
     ⟨h1, h2, h3⟩
   rw [h3]
   have h0 : c₀.nreg 9999 ≤ c.nreg 9999 := hI.hA
-  have ha' : a < c₀.nreg 9999 := ha
-  simp only [upd]
-  rw [ite_eq_right (by omega)]
+  ram_simp 
 
 /-- The registers of a slot. -/
 def SlotW (r : ℕ) : Prop := r = sV ∨ r = sA ∨ r = sX ∨ r = sN ∨ r = sE
 
-theorem addrL_val (m f : ℕ → ℕ) (e : ℕ) (hk2 : f K2 = 2) (hk3 : f K3 = 3) :
+section
+variable (m f : ℕ → ℕ) (e : ℕ)
+theorem addrL_val (hk2 : f K2 = 2) (hk3 : f K3 = 3) :
     regB m (addrL e) f sA = f (sw 300) + 7 * f e + 3 ∧
     regB m (addrL e) f sN = m (f (sw 300) + 7 * f e + 2) := by
   have hk2' : f 240615 = 2 := hk2
   have hk3' : f 240616 = 3 := hk3
   simp only [addrL, regB, regI, upd, sA, sX, sN, sE, K2, K3, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, hk2', hk3']
-  exact ⟨by ring, congrArg m (by ring)⟩
+  simp_all +arith
 
-theorem addrL_other (m f : ℕ → ℕ) (e : ℕ) {q : ℕ} (hq : ¬ SlotW q) : regB m (addrL e) f q = f q :=
+theorem addrL_other {q : ℕ} (hq : ¬ SlotW q) : regB m (addrL e) f q = f q :=
   regB_other m (addrL e) f (fun i hi => by
     simp only [addrL, List.mem_cons, List.not_mem_nil, or_false] at hi
-    unfold SlotW at hq
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;>
-      intro h <;> subst h <;> simp at hq)
+    core_grind)
 
-theorem addrL_ok (m f : ℕ → ℕ) (e : ℕ) (hk2 : f K2 = 2) (hk3 : f K3 = 3)
+theorem addrL_ok (hk2 : f K2 = 2) (hk3 : f K3 = 3)
     (hb : f (sw 300) + 7 * f e + 3 ≤ W) : okB W m (addrL e) f := by
   have hk2' : f 240615 = 2 := hk2
   have hk3' : f 240616 = 3 := hk3
@@ -118,29 +112,29 @@ theorem addrL_ok (m f : ℕ → ℕ) (e : ℕ) (hk2 : f K2 = 2) (hk3 : f K3 = 3)
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
     iscr_sw (by omega) (by omega)
   simp only [addrL, okB, okI, regI, upd, sA, sX, sN, sE, K2, K3, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, hk2', hk3']
-  exact ⟨s 4037 (by norm_num) (by norm_num), ⟨s 4034 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, ⟨s 4034 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, ⟨s 4034 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, ⟨s 4035 (by norm_num) (by norm_num), by omega⟩,
-    s 4036 (by norm_num) (by norm_num), ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, trivial⟩
+  grind
 
-theorem labL_val (m f : ℕ → ℕ) (k : ℕ) :
+
+end
+
+section
+variable (m f : ℕ → ℕ) (k : ℕ)
+theorem labL_val :
     regB m (labL k) f sV = m (f sA + f k) := by
-  simp only [labL, regB, regI, upd, sA, sV, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
+  aesop
 
-theorem labL_other (m f : ℕ → ℕ) (k : ℕ) {q : ℕ} (hq : ¬ SlotW q) : regB m (labL k) f q = f q :=
+theorem labL_other {q : ℕ} (hq : ¬ SlotW q) : regB m (labL k) f q = f q :=
   regB_other m (labL k) f (fun i hi => by
     simp only [labL, List.mem_cons, List.not_mem_nil, or_false] at hi
-    unfold SlotW at hq
-    rcases hi with rfl | rfl <;> simp only [dstI] <;> intro h <;> subst h <;> simp at hq)
+    core_grind)
 
-theorem labL_ok (m f : ℕ → ℕ) (k : ℕ) (hb : f sA + f k ≤ W) : okB W m (labL k) f := by
+theorem labL_ok (hb : f sA + f k ≤ W) : okB W m (labL k) f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
     iscr_sw (by omega) (by omega)
-  simp only [labL, okB, okI, sA, sV, sw] at hb ⊢
-  exact ⟨⟨s 4034 (by norm_num) (by norm_num), hb⟩, s 4033 (by norm_num) (by norm_num), trivial⟩
+  core_grind [okI, sV, sw]
+
+
+end
 
 set_option maxHeartbeats 1000000 in
 /-- **One slot**: its value is stored at the allocator. -/
@@ -154,9 +148,7 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
   have nW : ∀ q, (q = ALLOC ∨ q = gL ∨ q = sw 300 ∨ q = sw 301 ∨ q = K1 ∨ q = K2 ∨ q = K3) →
       ¬ SlotW q := by
     intro q hq h
-    unfold SlotW at h
-    rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      rcases h with h | h | h | h | h <;> simp [ALLOC, gL, K1, K2, K3, sV, sA, sX, sN, sE, sw] at h
+    omega_nf
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
     iscr_sw (by omega) (by omega)
   set v := slotVal c.nmem (c.nreg (sw 300)) (c.nreg (sw 301)) (c.nmem (c.nreg gL)) (c.nreg e)
@@ -179,7 +171,7 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
   · refine IRS.ite (K := 14) (fun hlt => ?_) (fun hlt => ?_)
     · rw [o1 e he, o1 _ (nW _ (by simp))] at hlt
       have hb : c₁.nreg (sw 300) + 7 * c₁.nreg e + 3 ≤ W := by
-        rw [o1 e he, o1 _ (nW _ (by simp))]; omega
+        grind
       refine IRS.seq (K₁ := 10) (K₂ := 4)
         (IRS.block (addrL e) hI₁ (addrL_ok _ _ e hK₁.2.2.2.2.2.1
           hK₁.2.2.2.2.2.2 hb)) ?_
@@ -192,44 +184,30 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
         rw [addrL_other _ _ e hq, o1 q hq]
       have m3 : c₃.nmem = c.nmem := rfl
       have eA : c₃.nreg sA = c.nreg (sw 300) + 7 * c.nreg e + 3 := by
-        show regB c₁.nmem (addrL e) c₁.nreg sA = _
-        rw [a1, o1 e he, o1 _ (nW _ (by simp))]
+        grind
       have eN : c₃.nreg sN = c.nmem (c.nreg (sw 300) + 7 * c.nreg e + 2) := by
-        show regB c₁.nmem (addrL e) c₁.nreg sN = _
-        rw [a2, o1 e he, o1 _ (nW _ (by simp))]
+        grind
       refine IRS.ite (K := 2) (fun hlt' => ?_) (fun hlt' => ?_)
       · rw [o3 k hk, eN] at hlt'
-        refine (IRS.block (labL k) hI₃ (labL_ok _ _ k (by rw [eA, o3 k hk]; omega))).mono
+        refine (IRS.block (labL k) hI₃ (labL_ok _ _ k (by grind))).mono
           (by simp [labL]) ?_
         rintro _ rfl
-        refine ⟨?_, fun q hq => ?_, rfl⟩
-        · show regB c₃.nmem (labL k) c₃.nreg sV = v
-          rw [labL_val, eA, o3 k hk, hv]
-          unfold slotVal
-          rw [ite_eq_left ⟨hlt, hlt'⟩]
-        · show regB c₃.nmem (labL k) c₃.nreg q = c.nreg q
-          rw [labL_other _ _ k hq, o3 q hq]
+        grind [Chazelle.Core.SweepIo.Lab0.labL_val, Chazelle.Core.SweepIo.Lab0.labL_other, labL_val, slotVal]
       · rw [o3 k hk, eN] at hlt'
         refine IRS.skip hI₃ ⟨?_, o3, m3⟩
         show regB c₁.nmem (addrL e) c₁.nreg sV = v
         rw [regB_other _ _ _ (fun i hi => by
           simp only [addrL, List.mem_cons, List.not_mem_nil, or_false] at hi
-          rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-            simp [dstI, sV, sA, sX, sN, sE, sw]), v1, hv]
-        unfold slotVal
-        rw [ite_eq_right (fun h => hlt' h.2)]
+          grind [dstI, sV, sA, sX, sN, sE, sw]), v1, hv]
+        grind [slotVal]
     · rw [o1 e he, o1 _ (nW _ (by simp))] at hlt
       refine IRS.skip hI₁ ⟨?_, o1, rfl⟩
-      rw [v1, hv]
-      unfold slotVal
-      rw [ite_eq_right (fun h => hlt h.1)]
+      grind [slotVal]
   · rintro c₂ hI₂ hA₂ hA₂' ⟨v2, o2, m2⟩
     have hK₂ := hK.fix hI₂
     have eA2 : c₂.nreg ALLOC = c.nreg ALLOC := o2 _ (nW _ (by simp))
-    refine (put1_irs hI₂ hK₂ (by rw [eA2]; omega)).mono le_rfl ?_
-    rintro c' ⟨p1, p2, p3⟩
-    refine ⟨by rw [p1, eA2], fun r hr hrA => by rw [p2 r hrA, o2 r hr], ?_⟩
-    rw [p3, m2, eA2, v2]
+    refine (put1_irs hI₂ hK₂ (by omega)).mono le_rfl ?_
+    grind
 
 /-! ## The twelve slots -/
 
@@ -246,10 +224,7 @@ def slotPairs : List (ℕ × ℕ) :=
 theorem slotVal_congr {m m' : ℕ → ℕ} {AL E g e k : ℕ} (hk : k ≤ 3)
     (h : ∀ a, a < AL + 7 * E → m' a = m a) :
     slotVal m' AL E g e k = slotVal m AL E g e k := by
-  unfold slotVal
-  by_cases he : e < E
-  · rw [h _ (by omega), h _ (by omega)]
-  · simp [he]
+  grind [slotVal]
 
 set_option maxHeartbeats 1000000 in
 /-- **A list of slots**: the values in order at the allocator. -/

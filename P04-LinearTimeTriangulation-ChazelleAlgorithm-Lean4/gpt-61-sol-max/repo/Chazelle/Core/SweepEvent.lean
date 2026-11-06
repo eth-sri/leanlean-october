@@ -84,7 +84,7 @@ theorem no_label_of_bracket (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have := congrArg (off n g) h
     rw [hoy] at this
     unfold Btw at hbtw
-    rcases hbtw with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> linarith
+    grind
   have hxa : (px : ℝ) + tx ≠ pa + ta := fun h => hcx ⟨e, he, pa, ta, hA, h⟩
   have hxb : (px : ℝ) + tx ≠ pb + tb := fun h => hcx ⟨e, he, pb, tb, hB, h⟩
   have hya : (((g + d) % n : ℕ) : ℝ) + t ≠ pa + ta := fun h => hc ⟨e, he, pa, ta, hA, h⟩
@@ -92,14 +92,7 @@ theorem no_label_of_bracket (hP : J.P.Simple) {S₂ : Set (Set Point)}
   refine (sep_iff_btw hg0 hgn a0 a1 b0 b1 x0 x1 y0 y1 hk13 hxy hxa hxb hya hyb).2 ?_
   rw [hoy]
   unfold Btw at hbtw ⊢
-  constructor
-  · intro h1 h2
-    rcases h1 with ⟨h7, h8⟩ | ⟨h7, h8⟩ <;> rcases h2 with ⟨h3, h4⟩ | ⟨h3, h4⟩ <;>
-      rcases hbtw with ⟨h5, h6⟩ | ⟨h5, h6⟩ <;> linarith
-  · intro h1
-    rcases hbtw with ⟨h5, h6⟩ | ⟨h5, h6⟩
-    · right; constructor <;> linarith
-    · exfalso; apply h1; right; constructor <;> linarith
+  grind
 
 end Bracket
 
@@ -119,14 +112,14 @@ theorem region_eq_of_side {M : Model} {F : Set (Set Point)} {U U' : Set Point}
 
 /-- A region containing the points just above (below) a point of a chord in the domain touches
 the chord (it is an exit chord of the region). -/
-theorem touches_of_side {D : Set Point} {c U : Set Point} {z : Point} (hz : z ∈ c) (hzD : z ∈ D)
+theorem touches_of_side {D c U : Set Point} {z : Point} (hz : z ∈ c) (hzD : z ∈ D)
     {τ : ℝ} (h : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z.1, z.2 + τ * δ) : Point) ∈ U) :
     Chazelle.Chain.TouchesIn D c U := by
   refine ⟨z, ⟨hz, hzD⟩, ?_⟩
   have hlim : Tendsto (fun δ : ℝ => ((z.1, z.2 + τ * δ) : Point)) (𝓝[>] (0 : ℝ)) (𝓝 z) := by
     have hc : Continuous (fun δ : ℝ => ((z.1, z.2 + τ * δ) : Point)) := by fun_prop
     have := (hc.tendsto 0).mono_left (nhdsWithin_le_nhds (s := Ioi (0 : ℝ)))
-    simpa using this
+    simp_all
   exact mem_closure_of_tendsto hlim h
 
 end Transition

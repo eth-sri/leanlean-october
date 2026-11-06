@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OutputGeom
 
 /-!
@@ -43,43 +45,50 @@ def nxt (n p : ℕ) : ℕ := if p + 1 < n then p + 1 else 0
 /-- The edge of `Q` carried by walk edge `p`. -/
 def inp (b : Bool) (n p : ℕ) : ℕ := if b then (if p + 1 < n then n - 2 - p else n - 1) else p
 
+section
+variable {n p : ℕ} (hp : p < n)
+include hp
 /-- `nxt` is the successor modulo `n`. -/
-theorem nxt_eq {n p : ℕ} (hp : p < n) : nxt n p = (p + 1) % n := by
+theorem nxt_eq : nxt n p = (p + 1) % n := by
   unfold nxt
   split_ifs with h
   · rw [Nat.mod_eq_of_lt h]
-  · rw [show p + 1 = n by omega, Nat.mod_self]
+  grind [Nat.mod_self]
 
 /-- `nxt` stays below `n`. -/
-theorem nxt_lt {n p : ℕ} (hp : p < n) : nxt n p < n := by unfold nxt; split_ifs <;> omega
+theorem nxt_lt : nxt n p < n := by core_grind
 
+
+end
+
+section
+variable {b : Bool}
 /-- `inp` stays below `n`. -/
-theorem inp_lt {b : Bool} {n p : ℕ} (hp : p < n) : inp b n p < n := by
-  unfold inp; split_ifs <;> omega
+theorem inp_lt {n p : ℕ} (hp : p < n) : inp b n p < n := by
+  grind [inp]
 
 /-- `wv` stays below `n`. -/
-theorem wv_lt {b : Bool} {n k : ℕ} (hk : k < n) : wv b n k < n := by
-  unfold wv; split_ifs <;> omega
+theorem wv_lt {n k : ℕ} (hk : k < n) : wv b n k < n := by
+  core_grind
 
 /-- `inp` is an involution below `n`. -/
-theorem inp_inp {b : Bool} {n p : ℕ} (hp : p < n) : inp b n (inp b n p) = p := by
-  unfold inp; split_ifs <;> omega
+theorem inp_inp {n p : ℕ} (hp : p < n) : inp b n (inp b n p) = p := by
+  grind [inp]
 
 /-- `wv` is an involution below `n`. -/
-theorem wv_wv {b : Bool} {n k : ℕ} (hk : k < n) : wv b n (wv b n k) = k := by
-  unfold wv; split_ifs <;> omega
+theorem wv_wv {n k : ℕ} (hk : k < n) : wv b n (wv b n k) = k := by
+  core_grind
 
 /-- The ends of a walk edge in terms of the carried edge. -/
-theorem wv_inp {b : Bool} {n p : ℕ} (hp : p < n) :
+theorem wv_inp {n p : ℕ} (hp : p < n) :
     (b = false ∧ wv b n p = inp b n p ∧ wv b n (nxt n p) = nxt n (inp b n p)) ∨
       (b = true ∧ wv b n p = nxt n (inp b n p) ∧ wv b n (nxt n p) = inp b n p) := by
-  cases b
-  · left; simp [wv, inp]
-  · right
-    refine ⟨rfl, ?_, ?_⟩ <;> simp only [wv, inp, nxt] <;>
-      split_ifs <;> omega
+  grind [wv, inp, nxt]
 
 /-! ## The walk -/
+
+
+end
 
 open Classical in
 /-- Whether the interior walk of `Q` is the reversed polygon. -/
@@ -98,11 +107,9 @@ theorem walk_vtx (Q : Polygon) {k : ℕ} (hk : k < Q.n) :
     (interiorWalk Q).vtx k = Q.vtx (wv (revOf Q) Q.n k) := by
   classical
   by_cases h : LeftInside Q
-  · have e1 : interiorWalk Q = Q := by unfold interiorWalk; simp [h]
-    have e2 : revOf Q = false := by unfold revOf; simp [h]
-    rw [e1, e2]; rfl
-  · have e1 : interiorWalk Q = ⟨Q.vertices.reverse⟩ := by unfold interiorWalk; simp [h]
-    have e2 : revOf Q = true := by unfold revOf; simp [h]
+  · aesop (add simp [interiorWalk, revOf]) (add safe (by omega))
+  · have e1 : interiorWalk Q = ⟨Q.vertices.reverse⟩ := by grind [interiorWalk]
+    have e2 : revOf Q = true := by core_grind
     rw [e1, e2]
     exact FactsInterior.rev_vtx Q k hk
 
@@ -113,16 +120,18 @@ theorem walk_succ (Q : Polygon) {p : ℕ} (hp : p < Q.n) :
 
 /-! ## The direction of a walk edge next to an interior point -/
 
+section
+variable {W : Polygon} (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) {δ₀ : ℝ} (hδ₀ : 0 < δ₀)
+include hW hL hp ht hδ₀
 /-- If the points just right of a point `z` inside walk edge `p` are interior, the walk edge
 goes down (interior on the left). -/
-theorem walk_down {W : Polygon} (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n)
-    {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) {δ₀ : ℝ} (hδ₀ : 0 < δ₀)
+theorem walk_down
     (hint : ∀ δ, 0 < δ → δ < δ₀ →
       (((sidePt W p t).1 + δ, (sidePt W p t).2) : Point) ∈ W.filled \ W.boundary) :
     (W.vtx ((p + 1) % W.n)).2 < (W.vtx p).2 := by
   obtain ⟨r, hr, hloc⟩ := FactsInterior.edge_local hW hL hp ht
   set δ := min r δ₀ / 2 with hδ
-  have hδ0 : 0 < δ := by rw [hδ]; exact half_pos (lt_min hr hδ₀)
+  have hδ0 : 0 < δ := by positivity
   have hδr : δ < r := by rw [hδ]; linarith [min_le_left r δ₀]
   have hδδ : δ < δ₀ := by rw [hδ]; linarith [min_le_right r δ₀]
   set x : Point := ((sidePt W p t).1 + δ, (sidePt W p t).2) with hx
@@ -138,19 +147,18 @@ theorem walk_down {W : Polygon} (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (h
     simp only [det, hx, sidePt, lerp_fst, lerp_snd, ← ha, ← hb]; ring
   rcases lt_trichotomy 0 (det a b x) with h | h | h
   · rw [hdet] at h; nlinarith
-  · exact absurd ((hloc x hxb).2.2 h.symm) hxi.2
+  · grind
   · exact absurd hxi.1 ((hloc x hxb).2.1 h)
 
 /-- If the points just left of a point `z` inside walk edge `p` are interior, the walk edge goes
 up. -/
-theorem walk_up {W : Polygon} (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n)
-    {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) {δ₀ : ℝ} (hδ₀ : 0 < δ₀)
+theorem walk_up
     (hint : ∀ δ, 0 < δ → δ < δ₀ →
       (((sidePt W p t).1 - δ, (sidePt W p t).2) : Point) ∈ W.filled \ W.boundary) :
     (W.vtx p).2 < (W.vtx ((p + 1) % W.n)).2 := by
   obtain ⟨r, hr, hloc⟩ := FactsInterior.edge_local hW hL hp ht
   set δ := min r δ₀ / 2 with hδ
-  have hδ0 : 0 < δ := by rw [hδ]; exact half_pos (lt_min hr hδ₀)
+  have hδ0 : 0 < δ := by positivity
   have hδr : δ < r := by rw [hδ]; linarith [min_le_left r δ₀]
   have hδδ : δ < δ₀ := by rw [hδ]; linarith [min_le_right r δ₀]
   set x : Point := ((sidePt W p t).1 - δ, (sidePt W p t).2) with hx
@@ -166,19 +174,25 @@ theorem walk_up {W : Polygon} (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp 
     simp only [det, hx, sidePt, lerp_fst, lerp_snd, ← ha, ← hb]; ring
   rcases lt_trichotomy 0 (det a b x) with h | h | h
   · rw [hdet] at h; nlinarith
-  · exact absurd ((hloc x hxb).2.2 h.symm) hxi.2
+  · grind
   · exact absurd hxi.1 ((hloc x hxb).2.1 h)
 
 /-! ## The walk along the side edges of a trapezoid -/
 
+
+end
+
+section
+variable (hQ : Q.Simple) (D : TrapData Q)
+include hQ
 /-- A point of the open left side at a middle height, as a point of the open edge `i`. -/
-theorem left_mid (hQ : Q.Simple) (D : TrapData Q) :
+theorem left_mid :
     ∃ t ∈ Ioo (0 : ℝ) 1, lerp (Q.vtx D.i) (Q.vtx ((D.i + 1) % Q.n)) t =
       ((edgeX Q D.i ((D.y₁ + D.y₂) / 2), (D.y₁ + D.y₂) / 2) : Point) := by
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   set ym := (D.y₁ + D.y₂) / 2 with hym
-  have hy1 : D.y₁ < ym := by rw [hym]; linarith
-  have hy2 : ym < D.y₂ := by rw [hym]; linarith
+  have hy1 : D.y₁ < ym := by linarith
+  have hy2 : ym < D.y₂ := by linarith
   have hmem : ((edgeX Q D.i ym, ym) : Point) ∈ Q.edge D.i :=
     D.isTrap.mem_edgeL hy1.le hy2.le rfl
   obtain ⟨t, ht0, ht1, hzt⟩ := hmem
@@ -187,26 +201,26 @@ theorem left_mid (hQ : Q.Simple) (D : TrapData Q) :
     intro k hk hkz
     have e1 : (Q.vtx k).1 = edgeX Q D.i ym := by rw [hkz]
     have e2 : (Q.vtx k).2 = ym := by rw [hkz]
-    exact D.isTrap.no_vertex k hk (by rw [e2]; exact hy1) (by rw [e2]; exact hy2)
-      (by rw [e1, e2]) (by rw [e1, e2]; exact hlt.le)
+    exact D.isTrap.no_vertex k hk (by grind) (by grind)
+      (by rw [e1, e2]) (by grind)
   refine ⟨t, ⟨?_, ?_⟩, hzt.symm⟩
   · rcases ht0.lt_or_eq with h | h
     · exact h
     · exfalso; apply hnv D.i D.isTrap.hi
-      rw [hzt, ← h]; exact (Geometry.lerp_zero _ _).symm
+      grind
   · rcases ht1.lt_or_eq with h | h
     · exact h
     · exfalso; apply hnv _ (succIdx_lt Q D.isTrap.hi)
-      rw [hzt, h]; exact (Geometry.lerp_one _ _).symm
+      simp_all
 
 /-- A point of the open right side at a middle height, as a point of the open edge `j`. -/
-theorem right_mid (hQ : Q.Simple) (D : TrapData Q) :
+theorem right_mid :
     ∃ t ∈ Ioo (0 : ℝ) 1, lerp (Q.vtx D.j) (Q.vtx ((D.j + 1) % Q.n)) t =
       ((edgeX Q D.j ((D.y₁ + D.y₂) / 2), (D.y₁ + D.y₂) / 2) : Point) := by
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   set ym := (D.y₁ + D.y₂) / 2 with hym
-  have hy1 : D.y₁ < ym := by rw [hym]; linarith
-  have hy2 : ym < D.y₂ := by rw [hym]; linarith
+  have hy1 : D.y₁ < ym := by linarith
+  have hy2 : ym < D.y₂ := by linarith
   have hmem : ((edgeX Q D.j ym, ym) : Point) ∈ Q.edge D.j :=
     D.isTrap.mem_edgeR hy1.le hy2.le rfl
   obtain ⟨t, ht0, ht1, hzt⟩ := hmem
@@ -215,17 +229,20 @@ theorem right_mid (hQ : Q.Simple) (D : TrapData Q) :
     intro k hk hkz
     have e1 : (Q.vtx k).1 = edgeX Q D.j ym := by rw [hkz]
     have e2 : (Q.vtx k).2 = ym := by rw [hkz]
-    exact D.isTrap.no_vertex k hk (by rw [e2]; exact hy1) (by rw [e2]; exact hy2)
-      (by rw [e1, e2]; exact hlt.le) (by rw [e1, e2])
+    exact D.isTrap.no_vertex k hk (by grind) (by grind)
+      (by grind) (by rw [e1, e2])
   refine ⟨t, ⟨?_, ?_⟩, hzt.symm⟩
   · rcases ht0.lt_or_eq with h | h
     · exact h
     · exfalso; apply hnv D.j D.isTrap.hj
-      rw [hzt, ← h]; exact (Geometry.lerp_zero _ _).symm
+      grind
   · rcases ht1.lt_or_eq with h | h
     · exact h
     · exfalso; apply hnv _ (succIdx_lt Q D.isTrap.hj)
-      rw [hzt, h]; exact (Geometry.lerp_one _ _).symm
+      simp_all
+
+
+end
 
 /-- The walk point of the open part of an edge of `Q`. -/
 theorem walk_pt (_hQ : Q.Simple) {e : ℕ} (he : e < Q.n) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) :
@@ -236,13 +253,14 @@ theorem walk_pt (_hQ : Q.Simple) {e : ℕ} (he : e < Q.n) {t : ℝ} (ht : t ∈ 
   unfold sidePt
   rw [walk_vtx Q hp, walk_succ Q hp, ← nxt_eq he]
   rcases wv_inp (b := revOf Q) hp with ⟨-, h1, h2⟩ | ⟨-, h1, h2⟩
-  · rw [h1, h2, hpp]; exact ⟨t, ht, rfl⟩
-  · rw [h1, h2, hpp, Geometry.lerp_symm]
-    exact ⟨1 - t, ⟨by linarith [ht.2], by linarith [ht.1]⟩, rfl⟩
+  all_goals (grind [Geometry.lerp_symm])
 
+section
+variable (hQ : Q.Simple) (D : TrapData Q)
+include hQ
 /-- **The walk runs down the left side edge**: walk edge `inp i` starts at the upper end of the
 left side edge `i` of the trapezoid. -/
-theorem walk_left (hQ : Q.Simple) (D : TrapData Q) :
+theorem walk_left :
     (Q.vtx (wv (revOf Q) Q.n (nxt Q.n (inp (revOf Q) Q.n D.i)))).2 <
       (Q.vtx (wv (revOf Q) Q.n (inp (revOf Q) Q.n D.i))).2 := by
   obtain ⟨hWs, hWb, hWf, hWo⟩ := FactsInterior.interiorWalk_spec hQ
@@ -250,19 +268,19 @@ theorem walk_left (hQ : Q.Simple) (D : TrapData Q) :
   have hp := inp_lt (b := revOf Q) hi
   obtain ⟨t, ht, hzt⟩ := left_mid hQ D
   obtain ⟨t', ht', hz'⟩ := walk_pt hQ hi ht
-  have hpW : inp (revOf Q) Q.n D.i < (interiorWalk Q).n := by rw [walk_n]; exact hp
+  have hpW : inp (revOf Q) Q.n D.i < (interiorWalk Q).n := by grind [walk_n]
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := by linarith
   have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := by linarith
   have hlt := D.isTrap.edgeX_lt hQ D.free hy1 hy2
   have := walk_down hWs hWo hpW ht' (sub_pos.2 hlt) (fun δ hδ hδ' => by
     rw [hWf, hWb, hz', hzt]
-    exact D.region_subset_interior hQ ⟨hy1, hy2, by simp only; linarith, by simp only; linarith⟩)
+    exact D.region_subset_interior hQ ⟨hy1, hy2, by simp_all, by linarith⟩)
   rwa [walk_succ Q hp, walk_vtx Q hp] at this
 
 /-- **The walk runs up the right side edge**: walk edge `inp j` ends at the upper end of the
 right side edge `j` of the trapezoid. -/
-theorem walk_right (hQ : Q.Simple) (D : TrapData Q) :
+theorem walk_right :
     (Q.vtx (wv (revOf Q) Q.n (inp (revOf Q) Q.n D.j))).2 <
       (Q.vtx (wv (revOf Q) Q.n (nxt Q.n (inp (revOf Q) Q.n D.j)))).2 := by
   obtain ⟨hWs, hWb, hWf, hWo⟩ := FactsInterior.interiorWalk_spec hQ
@@ -270,15 +288,18 @@ theorem walk_right (hQ : Q.Simple) (D : TrapData Q) :
   have hp := inp_lt (b := revOf Q) hj
   obtain ⟨t, ht, hzt⟩ := right_mid hQ D
   obtain ⟨t', ht', hz'⟩ := walk_pt hQ hj ht
-  have hpW : inp (revOf Q) Q.n D.j < (interiorWalk Q).n := by rw [walk_n]; exact hp
+  have hpW : inp (revOf Q) Q.n D.j < (interiorWalk Q).n := by grind [walk_n]
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := by linarith
   have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := by linarith
   have hlt := D.isTrap.edgeX_lt hQ D.free hy1 hy2
   have := walk_up hWs hWo hpW ht' (sub_pos.2 hlt) (fun δ hδ hδ' => by
     rw [hWf, hWb, hz', hzt]
-    exact D.region_subset_interior hQ ⟨hy1, hy2, by simp only; linarith, by simp only; linarith⟩)
+    exact D.region_subset_interior hQ ⟨hy1, hy2, by linarith, by simp_all⟩)
   rwa [walk_succ Q hp, walk_vtx Q hp] at this
+
+
+end
 
 /-- The two walk ends of the walk edge carrying edge `e`. -/
 theorem walk_ends {b : Bool} {n e : ℕ} (he : e < n) :
@@ -286,11 +307,14 @@ theorem walk_ends {b : Bool} {n e : ℕ} (he : e < n) :
       (wv b n (inp b n e) = nxt n e ∧ wv b n (nxt n (inp b n e)) = e) := by
   have hp := inp_lt (b := b) he
   rcases wv_inp (b := b) hp with ⟨-, h1, h2⟩ | ⟨-, h1, h2⟩
-  · left; rw [h1, h2, inp_inp he]; exact ⟨rfl, rfl⟩
-  · right; rw [h1, h2, inp_inp he]; exact ⟨rfl, rfl⟩
+  · left; rw [h1, h2, inp_inp he]; omega
+  · right; rw [h1, h2, inp_inp he]; omega
 
+section
+variable (hQ : Q.Simple) (D : TrapData Q) {v : ℕ}
+include hQ
 /-- The upper end of the left side edge is the start of its walk edge. -/
-theorem walk_left_upper (hQ : Q.Simple) (D : TrapData Q) {v : ℕ}
+theorem walk_left_upper
     (hv : (v = D.i ∧ (Q.vtx ((D.i + 1) % Q.n)).2 < (Q.vtx v).2) ∨
       (v = (D.i + 1) % Q.n ∧ (Q.vtx D.i).2 < (Q.vtx v).2)) :
     wv (revOf Q) Q.n (inp (revOf Q) Q.n D.i) = v := by
@@ -304,7 +328,7 @@ theorem walk_left_upper (hQ : Q.Simple) (D : TrapData Q) {v : ℕ}
   · rfl
 
 /-- The lower end of the left side edge is the end of its walk edge. -/
-theorem walk_left_lower (hQ : Q.Simple) (D : TrapData Q) {v : ℕ}
+theorem walk_left_lower
     (hv : (v = D.i ∧ (Q.vtx v).2 < (Q.vtx ((D.i + 1) % Q.n)).2) ∨
       (v = (D.i + 1) % Q.n ∧ (Q.vtx v).2 < (Q.vtx D.i).2)) :
     wv (revOf Q) Q.n (nxt Q.n (inp (revOf Q) Q.n D.i)) = v := by
@@ -318,7 +342,7 @@ theorem walk_left_lower (hQ : Q.Simple) (D : TrapData Q) {v : ℕ}
   · exact absurd (h.trans hw) (lt_irrefl _)
 
 /-- The lower end of the right side edge is the start of its walk edge. -/
-theorem walk_right_lower (hQ : Q.Simple) (D : TrapData Q) {v : ℕ}
+theorem walk_right_lower
     (hv : (v = D.j ∧ (Q.vtx v).2 < (Q.vtx ((D.j + 1) % Q.n)).2) ∨
       (v = (D.j + 1) % Q.n ∧ (Q.vtx v).2 < (Q.vtx D.j).2)) :
     wv (revOf Q) Q.n (inp (revOf Q) Q.n D.j) = v := by
@@ -332,7 +356,7 @@ theorem walk_right_lower (hQ : Q.Simple) (D : TrapData Q) {v : ℕ}
   · rfl
 
 /-- The upper end of the right side edge is the end of its walk edge. -/
-theorem walk_right_upper (hQ : Q.Simple) (D : TrapData Q) {v : ℕ}
+theorem walk_right_upper
     (hv : (v = D.j ∧ (Q.vtx ((D.j + 1) % Q.n)).2 < (Q.vtx v).2) ∨
       (v = (D.j + 1) % Q.n ∧ (Q.vtx D.j).2 < (Q.vtx v).2)) :
     wv (revOf Q) Q.n (nxt Q.n (inp (revOf Q) Q.n D.j)) = v := by
@@ -344,6 +368,9 @@ theorem walk_right_upper (hQ : Q.Simple) (D : TrapData Q) {v : ℕ}
   · rfl
   · rfl
   · exact absurd (hw.trans h) (lt_irrefl _)
+
+
+end
 
 end
 

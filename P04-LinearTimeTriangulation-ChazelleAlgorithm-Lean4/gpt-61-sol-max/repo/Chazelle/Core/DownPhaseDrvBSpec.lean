@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvBArc
 public import Chazelle.Core.DownPhaseBaseSpec
 public import Chazelle.Core.DownPhaseDrvRBktM
@@ -45,45 +47,41 @@ noncomputable def ptsB (li : Bool) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) 
   if L.length = 0 then wlist li (Host.pts Q.n [HostItem.run 0 (Q.n - 1)])
   else regPts li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r
 
+section
+variable (li : Bool) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ)
+include li Q L E
 /-- **The new chords, tagged by their region.** -/
-noncomputable def tagLB (li : Bool) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) :
+noncomputable def tagLB :
     List (ℕ × (ℕ × ℕ × ℕ)) :=
   (List.range (L.length + 1)).flatMap fun r => (regList li Q (ptsB li Q L E r)).map fun x => (r, x)
 
 /-- **The new chords of the base case** (`newL` for `K > 0`, `newL0` for `K = 0`). -/
-noncomputable def newLB (li : Bool) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) :
+noncomputable def newLB :
     List (ℕ × ℕ × ℕ) :=
   (tagLB li Q L E).map Prod.snd
 
-theorem newLB_eq_flatMap (li : Bool) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) :
+theorem newLB_eq_flatMap :
     newLB li Q L E = (List.range (L.length + 1)).flatMap fun r => regList li Q (ptsB li Q L E r) := by
-  unfold newLB tagLB
-  rw [List.map_flatMap]
-  congr 1
-  funext r
-  rw [List.map_map]
-  exact List.map_id' _
+  simp_all [newLB, tagLB, List.map_flatMap, List.map_map] <;> omega_nf
 
+
+end
+
+section
+variable (li : Bool) (Q : Polygon) {L : List (ℕ × ℕ × ℕ)} (E : List ℕ)
 /-- **`newLB` is `newL`** for `K > 0`. -/
-theorem newLB_pos (li : Bool) (Q : Polygon) {L : List (ℕ × ℕ × ℕ)} (E : List ℕ)
+theorem newLB_pos
     (hK : 0 < L.length) :
     newLB li Q L E = newL li Q (BuildNF.buildNF (interiorModel Q) Q L E) := by
-  rw [newLB_eq_flatMap]
-  unfold newL
-  have hR : (BuildNF.buildNF (interiorModel Q) Q L E).nRegions = L.length + 1 := by
-    simp [NF.nRegions, BuildNF.buildNF]
-  rw [hR]
-  congr 1
-  funext r
-  unfold ptsB
-  rw [ite_eq_right (by omega)]
+  grind [newLB_eq_flatMap, newL, NF.nRegions, BuildNF.buildNF, ptsB]
 
 /-- **`newLB` is `newL0`** for `K = 0`. -/
-theorem newLB_zero (li : Bool) (Q : Polygon) {L : List (ℕ × ℕ × ℕ)} (E : List ℕ)
+theorem newLB_zero
     (hK : L.length = 0) : newLB li Q L E = newL0 li Q := by
-  rw [newLB_eq_flatMap, hK]
-  unfold ptsB newL0
-  simp [hK]
+  simp_all [newLB_eq_flatMap, ptsB, newL0] <;> omega_nf
+
+
+end
 
 /-- **The precondition of the region loop**, with bounds `S₀` (points of a region) and `Cm`
 (walk edges of an arc of a region, or `n` when `K = 0`). -/

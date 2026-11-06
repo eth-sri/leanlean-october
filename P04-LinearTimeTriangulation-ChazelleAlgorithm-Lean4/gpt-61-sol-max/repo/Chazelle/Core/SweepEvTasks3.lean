@@ -98,9 +98,15 @@ def OrgsTask : Prop :=
 
 /-! ## K: the next key -/
 
+section
+variable (c : Config) (i : ℕ)
+include c i
 /-- The position of stop `i` (the stop records at `sB`, five words each). -/
-def stopE (c : Config) (i : ℕ) : ℕ := c.nmem (c.nreg sB + 5 * i)
-def stopH (c : Config) (i : ℕ) : ℕ := c.nmem (c.nreg sB + 5 * i + 1)
+def stopE : ℕ := c.nmem (c.nreg sB + 5 * i)
+def stopH : ℕ := c.nmem (c.nreg sB + 5 * i + 1)
+
+
+end
 
 /-- The labels of the auxiliary record `i` at `A` if it is anchored: `l₀, l₁` up to the count
 `nl` (at most two). -/

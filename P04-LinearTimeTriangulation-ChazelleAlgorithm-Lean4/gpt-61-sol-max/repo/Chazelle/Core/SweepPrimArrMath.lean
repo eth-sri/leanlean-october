@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepPrimLeft
 
 /-!
@@ -52,24 +54,22 @@ theorem sideIdx_candIdx (C : Chain) (β : Bool) {j : ℕ} (hj : j ≤ 2 * C.m) :
     rw [ite_eq_right (by omega)]
     refine ⟨by omega, ?_⟩
     rw [C.sideIdx_eq, show C.sideS β + (2 * C.m - C.sideS β) = 2 * C.m by omega, Nat.mod_self]
-    unfold sideE; split_ifs <;> omega
+    grind [sideE]
 
 theorem sideE_rev {m j : ℕ} (hj : j ≤ m) : sideE m (2 * m - j) = j := by
-  unfold sideE; split_ifs <;> omega
+  core_grind
 
+section
+variable (C : Chain) (β : Bool)
 /-- **The candidate tour steps of a chain vertex.** -/
-theorem cand_vertex (C : Chain) (β : Bool) {k : ℕ} (hk : k ≤ C.m) :
+theorem cand_vertex {k : ℕ} (hk : k ≤ C.m) :
     (candIdx C.m (C.sideS β) k ≤ 2 * C.m ∧ C.sideIdx β (candIdx C.m (C.sideS β) k) = k) ∧
       (candIdx C.m (C.sideS β) (2 * C.m - k) ≤ 2 * C.m ∧
         C.sideIdx β (candIdx C.m (C.sideS β) (2 * C.m - k)) = k) := by
-  obtain ⟨a1, a2⟩ := sideIdx_candIdx C β (j := k) (by omega)
-  obtain ⟨b1, b2⟩ := sideIdx_candIdx C β (j := 2 * C.m - k) (by omega)
-  refine ⟨⟨a1, ?_⟩, ⟨b1, ?_⟩⟩
-  · rw [a2]; unfold sideE; split_ifs; omega
-  · rw [b2, sideE_rev hk]
+  grind [Chazelle.Core.SweepPrim.sideIdx_candIdx, Chazelle.Core.SweepPrim.sideE_rev, sideE]
 
 /-- **Every tour step of a chain vertex is a candidate.** -/
-theorem cand_complete (C : Chain) (β : Bool) {i k : ℕ} (hi : i ≤ 2 * C.m)
+theorem cand_complete {i k : ℕ} (hi : i ≤ 2 * C.m)
     (hk : C.sideIdx β i = k) :
     i = candIdx C.m (C.sideS β) k ∨ i = candIdx C.m (C.sideS β) (2 * C.m - k) ∨ i = 2 * C.m := by
   have hS := C.sideS_lt β
@@ -82,61 +82,55 @@ theorem cand_complete (C : Chain) (β : Bool) {i k : ℕ} (hi : i ≤ 2 * C.m)
       unfold candIdx
       by_cases h : C.sideS β + i < 2 * C.m
       · rw [Nat.mod_eq_of_lt h] at hjdef
-        rw [ite_eq_right (by omega)]; omega
+        simp_all
       · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at hjdef
-        rw [ite_eq_left (by omega)]; omega
-    have hjk : j = k ∨ j = 2 * C.m - k := by
-      rw [← hk]; unfold sideE; split_ifs <;> omega
-    rcases hjk with h | h
-    · left; rw [hji, h]
-    · right; left; rw [hji, h]
-  · exact Or.inr (Or.inr hi)
+        grind
+    grind [sideE]
+  omega
 
 /-! ## Twin edges -/
+
+
+end
 
 /-- **Twin edges**: an edge whose ends are those of `p` swapped carries the same points at the same
 height codes, with the complementary parameter. -/
 theorem twin_pos_param (M : Model) (Q : Polygon) {p p' h : ℕ} (hh : 1 ≤ h)
     (h1 : M.wa p' = M.wb p) (h2 : M.wb p' = M.wa p) (hne : (M.wa p).2 ≠ (M.wb p).2) :
     M.pos Q ⟨p', h⟩ = M.pos Q ⟨p, h⟩ ∧ M.param Q ⟨p', h⟩ = 1 - M.param Q ⟨p, h⟩ := by
-  obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
-  have hne' : (M.wb p).2 - (M.wa p).2 ≠ 0 := sub_ne_zero.2 hne.symm
-  have hne'' : (M.wa p).2 - (M.wb p).2 ≠ 0 := sub_ne_zero.2 hne
-  have hpar : M.param Q ⟨p', h' + 1⟩ = 1 - M.param Q ⟨p, h' + 1⟩ := by
-    unfold Model.param
-    simp only
-    rw [h1, h2, ite_eq_right (Ne.symm hne), ite_eq_right hne]
-    field_simp
-    ring
-  refine ⟨?_, hpar⟩
-  unfold Model.pos
-  simp only
-  rw [hpar, h1, h2]
-  apply Geometry.point_ext <;> simp [Geometry.lerp] <;> ring
+  grind [Model.param, Model.pos, Geometry.lerp]
 
+section
+variable (C : Chain)
+include C
 /-- The two slit edges are twins. -/
-theorem slit_twin (C : Chain) :
+theorem slit_twin :
     (chainModel C).wa 5 = (chainModel C).wb (2 * C.m + 6) ∧
       (chainModel C).wb 5 = (chainModel C).wa (2 * C.m + 6) := by
   have hm := C.one_le
   have hn := C.sideWalk_n C.sideBeta
   simp only [Model.wa, Model.wb, chainModel]
   refine ⟨?_, ?_⟩
-  · rw [C.sideWalk_next_last, C.sideWalk_vtx_five, C.sideWalk_vtx_zero]
+  · aesop
   · rw [hn, Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_six, C.sideWalk_vtx_tour _ le_rfl,
       C.sideTour_two_m]
 
-theorem slit_twin' (C : Chain) :
+theorem slit_twin' :
     (chainModel C).wa (2 * C.m + 6) = (chainModel C).wb 5 ∧
       (chainModel C).wb (2 * C.m + 6) = (chainModel C).wa 5 :=
   ⟨(slit_twin C).2.symm, (slit_twin C).1.symm⟩
 
 /-- The twin tour step of tour edge `i`: the reversed tour position `2m - 1 - j`. -/
-noncomputable def tourTwin (C : Chain) (i : ℕ) : ℕ :=
+noncomputable def tourTwin (i : ℕ) : ℕ :=
   candIdx C.m (C.sideS C.sideBeta) (2 * C.m - 1 - (C.sideS C.sideBeta + i) % (2 * C.m))
 
+
+end
+
+section
+variable (C : Chain)
 /-- **The twin of a tour edge.** -/
-theorem tour_twin (C : Chain) {i : ℕ} (hi : i < 2 * C.m) :
+theorem tour_twin {i : ℕ} (hi : i < 2 * C.m) :
     tourTwin C i < 2 * C.m ∧
       (chainModel C).wa (tourTwin C i + 6) = (chainModel C).wb (i + 6) ∧
       (chainModel C).wb (tourTwin C i + 6) = (chainModel C).wa (i + 6) := by
@@ -154,19 +148,19 @@ theorem tour_twin (C : Chain) {i : ℕ} (hi : i < 2 * C.m) :
     unfold Chain.sideTour
     congr 1
     rw [C.sideIdx_eq, h1, C.sideIdx_succ, ← hjdef]
-    unfold sideE; split_ifs <;> omega
+    grind [sideE]
   · simp only [Model.wa, Model.wb]
     rw [show (chainModel C).W = C.sideWalk C.sideBeta from rfl, C.sideWalk_next_tour _ h2,
       C.sideWalk_vtx_tour _ (by omega), C.sideWalk_vtx_tour _ hi.le]
     unfold Chain.sideTour
     congr 1
     rw [C.sideIdx_succ, h1, C.sideIdx_eq, ← hjdef]
-    unfold sideE; split_ifs <;> omega
+    grind [sideE]
 
 /-! ## The positions of a point of a vertical side of the box -/
 
 /-- **A point inside an open vertical side of the box has one position.** -/
-theorem wall_unique (C : Chain) (hP : C.P.Simple) {e : ℕ} (he : e = 1 ∨ e = 3) {t₀ : ℝ}
+theorem wall_unique (hP : C.P.Simple) {e : ℕ} (he : e = 1 ∨ e = 3) {t₀ : ℝ}
     (ht₀ : 0 < t₀) (ht₀1 : t₀ < 1) {p : ℕ} {t : ℝ} (hp : p < (chainModel C).W.n) (ht : 0 ≤ t)
     (ht1 : t < 1) (heq : sidePt (chainModel C).W p t = sidePt (chainModel C).W e t₀) :
     p = e ∧ t = t₀ := by
@@ -190,11 +184,7 @@ theorem wall_unique (C : Chain) (hP : C.P.Simple) {e : ℕ} (he : e = 1 ∨ e = 
   · obtain ⟨-, hside⟩ := C.sideWalk_box_pt C.sideBeta hbox ht ht1
     obtain ⟨hpe, -⟩ := hside hw1 hw2
     have hpe' : p = e := by
-      rcases hpe with ⟨rfl, h1⟩ | ⟨rfl, h1⟩ <;> rcases hw3 with ⟨rfl, h2⟩ | ⟨rfl, h2⟩
-      · rfl
-      · linarith
-      · linarith
-      · rfl
+      grind
     subst hpe'
     refine ⟨rfl, ?_⟩
     have hnd := C.sideWalk_nd hP C.sideBeta p hp
@@ -207,7 +197,7 @@ theorem wall_unique (C : Chain) (hP : C.P.Simple) {e : ℕ} (he : e = 1 ∨ e = 
 /-! ## The positions of a chain vertex -/
 
 /-- **The positions of a vertex of the chain** are tour vertices of that vertex. -/
-theorem vertex_positions (C : Chain) (hP : C.P.Simple) {k : ℕ} (hk : k ≤ C.m) {p : ℕ} {t : ℝ}
+theorem vertex_positions (hP : C.P.Simple) {k : ℕ} (hk : k ≤ C.m) {p : ℕ} {t : ℝ}
     (hp : p < (chainModel C).W.n) (ht : 0 ≤ t) (ht1 : t < 1)
     (heq : sidePt (chainModel C).W p t = C.vertex k) :
     t = 0 ∧ ∃ i, i ≤ 2 * C.m ∧ p = i + 6 ∧ C.sideIdx C.sideBeta i = k := by
@@ -223,11 +213,14 @@ theorem vertex_positions (C : Chain) (hP : C.P.Simple) {k : ℕ} (hk : k ≤ C.m
         obtain ⟨k', -, s, hs, hpt, -⟩ := C.sideTour_open C.sideBeta hi' htp
         rw [hpt] at heq
         exact C.sideOpen_ne_vertex hP hs heq
-      · exact hit hi'
+      simp_all
     subst ht0
     refine ⟨rfl, i, hi, rfl, ?_⟩
     rw [Chazelle.Chain.sidePt_zero, C.sideWalk_vtx_tour _ hi] at heq
     exact C.sideVertex_inj hP (C.sideIdx_le _ _) hk heq
+
+
+end
 
 end
 

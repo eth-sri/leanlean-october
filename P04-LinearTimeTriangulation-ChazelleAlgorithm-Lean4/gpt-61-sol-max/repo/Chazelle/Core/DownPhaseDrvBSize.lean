@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvBArc
 public import Chazelle.Core.FactsArcs
 public import Chazelle.Core.DownPhaseDrvCount
@@ -43,7 +45,7 @@ theorem vertsIn_le_arcWt (Q : Polygon) (a b : ℝ) :
   refine ⟨hp, trivial, ?_⟩
   obtain ⟨t, h1, h2⟩ := ((cyc_open hin).and
     (Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num))).exists
-  exact ⟨t, h2.1, h2.2, h1⟩
+  grind
 
 /-- **An arc weighs at most the weight of its region.** -/
 theorem arcWt_le_weight {Q : Polygon} (hQ : Q.Simple) {S : Set (Set Point)}
@@ -67,10 +69,7 @@ theorem region_arcs_nodup (r : ℕ) :
     simp only [BuildNF.buildNF, List.getElem?_map, List.getElem?_range hr, Option.map_some,
       Option.getD_some]
     exact List.nodup_range.filter _
-  · rw [List.getD_eq_getElem?_getD]
-    simp only [BuildNF.buildNF, List.getElem?_map]
-    rw [List.getElem?_eq_none (by simp; omega)]
-    simp
+  simp_all [List.getD_eq_getElem?_getD, BuildNF.buildNF, List.getElem?_map] 
 
 /-- **A region has at most `deg + 1` arcs.** -/
 theorem arcs_length_le (B : BaseCtx Q L E reg li) {r : ℕ}
@@ -88,25 +87,20 @@ theorem arcs_length_le (B : BaseCtx Q L E reg li) {r : ℕ}
     intro j hj
     obtain ⟨hjA, hjr⟩ := (B.hregs.2.2.1.2.2.2 r hr j).1 hj
     have := (B.hregs.2.2.1.1 j hjA).2
-    rw [hjr] at this
-    exact this
+    simp_all
   have hinj : Set.InjOn f {j | j ∈ (N.region r).arcs} := by
     intro j hj j' hj' he
     obtain ⟨hjA, hjr⟩ := (B.hregs.2.2.1.2.2.2 r hr j).1 hj
     obtain ⟨hjA', hjr'⟩ := (B.hregs.2.2.1.2.2.2 r hr j').1 hj'
     exact B.hregs.2.2.1.2.1 j j' hjA hjA' (hjr.trans hjr'.symm) (Prod.ext_iff.1 he).1
   have h1 : ((N.region r).arcs.toFinset.image f).card = (N.region r).arcs.length := by
-    rw [Finset.card_image_of_injOn (fun j hj j' hj' h => hinj (by simpa using hj)
-      (by simpa using hj') h), List.toFinset_card_of_nodup (region_arcs_nodup r)]
+    rw [Finset.card_image_of_injOn (fun j hj j' hj' h => hinj (by simp_all)
+      (by simp_all) h), List.toFinset_card_of_nodup (region_arcs_nodup r)]
   have h2 : (((N.region r).arcs.toFinset.image f : Finset (ℝ × ℝ)) : Set (ℝ × ℝ)) ⊆
       {ab : ℝ × ℝ | (interiorModel Q).IsArc S (reg r) ab.1 ab.2} := by
-    intro ab hab
-    simp only [Finset.coe_image, List.coe_toFinset, Set.mem_image, mem_ofPred_eq] at hab
-    obtain ⟨j, hj, rfl⟩ := hab
-    exact hmem j hj
+    grind [Finset.coe_image, List.coe_toFinset, Set.mem_image, mem_ofPred_eq]
   have h3 := Set.ncard_le_ncard h2 hfin
-  rw [Set.ncard_coe_finset, h1] at h3
-  exact h3.trans hcard
+  grind [Set.ncard_coe_finset]
 
 /-- A union of a finite family of sets of bounded size. -/
 theorem ncard_biUnion_le_mul {α β : Type*} {T : Set α} (hT : T.Finite) (f : α → Set β) {m : ℕ}
@@ -117,17 +111,14 @@ theorem ncard_biUnion_le_mul {α β : Type*} {T : Set α} (hT : T.Finite) (f : �
   | @insert c T hcT hT ih =>
     rw [Set.biUnion_insert, Set.ncard_insert_of_notMem hcT hT]
     refine (Set.ncard_union_le _ _).trans ?_
-    have h1 := hf c (Set.mem_insert c T)
-    have h2 := ih (fun x hx => hf x (Set.mem_insert_of_mem c hx))
-      (fun x hx => hfin x (Set.mem_insert_of_mem c hx))
-    rw [Nat.mul_succ]
-    omega
+    grind
 
+section
+variable (B : BaseCtx Q L E reg li) {r : ℕ} (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) {γ : ℕ} (hwt : (interiorModel Q).Semigranular
+      ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) γ)
+include B hr hwt
 /-- **A region has at most `(deg + 1) γ + 2 deg` host points.** -/
-theorem regPts_length_le (B : BaseCtx Q L E reg li) {r : ℕ}
-    (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) {γ : ℕ}
-    (hwt : (interiorModel Q).Semigranular
-      ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) γ) :
+theorem regPts_length_le :
     (regPts li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r).length ≤
       ((interiorModel Q).deg ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q)
           (reg r) + 1) * γ +
@@ -138,11 +129,7 @@ theorem regPts_length_le (B : BaseCtx Q L E reg li) {r : ℕ}
   have hlenP : (regPts li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r).length =
       DownHost.nk (interiorModel Q)
         ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r) := by
-    unfold regPts
-    rw [wlist_length, DownMath.regHost_pts]
-    split_ifs
-    · exact hlen
-    · rw [List.length_reverse]; exact hlen
+    core_grind [wlist_length, DownMath.regHost_pts, List.length_reverse]
   rw [hlenP]
   have hM := walkAx_interiorModel B.hQ
   have hnk := DownDrv.nk_le hM B.fam.2.1 B.fam.1 (reg r)
@@ -161,17 +148,10 @@ theorem regPts_length_le (B : BaseCtx Q L E reg li) {r : ℕ}
         (hwt _ hR)))
       (fun _ _ => (Set.finite_lt_nat _).subset fun p hp => hp.1))
   have hmul := Nat.mul_le_mul_left γ hcard
-  have e1 : ((interiorModel Q).deg ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q)
-      (reg r) + 1) * γ = γ * ((interiorModel Q).deg
-        ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r) + 1) :=
-    mul_comm _ _
-  omega
+  grind
 
 /-- **An arc of a region has at most its weight plus two walk edges.** -/
-theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
-    (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) {γ : ℕ}
-    (hwt : (interiorModel Q).Semigranular
-      ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) γ) {j : ℕ}
+theorem arcCnt_le {j : ℕ}
     (hj : j ∈ ((BuildNF.buildNF (interiorModel Q) Q L E).region r).arcs) :
     arcCnt Q.n ((BuildNF.buildNF (interiorModel Q) Q L E).arc j) ≤ γ + 2 := by
   have hR := B.hregs.1.1 r hr
@@ -182,7 +162,7 @@ theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
     (hwt _ hR))
   have hE : 0 < E.length := by rw [B.hperm.length_eq, List.length_range]; have := B.hK; omega
   have hA := DrvD.arcs_length (M := interiorModel Q) (Q := Q) (E := E) B.hK
-  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by rw [← hA]; exact hjA
+  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by omega
   obtain ⟨sn, s0, s1⟩ := evPos_ok B (DrvD.gs_lt_len hjA')
   obtain ⟨en, e0, e1⟩ := evPos_ok B (Nat.mod_lt (DrvD.gs (interiorModel Q) Q L E j + 1) hE)
   rw [← DrvD.arc_s B.hK hjA'] at sn s0 s1
@@ -208,14 +188,13 @@ theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
           ((interiorModel Q).key Q e) := by
       intro v hv
       simp only [Finset.coe_Ioo, Set.mem_Ioo] at hv
-      refine ⟨by rw [hn]; omega, ?_⟩
+      refine ⟨by omega, ?_⟩
       unfold sideInArc; rw [ite_eq_left hk]
       have h1 : (s.edge : ℝ) + 1 ≤ v := by exact_mod_cast hv.1
       have h2 : (v : ℝ) + 1 ≤ e.edge := by exact_mod_cast hv.2
-      constructor <;> linarith
+      grind
     have := Set.ncard_le_ncard hsub ((Set.finite_lt_nat _).subset fun p hp => hp.1)
-    rw [Set.ncard_coe_finset, Nat.card_Ioo] at this
-    omega
+    grind [Set.ncard_coe_finset, Nat.card_Ioo]
   · have hjl : j = (gapStarts (interiorModel Q) Q L E).length - 1 := by omega
     have hks := DrvD.key_s_last (M := interiorModel Q) (Q := Q) B.hK hE
     have hke := DrvD.key_e_last (M := interiorModel Q) (Q := Q) B.hK hE
@@ -236,7 +215,7 @@ theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
       intro v hv
       simp only [Finset.coe_union, Finset.coe_Ioo, Finset.coe_Ico, Set.mem_union, Set.mem_Ioo,
         Set.mem_Ico] at hv
-      refine ⟨by rw [hn]; omega, ?_⟩
+      refine ⟨by omega, ?_⟩
       unfold sideInArc; rw [ite_eq_right (not_lt.2 hge)]
       rcases hv with hv | hv
       · left
@@ -248,14 +227,14 @@ theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
     have := Set.ncard_le_ncard hsub ((Set.finite_lt_nat _).subset fun p hp => hp.1)
     rw [Set.ncard_coe_finset] at this
     have hd : Disjoint (Finset.Ioo s.edge Q.n) (Finset.Ico 0 e.edge) := by
-      rw [Finset.disjoint_left]
-      intro v h1 h2
-      simp only [Finset.mem_Ioo, Finset.mem_Ico] at h1 h2
-      omega
+      grind [Finset.disjoint_left, Finset.mem_Ioo, Finset.mem_Ico]
     rw [Finset.card_union_of_disjoint hd, Nat.card_Ioo, Nat.card_Ico] at this
     omega
 
 /-! ## The empty family -/
+
+
+end
 
 /-- The whole walk weighs `n`. -/
 theorem arcWt_zero (Q : Polygon) : (interiorModel Q).arcWt 0 0 = Q.n := by
@@ -266,10 +245,10 @@ theorem arcWt_zero (Q : Polygon) : (interiorModel Q).arcWt 0 0 = Q.n := by
     ext p
     simp only [mem_ofPred_eq, hn]
     constructor
-    · exact fun h => h.1
+    · omega
     · intro h
       refine ⟨h, trivial, 1 / 2, by norm_num, by norm_num, ?_⟩
-      unfold sideInArc; rw [ite_eq_right (lt_irrefl _)]; left; positivity
+      core_grind
   rw [this, show {p : ℕ | p < Q.n} = ((Finset.range Q.n : Finset ℕ) : Set ℕ) by ext; simp,
     Set.ncard_coe_finset, Finset.card_range]
 
@@ -284,19 +263,17 @@ theorem n_le_of_empty {Q : Polygon} (hQ : Q.Simple) {E : List ℕ} (hE : E = [])
   have hNF : IsNF I Q N := DownMath.isNF_build hQ hL (by simp) (by simp)
   obtain ⟨-, -, -, reg, hRC, -, hAO, -⟩ := id hNF
   have hA : N.arcs = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by
-    show BuildNF.arcList I Q [] [] = _
-    unfold BuildNF.arcList
-    rw [ite_eq_left (show ([] : List (ℕ × ℕ × ℕ)).length = 0 from rfl)]
-  have h0 : 0 < N.arcs.length := by rw [hA]; simp
+    aesop (add simp [BuildNF.arcList]) (add safe (by omega))
+  have h0 : 0 < N.arcs.length := by simp_all
   obtain ⟨hreg, harc⟩ := hAO.1 0 h0
-  have ha : N.arc 0 = ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ := by unfold NF.arc; rw [hA]; rfl
+  have ha : N.arc 0 = ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ := by simp_all [NF.arc] 
   rw [ha] at hreg harc
   have hk : I.key Q ⟨0, 0⟩ = 0 := by
-    unfold Model.key Model.param; simp
+    simp_all
   rw [hk] at harc
   have hR := hRC.1 _ hreg
   have := (arcWt_le_weight hQ hNF.1 hR harc).trans (hwt _ hR)
-  rwa [arcWt_zero] at this
+  grind [arcWt_zero]
 
 end
 

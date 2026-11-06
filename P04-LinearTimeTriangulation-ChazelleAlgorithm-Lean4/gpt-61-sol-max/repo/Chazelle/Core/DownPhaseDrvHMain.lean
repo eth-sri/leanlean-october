@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvHLoop
 
 /-!
@@ -24,8 +26,7 @@ open Machine Machine.Stmt Programs BuildRam DrvR
 theorem list_ext_getD {α : Type} {l l' : List α} (x : α) (hl : l.length = l'.length)
     (h : ∀ i, i < l.length → l.getD i x = l'.getD i x) : l = l' :=
   List.ext_getElem hl fun i h1 h2 => by
-    have := h i h1
-    rwa [List.getD_eq_getElem _ _ h1, List.getD_eq_getElem _ _ h2] at this
+    simp_all
 
 /-- **The layout determines the records**: two normal forms readable at the same handle have the
 same chord, arc and region records. -/
@@ -70,9 +71,7 @@ theorem regHost_congr {N N' : NF} (hc : N.chords = N'.chords) (ha : N.arcs = N'.
     (hr : N.regions = N'.regions) (li : Bool) (n r : ℕ) :
     regHost li n N r = regHost li n N' r := by
   obtain ⟨c, a, g, s, d, o, l⟩ := N
-  simp only at hc ha hr
-  subst hc ha hr
-  rfl
+  aesop
 
 section exec
 
@@ -136,10 +135,7 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
   generalize hNdef : BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E = N at hF hNW hr
   generalize hlidef : decide (c.nreg 215002 = 1) = li
   have hliv : c.nreg 215002 = if li then 1 else 0 := by
-    subst hlidef
-    by_cases h : c.nreg 215002 = 1
-    · simp [h]
-    · simp only [h, decide_false, Bool.false_eq_true, ↓reduceIte]; omega
+    grind
   have hN := hNW.nfAt
   obtain ⟨hb7, hbc, hba, hbr, hbra, hbrc⟩ := Restore.nf_bounds hNW
   obtain ⟨-, -, -, -, -, hNc, hNa, hNr, -⟩ := hN
@@ -147,7 +143,7 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
   obtain ⟨d₁, k₁, e₁, hk₁, s20, s21, s22, s23, s24, s25, s26, s27, s30, s28, s31, s29, s32, s40,
     s11, s12, s41, s02, s99, sm, f₁⟩ := setupS_exec (P := P) c hw rfl rfl rfl hb7
     (hbr _ hr) (by omega) (by omega)
-  have K₁ : Kst P.n li d₁ := ⟨s20, s21, s22, s23, s24, by rw [s02, hliv]⟩
+  have K₁ : Kst P.n li d₁ := ⟨s20, s21, s22, s23, s24, by omega⟩
   have hE₁ : HEnv W P.n N (c.nreg 215001) li (c.nreg 9999) d₁ := by
     refine ⟨K₁, hF, by rw [s30]; exact (hNr _ hr).1, by rw [s31]; exact (hNr _ hr).2.1, s32,
       fun t ht => ?_, fun v hv => ?_, fun j hj => ?_, fun i hi => ?_, by omega, by omega,
@@ -156,14 +152,12 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
       exact ⟨(hNr _ hr).2.2.2.1 t ht, hbra _ hr t ht⟩
     · rw [sm, s27, s29, ← Nat.add_assoc]
       exact ⟨(hNr _ hr).2.2.2.2 v hv, hbrc _ hr v hv⟩
-    · rw [sm, s26]
-      obtain ⟨a1, a2, a3, a4, a5⟩ := hNa j hj
-      exact ⟨a2, a3, a4, a5, hba j hj⟩
+    · ram_simp
     · rw [sm, s25]
       obtain ⟨a1, a2, a3, a4, a5⟩ := hNc i hi
       exact ⟨a1, a2, a3, by have := hbc i hi; omega⟩
-  have hB₁ : Buf P.n (c.nreg 9999) [] d₁ := ⟨ItemsAt.nil _ _, by rw [s40]; simp,
-    by rw [s11]; rfl, by rw [s12]; rfl⟩
+  have hB₁ : Buf P.n (c.nreg 9999) [] d₁ := ⟨ItemsAt.nil _ _, by omega,
+    by omega, by rw [s12]; rfl⟩
   -- the arc loop
   obtain ⟨d₂, k₂, e₂, hk₂, B₂, E₂, m₂, f₂⟩ := arcLoop_exec (P := P) d₁ e₁.wb_right hE₁ s41 hB₁
   have hK20 : (walkItems li P.n N (c.nreg 215001)).length ≤ 20 := by
@@ -194,9 +188,9 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
   have fR := exec_frameM2 ex wrM2_hostS
   have g₄ : ∀ q, Bcp q = false → d₄.nreg q = d₃.nreg q := f₄.1
   have a99 : (upd d₄.nreg 9999 (d₄.nreg 215082)) 9999 = c.nreg 9999 + 6 * xs.length + 1 := by
-    rw [Machine.upd_same, w82]
+    ram_simp
   have a10 : (upd d₄.nreg 9999 (d₄.nreg 215082)) 215010 = c.nreg 9999 + 3 * xs.length := by
-    rw [Machine.upd_other _ _ _ (by decide), g₄ _ (by decide), v10]
+    ram_simp
   have a11 : (upd d₄.nreg 9999 (d₄.nreg 215082)) 215011 = xs.length := by
     rw [Machine.upd_other _ _ _ (by decide), g₄ _ (by decide), f₃.1 _ (by decide), B₂.2.2.1]
   have a12 : (upd d₄.nreg 9999 (d₄.nreg 215082)) 215012 = ptsLen P.n xs := by
@@ -204,7 +198,7 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
   have hmem : ∀ a, a < c.nreg 9999 → d₄.nmem a = c.nmem a := fun a ha => by
     rw [m₄ a (by omega), vm₃, Machine.upd_other _ _ _ (by omega), m₂ a ha, sm]
   have hHB : d₄.nmem (c.nreg 9999 + 3 * xs.length) = xs.length := by
-    rw [m₄ _ (by omega), vm₃, Machine.upd_same]
+    ram_simp
   refine ⟨_, _, ex, show _ ≤ 3000 by omega, ⟨fun q hq hq' => fA.1 q ?_,
     fun L' E' hLne' hL' hperm' hsort' hNA' => ?_⟩,
     ⟨fun q hq hqA => fA.1 q ?_, fun q _ => fR q rfl, hmem, fun a _ => by rw [fA.2.2.1],
@@ -227,7 +221,7 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
     · exact (ptsLen_reverse P.n xs).symm
   · simp only [Finset.mem_singleton, bandOf, bDownDrv] at hq
     simp only [Ball, Bool.or_eq_false_iff, decide_eq_false_iff_not]
-    rw [hAL] at hqA; omega
+    omega
 
 end
 

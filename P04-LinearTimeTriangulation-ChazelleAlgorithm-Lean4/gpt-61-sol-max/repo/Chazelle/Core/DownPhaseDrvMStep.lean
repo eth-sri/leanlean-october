@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseMirrorExtract
 public import Chazelle.Core.DownPhaseStepMain
 
@@ -53,9 +55,9 @@ theorem downStepG (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     fun R hR c hc => (hEx R hR).loc (hF R hR).1.2.1 c hc
   have hmem : ∀ c, c ∈ T → c ∈ S ∨ ∃ R ∈ I.regions S, c ∈ Extract.kept R (F R) := by
     rintro c (hc | hc)
-    · exact Or.inl hc
+    · simp_all
     · obtain ⟨R, hR, hcR⟩ := mem_iUnion₂.1 hc
-      exact Or.inr ⟨R, hR, hcR⟩
+      ram_grind
   have hkT : ∀ R ∈ I.regions S, Extract.kept R (F R) ⊆ T := fun R hR c hc =>
     Or.inr (mem_iUnion₂.2 ⟨R, hR, hc⟩)
   have hTfin : T.Finite :=
@@ -63,7 +65,7 @@ theorem downStepG (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hTadm : T ⊆ I.Adm := fun c hc => by
     rcases hmem c hc with hcS | ⟨R, hR, hcR⟩
     · exact hFam.2.1 hcS
-    · exact (hloc R hR c hcR).1
+    grind
   have hX1 : I.ChordFamily Q T := by
     refine ⟨hTfin, hTadm, fun c hc => ?_⟩
     rcases hmem c hc with hcS | ⟨R, hR, hcR⟩
@@ -72,7 +74,7 @@ theorem downStepG (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hX4 : T \ S ⊆ ⋃ R ∈ I.regions S, F R := by
     rintro c ⟨hc, hcS⟩
     rcases hmem c hc with h | ⟨R, hR, hcR⟩
-    · exact absurd h hcS
+    · grind
     · exact mem_iUnion₂.2 ⟨R, hR, hcR.1⟩
   have hST : S ⊆ T := subset_union_left
   have key : ∀ V ∈ I.regions T, I.deg T V ≤ D + d₀ ∧ I.weight T V ≤ γ := by
@@ -90,7 +92,7 @@ theorem downStepG (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     have hK : OutOther I.D S G T R := by
       intro c hc hcG
       rcases hmem c hc with hcS | ⟨R', hR', hcR'⟩
-      · exact absurd (Or.inl hcS) hcG
+      · ram_grind
       · refine ⟨R', hR', fun e => hcG (Or.inr (e ▸ hcR')), (hloc R' hR' c hcR').2⟩
     have hVG : V ∈ I.regions G := region_restrict hSG hGT hR hK hV hVR
     obtain ⟨U, hU, hVU⟩ := (hEx R hR).region hVG hVR
@@ -108,7 +110,7 @@ theorem downStepG (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     · rw [weight_restrict hM hTadm hTfin hSG hGT hR hK hV hVR]
       exact ((hEx R hR).weight (hF R hR).1.2.1 (hF R hR).1.1 hU hVR hVU).trans
         ((hF R hR).2.2 U hU)
-  exact ⟨hX1, fun V hV => (key V hV).1, fun V hV => (key V hV).2, hX4⟩
+  ram_grind
 
 end
 

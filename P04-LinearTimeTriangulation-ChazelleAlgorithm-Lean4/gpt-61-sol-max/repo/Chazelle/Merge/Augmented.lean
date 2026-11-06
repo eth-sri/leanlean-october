@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Merge.Union
 public import Chazelle.Merge.Removal
 
@@ -61,7 +63,7 @@ theorem fst_image_hseg (y a b : ℝ) : Prod.fst '' hseg y a b = Icc a b := by
   ext x
   constructor
   · rintro ⟨p, ⟨-, h1, h2⟩, rfl⟩
-    exact ⟨h1, h2⟩
+    simp_all
   · rintro ⟨h1, h2⟩
     exact ⟨(x, y), ⟨rfl, h1, h2⟩, rfl⟩
 
@@ -74,19 +76,31 @@ theorem snd_image_hseg {y a b : ℝ} (h : a ≤ b) : Prod.snd '' hseg y a b = {y
   · rintro rfl
     exact ⟨(a, t), ⟨rfl, le_rfl, h⟩, rfl⟩
 
+section
+variable (c : Set Point)
+include c
 /-- The left endpoint of a horizontal segment. -/
-noncomputable def lend (c : Set Point) : Point := (sInf (Prod.fst '' c), sSup (Prod.snd '' c))
+noncomputable def lend : Point := (sInf (Prod.fst '' c), sSup (Prod.snd '' c))
 
 /-- The right endpoint of a horizontal segment. -/
-noncomputable def rend (c : Set Point) : Point := (sSup (Prod.fst '' c), sSup (Prod.snd '' c))
+noncomputable def rend : Point := (sSup (Prod.fst '' c), sSup (Prod.snd '' c))
 
+
+end
+
+section
+variable {y a b : ℝ} (h : a ≤ b)
+include h
 /-- The left endpoint of `hseg y a b` (for `a ≤ b`) is `(a, y)`. -/
-theorem lend_hseg {y a b : ℝ} (h : a ≤ b) : lend (hseg y a b) = (a, y) := by
+theorem lend_hseg : lend (hseg y a b) = (a, y) := by
   simp only [lend, fst_image_hseg, snd_image_hseg h, csInf_Icc h, csSup_singleton]
 
 /-- The right endpoint of `hseg y a b` (for `a ≤ b`) is `(b, y)`. -/
-theorem rend_hseg {y a b : ℝ} (h : a ≤ b) : rend (hseg y a b) = (b, y) := by
+theorem rend_hseg : rend (hseg y a b) = (b, y) := by
   simp only [rend, fst_image_hseg, snd_image_hseg h, csSup_Icc h, csSup_singleton]
+
+
+end
 
 /-- A nonempty horizontal segment determines its height and abscissae. -/
 theorem hseg_inj {y a b y' a' b' : ℝ} (hab : a ≤ b) (h : hseg y a b = hseg y' a' b') :
@@ -98,23 +112,27 @@ theorem hseg_inj {y a b y' a' b' : ℝ} (hab : a ≤ b) (h : hseg y a b = hseg y
   have h2 := rend_hseg hab (y := y)
   rw [h, lend_hseg hne] at h1
   rw [h, rend_hseg hne] at h2
-  obtain ⟨e1, e2⟩ := Prod.ext_iff.1 h1
-  obtain ⟨e3, -⟩ := Prod.ext_iff.1 h2
-  exact ⟨e2.symm, e1.symm, e3.symm⟩
+  simp_all
 
+section
+variable (p : Point) {T : ℝ} (hT : 0 ≤ T)
+include hT
 /-- A rightward ray segment as an `hseg`. -/
-theorem segment_rayPt_pos (p : Point) {T : ℝ} (hT : 0 ≤ T) :
+theorem segment_rayPt_pos :
     Chazelle.segment p (rayPt p 1 T) = hseg p.2 p.1 (p.1 + T) := by
   rw [segment_horizontal_eq_hseg (rayPt_snd p 1 T).symm, rayPt_fst, one_mul,
     min_eq_left (by linarith), max_eq_right (by linarith)]
 
 /-- A leftward ray segment as an `hseg`. -/
-theorem segment_rayPt_neg (p : Point) {T : ℝ} (hT : 0 ≤ T) :
+theorem segment_rayPt_neg :
     Chazelle.segment p (rayPt p (-1) T) = hseg p.2 (p.1 - T) p.1 := by
   rw [segment_horizontal_eq_hseg (rayPt_snd p (-1) T).symm, rayPt_fst, neg_one_mul,
     min_eq_right (by linarith), max_eq_left (by linarith), ← sub_eq_add_neg]
 
 /-! ### Augmented chords -/
+
+
+end
 
 /-- The **augmented chords** of a chain: horizontal chords of its domain (open part in the
 domain, both endpoints off it) at heights not above the top of the chain. -/
@@ -134,8 +152,11 @@ theorem augChords_spec {C : Chain} {c : Set Point} (hc : c ∈ augChords C) :
   obtain ⟨y, a, b, h, hy, rfl⟩ := hc
   exact ⟨y, a, b, h, hy, rfl, lend_hseg h.lt.le, rend_hseg h.lt.le⟩
 
+section
+variable (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b)
+include a b h
 /-- The left endpoint of a horizontal chord of the domain is anchorable. -/
-theorem anchorable_left (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) :
+theorem anchorable_left :
     C.Anchorable ((a, y) : Point) := by
   have hmid := h.open_mem ((a + b) / 2) (by linarith [h.lt]) (by linarith [h.lt])
   have hy : |y| < C.radius := (C.dom_subset_box hmid).2
@@ -144,9 +165,7 @@ theorem anchorable_left (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) :
     rw [C.mem_dom_iff] at hnd
     by_cases hs : ((a, y) : Point) ∈ C.set
     · exact Or.inl hs
-    · right; left
-      by_contra hsl
-      exact hnd ⟨hbox, hs, hsl⟩
+    · right; simp_all
   · right; right; left
     have hge : C.radius ≤ |a| := by
       by_contra hlt
@@ -164,17 +183,14 @@ theorem anchorable_left (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) :
         have : a < min b (-C.radius) := lt_min h.lt (by linarith)
         linarith
       have hx2 : (a + min b (-C.radius)) / 2 < b := by
-        have := min_le_left b (-C.radius)
-        linarith
+        grind
       have hx3 : (a + min b (-C.radius)) / 2 < -C.radius := by
-        have := min_le_right b (-C.radius)
-        linarith
+        grind
       have := (C.dom_subset_box (h.open_mem _ hx1 hx2)).1
-      rw [abs_lt] at this
-      linarith [this.1]
+      grind
 
 /-- The right endpoint of a horizontal chord of the domain is anchorable. -/
-theorem anchorable_right (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) :
+theorem anchorable_right :
     C.Anchorable ((b, y) : Point) := by
   have hmid := h.open_mem ((a + b) / 2) (by linarith [h.lt]) (by linarith [h.lt])
   have hy : |y| < C.radius := (C.dom_subset_box hmid).2
@@ -183,9 +199,7 @@ theorem anchorable_right (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) 
     rw [C.mem_dom_iff] at hnd
     by_cases hs : ((b, y) : Point) ∈ C.set
     · exact Or.inl hs
-    · right; left
-      by_contra hsl
-      exact hnd ⟨hbox, hs, hsl⟩
+    · right; simp_all
   · right; right; left
     have hge : C.radius ≤ |b| := by
       by_contra hlt
@@ -197,21 +211,18 @@ theorem anchorable_right (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) 
     rcases lt_abs.1 hgt with h1 | h1
     · have hx1 : a < (max a C.radius + b) / 2 := by
         have : max a C.radius < b := max_lt h.lt h1
-        have := le_max_left a C.radius
-        linarith
+        grind
       have hx2 : (max a C.radius + b) / 2 < b := by
-        have : max a C.radius < b := max_lt h.lt h1
-        linarith
-      have hx3 : C.radius < (max a C.radius + b) / 2 := by
-        have : max a C.radius < b := max_lt h.lt h1
-        have := le_max_right a C.radius
-        linarith
+        grind
+      
       have := (C.dom_subset_box (h.open_mem _ hx1 hx2)).1
-      rw [abs_lt] at this
-      linarith [this.2]
+      grind
     · have := (C.dom_subset_box hmid).1
       rw [abs_lt] at this
       linarith [h.lt]
+
+
+end
 
 /-- **Every finite family of augmented chords is a chord system of the domain.** -/
 theorem augChordSystem (C : Chain) {F : Set (Set Point)} (hF : F ⊆ augChords C)
@@ -221,7 +232,7 @@ theorem augChordSystem (C : Chain) {F : Set (Set Point)} (hF : F ⊆ augChords C
   hchord := by
     intro c hc
     obtain ⟨y, a, b, h, -, rfl⟩ := hF hc
-    exact ⟨y, a, b, h, rfl⟩
+    grind
   walk := by
     intro c hc z hz hzd
     obtain ⟨y, a, b, h, -, rfl⟩ := hF hc
@@ -237,25 +248,37 @@ theorem augChordSystem (C : Chain) {F : Set (Set Point)} (hF : F ⊆ augChords C
 
 /-! ### Shooting along a chord -/
 
+section
+variable (C : Chain) (p : Point) (σ : ℝ)
+include C p σ
 /-- The initial part of the ray from `p` in direction `σ` lies in the domain. -/
-def FreeAt (C : Chain) (p : Point) (σ : ℝ) : Prop :=
+def FreeAt : Prop :=
   ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt p σ t ∈ C.dom
 
 /-- The chord of `C` seen from `p` in direction `σ`: the segment from `p` to the first point of
 `(C.dom)ᶜ` on the ray (Chazelle's "point of `∂C` seen by `p`"). -/
-noncomputable def shoot (C : Chain) (p : Point) (σ : ℝ) : Set Point :=
+noncomputable def shoot : Set Point :=
   Chazelle.segment p (rayPt p σ (C.hitParam p σ))
 
-/-- Shooting from a chain vertex gives its vertex chord. -/
-theorem shoot_vertex (C : Chain) (k : ℕ) (σ : ℝ) : shoot C (C.vertex k) σ = C.chordSet k σ := rfl
+
+end
+
+section
+variable (C : Chain) (k : ℕ) (σ : ℝ)
 
 /-- Freeness at a chain vertex is `DirFree`. -/
-theorem freeAt_vertex (C : Chain) (k : ℕ) (σ : ℝ) : FreeAt C (C.vertex k) σ ↔ C.DirFree k σ :=
+theorem freeAt_vertex : FreeAt C (C.vertex k) σ ↔ C.DirFree k σ :=
   Iff.rfl
 
+
+end
+
+section
+variable (C : Chain) {p : Point} (hp : p.2 ≤ C.top.2)
+include hp
 /-- **The first hit from a free point** at height `≤ C.top.2` (the point may be on the box
 perimeter). -/
-theorem hit_of_freeAt (C : Chain) {p : Point} (hp : p.2 ≤ C.top.2) {σ : ℝ}
+theorem hit_of_freeAt {σ : ℝ}
     (hσ : σ = 1 ∨ σ = -1) (h : FreeAt C p σ) :
     0 < C.hitParam p σ ∧ rayPt p σ (C.hitParam p σ) ∉ C.dom ∧
       ∀ t, 0 < t → t < C.hitParam p σ → rayPt p σ t ∈ C.dom := by
@@ -267,75 +290,69 @@ theorem hit_of_freeAt (C : Chain) {p : Point} (hp : p.2 ≤ C.top.2) {σ : ℝ}
     exact ⟨C.dom_subset_box hd, C.not_mem_set_of_mem_dom hd⟩
   have hpos := lt_of_lt_of_le hu hle
   obtain ⟨h1, h2⟩ := rayHit_spec (r := C.radius) C.isClosed_set p hσ
-  have hsnd : ∀ t, (rayPt p σ t).2 ≤ C.top.2 := fun t => by rw [rayPt_snd]; exact hp
+  have hsnd : ∀ t, (rayPt p σ t).2 ≤ C.top.2 := fun t => by simp_all
   refine ⟨hpos, (not_mem_dom_iff C (hsnd _)).2 (h2 hpos), fun t ht1 ht2 => ?_⟩
   by_contra hnd
   obtain ⟨hb, hs⟩ := h1 t ht1 ht2
   rcases (not_mem_dom_iff C (hsnd t)).1 hnd with h' | h'
-  · exact h' hb
-  · exact hs h'
+  all_goals simp_all
 
 /-- The chord seen from a free point off the domain is an augmented chord. -/
-theorem shoot_mem_augChords (C : Chain) {p : Point} (hp : p.2 ≤ C.top.2) (hnd : p ∉ C.dom)
+theorem shoot_mem_augChords (hnd : p ∉ C.dom)
     {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (h : FreeAt C p σ) : shoot C p σ ∈ augChords C := by
   obtain ⟨hpos, hend, hint⟩ := hit_of_freeAt C hp hσ h
   set T := C.hitParam p σ with hT
   rcases hσ with rfl | rfl
   · refine ⟨p.2, p.1, p.1 + T, ⟨by linarith, hnd, ?_, fun x hx1 hx2 => ?_⟩, hp,
       segment_rayPt_pos p hpos.le⟩
-    · have : ((p.1 + T, p.2) : Point) = rayPt p 1 T := by simp [rayPt]
-      rw [this]; exact hend
+    · simp_all [rayPt] 
     · have := hint (x - p.1) (by linarith) (by linarith)
-      have e : rayPt p 1 (x - p.1) = ((x, p.2) : Point) := by
-        simp only [rayPt, one_mul, add_sub_cancel]
-      rwa [e] at this
+      simp_all [rayPt, one_mul, add_sub_cancel] 
   · refine ⟨p.2, p.1 - T, p.1, ⟨by linarith, ?_, hnd, fun x hx1 hx2 => ?_⟩, hp,
       segment_rayPt_neg p hpos.le⟩
-    · have : ((p.1 - T, p.2) : Point) = rayPt p (-1) T := by simp [rayPt, sub_eq_add_neg]
-      rw [this]; exact hend
+    · simp_all [rayPt, sub_eq_add_neg] 
     · have := hint (p.1 - x) (by linarith) (by linarith)
-      have e : rayPt p (-1) (p.1 - x) = ((x, p.2) : Point) := by
-        simp only [rayPt, neg_one_mul, neg_sub, add_sub_cancel]
-      rwa [e] at this
+      simp_all [rayPt, neg_one_mul, neg_sub, add_sub_cancel] 
 
+
+end
+
+section
+variable (C : Chain) {y a b : ℝ} (hab : a < b)
+include hab
 /-- Shooting rightwards from the left end of a segment whose right end is off the domain stays
 inside the segment. -/
-theorem shoot_subset_pos (C : Chain) {y a b : ℝ} (hab : a < b)
+theorem shoot_subset_pos
     (hb : ((b, y) : Point) ∉ C.dom) : shoot C ((a, y) : Point) 1 ⊆ hseg y a b := by
   have hle : C.hitParam ((a, y) : Point) 1 ≤ b - a := by
     refine C.hitParam_le_of_not_mem_dom _ 1 (by linarith) ?_
-    have : rayPt ((a, y) : Point) 1 (b - a) = ((b, y) : Point) := by
-      simp only [rayPt, one_mul, add_sub_cancel]
-    rw [this]; exact hb
+    simp_all [rayPt, one_mul, add_sub_cancel] 
   have h := segment_rayPt_subset ((a, y) : Point) 1 (hitParam_nonneg C _ 1) hle
   have e : Chazelle.segment ((a, y) : Point) (rayPt ((a, y) : Point) 1 (b - a)) = hseg y a b := by
     rw [segment_rayPt_pos _ (by linarith)]
-    dsimp only
-    rw [add_sub_cancel]
-  rw [e] at h
-  exact h
+    simp_all
+  aesop
 
 /-- Shooting leftwards from the right end of a segment whose left end is off the domain stays
 inside the segment. -/
-theorem shoot_subset_neg (C : Chain) {y a b : ℝ} (hab : a < b)
+theorem shoot_subset_neg
     (ha : ((a, y) : Point) ∉ C.dom) : shoot C ((b, y) : Point) (-1) ⊆ hseg y a b := by
   have hle : C.hitParam ((b, y) : Point) (-1) ≤ b - a := by
     refine C.hitParam_le_of_not_mem_dom _ (-1) (by linarith) ?_
-    have : rayPt ((b, y) : Point) (-1) (b - a) = ((a, y) : Point) := by
-      simp only [rayPt, neg_one_mul, neg_sub, add_sub_cancel]
-    rw [this]; exact ha
+    simp_all [rayPt, neg_one_mul, neg_sub, add_sub_cancel] 
   have h := segment_rayPt_subset ((b, y) : Point) (-1) (hitParam_nonneg C _ (-1)) hle
   have e : Chazelle.segment ((b, y) : Point) (rayPt ((b, y) : Point) (-1) (b - a)) =
       hseg y a b := by
     rw [segment_rayPt_neg _ (by linarith)]
-    dsimp only
-    rw [sub_sub_cancel]
-  rw [e] at h
-  exact h
+    simp_all
+  aesop
 
 /-! ### Vertex chords as shots -/
 
 /-! ### The chord through a point, and finiteness of the chords at one height -/
+
+
+end
 
 /-- Every point of the (open) domain is free in every direction. -/
 theorem freeAt_of_mem_dom (C : Chain) {p : Point} (hp : p ∈ C.dom) (σ : ℝ) : FreeAt C p σ := by
@@ -344,57 +361,50 @@ theorem freeAt_of_mem_dom (C : Chain) {p : Point} (hp : p ∈ C.dom) (σ : ℝ) 
     rw [rayPt_zero]; exact C.isOpen_dom.mem_nhds hp
   exact nhdsWithin_le_nhds (hcont.preimage_mem_nhds hmem)
 
+section
+variable (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b)
+include a b h
 /-- The left end of a horizontal chord of the domain is free rightwards. -/
-theorem freeAt_of_isHChordIn_left (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) :
+theorem freeAt_of_isHChordIn_left :
     FreeAt C ((a, y) : Point) 1 := by
   filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < b - a by linarith [h.lt])] with t ht
   have e : rayPt ((a, y) : Point) 1 t = ((a + t, y) : Point) := by simp [rayPt]
   rw [e]
-  exact h.open_mem _ (by linarith [ht.1]) (by linarith [ht.2])
+  exact h.open_mem _ (by simp_all) (by grind)
 
 /-- The right end of a horizontal chord of the domain is free leftwards. -/
-theorem freeAt_of_isHChordIn_right (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) :
+theorem freeAt_of_isHChordIn_right :
     FreeAt C ((b, y) : Point) (-1) := by
   filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < b - a by linarith [h.lt])] with t ht
   have e : rayPt ((b, y) : Point) (-1) t = ((b - t, y) : Point) := by
-    simp [rayPt, sub_eq_add_neg]
+    aesop
   rw [e]
-  exact h.open_mem _ (by linarith [ht.2]) (by linarith [ht.1])
+  exact h.open_mem _ (by grind) (by simp_all)
 
 /-- A horizontal chord of the domain is the chord shot from its left end. -/
-theorem hseg_eq_shoot (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) :
+theorem hseg_eq_shoot :
     hseg y a b = shoot C ((a, y) : Point) 1 := by
   have hT : C.hitParam ((a, y) : Point) 1 = b - a := by
     refine C.hitParam_eq_of_first _ 1 (by linarith [h.lt]) ?_ fun s hs1 hs2 => ?_
-    · have : rayPt ((a, y) : Point) 1 (b - a) = ((b, y) : Point) := by
-        simp only [rayPt, one_mul, add_sub_cancel]
-      rw [this]; exact h.right_not
-    · have e : rayPt ((a, y) : Point) 1 s = ((a + s, y) : Point) := by simp [rayPt]
-      rw [e]
-      exact h.open_mem _ (by linarith) (by linarith)
+    all_goals (grind [Chazelle.Chain.IsHChordIn, rayPt, one_mul, add_sub_cancel])
   unfold shoot
   rw [hT, segment_rayPt_pos _ (by linarith [h.lt])]
-  dsimp only
-  rw [add_sub_cancel]
+  simp_all
 
 /-- A horizontal chord of the domain is the chord shot from its right end. -/
-theorem hseg_eq_shoot_neg (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) :
+theorem hseg_eq_shoot_neg :
     hseg y a b = shoot C ((b, y) : Point) (-1) := by
   have hT : C.hitParam ((b, y) : Point) (-1) = b - a := by
     refine C.hitParam_eq_of_first _ (-1) (by linarith [h.lt]) ?_ fun s hs1 hs2 => ?_
-    · have : rayPt ((b, y) : Point) (-1) (b - a) = ((a, y) : Point) := by
-        simp only [rayPt, neg_one_mul, neg_sub, add_sub_cancel]
-      rw [this]; exact h.left_not
-    · have e : rayPt ((b, y) : Point) (-1) s = ((b - s, y) : Point) := by
-        simp [rayPt, sub_eq_add_neg]
-      rw [e]
-      exact h.open_mem _ (by linarith) (by linarith)
+    all_goals (grind [Chazelle.Chain.IsHChordIn, rayPt, neg_one_mul, neg_sub, add_sub_cancel, sub_eq_add_neg])
   unfold shoot
   rw [hT, segment_rayPt_neg _ (by linarith [h.lt])]
-  dsimp only
-  rw [sub_sub_cancel]
+  simp_all
 
 /-! ### Regions are closed under visibility -/
+
+
+end
 
 end
 

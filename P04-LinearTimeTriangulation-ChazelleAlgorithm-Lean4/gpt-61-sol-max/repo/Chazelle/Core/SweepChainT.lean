@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepChain
 
 /-!
@@ -52,42 +54,50 @@ theorem sideInArc_eventually_sub {a b x : ℝ} (h : sideInArc a b x) :
     ∀ᶠ s in 𝓝[>] (0 : ℝ), sideInArc a b (x - s) := by
   unfold sideInArc at h ⊢
   split_ifs at h ⊢ with hab
-  · filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT (show (0 : ℝ) < x - a by linarith [h.1])]
+  · filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT (show (0 : ℝ) < x - a by simp_all)]
       with s hs hs'
-    have : (0 : ℝ) < s := hs
-    exact ⟨by linarith [hs'.2], by linarith [h.2]⟩
+    grind
   · rcases h with h | h
     · filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < x - a by linarith)] with s hs
-      left; linarith [hs.2]
+      ram_grind
     · filter_upwards [self_mem_nhdsWithin] with s hs
-      have : (0 : ℝ) < s := hs
-      right; linarith
+      grind
 
-theorem faces_mono {M : Model} {p : ℕ} {t : ℝ} {U V : Set Point} (h : M.Faces p t U)
+section
+variable {M : Model} {p : ℕ} {t : ℝ} {U V : Set Point}
+theorem faces_mono (h : M.Faces p t U)
     (hUV : U ⊆ V) : M.Faces p t V :=
   h.mono fun _ hx => hUV hx
 
-theorem afterFaces_mono {M : Model} {p : ℕ} {t : ℝ} {U V : Set Point} (h : AfterFaces M p t U)
+theorem afterFaces_mono (h : AfterFaces M p t U)
     (hUV : U ⊆ V) : AfterFaces M p t V := by
   obtain ⟨δ, hδ, h⟩ := h
   exact ⟨δ, hδ, fun s h0 h1 h2 => faces_mono (h s h0 h1 h2) hUV⟩
 
-theorem beforeFaces_mono {M : Model} {p : ℕ} {t : ℝ} {U V : Set Point}
+theorem beforeFaces_mono
     (h : BeforeFaces M p t U) (hUV : U ⊆ V) : BeforeFaces M p t V := by
   obtain ⟨δ, hδ, h1, h2⟩ := h
   exact ⟨δ, hδ, fun ht s h0 h1' h2' => faces_mono (h1 ht s h0 h1' h2') hUV,
     fun ht s h0 h1' => faces_mono (h2 ht s h0 h1') hUV⟩
 
-theorem facedSide_mono {M : Model} {p : ℕ} {t ρ dir : ℝ} {U V : Set Point}
+
+end
+
+section
+variable {M : Model}
+theorem facedSide_mono {p : ℕ} {t ρ dir : ℝ} {U V : Set Point}
     (h : FacedSide M p t ρ dir U) (hUV : U ⊆ V) : FacedSide M p t ρ dir V :=
   ⟨fun h' => afterFaces_mono (h.1 h') hUV, fun h' => beforeFaces_mono (h.2 h') hUV⟩
 
-theorem sideOf_mono {M : Model} {ρ : ℝ} {c U V : Set Point} (h : SideOf M ρ c U)
+theorem sideOf_mono {ρ : ℝ} {c U V : Set Point} (h : SideOf M ρ c U)
     (hUV : U ⊆ V) : SideOf M ρ c V :=
   fun z hz hzD => (h z hz hzD).mono fun _ hx => hUV hx
 
+section
+variable (hM : WalkAx M)
+include hM
 /-- An admissible chord has a point in the domain. -/
-theorem adm_mem_dom {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
+theorem adm_mem_dom {c : Set Point} (hc : c ∈ M.Adm) :
     ∃ z ∈ c, z ∈ M.D := by
   obtain ⟨a, b, -, hcab, -, hopen, -, -⟩ := hM.ends c hc
   refine ⟨lerp a b (1 / 2), ?_, hopen _ ⟨by norm_num, by norm_num⟩⟩
@@ -95,17 +105,20 @@ theorem adm_mem_dom {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Ad
   exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
 
 /-- Every chord of a finite admissible family has a region on each side. -/
-theorem side_region_exists' {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
+theorem side_region_exists' {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     (hfin : F.Finite) {c : Set Point} (hc : c ∈ F) {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1) :
     ∃ U ∈ M.regions F, SideOf M ρ c U := by
   obtain ⟨Up, Dn, hUp, hDn, -, hside, -⟩ := chordSides_of_system (hM.sys F hF hfin) hc
   rcases hρ with rfl | rfl
-  · exact ⟨Up, hUp, fun z hz hzD => (hside z hz hzD).mono fun δ h => by simpa using h.1⟩
+  · exact ⟨Up, hUp, fun z hz hzD => (hside z hz hzD).mono fun δ h => by ram_grind⟩
   · exact ⟨Dn, hDn, fun z hz hzD => (hside z hz hzD).mono fun δ h => by
-      simpa [sub_eq_add_neg] using h.2⟩
+      grind [sub_eq_add_neg]⟩
+
+
+end
 
 /-- A region of a finer family lies in a region of a coarser one. -/
-theorem super_region {M : Model} {F F' : Set (Set Point)} (hFF : F ⊆ F') {U : Set Point}
+theorem super_region {F F' : Set (Set Point)} (hFF : F ⊆ F') {U : Set Point}
     (hU : U ∈ M.regions F') : ∃ V ∈ M.regions F, U ⊆ V := by
   obtain ⟨z, hz, rfl⟩ := hU
   have hsub : freeIn M.D F' ⊆ freeIn M.D F :=
@@ -116,7 +129,7 @@ theorem super_region {M : Model} {F F' : Set (Set Point)} (hFF : F ⊆ F') {U : 
 
 /-- **The region of a finer family on a side of a chord** lies in the region of the coarser
 family on that side. -/
-theorem sub_region_side {M : Model} (hM : WalkAx M) {F F' : Set (Set Point)} (hFF : F ⊆ F')
+theorem sub_region_side (hM : WalkAx M) {F F' : Set (Set Point)} (hFF : F ⊆ F')
     (hF' : F' ⊆ M.Adm) (hfin : F'.Finite) {c : Set Point} (hc : c ∈ F') {ρ : ℝ}
     (hρ : ρ = 1 ∨ ρ = -1) {V : Set Point} (hV : V ∈ M.regions F) (hVs : SideOf M ρ c V) :
     ∃ U ∈ M.regions F', U ⊆ V ∧ SideOf M ρ c U := by
@@ -129,6 +142,9 @@ theorem sub_region_side {M : Model} (hM : WalkAx M) {F F' : Set (Set Point)} (hF
   obtain ⟨w, -, rfl⟩ := hU
   exact subset_region hV isPreconnected_connectedComponentIn
     ((connectedComponentIn_subset _ _).trans hsub) h1 h2
+
+
+end
 
 end Generic
 
@@ -147,17 +163,19 @@ theorem shared_eq_top_of_snd (h : J.right.top.2 ≤ J.shared.2) : J.shared = J.r
     rw [J.right_vertex_zero]
     exact (J.right.vertex_snd_le_top hi).trans h
   show J.shared = J.right.vertex J.right.topIdx
-  rw [h0, J.right_vertex_zero]
+  aesop
 
+section
+variable {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) {f : Set Point} (hf : f ∈ F₂plus J S₂)
+include S₂ hS₂ hf
 /-- **The chords of `F₂⁺` are not above the top of `C₂`.** -/
-theorem F₂plus_snd_le {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right)
-    {f : Set Point} (hf : f ∈ F₂plus J S₂) {z : Point} (hz : z ∈ f) : z.2 ≤ J.right.top.2 := by
+theorem F₂plus_snd_le {z : Point} (hz : z ∈ f) : z.2 ≤ J.right.top.2 := by
   rcases hf with ((⟨c₀, hc₀, -, rfl⟩ | ⟨c₀, hc₀, -, rfl⟩) | ⟨σ, -, -, rfl⟩) | ⟨σ, -, -, rfl⟩
-  · have hc₀' : c₀ ∈ S₂ := by simpa using hc₀
+  · have hc₀' : c₀ ∈ S₂ := by simp_all
     have hz' := J.shoot_lend_subset (Or.inr (hS₂ hc₀')) hz
     obtain ⟨y, a, b, -, hy, rfl, -, -⟩ := Merge.augChords_spec (hS₂ hc₀')
     rw [hz'.1]; exact hy
-  · have hc₀' : c₀ ∈ S₂ := by simpa using hc₀
+  · have hc₀' : c₀ ∈ S₂ := by simp_all
     have hz' := J.shoot_rend_subset (Or.inr (hS₂ hc₀')) hz
     obtain ⟨y, a, b, -, hy, rfl, -, -⟩ := Merge.augChords_spec (hS₂ hc₀')
     rw [hz'.1]; exact hy
@@ -170,13 +188,12 @@ theorem F₂plus_snd_le {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChor
 
 /-- **The kinds of chords of `F₂⁺`**: inside a chord of `S₂`, through the shared vertex, or
 through the top of `C₂`. -/
-theorem F₂plus_kind {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right)
-    {f : Set Point} (hf : f ∈ F₂plus J S₂) :
+theorem F₂plus_kind :
     (∃ c ∈ S₂, f ⊆ c) ∨ J.shared ∈ f ∨ J.right.top ∈ f := by
   rcases hf with ((⟨c₀, hc₀, -, rfl⟩ | ⟨c₀, hc₀, -, rfl⟩) | ⟨σ, -, -, rfl⟩) | ⟨σ, -, -, rfl⟩
-  · have hc₀' : c₀ ∈ S₂ := by simpa using hc₀
+  · have hc₀' : c₀ ∈ S₂ := by simp_all
     exact Or.inl ⟨c₀, hc₀', J.shoot_lend_subset (Or.inr (hS₂ hc₀'))⟩
-  · have hc₀' : c₀ ∈ S₂ := by simpa using hc₀
+  · have hc₀' : c₀ ∈ S₂ := by simp_all
     exact Or.inl ⟨c₀, hc₀', J.shoot_rend_subset (Or.inr (hS₂ hc₀'))⟩
   · right; left
     rw [← Merge.Junction.whole_vertex_m₁]
@@ -186,6 +203,9 @@ theorem F₂plus_kind {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords
     rw [← Merge.Junction.whole_vertex_add]
     exact Geometry.left_mem_segment _ _
 
+
+end
+
 end Basic
 
 /-! ## The enlarged family of `C₂` -/
@@ -194,21 +214,31 @@ section Family
 
 variable (J : Merge.Junction)
 
+section
+variable (S₂ : Set (Set Point))
+include S₂
 /-- **The family of `C₂` along the stretch**: `S₂` together with the chords of `F₂⁺` that are
 augmented chords of `C₂` (such as a top chord of `C` at the top of `C₂` ending on `C₂`). -/
-def S₂x (S₂ : Set (Set Point)) : Set (Set Point) :=
+def S₂x : Set (Set Point) :=
   S₂ ∪ {e | e ∈ F₂plus J S₂ ∧ e ∈ Merge.augChords J.right}
 
-theorem subset_S₂x (S₂ : Set (Set Point)) : S₂ ⊆ S₂x J S₂ := subset_union_left
+theorem subset_S₂x : S₂ ⊆ S₂x J S₂ := subset_union_left
 
-theorem S₂x_subset {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) :
+
+end
+
+section
+variable {S₂ : Set (Set Point)}
+theorem S₂x_subset (hS₂ : S₂ ⊆ Merge.augChords J.right) :
     S₂x J S₂ ⊆ Merge.augChords J.right := by
   rintro c (hc | ⟨-, hc⟩)
-  · exact hS₂ hc
-  · exact hc
+  all_goals aesop
 
-theorem S₂x_finite {S₂ : Set (Set Point)} (hS₂f : S₂.Finite) : (S₂x J S₂).Finite :=
+theorem S₂x_finite (hS₂f : S₂.Finite) : (S₂x J S₂).Finite :=
   hS₂f.union ((F₂plus_finite J hS₂f).subset fun _ h => h.1)
+
+
+end
 
 theorem S₂x_family {Q : Polygon} {S₂ : Set (Set Point)}
     (hS₂ : (chainModel J.right).ChordFamily Q S₂)
@@ -216,8 +246,7 @@ theorem S₂x_family {Q : Polygon} {S₂ : Set (Set Point)}
     (chainModel J.right).ChordFamily Q (S₂x J S₂) := by
   refine ⟨S₂x_finite J hS₂.1, S₂x_subset J hS₂.2.1, ?_⟩
   rintro c (hc | ⟨hc, -⟩)
-  · exact hS₂.2.2 c hc
-  · exact hF.2.2 c hc
+  all_goals ram_grind
 
 /-- **The right correspondence with the enlarged family.** -/
 theorem corr_right0x (hP : J.P.Simple) {S₂ : Set (Set Point)}
@@ -228,7 +257,7 @@ theorem corr_right0x (hP : J.P.Simple) {S₂ : Set (Set Point)}
   refine { hC with hS := S₂x_subset J hS₂, hSfin := S₂x_finite J hS₂f, trans := ?_ }
   rintro c (hc | ⟨hcF, -⟩) q hq hqD hqv
   · exact hC.trans c hc q hq hqD hqv
-  · exact ⟨c, hcF, hq, subset_rfl⟩
+  aesop
 
 /-- The other attachments of a chord of `F₂⁺` are off the open right stretch. -/
 def OffOut (f : Set Point) (P : ℕ) (t : ℝ) : Prop :=
@@ -238,9 +267,11 @@ def OffOut (f : Set Point) (P : ℕ) (t : ℝ) : Prop :=
       off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p' + t') <
         ((rL1 J + rL2 J : ℕ) : ℝ))
 
+section
+variable (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite)
+include hP S₂ hS₂ hS₂f
 /-- **The points of the stretch are not in the domain of `C₂`.** -/
-theorem stretch_not_dom₂ (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {p : ℕ}
+theorem stretch_not_dom₂ {p : ℕ}
     (hp : p < (chainModel J.whole).W.n) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
     (hin : 0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) ∧
       off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) <
@@ -259,15 +290,14 @@ theorem stretch_not_dom₂ (hP : J.P.Simple) {S₂ : Set (Set Point)}
 
 /-- **A chord of `F₂⁺` attached in the right stretch is an augmented chord of `C₂`, or its other
 end is off the stretch.** -/
-theorem partner_cases (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {f : Set Point}
+theorem partner_cases {f : Set Point}
     (hf : f ∈ F₂plus J S₂) {p : ℕ} {t : ℝ} (hA : SideAttach (chainModel J.whole).W f p t)
     (hin : 0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) ∧
       off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) <
         ((rL1 J + rL2 J : ℕ) : ℝ)) :
     f ∈ Merge.augChords J.right ∨ OffOut J f p t := by
   by_cases hfA : f ∈ Merge.augChords J.right
-  · exact Or.inl hfA
+  · simp_all
   right
   intro p' t' hB hne hin'
   have hC := corr_right0 J hP hS₂ hS₂f
@@ -287,25 +317,22 @@ theorem partner_cases (hP : J.P.Simple) {S₂ : Set (Set Point)}
     · rcases hzb.lt_or_eq with h2 | h2
       · exact absurd (show z ∈ (chainModel J.whole).D by
           rw [show z = (z.1, y) from Prod.ext rfl hzy]; exact hH.open_mem z.1 h1 h2) hzD
-      · exact Or.inr h2
-    · exact Or.inl h1.symm
+      simp_all
+    simp_all
   have hpt : ∀ z ∈ Visibility.hseg y a b, z.1 = a ∨ z.1 = b → z = (a, y) ∨ z = (b, y) := by
     rintro z ⟨hzy, -, -⟩ (h | h)
-    · left; exact Prod.ext h hzy
-    · right; exact Prod.ext h hzy
+    all_goals grind
   apply hfA
   refine ⟨y, a, b, ⟨hH.lt, ?_, ?_, fun x h1 h2 => ?_⟩, hyh, rfl⟩
   rotate_right
-  · exact dom_right J (hH.open_mem x h1 h2) (by simpa using hyh)
+  · exact dom_right J (hH.open_mem x h1 h2) (by omega)
   all_goals
     intro hD
     have e1 := hpt _ hA.2.2.2.1 (hend _ hA.2.2.2.1 hwD)
-    have e2 := hpt _ hB.2.2.2.1 (hend _ hB.2.2.2.1 hwD')
-    rcases e1 with e1 | e1 <;> rcases e2 with e2 | e2 <;>
-      first
-      | exact hne (e2.trans e1.symm)
-      | (rw [e1] at hw; exact hw hD)
-      | (rw [e2] at hw'; exact hw' hD)
+    ram_grind
+
+
+end
 
 end Family
 
@@ -315,10 +342,11 @@ section JunctionFacts2
 
 variable (J : Merge.Junction)
 
+section
+variable (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {d : ℕ} (hd : d < rL1 J + rL2 J) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
+include hP hS₂ hS₂f hd ht0 ht1
 /-- **`RLabel` from the positions just after a position of the right stretch.** -/
-theorem rlabel_after2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {d : ℕ} (hd : d < rL1 J + rL2 J)
-    {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) {G V : Set Point}
+theorem rlabel_after2 {G V : Set Point}
     (hW : AfterFaces (chainModel J.whole)
       ((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n) t G)
     (hW₂ : AfterFaces (chainModel J.right)
@@ -334,13 +362,14 @@ theorem rlabel_after2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hs1 : s < δ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_left _ _))
   have hs2 : s < δ₂ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_right _ _))
   have hs3 : t + s < 1 := by linarith [lt_of_lt_of_le hs.2 (min_le_right _ _)]
-  refine ⟨d, hd, t + s, ⟨by linarith [hs.1], hs3⟩, ?_, h1 s hs.1 hs1 hs3, h2 s hs.1 hs2 hs3⟩
-  rw [← add_assoc]; exact hnc
+  refine ⟨d, hd, t + s, ⟨by linarith, hs3⟩, ?_, h1 s hs.1 hs1 hs3, h2 s hs.1 hs2 hs3⟩
+  grind
 
+section
+variable (hsec : t = 0 → d ≠ 0 ∧ d ≠ rL1 J)
+include hsec
 /-- **`RLabel` from the positions just before a position of the right stretch.** -/
-theorem rlabel_before2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {d : ℕ} (hd : d < rL1 J + rL2 J)
-    {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (hsec : t = 0 → d ≠ 0 ∧ d ≠ rL1 J) {G V : Set Point}
+theorem rlabel_before2 {G V : Set Point}
     (hW : BeforeFaces (chainModel J.whole)
       ((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n) t G)
     (hW₂ : BeforeFaces (chainModel J.right)
@@ -357,11 +386,9 @@ theorem rlabel_before2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have hs1 : s < δ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_left _ _))
     have hs2 : s < δ₂ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_right _ _))
     have hs3 : s < t := lt_of_lt_of_le hs.2 (min_le_right _ _)
-    refine ⟨d, hd, t - s, ⟨by linarith, by linarith [hs.1]⟩, ?_, h1a htpos s hs.1 hs1 hs3,
+    refine ⟨d, hd, t - s, ⟨by linarith, by linarith⟩, ?_, h1a htpos s hs.1 hs1 hs3,
       h2a htpos s hs.1 hs2 hs3⟩
-    rw [show ((((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n : ℕ) : ℝ) + (t - s)) =
-      (((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n : ℕ) : ℝ) + t - s by ring]
-    exact hnc
+    grind
   · subst ht00
     obtain ⟨hd0, -⟩ := hsec rfl
     have hn0 : 0 < (chainModel J.whole).W.n := hC.n_pos
@@ -370,9 +397,9 @@ theorem rlabel_before2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
     set P' := (P + (chainModel J.whole).W.n - 1) % (chainModel J.whole).W.n with hP'def
     have hPm : (6 + tpos J.whole J.m₁ + (d - 1)) % (chainModel J.whole).W.n = P' := by
       rw [hP'def, hPdef, mod_pred_mod hn0 _ (show 1 ≤ d by omega)]
-    have hdq0 : 1 ≤ dq (rL1 J) (rδ J) d := by unfold dq; split_ifs <;> omega
+    have hdq0 : 1 ≤ dq (rL1 J) (rδ J) d := by grind [dq]
     have hdq1 : dq (rL1 J) (rδ J) (d - 1) = dq (rL1 J) (rδ J) d - 1 := by
-      have := (hsec rfl).2; unfold dq; split_ifs <;> omega
+       grind [dq]
     have hPm₂ : (6 + tpos J.right 0 + dq (rL1 J) (rδ J) (d - 1)) % (chainModel J.right).W.n =
         ((6 + tpos J.right 0 + dq (rL1 J) (rδ J) d) % (chainModel J.right).W.n +
           (chainModel J.right).W.n - 1) % (chainModel J.right).W.n := by
@@ -384,16 +411,14 @@ theorem rlabel_before2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have hs1 : s < δ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_left _ _))
     have hs2 : s < δ₂ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_right _ _))
     have hs3 : s < 1 := lt_of_lt_of_le hs.2 (min_le_right _ _)
-    refine ⟨d - 1, by omega, 1 - s, ⟨by linarith, by linarith [hs.1]⟩, ?_, ?_, ?_⟩
-    · rw [hPm, show ((P' : ℕ) : ℝ) + (1 - s) = ((P' : ℕ) : ℝ) + 1 - s by ring]; exact hnc
+    refine ⟨d - 1, by omega, 1 - s, ⟨by linarith, by ram_grind⟩, ?_, ?_, ?_⟩
+    · grind
     · rw [hPm]; exact h1b rfl s hs.1 hs1
-    · rw [hPm₂]; exact h2b rfl s hs.1 hs2
+    grind
 
 /-- **A chord of `S₂` containing a chord of `F₂⁺` attached at a position of the right stretch is
 attached at the corresponding position of the walk of `C₂`.** -/
-theorem attach_counterpart2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {d : ℕ} (hd : d < rL1 J + rL2 J)
-    {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (hsec : t = 0 → d ≠ 0 ∧ d ≠ rL1 J)
+theorem attach_counterpart2
     {f c : Set Point} (hf : f ∈ F₂plus J S₂) (hc : c ∈ Merge.augChords J.right) (hfc : f ⊆ c)
     (hfA : SideAttach (chainModel J.whole).W f
       ((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n) t) :
@@ -413,7 +438,7 @@ theorem attach_counterpart2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
   obtain ⟨rf, hrf, hlf⟩ := hfA.2.2.2.2
   have hsecEq := hC.sideLeft_eq hd hsec
   have hab₁ := hH₁.lt
-  refine ⟨Nat.mod_lt _ hC.n₂_pos, ht0, ht1, by rw [hw₂]; exact hwc, min rf (b₁ - a₁),
+  refine ⟨Nat.mod_lt _ hC.n₂_pos, ht0, ht1, by ram_grind, min rf (b₁ - a₁),
     lt_min hrf (by linarith), fun x hx hxne hxd => ?_⟩
   rw [hw₂] at hxne hxd
   rw [← hsecEq]
@@ -421,8 +446,8 @@ theorem attach_counterpart2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hxd' : dist x w < b₁ - a₁ := lt_of_lt_of_le hxd (min_le_right _ _)
   have hx1 : |x.1 - w.1| < b₁ - a₁ := by
     have := (le_max_left _ _).trans_lt (show max (dist x.1 w.1) (dist x.2 w.2) < b₁ - a₁ by
-      rw [← Prod.dist_eq]; exact hxd')
-    rwa [Real.dist_eq] at this
+      omega)
+    omega
   rw [hfdef] at hwf hfc ⊢
   rw [hcdef] at hwc hfc hx
   obtain ⟨hwy₁, hwa₁, hwb₁⟩ := hwf
@@ -437,16 +462,24 @@ theorem attach_counterpart2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
     · rcases hwb.lt_or_eq with h2 | h2
       · exact absurd (show w ∈ J.right.dom by
           rw [show w = (w.1, y) from Prod.ext rfl hwy]; exact hH.open_mem w.1 h1 h2) hwD₂
-      · exact Or.inr h2
-    · exact Or.inl h1.symm
-  refine ⟨by rw [hxy, ← hy1], ?_, ?_⟩ <;> rcases hwend with h | h <;>
-    rw [abs_lt] at hx1 <;> linarith [hx1.1, hx1.2]
+      ram_grind
+    ram_grind
+  refine ⟨by ram_grind, ?_, ?_⟩ <;> rcases hwend with h | h <;>
+    ram_grind <;> linarith
 
+
+
+end
+
+end
+
+section
+variable (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {d : ℕ}
+include hP hS₂ hS₂f
 /-- **No tie at the top of `C₂`** on the right stretch: two chords of `F₂⁺` are never attached at
 one position of the right stretch whose point is the top of `C₂` (the corresponding position of
 the walk of `C₂` is next to the slit). -/
-theorem no_tie_at_top2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {d : ℕ} (hd : d < rL1 J + rL2 J)
+theorem no_tie_at_top2 (hd : d < rL1 J + rL2 J)
     (hsec : d ≠ 0 ∧ d ≠ rL1 J) {e e' : Set Point} (he : e ∈ F₂plus J S₂)
     (he' : e' ∈ F₂plus J S₂) (hne : e ≠ e')
     (hA : SideAttach (chainModel J.whole).W e
@@ -468,8 +501,8 @@ theorem no_tie_at_top2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
       SideAttach W ce P 0 ∧ SideAttach W cw P 0 ∧ (∀ z ∈ ce, (sidePt W P 0).1 ≤ z.1) ∧
       (∀ z ∈ cw, z.1 ≤ (sidePt W P 0).1) := by
     rcases hM.tie_pair hF he he' hne hA hA' with ⟨h1, h2⟩ | ⟨h1, h2⟩
-    · exact ⟨e, e', he, he', hA, hA', h1, h2⟩
-    · exact ⟨e', e, he', he, hA', hA, h2, h1⟩
+    · grind
+    grind
   obtain ⟨-, s₁, s₂, hs₁, hs₂, hsE, hsW⟩ := hM.tie_setup (hF hce) (hF hcw) hAe hAw hE hW
   obtain ⟨-, hhor, -⟩ := hM.tie_shape hF hce hcw hAe hAw hE hW
   have hv : (chainModel J.whole).wa P = J.right.top := by
@@ -482,7 +515,7 @@ theorem no_tie_at_top2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hprev : W.vtx ((P + W.n - 1) % W.n) = W₂.vtx ((P₂ + W₂.n - 1) % W₂.n) := by
     have := hC.sidePrev_eq hd (t := 0) hsec'
     unfold sidePrev at this
-    rwa [ite_eq_left rfl, ite_eq_left rfl] at this
+    grind
   -- the position of the walk of `C₂` at its top is a tour vertex
   have hP₂n : P₂ < W₂.n := Nat.mod_lt _ hC.n₂_pos
   obtain ⟨-, i, hi, hP₂i, -⟩ := pos_eq_vertex J.right hP J.right.sideBeta hP₂n le_rfl
@@ -554,8 +587,7 @@ theorem no_tie_at_top2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
 `1 ≤ d ≤ rL1 + rL2`): the corresponding positions of the walk of `C₂` are those just before the
 position following the counterpart of `d - 1`.  This covers the split vertex (`d = rL1`, case G)
 and the end of the stretch (`d = rL1 + rL2`). -/
-theorem rlabel_before0_2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {d : ℕ} (hd1 : 1 ≤ d)
+theorem rlabel_before0_2 (hd1 : 1 ≤ d)
     (hd : d ≤ rL1 J + rL2 J) {G V : Set Point}
     (hW : BeforeFaces (chainModel J.whole)
       ((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n) 0 G)
@@ -583,10 +615,13 @@ theorem rlabel_before0_2 (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hs1 : s < δ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_left _ _))
   have hs2 : s < δ₂ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_right _ _))
   have hs3 : s < 1 := lt_of_lt_of_le hs.2 (min_le_right _ _)
-  refine ⟨d - 1, by omega, 1 - s, ⟨by linarith, by linarith [hs.1]⟩, ?_, ?_, ?_⟩
-  · rw [hPm, show ((P' : ℕ) : ℝ) + (1 - s) = ((P' : ℕ) : ℝ) + 1 - s by ring]; exact hnc
+  refine ⟨d - 1, by omega, 1 - s, ⟨by linarith, by ram_grind⟩, ?_, ?_, ?_⟩
+  · grind
   · rw [hPm]; exact h1b rfl s hs.1 hs1
-  · rw [hPm₂]; exact h2b rfl s hs.1 hs2
+  grind
+
+
+end
 
 end JunctionFacts2
 
@@ -696,7 +731,7 @@ theorem local_step2 (hP : J.P.Simple) {Q : Polygon}
     by_cases htie₂ : ∃ c'' ∈ S₂x J S₂, c'' ≠ c ∧ SideAttach W₂ c'' P₂ 0
     · obtain ⟨c'', hc'', hne'', hA''⟩ := htie₂
       obtain ⟨-, -, -, h1⟩ := FV2 c'' hc'' hne'' hA''
-      exact (h1 (by rw [hwa, hwb]; exact hupd)).2 hρ1
+      exact (h1 (by ram_simp <;> omega_nf)).2 hρ1
     · push Not at htie₂
       exact FV1 fun c'' hc'' hA'' => by_contra fun h => htie₂ c'' hc'' h hA''
   -- the middle case in `W₂`, for a partner inside a chord of `S₂x`
@@ -709,16 +744,7 @@ theorem local_step2 (hP : J.P.Simple) {Q : Polygon}
     have hc'A : SideAttach W₂ c' P₂ 0 :=
       attach_counterpart2 J hP hS₂.2.1 hS₂.1 hd le_rfl zero_lt_one hsec hf'
         (S₂x_subset J hS₂.2.1 hc') hfc' hA'
-    have hc'c : c' ≠ c := by
-      rintro rfl
-      rcases hdirC with ⟨-, hc1⟩ | ⟨-, hc1⟩ <;> rw [hw₂] at hc1
-      · exact hne (hM.attach_east_unique hFs hf' hf hA' hfA (fun z hz => hc1 z (hfc' hz))
-          (fun z hz => hc1 z (hfc hz)))
-      · exact hne (hM.attach_west_unique hFs hf' hf hA' hfA (fun z hz => hc1 z (hfc' hz))
-          (fun z hz => hc1 z (hfc hz)))
-    obtain ⟨-, -, h1, h2⟩ := FV2 c' hc' hc'c hc'A
-    exact ⟨fun hd' hρ1 => sideOf_mono ((h1 (by rw [hwa, hwb]; exact hd')).1 hρ1) hUV,
-      fun hu' hρ1 => sideOf_mono ((h2 (by rw [hwa, hwb]; exact hu')).1 hρ1) hUV⟩
+    grind [Chazelle.Core.Sweep.sideOf_mono]
   -- the partner: an augmented chord of `C₂`, or its other end is off the stretch
   have hpartner : (∃ c' ∈ S₂x J S₂, f' ⊆ c') ∨
       ((J.shared ∈ f' ∨ J.right.top ∈ f') ∧ OffOut J f' P 0) := by
@@ -734,19 +760,7 @@ theorem local_step2 (hP : J.P.Simple) {Q : Polygon}
     rcases partner_cases J hP hS₂.2.1 hS₂.1 hf' hA' hin with h | h
     · exact Or.inl ⟨f', Or.inr ⟨hf', h⟩, subset_rfl⟩
     · exact Or.inr ⟨hkind, h⟩
-  rcases lt_or_gt_of_ne hhor with hdown | hupd
-  · rcases hρ with rfl | rfl
-    · refine Or.inr ⟨rfl, f', hf', hne, hA', (hdn hdown).1 rfl, ?_⟩
-      rcases hpartner with ⟨c', hc', hfc'⟩ | hsh
-      · exact Or.inl ⟨c', hc', hfc', (hmid₂ c' hc' hfc').1 hdown rfl⟩
-      · exact Or.inr hsh
-    · exact Or.inl (hRL ((hdn hdown).2 rfl) (hfaced₂ hdown rfl))
-  · rcases hρ with rfl | rfl
-    · exact Or.inl (hRL ((hup hupd).2 rfl) (hfaced₂' hupd rfl))
-    · refine Or.inr ⟨rfl, f', hf', hne, hA', (hup hupd).1 rfl, ?_⟩
-      rcases hpartner with ⟨c', hc', hfc'⟩ | hsh
-      · exact Or.inl ⟨c', hc', hfc', (hmid₂ c' hc' hfc').2 hupd rfl⟩
-      · exact Or.inr hsh
+  ram_grind
 
 end Local2
 
@@ -754,89 +768,31 @@ end Local2
 
 section SplitGeo
 
+section
+variable {a x : ℝ} {A B : Point} (ha : 0 < a) (hA : A.2 ≤ 0) (hB : B.2 ≤ 0) (h : sideCcw B ((x, 0) : Point) A)
+include A B ha hA hB h
 /-- **A west direction of a corner below the horizontal** lies in the corner from the upward
 slit (converse of `ccw_lower_left`). -/
-theorem ccw_corner_west {a x : ℝ} {A B : Point} (ha : 0 < a) (hA : A.2 ≤ 0) (hB : B.2 ≤ 0)
-    (h : sideCcw B ((x, 0) : Point) A) (hx : x < 0) :
+theorem ccw_corner_west (hx : x < 0) :
     sideCcw ((0, a) : Point) ((x, 0) : Point) A := by
-  obtain ⟨b1, b2⟩ := B
-  obtain ⟨a1, a2⟩ := A
-  simp only at hA hB
-  simp only [sideCcw, sideCross, sideDot] at h ⊢
-  have hxa : 0 < -(a * x) := by nlinarith
-  rcases lt_trichotomy a1 0 with h1 | h1 | h1
-  · rcases hA.lt_or_eq with h2 | h2
-    · left
-      exact ⟨by nlinarith, by nlinarith, by nlinarith⟩
-    · exfalso
-      subst h2
-      rcases h with ⟨h3, h4, h5⟩ | ⟨h3, h4 | h4⟩ | ⟨h3, h4, h5⟩ | ⟨h3, h4, h5 | h5⟩
-      · nlinarith
-      · have hb : b2 < 0 := by nlinarith
-        nlinarith
-      · nlinarith
-      · have hb : b2 = 0 := by
-          have : b2 * a1 = 0 := by linarith
-          rcases mul_eq_zero.1 this with h | h
-          · exact h
-          · linarith
-        subst hb; nlinarith
-      · have hb : b2 = 0 := by
-          have : b2 * a1 = 0 := by linarith
-          rcases mul_eq_zero.1 this with h | h
-          · exact h
-          · linarith
-        subst hb; exact h5 (by ring)
-      · have hb : b2 = 0 := by
-          have : b2 * a1 = 0 := by linarith
-          rcases mul_eq_zero.1 this with h | h
-          · exact h
-          · linarith
-        subst hb
-        have : b1 < 0 := by nlinarith
-        nlinarith
-  · subst h1
-    rcases hA.lt_or_eq with h2 | h2
-    · right; right; left
-      exact ⟨by ring, by nlinarith, by nlinarith⟩
-    · exfalso
-      subst h2
-      rcases h with ⟨h3, -, -⟩ | ⟨h3, -⟩ | ⟨-, h4, -⟩ | ⟨-, h4, -⟩ <;> nlinarith
-  · right; left
-    exact ⟨by nlinarith, Or.inl (by nlinarith)⟩
+  rcases lt_trichotomy A.1 0 with h1 | h1 | h1 <;>
+    rcases hA.lt_or_eq with h2 | h2 <;>
+    (by_contra! hn
+     simp_all [sideCcw, sideCross, sideDot, mul_pos_iff, mul_neg_iff] <;>
+     aesop (add safe (by nlinarith)))
 
 /-- **An east direction of a corner below the horizontal** lies in the corner to the upward
 slit (converse of `ccw_lower_right`). -/
-theorem ccw_corner_east {a x : ℝ} {A B : Point} (ha : 0 < a) (hA : A.2 ≤ 0) (hB : B.2 ≤ 0)
-    (h : sideCcw B ((x, 0) : Point) A) (hx : 0 < x) :
+theorem ccw_corner_east (hx : 0 < x) :
     sideCcw B ((x, 0) : Point) ((0, a) : Point) := by
-  obtain ⟨b1, b2⟩ := B
-  obtain ⟨a1, a2⟩ := A
-  simp only at hA hB
-  simp only [sideCcw, sideCross, sideDot] at h ⊢
-  have hxa : 0 < x * a := by nlinarith
-  rcases lt_trichotomy b1 0 with h1 | h1 | h1
-  · right; left
-    exact ⟨by nlinarith, Or.inr (by nlinarith)⟩
-  · subst h1
-    rcases hB.lt_or_eq with h2 | h2
-    · right; right; left
-      exact ⟨by ring, by nlinarith, by nlinarith⟩
-    · exfalso
-      subst h2
-      rcases h with ⟨h3, -, -⟩ | ⟨h3, -⟩ | ⟨-, h4, -⟩ | ⟨-, h4, -⟩ <;> nlinarith
-  · rcases hB.lt_or_eq with h2 | h2
-    · left
-      exact ⟨by nlinarith, by nlinarith, by nlinarith⟩
-    · exfalso
-      subst h2
-      rcases h with ⟨h3, h4, h5⟩ | ⟨h3, h4 | h4⟩ | ⟨h3, h4, h5⟩ | ⟨h3, h4, h5 | h5⟩
-      · nlinarith
-      · nlinarith
-      · nlinarith
-      · nlinarith
-      · exact h5 (by ring)
-      · nlinarith
+  rcases lt_trichotomy B.1 0 with h1 | h1 | h1 <;>
+    rcases hB.lt_or_eq with h2 | h2 <;>
+    (by_contra! hn
+     simp_all [sideCcw, sideCross, sideDot, mul_pos_iff, mul_neg_iff] <;>
+     aesop (add safe (by nlinarith)))
+
+
+end
 
 /-- **An admissible chord through a point off the domain** is a horizontal segment from it. -/
 theorem seg_of_end {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {u : Point}
@@ -846,17 +802,14 @@ theorem seg_of_end {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm
   rw [heq] at hue'
   obtain ⟨s, hs0, hs1, hs⟩ := Geometry.mem_segment_iff_lerp.1 hue'
   rcases hs0.lt_or_eq with hs0 | hs0
-  · rcases hs1.lt_or_eq with hs1 | hs1
-    · exact absurd (hs ▸ hopen s ⟨hs0, hs1⟩) huD
-    · rw [hs1, Geometry.lerp_one] at hs
-      exact ⟨a, fun h => hab (h.trans hs), by rw [hs]; exact hy, by
-        rw [heq, hs, Geometry.segment_comm]⟩
-  · rw [← hs0, Geometry.lerp_zero] at hs
-    exact ⟨b, fun h => hab (hs.symm.trans h.symm), by rw [hs]; exact hy.symm, by rw [heq, hs]⟩
+  · grind [Geometry.lerp_one, Geometry.segment_comm]
+  grind [Geometry.lerp_zero]
 
+section
+variable {W : Polygon} {c : Set Point} {p : ℕ}
 /-- The direction of a horizontal segment attached at a vertex position lies in its left
 sector. -/
-theorem sideLeft_of_attach_seg {W : Polygon} {c : Set Point} {p : ℕ} {u w : Point}
+theorem sideLeft_of_attach_seg {u w : Point}
     (hpu : sidePt W p 0 = u) (hA : SideAttach W c p 0) (hcw : c = Chazelle.segment u w)
     {σ T : ℝ} (hσ : σ = 1 ∨ σ = -1) (hT : 0 < T)
     (hray : ∀ s, 0 ≤ s → s ≤ T → rayPt u σ s ∈ Chazelle.segment u w) :
@@ -864,20 +817,18 @@ theorem sideLeft_of_attach_seg {W : Polygon} {c : Set Point} {p : ℕ} {u w : Po
   obtain ⟨-, -, -, -, r, hr, hl⟩ := hA
   set ε := min (r / 2) T with hε
   have hε0 : 0 < ε := lt_min (by linarith) hT
-  have hz := hl (rayPt u σ ε) (by rw [hcw]; exact hray ε hε0.le (min_le_right _ _))
+  have hz := hl (rayPt u σ ε) (by grind)
     (by
-      rw [hpu]; intro h
-      have := congrArg Prod.fst h; simp only [rayPt] at this
-      rcases hσ with rfl | rfl <;> linarith)
+      grind [rayPt])
     (by
       rw [hpu, dist_rayPt _ hσ hε0.le]
-      exact lt_of_le_of_lt (min_le_left _ _) (by linarith))
+      ram_grind)
   rw [← hpu] at hz ⊢
   exact (FuseMath.sideLeft_rayPt hε0).1 hz
 
 /-- A horizontal segment from the point of a vertex position, with its direction in the left
 sector, is attached there. -/
-theorem attach_of_sideLeft_seg {W : Polygon} {c : Set Point} {p : ℕ} (hp : p < W.n)
+theorem attach_of_sideLeft_seg (hp : p < W.n)
     {u w : Point} (hpu : sidePt W p 0 = u) {σ T : ℝ} (hsl : sideLeft W p 0 (rayPt u σ 1))
     (hcw : c = Chazelle.segment u w)
     (hseg : ∀ z ∈ Chazelle.segment u w, ∃ s, 0 ≤ s ∧ s ≤ T ∧ z = rayPt u σ s) :
@@ -887,11 +838,12 @@ theorem attach_of_sideLeft_seg {W : Polygon} {c : Set Point} {p : ℕ} (hp : p <
   rw [hcw] at hz
   obtain ⟨s, hs0, -, rfl⟩ := hseg z hz
   have hs : 0 < s := by
-    rcases hs0.lt_or_eq with h | h
-    · exact h
-    · exfalso; apply hzu; rw [← h, hpu]; apply Geometry.point_ext <;> simp [rayPt]
+    grind [rayPt]
   rw [← hpu] at hsl ⊢
   exact (FuseMath.sideLeft_rayPt hs).2 hsl
+
+
+end
 
 /-- Two horizontal segments from `u` sharing a point other than `u` have the same direction. -/
 theorem ray_dir_eq {u : Point} {σ σ' T T' : ℝ} (hσ : σ = 1 ∨ σ = -1) (hσ' : σ' = 1 ∨ σ' = -1)
@@ -900,10 +852,7 @@ theorem ray_dir_eq {u : Point} {σ σ' T T' : ℝ} (hσ : σ = 1 ∨ σ = -1) (h
   have h1 := congrArg Prod.fst h
   simp only [rayPt] at h1
   rcases hσ with rfl | rfl <;> rcases hσ' with rfl | rfl
-  · rfl
-  · exfalso; nlinarith
-  · exfalso; nlinarith
-  · rfl
+  all_goals linarith
 
 end SplitGeo
 
@@ -917,22 +866,19 @@ theorem faces_around_vertex {M : Model} (hGM : GoodModel M) {Q : Polygon} {F : S
     (hFam : M.ChordFamily Q F) {p : ℕ} (hp : p < M.W.n) (hp0 : 0 < p)
     (hcut : ¬ M.IsCut F (p : ℝ)) :
     ∃ X ∈ M.regions F, AfterFaces M p 0 X ∧ BeforeFaces M p 0 X := by
-  have hpos : (0 : ℝ) < p := by exact_mod_cast hp0
+  have hpos : (0 : ℝ) < p := by simp_all
   obtain ⟨X, hX, l, r, harc, hin⟩ := WalkEmbed.exists_arc_around hGM hFam hpos hcut
   have hfac := harc.2.2.2.2.2.2
   obtain ⟨δ₁, hδ₁, h1⟩ := exists_of_eventually_gt (sideInArc_eventually_add hin)
   obtain ⟨δ₂, hδ₂, h2⟩ := exists_of_eventually_gt (sideInArc_eventually_sub hin)
   refine ⟨X, hX, ⟨δ₁, hδ₁, fun s h0 h1' h2' => ?_⟩,
     ⟨min δ₂ 1, lt_min hδ₂ one_pos, fun h => absurd h (lt_irrefl 0), fun _ s h0 h1' => ?_⟩⟩
-  · rw [zero_add] at h2' ⊢
-    exact hfac p s hp h0 h2' (h1 s h0 h1')
+  · simp_all
   · have hs1 : s < 1 := lt_of_lt_of_le h1' (min_le_right _ _)
     have hsδ : s < δ₂ := lt_of_lt_of_le h1' (min_le_left _ _)
     rw [prev_mod hp hp0]
     refine hfac (p - 1) (1 - s) (by omega) (by linarith) (by linarith) ?_
-    have : ((p - 1 : ℕ) : ℝ) + (1 - s) = (p : ℝ) - s := by
-      rw [Nat.cast_sub hp0]; push_cast; ring
-    rw [this]; exact h2 s h0 hsδ
+    simp_all
 
 variable (J : Merge.Junction)
 
@@ -955,30 +901,33 @@ theorem copy_facts (hδ : 0 < rδ J) :
   have hn₂ : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
   have hm := J.right.one_le
   have g2' : (6 + tpos J.right 0 + rL1 J + rδ J) % (chainModel J.right).W.n = 6 := by
-    rw [add_assoc]; exact g2
-  refine ⟨g1, g2', by rw [g1, Chazelle.Chain.sidePt_zero, v26],
-    by rw [g2', Chazelle.Chain.sidePt_zero, v6], fun x => ?_, fun x => ?_⟩
+    grind
+  refine ⟨g1, g2', by grind [Chazelle.Chain.sidePt_zero],
+    by grind [Chazelle.Chain.sidePt_zero], fun x => ?_, fun x => ?_⟩
   · rw [g1, Chazelle.Chain.sideLeft_zero]
     have e1 : (2 * J.right.m + 6 + 1) % (chainModel J.right).W.n = 0 := by
-      rw [hn₂, show 2 * J.right.m + 6 + 1 = 2 * J.right.m + 7 by ring, Nat.mod_self]
+      simp_all
     have e2 : (2 * J.right.m + 6 + (chainModel J.right).W.n - 1) % (chainModel J.right).W.n =
         2 * J.right.m + 5 := by
       rw [hn₂, show 2 * J.right.m + 6 + (2 * J.right.m + 7) - 1 = (2 * J.right.m + 5) +
         (2 * J.right.m + 7) by omega, Nat.add_mod_right]
-      exact Nat.mod_eq_of_lt (by omega)
-    rw [e1, e2, v0, v25, v26]
+      simp_all
+    ram_grind
   · rw [g2', Chazelle.Chain.sideLeft_zero]
     have e1 : (6 + 1) % (chainModel J.right).W.n = 7 := by
-      rw [hn₂]; exact Nat.mod_eq_of_lt (by omega)
+      simp_all +arith
     have e2 : (6 + (chainModel J.right).W.n - 1) % (chainModel J.right).W.n = 5 := by
       rw [hn₂, show 6 + (2 * J.right.m + 7) - 1 = 5 + (2 * J.right.m + 7) by omega,
         Nat.add_mod_right]
-      exact Nat.mod_eq_of_lt (by omega)
-    rw [e1, e2, v7, v5, v6]
+      simp_all
+    grind
 
+section
+variable (hP : J.P.Simple) (hδ : 0 < rδ J)
+include hP hδ
 /-- **The direction of a chord at a copy of the split vertex**: a chord of `C₂` attached at the
 copy before the slit goes west, at the copy after it east. -/
-theorem copy_dir (hP : J.P.Simple) (hδ : 0 < rδ J) {c : Set Point}
+theorem copy_dir {c : Set Point}
     (hc : c ∈ Merge.augChords J.right) :
     (SideAttach (chainModel J.right).W c
         ((6 + tpos J.right 0 + rL1 J) % (chainModel J.right).W.n) 0 →
@@ -1028,7 +977,7 @@ theorem copy_dir (hP : J.P.Simple) (hδ : 0 < rδ J) {c : Set Point}
 /-- **The copy of a chord at the split vertex**: a chord of `C` attached at the split vertex of
 the right stretch, inside an augmented chord `c` of `C₂`, goes west and `c` is attached at the
 copy before the slit, or it goes east and `c` is attached at the copy after the slit. -/
-theorem split_copy (hP : J.P.Simple) (hδ : 0 < rδ J) {f c : Set Point}
+theorem split_copy {f c : Set Point}
     (hf : f ∈ Merge.augChords J.whole) (hc : c ∈ Merge.augChords J.right) (hfc : f ⊆ c)
     (hfA : SideAttach (chainModel J.whole).W f
       ((6 + tpos J.whole J.m₁ + rL1 J) % (chainModel J.whole).W.n) 0) :
@@ -1043,7 +992,7 @@ theorem split_copy (hP : J.P.Simple) (hδ : 0 < rδ J) {f c : Set Point}
   have hRt := J.right.top_snd_lt_radius
   have hA0 := sideTour_sub_top_snd J.right J.right.sideBeta (2 * J.right.m - 1)
   have hB0 := sideTour_sub_top_snd J.right J.right.sideBeta 1
-  have hn₂ : 0 < (chainModel J.right).W.n := by rw [cm_n]; omega
+  have hn₂ : 0 < (chainModel J.right).W.n := by grind [cm_n]
   set u := J.right.top with hu_def
   have huf : u ∈ f := hpt ▸ hfA.2.2.2.1
   have huD : u ∉ (chainModel J.whole).D := by
@@ -1083,6 +1032,9 @@ theorem split_copy (hP : J.P.Simple) (hδ : 0 < rδ J) {f c : Set Point}
       unfold sideLeftOf
       rw [rayPt_sub_self, slitTop_sub_top]
       exact ccw_corner_west (by linarith) hA0 hB0 hslM (by norm_num)
+
+
+end
 
 end Split
 
@@ -1124,8 +1076,7 @@ theorem other_copy_not_cut (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have h2 : (rL1 J : ℝ) + 1 ≤ ((rL1 J + rδ J + rL2 J : ℕ) : ℝ) := by
       exact_mod_cast (show rL1 J + 1 ≤ rL1 J + rδ J + rL2 J by omega)
     refine hC.noV _ (Nat.mod_lt _ hC.n₂_pos) 0 le_rfl zero_lt_one ?_ ?_
-    · rw [hoff]; linarith
-    · rw [hoff]; push_cast at h2 ⊢; linarith
+    all_goals grind
   -- a chord of `S₂` at a copy of the split vertex is `c`
   have hsame : ∀ k : ℕ, (k = rL1 J ∨ k = rL1 J + rδ J) → ∀ c'' ∈ S₂,
       SideAttach (chainModel J.right).W c'' ((6 + tpos J.right 0 + k) %
@@ -1136,7 +1087,7 @@ theorem other_copy_not_cut (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have hu'' : J.right.top ∈ c'' := hpk ▸ hA''.2.2.2.1
     obtain ⟨e'', he'', hue'', hec''⟩ := hC.trans c'' hc'' _ hu'' huD₂ hunV
     have heA := splitAttach_right J hP hS₂ hδ k hk c'' hc'' hA'' e'' he'' hec''
-      (by rw [hpt]; exact hue'')
+      (by ram_grind)
     have := huniq e'' he'' heA
     subst this
     exact s2_eq_of_sub J (S₂ := Merge.augChords J.right) subset_rfl (hS₂ hc'') hc
@@ -1152,18 +1103,18 @@ theorem other_copy_not_cut (hP : J.P.Simple) {S₂ : Set (Set Point)}
   · rintro hW ⟨c'', hc'', p, t, hA'', hkey⟩
     obtain ⟨hp, ht⟩ := Chazelle.Chain.sideKey_inj le_rfl zero_lt_one hA''.2.1 hA''.2.2.1
       (show (((6 + tpos J.right 0 + rL1 J + rδ J) % (chainModel J.right).W.n : ℕ) : ℝ) + 0 =
-        p + t by rw [add_zero]; exact hkey)
+        p + t by grind)
     subst hp; subst ht
     have hA2 : SideAttach (chainModel J.right).W c''
         ((6 + tpos J.right 0 + (rL1 J + rδ J)) % (chainModel J.right).W.n) 0 := by
-      rw [← add_assoc]; exact hA''
-    have hcc := hsame _ (Or.inr rfl) c'' hc'' hA2 (by rw [← add_assoc]; exact hp2)
+      grind
+    have hcc := hsame _ (Or.inr rfl) c'' hc'' hA2 (by grind)
     subst hcc
     exact hboth hW ((copy_dir J hP hδ hc).2 hA'')
   · rintro hE ⟨c'', hc'', p, t, hA'', hkey⟩
     obtain ⟨hp, ht⟩ := Chazelle.Chain.sideKey_inj le_rfl zero_lt_one hA''.2.1 hA''.2.2.1
       (show (((6 + tpos J.right 0 + rL1 J) % (chainModel J.right).W.n : ℕ) : ℝ) + 0 =
-        p + t by rw [add_zero]; exact hkey)
+        p + t by grind)
     subst hp; subst ht
     have hcc := hsame _ (Or.inl rfl) c'' hc'' hA'' hp1
     subst hcc
@@ -1232,7 +1183,7 @@ theorem split_step (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     refine rlabel_after2 J hP hS₂.2.1 hS₂.1 hd le_rfl zero_lt_one h1 ?_
     have e : 6 + tpos J.right 0 + dq (rL1 J) (rδ J) (rL1 J) =
         6 + tpos J.right 0 + rL1 J + rδ J := by
-      unfold dq; rw [ite_eq_right (lt_irrefl _)]; ring
+      unfold dq; grind
     rw [e]; exact h2
   have hRLb : ∀ X, BeforeFaces (chainModel J.whole) Pu 0 G →
       BeforeFaces (chainModel J.right) k₁ 0 X → RLabel J S₂ G X := by
@@ -1240,7 +1191,7 @@ theorem split_step (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     refine rlabel_before0_2 J hP hS₂.2.1 hS₂.1 hL1pos hd.le h1 ?_
     have e : 6 + tpos J.right 0 + (dq (rL1 J) (rδ J) (rL1 J - 1) + 1) =
         6 + tpos J.right 0 + rL1 J := by
-      unfold dq; rw [ite_eq_left (by omega)]; omega
+      unfold dq; grind
     rw [e]; exact h2
   -- the leaving edge at the split vertex is not above it
   have hwa : (chainModel J.whole).wa Pu = u := by
@@ -1248,7 +1199,7 @@ theorem split_step (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hwb : ((chainModel J.whole).wb Pu).2 ≤ u.2 := by
     have e := hC.sideNext_eq hd
     have edq : dq (rL1 J) (rδ J) (rL1 J) = rL1 J + rδ J := by
-      unfold dq; rw [ite_eq_right (lt_irrefl _)]
+      unfold dq; grind
     obtain ⟨-, g2, -, -, -, -, -, v7⟩ := gap_walk J hδ
     rw [edq, g2] at e
     have e7 : sideNext W₂ 6 = J.right.sideTour J.right.sideBeta 1 := by
@@ -1263,13 +1214,11 @@ theorem split_step (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     rw [hC.off_M hd (t := 0) le_rfl zero_lt_one]
     have h1 : (1 : ℝ) ≤ rL1 J := by exact_mod_cast hL1pos
     have h2 : ((rL1 J : ℕ) : ℝ) + 1 ≤ ((rL1 J + rL2 J : ℕ) : ℝ) := by exact_mod_cast hd
-    constructor <;> linarith
+    grind
   have hdw : ∀ f' ∈ F₂plus J S₂, f' ≠ f → SideAttach W f' Pu 0 →
       ((chainModel J.whole).wb Pu).2 ≠ ((chainModel J.whole).wa Pu).2 →
       ((chainModel J.whole).wb Pu).2 < ((chainModel J.whole).wa Pu).2 := by
-    intro f' _ _ _ hhor
-    rw [hwa] at hhor ⊢
-    exact lt_of_le_of_ne hwb hhor
+    grind
   have hpart : ∀ f' ∈ F₂plus J S₂, SideAttach W f' Pu 0 → (∃ c' ∈ S₂x J S₂, f' ⊆ c') ∨
       ((J.shared ∈ f' ∨ J.right.top ∈ f') ∧ OffOut J f' Pu 0) := by
     intro f' hf' hA'
@@ -1277,7 +1226,7 @@ theorem split_step (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     · exact Or.inl ⟨c₀, subset_S₂x J S₂ hc₀, hfc₀⟩
     rcases partner_cases J hP hS₂.2.1 hS₂.1 hf' hA' hinPu with h | h
     · exact Or.inl ⟨f', Or.inr ⟨hf', h⟩, subset_rfl⟩
-    · exact Or.inr ⟨hkind, h⟩
+    grind
   rcases split_copy J hP hδ (F₂plus_subset J hS₂.2.1 hf) (hSs hc) hfc hfA with
     ⟨hcW, hAk⟩ | ⟨hcE, hAk⟩
   · -- `c` goes west, attached at the copy before the slit

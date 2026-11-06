@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvLoopStartF
 
 /-!
@@ -26,22 +28,13 @@ theorem dq_end (J : Merge.Junction) :
     dq (rL1 J) (rδ J) (rL1 J + rL2 J - 1) + 1 = rL1 J + rL2 J + rδ J := by
   have hL := Lst_pos J
   have hL' : 0 < rL1 J + rL2 J := by unfold Lst at hL; exact_mod_cast hL
-  have h20 : rL2 J = 0 → rδ J = 0 := by
-    unfold rL2 rδ
-    have := tpos_lt J.right 0
-    split_ifs <;> omega
-  unfold dq
-  split_ifs with h
-  · have : rL2 J = 0 := by omega
-    rw [this, h20 this]; omega
-  · omega
+  core_grind [rL2, rδ]
 
 theorem vEnd_eq (J : Merge.Junction) :
     vEnd J = (6 + tpos J.right 0 + rL1 J + rL2 J + rδ J) % (chainModel J.right).W.n := by
   unfold vEnd
   rw [dq_end]
-  congr 1
-  ring
+  grind
 
 /-- The position of the end of the right stretch. -/
 def vEndL : List Instr := [.addN zT (sw 41) (sw 42), .addN zT zT (sw 43), .addN zT zT (sw 44)]
@@ -74,10 +67,9 @@ theorem corr_bounds (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
   have h1 := E.hWn
   have e1 : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n _
   have e2 : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n _
-  have : J.right.m ≤ J.whole.m := by show J.m₂ ≤ J.m₁ + J.m₂; omega
-  omega
+  simp_all +zetaDelta <;> omega
 
-theorem iscrT : IScr zT := iscr_sw (by simp [zT, sw]) (by simp [zT, sw])
+theorem iscrT : IScr zT := iscr_sw (by omega_nf) (by omega_nf)
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 20000 in
@@ -105,27 +97,21 @@ theorem stLab_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       have e3 : c.nreg 240043 = rL2 J := g3
       have e4 : c.nreg 240044 = rδ J := g4
       rw [e1, e2, e3, e4]
-      exact ⟨⟨iscrT, by omega⟩, ⟨iscrT, by omega⟩, ⟨iscrT, by omega⟩, trivial⟩
+      ram_grind
     have hv : regB c.nmem vEndL c.nreg zT = 6 + tpos J.right 0 + rL1 J + rL2 J + rδ J := by
-      simp only [vEndL, regB, regI, upd, zT, sw]
-      simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-      have e1 : c.nreg 240041 = 6 + tpos J.right 0 := g1
-      have e2 : c.nreg 240042 = rL1 J := g2
-      have e3 : c.nreg 240043 = rL2 J := g3
-      have e4 : c.nreg 240044 = rδ J := g4
-      rw [e1, e2, e3, e4]
+      simp_all [vEndL, regB, regI, upd, zT, sw, Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false] <;> omega_nf
     have hl : ∀ q, q ≠ zT → regB c.nmem vEndL c.nreg q = c.nreg q := fun q hq =>
       regB_other _ _ _ (fun i hi => by
         simp only [vEndL, List.mem_cons, List.not_mem_nil, or_false] at hi
         rcases hi with rfl | rfl | rfl <;> exact fun h => hq h.symm)
     refine IRS.seq (K₁ := fposK 3 (c₀.nreg TLR)) (K₂ := 2) (fpos_irs E hI hok hv hl (by omega)
-      (le_refl _ |>.trans (by norm_num)) (by simp [vEndL]; omega)) ?_
+      (le_refl _ |>.trans (by norm_num)) (by grind [vEndL])) ?_
     rintro c₁ hI₁ hA₁ - ⟨r1, hb1, -, k1, A1, m1⟩
     have hb1' := hb1 rfl
     rw [← vEnd_eq] at hb1'
-    refine (IRS.block [.copyN kL fR, .constN kN 1] hI₁ ⟨iscr_sw (by simp [kL, sw])
-      (by simp [kL, sw]), ⟨iscr_sw (by simp [kN, sw]) (by simp [kN, sw]),
-        by have := E.hWh; unfold hostWords at this; omega⟩, trivial⟩).mono (by simp) ?_
+    refine (IRS.block [.copyN kL fR, .constN kN 1] hI₁ ⟨iscr_sw (by omega_nf)
+      (by omega_nf), ⟨iscr_sw (by omega_nf) (by omega_nf),
+        by omega⟩, trivial⟩).mono (by simp) ?_
     rintro c' rfl
     have vL : regB c₁.nmem [.copyN kL fR, .constN kN 1] c₁.nreg kL = c₁.nreg fR := by
       simp [regB, regI, upd, kL, kN, fR, sw]
@@ -133,15 +119,15 @@ theorem stLab_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       simp [regB, regI, upd, kN]
     have vo : ∀ q, q ≠ kL → q ≠ kN → regB c₁.nmem [.copyN kL fR, .constN kN 1] c₁.nreg q =
         c₁.nreg q := fun q h1 h2 => by simp [regB, regI, upd_other _ _ _ h1, upd_other _ _ _ h2]
-    refine ⟨fun h1 => by omega, fun _ => ⟨vN, by show regB _ _ _ kL < _; rw [vL]; exact r1,
-      by show BeforeFaces _ _ _ (regOf _ _ _ (regB _ _ _ kL)); rw [vL]; exact hb1'⟩,
+    refine ⟨fun h1 => by omega, fun _ => ⟨vN, by grind,
+      by grind⟩,
       fun r hr hfp hlb hra => ?_, ?_, fun a ha => m1 a ha⟩
     · show regB _ _ _ r = _
-      rw [vo r (fun h => hlb (Or.inr (by subst h; omega))) (fun h => hlb (Or.inl h))]
+      rw [vo r (fun h => hlb (Or.inr (by omega))) (fun h => hlb (Or.inl h))]
       exact k1 r hr hfp hra
     · show c.nreg ALLOC ≤ regB _ _ _ ALLOC
-      rw [vo ALLOC (by simp [ALLOC, kL, sw]) (by simp [ALLOC, kN, sw])]; exact A1
-  · exact IRS.skip hI ⟨fun _ _ _ => rfl, fun h' => absurd (by rw [hK₀.2.1] at h; omega) h',
+      rw [vo ALLOC (by omega_nf) (by omega_nf)]; exact A1
+  · exact IRS.skip hI ⟨fun _ _ _ => rfl, fun h' => absurd (by ram_grind) h',
       fun _ _ _ _ _ => rfl, le_rfl, fun _ _ => rfl⟩
 
 /-- The registers of the gap regions. -/
@@ -162,16 +148,16 @@ theorem stGap_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   obtain ⟨hg', hL2, hW2⟩ := corr_bounds E
   have hNF := E.hNF₂
   obtain ⟨hRC, -⟩ := regOf_spec hNF
-  have hW1 : 2 ≤ W := by have := E.hWh; unfold hostWords at this; omega
+  have hW1 : 2 ≤ W := by omega
   unfold stGap
   refine IRS.ite (K := fposK 1 (c₀.nreg TLR) + fposK 2 (c₀.nreg TLR) + 3) (fun h => ?_) (fun h => ?_)
-  · have hδ : 0 < rδ J := by rw [hK₀.1, g4] at h; exact h
+  · have hδ : 0 < rδ J := by omega
     -- the first gap region
     have hok1 : okB W c.nmem gap1L c.nreg := by
       simp only [gap1L, okB, okI]
-      exact ⟨⟨iscrT, by rw [g1, g2]; omega⟩, trivial⟩
+      ram_grind
     have hv1 : regB c.nmem gap1L c.nreg zT = 6 + tpos J.right 0 + rL1 J := by
-      simp only [gap1L, regB, regI, upd_same]; rw [g1, g2]
+      simp_all [gap1L, regB, regI, upd_same] <;> omega_nf
     have hl1 : ∀ q, q ≠ zT → regB c.nmem gap1L c.nreg q = c.nreg q := fun q hq =>
       regB_other _ _ _ (fun i hi => by
         simp only [gap1L, List.mem_cons, List.not_mem_nil, or_false] at hi
@@ -183,7 +169,7 @@ theorem stGap_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     rintro c₁ hI₁ hA₁ hA₁' ⟨r1, -, ha1, k1, A1, m1⟩
     have ha1' := ha1 rfl
     refine IRS.seq (K₁ := 1) (IRS.block [.copyN gR fR] hI₁
-      ⟨iscr_sw (by simp [gR, sw]) (by simp [gR, sw]), trivial⟩) ?_
+      ⟨iscr_sw (by omega_nf) (by omega_nf), trivial⟩) ?_
     rintro c₂ hI₂ hA₂ - rfl
     have vR2 : regB c₁.nmem [.copyN gR fR] c₁.nreg gR = c₁.nreg fR := by simp [regB, regI]
     have vo2 : ∀ q, q ≠ gR → regB c₁.nmem [.copyN gR fR] c₁.nreg q = c₁.nreg q := fun q h =>
@@ -193,8 +179,8 @@ theorem stGap_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         c₂.nreg q = c.nreg q := fun q h1 h2 h3 h4 => (vo2 q h1).trans (k1 q h2 h3 h4)
     have cst : ∀ k, (k = 41 ∨ k = 42 ∨ k = 44) → c₂.nreg (sw k) = c.nreg (sw k) := by
       rintro k (rfl | rfl | rfl) <;>
-        exact kk2 _ (by simp [gR, sw]) (not_oracle_sw (by simp [sw]) (by simp [sw]))
-          (by simp [FPR, FR, zT, fE, fA, fR, sw]) (by simp [ALLOC, sw])
+        exact kk2 _ (by omega_nf) (not_oracle_sw (by simp [sw]) (by simp [sw]))
+          (by omega_nf) (by omega_nf)
     -- the second gap region
     have hok2 : okB W c₂.nmem gap2L c₂.nreg := by
       simp only [gap2L, okB, okI, regI, upd, zT, sw]
@@ -210,20 +196,20 @@ theorem stGap_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       have e1 : c₂.nreg 240041 = 6 + tpos J.right 0 := (cst 41 (Or.inl rfl)).trans g1
       have e2 : c₂.nreg 240042 = rL1 J := (cst 42 (Or.inr (Or.inl rfl))).trans g2
       have e4 : c₂.nreg 240044 = rδ J := (cst 44 (Or.inr (Or.inr rfl))).trans g4
-      rw [e1, e2, e4]
+      omega
     have hl2 : ∀ q, q ≠ zT → regB c₂.nmem gap2L c₂.nreg q = c₂.nreg q := fun q hq =>
       regB_other _ _ _ (fun i hi => by
         simp only [gap2L, List.mem_cons, List.not_mem_nil, or_false] at hi
         rcases hi with rfl | rfl <;> exact fun h => hq h.symm)
-    have hA2' : c₂.nreg ALLOC = c₁.nreg ALLOC := vo2 ALLOC (by simp [ALLOC, gR, sw])
+    have hA2' : c₂.nreg ALLOC = c₁.nreg ALLOC := vo2 ALLOC (by omega_nf)
     refine IRS.seq (K₁ := fposK 2 (c₀.nreg TLR)) (K₂ := 2)
       (fpos_irs E hI₂ (side := 0) hok2 hv2 hl2 (by omega) (by norm_num) (by
-        show c₂.nreg ALLOC + fposK 2 (c₀.nreg TLR) ≤ W; rw [hA2']; omega)) ?_
+        show c₂.nreg ALLOC + fposK 2 (c₀.nreg TLR) ≤ W; omega)) ?_
     rintro c₃ hI₃ hA₃ - ⟨r3, hb3, -, k3, A3, m3⟩
     have hb3' := hb3 rfl
     refine (IRS.block [.copyN (gR + 1) fR, .constN gN 2] hI₃
-      ⟨iscr_sw (by simp [gR, sw]) (by simp [gR, sw]),
-        ⟨iscr_sw (by simp [gN, sw]) (by simp [gN, sw]), hW1⟩, trivial⟩).mono (by simp) ?_
+      ⟨iscr_sw (by omega_nf) (by omega_nf),
+        ⟨iscr_sw (by omega_nf) (by omega_nf), hW1⟩, trivial⟩).mono (by simp) ?_
     rintro c' rfl
     have vR3 : regB c₃.nmem [.copyN (gR + 1) fR, .constN gN 2] c₃.nreg (gR + 1) = c₃.nreg fR := by
       simp [regB, regI, upd, gR, gN, sw]
@@ -233,52 +219,49 @@ theorem stGap_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         regB c₃.nmem [.copyN (gR + 1) fR, .constN gN 2] c₃.nreg q = c₃.nreg q := fun q h1 h2 => by
       simp [regB, regI, upd_other _ _ _ h1, upd_other _ _ _ h2]
     have gR3 : c₃.nreg gR = c₁.nreg fR := by
-      rw [k3 gR (not_oracle_sw (by simp [gR, sw]) (by simp [gR, sw]))
-        (by simp [FPR, FR, zT, fE, fA, fR, gR, sw]) (by simp [ALLOC, gR, sw])]
+      rw [k3 gR (not_oracle_sw (by omega_nf) (by omega_nf))
+        (by omega_nf) (by omega_nf)]
       exact vR2
     have eR0 : regB c₃.nmem [.copyN (gR + 1) fR, .constN gN 2] c₃.nreg (gR + 0) = c₁.nreg fR := by
-      rw [vo3 (gR + 0) (by simp [gR, sw]) (by simp [gR, gN, sw]), Nat.add_zero, gR3]
-    have ev : (6 + tpos J.right 0 + rL1 J + rδ J) % (chainModel J.right).W.n =
-        (6 + tpos J.right 0 + rL1 J + rδ J) % (chainModel J.right).W.n := rfl
-    refine ⟨by rw [show ({ c₃ with nreg := _ } : Config).nreg gN = 2 from vN3], fun i hi => ?_,
+      rw [vo3 (gR + 0) (by omega) (by omega_nf), Nat.add_zero, gR3]
+    
+    refine ⟨by ram_simp, fun i hi => ?_,
       fun V hV => ?_, fun r hr hfp hgr hra => ?_, ?_, fun a ha => ?_⟩
-    · have hi' : i < 2 := by rw [show ({ c₃ with nreg := _ } : Config).nreg gN = 2 from vN3] at hi; exact hi
+    · have hi' : i < 2 := by grind
       interval_cases i
-      · show regB _ _ _ (gR + 0) < _; rw [eR0]; exact r1
-      · show regB _ _ _ (gR + 1) < _; rw [vR3]; exact r3
+      · grind
+      grind
     · obtain ⟨-, hVr, hfac⟩ := hV
       have e1 := hRC.1 _ r1
       have e3 := hRC.1 _ r3
       rcases hfac with hfac | hfac
-      · exact ⟨0, by rw [show ({ c₃ with nreg := _ } : Config).nreg gN = 2 from vN3]; norm_num,
+      · exact ⟨0, by grind,
           by show regOf _ _ _ (regB _ _ _ (gR + 0)) = V; rw [eR0]
              exact after_unique one_pos e1 hVr ha1' hfac⟩
-      · exact ⟨1, by rw [show ({ c₃ with nreg := _ } : Config).nreg gN = 2 from vN3]; norm_num,
+      · exact ⟨1, by ram_simp,
           by show regOf _ _ _ (regB _ _ _ (gR + 1)) = V; rw [vR3]
              exact before_unique le_rfl e3 hVr hb3' hfac⟩
     · show regB _ _ _ r = _
       rw [vo3 r (fun h => hgr (Or.inr (Or.inr h))) (fun h => hgr (Or.inl h)), k3 r hr hfp hra,
         kk2 r (fun h => hgr (Or.inr (Or.inl h))) hr hfp hra]
     · show c.nreg ALLOC ≤ regB _ _ _ ALLOC
-      rw [vo3 _ (by simp [ALLOC, gR, sw]) (by simp [ALLOC, gN, sw])]
-      have := A1; have := A3; omega
-    · rw [m3 a (by have := A1; omega)]
-      show c₁.nmem a = _
-      exact m1 a ha
+      rw [vo3 _ (by omega_nf) (by omega_nf)]
+      omega
+    · ram_simp
   · -- no gap
     have hδ : rδ J = 0 := by rw [hK₀.1, g4] at h; omega
-    refine (IRS.block [.constN gN 0] hI ⟨⟨iscr_sw (by simp [gN, sw]) (by simp [gN, sw]),
-      Nat.zero_le _⟩, trivial⟩).mono (by unfold fposK; simp) ?_
+    refine (IRS.block [.constN gN 0] hI ⟨⟨iscr_sw (by omega_nf) (by omega_nf),
+      Nat.zero_le _⟩, trivial⟩).mono (by omega_nf) ?_
     rintro c' rfl
     have v0 : regB c.nmem [.constN gN 0] c.nreg gN = 0 := by simp [regB, regI]
     have vo : ∀ q, q ≠ gN → regB c.nmem [.constN gN 0] c.nreg q = c.nreg q := fun q h => by
-      simp [regB, regI, upd_other _ _ _ h]
-    refine ⟨by show regB _ _ _ gN ≤ 2; rw [v0]; norm_num, fun i hi => ?_, fun V hV => ?_,
+      simp_all [regB, regI] <;> omega_nf
+    refine ⟨by ram_grind, fun i hi => ?_, fun V hV => ?_,
       fun r hr hfp hgr hra => ?_, ?_, fun _ _ => rfl⟩
-    · exact absurd hi (by show ¬ i < regB _ _ _ gN; rw [v0]; omega)
+    · omega_nf
     · exact absurd hV.1 (by omega)
     · show regB _ _ _ r = _; exact vo r (fun h => hgr (Or.inl h))
-    · show c.nreg ALLOC ≤ regB _ _ _ ALLOC; rw [vo _ (by simp [ALLOC, gN, sw])]
+    simp_all [ALLOC, gN, sw] <;> omega_nf
 
 end Prog
 

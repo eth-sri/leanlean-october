@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvKey2Lab
 
 /-!
@@ -49,8 +51,11 @@ structure SkCtx (P : Polygon) (J : Merge.Junction) (c d₀ : Config) : Prop wher
   hsBA : c.nreg sB + 5 * c.nreg sC ≤ c.nreg ALLOC
   haBA : c.nreg aB + 5 * c.nreg sC ≤ c.nreg ALLOC
 
+section
+variable (P : Polygon) (J : Merge.Junction) (c d₀ d : Config)
+include P J c d₀ d
 /-- **The invariant of the skipping** after `j` skipped stops. -/
-def SkInv (P : Polygon) (J : Merge.Junction) (c d₀ d : Config) (j : ℕ) : Prop :=
+def SkInv (j : ℕ) : Prop :=
   EFr SkR d₀ d ∧ d.nreg sP = c.nreg sP + j ∧ c.nreg sP + j ≤ c.nreg sC ∧ j ≤ 2 ∧
   (∀ i, c.nreg sP ≤ i → i < c.nreg sP + j →
     offK P J (stopE c i) (stopH c i) = offK P J (d₀.nreg kE) (d₀.nreg kH)) ∧
@@ -61,9 +66,12 @@ def SkInv (P : Polygon) (J : Merge.Junction) (c d₀ d : Config) (j : ℕ) : Pro
   (d.nreg kqA = 1 ↔ ∃ i, c.nreg sP ≤ i ∧ i < c.nreg sP + j ∧ c.nmem (c.nreg aB + 5 * i) = 1)
 
 /-- **The end of the skipping**: the next stop is not at the key. -/
-def SkDone (P : Polygon) (J : Merge.Junction) (c d₀ d : Config) : Prop :=
+def SkDone : Prop :=
   ∃ j, SkInv P J c d₀ d j ∧ (d.nreg sP < c.nreg sC →
     offK P J (stopE c (d.nreg sP)) (stopH c (d.nreg sP)) ≠ offK P J (d₀.nreg kE) (d₀.nreg kH))
+
+
+end
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {P : Polygon} {W : ℕ} {c₀ c d₀ d : Config} {J : Merge.Junction} {N₁ N₂ : NF}
@@ -82,14 +90,13 @@ theorem stopLabs_congr {m m' : ℕ → ℕ} {A i : ℕ} (h : ∀ t, t < 4 → m'
     intro t ht
     rw [List.mem_range] at ht
     have := h (2 + t) (by omega)
-    rw [← Nat.add_assoc] at this
-    exact this
+    simp_all +arith
   · rfl
 
 theorem skInv_zero (hS : SkCtx P J c d₀) (hsC : c.nreg sP ≤ c.nreg sC) (hN : d₀.nreg kqN ≤ 4)
     (hA : d₀.nreg kqA = 0) : SkInv P J c d₀ d₀ 0 :=
-  ⟨EFr.refl _ _, by rw [hS.hsP]; rfl, by omega, by norm_num, fun i h1 h2 => by omega, hN,
-    by simp [addLs], by omega, ⟨fun h => by omega, fun ⟨i, h1, h2, _⟩ => by omega⟩⟩
+  ⟨EFr.refl _ _, by ram_grind, by omega, by norm_num, fun i h1 h2 => by omega, hN,
+    by simp [addLs], by omega, by omega⟩
 
 set_option maxHeartbeats 16000000 in
 set_option maxRecDepth 100000 in
@@ -110,7 +117,7 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
     fun r hr => fr.kkeep (nSk r hr).1 (nSk r hr).2
   have eSC : d.nreg sC = c.nreg sC := (kp _ (Or.inl rfl)).trans hS.hsC
   have eSB : d.nreg sB = c.nreg sB := (kp _ (Or.inr (Or.inl rfl))).trans hS.hsB
-  have eAB : d.nreg aB = c.nreg aB := (kp _ (Or.inr (Or.inr (Or.inl rfl)))).trans hS.haB
+  
   have eKE : d.nreg kE = d₀.nreg kE := kp _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))
   have eKH : d.nreg kH = d₀.nreg kH := kp _ (Or.inr (Or.inr (Or.inr (Or.inr rfl))))
   have hAd : c.nreg ALLOC ≤ d.nreg ALLOC := hS.hA.trans fr.2.1
@@ -121,13 +128,13 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
   set o' := offK P J (d₀.nreg kE) (d₀.nreg kH) with ho'
   unfold skipS
   by_cases hsd : d.nreg sP < d.nreg sC
-  · have hs : c.nreg sP + j < c.nreg sC := by rw [hsP, eSC] at hsd; exact hsd
+  · have hs : c.nreg sP + j < c.nreg sC := by omega
     set i := c.nreg sP + j with hi
     refine IRS.mono (K := 11102 + K + 2) (IRS.ifT hsd ?_) (by omega) (fun _ h => h)
     have hsBA := hS.hsBA
     have haBA := hS.haBA
-    have h5 : 5 * i + 5 ≤ 5 * c.nreg sC := by omega
-    refine (IRS.seq (K₁ := 7) (K₂ := 11095 + K) (ldStop_irs hId hKd.2.1 (by rw [eSB, hsP]; omega))
+    
+    refine (IRS.seq (K₁ := 7) (K₂ := 11095 + K) (ldStop_irs hId hKd.2.1 (by omega))
       ?_).mono (by omega) (fun _ h => h)
     rintro d₁ hI₁ hA₁ hA₁' ⟨s1, s2, s3, s4⟩
     rw [eSB, hsP, hmem _ (by omega)] at s1
@@ -146,11 +153,11 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
     have hpi := hS.hps i hs
     refine IRS.seq (K₁ := 11008) (K₂ := 87 + K) (callOff_irs (dsc := sw 2) (ex := kE) (hx := kH)
       (ey := kqSE) (hy := kqSH) (g := cGW) (o := kqO) hI₁ (E.ctxW' hI₁)
-      ⟨by norm_num [sw], by norm_num [sw], by unfold kE sw; norm_num, by unfold kE sw; norm_num,
-        by unfold kH sw; norm_num, by unfold kH sw; norm_num, by unfold kqSE sw; norm_num,
-        by unfold kqSE sw; norm_num, by unfold kqSH sw; norm_num, by unfold kqSH sw; norm_num,
-        by unfold cGW sw; norm_num, by unfold cGW sw; norm_num⟩
-      ⟨by unfold kqO sw; norm_num, by unfold kqO sw; norm_num⟩ (by rw [eKE1]; exact hpk.1)
+      ⟨by omega_nf, by omega_nf, by omega_nf, by omega_nf,
+        by omega_nf, by omega_nf, by omega_nf,
+        by omega_nf, by omega_nf, by omega_nf,
+        by omega_nf, by omega_nf⟩
+      ⟨by omega_nf, by omega_nf⟩ (by rw [eKE1]; exact hpk.1)
       (by rw [s1]; exact hpi.1) (by rw [hgw₁]; exact kqGW_lt J) (by rw [eKE1, eKH1]; exact hpk.2.1)
       (by rw [s1, s2]; exact hpi.2.1) (by rw [eKE1, eKH1]; exact hpk.2.2)
       (by rw [s1, s2]; exact hpi.2.2) (by omega)) ?_ |>.mono (by omega) (fun _ h => h)
@@ -164,15 +171,15 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
       intro r hr
       have hr' : r = sP ∨ r = kqA ∨ (kqN ≤ r ∧ r < kqL + 4) := by
         rcases hr with h | h | h | h
-        · exact Or.inl h
-        · exact Or.inr (Or.inl h)
-        · exact Or.inr (Or.inr ⟨by rw [h], by rw [h]; unfold kqN kqL sw; omega⟩)
-        · exact Or.inr (Or.inr ⟨by unfold kqN kqL sw at *; omega, h.2⟩)
+        · omega
+        · omega
+        · exact Or.inr (Or.inr ⟨by rw [h], by grind [kqN, kqL, sw]⟩)
+        grind [kqN, kqL, sw]
       have hr'' : r = 242450 ∨ (242488 ≤ r ∧ r < 242494) := by
-        simp only [sP, kqA, kqN, kqL, sw] at hr'; omega
-      rw [k₂ r (not_oracle_sw (by omega) (by omega)) (by unfold kqO sw; omega)
-        (by unfold kqO sw; omega) (by unfold ALLOC; omega)]
-      exact s3 r (by unfold kqX sw; omega) (by unfold kqSE sw; omega) (by unfold kqSH sw; omega)
+        grind [sP, kqA, kqN, kqL, sw]
+      rw [k₂ r (not_oracle_sw (by omega) (by omega)) (by omega_nf)
+        (by omega_nf) (by omega_nf)]
+      exact s3 r (by omega_nf) (by omega_nf) (by omega_nf)
     have eSP2 : d₂.nreg sP = i := (same _ (Or.inl rfl)).trans hsP
     have eN2 : d₂.nreg kqN = d.nreg kqN := same _ (Or.inr (Or.inr (Or.inl rfl)))
     have eA2 : d₂.nreg kqA = d.nreg kqA := same _ (Or.inr (Or.inl rfl))
@@ -183,12 +190,11 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
     by_cases h2 : d₂.nreg K0 < d₂.nreg kqO
     · rw [k02] at h2
       have hlt : o' < offK P J (stopE c i) (stopH c i) := b1.2.1 (by have := b1.1; omega)
-      refine IRS.mono (K := 0 + 2) (IRS.ifT (by rw [k02]; exact h2) (IRS.skip hI₂ rfl)) (by omega) ?_
+      refine IRS.mono (K := 0 + 2) (IRS.ifT (by omega) (IRS.skip hI₂ rfl)) (by omega) ?_
       rintro d' rfl
-      refine hstop d₂ ⟨j, ⟨fr02, by rw [eSP2], hjC, hj2, hoff, by rw [eN2]; exact hN,
-        by rw [lb2]; exact hlb, by rw [eA2]; exact hA1, by rw [eA2]; exact hAiff⟩, fun _ => ?_⟩
-      rw [eSP2]
-      exact ne_of_gt hlt
+      refine hstop d₂ ⟨j, ⟨fr02, by rw [eSP2], hjC, hj2, hoff, by omega,
+        by grind, by omega, by rw [eA2]; exact hAiff⟩, fun _ => ?_⟩
+      grind
     · rw [k02] at h2
       have hnlt : ¬ o' < offK P J (stopE c i) (stopH c i) := fun h => by have := b1.2.2 h; omega
       have hle : o' ≤ offK P J (stopE c i) (stopH c i) := by
@@ -197,23 +203,23 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
           rw [hi, hj0, Nat.add_zero]; exact this
         · rw [← hoff (c.nreg sP) le_rfl (by omega)]
           exact hS.hsort _ _ (by omega) hs
-      have heq : offK P J (stopE c i) (stopH c i) = o' := le_antisymm (not_lt.1 hnlt) hle
-      refine IRS.mono (K := 85 + K + 2) (IRS.ifF (by rw [k02]; exact h2) ?_) (by omega)
+      
+      refine IRS.mono (K := 85 + K + 2) (IRS.ifF (by omega) ?_) (by omega)
         (fun _ h => h)
       have eAB2 : d₂.nreg aB = c.nreg aB := by
         rw [fr02.kkeep (nSk aB (Or.inr (Or.inr (Or.inl rfl)))).1 (nSk aB (Or.inr (Or.inr (Or.inl rfl)))).2]
         exact hS.haB
-      have hAd2 : c.nreg ALLOC ≤ d₂.nreg ALLOC := hAd.trans (hA₁.trans hA₂)
+      
       have hmem2 : ∀ x, x < c.nreg ALLOC → d₂.nmem x = c.nmem x := fun x hx => by
-        rw [hm₂ x (lt_of_lt_of_le hx (hAd.trans hA₁)), s4, hmem x hx]
-      refine IRS.seq (K₁ := 84) (K₂ := 1 + K) (stopLab_irs hI₂ E.hK (by rw [eN2]; exact hN)
-        (by rw [eAB2, eSP2]; omega) hW4) ?_ |>.mono (by omega) (fun _ h => h)
+        grind
+      refine IRS.seq (K₁ := 84) (K₂ := 1 + K) (stopLab_irs hI₂ E.hK (by omega)
+        (by omega) hW4) ?_ |>.mono (by omega) (fun _ h => h)
       rintro d₃ hI₃ hA₃ hA₃' ⟨t1, t2, t3, t4, t5, t6⟩
       rw [eAB2, eSP2, stopLabs_congr (m := c.nmem) (fun t ht => hmem2 _ (by omega))] at t4
       rw [eAB2, eSP2, hmem2 _ (by omega)] at t5 t6
       have hK₃ := E.hK.fix hI₃
       have eSP3 : d₃.nreg sP = i := by
-        rw [t1 _ (by unfold KStR LblR; kqr)]; exact eSP2
+        rw [t1 _ (by omega_nf)]; exact eSP2
       refine IRS.seq (K₁ := 1) (K₂ := K) (IRS.block [.addN sP sP K1] hI₃
         ⟨⟨iscr_sw' (by norm_num) (by norm_num), by rw [eSP3, hK₃.2.1]; omega⟩, trivial⟩) ?_
       rintro d₄ hI₄ hA₄ hA₄' hd₄
@@ -225,23 +231,19 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
       have fr34 : EFr SkR d₂ d₄ := ⟨fun r _ hr _ => by
           rw [v2 r (fun h => hr (Or.inl h))]
           exact t1 r (fun h => hr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr h)))))),
-        by rw [v2 ALLOC (by kqr), t1 ALLOC (by unfold KStR LblR; kqr)], fun a _ => by rw [mem4, t2]⟩
+        by omega, fun a _ => by grind⟩
       refine hnext d₄ hI₄ (by
-        have := v2 ALLOC (by kqr); have := t1 ALLOC (by unfold KStR LblR; kqr); omega) ?_
+        omega) ?_
       have eN4 : d₄.nreg kqN = d₃.nreg kqN := v2 _ (by kqr)
       have eA4 : d₄.nreg kqA = d₃.nreg kqA := v2 _ (by kqr)
       have lb4 : lblOf d₄ kqN kqL = lblOf d₃ kqN kqL := kqLblOf_eq fun q hq =>
         v2 q (by simp only [LblR, kqN, kqL, sw] at hq; kqr)
-      refine ⟨fr02.trans fr34, by rw [v1, hi]; ring, by omega, by omega, fun i' h1 h2 => ?_, by omega,
+      refine ⟨fr02.trans fr34, by omega, by omega, by omega, fun i' h1 h2 => ?_, by omega,
         ?_, ?_, ?_⟩
-      · rcases Nat.lt_or_ge i' i with h | h
-        · exact hoff i' h1 h
-        · rw [show i' = i by omega]; exact heq
+      · grind
       · rw [lb4, t4, lb2, hlb, ← kqAddLs_append, ← List.flatMap_singleton (f := stopLabs c.nmem
           (c.nreg aB)) (x := i), ← List.flatMap_append, List.range'_1_concat]
-      · by_cases hf : c.nmem (c.nreg aB + 5 * i) = 1
-        · rw [eA4, t5 hf]
-        · rw [eA4, t6 hf, eA2]; exact hA1
+      · omega
       · by_cases hf : c.nmem (c.nreg aB + 5 * i) = 1
         · rw [eA4, t5 hf]
           exact ⟨fun _ => ⟨i, by omega, by omega, hf⟩, fun _ => rfl⟩
@@ -253,7 +255,7 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
             rcases Nat.lt_or_ge i' i with h | h
             · exact h
             · exact absurd (show i' = i by omega ▸ h3) hf
-  · have hs : ¬ c.nreg sP + j < c.nreg sC := by rw [hsP, eSC] at hsd; exact hsd
+  · 
     refine IRS.mono (K := 0 + 2) (IRS.ifF hsd (IRS.skip hId rfl)) (by omega) ?_
     rintro d' rfl
     exact hstop d ⟨j, ⟨fr, hsP, hjC, hj2, hoff, hN, hlb, hA1, hAiff⟩, fun h => by omega⟩

@@ -52,10 +52,7 @@ noncomputable def gamma1 (μ : ℕ) : ℕ := 2 * gradeGran μ + 15
 theorem gamma1_le (μ : ℕ) : gamma1 μ ≤ 2 ^ (Cost.ceilBeta μ + 12) := by
   have h := gradeGran_le_real μ
   have hN : gradeGran μ ≤ 1201 * 2 ^ Cost.ceilBeta μ := by exact_mod_cast h
-  have h1 : 1 ≤ 2 ^ Cost.ceilBeta μ := Nat.one_le_two_pow
-  unfold gamma1
-  rw [pow_add]
-  omega
+  grind [gamma1, pow_add]
 
 end
 

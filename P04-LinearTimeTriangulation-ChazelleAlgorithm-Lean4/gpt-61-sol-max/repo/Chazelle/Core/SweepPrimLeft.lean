@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepPrimDir
 
 /-!
@@ -44,21 +46,7 @@ theorem param_eq_zero_iff (M : Model) (Q : Polygon) (x : WPos) :
     M.param Q x = 0 ↔ (x.hgt = 0 ∨ (M.wa x.edge).2 = (M.wb x.edge).2 ∨
       (Q.vtx (x.hgt - 1)).2 = (M.wa x.edge).2) := by
   unfold Model.param
-  rcases x with ⟨e, h⟩
-  cases h with
-  | zero => simp
-  | succ h =>
-    simp only [Nat.add_sub_cancel, Nat.add_eq_zero_iff, one_ne_zero, and_false, false_or]
-    split_ifs with hh
-    · simp [hh]
-    · rw [div_eq_zero_iff, sub_eq_zero, sub_eq_zero]
-      constructor
-      · rintro (h1 | h1)
-        · exact Or.inr h1
-        · exact absurd h1.symm hh
-      · rintro (h1 | h1)
-        · exact absurd h1 hh
-        · exact Or.inl h1
+  grind
 
 /-- A positive parameter lies on a non-horizontal edge. -/
 theorem ne_of_param_pos {M : Model} {Q : Polygon} {x : WPos} (h : 0 < M.param Q x) :
@@ -74,7 +62,7 @@ theorem sideLeft_interior {W : Polygon} {p : ℕ} {t s : ℝ} (ht : 0 < t) (ht1 
   rw [Chazelle.Chain.sideLeft_edge hne' ⟨ht, ht1⟩]
   unfold sidePt
   simp only [det, Visibility.rayPt, Geometry.lerp_fst, Geometry.lerp_snd]
-  constructor <;> intro h <;> nlinarith
+  grind
 
 /-- The interior sign test is the turning code `1`. -/
 theorem interior_bit (M : Model) (e σ : ℕ) :
@@ -95,18 +83,9 @@ theorem box_param_pos (C : Chain) {Q : Polygon} {x : WPos} (he : x.edge < 6)
   exfalso
   rw [pos_eq_sidePt, ← h] at hy
   obtain ⟨h0, h1, h2, h3, h4, h5, -⟩ := C.sidePt_box C.sideBeta 0
-  have hR := C.radius_pos
+  
   have hw : (chainModel C).W = C.sideWalk C.sideBeta := rfl
-  rw [hw] at hy
-  rcases x with ⟨e, k⟩
-  simp only at he hy
-  interval_cases e
-  · rw [h0] at hy; simp [abs_of_pos hR] at hy
-  · rw [h1] at hy; simp [abs_of_pos hR] at hy
-  · rw [h2] at hy; simp [abs_of_pos hR] at hy
-  · rw [h3] at hy; simp [abs_of_pos hR] at hy
-  · rw [h4] at hy; simp [abs_of_pos hR] at hy
-  · rw [h5] at hy; simp [abs_of_pos hR] at hy
+  grind
 
 /-! ## The machine -/
 
@@ -122,22 +101,22 @@ theorem intOut_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       ∀ r, r ≠ 50210 → c'.nreg r = c.nreg r := by
   obtain ⟨c₁, k₁, e₁, hk₁, o₁, r₁⟩ := turnOut_exec (P := P) c hw hW h32 hd
   have w₁ := e₁.wb_right
-  have p₁ : c₁.nreg 50032 = 1 := by rw [r₁ _ (by decide), h32]
+  have p₁ : c₁.nreg 50032 = 1 := by ram_simp
   set t := turnCode (c.nreg 10502) (c.nreg 50203)
   have fin : ∀ v, v ≤ 1 → (v = 1 ↔ t = 1) → ∃ c' k, Exec P W (.instr (.constN 50210 v)) c₁ c' k ∧
       k = 1 ∧ BitIs c' 50210 (t = 1) ∧ ∀ r, r ≠ 50210 → c'.nreg r = c.nreg r := fun v hv hvt =>
     ⟨_, 1, Exec.constN w₁ _ _ (by omega), rfl, ⟨by simp [hv], by simp [hvt]⟩,
-      fun r hr => by simp [hr, r₁ r hr]⟩
+      fun r hr => by ram_simp⟩
   by_cases h0 : t < 1
   · obtain ⟨c', k, e, hk, h1, h2⟩ := fin 0 (by omega) (by omega)
-    exact ⟨c', _, .seq e₁ (.ifLtN_true (by rw [o₁, p₁]; exact h0) e), by omega, h1, h2⟩
+    exact ⟨c', _, .seq e₁ (.ifLtN_true (by omega) e), by omega, h1, h2⟩
   by_cases h2 : 1 < t
   · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 0 (by omega) (by omega)
-    exact ⟨c', _, .seq e₁ (.ifLtN_false (by rw [o₁, p₁]; exact h0)
-      (.ifLtN_true (by rw [o₁, p₁]; exact h2) e)), by omega, h1, h3⟩
+    exact ⟨c', _, .seq e₁ (.ifLtN_false (by omega)
+      (.ifLtN_true (by omega) e)), by omega, h1, h3⟩
   · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 1 le_rfl (by omega)
-    exact ⟨c', _, .seq e₁ (.ifLtN_false (by rw [o₁, p₁]; exact h0)
-      (.ifLtN_false (by rw [o₁, p₁]; exact h2) e)), by omega, h1, h3⟩
+    exact ⟨c', _, .seq e₁ (.ifLtN_false (by omega)
+      (.ifLtN_false (by omega) e)), by omega, h1, h3⟩
 
 /-- The vertex case: the sector procedure at the tour vertex `e - 6`, answer copied. -/
 def vtxOut : Stmt :=
@@ -172,12 +151,12 @@ theorem vtxOut_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have hE₁ : CEnv P W H C c₁ := hE.frame (exec_frameB e₁ (B := fun r => r == 50121)
     (by decide)) e₁.wb_right (by decide)
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, -, b₂⟩ := secAt_exec c₁ hE₁ (i := e - 6)
-    (by rw [hc₁]; simp [h01, hE.r81]) (by omega)
+    (by ram_all <;> ram_grind) (by omega)
   have e₃ := Exec.copyN (P := P) e₂.wb_right 50210 50110
   refine ⟨_, _, .seq e₁ (.seq e₂ e₃), by omega, ?_⟩
-  have s₁ : c₁.nreg 50203 = c.nreg 50203 := by rw [hc₁]; simp
+  have s₁ : c₁.nreg 50203 = c.nreg 50203 := by ram_simp
   rw [s₁, show e - 6 + 6 = e by omega] at b₂
-  exact b₂.of_eq (by simp)
+  ram_all <;> ram_grind
 
 /-- The input condition of `leftSec`: a proper position of the walk whose point is strictly
 inside the height range of the box. -/
@@ -200,8 +179,8 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
   refine prim_meets (K := 16600) (fun r h => h) wr_leftSec ?_
   intro P W H C c₀ c _hC hE ⟨hen, ⟨hp0, hp1, hhn⟩, hy⟩ hinp
   have i01 := hinp 50201 (by norm_num) (by norm_num)
-  have i02 := hinp 50202 (by norm_num) (by norm_num)
-  have i03 := hinp 50203 (by norm_num) (by norm_num)
+  
+  
   unfold LeftOut
   set e := c₀.nreg 50201 with he_def
   set hc := c₀.nreg 50202 with hc_def
@@ -217,10 +196,10 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
   have hE₁ : CEnv P W H C c₁ := hE.frame (exec_frameB e₁ (B := fun r => r == 50002)
     (by decide)) e₁.wb_right (by decide)
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, d₂⟩ := dirAt_exec c₁ hE₁ (e := e)
-    (by rw [hc₁]; simp [i01]) (by omega)
+    (by ram_simp) (by omega)
   have w₂ := e₂.wb_right
   have g₂ : ∀ r, 50200 ≤ r → r < 50210 → c₂.nreg r = c₀.nreg r := fun r h1 h2 => by
-    rw [f₂.1 r (by simp only [Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega),
+    rw [f₂.1 r (by core_grind),
       hc₁]
     simp only
     rw [upd_other _ _ _ (by omega), hinp r h1 h2]
@@ -236,7 +215,7 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
           (Visibility.rayPt (M.pos (Qof P) x) (dirOf σ) 1)) := by
     intro c₃ hE₃ d₃ s₃ hpos
     obtain ⟨c', k, ex, hk, b, -⟩ := intOut_exec (P := P) c₃ hE₃.wb (by omega) hE₃.r32
-      (by rw [d₃]; exact dirCode_le_two _ _)
+      (by omega_nf)
     refine ⟨c', k, ex, hk, b.congr ?_⟩
     rw [d₃, s₃, ← interior_bit, pos_eq_sidePt]
     exact (sideLeft_interior hpos hp1 (ne_of_param_pos hpos)).symm
@@ -248,9 +227,7 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
           (Visibility.rayPt (M.pos (Qof P) x) (dirOf σ) 1)) := by
     intro c₃ hE₃ e₃ s₃ h6 h0
     obtain ⟨c', k, ex, hk, b⟩ := vtxOut_exec c₃ hE₃ e₃ h6 (by omega)
-    refine ⟨c', k, ex, hk, ?_⟩
-    rw [h0, pos_eq_sidePt, h0, Chazelle.Chain.sidePt_zero, ← s₃]
-    exact b
+    grind [pos_eq_sidePt, Chazelle.Chain.sidePt_zero]
   by_cases hsm : e < 6
   · -- the box block
     have hpos : 0 < M.param (Qof P) x := box_param_pos C hsm hp0 hy
@@ -260,16 +237,14 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
   have t1 : ¬ c₂.nreg 50201 < c₂.nreg 50081 := by rw [q01, hE₂.r81]; exact hsm
   by_cases hh0 : hc < 1
   · obtain ⟨c', k, ex, hk, b⟩ := vertex c₂ hE₂ q01 q03 (by omega)
-      ((param_eq_zero_iff _ _ _).2 (Or.inl (by simp [hx]; omega)))
+      ((param_eq_zero_iff _ _ _).2 (Or.inl (by grind)))
     exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_true
       (by rw [q02, hE₂.r32]; exact hh0) ex))), by omega, b⟩
   have t2 : ¬ c₂.nreg 50202 < c₂.nreg 50032 := by rw [q02, hE₂.r32]; exact hh0
   by_cases hd0 : c₂.nreg 10502 < 1
-  · have hdir : dirCode M e = 0 := by rw [← d₂]; omega
+  · 
     have hhor : (M.wa x.edge).2 = (M.wb x.edge).2 := by
-      unfold dirCode at hdir
-      split_ifs at hdir with h1 h2
-      exact le_antisymm (not_lt.1 h2) (not_lt.1 h1)
+      grind [dirCode]
     obtain ⟨c', k, ex, hk, b⟩ := vertex c₂ hE₂ q01 q03 (by omega)
       ((param_eq_zero_iff _ _ _).2 (Or.inr (Or.inl hhor)))
     exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_true
@@ -290,7 +265,7 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
         c₅.nreg 50161 = hc - 1 ∧ ∀ r, r ≠ 50160 → r ≠ 50161 → c₅.nreg r = c₄.nreg r) := by
     exec_block
     · omega
-    · refine ⟨rfl, by config_simp, ?_, fun r h1 h2 => by simp [h1, h2]⟩
+    · refine ⟨rfl, by config_simp, ?_, fun r h1 h2 => by ram_simp⟩
       config_simp
       rw [f₄.1 50202 (by decide), f₄.1 50032 (by decide), hc₃]
       simp only
@@ -298,8 +273,8 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
   obtain ⟨q60, q61, r₅⟩ := q
   have w₅ := e₅.wb_right
   have ih : SymPtIn c₅ 50160 (.vtx (hc - 1)) := ⟨q60, q61⟩
-  have hhn' : hc ≤ P.n := hhn
-  have lh : (SymPt.vtx (hc - 1)).Lt P.n := by show hc - 1 < P.n; omega
+  
+  have lh : (SymPt.vtx (hc - 1)).Lt P.n := by grind [Chazelle.Core.SymPt.Lt]
   have ia₅ : SymPtIn c₅ 50133 sa := symPtIn_of_eq ia fun j h1 h2 => r₅ j (by omega) (by omega)
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, b₆, t₆⟩ := kbit_exec (op := 1) (dst := 50170) hE.hG hW c₅ w₅
     (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) la lh la ia₅ ih ia₅
@@ -339,23 +314,22 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
       have n71 : ¬ ((Qof P).vtx (x.hgt - 1)).2 < (M.W.vtx e).2 := fun h => by
         have := b71.2.2 h; omega
       have heq : ((Qof P).vtx (x.hgt - 1)).2 = (M.wa x.edge).2 := by
-        rw [hwa]; linarith [not_lt.1 n70, not_lt.1 n71]
-      obtain ⟨c', k, ex, hk, b⟩ := vertex c₇ hE₇ (by rw [g₇ _ (Or.inl rfl), q01])
-        (by rw [g₇ _ (Or.inr (Or.inl rfl)), q03]) (by omega)
+        grind
+      obtain ⟨c', k, ex, hk, b⟩ := vertex c₇ hE₇ (by ram_simp)
+        (by ram_simp) (by omega)
         ((param_eq_zero_iff _ _ _).2 (Or.inr (Or.inr heq)))
       exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
         (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rw [hE₇.r32]; exact hlt)
           (.ifLtN_true (by rw [hE₇.r32]; exact hlt2) ex))))))))))), by omega, b⟩
     · have p71 : ((Qof P).vtx (x.hgt - 1)).2 < (M.W.vtx e).2 := b71.2.1 (by
-        have := b71.1; rw [hE₇.r32] at hlt2; omega)
+         rw [hE₇.r32] at hlt2; omega)
       have hpos : 0 < M.param (Qof P) x := lt_of_le_of_ne hp0 (fun h => by
         rcases (param_eq_zero_iff _ _ _).1 h.symm with h' | h' | h'
-        · simp [hx] at h'; omega
-        · exact hd0 (by rw [d₂]; unfold dirCode; rw [ite_eq_right (by rw [h']; exact lt_irrefl _),
-            ite_eq_right (by rw [h']; exact lt_irrefl _)]; omega)
-        · rw [hwa] at h'; linarith)
-      obtain ⟨c', k, ex, hk, b⟩ := interior c₇ hE₇ (by rw [g₇ _ (Or.inr (Or.inr rfl)), d₂])
-        (by rw [g₇ _ (Or.inr (Or.inl rfl)), q03]) hpos
+        · grind
+        · exact hd0 (by rw [d₂]; unfold dirCode; grind)
+        grind)
+      obtain ⟨c', k, ex, hk, b⟩ := interior c₇ hE₇ (by ram_simp)
+        (by ram_simp) hpos
       exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
         (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rw [hE₇.r32]; exact hlt)
           (.ifLtN_false hlt2 ex))))))))))), by omega, b⟩
@@ -363,12 +337,11 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
       have := b70.1; rw [hE₇.r32] at hlt; omega)
     have hpos : 0 < M.param (Qof P) x := lt_of_le_of_ne hp0 (fun h => by
       rcases (param_eq_zero_iff _ _ _).1 h.symm with h' | h' | h'
-      · simp [hx] at h'; omega
-      · exact hd0 (by rw [d₂]; unfold dirCode; rw [ite_eq_right (by rw [h']; exact lt_irrefl _),
-          ite_eq_right (by rw [h']; exact lt_irrefl _)]; omega)
-      · rw [hwa] at h'; linarith)
-    obtain ⟨c', k, ex, hk, b⟩ := interior c₇ hE₇ (by rw [g₇ _ (Or.inr (Or.inr rfl)), d₂])
-      (by rw [g₇ _ (Or.inr (Or.inl rfl)), q03]) hpos
+      · grind
+      · exact hd0 (by rw [d₂]; unfold dirCode; grind)
+      grind)
+    obtain ⟨c', k, ex, hk, b⟩ := interior c₇ hE₇ (by ram_simp)
+      (by ram_simp) hpos
     exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
       (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_false hlt ex)))))))))), by omega, b⟩
 

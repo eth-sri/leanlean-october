@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepAnswer
 
 /-!
@@ -37,18 +39,6 @@ def Btw (p q r : ℝ) : Prop := (p < r ∧ r < q) ∨ (q < r ∧ r < p)
 
 theorem Btw.symm {p q r : ℝ} (h : Btw p q r) : Btw q p r := Or.symm h
 
-/-- **Four points on a line**: `x`, `y` are on different sides of the interval `(a, b)` iff
-exactly one of `a`, `b` lies between `x` and `y`. -/
-theorem xor_btw {a b x y : ℝ} (hab : a < b) (hxy : x ≠ y) (hxa : x ≠ a) (hxb : x ≠ b)
-    (hya : y ≠ a) (hyb : y ≠ b) :
-    ((a < x ∧ x < b) ↔ ¬ (a < y ∧ y < b)) ↔ (Btw x y a ↔ ¬ Btw x y b) := by
-  unfold Btw
-  rcases lt_or_gt_of_ne hxa with h1 | h1 <;> rcases lt_or_gt_of_ne hxb with h2 | h2 <;>
-    rcases lt_or_gt_of_ne hya with h3 | h3 <;> rcases lt_or_gt_of_ne hyb with h4 | h4 <;>
-    rcases lt_or_gt_of_ne hxy with h5 | h5 <;>
-    first
-    | (exfalso; linarith)
-    | simp [h1, h2, h3, h4, lt_asymm]
 
 /-- **Separation as betweenness of offsets.**  For keys on a cycle of length `n`, measured by
 offsets from a base `g`: the interval `(a, b)` separates `x` from `y` iff exactly one of `a`, `b`
@@ -61,7 +51,7 @@ theorem sep_iff_btw {n g a b x y : ℝ} (hg : 0 ≤ g) (hgn : g < n) (ha : 0 ≤
   have hne : ∀ {u w : ℝ}, 0 ≤ u → u < n → 0 ≤ w → w < n → u ≠ w → off n g u ≠ off n g w :=
     fun hu hun hw hwn huw h => huw (off_inj hg hgn hu hun hw hwn h)
   have hoab := hne ha han hb hbn hab
-  have hoxy := hne hx hxn hy hyn hxy
+  
   have hoxa := hne hx hxn ha han hxa
   have hoxb := hne hx hxn hb hbn hxb
   have hoya := hne hy hyn ha han hya
@@ -69,16 +59,11 @@ theorem sep_iff_btw {n g a b x y : ℝ} (hg : 0 ≤ g) (hgn : g < n) (ha : 0 ≤
   rcases lt_or_gt_of_ne hoab with h | h
   · rw [sideInArc_iff_off hg hgn ha han hb hbn hx hxn h,
       sideInArc_iff_off hg hgn ha han hb hbn hy hyn h]
-    exact xor_btw h hoxy hoxa hoxb hoya hoyb
+    ram_grind
   · rw [Chazelle.Chain.sideInArc_swap hab hxa hxb, Chazelle.Chain.sideInArc_swap hab hya hyb,
       sideInArc_iff_off hg hgn hb hbn ha han hx hxn h,
       sideInArc_iff_off hg hgn hb hbn ha han hy hyn h]
-    have key := xor_btw h hoxy hoxb hoxa hoyb hoya
-    have prop : ∀ PX PY BA BB : Prop, ((PX ↔ ¬PY) ↔ (BB ↔ ¬BA)) →
-        ((¬PX ↔ ¬¬PY) ↔ (BA ↔ ¬BB)) := by
-      intro PX PY BA BB h; by_cases h1 : PX <;> by_cases h2 : PY <;> by_cases h3 : BA <;>
-        by_cases h4 : BB <;> simp_all
-    exact prop _ _ _ _ key
+    ram_grind
 
 /-! ## Endpoints of admissible chords -/
 
@@ -90,11 +75,7 @@ theorem end_of_not_mem {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈ M
   refine ⟨a, b, hab, hcab, fun x hx hxD => ?_⟩
   rw [hcab] at hx
   obtain ⟨s, hs0, hs1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hx
-  rcases hs0.lt_or_eq with hs0 | hs0
-  · rcases hs1.lt_or_eq with hs1 | hs1
-    · exact absurd (hopen s ⟨hs0, hs1⟩) hxD
-    · right; rw [hs1, Geometry.lerp_one]
-  · left; rw [← hs0, Geometry.lerp_zero]
+  grind [Geometry.lerp_one, Geometry.lerp_zero]
 
 /-- An admissible chord inside another one containing both endpoints of the latter is equal to
 it. -/
@@ -109,42 +90,13 @@ theorem eq_of_ends {M M₂ : Model} (hM : WalkAx M) (hM₂ : WalkAx M₂) {e c :
   refine Set.Subset.antisymm hec ?_
   rw [hcab]
   rcases hqc with rfl | rfl <;> rcases hyc with rfl | rfl
-  · exact absurd rfl hqy
+  · simp_all
   · exact Geometry.segment_subset_of_convex hconv hq hy
   · exact Geometry.segment_subset_of_convex hconv hy hq
-  · exact absurd rfl hqy
+  simp_all
 
 /-! ## Two walks agreeing along two pieces -/
 
-/-- **A correspondence** between the walk of a model `M` (read from the vertex `g`) and the walk
-of a model `M₂` (read from `g'`): they agree along a first piece of length `L1` and, after a gap of
-`δ` walk vertices of `M₂` (the box of `C₂`, when `δ > 0`), along a second piece of length `L2`.
-Chords of `S` (in `M₂`) through walk points of `M₂` other than the base point contain chords of
-`F` (in `M`) through the same point; when there is a gap, a chord of `F` is attached at the split
-vertex of `M` and has its other attachments outside the stretch; distinct chords of `F` are not
-nested. -/
-structure Corr (M M₂ : Model) (F S : Set (Set Point)) (g g' L1 L2 δ : ℕ) : Prop where
-  hM : WalkAx M
-  hM₂ : WalkAx M₂
-  hF : F ⊆ M.Adm
-  hfin : F.Finite
-  hS : S ⊆ M₂.Adm
-  hSfin : S.Finite
-  hg : g < M.W.n
-  hg' : g' < M₂.W.n
-  hL : L1 + L2 ≤ M.W.n
-  hL₂ : L1 + δ + L2 ≤ M₂.W.n
-  hδ : δ = 0 → L2 = 0
-  hfull : 0 < δ → L1 + δ + L2 = M₂.W.n
-  A1 : Agree M.W M₂.W g g' L1
-  A2 : Agree M.W M₂.W (g + L1) (g' + L1 + δ) L2
-  noV : ∀ p < M₂.W.n, ∀ t : ℝ, 0 ≤ t → t < 1 → 0 < off M₂.W.n g' (p + t) →
-    off M₂.W.n g' (p + t) < L1 + δ + L2 → sidePt M₂.W p t ≠ M₂.W.vtx g'
-  trans : ∀ c ∈ S, ∀ q ∈ c, q ∉ M₂.D → q ≠ M₂.W.vtx g' → ∃ e ∈ F, q ∈ e ∧ e ⊆ c
-  box : 0 < δ → ∃ e ∈ F, SideAttach M.W e ((g + L1) % M.W.n) 0 ∧ ∀ (p : ℕ) (t : ℝ),
-    SideAttach M.W e p t → sidePt M.W p t ≠ sidePt M.W ((g + L1) % M.W.n) 0 →
-      ¬ (0 < off M.W.n g (p + t) ∧ off M.W.n g (p + t) < L1 + L2)
-  nest : ∀ e ∈ F, ∀ e' ∈ F, e ⊆ e' → e = e'
 
 /-- The offset in the walk of `M₂` of the offset `d` of the walk of `M`. -/
 def dq (L1 δ d : ℕ) : ℕ := if d < L1 then d else d + δ
@@ -171,43 +123,28 @@ theorem psi_dq {L1 δ d : ℕ} {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
     linarith
   · rw [ite_eq_right h]
     push_cast
-    have hL : (L1 : ℝ) ≤ d := by exact_mod_cast (not_lt.1 h)
-    by_cases h1 : (d : ℝ) + δ + t ≤ L1
-    · rw [ite_eq_left h1]
-      have hδ : (0 : ℝ) ≤ δ := Nat.cast_nonneg _
-      have : (d : ℝ) = L1 := by linarith
-      rw [this]; linarith
-    · rw [ite_eq_right h1]
-      by_cases h2 : (d : ℝ) + δ + t ≤ L1 + δ
-      · rw [ite_eq_left h2]
-        have : (d : ℝ) = L1 ∧ t = 0 := ⟨by linarith, by linarith⟩
-        rw [this.1, this.2]; ring
-      · rw [ite_eq_right h2]; ring
+    have hL : (L1 : ℝ) ≤ d := by simp_all
+    grind
 
 theorem psi_mono {L1 δ : ℕ} {o o' : ℝ} (h : o ≤ o') : psi L1 δ o ≤ psi L1 δ o' := by
-  have hδ : (0 : ℝ) ≤ δ := Nat.cast_nonneg _
-  unfold psi
-  split_ifs <;> linarith
+  core_grind
 
 /-- The gap of the walk of `M₂`. -/
 def InGap (L1 δ : ℕ) (o : ℝ) : Prop := (L1 : ℝ) ≤ o ∧ o ≤ (L1 : ℝ) + δ
 
-theorem psi_strict {L1 δ : ℕ} {o o' : ℝ} (h : o < o') (hg : ¬ InGap L1 δ o ∨ ¬ InGap L1 δ o') :
+section
+variable {L1 δ : ℕ}
+theorem psi_strict {o o' : ℝ} (h : o < o') (hg : ¬ InGap L1 δ o ∨ ¬ InGap L1 δ o') :
     psi L1 δ o < psi L1 δ o' := by
-  have hδ : (0 : ℝ) ≤ δ := Nat.cast_nonneg _
-  unfold psi
-  rcases hg with hg | hg <;> (unfold InGap at hg; push Not at hg) <;> split_ifs <;>
-    first
-    | linarith
-    | (by_contra hc; push Not at hc; have := hg (by linarith); linarith)
+  core_grind
 
-theorem btw_psi {L1 δ : ℕ} {a b o : ℝ} (ha : ¬ InGap L1 δ a) (hb : ¬ InGap L1 δ b)
+theorem btw_psi {a b o : ℝ} (ha : ¬ InGap L1 δ a) (hb : ¬ InGap L1 δ b)
     (h : Btw a b o) : Btw (psi L1 δ a) (psi L1 δ b) (psi L1 δ o) := by
   rcases h with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · exact Or.inl ⟨psi_strict h1 (Or.inl ha), psi_strict h2 (Or.inr hb)⟩
   · exact Or.inr ⟨psi_strict h1 (Or.inl hb), psi_strict h2 (Or.inr ha)⟩
 
-theorem btw_of_psi {L1 δ : ℕ} {a b o : ℝ} (h : Btw (psi L1 δ a) (psi L1 δ b) (psi L1 δ o)) :
+theorem btw_of_psi {a b o : ℝ} (h : Btw (psi L1 δ a) (psi L1 δ b) (psi L1 δ o)) :
     Btw a b o := by
   rcases h with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · left
@@ -219,6 +156,9 @@ theorem btw_of_psi {L1 δ : ℕ} {a b o : ℝ} (h : Btw (psi L1 δ a) (psi L1 δ
     · by_contra hc; push Not at hc; linarith [psi_mono (L1 := L1) (δ := δ) hc]
     · by_contra hc; push Not at hc; linarith [psi_mono (L1 := L1) (δ := δ) hc]
 
+
+end
+
 theorem not_inGap_dq {L1 δ d : ℕ} {t : ℝ} (ht : 0 < t) (ht1 : t < 1) :
     ¬ InGap L1 δ ((dq L1 δ d : ℕ) + t) := by
   unfold InGap dq
@@ -227,7 +167,7 @@ theorem not_inGap_dq {L1 δ d : ℕ} {t : ℝ} (ht : 0 < t) (ht1 : t < 1) :
   · have : (d : ℝ) + 1 ≤ L1 := by exact_mod_cast h
     linarith
   · push_cast at h1 h2
-    have : (L1 : ℝ) ≤ d := by exact_mod_cast (not_lt.1 h)
+    have : (L1 : ℝ) ≤ d := by simp_all
     linarith
 
 namespace Corr
@@ -250,7 +190,7 @@ variable {M M₂ : Model} {F S : Set (Set Point)} {g g' L1 L2 δ : ℕ}
 theorem key_mem {W : Polygon} {p : ℕ} (hp : p < W.n) {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
     0 ≤ (p : ℝ) + t ∧ (p : ℝ) + t < W.n := by
   have : (p : ℝ) + 1 ≤ W.n := by exact_mod_cast hp
-  exact ⟨by positivity, by linarith⟩
+  ram_grind
 
 end Corr
 

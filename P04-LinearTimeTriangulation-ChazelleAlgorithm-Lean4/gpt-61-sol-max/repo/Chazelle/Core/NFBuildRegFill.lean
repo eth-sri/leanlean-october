@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildRegRec
 
 /-!
@@ -23,20 +25,16 @@ theorem lstF_length (key : ℕ → ℕ) (n r : ℕ) : (lstF key n r).length = cn
 
 theorem cntF_mono (key : ℕ → ℕ) {n n' : ℕ} (h : n ≤ n') (r : ℕ) : cntF key n r ≤ cntF key n' r := by
   induction n' with
-  | zero => rw [Nat.le_zero.1 h]
+  | zero => simp_all
   | succ k ih =>
-    rcases Nat.lt_or_ge n (k + 1) with h' | h'
-    · rw [cntF_succ]; have := ih (by omega); omega
-    · rw [show n = k + 1 by omega]
+    grind [cntF_succ]
 
 theorem cnt2F_mono (u v : ℕ → ℕ) {n n' : ℕ} (h : n ≤ n') (r : ℕ) :
     cnt2F u v n r ≤ cnt2F u v n' r := by
   induction n' with
-  | zero => rw [Nat.le_zero.1 h]
+  | zero => simp_all
   | succ k ih =>
-    rcases Nat.lt_or_ge n (k + 1) with h' | h'
-    · rw [cnt2F_succ]; have := ih (by omega); omega
-    · rw [show n = k + 1 by omega]
+    grind [cnt2F_succ]
 
 /-- The arc list fill. -/
 def arcFillLoop : Stmt :=
@@ -48,8 +46,6 @@ def arcFillLoop : Stmt :=
     .addN 43223 43223 43011, .storeN 43222 43223,
     .addN 43201 43201 43011])
 
-theorem wr_arcFillLoop : wrM (fun r => decide (r = 43201 ∨ (43220 ≤ r ∧ r < 43225)))
-    arcFillLoop = true := by decide
 
 section exec
 
@@ -57,7 +53,7 @@ variable {P : Polygon} {W : ℕ}
 
 /-- **The arc list fill.** -/
 theorem arcFillLoop_exec (d : Config) (hw : WordsBounded W d) {m₂ : ℕ → ℕ}
-    {A R AT FA LT : ℕ} {key : ℕ → ℕ} {cC : ℕ → ℕ} (hA : d.nreg 43102 = A)
+    {A R AT FA LT : ℕ} {key cC : ℕ → ℕ} (hA : d.nreg 43102 = A)
     (hR : d.nreg 43200 = R) (h1 : d.nreg 43011 = 1) (hi : d.nreg 43201 = 0)
     (hAT : d.nreg 44002 = AT) (hFA : d.nreg 44011 = FA) (hLT : d.nreg 44005 = LT)
     (hkey : ∀ j, j < A → m₂ (AT + 5 * j) = key j) (hkR : ∀ j, j < A → key j < R)
@@ -82,11 +78,9 @@ theorem arcFillLoop_exec (d : Config) (hw : WordsBounded W d) {m₂ : ℕ → �
   have omono : ∀ {a b : ℕ}, a ≤ b → off a ≤ off b := fun h => by
     rw [hoffdef]; exact offF_mono _ _ h
   have seg : ∀ r', r' < R → ∀ t, t < cntF key A r' → off r' + t < off R := fun r' hr' t ht => by
-    have := osucc r'
-    have := omono (show r' + 1 ≤ R by omega)
-    omega
+    grind
   have odisj : ∀ {r₁ r₂ : ℕ}, r₁ < r₂ → off r₁ + cntF key A r₁ + cC r₁ ≤ off r₂ := fun h => by
-    rw [← osucc]; exact omono h
+    grind
   obtain ⟨d', k, e, ⟨hw', j, hj', hjA, hf, I1, I2, I3⟩, htest, hk⟩ := Exec.whileLtN_potential
     (P := P) (W := W) (a := 43201) (b := 43102) (body := _)
     (fun e => WordsBounded W e ∧ ∃ j, e.nreg 43201 = j ∧ j ≤ A ∧
@@ -109,7 +103,7 @@ theorem arcFillLoop_exec (d : Config) (hw : WordsBounded W d) {m₂ : ℕ → �
       set r := key j with hr
       have hcle : cntF key j r < cntF key A r := by
         have := cntF_mono key (show j + 1 ≤ A by omega) r
-        rw [cntF_succ, ite_eq_left rfl] at this; omega
+        grind [cntF_succ]
       have hpos : off r + cntF key j r < off R := seg r hkj _ hcle
       have mk : e.nmem (AT + 5 * j) = r := by
         rw [J3 _ (by omega) (fun r' hr' t ht => by
@@ -135,10 +129,10 @@ theorem arcFillLoop_exec (d : Config) (hw : WordsBounded W d) {m₂ : ℕ → �
         · rw [r4, r5, r6, r7, hje, show j + j + (j + j) + j + AT = AT + 5 * j by omega, mk, mp]
       obtain ⟨e', k, x, hk, hj', hm'⟩ := X
       refine ⟨e', k, x, ⟨x.wb_right, j + 1, hj', by omega, hfe.trans (exec_frameM x (by decide)),
-        fun r' hr' => ?_, fun r' hr' t ht => ?_, fun a ha hna => ?_⟩, by rw [hj', hje]; omega⟩
+        fun r' hr' => ?_, fun r' hr' t ht => ?_, fun a ha hna => ?_⟩, by omega⟩
       · rw [hm', cntF_succ]
         by_cases h' : r' = r
-        · subst h'; rw [upd_same, ite_eq_left rfl]; try omega
+        · grind [upd_same]
         · have := seg r' hr'
           rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), J1 r' hr',
             ite_eq_right (Ne.symm h')]
@@ -155,7 +149,7 @@ theorem arcFillLoop_exec (d : Config) (hw : WordsBounded W d) {m₂ : ℕ → �
               List.getD_append_right _ _ _ _ (by rw [lstF_length]), lstF_length, Nat.sub_self]
             rfl
           · rw [upd_other _ _ _ (by omega), J2 r hr' t (by omega),
-              List.getD_append _ _ _ _ (by rw [lstF_length]; omega)]
+              List.getD_append _ _ _ _ (by grind [lstF_length])]
         · rw [ite_eq_right (Ne.symm h'), List.append_nil]
           rw [cntF_succ, ite_eq_right (Ne.symm h'), Nat.add_zero] at ht
           have hdisj : LT + off r' + t ≠ LT + (off r + cntF key j r) := by
@@ -163,12 +157,11 @@ theorem arcFillLoop_exec (d : Config) (hw : WordsBounded W d) {m₂ : ℕ → �
             · have := odisj hlt
               have := cntF_mono key (show j ≤ A by omega) r'
               omega
-            · have := odisj hlt
-              omega
+            grind
           rw [upd_other _ _ _ hdisj, J2 r' hr' t ht]
       · rw [hm', upd_other _ _ _ (by omega)]
         have hne : a ≠ LT + (off r + cntF key j r) := by
-          have := hna r hkj (cntF key j r) (by rw [cntF_succ, ite_eq_left rfl]; omega)
+          have := hna r hkj (cntF key j r) (by grind [cntF_succ])
           omega
         rw [upd_other _ _ _ hne]
         exact J3 a ha fun r' hr' t ht => hna r' hr' t (by
@@ -179,7 +172,7 @@ theorem arcFillLoop_exec (d : Config) (hw : WordsBounded W d) {m₂ : ℕ → �
   have hjA' : j = A := by
     rw [hj', hf.1 _ (by decide), hA] at htest; omega
   subst hjA'
-  exact ⟨d', k, e, by rw [hi] at hk; omega, hw', hf, I1, I2, I3⟩
+  exact ⟨d', k, e, by omega, hw', hf, I1, I2, I3⟩
 
 end exec
 
@@ -202,12 +195,7 @@ theorem FillInv.step {R FC LT : ℕ} {b c cap : ℕ → ℕ} {ls : ℕ → List 
       m₃ (upd (upd M (LT + (b r₀ + c r₀)) i) (FC + r₀) (b r₀ + c r₀ + 1)) := by
   have sep₀ := hsep r₀ hr₀ (c r₀) hc
   constructor
-  · intro r hr
-    by_cases h : r = r₀
-    · subst h; rw [upd_same, Function.update_self]; omega
-    · rw [upd_other _ _ _ (by omega), Function.update_of_ne h]
-      have := hsep r₀ hr₀ (c r₀) hc
-      rw [upd_other _ _ _ (by omega), I.ptr r hr]
+  · core_grind [Chazelle.Core.BuildRam.FillInv.ptr]
   · intro r hr t ht
     by_cases h : r = r₀
     · subst h
@@ -222,45 +210,38 @@ theorem FillInv.step {R FC LT : ℕ} {b c cap : ℕ → ℕ} {ls : ℕ → List 
       · rw [upd_other _ _ _ (by omega), I.cells r hr t (by omega),
           List.getD_append _ _ _ _ (by rw [I.len]; omega)]
     · rw [Function.update_of_ne h] at ht ⊢
-      have sep := hsep r hr t (by have := hcap r hr; omega)
+      have sep := hsep r hr t (by grind)
       rw [upd_other _ _ _ (by omega)]
       have hne : LT + b r + t ≠ LT + (b r₀ + c r₀) := by
         rcases Nat.lt_or_gt_of_ne h with hlt | hlt
-        · have := hdisj r r₀ hlt hr₀; have := hcap r hr; omega
-        · have := hdisj r₀ r hlt hr; omega
+        all_goals grind
       rw [upd_other _ _ _ hne, I.cells r hr t ht]
   · intro a ha hna
     rw [upd_other _ _ _ (by omega)]
     have hne : a ≠ LT + (b r₀ + c r₀) := by
-      have := hna r₀ hr₀ (c r₀) (by rw [Function.update_self]; omega)
+      have := hna r₀ hr₀ (c r₀) (by ram_simp)
       omega
     rw [upd_other _ _ _ hne]
     exact I.rest a ha fun r hr t ht => hna r hr t (by
-      by_cases h : r = r₀
-      · subst h; rw [Function.update_self]; omega
-      · rw [Function.update_of_ne h]; exact ht)
+      core_grind)
   · intro r
     by_cases h : r = r₀
     · subst h; rw [Function.update_self, Function.update_self, List.length_append, I.len]; rfl
     · rw [Function.update_of_ne h, Function.update_of_ne h, I.len]
 
-theorem lst2_update_eq (u v : ℕ → ℕ) (i : ℕ) (h : u i = v i) :
+section
+variable (u v : ℕ → ℕ) (i : ℕ)
+theorem lst2_update_eq (h : u i = v i) :
     Function.update (lst2F u v i) (u i) (lst2F u v i (u i) ++ [i]) = lst2F u v (i + 1) := by
-  funext r
-  by_cases hr : r = u i
-  · subst hr; rw [Function.update_self, lst2F_succ, ite_eq_left (Or.inl rfl)]
-  · rw [Function.update_of_ne hr, lst2F_succ, ite_eq_right (by rw [← h]; omega), List.append_nil]
+  grind [Function.update_self, lst2F_succ, List.append_nil]
 
-theorem lst2_update_ne (u v : ℕ → ℕ) (i : ℕ) (_h : u i ≠ v i) :
+theorem lst2_update_ne (_h : u i ≠ v i) :
     Function.update (Function.update (lst2F u v i) (u i) (lst2F u v i (u i) ++ [i])) (v i)
       (lst2F u v i (v i) ++ [i]) = lst2F u v (i + 1) := by
-  funext r
-  by_cases hr : r = v i
-  · subst hr; rw [Function.update_self, lst2F_succ, ite_eq_left (Or.inr rfl)]
-  · rw [Function.update_of_ne hr]
-    by_cases hr' : r = u i
-    · subst hr'; rw [Function.update_self, lst2F_succ, ite_eq_left (Or.inl rfl)]
-    · rw [Function.update_of_ne hr', lst2F_succ, ite_eq_right (by omega), List.append_nil]
+  grind [Function.update_self, lst2F_succ, List.append_nil]
+
+
+end
 
 /-- Append chord `r43201` to the list of region `r43225`. -/
 def fillV : Stmt :=
@@ -278,8 +259,6 @@ def chFillLoop : Stmt :=
       (.seq (.ifLtN 43221 43225 fillV (.ifLtN 43225 43221 fillV .skip))
         (.instr (.addN 43201 43201 43011))))
 
-theorem wr_chFillLoop : wrM (fun r => decide (r = 43201 ∨ (43220 ≤ r ∧ r < 43226)))
-    chFillLoop = true := by decide
 
 section exec
 
@@ -294,12 +273,10 @@ theorem fillV_exec (e : Config) (hw : WordsBounded W e) {FC LT v p : ℕ}
       (∀ r, (r < 43222 ∨ 43224 < r) → e'.nreg r = e.nreg r) := by
   unfold fillV
   exec_block
-  · rw [hFC, hv]; exact hW1
-  · config_simp; rw [hFC, hv, hLT, hp]; exact hW2
-  · config_simp; rw [hFC, hv, hp, h1]; exact hW3
-  · refine ⟨rfl, ?_, fun r hr => ?_⟩ <;> config_simp
-    · rw [hFC, hv, hLT, hp, h1]
-    · simp (disch := omega) only [upd_other]
+  · omega
+  · simp_all
+  · simp_all
+  grind [upd_other]
 
 /-- **The chord list fill.** -/
 theorem chFillLoop_exec (d : Config) (hw : WordsBounded W d) {m₃ : ℕ → ℕ}
@@ -323,8 +300,8 @@ theorem chFillLoop_exec (d : Config) (hw : WordsBounded W d) {m₃ : ℕ → ℕ
   obtain ⟨u, hudef⟩ : ∃ f : ℕ → ℕ, f = fun i => m₃ (CT + 5 * i + 3) := ⟨_, rfl⟩
   obtain ⟨v, hvdef⟩ : ∃ f : ℕ → ℕ, f = fun i => m₃ (CT + 5 * i + 4) := ⟨_, rfl⟩
   rw [← hudef, ← hvdef] at hdisj hsep hcell ⊢
-  have hu' : ∀ i, i < K → u i < R := fun i hi => by rw [hudef]; exact hu i hi
-  have hv' : ∀ i, i < K → v i < R := fun i hi => by rw [hvdef]; exact hv i hi
+  have hu' : ∀ i, i < K → u i < R := fun i hi => by grind
+  have hv' : ∀ i, i < K → v i < R := fun i hi => by grind
   have hcap : ∀ i, i ≤ K → ∀ r, cnt2F u v i r ≤ cnt2F u v K r := fun i hi r => cnt2F_mono u v hi r
   obtain ⟨d', k, e, ⟨hw', i, hi', hiK, hf, I⟩, htest, hk⟩ := Exec.whileLtN_potential
     (P := P) (W := W) (a := 43201) (b := 43002) (body := _)
@@ -343,14 +320,14 @@ theorem chFillLoop_exec (d : Config) (hw : WordsBounded W d) {m₃ : ℕ → ℕ
       have hui := hu' i htest
       have hvi := hv' i htest
       have notcell : ∀ a, a < CT + 5 * K → ∀ r, r < R → ∀ t, t < cnt2F u v i r →
-          a ≠ LT + b r + t := fun a ha r hr t _ => by have := hCTL r hr; omega
+          a ≠ LT + b r + t := fun a ha r hr t _ => by grind
       have mu : e.nmem (CT + 5 * i + 3) = u i := by
         rw [J.rest _ (by omega) (notcell _ (by omega)), hudef]
       have mv : e.nmem (CT + 5 * i + 4) = v i := by
         rw [J.rest _ (by omega) (notcell _ (by omega)), hvdef]
       have hcu : cnt2F u v i (u i) < cnt2F u v K (u i) := by
         have := hcap (i + 1) (by omega) (u i)
-        rw [cnt2F_succ, ite_eq_left (Or.inl rfl)] at this; omega
+        grind [cnt2F_succ]
       have pu := J.ptr (u i) hui
       have cellu := hcell (u i) hui _ hcu
       have hdisj' : ∀ r r', r < r' → r' < R → b r + cnt2F u v K r ≤ b r' := hdisj
@@ -395,20 +372,20 @@ theorem chFillLoop_exec (d : Config) (hw : WordsBounded W d) {m₃ : ℕ → ℕ
               cnt2F u v K (v i) := by
             rw [Function.update_of_ne (Ne.symm hne)]
             have := hcap (i + 1) (by omega) (v i)
-            rw [cnt2F_succ, ite_eq_left (Or.inr rfl)] at this; omega
+            grind [cnt2F_succ]
           have pv := J₁.ptr (v i) hvi
           have cellv := hcell (v i) hvi _ hcv
           obtain ⟨e₂, k₂, x₂, hk₂, m₂, g₂⟩ := fillV_exec (P := P) e₁ w₁ (FC := FC) (LT := LT)
             (v := v i) (p := b (v i) + Function.update (cnt2F u v i) (u i)
               (cnt2F u v i (u i) + 1) (v i))
-            (by rw [g₁ _ (by omega), r6]) (by rw [g₁ _ (by omega), r7]) v25
-            (by rw [g₁ _ (by omega), r4]) pv (by omega) (by omega) (by omega)
+            (by grind) (by grind) v25
+            (by grind) pv (by omega) (by omega) (by omega)
           refine ⟨e₂, k₂, x₂, hk₂, g₂, ?_⟩
           have J₂ := J₁.step (cap := cnt2F u v K) (i := i) hvi hcv hdisj'
             (fun r _ => by
               by_cases h : r = u i
-              · subst h; rw [Function.update_self]; omega
-              · rw [Function.update_of_ne h]; exact hcap i hiK r)
+              · grind
+              · rw [Function.update_of_ne h]; grind)
             (fun r hr t ht => hsep r hr t ht)
           have q1 : Function.update (cnt2F u v i) (u i) (cnt2F u v i (u i) + 1) (v i) =
               cnt2F u v i (v i) := Function.update_of_ne (Ne.symm hne) _ _
@@ -419,33 +396,33 @@ theorem chFillLoop_exec (d : Config) (hw : WordsBounded W d) {m₃ : ℕ → ℕ
           exact J₂
         by_cases a1 : u i < v i
         · obtain ⟨e₂, k₂, x₂, hk₂, g₂, J₂⟩ := fv (by omega)
-          exact ⟨e₂, _, .ifLtN_true (by rw [v21, v25]; exact a1) x₂, by omega, g₂, J₂⟩
+          exact ⟨e₂, _, .ifLtN_true (by omega) x₂, by omega, g₂, J₂⟩
         by_cases a2 : v i < u i
         · obtain ⟨e₂, k₂, x₂, hk₂, g₂, J₂⟩ := fv (by omega)
-          exact ⟨e₂, _, .ifLtN_false (by rw [v21, v25]; exact a1)
-            (.ifLtN_true (by rw [v21, v25]; exact a2) x₂), by omega, g₂, J₂⟩
-        · refine ⟨e₁, _, .ifLtN_false (by rw [v21, v25]; exact a1)
-            (.ifLtN_false (by rw [v21, v25]; exact a2) (.skip w₁)), by omega, fun _ _ => rfl, ?_⟩
+          exact ⟨e₂, _, .ifLtN_false (by omega)
+            (.ifLtN_true (by omega) x₂), by omega, g₂, J₂⟩
+        · refine ⟨e₁, _, .ifLtN_false (by omega)
+            (.ifLtN_false (by omega) (.skip w₁)), by omega, fun _ _ => rfl, ?_⟩
           rw [← cnt2_update_eq u v i (by omega), ← lst2_update_eq u v i (by omega)]
           exact J₁
       have w₂ := x₂.wb_right
-      have e1011 : e₂.nreg 43011 = 1 := by rw [g₂ _ (by omega), g₁ _ (by omega), r4]
-      have e1201 : e₂.nreg 43201 = i := by rw [g₂ _ (by omega), v01]
-      have x₃ := Exec.addN (P := P) w₂ 43201 43201 43011 (by rw [e1011, e1201]; omega)
+      have e1011 : e₂.nreg 43011 = 1 := by grind
+      have e1201 : e₂.nreg 43201 = i := by grind
+      have x₃ := Exec.addN (P := P) w₂ 43201 43201 43011 (by omega)
       have X := Exec.seq x₁ (Exec.seq x₂ x₃)
       refine ⟨_, _, X, ⟨X.wb_right, i + 1, by simp [e1011, e1201], by omega,
-        hfe.trans (exec_frameM X (by decide)), by simpa using J₂⟩, ?_⟩
+        hfe.trans (exec_frameM X (by decide)), by omega⟩, ?_⟩
       simp only [upd_same, e1011, e1201]
       omega)
     ⟨hw, 0, hi, Nat.zero_le _, FrameM.refl _ _,
-      { ptr := fun r hr => by rw [hm, hFCv r hr]; simp [cnt2F, lst2F]
-        cells := fun r _ t ht => by simp [cnt2F, lst2F] at ht
+      { ptr := fun r hr => by grind [cnt2F, lst2F]
+        cells := fun r _ t ht => by grind [cnt2F, lst2F]
         rest := fun a _ _ => by rw [hm]
         len := fun r => rfl }⟩
   have hiK' : i = K := by
     rw [hi', hf.1 _ (by decide), hK] at htest; omega
   subst hiK'
-  exact ⟨d', k, e, by rw [hi] at hk; omega, hw', hf, I⟩
+  exact ⟨d', k, e, by omega, hw', hf, I⟩
 
 end exec
 

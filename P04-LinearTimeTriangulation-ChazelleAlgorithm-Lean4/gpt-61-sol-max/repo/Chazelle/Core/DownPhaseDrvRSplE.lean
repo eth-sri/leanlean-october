@@ -24,8 +24,7 @@ theorem bsCost_le {bk : ℕ → ℕ} {n b Mb : ℕ} (h : bcnt bk n b ≤ Mb) :
   have hc := Nat.clog_mono_right 2 h
   have : bcnt bk n b * (Nat.clog 2 (bcnt bk n b) + 1) ≤ bcnt bk n b * (Nat.clog 2 Mb + 1) :=
     Nat.mul_le_mul_left _ (by omega)
-  have h2 : bcnt bk n b ≤ bcnt bk n b * (Nat.clog 2 Mb + 1) := Nat.le_mul_of_pos_right _ (by omega)
-  nlinarith
+  grind
 
 /-- **The cost of the bucket part.** -/
 theorem splB2Cost_le {bk : ℕ → ℕ} {n A Mb : ℕ} (hA : ∀ q, q < n → bk q ≤ A)
@@ -41,10 +40,7 @@ theorem splB2Cost_le {bk : ℕ → ℕ} {n A Mb : ℕ} (hA : ∀ q, q < n → bk
       ← Finset.sum_mul, ← Finset.mul_sum]
     ring
   have hb : ∑ b ∈ Finset.range (A + 1), bcnt bk n b = n := bstart_all hA
-  rw [e, hb] at hsum
-  have h1 : 1 ≤ Nat.clog 2 Mb + 1 := by omega
-  have h3 : (n + A + 1) ≤ (n + A + 1) * (Nat.clog 2 Mb + 1) := Nat.le_mul_of_pos_right _ (by omega)
-  nlinarith
+  grind
 
 end
 

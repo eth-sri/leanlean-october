@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFHv
 public import Chazelle.Core.RestoreSearchGood
 
@@ -38,8 +40,11 @@ def GoodAt (E : FEnv) (reg : ℕ → Set Point) (v σb : ℕ) : Prop :=
 
 variable {E : FEnv} {c₀ c : Config}
 
+section
+variable (hE : FGood E c₀)
+include hE
 /-- **A test at a good candidate sets the flag.** -/
-theorem TOut.good (hE : FGood E c₀) {c' : Config} (h : TOut E c c') {reg : ℕ → Set Point}
+theorem TOut.good {c' : Config} (h : TOut E c c') {reg : ℕ → Set Point}
     (hregs : NFRegs E.M (Qof E.P) E.N reg) (hch : (E.N.region E.r).chords ≠ [])
     (hx1 : c.nreg 81061 = 0) (hg : GoodAt E reg (c.nreg 81060) (c.nreg 81063)) :
     c'.nreg 81007 = 1 := by
@@ -49,7 +54,7 @@ theorem TOut.good (hE : FGood E c₀) {c' : Config} (h : TOut E c c') {reg : ℕ
   have hxeq : (⟨c.nreg 81060, c.nreg 81061⟩ : WPos) = ⟨c.nreg 81060, 0⟩ := by rw [hx1]
   rw [hxeq] at hex hcomp
   have hp0 : E.M.param (Qof E.P) ⟨c.nreg 81060, 0⟩ = 0 := rfl
-  obtain ⟨h10, h11⟩ := hcomp (by rw [hp0]; exact hsec) hch T hT hdom hout hadm hsw.1 hsw.2.1
+  obtain ⟨h10, h11⟩ := hcomp (by ram_simp) hch T hT hdom hout hadm hsw.1 hsw.2.1
   obtain ⟨T', hT', hstr, hposf, hfe, hfp, hadm', hA, hB, hiff⟩ := hex h10 h11
   have hM := walkAx_of_goodModel hE.hGM
   have hout' : rayPt (E.M.pos (Qof E.P) ⟨c.nreg 81060, 0⟩) (dirOf (c.nreg 81063)) T' ∉ E.M.D := by
@@ -67,7 +72,7 @@ theorem TOut.good (hE : FGood E c₀) {c' : Config} (h : TOut E c c') {reg : ℕ
   exact counts_of_splitsWell hM hE.hNF.1.2.1 hE.hNF.1.1 (hregs.1.1 _ hE.hr) hadm hA hB hAB hsw
 
 /-- **The test call**, with the soundness of the result registers. -/
-theorem tcall_win (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
+theorem tcall_win {B : Finset ℕ} (hB : dBands ⊆ B)
     (hBT : restoreBands ∪ E.Bo ⊆ B) (hI : FInv E.W c₀ c) (hw : FWin E c)
     (hcand : c.nreg 81007 = 0 →
       CandOK E ⟨c.nreg 81060, c.nreg 81061⟩ (c.nreg 81062) (c.nreg 81063))
@@ -86,6 +91,9 @@ theorem tcall_win (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     rw [t8, t9, t10]; exact hw.2 ho reg hregs
 
 /-! ## Testing a walk vertex in both directions -/
+
+
+end
 
 /-- **Test the walk vertex in register `a`** in both directions. -/
 def tVert (a : ℕ) (sT : Stmt) : Stmt :=
@@ -110,45 +118,37 @@ theorem tVert_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       (c.nreg 81007 = 1 → c'.nreg 81007 = 1) ∧
       (∀ reg, NFRegs E.M (Qof E.P) E.N reg → (E.N.region E.r).chords ≠ [] →
         ∀ σb, σb ≤ 1 → GoodAt E reg (c.nreg a) σb → c'.nreg 81007 = 1)) := by
-  have hW1 : 1 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
-  have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
+  have hW1 : 1 ≤ E.W := by omega_nf
+  
   -- the candidate vertex
   have ok1 : okB E.W c.nmem [.copyN 81060 a, .constN 81061 0] c.nreg := by
     simp only [okB, okI]
-    exact ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩),
-      ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by omega⟩, trivial⟩
+    ram_grind
   refine (FRS.seq (K₂ := 2 * tK E + hvK + 2) (FRS.block hB _ hI ok1)
     (fun c₁ hI₁ hA₁ h₁ => ?_)).mono
-    (by simp only [List.length_cons, List.length_nil, tvK]; omega) (fun _ h => h)
-  have e₁ : ∀ q, c₁.nreg q = regB c.nmem [.copyN 81060 a, .constN 81061 0] c.nreg q :=
-    fun q => by rw [h₁]
-  have v60 : c₁.nreg 81060 = c.nreg a := by rw [e₁]; simp [regB, regI, upd]
-  have v61 : c₁.nreg 81061 = 0 := by rw [e₁]; simp [regB, regI, upd]
+    (by core_grind) (fun _ h => h)
+  
+  have v60 : c₁.nreg 81060 = c.nreg a := by simp_all [regB, regI, upd] 
+  have v61 : c₁.nreg 81061 = 0 := by simp_all [regB, regI, upd] 
   have f₁ : ∀ q, q ≠ 81060 → q ≠ 81061 → c₁.nreg q = c.nreg q := fun q h1 h2 => by
-    rw [e₁]; simp [regB, regI, upd, h1, h2]
-  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega)
+    simp_all [regB, regI, upd] 
+  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by omega_nf)
+    (by omega_nf)
   -- the height vertex
   refine (FRS.seq (K₂ := 2 * tK E + 2) (fHv_fs hE hB hI₁ (a := 81060) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) (by rw [v60]; exact hv) (by rw [v60]; exact hset)
-    (by rw [hA₁']; unfold tvK at hroom; omega)) (fun c₂ hI₂ hA₂ ⟨hv2, hy2, fr2⟩ => ?_)).mono
+    (by norm_num) (by norm_num) (by norm_num) (by omega) (by ram_grind)
+    (by grind [tvK])) (fun c₂ hI₂ hA₂ ⟨hv2, hy2, fr2⟩ => ?_)).mono
     (by omega) (fun _ h => h)
   have g₂ : ∀ q, 80000 ≤ q → q < 90000 → q ≠ 81060 → q ≠ 81061 → q ≠ 81062 → q ≠ 81064 →
       c₂.nreg q = c.nreg q := fun q h1 h2 h3 h4 h5 h6 => by
-    rw [fr2 q h1 h2 h5 h6, f₁ q h3 h4]
+    ram_grind
   have w60 : c₂.nreg 81060 = c.nreg a := by
-    rw [fr2 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num), v60]
+    ram_grind
   have w61 : c₂.nreg 81061 = 0 := by
-    rw [fr2 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num), v61]
+    ram_grind
   have hw₂ : FWin E c₂ := by
-    unfold FWin
-    rw [g₂ 81007 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num), g₂ 81008 (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num), g₂ 81009 (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num) (by norm_num), g₂ 81010 (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num) (by norm_num) (by norm_num)]
-    exact hw
-  have hA₂' : c₂.nreg ALLOC ≤ c.nreg ALLOC + hvK := by rw [← hA₁']; exact hA₂
+    grind [FWin]
+  
   rw [v60] at hy2
   -- a direction bit and a test
   have dir : ∀ (b : ℕ) (cx : Config), b ≤ 1 → FInv E.W c₀ cx → FWin E cx →
@@ -161,9 +161,9 @@ theorem tVert_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
             GoodAt E reg (c.nreg a) b → c'.nreg 81007 = 1)) := by
     intro b cx hb hIx hwx x60 x61 x62 hrx
     have okb : okB E.W cx.nmem [.constN 81063 b] cx.nreg := by
-      simp only [okB, okI]; exact ⟨⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by omega⟩, trivial⟩
+      simp only [okB, okI]; ram_grind
     refine (FRS.seq (K₂ := tK E) (FRS.block hB _ hIx okb) (fun cy hIy hAy hy => ?_)).mono
-      (by simp only [List.length_cons, List.length_nil]; omega) (fun _ h => h)
+      (by grind) (fun _ h => h)
     have ey : ∀ q, cy.nreg q = regB cx.nmem [.constN 81063 b] cx.nreg q := fun q => by rw [hy]
     have y63 : cy.nreg 81063 = b := by rw [ey]; simp [regB, regI, upd]
     have fy : ∀ q, q ≠ 81063 → cy.nreg q = cx.nreg q := fun q hq => by
@@ -175,30 +175,29 @@ theorem tVert_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       exact hwx
     have hcand : CandOK E ⟨cy.nreg 81060, cy.nreg 81061⟩ (cy.nreg 81062) (cy.nreg 81063) := by
       rw [fy _ (by norm_num), fy _ (by norm_num), fy _ (by norm_num), y63, x60, x61, x62]
-      exact ⟨hv, ⟨le_of_eq rfl, by show (0 : ℝ) < 1; norm_num, Nat.zero_le _⟩, Or.inl rfl,
+      exact ⟨hv, ⟨le_of_eq rfl, by omega_nf, Nat.zero_le _⟩, Or.inl rfl,
         hset, hv2, hy2, hb⟩
     refine (tcall_win hE hB hBT hIy hwy (fun _ => hcand) (by
-      rw [fy _ (by unfold ALLOC; omega)]; omega)).mono le_rfl
+      grind)).mono le_rfl
       (fun c' ⟨hk, hw', hm, hg⟩ => ⟨hw', fun q h1 h2 h3 => by rw [hk q h1 h2, fy q h3], fun h => hm
-        (by rw [fy _ (by norm_num)]; exact h), fun reg hregs hch hgd => hg reg hregs hch
-          (by rw [fy _ (by norm_num), x61]) (by rw [fy _ (by norm_num), y63, x60]; exact hgd)⟩)
+        (by ram_grind), fun reg hregs hch hgd => hg reg hregs hch
+          (by ram_grind) (by ram_grind)⟩)
   refine (FRS.seq (K₂ := tK E + 1)
-    (dir 0 c₂ (by norm_num) hI₂ hw₂ w60 w61 rfl (by unfold tvK at hroom; omega))
+    (dir 0 c₂ (by norm_num) hI₂ hw₂ w60 w61 rfl (by grind [tvK]))
     (fun c₄ hI₄ hA₄ ⟨hw₄, fr₄, hm₄, hg₄⟩ => ?_)).mono (by omega) (fun _ h => h)
-  refine (dir 1 c₄ le_rfl hI₄ hw₄ (by rw [fr₄ _ (by norm_num) (by norm_num) (by norm_num), w60])
-    (by rw [fr₄ _ (by norm_num) (by norm_num) (by norm_num), w61])
-    (by rw [fr₄ _ (by norm_num) (by norm_num) (by norm_num)])
-    (by unfold tvK at hroom; omega)).mono le_rfl
+  refine (dir 1 c₄ le_rfl hI₄ hw₄ (by ram_grind)
+    (by ram_grind)
+    (by ram_grind)
+    (by grind [tvK])).mono le_rfl
     (fun c₆ ⟨hw₆, fr₆, hm₆, hg₆⟩ => ⟨hw₆, fun q h1 h2 hq => ?_, fun h => hm₆ (hm₄ ?_),
       fun reg hregs hch σb hσb hgd => ?_⟩)
   · unfold VertW at hq
     rw [fr₆ q h1 h2 (by omega), fr₄ q h1 h2 (by omega)]
     exact g₂ q (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  · rw [g₂ 81007 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num)]; exact h
+  · ram_grind
   · rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hσb with rfl | rfl
-    · exact hm₆ (hg₄ reg hregs hch hgd)
-    · exact hg₆ reg hregs hch hgd
+    · ram_grind
+    ram_grind
 
 end
 

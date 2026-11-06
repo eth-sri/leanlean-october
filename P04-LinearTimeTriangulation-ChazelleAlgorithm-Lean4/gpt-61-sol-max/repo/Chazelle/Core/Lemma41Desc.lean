@@ -42,7 +42,7 @@ theorem whole_topIdx : J.whole.topIdx =
     rcases le_or_gt i J.m₁ with h | h
     · exact Or.inl ⟨h, rfl⟩
     · refine Or.inr ⟨i - J.m₁, by omega, by omega, ?_⟩
-      rw [right_vertex]; congr 1; omega
+      grind [right_vertex]
   split_ifs with hc
   · apply le_antisymm
     · apply J.whole.topIdx_min (by omega)

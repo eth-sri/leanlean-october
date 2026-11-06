@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvBatch2
 public import Chazelle.Core.SweepEvTasks4
 
@@ -38,20 +40,14 @@ def iterK (KW KK κO Fg D KG : ℕ) : ℕ :=
   KW + (2 + (((12 * D + 8) * (odK Fg D KG + κO) + κO) + KK))
 
 theorem orgDoK_mono {Fg K K' KG : ℕ} (h : K ≤ K') : orgDoK Fg K KG ≤ orgDoK Fg K' KG := by
-  unfold orgDoK evCandK evShotK ShotList.shotCost
-  have := Nat.mul_le_mul_right (16 * Fg + 500000) (show K + 1 ≤ K' + 1 by omega)
-  omega
+  omega_nf
 
 theorem regArcs_length_le {N : NF} {rs : List ℕ} {B : ℕ}
     (h : ∀ r ∈ rs, (N.region r).arcs.length ≤ B) : (regArcs N rs).length ≤ rs.length * B := by
   induction rs with
-  | nil => simp [regArcs]
+  | nil => aesop
   | cons r rs ih =>
-    have h1 := h r List.mem_cons_self
-    have h2 := ih fun r' hr' => h r' (List.mem_cons_of_mem _ hr')
-    simp only [regArcs, List.flatMap_cons, List.length_append, List.length_cons] at h2 ⊢
-    rw [Nat.succ_mul]
-    omega
+    simp_all [regArcs, List.flatMap_cons, List.length_append, List.length_cons, Nat.succ_mul] <;> omega_nf
 
 theorem regArcs_lt {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N) {rs : List ℕ}
     (hrs : ∀ r ∈ rs, r < N.nRegions) : ∀ a ∈ regArcs N rs, a < N.arcs.length := by

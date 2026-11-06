@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRExtSpec
 public import Chazelle.Core.DownPhaseMathHR1
 
@@ -43,14 +45,20 @@ def hidx : SymPt → ℕ
   | .vtx j => j
   | .onEdge _ h => h
 
+section
+variable (m T : ℕ) (β : Bool)
+include m T β
 /-- The tour offset (`Chain.sideS`). -/
-def tS (m T : ℕ) (β : Bool) : ℕ := if β then T else 2 * m - T
+def tS : ℕ := if β then T else 2 * m - T
 
 /-- The tour position of walk edge `p`. -/
-def tU (m T : ℕ) (β : Bool) (p : ℕ) : ℕ := (tS m T β + (p - 6)) % (2 * m)
+def tU (p : ℕ) : ℕ := (tS m T β + (p - 6)) % (2 * m)
 
 /-- The chain vertex at the start of walk edge `p`. -/
-def tK (m T : ℕ) (β : Bool) (p : ℕ) : ℕ := sideE m (tU m T β p)
+def tK (p : ℕ) : ℕ := sideE m (tU m T β p)
+
+
+end
 
 /-- The end at walk edge `p`, height `h` is the start vertex of `p`. -/
 def tZ (n : ℕ) (H : Host) (m T : ℕ) (β : Bool) (h p : ℕ) : Prop :=
@@ -83,24 +91,36 @@ def pEdge (li : Bool) (n : ℕ) : SymPt → ℕ
   | .vtx j => ivB li n j
   | .onEdge e h => if h = ivB li n ((qE li n e + 1) % n) then (qE li n e + 1) % n else qE li n e
 
+section
+variable (n : ℕ) (H : Host) (li : Bool) (m T : ℕ) (β : Bool)
+include n H li m T β
 /-- **The interior walk position of a kept end.** -/
-def xPos (n : ℕ) (H : Host) (li : Bool) (m T : ℕ) (β : Bool) (h p : ℕ) : WPos :=
+def xPos (h p : ℕ) : WPos :=
   ⟨pEdge li n (hpt n H (tK m T β p)), h + 1⟩
 
 /-- The interior triple of a kept chord record. -/
-def xTriple (n : ℕ) (H : Host) (li : Bool) (m T : ℕ) (β : Bool) (h lp rp : ℕ) : ℕ × ℕ × ℕ :=
+def xTriple (h lp rp : ℕ) : ℕ × ℕ × ℕ :=
   (h, (xPos n H li m T β h lp).edge, (xPos n H li m T β h rp).edge)
 
 /-! ## Comparing interior keys -/
 
+
+end
+
+section
+variable (Q : Polygon) (li : Bool)
+include Q li
 /-- The interior walk edge `q` goes up (`Q` vertex heights). -/
-def EdgeUp (Q : Polygon) (li : Bool) (q : ℕ) : Prop :=
+def EdgeUp (q : ℕ) : Prop :=
   (Q.vtx (ivB li Q.n q)).2 < (Q.vtx (ivB li Q.n ((q + 1) % Q.n))).2
 
 /-- **The key order of two positions of the interior walk**, by edges, then heights. -/
-def PosLt (Q : Polygon) (li : Bool) (x y : WPos) : Prop :=
+def PosLt (x y : WPos) : Prop :=
   x.edge < y.edge ∨ (x.edge = y.edge ∧ x.hgt ≠ y.hgt ∧
     (EdgeUp Q li x.edge ↔ (Q.vtx (x.hgt - 1)).2 < (Q.vtx (y.hgt - 1)).2))
+
+
+end
 
 /-- Equal keys: equal positions. -/
 def PosEq (x y : WPos) : Prop := x.edge = y.edge ∧ x.hgt = y.hgt
@@ -111,50 +131,65 @@ def bktF (A j : ℕ) (eqS eqE gtS : Prop) [Decidable eqS] [Decidable eqE] [Decid
 
 /-! ## Basic arithmetic -/
 
-theorem tU_lt {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ) : tU m T β p < 2 * m :=
+section
+variable {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ)
+include hm
+theorem tU_lt : tU m T β p < 2 * m :=
   Nat.mod_lt _ (by omega)
 
-theorem tK_le {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ) : tK m T β p ≤ m :=
+theorem tK_le : tK m T β p ≤ m :=
   Chazelle.Chain.sideE_le (tU_lt β hm p).le
 
-theorem tK_eq_of_lt {m T : ℕ} {β : Bool} {p : ℕ} (h : tU m T β p < m) : tK m T β p = tU m T β p := by
-  unfold tK sideE; rw [ite_eq_left h.le]
 
-theorem tK_eq_of_ge {m T : ℕ} {β : Bool} {p : ℕ} (h : m ≤ tU m T β p) :
+end
+
+section
+variable {m T : ℕ} {β : Bool} {p : ℕ}
+theorem tK_eq_of_lt (h : tU m T β p < m) : tK m T β p = tU m T β p := by
+  core_grind [sideE]
+
+theorem tK_eq_of_ge (h : m ≤ tU m T β p) :
     tK m T β p = 2 * m - tU m T β p := by
-  unfold tK sideE; split_ifs with h' <;> omega
+  simp_all [tK, sideE] <;> omega_nf
 
-theorem tK_eq_zero_iff {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ) :
+
+end
+
+section
+variable {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ)
+include hm
+theorem tK_eq_zero_iff :
     tK m T β p = 0 ↔ tU m T β p = 0 := by
   have := tU_lt (T := T) β hm p
-  unfold tK sideE; split_ifs <;> omega
+  grind [tK, sideE]
 
-theorem tK_eq_m_iff {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ) :
+theorem tK_eq_m_iff :
     tK m T β p = m ↔ tU m T β p = m := by
-  have := tU_lt (T := T) β hm p
-  unfold tK sideE; split_ifs <;> omega
+  core_grind [sideE]
 
+
+end
+
+section
+variable (m T : ℕ) (β : Bool)
 /-- The last walk edge (up the slit) has the tour position of the first one. -/
-theorem tU_last (m T : ℕ) (β : Bool) : tU m T β (2 * m + 6) = tU m T β 6 := by
-  unfold tU
-  rw [show 2 * m + 6 - 6 = 2 * m by omega, show 6 - 6 = 0 by rfl, add_zero, Nat.add_mod_right]
+theorem tU_last : tU m T β (2 * m + 6) = tU m T β 6 := by
+  simp_all [tU, add_zero, Nat.add_mod_right] <;> omega_nf
 
-theorem tK_last (m T : ℕ) (β : Bool) : tK m T β (2 * m + 6) = tK m T β 6 := by
-  unfold tK; rw [tU_last]
+theorem tK_last : tK m T β (2 * m + 6) = tK m T β 6 := by
+  core_grind [tU_last]
+
+
+end
 
 /-- `ivB` is an involution. -/
 theorem ivB_ivB (li : Bool) {n p : ℕ} (hp : p < n) : ivB li n (ivB li n p) = p := by
-  unfold ivB; cases li <;> simp; omega
+  core_grind
 
 /-- `qE` is an involution. -/
 theorem qE_qE (li : Bool) {n e : ℕ} (he : e < n) : qE li n (qE li n e) = e := by
   unfold qE
-  cases li
-  · simp only [Bool.false_eq_true, ite_false]
-    by_cases h : e + 1 < n
-    · rw [ite_eq_left h, ite_eq_left (by omega)]; omega
-    · rw [ite_eq_right h, ite_eq_right (by omega)]; omega
-  · simp
+  grind
 
 end
 

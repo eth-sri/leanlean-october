@@ -38,16 +38,17 @@ theorem isEar_of_diagonal_two {s : ℕ} (hd : IsDiagonal P s 2)
   · rw [prevIdx_succ_mod P hn, isDiagonal_mod_iff]; exact hd
   · rw [prevIdx_succ_mod P hn, mod_add_one_mod]; exact hin
 
+section
+variable {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L) (hin : Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled)
+include hP hd hin
 /-- The filled region of an arc of an interior diagonal lies in the filled region of `P`. -/
-theorem filled_arc_subset {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
-    (hin : Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled) :
+theorem filled_arc_subset :
     (P.arc s L).filled ⊆ P.filled := by
-  rw [filled_eq_union_arcs P s L hP hd hin]; exact Set.subset_union_left
+  rw [filled_eq_union_arcs P s L hP hd hin]; simp_all
 
 /-- **Lifting an ear from an arc.**  Let `(s, L)` be an interior diagonal of `P` and `A = P.arc s L`.
 An ear of `A` at an apex `k` with `0 < k < L` is an ear of `P` at `(s + k) % n`. -/
-theorem isEar_of_arc {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
-    (hin : Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled)
+theorem isEar_of_arc
     {k : ℕ} (hk0 : 0 < k) (hkL : k < L) (he : IsEar (P.arc s L) k) :
     IsEar P ((s + k) % P.n) := by
   have hLn : L + 2 ≤ P.n := hd.2.1
@@ -56,7 +57,7 @@ theorem isEar_of_arc {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
   have hAn : (P.arc s L).n = L + 1 := n_arc P s L
   have h4 : 4 ≤ (P.arc s L).n := he.1.2.1
   have hprev : prevIdx (P.arc s L) k = k - 1 := by
-    rw [prevIdx_eq _ (by omega)]; simp [Nat.pos_iff_ne_zero.1 hk0]
+    rw [prevIdx_eq _ (by omega)]; grind
   have e1 : (P.arc s L).vtx (prevIdx (P.arc s L) k) = P.vtx ((s + (k - 1)) % P.n) := by
     rw [hprev, vtx_arc P s L (by omega)]
   have e2 : (P.arc s L).vtx ((k + 1) % (P.arc s L).n) = P.vtx ((s + (k - 1) + 2) % P.n) := by
@@ -83,6 +84,9 @@ theorem isEar_of_arc {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
     · exact hsub.trans (filled_arc_subset P hP hd hin)
   rw [show s + (k - 1) + 1 = s + k by omega] at hkey
   exact hkey
+
+
+end
 
 /-- **Two apexes strictly inside opposite chains of a diagonal are never adjacent.**  Index
 arithmetic modulo `N = L + 1`: for a diagonal `(s', L')` of a polygon with `N` vertices, and
@@ -114,7 +118,7 @@ theorem apex_not_both_endpoints {N L s' L' k₁ k₂ : ℕ} (hN : N = L + 1)
     · have hEq : L' + k₂ + 1 = N := by omega
       rw [hEq, Nat.add_mod_right] at e
       have := rot_index_inj (n := N) (s := s') (i := 0) (j := k₁) hN0 (by omega)
-        (by rw [Nat.add_zero]; exact e)
+        (by omega)
       omega
   · -- `a₂ = 0` is the successor of `a₁ = L`
     have e : (s' + (k₁ + 1)) % N = (s' + (L' + k₂)) % N := by

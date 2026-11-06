@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseHostDom
 public import Chazelle.Core.DownPhaseTourA
 
@@ -33,33 +35,29 @@ theorem sideLeftOf_scale {a a' v b b' x : Point} {l m : ℝ} (hl : 0 < l) (hm : 
   unfold sideLeftOf
   rw [ha, hb]
   have := BoxT.sideCcw_smul hm one_pos hl (b - v) (x - v) (a - v)
-  rwa [one_smul] at this
+  simp_all
 
 /-- The left half-plane of a sub-segment is that of the segment. -/
 theorem det_lerp_pair (A B y : Point) (τ₀ τ₁ : ℝ) :
     Chazelle.det (lerp A B τ₀) (lerp A B τ₁) y = (τ₁ - τ₀) * Chazelle.det A B y := by
-  unfold Chazelle.det lerp; simp only; ring
+  core_grind [Chazelle.det]
 
 /-- The arms of a sub-segment are positive multiples of the arms of the segment. -/
 theorem lerp_sub_lerp (A B : Point) (τ₀ τ₁ : ℝ) :
     lerp A B τ₁ - lerp A B τ₀ = (τ₁ - τ₀) • (B - A) := by
-  apply Prod.ext <;> simp [lerp] <;> ring
+  ext <;> simp_all [lerp] <;> ring
 
 /-- **Attachment transfers** between positions with the same point and the same sector. -/
 theorem attach_of_sector {W W' : Polygon} {c : Set Point} {p p' : ℕ} {t t' : ℝ}
     (hpt : sidePt W' p' t' = sidePt W p t)
     (hsec : ∀ y, sideLeft W p t y → sideLeft W' p' t' y) (hp' : p' < W'.n) (ht0 : 0 ≤ t')
     (ht1 : t' < 1) (h : SideAttach W c p t) : SideAttach W' c p' t' := by
-  obtain ⟨-, -, -, hmem, r, hr, hnear⟩ := h
-  refine ⟨hp', ht0, ht1, hpt ▸ hmem, r, hr, fun y hy hne hd => hsec y (hnear y hy ?_ ?_)⟩
-  · rwa [← hpt]
-  · rwa [← hpt]
+  grind [Chazelle.Chain.SideAttach]
 
 /-- The offsets of a sub-segment. -/
 theorem offset_lerp_pair (A B : Point) (τ₀ τ₁ s δ : ℝ) :
     offset (lerp A B τ₀) (lerp A B τ₁) s δ = offset A B (τ₀ + s * (τ₁ - τ₀)) (δ * (τ₁ - τ₀)) := by
-  apply Prod.ext <;> simp only [offset_fst, offset_snd, Chazelle.Geometry.lerp_fst,
-    Chazelle.Geometry.lerp_snd] <;> ring
+  grind [offset_fst, offset_snd, Chazelle.Geometry.lerp_fst, Chazelle.Geometry.lerp_snd]
 
 /-- **Facing transfers** when the offsets agree up to a positive scaling. -/
 theorem faces_of_offset {M₁ M₂ : Model} {p₁ p₂ : ℕ} {t₁ t₂ c : ℝ} (hc : 0 < c)
@@ -67,7 +65,7 @@ theorem faces_of_offset {M₁ M₂ : Model} {p₁ p₂ : ℕ} {t₁ t₂ c : ℝ
     {U V : Set Point} (hVU : V ⊆ U) (hV : M₂.Faces p₂ t₂ V) : M₁.Faces p₁ t₁ U := by
   have h := (Loc.tendsto_mul_const_nhdsGT hc).eventually hV
   filter_upwards [h] with δ hδ
-  rw [hoff]; exact hVU hδ
+  grind
 
 end
 

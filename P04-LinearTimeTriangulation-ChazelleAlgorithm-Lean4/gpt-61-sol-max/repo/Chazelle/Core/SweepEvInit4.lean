@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvInit3
 
 /-!
@@ -56,12 +58,13 @@ structure InitRes (P : Polygon) (J : Merge.Junction) (c c₀ : Config) : Prop wh
 theorem nfWithin_lt' {m : ℕ → ℕ} {B E : ℕ} {N : NF} (h : NFWithin m B E N) : B + 1 < E := by
   by_contra hc
   have := (h (upd m (B + 1) (N.arcs.length + 1)) (fun a ha => by
-    rw [upd_other _ _ _ (by omega)])).2.1
-  rw [upd_same] at this
-  omega
+    ram_all)).2.1
+  simp_all
 
+section
+variable {P : Polygon}
 /-- The number of edges of a chain with a well-formed descriptor. -/
-theorem chain_m_le' {P : Polygon} {E : ℕ} {m : ℕ → ℕ} {bw : ℕ} {H : Host} {C : Chain}
+theorem chain_m_le' {E : ℕ} {m : ℕ → ℕ} {bw : ℕ} {H : Host} {C : Chain}
     (hwf : ChainWF P E m bw) (hC : ChainDescAt m bw (Qof P) H C) : 2 * C.m + 2 ≤ 128 * P.n := by
   obtain ⟨hl, hHW, -, -⟩ := hwf.2 H C hC
   have h1 := C.add_one_le
@@ -69,14 +72,14 @@ theorem chain_m_le' {P : Polygon} {E : ℕ} {m : ℕ → ℕ} {bw : ℕ} {H : Ho
   omega
 
 /-- The walk of `C` fits twice in the word bound. -/
-theorem walk_two_le {P : Polygon} {W E : ℕ} {m : ℕ → ℕ} {bw : ℕ} {H : Host} {C : Chain}
+theorem walk_two_le {W E : ℕ} {m : ℕ → ℕ} {bw : ℕ} {H : Host} {C : Chain}
     (hwf : ChainWF P E m bw) (hC : ChainDescAt m bw (Qof P) H C) (hW : hostWords P.n ≤ W) :
     2 * (chainModel C).W.n ≤ W := by
   have := chain_m_le' hwf hC
-  rw [cm_n]; unfold hostWords at hW; omega
+  simp_all [cm_n, hostWords] <;> omega_nf
 
 /-- The chain context of a descriptor of a junction chain (host regular by `JunctionWF`). -/
-theorem chainCtx_of {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Junction}
+theorem chainCtx_of {W : ℕ} {c : Config} {H : Host} {J : Merge.Junction}
     {d : ℕ} {C : Chain} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hP : C.P.Simple)
     (hJ : JunctionAt c.nmem (c.nreg (sw 0)) (c.nreg (sw 1)) (c.nreg (sw 2)) (Qof P) H J)
     (hJW : JunctionWF P (c.nreg ALLOC) c.nmem (c.nreg (sw 0)) (c.nreg (sw 1)) (c.nreg (sw 2)))
@@ -84,7 +87,10 @@ theorem chainCtx_of {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.J
     ChainCtx P W c d C := by
   have := chain_m_le' hw hd
   unfold hostWords at hWh
-  exact ⟨hG, by unfold hostWords; omega, hw, ⟨H, hd, hJW.2.2.2 H hJ.2.2.1⟩, hP, by omega⟩
+  exact ⟨hG, by omega_nf, hw, ⟨H, hd, hJW.2.2.2 H hJ.2.2.1⟩, hP, by omega⟩
+
+
+end
 
 set_option maxRecDepth 20000 in
 /-- **The run of the initialisation** from the stage-0 state. -/
@@ -105,29 +111,29 @@ theorem initE_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Ju
   -- part A
   obtain ⟨c₁, kA, eA, hkA, mA, rrA, rmA, oA, keepA, KA, MA, gwA, o2m, om, otop, oS, o2m6⟩ :=
     initRA_exec (P := P) hw h0 hWn
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := keepA _ (by unfold ALLOC sw; omega)
+  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := keepA _ (by omega_nf)
   have fA : Frame ioBands c c₁ kA := frame_regs kA (fun r hr => keepA r (by
-    by_contra h; exact hr (sw_io (by unfold sw at h; omega) (by unfold sw at h; omega)))) rrA mA rmA oA
+    by_contra h; exact hr (sw_io (by grind [sw]) (by grind [sw])))) rrA mA rmA oA
   -- the top of `C₁`
-  have k20 : c₁.nreg (sw 20) = c.nreg (sw 20) := keepA _ (by unfold sw; omega)
+  have k20 : c₁.nreg (sw 20) = c.nreg (sw 20) := keepA _ (by omega_nf)
   have hctx : ChainCtx P W c₁ (sw 20) J.left :=
     (chainCtx_of hG hWh hP hJ hJW d20 w20).transport k20 (fun a _ => by rw [mA])
       (by rw [hA₁])
   obtain ⟨c₂, kS, eS, hkS, fS, ⟨s, hs, hsl, hse⟩, keepS⟩ :=
-    symS_exec (P := P) eA.wb_right hctx (by rw [hA₁]; omega)
+    symS_exec (P := P) eA.wb_right hctx (by omega)
   have hA₂ := fS.2.2.2.2.2.2
   have hA₂' := fS.2.2.2.2.2.1
   have kS' : ∀ r, 240000 ≤ r → r < 250000 → (r < sw 645 ∨ sw 647 < r) →
       (r < sw 705 ∨ sw 709 < r) → c₂.nreg r = c₁.nreg r := fun r h1 h2 h3 h4 =>
-    keepS r (not_oracle_sw h1 h2) (by unfold ALLOC; omega) h3 h4
+    keepS r (not_oracle_sw h1 h2) (by omega_nf) h3 h4
   -- the model descriptor
   have KS : Consts c₂ := by
     obtain ⟨a, b, d, e, f, g, i⟩ := KA
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
     [rw [← a]; rw [← b]; rw [← d]; rw [← e]; rw [← f]; rw [← g]; rw [← i]] <;>
-    exact kS' _ (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2)
+    ram_grind
   have k20' : c₂.nreg (sw 20) = c.nreg (sw 20) := by
-    rw [kS' _ (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2), k20]
+    ram_grind
   obtain ⟨c₃, kM, eM, hkM, aM, mdM, cdM, m0M, mcM, mlM, keepM, rrM, rmM, oM⟩ :=
     md1S_exec (P := P) eS.wb_right KS (by rw [k20']; have := w20.1; omega)
       (by omega)
@@ -136,7 +142,7 @@ theorem initE_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Ju
     fun r _ => by rw [rrM], mlM, fun a _ => by rw [rmM], oM, by omega, by omega⟩
   -- the table
   have kM' : ∀ r, 240000 ≤ r → r < 250000 → r ≠ MD₁ → r ≠ CD₁ → r ≠ iA → r ≠ iV →
-      c₃.nreg r = c₂.nreg r := fun r h1 h2 a b d e => keepM r (by unfold ALLOC; omega) a b d e
+      c₃.nreg r = c₂.nreg r := fun r h1 h2 a b d e => keepM r (by omega_nf) a b d e
   have K1₃ : c₃.nreg K1 = 1 := by rw [kM' _ (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2)]; exact KS.2.1
   have s3 : c₃.nreg (sw 3) = c.nreg (sw 3) := by
     rw [kM' _ (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2),
@@ -146,12 +152,12 @@ theorem initE_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Ju
       kS' _ (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2), keepA _ (by swoInit2)]
   have mem₃ : ∀ a, a < c.nreg ALLOC → c₃.nmem a = c.nmem a := fun a ha => by
     rw [mlM a (by omega), fS.2.2.1 a (by omega), mA]
-  have ea₁ : c₃.nmem (c₃.nreg (sw 3) + 1) = a₁ := by rw [s3, mem₃ _ h3]
-  have ea₂ : c₃.nmem (c₃.nreg (sw 4) + 1) = a₂ := by rw [s4, mem₃ _ h4]
+  have ea₁ : c₃.nmem (c₃.nreg (sw 3) + 1) = a₁ := by grind
+  have ea₂ : c₃.nmem (c₃.nreg (sw 4) + 1) = a₂ := by grind
   have hw₃ := eM.wb_right
   obtain ⟨c₄, kT, eT, hkT, tB, tL, tA, ttab, tmem, keepT, rrT, rmT, oT⟩ :=
-    tabS_exec (P := P) hw₃ K1₃ (by rw [s3]; have := hw.1 ALLOC; omega)
-      (by rw [s4]; have := hw.1 ALLOC; omega) (by rw [ea₁, ea₂, aM]; omega)
+    tabS_exec (P := P) hw₃ K1₃ (by omega)
+      (by omega) (by omega)
   rw [ea₁, ea₂] at hkT tL
   have fT : Frame ioBands c₃ c₄ kT := ⟨fun r hr hrA => by
       refine keepT r hrA ?_ ?_ ?_ ?_ ?_ ?_ ?_ <;> rintro rfl <;>
@@ -180,7 +186,7 @@ theorem initE_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Ju
   refine ⟨c₅, kA + (kS + (kM + (kT + 1))), .seq eA (.seq eS (.seq eM (.seq eT eC))), ?_,
     frame_ioB (fA.trans (frame_ioB (fS.trans (frame_ioB (fM.trans (frame_ioB (fT.trans fC))))))),
     ⟨fun r ho hA hr => ?_, fun a ha => ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩⟩
-  · rw [hkM, hkT]; omega
+  · omega
   · rw [keepR r ho hA (by swoInit2) (by swoInit2) (by rintro rfl; swoInit2) (by rintro rfl; swoInit2)
       (by rintro rfl; swoInit2) (by rintro rfl; swoInit2) (by rintro rfl; swoInit2)]
     exact keepA r (by swoInit2)
@@ -236,7 +242,7 @@ theorem initE_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Ju
     rw [k5 TBR (by swoInit2), tB]
     exact ttab j hj
   · rw [k5 ALLOC (by swoInit2), k5 TBR (by swoInit2), k5 TLR (by swoInit2), tA, tB]
-  · simp only [hc₅]; rw [upd_same, upd_other _ _ _ (by swoInit2)]
+  · simp only [hc₅]; omega_nf
 
 end
 

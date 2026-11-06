@@ -31,8 +31,7 @@ open Set
 theorem arcWt_le_size (M : Model) (a b : ℝ) : M.arcWt a b ≤ M.size := by
   unfold Model.arcWt Model.size
   refine Set.ncard_le_ncard ?_ ((Set.finite_lt_nat M.W.n).subset fun _ hp => hp.1)
-  rintro p ⟨hp, hc, -⟩
-  exact ⟨hp, hc⟩
+  simp_all
 
 theorem weight_le_size (M : Model) (F : Set (Set Point)) (U : Set Point) :
     M.weight F U ≤ M.size := by
@@ -63,21 +62,22 @@ theorem chainModel_size (C : Chain) : (chainModel C).size = 2 * C.m := by
     simp only [mem_ofPred_eq, Finset.coe_Ico, Set.mem_Ico, chainModel_n]
     show p < 2 * C.m + 7 ∧ (6 ≤ p ∧ p < 2 * C.m + 6) ↔ _
     omega
-  rw [e, Set.ncard_coe_finset, Nat.card_Ico]
-  omega
+  grind [Set.ncard_coe_finset, Nat.card_Ico]
 
 /-- A `(γ + 1)`-semigranular family of a chain model is `(min γ (2 m) + 1)`-semigranular. -/
 theorem semigranular_min_chain' {C : Chain} {F : Set (Set Point)} {γ : ℕ}
     (h : (chainModel C).Semigranular F (γ + 1)) :
     (chainModel C).Semigranular F (min γ (2 * C.m) + 1) := by
   refine Model.Semigranular.mono _ (semigranular_min h) ?_
-  rw [chainModel_size]
-  omega
+  grind [chainModel_size]
 
 /-! ## Degrees of normal forms -/
 
+section
+variable {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N) {d : ℕ}
+include hN
 /-- **The degree bound from the chord lists** of the regions. -/
-theorem degLe_of_lens {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N) {d : ℕ}
+theorem degLe_of_lens
     (h : ∀ r, r < N.nRegions → (N.region r).chords.length ≤ d) : M.DegLe (N.F M Q) d := by
   obtain ⟨-, -, -, reg, hRC, -, -, hRO, -⟩ := id hN
   intro U hU
@@ -86,7 +86,7 @@ theorem degLe_of_lens {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N) {d : 
   exact h r hr
 
 /-- **The chord lists from the degree bound.** -/
-theorem lens_of_degLe {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N) {d : ℕ}
+theorem lens_of_degLe
     (h : M.DegLe (N.F M Q) d) : ∀ r, r < N.nRegions → (N.region r).chords.length ≤ d := by
   obtain ⟨-, -, -, reg, hRC, -, -, hRO, -⟩ := id hN
   intro r hr
@@ -94,6 +94,9 @@ theorem lens_of_degLe {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N) {d : 
   exact h _ (hRC.1 r hr)
 
 /-! ## Lemma 2.3 -/
+
+
+end
 
 /-- **Chord count of a canonical normal form** of a chain model (Lemma 2.3, with its constant
 `c`). -/

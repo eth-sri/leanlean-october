@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterStageD5
 public import Chazelle.Core.ClusterStageC4
 public import Chazelle.Core.ClusterStageB2S
@@ -65,9 +67,7 @@ theorem lv_win {k cs l l' : ℕ} (hk : 0 < k) (h : (l' + cs) / k = (l + cs) / k)
     l - (l + cs) % k ≤ l' ∧ l' ≤ l + (k - 1) - (l + cs) % k := by
   have h1 := Nat.div_add_mod (l + cs) k; have h2 := Nat.mod_lt (l + cs) hk
   have h3 := Nat.div_add_mod (l' + cs) k; have h4 := Nat.mod_lt (l' + cs) hk
-  rw [h] at h3
-  generalize k * ((l + cs) / k) = q at h1 h3
-  omega
+  ram_grind
 
 variable {W : ℕ}
 
@@ -75,8 +75,7 @@ set_option maxHeartbeats 4000000 in
 /-- **The static facts.** -/
 theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     {M : CombMap (Fin g.μ) F (Fin g.N)} {T : SpanTree M} {a : F → Fin g.N}
-    {ha : ∀ f, M.face (a f) = f} {C : CoTree (starTree T a ha)} {R : BTree} {preE slot : ℕ → ℕ}
-    {m : ℕ → ℕ} (hA : AF g M T m) (hB1 : B1F g M T a ha m) (hB2 : B2F g C R preE slot m)
+    {ha : ∀ f, M.face (a f) = f} {C : CoTree (starTree T a ha)} {R : BTree} {preE slot m : ℕ → ℕ} (hA : AF g M T m) (hB1 : B1F g M T a ha m) (hB2 : B2F g C R preE slot m)
     (hpl : M.Planar) (hμN : g.μ ≤ g.N) (hO : g.bO + g.N ≤ g.A0) (hV : g.bV + g.N ≤ g.A0)
     (hW : g.END ≤ W) (hL : 0 < g.L)
     (hhalf : ∀ w, w ≤ g.μ → m (g.base 39 + w) = w / 2)
@@ -84,7 +83,7 @@ theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     (hk : 0 < g.k') {cs : ℕ} (hlv : ∀ l, l < g.μ → LvOK g m cs l) :
     SFacts M T a ha C R (firstOf g m hA.first_lt) preE slot (upTf T) g.k' cs (ssOf g) g.A0 g.U W
       m := by
-  have hU := g.U_ge
+  
   have hP := g.two_pow_L; have hPU := g.P_le_U
   refine ⟨ssOf_lay hμN hO hV hW, rfl, rfl, hpl, fun v => ?_, fun d => (hA.map d).2.2,
     fun d => (hA.map d).1, fun v => rfl, hA.lev, hA.lev_lt, hB1.att, hB1.fp, fun x => ?_,
@@ -95,8 +94,7 @@ theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   · apply Fin.ext
     have h1 := (hA.map (firstOf g m hA.first_lt v)).2.2
     have h2 := hA.first_v v v.2
-    simp only [firstOf] at h1 ⊢
-    rw [← h1]; exact h2
+    grind [firstOf]
   · rcases x with d | d | d
     · show m (g.base 11 + d) = (M.opp d : ℕ)
       exact (hB1.so d).1
@@ -111,10 +109,10 @@ theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
       rw [← Nat.add_assoc]; exact (hB1.sf d).2.1
     · show m (g.base 17 + (2 * g.N + d)) = ((M.fperm⁻¹ d : Fin g.N) : ℕ)
       rw [← Nat.add_assoc]; exact (hB1.sf d).2.2
-  · unfold upTf; rw [dite_eq_left v.2]
+  · grind [upTf]
   · have := hA.pv ⟨x, hx⟩; simp only at this
     show m (g.base 6 + x) = upTf T x
-    unfold upTf; rw [dite_eq_left hx]; exact this
+    simp_all [upTf] <;> omega_nf
   · have hlvv := hlv _ (hA.lev_lt v)
     obtain ⟨hb, ht, -, -⟩ := hlvv
     simp only [slabN, dite_eq_left v.2, dite_eq_left x.2] at hvx
@@ -123,8 +121,6 @@ theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   · have hlvv := hlv _ (hA.lev_lt v)
     obtain ⟨hb, ht, -, -⟩ := hlvv
     show m (g.base 38 + T.level v) + 1 - m (g.base 37 + T.level v) ≤ g.k'
-    rw [hb, ht]
-    have := Nat.mod_lt (T.level v + cs) hk
     omega
 
 end

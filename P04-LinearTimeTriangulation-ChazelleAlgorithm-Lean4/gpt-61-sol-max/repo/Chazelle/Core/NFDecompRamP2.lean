@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFDecompRamP1
 
 /-!
@@ -28,13 +30,13 @@ variable {P : Polygon} {W : ℕ}
 variable {A R K CB RB LB : ℕ}
 
 theorem ite_lt_min (a b : ℕ) : (if a < b then a else b) = min a b := by
-  split_ifs with h
-  · exact (min_eq_left h.le).symm
-  · exact (min_eq_right (by omega)).symm
+  grind
 
+section
+variable {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB c) (hAW : A + 12 + 20 * R ≤ W)
+include hw hR hAW
 /-- The top branch: `top r := r`, `best r := r`, `bestv r := 0`. -/
-theorem topBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB c)
-    (hAW : A + 12 + 20 * R ≤ W) {r : ℕ} (h40 : c.nreg 60040 = r) (hr : r < R) :
+theorem topBr_exec {r : ℕ} (h40 : c.nreg 60040 = r) (hr : r < R) :
     ∃ c' k, Exec P W topBr c c' k ∧ k = 6 ∧ Same [60030] c c' ∧
       (∀ a, (a < A + 12 ∨ A + 12 + 19 * R ≤ a) → c'.nmem a = c.nmem a) ∧
       ∀ f u, f < 19 → u < R → fv c'.nmem A R f u =
@@ -55,13 +57,10 @@ theorem topBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB 
       fv_store_out (by norm_num) hr ha]
   · config_simp; simp only [b8, b9, b10, h40, z]
     rw [fv_store hr hu, fv_store hr hu, fv_store hr hu]
-    by_cases hur : u = r
-    · subst hur; interval_cases f <;> simp
-    · simp [hur]
+    grind
 
 /-- The non-top branch: the top of `r` is its parent's; the candidate of that top may improve. -/
-theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB c)
-    (hAW : A + 12 + 20 * R ≤ W) {r q t : ℕ} (h40 : c.nreg 60040 = r) (hr : r < R) (hq : q < R)
+theorem ntBr_exec {r q t : ℕ} (h40 : c.nreg 60040 = r) (hr : r < R) (hq : q < R)
     (ht : t < R) (hprg : fv c.nmem A R 3 r = q) (htop : fv c.nmem A R 8 q = t) :
     ∃ c' k, Exec P W ntBr c c' k ∧ k ≤ 21 ∧
       Same [60030, 60043, 60046, 60044, 60047, 60048, 60049, 60050] c c' ∧
@@ -112,7 +111,7 @@ theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
   have s1 : Same [60030, 60043, 60046, 60044, 60047, 60048] c c1 := by rw [hc1]; same_tac
   have hR1 : DRegs A R K CB RB LB c1 := hR.of_same s1 (by simp [Prot])
   have m1 : c1.nmem = upd c.nmem (A + 12 + 8 * R + r) t := by rw [hc1]
-  have r44 : c1.nreg 60044 = a := by rw [hc1]; config_simp
+  have r44 : c1.nreg 60044 = a := by simp_all
   have r48 : c1.nreg 60048 = sT - a := by rw [hc1]; config_simp
   have r46 : c1.nreg 60046 = t := by rw [hc1]; config_simp
   unfold ntBr
@@ -122,18 +121,18 @@ theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
       (.instr (.copyN 60049 60048))) c1 c2 k2 ∧ k2 ≤ 3 ∧
       c2 = { c1 with nreg := upd c1.nreg 60049 v } := by
     by_cases hlt : a < sT - a
-    · refine spec_ifLtN_true (by rw [r44, r48]; exact hlt)
+    · refine spec_ifLtN_true (by omega)
         (spec_instr (Exec.copyN hw1 _ _) fun _ => ⟨by omega, ?_⟩)
-      rw [r44, hvdef, ← ite_lt_min, ite_eq_left hlt]
-    · refine spec_ifLtN_false (by rw [r44, r48]; exact hlt)
+      grind
+    · refine spec_ifLtN_false (by omega)
         (spec_instr (Exec.copyN hw1 _ _) fun _ => ⟨by omega, ?_⟩)
-      rw [r48, hvdef, ← ite_lt_min, ite_eq_right hlt]
+      grind
   subst hc2
   have hw2 := e2.wb_right
   have b10c := hR1.b 10 (by norm_num)
   simp only [Nat.reduceAdd] at b10c
   obtain ⟨c3, k3, e3, rfl, m3, s3, r50⟩ := ldF_rel (P := P) hw2 60050 10 60046
-    (by simp only [show fb 10 = 60110 from rfl]; config_simp; rw [b10c, r46]; omega)
+    (by simp only [show fb 10 = 60110 from rfl]; config_simp; grind)
   have hbv : c3.nreg 60050 = bv := by
     rw [r50]; simp only [show fb 10 = 60110 from rfl]; config_simp
     rw [b10c, r46, m1, Machine.upd_other _ _ _ (by omega)]
@@ -144,12 +143,12 @@ theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
   have hR3 : DRegs A R K CB RB LB c3 := by
     refine (hR1.of_same (l := [60049]) (Same.upd1 (by simp)) (by simp [Prot])).of_same s3
       (by simp [Prot])
-  have m3' : c3.nmem = upd c.nmem (A + 12 + 8 * R + r) t := by rw [m3]; exact m1
+  have m3' : c3.nmem = upd c.nmem (A + 12 + 8 * R + r) t := by grind
   have s13 : Same [60030, 60043, 60046, 60044, 60047, 60048, 60049, 60050] c c3 :=
     ((s1.mono (by simp)).trans ((Same.upd1 (l := [60030, 60043, 60046, 60044, 60047, 60048, 60049,
       60050]) (by simp)))).trans (s3.mono (by simp))
   by_cases hup : bv < v
-  · refine spec_ifLtN_true (by rw [hbv, r49]; exact hup) ?_
+  · refine spec_ifLtN_true (by omega) ?_
     have b9' := hR3.b 9 (by norm_num); have b10' := hR3.b 10 (by norm_num)
     simp only [Nat.reduceAdd] at b9' b10'
     have r46' : c3.nreg 60046 = t := by rw [s3.1 _ (by simp)]; config_simp; exact r46
@@ -170,18 +169,15 @@ theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
     · rw [hc4]; config_simp; rw [m3', fv_store_out (by norm_num) ht hx, fv_store_out (by norm_num) ht hx,
         fv_store_out (by norm_num) hr hx]
     · rw [hc4]; config_simp; rw [m3', fv_store ht hu, fv_store ht hu, fv_store hr hu]
-      by_cases h8 : f = 8 ∧ u = r
-      · rw [ite_eq_left h8]
-        have : ¬ (f = 9 ∧ u = t) := fun hh => by omega
-        have : ¬ (f = 10 ∧ u = t) := fun hh => by omega
-        simp [*]
-      · simp only [ite_eq_right h8, hup, true_and]
-        split_ifs <;> first | rfl | omega
-  · refine spec_ifLtN_false (by rw [hbv, r49]; exact hup) (spec_skip hw3 ?_)
+      grind
+  · refine spec_ifLtN_false (by omega) (spec_skip hw3 ?_)
     refine ⟨by omega, s13, fun x hx => ?_, fun f u hf hu => ?_⟩
     · rw [m3', fv_store_out (by norm_num) hr hx]
     · rw [m3', fv_store hr hu]
-      simp only [hup, false_and, ite_false]
+      grind
+
+
+end
 
 /-- The field view of the top-pass state. -/
 def t3Of (m : ℕ → ℕ) (A R : ℕ) : T3 := ⟨fv m A R 8, fv m A R 9, fv m A R 10⟩
@@ -208,14 +204,12 @@ theorem p2Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       .loadN 60040 60030]) c c1 k1 ∧ k1 = 2 ∧
       c1 = { c with nreg := upd (upd c.nreg 60030 (A + 12 + 1 * R + i)) 60040 r } := by
     exec_block
-    · rw [b1, h20]; omega
-    · refine ⟨rfl, ?_⟩
-      rw [b1, h20, hr']
+    all_goals grind
   have s1 : Same [60030, 60040] c c1 := by rw [hc1]; same_tac
   have m1 : c1.nmem = c.nmem := by rw [hc1]
   have hw1 := e1.wb_right
   have hR1 : DRegs A R K CB RB LB c1 := hR.of_same s1 (by simp [Prot])
-  have r40 : c1.nreg 60040 = r := by rw [hc1]; config_simp
+  have r40 : c1.nreg 60040 = r := by simp_all
   unfold p2Body
   -- the middle
   have hmid : ∃ c2 k2, Exec P W (.ifLtN 60010 60040
@@ -240,15 +234,12 @@ theorem p2Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
              else fv c.nmem A R f u) := by
       intro d hwd hRd h40 hmd hcond
       obtain ⟨d', k, e, hk, s, hm, hv⟩ := topBr_exec (P := P) hwd hRd hAW h40 hr
-      refine ⟨d', k, e, hk, s, fun a ha => by rw [hm a ha, hmd], fun f u hf hu => ?_⟩
+      refine ⟨d', k, e, hk, s, fun a ha => by grind, fun f u hf hu => ?_⟩
       rw [hv f u hf hu, hmd]
       simp only [p2, ← hrdef, ite_eq_left hcond, t3Of, Function.update_apply]
-      by_cases hur : u = r
-      · subst hur; interval_cases f <;> simp
-      · simp only [hur, and_false, ite_false]
-        split_ifs with h8 h9 h10 <;> subst_vars <;> rfl
+      grind
     by_cases h0 : r = 0
-    · refine spec_ifLtN_false (by rw [hR1.zero, r40, h0]; omega) ?_
+    · refine spec_ifLtN_false (by omega) ?_
       obtain ⟨c2, k2, e2, hk2, s2, hm2, hv2⟩ := htopB c1 hw1 hR1 r40 m1 (Or.inl h0)
       exact ⟨c2, k2, e2, by omega, s2.mono (by simp), hm2, hv2⟩
     · refine spec_ifLtN_true (by rw [hR1.zero, r40]; omega) ?_
@@ -260,13 +251,11 @@ theorem p2Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       obtain ⟨c3, k3, e3, rfl, m3, s3, r42⟩ := ldF_rel (P := P) e2.wb_right 60042 11 60041
         (by
           rw [show fb 11 = 60111 from rfl, hR2.b 11 (by norm_num), r41]
-          have : fv c.nmem A R 4 r < R := hpr
-          unfold fv at this
-          omega)
+          ram_grind)
       rw [show fb 11 = 60111 from rfl, hR2.b 11 (by norm_num), r41, m2, m1] at r42
       have hR3 : DRegs A R K CB RB LB c3 := hR2.of_same s3 (by simp [Prot])
       have s23 : Same [60041, 60042, 60030] c1 c3 := (s2.mono (by simp)).trans (s3.mono (by simp))
-      have m13 : c3.nmem = c.nmem := by rw [m3, m2, m1]
+      have m13 : c3.nmem = c.nmem := by grind
       have r40' : c3.nreg 60040 = r := by rw [s23.1 _ (by simp), r40]
       refine spec_seq ⟨c2, 2, e2, spec_seq ⟨c3, 2, e3, ?_⟩⟩
       by_cases hrem : fv c.nmem A R 11 (fv c.nmem A R 4 r) = 1
@@ -278,7 +267,7 @@ theorem p2Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
         obtain ⟨c4, k4, e4, hk4, s4, hm4, hv4⟩ := ntBr_exec (P := P) e3.wb_right hR3 hAW r40' hr hpg htp
           (by rw [m13]) (by rw [m13])
         refine ⟨c4, k4, e4, fun k' hk' => ⟨by omega, (s23.mono (by simp)).trans (s4.mono (by simp)),
-          fun a ha => by rw [hm4 a ha, m13], fun f u hf hu => ?_⟩⟩
+          fun a ha => by grind, fun f u hf hu => ?_⟩⟩
         rw [hv4 f u hf hu, m13]
         have hnc : ¬ (r = 0 ∨ fv c.nmem A R 11 (fv c.nmem A R 4 r) = 1) := by tauto
         simp only [p2, ← hrdef, ite_eq_right hnc, t3Of]
@@ -288,17 +277,17 @@ theorem p2Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
           h8 | h9 | h10 | ⟨h8, h9, h10⟩
         · subst h8
           by_cases hup : fv c.nmem A R 10 T < v
-          · rw [ite_eq_left hup]; simp [Function.update_apply]
-          · rw [ite_eq_right hup]; simp [Function.update_apply]
+          · rw [ite_eq_left hup]; grind
+          · rw [ite_eq_right hup]; grind
         · subst h9
           by_cases hup : fv c.nmem A R 10 T < v
-          · rw [ite_eq_left hup]; simp [Function.update_apply, hup]
+          · rw [ite_eq_left hup]; grind
           · rw [ite_eq_right hup]; simp [hup]
         · subst h10
           by_cases hup : fv c.nmem A R 10 T < v
-          · rw [ite_eq_left hup]; simp [Function.update_apply, hup]
+          · rw [ite_eq_left hup]; grind
           · rw [ite_eq_right hup]; simp [hup]
-        · simp [h8, h9, h10]
+        grind
   obtain ⟨c2, k2, e2, hk2, s2, hm2, hv2⟩ := hmid
   have hR2 : DRegs A R K CB RB LB c2 := hR1.of_same s2 (by simp [Prot])
   obtain ⟨c3, k3, e3, rfl, m3, s3, r20⟩ := incr_exec (P := P) e2.wb_right hR2.one
@@ -306,8 +295,8 @@ theorem p2Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
   have s13 : Same [60030, 60040, 60041, 60042, 60043, 60046, 60044, 60047, 60048, 60049, 60050,
       60020] c c3 := ((s1.mono (by simp)).trans (s2.mono (by simp))).trans (s3.mono (by simp))
   refine ⟨c3, 2 + (k2 + 1), .seq e1 (.seq e2 e3), by omega, ?_, by
-    rw [r20, s2.1 _ (by simp), s1.1 _ (by simp), h20], fun f u hf hu => by rw [m3, hv2 f u hf hu]⟩
-  exact DFr.of_same s13 (by simp [Prot]) (fun a ha => by rw [m3, hm2 a ha])
+    rw [r20, s2.1 _ (by simp), s1.1 _ (by simp), h20], fun f u hf hu => by grind⟩
+  exact DFr.of_same s13 (by simp [Prot]) (fun a ha => by grind)
 
 /-- Two top-pass states agree below `R`. -/
 def T3Agree (R : ℕ) (st st' : T3) : Prop :=
@@ -326,15 +315,11 @@ theorem p2_congr {R i : ℕ} {o o' p p' q q' rm rm' S S' : ℕ → ℕ} {st st' 
   rw [ho]
   by_cases h0 : o' i = 0
   · rw [ite_eq_left (Or.inl h0), ite_eq_left (Or.inl h0)]
-    obtain ⟨a1, a2, a3⟩ := hag u hu
-    simp only [Function.update_apply]
-    split_ifs <;> simp_all
+    ram_grind
   · rw [hq h0, hrm h0]
     by_cases htop : rm' (q' (o' i)) = 1
     · rw [ite_eq_left (Or.inr htop), ite_eq_left (Or.inr htop)]
-      obtain ⟨a1, a2, a3⟩ := hag u hu
-      simp only [Function.update_apply]
-      split_ifs <;> simp_all
+      ram_grind
     · have hnt : ¬ (o' i = 0 ∨ rm' (q' (o' i)) = 1) := by tauto
       rw [ite_eq_right hnt, ite_eq_right hnt, hp h0]
       have ht : st.top (p' (o' i)) = st'.top (p' (o' i)) := (hag _ (hpR h0)).1
@@ -343,7 +328,7 @@ theorem p2_congr {R i : ℕ} {o o' p p' q q' rm rm' S S' : ℕ → ℕ} {st st' 
       have htR' := htR h0
       rw [hS _ hr, hS _ htR', (hag t htR').2.2]
       obtain ⟨a1, a2, a3⟩ := hag u hu
-      split_ifs <;> simp only [Function.update_apply] <;> split_ifs <;> simp_all
+      split_ifs <;> grind <;> split_ifs <;> simp_all
 
 /-- **The top pass**: fields `8`, `9`, `10` end with the fold of `p2` over all search positions. -/
 theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB c)
@@ -361,13 +346,13 @@ theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
   let S : ℕ → T3 := fun i =>
     (List.range i).foldl (p2 ord prg pch rem (sz R prg pch rem)) (t3Of c.nmem A R)
   have hS : ∀ i, S (i + 1) = p2 ord prg pch rem (sz R prg pch rem) (S i) i := fun i => by
-    simp only [S, List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
+    simp_all [S, List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
   unfold p2S
   refine spec_seq (spec_instr (Exec.constN hw 60020 0 (Nat.zero_le _)) fun hw1 => ?_)
   set c1 := { c with nreg := upd c.nreg 60020 0 } with hc1
   have hf1 : DFr (A + 12) (A + 12 + 19 * R) c c1 :=
     DFr.nreg _ fun r hr _ => by
-      unfold Prot at hr; rw [Machine.upd_other _ _ _ (by omega)]
+      ram_simp
   obtain ⟨c', k, e, ⟨hw', hf', hj', hag', hv'⟩, htest, hk⟩ := Exec.whileLtN_potential (P := P) (W := W)
     (a := 60020) (b := 60013) (body := p2Body)
     (fun d => WordsBounded W d ∧ DFr (A + 12) (A + 12 + 19 * R) c d ∧ d.nreg 60020 ≤ R ∧
@@ -380,15 +365,15 @@ theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
       obtain ⟨i, hidef⟩ : ∃ i, d.nreg 60020 = i := ⟨_, rfl⟩
       rw [hidef] at htest hjd hagd
       have hv1 : ∀ v, v < R → fv d.nmem A R 1 v = ord v := fun v hv => by
-        rw [hvd 1 v (by norm_num) (by norm_num) (by norm_num) (by norm_num) hv, hord v hv]
+        grind
       have hv3 : ∀ v, v < R → fv d.nmem A R 3 v = prg v := fun v hv => by
-        rw [hvd 3 v (by norm_num) (by norm_num) (by norm_num) (by norm_num) hv, hprg v hv]
+        grind
       have hv4 : ∀ v, v < R → fv d.nmem A R 4 v = pch v := fun v hv => by
-        rw [hvd 4 v (by norm_num) (by norm_num) (by norm_num) (by norm_num) hv, hpch v hv]
+        grind
       have hv11 : ∀ v, v < R → fv d.nmem A R 11 v = rem v := fun v hv => by
-        rw [hvd 11 v (by norm_num) (by norm_num) (by norm_num) (by norm_num) hv, hrem v hv]
+        grind
       have hv7 : ∀ v, v < R → fv d.nmem A R 7 v = sz R prg pch rem v := fun v hv => by
-        rw [hvd 7 v (by norm_num) (by norm_num) (by norm_num) (by norm_num) hv, hsize v hv]
+        grind
       have hr := h.ord_lt i htest
       have hP2 := p2_fold h (rem := rem) (S := sz R prg pch rem) (le_of_lt htest) (fun _ _ => rfl)
         (t3Of c.nmem A R)
@@ -399,7 +384,7 @@ theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
         rw [h.pos_ord i htest] at this
         exact (hP2.1 _ hpR this).1
       obtain ⟨d', k', e', hk', hf'', h20', hv''⟩ := p2Body_exec (P := P) hwd hRd hAW hidef htest
-        (by rw [hv1 i htest]; exact hr)
+        (by grind)
         (fun h0 => by rw [hv1 i htest] at h0 ⊢; rw [hv4 _ hr]; have := h.pch_lt _ hr h0; omega)
         (fun h0 => by rw [hv1 i htest] at h0 ⊢; rw [hv3 _ hr]; exact h.prg_lt _ hr h0)
         (fun h0 => by
@@ -407,10 +392,9 @@ theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
           rw [hv3 _ hr]
           have := (hagd _ (h.prg_lt _ hr h0)).1
           simp only [t3Of] at this
-          rw [this]
-          exact htopR h0)
+          omega)
       refine ⟨d', k', e', ⟨e'.wb_right, hfd.trans hf'', by omega, ?_, fun f u hf h8 h9 h10 hu => ?_⟩,
-        by rw [h20', hidef]; omega⟩
+        by omega⟩
       · rw [h20', hS i]
         have hc := p2_congr (R := R) (i := i) (st := t3Of d.nmem A R) (st' := S i) hagd
           (hv1 i htest) hr (fun h0 => hv4 _ hr) (fun h0 => hv11 _ (by have := h.pch_lt _ hr h0; omega))
@@ -418,21 +402,15 @@ theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
         intro u hu
         obtain ⟨a1, a2, a3⟩ := hc u hu
         refine ⟨?_, ?_, ?_⟩
-        · show fv d'.nmem A R 8 u = _; rw [hv'' 8 u (by norm_num) hu]; exact a1
-        · show fv d'.nmem A R 9 u = _; rw [hv'' 9 u (by norm_num) hu]; exact a2
-        · show fv d'.nmem A R 10 u = _; rw [hv'' 10 u (by norm_num) hu]; exact a3
-      · rw [hv'' f u hf hu]
-        simp only [h8, h9, h10, ite_false]
-        exact hvd f u hf h8 h9 h10 hu)
-    ⟨hw1, hf1, by simp only [hc1]; config_simp; omega, by
-      simp only [hc1]; config_simp; intro u _; exact ⟨rfl, rfl, rfl⟩, fun _ _ _ _ _ _ _ => rfl⟩
+        · show fv d'.nmem A R 8 u = _; grind
+        · show fv d'.nmem A R 9 u = _; grind
+        · show fv d'.nmem A R 10 u = _; grind
+      grind)
+    ⟨hw1, hf1, by simp_all, by
+      ram_simp <;> omega_nf, fun _ _ _ _ _ _ _ => rfl⟩
   have hR' := hR.frame hf'
   rw [hR'.rR] at htest
-  have hjR : c'.nreg 60020 = R := by omega
-  have h0 : c1.nreg 60020 = 0 := by simp only [hc1]; config_simp
-  rw [h0] at hk
-  rw [hjR] at hag'
-  exact ⟨c', k, e, by omega, hw', hf', hag', hv'⟩
+  grind
 
 end p2ram
 

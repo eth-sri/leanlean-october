@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvXKept
 
 /-!
@@ -43,65 +45,27 @@ theorem cyc_end {n a b x y : ℝ} (hxy : x ≠ y) (hx0 : 0 ≤ x) (hxn : x < n) 
       intro u hu
       rcases lt_or_gt_of_ne hxy with h | h
       · refine ⟨(max u x + y) / 2, ?_, ?_, hsub _ ?_ ?_ ?_⟩
-        · have := le_max_left u x; have := max_lt hu h; linarith
-        · have := max_lt hu h; linarith
-        · have := le_max_right u x; have := max_lt hu h; linarith
-        · have := max_lt hu h; linarith
-        · unfold sideInArc; rw [ite_eq_left h]
-          constructor
-          · have := le_max_right u x; have := max_lt hu h; linarith
-          · have := max_lt hu h; linarith
-      · refine ⟨(max u 0 + y) / 2, ?_, ?_, hsub _ ?_ ?_ ?_⟩
-        · have := le_max_left u 0; have := max_lt hu hy; linarith
-        · have := max_lt hu hy; linarith
-        · have := le_max_right u 0; have := max_lt hu hy; linarith
-        · have := max_lt hu hy; linarith
-        · unfold sideInArc; rw [ite_eq_right (not_lt.2 h.le)]
-          right; have := max_lt hu hy; linarith
-    unfold sideInArc at hnot hpt
-    by_cases hab : a < b
-    · simp only [ite_eq_left hab] at hnot hpt
-      obtain ⟨z, -, hz2, hz3, -⟩ := hpt (y - 1) (by linarith)
-      have hay : a < y := lt_trans hz3 hz2
-      have hby : b < y := by
-        rcases lt_or_ge b y with h | h
-        · exact h
-        · exact absurd ⟨hay, lt_of_le_of_ne h (by intro e; exact hyb (by linarith))⟩ hnot
-      obtain ⟨z, hz1, -, -, hz4⟩ := hpt b hby
-      linarith
-    · simp only [ite_eq_right hab] at hnot hpt
-      push Not at hnot
-      have hby : b < y := lt_of_le_of_ne hnot.2 (by intro e; exact hyb (by linarith))
-      obtain ⟨z, hz1, hz2, hz3⟩ := hpt b hby
-      rcases hz3 with h | h <;> linarith [hnot.1]
+        · ram_grind
+        · ram_grind
+        · ram_grind
+        all_goals ram_grind
+      · ram_grind
+    ram_grind
   · subst hy
     have hx : 0 < x := lt_of_le_of_ne hx0 (Ne.symm hxy)
     unfold sideInArc at hnot
     by_cases hab : a < b
-    · have hz := hsub ((max x b + n) / 2) (by have := le_max_left x b; linarith)
-        (by have := max_lt hxn hbn; linarith)
-        (by unfold sideInArc; rw [ite_eq_right (not_lt.2 hx.le)]; left
-            have := le_max_left x b; have := max_lt hxn hbn; linarith)
-      unfold sideInArc at hz
-      rw [ite_eq_left hab] at hz
-      have := le_max_right x b; have := max_lt hxn hbn; linarith [hz.2]
-    · rw [ite_eq_right hab] at hnot
-      push Not at hnot
-      exact hyb (le_antisymm hb0 hnot.2)
+    · have hz := hsub ((max x b + n) / 2) (by ram_grind)
+        (by ram_grind)
+        (by ram_grind)
+      ram_grind
+    ram_grind
 
 /-- A horizontal direction is not strictly inside an arc of horizontal directions that is not a
 spike. -/
 theorem not_sideCcw_flat {B X A : Point} (hB : B.2 = 0) (hX : X.2 = 0) (hA : A.2 = 0)
     (hns : Chazelle.Chain.sideNonSpike B A) : ¬ sideCcw B X A := by
-  have e1 : Chazelle.Chain.sideCross B A = 0 := by
-    unfold Chazelle.Chain.sideCross; rw [hB, hA]; ring
-  have e2 : Chazelle.Chain.sideCross B X = 0 := by
-    unfold Chazelle.Chain.sideCross; rw [hB, hX]; ring
-  rintro (⟨h1, -⟩ | ⟨h1, -⟩ | ⟨-, -, h3⟩ | ⟨-, h4, -⟩)
-  · rw [e1] at h1; exact lt_irrefl _ h1
-  · rw [e1] at h1; exact lt_irrefl _ h1
-  · rw [e2] at h3; exact lt_irrefl _ h3
-  · exact hns ⟨e1, h4⟩
+  grind [Chazelle.Chain.sideCcw, Chazelle.Chain.sideNonSpike, Chazelle.Chain.sideCross]
 
 section
 
@@ -129,7 +93,7 @@ theorem pEdge_rep (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S) {li
     have := ivB_inj li hp hp1 h'
     by_cases h1 : ⌊κ⌋₊ + 1 < Q.n
     · rw [Nat.mod_eq_of_lt h1] at this; omega
-    · rw [show ⌊κ⌋₊ + 1 = Q.n by omega, Nat.mod_self] at this; omega
+    grind [Nat.mod_self]
   rcases hs with ⟨-, rfl⟩ | ⟨-, h, hhn, hy, (⟨hint, -, rfl⟩ | ⟨hnot, rfl⟩)⟩
   · exact ivB_ivB li hp
   · -- an arc end at a vertex, written with the previous edge
@@ -143,21 +107,20 @@ theorem pEdge_rep (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S) {li
     rw [hpt] at hy
     have hh : h = ivB li Q.n ⌊κ⌋₊ := by
       by_contra hne; exact hdh _ _ hhn (ivB_lt li hp) hne hy
-    rw [ite_eq_left hh]
+    ram_grind
   · simp only [pEdge]
     rw [qE_qE li hp]
     rw [ite_eq_right]
     intro hh
     rw [hh] at hy
-    have hf0 : 0 ≤ κ - ⌊κ⌋₊ := by have := Nat.floor_le hb.1; linarith
+    
     have hf1 : κ - ⌊κ⌋₊ < 1 := by have := Nat.lt_floor_add_one κ; linarith
     unfold hostPt sidePt at hy
     rw [hW, walk_n, DownMath.walk_vtx hli hp, DownMath.walk_vtx hli hp1, Chazelle.Geometry.lerp_snd] at hy
     have : (1 - (κ - ⌊κ⌋₊)) * ((Q.vtx (ivB li Q.n ⌊κ⌋₊)).2 -
         (Q.vtx (ivB li Q.n ((⌊κ⌋₊ + 1) % Q.n))).2) = 0 := by linarith
     rcases mul_eq_zero.1 this with h0 | h0
-    · linarith
-    · exact hd (by linarith)
+    all_goals ram_grind
 
 /-- **The parameter of an interior walk position** from its point. -/
 theorem iparam {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) (hdh : DistinctHeights Q)
@@ -170,7 +133,7 @@ theorem iparam {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) (hdh : Di
     have := ivB_inj li hq hq1 h'
     by_cases h1 : q + 1 < Q.n
     · rw [Nat.mod_eq_of_lt h1] at this; omega
-    · rw [show q + 1 = Q.n by omega, Nat.mod_self] at this; omega
+    grind [Nat.mod_self]
   have hW : (interiorModel Q).W = interiorWalk Q := rfl
   have ha : (interiorModel Q).wa q = Q.vtx (ivB li Q.n q) := by
     unfold Model.wa; rw [hW, DownMath.walk_vtx hli hq]
@@ -181,11 +144,7 @@ theorem iparam {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) (hdh : Di
   show (if ((interiorModel Q).wa q).2 = ((interiorModel Q).wb q).2 then 0
     else ((Q.vtx h).2 - ((interiorModel Q).wa q).2) /
       (((interiorModel Q).wb q).2 - ((interiorModel Q).wa q).2)) = τ
-  rw [ha, hb, ite_eq_right hd]
-  have hne : (Q.vtx (ivB li Q.n ((q + 1) % Q.n))).2 - (Q.vtx (ivB li Q.n q)).2 ≠ 0 :=
-    sub_ne_zero.2 (Ne.symm hd)
-  rw [div_eq_iff hne]
-  linarith
+  grind
 
 end
 
@@ -224,11 +183,7 @@ theorem not_attach_flat {y a b : ℝ} (hab : a < b) {q : ℕ} (hq : q < xK) {t :
   have hxy : x.2 = y := hxc.1
   unfold sidePt at hzy
   rw [Y.gn, Chazelle.Geometry.lerp_snd, ← hflat] at hzy
-  have hy : ((xG).vtx q).2 = y := by linarith
-  unfold det at hx
-  rw [hxy, ← hflat, hy] at hx
-  simp only [sub_self, mul_zero] at hx
-  exact lt_irrefl _ hx
+  aesop (add simp [det, sub_self, mul_zero]) (add safe (by omega))
 
 /-- A chord gap of the region is a horizontal edge of `G`. -/
 theorem chordGap_flat {ι : ℕ} (hι : ι < xK)
@@ -259,9 +214,9 @@ theorem not_attach_junction {y a b : ℝ} (hab : a < b) {ι : ℕ} (hι : ι < x
   rw [Y.gn] at hns hx
   unfold sideLeftOf at hx
   refine not_sideCcw_flat ?_ ?_ ?_ hns hx
-  · simp only [Prod.snd_sub]; rw [← h1]; ring
-  · simp only [Prod.snd_sub]; rw [hxy, hzy]; ring
-  · simp only [Prod.snd_sub]; rw [h2]; ring
+  · simp only [Prod.snd_sub]; ram_grind
+  · simp only [Prod.snd_sub]; ram_grind
+  · simp only [Prod.snd_sub]; ram_grind
 
 end XCtx
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseHostKey
 public import Chazelle.Core.FactsTie
 public import Chazelle.Core.FactsL23
@@ -56,7 +58,7 @@ theorem exitKeys_subset_cuts : exitKeys M F U ⊆ {x | M.IsCut F x} := by
 theorem vtxKeys_finite : (vtxKeys M F U).Finite := by
   refine ((Finset.range M.W.n).finite_toSet.image (fun k : ℕ => (k : ℝ))).subset ?_
   rintro x ⟨k, hk, rfl, -⟩
-  exact ⟨k, by simpa using hk, rfl⟩
+  simp_all
 
 theorem hostKeys_finite (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) :
     (hostKeys M F U).Finite :=
@@ -66,7 +68,7 @@ theorem hostKeys_finite (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) :
 theorem hostKeys_bounds {x : ℝ} (hx : x ∈ hostKeys M F U) : 0 ≤ x ∧ x < M.W.n := by
   rcases hx with hx | ⟨k, hk, rfl, -⟩
   · exact WalkAx.cut_bounds (exitKeys_subset_cuts hx)
-  · exact ⟨Nat.cast_nonneg k, by exact_mod_cast hk⟩
+  simp_all
 
 /-- Distinct chords of a finite admissible family do not meet in the domain. -/
 theorem chord_disj (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {c c' : Set Point}
@@ -77,27 +79,25 @@ theorem chord_disj (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {c c' : 
   obtain ⟨y', a', b', h', rfl⟩ := hsys.hchord c' hc'
   exact hne (SegObs.eq_of_common ⟨y, a, b, h, rfl⟩ ⟨y', a', b', h', rfl⟩ hz hz' hzD)
 
+section
+variable {a b : ℝ} (h : a < b)
+include h
 /-- Small positive numbers, as an eventual statement. -/
-theorem ev_Ioo {a b : ℝ} (h : a < b) : ∀ᶠ ε in 𝓝[>] a, ε ∈ Ioo a b := Ioo_mem_nhdsGT h
+theorem ev_Ioo : ∀ᶠ ε in 𝓝[>] a, ε ∈ Ioo a b := Ioo_mem_nhdsGT h
 
 /-- Numbers just below `b`, as an eventual statement. -/
-theorem ev_Ioo_lt {a b : ℝ} (h : a < b) : ∀ᶠ ε in 𝓝[<] b, ε ∈ Ioo a b := Ioo_mem_nhdsLT h
+theorem ev_Ioo_lt : ∀ᶠ ε in 𝓝[<] b, ε ∈ Ioo a b := Ioo_mem_nhdsLT h
+
+
+end
 
 /-- The start of a cyclic interval is not inside it. -/
 theorem not_sideInArc_left (a b : ℝ) : ¬ sideInArc a b a := by
-  unfold sideInArc; split_ifs with h
-  · exact fun h' => lt_irrefl _ h'.1
-  · rintro (h' | h')
-    · exact lt_irrefl _ h'
-    · exact h h'
+  simp_all [sideInArc] <;> omega_nf
 
 /-- The end of a cyclic interval is not inside it. -/
 theorem not_sideInArc_right (a b : ℝ) : ¬ sideInArc a b b := by
-  unfold sideInArc; split_ifs with h
-  · exact fun h' => lt_irrefl _ h'.2
-  · rintro (h' | h')
-    · exact h h'
-    · exact lt_irrefl _ h'
+  simp_all [sideInArc] <;> omega_nf
 
 /-- Keys strictly after a key inside an open cyclic interval stay inside it. -/
 theorem eventually_in_arc {a b k : ℝ} (hk : sideInArc a b k) :
@@ -106,15 +106,13 @@ theorem eventually_in_arc {a b k : ℝ} (hk : sideInArc a b k) :
   split_ifs at * with h
   · filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT (show (0 : ℝ) < b - k by linarith)]
       with ε hε hε'
-    have : (0 : ℝ) < ε := hε
-    exact ⟨by linarith, by linarith [hε'.2]⟩
+    ram_grind
   · rcases hk with hk | hk
     · filter_upwards [self_mem_nhdsWithin] with ε hε
-      have : (0 : ℝ) < ε := hε
-      left; linarith
+      grind
     · filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT (show (0 : ℝ) < b - k by linarith)]
         with ε hε hε'
-      right; linarith [hε'.2]
+      grind
 
 /-- **Separation.**  If the positions strictly between the attachments `A`, `B` of `c ∈ F` have
 their small left sectors in the component `K` of `D \ c` of `k₁`, a host key of `U` strictly
@@ -151,7 +149,7 @@ theorem host_side (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
     obtain ⟨e, he, -, hce, hopen, heD, -⟩ := hM.attach_other_end (hF hc') hA'
     obtain ⟨r, hr, hsec⟩ := hK p hA'.1 t hA'.2.1 hA'.2.2.1 hxin
     obtain ⟨s, hs0, hs1, hsd, hsl⟩ := WalkAx.exists_left_on_chord hA' hce he hr
-    have hyK : lerp (sidePt M.W p t) e s ∈ K := hsec _ (by rw [mem_ball]; exact hsd) hsl
+    have hyK : lerp (sidePt M.W p t) e s ∈ K := hsec _ (by grind [mem_ball]) hsl
     -- the open part of `c'` lies in `K`
     have hopenK : ∀ s' ∈ Ioo (0 : ℝ) 1, lerp (sidePt M.W p t) e s' ∈ K := by
       have hpre : IsPreconnected ((lerp (sidePt M.W p t) e) '' Ioo (0 : ℝ) 1) :=
@@ -173,13 +171,10 @@ theorem host_side (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
       · subst h; rw [Chazelle.Geometry.lerp_zero] at hzD
         exact absurd hzD (hM.trace p hA'.1 t hA'.2.1 hA'.2.2.1.le)
     have hs'1' : s' < 1 := by
-      rcases hs'1.lt_or_eq with h | h
-      · exact h
-      · subst h; rw [Chazelle.Geometry.lerp_one] at hzD
-        exact absurd hzD heD
+      grind [Chazelle.Geometry.lerp_one]
     have hzK := hopenK s' ⟨hs'0', hs'1'⟩
     obtain ⟨u, huK, hu⟩ := mem_closure_iff.1 hzcl K hKo hzK
-    exact hmeet u hu huK
+    grind
   · -- a walk vertex inside an arc of `U`: positions just after it face `U`
     obtain ⟨ε, ⟨hε0, hε1⟩, hin1, hin2⟩ := ((ev_Ioo (show (0 : ℝ) < 1 by norm_num)).and
       ((eventually_in_arc hxin).and (eventually_in_arc hkab))).exists

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseMathRec2
 
 /-!
@@ -37,14 +39,13 @@ def RepFrom (li : Bool) (Q : Polygon) (S : Set (Set Point)) (R : Set Point) (L :
 
 theorem repFrom_nil (li : Bool) (i : ℕ) : RepFrom li Q S R [] i := fun j hj => by simp at hj
 
-theorem repFrom_single {li : Bool} {s : SymPt} {i : ℕ}
+section
+variable {li : Bool}
+theorem repFrom_single {s : SymPt} {i : ℕ}
     (h : RepPt li Q S R (i % nk (interiorModel Q) S R) s) : RepFrom li Q S R [s] i := by
-  intro j hj
-  simp only [List.length_singleton] at hj
-  obtain rfl : j = 0 := by omega
-  simpa using h
+  grind [Chazelle.Core.DownMath.RepFrom, List.length_singleton]
 
-theorem repFrom_append {li : Bool} {L L' : List SymPt} {i : ℕ} (h : RepFrom li Q S R L i)
+theorem repFrom_append {L L' : List SymPt} {i : ℕ} (h : RepFrom li Q S R L i)
     (h' : RepFrom li Q S R L' (i + L.length)) : RepFrom li Q S R (L ++ L') i := by
   intro j hj
   rw [List.length_append] at hj
@@ -52,45 +53,42 @@ theorem repFrom_append {li : Bool} {L L' : List SymPt} {i : ℕ} (h : RepFrom li
   · rw [List.getD_append _ _ _ _ hjL]; exact h j hjL
   · rw [List.getD_append_right _ _ _ _ hjL]
     have := h' (j - L.length) (by omega)
-    rwa [show i + L.length + (j - L.length) = i + j by omega] at this
+    simp_all
 
 /-- The length of the group of host keys of arc `t`: its `d t + 1` keys from the start to the
 key before the next group, plus the junction. -/
-theorem repFrom_flatMap {li : Bool} (G : ℕ → List SymPt) (d J : ℕ → ℕ) (i : ℕ) (k : ℕ)
+theorem repFrom_flatMap (G : ℕ → List SymPt) (d J : ℕ → ℕ) (i k : ℕ)
     (hG : ∀ t, t < k → RepFrom li Q S R (G t) (i + grpOff d J t) ∧ (G t).length = grpLen d J t) :
     RepFrom li Q S R ((List.range k).flatMap G) i ∧
       ((List.range k).flatMap G).length = grpOff d J k := by
   induction k with
-  | zero => exact ⟨repFrom_nil li i, by simp [grpOff]⟩
+  | zero => exact ⟨repFrom_nil li i, by aesop⟩
   | succ k ih =>
     obtain ⟨h1, h2⟩ := ih fun t ht => hG t (by omega)
-    obtain ⟨h3, h4⟩ := hG k (by omega)
-    rw [List.range_succ, List.flatMap_append, List.flatMap_singleton]
-    refine ⟨repFrom_append h1 (by rw [h2]; exact h3), ?_⟩
-    rw [List.length_append, h2, h4, grpOff_succ]
+    grind [Chazelle.Core.DownMath.repFrom_append, List.range_succ, List.flatMap_append, List.flatMap_singleton, List.length_append, grpOff_succ]
 
-theorem repFrom_rotate {li : Bool} {L : List SymPt} {i : ℕ}
+theorem repFrom_rotate {L : List SymPt} {i : ℕ}
     (hL : L.length = nk (interiorModel Q) S R) (h : RepFrom li Q S R L i) (m : ℕ) :
     RepFrom li Q S R (L.rotate m) (i + m) := by
   intro j hj
   rw [List.length_rotate] at hj
   have hpos : 0 < L.length := by omega
   have hjm := h ((j + m) % L.length) (Nat.mod_lt _ hpos)
-  rw [List.getD_eq_getElem _ _ (by rw [List.length_rotate]; exact hj), List.getElem_rotate,
-    ← List.getD_eq_getElem _ (.vtx 0) (Nat.mod_lt _ hpos)]
-  have e : (i + (j + m) % L.length) % nk (interiorModel Q) S R =
-      (i + m + j) % nk (interiorModel Q) S R := by
-    rw [hL, Nat.add_mod_mod]; congr 1; ring
-  rwa [e] at hjm
+  grind [Chazelle.Core.DownMath.RepFrom, List.length_rotate, List.getElem_rotate, Nat.add_mod_mod]
 
 /-! ## The points of the driver's host in walk order -/
+
+
+end
 
 /-- The points of a host item in walk order. -/
 def wpts (li : Bool) (n : ℕ) (it : HostItem) : List SymPt :=
   if li then it.pts n else (it.pts n).reverse
 
+section
+variable (li : Bool) (n : ℕ)
 /-- **The points of `regHost`**: the walk-order points of the walk items, reversed if `¬ li`. -/
-theorem regHost_pts (li : Bool) (n : ℕ) (N : NF) (r : ℕ) :
+theorem regHost_pts (N : NF) (r : ℕ) :
     (regHost li n N r).pts n =
       if li then (walkItems li n N r).flatMap (wpts li n)
       else ((walkItems li n N r).flatMap (wpts li n)).reverse := by
@@ -99,15 +97,16 @@ theorem regHost_pts (li : Bool) (n : ℕ) (N : NF) (r : ℕ) :
   · simp only [Bool.false_eq_true, ite_false]
     rw [List.reverse_flatMap]
     congr 1
-    funext it
-    simp [wpts]
-  · simp only [ite_true]
-    congr 1
+    core_grind
+  aesop
 
-theorem wpts_pt (li : Bool) (n : ℕ) (x : SymPt) : wpts li n (.pt x) = [x] := by
-  unfold wpts; cases li <;> simp [HostItem.pts]
+theorem wpts_pt (x : SymPt) : wpts li n (.pt x) = [x] := by
+  simp_all [wpts, HostItem.pts] <;> omega_nf
 
 /-! ## Runs -/
+
+
+end
 
 /-- `(y + n - 1 - x) mod n` for `y ≡ x + c (mod n)`: the arithmetic of `runCnt`. -/
 theorem runCnt_arith {n x c y : ℕ} (hx : x < n) (hc : 1 ≤ c) (hcn : c ≤ n)
@@ -160,8 +159,7 @@ theorem run_wpts {li : Bool} {n x c : ℕ} (_hn : 0 < n) (hx : x < n) (hc : c < 
     simp only [List.getElem_map, List.getElem_range]
     congr 1
     unfold ivB
-    simp only [ite_true]
-    rw [Nat.mod_add_mod, show x + 1 + m = x + (m + 1) by ring]
+    simp_all +arith
 
 end
 

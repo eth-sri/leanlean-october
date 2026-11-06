@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseOracleCArc
 public import Chazelle.Core.BruteRam2
 public import Chazelle.Core.ShotListLeaf
@@ -25,9 +27,6 @@ oracle bands, so that it survives the calls to the chain oracles (finding E7-B1)
   raised by `8`), and the running minimum flag `170070 := 0`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -151,16 +150,16 @@ theorem initI_exec {P : Polygon} {W : ℕ} (c : Config)
     refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
       by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
       by config_simp, ?_, ?_, ?_, ?_, fun a ha => ?_, trivial, rfl, rfl, rfl⟩
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
+    · simp only [Config.nmem_mk, upd]; ram_grind
+    · omega_nf
+    · omega_nf
+    · omega_nf
+    · simp only [Config.nmem_mk, upd]; grind
   have fM := BuildRam.exec_frameM e₁ wrM_initI
   replace rest : ∀ r, ¬ BinitR r → c₁.nreg r = c.nreg r := fun r hr =>
-    fM.1 r (by unfold BinitB; unfold BinitR at hr; simpa using hr)
+    fM.1 r (by simp_all [BinitB, BinitR] <;> omega_nf)
   have w₁ := e₁.wb_right
-  have hb : c₁.nreg 170011 = 1 := q11
+  
   -- the orientation bit
   obtain ⟨c₂, k₂, e₂, hk₂, b14, bl, r₂⟩ : ∃ c₂ k₂, Exec P W bitI c₁ c₂ k₂ ∧ k₂ ≤ 5 ∧
       (c₂.nreg 170014 = 1 ↔ c₁.nreg 170093 = 1) ∧ c₂.nreg 170014 ≤ 1 ∧
@@ -168,32 +167,30 @@ theorem initI_exec {P : Polygon} {W : ℕ} (c : Config)
     unfold bitI
     by_cases h1 : c₁.nreg 170093 < c₁.nreg 170011
     · refine ⟨_, _, .ifLtN_true h1 (Exec.constN w₁ 170014 0 (by omega)), by omega, ?_, ?_, ?_⟩
-      · simp only [upd_same]; omega
-      · simp only [upd_same]; omega
-      · simp only [upd_same]
+      · omega_nf
+      · omega_nf
+      · ram_simp
     by_cases h2 : c₁.nreg 170011 < c₁.nreg 170093
     · refine ⟨_, _, .ifLtN_false h1 (.ifLtN_true h2 (Exec.constN w₁ 170014 0 (by omega))),
         by omega, ?_, ?_, ?_⟩
-      · simp only [upd_same]; omega
-      · simp only [upd_same]; omega
-      · simp only [upd_same]
+      · omega_nf
+      · omega_nf
+      · ram_simp
     · refine ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 (Exec.constN w₁ 170014 1 (by omega))),
         by omega, ?_, ?_, ?_⟩
-      · simp only [upd_same]; exact ⟨fun _ => by omega, fun _ => trivial⟩
-      · simp only [upd_same]; omega
-      · simp only [upd_same]
+      all_goals (ram_simp <;> omega_nf)
   have k : ∀ r, r ≠ 170014 → c₂.nreg r = c₁.nreg r := fun r hr => by
-    rw [r₂]; simp [upd, hr]
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, by omega, by rw [k _ (by omega)]; exact q10,
-    by rw [k _ (by omega)]; exact q11, by rw [k _ (by omega)]; exact q12,
-    by rw [k _ (by omega)]; exact q18, by rw [k _ (by omega)]; exact q19,
-    by rw [k _ (by omega)]; exact q16, by rw [k _ (by omega)]; exact q17,
-    by rw [b14, q93], bl, by rw [k _ (by omega)]; exact q15, by rw [k _ (by omega)]; exact qA,
-    by rw [k _ (by omega)]; exact q70, ?_, ?_, ?_, ?_, fun a ha => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
+    rw [r₂]; grind [upd]
+  refine ⟨c₂, _, .seq e₁ e₂, by omega, by omega, by ram_grind,
+    by ram_grind, by ram_grind,
+    by ram_grind, by ram_grind,
+    by ram_grind, by ram_grind,
+    by omega, bl, by ram_grind, by ram_grind,
+    by ram_grind, ?_, ?_, ?_, ?_, fun a ha => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
   all_goals first
     | (rw [r₂]; simp only [Config.nmem_mk]; first | exact m0 | exact m1 | exact m2 | exact m3)
     | skip
-  · rw [r₂]; exact mlo a ha
+  · rw [r₂]; ram_simp
   · rw [k r (by unfold BinitR at hr; omega)]; exact rest r hr
   · rw [r₂]; exact rr
   · rw [r₂]; exact rm

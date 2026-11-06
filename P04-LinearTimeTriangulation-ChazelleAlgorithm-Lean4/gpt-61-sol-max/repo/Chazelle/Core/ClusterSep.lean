@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Separator.Clusters
 
 /-!
@@ -67,9 +69,7 @@ theorem exists_label' (hM : M.Planar) (δ : V → D) (hδ : ∀ v, M.vert (δ v)
     mem_of_eqvGen (M.faceRel T.coDarts) U hstep
       (fun x y hxy hy => hstep y x (faceRel_opp T.coDarts_oppClosed hxy) hy)
       (T.eqvGen_faceRel_coDarts hM.1 f (M.face (δ v))) (Or.inl rfl)
-  rcases hmem with h | h
-  · exact absurd h hfv
-  · exact h
+  ram_grind
 
 omit [DecidableEq F] in
 /-- The label of a vertex is unique. -/
@@ -105,7 +105,7 @@ def IsDesc (h g : F) : Prop := ∃ n : ℕ, C.parent^[n] h = g
 
 omit [Fintype F] in
 theorem parent_of_ne {g : F} (hg : g ≠ C.r0) : C.parent g = M.face (C.fpar g) := by
-  simp [parent, hg]
+  grind [parent]
 
 omit [Fintype F] in
 theorem isDesc_refl (g : F) : C.IsDesc g g := ⟨0, rfl⟩
@@ -116,10 +116,10 @@ theorem isDesc_parent_iff {h g : F} (hh : h ≠ g) : C.IsDesc h g ↔ C.IsDesc (
   constructor
   · rintro ⟨n, hn⟩
     rcases n with _ | n
-    · exact absurd hn hh
-    · exact ⟨n, by rw [Function.iterate_succ_apply] at hn; exact hn⟩
+    · simp_all
+    core_grind [Function.iterate_succ_apply]
   · rintro ⟨n, hn⟩
-    exact ⟨n + 1, by rw [Function.iterate_succ_apply]; exact hn⟩
+    exact ⟨n + 1, by simp_all⟩
 
 /-- The parent darts and their opposites. -/
 noncomputable def treeDarts : Finset D :=
@@ -139,7 +139,7 @@ theorem coDarts_eq (hM : M.Planar) : T.coDarts = C.treeDarts := by
     intro g hg g' hg' h
     have e1 := C.head g (Finset.ne_of_mem_erase hg)
     have e2 := C.head g' (Finset.ne_of_mem_erase hg')
-    rw [← e1, ← e2, h]
+    simp_all
   have hinj2 : Set.InjOn (fun g => M.opp (C.fpar g)) (Finset.univ.erase C.r0 : Finset F) := by
     intro g hg g' hg' h
     exact hinj1 hg hg' (M.opp_injective h)
@@ -155,11 +155,10 @@ theorem coDarts_eq (hM : M.Planar) : T.coDarts = C.treeDarts := by
     have a1 : M.face (C.fpar g') = g := by
       have := C.head g hg0; rw [← heq, M.opp_opp] at this; exact this
     have a2 : M.face (C.fpar g) = g' := by
-      have := C.head g' hg0'; rw [heq] at this; exact this
+      have := C.head g' hg0'; grind
     have l1 := C.lev g hg0
     have l2 := C.lev g' hg0'
-    rw [a2] at l1; rw [a1] at l2
-    omega
+    grind
   have hcard : C.treeDarts.card = 2 * (Fintype.card F - 1) := by
     unfold treeDarts
     rw [Finset.card_union_of_disjoint hdisj, Finset.card_image_of_injOn hinj1,
@@ -167,24 +166,20 @@ theorem coDarts_eq (hM : M.Planar) : T.coDarts = C.treeDarts := by
       Finset.card_univ]
     omega
   have hco := T.card_coDarts hM
-  have hF : 0 < Fintype.card F := Fintype.card_pos_iff.mpr ⟨C.r0⟩
+  
   exact (Finset.eq_of_subset_of_card_le hsub (by omega)).symm
 
 theorem mem_coDarts_iff (hM : M.Planar) {e : D} :
     e ∈ T.coDarts ↔ ∃ g, g ≠ C.r0 ∧ (e = C.fpar g ∨ e = M.opp (C.fpar g)) := by
   rw [C.coDarts_eq hM]
   unfold treeDarts
-  simp only [Finset.mem_union, Finset.mem_image, Finset.mem_erase, Finset.mem_univ, and_true]
-  constructor
-  · rintro (⟨g, hg, rfl⟩ | ⟨g, hg, rfl⟩)
-    · exact ⟨g, hg, Or.inl rfl⟩
-    · exact ⟨g, hg, Or.inr rfl⟩
-  · rintro ⟨g, hg, rfl | rfl⟩
-    · exact Or.inl ⟨g, hg, rfl⟩
-    · exact Or.inr ⟨g, hg, rfl⟩
+  ram_grind
 
+section
+variable (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F)
+include hM hg
 /-- **The side entered through a parent dart is the subtree below it.** -/
-theorem cross_fpar (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F) :
+theorem cross_fpar :
     h ∈ T.cross (C.fpar g) ↔ C.IsDesc h g := by
   classical
   rw [T.mem_cross, C.head g hg]
@@ -196,10 +191,7 @@ theorem cross_fpar (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F) :
       obtain ⟨he1, hne1, hne2⟩ := T.mem_Sd.mp he
       obtain ⟨x', hx'0, rfl | rfl⟩ := (C.mem_coDarts_iff hM).mp he1
       · -- crossing down the parent dart of `x'`
-        have hx'g : x' ≠ g := fun h => hne1 (by rw [h])
-        show C.IsDesc _ g
-        rw [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0]
-        exact hx
+        grind [Chazelle.Core.Cluster.CoTree.head, Chazelle.Core.Cluster.CoTree.isDesc_parent_iff, Chazelle.Core.Cluster.CoTree.parent_of_ne]
       · -- crossing up to the parent
         have hx'g : x' ≠ g := fun h => hne2 (by rw [h])
         show C.IsDesc _ g
@@ -210,11 +202,7 @@ theorem cross_fpar (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F) :
     · rintro x y ⟨e, he, rfl, rfl⟩ hy
       obtain ⟨he1, hne1, hne2⟩ := T.mem_Sd.mp he
       obtain ⟨x', hx'0, rfl | rfl⟩ := (C.mem_coDarts_iff hM).mp he1
-      · have hx'g : x' ≠ g := fun h => hne1 (by rw [h])
-        show C.IsDesc _ g
-        simp only [Set.mem_ofPred_eq] at hy
-        rw [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0] at hy
-        exact hy
+      · grind [Chazelle.Core.Cluster.CoTree.head, Chazelle.Core.Cluster.CoTree.isDesc_parent_iff, Chazelle.Core.Cluster.CoTree.parent_of_ne]
       · have hx'g : x' ≠ g := fun h => hne2 (by rw [h])
         show C.IsDesc _ g
         simp only [Set.mem_ofPred_eq] at hy
@@ -234,7 +222,7 @@ theorem cross_fpar (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F) :
         intro h0
         rw [h0, show C.parent C.r0 = C.r0 by simp [parent],
           Function.iterate_fixed (show C.parent C.r0 = C.r0 by simp [parent])] at hn
-        exact hg hn.symm
+        simp_all
       refine EqvGen.trans _ _ _ hpar (EqvGen.rel _ _ ⟨C.fpar h, ?_, ?_, C.head h hh0⟩)
       · refine T.mem_Sd.mpr ⟨C.mem h hh0, fun heq => hhg ?_, fun heq => ?_⟩
         · rw [← C.head h hh0, ← C.head g hg, heq]
@@ -245,12 +233,11 @@ theorem cross_fpar (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F) :
             rw [heq]; exact C.head g hg
           have l1 := C.lev g hg
           have l2 := C.lev h hh0
-          rw [← a1] at l1; rw [a2] at l2
-          omega
+          grind
       · exact (C.parent_of_ne hh0).symm
 
 /-- **The side entered through the opposite of a parent dart is the complement of the subtree.** -/
-theorem cross_opp_fpar (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F) :
+theorem cross_opp_fpar :
     h ∈ T.cross (M.opp (C.fpar g)) ↔ ¬ C.IsDesc h g := by
   have hd := C.mem g hg
   constructor
@@ -258,6 +245,9 @@ theorem cross_opp_fpar (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F) :
     exact T.notMem_cross_opp hM hd ((C.cross_fpar hM hg h).mpr h2) h1
   · intro h1
     exact (T.mem_cross_or hM hd h).resolve_left (fun h2 => h1 ((C.cross_fpar hM hg h).mp h2))
+
+
+end
 
 end CoTree
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutShK1M
 public import Chazelle.Core.ShootCutOrig
 
@@ -36,8 +38,8 @@ theorem inC_of_mem {C : Chain} {x : Point} (h : x ∈ C.set) : InC C x :=
 theorem conv_gt {lo a b t : ℝ} (ha : lo < a) (hb : lo < b) (h0 : 0 ≤ t) (h1 : t ≤ 1) :
     lo < (1 - t) * a + t * b := by
   rcases h0.lt_or_eq with h | h
-  · nlinarith [mul_pos h (sub_pos.2 hb), mul_nonneg (sub_nonneg.2 h1) (sub_pos.2 ha).le]
-  · subst h; simp; linarith
+  · nlinarith
+  nlinarith
 
 theorem conv_lt {hi a b t : ℝ} (ha : a < hi) (hb : b < hi) (h0 : 0 ≤ t) (h1 : t ≤ 1) :
     (1 - t) * a + t * b < hi := by
@@ -86,15 +88,13 @@ theorem noHit_ahead_side (hσ : σ = 1 ∨ σ = -1) (hz : z.1 = σ * C.radius)
 theorem noHit_above (hz : C.top.2 < z.2) (hS : ∀ x ∈ S, InC C x) : NoHit S z σ :=
   fun t _ hm => by
     have h := (hS _ hm).2.2
-    simp only [rayPt_snd] at h
-    linarith
+    grind [rayPt_snd]
 
 /-- **No hit on the line of the top or of the bottom of the box.** -/
 theorem noHit_ext (hz : C.radius ≤ |z.2|) (hS : ∀ x ∈ S, InC C x) : NoHit S z σ :=
   fun t _ hm => by
     have h := (hS _ hm).2.1
-    simp only [rayPt_snd] at h
-    linarith
+    grind [rayPt_snd]
 
 /-- **Shifting the origin along the side of the box behind the ray.** -/
 theorem box_shift (hσ : σ = 1 ∨ σ = -1) {R R' : ℝ} {z' : Point} (hz : z.1 = -σ * R)
@@ -106,8 +106,7 @@ theorem box_shift (hσ : σ = 1 ∨ σ = -1) {R R' : ℝ} {z' : Point} (hz : z.1
   simp only [abs_lt] at h
   rw [hz, hz']
   rcases hσ with rfl | rfl
-  · constructor <;> linarith [h.1.1, h.2.1]
-  · constructor <;> linarith [h.1.2, h.2.2]
+  all_goals ram_grind
 
 /-- **The relation of a query origin to the origin of the ray.** -/
 def QRel (P : Polygon) (C : Chain) (σ : ℝ) (z : Point) : QOrigin → Prop
@@ -123,31 +122,17 @@ theorem query_transfer {P : Polygon} (hσ : σ = 1 ∨ σ = -1) {Cα : Chain} {o
         rayPt z σ (σ * ((rayPt (o.eval (Qof P) Cα σ) σ t').1 - z.1)) =
           rayPt (o.eval (Qof P) Cα σ) σ t') ∧
       (NoHit S (o.eval (Qof P) Cα σ) σ → NoHit S z σ) := by
-  have hσ2 := sigma_sq hσ
+  
   cases o with
   | sym s =>
-    simp only [QRel] at hrel
-    simp only [QOrigin.eval, hrel]
-    refine ⟨fun t' ht' => ?_, id⟩
-    have : σ * ((rayPt z σ t').1 - z.1) = t' := by
-      rw [rayPt_fst]; ring_nf; rw [show σ ^ 2 = σ * σ by ring, hσ2]; ring
-    rw [this]; exact ⟨ht', rfl⟩
+    grind [QRel, QOrigin.eval, rayPt_fst]
   | box h =>
     simp only [QRel] at hrel
     simp only [QOrigin.eval]
     have hsh := box_shift (S := S) (z := z) hσ (R := C.radius) (R' := Cα.radius)
       (z' := (-σ * Cα.radius, ((Qof P).vtx h).2)) (by rw [hrel]) rfl (by rw [hrel])
       (fun x hx => ⟨(hSC x hx).1, (Cα.set_subset_box (hS hx)).1⟩)
-    refine ⟨fun t' ht' => ?_, hsh.2⟩
-    have hf := hsh.1 t' ht'
-    have e : σ * ((rayPt (-σ * Cα.radius, ((Qof P).vtx h).2) σ t').1 - z.1) =
-        t' + σ * ((-σ * Cα.radius, ((Qof P).vtx h).2).1 - z.1) := by
-      rw [rayPt_fst]; ring_nf; rw [show σ ^ 2 = σ * σ by ring, hσ2]; ring
-    rw [e]
-    refine ⟨hf, ?_⟩
-    ext
-    · simp only [rayPt_fst]; linear_combination (-σ * Cα.radius - z.1) * hσ2
-    · simp only [rayPt_snd]; rw [hrel]
+    grind [rayPt_fst, rayPt_snd]
 
 end ShootCut
 

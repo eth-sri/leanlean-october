@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildRen
 public import Chazelle.Core.NFBuildSpec
 public import Chazelle.Core.SortRam
@@ -49,21 +51,18 @@ theorem dirR_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
   refine ⟨cfgRen σ c', k, exec_of_ren σ_σ ex, hk, ⟨fun r hr => ?_, fun r hr => ?_, hfr.2.2.1,
     hfr.2.2.2.1, hfr.2.2.2.2⟩, ?_⟩
   · have := hfr.1 (σ r) hr
-    simp only [cfgRen_nreg, σ_σ] at this ⊢
-    exact this
+    simp_all [cfgRen_nreg, σ_σ] 
   · have := hfr.2.1 (σ r) hr
-    simp only [cfgRen, σ_σ] at this ⊢
-    exact this
+    simp_all [cfgRen, σ_σ] 
   · rw [cfgRen_nreg, σ_10502, hdir M hM]
     rfl
 
 /-- The registers `cmpR` writes. -/
 def BcmpR (r : ℕ) : Bool := decide (10000 ≤ r ∧ r < 10500) || decide (r = 40102)
 
-theorem wr_cmpPos' : wr (fun r => BcmpR (σ r)) cmpPos = true := by decide
 
 theorem wr_cmpR : wr BcmpR cmpR = true := by
-  rw [cmpR, wr_ren σ_σ]; exact wr_cmpPos'
+  rw [cmpR, wr_ren σ_σ]; aesop
 
 
 /-- **The key decision in band `bBuild`.** -/
@@ -76,8 +75,7 @@ theorem cmpR_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
   obtain ⟨c', k, ex, hk, hr⟩ := cmpPos_exec (P := P) hG hW (cfgRen σ d) hw' h1 hxn
   have ex' := exec_of_ren σ_σ ex
   refine ⟨cfgRen σ c', k, ex', hk, exec_frameB ex' wr_cmpR, ?_⟩
-  rw [cfgRen_nreg, show σ 40102 = 50102 by decide, hr]
-  rfl
+  aesop
 
 /-! ## Write sets -/
 
@@ -85,7 +83,7 @@ theorem σ_cases (r : ℕ) : (40000 ≤ r ∧ r < 41000 ∧ σ r = r + 10000) �
     (50000 ≤ r ∧ r < 51000 ∧ σ r = r - 10000) ∨ (41000 ≤ r ∧ r < 42000 ∧ σ r = r + 49000) ∨
     (90000 ≤ r ∧ r < 91000 ∧ σ r = r - 49000) ∨
     ((r < 40000 ∨ (42000 ≤ r ∧ r < 50000) ∨ (51000 ≤ r ∧ r < 90000) ∨ 91000 ≤ r) ∧ σ r = r) := by
-  unfold σ; split_ifs <;> omega
+  grind [σ]
 
 theorem BdirR_true {r : ℕ} (h : BdirR r = true) :
     (10000 ≤ r ∧ r < 10503) ∨ (40030 ≤ r ∧ r < 40100) := by
@@ -95,7 +93,7 @@ theorem BdirR_true {r : ℕ} (h : BdirR r = true) :
     rw [h3] at h <;> omega
 
 theorem BcmpR_true {r : ℕ} (h : BcmpR r = true) : (10000 ≤ r ∧ r < 10500) ∨ r = 40102 := by
-  unfold BcmpR at h; simp at h; omega
+  ram_grind
 
 theorem wr_dirR : wr BdirR dirR = true := by
   rw [dirR, wr_ren σ_σ]
@@ -126,8 +124,7 @@ theorem wr_halfS {qe qh se sh dd dst : ℕ} : wr (BhalfS dd dst) (halfS qe qh se
   have h2 : wr (BhalfS dd dst) cmpR = true :=
     wr_mono (fun r hr => by
       rcases BcmpR_true hr with h | h <;> simp [BhalfS, Bhalf] <;> omega) wr_cmpR
-  simp only [halfS, wr, block, wrOK, h1, h2, Bool.and_true, Bool.true_and]
-  simp [BhalfS, Bhalf]
+  simp_all [halfS, wr, block, wrOK, Bool.and_true, Bool.true_and, BhalfS, Bhalf] 
 
 /-- **One half of the comparison.**  The registers `qe, qh, se, sh, dd, dst` lie in
 `42100 … 42199`, the outputs are distinct from each other and from the inputs. -/
@@ -152,17 +149,16 @@ theorem halfS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
   have x₁ := Exec.copyN (P := P) hw 40002 qe
   set d₁ : Config := { d with nreg := upd d.nreg 40002 (d.nreg qe) } with hd₁
   have w₁ : WordsBounded W d₁ := x₁.wb_right
-  have r₁ : ∀ r, r ≠ 40002 → d₁.nreg r = d.nreg r := fun r hr => by rw [hd₁]; simp [hr]
+  have r₁ : ∀ r, r ≠ 40002 → d₁.nreg r = d.nreg r := fun r hr => by ram_simp
   obtain ⟨d₂, k₂, x₂, hk₂, f₂, dir₂⟩ := dirR_exec (P := P) hG hW d₁ w₁
-    (by rw [r₁ _ (by omega)]; exact hDW) (by rw [r₁ _ (by omega)]; exact hCW)
-    (M := M) (by rw [r₁ _ (by omega)]; exact hM) (by rw [hd₁]; simp; exact he)
+    (by ram_grind) (by ram_simp)
+    (M := M) (by ram_simp) (by ram_simp)
   have r₂ : ∀ r, BdirR r = false → d₂.nreg r = d₁.nreg r := f₂.1
   have nb : ∀ r, 42100 ≤ r → BdirR r = false := fun r hr => by
     by_contra h; have := BdirR_true (Bool.not_eq_false _ ▸ h); omega
   have w₂ := x₂.wb_right
-  have v : ∀ r, 42100 ≤ r → r < 42200 → d₂.nreg r = d.nreg r := fun r h1 h2 => by
-    rw [r₂ r (nb r h1), r₁ r (by omega)]
-  rw [show d₁.nreg 40002 = d.nreg qe by rw [hd₁]; simp] at dir₂
+  
+  rw [show d₁.nreg 40002 = d.nreg qe by ram_simp] at dir₂
   -- the loads
   obtain ⟨d₃, k₃, x₃, hk₃, q⟩ : ∃ d₃ k₃, Exec P W (block [.copyN dd 10502, .copyN 10500 qe,
       .copyN 10501 qh, .copyN 10011 se, .copyN 10012 sh, .constN 40102 1]) d₂ d₃ k₃ ∧ k₃ = 6 ∧
@@ -174,13 +170,11 @@ theorem halfS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
     exec_block
     · omega
     · refine ⟨rfl, ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r h1 h2 h3 h4 h5 h6 => ?_⟩, rfl⟩ <;>
-        simp (disch := omega) only [upd_same, upd_other]
-      all_goals first
-        | exact dir₂
-        | (rw [v _ (by omega) (by omega)])
+        ram_simp
+      all_goals ram_grind
   obtain ⟨q1, q2, q3, q4, q5, q6, q7, q8⟩ := q.1
   have w₃ := x₃.wb_right
-  obtain ⟨d₄, k₄, x₄, hk₄, f₄, bit₄⟩ := cmpR_exec (P := P) hG hW d₃ w₃ q6 (by rw [q3]; exact hqh)
+  obtain ⟨d₄, k₄, x₄, hk₄, f₄, bit₄⟩ := cmpR_exec (P := P) hG hW d₃ w₃ q6 (by omega)
   rw [q2, q3, q4, q5, q7] at bit₄
   have w₄ := x₄.wb_right
   have ex : Exec P W (halfS qe qh se sh dd dst) d
@@ -190,9 +184,8 @@ theorem halfS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
   refine ⟨_, _, ex, by omega, ?_, ?_, exec_frameB ex hwr⟩
   · simp only [upd_other _ _ _ n5]
     rw [f₄.1 _ (by
-      unfold BcmpR; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega), q1]
-  · simp only [upd_same]
-    rw [bit₄]
+      omega_nf), q1]
+  · omega_nf
 
 /-! ## Descriptors survive changes of memory above them -/
 
@@ -201,16 +194,7 @@ theorem hostAt_agree {m m' : ℕ → ℕ} {B E : ℕ} {H : Host} (h : HostAt m B
     (hE : B + 3 * H.length + 4 ≤ E) (hm : ∀ a, a < E → m' a = m a) : HostAt m' B H := by
   refine ⟨by rw [hm _ (by omega)]; exact h.1, fun i hi => ?_⟩
   have hh := h.2 i hi
-  have e1 := hm (B + 1 + 3 * i) (by omega)
-  have e2 := hm (B + 2 + 3 * i) (by omega)
-  have e3 := hm (B + 3 + 3 * i) (by omega)
-  generalize H.getD i (.run 0 0) = it at hh ⊢
-  cases it with
-  | run a l => obtain ⟨h1, h2, h3⟩ := hh; exact ⟨e1.trans h1, e2.trans h2, e3.trans h3⟩
-  | pt x =>
-    cases x with
-    | vtx j => obtain ⟨h1, h2⟩ := hh; exact ⟨e1.trans h1, e2.trans h2⟩
-    | onEdge e hh' => obtain ⟨h1, h2, h3⟩ := hh; exact ⟨e1.trans h1, e2.trans h2, e3.trans h3⟩
+  ram_grind
 
 /-- **A well-formed model descriptor survives every change of memory at or above its bound.** -/
 theorem desc_agree {P : Polygon} {E : ℕ} {m m' : ℕ → ℕ} {D : ℕ} {M : Model}
@@ -226,16 +210,12 @@ theorem desc_agree {P : Polygon} {E : ℕ} {m m' : ℕ → ℕ} {D : ℕ} {M : M
     have hH' : HostAt m' (m' (D + 1)) H := by
       rw [e1]; exact hostAt_agree hH (by omega) hm
     have hC' : ChainDescAt m' (D + 1) (Qof P) H C :=
-      ⟨hH', hP, by rw [hm _ (by omega)]; exact h2, by rw [hm _ (by omega)]; exact h3,
-        by rw [hm _ (by omega)]; exact h4, by rw [hm _ (by omega)]; exact h5⟩
-    refine ⟨Or.inl ⟨by rw [e0]; exact h0, H, C, hC', rfl⟩, hD, fun _ => ⟨hC6, fun H' C' hC'' => ?_⟩⟩
+      ⟨hH', hP, by grind, by grind,
+        by grind, by ram_simp⟩
+    refine ⟨Or.inl ⟨by omega, H, C, hC', rfl⟩, hD, fun _ => ⟨hC6, fun H' C' hC'' => ?_⟩⟩
     have hHH := hostAt_unique hC''.1 hC'.1
-    subst hHH
-    have hCC := chain_eq_of_desc hC'' hC'
-    subst hCC
-    exact ⟨hl, hwfH, by rw [e1]; exact hHE, hs⟩
-  · refine ⟨Or.inr ⟨by rw [e0]; exact h1, by rw [hm _ (by omega)]; exact hbit, rfl⟩, hD,
-      fun h0 => absurd (e0.symm.trans h0) (by omega)⟩
+    ram_grind
+  ram_grind
 
 
 end

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRTailSpec
 public import Chazelle.Core.DownPhaseDrvRLvC
 public import Chazelle.Core.DownPhaseDrvRCostSpec
@@ -53,10 +55,7 @@ def LoopOK (O : OracleIface) (sH sR sX : Stmt) (κH κR κX : ℕ) : Prop :=
       k ≤ (Kb + 2) * (L.length + 1) + 2 ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k
 
 theorem nextLvl_ge {lam : ℕ} (h : 16 ≤ lam) : 15 ≤ nextLvl lam := by
-  unfold nextLvl
-  have := ceilBeta_mono h
-  have e : Cost.ceilBeta 16 = 4 := by rw [Setup.ceilBeta_eq]
-  omega
+  simp_all [nextLvl, Setup.ceilBeta_eq] <;> omega_nf
 
 /-- The arithmetic of the cost of one level. -/
 theorem lv_cost (K X κH κR κX κc κT N Kb : ℕ) (hX : 1 ≤ X) (hN : N ≤ κc * X)
@@ -68,18 +67,8 @@ theorem lv_cost (K X κH κR κX κc κT N Kb : ℕ) (hX : 1 ≤ X) (hN : N ≤ 
     have a1 : κH ≤ κH * X := Nat.le_mul_of_pos_right _ hX
     have a2 : κX * (N + 1) ≤ κX * κc * X + κX * X := by
       have : κX * (N + 1) ≤ κX * (κc * X + X) := Nat.mul_le_mul_left _ (by omega)
-      calc κX * (N + 1) ≤ κX * (κc * X + X) := this
-        _ = κX * κc * X + κX * X := by ring
-    have e : (32 + κH + κR + κX + κX * κc + κc) * X =
-        32 * X + κH * X + κR * X + κX * X + κX * κc * X + κc * X := by ring
-    rw [e]
-    generalize κH * X = a at *
-    generalize κR * X = b at *
-    generalize κX * κc * X = d at *
-    generalize κX * X = f at *
-    generalize κc * X = g at *
-    generalize κX * (N + 1) = h at *
-    omega
+      grind
+    grind
   have h2 : (Kb + 2) * (K + 1) ≤ (32 + κH + κR + κX + κX * κc + κc) * ((K + 1) * X) := by
     calc (Kb + 2) * (K + 1) ≤ (32 + κH + κR + κX + κX * κc + κc) * X * (K + 1) :=
           Nat.mul_le_mul_right _ h1
@@ -87,15 +76,7 @@ theorem lv_cost (K X κH κR κX κc κT N Kb : ℕ) (hX : 1 ≤ X) (hN : N ≤ 
   have h3 : 9 * (K + 1) + 48 ≤ 57 * ((K + 1) * X) := by
     have : K + 1 ≤ (K + 1) * X := Nat.le_mul_of_pos_right _ hX
     omega
-  have e : (89 + κH + κR + κX + κX * κc + κc + κT) * ((K + 1) * X) =
-      57 * ((K + 1) * X) + (32 + κH + κR + κX + κX * κc + κc) * ((K + 1) * X) +
-        κT * (K + 1) * X := by ring
-  rw [e]
-  generalize (32 + κH + κR + κX + κX * κc + κc) * ((K + 1) * X) = u at *
-  generalize κT * (K + 1) * X = v at *
-  generalize (Kb + 2) * (K + 1) = w at *
-  generalize (K + 1) * X = y at *
-  omega
+  grind
 
 theorem rd21 (c : Config) (i : ℕ) : rd c bDownDrv i = c.nreg (210000 + i) := rfl
 
@@ -109,16 +90,14 @@ theorem ne_nil_of_big {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ
     (hbig : 2 ^ (Cost.ceilBeta (topGrade P.n) + 13) + 200 ≤ P.n) : L ≠ [] := by
   intro hL
   subst hL
-  have hE : E = [] := by simpa using hperm
+  have hE : E = [] := by simp_all
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
   have h := DrvB.n_le_of_empty hQ hE hwt
   have hn : (Qof P).n = P.n := shear_n _ _
   rw [hn] at h
   have h1 : 2 ^ (Cost.ceilBeta lam + 12) ≤ 2 ^ (Cost.ceilBeta (topGrade P.n) + 12) :=
     Nat.pow_le_pow_right (by norm_num) (by have := ceilBeta_mono hlp; omega)
-  have h2 : 2 ^ (Cost.ceilBeta (topGrade P.n) + 13) = 2 * 2 ^ (Cost.ceilBeta (topGrade P.n) + 12) := by
-    rw [pow_succ]; ring
-  omega
+  grind
 
 /-- The bounds `big`, `big2` of the context above the threshold. -/
 theorem big_of {n lam : ℕ} (h16 : 16 ≤ lam) (hlp : lam ≤ topGrade n)
@@ -130,12 +109,7 @@ theorem big_of {n lam : ℕ} (h16 : 16 ≤ lam) (hlp : lam ≤ topGrade n)
     ceilBeta_mono (by omega)
   have h1 : 2 ^ (Cost.ceilBeta (nextLvl lam) + 12) ≤ 2 ^ (Cost.ceilBeta (topGrade n) + 12) :=
     Nat.pow_le_pow_right (by norm_num) (by omega)
-  have h2 : 2 ^ (Cost.ceilBeta (topGrade n) + 13) = 2 * 2 ^ (Cost.ceilBeta (topGrade n) + 12) := by
-    rw [pow_succ]; ring
-  have h3 : 2 ^ (Cost.ceilBeta (nextLvl lam) + 12) = 4 * 2 ^ (Cost.ceilBeta (nextLvl lam) + 10) := by
-    rw [show Cost.ceilBeta (nextLvl lam) + 12 = Cost.ceilBeta (nextLvl lam) + 10 + 2 by omega,
-      pow_add]; ring
-  omega
+  grind
 
 /-- The `LeftInside` bit of the interior model descriptor. -/
 theorem li_of_desc {m : ℕ → ℕ} {B : ℕ} {Q : Polygon}
@@ -177,37 +151,34 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
   rw [← hκ] at hcost
   have hK' : c.nreg 210003 = K := hK
   replace hroom : c.nreg ALLOC + κLv κH κR κX κc κT * ((K + 1) * X) ≤ W := by
-    rw [hK'] at hroom; exact hroom
-  have hW11 : 11 ≤ W := by unfold hostWords at hWh; omega
+    grind
+  have hW11 : 11 ≤ W := by omega
   -- 1. the parameters
   obtain ⟨c₁, k₁, e₁, hk₁, a00, a01, a02, a03, a04, a06, a07, b08, b08', a14, a15, a16, a17, d09,
     d11, d99, d10, d12, d13, w₁, hreg, hmm, F₁⟩ := lvPar_exec (P := P) c hw (S := c.nreg 230000)
       (n := P.n) rfl hlam (MD := c.nreg 210001) rfl (K := K) hK' hS.holds h16 hlp hD
-      (by generalize κLv κH κR κX κc κT * ((K + 1) * X) = u at hcost hroom
-          generalize (Kb + 2) * (K + 1) = v at hcost
-          generalize κT * (K + 1) * X = w at hcost
-          omega) hW11
+      (by omega) hW11
   have keep : ∀ q, 210000 ≤ q → q ≤ 210005 → c₁.nreg q = c.nreg q := fun q h1 h2 =>
-    hreg q (by omega) (by omega) (by omega) (by unfold ALLOC; omega)
+    hreg q (by omega) (by omega) (by omega) (by omega_nf)
   have k230 : ∀ q, 230000 ≤ q → q ≤ 230001 → c₁.nreg q = c.nreg q := fun q h1 h2 =>
-    hreg q (by omega) (by omega) (by omega) (by unfold ALLOC; omega)
+    hreg q (by omega) (by omega) (by omega) (by omega_nf)
   have hc0 : c₁.nreg (coreReg 0) = c.nreg (coreReg 0) := k230 230000 le_rfl (by norm_num)
   have hc1 : c₁.nreg (coreReg 1) = c.nreg (coreReg 1) := k230 230001 (by norm_num) le_rfl
   -- 2. the context
   have ctx : LvCtx O P W c₁ L E reg lam := by
     refine ⟨hG, hW3, hWh, ?_, ?_, ?_, h16, hlp, ne_nil_of_big hG hperm hwt hlp (hn₀ _ hn), hok,
-      hperm, hsort, hdeg, hwt, ⟨g1, g2, g3, g4⟩, ?_, by rw [keep _ le_rfl (by norm_num), hlam],
+      hperm, hsort, hdeg, hwt, ⟨g1, g2, g3, g4⟩, ?_, by ram_simp,
       a02, a04, a06, a07, b08, ?_, ?_, a14, (big_of h16 hlp (hn₀ _ hn)).1,
       (big_of h16 hlp (hn₀ _ hn)).2, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     · rw [d09, hmm, hc0]; exact hS
-    · rw [d09, hmm, hc1]; exact hXh
-    · rw [hmm, hc1]; exact hcap
+    · grind
+    · grind
     · rw [d09, hmm, keep _ (by norm_num) le_rfl]; exact hN
     · rw [b08']; exact li_of_desc hDa.holds
-    · rw [d09, d99]
+    · omega
     · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hDa
     · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hD
-    · rw [keep _ (by norm_num) (by norm_num)]; exact hK
+    · ram_simp
     · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hLb
     · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hLa
     · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hEb
@@ -219,14 +190,14 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
       fun _ _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, by simp,
       fun _ => ⟨Qof P, 0, 1, le_rfl, by omega⟩,
       fun _ => BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E, fun _ => 0, fun _ => [],
-      by rw [d12]; simp, fun r hr => absurd hr (Nat.not_lt_zero r), Or.inl d13,
+      by ram_simp, fun r hr => absurd hr (Nat.not_lt_zero r), Or.inl d13,
       fun r hr => absurd hr (Nat.not_lt_zero r)⟩
   -- 4. the loop
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC + 3 * (K + 1) := d99
   obtain ⟨c₂, k₂, e₂, I₂, hk₂, hA₂⟩ := hloop P W c₁ c₁ L E reg lam Kb ctx le_rfl
     (by rw [hA₁]
         have hkb : (K + 1) * Kb ≤ (Kb + 2) * (K + 1) := by
-          rw [Nat.mul_comm]; exact Nat.mul_le_mul_right _ (by omega)
+          grind
         generalize κLv κH κR κX κc κT * ((K + 1) * X) = u at hcost hroom
         generalize (Kb + 2) * (K + 1) = v at hcost hkb
         generalize κT * (K + 1) * X = w at hcost
@@ -236,8 +207,7 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
   obtain ⟨c₃, k₃, e₃, hk₃, F₃, h00, hInv₃⟩ := hTm Kb P W c₁ c₂ L E reg lam ctx hcnt I₂
     (by generalize κLv κH κR κX κc κT * ((K + 1) * X) = u at hcost hroom
         generalize (Kb + 2) * (K + 1) = v at hcost hk₂
-        generalize κT * (K + 1) * X = w at hcost ⊢
-        omega)
+        grind)
   obtain ⟨-, -, -, -, m₂, rm₂, r₂, rr₂, o₂, a₂, -, -⟩ := I₂
   have ex : Exec P W (.seq lvPar (.seq (lvLoop sH sR sX) sT)) c c₃ (k₁ + (k₂ + k₃)) :=
     .seq e₁ (.seq e₂ e₃)
@@ -250,10 +220,10 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
     generalize (Kb + 2) * (K + 1) = v at hcost hk₂
     generalize κT * (K + 1) * X = w at hcost hk₃
     omega
-  · simp only [rd21, Nat.reduceAdd]; rw [h00, hlam]
+  · simp only [rd21, Nat.reduceAdd]; omega
   · simp only [rd21, Nat.reduceAdd]; rw [hlam]; exact hInv₃
   · -- the frame
-    have hA9 : c₁.nreg 211009 = c.nreg ALLOC := d09
+    
     refine ⟨fun r hr hrA => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩
     · rw [F₃.1 r hr hrA, r₂ r hr hrA, F₁.1 r (fun h => hr (by
         simp only [Finset.mem_singleton] at h; rw [h]; exact b21)) hrA]

@@ -99,13 +99,19 @@ def RegionTreeSpec : Prop :=
 
 /-! ### Added in the consolidated revision (findings C9, C10) -/
 
+section
+variable (M : Model) (c U : Set Point)
+include M c U
 /-- `U` contains the points just **above** every point of the chord `c` in the domain. -/
-def Model.AboveOf (M : Model) (c U : Set Point) : Prop :=
+def Model.AboveOf : Prop :=
   ∀ z ∈ c, z ∈ M.D → ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z.1, z.2 + δ) : Point) ∈ U
 
 /-- `U` contains the points just **below** every point of the chord `c` in the domain. -/
-def Model.BelowOf (M : Model) (c U : Set Point) : Prop :=
+def Model.BelowOf : Prop :=
   ∀ z ∈ c, z ∈ M.D → ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z.1, z.2 - δ) : Point) ∈ U
+
+
+end
 
 /-- **WP-B (finding C10): the side faced after an attachment.**  For a chord `c` of an admissible
 family `F` of a good model, attached at the walk position `(p, t)` at which no other chord of `F`

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvBPieces2
 public import Chazelle.Core.DownPhaseDrvBBkt
 public import Chazelle.Core.RestoreTRead
@@ -84,8 +86,7 @@ theorem regInit_exec (c : Config) (hw : WordsBounded W c) {MD K H B₂ : ℕ}
       d1.nreg 212020 = c.nmem (MD + 1) ∧ d1.nreg 212011 = 0 := by
     unfold regInitB
     exec_block
-    all_goals (try (config_simp; simp (config := { failIfUnchanged := false }) only
-      [h01, h03, h05, h19]; omega))
+    all_goals (try (config_simp; ram_grind))
     all_goals (try (refine ⟨by omega, ?_⟩))
     all_goals (repeat' apply And.intro)
     all_goals (config_simp <;> simp (config := { failIfUnchanged := false }) only
@@ -102,29 +103,29 @@ theorem regInit_exec (c : Config) (hw : WordsBounded W c) {MD K H B₂ : ℕ}
         d1 d2 k2 ∧ k2 ≤ 5 ∧ d2.nreg 212011 = (if c.nmem (MD + 1) = 1 then 1 else 0) := by
       by_cases c1 : d1.nreg 212020 < d1.nreg 212000
       · exact ⟨d1, 0 + 1, .ifLtN_true c1 (.skip hw1), by omega,
-          by rw [a11, ite_eq_right (by omega)]⟩
+          by simp_all⟩
       · by_cases c2 : d1.nreg 212000 < d1.nreg 212020
         · exact ⟨d1, 0 + 1 + 2, .ifLtN_false c1 (.ifLtN_true c2 (.skip hw1)), by omega,
-            by rw [a11, ite_eq_right (by omega)]⟩
+            by ram_grind⟩
         · refine spec_ifLtN_false c1 ?_
           refine spec_ifLtN_false c2 ?_
           exec_block
           · omega
           · refine ⟨by omega, ?_⟩
             config_simp
-            rw [ite_eq_left (by omega)]
+            ram_grind
     exact ⟨d2, k2, e2, hk2, v, exec_frameB e2 (by decide)⟩
   have g : ∀ r, r ≠ 212011 → d2.nreg r = d1.nreg r := fun r hr =>
-    f2.1 r (by simp only [decide_eq_false_iff_not]; exact hr)
-  refine ⟨d2, k1 + k2, .seq e1 e2, by omega, by rw [g _ (by decide), a00],
-    by rw [g _ (by decide), a01], by rw [g _ (by decide), a02], by rw [g _ (by decide), a10], v11,
-    by rw [g _ (by decide), a12], by rw [g _ (by decide), b02], by rw [g _ (by decide), b03],
-    by rw [g _ (by decide), b05], by rw [g _ (by decide), b06], by rw [g _ (by decide), b14],
-    by rw [g _ (by decide), b16], by rw [g _ (by decide), b17], by rw [g _ (by decide), b31],
-    by rw [g _ (by decide), a13], by rw [g _ (by decide), a14], by rw [g _ (by decide), a18],
-    by rw [g _ (by decide), b20], by rw [g _ (by decide), b21], by rw [g _ (by decide), b22],
-    f1.trans ⟨fun r hr => f2.1 r (by simp only [Binit, decide_eq_false_iff_not] at hr ⊢; omega),
-      fun r hr => f2.2.1 r (by simp only [Binit, decide_eq_false_iff_not] at hr ⊢; omega),
+    f2.1 r (by simp_all)
+  refine ⟨d2, k1 + k2, .seq e1 e2, by omega, by simp_all,
+    by simp_all, by simp_all, by simp_all, v11,
+    by simp_all, by simp_all, by simp_all,
+    by simp_all, by simp_all, by simp_all,
+    by simp_all, by simp_all, by simp_all,
+    by simp_all, by simp_all, by simp_all,
+    by simp_all, by simp_all, by simp_all,
+    f1.trans ⟨fun r hr => f2.1 r (by grind [Binit, decide_eq_false_iff_not]),
+      fun r hr => f2.2.1 r (by grind [Binit, decide_eq_false_iff_not]),
       f2.2.2⟩⟩
 
 end init

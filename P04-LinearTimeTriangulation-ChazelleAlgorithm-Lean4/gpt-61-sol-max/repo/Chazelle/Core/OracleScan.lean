@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleEdge
 
 /-!
@@ -41,25 +43,21 @@ theorem wrap_iff (hN : IsNF M Q N) (hGM : GoodModel M) {p : ℕ} (hp : p < N.arc
       obtain ⟨r, hr', hrj⟩ := NFLoc.seq_surj hN hj
       have hsr : sk M Q N r = ek M Q N p := by
         show M.key Q (N.arc (N.seq.getD r 0)).s = _
-        rw [hrj, hjs]
+        simp_all
       have := sk_mono hN (show r ≤ p by omega) hp
       linarith
     · intro hr
       set r := p + 1
       have hpr := starts_lt hN hGM hne (show p < r by omega) hr
       have hcr := (arc_facts hN hne hr).1
-      by_contra hc
-      exact hfree _ (by unfold sideInArc; rw [ite_eq_right hc]; exact Or.inl hpr) hcr
+      grind [sideInArc]
   · rw [Set.not_nonempty_iff_eq_empty] at hne
     have h1 := arcs_le_one_of_empty hN hGM hne
     obtain ⟨reg, -, -, harc⟩ := isArc_sj hN hp
     have heq : sk M Q N p = ek M Q N p := by
       rcases harc.2.2.2.2.1 with ⟨⟨c, hc, -⟩, -⟩ | ⟨-, h1', h2'⟩
-      · rw [hne] at hc; exact absurd hc (Set.notMem_empty _)
-      · rw [h1', h2']
-    constructor
-    · intro h; linarith
-    · intro h; omega
+      all_goals simp_all
+    ram_grind
 
 end Wrap
 
@@ -77,9 +75,7 @@ theorem scanLen_eq (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p : ℕ}
     scanLen C Q N p = scanLenR N (chainModel C).W.n N.arcs.length p := by
   unfold scanLen scanLenR
   have hw := wrap_iff hN (Or.inl ⟨C, hP, rfl⟩) hp
-  by_cases h : p + 1 < N.arcs.length
-  · rw [ite_eq_left (hw.2 h), ite_eq_left h]
-  · rw [ite_eq_right (fun h' => h (hw.1 h')), ite_eq_right h]
+  simp_all
 
 end Len
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepMachine18
 
 /-!
@@ -33,9 +35,7 @@ namespace Sweep
 theorem far_attach {M : Model} (hM : WalkAx M) {e : Set Point} (he : e ∈ M.Adm) (x : Point) :
     ∃ (p : ℕ) (t : ℝ), SideAttach M.W e p t ∧ sidePt M.W p t ≠ x := by
   obtain ⟨a, b, hab, -, -, -, ⟨⟨pa, ta, hAa, hAa'⟩, -⟩, ⟨⟨pb, tb, hBb, hBb'⟩, -⟩⟩ := hM.ends e he
-  by_cases hxa : x = a
-  · exact ⟨pb, tb, hBb, by rw [hBb', hxa]; exact Ne.symm hab⟩
-  · exact ⟨pa, ta, hAa, by rw [hAa']; exact Ne.symm hxa⟩
+  ram_grind
 
 section Machine
 

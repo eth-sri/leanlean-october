@@ -88,7 +88,7 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
     (hcl : ClFacts m B FL LAB k) (hord : OrdFacts m (N.arcs.length + 3) FL LAB DL nD ORD RK) :
     Robust E m fun m'' => ∃ V H C N B k, QAt P m'' O E V H C N B k := by
   intro m'' hm''
-  have hQn : (Qof P).n = P.n := shear_n _ _
+  
   have hN := hcan.1
   have hsimp : C.P.Simple := by rw [hCQ]; exact (shearInvariance (epsOf P) P).1 hG.1
   have hA0 := arcs_pos hsimp hN
@@ -116,7 +116,7 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
     have h1 : Robust A₀ m₀ fun m' => m' (m' (NB + 3) + (5 * i + 4)) = (N.chord i).dn :=
       fun m' hm' => by
         have := ((hNFw m' hm').2.2.2.2.2.1 i hi).2.2.2.2
-        simpa only [Nat.add_assoc] using this
+        omega
     have := (NFLoc.robust_addr2 h1).2; omega
   refine ⟨V, H, C, N, B, k, ?_⟩
   exact
@@ -165,7 +165,7 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
         have h1 : Robust A₀ m₀ fun m' => m' (m' (NB + 5) + (5 * r + 4)) = (N.region r).wt :=
           fun m' hm' => by
             have := ((hNFw m' hm').2.2.2.2.2.2.2.1 r hr).2.2.1
-            simpa only [Nat.add_assoc] using this
+            omega
         obtain ⟨h5, h54⟩ := NFLoc.robust_addr2 h1
         refine ⟨by show m₀ (NB + 5) + 5 * r + 4 < E; omega, fun t ht => ?_⟩
         show m₀ (NB + 7) + m'' (m₀ (NB + 5) + 5 * r + 1) + t < E
@@ -178,7 +178,6 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
               m₀ (NB + 7) + m₀ (m₀ (NB + 5) + 5 * r + 1) + t
             rw [hm' (NB + 7) (by omega), hm' (NB + 5) (by omega), hm' _ (by omega)])
           (fun m' hm' => ((hNFw m' hm').2.2.2.2.2.2.2.1 r hr).2.2.2.1 t ht)
-        have h' : m₀ (NB + 7) + m₀ (m₀ (NB + 5) + 5 * r + 1) + t < A₀ := this
         omega
       pos := fun j hj => by
         rw [hVA] at hj
@@ -190,7 +189,7 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
       FL_le := by show FL + (A + 3) ≤ E; omega
       LAB_le := by show LAB + (A + 3) ≤ E; omega
       hlab := by
-        have := (hcl.mono (m' := m'') (X := O) agE (by rw [hBN]; omega) (by rw [hBN]; omega)).hlab
+        have := (hcl.mono (m' := m'') (X := O) agE (by omega) (by omega)).hlab
         exact this
       dl := (hord.mono (m' := m'') (X := O) agE hFL hLAB hDL hORD hRK).dl
       dl_all := (hord.mono (m' := m'') (X := O) agE hFL hLAB hDL hORD hRK).dl_all
@@ -198,10 +197,10 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
       nD_le := by
         show nD ≤ 7 * k ^ 2
         rw [hord.nD_eq]
-        have := hcl.card; rw [hBN] at this; exact this
+        have := hcl.card; grind
       clus := fun l => by
-        have := (hcl.mono (m' := m'') (X := O) agE (by rw [hBN]; omega)
-          (by rw [hBN]; omega)).clus l
+        have := (hcl.mono (m' := m'') (X := O) agE (by omega)
+          (by omega)).clus l
         rw [hBN] at this; exact this
       k_pos := hcl.k_pos
       μ_le := by have := hcl.μ_le; rw [hBN] at this; exact this
@@ -229,13 +228,13 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
         have a2 := hchlt q' hq'
         rw [chLe_V_congr (V' := V) hVc.1 hVc.2.1 hVc.2.2.1 hVc.2.2.2] at hs
         refine (chLe_congr fun x hx => ?_).1 hs
-        have hxK : x < K := by rcases hx with rfl | rfl <;> assumption
+        have hxK : x < K := by omega
         have := hcb x hxK
         exact ⟨(ag0 _ (by show m₀ (NB + 3) + 5 * x < A₀; omega)).symm,
           (ag0 _ (by show m₀ (NB + 3) + 5 * x + 1 < A₀; omega)).symm⟩
       tab := fun j hj => by
         rw [hVL] at hj
-        show m'' (TB + j) = 2 ^ j; rw [agE _ (by omega)]; exact htab j hj
+        show m'' (TB + j) = 2 ^ j; rw [agE _ (by omega)]; grind
       A_lt := hAlt
       K_lt := hKlt
       L_le := by

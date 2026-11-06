@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseMirrorWalk
 public import Chazelle.Core.SpecBase
 
@@ -33,31 +35,16 @@ open Chazelle.Visibility (hseg rayPt)
 theorem mir_pt (x y : ℝ) : mir ((x, y) : Point) = (-x, y) := rfl
 
 theorem mir_rayPt (p : Point) (σ t : ℝ) : mir (rayPt p σ t) = rayPt (mir p) (-σ) t := by
-  apply Prod.ext <;> simp [mir, rayPt]; ring
+  grind [mir, rayPt]
 
 theorem hseg_mir (y a b : ℝ) : mir '' hseg y a b = hseg y (-b) (-a) := by
   ext x
-  rw [mem_image_mir]
-  simp only [hseg, mem_ofPred_eq, mir_fst, mir_snd]
-  constructor <;> rintro ⟨h1, h2, h3⟩ <;> exact ⟨h1, by linarith, by linarith⟩
+  grind [mem_image_mir, hseg, mem_ofPred_eq, mir_fst, mir_snd]
 
 /-- **Horizontal chords of the mirrored domain.** -/
 theorem isHChordIn_mir {D : Set Point} {y a b : ℝ} :
     IsHChordIn (mir '' D) y (-b) (-a) ↔ IsHChordIn D y a b := by
-  constructor
-  · intro h
-    refine ⟨by linarith [h.lt], fun hm => h.right_not ?_, fun hm => h.left_not ?_,
-      fun x h1 h2 => ?_⟩
-    · rw [mem_image_mir, mir_pt, neg_neg]; exact hm
-    · rw [mem_image_mir, mir_pt, neg_neg]; exact hm
-    · have := h.open_mem (-x) (by linarith) (by linarith)
-      rwa [mem_image_mir, mir_pt, neg_neg] at this
-  · intro h
-    refine ⟨by linarith [h.lt], fun hm => h.right_not ?_, fun hm => h.left_not ?_,
-      fun x h1 h2 => ?_⟩
-    · rwa [mem_image_mir, mir_pt, neg_neg] at hm
-    · rwa [mem_image_mir, mir_pt, neg_neg] at hm
-    · rw [mem_image_mir, mir_pt]; exact h.open_mem (-x) (by linarith) (by linarith)
+  grind [Chazelle.Chain.IsHChordIn, mem_image_mir, mir_pt, neg_neg]
 
 theorem closure_mir (U : Set Point) : closure (mir '' U) = mir '' closure U :=
   (mirHomeo.image_closure U).symm
@@ -67,20 +54,24 @@ theorem closure_mir (U : Set Point) : closure (mir '' U) = mir '' closure U :=
 /-- The mirror image of a family of sets. -/
 def mirF (F : Set (Set Point)) : Set (Set Point) := (fun c => mir '' c) '' F
 
-theorem mem_mirF {F : Set (Set Point)} {c : Set Point} : c ∈ mirF F ↔ mir '' c ∈ F := by
+section
+variable {F : Set (Set Point)}
+theorem mem_mirF {c : Set Point} : c ∈ mirF F ↔ mir '' c ∈ F := by
   constructor
   · rintro ⟨e, he, rfl⟩; rwa [image_mir_image_mir]
   · intro h; exact ⟨mir '' c, h, image_mir_image_mir c⟩
 
-theorem image_mem_mirF {F : Set (Set Point)} {e : Set Point} : mir '' e ∈ mirF F ↔ e ∈ F := by
+theorem image_mem_mirF {e : Set Point} : mir '' e ∈ mirF F ↔ e ∈ F := by
   rw [mem_mirF, image_mir_image_mir]
 
+
+end
+
 theorem mirF_mirF (F : Set (Set Point)) : mirF (mirF F) = F := by
-  ext c; rw [mem_mirF, mem_mirF, image_mir_image_mir]
+  grind [mem_mirF, image_mir_image_mir]
 
 theorem mirF_injective : Function.Injective (fun c : Set Point => mir '' c) := fun a b hab => by
-  have := congrArg (fun c : Set Point => mir '' c) hab
-  simpa only [image_mir_image_mir] using this
+  grind [image_mir_image_mir]
 
 theorem mirF_finite {F : Set (Set Point)} : (mirF F).Finite ↔ F.Finite :=
   ⟨fun h => by rw [← mirF_mirF F]; exact h.image _, fun h => h.image _⟩
@@ -103,12 +94,14 @@ theorem sUnion_mirF (F : Set (Set Point)) : ⋃₀ mirF F = mir '' ⋃₀ F := b
   · rintro ⟨e, he, hx⟩
     exact ⟨mir '' e, image_mem_mirF.2 he, mem_image_mir.2 hx⟩
 
-theorem freeIn_mir (D : Set Point) (F : Set (Set Point)) :
+section
+variable (D : Set Point) (F : Set (Set Point))
+theorem freeIn_mir :
     freeIn (mir '' D) (mirF F) = mir '' freeIn D F := by
   unfold freeIn; rw [sUnion_mirF, image_sdiff mir_injective]
 
 /-- **The regions of the mirrored family are the mirrored regions.** -/
-theorem regionsIn_mir (D : Set Point) (F : Set (Set Point)) :
+theorem regionsIn_mir :
     regionsIn (mir '' D) (mirF F) = mirF (regionsIn D F) := by
   ext U
   rw [mem_mirF]
@@ -116,11 +109,13 @@ theorem regionsIn_mir (D : Set Point) (F : Set (Set Point)) :
   rw [freeIn_mir]
   constructor
   · rintro ⟨z, hz, rfl⟩
-    refine ⟨mir z, mem_image_mir.1 hz, ?_⟩
-    rw [image_connectedComponentIn_mir, image_mir_image_mir]
+    grind [image_connectedComponentIn_mir, image_mir_image_mir]
   · rintro ⟨z, hz, hU⟩
-    refine ⟨mir z, mem_image_mir.2 (by rwa [mir_mir]), ?_⟩
+    refine ⟨mir z, mem_image_mir.2 (by simp_all), ?_⟩
     rw [← image_mir_image_mir U, hU, image_connectedComponentIn_mir]
+
+
+end
 
 theorem touchesIn_mir {D c U : Set Point} :
     TouchesIn (mir '' D) (mir '' c) (mir '' U) ↔ TouchesIn D c U := by
@@ -130,7 +125,7 @@ theorem touchesIn_mir {D c U : Set Point} :
   · rintro ⟨z, hz, hzU⟩
     exact ⟨mir z, mem_image_mir.1 hz, mem_image_mir.1 hzU⟩
   · rintro ⟨z, hz, hzU⟩
-    exact ⟨mir z, mem_image_mir.2 (by rwa [mir_mir]), mem_image_mir.2 (by rwa [mir_mir])⟩
+    exact ⟨mir z, mem_image_mir.2 (by simp_all), mem_image_mir.2 (by simp_all)⟩
 
 /-! ## Mirrored models -/
 
@@ -157,15 +152,12 @@ theorem isArc_empty {M : Model} {U : Set Point} {a b : ℝ} :
   constructor
   · rintro ⟨-, han, -, -, hc, -, hf⟩
     obtain ⟨ha, hb⟩ : a = 0 ∧ b = 0 := by
-      rcases hc with ⟨h, -⟩ | ⟨-, ha, hb⟩
-      · exact absurd h (hnc a)
-      · exact ⟨ha, hb⟩
+      grind
     subst ha hb
-    refine ⟨rfl, rfl, by exact_mod_cast han, fun p t hp ht0 ht1 => hf p t hp ht0 ht1 ?_⟩
-    unfold sideInArc; rw [ite_eq_right (lt_irrefl _)]
-    left; positivity
+    refine ⟨rfl, rfl, by simp_all, fun p t hp ht0 ht1 => hf p t hp ht0 ht1 ?_⟩
+    core_grind
   · rintro ⟨rfl, rfl, hn, hf⟩
-    have hn' : (0 : ℝ) < M.W.n := by exact_mod_cast hn
+    have hn' : (0 : ℝ) < M.W.n := by simp_all
     exact ⟨le_rfl, hn', le_rfl, hn', Or.inr ⟨rfl, rfl, rfl⟩, fun x _ => hnc x,
       fun p t hp ht0 ht1 _ => hf p t hp ht0 ht1⟩
 
@@ -177,7 +169,7 @@ theorem arcWt_self (M : Model) (a : ℝ) :
   ext p
   simp only [mem_ofPred_eq]
   constructor
-  · rintro ⟨h1, h2, -⟩; exact ⟨h1, h2⟩
+  · simp_all
   · rintro ⟨h1, h2⟩
     refine ⟨h1, h2, ?_⟩
     unfold sideInArc
@@ -185,8 +177,7 @@ theorem arcWt_self (M : Model) (a : ℝ) :
     by_cases h : (p : ℝ) + 1 / 2 = a
     · exact ⟨1 / 4, by norm_num, by norm_num, Or.inr (by linarith)⟩
     · rcases lt_or_gt_of_ne h with h | h
-      · exact ⟨1 / 2, by norm_num, by norm_num, Or.inr h⟩
-      · exact ⟨1 / 2, by norm_num, by norm_num, Or.inl h⟩
+      all_goals grind
 
 namespace ModelMir
 
@@ -195,12 +186,14 @@ include h
 
 theorem n_eq : M'.W.n = M.W.n := h.walk.n_eq
 
+section
+variable (F : Set (Set Point))
 /-- **Regions correspond.** -/
-theorem regions (F : Set (Set Point)) : M'.regions (mirF F) = mirF (M.regions F) := by
+theorem regions : M'.regions (mirF F) = mirF (M.regions F) := by
   unfold Model.regions; rw [h.D, regionsIn_mir]
 
 /-- **Degrees correspond.** -/
-theorem deg (F : Set (Set Point)) (U : Set Point) : M'.deg (mirF F) (mir '' U) = M.deg F U := by
+theorem deg (U : Set Point) : M'.deg (mirF F) (mir '' U) = M.deg F U := by
   unfold Model.deg
   have e : {e' | e' ∈ mirF F ∧ TouchesIn M'.D e' (mir '' U)} =
       (fun e => mir '' e) '' {e | e ∈ F ∧ TouchesIn M.D e U} := by
@@ -209,17 +202,14 @@ theorem deg (F : Set (Set Point)) (U : Set Point) : M'.deg (mirF F) (mir '' U) =
     · rintro ⟨he, ht⟩
       refine ⟨mir '' e', ⟨mem_mirF.1 he, ?_⟩, image_mir_image_mir e'⟩
       rw [h.D] at ht
-      rw [← touchesIn_mir, image_mir_image_mir]; exact ht
+      grind [touchesIn_mir, image_mir_image_mir]
     · rintro ⟨e, ⟨he, ht⟩, rfl⟩
       exact ⟨⟨e, he, rfl⟩, by rw [h.D]; exact touchesIn_mir.2 ht⟩
   rw [e, Set.ncard_image_of_injective _ mirF_injective]
 
-theorem deg' (F : Set (Set Point)) (U' : Set Point) :
-    M'.deg (mirF F) U' = M.deg F (mir '' U') := by
-  rw [← h.deg, image_mir_image_mir]
 
 /-- **Cut keys correspond** (reflected keys). -/
-theorem isCut (F : Set (Set Point)) {x' : ℝ} (hx0 : 0 ≤ x') (hxn : x' < M.W.n) :
+theorem isCut {x' : ℝ} (hx0 : 0 ≤ x') (hxn : x' < M.W.n) :
     M'.IsCut (mirF F) x' ↔ M.IsCut F (rk M.W.n c x') := by
   constructor
   · rintro ⟨e', he', p', t', hA, rfl⟩
@@ -234,6 +224,9 @@ theorem isCut (F : Set (Set Point)) {x' : ℝ} (hx0 : 0 ≤ x') (hxn : x' < M.W.
     refine ⟨_, ⟨e, he, rfl⟩, _, _, hA', ?_⟩
     rw [posMir_key h.walk.symm.c_lt hp hA.2.1 hA.2.2.1, h.n_eq, ← hx,
       rk_rk h.walk.c_lt hx0 hxn]
+
+
+end
 
 /-- **Facing reverses the walk edge.** -/
 theorem faces {p' : ℕ} (hp : p' < M.W.n) (t' : ℝ) (U : Set Point) :
@@ -284,15 +277,8 @@ theorem isArc {F : Set (Set Point)} (hF : F.Nonempty) (U : Set Point) {a' b' : �
       · intro hab e
         apply hab
         rw [← rk_rk hc ha0 han, ← rk_rk hc hb0 hbn, e]
-      · rintro hab rfl; exact hab rfl
-    rw [hne]
-    constructor
-    · rintro (⟨h1, h2, h3⟩ | ⟨h1, -⟩)
-      · exact Or.inl ⟨h2, h1, h3⟩
-      · exact absurd h1 hF'
-    · rintro (⟨h1, h2, h3⟩ | ⟨h1, -⟩)
-      · exact Or.inl ⟨h2, h1, h3⟩
-      · exact absurd h1 hF0
+      grind
+    grind
   have hnocut : (∀ x, sideInArc a' b' x → ¬ M'.IsCut (mirF F) x) ↔
       (∀ x, sideInArc (rk n c b') (rk n c a') x → ¬ M.IsCut F x) := by
     constructor
@@ -314,7 +300,7 @@ theorem isArc {F : Set (Set Point)} (hF : F.Nonempty) (U : Set Point) {a' b' : �
     constructor
     · intro H p t hp ht0 ht1 hin
       have hq := Nat.mod_lt (c + 2 * n - 1 - p) hn
-      have hq' : ((c + 2 * n - 1 - p) % n : ℕ) < (n : ℝ) := by exact_mod_cast hq
+      
       have hql : (((c + 2 * n - 1 - p) % n : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast hq
       have := H _ (1 - t) hq (by linarith) (by linarith) ?_
       · rwa [h.faces hq, idx_q_invol hc hp, sub_sub_cancel] at this
@@ -329,8 +315,7 @@ theorem isArc {F : Set (Set Point)} (hF : F.Nonempty) (U : Set Point) {a' b' : �
       exact (sideInArc_rk hc ha0 han hb0 hbn (by positivity) (by linarith)).1 hin
   unfold Model.IsArc
   constructor
-  · rintro ⟨-, -, -, -, h1, h2, h3⟩
-    exact ⟨rb0, rbn, ra0, ran, hcut.1 h1, hnocut.1 h2, hfaces.1 h3⟩
+  · grind
   · rintro ⟨-, -, -, -, h1, h2, h3⟩
     exact ⟨ha0, by rw [h.n_eq]; exact han, hb0, by rw [h.n_eq]; exact hbn, hcut.2 h1, hnocut.2 h2,
       hfaces.2 h3⟩
@@ -351,7 +336,7 @@ theorem arcWt {a' b' : ℝ} (ha0 : 0 ≤ a') (han : a' < M.W.n) (hb0 : 0 ≤ b')
     exact (sideInArc_rk hc ha0 han hb0 hbn (by positivity) (by linarith)).1 hin
   · rintro p₁ p₂ ⟨hp₁, -⟩ ⟨hp₂, -⟩ e
     rw [← idx_q_invol hc hp₁, ← idx_q_invol hc hp₂]
-    exact congrArg (fun q => (c + 2 * n - 1 - q) % n) e
+    grind
   · rintro p ⟨hp, hcnt, t, ht0, ht1, hin⟩
     have hq := Nat.mod_lt (c + 2 * n - 1 - p) hn
     have hql : (((c + 2 * n - 1 - p) % n : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast hq
@@ -372,7 +357,7 @@ theorem weight (F : Set (Set Point)) (U : Set Point) :
   rcases F.eq_empty_or_nonempty with rfl | hF
   · rw [mirF_empty]
     have e0 : M'.arcWt 0 0 = M.arcWt 0 0 := by
-      have hn' : (0 : ℝ) < M.W.n := by exact_mod_cast hn
+      have hn' : (0 : ℝ) < M.W.n := by simp_all
       rw [h.arcWt le_rfl hn' le_rfl hn', arcWt_self, arcWt_self]
     ext w
     simp only [mem_image, mem_ofPred_eq, Prod.exists]

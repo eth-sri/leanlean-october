@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleFree
 
 /-!
@@ -37,18 +39,24 @@ structure MainCtx (P : Polygon) (C : Chain) (V : QV) (N : NF) (B : BookData) (m 
 
 variable {P : Polygon} {C : Chain} {V : QV} {N : NF} {B : BookData} {m : ℕ → ℕ}
 
-theorem nodePts_sub (X : MainCtx P C V N B m) (u : ℕ) : nodePts m V C u ⊆ C.set := by
+section
+variable (X : MainCtx P C V N B m)
+include X
+theorem nodePts_sub (u : ℕ) : nodePts m V C u ⊆ C.set := by
   rw [nodePts_eq X.ch.hN X.hP X.mem X.ch.hT.hv.m]; exact nodeScan_subset u
 
-theorem dstarPts_sub (X : MainCtx P C V N B m) (k : ℕ) : dstarPts m V C k ⊆ C.set := by
+theorem dstarPts_sub (k : ℕ) : dstarPts m V C k ⊆ C.set := by
   rintro x ⟨i, -, hx⟩; exact nodePts_sub X _ hx
 
-theorem clusPts_sub (X : MainCtx P C V N B m) (l : ℕ) : clusPts m V C l ⊆ C.set := by
+theorem clusPts_sub (l : ℕ) : clusPts m V C l ⊆ C.set := by
   rintro x ⟨u, -, -, hx⟩; exact nodePts_sub X _ hx
 
-theorem clusPts3_sub (X : MainCtx P C V N B m) (p : ℕ) : clusPts3 m V C p ⊆ C.set := by
+theorem clusPts3_sub (p : ℕ) : clusPts3 m V C p ⊆ C.set := by
   unfold clusPts3
   exact Set.union_subset (Set.union_subset (clusPts_sub X _) (clusPts_sub X _)) (clusPts_sub X _)
+
+
+end
 
 /-- **The entry point**: the ray from the origin reaches the effective origin `(ζ, y)` after
 `d ≥ 0`, outside the box before. -/
@@ -63,32 +71,20 @@ theorem entry_facts {z : Point} (_hs : SemOK P C V z) (hnp : NotPast C V z) :
   by_cases hσ : V.σb = 1
   · rw [ite_eq_left hσ, sgnOf_one hσ]
     have hzR := hnp.1 hσ
-    refine ⟨by simp only [one_mul]; linarith [le_max_left z.1 (-C.radius)], ?_, ?_, ?_⟩
-    · rw [rayPt_right]; ext <;> simp
+    refine ⟨by simp_all, ?_, ?_, ?_⟩
+    · simp_all [rayPt_right] 
     · intro s hs0 hsd hb
       have := (abs_lt.1 hb.1)
-      simp only [rayPt_right] at this
-      simp only [one_mul] at hsd
-      rcases le_total z.1 (-C.radius) with h' | h'
-      · rw [max_eq_right h'] at hsd; linarith [this.1]
-      · rw [max_eq_left h'] at hsd; linarith
-    · rw [abs_le]; constructor
-      · exact le_max_right _ _
-      · exact max_le hzR.le (by linarith)
+      grind [rayPt_right, one_mul]
+    grind
   · rw [ite_eq_right hσ, sgnOf_ne hσ]
     have hzR := hnp.2 hσ
-    refine ⟨by linarith [min_le_left z.1 C.radius], ?_, ?_, ?_⟩
-    · rw [show (-1 : ℝ) * (min z.1 C.radius - z.1) = z.1 - min z.1 C.radius by ring, rayPt_left]
-      ext <;> simp
+    refine ⟨by simp_all, ?_, ?_, ?_⟩
+    · simp_all [rayPt_left] 
     · intro s hs0 hsd hb
       have := (abs_lt.1 hb.1)
-      simp only [rayPt_left] at this
-      rcases le_total z.1 C.radius with h' | h'
-      · rw [min_eq_left h'] at hsd; linarith
-      · rw [min_eq_right h'] at hsd; linarith [this.2]
-    · rw [abs_le]; constructor
-      · exact le_min hzR.le (by linarith)
-      · exact min_le_right _ _
+      grind [rayPt_left]
+    grind
 
 /-- **The answer of the main phase.** -/
 theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvLMHost
 
 /-!
@@ -46,18 +48,11 @@ theorem filter_range_lt {p p' : ℕ → Bool} (hpp : ∀ i, p i = true → p' i 
       List.length_append]
     have hle : ((List.range A).filter p).length ≤ ((List.range A).filter p').length :=
       (List.monotone_filter_right _ (fun {i} h => hpp i h)).length_le
-    rcases Nat.lt_succ_iff_lt_or_eq.1 hj with h | h
-    · have := ih h
-      have : ([A].filter p).length ≤ ([A].filter p').length := by
-        simp only [List.filter_cons, List.filter_nil]
-        cases h1 : p A
-        · simp
-        · simp [hpp A h1]
-      omega
-    · subst h
-      simp [hj1, hj0, hle]
+    grind
 
-theorem keyBkt_mono (Q : Polygon) (N : NF) {x y : WPos}
+section
+variable (Q : Polygon) (N : NF) {x y : WPos}
+theorem keyBkt_mono
     (h : (interiorModel Q).key Q y ≤ (interiorModel Q).key Q x) :
     keyBkt Q N y ≤ keyBkt Q N x := by
   classical
@@ -68,23 +63,22 @@ theorem keyBkt_mono (Q : Polygon) (N : NF) {x y : WPos}
         ((List.range N.arcs.length).filter fun j =>
           decide ((interiorModel Q).key Q (N.arc j).s < (interiorModel Q).key Q x)).length :=
       (List.monotone_filter_right _ (fun {i} hi => by
-        simp only [decide_eq_true_eq] at hi ⊢; linarith)).length_le
+        aesop (add safe (by nlinarith)))).length_le
     by_cases hex : ∃ j, j < N.arcs.length ∧
         (interiorModel Q).key Q (N.arc j).s = (interiorModel Q).key Q y
     · obtain ⟨j, hj, hjy⟩ := hex
       have hlt := filter_range_lt (A := N.arcs.length) (j := j)
         (p := fun j => decide ((interiorModel Q).key Q (N.arc j).s < (interiorModel Q).key Q y))
         (p' := fun j => decide ((interiorModel Q).key Q (N.arc j).s < (interiorModel Q).key Q x))
-        (fun i hi => by simp only [decide_eq_true_eq] at hi ⊢; linarith) hj
-        (by simp only [decide_eq_true_eq]; linarith) (by simp [hjy])
+        (fun i hi => by grind) hj
+        (by simp_all) (by simp [hjy])
       rw [ite_eq_left ⟨j, hj, hjy⟩]
-      split_ifs <;> omega
-    · rw [ite_eq_right hex]
-      split_ifs <;> omega
+      omega
+    grind
   · unfold keyBkt; rw [h]
 
 /-- **A smaller bucket means a smaller key.** -/
-theorem key_lt_of_keyBkt_lt (Q : Polygon) (N : NF) {x y : WPos}
+theorem key_lt_of_keyBkt_lt
     (h : keyBkt Q N x < keyBkt Q N y) :
     (interiorModel Q).key Q x < (interiorModel Q).key Q y := by
   by_contra hc
@@ -93,6 +87,9 @@ theorem key_lt_of_keyBkt_lt (Q : Polygon) (N : NF) {x y : WPos}
   omega
 
 /-! ## Counting the ends of a bucket -/
+
+
+end
 
 section count
 
@@ -103,21 +100,20 @@ theorem bcnt_congr {bk bk' : ℕ → ℕ} {n b : ℕ} (h : ∀ q, q < n → bk q
   unfold bcnt bfilt
   congr 1
   refine List.filter_congr fun q hq => ?_
-  rw [List.mem_range] at hq
-  rw [h q hq]
+  simp_all
 
-theorem bcnt_le (bk : ℕ → ℕ) (n b : ℕ) : bcnt bk n b ≤ n := by
-  unfold bcnt bfilt
-  have := List.length_filter_le (fun q => decide (bk q = b)) (List.range n)
-  rwa [List.length_range] at this
+section
+variable (bk : ℕ → ℕ)
 
-theorem bcnt_add (bk : ℕ → ℕ) (a c b : ℕ) :
+theorem bcnt_add (a c b : ℕ) :
     bcnt bk (a + c) b = bcnt bk a b + bcnt (fun q => bk (a + q)) c b := by
   induction c with
-  | zero => simp [bcnt, bfilt]
+  | zero => aesop
   | succ c ih =>
-    rw [← Nat.add_assoc, DrvR.bcnt_succ, ih, DrvR.bcnt_succ (bk := fun q => bk (a + q))]
-    split_ifs <;> omega
+    grind [Nat.add_assoc, DrvR.bcnt_succ]
+
+
+end
 
 /-- The number of ends of `l` in bucket `b`. -/
 noncomputable def cntB (Q : Polygon) (N : NF) (l : List (ℕ × ℕ × ℕ)) (b : ℕ) : ℕ :=
@@ -125,8 +121,7 @@ noncomputable def cntB (Q : Polygon) (N : NF) (l : List (ℕ × ℕ × ℕ)) (b 
 
 theorem endPos_append_left {l₁ l₂ : List (ℕ × ℕ × ℕ)} {q : ℕ} (hq : q < 2 * l₁.length) :
     DrvR.endPos (l₁ ++ l₂) q = DrvR.endPos l₁ q := by
-  unfold DrvR.endPos
-  rw [List.getD_append _ _ _ _ (by omega)]
+  grind [DrvR.endPos]
 
 theorem endPos_append_right (l₁ l₂ : List (ℕ × ℕ × ℕ)) (q : ℕ) :
     DrvR.endPos (l₁ ++ l₂) (2 * l₁.length + q) = DrvR.endPos l₂ q := by
@@ -137,7 +132,6 @@ theorem endPos_append_right (l₁ l₂ : List (ℕ × ℕ × ℕ)) (q : ℕ) :
 
 variable {Q : Polygon} {N : NF}
 
-theorem cntB_nil (b : ℕ) : cntB Q N [] b = 0 := by simp [cntB, bcnt, bfilt]
 
 theorem cntB_append (l₁ l₂ : List (ℕ × ℕ × ℕ)) (b : ℕ) :
     cntB Q N (l₁ ++ l₂) b = cntB Q N l₁ b + cntB Q N l₂ b := by
@@ -145,23 +139,23 @@ theorem cntB_append (l₁ l₂ : List (ℕ × ℕ × ℕ)) (b : ℕ) :
   rw [List.length_append, Nat.mul_add, bcnt_add]
   congr 1
   · exact bcnt_congr fun q hq => by simp only [endPos_append_left hq]
-  · exact bcnt_congr fun q _ => by simp only [endPos_append_right]
+  simp_all [endPos_append_right] 
 
-theorem cntB_flatMap (Lx : ℕ → List (ℕ × ℕ × ℕ)) (R b : ℕ) :
+section
+variable (Lx : ℕ → List (ℕ × ℕ × ℕ))
+theorem cntB_flatMap (R b : ℕ) :
     cntB Q N ((List.range R).flatMap Lx) b = ∑ r ∈ Finset.range R, cntB Q N (Lx r) b := by
   induction R with
-  | zero => simp [cntB_nil]
+  | zero => aesop
   | succ R ih =>
-    rw [List.range_succ, List.flatMap_append, cntB_append, ih, Finset.sum_range_succ]
-    simp
+    grind [List.range_succ, List.flatMap_append, cntB_append, Finset.sum_range_succ]
 
-theorem length_flatMap_range (Lx : ℕ → List (ℕ × ℕ × ℕ)) (R : ℕ) :
+theorem length_flatMap_range (R : ℕ) :
     ((List.range R).flatMap Lx).length = ∑ r ∈ Finset.range R, (Lx r).length := by
-  induction R with
-  | zero => simp
-  | succ R ih =>
-    rw [List.range_succ, List.flatMap_append, List.length_append, ih, Finset.sum_range_succ]
-    simp
+  aesop (add simp [List.range_succ, List.flatMap_append, List.length_append, Finset.sum_range_succ]) (add safe (by omega))
+
+
+end
 
 /-- **A bucket fed by two regions** holds at most `4 M` ends. -/
 theorem cntB_flat_le {Lx : ℕ → List (ℕ × ℕ × ℕ)} {R M b : ℕ} (rA rB : ℕ)
@@ -173,21 +167,10 @@ theorem cntB_flat_le {Lx : ℕ → List (ℕ × ℕ × ℕ)} {R M b : ℕ} (rA r
   rw [cntB_flatMap]
   have hper : ∀ r ∈ Finset.range R, cntB Q N (Lx r) b ≤
       (if r = rA then 2 * M else 0) + (if r = rB then 2 * M else 0) := by
-    intro r hr
-    rw [Finset.mem_range] at hr
-    by_cases hab : r = rA ∨ r = rB
-    · have h1 : cntB Q N (Lx r) b ≤ 2 * M := (bcnt_le _ _ _).trans (by have := hM r hr; omega)
-      rcases hab with h | h <;> split_ifs <;> omega
-    · have h0 : cntB Q N (Lx r) b = 0 := by
-        unfold cntB bcnt bfilt
-        rw [List.length_eq_zero_iff, List.filter_eq_nil_iff]
-        intro q hq hqb
-        rw [List.mem_range] at hq
-        exact hab (hreg r hr q hq (of_decide_eq_true hqb))
-      rw [h0]; exact Nat.zero_le _
+    core_grind [Finset.mem_range, bcnt, bfilt, List.length_eq_zero_iff, List.filter_eq_nil_iff, List.mem_range]
   refine (Finset.sum_le_sum hper).trans ?_
   rw [Finset.sum_add_distrib, Finset.sum_ite_eq', Finset.sum_ite_eq']
-  split_ifs <;> omega
+  grind
 
 end count
 
@@ -199,10 +182,8 @@ theorem wposOf_new' {L L₂ : List (ℕ × ℕ × ℕ)} {q : ℕ} (_hq : q < 2 *
   have e2 : (2 * L.length + q) / 2 = L.length + q / 2 := by omega
   have e3 : (2 * L.length + q) % 2 = q % 2 := by omega
   have hg : (L ++ L₂).getD (L.length + q / 2) (0, 0, 0) = L₂.getD (q / 2) (0, 0, 0) := by
-    rw [List.getD_append_right _ _ _ _ (by omega), Nat.add_sub_cancel_left]
-  unfold wposOf DrvR.endPos
-  rw [e3, e2]
-  simp only [BuildRegions.crec, hg]
+    grind
+  grind [wposOf, DrvR.endPos, BuildRegions.crec]
 
 /-- **Bucket order gives code order.** -/
 theorem codeLe_of_keyBkt (Q : Polygon) (N : NF) {L L₂ : List (ℕ × ℕ × ℕ)} {q q' : ℕ}
@@ -255,7 +236,7 @@ theorem gs_strict {k k' : ℕ} (hk : k < (gapStarts (interiorModel Q) Q L E).len
   · have := DrvD.gs_lt_gs (M := interiorModel Q) (Q := Q) (L := L) (E := E) hc
       (by omega)
     omega
-  · subst hc; omega
+  simp_all
 
 /-! ## The bucket of a key -/
 
@@ -264,10 +245,7 @@ theorem len_filter_lt (c A : ℕ) :
   induction A with
   | zero => simp
   | succ A ih =>
-    rw [List.range_succ, List.filter_append, List.length_append, ih]
-    by_cases h : A < c
-    · simp [h]; omega
-    · simp [h]; omega
+    grind [List.range_succ, List.filter_append, List.length_append]
 
 /-- The bucket of a key, from the number `c` of arc starts below it. -/
 theorem keyBkt_eq {x : WPos} {A c : ℕ}
@@ -287,16 +265,7 @@ theorem keyBkt_eq {x : WPos} {A c : ℕ}
     refine List.filter_congr fun i hi => ?_
     rw [List.mem_range] at hi
     exact decide_eq_decide.2 (h i hi)
-  have hm : min (BuildNF.buildNF (interiorModel Q) Q L E).arcs.length c = c := Nat.min_eq_right hc
-  constructor
-  · intro hex
-    unfold st at hex
-    unfold keyBkt
-    rw [hf, len_filter_lt, hm, ite_eq_left hex]
-  · intro hex
-    unfold st at hex
-    unfold keyBkt
-    rw [hf, len_filter_lt, hm, ite_eq_right hex, Nat.add_zero]
+  simp_all [st, keyBkt, len_filter_lt, Nat.add_zero] 
 
 /-- The first arc of bucket `b` (`A` arcs). -/
 def arcA (A b : ℕ) : ℕ := if b = 0 then A - 1 else (b - 1) / 2
@@ -324,7 +293,7 @@ theorem st_lt {i i' : ℕ} (hii : i < i') (hi' : i' < (BuildNF.buildNF (interior
   have h2 := DrvD.gs_lt_gs (M := interiorModel Q) (Q := Q) (L := L) (E := E) hii hi'
   have h3 := DrvD.kE_mono hsort (show DrvD.gs (interiorModel Q) Q L E i + 1 ≤
     DrvD.gs (interiorModel Q) Q L E i' by omega) (DrvD.gs_lt_len hi')
-  linarith [h1.2]
+  linarith
 
 theorem st_le {i i' : ℕ} (hii : i ≤ i')
     (hi' : i' < (BuildNF.buildNF (interiorModel Q) Q L E).arcs.length) :
@@ -341,7 +310,7 @@ theorem key_e_eq {j : ℕ} (hj : j + 1 < (BuildNF.buildNF (interiorModel Q) Q L 
   rw [hA] at hj
   unfold st
   rw [DrvD.key_e hK hE hj, DrvD.key_s hK hj]
-  have h1 := DrvD.gs_succ (M := interiorModel Q) (Q := Q) (L := L) hE (j := j) hj
+  
   have h2 := DrvD.gs_lt_gs (M := interiorModel Q) (Q := Q) (L := L) (E := E)
     (show j < j + 1 by omega) hj
   refine kE_const hsort (by omega) (DrvD.gs_lt_len hj) fun m hm1 hm2 hm => ?_
@@ -397,31 +366,28 @@ theorem arc_of_bkt {j : ℕ} {x : WPos}
   rcases hx with hx | hx | hx
   · -- the start of arc `j`
     have := (hkb j hj.le (fun i hi => ⟨fun h => by
-        by_contra h'; have := hle j i (by omega) hi; linarith,
-      fun h => by rw [hx]; exact hlt i j h hj⟩)).1 ⟨j, hj, hx.symm⟩
-    left; rw [this]; unfold arcA; rw [ite_eq_right (by omega)]; omega
+        grind,
+      fun h => by grind⟩)).1 ⟨j, hj, hx.symm⟩
+    grind [arcA]
   · rcases Nat.lt_or_ge (j + 1) A with hj1 | hj1
     · rw [hke.1 hj1] at hx
       have := (hkb (j + 1) hj1.le (fun i hi => ⟨fun h => by
-          by_contra h'; have := hle (j + 1) i (by omega) hi; linarith,
-        fun h => by rw [hx]; exact hlt i (j + 1) h hj1⟩)).1 ⟨j + 1, hj1, hx.symm⟩
-      right; rw [this]; unfold arcB; rw [ite_eq_right (by omega)]; omega
+          grind,
+        fun h => by grind⟩)).1 ⟨j + 1, hj1, hx.symm⟩
+      grind [arcB]
     · rw [hke.2 (by omega)] at hx
       have := (hkb 0 (Nat.zero_le _) (fun i hi => ⟨fun h => by
           have := hle 0 i (by omega) hi; linarith, fun h => by omega⟩)).1 ⟨0, by omega, hx.symm⟩
-      right; rw [this]; unfold arcB; rw [ite_eq_left (by omega)]; omega
+      grind [arcB]
   · rcases Nat.lt_or_ge (j + 1) A with hj1 | hj1
     · rw [hke.1 hj1] at hx
       unfold sideInArc at hx
       rw [ite_eq_left (hlt j (j + 1) (by omega) hj1)] at hx
       have := (hkb (j + 1) hj1.le (fun i hi => ⟨fun h => by
-          by_contra h'; have := hle (j + 1) i (by omega) hi; linarith,
-        fun h => by have := hle i j (by omega) hj; linarith⟩)).2 (by
-          rintro ⟨i, hi, hie⟩
-          rcases Nat.lt_or_ge j i with hji | hji
-          · have := hle (j + 1) i (by omega) hi; linarith
-          · have := hle i j hji hj; linarith)
-      left; rw [this]; unfold arcA; rw [ite_eq_right (by omega)]; omega
+          grind,
+        fun h => by grind⟩)).2 (by
+          grind)
+      grind [arcA]
     · rw [hke.2 (by omega)] at hx
       unfold sideInArc at hx
       rw [ite_eq_right (by have := hle 0 j (by omega) hj; linarith)] at hx
@@ -430,12 +396,12 @@ theorem arc_of_bkt {j : ℕ} {x : WPos}
           fun _ => by have := hle i j (by omega) hj; linarith⟩)).2 (by
             rintro ⟨i, hi, hie⟩
             have := hle i j (by omega) hj; linarith)
-        left; rw [this]; unfold arcA; rw [ite_eq_right (by omega)]; omega
+        grind [arcA]
       · have := (hkb 0 (Nat.zero_le _) (fun i hi => ⟨fun h => by
             have := hle 0 i (by omega) hi; linarith, fun h => by omega⟩)).2 (by
             rintro ⟨i, hi, hie⟩
             have := hle 0 i (by omega) hi; linarith)
-        left; rw [this]; unfold arcA; rw [ite_eq_left rfl]; omega
+        grind [arcA]
 
 /-- **At most `4 M` ends per bucket.** -/
 theorem bcnt_le_four {reg : ℕ → Set Point}
@@ -461,8 +427,7 @@ theorem bcnt_le_four {reg : ℕ → Set Point}
   obtain ⟨j, hj, hjx⟩ := hon r hr q hq
   obtain ⟨hjA, hjr⟩ := (hregs.2.2.1.2.2.2 r hr j).1 hj
   rcases arc_of_bkt hK hperm hsort hjA hjx with h | h
-  · left; rw [← hjr, h, hqb]
-  · right; rw [← hjr, h, hqb]
+  all_goals simp_all
 
 end arcs
 

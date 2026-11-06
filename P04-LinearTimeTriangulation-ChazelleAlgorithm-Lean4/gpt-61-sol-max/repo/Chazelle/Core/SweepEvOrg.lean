@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvSym
 public import Chazelle.Core.SweepEvOrgM
 public import Chazelle.Core.SweepIoLH
@@ -68,7 +70,9 @@ def orgHead : Stmt := .seq (block orgLoad) (.seq orgPick (normS (sw 21) oE oC oN
 
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
-theorem orgLoad_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) :
+section
+variable (m f : ℕ → ℕ)
+theorem orgLoad_val (hk1 : f K1 = 1) (hk3 : f K3 = 3) :
     regB m orgLoad f oH = m (m (f (sw 4) + 3) + 5 * f oK) ∧
     regB m orgLoad f oL = m (m (f (sw 4) + 3) + 5 * f oK + 1) ∧
     regB m orgLoad f oR = m (m (f (sw 4) + 3) + 5 * f oK + 2) ∧
@@ -79,19 +83,17 @@ theorem orgLoad_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) :
   have e1 : f 240611 = 1 := hk1
   have e3 : f 240616 = 3 := hk3
   simp only [orgLoad, regB, regI, upd, oX, oK, oH, oL, oR, oUp, oDn, oC, oFC, K1, K3, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e3]
-  refine ⟨congrArg m (by ring), congrArg m (by ring), congrArg m (by ring), congrArg m (by ring),
-    congrArg m (by ring), congrArg m (by ring), congrArg m (by ring)⟩
+  simp_all +arith
 
-theorem orgLoad_other (m f : ℕ → ℕ) {q : ℕ} (h : q < sw 2202 ∨ sw 2213 < q) :
+theorem orgLoad_other {q : ℕ} (h : q < sw 2202 ∨ sw 2213 < q) :
     regB m orgLoad f q = f q :=
   regB_other m orgLoad f (fun i hi => by
     simp only [orgLoad, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
       rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> intro he <;> subst he <;>
-      simp [oX, oH, oL, oR, oUp, oDn, oC, oFC, sw] at h)
+      omega_nf)
 
-theorem orgLoad_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) (hb : f (sw 4) + 3 ≤ W)
+theorem orgLoad_ok (hk1 : f K1 = 1) (hk3 : f K3 = 3) (hb : f (sw 4) + 3 ≤ W)
     (hb2 : m (f (sw 4) + 3) + 5 * f oK + 4 ≤ W) (hh : m (m (f (sw 4) + 3) + 5 * f oK) + 1 ≤ W) :
     okB W m orgLoad f := by
   have e1 : f 240611 = 1 := hk1
@@ -105,16 +107,10 @@ theorem orgLoad_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) (hb : f
       m (f 240004 + 3) + 5 * f 242200 := by ring
     rw [this]; exact hh
   simp only [orgLoad, okB, okI, regI, upd, oX, oK, oH, oL, oR, oUp, oDn, oC, oFC, K1, K3, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e3]
-  refine ⟨⟨s 2202 (by norm_num) (by norm_num), by omega⟩, s 2202 (by norm_num) (by norm_num),
-    ⟨s 2202 (by norm_num) (by norm_num), by omega⟩, ⟨s 2202 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 2202 (by norm_num) (by norm_num), by omega⟩, ⟨s 2202 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 2202 (by norm_num) (by norm_num), by omega⟩, s 2203 (by norm_num) (by norm_num),
-    ⟨s 2202 (by norm_num) (by norm_num), by omega⟩, s 2204 (by norm_num) (by norm_num),
-    ⟨s 2202 (by norm_num) (by norm_num), by omega⟩, s 2205 (by norm_num) (by norm_num),
-    ⟨s 2202 (by norm_num) (by norm_num), by omega⟩, s 2206 (by norm_num) (by norm_num),
-    ⟨s 2202 (by norm_num) (by norm_num), by omega⟩, s 2207 (by norm_num) (by norm_num),
-    ⟨s 2211 (by norm_num) (by norm_num), by omega⟩, s 2213 (by norm_num) (by norm_num), trivial⟩
+  grind
+
+
+end
 
 end
 

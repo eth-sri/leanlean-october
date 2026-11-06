@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleRay
 
 /-!
@@ -31,13 +33,19 @@ namespace OracleQ
 
 variable (C : Chain)
 
+section
+variable (k : ℕ)
+include k
 /-- The chain point with coordinate `(k, τ)`. -/
-noncomputable def cp (k : ℕ) (τ : ℝ) : Point := lerp (C.vertex k) (C.vertex (k + 1)) τ
+noncomputable def cp (τ : ℝ) : Point := lerp (C.vertex k) (C.vertex (k + 1)) τ
 
 /-- A valid chain coordinate: `k < m`, `τ ∈ [0, 1)`, or the last vertex `(m, 0)`. -/
-def CCoord (k : ℕ) (τ : ℝ) : Prop := (k < C.m ∧ 0 ≤ τ ∧ τ < 1) ∨ (k = C.m ∧ τ = 0)
+def CCoord (τ : ℝ) : Prop := (k < C.m ∧ 0 ≤ τ ∧ τ < 1) ∨ (k = C.m ∧ τ = 0)
 
-theorem cp_zero (k : ℕ) : cp C k 0 = C.vertex k := lerp_zero _ _
+theorem cp_zero : cp C k 0 = C.vertex k := lerp_zero _ _
+
+
+end
 
 /-- **The chain is injective in its coordinate.** -/
 theorem cp_inj (hP : C.P.Simple) {k k' : ℕ} {τ τ' : ℝ} (h : CCoord C k τ) (h' : CCoord C k' τ')
@@ -53,13 +61,13 @@ theorem cp_inj (hP : C.P.Simple) {k k' : ℕ} {τ τ' : ℝ} (h : CCoord C k τ)
     exact ⟨C.sideVertex_inj hP hk hk' heq, rfl⟩
   · exfalso
     subst hτ
-    have hk'm : k' < C.m := by rcases h' with h | h <;> [exact h.1; linarith [h.2]]
+    
     have hτ1 : τ' < 1 := by rcases h' with h | h <;> [exact h.2.2; linarith [h.2]]
     rw [cp_zero] at heq
     exact C.sideOpen_ne_vertex hP ⟨hτ', hτ1⟩ heq.symm
   · exfalso
     subst hτ'
-    have hkm : k < C.m := by rcases h with h | h <;> [exact h.1; linarith [h.2]]
+    
     have hτ1 : τ < 1 := by rcases h with h | h <;> [exact h.2.2; linarith [h.2]]
     rw [cp_zero] at heq
     exact C.sideOpen_ne_vertex hP ⟨hτ, hτ1⟩ heq
@@ -71,54 +79,36 @@ theorem cp_inj (hP : C.P.Simple) {k k' : ℕ} {τ τ' : ℝ} (h : CCoord C k τ)
     · subst hkk
       refine ⟨rfl, ?_⟩
       have hne := C.sideVertex_succ_ne hP k
-      unfold cp lerp at heq
-      have h1 := congrArg Prod.fst heq
-      have h2 := congrArg Prod.snd heq
-      simp only at h1 h2
-      by_contra hne'
-      apply hne
-      have hd : τ - τ' ≠ 0 := sub_ne_zero.2 hne'
-      apply Prod.ext
-      · have : (τ - τ') * ((C.vertex (k + 1)).1 - (C.vertex k).1) = 0 := by linarith
-        have := (mul_eq_zero.1 this).resolve_left hd
-        linarith
-      · have : (τ - τ') * ((C.vertex (k + 1)).2 - (C.vertex k).2) = 0 := by linarith
-        have := (mul_eq_zero.1 this).resolve_left hd
-        linarith
+      grind [cp, lerp]
     · exfalso
       apply C.sideOpen_not_mem_chainEdge hP hkm hk'm (Ne.symm hkk) ⟨hτ, hτ1⟩
       show cp C k τ ∈ C.chainEdge k'
       rw [heq, C.chainEdge_eq]
       exact Geometry.lerp_mem_segment _ _ hτ'.le hτ1'.le
 
+section
+variable (i : ℕ)
+include i
 /-- The tour index on the double circle: `j = (S + i) mod 2 m`. -/
-noncomputable def tj (i : ℕ) : ℕ := (C.sideS C.sideBeta + i) % (2 * C.m)
+noncomputable def tj : ℕ := (C.sideS C.sideBeta + i) % (2 * C.m)
 
 /-- **The tour coordinate** of the tour position `(i, t)`: `u = j + t`. -/
-noncomputable def tu (i : ℕ) (t : ℝ) : ℝ := (tj C i : ℝ) + t
+noncomputable def tu (t : ℝ) : ℝ := (tj C i : ℝ) + t
 
-theorem tj_lt (i : ℕ) : tj C i < 2 * C.m := Nat.mod_lt _ C.two_m_pos
+theorem tj_lt : tj C i < 2 * C.m := Nat.mod_lt _ C.two_m_pos
 
 /-- The chain coordinate of a tour position. -/
-noncomputable def tk (i : ℕ) (t : ℝ) : ℕ × ℝ :=
+noncomputable def tk (t : ℝ) : ℕ × ℝ :=
   if tj C i < C.m then (tj C i, t)
   else if t = 0 then (2 * C.m - tj C i, 0) else (2 * C.m - tj C i - 1, 1 - t)
 
-theorem tk_coord (i : ℕ) {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
+theorem tk_coord {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
     CCoord C (tk C i t).1 (tk C i t).2 := by
   have hj := tj_lt C i
-  unfold tk CCoord
-  split_ifs with h1 h2
-  · exact Or.inl ⟨h1, ht, ht1⟩
-  · rcases eq_or_lt_of_le (show 2 * C.m - tj C i ≤ C.m by omega) with e | e
-    · exact Or.inr ⟨e, rfl⟩
-    · exact Or.inl ⟨e, le_rfl, one_pos⟩
-  · exact Or.inl ⟨by omega, by linarith, by
-      have : 0 < t := lt_of_le_of_ne ht (Ne.symm h2)
-      linarith⟩
+  core_grind [tk]
 
 /-- **The point of a tour position** in chain coordinates. -/
-theorem tour_pt (i : ℕ) (hi : i < 2 * C.m) (t : ℝ) :
+theorem tour_pt (hi : i < 2 * C.m) (t : ℝ) :
     sidePt (C.sideWalk C.sideBeta) (i + 6) t = cp C (tk C i t).1 (tk C i t).2 := by
   rw [C.sidePt_tour C.sideBeta hi]
   unfold Chain.sideTour
@@ -129,21 +119,14 @@ theorem tour_pt (i : ℕ) (hi : i < 2 * C.m) (t : ℝ) :
   rw [e1, e2]
   unfold tk cp
   generalize tj C i = j at hj ⊢
-  have sE1 : ∀ x, x ≤ C.m → sideE C.m x = x := fun x hx => by unfold sideE; simp [hx]
+  have sE1 : ∀ x, x ≤ C.m → sideE C.m x = x := fun x hx => by grind [sideE]
   have sE3 : ∀ x, C.m ≤ x → sideE C.m x = 2 * C.m - x := fun x hx => by
     unfold sideE
-    rcases eq_or_lt_of_le hx with e | e
-    · subst e; simp only [le_refl, ↓reduceIte]; omega
-    · simp [show ¬ x ≤ C.m by omega]
-  split_ifs with h1 h2
-  · simp only
-    rw [sE1 j h1.le, sE1 (j + 1) (by omega)]
-  · simp only
-    subst h2
-    rw [lerp_zero, lerp_zero, sE3 j (by omega)]
-  · simp only
-    rw [Geometry.lerp_symm, sE3 (j + 1) (by omega), sE3 j (by omega)]
-    congr 2; omega
+    grind
+  grind [lerp_zero, Geometry.lerp_symm]
+
+
+end
 
 /-- **Two tour positions have the same point iff their tour coordinates are equal or opposite.** -/
 theorem same_point (hP : C.P.Simple) {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m) {t t' : ℝ}
@@ -183,9 +166,9 @@ theorem pos_on_chain {p : ℕ} (hp : p < 2 * C.m + 7) {t : ℝ} (ht : 0 ≤ t) (
   · by_cases hl : p = 2 * C.m + 6
     · subst hl
       rcases eq_or_lt_of_le ht with h0 | h0
-      · exact Or.inr ⟨rfl, h0.symm⟩
+      · simp_all
       · exact absurd hx (C.sideWalk_box_pt C.sideBeta (Or.inr ⟨rfl, h0⟩) ht ht1).1
-    · exact Or.inl ⟨by omega, by omega⟩
+    omega
 
 /-- The closing vertex of the walk is the top, like the first tour vertex. -/
 theorem sidePt_last :
@@ -202,8 +185,7 @@ theorem tu_eq (i : ℕ) (t : ℝ) :
   have h' : (((C.sideS C.sideBeta + i) % (2 * C.m) : ℕ) : ℝ) + (2 * C.m : ℕ) *
       (((C.sideS C.sideBeta + i) / (2 * C.m) : ℕ) : ℝ) = (C.sideS C.sideBeta : ℝ) + i := by
     exact_mod_cast h
-  push_cast at h'
-  linarith
+  grind
 
 /-- **The mirror of a chain point**: two distinct walk keys `κ ≠ κ'` (positions with parameters in
 `[0, 1)`) of the same point of the chain satisfy `κ + κ' ≡ 12 - 2 S (mod 2 m)`, or they are the
@@ -226,20 +208,20 @@ theorem mirror_sum (hP : C.P.Simple) {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : 
         (e = 2 * C.m → i = 0 ∧ t = 0) := by
     intro p t hp ht ht1 hx
     rcases pos_on_chain C hp ht ht1 hx with ⟨h1, h2⟩ | ⟨h1, h2⟩
-    · refine ⟨p - 6, 0, by omega, Or.inl rfl, ?_, by rw [show p - 6 + 6 = p by omega], by omega⟩
-      rw [Nat.cast_sub (by omega)]; push_cast; ring
+    · refine ⟨p - 6, 0, by omega, Or.inl rfl, ?_, by simp_all, by omega⟩
+      simp_all
     · subst h1; subst h2
-      refine ⟨0, 2 * C.m, by omega, Or.inr rfl, by push_cast; ring, sidePt_last C, fun _ => ⟨rfl, rfl⟩⟩
+      refine ⟨0, 2 * C.m, by omega, Or.inr rfl, by grind, sidePt_last C, fun _ => ⟨rfl, rfl⟩⟩
   obtain ⟨i, e, hi, he, hk, hpt, he2⟩ := norm hp ht ht1 hx
   obtain ⟨i', e', hi', he', hk', hpt', he2'⟩ := norm hp' ht' ht1' hx'
   have heq' : sidePt (C.sideWalk C.sideBeta) (i + 6) t = sidePt (C.sideWalk C.sideBeta) (i' + 6) t' := by
-    rw [← hpt, ← hpt']; exact heq
+    grind
   obtain ⟨q, hq⟩ := tu_eq C i t
   obtain ⟨q', hq'⟩ := tu_eq C i' t'
   rcases same_point C hP hi hi' ht ht1 ht' ht1' heq' with h | h
   · -- equal tour coordinates: the keys differ by a multiple of `2 m`, hence are `6` and `2 m + 6`
     have hdiff : ((i : ℝ) + t) - (i' + t') = 2 * C.m * ((q : ℝ) - q') := by
-      rw [hq, hq'] at h; linarith
+      grind
     -- `|(i + t) - (i' + t')| < 2 m`, so the multiple is `0`
     have hlt1 : (i : ℝ) + t < 2 * C.m := by
       have : (i : ℝ) + 1 ≤ 2 * C.m := by exact_mod_cast hi
@@ -249,34 +231,31 @@ theorem mirror_sum (hP : C.P.Simple) {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : 
       linarith
     have hi0 : (0 : ℝ) ≤ i := Nat.cast_nonneg i
     have hi0' : (0 : ℝ) ≤ i' := Nat.cast_nonneg i'
-    have hm0 : (0 : ℝ) < C.m := by exact_mod_cast hm
+    
     have hqq : (q : ℤ) = q' := by
-      have h1 : 2 * (C.m : ℝ) * ((q : ℝ) - q') < 2 * C.m := by linarith
-      have h2 : -(2 * (C.m : ℝ)) < 2 * C.m * ((q : ℝ) - q') := by linarith
+      
+      
       have h3 : ((q : ℝ) - q') < 1 := by nlinarith
       have h4 : -1 < ((q : ℝ) - q') := by nlinarith
-      have h5 : ((q : ℤ) : ℝ) - ((q' : ℤ) : ℝ) < 1 := by push_cast; linarith
-      have h6 : -1 < ((q : ℤ) : ℝ) - ((q' : ℤ) : ℝ) := by push_cast; linarith
+      have h5 : ((q : ℤ) : ℝ) - ((q' : ℤ) : ℝ) < 1 := by omega
+      have h6 : -1 < ((q : ℤ) : ℝ) - ((q' : ℤ) : ℝ) := by omega
       have h7 : (q : ℤ) - q' < 1 := by exact_mod_cast h5
       have h8 : -1 < (q : ℤ) - q' := by exact_mod_cast h6
       omega
     have hqq' : (q : ℝ) = q' := by exact_mod_cast hqq
-    have hsame : (i : ℝ) + t = i' + t' := by rw [hqq'] at hdiff; linarith
+    have hsame : (i : ℝ) + t = i' + t' := by grind
     -- so the keys differ only by the shifts `e, e'`
     right
     rcases he with rfl | rfl <;> rcases he' with rfl | rfl
-    · exact absurd (by rw [hk, hk']; push_cast; linarith) hne
+    · grind
     · obtain ⟨rfl, rfl⟩ := he2' rfl
-      have : (i : ℝ) + t = 0 := by simpa using hsame
-      left; constructor <;> [rw [hk]; rw [hk']] <;> push_cast <;> linarith
+      grind
     · obtain ⟨rfl, rfl⟩ := he2 rfl
-      have : (i' : ℝ) + t' = 0 := by simpa using hsame.symm
-      right; constructor <;> [rw [hk]; rw [hk']] <;> push_cast <;> linarith
-    · exact absurd (by rw [hk, hk']; push_cast; linarith) hne
+      grind
+    grind
   · -- opposite tour coordinates
     left
-    have hsum : ((C.sideS C.sideBeta : ℝ) + i + t - 2 * C.m * q) + ((C.sideS C.sideBeta : ℝ) + i' + t' - 2 * C.m * q') = 2 * C.m := by
-      rw [← hq, ← hq']; exact h
+    
     rcases he with rfl | rfl <;> rcases he' with rfl | rfl
     · refine ⟨1 + q + q', ?_⟩
       rw [hk, hk']; push_cast; linarith
@@ -284,8 +263,7 @@ theorem mirror_sum (hP : C.P.Simple) {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : 
       rw [hk, hk']; push_cast; linarith
     · refine ⟨2 + q + q', ?_⟩
       rw [hk, hk']; push_cast; linarith
-    · refine ⟨3 + q + q', ?_⟩
-      rw [hk, hk']; push_cast; linarith
+    grind
 
 end OracleQ
 

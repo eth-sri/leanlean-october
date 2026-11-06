@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseOracleTop
 
 /-!
@@ -13,9 +15,6 @@ row and halving tables), without the adapter's other registers.  The programs ar
 redone (`topLoop_exec`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -50,7 +49,10 @@ namespace TEnv
 
 variable {P : Polygon} {W : ℕ} {O : OracleIface} {s : TSt} {c c' : Config}
 
-theorem keep (h : TEnv P W O s c) (hr : ∀ r, 170000 ≤ r → r < 170030 → c'.nreg r = c.nreg r)
+section
+variable (h : TEnv P W O s c)
+include h
+theorem keep (hr : ∀ r, 170000 ≤ r → r < 170030 → c'.nreg r = c.nreg r)
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) (ha : c.nreg ALLOC ≤ c'.nreg ALLOC) :
     TEnv P W O s c' := by
   have hal := h.alloc
@@ -59,7 +61,10 @@ theorem keep (h : TEnv P W O s c) (hr : ∀ r, 170000 ≤ r → r < 170030 → c
     (hr _ (by omega) (by omega)).trans h.r17, fun a ha' => (hm a (by omega)).trans (h.mem a ha'),
     by omega, h.grade⟩
 
-theorem nW (h : TEnv P W O s c) : P.n + 3 ≤ W := by have := h.hW; unfold hostWords at this; omega
+theorem nW : P.n + 3 ≤ W := by have := h.hW; grind [hostWords]
+
+
+end
 
 end TEnv
 
@@ -69,8 +74,11 @@ section steps
 
 variable {P : Polygon} {W : ℕ} {O : OracleIface} {s : TSt}
 
+section
+variable (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
+include hw hS
 /-- **The parity of `q_l`.** -/
-theorem parL_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
+theorem parL_exec
     (hq : c.nreg 170050 ≤ P.n) :
     ∃ c' k, Exec P W IOrc.parL c c' k ∧ k = 4 ∧ c'.nreg 170058 = c.nreg 170050 % 2 ∧
       (∀ r, r ≠ 170056 → r ≠ 170057 → r ≠ 170058 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
@@ -86,10 +94,10 @@ theorem parL_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
     omega
   refine ⟨rfl, ?_, fun r h1 h2 h3 => ?_, rfl⟩
   · config_simp; rw [hS.r17, hm]; omega
-  · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+  simp_all
 
 /-- **The parity of `q_r`.** -/
-theorem parR_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
+theorem parR_exec
     (hq : c.nreg 170051 ≤ P.n) :
     ∃ c' k, Exec P W IOrc.parR c c' k ∧ k = 4 ∧ c'.nreg 170058 = c.nreg 170051 % 2 ∧
       (∀ r, r ≠ 170056 → r ≠ 170057 → r ≠ 170058 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
@@ -103,11 +111,11 @@ theorem parR_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
     omega
   refine ⟨rfl, ?_, fun r h1 h2 h3 => ?_, rfl⟩
   · config_simp; rw [hS.r17, hm]; omega
-  · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+  simp_all
 
 /-- **The left candidate**: the end vertex `lo + 1` of an edge (`g = 0`), else the top of the
 block `(g, q_l)` from the grade table. -/
-theorem candL_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
+theorem candL_exec
     (hblk : 1 ≤ c.nreg 170052 → c.nreg 170052 < s.m₀ s.h ∧
       (c.nreg 170050 + 1) * 2 ^ c.nreg 170052 ≤ P.n - 1)
     (hlo : c.nreg 170054 + 2 ^ c.nreg 170052 ≤ P.n) :
@@ -124,10 +132,10 @@ theorem candL_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
   · refine spec_ifLtN_true hg ?_
     have hg0 : c.nreg 170052 = 0 := by rw [hS.r11] at hg; omega
     exec_block
-    · config_simp; rw [hS.r11]; rw [hg0] at hlo; simp at hlo; omega
+    · config_simp; rw [hS.r11]; grind
     refine ⟨by omega, ?_, fun r h1 h2 h3 => ?_, rfl⟩
     · config_simp; rw [ite_eq_left hg0, hS.r11]
-    · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+    simp_all
   · refine spec_ifLtN_false hg ?_
     have hg1 : 1 ≤ c.nreg 170052 := by rw [hS.r11] at hg; omega
     obtain ⟨hgΛ, hb⟩ := hblk hg1
@@ -138,12 +146,10 @@ theorem candL_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
         IOrc.blkD s.m₀ s.h (c.nreg 170052) (c.nreg 170050) := hS.mem _ ae
     have m3 : c.nmem (IOrc.blkD s.m₀ s.h (c.nreg 170052) (c.nreg 170050) + 3) =
         IOrc.blkT s.m₀ s.h (c.nreg 170052) (c.nreg 170050) := hS.mem _ ad
-    have hpow : 1 ≤ 2 ^ c.nreg 170052 := Nat.one_le_two_pow
+    
     have m2' : c.nmem (s.m₀ (s.m₀ (s.h + 2) + c.nreg 170052) + c.nreg 170050 + c.nreg 170050 +
         c.nreg 170050) = IOrc.blkD s.m₀ s.h (c.nreg 170052) (c.nreg 170050) := by
-      rw [show s.m₀ (s.m₀ (s.h + 2) + c.nreg 170052) + c.nreg 170050 + c.nreg 170050 +
-        c.nreg 170050 = s.m₀ (s.m₀ (s.h + 2) + c.nreg 170052) + 3 * c.nreg 170050 by ring]
-      exact m2
+      grind
     have hTb' : IOrc.blkT s.m₀ s.h (c.nreg 170052) (c.nreg 170050) ≤ 2 ^ c.nreg 170052 := hTb
     exec_block
     all_goals first | omega | skip
@@ -154,11 +160,11 @@ theorem candL_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
     all_goals first | (config_simp; rw [hS.r16, m1, m2', m3]; omega) | skip
     refine ⟨by omega, ?_, fun r h1 h2 h3 => ?_, rfl⟩
     · config_simp; rw [ite_eq_right (by omega), hS.r16, m1, m2', m3]
-    · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+    · simp only [Config.nreg_mk, upd]; simp_all
 
 /-- **The right candidate**: the start vertex `hi` of an edge (`g = 0`), else the top of the
 block `(g, q_r)` (after the decrement). -/
-theorem candR_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
+theorem candR_exec
     (hblk : 1 ≤ c.nreg 170052 → c.nreg 170052 < s.m₀ s.h ∧
       (c.nreg 170051 + 1) * 2 ^ c.nreg 170052 ≤ P.n - 1)
     (hhi : c.nreg 170055 + 2 ^ c.nreg 170052 ≤ P.n) :
@@ -175,9 +181,7 @@ theorem candR_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
   · refine spec_ifLtN_true hg ?_
     have hg0 : c.nreg 170052 = 0 := by rw [hS.r11] at hg; omega
     exec_block
-    refine ⟨by omega, ?_, fun r h1 h2 h3 => ?_, rfl⟩
-    · config_simp; rw [ite_eq_left hg0]
-    · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+    simp_all
   · refine spec_ifLtN_false hg ?_
     have hg1 : 1 ≤ c.nreg 170052 := by rw [hS.r11] at hg; omega
     obtain ⟨hgΛ, hb⟩ := hblk hg1
@@ -188,12 +192,10 @@ theorem candR_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
         IOrc.blkD s.m₀ s.h (c.nreg 170052) (c.nreg 170051) := hS.mem _ ae
     have m3 : c.nmem (IOrc.blkD s.m₀ s.h (c.nreg 170052) (c.nreg 170051) + 3) =
         IOrc.blkT s.m₀ s.h (c.nreg 170052) (c.nreg 170051) := hS.mem _ ad
-    have hpow : 1 ≤ 2 ^ c.nreg 170052 := Nat.one_le_two_pow
+    
     have m2' : c.nmem (s.m₀ (s.m₀ (s.h + 2) + c.nreg 170052) + c.nreg 170051 + c.nreg 170051 +
         c.nreg 170051) = IOrc.blkD s.m₀ s.h (c.nreg 170052) (c.nreg 170051) := by
-      rw [show s.m₀ (s.m₀ (s.h + 2) + c.nreg 170052) + c.nreg 170051 + c.nreg 170051 +
-        c.nreg 170051 = s.m₀ (s.m₀ (s.h + 2) + c.nreg 170052) + 3 * c.nreg 170051 by ring]
-      exact m2
+      grind
     have hTb' : IOrc.blkT s.m₀ s.h (c.nreg 170052) (c.nreg 170051) ≤ 2 ^ c.nreg 170052 := hTb
     exec_block
     all_goals first | omega | skip
@@ -204,10 +206,10 @@ theorem candR_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
     all_goals first | (config_simp; rw [hS.r16, m1, m2', m3]; omega) | skip
     refine ⟨by omega, ?_, fun r h1 h2 h3 => ?_, rfl⟩
     · config_simp; rw [ite_eq_right (by omega), hS.r16, m1, m2', m3]
-    · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+    simp_all +zetaDelta <;> omega
 
 /-- **The running maximum.** -/
-theorem cmpUpd_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
+theorem cmpUpd_exec
     (hv : c.nreg 170046 < P.n) (hc : c.nreg 170059 < P.n) :
     ∃ c' k, Exec P W IOrc.cmpUpd c c' k ∧ k ≤ 250 ∧
       c'.nreg 170046 = (if IOrc.Y P (c.nreg 170046) < IOrc.Y P (c.nreg 170059) then c.nreg 170059
@@ -222,10 +224,7 @@ theorem cmpUpd_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
       (∀ r, r ≠ 170060 → r ≠ 170061 → r ≠ 170063 → r ≠ 170064 → c₁.nreg r = c.nreg r) ∧
       c₁.nmem = c.nmem := by
     exec_block
-    all_goals first | omega | skip
-    refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp,
-      fun r a b d e => ?_, rfl⟩
-    simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+    all_goals simp_all
   have s1 : SymPtIn c₁ 170060 (.vtx (c.nreg 170046)) := ⟨h60, h61⟩
   have s2 : SymPtIn c₁ 170063 (.vtx (c.nreg 170059)) := ⟨h63, h64⟩
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, b₂, t₂⟩ := SweepPrim.kbit_exec (P := P) hS.good hW c₁ e₁.wb_right
@@ -234,34 +233,35 @@ theorem cmpUpd_exec (c : Config) (hw : WordsBounded W c) (hS : TEnv P W O s c)
     (sb := .vtx (c.nreg 170059)) (sd := .vtx (c.nreg 170046)) hv hc hv s1 s2 s1
   simp only [SignTest, SymPt.eval] at t₂
   have k2 : ∀ r, 10500 ≤ r → r ≠ 170066 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
-    F₂.1 r (by simp only [SweepPrim.Bkb, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
-      beq_eq_false_iff_ne]; exact ⟨by omega, h2⟩)
+    F₂.1 r (by core_grind)
   have w₂ := e₂.wb_right
   have hfr : ∀ r, r ≠ 170046 → (r < 170060 ∨ 170067 ≤ r) → (r < 10000 ∨ 10500 ≤ r) →
       c₂.nreg r = c.nreg r := fun r h1 h2 h3 => by
-    rw [F₂.1 r (by simp only [SweepPrim.Bkb, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
-      beq_eq_false_iff_ne]; exact ⟨by omega, by omega⟩), r₁ r (by omega) (by omega) (by omega)
+    rw [F₂.1 r (by core_grind), r₁ r (by omega) (by omega) (by omega)
       (by omega)]
   have c12 : c₂.nreg 170012 = 0 := by rw [hfr _ (by decide) (by decide) (by decide)]; exact hS.r12
   have c59 : c₂.nreg 170059 = c.nreg 170059 := by
-    rw [k2 _ (by norm_num) (by norm_num), r₁ _ (by decide) (by decide) (by decide) (by decide)]
+    grind
   have c46 : c₂.nreg 170046 = c.nreg 170046 := by
-    rw [k2 _ (by norm_num) (by norm_num), r₁ _ (by decide) (by decide) (by decide) (by decide)]
+    grind
   by_cases hb : c₂.nreg 170012 < c₂.nreg 170066
   · have hy : IOrc.Y P (c.nreg 170046) < IOrc.Y P (c.nreg 170059) := t₂.1 (by omega)
     have e₃ := IOrc.exec_copyN_upd (P := P) w₂ 170046 170059
     refine ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_true hb e₃)), by omega, ?_, fun r h1 h2 h3 => ?_, ?_⟩
-    · simp only [upd_same]; rw [ite_eq_left hy, c59]
-    · simp only [upd, ite_eq_right h1]; exact hfr r h1 h2 h3
+    · grind [upd_same]
+    · grind [upd]
     · show c₂.nmem = c.nmem; rw [F₂.2.2.1, m₁]
   · have hy : ¬ IOrc.Y P (c.nreg 170046) < IOrc.Y P (c.nreg 170059) := fun h => by
-      have := t₂.2 h; omega
+      grind
     refine ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_false hb (.skip w₂))), by omega, ?_,
       fun r h1 h2 h3 => hfr r h1 h2 h3, ?_⟩
-    · rw [ite_eq_right hy, c46]
+    · grind
     · rw [F₂.2.2.1, m₁]
 
 /-! ## The invariant of the cover -/
+
+
+end
 
 /-- **The invariant of the cover of `[x, y]`**: the grade registers, the covered ranges `[x, lo]`
 and `[hi, y]` below the running maximum, which is a good vertex. -/
@@ -307,9 +307,11 @@ theorem TopI.keep {x y : ℕ} {G : ℕ → Prop} {c c' : Config} (hI : TopI P W 
   · exact hI.vbn
   · exact hI.cov
 
+section
+variable {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounded W c) (hI : TopI P W O s x y G c)
+include hw hI
 /-- **The left block of a grade.** -/
-theorem stepL_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounded W c)
-    (hI : TopI P W O s x y G c) (hpar : c.nreg 170058 = c.nreg 170050 % 2)
+theorem stepL_exec (hpar : c.nreg 170058 = c.nreg 170050 % 2)
     (hlt : c.nreg 170050 < c.nreg 170051) :
     ∃ c' k, Exec P W IOrc.stepL c c' k ∧ k ≤ 280 ∧ TopI P W O s x y G c' ∧
       c'.nreg 170050 = c.nreg 170050 + c.nreg 170050 % 2 ∧ c'.nreg 170051 = c.nreg 170051 ∧
@@ -322,12 +324,12 @@ theorem stepL_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
   have hhi := hI.hi
   have hp1 : 1 ≤ 2 ^ c.nreg 170052 := Nat.one_le_two_pow
   have hprod : (c.nreg 170050 + 1) * 2 ^ c.nreg 170052 = c.nreg 170054 + c.nreg 170053 := by
-    rw [hlo, hpw, Nat.add_mul, Nat.one_mul]
+    grind
   have hloHi : c.nreg 170054 + c.nreg 170053 ≤ c.nreg 170055 := by
     rw [hlo, hhi]
     have : (c.nreg 170050 + 1) * c.nreg 170053 ≤ c.nreg 170051 * c.nreg 170053 :=
       Nat.mul_le_mul_right _ (by omega)
-    rw [Nat.add_mul, Nat.one_mul] at this; exact this
+    simp_all
   have hxlo := hI.xlo
   have hhiy := hI.hiy
   have hyn := hI.yn
@@ -335,18 +337,17 @@ theorem stepL_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
     rw [hlo, hpw]; exact Nat.le_mul_of_pos_right _ (by positivity)
   have hblk : 1 ≤ c.nreg 170052 → c.nreg 170052 < s.m₀ s.h ∧
       (c.nreg 170050 + 1) * 2 ^ c.nreg 170052 ≤ P.n - 1 := fun hg1 =>
-    ⟨IOrc.pow_le_of_cap hg1 (d := y - x) (by rw [← hpw]; omega) hI.cap, by omega⟩
+    ⟨IOrc.pow_le_of_cap hg1 (d := y - x) (by omega) hI.cap, by omega⟩
   unfold IOrc.stepL
   by_cases hodd : c.nreg 170012 < c.nreg 170058
   · refine spec_ifLtN_true hodd ?_
-    have h1 : c.nreg 170050 % 2 = 1 := by rw [hS.r12, hpar] at hodd; omega
+    have h1 : c.nreg 170050 % 2 = 1 := by omega
     -- the candidate
-    obtain ⟨c₁, k₁, e₁, hk₁, v59, r₁, m₁⟩ := candL_exec c hw hS hblk (by rw [← hpw]; omega)
+    obtain ⟨c₁, k₁, e₁, hk₁, v59, r₁, m₁⟩ := candL_exec c hw hS hblk (by omega)
     have hcand : c₁.nreg 170059 < P.n ∧ x ≤ c₁.nreg 170059 ∧ c₁.nreg 170059 ≤ y := by
       rw [v59]
       split_ifs with hg0
-      · have : c.nreg 170053 = 1 := by rw [hpw, hg0]; rfl
-        omega
+      · omega
       · obtain ⟨hgΛ, hb⟩ := hblk (by omega)
         have hT := (IOrc.block_top hS.grade hgΛ hb).2.2.2.2.1
         have : IOrc.blkT s.m₀ s.h (c.nreg 170052) (c.nreg 170050) ≤ 2 ^ c.nreg 170052 := hT
@@ -357,11 +358,10 @@ theorem stepL_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
       intro v hv1 hv2
       rw [v59]
       split_ifs with hg0
-      · have : c.nreg 170053 = 1 := by rw [hpw, hg0]; rfl
-        rw [show v = c.nreg 170054 + 1 by omega]
+      · grind
       · obtain ⟨hgΛ, hb⟩ := hblk (by omega)
-        have hT := (IOrc.block_top hS.grade hgΛ hb).2.2.2.2.2 (v - c.nreg 170054) (by rw [← hpw]; omega)
-        have e1 : c.nreg 170050 * 2 ^ c.nreg 170052 = c.nreg 170054 := by rw [hlo, hpw]
+        have hT := (IOrc.block_top hS.grade hgΛ hb).2.2.2.2.2 (v - c.nreg 170054) (by omega)
+        have e1 : c.nreg 170050 * 2 ^ c.nreg 170052 = c.nreg 170054 := by grind
         rw [e1, show c.nreg 170054 + (v - c.nreg 170054) = v by omega] at hT
         exact hT
     have S₁ : TEnv P W O s c₁ := hS.keep (fun r h1 h2 => r₁ r (by omega) (by omega) (by omega))
@@ -375,7 +375,7 @@ theorem stepL_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
     have k2' : ∀ r, 170050 ≤ r → r < 170056 → c₂.nreg r = c.nreg r := fun r h1 h2 => by
       rw [r₂ r (by omega) (by omega) (by omega), r₁ r (by omega) (by omega) (by omega)]
     have S₂ : TEnv P W O s c₂ := S₁.keep (fun r h1 h2 => by
-        rw [r₂ r (by omega) (by omega) (by omega)]) (fun a _ => by rw [m₂]) (by
+        grind) (fun a _ => by rw [m₂]) (by
         rw [r₂ _ (by decide) (by decide) (by decide)])
     have w₂ := e₂.wb_right
     have hmx := IOrc.Y_max_le (P := P) (a := c.nreg 170046) (b := c₁.nreg 170059)
@@ -426,8 +426,7 @@ theorem stepL_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
     refine spec_skip hw ⟨by omega, hI, by omega, rfl, rfl, fun r _ _ => rfl, le_rfl, rfl⟩
 
 /-- **The right block of a grade.** -/
-theorem stepR_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounded W c)
-    (hI : TopI P W O s x y G c) (hpar : c.nreg 170058 = c.nreg 170051 % 2)
+theorem stepR_exec (hpar : c.nreg 170058 = c.nreg 170051 % 2)
     (hlt : c.nreg 170051 % 2 = 1 → c.nreg 170050 < c.nreg 170051) :
     ∃ c' k, Exec P W IOrc.stepR c c' k ∧ k ≤ 280 ∧ TopI P W O s x y G c' ∧
       c'.nreg 170051 = c.nreg 170051 - c.nreg 170051 % 2 ∧ c'.nreg 170050 = c.nreg 170050 ∧
@@ -445,7 +444,7 @@ theorem stepR_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
   unfold IOrc.stepR
   by_cases hodd : c.nreg 170012 < c.nreg 170058
   · refine spec_ifLtN_true hodd ?_
-    have h1 : c.nreg 170051 % 2 = 1 := by rw [hS.r12, hpar] at hodd; omega
+    have h1 : c.nreg 170051 % 2 = 1 := by omega
     have hlt' := hlt h1
     have hprod : c.nreg 170051 * c.nreg 170053 = (c.nreg 170051 - 1) * c.nreg 170053 +
         c.nreg 170053 := by
@@ -457,7 +456,7 @@ theorem stepR_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
       rw [hlo, hhi]
       have : (c.nreg 170050 + 1) * c.nreg 170053 ≤ c.nreg 170051 * c.nreg 170053 :=
         Nat.mul_le_mul_right _ (by omega)
-      rw [Nat.add_mul, Nat.one_mul] at this; exact this
+      grind
     refine spec_seq ?_
     exec_block
     -- the configuration after the decrement
@@ -472,16 +471,16 @@ theorem stepR_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
     have hblk : 1 ≤ c₀.nreg 170052 → c₀.nreg 170052 < s.m₀ s.h ∧
         (c₀.nreg 170051 + 1) * 2 ^ c₀.nreg 170052 ≤ P.n - 1 := fun hg1 => by
       rw [k0 _ (by decide) (by decide)] at hg1 ⊢
-      refine ⟨IOrc.pow_le_of_cap hg1 (d := y - x) (by rw [← hpw]; omega) hI.cap, ?_⟩
-      rw [c51, show c.nreg 170051 - 1 + 1 = c.nreg 170051 by omega, ← hpw, ← hhi]; omega
+      refine ⟨IOrc.pow_le_of_cap hg1 (d := y - x) (by omega) hI.cap, ?_⟩
+      grind
     obtain ⟨c₁, k₁, e₁, hk₁, v59, r₁, m₁⟩ := candR_exec c₀ w₀ S₀ hblk (by
-      rw [c55, k0 _ (by decide) (by decide), ← hpw]; omega)
+      grind)
     rw [c55, k0 170052 (by decide) (by decide), c51] at v59
     have hcand : c₁.nreg 170059 < P.n ∧ x ≤ c₁.nreg 170059 ∧ c₁.nreg 170059 ≤ y := by
       rw [v59]
       split_ifs with hg0
       · omega
-      · obtain ⟨hgΛ, hb⟩ := hblk (by rw [k0 _ (by decide) (by decide)]; omega)
+      · obtain ⟨hgΛ, hb⟩ := hblk (by grind)
         rw [k0 170052 (by decide) (by decide)] at hgΛ hb; rw [c51] at hb
         have hT := (IOrc.block_top hS.grade hgΛ hb).2.2.2.2.1
         have : IOrc.blkT s.m₀ s.h (c.nreg 170052) (c.nreg 170051 - 1) ≤ 2 ^ c.nreg 170052 := hT
@@ -491,12 +490,11 @@ theorem stepR_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
       intro v hv1 hv2
       rw [v59]
       split_ifs with hg0
-      · have : c.nreg 170053 = 1 := by rw [hpw, hg0]; rfl
-        rw [show v = c.nreg 170055 - c.nreg 170053 by omega]
-      · obtain ⟨hgΛ, hb⟩ := hblk (by rw [k0 _ (by decide) (by decide)]; omega)
+      · grind
+      · obtain ⟨hgΛ, hb⟩ := hblk (by grind)
         rw [k0 170052 (by decide) (by decide)] at hgΛ hb; rw [c51] at hb
         have hT := (IOrc.block_top hS.grade hgΛ hb).2.2.2.2.2 (v - (c.nreg 170055 - c.nreg 170053))
-          (by rw [← hpw]; omega)
+          (by omega)
         have e1 : (c.nreg 170051 - 1) * 2 ^ c.nreg 170052 = c.nreg 170055 - c.nreg 170053 := by
           rw [← hpw, hhi]; omega
         rw [e1, show c.nreg 170055 - c.nreg 170053 + (v - (c.nreg 170055 - c.nreg 170053)) = v by
@@ -505,7 +503,7 @@ theorem stepR_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
     have S₁ : TEnv P W O s c₁ := S₀.keep (fun r h1 h2 => r₁ r (by omega) (by omega) (by omega))
       (fun a _ => by rw [m₁]) (by rw [r₁ _ (by decide) (by decide) (by decide)])
     have v46 : c₁.nreg 170046 = c.nreg 170046 := by
-      rw [r₁ _ (by decide) (by decide) (by decide), k0 _ (by decide) (by decide)]
+      grind
     obtain ⟨c₂, k₂, e₂, hk₂, v46', r₂, m₂⟩ := cmpUpd_exec c₁ e₁.wb_right S₁
       (by rw [v46]; exact hI.vbn) hcand.1
     have hmx := IOrc.Y_max_le (P := P) (a := c.nreg 170046) (b := c₁.nreg 170059)
@@ -556,8 +554,7 @@ theorem stepR_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
     refine spec_skip hw ⟨by omega, hI, by omega, rfl, rfl, fun r _ _ => rfl, le_rfl, rfl⟩
 
 /-- **The next grade**: IOrc.halve `q_l`, `q_r` (both even), double `2^g`. -/
-theorem halve_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounded W c)
-    (hI : TopI P W O s x y G c) (hl : c.nreg 170050 % 2 = 0) (hr : c.nreg 170051 % 2 = 0)
+theorem halve_exec (hl : c.nreg 170050 % 2 = 0) (hr : c.nreg 170051 % 2 = 0)
     (hpn : c.nreg 170053 ≤ P.n) :
     ∃ c' k, Exec P W IOrc.halve c c' k ∧ k = 6 ∧ TopI P W O s x y G c' ∧
       c'.nreg 170050 = c.nreg 170050 / 2 ∧ c'.nreg 170051 = c.nreg 170051 / 2 ∧
@@ -569,7 +566,7 @@ theorem halve_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
   have hlo := hI.lo
   have hhi := hI.hi
   have hp1 : 1 ≤ c.nreg 170053 := by rw [hpw]; exact Nat.one_le_two_pow
-  have hqlo : c.nreg 170050 ≤ c.nreg 170054 := by rw [hlo]; exact Nat.le_mul_of_pos_right _ hp1
+  
   have hqhi : c.nreg 170051 ≤ c.nreg 170055 := by rw [hhi]; exact Nat.le_mul_of_pos_right _ hp1
   have hxlo := hI.xlo
   have hhiy := hI.hiy
@@ -621,8 +618,7 @@ theorem halve_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
   · simp only [upd]; split_ifs <;> first | omega | rfl
 
 /-- **One grade of the cover.** -/
-theorem topBody_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounded W c)
-    (hI : TopI P W O s x y G c) (hlt : c.nreg 170050 < c.nreg 170051) :
+theorem topBody_exec (hlt : c.nreg 170050 < c.nreg 170051) :
     ∃ c' k, Exec P W IOrc.topBody c c' k ∧ k ≤ 600 ∧ TopI P W O s x y G c' ∧
       2 * (c'.nreg 170051 - c'.nreg 170050) ≤ c.nreg 170051 - c.nreg 170050 ∧
       (∀ r, (r < 170046 ∨ 170070 ≤ r) → (r < 10000 ∨ 10500 ≤ r) → c'.nreg r = c.nreg r) ∧
@@ -631,8 +627,8 @@ theorem topBody_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBoun
   have hpw := hI.pw
   have hlo := hI.lo
   have hhi := hI.hi
-  have hp1 : 1 ≤ c.nreg 170053 := by rw [hpw]; exact Nat.one_le_two_pow
-  have hqlo : c.nreg 170050 ≤ c.nreg 170054 := by rw [hlo]; exact Nat.le_mul_of_pos_right _ hp1
+  have hp1 : 1 ≤ c.nreg 170053 := by grind
+  
   have hqhi : c.nreg 170051 ≤ c.nreg 170055 := by rw [hhi]; exact Nat.le_mul_of_pos_right _ hp1
   have hpn : c.nreg 170053 ≤ P.n := by
     have : (c.nreg 170050 + 1) * c.nreg 170053 ≤ c.nreg 170051 * c.nreg 170053 :=
@@ -646,10 +642,10 @@ theorem topBody_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBoun
   have e50 : c₁.nreg 170050 = c.nreg 170050 := r₁ _ (by decide) (by decide) (by decide)
   have e51 : c₁.nreg 170051 = c.nreg 170051 := r₁ _ (by decide) (by decide) (by decide)
   obtain ⟨c₂, k₂, e₂, hk₂, I₂, q50, q51, q52, r₂, y₂, m₂⟩ := stepL_exec c₁ e₁.wb_right I₁
-    (by rw [p₁, e50]) (by rw [e50, e51]; exact hlt)
+    (by rw [p₁, e50]) (by omega)
   -- `q_r`
   obtain ⟨c₃, k₃, e₃, hk₃, p₃, r₃, m₃⟩ := parR_exec c₂ e₂.wb_right I₂.env
-    (by have := I₂.hiy; have := I₂.yn; have := I₂.hi; have := I₂.pw
+    (by have := I₂.hiy; have := I₂.yn; have := I₂.hi; 
         have : c₂.nreg 170051 ≤ c₂.nreg 170055 := by
           rw [I₂.hi]; exact Nat.le_mul_of_pos_right _ (by rw [I₂.pw]; exact Nat.one_le_two_pow)
         omega)
@@ -659,25 +655,25 @@ theorem topBody_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBoun
   have f51 : c₃.nreg 170051 = c₂.nreg 170051 := r₃ _ (by decide) (by decide) (by decide)
   obtain ⟨c₄, k₄, e₄, hk₄, I₄, s51, s50, s52, r₄, y₄, m₄⟩ := stepR_exec c₃ e₃.wb_right I₃
     (by rw [p₃, f51]) (by
-      intro h1
-      have hq : c₂.nreg 170050 ≤ c₂.nreg 170051 := I₂.qq
-      simp only [f50, f51, q50, q51, e50, e51] at hq h1 ⊢
       omega)
   have hpn4 : c₄.nreg 170053 ≤ P.n := by
     have g3 : c₃.nreg 170052 = c.nreg 170052 := by
-      rw [r₃ _ (by decide) (by decide) (by decide), q52, r₁ _ (by decide) (by decide) (by decide)]
+      grind
     rw [I₄.pw, s52, g3, ← hpw]; exact hpn
   obtain ⟨c₅, k₅, e₅, hk₅, I₅, t50, t51, r₅, y₅, m₅⟩ := halve_exec c₄ e₄.wb_right I₄
-    (by rw [s50, f50, q50, e50]; exact (fun a : ℕ => by omega : ∀ a : ℕ, (a + a % 2) % 2 = 0) _)
-    (by rw [s51, f51, q51, e51]; exact (fun a : ℕ => by omega : ∀ a : ℕ, (a - a % 2) % 2 = 0) _)
+    (by omega)
+    (by omega)
     hpn4
   rw [r₁ _ (by decide) (by decide) (by decide)] at y₂
   rw [r₃ _ (by decide) (by decide) (by decide)] at y₄
   refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by omega, I₅, ?_, fun r h1 h2 => ?_,
-    by rw [y₅]; exact y₂.trans y₄, by rw [m₅, m₄, m₃, m₂, m₁]⟩
+    by grind, by grind⟩
   · rw [t50, t51, s50, s51, f50, f51, q50, q51, e50, e51]; omega
   · rw [r₅ r h1, r₄ r h1 h2, r₃ r (by omega) (by omega) (by omega), r₂ r h1 h2,
       r₁ r (by omega) (by omega) (by omega)]
+
+
+end
 
 /-- **The cover of `[x, y]`.**  From `q_l = x ≤ y = q_r` (`y ≤ n - 1`, `y - x` within the cap)
 and a running maximum `170046` at least as high as both ends, `IOrc.topLoop` ends with a running
@@ -701,7 +697,7 @@ theorem topLoop_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBoun
     exec_block
     all_goals first | omega | skip
     refine ⟨rfl, ⟨hS.keep (fun r h1 h2 => by
-        simp only [Config.nreg_mk, upd]; split_ifs <;> first | omega | rfl) (fun a _ => rfl)
+        simp only [Config.nreg_mk, upd]; split_ifs <;> ram_all) (fun a _ => rfl)
         (by simp [upd, ALLOC]), ?_, ?_, ?_, ?_, ?_, ?_, hyn, hcap, ?_, ?_, ?_, hgood⟩,
       ?_, ?_, ?_, fun r h1 => ?_, rfl⟩
     all_goals config_simp
@@ -724,8 +720,7 @@ theorem topLoop_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBoun
       refine ⟨c₂, k₂, e₂, ⟨I₂, e₂.wb_right, fun r h1 h2 => (f₂ r h1 h2).trans (f₁ r h1 h2),
         y₁.trans y₂, m₂.trans m₁⟩, ?_⟩
       have := IOrc.log_half_lt hd (by omega)
-      have : 602 * (Nat.log 2 (2 * (c₂.nreg 170051 - c₂.nreg 170050)) + 1) ≤
-          602 * Nat.log 2 (2 * (c₁.nreg 170051 - c₁.nreg 170050)) := Nat.mul_le_mul_left _ this
+      
       omega)
     (c := c₀) ⟨I₀, e₀.wb_right, fun r h1 _ => r₀ r h1, by rw [h46], m₀⟩
   rw [h50, h51] at hk

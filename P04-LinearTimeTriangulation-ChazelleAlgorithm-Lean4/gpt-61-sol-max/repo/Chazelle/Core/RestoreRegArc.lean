@@ -36,9 +36,9 @@ theorem region_arc {M : Model} {Q : Polygon} {N : NF} {reg : ℕ → Set Point}
   have hmem : j ∈ (N.region r).arcs := ((hregs.2.2.1.2.2.2 r hr j).2 ⟨hj, hjr⟩)
   have hlen : 0 < (N.region r).arcs.length := List.length_pos_of_mem hmem
   have h0 : (N.region r).arcs.getD 0 0 ∈ (N.region r).arcs := by
-    rw [List.getD_eq_getElem _ _ hlen]; exact List.getElem_mem hlen
+    simp_all
   obtain ⟨a, b⟩ := (hregs.2.2.1.2.2.2 r hr _).1 h0
-  exact ⟨hlen, a, b⟩
+  omega
 
 end
 

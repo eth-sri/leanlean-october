@@ -20,8 +20,7 @@ section static
 
 variable {μ N : ℕ} {F : Type} [Fintype F] [DecidableEq F] {M : CombMap (Fin μ) F (Fin N)}
   {T : SpanTree M} {a : F → Fin N} {ha : ∀ g, M.face (a g) = g}
-  {C : CoTree (starTree T a ha)} {R : BTree} {first : Fin μ → Fin N} {preE slot : ℕ → ℕ}
-  {upT : ℕ → ℕ} {k c : ℕ} {W : ℕ}
+  {C : CoTree (starTree T a ha)} {R : BTree} {first : Fin μ → Fin N} {preE slot upT : ℕ → ℕ} {k c W : ℕ}
 
 /-- **The static facts only read the static slots.** -/
 theorem SFacts.of_static {S : SS} {A0 U : ℕ} {m m' : ℕ → ℕ}
@@ -88,8 +87,7 @@ section m2
 
 variable {μ N : ℕ} {F : Type} [Fintype F] [DecidableEq F] {M : CombMap (Fin μ) F (Fin N)}
   {T : SpanTree M} {a : F → Fin N} {ha : ∀ g, M.face (a g) = g}
-  {C : CoTree (starTree T a ha)} {R : BTree} {first : Fin μ → Fin N} {preE slot : ℕ → ℕ}
-  {upT : ℕ → ℕ} {k c : ℕ} {W : ℕ}
+  {C : CoTree (starTree T a ha)} {R : BTree} {first : Fin μ → Fin N} {preE slot upT : ℕ → ℕ} {k c W : ℕ}
 
 open Classical in
 /-- **The memory after the marks and the copy.** -/
@@ -122,26 +120,19 @@ theorem m2_facts {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : L
     intro x hx
     have hup : ∀ x, x < S.μ → upT x < S.μ := fun x hx => by
       rw [hμ] at hx ⊢; exact hSF.upT_lt x hx
-    have hvl : ∀ u : Fin μ, (u : ℕ) < S.μ := fun u => by rw [hμ]; exact u.2
+    have hvl : ∀ u : Fin μ, (u : ℕ) < S.μ := fun u => by omega
     unfold marksF
     rw [markStep_other hup (by rw [hSF.att, hSF.vert]; exact hvl _) hx,
       markStep_other hup (by rw [hSF.opp, hSF.vert]; exact hvl _) hx,
       markStep_other hup (by rw [hSF.vert]; exact hvl _) hx]
   have hm2 : ∀ x, ¬ (S.bDF ≤ x ∧ x < S.bDF + S.μ) → ¬ (S.bTMP + lo ≤ x ∧ x < S.bTMP + hi) →
       m2 x = m x := by
-    intro x h1 h2
-    show copyF _ S lo hi x = m x
-    unfold copyF
-    rw [ite_eq_right h2, hmo x h1]
+    grind [copyF]
   refine ⟨hm2, fun i h1 h2 => ?_, fun y hy => ?_, ?_⟩
   · show copyF _ S lo hi _ = _
     unfold copyF
-    rw [ite_eq_left ⟨by omega, by omega⟩, hmo _ (by omega)]
-    congr 2; omega
-  · show copyF _ S lo hi _ = _
-    unfold copyF
-    rw [ite_eq_right (by omega)]
-    exact hmk y hy
+    grind
+  · grind [copyF]
   · have hf : (f : ℕ) < N := f.2
     rw [hm2 _ (by omega) (by omega)]; exact hSF.fp f
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRLvC
 public import Chazelle.Core.DownPhaseDrvRCostSpec
 public import Chazelle.Core.DownPhaseMathLevel
@@ -37,42 +39,45 @@ theorem wr_lvRegE : wr BregE lvRegE = true := by decide
 def BregD (r : ℕ) : Bool := decide (r = 211020 ∨ r = 211012 ∨ r = 211010)
 theorem wrM_lvRegD : wrM BregD lvRegD = true := by decide
 
-theorem lvRegA_exec (c : Config) (hw : WordsBounded W c) :
+section
+variable (c : Config) (hw : WordsBounded W c)
+include hw
+theorem lvRegA_exec :
     ∃ c' k, Exec P W lvRegA c c' k ∧ k = 3 ∧ c'.nreg 215000 = c.nreg 210005 ∧
       c'.nreg 215001 = c.nreg 211010 ∧ c'.nreg 215002 = c.nreg 211008 := by
   unfold lvRegA
   exec_block
-  refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp
+  simp_all
 
-theorem lvRegB_exec (c : Config) (hw : WordsBounded W c) :
+theorem lvRegB_exec :
     ∃ c' k, Exec P W lvRegB c c' k ∧ k = 6 ∧ c'.nreg 219200 = c.nreg 215010 ∧
       c'.nreg 219201 = c.nreg 215012 ∧ c'.nreg 219202 = c.nreg 211002 ∧
       c'.nreg 219203 = c.nreg 211004 ∧ c'.nreg 219204 = c.nreg 211006 ∧
       c'.nreg 219205 = c.nreg 230001 := by
   unfold lvRegB
   exec_block
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+  simp_all
 
-theorem lvRegC_exec (c : Config) (hw : WordsBounded W c) :
+theorem lvRegC_exec :
     ∃ c' k, Exec P W lvRegC c c' k ∧ k = 7 ∧ c'.nreg 217000 = c.nreg 210005 ∧
       c'.nreg 217001 = c.nreg 211010 ∧ c'.nreg 217002 = c.nreg 211008 ∧
       c'.nreg 217003 = c.nreg 215010 ∧ c'.nreg 217004 = c.nreg 215012 ∧
       c'.nreg 217005 = c.nreg 219210 ∧ c'.nreg 217006 = c.nreg 219211 := by
   unfold lvRegC
   exec_block
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+  simp_all
 
-theorem lvRegE_exec (c : Config) (hw : WordsBounded W c) :
+theorem lvRegE_exec :
     ∃ c' k, Exec P W lvRegE c c' k ∧ k ≤ 3 ∧
       c'.nreg 211013 = max (c.nreg 211013) (c.nreg 217011) := by
   unfold lvRegE
   by_cases h : c.nreg 211013 < c.nreg 217011
   · have e := Exec.copyN (P := P) hw 211013 217011
     refine ⟨_, _, .ifLtN_true h e, by omega, ?_⟩
-    simp only [Machine.upd_same]; omega
+    grind [Machine.upd_same]
   · exact ⟨_, _, .ifLtN_false h (.skip hw), by omega, by omega⟩
 
-theorem lvRegD_exec (c : Config) (hw : WordsBounded W c) {T j p ℓ b tot : ℕ}
+theorem lvRegD_exec {T j p ℓ b tot : ℕ}
     (h09 : c.nreg 211009 = T) (h10 : c.nreg 211010 = j) (h14 : c.nreg 211014 = 1)
     (h17 : c.nreg 217010 = p) (h11 : c.nreg 217011 = ℓ) (h12 : c.nreg 217012 = b)
     (ht : c.nreg 211012 = tot) (hW1 : T + 3 * j + 2 ≤ W) (hW2 : tot + ℓ ≤ W) (hW3 : j + 1 ≤ W) :
@@ -81,9 +86,9 @@ theorem lvRegD_exec (c : Config) (hw : WordsBounded W c) {T j p ℓ b tot : ℕ}
       c'.nmem (T + 3 * j + 2) = b ∧
       (∀ a, (a < T + 3 * j ∨ T + 3 * j + 3 ≤ a) → c'.nmem a = c.nmem a) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  have wp := hw.1 217010
-  have wl := hw.1 217011
-  have wb := hw.1 217012
+  
+  
+  
   unfold lvRegD
   exec_block
   all_goals try (config_simp; (try simp only [h09, h10, h14, h17, h11, h12, ht]); omega)
@@ -99,6 +104,9 @@ theorem lvRegD_exec (c : Config) (hw : WordsBounded W c) {T j p ℓ b tot : ℕ}
   · config_simp
   · config_simp
 
+
+end
+
 end exec
 
 /-! ## Arithmetic of the level -/
@@ -111,10 +119,7 @@ theorem gradeGran_le_nat (g : ℕ) : gradeGran g ≤ 1201 * 2 ^ Cost.ceilBeta g 
 theorem g0_facts (μ : ℕ) :
     2 * gradeGran μ ≤ 3 * 2 ^ (Cost.ceilBeta μ + 10) ∧ 128 ≤ 3 * 2 ^ (Cost.ceilBeta μ + 10) ∧
       3 * 2 ^ (Cost.ceilBeta μ + 10) ≤ 4096 * 2 ^ Cost.ceilBeta μ := by
-  have h := gradeGran_le_nat μ
-  have e : 2 ^ (Cost.ceilBeta μ + 10) = 1024 * 2 ^ Cost.ceilBeta μ := by rw [pow_add]; ring
-  have h1 : 1 ≤ 2 ^ Cost.ceilBeta μ := Nat.one_le_two_pow
-  rw [e]; omega
+  grind [Chazelle.Core.DrvR.gradeGran_le_nat]
 
 /-- The merge grade is served by the up-phase data. -/
 theorem mu_le_grades {n x lam : ℕ} (hcap : n - 1 ≤ 2 ^ (x - 1)) (h16 : 16 ≤ lam)
@@ -126,18 +131,23 @@ theorem mu_le_grades {n x lam : ℕ} (hcap : n - 1 ≤ 2 ^ (x - 1)) (h16 : 16 �
 /-- The chain of a host with at least three points. -/
 noncomputable def hostChainOf (Q : Polygon) (H : Host) (h : 3 ≤ (H.pts Q.n).length) : Chain :=
   ⟨H.poly Q, 0, (H.pts Q.n).length - 1, by omega,
-    by rw [DownMath.host_poly_n]; omega⟩
+    by core_grind⟩
 
-theorem hostChainOf_P (Q : Polygon) (H : Host) (h : 3 ≤ (H.pts Q.n).length) :
+section
+variable (Q : Polygon) (H : Host) (h : 3 ≤ (H.pts Q.n).length)
+theorem hostChainOf_P :
     (hostChainOf Q H h).P = H.poly Q := rfl
 
-theorem hostChainOf_s (Q : Polygon) (H : Host) (h : 3 ≤ (H.pts Q.n).length) :
+theorem hostChainOf_s :
     (hostChainOf Q H h).s = 0 := rfl
 
-theorem hostChainOf_m (Q : Polygon) (H : Host) (h : 3 ≤ (H.pts Q.n).length) :
+theorem hostChainOf_m :
     (hostChainOf Q H h).m + 1 = (hostChainOf Q H h).P.n := by
   show (H.pts Q.n).length - 1 + 1 = (H.poly Q).n
-  rw [DownMath.host_poly_n]; omega
+  core_grind
+
+
+end
 
 /-- **The chords of a region map** (Lemma 2.3). -/
 theorem nch_le {Q : Polygon} {C : Chain} (hP : C.P.Simple) {N : NF} {γ γ₀ μ : ℕ}

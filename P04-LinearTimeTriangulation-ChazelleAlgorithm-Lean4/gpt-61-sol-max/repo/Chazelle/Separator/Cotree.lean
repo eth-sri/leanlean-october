@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Separator.Tree
 public import Mathlib.Algebra.BigOperators.Group.Finset.Piecewise
 
@@ -47,27 +49,39 @@ variable {V F D : Type*} (M : CombMap V F D)
 
 /-! ### Faces joined through a set of darts -/
 
+section
+variable (S : Finset D)
+include S
 /-- `faceRel S f g`: some dart `e ∈ S` has `f` on its side and `g` on the other side. -/
-def faceRel (S : Finset D) (f g : F) : Prop := ∃ e ∈ S, M.face e = f ∧ M.face (M.opp e) = g
+def faceRel (f g : F) : Prop := ∃ e ∈ S, M.face e = f ∧ M.face (M.opp e) = g
 
 /-- A dart set closed under `opp` (a set of edges). -/
-def OppClosed (S : Finset D) : Prop := ∀ e ∈ S, M.opp e ∈ S
+def OppClosed : Prop := ∀ e ∈ S, M.opp e ∈ S
 
 /-- The number of classes of faces joined through `S`. -/
-noncomputable def numComp (S : Finset D) : ℕ := Nat.card (Quot (M.faceRel S))
+noncomputable def numComp : ℕ := Nat.card (Quot (M.faceRel S))
+
+
+end
 
 variable {M}
 
+section
+variable {S S' : Finset D} (h : S ⊆ S') {f g : F}
+include h
 /-- Face adjacency is monotone in the dart set. -/
-theorem faceRel_mono {S S' : Finset D} (h : S ⊆ S') {f g : F} (hfg : M.faceRel S f g) :
+theorem faceRel_mono (hfg : M.faceRel S f g) :
     M.faceRel S' f g := by
   obtain ⟨e, he, h1, h2⟩ := hfg
   exact ⟨e, h he, h1, h2⟩
 
 /-- Face connectivity is monotone in the dart set. -/
-theorem eqvGen_faceRel_mono {S S' : Finset D} (h : S ⊆ S') {f g : F}
+theorem eqvGen_faceRel_mono
     (hfg : EqvGen (M.faceRel S) f g) : EqvGen (M.faceRel S') f g :=
   EqvGen.mono (fun _ _ => faceRel_mono h) _ _ hfg
+
+
+end
 
 /-- For an edge set (closed under `opp`), face adjacency is symmetric. -/
 theorem faceRel_opp {S : Finset D} (hS : M.OppClosed S) {f g : F} (h : M.faceRel S f g) :
@@ -89,25 +103,30 @@ theorem eqvGen_faceRel_insert (S : Finset D) (e : D) {x y : F} :
     · exact EqvGen.symm _ _ (EqvGen.rel _ _ (Or.inr ⟨by rw [M.opp_opp], rfl⟩))
     · exact EqvGen.rel _ _ (Or.inl ⟨e', he', rfl, rfl⟩)
   · rintro a b (h | ⟨rfl, rfl⟩)
-    · exact EqvGen.rel _ _ (faceRel_mono (by intro x hx; simp [hx]) h)
+    · exact EqvGen.rel _ _ (faceRel_mono (by grind) h)
     · exact EqvGen.rel _ _ ⟨e, by simp, rfl, rfl⟩
 
 variable [Finite F]
 
+section
+variable (S : Finset D) (e : D)
 /-- Adding an edge lowers the number of face classes by at most one. -/
-theorem numComp_le_insert (S : Finset D) (e : D) :
+theorem numComp_le_insert :
     M.numComp S ≤ M.numComp (insert e (insert (M.opp e) S)) + 1 := by
   unfold numComp
   rw [card_quot_eq_of_eqvGen_iff _ _ (fun x y => M.eqvGen_faceRel_insert S e (x := x) (y := y))]
   exact card_quot_le_or_pair_add_one _ _ _
 
 /-- Adding an edge whose sides are already joined does not change the face classes. -/
-theorem numComp_insert_eq (S : Finset D) (e : D)
+theorem numComp_insert_eq
     (h : EqvGen (M.faceRel S) (M.face e) (M.face (M.opp e))) :
     M.numComp (insert e (insert (M.opp e) S)) = M.numComp S := by
   unfold numComp
   rw [card_quot_eq_of_eqvGen_iff _ _ (fun x y => M.eqvGen_faceRel_insert S e (x := x) (y := y))]
   exact card_quot_or_pair_eq _ _ _ h
+
+
+end
 
 omit [Finite F] in
 /-- Adding an edge to an edge set gives an edge set. -/
@@ -116,9 +135,9 @@ theorem OppClosed.insert_pair {S : Finset D} (hS : M.OppClosed S) (e : D) :
   intro x hx
   simp only [Finset.mem_insert] at hx ⊢
   rcases hx with rfl | rfl | hx
-  · exact Or.inr (Or.inl rfl)
+  · simp_all
   · exact Or.inl (M.opp_opp _)
-  · exact Or.inr (Or.inr (hS x hx))
+  aesop
 
 /-- **Counting.**  `2·#classes(S) ≤ 2·#classes(S') + |S' \ S|` for edge sets `S ⊆ S'`. -/
 theorem two_mul_numComp_le {S' : Finset D} (hS' : M.OppClosed S') :
@@ -136,32 +155,13 @@ theorem two_mul_numComp_le {S' : Finset D} (hS' : M.OppClosed S') :
     have hne : M.opp e ≠ e := M.opp_ne e
     have hS1S' : insert e (insert (M.opp e) S) ⊆ S' := by
       intro x hx
-      simp only [Finset.mem_insert] at hx
-      rcases hx with rfl | rfl | hx
-      · exact he.1
-      · exact hoe'
-      · exact hSS' hx
+      grind
     have hcard : (S' \ insert e (insert (M.opp e) S)).card + 2 = (S' \ S).card := by
-      have h1 : S' \ insert e (insert (M.opp e) S) = ((S' \ S).erase e).erase (M.opp e) := by
-        ext x; simp only [Finset.mem_sdiff, Finset.mem_insert, Finset.mem_erase]; tauto
-      have h2 : M.opp e ∈ (S' \ S).erase e := by
-        simp [Finset.mem_erase, hne, hoe', hoe]
-      rw [h1, Finset.card_erase_of_mem h2, Finset.card_erase_of_mem (by simp [he.1, he.2])]
-      have : 2 ≤ (S' \ S).card := by
-        have hsub : ({e, M.opp e} : Finset D) ⊆ S' \ S := by
-          intro x hx; simp only [Finset.mem_insert, Finset.mem_singleton] at hx
-          rcases hx with rfl | rfl
-          · simp [he.1, he.2]
-          · simp [hoe', hoe]
-        have := Finset.card_le_card hsub
-        rwa [Finset.card_pair hne.symm] at this
-      omega
+      grind
     have h1 := ih _ (by omega) _ (hS.insert_pair e) hS1S' rfl
     have h2 := M.numComp_le_insert S e
     omega
-  · have hempty : S' \ S = ∅ := Finset.not_nonempty_iff_eq_empty.mp hcase
-    have hSS : S' = S := (Finset.sdiff_eq_empty_iff_subset.mp hempty).antisymm hSS'
-    subst hSS; omega
+  grind
 
 omit [DecidableEq D] [Finite F] in
 /-- With no edges, every face is its own class. -/
@@ -226,22 +226,27 @@ def Sd (d : D) : Finset D := T.coDarts.filter (fun e => e ≠ d ∧ e ≠ M.opp 
 theorem mem_Sd {d e : D} : e ∈ T.Sd d ↔ e ∈ T.coDarts ∧ e ≠ d ∧ e ≠ M.opp d := by
   simp [Sd]
 
+section
+variable (d : D)
 /-- The cotree minus an edge is part of the cotree. -/
-theorem Sd_subset (d : D) : T.Sd d ⊆ T.coDarts := Finset.filter_subset _ _
+theorem Sd_subset : T.Sd d ⊆ T.coDarts := Finset.filter_subset _ _
 
 /-- The dart `d` itself is removed. -/
-theorem notMem_Sd_self (d : D) : d ∉ T.Sd d := by simp [Sd]
+theorem notMem_Sd_self : d ∉ T.Sd d := by simp [Sd]
 
 /-- The cotree minus an edge is an edge set. -/
-theorem Sd_oppClosed (d : D) : M.OppClosed (T.Sd d) := by
+theorem Sd_oppClosed : M.OppClosed (T.Sd d) := by
   intro e he
   rw [mem_Sd] at he ⊢
   refine ⟨T.opp_mem_coDarts he.1, fun h => he.2.2 ?_, fun h => he.2.1 (M.opp_injective h)⟩
   rw [← h, M.opp_opp]
 
 /-- Removing the edge of `d` or of `opp d` is the same. -/
-theorem Sd_opp (d : D) : T.Sd (M.opp d) = T.Sd d := by
+theorem Sd_opp : T.Sd (M.opp d) = T.Sd d := by
   ext e; simp only [mem_Sd, M.opp_opp]; tauto
+
+
+end
 
 /-- The cotree is the cotree minus the edge of `d` plus that edge. -/
 theorem coDarts_eq_insert {d : D} (hd : d ∈ T.coDarts) :
@@ -249,12 +254,7 @@ theorem coDarts_eq_insert {d : D} (hd : d ∈ T.coDarts) :
   ext e
   simp only [Finset.mem_insert, mem_Sd]
   constructor
-  · intro he
-    by_cases h1 : e = d
-    · exact Or.inl h1
-    by_cases h2 : e = M.opp d
-    · exact Or.inr (Or.inl h2)
-    exact Or.inr (Or.inr ⟨he, h1, h2⟩)
+  · grind
   · rintro (rfl | rfl | ⟨he, -, -⟩)
     · exact hd
     · exact T.opp_mem_coDarts hd
@@ -288,14 +288,11 @@ theorem face_par_eqvGen {y : V} (hy : y ≠ T.root) {d : D} (hd : d ∈ T.coDart
         rw [← M.face_fperm_apply (M.fperm.symm e), Equiv.apply_symm_apply]
       have h2 : M.head (M.fperm.symm e) = M.vert e := by
         rw [← M.vert_fperm, Equiv.apply_symm_apply]
-      rw [h1, h2]; exact he
+      simp_all
     · intro e _; simp
     · intro e _; simp
   have hLE : (A \ Bh).card = (Bh \ A).card := by
-    have h1 := Finset.card_sdiff_add_card_inter A Bh
-    have h2 := Finset.card_sdiff_add_card_inter Bh A
-    rw [Finset.inter_comm] at h2
-    omega
+    grind
   -- the tree dart `par y` leaves the subtree
   have hpar : T.par y ∈ A \ Bh := by
     simp only [A, Bh, Finset.mem_sdiff, Finset.mem_filter, Finset.mem_univ, true_and, not_and]
@@ -323,13 +320,11 @@ theorem face_par_eqvGen {y : V} (hy : y ≠ T.root) {d : D} (hd : d ∈ T.coDart
           have h2 : M.vert (M.opp (T.par x)) = T.parent x := (T.parent_of_ne hx).symm
           rw [h1] at hin; rw [h2] at hout'
           have hxy := T.eq_of_isAnc_of_not_parent hin hout'
-          subst hxy
-          exact hK hKe
-      · rintro rfl
-        exact hout' (hiff.mpr hin)
+          simp_all
+      · grind
       · rintro rfl
         rw [M.head_opp] at hin
-        exact hout' (by rw [show M.vert (M.opp d) = M.head d from rfl]; exact hiff.mp hin)
+        exact hout' (by rw [show M.vert (M.opp d) = M.head d from rfl]; simp_all)
     have hKo : EqvGen R (M.face (T.par y)) (M.face (M.opp e)) :=
       EqvGen.trans _ _ _ hKe (EqvGen.rel _ _ ⟨e, heS, rfl, rfl⟩)
     simp only [A, Bh, Finset.coe_erase, Finset.coe_sdiff, Finset.coe_filter, Finset.mem_univ,
@@ -338,17 +333,16 @@ theorem face_par_eqvGen {y : V} (hy : y ≠ T.root) {d : D} (hd : d ∈ T.coDart
     · rw [M.head_opp]; exact hout'
     · intro h
       have : e = M.opp (T.par y) := by rw [← h, M.opp_opp]
-      rw [this] at hKe
-      exact hK hKe
+      simp_all
   have hle := Finset.card_le_card_of_injOn M.opp hmaps (M.opp_injective.injOn)
-  rw [Finset.card_erase_of_mem hpar] at hle
-  have hpos : 0 < (A \ Bh).card := Finset.card_pos.mpr ⟨_, hpar⟩
-  omega
+  grind
 
+section
+variable {d : D} (hd : d ∈ T.coDarts) {v : V} (hv1 : ¬ T.IsAnc v (M.vert d)) (hv2 : ¬ T.IsAnc v (M.head d))
+include hd hv1 hv2
 /-- Around a vertex off the root paths of the endpoints of a non-tree dart `d`, consecutive
 faces are on the same side of the fundamental cycle of `d`. -/
-theorem eqvGen_face_rot {d : D} (hd : d ∈ T.coDarts) {v : V}
-    (hv1 : ¬ T.IsAnc v (M.vert d)) (hv2 : ¬ T.IsAnc v (M.head d)) {e : D}
+theorem eqvGen_face_rot {e : D}
     (he : M.vert e = v) : EqvGen (M.faceRel (T.Sd d)) (M.face e) (M.face (M.rot e)) := by
   have hrot : M.face (M.rot e) = M.face (M.opp e) := by
     rw [← M.face_fperm_apply (M.opp e), fperm_apply, M.opp_opp]
@@ -373,8 +367,7 @@ theorem eqvGen_face_rot {d : D} (hd : d ∈ T.coDarts) {v : V}
 
 /-- **Jordan property, vertex form.**  All faces around a vertex `v` off the root paths of the
 endpoints of a non-tree dart `d` lie on the same side of the fundamental cycle of `d`. -/
-theorem eqvGen_face_of_vert {d : D} (hd : d ∈ T.coDarts) {v : V}
-    (hv1 : ¬ T.IsAnc v (M.vert d)) (hv2 : ¬ T.IsAnc v (M.head d)) {e e' : D}
+theorem eqvGen_face_of_vert {e e' : D}
     (he : M.vert e = v) (he' : M.vert e' = v) :
     EqvGen (M.faceRel (T.Sd d)) (M.face e) (M.face e') := by
   have hsc : M.rot.SameCycle e e' := M.sameCycle_of_vert e e' (he.trans he'.symm)
@@ -383,6 +376,9 @@ theorem eqvGen_face_of_vert {d : D} (hd : d ∈ T.coDarts) {v : V}
     ⟨he, EqvGen.refl _⟩).2
   rintro x ⟨hx, hex⟩
   exact ⟨by rw [M.vert_rot, hx], EqvGen.trans _ _ _ hex (T.eqvGen_face_rot hd hv1 hv2 hx)⟩
+
+
+end
 
 /-- **Jordan property, edge form.**  The two endpoints of a dart `e`, both off the root paths of
 the endpoints of the non-tree dart `d`, have their faces on the same side of the fundamental
@@ -419,16 +415,13 @@ theorem eqvGen_faceRel_coDarts (hM : M.Connected) (f g : F) :
     by_contra hB
     rw [Finset.not_nonempty_iff_eq_empty] at hB
     have hopp : ∀ d, M.face d ∈ K → M.face (M.opp d) ∈ K := by
-      intro d hd
-      by_contra h
-      have : d ∈ B := by simp [B, hd, h]
-      rw [hB] at this; simp at this
+      simp_all +zetaDelta 
     obtain ⟨d0, hd0⟩ := M.face_surj f
     obtain ⟨dg, hdg⟩ := M.face_surj g
     have := hM.of_face {d | M.face d ∈ K}
-      (fun d e hde hd => by rw [Set.mem_ofPred_eq, ← hde]; exact hd)
-      (fun d hd => hopp d hd) (d := d0) (by simp [hK, hd0, EqvGen.refl]) dg
-    exact hfg (by simpa [hK, hdg] using this)
+      (fun d e hde hd => by simp_all)
+      (fun d hd => hopp d hd) (d := d0) (by grind [EqvGen.refl]) dg
+    simp_all
   have hBtree : ∀ d ∈ B, T.IsTreeDart d := by
     intro d hd
     simp only [B, Finset.mem_filter, Finset.mem_univ, true_and] at hd
@@ -449,9 +442,7 @@ theorem eqvGen_faceRel_coDarts (hM : M.Connected) (f g : F) :
         simp only [B, Finset.mem_filter, Finset.mem_univ, true_and]
         refine ⟨hy2, ?_⟩
         rwa [← M.face_fperm_apply (M.opp y), fperm_apply, M.opp_opp]
-      have := hno y hyB hy1
-      subst this
-      exact hd.2 hy2
+      grind
     have hstart : M.fperm d ∈ {x | M.vert x = M.head d ∧ M.face x ∈ K} :=
       ⟨M.vert_fperm d, by rw [M.face_fperm_apply]; exact hd.1⟩
     have hsc : M.rot.SameCycle (M.fperm d) (M.opp d) :=
@@ -468,15 +459,14 @@ theorem eqvGen_faceRel_coDarts (hM : M.Connected) (f g : F) :
       rw [T.potential_up L hu, T.potential_up L hu']
       rw [T.vert_par u' hu'] at hv
       have := T.level_head_par u hu
-      rw [← hv] at this; omega
+      grind
     · -- up, down
       rw [T.potential_up L hu, T.potential_down L hu']
       have := T.level_pos hu; omega
     · -- down, up: impossible
       exfalso
       rw [T.vert_par u' hu', M.head_opp, T.vert_par u hu] at hv
-      subst hv
-      exact hne (M.opp_opp _).symm
+      grind
     · -- down, down
       rw [T.potential_down L hu, T.potential_down L hu']
       have h1 := T.level_head_par u' hu'
@@ -484,12 +474,9 @@ theorem eqvGen_faceRel_coDarts (hM : M.Connected) (f g : F) :
         have : M.vert (M.opp (T.par u')) = M.head (M.opp (T.par u)) := hv
         rw [M.head_opp, T.vert_par u hu] at this
         exact this
-      rw [hv'] at h1
-      have := hL u'
-      omega
+      grind
   obtain ⟨d, hd, hmin⟩ := B.exists_min_image (T.potential L) hBnonempty
-  obtain ⟨d', hd', hv, hne⟩ := hsucc d hd
-  exact absurd (hmin d' hd') (not_le.mpr (hdec d hd d' hd' hv hne))
+  grind
 
 /-! #### Acyclicity of the cotree in a planar map -/
 
@@ -504,14 +491,12 @@ theorem card_vert_pos (hM : M.Planar) : 0 < Fintype.card V := by
   have hF : Fintype.card F = 0 := Fintype.card_eq_zero_iff.mpr
     ⟨fun g => by obtain ⟨d, _⟩ := M.face_surj g; exact hDe.elim d⟩
   have := hM.2
-  unfold euler numE at this
-  rw [hV, hD, hF] at this
-  simp at this
+  grind [euler, numE]
 
 /-- In a planar map the cotree has `F - 1` edges. -/
 theorem card_coDarts (hM : M.Planar) : T.coDarts.card + 2 = 2 * Fintype.card F := by
   have h1 : T.coDarts.card = Fintype.card D - T.treeDarts.card := by
-    rw [coDarts, Finset.card_sdiff_of_subset (Finset.subset_univ _), Finset.card_univ]
+    core_grind
   have h2 := T.card_treeDarts
   have h3 := M.two_mul_euler
   rw [hM.2] at h3
@@ -533,10 +518,9 @@ theorem not_eqvGen_faceRel (hM : M.Planar) {S : Finset D} (hS : M.OppClosed S)
     rcases hx with rfl | rfl | hx
     · exact hd
     · exact T.opp_mem_coDarts hd
-    · exact hSc hx
+    grind
   have hcardS1 : (insert d (insert (M.opp d) S)).card = S.card + 2 := by
-    rw [Finset.card_insert_of_notMem, Finset.card_insert_of_notMem hod]
-    simp [hne.symm, hdS]
+    grind
   have e1 := M.numComp_insert_eq S d h
   have e2 := M.two_mul_numComp_le hS S.card ∅ (fun _ h => by simp at h)
     (Finset.empty_subset _) (by simp)
@@ -547,8 +531,7 @@ theorem not_eqvGen_faceRel (hM : M.Planar) {S : Finset D} (hS : M.OppClosed S)
     card_quot_le_one _ (T.eqvGen_faceRel_coDarts hM.1)
   have e7 := T.card_coDarts hM
   have e8 := Finset.card_le_card hS1c
-  rw [Nat.card_eq_fintype_card] at e5
-  omega
+  grind [Nat.card_eq_fintype_card]
 
 /-- The side of the fundamental cycle of `d` entered when crossing `d`: the faces joined to
 `face (opp d)` by non-tree edges other than the edge of `d`. -/
@@ -556,15 +539,20 @@ noncomputable def cross (d : D) : Finset F :=
   haveI := Classical.decPred (fun g => EqvGen (M.faceRel (T.Sd d)) (M.face (M.opp d)) g)
   Finset.univ.filter (fun g => EqvGen (M.faceRel (T.Sd d)) (M.face (M.opp d)) g)
 
+section
+variable {d : D} {g : F}
 /-- Membership in the side `cross d`: joined to `face (opp d)` avoiding the edge of `d`. -/
-theorem mem_cross {d : D} {g : F} :
+theorem mem_cross :
     g ∈ T.cross d ↔ EqvGen (M.faceRel (T.Sd d)) (M.face (M.opp d)) g := by
   simp [cross]
 
 /-- Membership in the other side `cross (opp d)`: joined to `face d`. -/
-theorem mem_cross_opp_iff {d : D} {g : F} :
+theorem mem_cross_opp_iff :
     g ∈ T.cross (M.opp d) ↔ EqvGen (M.faceRel (T.Sd d)) (M.face d) g := by
   rw [mem_cross, T.Sd_opp, M.opp_opp]
+
+
+end
 
 /-- The face entered through `d` lies on the side `cross d`. -/
 theorem face_opp_mem_cross (d : D) : M.face (M.opp d) ∈ T.cross d :=
@@ -575,8 +563,11 @@ theorem cross_closed {d e : D} (he : e ∈ T.Sd d) (h : M.face e ∈ T.cross d) 
     M.face (M.opp e) ∈ T.cross d :=
   T.mem_cross.mpr (EqvGen.trans _ _ _ (T.mem_cross.mp h) (EqvGen.rel _ _ ⟨e, he, rfl, rfl⟩))
 
+section
+variable (hM : M.Planar) {d : D} (hd : d ∈ T.coDarts)
+include hM hd
 /-- The face of `d` is not on the side entered through `d`. -/
-theorem face_notMem_cross (hM : M.Planar) {d : D} (hd : d ∈ T.coDarts) :
+theorem face_notMem_cross :
     M.face d ∉ T.cross d := by
   rw [mem_cross]
   intro h
@@ -584,24 +575,23 @@ theorem face_notMem_cross (hM : M.Planar) {d : D} (hd : d ∈ T.coDarts) :
     (EqvGen.symm _ _ h)
 
 /-- Every face is on one of the two sides of a non-tree edge. -/
-theorem mem_cross_or (hM : M.Planar) {d : D} (hd : d ∈ T.coDarts) (g : F) :
+theorem mem_cross_or (g : F) :
     g ∈ T.cross d ∨ g ∈ T.cross (M.opp d) := by
   have h := T.eqvGen_faceRel_coDarts hM.1 (M.face d) g
   rw [T.coDarts_eq_insert hd, M.eqvGen_faceRel_insert, eqvGen_or_pair_iff] at h
-  rw [mem_cross_opp_iff, mem_cross]
-  rcases h with h | ⟨_, h2⟩ | ⟨_, h2⟩
-  · exact Or.inr h
-  · exact Or.inl h2
-  · exact Or.inr h2
+  grind [mem_cross_opp_iff, mem_cross]
 
 /-- The two sides of a non-tree edge are disjoint. -/
-theorem notMem_cross_opp (hM : M.Planar) {d : D} (hd : d ∈ T.coDarts) {g : F}
+theorem notMem_cross_opp {g : F}
     (hg : g ∈ T.cross d) : g ∉ T.cross (M.opp d) := by
   rw [mem_cross] at hg
   rw [mem_cross_opp_iff]
   intro h
   exact T.not_eqvGen_faceRel hM (T.Sd_oppClosed d) (T.Sd_subset d) hd (T.notMem_Sd_self d)
     (EqvGen.trans _ _ _ h (EqvGen.symm _ _ hg))
+
+
+end
 
 /-- **Nesting of sides.**  Entering through `d` into the face `face (opp d)` and leaving it
 through another non-tree dart `d'` leads into a subset of the side entered through `d`. -/
@@ -611,8 +601,7 @@ theorem cross_subset (hM : M.Planar) {d d' : D} (hd : d ∈ T.coDarts) (hd' : d'
   by_contra hgd
   have hg2 : g ∈ T.cross (M.opp d) := (T.mem_cross_or hM hd g).resolve_left hgd
   have hdd' : d' ≠ d := by
-    rintro rfl
-    exact T.face_notMem_cross hM hd (hf ▸ T.face_opp_mem_cross d')
+    grind
   have hdSd' : d ∈ T.Sd d' :=
     T.mem_Sd.mpr ⟨hd, hdd'.symm, fun h => hne (by rw [h, M.opp_opp])⟩
   have hd'Sd : d' ∈ T.Sd d := T.mem_Sd.mpr ⟨hd', hdd', hne⟩
@@ -673,9 +662,11 @@ namespace CombMap
 
 variable {V F D : Type*} [Fintype V] [DecidableEq V] [Fintype F] [Fintype D] [DecidableEq D]
 
+section
+variable (M : CombMap V F D)
 /-- **Euler's inequality.**  A connected map has Euler characteristic at most `2` (the cotree of
 a spanning tree connects the `F` faces with `E - V + 1` edges). -/
-theorem euler_le_two (M : CombMap V F D) (hM : M.Connected) : M.euler ≤ 2 := by
+theorem euler_le_two (hM : M.Connected) : M.euler ≤ 2 := by
   classical
   by_cases hV : Nonempty V
   · obtain ⟨r⟩ := hV
@@ -686,13 +677,12 @@ theorem euler_le_two (M : CombMap V F D) (hM : M.Connected) : M.euler ≤ 2 := b
     have e3 := M.numComp_empty (D := D)
     rw [Nat.card_eq_fintype_card] at e3
     have e4 : T.coDarts.card = Fintype.card D - T.treeDarts.card := by
-      rw [SpanTree.coDarts, Finset.card_sdiff_of_subset (Finset.subset_univ _), Finset.card_univ]
+      core_grind
     have e5 := T.card_treeDarts
     have e6 : T.treeDarts.card ≤ Fintype.card D := Finset.card_le_univ _
     have e7 : 0 < Fintype.card V := Fintype.card_pos_iff.mpr ⟨r⟩
     have h2 := M.two_mul_euler
-    rw [Finset.sdiff_empty] at e1
-    omega
+    grind
   · have hVe : IsEmpty V := not_nonempty_iff.mp hV
     have hD : IsEmpty D := ⟨fun d => hVe.elim (M.vert d)⟩
     have hF : IsEmpty F := ⟨fun g => by obtain ⟨d, _⟩ := M.face_surj g; exact hD.elim d⟩
@@ -702,8 +692,11 @@ theorem euler_le_two (M : CombMap V F D) (hM : M.Connected) : M.euler ≤ 2 := b
     norm_num
 
 /-- Planarity is extremal Euler characteristic: `M` is planar iff it is connected with `χ ≥ 2`. -/
-theorem planar_iff (M : CombMap V F D) : M.Planar ↔ M.Connected ∧ 2 ≤ M.euler :=
+theorem planar_iff : M.Planar ↔ M.Connected ∧ 2 ≤ M.euler :=
   ⟨fun h => ⟨h.1, h.2.ge⟩, fun h => ⟨h.1, le_antisymm (M.euler_le_two h.1) h.2⟩⟩
+
+
+end
 
 end CombMap
 

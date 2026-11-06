@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseBaseFull
 public import Chazelle.Core.NFBuildCmp
 
@@ -47,32 +49,25 @@ theorem getD_filter_rank {L : List α} {i : ℕ} (d : α) (hi : i < L.length)
   | cons x L ih =>
     cases i with
     | zero =>
-      simp only [List.getD_cons_zero] at hf ⊢
-      simp [rankF, hf]
+      simp_all [List.getD_cons_zero, rankF] 
     | succ k =>
-      simp only [List.getD_cons_succ] at hf ⊢
-      have ih' := ih (by simp at hi; omega) hf
-      unfold rankF at ih' ⊢
-      simp only [List.take_succ_cons, List.filter_cons]
-      split_ifs <;> (try simp only [List.length_cons, List.getD_cons_succ]) <;> exact ih'
+      grind [List.getD_cons_succ, rankF, List.take_succ_cons, List.filter_cons, List.length_cons]
 
 theorem rankF_add (L : List α) (i m : ℕ) :
     rankF f L (i + m) = rankF f L i + (((L.drop i).take m).filter f).length := by
   unfold rankF
-  rw [List.take_add, List.filter_append, List.length_append]
+  grind
 
-theorem rankF_lt_of {L : List α} {i j : ℕ} (d : α) (hij : i < j) (hi : i < L.length)
+section
+variable {L : List α}
+theorem rankF_lt_of {i j : ℕ} (d : α) (hij : i < j) (hi : i < L.length)
     (hf : f (L.getD i d) = true) : rankF f L i < rankF f L j := by
   obtain ⟨m, rfl⟩ : ∃ m, j = i + (m + 1) := ⟨j - i - 1, by omega⟩
   rw [rankF_add]
   have hd : L.drop i = L[i] :: L.drop (i + 1) := List.drop_eq_getElem_cons hi
-  have hLi : L.getD i d = L[i] := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
-  rw [hLi] at hf
-  rw [hd, List.take_succ_cons, List.filter_cons, ite_eq_left hf, List.length_cons]
-  omega
+  grind
 
-theorem rankF_lt_length {L : List α} {i : ℕ} (d : α) (hi : i < L.length)
+theorem rankF_lt_length {i : ℕ} (d : α) (hi : i < L.length)
     (hf : f (L.getD i d) = true) : rankF f L i < (L.filter f).length := by
   have := rankF_lt_of f d (show i < i + 1 by omega) hi hf
   have h2 : rankF f L (i + 1) ≤ (L.filter f).length := by
@@ -80,20 +75,22 @@ theorem rankF_lt_length {L : List α} {i : ℕ} (d : α) (hi : i < L.length)
     exact ((List.take_sublist _ _).filter f).length_le
   omega
 
-theorem rankF_length (L : List α) : rankF f L L.length = (L.filter f).length := by
-  unfold rankF; rw [List.take_length]
 
-theorem rankF_succ {L : List α} {i : ℕ} (d : α) (hi : i < L.length) :
+end
+
+theorem rankF_length (L : List α) : rankF f L L.length = (L.filter f).length := by
+  core_grind
+
+section
+variable {L : List α}
+theorem rankF_succ {i : ℕ} (d : α) (hi : i < L.length) :
     rankF f L (i + 1) = rankF f L i + if f (L.getD i d) then 1 else 0 := by
   rw [rankF_add]
   have hd : L.drop i = L[i] :: L.drop (i + 1) := List.drop_eq_getElem_cons hi
-  have hLi : L.getD i d = L[i] := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
-  rw [hLi, hd, List.take_succ_cons, List.take_zero, List.filter_cons]
-  split_ifs <;> simp
+  grind
 
 /-- The kept codes below `2 i`: twice the kept chords below `i`. -/
-theorem count_codes {L : List α} (d : α) {i : ℕ} (hi : i ≤ L.length) :
+theorem count_codes (d : α) {i : ℕ} (hi : i ≤ L.length) :
     ((List.range (2 * i)).filter fun c => f (L.getD (c / 2) d)).length = 2 * rankF f L i := by
   induction i with
   | zero => simp [rankF]
@@ -102,9 +99,10 @@ theorem count_codes {L : List α} (d : α) {i : ℕ} (hi : i ≤ L.length) :
       List.range_succ, List.filter_append, List.filter_append, List.length_append,
       List.length_append, show 2 * k + 1 = 2 * k + 1 from rfl, ih (by omega)]
     have e1 : (2 * k) / 2 = k := by omega
-    have e2 : (2 * k + 1) / 2 = k := by omega
-    simp only [List.filter_cons, List.filter_nil, e1, e2]
-    split_ifs <;> simp; omega
+    grind
+
+
+end
 
 end generic
 
@@ -112,27 +110,35 @@ end generic
 
 variable (li : Bool) (n : ℕ)
 
+section
+variable (L : List (ℕ × ℕ × ℕ))
+include L
 /-- **The kept chord triples.** -/
-def keepL (L : List (ℕ × ℕ × ℕ)) : List (ℕ × ℕ × ℕ) := L.filter (keepX li n)
+def keepL : List (ℕ × ℕ × ℕ) := L.filter (keepX li n)
 
 /-- The event code `c` belongs to a kept chord. -/
-def keptC (L : List (ℕ × ℕ × ℕ)) (c : ℕ) : Bool := keepX li n (L.getD (c / 2) (0, 0, 0))
+def keptC (c : ℕ) : Bool := keepX li n (L.getD (c / 2) (0, 0, 0))
 
 /-- The renumbered event code. -/
-def newCode (L : List (ℕ × ℕ × ℕ)) (c : ℕ) : ℕ := 2 * rankF (keepX li n) L (c / 2) + c % 2
+def newCode (c : ℕ) : ℕ := 2 * rankF (keepX li n) L (c / 2) + c % 2
 
 /-- **The renumbered event list.** -/
-def dropE (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) : List ℕ :=
+def dropE (E : List ℕ) : List ℕ :=
   (E.filter (keptC li n L)).map (newCode li n L)
+
+
+end
 
 variable {li n}
 
-theorem getD_keepL {L : List (ℕ × ℕ × ℕ)} {i : ℕ} (hi : i < L.length)
+section
+variable {L : List (ℕ × ℕ × ℕ)}
+theorem getD_keepL {i : ℕ} (hi : i < L.length)
     (hk : keepX li n (L.getD i (0, 0, 0)) = true) :
     (keepL li n L).getD (rankF (keepX li n) L i) (0, 0, 0) = L.getD i (0, 0, 0) :=
   getD_filter_rank _ _ hi hk
 
-theorem wposOf_newCode {L : List (ℕ × ℕ × ℕ)} {c : ℕ} (hc : c < 2 * L.length)
+theorem wposOf_newCode {c : ℕ} (hc : c < 2 * L.length)
     (hk : keptC li n L c = true) : wposOf (keepL li n L) (newCode li n L c) = wposOf L c := by
   have h1 : newCode li n L c % 2 = c % 2 := by unfold newCode; omega
   have h2 : newCode li n L c / 2 = rankF (keepX li n) L (c / 2) := by unfold newCode; omega
@@ -140,6 +146,9 @@ theorem wposOf_newCode {L : List (ℕ × ℕ × ℕ)} {c : ℕ} (hc : c < 2 * L.
   rw [h1, h2]
   simp only [BuildRegions.crec]
   rw [getD_keepL (by omega) hk]
+
+
+end
 
 theorem tieBit_newCode (M : Model) {L : List (ℕ × ℕ × ℕ)} {c : ℕ} (hc : c < 2 * L.length)
     (hk : keptC li n L c = true) : tieBit M (keepL li n L) (newCode li n L c) = tieBit M L c := by
@@ -155,22 +164,27 @@ theorem codeLe_newCode (M : Model) (Q : Polygon) {L : List (ℕ × ℕ × ℕ)} 
   rw [wposOf_newCode hc hk, wposOf_newCode hc' hk', tieBit_newCode M hc hk,
     tieBit_newCode M hc' hk']
 
-theorem newCode_lt {L : List (ℕ × ℕ × ℕ)} {c : ℕ} (hc : c < 2 * L.length)
+section
+variable {L : List (ℕ × ℕ × ℕ)}
+theorem newCode_lt {c : ℕ} (hc : c < 2 * L.length)
     (hk : keptC li n L c = true) : newCode li n L c < 2 * (keepL li n L).length := by
   have := rankF_lt_length (keepX li n) (0, 0, 0) (show c / 2 < L.length by omega) hk
   unfold newCode keepL
   omega
 
-theorem newCode_inj {L : List (ℕ × ℕ × ℕ)} {c c' : ℕ} (hc : c < 2 * L.length)
+theorem newCode_inj {c c' : ℕ} (hc : c < 2 * L.length)
     (hk : keptC li n L c = true) (hc' : c' < 2 * L.length) (hk' : keptC li n L c' = true)
     (h : newCode li n L c = newCode li n L c') : c = c' := by
   unfold newCode at h
   rcases lt_trichotomy (c / 2) (c' / 2) with h1 | h1 | h1
   · have := rankF_lt_of (keepX li n) (0, 0, 0) h1 (by omega) hk
     omega
-  · rw [h1] at h; omega
+  · omega
   · have := rankF_lt_of (keepX li n) (0, 0, 0) h1 (by omega) hk'
     omega
+
+
+end
 
 variable {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
 
@@ -197,18 +211,14 @@ theorem dropE_perm (hperm : E.Perm (List.range (2 * L.length))) :
     rw [List.mem_filter] at ha hb
     exact newCode_inj (mem_lt hperm ha.1) ha.2 (mem_lt hperm hb.1) hb.2 hab
   have hsub : dropE li n L E ⊆ List.range (2 * (keepL li n L).length) := by
-    intro x hx
-    unfold dropE at hx
-    obtain ⟨c, hc, rfl⟩ := List.mem_map.1 hx
-    rw [List.mem_filter] at hc
-    exact List.mem_range.2 (newCode_lt (mem_lt hperm hc.1) hc.2)
+    grind [Chazelle.Core.DownBase.mem_lt, Chazelle.Core.DownBase.newCode_lt, dropE, List.mem_filter]
   have hlen : (dropE li n L E).length = 2 * (keepL li n L).length := by
     unfold dropE
     rw [List.length_map, (hperm.filter _).length_eq]
     have := count_codes (keepX li n) (L := L) (0, 0, 0) (le_refl L.length)
     rw [rankF_length] at this
     exact this
-  exact (hnd'.subperm hsub).perm_of_length_le (by rw [hlen, List.length_range])
+  exact (hnd'.subperm hsub).perm_of_length_le (by simp_all)
 
 /-- **The kept triples are valid.** -/
 theorem chordTriplesOK_keepL {M : Model} {Q : Polygon} (h : ChordTriplesOK M Q L) :
@@ -235,7 +245,7 @@ theorem family_keepL {Q : Polygon} (hQ : Q.Simple) (hDH : DistinctHeights Q)
   constructor
   · rintro ⟨x, hx, rfl⟩
     obtain ⟨hxL, hk⟩ := List.mem_filter.1 hx
-    exact ⟨⟨x, hxL, rfl⟩, (hiff x hxL).2 hk⟩
+    grind
   · rintro ⟨⟨x, hx, rfl⟩, hfull⟩
     exact ⟨x, List.mem_filter.2 ⟨hx, (hiff x hx).1 hfull⟩, rfl⟩
 

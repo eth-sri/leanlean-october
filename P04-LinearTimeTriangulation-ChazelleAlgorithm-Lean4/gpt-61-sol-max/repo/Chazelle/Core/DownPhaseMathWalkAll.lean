@@ -40,8 +40,7 @@ theorem flatMap_rot {α : Type*} (A B : ℕ → List α) {k : ℕ} (hk : 0 < k) 
       rw [List.range_succ, List.flatMap_append, List.flatMap_append, List.flatMap_singleton,
         List.flatMap_singleton, List.append_assoc, List.append_assoc, ← List.append_assoc (f m),
         ← List.append_assoc _ (f m ++ B m)]
-      rw [← List.append_assoc, ih]
-      simp only [List.append_assoc]
+      grind
   have h1 : (List.range k).flatMap (fun t => f t ++ B t) =
       (List.range k).flatMap (fun t => A t ++ B t) := by
     apply List.flatMap_congr
@@ -51,7 +50,7 @@ theorem flatMap_rot {α : Type*} (A B : ℕ → List α) {k : ℕ} (hk : 0 < k) 
   have h2 : (List.range k).flatMap (fun t => B t ++ f (t + 1)) =
       (List.range k).flatMap (fun t => B t ++ A ((t + 1) % k)) := rfl
   have hk0 : f k = A 0 := by simp [hf]
-  have hf0 : f 0 = A 0 := by simp [hf, Nat.zero_mod]
+  have hf0 : f 0 = A 0 := by simp_all
   have e := key k
   rw [h1, h2, hk0, hf0] at e
   -- the concatenation starts with `A 0`
@@ -59,11 +58,8 @@ theorem flatMap_rot {α : Type*} (A B : ℕ → List α) {k : ℕ} (hk : 0 < k) 
   obtain ⟨W', hW'⟩ : ∃ W', (List.range (k' + 1)).flatMap (fun t => A t ++ B t) = A 0 ++ W' := by
     rw [List.range_succ_eq_map, List.flatMap_cons]
     exact ⟨B 0 ++ List.flatMap (fun t => A t ++ B t) (List.map Nat.succ (List.range k')),
-      by simp only [List.append_assoc]⟩
-  rw [hW'] at e ⊢
-  rw [List.append_assoc] at e
-  have := List.append_cancel_left e
-  rw [← this, List.rotate_append_length_eq]
+      by simp_all⟩
+  simp_all
 
 /-- **Every region has an arc.** -/
 theorem exists_arc {Q : Polygon} {S : Set (Set Point)} {R : Set Point} (hQ : Q.Simple)
@@ -76,9 +72,8 @@ theorem exists_arc {Q : Polygon} {S : Set (Set Point)} {R : Set Point} (hQ : Q.S
   have hXR : X = R := by
     obtain ⟨δ, h1, h2⟩ := (hfacX.and hfac).exists
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hR with h | h
-    · exact h
-    · exact absurd h2 (Set.disjoint_left.1 h h1)
-  exact ⟨l, r', hXR ▸ harc⟩
+    all_goals grind
+  grind
 
 /-- The walk-order points of one arc's items. -/
 theorem arcItems_wpts (li : Bool) (n : ℕ) (N : NF) (r jp j : ℕ) :
@@ -91,7 +86,7 @@ theorem arcItems_wpts (li : Bool) (n : ℕ) (N : NF) (r jp j : ℕ) :
   unfold arcItems
   simp only [List.flatMap_append, ptI_eq, List.flatMap_singleton, wpts_pt, List.append_assoc]
   congr 1
-  split_ifs <;> simp [wpts_pt]
+  grind [wpts_pt]
 
 /-- **The walk-order points of the driver's host** represent the host keys of the region
 cyclically, `nk` of them, starting right after a chord gap; and the host is well formed. -/
@@ -121,7 +116,7 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
     ⟨_, (chordPos_attach hN (show 0 < N.nChords by rw [hnc]; exact X.hK) (Or.inl rfl)).1⟩
   have hR : R ∈ I.regions S := X.hregs.1.1 r X.hr
   have hRC := (X.hregs.2.2.2 r X.hr).1
-  have hM : WalkAx I := walkAx_interiorModel hQ
+  
   have h3 : 3 ≤ K := three_le_nk hQ hFam hne hR
   have hn3 : 3 ≤ Q.n := Chazelle.Jordan.simple_three_le hQ
   obtain ⟨hAarc, hAsort, hAcomp⟩ := regArcs_facts (E := E) X.hQ X.hL X.hperm X.hsort X.hK
@@ -138,7 +133,7 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
     (fun t => I.key Q (xs t)) (fun t => I.key Q (xe t)) (fun t ht => (hAarc t ht).2) hAsort
     (fun a b h => by
       obtain ⟨t, ht, h1, h2⟩ := hAcomp a b h
-      exact ⟨t, ht, h1, h2⟩)
+      grind)
   have hpos : ∀ t, t < k → ChordPos N (xs t) ∧ ChordPos N (xe t) := fun t ht =>
     arc_pos X.hQ X.hL X.hperm X.hsort X.hK (hAarc t ht).1
   have hil : ∀ t, t < k → i t < K := fun t ht => (hD t ht).hil
@@ -146,7 +141,7 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
   have hnext : ∀ t, t < k → I.key Q (xs ((t + 1) % k)) = hk I S R ((i t + d t + 1 + J t) % K) := by
     intro t ht
     have hst : i t + d t + 1 + J t = i 0 + grpOff d J (t + 1) := by
-      rw [grpOff_succ, hoff t ht]; unfold grpLen; ring
+      grind [grpOff_succ, grpLen]
     by_cases ht1 : t + 1 < k
     · rw [Nat.mod_eq_of_lt ht1, hst, ← hoff (t + 1) ht1, Nat.mod_eq_of_lt (hil (t + 1) ht1)]
       exact (hD (t + 1) ht1).hl.symm
@@ -199,8 +194,8 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
     rw [← has, ← hkdef] at hit
     obtain ⟨t, ht, hit⟩ := List.mem_flatMap.1 hit
     rw [List.mem_range] at ht
-    have hp0 := hpos t ht
-    have hp1 := hpos _ (Nat.mod_lt (t + 1) hk1)
+    
+    
     have hpp := (hgrp t ht).2.2.2.2
     have hptI : ∀ (x : WPos) (b : Bool), ChordPos N x →
         (match ptI li Q.n x b with
@@ -211,7 +206,7 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
       obtain ⟨-, hAx, -, eh, hh, -⟩ := chordPos_attach hN hc hxc
       have hxn : x.edge < Q.n := walk_n Q ▸ hAx.1
       show qE li Q.n _ < Q.n ∧ x.hgt - 1 < Q.n
-      refine ⟨qE_lt li ?_, by rw [eh]; simpa using hh⟩
+      refine ⟨qE_lt li ?_, by omega⟩
       split_ifs
       · exact Nat.mod_lt _ (by omega)
       · exact hxn
@@ -225,10 +220,7 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
         exact hptI _ _ hpp
     · exact hptI _ _ (hpos _ (Nat.mod_lt (t + 1) hk1)).1
     · unfold runItems at hrun
-      have hxn : (N.arc (as.getD ((t + 1) % k) 0)).s.edge < Q.n := by
-        obtain ⟨c, hc, hxc⟩ := hp1.1
-        obtain ⟨-, hAx, -, -, -, -⟩ := chordPos_attach hN hc hxc
-        exact walk_n Q ▸ hAx.1
+      
       have hcn : runCnt li Q.n (N.arc (as.getD ((t + 1) % k) 0)).s
           (N.arc (as.getD ((t + 1) % k) 0)).e < Q.n := Nat.mod_lt _ (by omega)
       split_ifs at hrun with h0 h1
@@ -236,7 +228,7 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
       · rw [List.mem_singleton] at hrun; subst hrun
         exact ⟨Nat.mod_lt _ (by omega), by omega⟩
       · rw [List.mem_singleton] at hrun; subst hrun
-        exact ⟨by omega, by omega⟩
+        omega
     · exact hptI _ _ (hpos _ (Nat.mod_lt (t + 1) hk1)).2
 
 end

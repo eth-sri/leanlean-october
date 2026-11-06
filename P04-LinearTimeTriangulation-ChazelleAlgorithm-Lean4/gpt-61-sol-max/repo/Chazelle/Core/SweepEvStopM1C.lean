@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopTasks3
 public import Chazelle.Core.SweepEvStopBrute2
 public import Chazelle.Core.SweepIoCand1G
@@ -43,12 +45,10 @@ theorem m1c_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) {k
   obtain ⟨hk, hlt⟩ := hw rfl
   obtain ⟨he, hpp, hcl, hz, -, hend⟩ := hpos
   have hx : (⟨e, h⟩ : WPos) = endPos N k (1 - b) := hend rfl
-  have he6 : e < 6 := by have := congrArg WPos.edge hx; simp only at this; rw [this]; exact hlt
+  
   have hbox : e = 1 ∨ e = 3 := by
     rcases hcl with h' | h' | h'
-    · exact h'
-    · simp only at h'; omega
-    · simp only at h'; have := J.right.one_le; omega
+    all_goals grind
   obtain ⟨-, -, hy, -, hx1⟩ := stOrig_facts hP hN hok'
   obtain ⟨ha, hbw, hpar, hposT⟩ :=
     boxTwin_pos (C₁ := J.right) (C₂ := J.left) rfl hbox (Qof P) h
@@ -67,19 +67,17 @@ theorem m1c_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) {k
     rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
     · have e1 : endPos N k (1 - 0) = (N.chord k).rpos := by unfold endPos; simp
       rw [e1, hr, dirOf_zero]
-      simp only [Visibility.hseg, rayPt, mem_ofPred_eq]
-      refine ⟨trivial, by linarith, by linarith⟩
+      grind [Visibility.hseg, rayPt, mem_ofPred_eq]
     · have e1 : endPos N k (1 - 1) = (N.chord k).lpos := by unfold endPos; simp
       rw [e1, hl, dirOf_one]
-      simp only [Visibility.hseg, rayPt, mem_ofPred_eq]
-      refine ⟨trivial, by linarith, by linarith⟩
+      grind [Visibility.hseg, rayPt, mem_ofPred_eq]
   have hsl₂ := SweepStop.sideLeft_of_attach hA (SweepStop.dirOf_cases' b) (ε := b' - a') (by linarith) hin
   rw [hpt, hz] at hsl₂
   -- the parameter is positive
   have ht : (chainModel J.right).param (Qof P) ⟨e, h⟩ ≠ 0 := by
     intro h0
     have e0 : (chainModel J.right).pos (Qof P) ⟨e, h⟩ = (chainModel J.right).wa e := by
-      unfold Model.pos; rw [h0]; simp [Geometry.lerp]
+      grind [Model.pos, Geometry.lerp]
     rw [hz] at e0
     rw [e0] at hy
     have hW : (chainModel J.right).W = J.right.sideWalk J.right.sideBeta := rfl
@@ -88,8 +86,8 @@ theorem m1c_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) {k
     rcases hbox with h' | h' <;> rw [h'] at hy
     · rw [J.right.sideWalk_vtx_one] at hy; simp [show J.right.radius = J.whole.radius from rfl, abs_of_pos hR] at hy
     · rw [J.right.sideWalk_vtx_three] at hy; simp [show J.right.radius = J.whole.radius from rfl, abs_of_pos hR] at hy
-  refine ⟨hbox, by rw [cm_n]; rcases hbox with h' | h' <;> omega,
-    by unfold ProperPos; rw [← hpar]; exact hpp, by rw [← hposT, hz], hy, hx1 rfl, ?_⟩
+  refine ⟨hbox, by grind [cm_n],
+    by core_grind, by grind, hy, hx1 rfl, ?_⟩
   rw [← hpar]
   exact (Cand1.sideLeft_congr ht ha hbw _).1 hsl₂
 

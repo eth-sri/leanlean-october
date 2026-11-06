@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFDesc
 public import Chazelle.Core.RestorePieceMath
 
@@ -44,33 +46,28 @@ theorem k1Load_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
   have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
   have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := fun a ha => hI.hm a ha
   have hD5 := hwf.1
-  have k5 : c.nreg 81015 = 5 := by rw [hI.hin _ (by unfold FFix; omega), hE.k5]
-  have k1 : c.nreg 81012 = 1 := by rw [hI.hin _ (by unfold FFix; omega), hE.k1]
+  have k5 : c.nreg 81015 = 5 := by rw [hI.hin _ (by omega_nf), hE.k5]
+  have k1 : c.nreg 81012 = 1 := by rw [hI.hin _ (by omega_nf), hE.k1]
   have m5 : c.nmem (c.nreg 81080 + 5) = c₀.nmem (c.nreg 81080 + 5) := hm _ (by omega)
   have ea : ∀ j, j ≤ 4 → c.nmem (c₀.nmem (c.nreg 81080 + 5) + j) =
       c₀.nmem (c₀.nmem (c.nreg 81080 + 5) + j) := fun j hj => hm _ (by omega)
   have ok : okB E.W c.nmem k1L c.nreg := by
     simp only [k1L, okB, okI, regI, upd, FScr, FOut, k5, k1]
-    norm_num
-    rw [m5]
-    (repeat' apply And.intro) <;> omega
+    simp_all +zetaDelta <;> omega
   refine (FRS.block hB _ hI ok).mono (by simp [k1L]) (fun c' h' => ?_)
   have e' : ∀ q, c'.nreg q = regB c.nmem k1L c.nreg q := fun q => by rw [h']
   obtain ⟨-, -, h1, h2, h3, h4⟩ := hCD
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, fun q a1 a2 a3 a4 a5 a6 a7 a8 => ?_⟩
-  · rw [e']; simp [k1L, regB, regI, upd]; exact hm _ (by omega)
+  · rw [e']; simp [k1L, regB, regI, upd]; grind
   · rw [e']; simp [k1L, regB, regI, upd, k5]; exact m5
-  · rw [e']; simp [k1L, regB, regI, upd, k5, k1]; exact hm _ (by omega)
-  · rw [e']; simp [k1L, regB, regI, upd, k5, k1, m5]; rw [ea 1 (by omega)]; exact h1
+  · rw [e']; simp [k1L, regB, regI, upd, k5, k1]; omega_nf
+  · rw [e']; simp [k1L, regB, regI, upd, k5, k1, m5]; simp_all
   · rw [e']; simp [k1L, regB, regI, upd, k5, k1, m5]
-    rw [show c₀.nmem (c.nreg 81080 + 5) + 1 + 1 = c₀.nmem (c.nreg 81080 + 5) + 2 by ring,
-      ea 2 (by omega)]; exact h2
+    grind
   · rw [e']; simp [k1L, regB, regI, upd, k5, k1, m5]
-    rw [show c₀.nmem (c.nreg 81080 + 5) + 1 + 1 + 1 = c₀.nmem (c.nreg 81080 + 5) + 3 by ring,
-      ea 3 (by omega)]; exact h3
+    grind
   · rw [e']; simp [k1L, regB, regI, upd, k5, k1, m5]
-    rw [show c₀.nmem (c.nreg 81080 + 5) + 1 + 1 + 1 + 1 = c₀.nmem (c.nreg 81080 + 5) + 4 by ring,
-      ea 4 (by omega)]; exact h4
+    grind
   · rw [e', regB_other _ _ _ (fun i hi => ?_)]
     simp only [k1L, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
@@ -96,16 +93,16 @@ theorem k1Dir_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
     (by simp; omega) (fun _ h => h)
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem [.copyN 81060 81089, .constN 81061 0] c.nreg q :=
     fun q => by rw [h₁]
-  have v60 : c₁.nreg 81060 = c.nreg 81089 := by rw [e₁]; simp [regB, regI, upd]
+  have v60 : c₁.nreg 81060 = c.nreg 81089 := by aesop
   have f₁ : ∀ q, q ≠ 81060 → q ≠ 81061 → c₁.nreg q = c.nreg q := fun q a b => by
     rw [e₁]; simp [regB, regI, upd, a, b]
-  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by unfold ALLOC; omega) (by unfold ALLOC; omega)
+  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by omega_nf) (by omega_nf)
   refine FRS.seq (K₂ := 7) (fHv_fs hE hB hI₁ (a := 81060) (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by rw [v60]; exact hs) (by rw [v60]; exact hset) (by rw [hA₁']; omega))
+    (by norm_num) (by omega) (by rw [v60]; exact hset) (by omega))
     (fun c₂ hI₂ hA₂ ⟨hh, hy, f₂⟩ => ?_)
   rw [v60] at hy
   have g₂ : ∀ q, 80000 ≤ q → q < 90000 → q ≠ 81060 → q ≠ 81061 → q ≠ 81062 → q ≠ 81064 →
-      c₂.nreg q = c.nreg q := fun q a b h1 h2 h3 h4 => by rw [f₂ q a b h3 h4, f₁ q h1 h2]
+      c₂.nreg q = c.nreg q := fun q a b h1 h2 h3 h4 => by simp_all
   have ok3 : okB E.W c₂.nmem [.copyN 81085 81081] c₂.nreg := by
     simp only [okB, okI, FScr, FOut]; norm_num
   refine FRS.seq (K₂ := 5) (FRS.block hB _ hI₂ ok3) (fun c₃ hI₃ hA₃ h₃ => ?_) |>.mono
@@ -113,16 +110,15 @@ theorem k1Dir_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
   have e₃ : ∀ q, c₃.nreg q = regB c₂.nmem [.copyN 81085 81081] c₂.nreg q := fun q => by rw [h₃]
   have v85 : c₃.nreg 81085 = c.nreg 81081 := by
     rw [e₃]; simp [regB, regI, upd]
-    exact g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+    grind
   have f₃ : ∀ q, q ≠ 81085 → c₃.nreg q = c₂.nreg q := fun q h => by
     rw [e₃]; simp [regB, regI, upd, h]
   have u62 : c₃.nreg 81062 = c₂.nreg 81062 := f₃ _ (by norm_num)
   have u82 : c₃.nreg 81082 = c.nreg 81082 := by
-    rw [f₃ _ (by norm_num), g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num)]
+    grind
   have fin : ∀ q, 80000 ≤ q → q < 90000 → q ≠ 81060 → q ≠ 81061 → q ≠ 81062 → q ≠ 81064 →
       q ≠ 81085 → c₃.nreg q = c.nreg q := fun q a b h1 h2 h3 h4 h5 => by
-    rw [f₃ q h5, g₂ q a b h1 h2 h3 h4]
+    grind
   by_cases he : c₃.nreg 81062 = c₃.nreg 81082
   · have okz : okB E.W c₃.nmem [.constN 81085 0] c₃.nreg := by
       simp only [okB, okI, FScr, FOut]; norm_num
@@ -130,9 +126,9 @@ theorem k1Dir_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
     have e' : ∀ q, c'.nreg q = regB c₃.nmem [.constN 81085 0] c₃.nreg q := fun q => by rw [h']
     refine ⟨c₂.nreg 81062, hh, hy, ?_, fun q a b h1 h2 h3 h4 h5 => ?_⟩
     · rw [u62, u82] at he; rw [e', ite_eq_left he]; simp [regB, regI, upd]
-    · rw [e']; simp [regB, regI, upd, h5]; exact fin q a b h1 h2 h3 h4 h5
+    · rw [e']; simp [regB, regI, upd, h5]; grind
   · refine FRS.ifEq_ne (K := 1) hI₃ he ⟨c₂.nreg 81062, hh, hy, ?_, fin⟩
-    rw [v85, ite_eq_right (by rw [u62, u82] at he; exact he)]
+    grind
 
 /-- The tour offset, the stretch lengths. -/
 def k1Pos : Stmt :=
@@ -163,7 +159,7 @@ theorem k1Pos_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
   have hbSd : WalkEmbed.bS Cα = if Cα.sideBeta then Cα.topIdx else 2 * Cα.m - Cα.topIdx := rfl
   -- 2m and 2m - top
   have ok1 : okB E.W c.nmem [.addN 81091 81081 81081, .subN 81092 81091 81083] c.nreg := by
-    simp only [okB, okI, FScr, FOut, hm]; norm_num; omega
+    simp only [okB, okI, FScr, FOut, hm]; grind
   refine FRS.seq (K₂ := 16) (FRS.block hB _ hI ok1) (fun c₁ hI₁ hA₁ h₁ => ?_) |>.mono
     (by simp) (fun _ h => h)
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem [.addN 81091 81081 81081, .subN 81092 81091 81083]
@@ -458,7 +454,7 @@ theorem kind1_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   set Dα := c₀.nmem (c.nreg 81080 + 5) with hDα
   set Bα := c₀.nmem (c.nreg 81080 + 6) with hBα
   have hWm : 2 * Cα.m + 7 ≤ E.W := by omega
-  have k1U := fun q (h : ¬ K1W q) => h
+  
   -- the reads
   refine FRS.seq (K₂ := k1K E Cα N - 13) (k1Load_fs hE hB hI hPR hCD hwf)
     (fun c₁ hI₁ hA₁ ⟨l89, l33, l34, l82, l81, l83, l84, f₁⟩ => ?_) |>.mono

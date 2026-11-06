@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRCostSpec
 public import Chazelle.Core.Lemma41Bridge
 
@@ -27,7 +29,7 @@ open Chazelle.Cost L41
 
 theorem five_ceilBeta_le (g : ℕ) : 5 * Cost.ceilBeta g ≤ g + 5 := by
   have h := L41.ceilBeta_le_real g
-  have : ((5 * Cost.ceilBeta g : ℕ) : ℝ) ≤ ((g + 5 : ℕ) : ℝ) := by push_cast; linarith
+  have : ((5 * Cost.ceilBeta g : ℕ) : ℝ) ≤ ((g + 5 : ℕ) : ℝ) := by grind
   exact_mod_cast this
 
 /-- **(a)** The levels' size threshold. -/
@@ -40,45 +42,48 @@ theorem lv_n0 : ∃ n₀ : ℕ, ∀ n, n₀ ≤ n → 2 ^ (Cost.ceilBeta (topGra
     push Not at h
     have h1 : n - 1 ≤ 2 ^ p := Nat.le_pow_clog (by norm_num) _
     have h2 : 2 ^ p ≤ 2 ^ 29 := Nat.pow_le_pow_right (by norm_num) (by omega)
-    have : (2 : ℕ) ^ 29 + 2 ≤ 2 ^ 30 := by norm_num
     omega
   have hlt : 2 ^ (p - 1) < n - 1 := by
     have := Nat.pow_pred_clog_lt_self (b := 2) (by norm_num) (x := n - 1)
-      (by have : (2 : ℕ) ≤ 2 ^ 30 := by norm_num
-          omega)
-    simpa [Nat.pred_eq_sub_one, ← hp] using this
+      (by omega)
+    omega
   have hcb := five_ceilBeta_le p
   have h1 : 2 ^ (Cost.ceilBeta p + 13) ≤ 2 ^ (p - 2) :=
     Nat.pow_le_pow_right (by norm_num) (by omega)
-  have h2 : 200 ≤ 2 ^ (p - 2) := by
-    have : (2 : ℕ) ^ 8 ≤ 2 ^ (p - 2) := Nat.pow_le_pow_right (by norm_num) (by omega)
-    have h256 : (2 : ℕ) ^ 8 = 256 := by norm_num
-    omega
+  
   have h3 : 2 ^ (p - 1) = 2 * 2 ^ (p - 2) := by
-    rw [← pow_succ']; congr 1; omega
+    rw [← pow_succ']; grind
   omega
 
 /-! ## Bounds in `E = 2^(μ/75)` -/
 
+section
+variable (μ : ℕ)
+include μ
 /-- `E = 2^(μ/75)`. -/
-noncomputable def E (μ : ℕ) : ℝ := (2 : ℝ) ^ ((μ : ℝ) / 75)
+noncomputable def E : ℝ := (2 : ℝ) ^ ((μ : ℝ) / 75)
 
-theorem E_pos (μ : ℕ) : 0 < E μ := by unfold E; positivity
+theorem E_pos : 0 < E μ := by unfold E; positivity
 
-theorem E_one_le (μ : ℕ) : 1 ≤ E μ := by unfold E; exact L41.one_le_E μ
+theorem E_one_le : 1 ≤ E μ := by unfold E; exact L41.one_le_E μ
+
+
+end
 
 theorem E_pow_nonneg (μ k : ℕ) : 0 ≤ E μ ^ k := pow_nonneg (E_pos μ).le k
 
 theorem E_pow_ge {μ a b : ℕ} (h : a ≤ b) : E μ ^ a ≤ E μ ^ b := pow_le_pow_right₀ (E_one_le μ) h
 
+section
+variable (μ : ℕ)
 /-- `lemma41Nat μ ≥ μ² E^74`. -/
-theorem lemma41Nat_ge (μ : ℕ) : (μ : ℝ) ^ 2 * E μ ^ 74 ≤ (lemma41Nat μ : ℝ) := by
+theorem lemma41Nat_ge : (μ : ℝ) ^ 2 * E μ ^ 74 ≤ (lemma41Nat μ : ℝ) := by
   have h := Nat.le_ceil ((μ : ℝ) ^ 2 * ((Nat.clog 2 μ : ℝ) + 1) * (2 : ℝ) ^ ((74 : ℝ) / 75 * μ))
   have hE : E μ ^ 74 = (2 : ℝ) ^ ((74 : ℝ) / 75 * μ) := by
-    unfold E; rw [L41.E_pow]; congr 1; push_cast; ring
-  have hc : (0 : ℝ) ≤ (Nat.clog 2 μ : ℕ) := Nat.cast_nonneg _
+    grind [E, L41.E_pow]
+  
   have hp : (0 : ℝ) ≤ (2 : ℝ) ^ ((74 : ℝ) / 75 * μ) := by positivity
-  have hm : (0 : ℝ) ≤ (μ : ℝ) ^ 2 := by positivity
+  
   unfold lemma41Nat
   rw [hE]
   calc (μ : ℝ) ^ 2 * (2 : ℝ) ^ ((74 : ℝ) / 75 * μ)
@@ -88,42 +93,42 @@ theorem lemma41Nat_ge (μ : ℕ) : (μ : ℝ) ^ 2 * E μ ^ 74 ≤ (lemma41Nat μ
     _ ≤ _ := h
 
 /-- `2^μ = E^75`. -/
-theorem two_pow_eq_E (μ : ℕ) : (2 : ℝ) ^ μ = E μ ^ 75 := by
-  unfold E; rw [L41.E_pow, ← Real.rpow_natCast]; congr 1; push_cast; field_simp
+theorem two_pow_eq_E : (2 : ℝ) ^ μ = E μ ^ 75 := by
+  simp_all [E, L41.E_pow, Real.rpow_natCast] 
 
 /-- `E^15 ≤ 2^⌈βμ⌉`. -/
-theorem E15_le (μ : ℕ) : E μ ^ 15 ≤ (2 : ℝ) ^ Cost.ceilBeta μ := by
+theorem E15_le : E μ ^ 15 ≤ (2 : ℝ) ^ Cost.ceilBeta μ := by
   unfold E; rw [L41.E_pow, ← Real.rpow_natCast]
   apply Real.rpow_le_rpow_of_exponent_le (by norm_num)
   have := L41.le_ceilBeta_real μ
-  push_cast; linarith
+  linarith
+
+
+end
 
 theorem regCap_eq : DrvR.regCap = 130 := rfl
 
+section
+variable (μ : ℕ)
 /-- The chord bound times its denominator. -/
-theorem lvNch_mul (μ : ℕ) :
+theorem lvNch_mul :
     DrvR.lvNch μ * (3 * 2 ^ (Cost.ceilBeta μ + 10) + 1) ≤ 18480 * (20 * 2 ^ μ + 17) := by
   unfold DrvR.lvNch
   rw [regCap_eq]
   exact Nat.div_mul_le_self _ _
 
 /-- `lvNch μ ≤ 223 · 2^μ`. -/
-theorem lvNch_le_pow (μ : ℕ) : DrvR.lvNch μ ≤ 223 * 2 ^ μ := by
+theorem lvNch_le_pow : DrvR.lvNch μ ≤ 223 * 2 ^ μ := by
   have h := lvNch_mul μ
   have h1 : 3072 ≤ 3 * 2 ^ (Cost.ceilBeta μ + 10) + 1 := by
-    have : (2 : ℕ) ^ 10 ≤ 2 ^ (Cost.ceilBeta μ + 10) := Nat.pow_le_pow_right (by norm_num) (by omega)
-    have h10 : (2 : ℕ) ^ 10 = 1024 := by norm_num
-    omega
+    grind
   have h2 : DrvR.lvNch μ * 3072 ≤ DrvR.lvNch μ * (3 * 2 ^ (Cost.ceilBeta μ + 10) + 1) :=
     Nat.mul_le_mul_left _ h1
   have h3 : 1 ≤ 2 ^ μ := Nat.one_le_two_pow
-  generalize DrvR.lvNch μ * (3 * 2 ^ (Cost.ceilBeta μ + 10) + 1) = a at h h2
-  generalize 2 ^ μ = T at h h3 ⊢
-  generalize DrvR.lvNch μ = L at h2 ⊢
   omega
 
 /-- `lvNch μ ≤ 223 E^60`. -/
-theorem lvNch_le_E (μ : ℕ) : (DrvR.lvNch μ : ℝ) ≤ 223 * E μ ^ 60 := by
+theorem lvNch_le_E : (DrvR.lvNch μ : ℝ) ≤ 223 * E μ ^ 60 := by
   have h := lvNch_mul μ
   have hR : (DrvR.lvNch μ : ℝ) * (3072 * (2 : ℝ) ^ Cost.ceilBeta μ) ≤ 683760 * (2 : ℝ) ^ μ := by
     have h' : ((DrvR.lvNch μ * (3 * 2 ^ (Cost.ceilBeta μ + 10) + 1) : ℕ) : ℝ) ≤
@@ -131,45 +136,48 @@ theorem lvNch_le_E (μ : ℕ) : (DrvR.lvNch μ : ℝ) ≤ 223 * E μ ^ 60 := by
     push_cast at h'
     have hp : (1 : ℝ) ≤ (2 : ℝ) ^ μ := one_le_pow₀ (by norm_num)
     have e10 : (2 : ℝ) ^ (Cost.ceilBeta μ + 10) = 1024 * (2 : ℝ) ^ Cost.ceilBeta μ := by
-      rw [pow_add]; norm_num; ring
+      grind
     rw [e10] at h'
-    have hL : (0 : ℝ) ≤ (DrvR.lvNch μ : ℝ) := Nat.cast_nonneg _
-    nlinarith
+    linarith
   have h15 := E15_le μ
   have hL : (0 : ℝ) ≤ (DrvR.lvNch μ : ℝ) := Nat.cast_nonneg _
   have hEp : 0 < E μ ^ 15 := pow_pos (E_pos μ) 15
   rw [two_pow_eq_E μ] at hR
   have h1 : (DrvR.lvNch μ : ℝ) * (3072 * E μ ^ 15) ≤ 683760 * E μ ^ 75 :=
     le_trans (mul_le_mul_of_nonneg_left (by linarith) hL) hR
-  have e75 : E μ ^ 75 = E μ ^ 15 * E μ ^ 60 := by rw [← pow_add]
+  have e75 : E μ ^ 75 = E μ ^ 15 * E μ ^ 60 := by grind
   rw [e75] at h1
   have h2 : (DrvR.lvNch μ : ℝ) * 3072 ≤ 683760 * E μ ^ 60 := by
     have : E μ ^ 15 * ((DrvR.lvNch μ : ℝ) * 3072) ≤ E μ ^ 15 * (683760 * E μ ^ 60) := by
       nlinarith
-    exact le_of_mul_le_mul_left this hEp
-  have : (0 : ℝ) ≤ E μ ^ 60 := E_pow_nonneg μ 60
-  nlinarith
+    simp_all
+  linarith
 
 /-! ## The oracle costs at `γ_r = lvGr μ` -/
 
-theorem lvGr_clog (μ : ℕ) : Nat.clog 2 (DrvR.lvGr μ) = Cost.ceilBeta μ + 12 := by
-  unfold DrvR.lvGr; exact Nat.clog_pow 2 _ (by norm_num)
+theorem lvGr_clog : Nat.clog 2 (DrvR.lvGr μ) = Cost.ceilBeta μ + 12 := by
+  simp_all [DrvR.lvGr] 
+
+
+end
 
 theorem lvGr_clog_le {μ : ℕ} (h : 15 ≤ μ) : Nat.clog 2 (DrvR.lvGr μ) + 1 ≤ 2 * μ := by
   rw [lvGr_clog]; have := five_ceilBeta_le μ; omega
 
-theorem ceilBeta_real (μ : ℕ) : (Cost.ceilBeta μ : ℝ) ≤ (μ : ℝ) / 5 + 1 := L41.ceilBeta_le_real μ
+section
+variable (μ : ℕ)
+theorem ceilBeta_real : (Cost.ceilBeta μ : ℝ) ≤ (μ : ℝ) / 5 + 1 := L41.ceilBeta_le_real μ
 
 /-- `γ_r ≤ 8192 E^15`. -/
-theorem lvGr_le_E (μ : ℕ) : (DrvR.lvGr μ : ℝ) ≤ 8192 * E μ ^ 15 := by
+theorem lvGr_le_E : (DrvR.lvGr μ : ℝ) ≤ 8192 * E μ ^ 15 := by
   have h := L41.two_pow_le_E (n := Cost.ceilBeta μ + 12) (lam := μ) (k := 15) (b := 13)
-    (by have := ceilBeta_real μ; push_cast; linarith)
+    (by have := ceilBeta_real μ; grind)
   have h13 : (2 : ℝ) ^ (13 : ℝ) = 8192 := by norm_num
   rw [h13] at h
-  unfold DrvR.lvGr E; push_cast; exact h
+  unfold DrvR.lvGr E; grind
 
 /-- `H(γ_r) ≤ 19216 E^3`. -/
-theorem cutGran_lvGr_le (μ : ℕ) : (cutGran (DrvR.lvGr μ) : ℝ) ≤ 19216 * E μ ^ 3 := by
+theorem cutGran_lvGr_le : (cutGran (DrvR.lvGr μ) : ℝ) ≤ 19216 * E μ ^ 3 := by
   unfold cutGran
   rw [lvGr_clog]
   have h1 := gradeGran_le_real (Cost.ceilBeta μ + 12)
@@ -177,14 +185,14 @@ theorem cutGran_lvGr_le (μ : ℕ) : (cutGran (DrvR.lvGr μ) : ℝ) ≤ 19216 * 
     (b := 4) (by
       have a1 := ceilBeta_real (Cost.ceilBeta μ + 12)
       have a2 := ceilBeta_real μ
-      push_cast at a1 ⊢; linarith)
+      grind)
   have h16 : (2 : ℝ) ^ (4 : ℝ) = 16 := by norm_num
   rw [h16] at h2
   unfold E
   linarith
 
 /-- `⌈(H(γ_r) (γ_r + 1)²)^{1/3}⌉ ≤ 11001 E^11`. -/
-theorem rpow_lvGr_le (μ : ℕ) :
+theorem rpow_lvGr_le :
     (rpowCeil (cutGran (DrvR.lvGr μ) * (DrvR.lvGr μ + 1) ^ 2) ((1 : ℝ) / 3) : ℝ) ≤
       11001 * E μ ^ 11 := by
   have hE1 : 1 ≤ E μ := E_one_le μ
@@ -196,27 +204,24 @@ theorem rpow_lvGr_le (μ : ℕ) :
   obtain ⟨X, hX⟩ : ∃ X, cutGran (DrvR.lvGr μ) * (DrvR.lvGr μ + 1) ^ 2 = X := ⟨_, rfl⟩
   obtain ⟨Hc, hHc⟩ : ∃ Hc, (cutGran (DrvR.lvGr μ) : ℝ) = Hc := ⟨_, rfl⟩
   obtain ⟨G, hGG⟩ : ∃ G, (DrvR.lvGr μ : ℝ) = G := ⟨_, rfl⟩
-  have hXc : (X : ℝ) = Hc * (G + 1) ^ 2 := by rw [← hX, ← hHc, ← hGG]; push_cast; ring
+  have hXc : (X : ℝ) = Hc * (G + 1) ^ 2 := by rw [← hX, ← hHc, ← hGG]; grind
   rw [hHc] at hH
   rw [hGG] at hG1
   rw [hX]
   have hG0 : (0 : ℝ) ≤ G + 1 := by
-    rw [← hGG]; have := Nat.cast_nonneg (α := ℝ) (DrvR.lvGr μ); linarith
-  have hH0 : (0 : ℝ) ≤ Hc := by rw [← hHc]; exact Nat.cast_nonneg _
+    linarith
+  
   have hXR : (X : ℝ) ≤ (11000 * E μ ^ 11) ^ 3 := by
     rw [hXc]
     calc Hc * (G + 1) ^ 2
         ≤ (19216 * E μ ^ 3) * (8193 * E μ ^ 15) ^ 2 := by
           apply mul_le_mul hH (pow_le_pow_left₀ hG0 hG1 2) (pow_nonneg hG0 2)
-            (by have := E_pow_nonneg μ 3; linarith)
+            (by linarith)
       _ ≤ (11000 * E μ ^ 11) ^ 3 := by
           have : (0 : ℝ) ≤ E μ ^ 33 := E_pow_nonneg μ 33
-          have e1 : (19216 * E μ ^ 3) * (8193 * E μ ^ 15) ^ 2 = 1289878784784 * E μ ^ 33 := by
-            ring
-          have e2 : (11000 * E μ ^ 11) ^ 3 = 1331000000000 * E μ ^ 33 := by ring
-          rw [e1, e2]; exact mul_le_mul_of_nonneg_right (by norm_num) this
+          grind
   have hroot : (X : ℝ) ^ ((1 : ℝ) / 3) ≤ 11000 * E μ ^ 11 := by
-    have h0 : (0 : ℝ) ≤ 11000 * E μ ^ 11 := by have := E_pow_nonneg μ 11; linarith
+    have h0 : (0 : ℝ) ≤ 11000 * E μ ^ 11 := by positivity
     calc (X : ℝ) ^ ((1 : ℝ) / 3) ≤ ((11000 * E μ ^ 11) ^ 3) ^ ((1 : ℝ) / 3) :=
           Real.rpow_le_rpow (Nat.cast_nonneg _) hXR (by norm_num)
       _ = 11000 * E μ ^ 11 := by
@@ -226,8 +231,14 @@ theorem rpow_lvGr_le (μ : ℕ) :
   have : (1 : ℝ) ≤ E μ ^ 11 := one_le_pow₀ hE1
   linarith
 
+
+end
+
+section
+variable (κo : ℕ) {μ : ℕ} (h : 15 ≤ μ)
+include h
 /-- `F(γ_r) ≤ 22003 κo μ E^11`. -/
-theorem shCost_lvGr_le (κo : ℕ) {μ : ℕ} (h : 15 ≤ μ) :
+theorem shCost_lvGr_le :
     (DrvR.shCost κo (DrvR.lvGr μ) : ℝ) ≤ 22003 * κo * μ * E μ ^ 11 := by
   unfold DrvR.shCost
   have hc : ((Nat.clog 2 (DrvR.lvGr μ) + 1 : ℕ) : ℝ) ≤ 2 * μ := by
@@ -244,23 +255,24 @@ theorem shCost_lvGr_le (κo : ℕ) {μ : ℕ} (h : 15 ≤ μ) :
       (rpowCeil (cutGran (DrvR.lvGr μ) * (DrvR.lvGr μ + 1) ^ 2) ((1 : ℝ) / 3) : ℝ) ≤
       κo * (2 * μ) * (11001 * E μ ^ 11) := by
     apply mul_le_mul (mul_le_mul_of_nonneg_left hc hκ) hR hR0 (by
-      have : (0 : ℝ) ≤ μ := Nat.cast_nonneg _
-      have : (0 : ℝ) ≤ (κo : ℝ) * (2 * μ) := by positivity
-      exact this)
+      positivity)
   have h2 : (κo : ℝ) ≤ κo * μ * E μ ^ 11 := by
     have : (1 : ℝ) ≤ μ * E μ ^ 11 := by nlinarith
     nlinarith
   nlinarith
 
 /-- `G(γ_r) ≤ 2 κo μ`. -/
-theorem cuCost_lvGr_le (κo : ℕ) {μ : ℕ} (h : 15 ≤ μ) :
+theorem cuCost_lvGr_le :
     (DrvR.cuCost κo (DrvR.lvGr μ) : ℝ) ≤ 2 * κo * μ := by
   unfold DrvR.cuCost
   have hc : ((Nat.clog 2 (DrvR.lvGr μ) + 1 : ℕ) : ℝ) ≤ 2 * μ := by
     exact_mod_cast lvGr_clog_le h
-  have hκ : (0 : ℝ) ≤ κo := Nat.cast_nonneg _
+  
   push_cast at hc ⊢
   nlinarith
+
+
+end
 
 /-- `H(γ_r) + ⌈log₂ γ_r⌉ + 1 ≤ 19516 E^3`. -/
 theorem hTerm_le {μ : ℕ} (h : 15 ≤ μ) :
@@ -273,9 +285,7 @@ theorem hTerm_le {μ : ℕ} (h : 15 ≤ μ) :
     have := E_one_le μ
     calc E μ = E μ ^ 1 := (pow_one _).symm
       _ ≤ E μ ^ 3 := pow_le_pow_right₀ this (by norm_num)
-  push_cast at hc ⊢
-  have : (μ : ℝ) ≤ 150 * E μ := hμE
-  linarith
+  grind
 
 /-! ## The level cost -/
 
@@ -283,34 +293,28 @@ theorem clog_lvNch_le (μ : ℕ) : Nat.clog 2 (4 * DrvR.lvNch μ + 4) ≤ μ + 1
   apply Nat.clog_le_of_le_pow
   have h := lvNch_le_pow μ
   have h1 : 1 ≤ 2 ^ μ := Nat.one_le_two_pow
-  have e : 2 ^ (μ + 10) = 1024 * 2 ^ μ := by rw [pow_add]; ring
-  rw [e]
-  generalize 2 ^ μ = T at h h1 ⊢
-  omega
+  simp_all [pow_add] <;> omega_nf
 
 set_option maxHeartbeats 1000000 in
 /-- **The cost arithmetic of one level (D11).** -/
 theorem lvCostSpec : DrvR.LvCostSpec := by
   refine ⟨lv_n0, fun κo => ⟨200000000000 * (κo ^ 2 + 1), fun μ hμ => ?_⟩⟩
-  have hμR : (15 : ℝ) ≤ μ := by exact_mod_cast hμ
+  have hμR : (15 : ℝ) ≤ μ := by simp_all
   have hL := lemma41Nat_ge μ
   have hE60 : E μ ^ 60 ≤ E μ ^ 74 := E_pow_ge (by norm_num)
   have hE0 : 0 ≤ E μ ^ 60 := E_pow_nonneg μ 60
-  have hE74 : 0 ≤ E μ ^ 74 := E_pow_nonneg μ 74
+  
   have hμ2 : (1 : ℝ) ≤ (μ : ℝ) ^ 2 := by nlinarith
   have hN := lvNch_le_E μ
   have hN1 : ((DrvR.lvNch μ : ℝ) + 1) ≤ 224 * E μ ^ 60 := by
     have : (1 : ℝ) ≤ E μ ^ 60 := one_le_pow₀ (E_one_le μ)
     linarith
-  have hLn : (0 : ℝ) ≤ (lemma41Nat μ : ℝ) := Nat.cast_nonneg _
+  
   -- the constant
   have hκ : ∀ c : ℕ, c ≤ 200000000000 → c * lemma41Nat μ ≤
       200000000000 * (κo ^ 2 + 1) * (lemma41Nat μ + 1) := fun c hc => by
     have h1 : c * lemma41Nat μ ≤ 200000000000 * lemma41Nat μ := Nat.mul_le_mul_right _ hc
-    have h2 : 200000000000 * lemma41Nat μ ≤ 200000000000 * (κo ^ 2 + 1) * (lemma41Nat μ + 1) := by
-      rw [Nat.mul_assoc]
-      exact Nat.mul_le_mul_left _ (by nlinarith)
-    exact h1.trans h2
+    grind
   refine ⟨?_, ?_, ?_⟩
   · -- the chords
     have hR : (DrvR.lvNch μ : ℝ) ≤ ((223 * lemma41Nat μ : ℕ) : ℝ) := by
@@ -331,23 +335,22 @@ theorem lvCostSpec : DrvR.LvCostSpec := by
       rw [Nat.cast_mul]
       calc ((DrvR.lvNch μ + 1 : ℕ) : ℝ) * ((Nat.clog 2 (4 * DrvR.lvNch μ + 4) + 1 : ℕ) : ℝ)
           ≤ (224 * E μ ^ 60) * (2 * μ) := by
-            apply mul_le_mul (by push_cast; exact hN1) hc' hc0 (by linarith)
+            apply mul_le_mul (by grind) hc' hc0 (by linarith)
         _ ≤ 448 * ((μ : ℝ) ^ 2 * E μ ^ 74) := by
             have a : (μ : ℝ) * E μ ^ 60 ≤ (μ : ℝ) ^ 2 * E μ ^ 74 :=
               mul_le_mul (by nlinarith) hE60 hE0 (by positivity)
-            have e : 224 * E μ ^ 60 * (2 * (μ : ℝ)) = 448 * ((μ : ℝ) * E μ ^ 60) := by ring
-            rw [e]; linarith
-        _ ≤ ((448 * lemma41Nat μ : ℕ) : ℝ) := by push_cast; linarith
+            linarith
+        _ ≤ ((448 * lemma41Nat μ : ℕ) : ℝ) := by grind
     have := (Nat.cast_le (α := ℝ)).1 hR
     exact this.trans (hκ 448 (by norm_num))
   · -- the restoration rounds
     have hF := shCost_lvGr_le κo hμ
     have hG := cuCost_lvGr_le κo hμ
     have hH := hTerm_le hμ
-    have hκo : (0 : ℝ) ≤ κo := Nat.cast_nonneg _
-    have hμ0 : (0 : ℝ) ≤ μ := Nat.cast_nonneg _
+    
+    
     have hE11 := E_pow_nonneg μ 11
-    have hE3 := E_pow_nonneg μ 3
+    
     have hF0 : (0 : ℝ) ≤ (DrvR.shCost κo (DrvR.lvGr μ) : ℝ) := Nat.cast_nonneg _
     have hG0 : (0 : ℝ) ≤ (DrvR.cuCost κo (DrvR.lvGr μ) : ℝ) := Nat.cast_nonneg _
     have hH0 : (0 : ℝ) ≤ ((cutGran (DrvR.lvGr μ) + Nat.clog 2 (DrvR.lvGr μ) + 1 : ℕ) : ℝ) :=
@@ -356,8 +359,8 @@ theorem lvCostSpec : DrvR.LvCostSpec := by
         (cutGran (DrvR.lvGr μ) + Nat.clog 2 (DrvR.lvGr μ) + 1)) : ℕ) : ℝ) ≤
         (224 * E μ ^ 60) * (22003 * κo * μ * E μ ^ 11) * (2 * κo * μ) * (19516 * E μ ^ 3) := by
       rw [Nat.cast_mul, Nat.cast_mul, Nat.cast_mul]
-      have hA : ((DrvR.lvNch μ + 1 : ℕ) : ℝ) ≤ 224 * E μ ^ 60 := by push_cast; exact hN1
-      have hA0 : (0 : ℝ) ≤ ((DrvR.lvNch μ + 1 : ℕ) : ℝ) := Nat.cast_nonneg _
+      have hA : ((DrvR.lvNch μ + 1 : ℕ) : ℝ) ≤ 224 * E μ ^ 60 := by grind
+      
       have p1 : (0 : ℝ) ≤ 224 * E μ ^ 60 := by linarith
       have p2 : (0 : ℝ) ≤ 22003 * κo * μ * E μ ^ 11 :=
         mul_nonneg (by positivity) hE11
@@ -367,8 +370,7 @@ theorem lvCostSpec : DrvR.LvCostSpec := by
       exact mul_le_mul hA hF hF0 p1
     have hbig : (224 * E μ ^ 60) * (22003 * κo * μ * E μ ^ 11) * (2 * κo * μ) *
         (19516 * E μ ^ 3) = 192375925504 * ((κo : ℝ) ^ 2 * ((μ : ℝ) ^ 2 * E μ ^ 74)) := by
-      have e : E μ ^ 74 = E μ ^ 60 * E μ ^ 11 * E μ ^ 3 := by rw [← pow_add, ← pow_add]
-      rw [e]; ring
+      grind
     rw [hbig] at hP
     have hk2 : (0 : ℝ) ≤ (κo : ℝ) ^ 2 := by positivity
     have hR : (((DrvR.lvNch μ + 1) * DrvR.shCost κo (DrvR.lvGr μ) * DrvR.cuCost κo (DrvR.lvGr μ) *
@@ -378,15 +380,10 @@ theorem lvCostSpec : DrvR.LvCostSpec := by
       push_cast
       have : (κo : ℝ) ^ 2 * ((μ : ℝ) ^ 2 * E μ ^ 74) ≤ (κo : ℝ) ^ 2 * (lemma41Nat μ : ℝ) :=
         mul_le_mul_of_nonneg_left hL hk2
-      have h0 : (0 : ℝ) ≤ (κo : ℝ) ^ 2 * (lemma41Nat μ : ℝ) := by positivity
-      nlinarith
+      linarith
     have := (Nat.cast_le (α := ℝ)).1 hR
     refine this.trans ?_
-    have e : 200000000000 * (κo ^ 2 + 1) * (lemma41Nat μ + 1) =
-        200000000000 * (κo ^ 2 * lemma41Nat μ) + 200000000000 * (κo ^ 2 + lemma41Nat μ + 1) := by
-      ring
-    rw [e]
-    exact Nat.le_add_right _ _
+    grind
 
 end
 

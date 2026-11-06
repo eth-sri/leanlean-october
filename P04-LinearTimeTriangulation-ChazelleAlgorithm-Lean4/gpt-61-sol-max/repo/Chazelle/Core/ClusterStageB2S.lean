@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterStageB2
 
 /-!
@@ -22,7 +24,7 @@ variable {P : Polygon} {W : ℕ}
 /-- **The facts of stage B2.** -/
 structure B2F (g : GV) {F : Type} [Fintype F] [DecidableEq F] {M : CombMap (Fin g.μ) F (Fin g.N)}
     {T : SpanTree M} {a : F → Fin g.N} {ha : ∀ f, M.face (a f) = f}
-    (C : CoTree (starTree T a ha)) (R : BTree) (preE slot : ℕ → ℕ) (m : ℕ → ℕ) : Prop where
+    (C : CoTree (starTree T a ha)) (R : BTree) (preE slot m : ℕ → ℕ) : Prop where
   fpar : ∀ x : Fin g.N, x ≠ C.r0 → m (g.base 26 + x) = enc g.N (C.fpar x)
   fpar_lt : ∀ x, x < g.N → m (g.base 26 + x) < 3 * g.N
   r0 : (C.r0 : ℕ) = 0
@@ -58,31 +60,31 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have b29 := g.base_eq 29; have b30 := g.base_eq 30; have b31 := g.base_eq 31
   have b32 := g.base_eq 32
   have hGR : ∀ {c1 : Config} {Am : ℕ → Prop}, PFr StBRG Am c c1 → GR g c1 := fun hf =>
-    hG.frame (fun r hr => hf.1 r (by unfold GRReg at hr; unfold StBRG; omega))
+    hG.frame (fun r hr => hf.1 r (by grind [GRReg, StBRG]))
   set Wr : ℕ → Prop := fun a => g.base 24 ≤ a ∧ a < g.base 32 ∨
     g.A0 + 54 * g.U + g.L * g.U ≤ a ∧ a < g.A0 + 54 * g.U + 2 * (g.L * g.U) with hWr
   unfold stageB2
   -- `DLAB := N`
   obtain ⟨c1, k1, x1, hk1, hw1, hf1, hl1⟩ := fillWith_exec (P := P) hw hG.one
-    (hG.rbase 24 (by omega)) hG.rN hG.rN (by unfold FillRG; omega) (by unfold FillRG; omega)
-    (by unfold FillRG; omega) (by omega) (by omega)
-  have f1 : PFr StBRG Wr c c1 := hf1.mono (fun r h => by unfold FillRG at h; unfold StBRG; omega)
-    (fun a h => by simp only [hWr]; omega)
+    (hG.rbase 24 (by omega)) hG.rN hG.rN (by omega_nf) (by omega_nf)
+    (by omega_nf) (by omega) (by omega)
+  have f1 : PFr StBRG Wr c c1 := hf1.mono (fun r h => by grind [FillRG, StBRG])
+    (fun a h => by grind)
   have b3 := g.base_eq 3; have b5 := g.base_eq 5; have b6 := g.base_eq 6; have b7 := g.base_eq 7
   have hA1 : AF g M T c1.nmem := hA.congr ⟨hO, hR, hV⟩
-    (fun x hx => hf1.2.2.2.2 x (by unfold KeepA at hx; omega))
+    (fun x hx => hf1.2.2.2.2 x (by grind [KeepA]))
   have hB1 : B1F g M T a ha c1.nmem := hB.congr (fun x h1 h2 => hf1.2.2.2.2 x (by omega))
   -- the dual search
   obtain ⟨c2, k2, x2, hk2, hw2, hf2, C, hr0, hfpar2, hlt2, hROK, hq0, hRup⟩ :=
     dbfsP_exec (P := P) hw1 (hGR f1) hA1 hB1 hM hN hl1 hW
   have f2 : PFr StBRG Wr c c2 := f1.trans (hf2.mono (fun r h => h) (fun a h => by
-    simp only [hWr]; omega))
+    grind))
   -- the preorder intervals
   obtain ⟨c3, k3, x3, hk3, hw3, hf3, hsz3, hpre3⟩ := eulerP_exec (P := P) hw2 (hGR f2) hROK hlt2 hW
   have f3 : PFr StBRG Wr c c3 := f2.trans (hf3.mono (fun r h => h) (fun a h => by
     simp only [hWr]; omega))
   have hlt3 : ∀ x, x < g.N → c3.nmem (g.base 26 + x) < 3 * g.N := fun x hx => by
-    rw [hf3.2.2.2.2 _ (by omega)]; exact hlt2 x hx
+    rw [hf3.2.2.2.2 _ (by omega)]; ram_grind
   -- the dual parent array
   obtain ⟨c4, k4, x4, hk4, hw4, hf4, hp0, hp4⟩ := pfP_exec (P := P) hw3 (hGR f3) hN hlt3 hW
   have f4 : PFr StBRG Wr c c4 := f3.trans (hf4.mono (fun r h => h) (fun a h => by
@@ -91,28 +93,26 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have hRn : R.n = g.N := rfl
   have hRroot : R.root = 0 := hq0
   have hupN : ∀ y, y < g.N → R.up y < g.N := fun y hy => by
-    rw [hRup ⟨y, hy⟩]; exact Fin.isLt _
+    rw [hRup ⟨y, hy⟩]; omega
   have hpf : ∀ y, y < g.N → c4.nmem (g.base 31 + y) = R.up y := by
     intro y hy
     by_cases h0 : y = 0
     · subst h0
-      simp only [Nat.add_zero]; rw [hp0]
-      unfold BTree.up; rw [ite_eq_left hRroot.symm]
+      simp only [Nat.add_zero]; grind [BTree.up]
     · rw [hp4 y (by omega) hy]
       unfold BTree.up
-      rw [ite_eq_right (by rw [hRroot]; exact h0)]
+      rw [ite_eq_right (by omega)]
       show _ = c2.nmem (g.base 17 + c2.nmem (g.base 26 + y))
       have := hlt2 y hy
       rw [hf3.2.2.2.2 (g.base 26 + y) (by omega), hf3.2.2.2.2 _ (by omega)]
   -- the dual table
   obtain ⟨c5, k5, x5, hk5, hw5, hf5, htab⟩ := updP_exec (P := P) hw4 (hGR f4) hN hL
-    (fun y hy => by rw [hpf y hy]; exact hupN y hy) hW
+    (fun y hy => by ram_grind) hW
   have f5 : PFr StBRG Wr c c5 := f4.trans (hf5.mono (fun r h => h) (fun a h => by
-    simp only [hWr]; omega))
+    grind))
   refine ⟨c5, k1 + (k2 + (k3 + (k4 + k5))), .seq x1 (.seq x2 (.seq x3 (.seq x4 x5))), ?_,
     hw5, f5, C, R, view c3.nmem (g.base 29) g.N, view c3.nmem (g.base 30) g.N, ?_⟩
-  · clear f1 f2 f3 f4 f5 hf1 hf2 hf3 hf4 hf5
-    omega
+  · omega
   · have e5 := hf5.2.2.2.2
     have e4 := hf4.2.2.2.2
     have e3 := hf3.2.2.2.2
@@ -121,28 +121,27 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
       intro x hx
       have h1 : ¬ (g.A0 + 54 * g.U + g.L * g.U ≤ g.base 29 + x ∧
           g.base 29 + x < g.A0 + 54 * g.U + g.L * g.U + g.L * g.N) := by
-        clear * - hx; have := g.U_ge; have := g.base_eq 29; omega
+        ram_grind
       have h2 : ¬ (g.base 31 ≤ g.base 29 + x ∧ g.base 29 + x < g.base 31 + g.N) := by
-        clear * - hx; have := g.U_ge; have := g.base_eq 29; have := g.base_eq 31; omega
+        ram_grind
       exact (e5 _ h1).trans (e4 _ h2)
     have k28 : ∀ x, x < g.N → c5.nmem (g.base 28 + x) = c3.nmem (g.base 28 + x) := by
       intro x hx
       have h1 : ¬ (g.A0 + 54 * g.U + g.L * g.U ≤ g.base 28 + x ∧
           g.base 28 + x < g.A0 + 54 * g.U + g.L * g.U + g.L * g.N) := by
-        clear * - hx; have := g.U_ge; have := g.base_eq 28; omega
+        ram_grind
       have h2 : ¬ (g.base 31 ≤ g.base 28 + x ∧ g.base 28 + x < g.base 31 + g.N) := by
-        clear * - hx; have := g.U_ge; have := g.base_eq 28; have := g.base_eq 31; omega
+        ram_grind
       exact (e5 _ h1).trans (e4 _ h2)
     have k26 : ∀ x, x < g.N → c5.nmem (g.base 26 + x) = c2.nmem (g.base 26 + x) := by
       intro x hx
       have h1 : ¬ (g.A0 + 54 * g.U + g.L * g.U ≤ g.base 26 + x ∧
           g.base 26 + x < g.A0 + 54 * g.U + g.L * g.U + g.L * g.N) := by
-        clear * - hx; have := g.U_ge; have := g.base_eq 26; omega
+        ram_grind
       have h2 : ¬ (g.base 31 ≤ g.base 26 + x ∧ g.base 26 + x < g.base 31 + g.N) := by
-        clear * - hx; have := g.U_ge; have := g.base_eq 26; have := g.base_eq 31; omega
+        ram_grind
       have h3 : ¬ (g.base 28 ≤ g.base 26 + x ∧ g.base 26 + x < g.base 31) := by
-        clear * - hx; have := g.U_ge; have := g.base_eq 26; have := g.base_eq 28
-        have := g.base_eq 31; omega
+        ram_grind
       exact (e5 _ h1).trans ((e4 _ h2).trans (e3 _ h3))
     have hpreF : ∀ x, x < g.N → c5.nmem (g.base 29 + x) = view c3.nmem (g.base 29) g.N x := by
       intro x hx

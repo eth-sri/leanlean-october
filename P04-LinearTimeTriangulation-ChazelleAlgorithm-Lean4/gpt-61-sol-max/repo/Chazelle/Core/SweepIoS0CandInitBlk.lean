@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoS0CandInitProg
 
 /-!
@@ -42,7 +44,7 @@ theorem hdrA_irs (hI : IInv W c₀ c) (hK : Consts c) (hd : c.nreg (sw 21) + 5 �
     simp only [hdrA, List.mem_cons, List.not_mem_nil, or_false] at hi
     unfold ipB pT ipX ipJ ipKc ipM5 ipTa ipTm ipTt ipTb sw ALLOC at *
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-      rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> omega
+      rfl | rfl | rfl | rfl | rfl <;> core_grind <;> omega
   refine (IRS.block hdrA hI ?_).mono (by simp [hdrA]) ?_
   · simp [hdrA, okB, okI, regI, upd, ipB, pT, ipX, ipJ, ipKc, ipM5, ipTa, ipTm, ipTt, ipTb, K2,
       K3, K4, sw, ALLOC, IScr, k2, k3, k4]
@@ -60,20 +62,14 @@ theorem midF_irs (hI : IInv W c₀ c) {m T : ℕ} (hm : c.nreg ipTm = m) (hT : c
       (∀ r, r ≠ ipTM → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
   unfold ipMidF
   by_cases h : T < m
-  · refine (IRS.ifT (by rw [hm, hT]; exact h) (IRS.instr1 (i := .addN ipTM ipTt ipTt) hI
-      ⟨iscr_sw (by unfold ipTM sw; omega) (by unfold ipTM sw; omega), by rw [hT]; exact h2⟩)).mono
+  · refine (IRS.ifT (by omega) (IRS.instr1 (i := .addN ipTM ipTt ipTt) hI
+      ⟨iscr_sw (by omega_nf) (by omega_nf), by omega⟩)).mono
       (by norm_num) ?_
-    rintro c' rfl
-    refine ⟨?_, fun r hr => ?_, rfl⟩
-    · simp only [regI, upd_same, hT, ite_eq_left h]; ring
-    · simp only [regI]; exact upd_other _ _ _ hr
-  · refine (IRS.ifF (by rw [hm, hT]; exact h) (IRS.instr1 (i := .constN ipTM 0) hI
-      ⟨iscr_sw (by unfold ipTM sw; omega) (by unfold ipTM sw; omega), Nat.zero_le _⟩)).mono
+    simp_all [regI, upd_same] <;> omega_nf
+  · refine (IRS.ifF (by omega) (IRS.instr1 (i := .constN ipTM 0) hI
+      ⟨iscr_sw (by omega_nf) (by omega_nf), Nat.zero_le _⟩)).mono
       (by norm_num) ?_
-    rintro c' rfl
-    refine ⟨?_, fun r hr => ?_, rfl⟩
-    · simp only [regI, upd_same, ite_eq_right h]
-    · simp only [regI]; exact upd_other _ _ _ hr
+    simp_all [regI, upd_same] <;> omega_nf
 
 set_option maxHeartbeats 1000000 in
 theorem midS_irs (hI : IInv W c₀ c) (hK : Consts c) {m T b : ℕ} (hm : c.nreg ipTm = m)
@@ -87,26 +83,25 @@ theorem midS_irs (hI : IInv W c₀ c) (hK : Consts c) {m T b : ℕ} (hm : c.nreg
       c'.nreg ipTM = (if b = 1 then 2 * m - 2 * T else if T < m then 2 * T else 0) ∧
       (∀ r, r ≠ ipTM → r ≠ ipT2 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := fun hb1 =>
     (midF_irs hI hm hT (by omega)).mono (by norm_num) (fun c' ⟨h1, h2, h3⟩ =>
-      ⟨by rw [h1, ite_eq_right hb1], fun r hr _ => h2 r hr, h3⟩)
+      ⟨by simp_all, fun r hr _ => h2 r hr, h3⟩)
   by_cases h0 : b < 1
-  · exact (IRS.ifT (K := 4) (by rw [hb, k1]; exact h0) (hF (by omega))).mono (by norm_num)
+  · exact (IRS.ifT (K := 4) (by omega) (hF (by omega))).mono (by norm_num)
       (fun _ h => h)
-  · refine (IRS.ifF (K := 6) (by rw [hb, k1]; exact h0) ?_).mono le_rfl (fun _ h => h)
+  · refine (IRS.ifF (K := 6) (by omega) ?_).mono le_rfl (fun _ h => h)
     by_cases h1 : 1 < b
-    · exact IRS.ifT (K := 4) (by rw [hb, k1]; exact h1) (hF (by omega))
+    · exact IRS.ifT (K := 4) (by omega) (hF (by omega))
     · have hb1 : b = 1 := by omega
-      refine (IRS.ifF (K := 4) (by rw [hb, k1]; exact h1) ((IRS.block ipMidB hI ?_).mono
+      refine (IRS.ifF (K := 4) (by omega) ((IRS.block ipMidB hI ?_).mono
         (K' := 4) (by simp [ipMidB]) (fun _ h => h))).mono le_rfl ?_
       · simp [ipMidB, okB, okI, ipT2, ipTM, ipTm, ipTt, sw, IScr]
-        simp only [ipTm, sw, Nat.reduceAdd] at hm
-        rw [hm]; omega
+        omega_nf
       · rintro c' rfl
         refine ⟨?_, fun r h1 h2 => ?_, rfl⟩
         · simp only [ipTm, ipTt, sw, Nat.reduceAdd] at hm hT
           simp [ipMidB, regB, regI, upd, ipT2, ipTM, ipTm, ipTt, sw, hm, hT, hb1]
           omega
         · simp only [ipMidB, regB, regI]
-          rw [upd_other _ _ _ h1, upd_other _ _ _ h1, upd_other _ _ _ h2]
+          ram_simp 
 
 /-! ## Reading a stop record -/
 
@@ -129,7 +124,7 @@ theorem stLd_irs (hI : IInv W c₀ c) (hK : Consts c) {AS x : ℕ} (hAS : c.nreg
     simp only [stLd, List.mem_cons, List.not_mem_nil, or_false] at hi
     unfold lsxE lsxH ipA ipK ipKk ipBb ipS sw at *
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-      rfl <;> simp only [dstI] <;> omega
+      rfl <;> core_grind <;> omega
   refine (IRS.block stLd hI ?_).mono (by simp [stLd]) ?_
   · simp [stLd, okB, okI, regI, upd, lsxE, lsxH, ipA, ipK, ipKk, ipBb, ipS, ipX, K1, sw, IScr,
       k1, hx, hAS]
@@ -137,7 +132,7 @@ theorem stLd_irs (hI : IInv W c₀ c) (hK : Consts c) {AS x : ℕ} (hAS : c.nreg
   · rintro c' rfl
     refine ⟨?_, ?_, ?_, ?_, ?_, hfr, rfl⟩
     all_goals (simp [stLd, regB, regI, upd, lsxE, lsxH, ipA, ipK, ipKk, ipBb, ipS, ipX, K1, sw,
-      k1, hx, hAS]; first | (congr 1; omega) | (congr 2; omega))
+      k1, hx, hAS]; grind)
 
 /-! ## Writing a slot -/
 
@@ -148,17 +143,11 @@ theorem slotAd_irs (hI : IInv W c₀ c) {B t s : ℕ} (hB : c.nreg ipB = B) (ht 
     IRS P W c₀ (block slotAd) c 7 (fun c' => c'.nreg ipT = slotA B t s ∧
       (∀ r, r ≠ ipT → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
   simp only [ipB, lsI, ipS, sw, Nat.reduceAdd] at hB ht hs
-  refine (IRS.block slotAd hI ?_).mono (by simp [slotAd]) ?_
+  refine (IRS.block slotAd hI ?_).mono (by aesop) ?_
   · simp [slotAd, okB, okI, regI, upd, ipT, lsI, ipB, ipS, sw, IScr, hB, ht, hs]
     omega
   · rintro c' rfl
-    refine ⟨?_, fun r hr => ?_, rfl⟩
-    · simp [slotAd, regB, regI, upd, ipT, lsI, ipB, ipS, sw, hB, ht, hs, slotA]
-      omega
-    · refine regB_other _ _ _ (fun i hi => ?_)
-      simp only [slotAd, List.mem_cons, List.not_mem_nil, or_false] at hi
-      rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;>
-        exact Ne.symm hr
+    simp_all [slotAd, regB, regI, upd, ipT, lsI, ipB, ipS, sw, slotA, List.mem_cons, List.not_mem_nil, or_false, dstI] <;> omega_nf
 
 /-- **Writing a slot.** -/
 theorem slotSt_irs (hI : IInv W c₀ c) (hK : Consts c) {B t s : ℕ} (hB : c.nreg ipB = B)
@@ -168,38 +157,35 @@ theorem slotSt_irs (hI : IInv W c₀ c) (hK : Consts c) {B t s : ℕ} (hB : c.nr
       c'.nmem = slotW c.nmem B t s (c.nreg ipE) (c.nreg ipH) ∧
       (∀ r, r ≠ ipT → c'.nreg r = c.nreg r)) := by
   have k1 : c.nreg K1 = 1 := hK.2.1
-  have nT1 : K1 ≠ ipT := by unfold K1 ipT sw; omega
-  have nTE : ipE ≠ ipT := by unfold ipE ipT sw; omega
-  have nTH : ipH ≠ ipT := by unfold ipH ipT sw; omega
-  have iT : IScr ipT := iscr_sw (by unfold ipT sw; omega) (by unfold ipT sw; omega)
+  have nT1 : K1 ≠ ipT := by omega_nf
+  have nTE : ipE ≠ ipT := by omega_nf
+  have nTH : ipH ≠ ipT := by omega_nf
+  have iT : IScr ipT := iscr_sw (by omega_nf) (by omega_nf)
   unfold slotSt
   refine IRS.seq (K₁ := 7) (K₂ := 5) (slotAd_irs hI hB ht hs (by omega)) ?_ |>.mono le_rfl
     (fun _ h => h)
   rintro c₁ hI₁ - - ⟨a1, a2, a3⟩
   have e1 : c₁.nreg K1 = 1 := (a2 K1 nT1).trans k1
-  refine IRS.seq (K₁ := 1) (K₂ := 4) (IRS.store hI₁ (by rw [a1]; unfold slotA; omega)) ?_
+  refine IRS.seq (K₁ := 1) (K₂ := 4) (IRS.store hI₁ (by grind [slotA])) ?_
   rintro c₂ hI₂ - - rfl
   refine IRS.seq (K₁ := 1) (K₂ := 3) (IRS.instr1 hI₂ (i := .addN ipT ipT K1)
-    ⟨iT, by simp only; rw [a1, e1]; unfold slotA; omega⟩) ?_
+    ⟨iT, by grind [slotA]⟩) ?_
   rintro c₃ hI₃ - - rfl
   refine IRS.seq (K₁ := 1) (K₂ := 2) (IRS.store hI₃ (by
-    simp only [regI, upd_same]; rw [a1]; unfold slotA; omega)) ?_
+    simp only [regI, upd_same]; grind [slotA])) ?_
   rintro c₄ hI₄ - - rfl
   refine IRS.seq (K₁ := 1) (K₂ := 1) (IRS.instr1 hI₄ (i := .addN ipT ipT K1)
-    ⟨iT, by simp only [regI, upd_same]; rw [upd_other _ _ _ nT1, a1, e1]
-            unfold slotA; omega⟩) ?_
+    ⟨iT, by simp_all [regI, upd_same, slotA] ⟩) ?_
   rintro c₅ hI₅ - - rfl
   refine (IRS.store hI₅ (by
-    simp only [regI, upd_same]; rw [upd_other _ _ _ nT1, a1]
-    unfold slotA; omega)).mono le_rfl ?_
+    simp only [regI, upd_same]; grind [slotA])).mono le_rfl ?_
   rintro c' rfl
   refine ⟨?_, fun r hr => ?_⟩
   · simp only [regI, upd_same, upd_other _ _ _ nT1,
       upd_other _ _ _ nTE, upd_other _ _ _ nTH]
     rw [a1, e1, a2 _ nTE, a2 _ nTH, a3]
     rfl
-  · simp only [regI]
-    rw [upd_other _ _ _ hr, upd_other _ _ _ hr, a2 r hr]
+  simp_all [regI] <;> omega_nf
 
 /-! ## The head -/
 
@@ -225,7 +211,7 @@ theorem hdr_irs (hI : IInv W c₀ c) (hK : Consts c) (hd : c.nreg (sw 21) + 5 �
   have hK₁ : Consts c₁ := by
     obtain ⟨k0, k1, k6, k4, k5, k2, k3⟩ := hK
     have f : ∀ q, 610 ≤ q → q ≤ 616 → c₁.nreg (sw q) = c.nreg (sw q) := fun q h1 h2 =>
-      a10 _ (Or.inl (by unfold sw; omega))
+      a10 _ (Or.inl (by omega_nf))
     exact ⟨(f 610 le_rfl (by norm_num)).trans k0, (f 611 (by norm_num) (by norm_num)).trans k1,
       (f 612 (by norm_num) (by norm_num)).trans k6, (f 613 (by norm_num) (by norm_num)).trans k4,
       (f 614 (by norm_num) (by norm_num)).trans k5, (f 615 (by norm_num) (by norm_num)).trans k2,
@@ -233,34 +219,34 @@ theorem hdr_irs (hI : IInv W c₀ c) (hK : Consts c) (hd : c.nreg (sw 21) + 5 �
   refine IRS.seq (K₁ := 8) (K₂ := 1) (midS_irs hI₁ hK₁ a7 a8 a9 hTm (by omega)) ?_
   rintro c₂ hI₂ - - ⟨b1, b2, b3⟩
   have k6 : c₂.nreg K6 = 6 := by
-    rw [b2 K6 (by unfold K6 ipTM sw; omega) (by unfold K6 ipT2 sw; omega),
-      a10 K6 (Or.inl (by unfold K6 sw; omega))]
+    rw [b2 K6 (by omega_nf) (by omega_nf),
+      a10 K6 (Or.inl (by omega_nf))]
     exact hK.2.2.1
   have hv : c₂.nreg ipTM ≤ 2 * c.nmem (c.nreg (sw 21) + 2) := by
-    rw [b1]; split_ifs <;> omega
-  refine (IRS.instr1 (i := .addN ipM6 ipTM K6) hI₂ ⟨iscr_sw (by unfold ipM6 sw; omega)
-    (by unfold ipM6 sw; omega), by rw [k6]; omega⟩).mono le_rfl ?_
+    grind
+  refine (IRS.instr1 (i := .addN ipM6 ipTM K6) hI₂ ⟨iscr_sw (by omega_nf)
+    (by omega_nf), by omega⟩).mono le_rfl ?_
   rintro c' rfl
   have o : ∀ r, r ≠ ipM6 → r ≠ ipTM → r ≠ ipT2 → (regI c₂.nmem (.addN ipM6 ipTM K6) c₂.nreg) r =
       c₁.nreg r := fun r h1 h2 h3 => by
     simp only [regI]; rw [upd_other _ _ _ h1, b2 r h2 h3]
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, by simp only; rw [b3, a11]⟩
-  · exact (o _ (by unfold ipB ipM6 sw; omega) (by unfold ipB ipTM sw; omega)
-      (by unfold ipB ipT2 sw; omega)).trans a1
-  · exact (o _ (by unfold pT ipM6 sw; omega) (by unfold pT ipTM sw; omega)
-      (by unfold pT ipT2 sw; omega)).trans a2
-  · exact (o _ (by unfold ipX ipM6 sw; omega) (by unfold ipX ipTM sw; omega)
-      (by unfold ipX ipT2 sw; omega)).trans a3
-  · exact (o _ (by unfold ipJ ipM6 sw; omega) (by unfold ipJ ipTM sw; omega)
-      (by unfold ipJ ipT2 sw; omega)).trans a4
-  · exact (o _ (by unfold ipKc ipM6 sw; omega) (by unfold ipKc ipTM sw; omega)
-      (by unfold ipKc ipT2 sw; omega)).trans a5
-  · exact (o _ (by unfold ipM5 ipM6 sw; omega) (by unfold ipM5 ipTM sw; omega)
-      (by unfold ipM5 ipT2 sw; omega)).trans a6
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, by grind⟩
+  · exact (o _ (by omega_nf) (by omega_nf)
+      (by omega_nf)).trans a1
+  · exact (o _ (by omega_nf) (by omega_nf)
+      (by omega_nf)).trans a2
+  · exact (o _ (by omega_nf) (by omega_nf)
+      (by omega_nf)).trans a3
+  · exact (o _ (by omega_nf) (by omega_nf)
+      (by omega_nf)).trans a4
+  · exact (o _ (by omega_nf) (by omega_nf)
+      (by omega_nf)).trans a5
+  · exact (o _ (by omega_nf) (by omega_nf)
+      (by omega_nf)).trans a6
   · simp only [regI, upd_same]
     rw [b1, k6]
-  · exact (o r (by unfold ipM6 sw at *; omega) (by unfold ipTM sw at *; omega)
-      (by unfold ipT2 sw at *; omega)).trans (a10 r hr)
+  · exact (o r (by grind [ipM6, sw]) (by grind [ipTM, sw])
+      (by grind [ipT2, sw])).trans (a10 r hr)
 
 
 /-! ## Reading a table entry -/
@@ -282,7 +268,7 @@ theorem tbLd_irs (hI : IInv W c₀ c) {sr AT k s : ℕ} (hsr : sr < sw 4100 ∨ 
     simp only [tbLd, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;>
       first | exact Ne.symm h1 | exact Ne.symm h2 | exact Ne.symm h3 | exact Ne.symm h4
-  have hsr' : sr ≠ 244108 ∧ sr ≠ 244104 ∧ sr ≠ 244111 := by unfold sw at hsr; omega
+  
   refine (IRS.block (tbLd sr) hI ?_).mono (by simp [tbLd]) ?_
   · simp [tbLd, okB, okI, regI, upd, ipS, ipA, ipT, ipF, ipJ, sw, IScr, hAT, hk, hs]
     omega
@@ -302,30 +288,20 @@ theorem tbTg_irs (hI : IInv W c₀ c) (hK : Consts c) {a : ℕ} (ha : c.nreg ipA
       c'.nmem = c.nmem) := by
   have k1 : c.nreg K1 = 1 := hK.2.1
   simp only [K1, ipA, sw, Nat.reduceAdd] at k1 ha
-  have hfr : ∀ r, r ≠ ipE → r ≠ ipH → r ≠ ipA → r ≠ lsxE → r ≠ lsxH →
-      regB c.nmem tbTg c.nreg r = c.nreg r := by
-    intro r h1 h2 h3 h4 h5
-    refine regB_other _ _ _ (fun i hi => ?_)
-    simp only [tbTg, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;>
-      first | exact Ne.symm h1 | exact Ne.symm h2 | exact Ne.symm h3 | exact Ne.symm h4 |
-        exact Ne.symm h5
+  
   refine (IRS.block tbTg hI ?_).mono (by simp [tbTg]) ?_
   · simp [tbTg, okB, okI, regI, upd, ipE, ipH, ipA, lsxE, lsxH, oE, oC, K1, sw, IScr, k1, ha]
     omega
-  · rintro c' rfl
-    refine ⟨?_, ?_, ?_, ?_, hfr, rfl⟩
-    all_goals (try simp [tbTg, regB, regI, upd, ipE, ipH, ipA, lsxE, lsxH, oE, oC, K1, sw, k1, ha])
+  simp_all [tbTg, regB, regI, upd, ipE, ipH, ipA, lsxE, lsxH, oE, oC, K1, sw] 
 
 /-! ## The class test -/
 
 theorem setV_irs (hI : IInv W c₀ c) (hK : Consts c) {v : ℕ} (hv : v ≤ 1) :
     IRS P W c₀ (setV v) c 1 (fun c' => c'.nreg ipV = v ∧ (∀ r, r ≠ ipV → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem) := by
-  refine (IRS.instr1 (i := .constN ipV v) hI ⟨iscr_sw (by unfold ipV sw; omega)
-    (by unfold ipV sw; omega), by have := hI.hw.1 K1; rw [hK.2.1] at this; omega⟩).mono le_rfl ?_
-  · rintro c' rfl
-    exact ⟨by simp [regI], fun r hr => by simp only [regI]; exact upd_other _ _ _ hr, rfl⟩
+  refine (IRS.instr1 (i := .constN ipV v) hI ⟨iscr_sw (by omega_nf)
+    (by omega_nf), by have := hI.hw.1 K1; rw [hK.2.1] at this; omega⟩).mono le_rfl ?_
+  simp_all [regI] <;> omega_nf
 
 theorem eqT_irs {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
     (ht : c.nreg a = c.nreg b → IRS P W c₀ t c K Q)
@@ -357,10 +333,10 @@ theorem cls_irs (hI : IInv W c₀ c) (hK : Consts c) :
           c.nreg oE ≠ c.nreg ipM6)))) ∧ c'.nreg ipV ≤ 1 ∧
       (∀ r, r ≠ ipV → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) :=
     fun v hv hiff K hK => (setV_irs hI hK' hv).mono hK (fun c' ⟨h1, h2, h3⟩ =>
-      ⟨by rw [h1]; exact hiff, by rw [h1]; exact hv, h2, h3⟩)
+      ⟨by omega, by omega, h2, h3⟩)
   unfold cls
   by_cases a1 : c.nreg oE < c.nreg K6
-  · exact (IRS.ifT a1 (sv 0 (by norm_num) (by rw [k6] at a1; omega) 1 le_rfl)).mono (by norm_num)
+  · exact (IRS.ifT a1 (sv 0 (by norm_num) (by omega) 1 le_rfl)).mono (by norm_num)
       (fun _ h => h)
   refine (IRS.ifF (K := 17) a1 ?_).mono (by norm_num) (fun _ h => h)
   rw [k6] at a1
@@ -368,18 +344,17 @@ theorem cls_irs (hI : IInv W c₀ c) (hK : Consts c) :
   · exact (IRS.ifT a2 (sv 0 (by norm_num) (by omega) 1 le_rfl)).mono (by norm_num) (fun _ h => h)
   refine IRS.ifF (K := 15) a2 ?_
   by_cases a3 : c.nreg K0 < c.nreg oC
-  · exact (IRS.ifT a3 (sv 1 le_rfl (by rw [k0] at a3; omega) 1 le_rfl)).mono (by norm_num)
+  · exact (IRS.ifT a3 (sv 1 le_rfl (by omega) 1 le_rfl)).mono (by norm_num)
       (fun _ h => h)
   refine IRS.ifF (K := 13) a3 ?_
   rw [k0] at a3
   refine eqT_irs (K := 9) (fun h => ?_) (fun h => ?_)
-  · exact sv 0 (by norm_num) (by rw [k6] at h; omega) 9 (by norm_num)
+  · grind
   rw [k6] at h
   refine eqT_irs (K := 5) (fun h' => ?_) (fun h' => ?_)
-  · exact sv 0 (by norm_num) (by omega) 5 (by norm_num)
+  · grind
   refine eqT_irs (K := 1) (fun h'' => ?_) (fun h'' => ?_)
-  · exact (sv 0 (by norm_num) (by omega) 1 le_rfl).mono (by norm_num) (fun _ h => h)
-  · exact (sv 1 le_rfl (by omega) 1 le_rfl).mono (by norm_num) (fun _ h => h)
+  all_goals grind
 
 end
 

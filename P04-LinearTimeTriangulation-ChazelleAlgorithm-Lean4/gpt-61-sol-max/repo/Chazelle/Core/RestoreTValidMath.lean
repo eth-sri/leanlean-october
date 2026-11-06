@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreTPos
 
 /-!
@@ -71,10 +73,10 @@ def ValidB : Prop :=
 variable {M P N r x σb}
 
 theorem dirOf_pm (v : ℕ) : dirOf v = 1 ∨ dirOf v = -1 := by
-  unfold dirOf; split_ifs <;> simp
+  core_grind
 
 theorem dirOf_eq_one {v : ℕ} : dirOf v = 1 ↔ v = 1 := by
-  unfold dirOf; split_ifs with h <;> simp [h]; norm_num
+  core_grind
 
 /-- A chord of the family of a normal form is a chord record. -/
 theorem mem_F_iff {M : Model} {Q : Polygon} {c : Set Point} (hc : c ∈ N.F M Q) :
@@ -82,25 +84,25 @@ theorem mem_F_iff {M : Model} {Q : Polygon} {c : Set Point} (hc : c ∈ N.F M Q)
   obtain ⟨rr, hrr, rfl⟩ := hc
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hrr
   refine ⟨i, hi, ?_⟩
-  unfold NF.chord
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+  simp_all [NF.chord, List.getD_eq_getElem?_getD, Option.getD_some] 
 
 /-- The ends of the chord records are proper positions. -/
 theorem chord_proper {M : Model} (hNF : IsNF M (Qof P) N) {i : ℕ} (hi : i < N.nChords) :
     ProperPos M (Qof P) P.n (N.chord i).lpos ∧ ProperPos M (Qof P) P.n (N.chord i).rpos := by
   obtain ⟨-, -, hat, reg, -, -, -, -, -, hh, -⟩ := hNF
   have hQ : (Qof P).n = P.n := shear_n _ _
-  have hhn : (N.chord i).h + 1 ≤ P.n := by have := hh i hi; omega
+  have hhn : (N.chord i).h + 1 ≤ P.n := by simp_all
   exact ⟨⟨(hat i hi).1.2.1, (hat i hi).1.2.2.1, hhn⟩, ⟨(hat i hi).2.2.1, (hat i hi).2.2.2.1, hhn⟩⟩
 
 theorem chord_toSet_mem' {M : Model} {Q : Polygon} {i : ℕ} (hi : i < N.nChords) :
     (N.chord i).toSet M Q ∈ N.F M Q :=
   ⟨N.chord i, chord_mem_list hi, rfl⟩
 
+section
+variable (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ → Set Point} (hregs : NFRegs M (Qof P) N reg) (hr : r < N.nRegions) (hx : ProperPos M (Qof P) P.n x) (hxe : x.edge < M.W.n)
+include hGM hNF hregs hr hx hxe
 /-- **Soundness of the validity bit.** -/
-theorem valid_sound (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
-    {reg : ℕ → Set Point} (hregs : NFRegs M (Qof P) N reg) (hr : r < N.nRegions)
-    (hx : ProperPos M (Qof P) P.n x) (hxe : x.edge < M.W.n)
+theorem valid_sound
     (hv : ValidB M P N r x σb) :
     ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (M.pos (Qof P) x) (dirOf σb) s ∈ reg r := by
   set Q := Qof P
@@ -115,18 +117,14 @@ theorem valid_sound (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
     intro j hj
     obtain ⟨hjl, hjr⟩ := (harcs.2.2.2 r hr j).1 hj
     have := (harcs.1 j hjl).2
-    rwa [hjr] at this
+    simp_all
   rw [hpos]
   rcases hcase with ⟨j, hj, hin⟩ | ⟨h0, hc, hcl⟩
   · exact valid_inside hGM hFam hU hxe hx.1 hx.2.1 (arcOf j hj) hin hτ hL
-  · have hkx : M.key Q x = (x.edge : ℝ) + 0 := by unfold Model.key; rw [h0]
+  · have hkx : M.key Q x = (x.edge : ℝ) + 0 := by grind [Model.key]
     have e0 : M.param (Qof P) x = 0 := h0
     have hL' : sideLeft M.W x.edge 0 (rayPt (sidePt M.W x.edge 0) (dirOf σb) 1) := by
-      have := hL
-      unfold LeftB at this
-      rw [show M.pos (Qof P) x = sidePt M.W x.edge 0 by rw [SweepPrim.pos_eq_sidePt, e0], e0]
-        at this
-      exact this
+      simp_all [LeftB, SweepPrim.pos_eq_sidePt] 
     rw [e0]
     -- the exit scan
     have hex : ∀ c ∈ N.F M Q, TouchesIn M.D c (reg r) →
@@ -136,13 +134,7 @@ theorem valid_sound (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
       have hmem : i ∈ (N.region r).chords := ((hregsOK r hr).1 i).2 ⟨hi, ht⟩
       obtain ⟨hcl1, hcl2⟩ := hcl i hmem
       refine exit_avoid hGM hFam hc (hNF.2.2.1 i hi) hxe hτ hL' ?_ ?_
-      · intro h1 ⟨hlp, hl0⟩
-        apply hcl1 (dirOf_eq_one.1 h1)
-        rw [hkx]; unfold Model.key; rw [hl0]; simp [CRec.lpos, hlp]
-      · intro h1 ⟨hrp, hr0⟩
-        refine hcl2 (fun h => ?_) ?_
-        · rw [h] at h1; unfold dirOf at h1; norm_num at h1
-        · rw [hkx]; unfold Model.key; rw [hr0]; simp [CRec.rpos, hrp]
+      all_goals (grind [Model.key, CRec.lpos, dirOf, CRec.rpos])
     rcases hc with ⟨⟨j, hj, hk⟩, htn⟩ | ⟨⟨j, hj, hk⟩, htp⟩
     · have harc := arcOf j hj
       rw [hk, hkx] at harc
@@ -153,9 +145,7 @@ theorem valid_sound (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
 
 /-- **Completeness of the validity bit**: the validity checks accept an admissible chord outside
 the family from the candidate, in its left sector, whose open part lies in the region. -/
-theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
-    {reg : ℕ → Set Point} (hregs : NFRegs M (Qof P) N reg) (hr : r < N.nRegions)
-    (hx : ProperPos M (Qof P) P.n x) (hxe : x.edge < M.W.n)
+theorem valid_compl
     (hex : (N.region r).chords ≠ []) (hL : LeftB M P x σb) {T : ℝ} (hT : 0 < T)
     (hdom : ∀ t, 0 < t → t < T →
       rayPt (M.pos (Qof P) x) (dirOf σb) t ∈ M.D)
@@ -173,8 +163,7 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
   -- the family is nonempty
   obtain ⟨i₀, hi₀⟩ : ∃ i, i ∈ (N.region r).chords := by
     rcases hl : (N.region r).chords with _ | ⟨a, l⟩
-    · exact absurd hl hex
-    · exact ⟨a, by simp⟩
+    all_goals simp_all
   have hne : (N.F M Q).Nonempty := by
     have := (((hregsOK r hr).1 i₀).1 hi₀).1
     exact ⟨_, chord_toSet_mem' this⟩
@@ -194,7 +183,7 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
     exact Or.inl ⟨j, hj, by rw [ha, hb]; exact hin⟩
   · -- at a walk vertex
     have h0 : M.param Q x = 0 := ht0.symm
-    have hkx : M.key Q x = (x.edge : ℝ) + 0 := by unfold Model.key; rw [h0]
+    have hkx : M.key Q x = (x.edge : ℝ) + 0 := by grind [Model.key]
     rw [hpos, h0] at hdom hadm hnF hsub
     have hL' := hL
     unfold LeftB at hL'
@@ -220,15 +209,18 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
       · rw [hkx] at hk
         unfold Model.key at hk
         obtain ⟨e1, e2⟩ := Chazelle.Chain.sideKey_inj hlpos.2.1 hlpos.2.2.1 le_rfl one_pos hk
-        have hm : dirOf σb = -1 := by unfold dirOf; rw [ite_eq_right h1]
+        have hm : dirOf σb = -1 := by unfold dirOf; grind
         exact exit_block hM hadmi hat hτ (Or.inr ⟨hm, e1, e2⟩) hav
     rcases hcase with ⟨a, b, hab, hin⟩ | ⟨b, hab, hcr⟩ | ⟨a, hab, hcr⟩
     · obtain ⟨j, hj, ha, hb⟩ := listed a b hab
-      exact Or.inl ⟨j, hj, by rw [ha, hb, hkx]; exact hin⟩
+      exact Or.inl ⟨j, hj, by grind⟩
     · obtain ⟨j, hj, ha, -⟩ := listed _ b hab
       exact Or.inr ⟨h0, Or.inl ⟨⟨j, hj, by rw [ha, hkx]⟩, hcr⟩, hcl⟩
     · obtain ⟨j, hj, -, hb⟩ := listed a _ hab
       exact Or.inr ⟨h0, Or.inr ⟨⟨j, hj, by rw [hb, hkx]⟩, hcr⟩, hcl⟩
+
+
+end
 
 end
 

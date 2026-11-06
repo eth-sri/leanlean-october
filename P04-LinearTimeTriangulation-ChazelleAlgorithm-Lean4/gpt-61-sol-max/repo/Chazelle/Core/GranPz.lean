@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranRamLoop
 public import Chazelle.Core.OutputNF
 public import Chazelle.Core.NFLocateChain
@@ -44,7 +46,7 @@ theorem pz_int {Q : Polygon} (hQ : Q.Simple) (hdh : DistinctHeights Q) {e h : �
     (interiorModel Q).param Q ⟨e, h⟩ ≠ 0 ↔
       (h ≠ 0 ∧ h - 1 ≠ OutWalk.wv (OutWalk.revOf Q) Q.n e) := by
   cases h with
-  | zero => simp [Model.param_code_zero]
+  | zero => aesop
   | succ k =>
     simp only [ne_eq, Nat.add_one_ne_zero, not_false_eq_true, true_and, Nat.add_sub_cancel]
     constructor
@@ -61,7 +63,7 @@ theorem chain_wa_wb (C : Chain) {i : ℕ} (hi : i < 2 * C.m) :
   simp only [Model.wa, Model.wb, chainModel]
   rw [C.sideWalk_n, Nat.mod_eq_of_lt (by omega), show i + 6 + 1 = (i + 1) + 6 by ring,
     C.sideWalk_vtx_tour _ (by omega), C.sideWalk_vtx_tour _ (by omega)]
-  exact ⟨rfl, rfl⟩
+  aesop
 
 /-- **Chain model, tour edge**: a position has a nonzero parameter iff its code is nonzero, the
 edge is not horizontal and the code names another height than the start of the edge. -/
@@ -71,8 +73,8 @@ theorem pz_chain (C : Chain) {Q : Polygon} (hdh : DistinctHeights Q) {i h : ℕ}
     (l2 : sp₂.Lt Q.n) :
     (chainModel C).param Q ⟨i + 6, h⟩ ≠ 0 ↔ (h ≠ 0 ∧ hv sp₁ ≠ hv sp₂ ∧ h - 1 ≠ hv sp₁) := by
   obtain ⟨ea, eb⟩ := chain_wa_wb C hi
-  have ya : ((chainModel C).wa (i + 6)).2 = (Q.vtx (hv sp₁)).2 := by rw [ea, h1, eval_snd]
-  have yb : ((chainModel C).wb (i + 6)).2 = (Q.vtx (hv sp₂)).2 := by rw [eb, h2, eval_snd]
+  have ya : ((chainModel C).wa (i + 6)).2 = (Q.vtx (hv sp₁)).2 := by grind [eval_snd]
+  have yb : ((chainModel C).wb (i + 6)).2 = (Q.vtx (hv sp₂)).2 := by grind [eval_snd]
   have a1 := hv_lt l1
   have a2 := hv_lt l2
   have hinj : ∀ a b, a < Q.n → b < Q.n → ((Q.vtx a).2 = (Q.vtx b).2 ↔ a = b) := fun a b ha hb =>
@@ -82,19 +84,7 @@ theorem pz_chain (C : Chain) {Q : Polygon} (hdh : DistinctHeights Q) {i h : ℕ}
   | succ k =>
     simp only [ne_eq, Nat.add_one_ne_zero, not_false_eq_true, true_and, Nat.add_sub_cancel]
     simp only [Model.param]
-    rw [ya, yb]
-    by_cases hab : hv sp₁ = hv sp₂
-    · rw [ite_eq_left (by rw [hab])]; simp [hab]
-    · rw [ite_eq_right (fun e => hab ((hinj _ _ a1 a2).1 e))]
-      have hden : (Q.vtx (hv sp₂)).2 - (Q.vtx (hv sp₁)).2 ≠ 0 :=
-        sub_ne_zero.2 (fun e => hab ((hinj _ _ a1 a2).1 e.symm))
-      rw [div_eq_zero_iff, sub_eq_zero, hinj _ _ (by omega) a1]
-      simp only [hab, not_false_eq_true, true_and]
-      constructor
-      · intro hn e; exact hn (Or.inl e)
-      · rintro hn (e | e)
-        · exact hn e
-        · exact hden e
+    ram_grind
 
 end
 

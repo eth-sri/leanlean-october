@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.Setup
 public import Chazelle.Cost.DownPhase
 
@@ -35,14 +37,20 @@ namespace DownMath
 /-- The growth of the count bound at one level below the threshold. -/
 def cntG (A B x : ℕ) : ℕ := 2 * A * x + A + 2 * A * B + 8 * A * B * x
 
+section
+variable (A B : ℕ)
+include A B
 /-- The threshold exponent: `8 A ≤ 2^L` and `32 A B ≤ 2^L`. -/
-def cntL (A B : ℕ) : ℕ := Nat.clog 2 (8 * A + 32 * A * B)
+def cntL : ℕ := Nat.clog 2 (8 * A + 32 * A * B)
 
 /-- The threshold level `λ*`: from it on the levels contract. -/
-def cntLam (A B : ℕ) : ℕ := 5 * (5 * cntL A B + 16)
+def cntLam : ℕ := 5 * (5 * cntL A B + 16)
 
 /-- The count constant above the threshold (`2520` covers the transition). -/
-def cntBase (A B : ℕ) : ℕ := 8 * A * B + A + 2520
+def cntBase : ℕ := 8 * A * B + A + 2520
+
+
+end
 
 /-- **The count bound of level `λ`** (the `cnt` of (I3)). -/
 def cnt (A B lam : ℕ) : ℕ :=
@@ -51,13 +59,16 @@ def cnt (A B lam : ℕ) : ℕ :=
 /-- The bound on all count constants. -/
 def cntMax (A B : ℕ) : ℕ := (cntG A B)^[cntLam A B] (cntBase A B)
 
-theorem le_cntG {A : ℕ} (hA : 1 ≤ A) (B x : ℕ) : x ≤ cntG A B x := by
+section
+variable {A : ℕ} (hA : 1 ≤ A)
+include hA
+theorem le_cntG (B x : ℕ) : x ≤ cntG A B x := by
   have : x ≤ 2 * A * x := by
     calc x = 1 * x := (one_mul x).symm
       _ ≤ 2 * A * x := Nat.mul_le_mul_right _ (by omega)
-  unfold cntG; omega
+  omega_nf
 
-theorem iterate_le_iterate {A : ℕ} (hA : 1 ≤ A) (B x : ℕ) {k k' : ℕ} (h : k ≤ k') :
+theorem iterate_le_iterate (B x : ℕ) {k k' : ℕ} (h : k ≤ k') :
     (cntG A B)^[k] x ≤ (cntG A B)^[k'] x := by
   obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le h
   clear h
@@ -69,20 +80,23 @@ theorem iterate_le_iterate {A : ℕ} (hA : 1 ≤ A) (B x : ℕ) {k k' : ℕ} (h 
     rw [Function.iterate_succ_apply']
     exact ih.trans (le_cntG hA B _)
 
-theorem cntBase_le_cnt {A : ℕ} (hA : 1 ≤ A) (B lam : ℕ) : cntBase A B ≤ cnt A B lam := by
+theorem cntBase_le_cnt (B lam : ℕ) : cntBase A B ≤ cnt A B lam := by
   unfold cnt
   split_ifs
   · exact le_rfl
   · exact iterate_le_iterate hA B _ (Nat.zero_le _)
 
 /-- **The count constants are bounded.** -/
-theorem cnt_le_cntMax {A : ℕ} (hA : 1 ≤ A) (B lam : ℕ) : cnt A B lam ≤ cntMax A B := by
+theorem cnt_le_cntMax (B lam : ℕ) : cnt A B lam ≤ cntMax A B := by
   unfold cnt cntMax
   split_ifs
   · exact iterate_le_iterate hA B _ (Nat.zero_le _)
   · exact iterate_le_iterate hA B _ (Nat.sub_le _ _)
 
 /-! ## The threshold -/
+
+
+end
 
 theorem le_two_pow_cntL (A B : ℕ) : 8 * A + 32 * A * B ≤ 2 ^ cntL A B :=
   Nat.le_pow_clog (by norm_num) _
@@ -105,7 +119,7 @@ theorem big_of_ge {A B lam : ℕ} (h : cntLam A B ≤ lam) :
   constructor
   · calc 8 * A * 2 ^ ((b + 11 + 4) / 5) ≤ 2 ^ L * 2 ^ ((b + 11 + 4) / 5) :=
           Nat.mul_le_mul_right _ (by omega)
-      _ ≤ 2 ^ b := by rw [mul_comm]; exact hpow
+      _ ≤ 2 ^ b := by grind
   · omega
 
 /-! ## One level -/
@@ -138,13 +152,12 @@ theorem step_arith {p b b' K K' n c c' A B G : ℕ}
     calc K * X ≤ c * (P + X) := hK
       _ ≤ c * (P + P) := Nat.mul_le_mul_left _ (by omega)
       _ = 2 * c * P := by ring
-  have hn2 : n ≤ 2 * P := by have : 1 ≤ P := Nat.one_le_two_pow; omega
+  have hn2 : n ≤ 2 * P := by omega
   have eAn : A * B * n ≤ 2 * A * B * P := by
     calc A * B * n ≤ A * B * (2 * P) := Nat.mul_le_mul_left _ hn2
       _ = 2 * A * B * P := by ring
   have e0 : K' * Y ≤ A * (K * Y) + A * Y + A * B * n + 4 * A * B * K := by
-    calc K' * Y ≤ A * (K + 1) * Y + A * B * (n + 4 * K) := h1
-      _ = A * (K * Y) + A * Y + A * B * n + 4 * A * B * K := by ring
+    grind
   rcases hc with hc | ⟨rfl, hAc, hABc, h8, h32⟩
   · have eKY : A * (K * Y) ≤ 2 * A * c * P := by
       calc A * (K * Y) ≤ A * (K * X) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hYX)
@@ -155,17 +168,16 @@ theorem step_arith {p b b' K K' n c c' A B G : ℕ}
       calc 4 * A * B * K ≤ 4 * A * B * (K * X) := Nat.mul_le_mul_left _ this
         _ ≤ 4 * A * B * (2 * c * P) := Nat.mul_le_mul_left _ hK2
         _ = 8 * A * B * c * P := by ring
-    have hP1 : 1 ≤ P := Nat.one_le_two_pow
+    
     calc K' * Y ≤ A * (K * Y) + A * Y + A * B * n + 4 * A * B * K := e0
       _ ≤ 2 * A * c * P + A * Y + 2 * A * B * P + 8 * A * B * c * P := by omega
       _ ≤ cntG A B c * P + cntG A B c * Y := by
           unfold cntG
-          have : A * Y ≤ A * Y + (2 * A * c + 2 * A * B + 8 * A * B * c) * Y := by omega
-          nlinarith
+          grind
       _ ≤ c' * P + c' * Y :=
           Nat.add_le_add (Nat.mul_le_mul_right _ hc) (Nat.mul_le_mul_right _ hc)
       _ = c' * (P + Y) := by ring
-  · have hK2' : K * X ≤ 2 * (c' * P) := by rw [← mul_assoc]; exact hK2
+  · have hK2' : K * X ≤ 2 * (c' * P) := by grind
     have eKY : 4 * (A * (K * Y)) ≤ c' * P := by
       have : 8 * (A * (K * Y)) ≤ 2 * (c' * P) := by
         calc 8 * (A * (K * Y)) = K * (8 * A * Y) := by ring
@@ -183,11 +195,7 @@ theorem step_arith {p b b' K K' n c c' A B G : ℕ}
         _ = 8 * A * B * P := by ring
         _ ≤ c' * P := Nat.mul_le_mul_right _ hABc
     have eA : A * Y ≤ c' * Y := Nat.mul_le_mul_right _ hAc
-    have e0' : K' * Y ≤ A * (K * Y) + A * Y + A * B * n + 4 * (A * B * K) := by
-      have : 4 * A * B * K = 4 * (A * B * K) := by ring
-      omega
-    rw [mul_add]
-    omega
+    grind
 
 /-- **(I3) across one level.**  Let `16 ≤ λ ≤ p`, `μ = ⌈βλ⌉ + 11`, and let the counts `K` (level
 `λ`) and `K'` (level `μ`) satisfy the level bound with `2^⌈βμ⌉ ≤ G`.  If (I3) holds at `λ` with
@@ -201,27 +209,26 @@ theorem cnt_step {A B : ℕ} (hA : 1 ≤ A) {lam p K K' n G : ℕ} (h16 : 16 ≤
   have hbl : Cost.ceilBeta lam ≤ lam := Cost.ceilBeta_le lam
   have hμ : Cost.ceilBeta lam + 11 < lam := Cost.ceilBeta_add_eleven_lt h16
   have hb' : Cost.ceilBeta (Cost.ceilBeta lam + 11) ≤ Cost.ceilBeta lam := by
-    rw [Setup.ceilBeta_eq, Setup.ceilBeta_eq lam]; omega
+    grind [Setup.ceilBeta_eq]
   refine step_arith hK (hbl.trans hlp) hb' hn hG hK' ?_
   by_cases hbig : cntLam A B ≤ Cost.ceilBeta lam + 11
   · -- both levels above the threshold
     have hlam : cntLam A B ≤ lam := by omega
     right
-    have e1 : cnt A B lam = cntBase A B := by unfold cnt; rw [ite_eq_left hlam]
-    have e2 : cnt A B (Cost.ceilBeta lam + 11) = cntBase A B := by unfold cnt; rw [ite_eq_left hbig]
+    have e1 : cnt A B lam = cntBase A B := by core_grind
+    have e2 : cnt A B (Cost.ceilBeta lam + 11) = cntBase A B := by core_grind
     obtain ⟨h8, h32⟩ := big_of_ge hlam
-    rw [e1, e2]
-    refine ⟨rfl, by unfold cntBase; omega, by unfold cntBase; omega, h8, h32⟩
+    ram_grind
   · -- the next level is below the threshold
     left
     have e2 : cnt A B (Cost.ceilBeta lam + 11) =
         (cntG A B)^[cntLam A B - (Cost.ceilBeta lam + 11)] (cntBase A B) := by
-      unfold cnt; rw [ite_eq_right hbig]
+      core_grind
     obtain ⟨k, hk, ek⟩ : ∃ k, k + 1 ≤ cntLam A B - (Cost.ceilBeta lam + 11) ∧
         cnt A B lam = (cntG A B)^[k] (cntBase A B) := by
       by_cases hl : cntLam A B ≤ lam
-      · exact ⟨0, by omega, by unfold cnt; rw [ite_eq_left hl]; rfl⟩
-      · exact ⟨cntLam A B - lam, by omega, by unfold cnt; rw [ite_eq_right hl]⟩
+      · exact ⟨0, by omega, by simp_all [cnt] ⟩
+      core_grind
     rw [e2, ek, ← Function.iterate_succ_apply' (cntG A B)]
     exact iterate_le_iterate hA B _ hk
 
@@ -239,7 +246,7 @@ theorem cnt_trans {A : ℕ} (hA : 1 ≤ A) (B : ℕ) {K K₀ n p : ℕ} (hn : n 
   calc K * 2 ^ Cost.ceilBeta p ≤ K₀ * (gradeGran p + 1) := Nat.mul_le_mul hK hg
     _ ≤ 840 * (2 * (n - 1) + 1) := hK₀
     _ ≤ 2520 * 2 ^ p := by omega
-    _ ≤ cntBase A B * 2 ^ p := Nat.mul_le_mul_right _ (by unfold cntBase; omega)
+    _ ≤ cntBase A B * 2 ^ p := Nat.mul_le_mul_right _ (by omega_nf)
     _ ≤ cnt A B p * (2 ^ p + 2 ^ Cost.ceilBeta p) := Nat.mul_le_mul hc (Nat.le_add_right _ _)
 
 end

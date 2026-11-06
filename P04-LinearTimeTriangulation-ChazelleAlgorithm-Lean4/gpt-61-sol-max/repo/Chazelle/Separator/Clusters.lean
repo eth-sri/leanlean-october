@@ -41,16 +41,11 @@ theorem sum_split_bound {ι : Type*} [DecidableEq ι] (L : Finset ι) (m : ι �
     s + ∑ d ∈ L, (2 * m d - s) ≤ 2 * M - s := by
   set J := L.filter (fun d => s < 2 * m d)
   have hJ : ∑ d ∈ L, (2 * m d - s) = ∑ d ∈ J, (2 * m d - s) := by
-    rw [Finset.sum_filter]
-    refine Finset.sum_congr rfl (fun d _ => ?_)
-    split_ifs with h
-    · rfl
-    · omega
+    grind [Finset.sum_filter]
   have hkey : ∑ d ∈ J, (2 * m d - s) + J.card * s = 2 * ∑ d ∈ J, m d := by
     rw [Finset.mul_sum, ← smul_eq_mul, ← Finset.sum_const, ← Finset.sum_add_distrib]
     refine Finset.sum_congr rfl (fun d hd => ?_)
-    have := (Finset.mem_filter.mp hd).2
-    omega
+    grind
   have hJsum : ∑ d ∈ J, m d ≤ M :=
     le_trans (Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
       (fun _ _ _ => Nat.zero_le _)) hsum
@@ -59,11 +54,7 @@ theorem sum_split_bound {ι : Type*} [DecidableEq ι] (L : Finset ι) (m : ι �
   · rcases (show J.card = 0 ∨ J.card = 1 by omega) with h0 | h1
     · rw [Finset.card_eq_zero.mp h0, Finset.sum_empty]; omega
     · obtain ⟨d, hd⟩ := Finset.card_eq_one.mp h1
-      have hdL : d ∈ L := (Finset.mem_filter.mp (hd ▸ Finset.mem_singleton_self d)).1
-      rw [hd, Finset.card_singleton, Finset.sum_singleton, Finset.sum_singleton] at hkey
-      rw [hd, Finset.sum_singleton]
-      have := hhalf d hdL
-      omega
+      grind
   · have : 2 * s ≤ J.card * s := Nat.mul_le_mul_right s h
     omega
 

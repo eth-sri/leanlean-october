@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoLoopM
 
 /-!
@@ -39,36 +41,33 @@ def loopS (qry : Stmt → Stmt) (sh : Stmt) : Stmt :=
 
 /-! ## Lemmas -/
 
-theorem getD_snoc_lt {α : Type} {R : List α} {r d : α} {k : ℕ} (hk : k < R.length) :
+section
+variable {α : Type} {R : List α} {r d : α}
+include α
+theorem getD_snoc_lt {k : ℕ} (hk : k < R.length) :
     (R ++ [r]).getD k d = R.getD k d := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_append_left hk, ← List.getD_eq_getElem?_getD]
+  grind
 
-theorem getD_snoc_eq {α : Type} {R : List α} {r d : α} : (R ++ [r]).getD R.length d = r := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_append_right le_rfl]; simp
+theorem getD_snoc_eq : (R ++ [r]).getD R.length d = r := by
+  simp_all
+
+
+end
 
 theorem loop_cost_le {n A₁ Fg T κ S : ℕ}
     (hS : S ≤ n * (κ * (Fg + T + 1)) + 5 * (κ * (A₁ + 1) * (Fg + 1)) + 5 * n) :
     1 + (6 * n + 2 + (3 + (S + 2))) ≤
       (5 * κ + 21) * (n + 1) * (Fg + T + 1) + (5 * κ + 21) * (A₁ + 1) * (Fg + 1) := by
-  have h1 : n * (κ * (Fg + T + 1)) ≤ (5 * κ) * (n + 1) * (Fg + T + 1) := by
-    have : n * (κ * (Fg + T + 1)) = κ * n * (Fg + T + 1) := by ring
-    rw [this]
-    apply Nat.mul_le_mul_right
-    nlinarith
-  have h2 : 21 * (n + 1) ≤ 21 * (n + 1) * (Fg + T + 1) := Nat.le_mul_of_pos_right _ (by omega)
-  have h3 : 5 * (κ * (A₁ + 1) * (Fg + 1)) = 5 * κ * (A₁ + 1) * (Fg + 1) := by ring
-  have e1 : (5 * κ + 21) * (n + 1) * (Fg + T + 1) =
-      5 * κ * (n + 1) * (Fg + T + 1) + 21 * (n + 1) * (Fg + T + 1) := by ring
-  have e2 : (5 * κ + 21) * (A₁ + 1) * (Fg + 1) =
-      5 * κ * (A₁ + 1) * (Fg + 1) + 21 * (A₁ + 1) * (Fg + 1) := by ring
-  rw [e1, e2]
-  omega
+  grind
 
 section exec
 
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
-theorem allocB_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 4 ≤ W)
+section
+variable (hI : IInv W c₀ c) (hK : Consts c)
+include hI hK
+theorem allocB_irs (hroom : c.nreg ALLOC + 4 ≤ W)
     (hj : c.nreg pJ + 1 ≤ W) :
     IRS P W c₀ allocB c 4 (fun c' => c'.nreg ALLOC = c.nreg ALLOC + 4 ∧
       c'.nreg pJ = c.nreg pJ + 1 ∧
@@ -85,20 +84,16 @@ theorem allocB_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 
       (∀ r, r ≠ 9999 → r ≠ 245000 → r ≠ 245003 → r ≠ 245004 → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
     exec_block
-    all_goals try (config_simp; omega)
-    refine ⟨rfl, ?_, ?_, fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl, rfl⟩
-    · config_simp; rw [k4]
-    · config_simp; rw [k1]
-    · config_simp; simp [upd, h1, h2, h3, h4]
+    all_goals (grind [upd])
   obtain ⟨c', k, ex, hk, h1, h2, h3, h4, h5, h6, h7⟩ := ex
   refine IRS.ofExec hI ex (by omega) (fun r hr hra => h3 r hra ?_ ?_ ?_) h5
-    (fun a _ => by rw [h4]) h6 h7 (by show c.nreg 9999 ≤ c'.nreg 9999; omega)
-    (by show c'.nreg 9999 ≤ c.nreg 9999 + k; omega) ⟨h1, h2, fun r a b d e => h3 r a b d e, h4⟩
+    (fun a _ => by rw [h4]) h6 h7 (by omega_nf)
+    (by omega_nf) ⟨h1, h2, fun r a b d e => h3 r a b d e, h4⟩
   · intro h; subst h; exact hr (iscr_sw (by norm_num) (by norm_num))
   · intro h; subst h; exact hr (iscr_sw (by norm_num) (by norm_num))
   · intro h; subst h; exact hr (iscr_sw (by norm_num) (by norm_num))
 
-theorem incB_irs (hI : IInv W c₀ c) (hK : Consts c) (h1 : c.nreg pJ + 1 ≤ W)
+theorem incB_irs (h1 : c.nreg pJ + 1 ≤ W)
     (h2 : c.nreg pA + 3 ≤ W) (h3 : c.nreg pR + 4 ≤ W) :
     IRS P W c₀ incB c 3 (fun c' => c'.nreg pJ = c.nreg pJ + 1 ∧ c'.nreg pA = c.nreg pA + 3 ∧
       c'.nreg pR = c.nreg pR + 4 ∧
@@ -116,20 +111,18 @@ theorem incB_irs (hI : IInv W c₀ c) (hK : Consts c) (h1 : c.nreg pJ + 1 ≤ W)
       (∀ r, r ≠ 245000 → r ≠ 245001 → r ≠ 245002 → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
     exec_block
-    all_goals try (config_simp; omega)
-    refine ⟨rfl, ?_, ?_, ?_, fun r h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
-    · config_simp; rw [k1]
-    · config_simp; rw [k3]
-    · config_simp; rw [k4]
-    · config_simp; simp [upd, h1, h2, h3]
+    all_goals (grind [upd])
   obtain ⟨c', k, ex, hk, e1, e2, e3, e4, e5, e6, e7, e8⟩ := ex
   refine IRS.ofExec hI ex (by omega) (fun r hr hra => e4 r ?_ ?_ ?_) e6
-    (fun a _ => by rw [e5]) e7 e8 (by rw [e4 _ (by decide) (by decide) (by decide)])
-    (by rw [e4 _ (by decide) (by decide) (by decide)]; omega)
+    (fun a _ => by rw [e5]) e7 e8 (by grind)
+    (by ram_grind)
     ⟨e1, e2, e3, fun r a b d => e4 r a b d, e5⟩
   · intro h; subst h; exact hr (iscr_sw (by norm_num) (by norm_num))
   · intro h; subst h; exact hr (iscr_sw (by norm_num) (by norm_num))
   · intro h; subst h; exact hr (iscr_sw (by norm_num) (by norm_num))
+
+
+end
 
 end exec
 
@@ -163,13 +156,13 @@ theorem loopSpec_of {Aux : Polygon → Merge.Junction → NF → Config → Prop
   rw [← hn] at hroom ⊢
   have hK₀ := hB.hA.hK
   have hn9 : c₀.nreg (sw 9) = n := hB.hLn
-  have hnW : n ≤ W := by rw [← hn9]; exact hB.hw.1 _
+  have hnW : n ≤ W := by omega
   have hAW : c₀.nreg ALLOC ≤ W := hB.hw.1 _
   have hLm := hB.hLm
   have h11 := hB.hres
   -- the cost of the whole loop
   refine (IRS.seq (K₁ := 1) (K₂ := 6 * n + 2 + (3 + (∑ j ∈ Finset.range n, (f j + 5) + 2)))
-    ((IRS.block [.constN pJ 0] hI₀ ⟨⟨iscr_sw (by unfold pJ sw; omega) (by unfold pJ sw; omega),
+    ((IRS.block [.constN pJ 0] hI₀ ⟨⟨iscr_sw (by omega_nf) (by omega_nf),
       Nat.zero_le _⟩, trivial⟩).mono le_rfl (fun _ h => h)) ?_).mono hcost (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' hc₁
   have j1 : c₁.nreg pJ = 0 := by rw [hc₁]; simp [regB, regI]
@@ -177,30 +170,30 @@ theorem loopSpec_of {Aux : Polygon → Merge.Junction → NF → Config → Prop
   let Ia : Config → Prop := fun c => c.nreg pJ ≤ n ∧ c.nreg ALLOC = c₀.nreg ALLOC + 4 * c.nreg pJ
   have hA1e : c₁.nreg ALLOC = c₀.nreg ALLOC := by
     rw [hc₁]; simp only [regB, regI]
-    exact upd_other _ _ _ (by unfold ALLOC pJ sw; omega)
+    omega_nf
   refine IRS.seq (K₁ := 6 * n + 2) (K₂ := 3 + (∑ j ∈ Finset.range n, (f j + 5) + 2))
     ((IRS.whileP (a := pJ) (b := sw 9) (body := allocB) Ia (fun c => 6 * (n - c.nreg pJ))
       (fun c hI hc hlt hrm => ⟨4, (allocB_irs hI (hK₀.fix hI)
-        (by rw [hI.hin (sw 9) (by unfold IFix sw; omega), hn9] at hlt; omega)
-        (by rw [hI.hin (sw 9) (by unfold IFix sw; omega), hn9] at hlt; omega)).mono le_rfl
+        (by omega)
+        (by omega)).mono le_rfl
         (fun c' h => by
           obtain ⟨a1, a2, -, -⟩ := h
-          rw [hI.hin (sw 9) (by unfold IFix sw; omega), hn9] at hlt
-          refine ⟨⟨by omega, by rw [a1, a2, hc.2]; ring⟩, by rw [a2]; omega⟩)⟩)
-      hI₁ ⟨by omega, by rw [hA1e, j1]; simp⟩ (by rw [hA1e, j1]; omega)).mono (by rw [j1]; simp)
+          rw [hI.hin (sw 9) (by omega_nf), hn9] at hlt
+          omega)⟩)
+      hI₁ ⟨by omega, by omega⟩ (by omega)).mono (by omega)
       (fun _ h => h))
     ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨⟨ja, ha⟩, hex⟩
-  rw [hI₂.hin (sw 9) (by unfold IFix sw; omega), hn9] at hex
-  have hj2 : c₂.nreg pJ = n := by omega
-  have hA2e : c₂.nreg ALLOC = c₀.nreg ALLOC + 4 * n := by rw [ha, hj2]
+  rw [hI₂.hin (sw 9) (by omega_nf), hn9] at hex
+  
+  
   -- 2. the loop registers
-  have hK₂ := hK₀.fix hI₂
+  
   refine IRS.seq (K₁ := 3) (K₂ := ∑ j ∈ Finset.range n, (f j + 5) + 2)
     ((IRS.block [.constN pJ 0, .copyN pA (sw 8), .copyN pR (sw 11)] hI₂
-      ⟨⟨iscr_sw (by unfold pJ sw; omega) (by unfold pJ sw; omega), Nat.zero_le _⟩,
-        iscr_sw (by unfold pA sw; omega) (by unfold pA sw; omega),
-        iscr_sw (by unfold pR sw; omega) (by unfold pR sw; omega), trivial⟩).mono le_rfl
+      ⟨⟨iscr_sw (by omega_nf) (by omega_nf), Nat.zero_le _⟩,
+        iscr_sw (by omega_nf) (by omega_nf),
+        iscr_sw (by omega_nf) (by omega_nf), trivial⟩).mono le_rfl
       (fun _ h => h)) ?_
   rintro c₃ hI₃ hA₃ hA₃' hc₃
   have v3 : c₃.nreg pJ = 0 ∧ c₃.nreg pA = c₀.nreg (sw 8) ∧ c₃.nreg pR = c₀.nreg (sw 11) ∧
@@ -208,8 +201,8 @@ theorem loopSpec_of {Aux : Polygon → Merge.Junction → NF → Config → Prop
     rw [hc₃]
     simp only [regB, regI, upd, pJ, pA, pR, sw,
       ALLOC]
-    refine ⟨by simp, by simp; exact hI₂.hin (sw 8) (by unfold IFix sw; omega),
-      by simp; exact hI₂.hin (sw 11) (by unfold IFix sw; omega), by simp, trivial⟩
+    refine ⟨by simp, by simp; exact hI₂.hin (sw 8) (by omega_nf),
+      by simp; exact hI₂.hin (sw 11) (by omega_nf), by simp, trivial⟩
   obtain ⟨j3, p3, r3, a3, m3⟩ := v3
   -- 3. the queries
   let Iq : Config → Prop := fun c => ∃ j, c.nreg pJ = j ∧ j ≤ n ∧ c.nreg (sw 9) = n ∧
@@ -217,14 +210,14 @@ theorem loopSpec_of {Aux : Polygon → Merge.Junction → NF → Config → Prop
     c₀.nreg (sw 11) + 4 * n ≤ c.nreg ALLOC ∧
     ∃ R : List (ℕ × ℕ × ℕ × ℕ), R.length = j ∧ ResultListAt c.nmem (c₀.nreg (sw 11)) R ∧
       ∀ j', j' < j → SeesInWhole J (Qof P) i (L.getD j' (0, 0, 0)) (R.getD j' (0, 0, 0, 0))
-  have hIq₃ : Iq c₃ := ⟨0, j3, Nat.zero_le _, by rw [hI₃.hin (sw 9) (by unfold IFix sw; omega), hn9],
-    by rw [p3]; ring, by rw [r3]; ring,
-    by rw [a3, hA2e, h11], [], rfl, fun k hk => by simp at hk, fun k hk => by omega⟩
+  have hIq₃ : Iq c₃ := ⟨0, j3, Nat.zero_le _, by rw [hI₃.hin (sw 9) (by omega_nf), hn9],
+    by omega, by omega,
+    by omega, [], rfl, fun k hk => by simp at hk, fun k hk => by omega⟩
   have hΦ₃ : ∑ k ∈ Finset.Ico (c₃.nreg pJ) n, (f k + 5) = ∑ j ∈ Finset.range n, (f j + 5) := by
     rw [j3, Finset.range_eq_Ico]
   refine (IRS.whileP (a := pJ) (b := sw 9) (body := .seq (qry sh) incB) Iq
     (fun c => ∑ k ∈ Finset.Ico (c.nreg pJ) n, (f k + 5)) ?_ hI₃ hIq₃
-    (by rw [hΦ₃]; omega)).mono (by rw [hΦ₃]) ?_
+    (by omega)).mono (by rw [hΦ₃]) ?_
   · -- one query
     rintro c hI ⟨j, hj, hjn, h9, hpA, hpR, hAl, R, hRl, hRat, hRs⟩ hlt hrm
     rw [h9, hj] at hlt
@@ -236,33 +229,33 @@ theorem loopSpec_of {Aux : Polygon → Merge.Junction → NF → Config → Prop
       have : f j = qCost κq F c₀ J P N₁ N₂ L i j := rfl
       omega
     refine ⟨f j + 3, (IRS.seq (K₁ := f j) (K₂ := 3) (hqry sh Bs F X Ok hsh hBs hXl P W c₀ c J H
-      N₁ N₂ E L i j hB hI hj hlt hpA hpR (by rw [hpR]; omega) hrq) ?_).mono le_rfl
+      N₁ N₂ E L i j hB hI hj hlt hpA hpR (by omega) hrq) ?_).mono le_rfl
       (fun _ h => h)⟩
     rintro c' hI' hA' hA'' ⟨⟨r, q0, q1, q2, q3, hsee⟩, hmem, hreg, hAm⟩
     have kreg : ∀ r, sw 5000 ≤ r → r < sw 6000 → c'.nreg r = c.nreg r := hreg
-    have cJ : c'.nreg pJ = j := (kreg pJ (by unfold pJ sw; omega) (by unfold pJ sw; omega)).trans hj
+    have cJ : c'.nreg pJ = j := (kreg pJ (by omega_nf) (by omega_nf)).trans hj
     have cA : c'.nreg pA = c₀.nreg (sw 8) + 3 * j :=
-      (kreg pA (by unfold pA sw; omega) (by unfold pA sw; omega)).trans hpA
+      (kreg pA (by omega_nf) (by omega_nf)).trans hpA
     have cR : c'.nreg pR = c₀.nreg (sw 11) + 4 * j :=
-      (kreg pR (by unfold pR sw; omega) (by unfold pR sw; omega)).trans hpR
-    have hW' : c'.nreg ALLOC ≤ W := hI'.hw.1 _
-    refine (incB_irs hI' (hK₀.fix hI') (by rw [cJ]; omega) (by rw [cA]; omega)
+      (kreg pR (by omega_nf) (by omega_nf)).trans hpR
+    
+    refine (incB_irs hI' (hK₀.fix hI') (by omega) (by rw [cA]; omega)
       (by rw [cR]; omega)).mono le_rfl ?_
     rintro c'' ⟨e1, e2, e3, e4, e5⟩
     have hAc : c''.nreg ALLOC = c'.nreg ALLOC :=
-      e4 _ (by unfold ALLOC pJ sw; omega) (by unfold ALLOC pA sw; omega)
-        (by unfold ALLOC pR sw; omega)
+      e4 _ (by omega_nf) (by omega_nf)
+        (by omega_nf)
     have c9 : c''.nreg (sw 9) = n := by
-      rw [e4 _ (by unfold pJ sw; omega) (by unfold pA sw; omega) (by unfold pR sw; omega),
-        hI'.hin (sw 9) (by unfold IFix sw; omega), hn9]
-    refine ⟨⟨j + 1, by rw [e1, cJ], by omega, c9, by rw [e2, cA]; ring, by rw [e3, cR]; ring,
+      rw [e4 _ (by omega_nf) (by omega_nf) (by omega_nf),
+        hI'.hin (sw 9) (by omega_nf), hn9]
+    refine ⟨⟨j + 1, by rw [e1, cJ], by omega, c9, by omega, by rw [e3, cR]; ring,
       by rw [hAc]; omega, R ++ [r], by simp [hRl], fun k hk => ?_, fun k hk => ?_⟩, ?_⟩
     · rw [e5]
       simp only [List.length_append, List.length_singleton] at hk
       rcases (show k < R.length ∨ k = R.length by omega) with hk' | hk'
       · rw [getD_snoc_lt hk']
         obtain ⟨b0, b1, b2, b3⟩ := hRat k hk'
-        have hb : c₀.nreg (sw 11) + 4 * k + 3 < c.nreg pR := by rw [hpR]; omega
+        have hb : c₀.nreg (sw 11) + 4 * k + 3 < c.nreg pR := by omega
         have hb' : c₀.nreg (sw 11) + 4 * k + 3 < c.nreg ALLOC := by omega
         refine ⟨?_, ?_, ?_, ?_⟩
         · rw [hmem _ (by omega) (Or.inl (by omega))]; exact b0
@@ -271,9 +264,9 @@ theorem loopSpec_of {Aux : Polygon → Merge.Junction → NF → Config → Prop
         · rw [hmem _ (by omega) (Or.inl (by omega))]; exact b3
       · subst hk'
         rw [getD_snoc_eq]
-        have hpos : c₀.nreg (sw 11) + 4 * R.length = c.nreg pR := by rw [hpR, hRl]
+        have hpos : c₀.nreg (sw 11) + 4 * R.length = c.nreg pR := by omega
         rw [hpos]
-        exact ⟨q0, q1, q2, q3⟩
+        omega
     · rcases (show k < j ∨ k = j by omega) with hk' | hk'
       · rw [getD_snoc_lt (by omega)]; exact hRs k hk'
       · subst hk'

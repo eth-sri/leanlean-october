@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutPath
 
 /-!
@@ -13,9 +15,6 @@ public import Chazelle.Core.ShootCutPath
   the whole loop, from the first walk vertex `U₀` to the final one `F` (`F - U₀ < 2m + 7`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -58,13 +57,7 @@ theorem resid_gap {n U F : ℕ} (hn : 0 < n) (hU : U < F) (hF : F < U + n) :
   have e := add_mod_split (U := U) hn (show F - U < n by omega)
   rw [show U + (F - U) = F by omega] at e
   have ha := Nat.mod_lt U hn
-  split_ifs at e with h
-  · rw [e]; constructor
-    · omega
-    · rw [ite_eq_left (by omega)]; omega
-  · rw [e]; constructor
-    · omega
-    · rw [ite_eq_right (by omega)]; omega
+  ram_grind
 
 /-! ## The piece through the uncounted block -/
 
@@ -73,14 +66,15 @@ def uPc (m : ℕ) : Pc := ⟨⟨2 * m + 6, 0⟩, ⟨6, 0⟩, 0, 0, 0, 0, 0⟩
 
 theorem uPc_ok (P : Polygon) (C : Chain) (m₀ : ℕ → ℕ) (h γ : ℕ) : PcOK P C m₀ h γ (uPc C.m) := by
   refine ⟨proper_vtx' P C _, proper_vtx' P C _, by simp [uPc], by simp [uPc],
-    Or.inl rfl, fun _ => ?_, fun h1 => by simp [uPc] at h1⟩
+    Or.inl rfl, fun _ => ?_, fun h1 => by grind [uPc]⟩
   have := wt_U_to_six C (Qof P) (n := P.n) (x := ⟨2 * C.m + 6, 0⟩) (proper_vtx' P C _)
     (Or.inr rfl)
-  simp only [uPc, key_hgt0] at this ⊢
-  rw [this]; omega
+  simp_all [uPc, key_hgt0] <;> omega_nf
 
+section
+variable {P : Polygon}
 /-- **The step through the uncounted block.** -/
-theorem uStep_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop}
+theorem uStep_exec {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop}
     {I : List Pc → Config → Prop} (hE : EmitOK P W emit A₀ Pv I K) {ps : List Pc} {m : ℕ}
     (d : Config) (hw : WordsBounded W d) (h32 : d.nreg 150032 = 2 * m + 6)
     (h96 : d.nreg 150096 = 6) (hI : I ps d) (hpv : Pv (uPc m)) :
@@ -94,26 +88,20 @@ theorem uStep_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Pro
       d₁.nreg 150053 = 0 ∧ d₁.nreg 150054 = 0 ∧
       (∀ r, (r < 150050 ∨ 150055 ≤ r) → d₁.nreg r = d.nreg r) ∧ d₁.nmem = d.nmem := by
     exec_block
-    all_goals first | omega | skip
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl⟩
-    all_goals first | (config_simp; rw [h32]; done) | (config_simp; rw [h96]; done) |
-      (config_simp; done) | skip
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    all_goals (grind [upd])
   have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (by decide)
-  have hR : PcRegs d₁ (uPc m) := ⟨v50, v51, v52, v53, v54, fun h => by simp [uPc] at h⟩
+  have hR : PcRegs d₁ (uPc m) := ⟨v50, v51, v52, v53, v54, fun h => by grind [uPc]⟩
   obtain ⟨d₂, k₂, e₂, hk₂, hI₂, kp, mem₂⟩ := hE.run _ (uPc m) d₁ e₁.wb_right (hE.stable _ _ _ hI fr₁) hR hpv
   have q96 : d₂.nreg 150096 = 6 := by
-    rw [kp _ (by unfold Keep; omega), r₁ _ (by omega), h96]
+    ram_grind
   have e₃ := Exec.copyN (P := P) e₂.wb_right 150040 150096
   refine ⟨_, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by omega,
-    hE.stable _ _ _ hI₂ (exec_frameB e₃ (by decide)), by config_simp; rw [q96],
+    hE.stable _ _ _ hI₂ (exec_frameB e₃ (by decide)), by simp_all,
     fun r hr h1 => ?_, fun a ha => ?_⟩
-  · config_simp
-    rw [upd_other _ _ _ h1, kp r hr, r₁ r (by unfold Keep at hr; omega)]
-  · config_simp; rw [mem₂ a ha, m₁]
+  all_goals (ram_simp <;> omega_nf)
 
 /-- **The loop flag**: `150042 := [c ≠ f]`. -/
-theorem setFlag_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) :
+theorem setFlag_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) :
     ∃ d' k, Exec P W setFlag d d' k ∧ k ≤ 5 ∧
       d'.nreg 150042 = (if d.nreg 150040 = d.nreg 150041 then 0 else 1) ∧
       (∀ x, x ≠ 150042 → d'.nreg x = d.nreg x) ∧ d'.nmem = d.nmem := by
@@ -121,16 +109,16 @@ theorem setFlag_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d
   by_cases h1 : d.nreg 150040 < d.nreg 150041
   · refine spec_ifLtN_true h1 (spec_instr (Exec.constN hw _ _ (by omega)) fun _ =>
       ⟨by omega, ?_, fun x hx => by simp [hx], rfl⟩)
-    config_simp; rw [ite_eq_right (by omega)]
+    ram_simp <;> omega_nf
   · by_cases h2 : d.nreg 150041 < d.nreg 150040
     · refine spec_ifLtN_false h1 (spec_ifLtN_true h2 (spec_instr (Exec.constN hw _ _ (by omega))
         fun _ => ⟨by omega, ?_, fun x hx => by simp [hx], rfl⟩))
-      config_simp; rw [ite_eq_right (by omega)]
+      ram_simp <;> omega_nf
     · refine spec_ifLtN_false h1 (spec_ifLtN_false h2 (spec_instr (Exec.constN hw _ _
         (by omega)) fun _ => ⟨by omega, ?_, fun x hx => by simp [hx], rfl⟩))
-      config_simp; rw [ite_eq_left (by omega)]
+      aesop (add safe (by omega))
 
-theorem CoreRegs.of_frame' {P : Polygon} {C : Chain} {H : Host} {Hh MD h γ mode : ℕ}
+theorem CoreRegs.of_frame' {C : Chain} {H : Host} {Hh MD h γ mode : ℕ}
     {s e : WPos} {m₀ : ℕ → ℕ} {c c' : Config} (R : CoreRegs P C H Hh MD h γ mode s e m₀ c)
     (hk : ∀ r, 150000 ≤ r → r < 150044 → r ≠ 150040 → r ≠ 150042 → c'.nreg r = c.nreg r)
     (h90 : c'.nreg 150090 = 0) (h91 : c'.nreg 150091 = 1) (h92 : c'.nreg 150092 = 2)
@@ -152,6 +140,9 @@ theorem CoreRegs.of_frame' {P : Polygon} {C : Chain} {H : Host} {Hh MD h γ mode
     (k _ (by norm_num) (by norm_num)).trans R.h32, (k _ (by norm_num) (by norm_num)).trans R.h33,
     (k _ (by norm_num) (by norm_num)).trans R.h34, (k _ (by norm_num) (by norm_num)).trans R.h35,
     (k _ (by norm_num) (by norm_num)).trans R.h36, h90, h92⟩
+
+
+end
 
 end
 

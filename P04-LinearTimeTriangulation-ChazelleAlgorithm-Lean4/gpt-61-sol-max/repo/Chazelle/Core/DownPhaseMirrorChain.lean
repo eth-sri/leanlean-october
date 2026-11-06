@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseMirrorModel
 
 /-!
@@ -60,7 +62,7 @@ theorem topIdx_mir : C.mir.topIdx = C.topIdx := by
     exact C.topIdx_spec.2 i hi
   · refine C.topIdx_min C.mir.topIdx_le fun i hi => ?_
     have := C.mir.topIdx_spec.2 i hi
-    rwa [vertex_mir, vertex_mir, mir_snd, mir_snd] at this
+    simp_all [vertex_mir, mir_snd] 
 
 theorem top_mir : C.mir.top = mir C.top := by
   show C.mir.vertex C.mir.topIdx = _
@@ -68,24 +70,19 @@ theorem top_mir : C.mir.top = mir C.top := by
 
 theorem coordBound_mir (P : Polygon) : Chazelle.Jordan.coordBound P.mir =
     Chazelle.Jordan.coordBound P := by
-  unfold Chazelle.Jordan.coordBound
-  rw [mir_n]
-  refine Finset.sum_congr rfl fun i _ => ?_
-  rw [mir_vtx, mir_fst, mir_snd, abs_neg]
+  simp_all [Chazelle.Jordan.coordBound, mir_n, mir_vtx, mir_fst, mir_snd, abs_neg] 
 
 theorem radius_mir : C.mir.radius = C.radius := by
-  unfold Chazelle.Chain.radius; rw [chainMir_P, coordBound_mir]
+  core_grind [chainMir_P, coordBound_mir]
 
 theorem slitTop_mir : C.mir.slitTop = mir C.slitTop := by
   unfold Chazelle.Chain.slitTop; rw [top_mir, radius_mir]; rfl
 
 theorem slit_mir : C.mir.slit = mir '' C.slit := by
-  unfold Chazelle.Chain.slit; rw [top_mir, slitTop_mir, mir_segment]
+  grind [Chazelle.Chain.slit, top_mir, slitTop_mir, mir_segment]
 
 theorem box_mir (r : ℝ) : mir '' Chazelle.Chain.box r = Chazelle.Chain.box r := by
-  ext x
-  rw [mem_image_mir]
-  simp only [Chazelle.Chain.mem_box_iff, mir_fst, mir_snd, abs_neg]
+  grind [mem_image_mir, Chazelle.Chain.mem_box_iff, mir_fst, mir_snd, abs_neg]
 
 /-- **The domain of the mirrored chain.** -/
 theorem dom_mir : C.mir.dom = mir '' C.dom := by
@@ -101,14 +98,13 @@ theorem sideE_sym {m : ℕ} (hm : 0 < m) {x y : ℕ} (h : (x + y) % (2 * m) = 0)
     sideE m (x % (2 * m)) = sideE m (y % (2 * m)) := by
   have hX := Nat.mod_lt x (show 0 < 2 * m by omega)
   have hY := Nat.mod_lt y (show 0 < 2 * m by omega)
-  have h' : (x % (2 * m) + y % (2 * m)) % (2 * m) = 0 := by rw [← Nat.add_mod]; exact h
+  have h' : (x % (2 * m) + y % (2 * m)) % (2 * m) = 0 := by simp_all
   have hs : x % (2 * m) + y % (2 * m) = 0 ∨ x % (2 * m) + y % (2 * m) = 2 * m := by
     by_cases hlt : x % (2 * m) + y % (2 * m) < 2 * m
-    · rw [Nat.mod_eq_of_lt hlt] at h'; exact Or.inl h'
+    · rw [Nat.mod_eq_of_lt hlt] at h'; omega
     · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at h'
       right; omega
-  unfold sideE
-  split_ifs <;> omega
+  grind [sideE]
 
 /-- **Reversing the tour flips the turn.** -/
 theorem sideTour_not (β : Bool) {i : ℕ} (hi : i ≤ 2 * C.m) :
@@ -118,8 +114,8 @@ theorem sideTour_not (β : Bool) {i : ℕ} (hi : i ≤ 2 * C.m) :
   apply sideE_sym C.one_le
   have hT := C.topIdx_le
   rw [show C.sideS (!β) + i + (C.sideS β + (2 * C.m - i)) = 2 * C.m * 2 by
-    unfold Chazelle.Chain.sideS; cases β <;> simp <;> omega]
-  exact Nat.mul_mod_right _ _
+    grind [Chazelle.Chain.sideS]]
+  simp_all
 
 /-- At an end top vertex, the turn does not matter. -/
 theorem sideWalk_indep (hT : C.topIdx = 0 ∨ C.topIdx = C.m) (β β' : Bool) :
@@ -128,21 +124,19 @@ theorem sideWalk_indep (hT : C.topIdx = 0 ∨ C.topIdx = C.m) (β β' : Bool) :
     unfold Chazelle.Chain.sideTour Chazelle.Chain.sideIdx Chazelle.Chain.sideS
     simp only [ite_true, Bool.false_eq_true, ite_false]
     rcases hT with h | h
-    · rw [h, show 2 * C.m - 0 + i = i + 2 * C.m * 1 by omega, Nat.add_mul_mod_self_left,
-        zero_add]
-    · rw [h, show 2 * C.m - C.m = C.m by omega]
+    · simp_all
+    grind
   have hf : C.sideTour β = C.sideTour β' := by
     funext i
     cases β <;> cases β' <;> simp [key]
-  unfold Chazelle.Chain.sideWalk
-  rw [hf]
+  core_grind
 
 /-- **The walk of the mirrored chain with the flipped turn is the mirrored walk, reversed.** -/
 theorem walkMir_sideWalk_not (β : Bool) :
     WalkMir (C.sideWalk β) (C.mir.sideWalk (!β)) 5 := by
   have hn := C.sideWalk_n β
   have hn' := C.mir.sideWalk_n (!β)
-  refine ⟨by rw [hn, hn']; rfl, by rw [hn]; omega, fun j hj => ?_⟩
+  refine ⟨by simp_all, by omega, fun j hj => ?_⟩
   rw [hn] at hj ⊢
   rcases Nat.lt_or_ge j 6 with hj6 | hj6
   · rw [show 5 + (2 * C.m + 7) - j = (5 - j) + (2 * C.m + 7) * 1 by omega,
@@ -181,12 +175,7 @@ theorem sideBeta_mir (hP : C.P.Simple) (h0 : 0 < C.topIdx) (hm : C.topIdx < C.m)
     rw [Chazelle.Chain.sideBeta_eq_true_iff, topIdx_mir, vertex_mir, vertex_mir, top_mir,
       slitTop_mir, mir_sub, mir_sub, mir_sub, sideCcw_mir]
   cases hb : C.sideBeta
-  · show C.mir.sideBeta = true
-    rw [e]
-    refine hor.resolve_left fun h => ?_
-    have := hβ.2 h
-    rw [hb] at this
-    exact Bool.false_ne_true this
+  · simp_all
   · show C.mir.sideBeta = false
     rw [← Bool.not_eq_true, e]
     exact Chazelle.Chain.sideCcw_asymm hA hns.1 (hβ.1 hb)
@@ -205,19 +194,21 @@ theorem walkMir_sideWalk (hP : C.P.Simple) :
 /-! ### Chords -/
 
 theorem hitSet_chain_mir (v : Point) (σ : ℝ) : C.mir.hitSet (mir v) (-σ) = C.hitSet v σ := by
-  ext t
-  simp only [Chazelle.Chain.hitSet, mem_ofPred_eq, ← mir_rayPt, dom_mir, mem_compl_iff,
-    mem_image_mir, mir_mir]
+  grind [Chazelle.Chain.hitSet, mem_ofPred_eq, mir_rayPt, dom_mir, mem_compl_iff, mem_image_mir, mir_mir]
 
-theorem chordSet_chain_mir (k : ℕ) (σ : ℝ) :
+section
+variable (k : ℕ) (σ : ℝ)
+theorem chordSet_chain_mir :
     C.mir.chordSet k (-σ) = mir '' C.chordSet k σ := by
   unfold Chazelle.Chain.chordSet Chazelle.Chain.chordEnd Chazelle.Chain.chordParam
     Chazelle.Chain.hitParam
   rw [vertex_mir, hitSet_chain_mir, mir_segment, mir_rayPt]
 
-theorem dirFree_mir (k : ℕ) (σ : ℝ) : C.mir.DirFree k (-σ) ↔ C.DirFree k σ := by
-  unfold Chazelle.Chain.DirFree
-  simp only [vertex_mir, ← mir_rayPt, dom_mir, mem_image_mir, mir_mir]
+theorem dirFree_mir : C.mir.DirFree k (-σ) ↔ C.DirFree k σ := by
+  grind [Chazelle.Chain.DirFree, vertex_mir, mir_rayPt, dom_mir, mem_image_mir, mir_mir]
+
+
+end
 
 /-- **The vertex chords of the mirrored chain.** -/
 theorem chords_chain_mir : C.mir.chords = mirF C.chords := by
@@ -225,12 +216,11 @@ theorem chords_chain_mir : C.mir.chords = mirF C.chords := by
   rw [mem_mirF]
   constructor
   · rintro ⟨k, σ, hk, hσ, hD, rfl⟩
-    refine ⟨k, -σ, hk, by rcases hσ with rfl | rfl <;> norm_num, ?_, ?_⟩
-    · rw [← dirFree_mir, neg_neg]; exact hD
-    · rw [← neg_neg σ, chordSet_chain_mir, image_mir_image_mir, neg_neg]
+    refine ⟨k, -σ, hk, by grind, ?_, ?_⟩
+    all_goals (grind [dirFree_mir, neg_neg, chordSet_chain_mir, image_mir_image_mir])
   · rintro ⟨k, σ, hk, hσ, hD, hc⟩
-    refine ⟨k, -σ, hk, by rcases hσ with rfl | rfl <;> norm_num, (dirFree_mir C k σ).2 hD, ?_⟩
-    rw [chordSet_chain_mir, ← hc, image_mir_image_mir]
+    refine ⟨k, -σ, hk, by grind, (dirFree_mir C k σ).2 hD, ?_⟩
+    grind [chordSet_chain_mir, image_mir_image_mir]
 
 /-- **The augmented chords of the mirrored chain.** -/
 theorem augChords_mir : Merge.augChords C.mir = mirF (Merge.augChords C) := by
@@ -240,13 +230,7 @@ theorem augChords_mir : Merge.augChords C.mir = mirF (Merge.augChords C) := by
   unfold Merge.augChords
   simp only [mem_ofPred_eq]
   rw [dom_mir, ht]
-  constructor
-  · rintro ⟨y, a, b, hch, hy, rfl⟩
-    refine ⟨y, -b, -a, ?_, hy, hseg_mir y a b⟩
-    rw [← isHChordIn_mir, neg_neg, neg_neg]; exact hch
-  · rintro ⟨y, a, b, hch, hy, hc⟩
-    refine ⟨y, -b, -a, isHChordIn_mir.2 hch, hy, ?_⟩
-    rw [← hseg_mir, ← hc, image_mir_image_mir]
+  grind [isHChordIn_mir, neg_neg, hseg_mir, image_mir_image_mir]
 
 /-- **The chain model of the mirrored chain is the mirrored chain model**, walk reversed with
 shift `5`. -/
@@ -258,7 +242,7 @@ theorem modelMir_chain (hP : C.P.Simple) : ModelMir (chainModel C) (chainModel C
     rw [hn] at hp ⊢
     rw [idx_q (by omega) hp]
     show (6 ≤ p ∧ p < 2 * C.m + 6) ↔ (6 ≤ _ ∧ _ < 2 * C.m + 6)
-    split_ifs <;> omega
+    ram_grind
   Adm := augChords_mir C
   Full := chords_chain_mir C
 

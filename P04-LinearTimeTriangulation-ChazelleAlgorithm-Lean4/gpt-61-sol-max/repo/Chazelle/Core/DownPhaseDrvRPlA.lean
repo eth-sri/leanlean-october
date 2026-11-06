@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRPc
 public import Chazelle.Core.DownPhaseDrvRLib
 public import Chazelle.Core.NFBuildMain
@@ -116,7 +118,7 @@ theorem plCh_exec {C : ℕ} (hC : 1 ≤ C) : ∀ (L : ℕ) (d : Config) (s a k p
     by_cases hL : L = 0
     · subst hL
       rw [chunks_zero]
-      refine ⟨d, 2, .whileLtN_false (by rw [h17, h14]; omega) hw, by simp, by simp [h16],
+      refine ⟨d, 2, .whileLtN_false (by omega) hw, by simp, by simp [h16],
         by simp [h04], fun i hi => by simp at hi, fun _ _ => rfl, FrameM.refl _ _⟩
     · have hcons := chunks_cons (s := s) (a := a) hC (by omega : 1 ≤ L)
       set len := min C L with hlen
@@ -131,7 +133,7 @@ theorem plCh_exec {C : ℕ} (hC : 1 ≤ C) : ∀ (L : ℕ) (d : Config) (s a k p
         (a + len) (k + 1) (ptr + 3) e₁.wb_right (by rw [g₁ _ (by decide), h02]) b14 b12 b13 b16
         b04 (by rw [g₁ _ (by decide), h17]) (by rw [g₁ _ (by decide), h18])
         (by rw [g₁ _ (by decide), h20]) (by omega) (by omega) (by omega) (by omega)
-      refine ⟨d', j₁ + 2 + j₂, .whileLtN_true (by rw [h17, h14]; omega) e₁ e₂, ?_, ?_, ?_, ?_,
+      refine ⟨d', j₁ + 2 + j₂, .whileLtN_true (by omega) e₁ e₂, ?_, ?_, ?_, ?_,
         ?_, f₁.trans cf⟩
       · rw [hcons, List.length_cons]; omega
       · rw [c16, hcons, List.length_cons]; ring
@@ -149,10 +151,7 @@ theorem plCh_exec {C : ℕ} (hC : 1 ≤ C) : ∀ (L : ℕ) (d : Config) (s a k p
         · simp only [List.length_cons] at hi
           obtain ⟨x1, x2, x3⟩ := cL i (by omega)
           simp only [List.getD_cons_succ]
-          refine ⟨?_, ?_, ?_⟩
-          · rw [show ptr + 3 * (i + 1) = ptr + 3 + 3 * i by ring]; exact x1
-          · rw [show ptr + 3 * (i + 1) + 1 = ptr + 3 + 3 * i + 1 by ring]; exact x2
-          · rw [show ptr + 3 * (i + 1) + 2 = ptr + 3 + 3 * i + 2 by ring]; exact x3
+          ram_grind
       · intro x hx
         rw [hcons, List.length_cons] at hx
         rw [cm x (by omega), bm, Machine.upd_other _ _ _ (by omega),

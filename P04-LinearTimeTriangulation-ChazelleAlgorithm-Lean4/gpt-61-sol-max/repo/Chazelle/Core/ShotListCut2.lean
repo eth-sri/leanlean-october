@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShotListCut
 public import Chazelle.Core.ShotListFrame
 
@@ -56,7 +58,7 @@ theorem siaF_eval {c : Config} {uw uk kw : ℕ} {u w k : ℝ} (h1 : BitIs c uw (
   unfold siaF sideInArc
   simp only [BF.eval, Bool.or_eq_true, Bool.and_eq_true, Bool.not_eq_true', decide_eq_true_eq,
     decide_eq_false_iff_not, i1, i2, i3]
-  split_ifs with h <;> tauto
+  grind
 
 theorem eqF_eval {c : Config} {xa ax : ℕ} {x a : ℝ} (h1 : BitIs c xa (x < a))
     (h2 : BitIs c ax (a < x)) :
@@ -65,18 +67,19 @@ theorem eqF_eval {c : Config} {xa ax : ℕ} {x a : ℝ} (h1 : BitIs c xa (x < a)
   obtain ⟨-, i2⟩ := h2
   unfold eqF
   simp only [BF.eval, Bool.and_eq_true, Bool.not_eq_true', decide_eq_false_iff_not, i1, i2]
-  constructor
-  · rintro ⟨h, h'⟩; exact le_antisymm (not_lt.1 h') (not_lt.1 h)
-  · rintro rfl; exact ⟨lt_irrefl _, lt_irrefl _⟩
+  grind
 
 /-! ## The blocks -/
 
+section
+variable (R ℓ : ℕ)
+include R ℓ
 /-- The arc registers of level `ℓ`: `rL R ℓ … rL R ℓ + 3`. -/
-def rL (R ℓ : ℕ) : ℕ := R + 40 + 10 * ℓ
+def rL : ℕ := R + 40 + 10 * ℓ
 
 /-- The eight comparisons of level `ℓ`: `a < b`, `a < x`, `x < a`, `a < y`, `y < b`, `x < b`,
 `x < y`, `y < x` into `R + 100 … R + 107`. -/
-def cmpList (R ℓ : ℕ) : List Cmp :=
+def cmpList : List Cmp :=
   let L := rL R ℓ
   let hx := R + 10 + 2 * ℓ
   let hy := R + 11 + 2 * ℓ
@@ -86,17 +89,20 @@ def cmpList (R ℓ : ℕ) : List Cmp :=
     (hx, z, hy, z, R + 106), (hy, z, hx, z, R + 107)]
 
 /-- `a < b` by `offCmp` when `a`, `b` are interior positions of one edge. -/
-def offCall (R ℓ : ℕ) : Stmt :=
+def offCall : Stmt :=
   let L := rL R ℓ
   .seq (block [.copyN 50200 (R + 34), .copyN 50201 L, .copyN 50202 (L + 1), .copyN 50203 (L + 2),
       .copyN 50204 (L + 3), .copyN 50205 (R + 30)])
     (.seq offCmp (block [.copyN (R + 100) 50210]))
 
 /-- The correction of the bit `a < b`. -/
-def offB (R ℓ : ℕ) : Stmt :=
+def offB : Stmt :=
   let L := rL R ℓ
   .ifLtN L (L + 2) .skip (.ifLtN (L + 2) L .skip
     (.ifLtN (R + 30) (L + 1) (.ifLtN (R + 30) (L + 3) (offCall R ℓ) .skip) .skip))
+
+
+end
 
 /-- The six tests of `cutK` into `R + 120`, `R + 140`, …, `R + 220`. -/
 def formB (R : ℕ) : Stmt :=
@@ -125,26 +131,26 @@ def RegsOK (R : ℕ) : Prop :=
     R / 10000 ≠ 15
 
 theorem bprim_R {R : ℕ} (hR : RegsOK R) {i : ℕ} (hi : i < 300) : Bprim (R + i) = false := by
-  unfold RegsOK at hR
-  simp only [Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not]
-  omega
+  core_grind
 
 /-- The registers written by `offB`. -/
-def Boff (R : ℕ) (r : ℕ) : Bool := r == R + 100 || Bprim r || decide (50200 ≤ r ∧ r < 50210)
+def Boff (R r : ℕ) : Bool := r == R + 100 || Bprim r || decide (50200 ≤ r ∧ r < 50210)
 
 theorem wr_offCmp' (R : ℕ) : wr (Boff R) offCmp = true :=
-  wr_mono wr_offCmp (fun r hr => by simp [Boff, hr])
+  wr_mono wr_offCmp (fun r hr => by core_grind)
 
 theorem wr_offCall (R ℓ : ℕ) : wr (Boff R) (offCall R ℓ) = true := by
   have h := wr_offCmp' R
-  simp [offCall, wr, block, wrOK, Boff, h]
+  simp_all [offCall, wr, block, wrOK, Boff]
 
 theorem wr_offB (R ℓ : ℕ) : wr (Boff R) (offB R ℓ) = true := by
   have h := wr_offCall R ℓ
-  simp [offB, wr, h]
+  simp_all [offB, wr]
 
+section
+variable {P : Polygon} {W : ℕ}
 /-- Loading the inputs of `offCmp`. -/
-theorem offLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (cd L z : ℕ)
+theorem offLoad_exec (c : Config) (hw : WordsBounded W c) (cd L z : ℕ)
     (hLr : L + 4 ≤ 50200 ∨ 50206 ≤ L)
     (hz : z < 50200 ∨ 50206 ≤ z) :
     ∃ c₁ k₁, Exec P W
@@ -159,7 +165,7 @@ theorem offLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, ?_⟩ <;> (try unfold ALLOC) <;> rsimp
 
 /-- **The correction of `a < b`**: afterwards the bit `R + 100` is the key order of `a`, `b`. -/
-theorem offB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : ℓ ≤ 2) (c : Config)
+theorem offB_exec {R ℓ : ℕ} (hR : RegsOK R) (hℓ : ℓ ≤ 2) (c : Config)
     (hw : WordsBounded W c) (hG : GoodEnv P) (hHW : hostWords P.n ≤ W) {H : Host} {C : Chain}
     (hwf : ChainWF P (c.nreg ALLOC) c.nmem (c.nreg (R + 34)))
     (hC : ChainDescAt c.nmem (c.nreg (R + 34)) (Qof P) H C) (hm : 2 * C.m + 7 ≤ W)
@@ -180,8 +186,7 @@ theorem offB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
       BitIs c (R + 100) (M.key (Qof P) (posR c (L, L + 1)) <
         M.key (Qof P) (posR c (L + 2, L + 3))) := fun hne => by
     have := lexLt_iff_key ha hb hne
-    simp only [posR] at this ⊢
-    exact ⟨hbit.1, hbit.2.trans this⟩
+    grind [posR]
   have wk := wr_offB R ℓ
   unfold offB
   simp only
@@ -208,17 +213,16 @@ theorem offB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
   rw [hz] at p6
   have w₁ := e₁.wb_right
   have hn0 : 0 < M.W.n := by
-    have : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n _
-    rw [hM, this]; omega
+    omega
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, -⟩ := offCmp_meets P W c₁ w₁
-    ⟨hG, hHW, by rw [pal, pm, p1]; exact hwf, H, C, by rw [pm, p1]; exact hC,
-      by rw [p2]; exact hae, by rw [p4]; exact hbe, by rw [p6]; exact hn0,
+    ⟨hG, hHW, by grind, H, C, by grind,
+      by grind, by grind, by grind,
       by rw [p2, p3]; exact ha.1, by rw [p4, p5]; exact hb.1,
-      fun h => by rw [p3] at h; omega, fun h => by rw [p5] at h; omega, hm⟩
-    (by rw [pal]; show _ + 11000 ≤ W; omega)
+      fun h => by omega, fun h => by omega, hm⟩
+    (by grind)
   replace hk₂ : k₂ ≤ 11000 := hk₂
-  obtain ⟨o1, -⟩ := post₂ H C (by rw [pm, p1]; exact hC)
-  have F₂ := exec_frameB e₂ wr_offCmp
+  obtain ⟨o1, -⟩ := post₂ H C (by grind)
+  
   have e₃ := Exec.copyN (P := P) e₂.wb_right (R + 100) 50210
   have ex : Exec P W (offB R ℓ) c _ _ :=
     .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true h3 (.ifLtN_true h4
@@ -236,39 +240,47 @@ theorem offB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
 
 /-! ## Execution: the six tests -/
 
+
+end
+
 theorem bitIs_toNat {c : Config} {d : ℕ} {b : Bool} {p : Prop} (hv : c.nreg d = b.toNat)
     (hb : b = true ↔ p) : BitIs c d p := by
-  refine ⟨by rw [hv]; cases b <;> simp, ?_⟩
-  rw [hv, ← hb]; cases b <;> simp
+  grind [Chazelle.Core.SweepPrim.BitIs]
 
+section
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W)
+include hw hW
 /-- A compiled `sideInArc` test. -/
-theorem siaF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W)
+theorem siaF_exec
     {uw uk kw d : ℕ} (h1 : uw < d) (h2 : uk < d) (h3 : kw < d) {u w k : ℝ}
     (b1 : BitIs c uw (u < w)) (b2 : BitIs c uk (u < k)) (b3 : BitIs c kw (k < w)) :
     ∃ c' k', Exec P W ((siaF uw uk kw).compile d) c c' k' ∧ k' ≤ 48 ∧
       BitIs c' d (sideInArc u w k) ∧ FrameB ((siaF uw uk kw).wset d) c c' := by
   obtain ⟨c', k', ex, hk, hv, hf⟩ := BF.compile_exec (P := P) hW (siaF uw uk kw) d c hw
     ⟨⟨⟨⟨h1, b1.1⟩, ⟨h2, b2.1⟩⟩, ⟨h3, b3.1⟩⟩, ⟨⟨h1, b1.1⟩, ⟨⟨h2, b2.1⟩, ⟨h3, b3.1⟩⟩⟩⟩
-  exact ⟨c', k', ex, by rw [siaF_size] at hk; omega, bitIs_toNat hv (siaF_eval b1 b2 b3), hf⟩
+  exact ⟨c', k', ex, by grind [siaF_size], bitIs_toNat hv (siaF_eval b1 b2 b3), hf⟩
 
 /-- The compiled test `x = a`. -/
-theorem eqF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W)
+theorem eqF_exec
     {xa ax d : ℕ} (h1 : xa < d) (h2 : ax < d) {x a : ℝ} (b1 : BitIs c xa (x < a))
     (b2 : BitIs c ax (a < x)) :
     ∃ c' k', Exec P W ((eqF xa ax).compile d) c c' k' ∧ k' ≤ 20 ∧ BitIs c' d (x = a) ∧
       FrameB ((eqF xa ax).wset d) c c' := by
   obtain ⟨c', k', ex, hk, hv, hf⟩ := BF.compile_exec (P := P) hW (eqF xa ax) d c hw
     ⟨⟨h1, b1.1⟩, ⟨h2, b2.1⟩⟩
-  exact ⟨c', k', ex, by rw [eqF_size] at hk; omega, bitIs_toNat hv (eqF_eval b1 b2), hf⟩
+  exact ⟨c', k', ex, by grind [eqF_size], bitIs_toNat hv (eqF_eval b1 b2), hf⟩
+
+
+end
 
 /-- The registers written by `formB`. -/
-def Bform (R : ℕ) (r : ℕ) : Bool := decide (R + 120 ≤ r ∧ r < R + 240)
+def Bform (R r : ℕ) : Bool := decide (R + 120 ≤ r ∧ r < R + 240)
 
 theorem bitIs_keep {c c' : Config} {B : ℕ → Bool} {r : ℕ} {p : Prop} (h : BitIs c r p)
     (hf : FrameB B c c') (hr : B r = false) : BitIs c' r p := h.of_eq (hf.1 r hr)
 
 theorem wset_lt {f : BF} {d r : ℕ} (h : r < d) : f.wset d r = false := by
-  simp only [BF.wset, decide_eq_false_iff_not]; omega
+  core_grind
 
 /-- **The six tests of `cutK`** from the eight comparison bits. -/
 theorem formB_exec {P : Polygon} {W : ℕ} (R : ℕ) (c : Config) (hw : WordsBounded W c)
@@ -285,7 +297,7 @@ theorem formB_exec {P : Polygon} {W : ℕ} (R : ℕ) (c : Config) (hw : WordsBou
   have fr : ∀ {B : ℕ → Bool} {cc cc' : Config}, FrameB B cc cc' →
       (∀ r, B r = true → R + 120 ≤ r ∧ r < R + 240) → FrameB (Bform R) cc cc' := fun h h1 =>
     frameB_mono h (fun r hr => by
-      have := h1 r hr; simp only [Bform, decide_eq_true_eq]; omega)
+      simp_all [Bform, decide_eq_true_eq])
   have kp : ∀ {B : ℕ → Bool} {cc cc' : Config} {r : ℕ} {p : Prop}, BitIs cc r p →
       FrameB B cc cc' → B r = false → BitIs cc' r p := fun h hf hr => bitIs_keep h hf hr
   obtain ⟨c₁, k₁, e₁, hk₁, v₁, f₁⟩ := siaF_exec (P := P) c hw hW (d := R + 120)
@@ -328,18 +340,18 @@ theorem formB_exec {P : Polygon} {W : ℕ} (R : ℕ) (c : Config) (hw : WordsBou
     k6 (k5 (k4 (k3 v₂ (by omega)) (by omega)) (by omega)) (by omega),
     k6 (k5 (k4 v₃ (by omega)) (by omega)) (by omega), k6 (k5 v₄ (by omega)) (by omega),
     k6 v₅ (by omega), v₆, ?_⟩
-  exact (fz f₁ (by omega) (by rw [siaF_size]; omega)).trans
-    ((fz f₂ (by omega) (by rw [siaF_size]; omega)).trans
-    ((fz f₃ (by omega) (by rw [siaF_size]; omega)).trans
-    ((fz f₄ (by omega) (by rw [siaF_size]; omega)).trans
-    ((fz f₅ (by omega) (by rw [siaF_size]; omega)).trans
-    (fz f₆ (by omega) (by rw [eqF_size]; omega))))))
+  exact (fz f₁ (by omega) (by grind [siaF_size])).trans
+    ((fz f₂ (by omega) (by grind [siaF_size])).trans
+    ((fz f₃ (by omega) (by grind [siaF_size])).trans
+    ((fz f₄ (by omega) (by grind [siaF_size])).trans
+    ((fz f₅ (by omega) (by grind [siaF_size])).trans
+    (fz f₆ (by omega) (by grind [eqF_size]))))))
 
 
 /-! ## The cutting block -/
 
 /-- The registers written by `cutB`. -/
-def Bcut (R ℓ : ℕ) (r : ℕ) : Bool :=
+def Bcut (R ℓ r : ℕ) : Bool :=
   Bouts (cmpList R ℓ) r || Boff R r || Bform R r || decide (rL R ℓ + 4 ≤ r ∧ r < rL R ℓ + 14)
 
 /-- The pieces of the arc of level `ℓ`: `cut1` if the hole is present, else the arc. -/
@@ -349,9 +361,7 @@ noncomputable def levPieces (M : Model) (Q : Polygon) (hp : Prop) [Decidable hp]
 
 theorem cmpList_ok {R ℓ : ℕ} (hℓ : ℓ ≤ 2) : CmpOK (R + 30) (cmpList R ℓ) := by
   refine ⟨?_, ?_, fun t ht => ?_⟩
-  · simp only [cmpOuts, cmpList, rL, List.map_cons, List.map_nil, List.mem_cons,
-      List.not_mem_nil, or_false]
-    omega
+  · simp_all [cmpOuts, cmpList, rL, List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]
   · simp [cmpOuts, cmpList]
   · simp only [cmpList, rL, List.mem_cons, List.not_mem_nil, or_false] at ht
     rcases ht with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
@@ -361,7 +371,7 @@ theorem cmpList_ok {R ℓ : ℕ} (hℓ : ℓ ≤ 2) : CmpOK (R + 30) (cmpList R 
 
 /-- **The cutting block of level `ℓ`**: the pieces `levPieces` in the registers of the next
 level (`rL R ℓ + 10 …`, `rL R ℓ + 4 …`, their number in `rL R ℓ + 8`). -/
-theorem cutB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : ℓ ≤ 2) (c : Config)
+theorem cutB_exec {P : Polygon} {W R ℓ : ℕ} (hR : RegsOK R) (hℓ : ℓ ≤ 2) (c : Config)
     (hw : WordsBounded W c) (hW : 2 ≤ W) (hG : GoodEnv P) (hHW : hostWords P.n ≤ W)
     {H : Host} {C : Chain} (hwf : ChainWF P (c.nreg ALLOC) c.nmem (c.nreg (R + 34)))
     (hC : ChainDescAt c.nmem (c.nreg (R + 34)) (Qof P) H C) (hm : 2 * C.m + 7 ≤ W)
@@ -425,19 +435,19 @@ theorem cutB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
   have gL1 : c₁.nreg (L + 1) = c.nreg (L + 1) := in₁ _ (by omega)
   have gL2 : c₁.nreg (L + 2) = c.nreg (L + 2) := in₁ _ (by omega)
   have gL3 : c₁.nreg (L + 3) = c.nreg (L + 3) := in₁ _ (by omega)
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := in₁ _ (by unfold ALLOC; unfold RegsOK at hR; omega)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := in₁ _ (by grind [ALLOC, RegsOK])
   have hM1 : c₁.nmem = c.nmem := f₁.2.2.1
   have pa : posR c₁ (L, L + 1) = a := by
-    simp only [posR, ha_def, WPos.mk.injEq]; exact ⟨gL0, gL1⟩
+    grind [posR, WPos.mk.injEq]
   have pb : posR c₁ (L + 2, L + 3) = b := by
-    simp only [posR, hb_def, WPos.mk.injEq]; exact ⟨gL2, gL3⟩
+    grind [posR, WPos.mk.injEq]
   obtain ⟨c₂, k₂, e₂, hk₂, kab, f₂⟩ := offB_exec (P := P) hR hℓ c₁ e₁.wb_right hG hHW
-    (H := H) (C := C) (by rw [hA1, hM1, g34]; exact hwf) (by rw [hM1, g34]; exact hC) hm
-    (by rw [hA1]; exact hroom) (by rw [g30, hz]) (by rw [pa]; exact ha) (by rw [pb]; exact hb)
-    (by rw [gL0]; exact hae) (by rw [gL2]; exact hbe)
-    (by rw [gL0, gL1, gL2, gL3]; exact bab)
+    (H := H) (C := C) (by grind) (by grind) hm
+    (by omega) (by rw [g30, hz]) (by grind) (by grind)
+    (by grind) (by grind)
+    (by grind)
   rw [pa, pb] at kab
-  have in₂ : ∀ r, Boff R r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  
   have o₂ : ∀ r, (R + 100 < r ∧ r < R + 300) → Boff R r = false := fun r hr => by
     have := bprim_R hR (i := r - R) (by omega)
     rw [show R + (r - R) = r by omega] at this
@@ -454,7 +464,7 @@ theorem cutB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
   -- registers of `c` read by the selection
   have gsel : ∀ r, (r < R + 100 ∧ bandOf r = bandOf r) → ¬ (50200 ≤ r ∧ r < 50210) →
       Bprim r = false → c₃.nreg r = c.nreg r := fun r hr h5 hp => by
-    rw [f₃.1 r (by simp only [Bform, decide_eq_false_iff_not]; omega),
+    rw [f₃.1 r (by grind [Bform, decide_eq_false_iff_not]),
       f₂.1 r (by simp only [Boff, hp, Bool.or_false, Bool.or_eq_false_iff, beq_eq_false_iff_ne,
         decide_eq_false_iff_not]; omega), in₁ r (Or.inl hr.1)]
   have gR : ∀ i, i < 100 → c₃.nreg (R + i) = c.nreg (R + i) := fun i hi => by
@@ -464,7 +474,7 @@ theorem cutB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
   have gR' : ∀ r, R ≤ r → r < R + 100 → c₃.nreg r = c.nreg r := fun r h1 h2 => by
     have := gR (r - R) (by omega)
     rwa [show R + (r - R) = r by omega] at this
-  have z3 : c₃.nreg (R + 30) = 0 := by rw [gR 30 (by omega), hz]
+  have z3 : c₃.nreg (R + 30) = 0 := by grind
   obtain ⟨c₄, k₄, e₄, hk₄, pc₄, r₄, m₄, rr₄, rm₄, o₄⟩ := selB_exec (P := P) c₃ e₃.wb_right hW
     (L := L) (hx := R + 10 + 2 * ℓ) (hy := R + 11 + 2 * ℓ) (z := R + 30) (N := L + 10)
     (S := L + 4) (Cn := L + 8) (hpA := R + 30 + ℓ) (hpB := R + 9) (c1 := R + 120)
@@ -496,7 +506,7 @@ theorem cutB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
     unfold levPieces
     by_cases hp : c.nreg (R + 30 + ℓ) < c.nreg (R + 9)
     · have hd : decide (c₃.nreg (R + 30 + ℓ) < c₃.nreg (R + 9)) = true := by
-        simp [hp3.2 hp]
+        grind
       rw [hd] at pc₄
       rw [ite_yes _ _ hp]
       unfold cut1
@@ -509,15 +519,15 @@ theorem cutB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
         (by rw [decide_eq_true_iff]; exact t5.2) (by rw [decide_eq_true_iff]; exact t6.2)]
       exact pc₄
     · have hd : decide (c₃.nreg (R + 30 + ℓ) < c₃.nreg (R + 9)) = false := by
-        simp only [decide_eq_false_iff_not]; exact fun h => hp (hp3.1 h)
+        grind
       rw [hd] at pc₄
       rw [ite_no _ _ hp]
       exact pc₄
   · -- the frame
     have f₄ : FrameB (fun r => decide (L + 4 ≤ r ∧ r < L + 14)) c₃ c₄ :=
-      ⟨fun r hr => r₄ r (by simp only [decide_eq_false_iff_not] at hr; omega)
-        (by simp only [decide_eq_false_iff_not] at hr; omega)
-        (by simp only [decide_eq_false_iff_not] at hr; omega),
+      ⟨fun r hr => r₄ r (by grind)
+        (by grind)
+        (by grind),
        fun r _ => by rw [rr₄], m₄, rm₄, o₄⟩
     have c1 : FrameB (Bcut R ℓ) c c₁ := frameB_mono f₁ (fun r hr => by simp [Bcut, hr])
     have c2 : FrameB (Bcut R ℓ) c₁ c₂ := frameB_mono f₂ (fun r hr => by simp [Bcut, hr])

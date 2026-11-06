@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Ears.Test
 
 /-!
@@ -62,15 +64,13 @@ variable (P : Polygon)
 
 /-- The orientation is `1` or `-1`. -/
 theorem orient_eq : orient P = 1 ∨ orient P = -1 := by
-  unfold orient; split_ifs <;> simp
+  core_grind
 
-theorem orient_ne_zero : orient P ≠ 0 := by
-  rcases orient_eq P with h | h <;> rw [h] <;> norm_num
 
 /-- Two signs in `{1, -1}` are equal or opposite. -/
 theorem sign_eq_or_eq_neg {σ τ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hτ : τ = 1 ∨ τ = -1) :
     σ = τ ∨ σ = -τ := by
-  rcases hσ with rfl | rfl <;> rcases hτ with rfl | rfl <;> norm_num
+  grind
 
 /-- **The interior side is uniform.**  For every edge `i` and `t ∈ (0,1)`, for all small
 `δ > 0` the offset point `offset (vtx i) (vtx (i+1)) t (orient P * δ)` lies in the interior region
@@ -111,27 +111,21 @@ theorem eventually_offset_orient {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i
   split_ifs with hL
   · have hpL := hLI.1 hL
     have hpR : parity P cR = false := by
-      cases h : parity P cR
-      · rfl
-      · exact absurd (hpL.trans h.symm) hne
+      grind
     rw [one_mul]
-    refine ⟨⟨(mem_filled_iff hP hb1).2 (by rw [hp1, hpL]), hb1⟩, ?_⟩
+    refine ⟨⟨(mem_filled_iff hP hb1).2 (by grind), hb1⟩, ?_⟩
     intro hf
     rw [mem_filled_iff hP hb2, hp2, hpR] at hf
-    exact Bool.false_ne_true hf
+    simp_all
   · have hpL : parity P cL = false := by
-      cases h : parity P cL
-      · rfl
-      · exact absurd (hLI.2 h) hL
+      grind
     have hpR : parity P cR = true := by
-      cases h : parity P cR
-      · exact absurd (hpL.trans h.symm) hne
-      · rfl
+      grind
     simp only [neg_one_mul, neg_neg]
-    refine ⟨⟨(mem_filled_iff hP hb2).2 (by rw [hp2, hpR]), hb2⟩, ?_⟩
+    refine ⟨⟨(mem_filled_iff hP hb2).2 (by grind), hb2⟩, ?_⟩
     intro hf
     rw [mem_filled_iff hP hb1, hp1, hpL] at hf
-    exact Bool.false_ne_true hf
+    simp_all
 
 /-- **The orientation is determined by any edge**: if for arbitrarily small `δ > 0` the point
 of edge `i` at parameter `t ∈ (0,1)` pushed by `σ * δ` (`σ = ±1`) is filled, then
@@ -144,11 +138,9 @@ theorem orient_eq_of_frequently {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i 
   by_contra hne
   have hσ' : σ = -orient P := by
     rcases sign_eq_or_eq_neg hσ (orient_eq P) with h' | h'
-    · exact absurd h'.symm hne
-    · exact h'
+    all_goals simp_all
   obtain ⟨δ, h1, h2⟩ := (h.and_eventually (eventually_offset_orient hP hi ht)).exists
-  rw [hσ', neg_mul] at h1
-  exact h2.2 h1
+  simp_all
 
 /-- Variant of `orient_eq_of_frequently` with an `eventually` hypothesis. -/
 theorem orient_eq_of_eventually {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t : ℝ}
@@ -191,9 +183,7 @@ theorem interior_triangle_mem_filled_iff {P : Polygon} (hP : P.Simple) {i : ℕ}
   have hconn : IsPreconnected D := (convex_triangle a v b).interior.isPreconnected
   have hsub : D ⊆ P.boundaryᶜ := fun y hy => hoff y hy
   obtain ⟨σ, hσ, hpos⟩ : ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ 0 < σ * det a v b := by
-    rcases lt_or_gt_of_ne hdet with h | h
-    · exact ⟨-1, Or.inr rfl, by linarith⟩
-    · exact ⟨1, Or.inl rfl, by linarith⟩
+    grind
   -- the offset points of the edge at its midpoint, on the `σ` side, lie in the open triangle
   set W : Set Point := {y | 0 < bary₁ a v b y} ∩ {y | 0 < bary₂ a v b y} with hW
   have hWo : IsOpen W :=
@@ -235,7 +225,7 @@ theorem interior_triangle_mem_filled_iff {P : Polygon} (hP : P.Simple) {i : ℕ}
     refine iff_of_false ?_ (by linarith)
     intro hf
     rw [mem_filled_iff hP hxb, hpar, ← mem_filled_iff hP (hoff _ hpD)] at hf
-    exact hδor.2 hf
+    grind
 
 /-- **A simple triangle is strictly convex on the interior side**:
 `0 < orient P * det v₀ v₁ v₂`. -/
@@ -244,7 +234,7 @@ theorem orient_det_pos_of_three {P : Polygon} (hP : P.Simple) (h3 : P.n = 3) :
   have hdet := det_ne_zero_of_simple_three P hP h3
   have h1 : (0 + 1) % P.n = 1 := by rw [h3]
   have key := interior_triangle_mem_filled_iff hP (i := 0) (by omega) (b := P.vtx 2)
-    (by rw [h1]; exact hdet)
+    (by simp_all)
     (by rw [h1]; intro x hx; exact not_mem_boundary_of_mem_interior_triangle P h3 hdet hx)
     (x := Geometry.centroid (P.vtx 0) (P.vtx 1) (P.vtx 2))
     (by rw [h1]; exact centroid_mem_interior hdet)
@@ -271,7 +261,7 @@ theorem interior_earHull_not_mem_boundary {P : Polygon} (hP : P.Simple) {i : ℕ
   have hQn : Q.n = P.n := n_rotate P i
   obtain ⟨ea, ev, eb⟩ := vtx_rotate_fan P i (by omega) hi
   have hdetQ : det (Q.vtx (Q.n - 1)) (Q.vtx 0) (Q.vtx 1) ≠ 0 := by
-    rw [ea, ev, eb]; exact hdet
+    grind
   have hnoneQ : ∀ j, j < Q.n →
       Q.vtx j ∈ convexHull ℝ ({Q.vtx (Q.n - 1), Q.vtx 0, Q.vtx 1} : Set Point) →
         j = 0 ∨ j = 1 ∨ j = Q.n - 1 := by
@@ -324,7 +314,7 @@ theorem isEar_iff_convex_of_empty {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
   have hm1 : bary₁ a v b m = 1 / 2 := by
     rw [hm, bary₁_lerp, bary₁_vertex_left hdet, bary₁_vertex_right]; ring
   have hm2 : bary₂ a v b m = 0 := by
-    rw [hm, bary₂_lerp, bary₂_vertex_left, bary₂_vertex_right]; ring
+    grind [bary₂_lerp, bary₂_vertex_left, bary₂_vertex_right]
   have hm3 : bary₃ a v b m = 1 / 2 := by
     rw [hm, bary₃_lerp, bary₃_vertex_left, bary₃_vertex_right hdet]; ring
   -- the segment from the midpoint towards the apex
@@ -340,10 +330,7 @@ theorem isEar_iff_convex_of_empty {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
   have hS : IsPreconnected (lerp m v '' Icc (0 : ℝ) (1 / 2)) :=
     isPreconnected_Icc.image _ (continuous_lerp m v).continuousOn
   have hSb : lerp m v '' Icc (0 : ℝ) (1 / 2) ⊆ P.boundaryᶜ := by
-    rintro _ ⟨s, hs, rfl⟩
-    rcases hs.1.lt_or_eq with h0 | h0
-    · exact hoff _ (hint s ⟨h0, by linarith [hs.2]⟩)
-    · rw [← h0, lerp_zero]; exact hmB
+    grind [lerp_zero]
   have hx1 : lerp m v (1 / 2) ∈ interior (convexHull ℝ ({a, v, b} : Set Point)) :=
     hint (1 / 2) ⟨by norm_num, by norm_num⟩
   have hpar := parity_eq_of_isPreconnected P hS hSb (x := lerp m v 0) (y := lerp m v (1 / 2))
@@ -352,8 +339,8 @@ theorem isEar_iff_convex_of_empty {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
   -- the edge `prev i` is the directed segment `a v`
   have hprev : prevIdx P i < P.n := prevIdx_lt P hi
   have hsucc : P.vtx ((prevIdx P i + 1) % P.n) = v := by rw [prevIdx_add_one_mod P hi]
-  have key := interior_triangle_mem_filled_iff hP hprev (b := b) (by rw [hsucc]; exact hdet)
-    (by rw [hsucc]; exact hoff) (x := lerp m v (1 / 2)) (by rw [hsucc]; exact hx1)
+  have key := interior_triangle_mem_filled_iff hP hprev (b := b) (by grind)
+    (by rw [hsucc]; exact hoff) (x := lerp m v (1 / 2)) (by grind)
   rw [hsucc] at key
   rw [← key, hpar, ← mem_filled_iff hP (hoff _ hx1)]
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutShSeg
 
 /-!
@@ -41,26 +43,32 @@ noncomputable def pcB (D : ℕ) (b : ℝ) (d : ℕ) : ℝ := if d = D then b els
 def pcSet (M : Model) (sE : ℕ) (a : ℝ) (D : ℕ) (b : ℝ) (j : ℕ) : Set Point :=
   ⋃ d ∈ List.range (j + 1), subSeg M (pcEdge M.W.n sE d) (pcA a d) (pcB D b d)
 
-theorem pcSet_succ (M : Model) (sE : ℕ) (a : ℝ) (D : ℕ) (b : ℝ) (j : ℕ) :
+section
+variable (M : Model) (sE : ℕ) (a : ℝ)
+section
+variable (D : ℕ) (b : ℝ)
+include D b
+theorem pcSet_succ (j : ℕ) :
     pcSet M sE a D b (j + 1) = pcSet M sE a D b j ∪
       subSeg M (pcEdge M.W.n sE (j + 1)) (pcA a (j + 1)) (pcB D b (j + 1)) := by
   unfold pcSet
   rw [List.range_succ]
   ext x; simp [or_comm]
 
-theorem pcSet_zero (M : Model) (sE : ℕ) (a : ℝ) (D : ℕ) (b : ℝ) :
+theorem pcSet_zero :
     pcSet M sE a D b 0 = subSeg M (pcEdge M.W.n sE 0) (pcA a 0) (pcB D b 0) := by
   unfold pcSet; ext x; simp
 
+
+end
+
 /-- The sub-segments up to `j < D` do not depend on the end parameter. -/
-theorem pcSet_congr (M : Model) (sE : ℕ) (a : ℝ) {D D' : ℕ} {b b' : ℝ} {j : ℕ}
+theorem pcSet_congr {D D' : ℕ} {b b' : ℝ} {j : ℕ}
     (h : ∀ d, d ≤ j → pcB D b d = pcB D' b' d) : pcSet M sE a D b j = pcSet M sE a D' b' j := by
-  unfold pcSet
-  ext x
-  simp only [mem_iUnion, List.mem_range, exists_prop]
-  constructor
-  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [← h d (by omega)]; exact hx⟩
-  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [h d (by omega)]; exact hx⟩
+  simp_all [pcSet, mem_iUnion, List.mem_range, exists_prop] 
+
+
+end
 
 theorem nat_split (k n : ℕ) : (k : ℝ) = ((k % n : ℕ) : ℝ) + ((k / n : ℕ) : ℤ) * (n : ℝ) := by
   rw [Int.cast_natCast]; exact_mod_cast (Nat.mod_add_div' k n).symm
@@ -83,7 +91,7 @@ theorem wset_decomp (M : Model) {sE : ℕ} (hn : 0 < M.W.n) {a : ℝ} (ha0 : 0 �
   | D + 1, b, hb0, hb1, _ => by
     have ih := wset_decomp M (sE := sE) hn ha0 ha1 D (b := 1) zero_le_one le_rfl (fun _ => ha1)
     rw [pcSet_succ, ← pcSet_congr M sE a (D := D) (b := 1) (fun d hd => by
-      unfold pcB; split_ifs <;> first | rfl | omega), ← ih]
+      simp_all [pcB] <;> omega_nf), ← ih]
     have hlast : wset M ((sE : ℝ) + D + 1) ((sE : ℝ) + ↑(D + 1) + b) =
         subSeg M (pcEdge M.W.n sE (D + 1)) (pcA a (D + 1)) (pcB (D + 1) b (D + 1)) := by
       unfold pcEdge pcA pcB
@@ -91,17 +99,13 @@ theorem wset_decomp (M : Model) {sE : ℕ} (hn : 0 < M.W.n) {a : ℝ} (ha0 : 0 �
       set q := sE + (D + 1)
       have hq := nat_split q M.W.n
       have e1 : (sE : ℝ) + D + 1 = ((q % M.W.n : ℕ) : ℝ) + 0 + ((q / M.W.n : ℕ) : ℤ) * M.W.n := by
-        rw [show ((q % M.W.n : ℕ) : ℝ) + 0 + ((q / M.W.n : ℕ) : ℤ) * (M.W.n : ℝ) = (q : ℝ) by
-          rw [hq]; ring]
-        simp only [q]; push_cast; ring
+        grind
       have e2 : (sE : ℝ) + ↑(D + 1) + b =
           ((q % M.W.n : ℕ) : ℝ) + b + ((q / M.W.n : ℕ) : ℤ) * M.W.n := by
-        rw [show ((q % M.W.n : ℕ) : ℝ) + b + ((q / M.W.n : ℕ) : ℤ) * (M.W.n : ℝ) = (q : ℝ) + b by
-          rw [hq]; ring]
-        simp only [q]; push_cast; ring
+        grind
       rw [e1, e2]
       exact wset_edge M (Nat.mod_lt _ hn) le_rfl hb0 hb1 _
-    rw [← hlast, wset_union M (by linarith) (by push_cast; linarith)]
+    rw [← hlast, wset_union M (by linarith) (by grind)]
 
 /-! ## The number of edges -/
 
@@ -117,28 +121,25 @@ theorem piece0_nowrap {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n 
   push Not at hle
   have hm := C.one_le
   have hc := le_keyCeil y.edge ((chainModel C).param Q y)
-  have hc' := keyCeil_le y.edge ((chainModel C).param Q y)
-  unfold arcWtNat at hwt
-  rw [ite_eq_right (by rw [hxy]; push Not; linarith)] at hwt
-  omega
+  grind [arcWtNat]
 
 /-- The count of a kind-0 piece. -/
 def pcD (n sE eE : ℕ) : ℕ := (eE + n - sE) % n
 
+section
+variable {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x) (hy : ProperPos (chainModel C) Q n y) (hxn : x.edge < 2 * C.m + 7) (hyn : y.edge < 2 * C.m + 7) (hwt : (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) ≤ 1)
+include n hx hy hxn hyn hwt
 /-- **At most ten edges.** -/
-theorem piece0_D_le {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
-    (hy : ProperPos (chainModel C) Q n y) (hxn : x.edge < 2 * C.m + 7)
-    (hyn : y.edge < 2 * C.m + 7)
-    (hwt : (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) ≤ 1) :
+theorem piece0_D_le :
     pcD (2 * C.m + 7) x.edge y.edge ≤ 9 := by
-  have hnw := piece0_nowrap hx hy
+  
   rw [arcWt_chain C Q hx hy] at hwt
   have hm := C.one_le
   have hc := le_keyCeil y.edge ((chainModel C).param Q y)
   have hc' := keyCeil_le y.edge ((chainModel C).param Q y)
   have hx0 := hx.1
-  have hx1 := hx.2.1
-  have hy0 := hy.1
+  
+  
   have hy1 := hy.2.1
   unfold pcD
   unfold arcWtNat at hwt
@@ -154,20 +155,14 @@ theorem piece0_D_le {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
     omega
   · -- wrap in keys: `y.edge ≤ x.edge`
     have hle : y.edge ≤ x.edge := by
-      by_contra h
-      push Not at h
-      have : (x.edge : ℝ) + 1 ≤ y.edge := by exact_mod_cast h
-      exact hlt (by linarith)
+      omega
     rcases hle.lt_or_eq with hlt' | heq
     · rw [Nat.mod_eq_of_lt (by omega)]
       omega
-    · rw [heq, Nat.add_sub_cancel_left, Nat.mod_self]; omega
+    omega
 
 /-- **The unwrapped end** of a kind-0 piece. -/
-theorem piece0_end {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
-    (hy : ProperPos (chainModel C) Q n y) (hxn : x.edge < 2 * C.m + 7)
-    (hyn : y.edge < 2 * C.m + 7)
-    (hwt : (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) ≤ 1) :
+theorem piece0_end :
     (chainModel C).key Q x + len ((2 * C.m + 7 : ℕ) : ℝ) ((chainModel C).key Q x)
         ((chainModel C).key Q y) =
       (x.edge : ℝ) + (pcD (2 * C.m + 7) x.edge y.edge : ℕ) + (chainModel C).param Q y := by
@@ -190,20 +185,15 @@ theorem piece0_end {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
       by_contra h
       push Not at h
       have : (x.edge : ℝ) + 1 ≤ y.edge := by exact_mod_cast h
-      exact hlt (by linarith)
+      linarith
     rcases hle.lt_or_eq with hlt' | heq
     · rw [Nat.mod_eq_of_lt (by omega)]
       push_cast [show x.edge ≤ y.edge + (2 * C.m + 7) by omega]
       ring
-    · exfalso
-      have := hnw heq.symm hxn hwt
-      exact hlt (by rw [heq]; linarith)
+    simp_all
 
 /-- **A kind-0 piece is the union of its edge segments.** -/
-theorem piece0_union {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
-    (hy : ProperPos (chainModel C) Q n y) (hxn : x.edge < 2 * C.m + 7)
-    (hyn : y.edge < 2 * C.m + 7)
-    (hwt : (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) ≤ 1) :
+theorem piece0_union :
     (chainModel C).arcSet ((chainModel C).key Q x) ((chainModel C).key Q y) =
       pcSet (chainModel C) x.edge ((chainModel C).param Q x) (pcD (2 * C.m + 7) x.edge y.edge)
         ((chainModel C).param Q y) (pcD (2 * C.m + 7) x.edge y.edge) := by
@@ -213,7 +203,7 @@ theorem piece0_union {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x
   have kx := key_range hx hxn
   have ky := key_range hy hyn
   rw [← hnW] at kx ky
-  have hL := len_le (M.W.n : ℝ) (M.key Q x) (M.key Q y) kx.1 ky.2
+  
   have hend := piece0_end hx hy hxn hyn hwt
   have hstep := arcSet_step M kx.1 kx.2 ky.1 ky.2 0
   simp only [Int.cast_zero, zero_mul, add_zero] at hstep
@@ -230,6 +220,9 @@ theorem piece0_union {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x
         Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)] at hD
       omega
   exact (piece0_nowrap hx hy hxy hxn hwt).le
+
+
+end
 
 end ShootCut
 

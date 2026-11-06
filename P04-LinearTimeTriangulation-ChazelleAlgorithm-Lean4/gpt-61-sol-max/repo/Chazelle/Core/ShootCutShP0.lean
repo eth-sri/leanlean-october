@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutShMerge
 
 /-!
@@ -38,8 +40,7 @@ theorem pcEdge_D {n sE eE : ℕ} (hs : sE < n) (he : eE < n) : pcEdge n sE (pcD 
 theorem pcEdge_lt {n sE : ℕ} (hn : 0 < n) (d : ℕ) : pcEdge n sE d < n := Nat.mod_lt _ hn
 
 theorem pcEdge_succ (n sE d : ℕ) : pcEdge n sE (d + 1) = (pcEdge n sE d + 1) % n := by
-  unfold pcEdge; rw [Nat.add_comm ((sE + d) % n) 1, Nat.add_mod_mod, ← Nat.add_assoc,
-    Nat.add_comm 1]
+  simp_all [pcEdge, Nat.add_mod_mod, Nat.add_assoc] <;> omega_nf
 
 variable {C : Chain} {Q : Polygon}
 
@@ -61,7 +62,7 @@ theorem pc0_pts {x y : WPos} (hxn : x.edge < 2 * C.m + 7) (hyn : y.edge < 2 * C.
     by_cases h0 : d = 0
     · subst h0
       simp only [↓reduceIte]
-      rw [show pcEdge n x.edge 0 = x.edge by unfold pcEdge; rw [Nat.add_zero, Nat.mod_eq_of_lt hxn]]
+      rw [show pcEdge n x.edge 0 = x.edge by unfold pcEdge; aesop]
       rfl
     · simp only [h0, ↓reduceIte]; rfl
   · unfold pcV pcB
@@ -72,9 +73,7 @@ theorem pc0_pts {x y : WPos} (hxn : x.edge < 2 * C.m + 7) (hyn : y.edge < 2 * C.
     · simp only [hD, ↓reduceIte]
       rw [lerp_one']
       show lerp ((chainModel C).wa _) ((chainModel C).wb _) 0 = _
-      rw [lerp_zero']
-      unfold Model.wa Model.wb
-      rw [hnW, pcEdge_succ]
+      grind [lerp_zero', Model.wa, Model.wb, pcEdge_succ]
 
 theorem pc0_ab {x y : WPos} {N : ℕ} (hx : ProperPos (chainModel C) Q N x)
     (hy : ProperPos (chainModel C) Q N y) (hxn : x.edge < 2 * C.m + 7)

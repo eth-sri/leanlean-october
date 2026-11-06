@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmMain
 
 /-!
@@ -21,10 +23,10 @@ open Machine Machine.Stmt Programs SignK
 
 theorem nf_F_congr {M : Model} {Q : Polygon} {N N' : NF} (h : N.chords = N'.chords) :
     N.F M Q = N'.F M Q := by
-  unfold NF.F; rw [h]
+  grind [NF.F]
 
 theorem nChords_congr {N N' : NF} (h : N.chords = N'.chords) : N.nChords = N'.nChords := by
-  unfold NF.nChords; rw [h]
+  core_grind
 
 /-- **WP-F: the fusion.** -/
 theorem fuseSpec_of (hS : SweepSpecH) (hBd : BuildNFSpec) : FuseSpec := by

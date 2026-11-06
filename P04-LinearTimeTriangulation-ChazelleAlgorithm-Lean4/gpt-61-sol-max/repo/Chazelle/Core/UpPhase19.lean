@@ -75,7 +75,7 @@ theorem gradeB_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB : 
       (∀ r, GK r → c'.nreg r = c.nreg r) ∧
       (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r) := by
   have hAl : ALLOC = 9999 := rfl
-  have hWn : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
+  
   have hW128 : 128 * P.n + 8 ≤ W := by unfold hostWords at hWh; omega
   obtain ⟨hu, i00, i02, i03, i06, i09, i15, i16, i35, i36, hM⟩ := hI
   obtain ⟨A, hA⟩ : ∃ A, c.nreg ALLOC = A := ⟨_, rfl⟩
@@ -88,8 +88,7 @@ theorem gradeB_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB : 
   have h2g := two_pow_le_of_le_top hn hg
   set cnt := gradeCount P.n g with hcnt
   set K := stepB κB κL κG O.κ g with hK
-  have hcntn : cnt ≤ P.n := by
-    rw [hcnt]; unfold gradeCount; have := Nat.div_le_self (P.n - 2) (2 ^ g); omega
+  
   unfold gradeC at hW
   rw [← hcnt, ← hK] at hW
   clear_value K

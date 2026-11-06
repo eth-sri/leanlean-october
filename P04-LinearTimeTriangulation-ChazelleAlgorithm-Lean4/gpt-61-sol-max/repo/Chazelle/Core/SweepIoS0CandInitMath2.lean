@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoS0CandInitMath
 
 /-!
@@ -52,31 +54,24 @@ theorem OD.of_out {P : Polygon} {J : Merge.Junction} {N : NF} {c : Config}
   obtain ⟨rs, ls, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10⟩ := h
   exact ⟨rs, ls, h1, h2, h3, h4, h5, h6, h7, fun r hr => (h8 r hr).1, h9, h10⟩
 
-theorem stopRecs_congr {m m' : ℕ → ℕ} {A : ℕ} {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
+section
+variable {m m' : ℕ → ℕ} {A : ℕ}
+theorem stopRecs_congr {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
     (h : StopRecsAt m A rs) (hm : ∀ a, a < A + 5 * rs.length → m' a = m a) :
     StopRecsAt m' A rs := by
   intro i hi
   obtain ⟨a1, a2, a3, a4, a5⟩ := h i hi
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · rw [hm _ (by omega)]; exact a1
-  · rw [hm _ (by omega)]; exact a2
-  · rw [hm _ (by omega)]; exact a3
-  · rw [hm _ (by omega)]; exact a4
-  · rw [hm _ (by omega)]; exact a5
+  grind
 
-theorem logRecs_congr {m m' : ℕ → ℕ} {A : ℕ} {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)}
+theorem logRecs_congr {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)}
     (h : LogRecsAt m A ls) (hm : ∀ a, a < A + 7 * ls.length → m' a = m a) :
     LogRecsAt m' A ls := by
   intro i hi
   obtain ⟨a1, a2, a3, a4, a5, a6, a7⟩ := h i hi
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [hm _ (by omega)]; exact a1
-  · rw [hm _ (by omega)]; exact a2
-  · rw [hm _ (by omega)]; exact a3
-  · rw [hm _ (by omega)]; exact a4
-  · rw [hm _ (by omega)]; exact a5
-  · rw [hm _ (by omega)]; exact a6
-  · rw [hm _ (by omega)]; exact a7
+  grind
+
+
+end
 
 /-- **`OD` is local.** -/
 theorem OD.congr {P : Polygon} {J : Merge.Junction} {N : NF} {m m' : ℕ → ℕ}
@@ -85,9 +80,7 @@ theorem OD.congr {P : Polygon} {J : Merge.Junction} {N : NF} {m m' : ℕ → ℕ
     (hS : AS + 5 * S ≤ A₀) (hE : AL + 7 * E ≤ A₀) (hT : AT + 3 * (2 * N.nChords) ≤ A₀) :
     OD P J N m' AS S AL E AT rs ls := by
   have ht : ∀ j, j < 2 * N.nChords → tabOf J (Qof P) m' AT j = tabOf J (Qof P) m AT j := by
-    intro j hj
-    unfold tabOf
-    rw [hm _ (by omega), hm (AT + 3 * j + 1) (by omega), hm (AT + 3 * j + 2) (by omega)]
+    grind [tabOf]
   refine ⟨h.rl, stopRecs_congr h.rr (fun a ha => hm a (by rw [h.rl] at ha; omega)), h.rok, h.rw,
     h.ll, logRecs_congr h.lr (fun a ha => hm a (by rw [h.ll] at ha; omega)), h.lok, h.lw,
     fun j hj => ?_, fun j hj => ?_⟩
@@ -100,14 +93,17 @@ section steps
 variable {P : Polygon} {J : Merge.Junction} {N : NF} {m : ℕ → ℕ} {AS S AL E AT : ℕ}
   {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)} {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)}
 
-theorem OD.logW (h : OD P J N m AS S AL E AT rs ls) {j : ℕ} (hj : j < E) :
+section
+variable (h : OD P J N m AS S AL E AT rs ls)
+include h
+theorem OD.logW {j : ℕ} (hj : j < E) :
     PosW P J (m (AL + 7 * j)) (m (AL + 7 * j + 1)) := by
   have hj' : j < ls.length := by rw [h.ll]; exact hj
   obtain ⟨a1, a2, -⟩ := h.lr j hj'
   rw [a1, a2, List.getD_eq_getElem _ _ hj']
   exact h.lw _ (List.getElem_mem _)
 
-theorem OD.stopR (h : OD P J N m AS S AL E AT rs ls) {x : ℕ} (hx : x < S) :
+theorem OD.stopR {x : ℕ} (hx : x < S) :
     PosW P J (m (AS + 5 * x)) (m (AS + 5 * x + 1)) ∧ m (AS + 5 * x + 2) ≤ 2 ∧
       m (AS + 5 * x + 4) ≤ 1 ∧ (m (AS + 5 * x + 2) = 1 → m (AS + 5 * x + 3) < N.nChords) := by
   have hx' : x < rs.length := by rw [h.rl]; exact hx
@@ -115,13 +111,13 @@ theorem OD.stopR (h : OD P J N m AS S AL E AT rs ls) {x : ℕ} (hx : x < S) :
   rw [a1, a2, a3, a4, a5, List.getD_eq_getElem _ _ hx']
   exact h.rw _ (List.getElem_mem _)
 
-theorem OD.down (h : OD P J N m AS S AL E AT rs ls) {G : ℕ} (hG : G = gW J) (x : WPos) :
+theorem OD.down {G : ℕ} (hG : G = gW J) (x : WPos) :
     ∀ a b, a ≤ b → b < E → lsPr P J m AL G x b → lsPr P J m AL G x a := by
   rw [← h.ll]; exact (search_exact hG h.lr h.lok x).1
 
 /-- **A stop record**: the answer `t` of the search for its key is a log record with that key,
 and its origin position is a good slot content for it. -/
-theorem stop_step (h : OD P J N m AS S AL E AT rs ls) (hP : J.P.Simple)
+theorem stop_step (hP : J.P.Simple)
     (hN : IsNF (chainModel J.right) (Qof P) N) {G : ℕ} (hG : G = gW J) {x : ℕ} (hx : x < S)
     {t : ℕ} (h1 : ∀ j, j < t → lsPr P J m AL G ⟨m (AS + 5 * x), m (AS + 5 * x + 1)⟩ j)
     (h2 : ∀ j, t ≤ j → j < E → ¬ lsPr P J m AL G ⟨m (AS + 5 * x), m (AS + 5 * x + 1)⟩ j) :
@@ -153,8 +149,10 @@ theorem stop_step (h : OD P J N m AS S AL E AT rs ls) (hP : J.P.Simple)
     rw [e2, ← a1, ← a2]
     show sidePt _ (m (AL + 7 * t)) _ = _
     rw [e1]
-  rw [hpt]
-  exact hc
+  grind
+
+
+end
 
 /-- **The regular endpoint queries** by an index test on the normalised end position. -/
 theorem valid_test (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) {k s : ℕ}
@@ -192,7 +190,7 @@ theorem tab_step (h : OD P J N m AS S AL E AT rs ls) (hN : IsNF (chainModel J.ri
   have hTj : tabOf J (Qof P) m AT j =
       some (m (AT + 3 * j + 1), (chainModel J.whole).param (Qof P)
         ⟨m (AT + 3 * j + 1), m (AT + 3 * j + 2)⟩) := by
-    unfold tabOf; rw [ite_eq_left hf]
+    simp_all [tabOf] 
   obtain ⟨hc, hF, hA, hL⟩ := tab_cand J h.tok hj hon hsh htop hTj
   obtain ⟨i, hi, e1, e2⟩ := attach_idx (x := ⟨m (AT + 3 * j + 1), m (AT + 3 * j + 2)⟩)
     h.lr h.lok hF hA hL
@@ -204,11 +202,7 @@ theorem tab_step (h : OD P J N m AS S AL E AT rs ls) (hN : IsNF (chainModel J.ri
   refine ⟨f1, f2, ?_⟩
   rw [f3]
   have hd : dS s = endDir j := by
-    unfold dS endDir
-    rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hs with rfl | rfl
-    · simp [hjdef]
-    · have : (2 * k + 1) % 2 = 1 := by omega
-      simp [hjdef, this]
+    grind [dS, endDir]
   rw [hd]
   have hpt : logPt P J m AL t = sidePt (chainModel J.whole).W (m (AT + 3 * j + 1))
       ((chainModel J.whole).param (Qof P) ⟨m (AT + 3 * j + 1), m (AT + 3 * j + 2)⟩) := by
@@ -216,8 +210,7 @@ theorem tab_step (h : OD P J N m AS S AL E AT rs ls) (hN : IsNF (chainModel J.ri
     rw [e2]
     show sidePt _ (m (AL + 7 * t)) _ = _
     rw [e1]
-  rw [hpt]
-  exact hc
+  grind
 
 end steps
 
@@ -237,27 +230,26 @@ def SInv (P : Polygon) (J : Merge.Junction) (N : NF) (AS AL E AT B : ℕ) (m : �
       (chainModel J.whole).param (Qof P) ⟨m (AT + 3 * j + 1), m (AT + 3 * j + 2)⟩ ∧
     m (slotA B i (j % 2)) = 1)
 
+section
+variable {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : ℕ}
 /-- The invariant at the start: a zeroed slot table. -/
-theorem SInv.zero {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : ℕ} {m : ℕ → ℕ}
+theorem SInv.zero {m : ℕ → ℕ}
     (hz : ∀ a, B ≤ a → a < B + 6 * E → m a = 0) : SInv P J N AS AL E AT B m 0 0 := by
   refine ⟨fun i hi s hs => ?_, fun y hy => absurd hy (Nat.not_lt_zero _),
     fun j hj => absurd hj (Nat.not_lt_zero _)⟩
-  have h0 : m (slotA B i s) = 0 := hz _ (by unfold slotA; omega) (by unfold slotA; omega)
-  unfold SlotOK
-  rw [h0]
-  exact ⟨Nat.zero_le _, fun h => absurd h (by norm_num)⟩
+  core_grind [slotA]
 
 /-- **The invariant is local** below the end of the slot table. -/
-theorem SInv.congr {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : ℕ}
+theorem SInv.congr
     {m m' : ℕ → ℕ} {x kk : ℕ} (h : SInv P J N AS AL E AT B m x kk)
     (hm : ∀ a, a < B + 6 * E → m' a = m a) (hS : AS + 5 * x ≤ B) (hE : AL + 7 * E ≤ B)
     (hT : AT + 3 * kk ≤ B) : SInv P J N AS AL E AT B m' x kk := by
   obtain ⟨h1, h2, h3⟩ := h
   have hL : ∀ i, i < E → logPos m' AL i = logPos m AL i := fun i hi => by
-    unfold logPos; rw [hm _ (by omega), hm (AL + 7 * i + 1) (by omega)]
+    core_grind
   have hL0 : ∀ i, i < E → m' (AL + 7 * i) = m (AL + 7 * i) := fun i hi => hm _ (by omega)
   have hB : ∀ i, i < E → ∀ s, s ≤ 1 → ∀ d, d < 3 → m' (slotA B i s + d) = m (slotA B i s + d) :=
-    fun i hi s hs d hd => hm _ (by unfold slotA; omega)
+    fun i hi s hs d hd => hm _ (by omega_nf)
   have hB0 : ∀ i, i < E → ∀ s, s ≤ 1 → m' (slotA B i s) = m (slotA B i s) :=
     fun i hi s hs => by simpa using hB i hi s hs 0 (by norm_num)
   refine ⟨fun i hi s hs => ?_, fun y hy => ?_, fun j hj hv hf => ?_⟩
@@ -266,25 +258,25 @@ theorem SInv.congr {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : �
     exact h1 i hi s hs
   · obtain ⟨i, hi, e1, e2, e3⟩ := h2 y hy
     refine ⟨i, hi, ?_, ?_, ?_⟩
-    · rw [hL0 i hi, hm (AS + 5 * y) (by omega), e1]
-    · rw [hL i hi, hm (AS + 5 * y) (by omega), hm (AS + 5 * y + 1) (by omega), e2]
+    · grind
+    · grind
     · rw [hm (AS + 5 * y + 4) (by omega), hB0 i hi _ (ini_sOf_le _), e3]
-  · have hf' : m (AT + 3 * j) = 1 := by rw [← hm _ (by omega)]; exact hf
+  · have hf' : m (AT + 3 * j) = 1 := by grind
     obtain ⟨i, hi, e1, e2, e3⟩ := h3 j hj hv hf'
     refine ⟨i, hi, ?_, ?_, ?_⟩
-    · rw [hL0 i hi, hm (AT + 3 * j + 1) (by omega), e1]
-    · rw [hL i hi, hm (AT + 3 * j + 1) (by omega), hm (AT + 3 * j + 2) (by omega), e2]
-    · rw [hB0 i hi _ (by omega), e3]
+    · grind
+    · grind
+    grind
 
 /-- **Writing a good slot keeps the invariant** (the records lie below the slot table). -/
-theorem SInv.store {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : ℕ}
+theorem SInv.store
     {m : ℕ → ℕ} {x kk t s e h : ℕ} (hI : SInv P J N AS AL E AT B m x kk)
     (hS : AS + 5 * x ≤ B) (hE : AL + 7 * E ≤ B) (hT : AT + 3 * kk ≤ B) (ht : t < E)
     (hs : s ≤ 1) (hv : SlotVal P J ⟨e, h⟩ s (logPt P J m AL t)) :
     SInv P J N AS AL E AT B (slotW m B t s e h) x kk ∧ slotW m B t s e h (slotA B t s) = 1 := by
   obtain ⟨h1, h2, h3⟩ := hI
   have hlow : ∀ a, a < B → slotW m B t s e h a = m a :=
-    fun a ha => slotW_other (Or.inl (by unfold slotA; omega))
+    fun a ha => slotW_other (Or.inl (by omega_nf))
   have hfl : ∀ i, i < E → ∀ s', s' ≤ 1 → m (slotA B i s') = 1 →
       slotW m B t s e h (slotA B i s') = 1 := by
     intro i hi s' hs' hf
@@ -292,25 +284,27 @@ theorem SInv.store {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : �
     · obtain ⟨rfl, rfl⟩ := hit; exact slotW_flag
     · rw [slotW_other (by simpa using slot_sep (d := 0) hs' hs (by norm_num) hit)]; exact hf
   have hL : ∀ i, i < E → logPos (slotW m B t s e h) AL i = logPos m AL i := fun i hi => by
-    unfold logPos; rw [hlow _ (by omega), hlow (AL + 7 * i + 1) (by omega)]
+    core_grind
   have hL0 : ∀ i, i < E → slotW m B t s e h (AL + 7 * i) = m (AL + 7 * i) :=
     fun i hi => hlow _ (by omega)
   refine ⟨⟨slotOK_store hE ht hs h1 hv, fun y hy => ?_, fun j hj hv' hf => ?_⟩, slotW_flag⟩
   · obtain ⟨i, hi, e1, e2, e3⟩ := h2 y hy
     refine ⟨i, hi, ?_, ?_, ?_⟩
-    · rw [hL0 i hi, hlow (AS + 5 * y) (by omega), e1]
-    · rw [hL i hi, hlow (AS + 5 * y) (by omega), hlow (AS + 5 * y + 1) (by omega), e2]
+    · grind
+    · grind
     · rw [hlow (AS + 5 * y + 4) (by omega)]; exact hfl i hi _ (ini_sOf_le _) e3
-  · have hf' : m (AT + 3 * j) = 1 := by rw [← hlow _ (by omega)]; exact hf
+  · have hf' : m (AT + 3 * j) = 1 := by grind
     obtain ⟨i, hi, e1, e2, e3⟩ := h3 j hj hv' hf'
     refine ⟨i, hi, ?_, ?_, ?_⟩
-    · rw [hL0 i hi, hlow (AT + 3 * j + 1) (by omega), e1]
-    · rw [hL i hi, hlow (AT + 3 * j + 1) (by omega), hlow (AT + 3 * j + 2) (by omega), e2]
-    · exact hfl i hi _ (by omega) e3
+    · grind
+    · grind
+    grind
 
+section
+variable {m : ℕ → ℕ} {x kk : ℕ} (h : SInv P J N AS AL E AT B m x kk)
+include m x kk h
 /-- One more stop record. -/
-theorem SInv.extS {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : ℕ}
-    {m : ℕ → ℕ} {x kk : ℕ} (h : SInv P J N AS AL E AT B m x kk)
+theorem SInv.extS
     (hx : ∃ i, i < E ∧ m (AL + 7 * i) = m (AS + 5 * x) ∧
       (chainModel J.whole).param (Qof P) (logPos m AL i) =
         (chainModel J.whole).param (Qof P) ⟨m (AS + 5 * x), m (AS + 5 * x + 1)⟩ ∧
@@ -319,12 +313,10 @@ theorem SInv.extS {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : �
   obtain ⟨h1, h2, h3⟩ := h
   refine ⟨h1, fun y hy => ?_, h3⟩
   rcases Nat.lt_succ_iff_lt_or_eq.1 hy with hy | rfl
-  · exact h2 y hy
-  · exact hx
+  all_goals grind
 
 /-- One more table entry. -/
-theorem SInv.extT {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : ℕ}
-    {m : ℕ → ℕ} {x kk : ℕ} (h : SInv P J N AS AL E AT B m x kk)
+theorem SInv.extT
     (hx : ValidO J (Qof P) N kk → m (AT + 3 * kk) = 1 →
       ∃ i, i < E ∧ m (AL + 7 * i) = m (AT + 3 * kk + 1) ∧
       (chainModel J.whole).param (Qof P) (logPos m AL i) =
@@ -333,19 +325,24 @@ theorem SInv.extT {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : �
     SInv P J N AS AL E AT B m x (kk + 1) := by
   obtain ⟨h1, h2, h3⟩ := h
   refine ⟨h1, h2, fun j hj => ?_⟩
-  rcases Nat.lt_succ_iff_lt_or_eq.1 hj with hj | rfl
-  · exact h3 j hj
-  · exact hx
+  grind
+
+
+
+end
+
+end
 
 theorem logPt_congr {P : Polygon} {J : Merge.Junction} {m m' : ℕ → ℕ} {AL t B : ℕ}
     (hm : ∀ a, a < B → m' a = m a) (ht : AL + 7 * t + 1 < B) :
     logPt P J m' AL t = logPt P J m AL t := by
-  unfold logPt logPos; rw [hm _ (by omega), hm (AL + 7 * t + 1) ht]
+  grind [logPt, logPos]
 
+section
+variable {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : ℕ} {m m₂ : ℕ → ℕ} {x kk t eV hV : ℕ} (hI : SInv P J N AS AL E AT B m x kk) (hm : ∀ a, a < B → m₂ a = m a)
+include hI hm
 /-- **The step of a stop record**: a good slot written at the answer of the search. -/
-theorem SInv.stopStep {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : ℕ}
-    {m m₂ : ℕ → ℕ} {x kk t eV hV : ℕ} (hI : SInv P J N AS AL E AT B m x kk)
-    (hm : ∀ a, a < B → m₂ a = m a) (hS : AS + 5 * (x + 1) ≤ B) (hE : AL + 7 * E ≤ B)
+theorem SInv.stopStep (hS : AS + 5 * (x + 1) ≤ B) (hE : AL + 7 * E ≤ B)
     (hT : AT + 3 * kk ≤ B) (ht : t < E) (e1 : m₂ (AL + 7 * t) = m₂ (AS + 5 * x))
     (e2 : (chainModel J.whole).param (Qof P) (logPos m₂ AL t) =
       (chainModel J.whole).param (Qof P) ⟨m₂ (AS + 5 * x), m₂ (AS + 5 * x + 1)⟩)
@@ -355,23 +352,21 @@ theorem SInv.stopStep {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B 
   rw [logPt_congr hm (by omega)] at hv
   obtain ⟨h1, h2⟩ := hI.store (by omega) hE hT ht (ini_sOf_le _) hv
   refine h1.extS ⟨t, ht, ?_, ?_, ?_⟩
-  · rw [slotW_other (Or.inl (by unfold slotA; omega)),
-      slotW_other (Or.inl (by unfold slotA; omega)), ← hm _ (by omega), ← hm (AS + 5 * x) (by omega)]
+  · rw [slotW_other (Or.inl (by omega_nf)),
+      slotW_other (Or.inl (by omega_nf)), ← hm _ (by omega), ← hm (AS + 5 * x) (by omega)]
     exact e1
   · have hp : logPos (slotW m B t (sOf (m (AS + 5 * x + 4))) eV hV) AL t = logPos m₂ AL t := by
       unfold logPos
-      rw [slotW_other (Or.inl (by unfold slotA; omega)),
-        slotW_other (Or.inl (by unfold slotA; omega)), hm _ (by omega), hm (AL + 7 * t + 1) (by omega)]
-    rw [hp, e2, slotW_other (Or.inl (by unfold slotA; omega)),
-      slotW_other (Or.inl (by unfold slotA; omega)), hm _ (by omega), hm (AS + 5 * x + 1) (by omega)]
+      rw [slotW_other (Or.inl (by omega_nf)),
+        slotW_other (Or.inl (by omega_nf)), hm _ (by omega), hm (AL + 7 * t + 1) (by omega)]
+    rw [hp, e2, slotW_other (Or.inl (by omega_nf)),
+      slotW_other (Or.inl (by omega_nf)), hm _ (by omega), hm (AS + 5 * x + 1) (by omega)]
   · have h4 : slotW m B t (sOf (m (AS + 5 * x + 4))) eV hV (AS + 5 * x + 4) = m (AS + 5 * x + 4) :=
-      slotW_other (Or.inl (by unfold slotA; omega))
-    rw [h4]; exact h2
+      slotW_other (Or.inl (by omega_nf))
+    simp_all
 
 /-- **The step of a regular table entry with flag `1`.** -/
-theorem SInv.tabStep {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : ℕ}
-    {m m₂ : ℕ → ℕ} {x kk t eV hV : ℕ} (hI : SInv P J N AS AL E AT B m x kk)
-    (hm : ∀ a, a < B → m₂ a = m a) (hS : AS + 5 * x ≤ B) (hE : AL + 7 * E ≤ B)
+theorem SInv.tabStep (hS : AS + 5 * x ≤ B) (hE : AL + 7 * E ≤ B)
     (hT : AT + 3 * (kk + 1) ≤ B) (ht : t < E) (e1 : m₂ (AL + 7 * t) = m₂ (AT + 3 * kk + 1))
     (e2 : (chainModel J.whole).param (Qof P) (logPos m₂ AL t) =
       (chainModel J.whole).param (Qof P) ⟨m₂ (AT + 3 * kk + 1), m₂ (AT + 3 * kk + 2)⟩)
@@ -380,17 +375,20 @@ theorem SInv.tabStep {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B :
   rw [logPt_congr hm (by omega)] at hv
   obtain ⟨h1, h2⟩ := hI.store hS hE (by omega) ht (by omega) hv
   refine h1.extT (fun _ _ => ⟨t, ht, ?_, ?_, h2⟩)
-  · rw [slotW_other (Or.inl (by unfold slotA; omega)),
-      slotW_other (Or.inl (by unfold slotA; omega)), ← hm _ (by omega),
+  · rw [slotW_other (Or.inl (by omega_nf)),
+      slotW_other (Or.inl (by omega_nf)), ← hm _ (by omega),
       ← hm (AT + 3 * kk + 1) (by omega)]
     exact e1
   · have hp : logPos (slotW m B t (kk % 2) eV hV) AL t = logPos m₂ AL t := by
       unfold logPos
-      rw [slotW_other (Or.inl (by unfold slotA; omega)),
-        slotW_other (Or.inl (by unfold slotA; omega)), hm _ (by omega), hm (AL + 7 * t + 1) (by omega)]
-    rw [hp, e2, slotW_other (Or.inl (by unfold slotA; omega)),
-      slotW_other (Or.inl (by unfold slotA; omega)), hm (AT + 3 * kk + 1) (by omega),
+      rw [slotW_other (Or.inl (by omega_nf)),
+        slotW_other (Or.inl (by omega_nf)), hm _ (by omega), hm (AL + 7 * t + 1) (by omega)]
+    rw [hp, e2, slotW_other (Or.inl (by omega_nf)),
+      slotW_other (Or.inl (by omega_nf)), hm (AT + 3 * kk + 1) (by omega),
       hm (AT + 3 * kk + 2) (by omega)]
+
+
+end
 
 /-- **A table entry without a slot**: not regular, or flag `0`. -/
 theorem SInv.tabSkip {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : ℕ}

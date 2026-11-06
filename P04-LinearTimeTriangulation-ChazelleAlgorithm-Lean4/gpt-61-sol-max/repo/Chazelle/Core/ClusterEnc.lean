@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterMap
 public import Chazelle.Separator.Maps
 
@@ -73,12 +75,15 @@ theorem ok [Finite D'] (h : EnvEnc G M' eV eD) : G.OK := by
     obtain ⟨d, hd, hvd⟩ := h.first v
     rw [hd, h.vert, hvd]
 
-theorem head (h : EnvEnc G M' eV eD) (d : D') : G.head (eD d) = eV (M'.head d) := by
+section
+variable (h : EnvEnc G M' eV eD)
+include h
+theorem head (d : D') : G.head (eD d) = eV (M'.head d) := by
   unfold Env.head CombMap.head
   rw [h.opp, h.vert]
 
 /-- **Steps between encoded vertices.** -/
-theorem step_iff (h : EnvEnc G M' eV eD) (u w : V') :
+theorem step_iff (u w : V') :
     G.Step (eV u) (eV w) ↔ ∃ d, G.db (eD d) ≠ 1 ∧ M'.vert d = u ∧ M'.head d = w ∧
       G.vb (eV u) ≠ 1 ∧ G.vb (eV w) ≠ 1 := by
   constructor
@@ -86,9 +91,12 @@ theorem step_iff (h : EnvEnc G M' eV eD) (u w : V') :
     obtain ⟨d, rfl⟩ := h.eD_surj e he
     rw [h.vert] at hve
     rw [h.head] at hhe
-    exact ⟨d, hdb, h.eV_inj hve, h.eV_inj hhe, hu, hw⟩
+    ram_grind
   · rintro ⟨d, hdb, rfl, rfl, hu, hw⟩
     exact ⟨eD d, h.eD_lt d, hdb, h.vert d, h.head d, hu, hw⟩
+
+
+end
 
 /-- The typed step relation read through the encodings. -/
 def TStep (G : Env) (M' : CombMap V' F' D') (eV : V' → ℕ) (eD : D' → ℕ) (u w : V') : Prop :=
@@ -104,7 +112,7 @@ theorem reach_iff (h : EnvEnc G M' eV eD) (u w : V') :
         Relation.ReflTransGen (TStep G M' eV eD) u w' := by
       intro x hx
       induction hx with
-      | refl => exact ⟨u, rfl, Relation.ReflTransGen.refl⟩
+      | refl => ram_grind
       | tail _ hs ih =>
         obtain ⟨w', rfl, hw'⟩ := ih
         obtain ⟨e, he, hdb, hve, hhe, hu, hw⟩ := hs
@@ -112,8 +120,7 @@ theorem reach_iff (h : EnvEnc G M' eV eD) (u w : V') :
         rw [h.head] at hhe
         subst hhe
         rw [h.vert] at hve
-        refine ⟨M'.head d, rfl, Relation.ReflTransGen.tail hw' ⟨d, hdb, h.eV_inj hve, rfl,
-          by first | exact hu, hw⟩⟩
+        ram_grind
     obtain ⟨w', hw', hr'⟩ := key _ hr
     rw [h.eV_inj hw']; exact hr'
   · intro hr

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoCand1ShrSpec
 public import Chazelle.Core.SweepIoCand1TabSpec
 
@@ -66,33 +68,45 @@ def boxB (sh : Stmt) : Stmt := .ifLtN K0 bL (lhs (sw 30) (sw 3) (sw 33) qE 0 sh)
 def bruteB (bruteS : Stmt → Stmt) (sh : Stmt) : Stmt :=
   .ifLtN K0 bL (.seq (callSym (sw 21) qE qH (sw 3230)) (bruteS sh)) .skip
 
+section
+variable (tabB : Stmt) (bruteS : Stmt → Stmt) (sh : Stmt)
+include tabB bruteS sh
 /-- A vertex position other than the shared vertex: top test for an endpoint query. -/
-def topT (tabB : Stmt) (bruteS : Stmt → Stmt) (sh : Stmt) : Stmt :=
+def topT : Stmt :=
   .ifLtN jx k2
     (ifEq qE K6 (bruteB bruteS sh) (ifEq qE y34 (bruteB bruteS sh)
       (ifEq qE tgt (bruteB bruteS sh) tabB)))
     (bruteB bruteS sh)
 
 /-- A position inside an edge. -/
-def genT (tabB : Stmt) (bruteS : Stmt → Stmt) (sh : Stmt) : Stmt :=
+def genT : Stmt :=
   .ifLtN jx k2 tabB (bruteB bruteS sh)
 
+
+end
+
+section
+variable (tabB : Stmt) (shrB bruteS : Stmt → Stmt) (sh : Stmt)
+include tabB shrB bruteS sh
 /-- A vertex position: shared test. -/
-def zeroT (tabB : Stmt) (shrB bruteS : Stmt → Stmt) (sh : Stmt) : Stmt :=
+def zeroT : Stmt :=
   ifEq qE (sw 41) (shrB sh)
     (ifEq qE y34 (ifEq (sw 41) K6 (shrB sh) (topT tabB bruteS sh)) (topT tabB bruteS sh))
 
 /-- A tour position. -/
-def tourB (tabB : Stmt) (shrB bruteS : Stmt → Stmt) (sh : Stmt) : Stmt :=
+def tourB : Stmt :=
   .seq (block prepL) (.seq (normS (sw 21) tE tH nO) (.seq midB
     (.ifLtN K0 tH (genT tabB bruteS sh) (zeroT tabB shrB bruteS sh))))
 
 /-- **The candidate step of side `1`.** -/
-def cand1P (tabB : Stmt) (shrB bruteS : Stmt → Stmt) (sh : Stmt) : Stmt :=
+def cand1P : Stmt :=
   .seq (lhs (sw 31) (sw 4) (sw 34) qE 1 sh)
     (ifEq qE K1 (boxB sh) (ifEq qE K3 (boxB sh) (tourB tabB shrB bruteS sh)))
 
 /-! ## Run-step helpers -/
+
+
+end
 
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
@@ -127,19 +141,19 @@ theorem candFr_alw {c c' : Config} (h : CandFr c c') :
 
 theorem candFr_trans {c c₁ c₂ : Config} (h₁ : CandFr c c₁) (h₂ : CandFr c₁ c₂) : CandFr c c₂ :=
   candFr_of (fun r a b d => (candFr_alw h₂ r a b d).trans (candFr_alw h₁ r a b d))
-    (h₁.2.1.trans h₂.2.1) (fun a ha => (h₂.2.2 a (by have := h₁.2.1; omega)).trans (h₁.2.2 a ha))
+    (h₁.2.1.trans h₂.2.1) (fun a ha => (h₂.2.2 a (by ram_grind)).trans (h₁.2.2 a ha))
 
 /-- The frame of a local hit. -/
 theorem candFr_lhw {c c' : Config}
     (h : ∀ r, bandOf r ∉ oracleBands → ¬ LHW r → r ≠ ALLOC → c'.nreg r = c.nreg r)
     (ha : c.nreg ALLOC ≤ c'.nreg ALLOC) (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) :
     CandFr c c' :=
-  candFr_of (fun r a b d => h r a (by unfold LHW; unfold Alw sw at b; unfold sw; omega) d) ha hm
+  candFr_of (fun r a b d => h r a (by grind [LHW, Alw, sw]) d) ha hm
 
 /-- The frame of a part. -/
 theorem candFr_part {c c' : Config} (h : PartFr c c') : CandFr c c' :=
-  candFr_of (fun r a b d => h.1 r a (by unfold Alw sw at b; unfold sw; omega)
-    (by unfold Alw sw at b; unfold sw; omega) (by unfold Alw sw at b; unfold sw; omega) d)
+  candFr_of (fun r a b d => h.1 r a (by omega_nf)
+    (by omega_nf) (by omega_nf) d)
     h.2.1 h.2.2
 
 /-- A frame that writes only allowed registers. -/
@@ -152,21 +166,21 @@ theorem candFr_regs {c c' : Config} {S : ℕ → Prop} (hS : ∀ r, S r → Alw 
 /-- The pipeline registers are kept. -/
 theorem candFr_pipe {c c' : Config} (h : CandFr c c') {r : ℕ} (hr : sw 3200 ≤ r ∧ r < sw 3230) :
     c'.nreg r = c.nreg r :=
-  candFr_alw h r (not_oracle_sw (by unfold sw at hr; omega) (by unfold sw at hr; omega))
-    (by unfold Alw; unfold sw at hr ⊢; omega) (by unfold ALLOC; unfold sw at hr; omega)
+  candFr_alw h r (not_oracle_sw (by omega_nf) (by omega_nf))
+    (by core_grind) (by omega_nf)
 
 theorem candFr_qE {c c' : Config} (h : CandFr c c') : c'.nreg qE = c.nreg qE :=
-  candFr_pipe h (by unfold qE sw; omega)
+  candFr_pipe h (by omega_nf)
 theorem candFr_qH {c c' : Config} (h : CandFr c c') : c'.nreg qH = c.nreg qH :=
-  candFr_pipe h (by unfold qH sw; omega)
+  candFr_pipe h (by omega_nf)
 theorem candFr_qD {c c' : Config} (h : CandFr c c') : c'.nreg qD = c.nreg qD :=
-  candFr_pipe h (by unfold qD sw; omega)
+  candFr_pipe h (by omega_nf)
 theorem candFr_bL {c c' : Config} (h : CandFr c c') : c'.nreg bL = c.nreg bL :=
-  candFr_pipe h (by unfold bL sw; omega)
+  candFr_pipe h (by omega_nf)
 theorem candFr_bR {c c' : Config} (h : CandFr c c') : c'.nreg bR = c.nreg bR :=
-  candFr_pipe h (by unfold bR sw; omega)
+  candFr_pipe h (by omega_nf)
 theorem candFr_qJ {c c' : Config} (h : CandFr c c') : c'.nreg qJ = c.nreg qJ :=
-  candFr_pipe h (by unfold qJ sw; omega)
+  candFr_pipe h (by omega_nf)
 
 /-! ## The state after the local hit in the model of `C₂` -/
 
@@ -187,8 +201,10 @@ theorem mid_step {z : Point} {c₂ c₃ : Config} {L L' : Set ℝ} (hM : Mid P J
   ⟨hacc, fun τ hτ => (hg τ hτ).elim (fun h => hM.2.1 τ h) id, hsub hM.2.2.1,
     candFr_trans hM.2.2.2 hF⟩
 
+section
+variable {z : Point} {c' : Config} {L : Set ℝ}
 /-- **The output**, from the first hit of `C₁` below its top. -/
-theorem fin1 {z : Point} {c' : Config} {L : Set ℝ} (hq : QState P J 1 z c)
+theorem fin1 (hq : QState P J 1 z c)
     (hM : Mid P J z c c' L)
     (h1 : z.2 ≤ J.left.top.2 → J.left.hitParam z (dirOf (c.nreg qD)) ∈ L) :
     CandOut P J z c c' ∧ CandFr c c' := by
@@ -196,16 +212,16 @@ theorem fin1 {z : Point} {c' : Config} {L : Set ℝ} (hq : QState P J 1 z c)
   exact ⟨⟨L, hM.1, hM.2.1, whole_mem hσ hz₂ hq.hfree hM.2.2.1 h1⟩, hM.2.2.2⟩
 
 /-- **The output**, from the table step. -/
-theorem fin2 {z : Point} {c' : Config} {L : Set ℝ} (hM : Mid P J z c c' L)
+theorem fin2 (hM : Mid P J z c c' L)
     (h : J.whole.hitParam z (dirOf (c.nreg qD)) ∈ L ∨
       J.whole.hitParam z (dirOf (c.nreg qD)) = J.right.hitParam z (dirOf (c.nreg qD))) :
     CandOut P J z c c' ∧ CandFr c c' := by
-  refine ⟨⟨L, hM.1, hM.2.1, ?_⟩, hM.2.2.2⟩
-  rcases h with h | h
-  · exact h
-  · rw [h]; exact hM.2.2.1
+  ram_grind
 
 /-! ## The top edge of `C₂` -/
+
+
+end
 
 /-- A register outside `sw 4807 … 4813`. -/
 def OutM (r : ℕ) : Prop := r < sw 4807 ∨ sw 4813 < r
@@ -227,7 +243,7 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
   have kk3 : c.nreg 240616 = 3 := k3
   have kk4 : c.nreg 240613 = 4 := k4
   have s : ∀ j, 4807 ≤ j → j ≤ 4813 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw (by omega_nf) (by omega_nf)
   -- the block
   have v : regB c.nmem midL c.nreg m2 = J.right.m ∧
       regB c.nmem midL c.nreg ti = J.right.topIdx ∧
@@ -237,15 +253,13 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
       (∀ r, OutM r → regB c.nmem midL c.nreg r = c.nreg r) := by
     simp only [midL, regB, regI, upd, tmp, m2, ti, bt, dd, m2x, sw, K2, K3, K4]
     refine ⟨?_, ?_, ?_, ?_, ?_, fun r hr => ?_⟩
-    · simp [kk2, a2]
-    · simp [kk3, a3]
-    · simp [kk4, a4]
-    · simp [kk3, a3]; ring
-    · simp [kk2, a2]; ring
+    · ram_simp
+    · ram_simp
+    · ram_simp
+    · ram_grind
+    · ram_grind
     · unfold OutM sw at hr
-      simp only [show r ≠ 244811 by omega, show r ≠ 244808 by omega, show r ≠ 244809 by omega,
-        show r ≠ 244810 by omega, show r ≠ 244812 by omega, show r ≠ 244813 by omega,
-        ite_false]
+      grind
   obtain ⟨vm, vi, vb, vd, vx, vo⟩ := v
   have ok : okB W c.nmem midL c.nreg := by
     simp only [midL, okB, okI, regI]
@@ -254,15 +268,15 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
       ⟨s 4811 (by norm_num) (by norm_num), ?_⟩, s 4810 (by norm_num) (by norm_num),
       ⟨s 4812 (by norm_num) (by norm_num), ?_⟩, ⟨s 4813 (by norm_num) (by norm_num), ?_⟩, trivial⟩
     all_goals simp [upd, tmp, m2, ti, bt, dd, sw, K2, K3, K4, kk2, kk3, kk4, a2, a3]
-    all_goals (have := J.right.topIdx_le; simp only [Merge.Junction.right_m] at hWm this; omega)
+    all_goals (grind [Merge.Junction.right_m])
   refine IRS.seq (K₁ := 8) (K₂ := 12) ((IRS.block midL hI ok).mono (by simp [midL])
     (fun _ h => h)) ?_
   rintro c₁ hI₁ - - rfl
-  have hb6 : c.nreg K6 = 6 := k6
+  
   have e6 : regB c.nmem midL c.nreg K6 = 6 := by
-    rw [vo _ (by unfold OutM K6 sw; omega)]; exact k6
+    ram_grind
   have e1 : regB c.nmem midL c.nreg K1 = 1 := by
-    rw [vo _ (by unfold OutM K1 sw; omega)]; exact k1
+    ram_grind
   have fin : ∀ (l : List Instr) (c₂ : Config), c₂ = { c with nreg := regB c.nmem midL c.nreg } →
       IInv W c₀ c₂ → l.length ≤ 2 → okB W c₂.nmem l c₂.nreg →
       (∀ i ∈ l, dstI i = tgt) →
@@ -275,55 +289,43 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
     refine ⟨hv, fun r hr => ?_, by rw [hc₂]⟩
     simp only
     rw [regB_other _ l _ (fun i hi h => by
-      rw [hd i hi] at h; subst h; unfold OutM tgt sw at hr; omega)]
-    rw [hc₂]; exact vo r hr
+      grind [OutM, tgt, sw])]
+    rw [hc₂]; grind
   have st : IScr tgt := s 4807 le_rfl (by norm_num)
   refine irs_ifEq (K := 8) (fun hb => ?_) (fun hb => ?_)
   · simp only at hb
-    have hβ : J.right.sideBeta = true := vb.1 (by rw [hb]; exact e1)
-    have hmid : midT J.right = 2 * J.right.m - 2 * J.right.topIdx := by unfold midT; rw [ite_eq_left hβ]
+    
+    have hmid : midT J.right = 2 * J.right.m - 2 * J.right.topIdx := by grind [midT]
     refine (fin [.subN tgt m2x dd, .addN tgt tgt K6] _ rfl hI₁ (by simp) ?_ ?_ ?_).mono
       (by norm_num) (fun _ h => h)
     · simp only [okB, okI, regI]
-      refine ⟨st, ⟨st, ?_⟩, trivial⟩
-      simp only [upd, tgt, m2x, dd, K6, sw] at *
-      simp
-      rw [vx, vd, e6]; omega
+      grind [upd, tgt, m2x, dd, K6, sw]
     · simp [dstI]
     · simp only [regB, regI]
-      simp only [upd, tgt, m2x, dd, K6, sw] at *
-      simp
-      rw [vx, vd, e6, hmid]; omega
+      grind [upd, tgt, m2x, dd, K6, sw]
   · simp only at hb
-    have hβ : J.right.sideBeta ≠ true := fun h => hb ((vb.2 h).trans e1.symm)
+    
     refine IRS.ite (K := 6) (fun hl => ?_) (fun hl => ?_)
     · simp only at hl
       rw [vi, vm] at hl
       have hmid : midT J.right = 2 * J.right.topIdx := by
-        unfold midT; rw [ite_eq_right hβ, ite_eq_left hl]
+        grind [midT]
       refine (fin [.addN tgt dd K6] _ rfl hI₁ (by simp) ?_ ?_ ?_).mono
         (by norm_num) (fun _ h => h)
-      · simp only [okB, okI]
-        refine ⟨⟨st, ?_⟩, trivial⟩
-        rw [vd, e6]; omega
+      · grind [okB, okI]
       · simp [dstI]
       · simp only [regB, regI]
-        simp only [upd, tgt, dd, K6, sw] at *
-        simp
-        rw [vd, e6, hmid]; omega
+        grind [upd, tgt, dd, K6, sw]
     · simp only at hl
       rw [vi, vm] at hl
       have hmid : midT J.right = 0 := by
-        unfold midT; rw [ite_eq_right hβ, ite_eq_right hl]
+        grind [midT]
       refine (fin [.copyN tgt K6] _ rfl hI₁ (by simp) ?_ ?_ ?_).mono
         (by norm_num) (fun _ h => h)
-      · simp only [okB, okI]
-        exact ⟨st, trivial⟩
+      · grind [okB, okI]
       · simp [dstI]
       · simp only [regB, regI]
-        simp only [upd, tgt, K6, sw] at *
-        simp
-        rw [e6, hmid]
+        ram_simp 
 
 end Cand1
 

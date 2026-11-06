@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseOracleRamB
 public import Chazelle.Core.ShootCutWalk
 public import Chazelle.Core.ShootCutGrade
@@ -39,28 +41,22 @@ theorem block_top {m : ℕ → ℕ} {h A : ℕ} (hR : Robust A m fun m' => Grade
   have hbc : b < gradeCount P.n g := by
     unfold gradeCount
     have : b * 2 ^ g ≤ P.n - 2 := by
-      have : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
-      omega
+      grind
     have := Nat.div_le_div_right (c := 2 ^ g) this
-    rw [Nat.mul_div_cancel _ hp] at this
-    omega
+    simp_all
   obtain ⟨h2, hr, hE⟩ := ShootCut.grade_entry hR hg hbc
   obtain ⟨H, C, N, hC, hwf, hP, -, -, hs, hmm, -⟩ := hR.holds.2.2.2 g b hg hbc
   have hD5 : blkD m h g b + 5 ≤ A := hwf.1
   have hQ : (Qof P).n = P.n := shear_n _ _
   have hlen : C.m = 2 ^ g := by
-    rw [hmm]; unfold gradeLen
-    have : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
-    omega
+    grind [gradeLen]
   have hsC : C.s = b * 2 ^ g := hs
   have hT : m (blkD m h g b + 3) = C.topIdx := hC.2.2.2.2.1
   have hx : C.s + C.m < (Qof P).n := by
-    rw [hQ, hlen, hsC]
-    have : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
-    omega
-  refine ⟨h2, hr, by unfold ShootCut.entryAddr at hE; omega, by omega, ?_, fun k hk => ?_⟩
+    grind
+  refine ⟨h2, hr, by omega_nf, by omega, ?_, fun k hk => ?_⟩
   · rw [hT, ← hlen]; exact C.topIdx_le
-  · have hk' : k ≤ C.m := by rw [hlen]; exact hk
+  · have hk' : k ≤ C.m := by omega
     have h1 := C.vertex_snd_le_top hk'
     rw [ShootCut.grade_vertex hP hx hk', hsC] at h1
     rw [hT]

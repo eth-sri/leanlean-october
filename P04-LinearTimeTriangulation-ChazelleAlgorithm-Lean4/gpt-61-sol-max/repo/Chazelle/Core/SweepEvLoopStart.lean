@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvLoopStartQ
 
 /-!
@@ -30,7 +32,7 @@ theorem stopData_transport' {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c'
       (c.nreg aB ≤ a ∧ a < c.nreg aB + 5 * c.nreg sC)) → c'.nmem a = c.nmem a) :
     StopData P J N₂ c' rs ax := by
   obtain ⟨hl, hlax, hSR, hAR, h5, h6, h7, h8⟩ := h
-  refine ⟨by rw [hsC]; exact hl, hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
+  refine ⟨by omega, hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
   · rw [hsB, hm _ (Or.inl (by omega)), hm _ (Or.inl (by omega)), hm _ (Or.inl (by omega)),
       hm _ (Or.inl (by omega)), hm _ (Or.inl (by omega))]
     exact hSR i hi
@@ -44,14 +46,11 @@ theorem stopOff_eq {P : Polygon} {J : Merge.Junction} {c : Config}
   obtain ⟨h1, h2, -⟩ := hSR i hi
   rw [List.getD_eq_getElem _ _ hi] at h1 h2
   unfold stopOff stopE stopH offK soff oW
-  rw [h1, h2]
-  rfl
+  aesop
 
 theorem lblOf_mem {c : Config} {v : ℕ} (h : v ∈ lblOf c kN kL) :
     ∃ t, t < min (c.nreg kN) 4 ∧ v = c.nreg (kL + t) := by
-  unfold lblOf at h
-  obtain ⟨t, ht, rfl⟩ := List.mem_map.1 h
-  exact ⟨t, List.mem_range.1 ht, rfl⟩
+  grind [lblOf]
 
 theorem mem_curLab {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config} {v : ℕ}
     (h : v ∈ lblOf c kN kL) : regOf (chainModel J.right) (Qof P) N₂ v ∈ curLab P J N₂ c := by
@@ -59,10 +58,7 @@ theorem mem_curLab {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config} {
   refine ⟨c.nreg (kL + t), ?_, rfl⟩
   have : t = 0 ∨ t = 1 ∨ t = 2 ∨ t = 3 := by omega
   rcases this with rfl | rfl | rfl | rfl
-  · left; exact ⟨by omega, rfl⟩
-  · right; left; exact ⟨by omega, rfl⟩
-  · right; right; left; exact ⟨by omega, rfl⟩
-  · right; right; right; exact ⟨by omega, rfl⟩
+  all_goals ram_grind
 
 set_option maxHeartbeats 32000000 in
 set_option maxRecDepth 20000 in
@@ -80,14 +76,14 @@ theorem loopStartTask : LoopStartTask := by
   have hS₂ : S₂ ⊆ Merge.augChords J.right := hNF.1.2.1
   have hS₂f : S₂.Finite := hNF.1.1
   -- registers of `c`
-  have hlBc : c.nreg lB = c₁.nreg lB := hfr1 _ (not_oracle_sw (by simp [lB, sw])
-    (by simp [lB, sw])) (by unfold S2R; simp [lB, sw]) (by simp [lB, ALLOC, sw])
-  have hTB : c.nreg cTB = c₀.nreg cTB := hI.hin _ (by unfold IFix cTB sw; omega)
+  have hlBc : c.nreg lB = c₁.nreg lB := hfr1 _ (not_oracle_sw (by omega_nf)
+    (by omega_nf)) (by omega_nf) (by omega_nf)
+  have hTB : c.nreg cTB = c₀.nreg cTB := hI.hin _ (by omega_nf)
   have hTB₀ : c₀.nreg cTB = c₀.nreg ALLOC := E.hTA
   have hlay : c.nreg sB + 5 * c.nreg sC ≤ c.nreg ALLOC ∧
-      c.nreg aB + 5 * c.nreg sC ≤ c.nreg ALLOC := by rw [← hl]; exact ⟨hsB2, haB2⟩
-  have hlB : c₀.nreg ALLOC ≤ c.nreg lB := by rw [hlBc]; omega
-  have hlogB : c.nreg lB + 7 * logCap N₁ N₂ ≤ c₁.nreg ALLOC := by rw [hlBc]; unfold logCap; omega
+      c.nreg aB + 5 * c.nreg sC ≤ c.nreg ALLOC := by omega
+  have hlB : c₀.nreg ALLOC ≤ c.nreg lB := by omega
+  have hlogB : c.nreg lB + 7 * logCap N₁ N₂ ≤ c₁.nreg ALLOC := by grind [logCap]
   have hcap7 : 7 ≤ 7 * logCap N₁ N₂ := by unfold logCap; omega
   have hlB7 : c.nreg lB + 7 ≤ c.nreg ALLOC := by omega
   -- the run
@@ -99,13 +95,13 @@ theorem loopStartTask : LoopStartTask := by
   -- registers kept
   have keep : ∀ j, j < 10000 → ¬ StR (sw j) → c'.nreg (sw j) = c.nreg (sw j) := by
     intro j hj h
-    have h1 : 240000 ≤ sw j := by unfold sw; exact Nat.le_add_right _ _
-    have h2 : sw j < 250000 := by unfold sw; omega
-    have h3 : sw j ≠ ALLOC := by unfold ALLOC; omega
+    have h1 : 240000 ≤ sw j := by omega_nf
+    have h2 : sw j < 250000 := by omega_nf
+    have h3 : sw j ≠ ALLOC := by omega_nf
     exact fr (sw j) (not_oracle_sw h1 h2) h h3
   have nS : ∀ j, (j = 2600 ∨ j = 2601 ∨ j = 2602 ∨ j = 2430 ∨ j = 661) → ¬ StR (sw j) := by
     rintro j (rfl | rfl | rfl | rfl | rfl) <;> unfold StR <;>
-      simp [kE, kH, kN, kL, gN, gR, sP, dF, lC, sw]
+      omega_nf
   have sB' : c'.nreg sB = c.nreg sB := keep 2600 (by norm_num) (nS _ (by norm_num))
   have sC' : c'.nreg sC = c.nreg sC := keep 2601 (by norm_num) (nS _ (by norm_num))
   have aB' : c'.nreg aB = c.nreg aB := keep 2602 (by norm_num) (nS _ (by norm_num))
@@ -115,14 +111,14 @@ theorem loopStartTask : LoopStartTask := by
   have hSD' : StopData P J N₂ c' rs ax := stopData_transport' hSD sC' sB' aB' (fun a ha =>
     mem a (by omega) (Or.inr (by omega)))
   have hSR' : StopRecsAt c'.nmem (c'.nreg sB) rs := hSD'.2.2.1
-  have hlen' : rs.length = c'.nreg sC := hSD'.1
+  
   -- the start key
   obtain ⟨hpw, hoK, -⟩ := startMathTask P J N₂ hP hNF
   have hkey : keyOff P J c' = Lst J := by
     unfold keyOff
     rw [kE', kH']
     have : offK P J (pK0 J) 0 = oW J (((pK0 J : ℕ) : ℝ) + 0) := by unfold offK oW; rfl
-    rw [this]; unfold pK0; exact_mod_cast hoK
+    rw [this]; unfold pK0; omega
   have hge : ∀ i (hi : i < rs.length), (Lst J : ℝ) ≤ soff P J rs[i] := fun i hi =>
     (stop_facts hst hi).2.2.2
   -- the label set
@@ -156,7 +152,7 @@ theorem loopStartTask : LoopStartTask := by
         rcases hl' with ⟨-, rfl⟩ | ⟨h, -⟩ | ⟨h, -⟩ | ⟨h, -⟩
         · rfl
         all_goals omega
-      · rintro rfl; exact ⟨c'.nreg kL, Or.inl ⟨by omega, rfl⟩, rfl⟩
+      · rintro rfl; omega_nf
   have hinv' : EvInv J S₂ (keyOff P J c') (curLab P J N₂ c') := by rw [hkey]; exact hinv
   -- the labels are region indices
   have hlabR : ∀ i, i < c'.nreg kN → c'.nreg (kL + i) < N₂.nRegions := fun i hi =>
@@ -166,20 +162,20 @@ theorem loopStartTask : LoopStartTask := by
     c'.nreg (kL + 1), c'.nreg (kL + 2), c'.nreg (kL + 3)) with hrec
   have hpar0 : (chainModel J.whole).param (Qof P) ⟨pK0 J, 0⟩ = 0 := rfl
   have hoW : oW J (((pK0 J : ℕ) : ℝ) + (chainModel J.whole).param (Qof P) ⟨pK0 J, 0⟩) = Lst J := by
-    rw [hpar0]; unfold pK0; exact_mod_cast hoK
-  refine ⟨⟨⟨rs, ax, hSD'⟩, fun i i' hii hi' => ?_, fun i hi => ?_, by rw [TB', hTB, hTB₀],
-    by rw [TB', lB', hTB, hlBc]; exact hlay1, ?_, ?_, ?_, ?_,
+    rw [hpar0]; unfold pK0; omega
+  refine ⟨⟨⟨rs, ax, hSD'⟩, fun i i' hii hi' => ?_, fun i hi => ?_, by omega,
+    by omega, ?_, ?_, ?_, ?_,
     by rw [kE', kH']; exact hpw, by rw [hkey], kN4, hlabR, hinv', gN2, gR', gap,
-    by rw [sC', ← hl]; exact sPl, fun i hi => ?_, ⟨[rec], by rw [lC']; rfl,
+    by omega, fun i hi => ?_, ⟨[rec], by rw [lC']; rfl,
       ?_, ?_, ?_, rfl⟩, ?_, ?_, dF'⟩, fr, fun x hx hx' => mem x hx hx'⟩
   · rw [stopOff_eq hSR' (by omega), stopOff_eq hSR' (by omega)]
     exact stops_sorted hst hii (by omega)
   · rw [stopOff_eq hSR' (by omega), stopOff_eq hSR' (by omega)]
     exact stops_two hP hNF hst (by omega)
-  · rw [lB', sB', hlBc]; unfold logCap; omega
-  · rw [lB', aB', hlBc]; unfold logCap; omega
-  · rw [sB', sC', ← hl]; omega
-  · rw [aB', sC', ← hl]; omega
+  · omega
+  · omega
+  · omega
+  · omega
   · have hi' : i < rs.length := by omega
     rw [stopOff_eq hSR' hi', hkey, hptr i hi']
     have := hge i hi'
@@ -193,13 +189,10 @@ theorem loopStartTask : LoopStartTask := by
     rw [lB']
     simp only [List.getD_cons_zero, Nat.mul_zero, Nat.add_zero, hrec]
     refine ⟨r0, r1, r2, ?_, ?_, ?_, ?_⟩
-    · have := r3 0 (by norm_num); simpa using this
-    · have := r3 1 (by norm_num); rw [show c.nreg lB + 3 + 1 = c.nreg lB + 4 by omega] at this
-      exact this
-    · have := r3 2 (by norm_num); rw [show c.nreg lB + 3 + 2 = c.nreg lB + 5 by omega] at this
-      exact this
-    · have := r3 3 (by norm_num); rw [show c.nreg lB + 3 + 3 = c.nreg lB + 6 by omega] at this
-      exact this
+    · have := r3 0 (by norm_num); omega
+    · have := r3 1 (by norm_num); omega
+    · have := r3 2 (by norm_num); omega
+    · have := r3 3 (by norm_num); omega
   · -- the word facts
     intro r hr
     simp only [List.mem_singleton] at hr
@@ -240,7 +233,7 @@ theorem loopStartTask : LoopStartTask := by
   · -- the table
     intro j hj
     have hz : c'.nmem (c'.nreg cTB + 3 * j) = 0 := by
-      rw [TB', hTB, mem _ (by omega) (Or.inl (by rw [hlBc]; omega)), hm1 _ (by omega)]
+      rw [TB', hTB, mem _ (by omega) (Or.inl (by omega)), hm1 _ (by omega)]
       exact hflag j hj
     rw [hz]
     refine ⟨by norm_num, fun h => absurd h (by norm_num), fun _ _ p t _ _ hlt hle => ?_⟩

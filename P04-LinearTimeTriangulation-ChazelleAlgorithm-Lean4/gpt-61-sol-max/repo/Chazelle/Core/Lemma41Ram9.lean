@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.Lemma41Ram8
 
 /-!
@@ -24,41 +26,39 @@ def pairUp : List Shp → ℕ → List Shp
   | l, _ => l
 
 theorem pairUp_length : ∀ (l : List Shp) (t : ℕ), (pairUp l t).length = (l.length + 1) / 2
-  | [], _ => by simp [pairUp]
-  | [_], _ => by simp [pairUp]
+  | [], _ => by aesop
+  | [_], _ => by aesop
   | a :: b :: rest, t => by
     simp only [pairUp, List.length_cons, pairUp_length rest t]; omega
 
-theorem nd_cons_succ (a : Shp) (l : List Shp) (k : ℕ) : nd (a :: l) (k + 1) = nd l k := by
+section
+variable (a : Shp) (l : List Shp)
+theorem nd_cons_succ (k : ℕ) : nd (a :: l) (k + 1) = nd l k := by
   simp [nd]
 
-theorem nd_cons_zero (a : Shp) (l : List Shp) : nd (a :: l) 0 = a := by simp [nd]
+theorem nd_cons_zero : nd (a :: l) 0 = a := by simp [nd]
+
+
+end
 
 theorem nd_pairUp_merge : ∀ (l : List Shp) (t q : ℕ), q < l.length / 2 →
     nd (pairUp l t) q = ((nd l (2 * q)).1, (nd l (2 * q)).2.1 + (nd l (2 * q + 1)).2.1, t)
   | [], _, q, h => by simp at h
   | [_], _, q, h => by simp at h
   | a :: b :: rest, t, 0, _ => by
-    simp only [pairUp, Nat.mul_zero, Nat.zero_add, nd_cons_zero, nd_cons_succ]
+    aesop
   | a :: b :: rest, t, q + 1, h => by
-    have ih := nd_pairUp_merge rest t q (by simp only [List.length_cons] at h; omega)
-    have e1 : nd (a :: b :: rest) (2 * (q + 1)) = nd rest (2 * q) := by
-      rw [show 2 * (q + 1) = 2 * q + 1 + 1 by ring, nd_cons_succ, nd_cons_succ]
-    have e2 : nd (a :: b :: rest) (2 * (q + 1) + 1) = nd rest (2 * q + 1) := by
-      rw [show 2 * (q + 1) + 1 = 2 * q + 1 + 1 + 1 by ring, nd_cons_succ, nd_cons_succ]
-    rw [e1, e2]
-    simp only [pairUp]
-    rw [nd_cons_succ]
-    exact ih
+    have ih := nd_pairUp_merge rest t q (by simp_all +arith)
+    grind [nd_cons_succ, pairUp]
 
 theorem nd_pairUp_carry : ∀ (l : List Shp) (t : ℕ), l.length % 2 = 1 →
     nd (pairUp l t) (l.length / 2) = nd l (l.length - 1)
   | [], _, h => by simp at h
-  | [_], _, _ => by simp [pairUp]
+  | [_], _, _ => by aesop
   | a :: b :: rest, t, h => by
     simp only [List.length_cons] at h ⊢
     have ih := nd_pairUp_carry rest t (by omega)
-    have h1 : 1 ≤ rest.length := by omega
+    
     simp only [pairUp]
     rw [show (rest.length + 1 + 1) / 2 = rest.length / 2 + 1 by omega, nd_cons_succ,
       show rest.length + 1 + 1 - 1 = rest.length - 1 + 1 + 1 by omega, nd_cons_succ,
@@ -67,12 +67,7 @@ theorem nd_pairUp_carry : ∀ (l : List Shp) (t : ℕ), l.length % 2 = 1 →
 
 theorem nd_pairUp_zero (l : List Shp) (t : ℕ) (h : 1 ≤ l.length) :
     (nd (pairUp l t) 0).1 = (nd l 0).1 := by
-  rcases Nat.lt_or_ge 1 l.length with h2 | h2
-  · rw [nd_pairUp_merge l t 0 (by omega)]
-  · have : l.length = 1 := by omega
-    have := nd_pairUp_carry l t (by omega)
-    rw [show l.length / 2 = 0 by omega, show l.length - 1 = 0 by omega] at this
-    rw [this]
+  grind [Chazelle.Core.L41.nd_pairUp_merge, Chazelle.Core.L41.nd_pairUp_carry]
 
 /-- **The next level is consecutive.** -/
 theorem consec_pairUp {l : List Shp} (t : ℕ) (h : Consec l) : Consec (pairUp l t) := by
@@ -81,14 +76,8 @@ theorem consec_pairUp {l : List Shp} (t : ℕ) (h : Consec l) : Consec (pairUp l
   have hq0 : q < l.length / 2 := by omega
   rw [nd_pairUp_merge l t q hq0]
   have e1 : (nd (pairUp l t) (q + 1)).1 = (nd l (2 * q + 2)).1 := by
-    rcases Nat.lt_or_ge (q + 1) (l.length / 2) with h1 | h1
-    · rw [nd_pairUp_merge l t (q + 1) h1]; rfl
-    · have hodd : l.length % 2 = 1 := by omega
-      have := nd_pairUp_carry l t hodd
-      rw [show l.length / 2 = q + 1 by omega, show l.length - 1 = 2 * q + 2 by omega] at this
-      rw [this]
-  rw [e1, h (2 * q + 1) (by omega), h (2 * q) (by omega)]
-  simp only; ring
+    grind [Chazelle.Core.L41.nd_pairUp_merge, Chazelle.Core.L41.nd_pairUp_carry]
+  ram_grind
 
 theorem pairUp_sum : ∀ (l : List Shp) (t : ℕ),
     ((pairUp l t).map fun x => x.2.1).sum = (l.map fun x => x.2.1).sum
@@ -97,28 +86,19 @@ theorem pairUp_sum : ∀ (l : List Shp) (t : ℕ),
   | a :: b :: rest, t => by
     simp only [pairUp, List.map_cons, List.sum_cons, pairUp_sum rest t]; ring
 
+section
+variable {l : List Shp}
 /-- The granularities of the next level are at most the target. -/
-theorem pairUp_gran {l : List Shp} {t γ₀ : ℕ} (hγ : ∀ k, k < l.length → (nd l k).2.2 ≤ γ₀)
+theorem pairUp_gran {t γ₀ : ℕ} (hγ : ∀ k, k < l.length → (nd l k).2.2 ≤ γ₀)
     (ht : γ₀ ≤ t) : ∀ k, k < (pairUp l t).length → (nd (pairUp l t) k).2.2 ≤ t := by
-  intro k hk
-  rw [pairUp_length] at hk
-  rcases Nat.lt_or_ge k (l.length / 2) with h1 | h1
-  · rw [nd_pairUp_merge l t k h1]
-  · have hodd : l.length % 2 = 1 := by omega
-    have := nd_pairUp_carry l t hodd
-    rw [show k = l.length / 2 by omega, this]
-    exact (hγ _ (by omega)).trans ht
+  grind [Chazelle.Core.L41.pairUp_length, Chazelle.Core.L41.nd_pairUp_merge, Chazelle.Core.L41.nd_pairUp_carry]
 
-theorem pairUp_gran_pos {l : List Shp} {t : ℕ} (hγ : ∀ k, k < l.length → 1 ≤ (nd l k).2.2)
+theorem pairUp_gran_pos {t : ℕ} (hγ : ∀ k, k < l.length → 1 ≤ (nd l k).2.2)
     (ht : 1 ≤ t) : ∀ k, k < (pairUp l t).length → 1 ≤ (nd (pairUp l t) k).2.2 := by
-  intro k hk
-  rw [pairUp_length] at hk
-  rcases Nat.lt_or_ge k (l.length / 2) with h1 | h1
-  · rw [nd_pairUp_merge l t k h1]; exact ht
-  · have hodd : l.length % 2 = 1 := by omega
-    have := nd_pairUp_carry l t hodd
-    rw [show k = l.length / 2 by omega, this]
-    exact hγ _ (by omega)
+  grind [Chazelle.Core.L41.pairUp_length, Chazelle.Core.L41.nd_pairUp_merge, Chazelle.Core.L41.nd_pairUp_carry]
+
+
+end
 
 /-- **The nodes of the next level as back-linked cells** `[descriptor, NF, prev]`. -/
 def CellSt (P : Polygon) (m : ℕ → ℕ) (A hp : ℕ) (ns : List Shp) (e : ℕ → ℕ) : Prop :=
@@ -155,7 +135,7 @@ theorem carryB_exec {c : Config} (hw : WordsBounded W c) {E ptr prev j : ℕ}
   rw [hAl] at hA ⊢
   unfold carryB
   exec_block
-  all_goals try (config_simp; (try simp only [hA, h65, h64, h24, h83]); omega)
+  all_goals try (config_simp; omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, fun a ha => ?_, ?_, ?_, ?_,
     fun r a1 a2 a3 a4 a5 a6 a7 => ?_, rfl, rfl, rfl⟩
   · config_simp; simp only [hA, h65, h24, Machine.upd_apply]; split_ifs <;> omega
@@ -192,13 +172,13 @@ theorem carryS_exec {X : MemCtx} {c0 c : Config} {A0 B hp hX tgt : ℕ} {ns : Li
   set np := j / 2 with hnp
   have hlen' : (pairUp ns tgt).length = (j + 1) / 2 := pairUp_length ns tgt
   have c14 : c.nreg 160014 = j := by
-    rw [cr _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rw [hAl]; omega)]
+    rw [cr _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by omega)]
     exact h14
   have c24 : c.nreg 160024 = 1 := by
-    rw [cr _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rw [hAl]; omega)]
+    rw [cr _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by omega)]
     exact h24
   have c83 : c.nreg 160083 = 3 := by
-    rw [cr _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rw [hAl]; omega)]
+    rw [cr _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by omega)]
     exact h83
   -- the merged nodes as cells
   have merged : ∀ (m : ℕ → ℕ) (A : ℕ), c.nreg ALLOC ≤ A →
@@ -209,7 +189,7 @@ theorem carryS_exec {X : MemCtx} {c0 c : Config} {A0 B hp hX tgt : ℕ} {ns : Li
     intro m A hA he q hq
     obtain ⟨a1, a2, a3, C, b1, b2, b3⟩ := hee q hq
     rw [nd_pairUp_merge ns tgt q hq]
-    refine ⟨by omega, fun h => by rw [he _ (by omega)]; exact a3 h, C, b1, b2, ?_⟩
+    refine ⟨by omega, fun h => by ram_grind, C, b1, b2, ?_⟩
     rw [he _ (by omega), he _ (by omega)]
     exact (b3.agree he).mono hA
   by_cases hodd : 2 * np < j
@@ -219,12 +199,12 @@ theorem carryS_exec {X : MemCtx} {c0 c : Config} {A0 B hp hX tgt : ℕ} {ns : Li
     obtain ⟨c', k, e, hk, hw', w0, w1, w2, hm', hA', q63, q64, fr', hrr', hrm', ho'⟩ :=
       carryB_exec (P := P) hwc rfl c65 rfl c64 c24 c83 hW (by omega) (by omega)
     have hptr : B + 4 * np = B + 2 * (j - 1) := by omega
-    refine ⟨c', k + 1, .ifLtN_true (by rw [c62, c14]; exact hodd) e, by omega, hw',
+    refine ⟨c', k + 1, .ifLtN_true (by omega) e, by omega, hw',
       by omega, by omega, by omega, fun a ha => hm' a (Or.inl ha), hrm', ho', hrr',
       fun r h1 h2 => fr' r (by unfold PairRG at h1; omega) (by unfold PairRG at h1; omega)
         (by unfold PairRG at h1; omega) (by unfold PairRG at h1; omega)
         (by unfold PairRG at h1; omega) (by unfold PairRG at h1; omega) h2,
-      by rw [q64, hlen']; omega, fun q => if q = np then c.nreg ALLOC else ee q,
+      by omega, fun q => if q = np then c.nreg ALLOC else ee q,
       fun q hq => ?_, ?_, fun q hq => ?_⟩
     · rw [hlen'] at hq
       rcases Nat.lt_or_ge q np with hq1 | hq1
@@ -239,9 +219,9 @@ theorem carryS_exec {X : MemCtx} {c0 c : Config} {A0 B hp hX tgt : ℕ} {ns : Li
         rw [← hnp] at hcarry
         refine ⟨by omega, fun h => ?_, C, ?_, ?_, ?_⟩
         · simp only [show np - 1 ≠ np by omega, ite_false]
-          rw [w2, hprev (by omega)]
-        · rw [hcarry, s1]
-        · rw [hcarry, m1]
+          ram_grind
+        · ram_grind
+        · ram_grind
         · rw [hcarry, w0, w1, hA', hptr, cm _ (by omega), cm _ (by omega)]
           have n1c := (n1.agree cm).mono cA0
           exact (n1c.agree fun a ha => hm' a (Or.inl ha)).mono (by omega)
@@ -251,14 +231,14 @@ theorem carryS_exec {X : MemCtx} {c0 c : Config} {A0 B hp hX tgt : ℕ} {ns : Li
       · simp only [show q ≠ np by omega, ite_false]; exact (hee q hq1).1
       · simp only [show q = np by omega, ite_true]; exact cA0
   · -- nothing to carry
-    have heven : 2 * np = j := by omega
-    refine ⟨c, 2, .ifLtN_false (by rw [c62, c14]; exact hodd) (.skip hwc), by omega, hwc,
+    
+    refine ⟨c, 2, .ifLtN_false (by omega) (.skip hwc), by omega, hwc,
       le_rfl, by omega, by omega, fun _ _ => rfl, rfl, rfl, rfl, fun _ _ _ => rfl,
-      by rw [c64, hlen']; omega, ee, fun q hq => ?_, ?_, fun q hq => ?_⟩
+      by omega, ee, fun q hq => ?_, ?_, fun q hq => ?_⟩
     · rw [hlen'] at hq
       exact merged c.nmem (c.nreg ALLOC) le_rfl (fun _ _ => rfl) q (by omega)
     · rw [hprev (by omega), hlen']; congr 1; omega
-    · rw [hlen'] at hq; exact (hee q (by omega)).1
+    ram_grind
 
 end proofs
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopM2
 
 /-!
@@ -27,49 +29,43 @@ open Sweep SweepEv
 
 /-! ## Lexicographic keys -/
 
+section
+variable (a b : ℝ × ℕ)
+include a b
 /-- The lexicographic order of keys `(offset, code)`. -/
-def KLe (a b : ℝ × ℕ) : Prop := a.1 < b.1 ∨ (a.1 = b.1 ∧ a.2 ≤ b.2)
+def KLe : Prop := a.1 < b.1 ∨ (a.1 = b.1 ∧ a.2 ≤ b.2)
 
 /-- The strict lexicographic order. -/
-def KLt (a b : ℝ × ℕ) : Prop := a.1 < b.1 ∨ (a.1 = b.1 ∧ a.2 < b.2)
+def KLt : Prop := a.1 < b.1 ∨ (a.1 = b.1 ∧ a.2 < b.2)
+
+
+end
 
 theorem KLe.trans {a b c : ℝ × ℕ} (h1 : KLe a b) (h2 : KLe b c) : KLe a c := by
-  unfold KLe at *
-  rcases h1 with h1 | ⟨h1, h1'⟩ <;> rcases h2 with h2 | ⟨h2, h2'⟩
-  · exact Or.inl (h1.trans h2)
-  · exact Or.inl (by rw [← h2]; exact h1)
-  · exact Or.inl (by rw [h1]; exact h2)
-  · exact Or.inr ⟨h1.trans h2, h1'.trans h2'⟩
+  ram_grind
 
 theorem KLe.total (a b : ℝ × ℕ) : KLe a b ∨ KLe b a := by
-  unfold KLe
-  rcases lt_trichotomy a.1 b.1 with h | h | h
-  · exact Or.inl (Or.inl h)
-  · rcases le_total a.2 b.2 with h' | h'
-    · exact Or.inl (Or.inr ⟨h, h'⟩)
-    · exact Or.inr (Or.inr ⟨h.symm, h'⟩)
-  · exact Or.inr (Or.inl h)
+  ram_grind
 
 theorem KLt.of_le_ne {a b : ℝ × ℕ} (h : KLe a b) (hne : a ≠ b) : KLt a b := by
-  rcases h with h | ⟨h1, h2⟩
-  · exact Or.inl h
-  · refine Or.inr ⟨h1, lt_of_le_of_ne h2 fun h' => hne (Prod.ext h1 h')⟩
+  ram_grind
 
-theorem KLt.ne {a b : ℝ × ℕ} (h : KLt a b) : a ≠ b := by
-  rintro rfl
-  rcases h with h | ⟨-, h⟩ <;> exact lt_irrefl _ h
+section
+variable {a b : ℝ × ℕ} (h : KLt a b)
+include h
+theorem KLt.ne : a ≠ b := by
+  ram_grind
 
-theorem KLt.le {a b : ℝ × ℕ} (h : KLt a b) : KLe a b := by
-  rcases h with h | ⟨h1, h2⟩
-  · exact Or.inl h
-  · exact Or.inr ⟨h1, h2.le⟩
+theorem KLt.le : KLe a b := by
+  ram_grind
 
-theorem KLt.fst_le {a b : ℝ × ℕ} (h : KLt a b) : a.1 ≤ b.1 := by
-  rcases h with h | ⟨h1, -⟩
-  · exact h.le
-  · exact h1.le
+theorem KLt.fst_le : a.1 ≤ b.1 := by
+  ram_grind
 
 /-! ## The dedupe pass -/
+
+
+end
 
 variable {α : Type*} (key : α → ℝ × ℕ)
 
@@ -167,26 +163,32 @@ section Raw
 
 variable (P : Polygon) (J : Merge.Junction) (N : NF)
 
+section
+variable (r : ℕ × ℕ × ℕ × ℕ × ℕ)
+include r
 /-- The key of a raw record `(e, h, kind, k, b)` with leaving direction code `d`. -/
-noncomputable def rKey (r : ℕ × ℕ × ℕ × ℕ × ℕ) (d : ℕ) : ℝ × ℕ := (offK P J r.1 r.2.1, d)
+noncomputable def rKey (d : ℕ) : ℝ × ℕ := (offK P J r.1 r.2.1, d)
 
 /-- The parameter of the position of a record. -/
-noncomputable abbrev rPar (r : ℕ × ℕ × ℕ × ℕ × ℕ) : ℝ :=
+noncomputable abbrev rPar : ℝ :=
   (chainModel J.whole).param (Qof P) ⟨r.1, r.2.1⟩
 
 /-- The chord of a record. -/
-noncomputable abbrev rSet (r : ℕ × ℕ × ℕ × ℕ × ℕ) : Set Point :=
+noncomputable abbrev rSet : Set Point :=
   stopSet J (Qof P) N r.2.2.1 r.2.2.2.1 r.2.2.2.2
 
 /-- **A valid raw record**: admissible codes with a free direction, the chord attached at the
 position on the `C₁` part, which is its left end (`d = 1`) or its right end (`d = 0`). -/
-def RawOK (r : ℕ × ℕ × ℕ × ℕ × ℕ) (d : ℕ) : Prop :=
+def RawOK (d : ℕ) : Prop :=
   StOK P J N r.2.2.1 r.2.2.2.1 r.2.2.2.2 ∧
     FreeAt J.whole (stOrig J (Qof P) N r.2.2.1 r.2.2.2.1 r.2.2.2.2) (dirOf r.2.2.2.2) ∧
     SideAttach (chainModel J.whole).W (rSet P J N r) r.1 (rPar P J r) ∧
     (Lst J : ℝ) ≤ oW J (r.1 + rPar P J r) ∧ d ≤ 1 ∧
     sidePt (chainModel J.whole).W r.1 (rPar P J r) =
       (if d = 1 then Merge.lend (rSet P J N r) else Merge.rend (rSet P J N r))
+
+
+end
 
 end Raw
 
@@ -195,9 +197,11 @@ theorem offK_eq (P : Polygon) (J : Merge.Junction) (e h : ℕ) :
 
 variable {P : Polygon} {J : Merge.Junction} {N : NF}
 
+section
+variable (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) {r r' : ℕ × ℕ × ℕ × ℕ × ℕ} {d d' : ℕ} (h : RawOK P J N r d) (h' : RawOK P J N r' d')
+include hP hN h h'
 /-- Two valid raw records with the same key have the same position and chord. -/
-theorem raw_eq_of_key (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N)
-    {r r' : ℕ × ℕ × ℕ × ℕ × ℕ} {d d' : ℕ} (h : RawOK P J N r d) (h' : RawOK P J N r' d')
+theorem raw_eq_of_key
     (hk : rKey P J r d = rKey P J r' d') :
     r.1 = r'.1 ∧ rPar P J r = rPar P J r' ∧ rSet P J N r = rSet P J N r' := by
   have hS₂ := hN.1
@@ -222,8 +226,7 @@ theorem raw_eq_of_key (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) 
   · exact aug_eq_of_rend ha ha' hpt
 
 /-- The leaving direction code is determined by the position and the chord. -/
-theorem raw_dc_eq (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N)
-    {r r' : ℕ × ℕ × ℕ × ℕ × ℕ} {d d' : ℕ} (h : RawOK P J N r d) (h' : RawOK P J N r' d')
+theorem raw_dc_eq
     (he : r.1 = r'.1) (ht : rPar P J r = rPar P J r') (hs : rSet P J N r = rSet P J N r') :
     rKey P J r d = rKey P J r' d' := by
   have hS₂ := hN.1
@@ -235,16 +238,10 @@ theorem raw_dc_eq (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N)
       sidePt (chainModel J.whole).W r'.1 (rPar P J r') := by rw [he, ht]
   rw [hend, hend', ← hs] at hpt
   have hne := lend_ne_rend ha
-  have hdd : d = d' := by
-    split_ifs at hpt with h1 h2 h2
-    · omega
-    · exact absurd hpt hne
-    · exact absurd hpt.symm hne
-    · omega
-  unfold rKey
-  rw [offK_eq, offK_eq, hdd]
-  show ((oW J (r.1 + rPar P J r)), d') = (oW J (r'.1 + rPar P J r'), d')
-  rw [he, ht]
+  core_grind [offK_eq]
+
+
+end
 
 /-- **The stop list from the deduped raw records** (a list `O` of raw items with strictly
 increasing keys covering the keys of all raw items). -/
@@ -262,30 +259,26 @@ theorem stopsOK_of' {α : Type*} (hP : J.P.Simple) (hN : IsNF (chainModel J.righ
   have hO : ∀ y ∈ O, RawOK P J N (rec y) (dc y) := fun y hy => hok y (hsub y hy)
   have hst : stopsOf J (Qof P) N (O.map rec) =
       O.map (fun y => ((rec y).1, rPar P J (rec y), rSet P J N (rec y))) := by
-    unfold stopsOf; rw [List.map_map]; rfl
+    unfold stopsOf; simp_all
   rw [hst]
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro s hs
     obtain ⟨y, hy, rfl⟩ := List.mem_map.1 hs
     obtain ⟨hk, hf, hA, hL, -, -⟩ := hO y hy
     obtain ⟨hm, hsc⟩ := stop_mem hP hN hk hf
-    exact ⟨hm, hsc, hA, hL⟩
+    ram_grind
   · intro e he hsc p t hA hL
     obtain ⟨x, hx, h1, h2, h3⟩ := hcomp e he hsc p t hA hL
     obtain ⟨y, hy, hky⟩ := hcov x hx
     obtain ⟨e1, e2, e3⟩ := raw_eq_of_key hP hN (hO y hy) (hok x hx) hky
-    refine List.mem_map.2 ⟨y, hy, ?_⟩
-    rw [e1, e2, e3, h1, h2, h3]
+    ram_grind
   · rw [List.pairwise_map]
     exact hinc.imp fun {a b} h => by
       have := KLt.fst_le h
-      simp only [rKey, offK_eq] at this
-      exact this
+      grind [rKey, offK_eq]
   · rw [List.Nodup, List.pairwise_map]
     refine List.Pairwise.imp_of_mem (fun {a b} ha hb h heq => ?_) hinc
-    obtain ⟨h1, h2⟩ := Prod.ext_iff.1 heq
-    obtain ⟨h2, h3⟩ := Prod.ext_iff.1 h2
-    exact KLt.ne h (raw_dc_eq hP hN (hO a ha) (hO b hb) h1 h2 h3)
+    grind [Chazelle.Core.SweepStop.KLt.ne, Chazelle.Core.SweepStop.raw_dc_eq]
 
 end SweepStop
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildRegCnt
 public import Chazelle.Core.SortRam
 
@@ -26,19 +28,19 @@ open Machine Machine.Stmt Programs SignK
 /-- The offset of region `r` in the list table. -/
 def offF (cA cC : ℕ → ℕ) (r : ℕ) : ℕ := ((List.range r).map fun r' => cA r' + cC r').sum
 
-theorem offF_succ (cA cC : ℕ → ℕ) (r : ℕ) : offF cA cC (r + 1) = offF cA cC r + cA r + cC r := by
-  unfold offF
-  rw [List.range_succ, List.map_append, List.sum_append]
-  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
-  try omega
+section
+variable (cA cC : ℕ → ℕ)
+theorem offF_succ (r : ℕ) : offF cA cC (r + 1) = offF cA cC r + cA r + cC r := by
+  simp_all [offF, List.range_succ, List.map_append, List.sum_append, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil] <;> omega_nf
 
-theorem offF_mono (cA cC : ℕ → ℕ) {r r' : ℕ} (h : r ≤ r') : offF cA cC r ≤ offF cA cC r' := by
+theorem offF_mono {r r' : ℕ} (h : r ≤ r') : offF cA cC r ≤ offF cA cC r' := by
   induction r' with
-  | zero => rw [Nat.le_zero.1 h]
+  | zero => simp_all
   | succ n ih =>
-    rcases Nat.lt_or_ge r (n + 1) with h' | h'
-    · rw [offF_succ]; have := ih (by omega); omega
-    · rw [show r = n + 1 by omega]
+    grind [offF_succ]
+
+
+end
 
 /-- The word `q` of the region table. -/
 def rtv (cA cC wR : ℕ → ℕ) (q : ℕ) : ℕ :=
@@ -56,12 +58,13 @@ def recRMem (m₁ : ℕ → ℕ) (RT FA R : ℕ) (cA cC wR : ℕ → ℕ) (n a :
 theorem rtv_eq (cA cC wR : ℕ → ℕ) (r f : ℕ) (hf : f < 5) :
     rtv cA cC wR (5 * r + f) = if f = 0 then cA r else if f = 1 then offF cA cC r
       else if f = 2 then cC r else if f = 3 then offF cA cC r + cA r else wR r := by
-  unfold rtv
-  rw [show (5 * r + f) % 5 = f by omega, show (5 * r + f) / 5 = r by omega]
+  grind [rtv]
 
+section
+variable (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) {n : ℕ} (hn : n < R) (hlay : RT + 5 * R ≤ FA ∨ FA + 2 * R ≤ RT)
+include hn hlay
 /-- The memory step of the region records. -/
-theorem recR_step (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) {n : ℕ} (hn : n < R)
-    (hlay : RT + 5 * R ≤ FA ∨ FA + 2 * R ≤ RT) (a : ℕ) :
+theorem recR_step (a : ℕ) :
     upd (upd (upd (upd (upd (upd (upd (recRMem m₁ RT FA R cA cC wR n) (RT + 5 * n) (cA n))
       (RT + 5 * n + 1) (offF cA cC n)) (RT + 5 * n + 2) (cC n))
       (RT + 5 * n + 3) (offF cA cC n + cA n)) (RT + 5 * n + 4) (wR n))
@@ -78,7 +81,7 @@ theorem recR_step (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) 
       (FA + R ≤ a ∧ a < FA + R + n) ∨ a = FA + R + n ∨ FA + R + n + 1 ≤ a := by omega
   rcases hr with h | h | ⟨f, hf, rfl⟩ | h | h
   · rcases hq with h' | h' | rfl | h' | h' | rfl | h' <;> ifs_omega <;>
-      first | rfl | omega | (congr 1; omega) | (congr 1 <;> congr 1 <;> omega)
+      simp_all
   · ifs_omega
   · interval_cases f <;> ifs_omega <;>
       first
@@ -94,13 +97,12 @@ theorem recR_step (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) 
         | (rw [show RT + 5 * n + 4 - RT = 5 * n + 4 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
            rfl)
   · rcases hq with h' | h' | rfl | h' | h' | rfl | h' <;> ifs_omega <;>
-      first | rfl | omega
+      omega
   · rcases hq with h' | h' | rfl | h' | h' | rfl | h' <;> ifs_omega <;>
-      first | rfl | omega | (congr 1; omega) | (congr 1 <;> congr 1 <;> omega)
+      simp_all
 
 /-- `recR_step` with the addresses and values given by equations. -/
-theorem recR_step' (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) {n : ℕ} (hn : n < R)
-    (hlay : RT + 5 * R ≤ FA ∨ FA + 2 * R ≤ RT) {M : ℕ → ℕ}
+theorem recR_step' {M : ℕ → ℕ}
     (hM : M = recRMem m₁ RT FA R cA cC wR n)
     {a0 a1 a2 a3 a4 a5 a6 v0 v1 v2 v3 v4 v5 v6 : ℕ}
     (e0 : a0 = RT + 5 * n) (e1 : a1 = RT + 5 * n + 1) (e2 : a2 = RT + 5 * n + 2)
@@ -113,6 +115,9 @@ theorem recR_step' (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ)
   subst a0 a1 a2 a3 a4 a5 a6 v0 v1 v2 v3 v4 v5 v6 M
   funext a
   exact recR_step m₁ cA cC wR hn hlay a
+
+
+end
 
 /-- The region records and the fill pointers. -/
 def regRecLoop : Stmt :=
@@ -134,7 +139,6 @@ def regRecLoop : Stmt :=
 /-- The registers `regRecLoop` writes. -/
 def BregRec (r : ℕ) : Bool := decide (r = 43201) || decide (43210 ≤ r ∧ r < 43218)
 
-theorem wr_regRecLoop : wrM BregRec regRecLoop = true := by decide
 
 section exec
 
@@ -158,11 +162,11 @@ theorem regRecLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ
       FrameM BregRec d e ∧ e.nmem = recRMem (regMem m₀ CA R cA cC wR) RT FA R cA cC wR n)
     (fun e => 28 * (R - e.nreg 43201)) (fun e => 26 * e.nreg 43201) (fun e he => he.1)
     (fun e ⟨hwe, n, hne, hnR, hPe, hfe, hme⟩ htest => by
-      have r1 : e.nreg 44008 = CA := by rw [hfe.1 _ (by decide), hCA]
-      have r2 : e.nreg 43200 = R := by rw [hfe.1 _ (by decide), hR]
-      have r4 : e.nreg 43011 = 1 := by rw [hfe.1 _ (by decide), h1]
-      have r5 : e.nreg 44003 = RT := by rw [hfe.1 _ (by decide), hRT]
-      have r6 : e.nreg 44011 = FA := by rw [hfe.1 _ (by decide), hFA]
+      have r1 : e.nreg 44008 = CA := by ram_grind
+      have r2 : e.nreg 43200 = R := by ram_grind
+      have r4 : e.nreg 43011 = 1 := by ram_grind
+      have r5 : e.nreg 44003 = RT := by ram_grind
+      have r6 : e.nreg 44011 = FA := by ram_grind
       rw [hne, r2] at htest
       have ma : e.nmem (CA + n) = cA n := by
         rw [hme]; unfold recRMem
@@ -200,14 +204,14 @@ theorem regRecLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ
           | skip
         refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp
         · rw [hne, r4]
-        · rw [r1, r2, hne, hPe, ma, mc]; omega
+        · ram_simp
         · rw [r1, r2, r4, r5, r6, hne, hPe, ma, mc, mw]
           exact recR_step' _ cA cC wR htest hlay hme (by omega) (by omega) (by omega) (by omega)
             (by omega) (by omega) (by omega) rfl rfl rfl rfl rfl rfl rfl
       obtain ⟨e', k, x, hk, hn', hP', hm'⟩ := X
       exact ⟨e', k, x, ⟨x.wb_right, n + 1, hn', by omega, hP',
-        hfe.trans (exec_frameM x (by decide)), hm'⟩, by rw [hn', hne]; omega,
-        by rw [hn', hne]; omega⟩)
+        hfe.trans (exec_frameM x (by decide)), hm'⟩, by omega_nf,
+        by omega_nf⟩)
     ⟨hw, 0, hi, Nat.zero_le _, by rw [hP]; rfl, FrameM.refl _ _, by
       rw [hm]; funext a; unfold recRMem; rw [ite_eq_right (by omega), ite_eq_right (by omega),
         ite_eq_right (by omega)]⟩

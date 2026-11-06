@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseMathRec
 
 /-!
@@ -32,8 +34,11 @@ section
 
 variable {M : Model} {N : NF}
 
+section
+variable (hN : IsNF M Q N)
+include hN
 /-- **Chord positions with the same key are equal** (distinct heights). -/
-theorem chordPos_eq (hN : IsNF M Q N) (hdh : DistinctHeights Q) {x x' : WPos}
+theorem chordPos_eq (hdh : DistinctHeights Q) {x x' : WPos}
     (hx : ChordPos N x) (hx' : ChordPos N x') (hk : M.key Q x = M.key Q x') : x = x' := by
   obtain ⟨i, hi, hxi⟩ := hx
   obtain ⟨i', hi', hxi'⟩ := hx'
@@ -42,15 +47,14 @@ theorem chordPos_eq (hN : IsNF M Q N) (hdh : DistinctHeights Q) {x x' : WPos}
   rw [ek, ek'] at hk
   obtain ⟨he, hp⟩ := key_inj hA.2.1 hA.2.2.1 hA'.2.1 hA'.2.2.1 hk
   have hyy : (Q.vtx (N.chord i).h).2 = (Q.vtx (N.chord i').h).2 := by
-    rw [← hy, ← hy', he, hp]
+    simp_all
   have hhh : (N.chord i).h = (N.chord i').h := by
     by_contra hne; exact hdh _ _ hh hh' hne hyy
   cases x; cases x'
-  simp only at he eh eh'
-  rw [he, eh, eh', hhh]
+  simp_all
 
 /-- **The two ends of a chord record have distinct keys.** -/
-theorem chordPos_ne (hN : IsNF M Q N) (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) :
+theorem chordPos_ne (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) :
     M.key Q (N.chord i).lpos ≠ M.key Q (N.chord i).rpos := by
   intro hk
   obtain ⟨hmem, hA, ek, -, -, -⟩ := chordPos_attach hN hi (Or.inl rfl)
@@ -58,7 +62,7 @@ theorem chordPos_ne (hN : IsNF M Q N) (hM : WalkAx M) {i : ℕ} (hi : i < N.nCho
   rw [ek, ek'] at hk
   obtain ⟨he, hp⟩ := key_inj hA.2.1 hA.2.2.1 hA'.2.1 hA'.2.2.1 hk
   have hP : M.pos Q (N.chord i).lpos = M.pos Q (N.chord i).rpos := by
-    unfold Model.pos; rw [he, hp]
+    simp_all [Model.pos] 
   have hF := hN.1.2.1 hmem
   obtain ⟨a, b, hab, hcab, -⟩ := hM.ends _ hF
   have ha : a ∈ (N.chord i).toSet M Q := by rw [hcab]; exact Geometry.left_mem_segment _ _
@@ -68,7 +72,10 @@ theorem chordPos_ne (hN : IsNF M Q N) (hM : WalkAx M) {i : ℕ} (hi : i < N.nCho
   apply hab
   obtain ⟨ha2, ha1, ha1'⟩ := ha
   obtain ⟨hb2, hb1, hb1'⟩ := hb
-  exact Prod.ext (by linarith) (ha2.trans hb2.symm)
+  grind
+
+
+end
 
 end
 
@@ -91,12 +98,12 @@ theorem atVtx_iff {N : NF} (hN : IsNF (interiorModel Q) Q N) (hdh : DistinctHeig
           if ((interiorModel Q).wa x.edge).2 = ((interiorModel Q).wb x.edge).2 then 0
           else ((Q.vtx (N.chord i).h).2 - ((interiorModel Q).wa x.edge).2) /
             (((interiorModel Q).wb x.edge).2 - ((interiorModel Q).wa x.edge).2) := by
-        unfold Model.param; rw [eh]
+        grind [Model.param]
       rw [e]
       split_ifs
       · rfl
       · rw [h]; unfold Model.wa; rw [hW, walk_vtx hli hp, sub_self, zero_div]
-    rw [hpar, add_zero]
+    simp_all
   · intro h
     have hp0 : (interiorModel Q).param Q x = 0 := by linarith
     rw [hp0, Chazelle.Chain.sidePt_zero, hW, walk_vtx hli hp] at hy
@@ -112,24 +119,12 @@ theorem partner_spec {N : NF} {r : ℕ} {x : WPos}
   obtain ⟨i, hi, hx⟩ := hxc
   set p : ℕ → Bool := fun i => decide ((N.chord i).lpos = x ∨ (N.chord i).rpos = x) with hp
   have hsome : ((N.region r).chords.find? p).isSome := by
-    rw [List.find?_isSome]
-    refine ⟨i, hi, ?_⟩
-    simp only [hp, decide_eq_true_eq]
-    rcases hx with h | h
-    · exact Or.inl h.symm
-    · exact Or.inr h.symm
+    grind
   obtain ⟨i₀, h₀⟩ := Option.isSome_iff_exists.1 hsome
   have hpi := List.find?_some h₀
   have hmi := List.mem_of_find?_eq_some h₀
   simp only [hp, decide_eq_true_eq] at hpi
-  refine ⟨i₀, hmi, ?_⟩
-  unfold partner
-  rw [show (N.region r).chords.find? (fun i => decide ((N.chord i).lpos = x ∨ (N.chord i).rpos = x))
-    = some i₀ from h₀]
-  simp only
-  by_cases hl : (N.chord i₀).lpos = x
-  · left; rw [ite_eq_left hl]; exact ⟨hl.symm, rfl⟩
-  · right; rw [ite_eq_right hl]; exact ⟨(hpi.resolve_left hl).symm, rfl⟩
+  grind [partner]
 
 /-! ## The arcs of a region record -/
 
@@ -157,9 +152,7 @@ theorem regArcs_facts (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L
   have hN := isNF_build (E := E) hQ hL hperm hsort
   obtain ⟨-, -, -, -, -, -, -, -, ⟨-, hseq⟩, -, -⟩ := hN
   have hnr : r < L.length + 1 := by
-    have : (buildNF (interiorModel Q) Q L E).nRegions = L.length + 1 := by
-      simp [NF.nRegions, buildNF]
-    omega
+    grind [NF.nRegions, buildNF]
   have hsorted : as.Pairwise (· < ·) := region_arcs_sorted hK hnr
   have hget : ∀ t (ht : t < as.length), as.getD t 0 = as[t]'ht := fun t ht =>
     List.getD_eq_getElem _ _ ht
@@ -169,10 +162,7 @@ theorem regArcs_facts (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L
     rw [hget t ht]
     exact (hA4 r hr _).1 (List.getElem_mem ht)
   refine ⟨fun t ht => ?_, fun t t' htt ht' => ?_, fun a b hab => ?_⟩
-  · obtain ⟨hj, hreg⟩ := hmem t ht
-    have := (hA1 _ hj).2
-    rw [hreg] at this
-    exact ⟨hj, this⟩
+  · ram_grind
   · obtain ⟨hj, hreg⟩ := hmem t (by omega)
     obtain ⟨hj', hreg'⟩ := hmem t' ht'
     have hlt : as.getD t 0 < as.getD t' 0 := by
@@ -181,16 +171,14 @@ theorem regArcs_facts (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L
     have hle : (interiorModel Q).key Q (N.arc (as.getD t 0)).s ≤
         (interiorModel Q).key Q (N.arc (as.getD t' 0)).s := by
       have := List.pairwise_iff_getElem.1 hseq (as.getD t 0) (as.getD t' 0)
-        (by rw [DownDrv.buildNF_seq, List.length_range]; exact lt_trans hlt hj')
-        (by rw [DownDrv.buildNF_seq, List.length_range]; exact hj') hlt
+        (by grind [DownDrv.buildNF_seq, List.length_range])
+        (by grind [DownDrv.buildNF_seq, List.length_range]) hlt
       simpa [DownDrv.buildNF_seq] using this
-    refine lt_of_le_of_ne hle fun he => ?_
-    have := hA2 _ _ hj hj' (hreg.trans hreg'.symm) he
-    omega
+    grind
   · obtain ⟨j, hj, hreg, hs, he⟩ := hA3 r hr a b hab
     have hjm : j ∈ as := (hA4 r hr j).2 ⟨hj, hreg⟩
     obtain ⟨t, ht, htj⟩ := List.getElem_of_mem hjm
-    exact ⟨t, ht, by rw [hget t ht, htj, hs], by rw [hget t ht, htj, he]⟩
+    grind
 
 end
 

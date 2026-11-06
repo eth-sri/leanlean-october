@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopTasks2
 public import Chazelle.Core.SweepEvStopTasks
 public import Chazelle.Core.SweepEvStopL
@@ -45,20 +47,18 @@ theorem slInc_irs (hK : Consts c₀) : ∀ (n : ℕ) {c : Config}, IInv W c₀ c
   | 0, c, hI, _ => IRS.skip hI ⟨rfl, fun _ _ => rfl, rfl⟩
   | n + 1, c, hI, hroom => by
     have k1 : c.nreg K1 = 1 := (hK.fix hI).2.1
-    have ex := Exec.addN (P := P) hI.hw ALLOC ALLOC K1 (by rw [k1]; omega)
+    have ex := Exec.addN (P := P) hI.hw ALLOC ALLOC K1 (by omega)
     have h1 : IRS P W c₀ (.instr (.addN ALLOC ALLOC K1)) c 1 (fun c' =>
         c' = { c with nreg := upd c.nreg ALLOC (c.nreg ALLOC + c.nreg K1) }) := by
       refine IRS.ofExec hI ex le_rfl (fun r _ hr => ?_) rfl (fun _ _ => rfl) rfl rfl
-        (by dsimp only; rw [upd_same]; omega) (by dsimp only; rw [upd_same, k1]) rfl
-      dsimp only; rw [upd_other _ _ _ hr]
+        (by simp_all) (by simp_all) rfl
+      simp_all
     refine (IRS.seq (K₂ := n) h1 ?_).mono (by omega) (fun _ h => h)
     rintro c₁ hI₁ - - rfl
     have hA : ({ c with nreg := upd c.nreg ALLOC (c.nreg ALLOC + c.nreg K1) } : Config).nreg ALLOC =
-        c.nreg ALLOC + 1 := by dsimp only; rw [upd_same, k1]
-    refine (slInc_irs hK n hI₁ (by rw [hA]; omega)).mono le_rfl ?_
-    rintro c' ⟨a1, a2, a3⟩
-    refine ⟨by rw [a1, hA]; ring, fun r hr => ?_, a3⟩
-    rw [a2 r hr]; dsimp only; rw [upd_other _ _ _ hr]
+        c.nreg ALLOC + 1 := by simp_all
+    refine (slInc_irs hK n hI₁ (by omega)).mono le_rfl ?_
+    simp_all +arith
 
 
 /-- The raw records only read their eleven words. -/
@@ -69,12 +69,7 @@ theorem slRawV_congr {J : Merge.Junction} {N : NF} {m m' : ℕ → ℕ} {RB i : 
     unfold rawRec
     rw [show RB + 11 * i = RB + 11 * i + 0 by ring, h 0 (by norm_num), h 1 (by norm_num),
       h 3 (by norm_num), h 4 (by norm_num), h 5 (by norm_num)]
-  have e2 : rawDc m' RB i = rawDc m RB i := by unfold rawDc; rw [h 2 (by norm_num)]
-  have e3 : rawAux m' RB i = rawAux m RB i := by
-    unfold rawAux
-    rw [h 6 (by norm_num), h 7 (by norm_num), h 8 (by norm_num), h 9 (by norm_num),
-      h 10 (by norm_num)]
-  unfold RawV at *; rw [e1, e2, e3]; exact hv
+  simp_all [rawDc, rawAux, RawV]
 
 /-- **The invariant of the origin loop** (`M1` the configuration after `md2Init`, the raw array
 at `A0 = M1.ALLOC`, `u` codes done, the set `D` of done codes). -/
@@ -95,13 +90,7 @@ structure SlpInv (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c M1 : Config) 
   regs : ∀ r, bandOf r ∉ oracleBands → ¬ S2R r → r ≠ ALLOC → c'.nreg r = c.nreg r
 
 theorem slpOrgR_S2R {r : ℕ} (h : SOrgR r) : S2R r := by
-  unfold SOrgR at h; unfold S2R
-  rcases h with h | h | h | h | h
-  · exact Or.inl h
-  · right; right; subst h; unfold gRC sw; omega
-  · right; right; unfold sw at *; omega
-  · right; right; unfold sw at *; omega
-  · right; right; unfold sw at *; omega
+  omega_nf
 
 /-- The model context of `C₂` along the invariant. -/
 theorem SlpInv.ctx {J : Merge.Junction} {N₂ : NF} {c M1 c' : Config} {u : ℕ}
@@ -109,16 +98,16 @@ theorem SlpInv.ctx {J : Merge.Junction} {N₂ : NF} {c M1 c' : Config} {u : ℕ}
     (hctx : MCtx P W J.right N₂ (c₀.nreg TBR) gMD2 gCD2 (sw 4) M1)
     (hIM : IInv W c₀ M1) (hI' : IInv W c₀ c') :
     MCtx P W J.right N₂ (c₀.nreg TBR) gMD2 gCD2 (sw 4) c' := by
-  have hA1 : M1.nreg ALLOC ≤ c'.nreg ALLOC := by have := hS.room; omega
+  have hA1 : M1.nreg ALLOC ≤ c'.nreg ALLOC := by ram_grind
   refine hctx.transport (fun r hr => ?_) (fun a ha => hS.memM a ha) hA1
   rcases hr with rfl | rfl | rfl | rfl | rfl
-  · exact hS.regM.1
-  · exact hS.regM.2
-  · exact (hI'.hin _ (by unfold IFix sw; omega)).trans (hIM.hin _ (by unfold IFix sw; omega)).symm
-  · exact (hI'.hin _ (by unfold IFix TBR sw; omega)).trans
-      (hIM.hin _ (by unfold IFix TBR sw; omega)).symm
-  · exact (hI'.hin _ (by unfold IFix TLR sw; omega)).trans
-      (hIM.hin _ (by unfold IFix TLR sw; omega)).symm
+  · ram_grind
+  · ram_grind
+  · exact (hI'.hin _ (by omega_nf)).trans (hIM.hin _ (by omega_nf)).symm
+  · exact (hI'.hin _ (by omega_nf)).trans
+      (hIM.hin _ (by omega_nf)).symm
+  · exact (hI'.hin _ (by omega_nf)).trans
+      (hIM.hin _ (by omega_nf)).symm
 
 set_option maxHeartbeats 4000000 in
 /-- **One per-origin step** keeps the invariant and adds its code. -/
@@ -133,21 +122,21 @@ theorem slOrg_step {J : Merge.Junction} {N₂ : NF} {M1 c' c'' : Config} {u : �
   rw [hS.rb] at o3 o4 o5
   have keepOld : ∀ i, i < c'.nreg gRC → ∀ j, j < 11 →
       c''.nmem (M1.nreg ALLOC + 11 * i + j) = c'.nmem (M1.nreg ALLOC + 11 * i + j) :=
-    fun i hi j hj => o5 _ (by have := hS.room; have := hS.cnt; nlinarith) (Or.inl (by nlinarith))
+    fun i hi j hj => o5 _ (by have := hS.room; omega) (Or.inl (by nlinarith))
   have hR : ∀ r, 240000 ≤ r → r < 250000 → ¬ SOrgR r → c''.nreg r = c'.nreg r := fun r h1 h2 h3 =>
-    o7 r (not_oracle_sw h1 h2) h3 (by unfold ALLOC; omega)
-  have rB : c''.nreg gRB = c'.nreg gRB := hR _ (by unfold gRB sw; omega) (by unfold gRB sw; omega)
-    (by unfold SOrgR gRB gRC sw; omega)
-  have rM : c''.nreg gMD2 = c'.nreg gMD2 := hR _ (by unfold gMD2 sw; omega)
-    (by unfold gMD2 sw; omega) (by unfold SOrgR gMD2 gRC sw; omega)
-  have rC : c''.nreg gCD2 = c'.nreg gCD2 := hR _ (by unfold gCD2 sw; omega)
-    (by unfold gCD2 sw; omega) (by unfold SOrgR gCD2 gRC sw; omega)
+    o7 r (not_oracle_sw h1 h2) h3 (by omega_nf)
+  have rB : c''.nreg gRB = c'.nreg gRB := hR _ (by omega_nf) (by omega_nf)
+    (by omega_nf)
+  have rM : c''.nreg gMD2 = c'.nreg gMD2 := hR _ (by omega_nf)
+    (by omega_nf) (by omega_nf)
+  have rC : c''.nreg gCD2 = c'.nreg gCD2 := hR _ (by omega_nf)
+    (by omega_nf) (by omega_nf)
   refine ⟨⟨by rw [rB, hS.rb], by have := hS.room; omega, by omega,
     fun i hi => ?_, fun kind k b hD hOD p t hA hL => ?_, fun a ha => ?_,
     ⟨by rw [rM, hS.regM.1], by rw [rC, hS.regM.2]⟩, fun r h0 h1 h2 => ?_⟩, o7⟩
   · by_cases hi' : i < c'.nreg gRC
     · exact slRawV_congr (keepOld i hi') (hS.valid i hi')
-    · exact o3 i (by omega) hi
+    grind
   · rcases hD with hD | ⟨rfl, rfl, rfl⟩
     · obtain ⟨i, hi, e1, e2, e3⟩ := hS.compl kind k b hD hOD p t hA hL
       have hrr : rawRec c''.nmem (M1.nreg ALLOC) i = rawRec c'.nmem (M1.nreg ALLOC) i := by
@@ -155,10 +144,9 @@ theorem slOrg_step {J : Merge.Junction} {N₂ : NF} {M1 c' c'' : Config} {u : �
         rw [show M1.nreg ALLOC + 11 * i = M1.nreg ALLOC + 11 * i + 0 by ring,
           keepOld i hi 0 (by norm_num), keepOld i hi 1 (by norm_num),
           keepOld i hi 3 (by norm_num), keepOld i hi 4 (by norm_num), keepOld i hi 5 (by norm_num)]
-      exact ⟨i, by omega, by rw [hrr]; exact e1, by rw [hrr]; exact e2, by rw [hrr]; exact e3⟩
-    · obtain ⟨i, hi1, hi2, e1, e2, e3⟩ := o4 hOD p t hA hL
-      exact ⟨i, hi2, e1, e2, e3⟩
-  · rw [o5 a (by have := hS.room; omega) (Or.inl (by have := hS.room; omega)), hS.memM a ha]
+      grind
+    grind
+  · rw [o5 a (by have := hS.room; omega) (Or.inl (by omega)), hS.memM a ha]
   · rw [o7 r h0 (fun h => h1 (slpOrgR_S2R h)) h2, hS.regs r h0 h1 h2]
 
 /-- The invariant survives changes of the code and loop registers `sw 4010 … sw 4999`. -/
@@ -166,19 +154,7 @@ theorem SlpInv.regChange {J : Merge.Junction} {N₂ : NF} {c M1 c' c'' : Config}
     {D : ℕ → ℕ → ℕ → Prop} (h : SlpInv P J N₂ c M1 u D c')
     (hr : ∀ r, ¬ (sw 4010 ≤ r ∧ r < sw 5000) → c''.nreg r = c'.nreg r)
     (hm : c''.nmem = c'.nmem) : SlpInv P J N₂ c M1 u D c'' := by
-  have e : ∀ r, r < sw 4010 → c''.nreg r = c'.nreg r := fun r hr' => hr r (by omega)
-  have eA : c''.nreg ALLOC = c'.nreg ALLOC := e _ (by unfold ALLOC sw; omega)
-  have eB : c''.nreg gRB = c'.nreg gRB := e _ (by unfold gRB sw; omega)
-  have eC : c''.nreg gRC = c'.nreg gRC := e _ (by unfold gRC sw; omega)
-  refine ⟨by rw [eB]; exact h.rb, by rw [eA]; exact h.room, by rw [eC]; exact h.cnt,
-    fun i hi => by rw [hm]; exact h.valid i (by rw [← eC]; exact hi),
-    fun kind k b hD hOD p t hA hL => ?_, fun a ha => by rw [hm]; exact h.memM a ha,
-    ⟨by rw [e _ (by unfold gMD2 sw; omega)]; exact h.regM.1,
-      by rw [e _ (by unfold gCD2 sw; omega)]; exact h.regM.2⟩, fun r h0 h1 h2 => ?_⟩
-  · obtain ⟨i, hi, e1⟩ := h.compl kind k b hD hOD p t hA hL
-    exact ⟨i, by rw [eC]; exact hi, by rw [hm]; exact e1⟩
-  · rw [← h.regs r h0 h1 h2]
-    exact hr r (fun h' => h1 (by unfold S2R; right; right; unfold sw at *; omega))
+  grind [Chazelle.Core.SweepEv.SlpInv, ALLOC, sw, gRB, gRC, eA, gMD2, gCD2, S2R]
 
 /-- Set the code registers and run the per-origin step. -/
 def slCode (o : Stmt) (kd : ℕ) (ins : Instr) (b : ℕ) : Stmt :=
@@ -200,15 +176,15 @@ theorem slCode_irs {J : Merge.Junction} {N₂ : NF} {c₁ M1 : Config} {o : Stmt
     IRS P W c₀ (slCode o kd ins b) c (3 + Ko kd) (fun c' => SlpInv P J N₂ c₁ M1 (u + 1)
       (fun kind k b' => D kind k b' ∨ (kind = kd ∧ k = kv ∧ b' = b)) c' ∧
       c'.nreg slK = c.nreg slK ∧ c'.nreg slN = c.nreg slN ∧ c'.nreg slV = c.nreg slV) := by
-  have hKc := hA0.fix hI
+  
   have ok : okB W c.nmem [.constN oKd kd, ins, .constN oB b] c.nreg := by
     rcases hins with ⟨rfl, -⟩ | ⟨rfl, -⟩
-    · exact ⟨⟨iscr_sw (by unfold oKd sw; omega) (by unfold oKd sw; omega), by omega⟩,
-        ⟨iscr_sw (by unfold oKk sw; omega) (by unfold oKk sw; omega), by omega⟩,
-        ⟨iscr_sw (by unfold oB sw; omega) (by unfold oB sw; omega), by omega⟩, trivial⟩
-    · exact ⟨⟨iscr_sw (by unfold oKd sw; omega) (by unfold oKd sw; omega), by omega⟩,
-        iscr_sw (by unfold oKk sw; omega) (by unfold oKk sw; omega),
-        ⟨iscr_sw (by unfold oB sw; omega) (by unfold oB sw; omega), by omega⟩, trivial⟩
+    · exact ⟨⟨iscr_sw (by omega_nf) (by omega_nf), by omega⟩,
+        ⟨iscr_sw (by omega_nf) (by omega_nf), by omega⟩,
+        ⟨iscr_sw (by omega_nf) (by omega_nf), by omega⟩, trivial⟩
+    · exact ⟨⟨iscr_sw (by omega_nf) (by omega_nf), by omega⟩,
+        iscr_sw (by omega_nf) (by omega_nf),
+        ⟨iscr_sw (by omega_nf) (by omega_nf), by omega⟩, trivial⟩
   refine (IRS.seq (K₂ := Ko kd) (IRS.block _ hI ok) ?_).mono (by simp) (fun _ h => h)
   rintro c₂ hI₂ - - hc2
   have vals : c₂.nreg oKd = kd ∧ c₂.nreg oKk = kv ∧ c₂.nreg oB = b ∧
@@ -217,33 +193,31 @@ theorem slCode_irs {J : Merge.Junction} {N₂ : NF} {c₁ M1 : Config} {o : Stmt
     rcases hins with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
     all_goals
       simp only [regB, regI, oKd, oKk, oB, slK, sw, Nat.reduceAdd]
-      simp only [upd, Nat.reduceEqDiff, ite_true, ite_false]
-      refine ⟨trivial, trivial, trivial, fun r h1 h2 h3 => ?_, trivial⟩
-      simp only [h1, h2, h3, ite_false]
+      simp_all
   obtain ⟨v1, v2, v3, v4, v5⟩ := vals
   have hS2 : SlpInv P J N₂ c₁ M1 u D c₂ := hS.regChange (fun r hr => v4 r
-    (fun h => hr (by subst h; unfold oKd sw; omega)) (fun h => hr (by subst h; unfold oKk sw; omega))
-    (fun h => hr (by subst h; unfold oB sw; omega))) v5
-  have hA2 : c₂.nreg ALLOC = c.nreg ALLOC := v4 _ (by unfold oKd ALLOC sw; omega)
-    (by unfold oKk ALLOC sw; omega) (by unfold oB ALLOC sw; omega)
-  have hO2 := hO c₂ hI₂ (hS2.ctx hctx hIM hI₂) (by rw [v1]; exact hkd) (by rw [v3]; exact hb)
-    (by rw [v1, v2]; exact hk) (by rw [hS2.rb]; exact hIM.hA)
+    (fun h => hr (by ram_grind)) (fun h => hr (by grind [oKk, sw]))
+    (fun h => hr (by grind [oB, sw]))) v5
+  have hA2 : c₂.nreg ALLOC = c.nreg ALLOC := v4 _ (by omega_nf)
+    (by omega_nf) (by omega_nf)
+  have hO2 := hO c₂ hI₂ (hS2.ctx hctx hIM hI₂) (by omega) (by omega)
+    (by omega) (by rw [hS2.rb]; exact hIM.hA)
     (by rw [hS2.rb]; have := hS2.room; have := hS2.cnt; omega)
-    (by rw [v1, hA2]; omega)
+    (by grind)
   refine hO2.mono (le_of_eq (by rw [v1])) ?_
   intro c' hc'
   obtain ⟨h1, h2⟩ := slOrg_step hS2 hu hc'
   rw [v1, v2, v3] at h1
   refine ⟨h1, ?_, ?_, ?_⟩
-  · rw [h2 _ (not_oracle_sw (by unfold slK sw; omega) (by unfold slK sw; omega))
-      (by unfold SOrgR slK gRC sw; omega) (by unfold slK ALLOC sw; omega),
-      v4 _ (by unfold slK oKd sw; omega) (by unfold slK oKk sw; omega) (by unfold slK oB sw; omega)]
-  · rw [h2 _ (not_oracle_sw (by unfold slN sw; omega) (by unfold slN sw; omega))
-      (by unfold SOrgR slN gRC sw; omega) (by unfold slN ALLOC sw; omega),
-      v4 _ (by unfold slN oKd sw; omega) (by unfold slN oKk sw; omega) (by unfold slN oB sw; omega)]
-  · rw [h2 _ (not_oracle_sw (by unfold slV sw; omega) (by unfold slV sw; omega))
-      (by unfold SOrgR slV gRC sw; omega) (by unfold slV ALLOC sw; omega),
-      v4 _ (by unfold slV oKd sw; omega) (by unfold slV oKk sw; omega) (by unfold slV oB sw; omega)]
+  · rw [h2 _ (not_oracle_sw (by omega_nf) (by omega_nf))
+      (by omega_nf) (by omega_nf),
+      v4 _ (by omega_nf) (by omega_nf) (by omega_nf)]
+  · rw [h2 _ (not_oracle_sw (by omega_nf) (by omega_nf))
+      (by omega_nf) (by omega_nf),
+      v4 _ (by omega_nf) (by omega_nf) (by omega_nf)]
+  · rw [h2 _ (not_oracle_sw (by omega_nf) (by omega_nf))
+      (by omega_nf) (by omega_nf),
+      v4 _ (by omega_nf) (by omega_nf) (by omega_nf)]
 
 
 /-- The allocation of the raw array: `44` words per round, `slV` rounds. -/
@@ -259,32 +233,25 @@ theorem slAlloc_irs (hK : Consts c₀) (hI : IInv W c₀ c) (h0 : c.nreg slK = 0
   have hVW : V ≤ W := by omega
   refine (IRS.while (Kb := 45) (fun c' => c'.nreg ALLOC = c.nreg ALLOC + 44 * c'.nreg slK ∧
       c'.nreg slK ≤ V ∧ (∀ r, r ≠ slK → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem)
-      (fun c' => V - c'.nreg slK) ?_ ?_ hI ⟨by rw [h0]; ring, by omega, fun _ _ _ => rfl, rfl⟩
-      (by rw [h0]; omega)).mono (by rw [h0]; omega) ?_
-  · rintro c' ⟨-, -, hr, -⟩ ht
-    rw [hr slV (by unfold slV slK sw; omega) (by unfold slV ALLOC sw; omega)] at ht; omega
+      (fun c' => V - c'.nreg slK) ?_ ?_ hI ⟨by omega, by omega, fun _ _ _ => rfl, rfl⟩
+      (by omega)).mono (by omega) ?_
+  · ram_grind
   · rintro c' hI' ⟨a1, a2, a3, a4⟩ ht hroom'
-    have hV' : c'.nreg slV = V := a3 slV (by unfold slV slK sw; omega) (by unfold slV ALLOC sw; omega)
+    have hV' : c'.nreg slV = V := a3 slV (by omega_nf) (by omega_nf)
     rw [hV'] at ht
     refine IRS.seq (K₂ := 1) (slInc_irs hK 44 hI' (by omega)) ?_
     rintro c₁ hI₁ - - ⟨b1, b2, b3⟩
     have k1 : c₁.nreg K1 = 1 := (hK.fix hI₁).2.1
-    have hk1 : c₁.nreg slK = c'.nreg slK := b2 _ (by unfold slK ALLOC sw; omega)
-    refine (IRS.block [.addN slK slK K1] hI₁ ⟨⟨iscr_sw (by unfold slK sw; omega)
-      (by unfold slK sw; omega), by rw [k1, hk1]; omega⟩, trivial⟩).mono le_rfl ?_
+    have hk1 : c₁.nreg slK = c'.nreg slK := b2 _ (by omega_nf)
+    refine (IRS.block [.addN slK slK K1] hI₁ ⟨⟨iscr_sw (by omega_nf)
+      (by omega_nf), by omega⟩, trivial⟩).mono le_rfl ?_
     rintro c'' rfl
     have v : ∀ r, r ≠ slK → regB c₁.nmem [.addN slK slK K1] c₁.nreg r = c₁.nreg r := by
-      intro r hr; simp only [regB, regI]; exact upd_other _ _ _ hr
+      simp_all [regB, regI]
     have vk : regB c₁.nmem [.addN slK slK K1] c₁.nreg slK = c'.nreg slK + 1 := by
-      simp only [regB, regI, upd_same, k1, hk1]
-    dsimp only
-    refine ⟨⟨by rw [v _ (by unfold slK ALLOC sw; omega), b1, a1, vk]; ring, by rw [vk]; omega,
-      fun r h1 h2 => by rw [v r h1, b2 r h2, a3 r h1 h2], by rw [b3, a4]⟩, by rw [vk]; omega⟩
-  · rintro c' ⟨⟨a1, a2, a3, a4⟩, a5⟩
-    have hV' : c'.nreg slV = V := a3 slV (by unfold slV slK sw; omega) (by unfold slV ALLOC sw; omega)
-    rw [hV'] at a5
-    have : c'.nreg slK = V := by omega
-    exact ⟨by rw [a1, this], this, a3, a4⟩
+      simp_all [regB, regI, upd_same]
+    grind
+  grind
 
 
 /-- The codes done after the shared and top codes and the wall codes of the chords `< k₀`. -/
@@ -293,8 +260,7 @@ def slD (k₀ kind k b : ℕ) : Prop := b ≤ 1 ∧ (((kind = 0 ∨ kind = 2) �
 theorem SlpInv.monoD {J : Merge.Junction} {N₂ : NF} {c M1 c' : Config} {u u' : ℕ}
     {D D' : ℕ → ℕ → ℕ → Prop} (h : SlpInv P J N₂ c M1 u D c')
     (hD : ∀ kind k b, D' kind k b → D kind k b) (hu : u ≤ u') : SlpInv P J N₂ c M1 u' D' c' :=
-  ⟨h.rb, h.room, by have := h.cnt; omega, h.valid,
-    fun kind k b hd => h.compl kind k b (hD kind k b hd), h.memM, h.regM, h.regs⟩
+  by ram_grind
 
 /-- The loop over the chords of `N₂` (both directions). -/
 def slKLoop (o : Stmt) : Stmt :=
@@ -317,9 +283,9 @@ theorem slKLoop_irs {J : Merge.Junction} {N₂ : NF} {c₁ M1 : Config} {o : Stm
   have hKW : N₂.nChords ≤ W := by nlinarith
   refine (IRS.while (Kb := 7 + 2 * Ko 1) (fun c' => SlpInv P J N₂ c₁ M1 (4 + 2 * c'.nreg slK)
       (slD (c'.nreg slK)) c' ∧ c'.nreg slN = N₂.nChords ∧ c'.nreg slK ≤ N₂.nChords)
-      (fun c' => N₂.nChords - c'.nreg slK) ?_ ?_ hI ⟨by rw [h0]; exact hS, hN, by omega⟩
-      (by rw [h0]; simp; omega)).mono (by rw [h0]; simp) ?_
-  · rintro c' ⟨-, hN', -⟩ ht; rw [hN'] at ht; omega
+      (fun c' => N₂.nChords - c'.nreg slK) ?_ ?_ hI ⟨by simp_all, hN, by omega⟩
+      (by grind)).mono (by simp_all) ?_
+  · omega
   · rintro c' hI' ⟨hS', hN', hk'⟩ ht hroom'
     rw [hN'] at ht
     set k := c'.nreg slK with hk_def
@@ -328,43 +294,32 @@ theorem slKLoop_irs {J : Merge.Junction} {N₂ : NF} {c₁ M1 : Config} {o : Stm
       (by omega) (fun _ h => h)
     rintro c₂ hI₂ - hA₂' ⟨hS₂, k2, n2, -⟩
     refine (IRS.seq (K₂ := 1) (slCode_irs (kd := 1) (b := 1) hctx hO hK hIM hI₂ hS₂
-      (Or.inr ⟨rfl, rfl⟩) (by norm_num) (by norm_num) (fun _ => by rw [k2]; exact ht)
+      (Or.inr ⟨rfl, rfl⟩) (by norm_num) (by norm_num) (fun _ => by omega)
       (by omega) (by omega)) ?_).mono (by omega) (fun _ h => h)
     rintro c₃ hI₃ - - ⟨hS₃, k3, n3, -⟩
     have k1 : c₃.nreg K1 = 1 := (hK.fix hI₃).2.1
-    refine (IRS.block [.addN slK slK K1] hI₃ ⟨⟨iscr_sw (by unfold slK sw; omega)
-      (by unfold slK sw; omega), by rw [k1, k3, k2]; omega⟩, trivial⟩).mono le_rfl ?_
+    refine (IRS.block [.addN slK slK K1] hI₃ ⟨⟨iscr_sw (by omega_nf)
+      (by omega_nf), by omega⟩, trivial⟩).mono le_rfl ?_
     rintro c'' rfl
     have v : ∀ r, r ≠ slK → regB c₃.nmem [.addN slK slK K1] c₃.nreg r = c₃.nreg r := by
-      intro r hr; simp only [regB, regI]; exact upd_other _ _ _ hr
+      simp_all [regB, regI] <;> omega_nf
     have vk : regB c₃.nmem [.addN slK slK K1] c₃.nreg slK = k + 1 := by
-      simp only [regB, regI, upd_same, k1, k3, k2, hk_def]
+      simp_all [regB, regI, upd_same] <;> omega_nf
     have hS₄ := hS₃.regChange (c'' := { c₃ with nreg := regB c₃.nmem [.addN slK slK K1] c₃.nreg })
-      (fun r hr => v r (fun h => hr (by subst h; unfold slK sw; omega))) rfl
-    refine ⟨⟨?_, by dsimp only; rw [v _ (by unfold slN slK sw; omega), n3, n2, hN'],
-      by dsimp only; rw [vk]; omega⟩, by dsimp only; rw [vk]; omega⟩
+      (fun r hr => v r (fun h => hr (by grind [slK, sw]))) rfl
+    refine ⟨⟨?_, by grind,
+      by grind⟩, by grind⟩
     dsimp only at hS₄ ⊢
     rw [vk]
     refine hS₄.monoD ?_ (by omega)
-    rintro kind kk b ⟨hb, h | ⟨rfl, hlt⟩⟩
-    · exact Or.inl (Or.inl ⟨hb, Or.inl h⟩)
-    · rw [k2]
-      rcases Nat.lt_succ_iff_lt_or_eq.1 hlt with h | rfl
-      · exact Or.inl (Or.inl ⟨hb, Or.inr ⟨rfl, h⟩⟩)
-      · rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
-        · exact Or.inl (Or.inr ⟨rfl, rfl, rfl⟩)
-        · exact Or.inr ⟨rfl, rfl, rfl⟩
-  · rintro c' ⟨⟨hS', hN', hk'⟩, hex⟩
-    rw [hN'] at hex
-    have : c'.nreg slK = N₂.nChords := by omega
-    rw [this] at hS'
-    exact hS'
+    ram_grind
+  grind
 
 
 theorem slp_clog_le {K L : ℕ} (hL : L = Nat.clog 2 K) (_hK : 1 ≤ K) {x : ℕ} (hx : x ≤ 16 * K) :
     Nat.clog 2 x ≤ L + 4 := by
   have h1 : K ≤ 2 ^ L := by rw [hL]; exact Nat.le_pow_clog (by norm_num) K
-  have h2 : x ≤ 2 ^ (L + 4) := by rw [pow_add]; norm_num; omega
+  have h2 : x ≤ 2 ^ (L + 4) := by grind
   exact (Nat.clog_le_of_le_pow h2)
 
 theorem slp_cost (κo κs K₁ K₂ F T L : ℕ) (hL : L = Nat.clog 2 (K₁ + K₂ + 1)) (hT : T ≤ L + 3) :
@@ -378,15 +333,12 @@ theorem slp_cost (κo κs K₁ K₂ F T L : ℕ) (hL : L = Nat.clog 2 (K₁ + K�
   set Y := F + L + 1 with hY
   have hX : F + T + 1 ≤ 4 * Y := by omega
   have hY1 : 1 ≤ Y := by omega
-  have hK1 : 1 ≤ Kc := by omega
+  
   have e1 : κo * Kc * (F + T + 1) ≤ κo * Kc * (4 * Y) := Nat.mul_le_mul_left _ hX
-  have e2 : κo * 1 * (F + T + 1) ≤ κo * (4 * Y) := by rw [mul_one]; exact Nat.mul_le_mul_left _ hX
+  
   have e3 : κs * (4 * K₂ + 8 + 1) * (Nat.clog 2 (4 * K₂ + 8 + 1) + 1) ≤ κs * (9 * Kc) * (5 * Y) := by
     apply Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) (by omega)
-  have e4 : (7 + 2 * (κo * 1 * (F + T + 1)) + 2) * K₂ ≤ (9 + 8 * κo * Y) * Kc := by
-    apply Nat.mul_le_mul _ (by omega)
-    nlinarith
-  nlinarith
+  grind
 
 
 /-- The setup of the raw array. -/
@@ -445,7 +397,7 @@ theorem stopTask_of (hO : OrgTask) (hS : SortTask) : StopTask := by
   -- the setup
   have hKc1 := hK.fix hI₁
   have hNW : NFWithin c₁.nmem (c₁.nreg (sw 4)) (c₀.nreg ALLOC) N₂ := by
-    rw [hI₁.hin _ (by unfold IFix sw; omega)]
+    rw [hI₁.hin _ (by omega_nf)]
     exact E.hNW₂.transport fun b hb => hI₁.hm b hb
   have hK2m : c₁.nmem (c₁.nreg (sw 4)) = K₂ := hNW.holds.1
   have k2c : c₁.nreg K2 = 2 := hKc1.2.2.2.2.2.1
@@ -469,23 +421,23 @@ theorem stopTask_of (hO : OrgTask) (hS : SortTask) : StopTask := by
     refine ⟨trivial, trivial, trivial, trivial, trivial, fun r h1 h2 h3 h4 h5 => ?_, trivial⟩
     simp only [h1, h2, h3, h4, h5, ite_false]
   obtain ⟨v1, v2, v3, v4, v5, v6, v7⟩ := vals
-  have hAM : M1.nreg ALLOC = c₁.nreg ALLOC := v6 _ (by unfold gRB ALLOC sw; omega)
-    (by unfold gRC ALLOC sw; omega) (by unfold slN ALLOC sw; omega) (by unfold slV ALLOC sw; omega)
-    (by unfold slK ALLOC sw; omega)
+  have hAM : M1.nreg ALLOC = c₁.nreg ALLOC := v6 _ (by omega_nf)
+    (by omega_nf) (by omega_nf) (by omega_nf)
+    (by omega_nf)
   have hctxM : MCtx P W J.right N₂ (c₀.nreg TBR) gMD2 gCD2 (sw 4) M1 := by
     refine hctx₁.transport (fun r hr => ?_) (fun a _ => by rw [v7]) (by rw [hAM])
     rcases hr with rfl | rfl | rfl | rfl | rfl <;>
-      exact v6 _ (by simp only [gRB, gMD2, gCD2, TBR, TLR, sw]; omega)
-        (by simp only [gRC, gMD2, gCD2, TBR, TLR, sw]; omega)
-        (by simp only [slN, gMD2, gCD2, TBR, TLR, sw]; omega)
-        (by simp only [slV, gMD2, gCD2, TBR, TLR, sw]; omega)
-        (by simp only [slK, gMD2, gCD2, TBR, TLR, sw]; omega)
+      exact v6 _ (by omega_nf)
+        (by omega_nf)
+        (by omega_nf)
+        (by omega_nf)
+        (by omega_nf)
   -- the raw array
   refine IRS.seq (K₂ := R3) (slAlloc_irs hK hIM v5 (by rw [v4]; omega)) ?_ |>.mono
     (by rw [v4, hR2]) (fun _ h => h)
   rintro c₃ hI₃ hA3a hA3b ⟨a3, k3, r3, m3⟩
   refine IRS.seq (K₂ := R4) (IRS.block [.constN slK 0] hI₃
-    ⟨⟨iscr_sw (by unfold slK sw; omega) (by unfold slK sw; omega), Nat.zero_le _⟩, trivial⟩) ?_
+    ⟨⟨iscr_sw (by omega_nf) (by omega_nf), Nat.zero_le _⟩, trivial⟩) ?_
   rintro c₄ hI₄ hA4a hA4b hc4
   have v4' : ∀ r, r ≠ slK → c₄.nreg r = c₃.nreg r := fun r hr => by
     rw [hc4]; simp only [regB, regI]; exact upd_other _ _ _ hr
@@ -494,29 +446,29 @@ theorem stopTask_of (hO : OrgTask) (hS : SortTask) : StopTask := by
   have r4 : ∀ r, r ≠ slK → r ≠ ALLOC → c₄.nreg r = M1.nreg r := fun r h1 h2 => by
     rw [v4' r h1, r3 r h1 h2]
   have hA4 : c₄.nreg ALLOC = M1.nreg ALLOC + 44 * (K₂ + 2) := by
-    rw [v4' _ (by unfold slK ALLOC sw; omega), a3, v4]
+    rw [v4' _ (by omega_nf), a3, v4]
   have hS4 : SlpInv P J N₂ c M1 0 (fun _ _ _ => False) c₄ := by
-    refine ⟨by rw [r4 _ (by unfold gRB slK sw; omega) (by unfold gRB ALLOC sw; omega), v1, hAM],
-      by rw [hA4]; omega, by rw [r4 _ (by unfold gRC slK sw; omega) (by unfold gRC ALLOC sw; omega),
+    refine ⟨by rw [r4 _ (by omega_nf) (by omega_nf), v1, hAM],
+      by rw [hA4]; omega, by rw [r4 _ (by omega_nf) (by omega_nf),
       v2], fun i hi => ?_, fun _ _ _ h => h.elim, fun a _ => by rw [m4, m3],
-      ⟨r4 _ (by unfold gMD2 slK sw; omega) (by unfold gMD2 ALLOC sw; omega),
-        r4 _ (by unfold gCD2 slK sw; omega) (by unfold gCD2 ALLOC sw; omega)⟩,
+      ⟨r4 _ (by omega_nf) (by omega_nf),
+        r4 _ (by omega_nf) (by omega_nf)⟩,
       fun r h0 h1 h2 => ?_⟩
-    · rw [r4 _ (by unfold gRC slK sw; omega) (by unfold gRC ALLOC sw; omega), v2] at hi; omega
+    · rw [r4 _ (by omega_nf) (by omega_nf), v2] at hi; omega
     · have hS2R : ∀ x, sw 3000 ≤ x → x < sw 6000 → S2R x := fun x a b => Or.inr (Or.inr ⟨a, b⟩)
-      rw [r4 r (fun h => h1 (hS2R _ (by subst h; unfold slK sw; omega) (by subst h; unfold slK sw; omega))) h2,
-        v6 r (fun h => h1 (hS2R _ (by subst h; unfold gRB sw; omega) (by subst h; unfold gRB sw; omega)))
-          (fun h => h1 (hS2R _ (by subst h; unfold gRC sw; omega) (by subst h; unfold gRC sw; omega)))
-          (fun h => h1 (hS2R _ (by subst h; unfold slN sw; omega) (by subst h; unfold slN sw; omega)))
-          (fun h => h1 (hS2R _ (by subst h; unfold slV sw; omega) (by subst h; unfold slV sw; omega)))
-          (fun h => h1 (hS2R _ (by subst h; unfold slK sw; omega) (by subst h; unfold slK sw; omega)))]
+      rw [r4 r (fun h => h1 (hS2R _ (by subst h; omega_nf) (by subst h; omega_nf))) h2,
+        v6 r (fun h => h1 (hS2R _ (by subst h; omega_nf) (by subst h; omega_nf)))
+          (fun h => h1 (hS2R _ (by subst h; omega_nf) (by subst h; omega_nf)))
+          (fun h => h1 (hS2R _ (by subst h; omega_nf) (by subst h; omega_nf)))
+          (fun h => h1 (hS2R _ (by subst h; omega_nf) (by subst h; omega_nf)))
+          (fun h => h1 (hS2R _ (by subst h; omega_nf) (by subst h; omega_nf)))]
       exact r1 r (fun h => h1 (by
         unfold MD2W gMD2 gCD2 gTP gTV at h
-        rcases h with rfl | rfl | rfl | rfl <;> exact hS2R _ (by unfold sw; omega) (by unfold sw; omega))) h2
+        rcases h with rfl | rfl | rfl | rfl <;> omega_nf)) h2
   have hK4 : c₄.nreg slK = 0 := k4
   have hN4 : c₄.nreg slN = K₂ := by
-    rw [v4' _ (by unfold slN slK sw; omega), r3 _ (by unfold slN slK sw; omega)
-      (by unfold slN ALLOC sw; omega), v3]
+    rw [v4' _ (by omega_nf), r3 _ (by omega_nf)
+      (by omega_nf), v3]
   -- the shared and top codes
   refine IRS.seq (K₂ := R5) (slCode_irs (kd := 0) (b := 0) hctxM hOc hK hIM hI₄ hS4
     (Or.inl ⟨rfl, rfl⟩) (by norm_num) (by norm_num) (fun h => absurd h (by norm_num)) (by omega)
@@ -537,7 +489,7 @@ theorem stopTask_of (hO : OrgTask) (hS : SortTask) : StopTask := by
   have hS8' : SlpInv P J N₂ c M1 4 (slD 0) c₈ := by
     refine hS8.monoD ?_ le_rfl
     rintro kind k b ⟨hb, ⟨h0k, rfl⟩ | ⟨-, hk⟩⟩
-    · rcases h0k with rfl | rfl <;> rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl <;>
+    · rcases h0k with rfl | rfl <;> omega <;>
         simp
     · omega
   -- the wall codes
@@ -617,7 +569,7 @@ theorem stopTask_of (hO : OrgTask) (hS : SortTask) : StopTask := by
     unfold SoR at h; unfold S2R
     rcases h with h | h | h | h
     · exact Or.inl h
-    · exact Or.inr (Or.inl h)
+    · omega
     · right; right; unfold sw at *; omega
     · right; right; unfold sw at *; omega
 

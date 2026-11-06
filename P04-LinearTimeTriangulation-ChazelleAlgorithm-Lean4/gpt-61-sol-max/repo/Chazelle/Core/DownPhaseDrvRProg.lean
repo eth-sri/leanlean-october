@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRCost
 public import Chazelle.Programs.Tactics
 
@@ -52,11 +54,17 @@ def lamNext : Stmt :=
     .addN 210013 210013 210012, .addN 210013 210013 210000, .loadN 210000 210013,
     .constN 210012 11, .addN 210000 210000 210012]
 
+section
+variable (sL : Stmt) (n₀ : ℕ)
+include sL n₀
 /-- The body of the level loop. -/
-def levelBody (sL : Stmt) (n₀ : ℕ) : Stmt := .seq sL (.seq lamNext (guardS n₀))
+def levelBody : Stmt := .seq sL (.seq lamNext (guardS n₀))
 
 /-- The level loop. -/
-def levelLoop (sL : Stmt) (n₀ : ℕ) : Stmt := .whileLtN 210008 210007 (levelBody sL n₀)
+def levelLoop : Stmt := .whileLtN 210008 210007 (levelBody sL n₀)
+
+
+end
 
 /-- **The down phase** from its components: transition `sT`, one level `sL`, base `sB`. -/
 def downS (sT sL sB : Stmt) (n₀ : ℕ) : Stmt :=
@@ -67,29 +75,26 @@ def downS (sT sL sB : Stmt) (n₀ : ℕ) : Stmt :=
 
 theorem rd_drv (c : Config) (i : ℕ) : rd c bDownDrv i = c.nreg (210000 + i) := rfl
 
+section
+variable {c c' : Config} {k : ℕ}
 /-- A configuration change writing only band-`21` registers is a frame of `{bDownDrv}`. -/
-theorem frame_drv {c c' : Config} {k : ℕ}
+theorem frame_drv
     (hr : ∀ r, (r < 210000 ∨ 220000 ≤ r) → c'.nreg r = c.nreg r) (hm : c'.nmem = c.nmem)
     (hrr : c'.rreg = c.rreg) (hrm : c'.rmem = c.rmem) (ho : c'.output = c.output) :
     Frame {bDownDrv} c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
-  refine ⟨fun r hr' _ => hr r ?_, fun r _ => by rw [hrr], fun a _ => by rw [hm],
-    fun a _ => by rw [hrm], ho, by omega, by omega⟩
-  simp only [Finset.mem_singleton, bandOf, bDownDrv] at hr'
-  omega
+  core_grind [ALLOC, Finset.mem_singleton, bandOf]
 
 /-- The frame of the final copy into `coreReg 3`. -/
-theorem frame_core {c c' : Config} {k : ℕ}
+theorem frame_core
     (hr : ∀ r, r ≠ 230003 → c'.nreg r = c.nreg r) (hm : c'.nmem = c.nmem)
     (hrr : c'.rreg = c.rreg) (hrm : c'.rmem = c.rmem) (ho : c'.output = c.output) :
     Frame {bCore} c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
-  refine ⟨fun r hr' _ => hr r ?_, fun r _ => by rw [hrr], fun a _ => by rw [hm],
-    fun a _ => by rw [hrm], ho, by omega, by omega⟩
-  simp only [Finset.mem_singleton, bandOf, bCore] at hr'
-  omega
+  core_grind [ALLOC, Finset.mem_singleton, bandOf]
 
 /-! ## The pieces -/
+
+
+end
 
 section exec
 
@@ -109,17 +114,12 @@ theorem guardS_exec (n₀ : ℕ) (c : Config) (hw : WordsBounded W c) (hn₀ : n
   exec_block
   all_goals try omega
   by_cases h : P.n < n₀
-  · refine spec_ifLtN_true (by config_simp; omega) ?_
+  · refine spec_ifLtN_true (by simp_all) ?_
     refine spec_skip ‹_› ?_
-    refine ⟨by omega, ?_, ?_, fun r hr => ?_, fun r h1 h2 => ?_, ?_, rfl, rfl, rfl, rfl⟩
-    · simp only [Machine.upd_same, ite_eq_right (show ¬ n₀ ≤ P.n by omega)]
-    all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
-  · refine spec_ifLtN_false (by config_simp; omega) ?_
+    grind [Machine.upd_same, Machine.upd_other]
+  · refine spec_ifLtN_false (by simp_all) ?_
     refine spec_instr (Exec.copyN ‹_› 210007 210000) fun _ => ?_
-    refine ⟨by omega, ?_, ?_, fun r hr => ?_, fun r h1 h2 => ?_, ?_, rfl, rfl, rfl, rfl⟩
-    · simp (disch := omega) only [Machine.upd_same, Machine.upd_other,
-        ite_eq_left (show n₀ ≤ P.n by omega)]
-    all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+    grind [Machine.upd_same, Machine.upd_other]
 
 set_option maxHeartbeats 4000000 in
 /-- **`λ := p`.** -/
@@ -131,11 +131,7 @@ theorem lamP_exec (c : Config) (hw : WordsBounded W c) {S : ℕ} (hS : c.nreg 23
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold lamP
   exec_block
-  all_goals try omega
-  all_goals try (simp (disch := omega) only [Machine.upd_same,
-    Machine.upd_other, hS]; omega)
-  refine ⟨rfl, ?_, fun r hr => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-  all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hS]
+  all_goals (grind [Machine.upd_same, Machine.upd_other])
 
 set_option maxHeartbeats 4000000 in
 /-- **`λ := ⌈λ/5⌉ + 11`** from the setup table. -/

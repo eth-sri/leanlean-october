@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepDetect2
 
 /-!
@@ -50,17 +52,16 @@ theorem genuine_along_chord {e : Set Point} (he : e ∈ Merge.augChords C) {z : 
     rcases h1.lt_or_eq with h1 | h1
     · rcases h2.lt_or_eq with h2 | h2
       · exact absurd (hH.open_mem x h1 h2) hx
-      · exact Or.inr h2
-    · exact Or.inl h1.symm
-  have hz := hend z.1 hzl hzr (by rw [show ((z.1, y) : Point) = z from Prod.ext rfl hzy.symm]; exact hzD)
+      simp_all
+    simp_all
+  
   have hw := hend (z.1 + σ * τ) hwl hwr (by
-    rw [show ((z.1 + σ * τ, y) : Point) = rayPt z σ τ from
-      point_ext (by simp [rayPt]) (by simp [rayPt, hzy])]; exact hwD)
+    simp_all [rayPt] <;> omega_nf)
   refine ⟨hτ, fun s h0 h1 => ?_, hwD⟩
   rw [show rayPt z σ s = ((z.1 + σ * s, y) : Point) from
-    point_ext (by simp [rayPt]) (by simp [rayPt, hzy])]
-  have hlr := hH.lt
-  apply hH.open_mem <;> rcases hσ with rfl | rfl <;> rcases hz with hz | hz <;>
+    point_ext (by simp [rayPt]) (by simp_all)]
+  
+  apply hH.open_mem <;> rcases hσ with rfl | rfl <;> grind <;>
     rcases hw with hw | hw <;> nlinarith
 
 end ChainModel

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoSpec2
 public import Chazelle.Core.SweepIoCand1E
 
@@ -29,25 +31,28 @@ variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
 theorem sideChain_cases (J : Merge.Junction) {i : ℕ} (hi : i ≤ 1) :
     (i = 0 ∧ sideChain J i = J.left) ∨ (i = 1 ∧ sideChain J i = J.right) := by
-  rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hi with rfl | rfl
-  · left; exact ⟨rfl, by simp [sideChain]⟩
-  · right; exact ⟨rfl, by simp [sideChain]⟩
+  simp_all [sideChain] <;> omega_nf
 
-theorem sideChain_P (J : Merge.Junction) (i : ℕ) : (sideChain J i).P = J.P := by
-  unfold sideChain; split_ifs <;> rfl
+section
+variable (J : Merge.Junction) (i : ℕ)
+theorem sideChain_P : (sideChain J i).P = J.P := by
+  unfold sideChain; aesop
 
-theorem sideChain_radius (J : Merge.Junction) (i : ℕ) :
+theorem sideChain_radius :
     (sideChain J i).radius = J.whole.radius := FuseMath.radius_of_P J (sideChain_P J i)
 
-theorem sideChain_set (J : Merge.Junction) (i : ℕ) : (sideChain J i).set ⊆ J.whole.set := by
+theorem sideChain_set : (sideChain J i).set ⊆ J.whole.set := by
   unfold sideChain; split_ifs
   · exact J.left_set_subset
   · exact J.right_set_subset
 
-theorem sideChain_top (J : Merge.Junction) (i : ℕ) : (sideChain J i).top.2 ≤ J.whole.top.2 := by
+theorem sideChain_top : (sideChain J i).top.2 ≤ J.whole.top.2 := by
   unfold sideChain; split_ifs
   · exact J.left_top_le
   · exact J.right_top_le
+
+
+end
 
 /-- **The facts of a query point.** -/
 theorem query_facts (J : Merge.Junction) {Q : Polygon} {i : ℕ} {q : ℕ × ℕ × ℕ}
@@ -64,18 +69,14 @@ theorem query_facts (J : Merge.Junction) {Q : Polygon} {i : ℕ} {q : ℕ × ℕ
   have hsec' : sideLeft (chainModel (sideChain J i)).W q.1
       ((chainModel (sideChain J i)).param Q ⟨q.1, q.2.1⟩)
       (rayPt ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩) (dirOf q.2.2) 1) := by
-    rw [show rayPt ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩) (dirOf q.2.2) 1 =
-      (((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩).1 + dirOf q.2.2,
-        ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩).2) by
-      unfold rayPt; rw [mul_one]]
-    exact hsec
+    simp_all [rayPt, mul_one] 
   have hy := query_abs (C := sideChain J i) (x := ⟨q.1, q.2.1⟩) he h0 h1 htop hσ hsec'
   have hR := sideChain_radius J i
   have hcls := posClass_of (C := sideChain J i) (x := ⟨q.1, q.2.1⟩) he h0 h1 hy (Or.inl htop)
   refine ⟨hcls, hR ▸ hy, htop, htop.trans (sideChain_top J i), ?_⟩
   rcases posClass_pt hcls h0 h1 hy with h | ⟨h, h'⟩
   · exact Or.inl (sideChain_set J i h)
-  · exact Or.inr ⟨hR ▸ h, hR ▸ h'⟩
+  simp_all
 
 /-- **The conversion of a position of the model of `C₁`** with the stage-0 constants. -/
 theorem convL_val {P : Polygon} {c : Config} {H : Host} {J : Merge.Junction}
@@ -98,8 +99,8 @@ theorem convL_val {P : Polygon} {c : Config} {H : Host} {J : Merge.Junction}
     rw [show sw 45 + 2 = sw (45 + 2) from rfl, h45 2 (by norm_num)]; rfl
   have e4 : c.nreg (sw 45 + 4) = Sweep.lδ J := by
     rw [show sw 45 + 4 = sw (45 + 4) from rfl, h45 4 (by norm_num)]; rfl
-  have en : c.nreg (sw 33) = (chainModel J.left).W.n := by rw [h33, cm_n]
-  have en' : c.nreg (sw 35) = (chainModel J.whole).W.n := by rw [h35, cm_n]
+  have en : c.nreg (sw 33) = (chainModel J.left).W.n := by grind [cm_n]
+  have en' : c.nreg (sw 35) = (chainModel J.whole).W.n := by grind [cm_n]
   rw [e0, e1, e2, e4, en, en']
   exact conv_pos (sideConvL J hP) Q hv
 
@@ -124,8 +125,8 @@ theorem convR_val {P : Polygon} {c : Config} {H : Host} {J : Merge.Junction}
     rw [show sw 40 + 2 = sw (40 + 2) from rfl, h40 2 (by norm_num)]; rfl
   have e4 : c.nreg (sw 40 + 4) = Sweep.rδ J := by
     rw [show sw 40 + 4 = sw (40 + 4) from rfl, h40 4 (by norm_num)]; rfl
-  have en : c.nreg (sw 34) = (chainModel J.right).W.n := by rw [h34, cm_n]
-  have en' : c.nreg (sw 35) = (chainModel J.whole).W.n := by rw [h35, cm_n]
+  have en : c.nreg (sw 34) = (chainModel J.right).W.n := by grind [cm_n]
+  have en' : c.nreg (sw 35) = (chainModel J.whole).W.n := by grind [cm_n]
   rw [e0, e1, e2, e4, en, en']
   exact conv_pos (sideConvR J hP) Q hv
 
@@ -150,14 +151,11 @@ theorem winner_eq {P : Polygon} {A : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {J 
         rayPt z σ (J.whole.hitParam z σ) := by
   obtain ⟨hle, h0, h1⟩ := hacc
   have hA : c.nreg A = 1 := by
-    rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hle with h | h
-    · have := h0 h; rw [this] at hT; exact absurd hT (Set.notMem_empty _)
-    · exact h
+    grind
   obtain ⟨τ, hτ, hmin, ht, hpp, he, hpos, -⟩ := h1 hA
   have e : τ = J.whole.hitParam z σ :=
     le_antisymm (hmin _ hT) (hitParam_le_of_onCB J.whole (hgood τ hτ).1 (hgood τ hτ).2)
-  rw [e] at hpos
-  exact ⟨hA, ht, hpp, he, hpos⟩
+  simp_all
 
 /-! ## The winner in the walk of `C` -/
 
@@ -197,18 +195,18 @@ theorem winQ_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hb : c.nreg bL ≤ 1 �
   have hKc := hK.fix hI
   have k1 : c.nreg K1 = 1 := hKc.2.1
   have k2 : c.nreg K2 = 2 := hKc.2.2.2.2.2.1
-  have syE : IScr yE := iscr_sw (by unfold yE sw; norm_num) (by unfold yE sw; norm_num)
-  have syH : IScr yH := iscr_sw (by unfold yH sw; norm_num) (by unfold yH sw; norm_num)
-  have hyX : yE ≠ cX ∧ yE ≠ cT ∧ yE ≠ cDd := by unfold yE cX cT cDd sw; omega
-  have hpe : accA + 1 ≠ cX ∧ accA + 1 ≠ cT ∧ accA + 1 ≠ cDd := by unfold accA cX cT cDd sw; omega
+  have syE : IScr yE := iscr_sw (by omega_nf) (by omega_nf)
+  have syH : IScr yH := iscr_sw (by omega_nf) (by omega_nf)
+  have hyX : yE ≠ cX ∧ yE ≠ cT ∧ yE ≠ cDd := by omega_nf
+  have hpe : accA + 1 ≠ cX ∧ accA + 1 ≠ cT ∧ accA + 1 ≠ cDd := by omega_nf
   -- the copy branch
   have cp : IRS P W c₀ cpW c 1 (fun c₁ => c₁.nreg yE = c.nreg (accA + 1) ∧
       (∀ r, r ≠ yE → r ≠ cX → r ≠ cT → r ≠ cDd → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem) := by
     refine (IRS.instr1 (i := .copyN yE (accA + 1)) hI syE).mono le_rfl ?_
     rintro c' rfl
     refine ⟨?_, fun r h1 _ _ _ => ?_, rfl⟩
-    · show upd c.nreg yE (c.nreg (accA + 1)) yE = _; rw [upd_same]
-    · show upd c.nreg yE (c.nreg (accA + 1)) r = _; rw [upd_other _ _ _ h1]
+    · show upd c.nreg yE (c.nreg (accA + 1)) yE = _; simp_all
+    · show upd c.nreg yE (c.nreg (accA + 1)) r = _; simp_all
   have st1 : IRS P W c₀ (.ifLtN (accA + 3) K1
       (.ifLtN bL K1 cpW (convS (sw 45) (sw 33) (accA + 1) yE))
       (.ifLtN (accA + 3) K2
@@ -220,48 +218,35 @@ theorem winQ_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hb : c.nreg bL ≤ 1 �
       refine IRS.mono (K := 28) (IRS.ifT t0 ?_) le_rfl (fun _ h => h)
       by_cases b0 : c.nreg bL < c.nreg K1
       · refine (IRS.ifT b0 cp).mono (by norm_num) ?_
-        rintro c₁ ⟨h1, h2, h3⟩
-        refine ⟨?_, h2, h3⟩
-        rw [h1]; unfold winVal; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+        grind [winVal]
       · have b1 : c.nreg bL = 1 := by omega
         obtain ⟨a1, a2, a3, a4, a5⟩ := hl t0' b1
         refine (IRS.ifF b0 (convS_irs (Or.inr rfl) (Or.inl rfl) hpe ⟨syE, hyX⟩ hI hK a1 a2 a3
           a4 a5)).mono (by norm_num) ?_
-        rintro c₁ ⟨h1, h2, h3⟩
-        refine ⟨?_, fun r r1 r2 r3 r4 => h2 r (by
-          unfold CvSet; rintro (h | h | h | h) <;> simp_all), h3⟩
-        rw [h1]; unfold winVal; rw [ite_eq_left ⟨t0', b1⟩]
+        grind [CvSet, winVal]
     · refine IRS.mono (K := 28) (IRS.ifF t0 ?_) le_rfl (fun _ h => h)
       by_cases t1 : c.nreg (accA + 3) < c.nreg K2
       · have t1' : c.nreg (accA + 3) = 1 := by omega
         refine IRS.mono (K := 26) (IRS.ifT t1 ?_) le_rfl (fun _ h => h)
         by_cases b0 : c.nreg bR < c.nreg K1
         · refine (IRS.ifT b0 cp).mono (by norm_num) ?_
-          rintro c₁ ⟨h1, h2, h3⟩
-          refine ⟨?_, h2, h3⟩
-          rw [h1]; unfold winVal; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+          grind [winVal]
         · have b1 : c.nreg bR = 1 := by omega
           obtain ⟨a1, a2, a3, a4, a5⟩ := hr t1' b1
           refine (IRS.ifF b0 (convS_irs (Or.inl rfl) (Or.inr rfl) hpe ⟨syE, hyX⟩ hI hK a1 a2 a3
             a4 a5)).mono (by norm_num) ?_
-          rintro c₁ ⟨h1, h2, h3⟩
-          refine ⟨?_, fun r r1 r2 r3 r4 => h2 r (by
-            unfold CvSet; rintro (h | h | h | h) <;> simp_all), h3⟩
-          rw [h1]; unfold winVal; rw [ite_eq_right (by omega), ite_eq_left ⟨t1', b1⟩]
+          grind [CvSet, winVal]
       · refine (IRS.ifF t1 cp).mono (by norm_num) ?_
-        rintro c₁ ⟨h1, h2, h3⟩
-        refine ⟨?_, h2, h3⟩
-        rw [h1]; unfold winVal; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+        grind [winVal]
   refine (IRS.seq (K₂ := 1) st1 ?_).mono (by norm_num) (fun _ h => h)
   rintro c₁ hI₁ - - ⟨h1, h2, h3⟩
   refine (IRS.instr1 (i := .copyN yH (accA + 2)) hI₁ syH).mono le_rfl ?_
   rintro c' rfl
   refine ⟨?_, ?_, fun r r1 r2 r3 r4 r5 => ?_, h3⟩
   · show upd c₁.nreg yH (c₁.nreg (accA + 2)) yE = _
-    rw [upd_other _ _ _ (by unfold yE yH sw; norm_num), h1]
+    ram_simp 
   · show upd c₁.nreg yH (c₁.nreg (accA + 2)) yH = _
-    rw [upd_same, h2 _ (by unfold yE accA sw; norm_num) (by unfold cX accA sw; norm_num)
-      (by unfold cT accA sw; norm_num) (by unfold cDd accA sw; norm_num)]
+    grind [upd_same, yE, accA, sw, cX, cT, cDd]
   · show upd c₁.nreg yH (c₁.nreg (accA + 2)) r = _
     rw [upd_other _ _ _ r2, h2 r r1 r3 r4 r5]
 

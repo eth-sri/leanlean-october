@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmSideQ
 public import Chazelle.Core.SweepSpecH
 
@@ -59,7 +61,7 @@ def SwPost (P : Polygon) (c c' : Config) : Prop :=
         SeesInWhole J (Qof P) (rd c bSweep 7) (L.getD j (0, 0, 0)) (R.getD j (0, 0, 0, 0))
 
 /-- The cost of the sweep. -/
-def SwCost (κ : ℕ → ℕ) (F : ℕ → ℕ) (_ : Polygon) (c : Config) : ℕ :=
+def SwCost (κ F : ℕ → ℕ) (_ : Polygon) (c : Config) : ℕ :=
   κ (rd c bSweep 6) * (c.nmem (rd c bSweep 3) + c.nmem (rd c bSweep 4) + rd c bSweep 9 + 1) *
     (F (rd c bSweep 5) +
       Nat.clog 2 (c.nmem (rd c bSweep 3) + c.nmem (rd c bSweep 4) + rd c bSweep 9 + 1) + 1)
@@ -98,10 +100,10 @@ theorem FPre.keep {P : Polygon} {X : MemCtx} {Ok : Polygon → Model → Prop} {
     (hf : Frame B c c' k) : FPre P X Ok J N₁ N₂ c' := by
   obtain ⟨o1, o2, o3, d1, d2, s1, s2, hh, hc⟩ := h
   have e5 := hr 70005 (by norm_num) (by norm_num)
-  have e6 := hr 70006 (by norm_num) (by norm_num)
+  
   have e8 := hr 70008 (by norm_num) (by norm_num)
-  refine ⟨o1, o2, o3, by rw [e6]; exact d1, by rw [e6]; exact d2, by rw [e5]; exact s1,
-    by rw [e5]; exact s2, by rw [e8]; exact holds_frameF hh hf, ?_⟩
+  refine ⟨o1, o2, o3, by ram_simp, by ram_simp, by ram_simp,
+    by ram_simp, by rw [e8]; exact holds_frameF hh hf, ?_⟩
   rw [e5, e8, cap_frameF hloc hh hf]; exact hc
 
 theorem junctionWF_mono {P : Polygon} {E E' : ℕ} {m : ℕ → ℕ} {bl br bw : ℕ}
@@ -135,7 +137,7 @@ theorem swSet_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other])
   · have : r < 240000 ∨ 250000 ≤ r := by
-      unfold bandOf bSweep at h1; omega
+      grind [bandOf, bSweep]
     simp (disch := omega) only [Machine.upd_other]
 
 /-- The bands of the fusion. -/
@@ -143,7 +145,7 @@ def FB : Finset ℕ := fuseBands ∪ oracleBands
 
 theorem ftrF {c c₁ c₂ : Config} {k₁ k₂ : ℕ} (h₁ : Frame FB c c₁ k₁) (h₂ : Frame FB c₁ c₂ k₂) :
     Frame FB c c₂ (k₁ + k₂) :=
-  (h₁.trans h₂).mono (by rw [Finset.union_self]) le_rfl
+  (h₁.trans h₂).mono (by simp_all) le_rfl
 
 theorem sweep_sub : sweepBands ∪ oracleBands ⊆ FB := by decide
 
@@ -176,15 +178,15 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
       Frame FB c c' k ∧
       (∀ r, bandOf r = bFuse → r ≠ RB → r ≠ Lr + 24 + 2 * i → c'.nreg r = c.nreg r) ∧
       c'.nreg (Lr + 24 + 2 * i) = L.length := by
-  have hW1 : 1 ≤ W := by have := hF.hw; unfold hostWords at this; omega
+  have hW1 : 1 ≤ W := by omega
   obtain ⟨c₁, k₁, e₁, hk₁, q0, q7, q8, q9, q10, q24, qr, qm, qrr, qrm, qo⟩ :=
     swSet_exec (P := P) c hw hi hW1 hS hLr
   have w₁ := e₁.wb_right
-  have a₁ : c₁.nreg ALLOC = c.nreg ALLOC := qr _ (by decide) (by unfold ALLOC; omega)
+  have a₁ : c₁.nreg ALLOC = c.nreg ALLOC := qr _ (by decide) (by omega_nf)
   have F₁ : Frame FB c c₁ k₁ := ⟨fun r hr ha => qr r (fun h => hr (h ▸ band24)) (fun h => hr (by
       rw [h]; unfold bandOf; rw [show (Lr + 24 + 2 * i) / 10000 = 7 by omega]; exact band7)),
     fun r _ => by rw [qrr], fun a _ => by rw [qm], fun a _ => by rw [qrm], qo, by rw [a₁],
-    by rw [a₁]; omega⟩
+    by omega⟩
   have r0 : rd c₁ bSweep 0 = c.nreg 70000 := q0 0 (by norm_num)
   have r1 : rd c₁ bSweep 1 = c.nreg 70001 := q0 1 (by norm_num)
   have r2 : rd c₁ bSweep 2 = c.nreg 70002 := q0 2 (by norm_num)
@@ -206,11 +208,11 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
       hF.is₁, hF.is₂, hP.degL, hP.degR, hP.sgL, hP.sgR, rfl, hQB, hL, hOK, hend, hHt⟩
   have hcost : SwCost κs F P c₁ = κs (c.nreg 70006) * (N₁.nChords + N₂.nChords + L.length + 1) *
       (F (c.nreg 70005) + Nat.clog 2 (N₁.nChords + N₂.nChords + L.length + 1) + 1) := by
-    unfold SwCost; rw [qm, r3, r4, r5, r6, r9, hK1, hK2]
-  obtain ⟨c₂, k₂, e₂, hk₂, post, F₂⟩ := hM P W c₁ w₁ hpre (by rw [hcost, a₁]; omega)
+    ram_grind
+  obtain ⟨c₂, k₂, e₂, hk₂, post, F₂⟩ := hM P W c₁ w₁ hpre (by omega)
   rw [hcost] at hk₂
   obtain ⟨R, hR1, hR2, hRl, hRL, hsees⟩ := post H J L (by rw [qm, r0, r1, r2]; exact hF.jat)
-    r9 (by rw [qm, r8]; exact hL)
+    r9 (by grind)
   rw [r7] at hsees
   have w₂ := e₂.wb_right
   obtain ⟨c₃, k₃, e₃, hk₃, t0, tr, tm, trr, trm, tou⟩ : ∃ c₃ k₃, Exec P W
@@ -218,13 +220,12 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
       (∀ r, r ≠ RB → c₃.nreg r = c₂.nreg r) ∧ c₃.nmem = c₂.nmem ∧ c₃.rreg = c₂.rreg ∧
       c₃.rmem = c₂.rmem ∧ c₃.output = c₂.output := by
     exec_block
-    refine ⟨rfl, ?_, fun r h => ?_, rfl, rfl, rfl, rfl⟩
-    all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
-  have hRBA : RB ≠ ALLOC := by unfold ALLOC; omega
+    ram_simp
+  have hRBA : RB ≠ ALLOC := by omega_nf
   have F₃ : Frame FB c₂ c₃ k₃ := ⟨fun r hr ha => tr r (fun h => hr (by
       rw [h]; unfold bandOf; rw [show RB / 10000 = 7 by omega]; exact band7)),
     fun r _ => by rw [trr], fun a _ => by rw [tm], fun a _ => by rw [trm], tou,
-    by rw [tr _ hRBA.symm], by rw [tr _ hRBA.symm]; omega⟩
+    by grind, by grind⟩
   have ex : Exec P W (swStage mk i S Lr RB) c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
   have Ft : Frame FB c c₃ (k₁ + (k₂ + k₃)) :=
     ftrF F₁ (ftrF (F₂.mono sweep_sub le_rfl) F₃)
@@ -237,7 +238,7 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
   · exact hsees
   · have hA : r ≠ ALLOC := by intro h; rw [h] at h1; exact absurd h1 (by decide)
     rw [tr r h2, F₂.1 r (hband r h1) hA, qr r (by rw [h1]; decide) h3]
-  · rw [tr _ (Ne.symm hRB'), F₂.1 _ (hband _ (by unfold bandOf bFuse; omega)) (by unfold ALLOC; omega),
+  · rw [tr _ (Ne.symm hRB'), F₂.1 _ (hband _ (by omega_nf)) (by omega_nf),
       q24, hLl]
 
 end

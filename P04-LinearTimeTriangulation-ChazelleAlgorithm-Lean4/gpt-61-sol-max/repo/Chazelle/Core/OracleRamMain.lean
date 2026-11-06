@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleRamCand
 
 /-!
@@ -64,19 +66,15 @@ theorem selOf_cb {P : Polygon} {C : Chain} {V : QV} {c : Config} (hb : BestOK P.
       selOf C V (bestOf c) found near (CBof P C V (bestOf c) near) := by
   unfold selOf
   by_cases hf : c.nreg 120050 = 1
-  · have hbo : bestOf c = some (c.nreg 120052) := by unfold bestOf; rw [ite_eq_left hf]
+  · have hbo : bestOf c = some (c.nreg 120052) := by grind [bestOf]
     have he := (hb.2 hf).1
-    rw [hbo]
-    unfold CBof
-    rw [he]
-  · have hbo : bestOf c = none := by unfold bestOf; rw [ite_eq_right hf]
-    rw [hbo]
-    simp
+    simp_all [CBof] 
+  simp_all [bestOf] 
 
 /-- The cost of one locate-and-clusters step. -/
 def candCost (V : QV) (NC CS : ℕ) : ℕ := 5500 * (V.L + 1) + 3 * ((CS + 2) * (NC + 80)) + 30
 
-theorem BCa_main {r : ℕ} (h : BCa r = true) : BMain r = true := by simp [BMain, h]
+theorem BCa_main {r : ℕ} (h : BCa r = true) : BMain r = true := by core_grind
 
 open Classical in
 /-- **The main phase of the query.** -/
@@ -114,11 +112,11 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   have hq₁ : QConst P V c₁ := hq.congr fun r h1 h2 => r₁ r (by omega)
   have m₁ : c₁.nmem = c.nmem :=
     (exec_frameB e₁ (B := fun r => decide (r = 120050)) (by decide)).2.2.1
-  have hbo₁ : bestOf c₁ = none := by unfold bestOf; rw [v₁]; simp
-  have hb₁ : BestOK P.n V.s V.m c₁ := ⟨by rw [v₁]; omega, fun h => by rw [v₁] at h; omega⟩
+  have hbo₁ : bestOf c₁ = none := by simp_all [bestOf] 
+  have hb₁ : BestOK P.n V.s V.m c₁ := ⟨by omega, fun h => by omega⟩
   -- 2. the nodes of `D*`
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hb₂, hit₂⟩ := dstarS_exec (P := P) hG hW hs c₁ e₁.wb_right hq₁ hb₁
-    (by rw [m₁]; exact hm) hDL (S := ∅) (by rw [hbo₁]; intro t _ h; exact h)
+    (by ram_simp) hDL (S := ∅) (by rw [hbo₁]; intro t _ h; exact h)
   rw [m₁, Set.empty_union] at hit₂
   rw [m₁] at hk₂
   have hq₂ : QConst P V c₂ := hq₁.frame f₂ BD_const
@@ -128,39 +126,34 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     intro cb h
     unfold bestOf at hbD
     by_cases hfl : c₂.nreg 120050 = 1
-    · rw [hbD, ite_eq_left hfl] at h; cases h; exact (hb₂.2 hfl).2
-    · rw [hbD, ite_eq_right hfl] at h; exact absurd h (by simp)
+    · rw [hbD, ite_eq_left hfl] at h; cases h; omega_nf
+    simp_all
   have x140 : c₂.nreg 120140 = c.nreg 120140 := by
     rw [f₂.1 _ (by decide), r₁ _ (by decide)]
   have x141 : c₂.nreg 120141 = c.nreg 120141 := by
     rw [f₂.1 _ (by decide), r₁ _ (by decide)]
   -- 3. the stopping point
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, s₃⟩ := tchS_exec (P := P) hG hW hv htv c₂ e₂.wb_right hq₂
-    (by rw [x140]; exact hf) hb₂
+    (by omega) hb₂
   rw [selOf_cb hb₂, x140, x141, ← hbD] at s₃
   set sel := selOf C V bD (c.nreg 120140 = 1) (c.nreg 120141) (CBof P C V bD (c.nreg 120141))
     with hsel
   have hq₃ : QConst P V c₃ := hq₂.frame f₃ fun r h1 h2 => by
-    simp only [BT, BX2, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+    core_grind
   have m₃ : c₃.nmem = c.nmem := f₃.2.2.1.trans m₂
   have hsel01 : sel.1 = 0 ∨ sel.1 = 1 := by
     rw [hsel]; unfold selOf
-    by_cases h : c.nreg 120140 = 1 ∧ (bD = none ∨ CBof P C V bD (c.nreg 120141))
-    · rw [ite_eq_left h]; unfold chordSel; split_ifs <;> simp
-    · rw [ite_eq_right h]; rcases bD with _ | cD <;> simp [boxSel]
+    grind [chordSel, boxSel]
   have hselm : sel.1 = 0 → sel.2 < V.m := by
     rw [hsel]; unfold selOf
     by_cases h : c.nreg 120140 = 1 ∧ (bD = none ∨ CBof P C V bD (c.nreg 120141))
     · rw [ite_eq_left h]; unfold chordSel
       split_ifs <;> simp <;> rw [hv.m] <;> exact tci_lt C _
-    · rw [ite_eq_right h]
-      rcases hbd : bD with _ | cD
-      · simp [boxSel]
-      · simp only; intro _; exact hbDm cD hbd
+    grind [boxSel]
   -- 4. the walk positions
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, v₄⟩ := posS_exec (P := P) hW hv c₃ e₃.wb_right hq₃ s₃ hsel01 hselm
   have hq₄ : QConst P V c₄ := hq₃.frame f₄ fun r h1 h2 => by
-    simp only [BPo, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+    core_grind
   have m₄ : c₄.nmem = c.nmem := f₄.2.2.1.trans m₃
   have hvd := hvalid bD hit₂ hbDm
   rw [← hsel] at hvd
@@ -196,10 +189,10 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     intro k hk d hd hqd hbd hmd hpos S hS
     obtain ⟨hwn, hx⟩ := hvd k hk
     obtain ⟨d', k', p, ex, hk', fr, hb', hp, hl1, hl2, hit⟩ := candS_exec hcov (P := P) hG hW hs d hd
-      hqd hbd (by rw [hmd]; exact hm) (by rw [hmd]; exact hO) (by rw [hmd]; exact hL)
-      (NC := NC) (CS := CS) (fun u hu => by rw [hmd]; exact hNC u hu)
-      (fun u hu => by rw [hmd]; exact hCS u hu) (rP := 120160 + k) (by omega)
-      (by rw [hpos]; exact hwn) (by rw [hpos]; exact hx) hS
+      hqd hbd (by grind) (by grind) (by rw [hmd]; exact hL)
+      (NC := NC) (CS := CS) (fun u hu => by grind)
+      (fun u hu => by grind) (rP := 120160 + k) (by omega)
+      (by omega) (by grind) hS
     rw [hpos] at hl1 hl2
     rw [hmd] at hit
     exact ⟨d', k', p, ex, hk', fr, hb', hp, ⟨hl1, hl2⟩, hit⟩
@@ -211,15 +204,15 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     simp only [BCa, BL, BC, BN, BA, BW, BE, Bdir, Bloc, Bcmp, Bk, Bool.or_eq_false_iff,
       decide_eq_false_iff_not]; omega
   obtain ⟨c₅, k₅, p₀, e₅, hk₅, f₅, hb₅, hp₀, hl₀, hit₅⟩ := candStep 0 (by norm_num) c₄ e₄.wb_right hq₄
-    hb₄ m₄ (xq 0 (by norm_num)) (dstarPts c.nmem V C V.nD) (by rw [hbo₄]; exact hit₂)
+    hb₄ m₄ (xq 0 (by norm_num)) (dstarPts c.nmem V C V.nD) (by grind)
   have hq₅ := hq₄.frame f₅ hBCac
   have m₅ : c₅.nmem = c.nmem := f₅.2.2.1.trans m₄
   obtain ⟨c₆, k₆, p₁, e₆, hk₆, f₆, hb₆, hp₁, hl₁, hit₆⟩ := candStep 1 (by norm_num) c₅ e₅.wb_right hq₅
-    hb₅ m₅ (by rw [keepPos c₄ c₅ f₅ 1 (by norm_num)]; exact xq 1 (by norm_num)) _ hit₅
+    hb₅ m₅ (by rw [keepPos c₄ c₅ f₅ 1 (by norm_num)]; grind) _ hit₅
   have hq₆ := hq₅.frame f₆ hBCac
   have m₆ : c₆.nmem = c.nmem := f₆.2.2.1.trans m₅
   obtain ⟨c₇, k₇, p₂, e₇, hk₇, f₇, hb₇, hp₂, hl₂, hit₇⟩ := candStep 2 (by norm_num) c₆ e₆.wb_right hq₆
-    hb₆ m₆ (by rw [keepPos c₅ c₆ f₆ 2 (by norm_num), keepPos c₄ c₅ f₅ 2 (by norm_num)]; exact xq 2 (by norm_num)) _ hit₆
+    hb₆ m₆ (by rw [keepPos c₅ c₆ f₆ 2 (by norm_num), keepPos c₄ c₅ f₅ 2 (by norm_num)]; grind) _ hit₆
   have hq₇ := hq₆.frame f₇ hBCac
   have m₇ : c₇.nmem = c.nmem := f₇.2.2.1.trans m₆
   obtain ⟨c₈, k₈, p₃, e₈, hk₈, f₈, hb₈, hp₃, hl₃, hit₈⟩ := candStep 3 (by norm_num) c₇ e₇.wb_right hq₇
@@ -231,7 +224,7 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
       c₈ c₉ k₉ ∧ k₉ = 2 ∧ (c₉.nreg 120005 = c₉.nreg 120050 ∧ c₉.nreg 120006 = c₉.nreg 120051 ∧
         ∀ r, r ≠ 120005 → r ≠ 120006 → c₉.nreg r = c₈.nreg r) := by
     exec_block
-    exact ⟨rfl, by config_simp, by config_simp, fun r h1 h2 => by config_simp; upd_solve⟩
+    ram_simp
   obtain ⟨o5, o6, r₉⟩ := v₉
   have hbo₉ : bestOf c₉ = bestOf c₈ := by
     unfold bestOf; rw [r₉ 120050 (by decide) (by decide), r₉ 120052 (by decide) (by decide)]
@@ -262,11 +255,11 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     if k = 2 then p₂ else p₃, fun k hk => ?_, ?_, hb₉, o5, o6⟩
   · omega
   · interval_cases k
-    · exact ⟨hp₀, hl₀⟩
-    · exact ⟨hp₁, hl₁⟩
-    · exact ⟨hp₂, hl₂⟩
-    · exact ⟨hp₃, hl₃⟩
-  · rw [hbo₉]; simpa using hit₈
+    · grind
+    · grind
+    · grind
+    grind
+  grind
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepPrimArrMath
 public import Chazelle.Core.SweepDetect2
 
@@ -47,19 +49,21 @@ def ArrRes (P : Polygon) (C : Chain) (e h ρ : ℕ) (c' : Config) : Prop :=
 
 /-- Reversing a direction code. -/
 theorem neg_dirOf_flip (v : ℕ) : -dirOf (if v = 1 then 0 else 1) = dirOf v := by
-  unfold dirOf; split_ifs <;> simp_all
+  unfold dirOf; aesop
 
 /-! ## Mathematics of the answers -/
 
+section
+variable (M : Model) (Q : Polygon)
 /-- An arrival position at the point of a proper position. -/
-theorem arrival_iff (M : Model) (Q : Polygon) {y : WPos} (hy : y.edge < M.W.n)
+theorem arrival_iff {y : WPos} (hy : y.edge < M.W.n)
     (h0 : 0 ≤ M.param Q y) (h1 : M.param Q y < 1) (σ : ℝ) :
     Sweep.Arrival M.W (M.pos Q y) σ y.edge (M.param Q y) ↔
       sideLeft M.W y.edge (M.param Q y) (Visibility.rayPt (M.pos Q y) (-σ) 1) :=
   ⟨fun h => h.2.2.2.2, fun h => ⟨hy, h0, h1, rfl, h⟩⟩
 
 /-- **The twin edge takes over** when the arriving ray is not in the half-plane of the edge. -/
-theorem twin_left (M : Model) (Q : Polygon) {p p' h : ℕ} (hh : 1 ≤ h)
+theorem twin_left {p p' h : ℕ} (hh : 1 ≤ h)
     (h1 : M.wa p' = M.wb p) (h2 : M.wb p' = M.wa p) (ht : 0 < M.param Q ⟨p, h⟩)
     (ht1 : M.param Q ⟨p, h⟩ < 1) {s : ℝ} (hs : s = 1 ∨ s = -1)
     (hn : ¬ sideLeft M.W p (M.param Q ⟨p, h⟩) (Visibility.rayPt (M.pos Q ⟨p, h⟩) s 1)) :
@@ -67,8 +71,8 @@ theorem twin_left (M : Model) (Q : Polygon) {p p' h : ℕ} (hh : 1 ≤ h)
       M.pos Q ⟨p', h⟩ = M.pos Q ⟨p, h⟩ ∧ 0 < M.param Q ⟨p', h⟩ ∧ M.param Q ⟨p', h⟩ < 1 := by
   have hne := ne_of_param_pos ht
   obtain ⟨hpos, hpar⟩ := twin_pos_param M Q hh h1 h2 hne
-  have ht' : 0 < M.param Q ⟨p', h⟩ := by rw [hpar]; linarith
-  have ht1' : M.param Q ⟨p', h⟩ < 1 := by rw [hpar]; linarith
+  have ht' : 0 < M.param Q ⟨p', h⟩ := by simp_all
+  have ht1' : M.param Q ⟨p', h⟩ < 1 := by simp_all
   refine ⟨?_, hpos, ht', ht1'⟩
   have hne' : (M.W.vtx p').2 ≠ (M.W.vtx ((p' + 1) % M.W.n)).2 := by
     have := ne_of_param_pos ht'; exact this
@@ -81,15 +85,17 @@ theorem twin_left (M : Model) (Q : Polygon) {p p' h : ℕ} (hh : 1 ≤ h)
   have e4 : M.W.vtx ((p + 1) % M.W.n) = M.wb p := rfl
   rw [e1, e2, h1, h2]
   rw [e3, e4] at hn
-  have hd : (M.wb p).2 - (M.wa p).2 ≠ 0 := sub_ne_zero.2 hne.symm
+  
   rcases hs with rfl | rfl
-  · push Not at hn
-    rcases lt_or_gt_of_ne hd with hd | hd <;> nlinarith
-  · push Not at hn
-    rcases lt_or_gt_of_ne hd with hd | hd <;> nlinarith
+  all_goals grind
 
+
+end
+
+section
+variable (C : Chain)
 /-- **No arrival position on a vertical side of the box** when the edge test fails. -/
-theorem wall_none (C : Chain) (hP : C.P.Simple) {Q : Polygon} {e h : ℕ} (he : e = 1 ∨ e = 3)
+theorem wall_none (hP : C.P.Simple) {Q : Polygon} {e h : ℕ} (he : e = 1 ∨ e = 3)
     (ht : 0 < (chainModel C).param Q ⟨e, h⟩) (ht1 : (chainModel C).param Q ⟨e, h⟩ < 1) {σ : ℝ}
     (hn : ¬ sideLeft (chainModel C).W e ((chainModel C).param Q ⟨e, h⟩)
       (Visibility.rayPt ((chainModel C).pos Q ⟨e, h⟩) (-σ) 1)) :
@@ -97,22 +103,22 @@ theorem wall_none (C : Chain) (hP : C.P.Simple) {Q : Polygon} {e h : ℕ} (he : 
   rintro p t ⟨hp, ht0, ht1', hpt, hl⟩
   rw [pos_eq_sidePt] at hpt hl hn
   obtain ⟨rfl, rfl⟩ := wall_unique C hP he ht ht1 hp ht0 ht1' hpt
-  exact hn (by rw [← hpt]; exact hl)
+  simp_all
 
 /-- **An arrival position at a tour vertex.** -/
-theorem arrival_vertex (C : Chain) {Q : Polygon} {x : WPos} {i : ℕ} (hi : i ≤ 2 * C.m)
+theorem arrival_vertex {Q : Polygon} {x : WPos} {i : ℕ} (hi : i ≤ 2 * C.m)
     (hv : (chainModel C).W.vtx (i + 6) = (chainModel C).pos Q x) {σ : ℝ}
     (hl : sideLeft (chainModel C).W (i + 6) 0
       (Visibility.rayPt ((chainModel C).W.vtx (i + 6)) (-σ) 1)) :
     Sweep.Arrival (chainModel C).W ((chainModel C).pos Q x) σ (i + 6)
       ((chainModel C).param Q ⟨i + 6, 0⟩) := by
   have hn : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n _
-  refine ⟨by omega, le_refl _, by rw [Model.param]; norm_num, ?_, ?_⟩
+  refine ⟨by omega, le_refl _, by positivity, ?_, ?_⟩
   · rw [show (chainModel C).param Q ⟨i + 6, 0⟩ = 0 from rfl, Chazelle.Chain.sidePt_zero, hv]
-  · rw [show (chainModel C).param Q ⟨i + 6, 0⟩ = 0 from rfl, ← hv]; exact hl
+  aesop
 
 /-- **No arrival position at a chain vertex** when all candidates fail. -/
-theorem vertex_none (C : Chain) (hP : C.P.Simple) {Q : Polygon} {x : WPos} {k : ℕ}
+theorem vertex_none (hP : C.P.Simple) {Q : Polygon} {x : WPos} {k : ℕ}
     (hk : k ≤ C.m) (hv : (chainModel C).pos Q x = C.vertex k) {σ : ℝ}
     (hn : ∀ i, i ≤ 2 * C.m → (i = candIdx C.m (C.sideS C.sideBeta) k ∨
         i = candIdx C.m (C.sideS C.sideBeta) (2 * C.m - k) ∨ (i = 2 * C.m ∧ k = C.topIdx)) →
@@ -125,13 +131,16 @@ theorem vertex_none (C : Chain) (hP : C.P.Simple) {Q : Polygon} {x : WPos} {k : 
   have hcand := cand_complete C C.sideBeta hi hik
   refine hn i hi ?_ ?_
   · rcases hcand with h | h | h
-    · exact Or.inl h
-    · exact Or.inr (Or.inl h)
+    · omega
+    · omega
     · refine Or.inr (Or.inr ⟨h, ?_⟩)
       rw [← hik, h, C.sideIdx_two_m]
   · rw [Chazelle.Chain.sidePt_zero] at hpt
-    rw [hpt]; exact hl
+    simp_all
 
+
+
+end
 
 /-- Inside an edge, the edge test is the turning code `1`. -/
 theorem interior_iff (M : Model) (Q : Polygon) {x : WPos} (ht : 0 < M.param Q x)
@@ -207,8 +216,10 @@ theorem wr_arrivalPos : wr Bprim arrivalPos = true := by decide
 
 /-! ## The vertex case -/
 
+section
+variable {P : Polygon} {W : ℕ}
 /-- **Testing one candidate tour vertex.** -/
-theorem tryS_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {rest : Stmt} {K : ℕ}
+theorem tryS_exec {H : Host} {C : Chain} {rest : Stmt} {K : ℕ}
     (c : Config) (hE : CEnv P W H C c) {e hc ρ i : ℕ} (h03 : c.nreg 50203 = ρ)
     (h121 : c.nreg 50121 = i) (hi : i ≤ 2 * C.m) (hWn : 2 * C.m + 7 ≤ W)
     (hv : (chainModel C).W.vtx (i + 6) = (chainModel C).pos (Qof P) ⟨e, hc⟩)
@@ -248,23 +259,26 @@ theorem tryS_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {rest : Stmt} {
     refine ⟨c₂, _, .seq e₁ (.ifLtN_false h0 e₂), by omega,
       by rw [q10], fun _ => ?_, fun h => absurd q10 h⟩
     rw [q11, q12]
-    refine ⟨by omega, ⟨le_refl _, by rw [Model.param]; norm_num, by simp⟩, ?_⟩
-    exact arrival_vertex C hi hv (by rw [neg_neg]; exact hl)
+    refine ⟨by omega, ⟨le_refl _, by positivity, by simp⟩, ?_⟩
+    exact arrival_vertex C hi hv (by simp_all)
 
 /-- The candidate computation. -/
-theorem candS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {r m S j : ℕ}
+theorem candS_exec (c : Config) (hw : WordsBounded W c) {r m S j : ℕ}
     (_hr : r ≠ 50121) (h221 : c.nreg 50221 = S) (h223 : c.nreg 50223 = 2 * m - S)
     (hrj : c.nreg r = j) (hS : S ≤ 2 * m) (_hj : j ≤ 2 * m) (hmW : 2 * m ≤ W) :
     ∃ c' k, Exec P W (candS r) c c' k ∧ k ≤ 3 ∧ c'.nreg 50121 = candIdx m S j ∧
       ∀ r', r' ≠ 50121 → c'.nreg r' = c.nreg r' := by
   unfold candS candIdx
   by_cases h : j < S
-  · refine spec_ifLtN_true (by rw [hrj, h221]; exact h) (spec_instr (Exec.addN hw _ _ _
-      (by rw [hrj, h223]; omega)) fun _ => ⟨by omega, ?_, fun r' hr' => by simp [hr']⟩)
-    config_simp; rw [hrj, h223, ite_eq_left h]
-  · refine spec_ifLtN_false (by rw [hrj, h221]; exact h) (spec_instr (Exec.subN hw _ _ _)
+  · refine spec_ifLtN_true (by omega) (spec_instr (Exec.addN hw _ _ _
+      (by omega)) fun _ => ⟨by omega, ?_, fun r' hr' => by simp [hr']⟩)
+    simp_all
+  · refine spec_ifLtN_false (by omega) (spec_instr (Exec.subN hw _ _ _)
       fun _ => ⟨by omega, ?_, fun r' hr' => by simp [hr']⟩)
-    config_simp; rw [hrj, h221, ite_eq_right h]
+    simp_all
+
+
+end
 
 /-- The walk vertex of a candidate is the chain vertex. -/
 theorem walk_vtx_cand (C : Chain) {i k : ℕ} (hi : i ≤ 2 * C.m) (hk : C.sideIdx C.sideBeta i = k) :
@@ -278,8 +292,8 @@ theorem vtxArr_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     (hpar : (chainModel C).param (Qof P) ⟨e, hc⟩ = 0) :
     ∃ c' k, Exec P W vtxArr c c' k ∧ k ≤ 26000 ∧ ArrRes P C e hc ρ c' := by
   have hlen := hE.hlen
-  have hm1 := C.one_le
-  have hT := C.topIdx_le
+  
+  
   have hS := C.sideS_lt C.sideBeta
   set S := C.sideS C.sideBeta with hSdef
   -- the chain vertex
@@ -302,8 +316,7 @@ theorem vtxArr_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
         ∀ r, r ≠ 50220 → r ≠ 50221 → r ≠ 50222 → r ≠ 50223 → c₃.nreg r = c₂.nreg r) := by
     have hw₂ := e₂.wb_right
     exec_block
-    refine ⟨rfl, by config_simp; exact k91, by config_simp; exact k59, by config_simp; exact k58,
-      by config_simp; exact k89, fun r h1 h2 h3 h4 => by simp [h1, h2, h3, h4]⟩
+    simp_all
   obtain ⟨q20, q21, q22, q23, r₃⟩ := q
   have hE₃ : CEnv P W H C c₃ := hE₂.keep e₃.wb_right
     (exec_frameB e₃ (B := fun r => decide (50220 ≤ r ∧ r < 50224)) (by decide)).2.2.1
@@ -325,7 +338,7 @@ theorem vtxArr_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have kS : ∀ {ca cb : Config}, FrameB Bsec ca cb → ∀ r, 50200 ≤ r → r < 50230 → r ≠ 50210 →
       r ≠ 50211 → r ≠ 50212 → cb.nreg r = ca.nreg r := fun hf r h1 h2 h3 h4 h5 => hf.1 r (by
         interval_cases r <;> first | decide)
-  have hn7 : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n _
+  
   obtain ⟨c', k', ex', hk', res⟩ := tryS_exec (K := 17000) (e := e) (hc := hc) (ρ := ρ)
       (i := candIdx C.m S k) (rest := .seq
       (.instr (.subN 50224 50222 50220)) (.seq (candS 50224) (tryS
@@ -435,8 +448,10 @@ theorem hgt_pos_of_param_pos {M : Model} {Q : Polygon} {e h : ℕ} (ht : 0 < M.p
   · exact absurd (show M.param Q ⟨e, 0⟩ = 0 from rfl) (ne_of_gt ht)
   · exact h0
 
+section
+variable {P : Polygon} {C : Chain}
 /-- The answer at the input position. -/
-theorem found_here {P : Polygon} {C : Chain} {e hc ρ : ℕ} (hen : e < (chainModel C).W.n)
+theorem found_here {e hc ρ : ℕ} (hen : e < (chainModel C).W.n)
     (h0 : 0 ≤ (chainModel C).param (Qof P) ⟨e, hc⟩) (h1 : (chainModel C).param (Qof P) ⟨e, hc⟩ < 1)
     (hhn : hc ≤ P.n) (hl : sideLeft (chainModel C).W e ((chainModel C).param (Qof P) ⟨e, hc⟩)
       (Visibility.rayPt ((chainModel C).pos (Qof P) ⟨e, hc⟩) (dirOf ρ) 1))
@@ -447,7 +462,7 @@ theorem found_here {P : Polygon} {C : Chain} {e hc ρ : ℕ} (hen : e < (chainMo
   exact ⟨hen, ⟨h0, h1, hhn⟩, (arrival_iff _ _ (y := ⟨e, hc⟩) hen h0 h1 _).2 (by rw [neg_neg]; exact hl)⟩
 
 /-- The answer at a twin position. -/
-theorem found_twin {P : Polygon} {C : Chain} {e hc ρ p' : ℕ} (hp' : p' < (chainModel C).W.n)
+theorem found_twin {e hc ρ p' : ℕ} (hp' : p' < (chainModel C).W.n)
     (hhn : hc ≤ P.n)
     (htw : sideLeft (chainModel C).W p' ((chainModel C).param (Qof P) ⟨p', hc⟩)
       (Visibility.rayPt ((chainModel C).pos (Qof P) ⟨p', hc⟩) (dirOf ρ) 1) ∧
@@ -462,10 +477,15 @@ theorem found_twin {P : Polygon} {C : Chain} {e hc ρ p' : ℕ} (hp' : p' < (cha
   rw [← hpos]
   exact (arrival_iff _ _ (y := ⟨p', hc⟩) hp' ht0.le ht1 _).2 (by rw [neg_neg]; exact hl)
 
+
+end
+
 theorem dirOf_cases' (ρ : ℕ) : dirOf ρ = 1 ∨ dirOf ρ = -1 := dirOf_cases ρ
 
+section
+variable {P : Polygon} {W : ℕ}
 /-- The block `foundTop`. -/
-theorem foundTop_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {m hc : ℕ}
+theorem foundTop_exec (c : Config) (hw : WordsBounded W c) {m hc : ℕ}
     (h53 : c.nreg 50053 = m) (h81 : c.nreg 50081 = 6) (h02 : c.nreg 50202 = hc)
     (hmW : 2 * m + 7 ≤ W) :
     ∃ c' k, Exec P W foundTop c c' k ∧ k = 4 ∧
@@ -476,7 +496,7 @@ theorem foundTop_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   all_goals try (config_simp; rw [h53]; omega)
 
 /-- **Inside an edge of the box block.** -/
-theorem boxArr_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
+theorem boxArr_exec {H : Host} {C : Chain} (c : Config)
     (hE : CEnv P W H C c) (hP : C.P.Simple) {e hc ρ : ℕ} (h01 : c.nreg 50201 = e)
     (h02 : c.nreg 50202 = hc) (h03 : c.nreg 50203 = ρ)
     (hd : c.nreg 10502 = dirCode (chainModel C) e) (he : e < 6)
@@ -532,9 +552,15 @@ theorem boxArr_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     exact ⟨c₂, _, .seq e₁ (.ifLtN_false h0 e₂), by omega,
       found_here (by omega) ht.le ht1 hhn hl q10 q11 q12⟩
 
+
+end
+
+section
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include hw
 /-- The generic candidate computation `50121 := candIdx` with registers `rs` (`S`) and `rd`
 (`2m - S`). -/
-theorem candGen_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {r rs rd m S j : ℕ}
+theorem candGen_exec {r rs rd m S j : ℕ}
     (_hr : r ≠ 50121) (hs : c.nreg rs = S) (hd : c.nreg rd = 2 * m - S) (hrj : c.nreg r = j)
     (hS : S ≤ 2 * m) (_hj : j ≤ 2 * m) (hmW : 2 * m ≤ W) :
     ∃ c' k, Exec P W (.ifLtN r rs (.instr (.addN 50121 r rd)) (.instr (.subN 50121 r rs))) c c' k ∧
@@ -550,7 +576,7 @@ theorem candGen_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
 
 
 /-- The block `found5`. -/
-theorem found5_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {hc : ℕ}
+theorem found5_exec {hc : ℕ}
     (h02 : c.nreg 50202 = hc) (hW : 5 ≤ W) :
     ∃ c' k, Exec P W found5 c c' k ∧ k = 3 ∧
       (c'.nreg 50210 = 1 ∧ c'.nreg 50211 = 5 ∧ c'.nreg 50212 = hc) := by
@@ -560,7 +586,7 @@ theorem found5_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   all_goals try (refine ⟨rfl, ?_⟩; config_simp; rw [h02])
 
 /-- The block `foundT`. -/
-theorem foundT_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {i hc : ℕ}
+theorem foundT_exec {i hc : ℕ}
     (h121 : c.nreg 50121 = i) (h81 : c.nreg 50081 = 6) (h02 : c.nreg 50202 = hc)
     (hW : i + 6 ≤ W) :
     ∃ c' k, Exec P W foundT c c' k ∧ k = 3 ∧
@@ -571,12 +597,15 @@ theorem foundT_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   all_goals try (config_simp; rw [h121, h81]; omega)
 
 /-- The block `foundIn`. -/
-theorem foundIn_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
+theorem foundIn_exec :
     ∃ c' k, Exec P W foundIn c c' k ∧ k = 2 ∧ c'.nreg 50211 = c.nreg 50201 ∧
       c'.nreg 50212 = c.nreg 50202 ∧ c'.nreg 50210 = c.nreg 50210 := by
   unfold foundIn
   exec_block
-  exact ⟨rfl, by config_simp, by config_simp, by config_simp⟩
+  ram_all
+
+
+end
 
 /-- **Inside an edge of the tour or the up-slit edge.** -/
 theorem intArr_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
@@ -687,7 +716,7 @@ theorem arrivalPos_meets : Meets arrivalPos primBands (PrimPre ArrIn) (PrimPost 
   intro P W H C c₀ c _hC hE ⟨⟨hen, ⟨hp0, hp1, hhn⟩, hy⟩, hP, hWn⟩ hinp
   have i01 := hinp 50201 (by norm_num) (by norm_num)
   have i02 := hinp 50202 (by norm_num) (by norm_num)
-  have i03 := hinp 50203 (by norm_num) (by norm_num)
+  
   unfold ArrOut
   set e := c₀.nreg 50201 with he_def
   set hc := c₀.nreg 50202 with hc_def
@@ -810,7 +839,7 @@ theorem arrivalPos_meets : Meets arrivalPos primBands (PrimPre ArrIn) (PrimPost 
         (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rw [hE₇.r32]; exact hlt)
           (.ifLtN_true (by rw [hE₇.r32]; exact hlt2) ex))))))))))), by omega, b⟩
     · have p71 : ((Qof P).vtx (x.hgt - 1)).2 < (M.W.vtx e).2 := b71.2.1 (by
-        have := b71.1; rw [hE₇.r32] at hlt2; omega)
+         rw [hE₇.r32] at hlt2; omega)
       have hpos : 0 < M.param (Qof P) x := lt_of_le_of_ne hp0 (fun h => by
         rcases (param_eq_zero_iff _ _ _).1 h.symm with h' | h' | h'
         · simp [hx] at h'; omega

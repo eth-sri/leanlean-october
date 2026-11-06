@@ -32,18 +32,7 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 theorem slf_labSet2 (J : Merge.Junction) (Q : Polygon) (N : NF) (l₀ l₁ l₂ l₃ : ℕ) :
     labSet J Q N 2 l₀ l₁ l₂ l₃ =
       {regOf (chainModel J.right) Q N l₀, regOf (chainModel J.right) Q N l₁} := by
-  ext V
-  simp only [labSet, Set.mem_image, mem_ofPred_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
-  constructor
-  · rintro ⟨l, hl, rfl⟩
-    rcases hl with ⟨-, rfl⟩ | ⟨-, rfl⟩ | ⟨h, -⟩ | ⟨h, -⟩
-    · exact Or.inl rfl
-    · exact Or.inr rfl
-    · omega
-    · omega
-  · rintro (rfl | rfl)
-    · exact ⟨l₀, Or.inl ⟨by norm_num, rfl⟩, rfl⟩
-    · exact ⟨l₁, Or.inr (Or.inl ⟨by norm_num, rfl⟩), rfl⟩
+  grind [labSet, Set.mem_image, mem_ofPred_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
 
 /-- A stretch attachment: its offset `d`. -/
 theorem slf_stretch (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂) {p : ℕ} {t : ℝ}
@@ -52,10 +41,11 @@ theorem slf_stretch (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N�
     ∃ d, d < Lst J ∧ (t = 0 → d ≠ 0) ∧ p = (gW J + d) % (chainModel J.whole).W.n :=
   stretch_decomp J hP hN.1.2.1 hN.1.1 hp ht0 ht1 h0 (by exact_mod_cast hL)
 
+section
+variable (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {kind k b : ℕ} (hD : OrgD P J N₂ kind k b) {p : ℕ} {t : ℝ} (hA : SideAttach (chainModel J.whole).W (stopSet J (Qof P) N₂ kind k b) p t)
+include E hD hA
 /-- **The side labels below and above the parent.** -/
-theorem slf_lab_par (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {kind k b : ℕ}
-    (hD : OrgD P J N₂ kind k b) {p : ℕ} {t : ℝ}
-    (hA : SideAttach (chainModel J.whole).W (stopSet J (Qof P) N₂ kind k b) p t)
+theorem slf_lab_par
     (h0 : 0 < oW J (p + t)) (hL : oW J (p + t) < Lst J)
     (hnp : ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W (stopSet J (Qof P) N₂ kind k b)
       q s → oW J (q + s) ≠ 0)
@@ -71,7 +61,7 @@ theorem slf_lab_par (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {kind k b : �
   obtain ⟨d, hd, htd, hpd⟩ := slf_stretch hP hN hA.1 hA.2.1 hA.2.2.1 h0 hL
   obtain ⟨hm, hst⟩ := stop_mem hP hN hD.ok hD.free
   have hL1 := (labTask J (Qof P) _ _ hP hN.1 (F₂plus_chordFamily E) hm hst hnp hC1 d t hd
-    hA.2.1 hA.2.2.1 htd (by rw [← hpd]; exact hA)).1
+    hA.2.1 hA.2.2.1 htd (by simp_all)).1
   obtain ⟨hreg, -⟩ := regOf_spec hN
   obtain ⟨hu, hdn, -⟩ := (regOf_spec hN).2.1 i hi
   obtain ⟨s1, s2⟩ := sideOf_rec hN hi
@@ -79,9 +69,7 @@ theorem slf_lab_par (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {kind k b : �
   exact hL1 _ (chord_mem hi) hsub _ (hreg.1 _ hu) _ (hreg.1 _ hdn) s1 s2
 
 /-- **The side labels faced at the counterpart of the stretch attachment.** -/
-theorem slf_lab_str (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {kind k b : ℕ}
-    (hD : OrgD P J N₂ kind k b) {p : ℕ} {t : ℝ}
-    (hA : SideAttach (chainModel J.whole).W (stopSet J (Qof P) N₂ kind k b) p t)
+theorem slf_lab_str
     (hnp : ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W (stopSet J (Qof P) N₂ kind k b)
       q s → oW J (q + s) ≠ 0)
     (hC1 : ∃ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W (stopSet J (Qof P) N₂ kind k b)
@@ -100,10 +88,13 @@ theorem slf_lab_str (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {kind k b : �
   have hN := E.hNF₂
   obtain ⟨hm, hst⟩ := stop_mem hP hN hD.ok hD.free
   have hL2 := (labTask J (Qof P) _ _ hP hN.1 (F₂plus_chordFamily E) hm hst hnp hC1 d t hd
-    hA.2.1 hA.2.2.1 htd (by rw [← hpd]; exact hA)).2
+    hA.2.1 hA.2.2.1 htd (by simp_all)).2
   obtain ⟨hreg, -⟩ := regOf_spec hN
   rw [slf_labSet2]
   exact hL2 hnopar _ (hreg.1 _ hla) _ (hreg.1 _ hlb) hAf hB1 hB0
+
+
+end
 
 end
 

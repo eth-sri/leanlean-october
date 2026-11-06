@@ -17,14 +17,19 @@ namespace Model
 
 variable (M : Model)
 
+section
+variable {F : Set (Set Point)} {γ γ' : ℕ}
 /-- Semigranularity is monotone in `γ`. -/
-theorem Semigranular.mono {F : Set (Set Point)} {γ γ' : ℕ} (h : M.Semigranular F γ)
+theorem Semigranular.mono (h : M.Semigranular F γ)
     (hγ : γ ≤ γ') : M.Semigranular F γ' := fun U hU => (h U hU).trans hγ
 
 /-- **A `γ`-granular submap is `γ'`-semigranular for `γ ≤ γ'`.** -/
-theorem Granular.semigranular_of_le {F : Set (Set Point)} {γ γ' : ℕ} (h : M.Granular F γ)
+theorem Granular.semigranular_of_le (h : M.Granular F γ)
     (hγ : γ ≤ γ') : M.Semigranular F γ' :=
   Semigranular.mono M h.1 hγ
+
+
+end
 
 end Model
 

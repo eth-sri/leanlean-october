@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreDrvMath
 
 /-!
@@ -39,18 +41,19 @@ theorem head_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
     (try simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, h12, h21, h22, ALLOC])
 
-theorem mid_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
+section
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include hw
+theorem mid_exec :
     ∃ c' k, Exec P W midS c c' k ∧ k = 3 ∧ c'.nreg 80018 = c.nreg 80013 ∧
       c'.nreg 80043 = c.nreg ALLOC ∧ c'.nreg 80034 = 0 ∧
       (∀ r, r ≠ 80018 → r ≠ 80043 → r ≠ 80034 → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold midS
   exec_block
-  · omega
-  · refine ⟨rfl, ?_, ?_, ?_, fun r a1 a2 a3 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-      simp (disch := omega) only [Machine.upd_same, Machine.upd_other, ALLOC]
+  all_goals (simp_all [Machine.upd_same, Machine.upd_other, ALLOC] <;> omega_nf)
 
-theorem preReg_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+theorem preReg_exec
     (h : c.nreg 80016 + c.nreg 80021 ≤ W) :
     ∃ c' k, Exec P W preRegS c c' k ∧ k = 2 ∧ c'.nreg 80040 = 0 ∧
       c'.nreg 80041 = c.nreg 80016 + c.nreg 80021 ∧
@@ -58,37 +61,34 @@ theorem preReg_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold preRegS
   exec_block
-  · omega
-  · simp (disch := omega) only [Machine.upd_other]; exact h
-  · refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-      simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+  all_goals simp_all
 
-theorem bargs_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
+theorem bargs_exec :
     ∃ c' k, Exec P W (block [.copyN 40000 80000, .copyN 40001 80017, .copyN 40002 80018]) c c' k ∧
       k = 3 ∧ c'.nreg 40000 = c.nreg 80000 ∧ c'.nreg 40001 = c.nreg 80017 ∧
       c'.nreg 40002 = c.nreg 80018 ∧
       (∀ r, r ≠ 40000 → r ≠ 40001 → r ≠ 40002 → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   exec_block
-  refine ⟨rfl, ?_, ?_, ?_, fun r a1 a2 a3 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-    simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+  simp_all
 
-theorem copy1_exec' {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (a b : ℕ) :
+theorem copy1_exec' (a b : ℕ) :
     ∃ c' k, Exec P W (block [.copyN a b]) c c' k ∧ k = 1 ∧ c'.nreg a = c.nreg b ∧
       (∀ r, r ≠ a → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
       c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output :=
   Gran.copy1_exec c hw a b
 
-theorem incr_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+theorem incr_exec
     (h : c.nreg 80010 + c.nreg 80020 ≤ W) :
     ∃ c' k, Exec P W (block [.addN 80010 80010 80020]) c c' k ∧ k = 1 ∧
       c'.nreg 80010 = c.nreg 80010 + c.nreg 80020 ∧
       (∀ r, r ≠ 80010 → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
       c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   exec_block
-  · exact h
-  · refine ⟨rfl, ?_, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-      simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+  all_goals simp_all
+
+
+end
 
 set_option maxHeartbeats 2000000 in
 theorem init_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)

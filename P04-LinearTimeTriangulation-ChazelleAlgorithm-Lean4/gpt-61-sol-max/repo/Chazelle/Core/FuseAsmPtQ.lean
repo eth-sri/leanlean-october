@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmHt
 
 /-!
@@ -32,24 +34,7 @@ def PtAns (i : ℕ) (z : Point) (σ : ℝ) (l : List (ℕ × ℕ × ℕ)) : Prop
 its point. -/
 theorem param_eq_of_pos (M : Model) {e h' hv : ℕ} {z : Point} (hpos : M.pos Q ⟨e, h'⟩ = z)
     (hhv : (Q.vtx hv).2 = z.2) : M.param Q ⟨e, hv + 1⟩ = M.param Q ⟨e, h'⟩ := by
-  cases h' with
-  | zero =>
-    have hwa : M.wa e = z := by
-      rw [← hpos]; unfold Model.pos; rw [show M.param Q ⟨e, 0⟩ = 0 from rfl, Geometry.lerp_zero]
-    rw [param_of_vertex M Q e hv (by rw [hhv, hwa])]; rfl
-  | succ h =>
-    by_cases hh : (M.wa e).2 = (M.wb e).2
-    · unfold Model.param; simp only; rw [ite_eq_left hh, ite_eq_left hh]
-    · have hy : (Q.vtx h).2 = (Q.vtx hv).2 := by
-        have hpos' := hpos
-        unfold Model.pos Model.param at hpos'
-        simp only at hpos'
-        rw [ite_eq_right hh] at hpos'
-        rw [hhv, ← hpos', Geometry.lerp_snd]
-        have : (M.wb e).2 - (M.wa e).2 ≠ 0 := sub_ne_zero.2 (Ne.symm hh)
-        field_simp
-        ring
-      exact param_congr M Q e hy.symm
+  grind [Model.pos, Geometry.lerp_zero, Model.param, Geometry.lerp_snd]
 
 /-- **An arrival position gives a point query.** -/
 theorem ptAns_some (i : ℕ) {e' h' ρ hv : ℕ} {z : Point}
@@ -63,10 +48,7 @@ theorem ptAns_some (i : ℕ) {e' h' ρ hv : ℕ} {z : Point}
   have hpar := param_eq_of_pos Q M hpos hhv
   obtain ⟨hq, hp⟩ := queryOK_of_arrival J Q i (h := hv) hA hpar (by omega) hz2
   refine ⟨fun q hq' => ?_, fun h => absurd h (by simp)⟩
-  simp only [List.mem_singleton] at hq'
-  subst hq'
-  refine ⟨hq, ?_, hp, rfl⟩
-  unfold HeightOK; simp only; rw [hp, ← hhv]; rfl
+  ram_grind
 
 /-- **No arrival position: the direction is not free.** -/
 theorem ptAns_none (hP : J.P.Simple) (i : ℕ) {ρ : ℕ} {z : Point}

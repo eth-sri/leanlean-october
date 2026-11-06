@@ -24,9 +24,7 @@ open DownStep (stepFam)
 
 /-- `2^(⌈βλ⌉+12) = 2 · 2^μ`. -/
 theorem pow_lvl (lam : ℕ) : 2 ^ (Cost.ceilBeta lam + 12) = 2 * 2 ^ DrvR.nextLvl lam := by
-  unfold DrvR.nextLvl
-  rw [show Cost.ceilBeta lam + 12 = Cost.ceilBeta lam + 11 + 1 by omega, pow_succ]
-  ring
+  grind [DrvR.nextLvl, pow_succ]
 
 /-- **The math of one level (D7).** -/
 theorem levelMathSpec : DrvR.LevelMathSpec := by
@@ -44,7 +42,7 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
   refine ⟨fun r hr => ?_, ?_⟩
   · -- 1. the hosts
     obtain ⟨h1, h2, h3, h4⟩ := host_facts B hr hdeg hwt
-    exact ⟨h1, fun a ℓ h => by have := h2 a ℓ h; omega, h3, by omega⟩
+    grind
   intro γ₀ M C NR γR Lx hγ₀ hreg
   -- the host facts of the regions
   have hH : ∀ r, r < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions →

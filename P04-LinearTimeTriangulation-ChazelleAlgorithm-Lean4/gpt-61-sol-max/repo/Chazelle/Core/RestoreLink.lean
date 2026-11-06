@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreMath
 
 /-!
@@ -56,10 +58,7 @@ theorem exists_lerp_near {a b : Point} (hab : a ≠ b) {ρ : ℝ} (hρ : 0 < ρ)
     rw [Geometry.lerp_eq_add_smul, dist_eq_norm, add_sub_cancel_left, norm_smul,
       Real.norm_eq_abs, abs_of_pos hs0, dist_eq_norm]
   refine ⟨s, hs0, hs1, ?_, ?_⟩
-  · intro h
-    have h' : dist (lerp a b s) a = 0 := by rw [h, dist_self]
-    rw [hdist] at h'
-    exact (mul_pos hs0 hd).ne' h'
+  · grind [dist_self]
   · rw [hdist]
     have : s ≤ ρ / (2 * dist b a) := min_le_right _ _
     calc s * dist b a ≤ ρ / (2 * dist b a) * dist b a :=
@@ -86,12 +85,9 @@ theorem exists_near_attach (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p
     have hxs : lerp u v s ∈ Chazelle.segment a b := by
       rw [← hseg]; exact Geometry.lerp_mem_segment _ _ hs0.le hs1.le
     have hxD : lerp u v s ∈ M.D := hop s ⟨hs0, hs1⟩
-    refine ⟨_, ⟨hxs, hxD⟩, hK _ ?_ ?_⟩
-    · rw [mem_ball, hpt]; exact lt_of_lt_of_le hd (min_le_right _ _)
-    · apply hsec _ hxs (by rw [hpt]; exact hne)
-      rw [hpt]; exact lt_of_lt_of_le hd (min_le_left _ _)
+    grind [mem_ball]
   rcases hend with h | h
-  · exact key a b hab hopen rfl h
+  · grind
   · exact key b a hab.symm (WalkAx.open_rev hopen) (Geometry.segment_comm _ _) h
 
 /-- **A touched connected set lies on the side of the chord.**  If `c ≠ e` are chords of a chord
@@ -125,8 +121,7 @@ theorem components_disjoint {A : Set Point} {c₁ c₂ : Point}
 
 theorem pair_cases {X u v a b : Set Point} (hx : X = u ∨ X = v) (ha : a = u ∨ a = v)
     (hb : b = u ∨ b = v) (hab : a ≠ b) : X = a ∨ X = b := by
-  rcases hx with rfl | rfl <;> rcases ha with rfl | rfl <;> rcases hb with rfl | rfl <;>
-    first | exact Or.inl rfl | exact Or.inr rfl | exact absurd rfl hab
+  ram_grind
 
 /-- **The link lemma.**  Let `R` be a region of the finite admissible family `S`, and `e ∉ S` an
 admissible chord with open part in `R`, attached at two positions with distinct points and keys
@@ -186,13 +181,9 @@ theorem splitsWell_of_sideExits (hM : WalkAx M) {S : Set (Set Point)} (hS : S �
     · exact hs.mem₂
   -- the half touched by `d₁` lies in `K₁`, the one touched by `d₂` in `K₂`
   obtain ⟨Ra, hRa, hRaK⟩ : ∃ Ra, (Ra = R₁ ∨ Ra = R₂) ∧ TouchesIn M.D d₁ Ra := by
-    rcases (hs1 d₁ hd₁).1 with h | h
-    · exact ⟨R₁, Or.inl rfl, h⟩
-    · exact ⟨R₂, Or.inr rfl, h⟩
+    ram_grind
   obtain ⟨Rb, hRb, hRbK⟩ : ∃ Rb, (Rb = R₁ ∨ Rb = R₂) ∧ TouchesIn M.D d₂ Rb := by
-    rcases (hs2 d₂ hd₂).1 with h | h
-    · exact ⟨R₁, Or.inl rfl, h⟩
-    · exact ⟨R₂, Or.inr rfl, h⟩
+    ram_grind
   have hRa1 := (hs1 d₁ hd₁).2 Ra (hR12 Ra hRa) hRaK
   have hRb2 := (hs2 d₂ hd₂).2 Rb (hR12 Rb hRb) hRbK
   have notBoth : ∀ Q ∈ regionsIn M.D F, Q ⊆ connectedComponentIn (M.D \ e) c₁ →
@@ -201,8 +192,7 @@ theorem splitsWell_of_sideExits (hM : WalkAx M) {S : Set (Set Point)} (hS : S �
     obtain ⟨z, hz⟩ := regionsIn_nonempty hQ
     exact hdisj.notMem_of_mem_left (h₁ hz) (h₂ hz)
   have hab : Ra ≠ Rb := by
-    rintro rfl
-    exact notBoth Ra (hR12 Ra hRa) hRa1 hRb2
+    grind
   intro P hP hPR
   have hP12 := hs.eq_of_subset hP hPR
   have gen : ∀ (c₀ c₀' : Point) (k₁ k₂ : ℝ) (Rx Ry : Set Point),
@@ -225,8 +215,8 @@ theorem splitsWell_of_sideExits (hM : WalkAx M) {S : Set (Set Point)} (hS : S �
         rw [h] at hz hQK
         exact hdis.notMem_of_mem_left (hQK hz) (hRyK hz)
     rcases (hside c hc).1 with h | h
-    · rw [← hQ R₁ (Or.inl rfl) h]; exact h
-    · rw [← hQ R₂ (Or.inr rfl) h]; exact h
+    · grind
+    grind
   rcases pair_cases hP12 hRa hRb hab with rfl | rfl
   · exact gen c₁ c₂ _ _ P Rb hs1 hRb hRb2 hdisj
       (fun Q hQ => pair_cases hQ hRa hRb hab) h1

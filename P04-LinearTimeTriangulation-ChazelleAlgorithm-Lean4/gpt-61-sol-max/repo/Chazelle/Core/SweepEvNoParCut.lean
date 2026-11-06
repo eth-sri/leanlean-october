@@ -40,14 +40,13 @@ theorem noParCut : NoParCut := by
   obtain ⟨hp, htt⟩ := Chazelle.Chain.sideKey_inj ht0.le ht1 hA.2.1 hA.2.2.1 hkey
   have hA2 : SideAttach (chainModel J.right).W c
       ((6 + tpos J.right 0 + dq (rL1 J) (rδ J) d) % (chainModel J.right).W.n) t := by
-    have h : SideAttach (chainModel J.right).W c (cpA J d) t := by rw [hp, htt]; exact hA
+    have h : SideAttach (chainModel J.right).W c (cpA J d) t := by simp_all
     exact h
   obtain ⟨e', he', he'c, -, he'A⟩ := hC.transfer hd' ht0.le ht1 (fun h => absurd h ht0.ne') hc hA2
   have heA' : SideAttach (chainModel J.whole).W e
       ((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n) t := heA
   have := npc_inner_unique hC.hM hC.hF he he' ht0 heA' he'A
-  subst this
-  exact hno c hc he'c
+  simp_all
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutTile
 public import Chazelle.Core.SweepHit
 
@@ -41,7 +43,7 @@ theorem wa_succ (M : Model) {p : ℕ} (hp : p + 1 < M.W.n) : M.wa (p + 1) = M.wb
 
 theorem lerp_zero' (a b : Point) : lerp a b 0 = a := by simp [lerp]
 theorem lerp_one' (a b : Point) : lerp a b 1 = b := by
-  ext <;> simp [lerp]
+  simp_all
 
 /-- **An unwrapped key range inside one walk edge.** -/
 theorem wset_edge (M : Model) {p : ℕ} (hp : p < M.W.n) {s₀ s₁ : ℝ} (h0 : 0 ≤ s₀) (h01 : s₀ ≤ s₁)
@@ -49,23 +51,23 @@ theorem wset_edge (M : Model) {p : ℕ} (hp : p < M.W.n) {s₀ s₁ : ℝ} (h0 :
     wset M (p + s₀ + i * M.W.n) (p + s₁ + i * M.W.n) = subSeg M p s₀ s₁ := by
   rw [wset_shift]
   have hn' : 0 < M.W.n := by omega
-  have hn : (0 : ℝ) < M.W.n := by exact_mod_cast hn'
+  have hn : (0 : ℝ) < M.W.n := by simp_all
   have hpn : (p : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp
   ext x
   constructor
   · rintro ⟨p', t, hp', ht0, ht1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
     have hp'n : (p' : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp'
     have hy0 : 0 ≤ (p' : ℝ) + t := by positivity
-    rcases int_range hn hy0 (by linarith) (by linarith [(Nat.cast_nonneg p : (0:ℝ) ≤ p)]) (by linarith) hj with rfl | rfl | rfl
+    rcases int_range hn hy0 (by linarith) (by linarith) (by linarith) hj with rfl | rfl | rfl
     · -- `j = -1`: `X = n`, so `p = n - 1`, `s₁ = 1`, and the position is the vertex `0`
       push_cast at hj
       have hX : X = M.W.n := by linarith
       have hpp : (p : ℝ) = M.W.n - 1 := by linarith
-      have hs1 : s₁ = 1 := by linarith
-      have hp'0 : (p' : ℝ) = 0 ∧ t = 0 := by constructor <;> linarith
-      have hp'0' : p' = 0 := by exact_mod_cast hp'0.1
+      
+      have hp'0 : (p' : ℝ) = 0 ∧ t = 0 := by ram_grind
+      have hp'0' : p' = 0 := by simp_all
       have hpn1 : p = M.W.n - 1 := by
-        have : ((p + 1 : ℕ) : ℝ) = M.W.n := by push_cast; linarith
+        have : ((p + 1 : ℕ) : ℝ) = M.W.n := by simp_all
         have := (Nat.cast_inj (R := ℝ)).1 this; omega
       refine ⟨1, by linarith, by linarith, ?_⟩
       rw [hp'0', hp'0.2, lerp_zero', lerp_one', hpn1, wb_last M hn']
@@ -83,7 +85,7 @@ theorem wset_edge (M : Model) {p : ℕ} (hp : p < M.W.n) {s₀ s₁ : ℝ} (h0 :
       · exact ⟨t, by linarith, by linarith, rfl⟩
       · push_cast at hhi
         have ht : t = 0 := by linarith
-        refine ⟨1, by linarith, by push_cast at hj; linarith, ?_⟩
+        refine ⟨1, by linarith, by grind, ?_⟩
         rw [ht, lerp_zero', lerp_one', wa_succ M hp']
       · have hpR : (p : ℝ) = p' + 1 := by exact_mod_cast h.symm
         have ht : t = 1 := by linarith
@@ -92,15 +94,13 @@ theorem wset_edge (M : Model) {p : ℕ} (hp : p < M.W.n) {s₀ s₁ : ℝ} (h0 :
     · -- `j = 1`: `X = 0`, so `p = 0`, `s₀ = 0`, and the position is the end of the last edge
       push_cast at hj
       have hX : X = 0 := by linarith
-      have hp0 : (p : ℝ) = 0 := by linarith [(Nat.cast_nonneg p : (0 : ℝ) ≤ p)]
-      have hp0' : p = 0 := by exact_mod_cast hp0
-      have hs0 : s₀ = 0 := by linarith
+      have hp0 : (p : ℝ) = 0 := by linarith
+      have hp0' : p = 0 := by simp_all
+      
       have ht : t = 1 := by
-        by_contra hne
-        have := lt_of_le_of_ne ht1 hne
         linarith
       have hp'n1 : p' = M.W.n - 1 := by
-        have : ((p' + 1 : ℕ) : ℝ) = M.W.n := by push_cast; linarith
+        have : ((p' + 1 : ℕ) : ℝ) = M.W.n := by simp_all
         have := (Nat.cast_inj (R := ℝ)).1 this; omega
       refine ⟨0, by linarith, by linarith, ?_⟩
       rw [ht, lerp_zero', lerp_one', hp'n1, wb_last M hn', hp0']
@@ -113,11 +113,7 @@ theorem wset_edge (M : Model) {p : ℕ} (hp : p < M.W.n) {s₀ s₁ : ℝ} (h0 :
 noncomputable def hpar (u v : Point) (y : ℝ) : ℝ := (y - u.2) / (v.2 - u.2)
 
 theorem hpar_snd {u v : Point} (huv : u.2 ≠ v.2) (y : ℝ) : (lerp u v (hpar u v y)).2 = y := by
-  unfold hpar
-  simp only [lerp_snd]
-  have : v.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm huv)
-  field_simp
-  ring
+  core_grind
 
 /-! ## Horizontal segments on the line of the ray -/
 

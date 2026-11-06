@@ -40,7 +40,7 @@ theorem stepTask : StepTask := by
   have egN : c'.nreg gN = c.nreg gN := stp_iter_keep hI (k := 2440) (by omega)
   have egR : ∀ u, u < 2 → c'.nreg (gR + u) = c.nreg (gR + u) := fun u hu => by
     have := stp_iter_keep hI (k := 2441 + u) (by omega)
-    rwa [show sw (2441 + u) = gR + u by unfold gR sw; omega] at this
+    grind [gR, sw]
   have hAl := stp_alloc_mono hI
   have hgN := L.gapN
   refine ⟨{
@@ -64,14 +64,14 @@ theorem stepTask : StepTask := by
     labN := hkN4
     labR := hlabR
     inv := hinv
-    gapN := by rw [egN]; exact L.gapN
+    gapN := by omega
     gapR := fun i hi => by
       rw [egN] at hi
       rw [egR i (by omega)]
       exact L.gapR i hi
     gap := fun V hV => by
       obtain ⟨i, hi, hiV⟩ := L.gap V hV
-      exact ⟨i, by rw [egN]; exact hi, by rw [egR i (by omega)]; exact hiV⟩
+      grind
     ptr := hptr
     ptrL := hptrL
     log := S.log'

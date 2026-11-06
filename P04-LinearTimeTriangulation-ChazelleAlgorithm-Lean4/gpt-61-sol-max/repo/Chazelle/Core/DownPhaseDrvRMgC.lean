@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRMgB
 public import Chazelle.Core.DownPhaseDrvRInv
 
@@ -78,7 +80,10 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-theorem mgDesc_exec (c : Config) (hw : WordsBounded W c) {A HB ma mp : ℕ}
+section
+variable (c : Config) (hw : WordsBounded W c)
+include hw
+theorem mgDesc_exec {A HB ma mp : ℕ}
     (a40 : c.nreg 219140 = 0) (a41 : c.nreg 219141 = 1) (a46 : c.nreg 219146 = 6)
     (a00 : c.nreg 219100 = HB) (a12 : c.nreg 219112 = ma) (a16 : c.nreg 219116 = mp)
     (aA : c.nreg 9999 = A) (hAW : A + 6 ≤ W) (hmp : ma + mp ≤ W) :
@@ -87,11 +92,11 @@ theorem mgDesc_exec (c : Config) (hw : WordsBounded W c) {A HB ma mp : ℕ}
       c'.nmem (A + 3) = ma + mp ∧ c'.nmem (A + 4) = c.nreg 219138 ∧
       c'.nmem (A + 5) = c.nreg 219139 ∧ (∀ a, a < A → c'.nmem a = c.nmem a) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  have aT := hw.1 219138
-  have aB := hw.1 219139
+  
+  
   unfold mgDesc
   exec_block
-  all_goals try (config_simp; (try simp only [a40, a41, a46, a00, a12, a16, aA]); omega)
+  all_goals try (config_simp; omega)
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · config_simp; simp only [aA]
   · config_simp; simp only [aA, a46]
@@ -107,7 +112,7 @@ theorem mgDesc_exec (c : Config) (hw : WordsBounded W c) {A HB ma mp : ℕ}
   · config_simp
   · config_simp
 
-theorem mgArgs_exec (c : Config) (hw : WordsBounded W c) {D1 D2 A f1 f2 γ D g : ℕ}
+theorem mgArgs_exec {D1 D2 A f1 f2 γ D g : ℕ}
     (b10 : c.nreg 219110 = D1) (b14 : c.nreg 219114 = D2) (b37 : c.nreg 219137 = A)
     (b11 : c.nreg 219111 = f1) (b15 : c.nreg 219115 = f2) (b13 : c.nreg 219113 = γ)
     (b03 : c.nreg 219103 = D) (b04 : c.nreg 219104 = g) (b41 : c.nreg 219141 = 1)
@@ -122,15 +127,17 @@ theorem mgArgs_exec (c : Config) (hw : WordsBounded W c) {D1 D2 A f1 f2 γ D g :
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
     (try simp only [b10, b14, b37, b11, b15, b13, b03, b04, b41])
 
-theorem mgOut_exec (c : Config) (hw : WordsBounded W c) {A ma mp γ : ℕ}
+theorem mgOut_exec {A ma mp γ : ℕ}
     (b37 : c.nreg 219137 = A) (b12 : c.nreg 219112 = ma) (b16 : c.nreg 219116 = mp)
     (b13 : c.nreg 219113 = γ) (b41 : c.nreg 219141 = 1) (h1 : ma + mp ≤ W) (h2 : γ + 1 ≤ W) :
     ∃ c' k, Exec P W mgOut c c' k ∧ k = 4 ∧ c'.nreg 219110 = A ∧
       c'.nreg 219111 = c.nreg 100008 ∧ c'.nreg 219112 = ma + mp ∧ c'.nreg 219113 = γ + 1 := by
   unfold mgOut
   exec_block
-  all_goals try (config_simp; (try simp only [b37, b12, b16, b13, b41]); omega)
-  refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> (try simp only [b37, b12, b16, b13, b41])
+  all_goals simp_all
+
+
+end
 
 set_option maxHeartbeats 8000000 in
 /-- **One merge step**: the union of the accumulated chain `C₁ = ⟨H.poly Q, 0, m₁⟩` (descriptor
@@ -188,12 +195,12 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
   set f2 := c.nreg 219115 with hf2
   have hP1 : C1.P = H.poly (Qof P) := hd1.holds.2.2.1
   have hP2 : C2.P = H.poly (Qof P) := hd2.holds.2.2.1
-  have hC1n : C1.P.n = NP := by rw [hP1, DownMath.host_poly_n, hQn, hNP]
-  have hlen' : ma + C2.m + 1 ≤ NP := by rw [← hC1n, ← hm1]; exact hlen
+  have hC1n : C1.P.n = NP := by grind [DownMath.host_poly_n]
+  have hlen' : ma + C2.m + 1 ≤ NP := by omega
   have hNW : NP ≤ 64 * P.n := by
     have h1 := Host.pts_length_le hwf
     have h2 : H.length * P.n ≤ 64 * P.n := Nat.mul_le_mul_right _ hHok
-    rw [hNP]; omega
+    omega
   have hAW : A₀ + 6 ≤ W := by omega
   -- the top of the union
   obtain ⟨c₁, k₁, e₁, hk₁, t38, t39, g₁⟩ := mgTop_exec hG hWn c hw hK h00 h01 h07 h12 hHA.holds
@@ -215,10 +222,10 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
   have g₂ : FrameM Bdesc c₁ c₂ := exec_frameM e₂ wrM_mgDesc
   have v : ∀ r, Btop r = false → Bdesc r = false → c₂.nreg r = c.nreg r := fun r h1 h2 =>
     (g₂.1 r h2).trans (u r h1)
-  have hag : ∀ a, a < A₀ → c₂.nmem a = c.nmem a := fun a ha => by rw [wlt a ha, hm₁]
+  have hag : ∀ a, a < A₀ → c₂.nmem a = c.nmem a := fun a ha => by grind
   -- the union's descriptor, robustly
   have hP21 : C2.P = C1.P := hP2.trans hP1.symm
-  have hcons : C2.s = C1.s + C1.m := by rw [hs2, hs1, hm1]; ring
+  have hcons : C2.s = C1.s + C1.m := by omega
   have hΦ : ∀ m' : ℕ → ℕ, (∀ a, a < A₀ + 6 → m' a = c₂.nmem a) →
       m' A₀ = 0 ∧ m' (A₀ + 1) = HB ∧
       ChainDescAt m' (A₀ + 1) (Qof P) H (jOf C1 C2 hlen).whole := by
@@ -227,16 +234,14 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
       (hm' a (by omega)).trans (hag a ha)
     obtain ⟨b1h, b1⟩ := hd1 m' ag
     obtain ⟨b2h, b2⟩ := hd2 m' ag
-    refine ⟨by rw [hm' _ (by omega)]; exact w0, by rw [hm' _ (by omega)]; exact w1, ?_⟩
+    refine ⟨by grind, by grind, ?_⟩
     refine descWhole hlen hP21 hcons b1 b2 ?_ ?_ ?_ ?_ ?_
-    · rw [hm' _ (by omega), w1, b1h]
-    · rw [show A₀ + 1 + 1 = A₀ + 2 by omega, hm' _ (by omega), w2, hs1]
-    · rw [show A₀ + 1 + 2 = A₀ + 3 by omega, hm' _ (by omega), w3, hm1, hm2]
-    · rw [show A₀ + 1 + 3 = A₀ + 4 by omega, hm' _ (by omega), w4, t38]
-    · rw [show A₀ + 1 + 4 = A₀ + 5 by omega, hm' _ (by omega), w5, t39,
-        show D1 + 1 + 4 = D1 + 5 by omega, show D2 + 1 + 4 = D2 + 5 by omega,
-        ag _ (by omega), ag _ (by omega)]
-  have hTD := hΦ c₂.nmem (fun _ _ => rfl)
+    · grind
+    · grind
+    · grind
+    · grind
+    grind
+  
   -- the arguments
   have b10 : c₂.nreg 219110 = D1 := v _ (by decide) (by decide)
   have b14 : c₂.nreg 219114 = D2 := v _ (by decide) (by decide)
@@ -329,8 +334,7 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
     hΦ m' (fun a ha => (hm' a (by omega)).trans (m5 a ha))
   have ag₅ : ∀ a, a < A₀ → c₅.nmem a = c.nmem a := fun a ha => (m5 a (by omega)).trans (hag a ha)
   -- the frame
-  have hB21 : ∀ r, bandOf r = bDownDrv → r ≠ ALLOC := fun r hr => by
-    simp only [bandOf, bDownDrv] at hr; unfold ALLOC; omega
+  
   have F1 : Frame mgBands c c₁ k₁ := NFLoc.frame_of_frameB g₁ (fun r hr => by
     simp only [Btop, Bool.or_eq_true, decide_eq_true_eq] at hr
     unfold mgBands

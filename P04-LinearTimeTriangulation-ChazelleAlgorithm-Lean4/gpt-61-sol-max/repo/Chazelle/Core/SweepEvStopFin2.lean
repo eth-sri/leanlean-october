@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopTasks3
 
 /-!
@@ -36,36 +38,30 @@ theorem slfStSeq_irs {x : ℕ} (hx : IScr x) (hK1x : K1 ≠ x) : ∀ (vs : List 
   | [], c, hI, _, _, _, _ => IRS.skip hI ⟨fun i hi => absurd hi (by simp), fun _ _ => rfl,
       fun _ _ => rfl, by simp⟩
   | v :: vs, c, hI, hk1, hvx, hA, hW => by
-    have hvx' : v ≠ x := hvx v List.mem_cons_self
+    
     have hvs : ∀ w ∈ vs, w ≠ x := fun w hw => hvx w (List.mem_cons_of_mem _ hw)
     simp only [List.length_cons] at hW ⊢
     refine IRS.mono (K := 1 + (1 + 2 * vs.length)) (IRS.seq (IRS.store hI hA) ?_) (by omega)
       (fun _ h => h)
     rintro c₁ hI₁ - - rfl
     refine IRS.seq (K₁ := 1) (K₂ := 2 * vs.length) (IRS.block [.addN x x K1] hI₁
-      ⟨⟨hx, by simp only; rw [hk1]; omega⟩, trivial⟩) ?_
+      ⟨⟨hx, by ram_grind⟩, trivial⟩) ?_
     rintro c₂ hI₂ - - hc2
     have r2x : c₂.nreg x = c.nreg x + 1 := by
-      rw [hc2]; simp only [regB, regI, upd_same]; rw [hk1]
+      simp_all [regB, regI, upd_same] 
     have r2o : ∀ r, r ≠ x → c₂.nreg r = c.nreg r := fun r hr => by
-      rw [hc2]; simp only [regB, regI]; rw [upd_other _ _ _ hr]
+      simp_all [regB, regI] 
     have m2 : c₂.nmem = upd c.nmem (c.nreg x) (c.nreg v) := by rw [hc2]
-    refine (slfStSeq_irs hx hK1x vs hI₂ (by rw [r2o _ hK1x]; exact hk1) hvs
-      (by rw [r2x]; omega) (by rw [r2x]; omega)).mono le_rfl ?_
+    refine (slfStSeq_irs hx hK1x vs hI₂ (by simp_all) hvs
+      (by omega) (by omega)).mono le_rfl ?_
     rintro c' ⟨h1, h2, h3, h4⟩
-    refine ⟨fun i hi => ?_, fun a ha => ?_, fun r hr => by rw [h3 r hr, r2o r hr], by
-      rw [h4, r2x]; ring⟩
+    refine ⟨fun i hi => ?_, fun a ha => ?_, fun r hr => by ram_grind, by
+      omega⟩
     · rcases i with _ | j
-      · rw [h2 _ (Or.inl (by rw [r2x]; omega)), m2]
+      · rw [h2 _ (Or.inl (by omega)), m2]
         simp
-      · have := h1 j (by omega)
-        have hmem : vs.getD j 0 ∈ vs := by
-          rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]
-          exact List.getElem_mem _
-        rw [r2x, r2o _ (hvs _ hmem)] at this
-        simp only [List.getD_cons_succ]
-        rw [show c.nreg x + (j + 1) = c.nreg x + 1 + j by ring, this]
-    · rw [h2 _ (by rw [r2x]; omega), m2, upd_other _ _ _ (by omega)]
+      grind
+    ram_simp 
 
 /-! ## Emitting a raw record -/
 
@@ -93,14 +89,13 @@ def slfEmit (pe ph dc : ℕ) : Stmt :=
 
 theorem slfAddrL_val (m f : ℕ → ℕ) :
     regB m slfAddrL f slfX = f gRB + 11 * f gRC ∧ ∀ q, q ≠ slfX → regB m slfAddrL f q = f q := by
-  have hB : gRB ≠ slfX := by unfold gRB slfX sw; omega
-  have hC : gRC ≠ slfX := by unfold gRC slfX sw; omega
+  
+  have hC : gRC ≠ slfX := by omega_nf
   refine ⟨?_, fun q hq => regB_other _ _ _ (fun i hi => by
     simp only [slfAddrL, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp only [dstI] <;> exact fun h => hq h.symm)⟩
-  simp only [slfAddrL, regB, regI, upd_same, upd_other _ _ _ hC]
-  ring
+      core_grind <;> exact fun h => hq h.symm)⟩
+  simp_all [slfAddrL, regB, regI, upd_same] <;> omega_nf
 
 set_option maxHeartbeats 8000000 in
 /-- **Emitting a raw record.** -/
@@ -115,33 +110,30 @@ theorem slfEmit_irs {pe ph dc : ℕ} (hpe : pe ≠ slfX) (hph : ph ≠ slfX) (hd
       c'.nreg gRC = c.nreg gRC + 1 ∧ (∀ r, r ≠ slfX → r ≠ gRC → c'.nreg r = c.nreg r)) := by
   have hsX : IScr slfX := iscr_sw' (by norm_num) (by norm_num)
   have hsC : IScr gRC := iscr_sw' (by norm_num) (by norm_num)
-  have hB : gRB ≠ slfX := by unfold gRB slfX sw; omega
-  have hC : gRC ≠ slfX := by unfold gRC slfX sw; omega
-  have hK1X : K1 ≠ slfX := by unfold K1 slfX sw; omega
-  have hK1C : K1 ≠ gRC := by unfold K1 gRC sw; omega
+  
+  have hC : gRC ≠ slfX := by omega_nf
+  have hK1X : K1 ≠ slfX := by omega_nf
+  
   have hok : okB W c.nmem slfAddrL c.nreg := by
     simp only [slfAddrL, okB, okI, regI, upd_same, upd_other _ _ _ hC]
-    refine ⟨hsX, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩,
-      ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩,
-      ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, trivial⟩
+    ram_grind
   obtain ⟨va, vo⟩ := slfAddrL_val c.nmem c.nreg
   refine IRS.seq (K₁ := 12) (K₂ := 2 * 11 + 1) (IRS.block slfAddrL hI hok) ?_
   rintro c₁ hI₁ - - hc1
-  have a1 : c₁.nreg slfX = c.nreg gRB + 11 * c.nreg gRC := by rw [hc1]; exact va
-  have o1 : ∀ q, q ≠ slfX → c₁.nreg q = c.nreg q := fun q hq => by rw [hc1]; exact vo q hq
+  have a1 : c₁.nreg slfX = c.nreg gRB + 11 * c.nreg gRC := by simp_all
+  have o1 : ∀ q, q ≠ slfX → c₁.nreg q = c.nreg q := fun q hq => by simp_all
   have m1 : c₁.nmem = c.nmem := by rw [hc1]
   have hws : ∀ v ∈ slfWords pe ph dc, v ≠ slfX := by
     intro v hv
     simp only [slfWords, List.mem_cons, List.not_mem_nil, or_false] at hv
-    rcases hv with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
-    all_goals first | assumption | (simp only [oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, slfX, sw]; omega)
+    grind [oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, slfX, sw]
   refine IRS.seq (K₁ := 2 * 11) (K₂ := 1) (slfStSeq_irs hsX hK1X (slfWords pe ph dc) hI₁
-    (by rw [o1 _ hK1X]; exact hk1) hws (by rw [a1]; omega)
-    (by rw [a1]; simp only [slfWords, List.length_cons, List.length_nil]; omega)) ?_
+    (by simp_all) hws (by omega)
+    (by grind [slfWords, List.length_cons, List.length_nil])) ?_
   rintro c₂ hI₂ - - ⟨s1, s2, s3, s4⟩
-  have c2C : c₂.nreg gRC = c.nreg gRC := by rw [s3 _ hC, o1 _ hC]
-  have c2K : c₂.nreg K1 = 1 := by rw [s3 _ hK1X, o1 _ hK1X]; exact hk1
-  refine (IRS.block [.addN gRC gRC K1] hI₂ ⟨⟨hsC, by rw [c2C, c2K]; omega⟩, trivial⟩).mono
+  have c2C : c₂.nreg gRC = c.nreg gRC := by ram_grind
+  have c2K : c₂.nreg K1 = 1 := by ram_grind
+  refine (IRS.block [.addN gRC gRC K1] hI₂ ⟨⟨hsC, by omega⟩, trivial⟩).mono
     (by simp) ?_
   rintro c₃ hc3
   have m3 : c₃.nmem = c₂.nmem := by rw [hc3]
@@ -151,11 +143,11 @@ theorem slfEmit_irs {pe ph dc : ℕ} (hpe : pe ≠ slfX) (hph : ph ≠ slfX) (hd
     · rfl
     · have hm : (slfWords pe ph dc).getD i 0 ∈ slfWords pe ph dc := by
         rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by simp [slfWords]; omega)]
-        exact List.getElem_mem _
+        grind
       exact hws _ hm
-  · rw [m3, s2 a (by rw [a1]; omega), m1]
-  · rw [hc3]; simp only [regB, regI, upd_same]; rw [c2C, c2K]
-  · rw [hc3]; simp only [regB, regI]; rw [upd_other _ _ _ hr2, s3 _ hr1, o1 _ hr1]
+  · ram_grind
+  · rw [hc3]; simp only [regB, regI, upd_same]; omega
+  · rw [hc3]; simp only [regB, regI]; ram_simp 
 
 end
 

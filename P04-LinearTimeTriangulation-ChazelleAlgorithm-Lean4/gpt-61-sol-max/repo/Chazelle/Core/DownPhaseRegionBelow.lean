@@ -53,17 +53,14 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   obtain ⟨η, ⟨hη0, hηρ⟩, hηV⟩ : ∃ η ∈ Ioo (0 : ℝ) ρ, η ∉ (V.image (· - z.2) : Set ℝ) :=
     ((Set.Ioo_infinite hρ).sdiff (Finset.finite_toSet _)).nonempty
   have hVy : ∀ y ∈ V, z.2 + η ≠ y := by
-    intro y hy e
-    apply hηV
-    rw [Finset.coe_image]
-    exact ⟨y, hy, by simp only; linarith⟩
+    grind
   set z' : Point := (z.1, z.2 + η)
   have hz'R : z' ∈ R := hball (by
     rw [Metric.mem_ball, Prod.dist_eq]
     simp only [z', Real.dist_eq, sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hη0]
-    exact max_lt hρ hηρ)
+    grind)
   have hz'free := Chazelle.Chain.regionsIn_subset hR hz'R
-  have hz'Y : Y < z'.2 := by show Y < z.2 + η; linarith
+  
   have hvW : ∀ i, i < M.W.n → z'.2 ≠ (M.W.vtx i).2 := fun i hi =>
     hVy _ (Finset.mem_union_right _ (Finset.mem_image.2 ⟨i, Finset.mem_range.2 hi, rfl⟩))
   have hvQ : ∀ i, i < Q.n → z'.2 ≠ (Q.vtx i).2 := fun i hi =>
@@ -83,7 +80,7 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       exact ⟨hseg s' hs', fun ⟨c, hc, hmem⟩ => hch c hc _ hmem rfl⟩
     have hsub := Chazelle.Chain.subset_regionsIn_of_inter hR hT hTfree
       ⟨z', ⟨0, ⟨le_rfl, hs⟩, by simp [z']⟩, hz'R⟩
-    exact fun s' hs' => hsub ⟨s', hs', rfl⟩
+    grind
   -- the walk position is not a cut
   have hncut : ¬ M.IsCut S (p + t) := by
     rintro ⟨c, hc, q, u, hA, e⟩
@@ -92,12 +89,12 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   obtain ⟨X, hX, a, b, harc, hin⟩ := hM.arc_around hF hfin hne hncut
   -- the region faced there is `R`
   have hfX : ∀ᶠ s in 𝓝[>] (0 : ℝ), M.Faces p (t + s * (1 - t)) X := by
-    have h1 := (Loc.tendsto_mul_const_nhdsGT (show 0 < 1 - t by linarith [ht.2])).eventually
+    have h1 := (Loc.tendsto_mul_const_nhdsGT (show 0 < 1 - t by grind)).eventually
       (cyc_open hin)
     filter_upwards [h1, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)] with s h1 hs1
     have hs0 : 0 < s := hs1.1
     refine harc.2.2.2.2.2.2 p _ hp (by nlinarith [ht.1, ht.2]) (by nlinarith [ht.1, ht.2, hs1.2]) ?_
-    rw [← add_assoc]; exact h1
+    grind
   obtain ⟨r0, hr0, hnear⟩ := Loc.near_sub_region hQ hF hfin hp ht.1.le ht.2 hncut hX hfX
   have hXR : X = R := by
     set s' := s - min s r0 / 2 with hs'd
@@ -108,13 +105,13 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       rw [hpt, Metric.mem_ball, Prod.dist_eq]
       simp only [Real.dist_eq, sub_self, abs_zero]
       rw [max_eq_left (abs_nonneg _)]
-      rw [show z'.1 + s' - (z'.1 + s) = -(min s r0 / 2) by rw [hs'd]; ring, abs_neg,
-        abs_of_pos (by have := lt_min hs hr0; linarith)]
-      have := min_le_right s r0; have := lt_min hs hr0; linarith
+      rw [show z'.1 + s' - (z'.1 + s) = -(min s r0 / 2) by grind, abs_neg,
+        abs_of_pos (by linarith)]
+      have := min_le_right s r0; linarith
     have hX' := hnear _ hdist (Chazelle.Chain.regionsIn_subset hR hmem).1
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hR with h | h
     · exact h
-    · exact absurd (h.le_bot ⟨hX', hmem⟩) (fun h => h)
+    grind
   subst hXR
   -- the walk point lies on a piece of the arc
   obtain ⟨i_l, d, hA⟩ := arc_keys hM hF hfin hne hX harc
@@ -122,14 +119,13 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   set n : ℝ := (M.W.n : ℝ)
   have hb : ∀ i, i < N → 0 ≤ hk M S X i ∧ hk M S X i < n := fun i hi =>
     hostKeys_bounds (hk_mem hM hF hfin hi)
-  have hab := (WalkAx.arc_cuts hne harc).2.2
+  
   have hlb : 0 ≤ a ∧ a < n := hA.hl ▸ hb _ hA.hil
   have hrb : 0 ≤ b ∧ b < n := hA.hr ▸ hb _ (Nat.mod_lt _ (by have := hA.hdN; omega))
   have hxb : 0 ≤ (p : ℝ) + t ∧ (p : ℝ) + t < n := by
     refine ⟨add_nonneg (Nat.cast_nonneg p) ht.1.le, ?_⟩
     have : ((p + 1 : ℕ) : ℝ) ≤ (M.W.n : ℝ) := by exact_mod_cast hp
-    push_cast at this
-    linarith [ht.2]
+    grind
   have hu0 : ukey M S X i_l 0 = a := by rw [ukey_zero hA.hil, hA.hl]
   have hab' : unwrapK n a a < unwrapK n a b := by
     rw [unwrapK_self, ← hA.hud, ← hu0]
@@ -137,26 +133,25 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hxu := (cyc_unwrap hlb hlb hrb hxb hab').1 hin
   rw [unwrapK_self] at hxu
   set xx := unwrapK n a ((p : ℝ) + t) with hxx
-  have hxa : ukey M S X i_l 0 < xx := by rw [hu0]; exact hxu.1
+  
   have hxd : xx < ukey M S X i_l d := by rw [hA.hud]; exact hxu.2
   have hd0 := hA.hd0
   -- the piece containing `xx`
   have hex : ∃ j, xx < ukey M S X i_l (j + 1) := ⟨d - 1, by
-    rw [Nat.sub_add_cancel hA.hd0]; exact hxd⟩
+    grind⟩
   classical
   set j := Nat.find hex
   have hj1 : xx < ukey M S X i_l (j + 1) := Nat.find_spec hex
   have hjd : j < d := by
     by_contra h; push Not at h
     have := Nat.find_min' hex (show xx < ukey M S X i_l (d - 1 + 1) by
-      rw [Nat.sub_add_cancel hA.hd0]; exact hxd)
+      grind)
     omega
   have hj0 : ukey M S X i_l j ≤ xx := by
     rcases Nat.eq_zero_or_pos j with h0 | h0
-    · rw [h0]; exact hxa.le
+    · grind
     · have := Nat.find_min hex (show j - 1 < j by omega)
-      push Not at this
-      rwa [Nat.sub_add_cancel h0] at this
+      grind
   obtain ⟨q, -, -, -, hq⟩ := arc_piece hM hF hfin hA hjd
   have hw : hostPt M.W (wrapK n xx) = sidePt M.W p t := by
     rw [wrapK_unwrapK hxb, hostPt_eq M.W ht.1.le ht.2]
@@ -177,7 +172,7 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   simp only [Chazelle.Geometry.lerp_snd] at hy hY1 hY2
   set u := (M.W.vtx (q % M.W.n)).2
   set v := (M.W.vtx ((q % M.W.n + 1) % M.W.n)).2
-  have hj1' := hj1.le
+  
   rcases le_total u v with huv | huv
   · have : (xx - q) * (v - u) ≤ (ukey M S X i_l (j + 1) - q) * (v - u) :=
       mul_le_mul_of_nonneg_right (by linarith) (by linarith)

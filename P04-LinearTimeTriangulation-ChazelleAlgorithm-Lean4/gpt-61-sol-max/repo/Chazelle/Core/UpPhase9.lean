@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.UpPhase8
 
 /-!
@@ -55,21 +57,27 @@ section proofs
 
 variable {O : OracleIface} {P : Polygon}
 
-theorem UpEntry.mono {m : ℕ → ℕ} {A A' hp g i d f o : ℕ} (h : UpEntry O P m A hp g i d f o)
+section
+variable {m : ℕ → ℕ}
+include m
+theorem UpEntry.mono {A A' hp g i d f o : ℕ} (h : UpEntry O P m A hp g i d f o)
     (hA : A ≤ A') : UpEntry O P m A' hp g i d f o :=
   ⟨fun C h1 h2 h3 => (h.1 C h1 h2 h3).mono hA, h.2⟩
 
-theorem UpTab.mono {m : ℕ → ℕ} {h hp A A' : ℕ} (hT : UpTab O P m h hp A) (hA : A ≤ A') :
+theorem UpTab.mono {h hp A A' : ℕ} (hT : UpTab O P m h hp A) (hA : A ≤ A') :
     UpTab O P m h hp A' := by
   obtain ⟨h1, h2, h3, h4, h5, ⟨h7, h7b, h7c⟩, h8, h9, h6⟩ := hT
   exact ⟨h1, h2, h3, h4, by omega, ⟨by omega, by omega, by omega⟩, by omega,
-    fun g hg => by have := h9 g hg; omega,
+    fun g hg => by grind,
     fun g i hg hi => (h6 g i hg hi).mono hA⟩
 
-theorem Cells.mono {m : ℕ → ℕ} {A A' hp g : ℕ} (hA : A ≤ A') :
+theorem Cells.mono {A A' hp g : ℕ} (hA : A ≤ A') :
     ∀ {x i : ℕ}, Cells O P m A hp g x i → Cells O P m A' hp g x i
   | _, 0, _ => trivial
   | _, _ + 1, ⟨h1, h2, h3⟩ => ⟨by omega, h2.mono hA, Cells.mono hA h3⟩
+
+
+end
 
 /-- A robust fact implies its consequences, for a larger bound. -/
 theorem robust_of {A A' : ℕ} {m : ℕ → ℕ} {Φ Ψ : (ℕ → ℕ) → Prop} (h : Robust A m Φ)
@@ -83,16 +91,19 @@ theorem chainWF_of_node {m : ℕ → ℕ} {A hp d f γ : ℕ} {C : Chain} (hn : 
   obtain ⟨hd, -, hdh, hd5, hhp, hfit, -⟩ := hN
   have hQn : (Qof P).n = P.n := shear_n _ _
   refine ⟨hd5, fun H C' hC => ?_⟩
-  have hH' : H = Host.whole P.n := hostAt_unique hC.1 (by rw [hdh]; exact hH)
+  have hH' : H = Host.whole P.n := hostAt_unique hC.1 (by simp_all)
   subst hH'
-  refine ⟨by simp [Host.whole], hostWF_whole hn, by rw [hdh]; simp [Host.whole]; omega, ?_⟩
+  refine ⟨by simp [Host.whole], hostWF_whole hn, by simp_all [Host.whole] <;> omega_nf, ?_⟩
   have hs : C'.s = C.s := hC.2.2.1.symm.trans hd.2.2.1
   have hP : C'.P = Qof P := by
-    rw [hC.2.1]; have := L41.poly_whole (Qof P) (by omega); rw [hQn] at this; exact this
-  rw [hs, hP, hQn]; have := C.one_le; omega
+    rw [hC.2.1]; have := L41.poly_whole (Qof P) (by omega); simp_all
+  grind
 
+section
+variable {m : ℕ → ℕ} {h hp A : ℕ} (hn : 2 ≤ P.n)
+include hn
 /-- **`UpTab` gives the raw grade table.** -/
-theorem upTab_gradeRaw {m : ℕ → ℕ} {h hp A : ℕ} (hn : 2 ≤ P.n) (hT : UpTab O P m h hp A) :
+theorem upTab_gradeRaw (hT : UpTab O P m h hp A) :
     GradeRaw O P m h A := by
   obtain ⟨h1, h2, h3, hH, -, -, -, -, hE⟩ := hT
   refine ⟨h1, h2, h3, fun g i hg hi => ?_⟩
@@ -104,9 +115,12 @@ theorem upTab_gradeRaw {m : ℕ → ℕ} {h hp A : ℕ} (hn : 2 ≤ P.n) (hT : U
     hostWF_whole (by omega), rfl, rfl, hNW, hc, hAt, e0, e1, e2⟩
 
 /-- **The grade context holds** at a robust `UpTab`. -/
-theorem holds_of_upTab {m : ℕ → ℕ} {h hp A : ℕ} (hn : 2 ≤ P.n)
+theorem holds_of_upTab
     (hR : Robust A m fun m' => UpTab O P m' h hp A) : (gradeCtx O).holds P m h A :=
   fun m' hm' => upTab_gradeRaw hn (hR m' hm')
+
+
+end
 
 end proofs
 

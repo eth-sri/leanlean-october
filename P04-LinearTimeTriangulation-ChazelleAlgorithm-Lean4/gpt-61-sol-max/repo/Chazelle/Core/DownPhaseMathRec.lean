@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseMathOrd
 public import Chazelle.Core.DownPhaseDrvSplice
 public import Chazelle.Core.NFBuildValid
@@ -52,12 +54,12 @@ theorem chordPos_attach (hN : IsNF M Q N) {i : ℕ} (hi : i < N.nChords) {x : WP
       (sidePt M.W x.edge (M.param Q x)).2 = (Q.vtx (N.chord i).h).2 := by
   obtain ⟨-, -, hatt, reg, -, -, -, -, -, hh, -⟩ := hN
   have hmem : (N.chord i).toSet M Q ∈ N.F M Q := ⟨N.chord i, by
-    unfold NF.chord; rw [List.getD_eq_getElem _ _ hi]; exact List.getElem_mem hi, rfl⟩
+    unfold NF.chord; rw [List.getD_eq_getElem _ _ hi]; grind, rfl⟩
   have hA : SideAttach M.W ((N.chord i).toSet M Q) x.edge (M.param Q x) := by
     rcases hx with rfl | rfl
     · exact (hatt i hi).1
     · exact (hatt i hi).2
-  refine ⟨hmem, hA, rfl, by rcases hx with rfl | rfl <;> rfl, hh i hi, ?_⟩
+  refine ⟨hmem, hA, rfl, by aesop, hh i hi, ?_⟩
   have := hA.2.2.2.1
   exact this.1
 
@@ -65,28 +67,26 @@ end
 
 /-! ## The region records of `buildNF` -/
 
-theorem isNF_build (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L)
-    (hperm : E.Perm (List.range (2 * L.length)))
-    (hsort : E.Pairwise (BuildNF.codeLe (interiorModel Q) Q L)) :
+section
+variable (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L) (hperm : E.Perm (List.range (2 * L.length))) (hsort : E.Pairwise (BuildNF.codeLe (interiorModel Q) Q L))
+include hQ hL hperm hsort
+theorem isNF_build :
     IsNF (interiorModel Q) Q (buildNF (interiorModel Q) Q L E) :=
   (BuildNF.isNF_goodModel (Or.inr ⟨Q, hQ, rfl⟩) hL hperm hsort).1
 
-theorem nChords_build (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L)
-    (hperm : E.Perm (List.range (2 * L.length)))
-    (hsort : E.Pairwise (BuildNF.codeLe (interiorModel Q) Q L)) :
+theorem nChords_build :
     (buildNF (interiorModel Q) Q L E).nChords = L.length := by
   have := (BuildNF.isNF_goodModel (Or.inr ⟨Q, hQ, rfl⟩) hL hperm hsort).2.1
-  have h := congrArg List.length this
-  simpa [NF.nChords] using h
+  grind [NF.nChords]
+
+
+end
 
 /-- The arcs of region `r` of `buildNF` in record order. -/
 theorem region_arcs_build {r : ℕ} (_hK : 0 < L.length) (hr : r < L.length + 1) :
     ((buildNF (interiorModel Q) Q L E).region r).arcs =
       BuildNF.regArcs (interiorModel Q) Q L E r := by
-  unfold NF.region buildNF
-  simp only
-  rw [List.getD_eq_getElem _ _ (by simpa using hr)]
-  simp
+  simp_all [NF.region, buildNF] <;> omega_nf
 
 /-- **The arcs of a region are listed in increasing record order.** -/
 theorem region_arcs_sorted {r : ℕ} (hK : 0 < L.length) (hr : r < L.length + 1) :
@@ -111,7 +111,7 @@ theorem arc_pos (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L)
   set m := (gapStarts (interiorModel Q) Q L E).getD j 0 with hm
   have hmE : m < E.length := by
     have hmem : m ∈ gapStarts (interiorModel Q) Q L E := by
-      rw [hm, List.getD_eq_getElem _ _ hj']; exact List.getElem_mem hj'
+      simp_all
     exact (BuildNF.Input.mem_gapStarts.1 hmem).1
   have hpos : ∀ u, u < E.length → ChordPos N (wposOf L (E.getD u 0)) := by
     intro u hu
@@ -124,8 +124,7 @@ theorem arc_pos (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L)
         (E.getD u 0 / 2) := by
       unfold NF.chord
       show ((List.range L.length).map (BuildNF.chordRec (interiorModel Q) Q L E)).getD _ _ = _
-      rw [List.getD_eq_getElem _ _ (by rw [List.length_map, List.length_range]; exact hc'),
-        List.getElem_map, List.getElem_range]
+      simp_all
     rw [hchord]
     unfold wposOf
     split_ifs
@@ -133,8 +132,7 @@ theorem arc_pos (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L)
     · right; rfl
   have he : N.arc j = _ := harc
   constructor
-  · rw [show (N.arc j).s = wposOf L (E.getD m 0) by rw [he]]
-    exact hpos m hmE
+  · grind
   · rw [show (N.arc j).e = wposOf L (E.getD ((m + 1) % E.length) 0) by rw [he]]
     exact hpos _ (Nat.mod_lt _ (by omega))
 

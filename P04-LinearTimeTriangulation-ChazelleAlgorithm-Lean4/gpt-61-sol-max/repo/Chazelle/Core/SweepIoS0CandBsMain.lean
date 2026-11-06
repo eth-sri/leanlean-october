@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoS0CandBsProg
 
 /-!
@@ -36,17 +38,15 @@ structure LInv (P : Polygon) (J : Merge.Junction) (c d : Config) : Prop where
   hhi : ∀ j, d.nreg 244000 + 2 ^ d.nreg 244001 ≤ j + 1 → j < c.nreg 240301 → ¬ lsP P J c j
 
 theorem lb_false_of_lset {r : ℕ} (h : ¬ LSet r) : LB r = false := by
-  unfold LSet sw at h
-  simp only [LB, decide_eq_false_iff_not]; omega
+  core_grind
 
 theorem lb_false_of_scr {r : ℕ} (h : ¬ IScr r) : LB r = false := by
-  unfold IScr at h
-  simp only [LB, decide_eq_false_iff_not]; omega
+  simp_all [IScr, LB, decide_eq_false_iff_not] <;> omega_nf
 
 theorem fix_keep {P : Polygon} {J : Merge.Junction} {c d : Config} (h : LInv P J c d) {r : ℕ}
     (h1 : 240000 ≤ r) (h2 : r < 244000 ∨ (244019 < r ∧ r < 250000)) : d.nreg r = c.nreg r :=
-  h.fr r (by rw [band_sw h1 (by omega)]; decide) (by unfold LSet sw; omega)
-    (by unfold ALLOC; omega)
+  h.fr r (by rw [band_sw h1 (by omega)]; decide) (by omega_nf)
+    (by omega_nf)
 
 section
 
@@ -57,7 +57,7 @@ theorem irs_blk {s : Stmt} {d d' : Config} {k : ℕ} (hI : IInv W c₀ d) (ex : 
     (f : ∀ r, LB r = false → d'.nreg r = d.nreg r) (rr : d'.rreg = d.rreg) (m : d'.nmem = d.nmem)
     (rm : d'.rmem = d.rmem) (o : d'.output = d.output) : IRS P W c₀ s d k (fun x => x = d') :=
   IRS.ofExec hI ex le_rfl (fun r hr _ => f r (lb_false_of_scr hr)) rr (fun a _ => by rw [m]) rm o
-    (by rw [f ALLOC (by decide)]) (by rw [f ALLOC (by decide)]; omega) rfl
+    (by ram_simp) (by ram_grind) rfl
 
 set_option maxHeartbeats 16000000 in
 /-- **One step of the search.** -/
@@ -84,17 +84,17 @@ theorem lsBody_irs (hctx : ChainCtx P W c 240002 J.whole)
   have dxE : d.nreg 244020 = c.nreg 244020 := fix_keep hL (by norm_num) (by norm_num)
   have dxH : d.nreg 244021 = c.nreg 244021 := fix_keep hL (by norm_num) (by norm_num)
   have hKK : 0 < d.nreg 244001 := by omega
-  have hWA : d.nreg ALLOC ≤ W := hI.hw.1 ALLOC
+  
   have hAd := hL.hA
   have hkTL := hL.hk
   -- 1. `k := k - 1`, the power, the room
   obtain ⟨d1, k₁, e1, hk1, a01, a03, a16, a00, f1, rr1, m1, rm1, o1⟩ := lsB1_exec (P := P) d hI.hw
     (I := d.nreg 244000) (KK := d.nreg 244001) rfl rfl dTB dE dK1 (by omega)
   have hpw : d.nmem (c.nreg 240600 + (d.nreg 244001 - 1)) = 2 ^ (d.nreg 244001 - 1) := by
-    rw [hL.hm _ (by omega)]; exact htab _ (by omega)
+    rw [hL.hm _ (by omega)]; grind
   rw [hpw] at a03
   have h2 : 2 ^ d.nreg 244001 = 2 * 2 ^ (d.nreg 244001 - 1) := by
-    rw [← pow_succ']; congr 1; omega
+    grind
   have hb1 := irs_blk hI e1 f1 rr1 m1 rm1 o1
   -- the frame facts of the step, from `d1` on
   have F1 : ∀ r, ¬ LSet r → d1.nreg r = d.nreg r := fun r hr => f1 r (lb_false_of_lset hr)
@@ -102,7 +102,7 @@ theorem lsBody_irs (hctx : ChainCtx P W c 240002 J.whole)
     (fun _ h => h)
   subst d1'
   have A1 : d1.nreg ALLOC = d.nreg ALLOC := f1 ALLOC (by decide)
-  have e101 : d1.nreg 244001 = d.nreg 244001 - 1 := a01
+  
   by_cases hlt : d1.nreg 244016 < d1.nreg 244003
   · -- no room: no record `j < E` above
     refine IRS.ifT hlt (IRS.skip hI1 ⟨⟨fun r hr1 hr2 hr3 => (F1 r hr2).trans (hL.fr r hr1 hr2 hr3),
@@ -111,26 +111,25 @@ theorem lsBody_irs (hctx : ChainCtx P W c 240002 J.whole)
     exfalso
     rw [a16, a03] at hlt
     rw [a00, a01] at hj
-    have := hL.hi
     omega
   refine IRS.ifF hlt ?_
   -- 2. the test
   rw [a16, a03] at hlt
-  have hge := hlt
+  
   have hle : d.nreg 244000 + 2 ^ (d.nreg 244001 - 1) ≤ c.nreg 240301 := by
     have := hL.hi; omega
   have hp1 : 1 ≤ 2 ^ (d.nreg 244001 - 1) := Nat.one_le_two_pow
   obtain ⟨d2, k₂, e2, hk2, b04, b12, b13, b00, b01, f2, rr2, m2, rm2, o2⟩ := lsB2_exec (P := P) d1
     hI1.hw (I := d.nreg 244000) (Pv := 2 ^ (d.nreg 244001 - 1)) (E := c.nreg 240301)
-    (AL := c.nreg 240300) a00 a03 (by rw [F1 _ (by unfold LSet sw; omega), dAL])
-    (by rw [F1 _ (by unfold LSet sw; omega), dK1]) hle (by omega) (by omega)
+    (AL := c.nreg 240300) a00 a03 (by ram_simp)
+    (by ram_simp) hle (by omega) (by omega)
   have hb2 := irs_blk hI1 e2 f2 rr2 m2 rm2 o2
   have F2 : ∀ r, ¬ LSet r → d2.nreg r = d.nreg r := fun r hr =>
     (f2 r (lb_false_of_lset hr)).trans (F1 r hr)
   refine (IRS.seq hb2 (K₂ := 11008 + (1 + 2)) (fun d2' hI2 _ _ h2' => ?_)).mono (by omega)
     (fun _ h => h)
   subst d2'
-  have A2 : d2.nreg ALLOC = d.nreg ALLOC := by rw [f2 ALLOC (by decide), A1]
+  have A2 : d2.nreg ALLOC = d.nreg ALLOC := by ram_simp
   -- the record and its key
   set j0 := d.nreg 244000 + 2 ^ (d.nreg 244001 - 1) - 1 with hj0
   have hj0E : j0 < c.nreg 240301 := by omega
@@ -142,19 +141,19 @@ theorem lsBody_irs (hctx : ChainCtx P W c 240002 J.whole)
   obtain ⟨hxe, hxp, hx6⟩ := hx
   have g12 : d2.nreg 244012 = c.nmem (c.nreg 240300 + 7 * j0) := b12
   have g13 : d2.nreg 244013 = c.nmem (c.nreg 240300 + 7 * j0 + 1) := b13
-  have g20 : d2.nreg 244020 = c.nreg 244020 := by rw [F2 _ (by unfold LSet sw; omega), dxE]
-  have g21 : d2.nreg 244021 = c.nreg 244021 := by rw [F2 _ (by unfold LSet sw; omega), dxH]
-  have g40 : d2.nreg 240040 = c.nreg 240040 := by rw [F2 _ (by unfold LSet sw; omega), dG]
-  have g02 : d2.nreg 240002 = c.nreg 240002 := by rw [F2 _ (by unfold LSet sw; omega), dD]
+  have g20 : d2.nreg 244020 = c.nreg 244020 := by ram_simp
+  have g21 : d2.nreg 244021 = c.nreg 244021 := by ram_simp
+  have g40 : d2.nreg 240040 = c.nreg 240040 := by ram_simp
+  have g02 : d2.nreg 240002 = c.nreg 240002 := by ram_simp
   have hmem2 : ∀ a, a < c.nreg ALLOC → d2.nmem a = c.nmem a := fun a ha => by
-    rw [m2]; exact hmem a ha
+    grind
   have hctx2 : ChainCtx P W d2 240002 J.whole :=
-    hctx.transport g02 hmem2 (by rw [A2]; exact hAd)
+    hctx.transport g02 hmem2 (by omega)
   have hcall := callOff_irs (P := P) (c₀ := c₀) (dsc := 240002) (ex := 244012) (hx := 244013)
     (ey := 244020) (hy := 244021) (g := 240040) (o := 244014) hI2 hctx2 (by norm_num)
-    (by norm_num) (by rw [g12]; exact hpe) (by rw [g20]; exact hxe) (by rw [g40]; exact hG)
-    (by rw [g12, g13]; exact hpp) (by rw [g20, g21]; exact hxp) (by rw [g12, g13]; exact hp6)
-    (by rw [g20, g21]; exact hx6) (by omega)
+    (by norm_num) (by omega) (by omega) (by omega)
+    (by grind) (by grind) (by omega)
+    (by omega) (by omega)
   refine IRS.seq hcall (fun d3 hI3 _ _ h3 => ?_)
   obtain ⟨bit, -, fr3, A3, m3⟩ := h3
   have F3 : ∀ r, bandOf r ∉ oracleBands → ¬ LSet r → r ≠ ALLOC → d3.nreg r = d.nreg r :=
@@ -164,16 +163,16 @@ theorem lsBody_irs (hctx : ChainCtx P W c 240002 J.whole)
     rw [bit.2, g12, g13, g20, g21, g40]; rfl
   have hb1' := bit.1
   have e10 : d3.nreg 240610 = 0 := by
-    rw [F3 _ (by decide) (by unfold LSet sw; omega) (by unfold ALLOC; omega), d0]
+    rw [F3 _ (by decide) (by omega_nf) (by omega_nf), d0]
   have e01 : d3.nreg 244001 = d.nreg 244001 - 1 := by
-    rw [fr3 _ (by decide) (by norm_num) (by norm_num) (by unfold ALLOC; omega),
+    rw [fr3 _ (by decide) (by norm_num) (by norm_num) (by omega_nf),
       b01, a01]
   have e00 : d3.nreg 244000 = d.nreg 244000 := by
-    rw [fr3 _ (by decide) (by norm_num) (by norm_num) (by unfold ALLOC; omega), b00]
+    rw [fr3 _ (by decide) (by norm_num) (by norm_num) (by omega_nf), b00]
   have e04 : d3.nreg 244004 = d.nreg 244000 + 2 ^ (d.nreg 244001 - 1) := by
-    rw [fr3 _ (by decide) (by norm_num) (by norm_num) (by unfold ALLOC; omega), b04]
+    rw [fr3 _ (by decide) (by norm_num) (by norm_num) (by omega_nf), b04]
   have hmem3 : ∀ a, a < c.nreg ALLOC → d3.nmem a = c.nmem a := fun a ha => by
-    rw [m3 a (by omega)]; exact hmem2 a ha
+    ram_simp
   have hA3 : c.nreg ALLOC ≤ d3.nreg ALLOC := by omega
   by_cases hlt3 : d3.nreg 240610 < d3.nreg 244014
   · -- accept
@@ -186,10 +185,10 @@ theorem lsBody_irs (hctx : ChainCtx P W c 240002 J.whole)
     subst x
     have F4 : ∀ r, ¬ LSet r → d4.nreg r = d3.nreg r := fun r hr => f4 r (lb_false_of_lset hr)
     have e41 : d4.nreg 244001 = d.nreg 244001 - 1 := by
-      rw [c01, e01]
-    have e40 : d4.nreg 244000 = d.nreg 244000 + 2 ^ (d.nreg 244001 - 1) := by rw [c00, e04]
+      omega
+    have e40 : d4.nreg 244000 = d.nreg 244000 + 2 ^ (d.nreg 244001 - 1) := by omega
     refine ⟨⟨fun r hr1 hr2 hr3 => ((F4 r hr2).trans (F3 r hr1 hr2 hr3)).trans (hL.fr r hr1 hr2 hr3),
-      by rw [f4 ALLOC (by decide)]; exact hA3, fun a ha => by rw [m4]; exact hmem3 a ha,
+      by rw [f4 ALLOC (by decide)]; exact hA3, fun a ha => by ram_simp,
       by omega, by omega, fun j hj => ?_, fun j hj hjE => ?_⟩, by omega⟩
     · rw [e40] at hj
       by_cases hji : j < d.nreg 244000
@@ -201,7 +200,7 @@ theorem lsBody_irs (hctx : ChainCtx P W c 240002 J.whole)
     refine IRS.ifF hlt3 ?_
     have hge' := hlt3
     rw [e10] at hge'
-    have hnpr : ¬ lsP P J c j0 := fun h => by have := hbit.2 h; omega
+    have hnpr : ¬ lsP P J c j0 := fun h => by grind
     refine IRS.skip hI3 ⟨⟨fun r hr1 hr2 hr3 => (F3 r hr1 hr2 hr3).trans (hL.fr r hr1 hr2 hr3),
       hA3, hmem3, by omega, by omega, by rw [e00]; exact hL.hlo, fun j hj hjE hpr => ?_⟩, by omega⟩
     rw [e00, e01] at hj
@@ -242,17 +241,17 @@ theorem lsearchSpec : LSearchSpec := by
   have A1 : c1.nreg ALLOC = c.nreg ALLOC := f1 ALLOC (by decide)
   have hL1 : LInv P J c c1 := ⟨fun r _ hr2 _ => F1 r hr2, by omega, fun a _ => by rw [m1],
     by omega, by omega, fun j hj => by omega, fun j hj hjE => by
-      rw [i00, i01] at hj; omega⟩
+      grind⟩
   have hw := IRS.while (P := P) (c₀ := c₀) (a := 240610) (b := 244001) (body := lsBody)
     (LInv P J c) (fun d => d.nreg 244001) 11100
-    (fun d hd hlt => by have := fix_keep hd (r := 240610) (by norm_num) (by norm_num); omega)
+    (fun d hd hlt => by omega)
     (fun d hId hd hlt hr => lsBody_irs hctx htab hTB hAL hG hrec hx hdc k0 k1 hId hd hlt hr)
-    hI1 hL1 (by rw [i01, A1]; omega)
+    hI1 hL1 (by omega)
   rw [i01] at hw
   refine hw.mono le_rfl (fun d ⟨hd, hn⟩ => ?_)
   have h10 : d.nreg 240610 = 0 := (fix_keep hd (by norm_num) (by norm_num)).trans k0
-  have hk0 : d.nreg 244001 = 0 := by omega
-  refine ⟨hd.hi, hd.hlo, fun j hj hjE => hd.hhi j (by rw [hk0]; simp; omega) hjE, hd.fr, hd.hA,
+  
+  refine ⟨hd.hi, hd.hlo, fun j hj hjE => hd.hhi j (by grind) hjE, hd.fr, hd.hA,
     hd.hm⟩
 
 end

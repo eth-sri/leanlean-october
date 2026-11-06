@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvBExpC
 
 /-!
@@ -38,10 +40,7 @@ theorem ESt.arr {W n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c : Config}
   · simp only [wlist, Bool.false_eq_true, ↓reduceIte, List.length_reverse] at hk ⊢
     have h := hS.pts (L.length - 1 - k) (by omega)
     simp only [slotE, Bool.false_eq_true, ↓reduceIte] at h
-    rw [show L.length - 1 - (L.length - 1 - k) = k by omega] at h
-    rw [List.getD_eq_getElem _ _ (by simpa using hk), List.getElem_reverse,
-      ← List.getD_eq_getElem _ (.vtx 0)]
-    exact h
+    ram_grind
   · simp only [wlist, ↓reduceIte] at hk ⊢
     simpa [slotE] using hS.pts k hk
 
@@ -59,23 +58,20 @@ theorem initS_exec (c : Config) (hw : WordsBounded W c) (li : Bool) (NP : ℕ)
   unfold initS
   refine spec_seq ?_
   exec_block
-  · rw [h0]; omega
+  · omega
   · cases li
-    · refine spec_ifLtN_false (by config_simp; rw [h1, h11]; simp) ?_
+    · refine spec_ifLtN_false (by simp_all) ?_
       exec_block
-      · config_simp; rw [h16]; omega
-      · config_simp; rw [h16]; omega
-      · config_simp; rw [h16]; omega
+      · simp_all +zetaDelta <;> omega
+      · simp_all +zetaDelta <;> omega
+      · simp_all +arith
       · refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
         · rw [h0]
         · rw [h1]
-        · rw [h16]; simp only [ptrE, Bool.false_eq_true, ↓reduceIte]; omega
-    · refine spec_ifLtN_true (by config_simp; rw [h1, h11]; simp) ?_
+        simp_all [ptrE, Bool.false_eq_true, reduceIte] <;> omega_nf
+    · refine spec_ifLtN_true (by simp_all) ?_
       refine spec_instr (Machine.Exec.copyN ‹_› _ _) fun _ => ?_
-      refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
-      · rw [h0]
-      · rw [h1]
-      · simp [ptrE]
+      simp_all [ptrE] <;> omega_nf
 
 end exec
 
@@ -92,7 +88,7 @@ theorem expSpec : ExpSpec := by
       fun k hk => absurd hk (Nat.not_lt_zero _), h25⟩
   have hz : (Host.pts P.n (H.take 0)).length = 0 := by simp [Host.pts]
   have I₀ : IInv W P.n (c.nreg 212015) (c.nreg 212022) li H c 0 c₁ :=
-    ⟨by rw [hz]; exact S₀, by rw [h23], h24⟩
+    ⟨by simp_all, by rw [h23], h24⟩
   obtain ⟨c', k₂, x₂, ⟨hS', -, -⟩, hk₂⟩ := forLoopPot (P := P) (W := W) (ir := 212024)
     (nr := 212021) (body := itemS) (IInv W P.n (c.nreg 212015) (c.nreg 212022) li H c)
     (fun q => 30 * ((Host.pts P.n (H.take q)).length + q)) H.length
@@ -102,7 +98,6 @@ theorem expSpec : ExpSpec := by
   rw [hfull] at hS' hk₂
   rw [hz] at hk₂
   refine ⟨c', k₁ + k₂, .seq x₁ x₂, ?_, hS'.arr, fun a ha => hS'.mem a ha, hS'.fr⟩
-  simp only [Host.pts] at hk₂ ⊢
   omega
 
 end

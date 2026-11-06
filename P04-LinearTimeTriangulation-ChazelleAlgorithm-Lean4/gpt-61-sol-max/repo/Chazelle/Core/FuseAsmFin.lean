@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmHt
 public import Chazelle.Core.FuseDeg
 public import Chazelle.Core.FuseMath
@@ -27,14 +29,20 @@ open Chazelle.Merge (FreeAt shoot)
 
 variable (J : Merge.Junction) (Q : Polygon)
 
+section
+variable (S₁ S₂ : Set (Set Point))
+include S₁ S₂
 /-- The query set of the fused family. -/
-def fuseZ (S₁ S₂ : Set (Set Point)) : Set (Point × ℝ) :=
+def fuseZ : Set (Point × ℝ) :=
   endQ (S₁ ∪ S₂) ∪ vtxQ J J.m₁ ∪ topQ J ∪ capQ J
 
 /-- The geometric queries of the two sweeps cover the query set of the fused family. -/
-def Cover (S₁ S₂ : Set (Set Point)) (L₀ L₁ : List (ℕ × ℕ × ℕ)) : Prop :=
+def Cover (L₀ L₁ : List (ℕ × ℕ × ℕ)) : Prop :=
   geoQ J Q 0 L₀ ∪ geoQ J Q 1 L₁ ⊆ fuseZ J S₁ S₂ ∧
     ∀ x ∈ fuseZ J S₁ S₂, FreeAt J.whole x.1 x.2 → x ∈ geoQ J Q 0 L₀ ∪ geoQ J Q 1 L₁
+
+
+end
 
 /-- The answers of the two sweeps. -/
 structure Answers (L₀ L₁ : List (ℕ × ℕ × ℕ)) (R₀ R₁ : List (ℕ × ℕ × ℕ × ℕ)) : Prop where
@@ -60,17 +68,8 @@ theorem fuseList_set {S₁ S₂ : Set (Set Point)} {L₀ L₁ : List (ℕ × ℕ
       ← shots_eq_of J hC.1 hC.2, shots_union, ← e₀, ← e₁]
     ext c
     simp only [Set.mem_union, Set.mem_ofPred_eq]
-    constructor
-    · rintro ⟨x, hx, rfl⟩
-      rcases List.mem_append.1 ((hD x).1 hx) with h | h
-      · exact Or.inl ⟨x, h, rfl⟩
-      · exact Or.inr ⟨x, h, rfl⟩
-    · rintro (⟨x, h, rfl⟩ | ⟨x, h, rfl⟩)
-      · exact ⟨x, (hD x).2 (List.mem_append_left _ h), rfl⟩
-      · exact ⟨x, (hD x).2 (List.mem_append_right _ h), rfl⟩
-  · rcases List.mem_append.1 ((hD x).1 hx) with h | h
-    · exact a₀ x h
-    · exact a₁ x h
+    ram_grind
+  ram_grind
 
 /-- **The chord list of the fusion is a valid input of `BuildNF`.** -/
 theorem fuseList_ok (hP : J.P.Simple) (hQ : DistinctHeights Q) (hgen : SharedGeneric J)
@@ -86,26 +85,20 @@ theorem fuseList_ok (hP : J.P.Simple) (hQ : DistinctHeights Q) (hgen : SharedGen
   obtain ⟨hset, hatt⟩ := fuseList_set J Q hA hC hD
   have hadm := FuseDeg.fuse_adm J hgen hS₁.2.1 hS₂.2.1
   have hmemF : ∀ x ∈ D, (recOf x).toSet (chainModel J.whole) Q ∈ (chainModel J.whole).Adm :=
-    fun x hx => hadm (by rw [← hset]; exact ⟨x, hx, rfl⟩)
+    fun x hx => hadm (by grind)
   refine ⟨⟨⟨?_, ?_, ?_⟩, ?_, fun x hx => (hatt x hx).1, fun x hx => (hatt x hx).2⟩, hset, ?_⟩
   · have : {c | ∃ x ∈ D, c = (recOf x).toSet (chainModel J.whole) Q} =
         (fun x => (recOf x).toSet (chainModel J.whole) Q) '' {x | x ∈ D} := by
-      ext c; simp only [Set.mem_ofPred_eq, Set.mem_image]
-      constructor
-      · rintro ⟨x, hx, rfl⟩; exact ⟨x, hx, rfl⟩
-      · rintro ⟨x, hx, rfl⟩; exact ⟨x, hx, rfl⟩
+      grind
     rw [this]; exact (D.finite_toSet).image _
-  · rintro c ⟨x, hx, rfl⟩; exact hmemF x hx
+  · ram_grind
   · rintro c ⟨x, hx, rfl⟩
     exact ⟨x.1, (hatt x hx).2, _, _, rfl⟩
   · refine hnd.map_on fun x hx y hy he => ?_
     have hM := walkAx_chainModel (C := J.whole) hP
     obtain ⟨e1, e2, e3⟩ := rec_eq_of_toSet hM hQ (hatt x hx).1 (hatt y hy).1 (hmemF x hx)
       (hatt x hx).2 (hatt y hy).2 he
-    obtain ⟨a, b, d⟩ := x
-    obtain ⟨a', b', d'⟩ := y
-    simp only [recOf] at e1 e2 e3
-    rw [e1, e2, e3]
+    grind [recOf]
   · have hsub : D ⊆ collectQ L₀ R₀ ++ collectQ L₁ R₁ := fun x hx => (hD x).1 hx
     have := (hnd.subperm hsub).length_le
     rw [List.length_append] at this

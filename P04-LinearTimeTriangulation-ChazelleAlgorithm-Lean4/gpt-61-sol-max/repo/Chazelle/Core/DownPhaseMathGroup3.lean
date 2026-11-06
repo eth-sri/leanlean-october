@@ -76,7 +76,7 @@ theorem group_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) {xs xe
   have hn3 : 3 ≤ Q.n := Chazelle.Jordan.simple_three_le hQ
   have hil := hD.hil
   have hd0 := hD.hd0
-  have hdN := hD.hdN
+  
   obtain ⟨hinner, hend, hdn⟩ := arc_run hQ hFam hne hR hdh harc hD
   -- floors of the record positions
   have hfl : ∀ {x : WPos}, ChordPos N x → ⌊I.key Q x⌋₊ = x.edge ∧ x.edge < Q.n := by
@@ -93,7 +93,7 @@ theorem group_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) {xs xe
       exact ⟨c, hc, ht, p, t, hA, by rw [hD.hl]; exact he⟩
     · intro _
       constructor
-      · intro h; exact absurd h (by decide)
+      · grind
       · intro hB
         exfalso
         have hA := arcGap_of_start hQ hFam hne hR hil (by rw [hD.hl]; exact harc)
@@ -104,11 +104,11 @@ theorem group_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) {xs xe
   set m := (i₁ + d₁) % K with hm
   have hmK : m < K := Nat.mod_lt _ (by omega)
   have hkm : hk I S R m = I.key Q xe := hD.hr
-  have harc' : I.IsArc S R (I.key Q xs) (hk I S R m) := by rw [hkm]; exact harc
+  have harc' : I.IsArc S R (I.key Q xs) (hk I S R m) := by grind
   have hAprev := arcGap_prev_of_end hQ hFam hne hR hmK harc'
   have hexe : hk I S R m ∈ exitKeys I S R := by
     obtain ⟨c, ⟨hc, ht⟩, p, t, hA, he⟩ := hM.exists_exit_at_end hFam.2.1 hFam.1 hne hR harc
-    exact ⟨c, hc, ht, p, t, hA, by rw [hkm]; exact he⟩
+    exact ⟨c, hc, ht, p, t, hA, by grind⟩
   have hendR : RepPt li Q S R m (ptSym li Q.n xe true) :=
     ptSym_rep hN hdh hli hxe hkm hexe fun _ => ⟨fun _ => hAprev, fun _ => rfl⟩
   -- the run
@@ -117,13 +117,13 @@ theorem group_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) {xs xe
     rcases hend with ⟨hint, hfr⟩ | ⟨hni, hfr⟩
     · have hat : atVtx li Q.n xe = true := (atVtx_iff hN hdh hli hxe).2 hint
       rw [ite_eq_left hat, add_zero, ← hfls, ← hfle]
-      exact runCnt_arith (by rw [hfls]; exact hes) (by omega) hdn hfr
+      exact runCnt_arith (by omega) (by omega) hdn hfr
     · have hat : atVtx li Q.n xe = false := by
         by_contra h
-        exact hni ((atVtx_iff hN hdh hli hxe).1 (by simpa using h))
-      rw [ite_eq_right (by rw [hat]; decide), ← hfls, ← hfle,
+        exact hni ((atVtx_iff hN hdh hli hxe).1 (by grind))
+      rw [ite_eq_right (by grind), ← hfls, ← hfle,
         show ⌊I.key Q xe⌋₊ + 1 + Q.n - 1 = ⌊I.key Q xe⌋₊ + Q.n by omega]
-      exact runCnt_arith2 (by rw [hfls]; exact hes) (by omega) hfr
+      exact runCnt_arith2 (by omega) (by omega) hfr
   have hrun : RepFrom li Q S R ((runItems li Q.n xs xe).flatMap (wpts li Q.n)) (i₁ + 1) ∧
       ((runItems li Q.n xs xe).flatMap (wpts li Q.n)).length = d₁ - 1 := by
     unfold runItems
@@ -149,10 +149,10 @@ theorem group_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) {xs xe
             (show 0 < K by omega)))
           rw [hk'] at this
           exact_mod_cast this.2
-        · rw [← hk']; exact hin
+        grind
       · rw [hv, Nat.floor_natCast, hfls]
   -- the junction
-  have hq₁m : (i₁ + d₁ + 1) % K = (m + 1) % K := by rw [hm, Nat.mod_add_mod]
+  have hq₁m : (i₁ + d₁ + 1) % K = (m + 1) % K := by grind
   obtain ⟨hpos, hpkey, hpex⟩ := partner_key hQ hdh hN hne hR hRC hxe hmK hkm harc
   obtain ⟨hCm, -⟩ := end_chord hQ hFam hne hR hmK hexe hAprev
   have hjunc : RepFrom li Q S R
@@ -178,7 +178,7 @@ theorem group_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) {xs xe
       apply ptSym_rep hN hdh hli hpos hpkey.symm hpex
       intro _
       constructor
-      · intro h; exact absurd h (by decide)
+      · grind
       · intro hB
         rw [prevIdx_succ hmK] at hB
         exact absurd hCm fun hC => not_arc_and_chord hM hFam.2.1 hFam.1 (by omega) hmK hB hC
@@ -187,7 +187,7 @@ theorem group_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) {xs xe
   obtain ⟨hjR, hjL⟩ := hjunc
   have hA1 : RepFrom li Q S R [ptSym li Q.n xs false] i₁ :=
     repFrom_single (by rw [Nat.mod_eq_of_lt hil]; exact hstart)
-  have hA2 := repFrom_append hA1 (by simpa using hrunR)
+  have hA2 := repFrom_append hA1 (by omega)
   have hA3 := repFrom_append hA2 (L' := [ptSym li Q.n xe true]) (repFrom_single (by
     rw [List.length_append, hrunL, List.length_singleton,
       show i₁ + (1 + (d₁ - 1)) = i₁ + d₁ by omega]

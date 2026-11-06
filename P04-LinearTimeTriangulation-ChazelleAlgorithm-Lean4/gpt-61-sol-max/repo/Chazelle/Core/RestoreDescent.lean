@@ -25,14 +25,20 @@ namespace Restore
 
 variable {N : NF} {d : ℕ}
 
+section
+variable (hD : IsDecomp N d) {k r : ℕ} (hk : k < N.nChords) (hb : N.Below (2 * k) r)
+include hD hk hb
 /-- **Taking the child on the side of the target keeps the target below.** -/
-theorem below_lo (hD : IsDecomp N d) {k r : ℕ} (hk : k < N.nChords) (hb : N.Below (2 * k) r)
+theorem below_lo
     (hs : r ∈ N.lowSide k) : N.Below (N.dnode k).lo r :=
   (hD.2.2.2.1 k hk r hb).2 hs
 
-theorem below_hi (hD : IsDecomp N d) {k r : ℕ} (hk : k < N.nChords) (hb : N.Below (2 * k) r)
+theorem below_hi
     (hs : r ∈ N.highSide k) : N.Below (N.dnode k).hi r :=
   (hD.2.2.2.2.1 k hk r hb).2 hs
+
+
+end
 
 /-- The target is below the root. -/
 theorem below_root (hD : IsDecomp N d) {r : ℕ} (hr : r < N.nRegions) : N.Below N.root r :=

@@ -36,27 +36,38 @@ variable {Q : Polygon} {C : Chain}
 
 theorem Top.n_pos (T : Top Q C) : 0 < Q.n := by have := T.hm; omega
 
-theorem Top.edgeIdx (T : Top Q C) {k : ℕ} (hk : k < Q.n) : C.edgeIdx k = k := by
+section
+variable (T : Top Q C) {k : ℕ}
+include T
+section
+variable (hk : k < Q.n)
+include hk
+theorem Top.edgeIdx : C.edgeIdx k = k := by
   unfold Chain.edgeIdx; rw [T.hs, zero_add, T.hP, Nat.mod_eq_of_lt hk]
 
 /-- Chain vertex `k` is vertex `k` of `Q`. -/
-theorem Top.vertex_eq (T : Top Q C) {k : ℕ} (hk : k < Q.n) : C.vertex k = Q.vtx k := by
+theorem Top.vertex_eq : C.vertex k = Q.vtx k := by
   unfold Chain.vertex; rw [T.edgeIdx hk, T.hP]
 
+
+end
+
 /-- Chain edge `k` is edge `k` of `Q`. -/
-theorem Top.chainEdge_eq' (T : Top Q C) {k : ℕ} (hk : k < C.m) : C.chainEdge k = Q.edge k := by
+theorem Top.chainEdge_eq' (hk : k < C.m) : C.chainEdge k = Q.edge k := by
   unfold Chain.chainEdge; rw [T.edgeIdx (by have := T.hm; omega), T.hP]
 
 /-- Every vertex of `Q` is at most as high as the top vertex. -/
-theorem Top.vtx_le_top (T : Top Q C) {k : ℕ} (hk : k < Q.n) : (Q.vtx k).2 ≤ C.top.2 := by
+theorem Top.vtx_le_top (hk : k < Q.n) : (Q.vtx k).2 ≤ C.top.2 := by
   rw [← T.vertex_eq hk]; exact C.vertex_snd_le_top (by have := T.hm; omega)
+
+
+end
 
 /-- Every boundary point of `Q` is at most as high as the top vertex. -/
 theorem Top.boundary_le_top (T : Top Q C) {z : Point} (hz : z ∈ Q.boundary) : z.2 ≤ C.top.2 := by
   obtain ⟨i, hi, t, ht0, ht1, rfl⟩ := hz
   have h1 := T.vtx_le_top hi
   have h2 := T.vtx_le_top (Nat.mod_lt (i + 1) T.n_pos)
-  simp only
   nlinarith
 
 /-- **The filled polygon lies below the top vertex** (a point above it sees the far exterior along
@@ -73,10 +84,9 @@ theorem Top.filled_below_top (hQ : Q.Simple) (T : Top Q C) {z : Point} (hz : z �
   have hsub : f '' Icc 0 L ⊆ Q.boundaryᶜ := by
     rintro _ ⟨t, ht, rfl⟩ hb
     have := T.boundary_le_top hb
-    simp only [hf] at this
-    linarith [ht.1]
+    grind
   have hw : f L ∉ Q.filled := Chazelle.Jordan.far_not_mem_filled Q (Or.inr (Or.inr (Or.inl (by
-    simp only [hf, hL]; linarith [le_abs_self z.2, neg_abs_le z.2]))))
+    grind))))
   have hzT : z ∈ f '' Icc 0 L := ⟨0, ⟨le_rfl, hL0⟩, by simp [hf]⟩
   exact FactsInterior.subset_exterior hQ hpre hsub ⟨L, ⟨hL0, le_rfl⟩, rfl⟩ hw hzT hz
 
@@ -100,13 +110,16 @@ theorem Top.interior_sub_dom (hQ : Q.Simple) (T : Top Q C) :
     have hzt : z = C.top := Prod.ext h1 (le_antisymm h3 h2)
     exact hzb (T.set_sub (hzt ▸ C.top_mem_set))
 
+section
+variable (T : Top Q C)
+include T
 /-- The last edge of `Q`. -/
-theorem Top.last_edge (T : Top Q C) : Q.edge C.m = Chazelle.segment (Q.vtx C.m) (Q.vtx 0) := by
+theorem Top.last_edge : Q.edge C.m = Chazelle.segment (Q.vtx C.m) (Q.vtx 0) := by
   unfold Polygon.edge
   rw [show (C.m + 1) % Q.n = 0 by rw [T.hm, Nat.mod_self]]
 
 /-- **The boundary of `Q` meets the domain of `C` only in the open part of `e_{n-1}`.** -/
-theorem Top.boundary_dom (T : Top Q C) {z : Point} (hz : z ∈ Q.boundary) (hzD : z ∈ C.dom) :
+theorem Top.boundary_dom {z : Point} (hz : z ∈ Q.boundary) (hzD : z ∈ C.dom) :
     ∃ s ∈ Ioo (0 : ℝ) 1, z = lerp (Q.vtx C.m) (Q.vtx 0) s := by
   have hzs := C.not_mem_set_of_mem_dom hzD
   obtain ⟨i, hi, hzi⟩ := hz
@@ -116,7 +129,7 @@ theorem Top.boundary_dom (T : Top Q C) {z : Point} (hz : z ∈ Q.boundary) (hzD 
   subst him
   rw [T.last_edge] at hzi
   obtain ⟨s, hs0, hs1, rfl⟩ := Chazelle.Geometry.mem_segment_iff_lerp.1 hzi
-  have hm0 : C.vertex C.m = Q.vtx C.m := T.vertex_eq (by have := T.hm; omega)
+  have hm0 : C.vertex C.m = Q.vtx C.m := T.vertex_eq (by omega)
   have h00 : C.vertex 0 = Q.vtx 0 := T.vertex_eq T.n_pos
   refine ⟨s, ⟨?_, ?_⟩, rfl⟩
   · rcases hs0.lt_or_eq with h | h
@@ -127,6 +140,9 @@ theorem Top.boundary_dom (T : Top Q C) {z : Point} (hz : z ∈ Q.boundary) (hzD 
     · exact h
     · exfalso; subst h; rw [Chazelle.Geometry.lerp_one, ← h00] at hzs
       exact hzs (C.vertex_mem_set (Nat.zero_le _))
+
+
+end
 
 end
 

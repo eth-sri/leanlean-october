@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleMainAns
 
 /-!
@@ -23,7 +25,10 @@ variable {P : Polygon} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host} {C : Ch
 theorem distinctHeights_of_goodEnv (hG : GoodEnv P) : DistinctHeights (Qof P) :=
   (goodShear_epsOf hG.2).2.1
 
-theorem QAt.topOK (h : QAt P m O E V H C N B k) (hG : GoodEnv P) (hv : QVOK P C V) :
+section
+variable (h : QAt P m O E V H C N B k)
+include h
+theorem QAt.topOK (hG : GoodEnv P) (hv : QVOK P C V) :
     TopOK P C V := by
   have hQn : (Qof P).n = P.n := shear_n _ _
   obtain ⟨-, -, -, -, hd3, -⟩ := h.desc
@@ -34,11 +39,20 @@ theorem QAt.topOK (h : QAt P m O E V H C N B k) (hG : GoodEnv P) (hv : QVOK P C 
   unfold Chain.top
   rw [vertex_eq hv]
 
-theorem QAt.chordRec (h : QAt P m O E V H C N B k) (hT : TopOK P C V) : ChordRecOK P C V m N :=
+section
+variable (hT : TopOK P C V)
+include hT
+theorem QAt.chordRec : ChordRecOK P C V m N :=
   ⟨hT, h.isNF, h.nf, h.nCB, h.hK, h.ch_lt, h.ch_inj, h.ch_sorted⟩
 
-theorem QAt.mainCtx (h : QAt P m O E V H C N B k) (hT : TopOK P C V) : MainCtx P C V N B m :=
+theorem QAt.mainCtx : MainCtx P C V N B m :=
   ⟨h.chordRec hT, h.simple, h.nodeMem, h.gOK, h.μ, h.hlab, h.dl, h.dl_all⟩
+
+
+
+end
+
+end
 
 open Chazelle.Visibility (rayPt) in
 /-- **The answer of the query** from the trace of its phases after loading. -/
@@ -50,7 +64,7 @@ theorem rest_answer {B : BookData} (X : MainCtx P C V N B m) {z : Point} (hs : S
   have hQn : (Qof P).n = P.n := shear_n _ _
   rcases tr with ⟨hab, h0⟩ | ⟨hab, t, hpart, hf, hdg, h1, h2⟩ |
       ⟨hab, t, hpart, hnd, bD, hD, hbD, pk, hloc, hbest, hb, o5, o6⟩
-  · refine ⟨fun h => by rw [h0] at h; omega, fun _ => noHit_of_above C ?_ _⟩
+  · refine ⟨fun h => by omega, fun _ => noHit_of_above C ?_ _⟩
     rw [hs.zy, ← hT.top]; exact hab
   · exact deg_answer X.ch hs hpart hf hdg h1 h2
   · obtain ⟨q1, q2⟩ := main_answer X hs hab hpart hnd hD hbD hloc hbest
@@ -58,7 +72,7 @@ theorem rest_answer {B : BookData} (X : MainCtx P C V N B m) {z : Point} (hs : S
     refine ⟨fun hf => ?_, fun hf => ?_⟩
     · rw [o5] at hf
       obtain ⟨he, hlt⟩ := hb2 hf
-      have hbo : bestOf c' = some (c'.nreg 120052) := by unfold bestOf; rw [ite_eq_left hf]
+      have hbo : bestOf c' = some (c'.nreg 120052) := by grind [bestOf]
       have hfh := q1 _ hbo
       refine ⟨_, hfh, ?_, ?_⟩
       · rw [o6, he]; exact Nat.mod_lt _ (by have := hT.tv_lt; omega)
@@ -72,16 +86,14 @@ theorem rest_answer {B : BookData} (X : MainCtx P C V N B m) {z : Point} (hs : S
             ((xe (Qof P) (eIdx (Qof P).n V.s (c'.nreg 120052)) V.hz, ((Qof P).vtx V.hz).2) : Point) := by
           simp only [rayPt]
           ext
-          · simp only; rw [← mul_assoc, hσ2, one_mul]; ring
+          · ram_grind
           · simp only; rw [hs.zy]
         rw [hpt]
         rw [hQn] at hsp ⊢
         have hn2 : 2 ≤ P.n := by
           have := C.add_one_le; have := C.one_le; rw [hv.CQ, hQn] at *; omega
         exact xe_mem_edge hT (Nat.mod_lt _ (by omega)) hsp hn2
-    · rw [o5] at hf
-      have hbo : bestOf c' = none := by unfold bestOf; rw [ite_eq_right hf]
-      exact q2 hbo
+    simp_all [bestOf] <;> omega_nf
 
 end
 

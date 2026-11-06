@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranOut
 
 /-!
@@ -57,37 +59,37 @@ theorem decompOK_of (h : DecompSpec) : ∃ s κ, DecompOK s κ := h
 def lset (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) : Set (Set Point) :=
   {c | ∃ x ∈ L, c = (recOf x).toSet M Q}
 
+section
+variable {M : Model} {Q : Polygon}
 /-- Validity does not depend on the decomposition. -/
-theorem isNF_congr {M : Model} {Q : Polygon} {N N' : NF} (h : IsNF M Q N)
+theorem isNF_congr {N N' : NF} (h : IsNF M Q N)
     (h1 : N'.chords = N.chords) (h2 : N'.arcs = N.arcs) (h3 : N'.regions = N.regions)
     (h4 : N'.seq = N.seq) : IsNF M Q N' := by
   obtain ⟨c, a, r, s, d, ro, l⟩ := N
-  obtain ⟨c', a', r', s', d', ro', l'⟩ := N'
-  simp only at h1 h2 h3 h4
-  subst h1 h2 h3 h4
-  exact h
+  aesop
 
-theorem F_congr {M : Model} {Q : Polygon} {N N' : NF} (h : N'.chords = N.chords) :
+theorem F_congr {N N' : NF} (h : N'.chords = N.chords) :
     N'.F M Q = N.F M Q := by
-  unfold NF.F; rw [h]
+  grind [NF.F]
 
-theorem F_of_map {M : Model} {Q : Polygon} {N : NF} {L : List (ℕ × ℕ × ℕ)}
+theorem F_of_map {N : NF} {L : List (ℕ × ℕ × ℕ)}
     (h : N.chords.map (fun r => (r.h, r.lp, r.rp)) = L) : N.F M Q = lset M Q L := by
   subst h
   ext c
   simp only [NF.F, lset, List.mem_map, Set.mem_ofPred_eq]
   constructor
-  · rintro ⟨r, hr, rfl⟩; exact ⟨_, ⟨r, hr, rfl⟩, rfl⟩
-  · rintro ⟨_, ⟨r, hr, rfl⟩, rfl⟩; exact ⟨r, hr, rfl⟩
+  · ram_all
+  · ram_all
+
+
+end
 
 /-- A frame from a register-only change. -/
 theorem frame_of {B : Finset ℕ} {c c' : Config} {k : ℕ}
     (hr : ∀ r, bandOf r ∉ B → c'.nreg r = c.nreg r) (hrr : c'.rreg = c.rreg)
     (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem) (ho : c'.output = c.output)
     (hA : bandOf ALLOC ∉ B) : Frame B c c' k := by
-  have := hr ALLOC hA
-  exact ⟨fun r h _ => hr r h, fun r _ => by rw [hrr], fun a _ => by rw [hm],
-    fun a _ => by rw [hrm], ho, by omega, by omega⟩
+  core_grind
 
 /-- Build then decompose. -/
 def bdStmt (sB sD : Stmt) : Stmt :=
@@ -99,7 +101,10 @@ def bdStmt (sB sD : Stmt) : Stmt :=
 def costBD (κB κD D x : ℕ) : ℕ :=
   7 + κB * (x * (Nat.clog 2 x + 1) + 1) + κD * (D + 1) * (x * (Nat.clog 2 x + 1) + 1)
 
-theorem copy3_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+section
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include hw
+theorem copy3_exec
     (a₁ b₁ a₂ b₂ a₃ b₃ : ℕ) (h12 : a₁ ≠ a₂) (h13 : a₁ ≠ a₃) (h23 : a₂ ≠ a₃)
     (hb₂ : b₂ ≠ a₁) (hb₃ : b₃ ≠ a₁) (hb₃' : b₃ ≠ a₂) :
     ∃ c' k, Exec P W (block [.copyN a₁ b₁, .copyN a₂ b₂, .copyN a₃ b₃]) c c' k ∧ k = 3 ∧
@@ -107,16 +112,17 @@ theorem copy3_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       (∀ r, r ≠ a₁ → r ≠ a₂ → r ≠ a₃ → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
       c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   exec_block
-  refine ⟨rfl, ?_, ?_, ?_, fun r x1 x2 x3 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-    simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+  ram_all
 
-theorem copy1_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (a b : ℕ) :
+theorem copy1_exec (a b : ℕ) :
     ∃ c' k, Exec P W (block [.copyN a b]) c c' k ∧ k = 1 ∧ c'.nreg a = c.nreg b ∧
       (∀ r, r ≠ a → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
       c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   exec_block
-  refine ⟨rfl, ?_, fun r x1 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-    simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+  ram_all
+
+
+end
 
 theorem band_not {r b : ℕ} {B : Finset ℕ} (hr : bandOf r = b) (hb : b ∈ B) :
     ¬ bandOf r ∉ B := fun h => h (hr ▸ hb)
@@ -149,23 +155,22 @@ theorem bd_exec {sB sD : Stmt} {κB κD : ℕ} (hsB : BuildOK sB κB) (hsD : Dec
     (band_not (r := 40000) rfl (by decide) ∘ fun h => h ▸ hr)
     (band_not (r := 40001) rfl (by decide) ∘ fun h => h ▸ hr)
     (band_not (r := 40002) rfl (by decide) ∘ fun h => h ▸ hr)) rr₁ m₁ rm₁ o₁ (by decide)
-  have hX : L.length * (Nat.clog 2 L.length + 1) + 1 ≤ L.length * (Nat.clog 2 L.length + 1) + 1 :=
-    le_rfl
+  
   have r0 : rd c₁ bBuild 0 = MD := a0.trans h0
   have r1 : rd c₁ bBuild 1 = LB := a1.trans h28
   have r2 : rd c₁ bBuild 2 = L.length := a2.trans h95
-  have hMD₁ : ModelDescAt c₁.nmem MD (Qof P) M := by rw [m₁]; exact hMD
+  
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, F₂⟩ := hsB P W c₁ w₁
-    ⟨hG, hWh, by rw [r0, A₁, m₁]; exact hwf, M, L, by rw [r0]; exact hMD₁, hGM, r2,
-      by rw [r1, A₁]; exact hLB, by rw [r1, m₁]; exact hL, hok⟩
-    (by beta_reduce; rw [A₁, r2]; unfold costBD at hroom; omega)
+    ⟨hG, hWh, by ram_simp, M, L, by ram_simp, hGM, r2,
+      by omega, by ram_simp, hok⟩
+    (by ram_grind)
   beta_reduce at hk₂
   rw [r2] at hk₂
-  obtain ⟨N₁, g₁, hNW₁, hNF₁, hmap₁, -⟩ := post₂ M L (by rw [r0]; exact hMD₁) r2
-    (by rw [r1, m₁]; exact hL)
+  obtain ⟨N₁, g₁, hNW₁, hNF₁, hmap₁, -⟩ := post₂ M L (by ram_grind) r2
+    (by ram_grind)
   have w₂ := e₂.wb_right
   have hF₁ : N₁.F M (Qof P) = lset M (Qof P) L := F_of_map hmap₁
-  have hlen₁ : N₁.chords.length = L.length := by rw [← hmap₁, List.length_map]
+  have hlen₁ : N₁.chords.length = L.length := by grind
   -- the arguments of the decomposition
   obtain ⟨c₃, k₃, e₃, hk₃, b0, b1, b2, R₃, rr₃, m₃, rm₃, o₃⟩ := copy3_exec (P := P) c₂ w₂
     60000 90000 60001 40003 60002 90002 (by decide) (by decide) (by decide) (by decide)
@@ -188,22 +193,20 @@ theorem bd_exec {sB sD : Stmt} {κB κD : ℕ} (hsB : BuildOK sB κB) (hsD : Dec
     rw [m₃, F₂.2.2.1 a (by omega), m₁]
   obtain ⟨hMD₃, hwf₃⟩ := desc_agree' hwf hMD hlow
   have hNW₃ : NFWithin c₃.nmem (rd c₃ bDecomp 1) (c₃.nreg ALLOC) N₁ := by
-    rw [s1, m₃, A₃]; exact hNW₁
+    ram_grind
   have hcnt : c₃.nmem (rd c₃ bDecomp 1) = L.length := by
     rw [← hlen₁]; exact hNW₃.nfAt.1
   obtain ⟨c₄, k₄, e₄, hk₄, post₄, F₄⟩ := hsD P W c₃ w₃
-    ⟨hG, hWh, by rw [s0]; exact hwf₃.mono (by omega), M, N₁, by rw [s0]; exact hMD₃, hGM, hNW₃,
-      hNF₁, by rw [s2, hF₁]; exact hdeg⟩
+    ⟨hG, hWh, by rw [s0]; exact hwf₃.mono (by omega), M, N₁, by ram_grind, hGM, hNW₃,
+      hNF₁, by grind⟩
     (by
       beta_reduce
       rw [s2, hcnt, A₃]
       have := F₂.2.2.2.2.2.2
-      unfold costBD at hroom
-      rw [A₁] at this
-      nlinarith)
+      grind [costBD])
   beta_reduce at hk₄
   rw [s2, hcnt] at hk₄
-  obtain ⟨N₂, g₂, hNW₂, hc₂, ha₂, hr₂, hs₂, hdec₂⟩ := post₄ M N₁ (by rw [s0]; exact hMD₃)
+  obtain ⟨N₂, g₂, hNW₂, hc₂, ha₂, hr₂, hs₂, hdec₂⟩ := post₄ M N₁ (by ram_grind)
     hNW₃.nfAt hNF₁
   have w₄ := e₄.wb_right
   -- the handle
@@ -214,16 +217,15 @@ theorem bd_exec {sB sD : Stmt} {κB κD : ℕ} (hsB : BuildOK sB κB) (hsD : Dec
   have FF := (((F₁.trans F₂).trans F₃).trans F₄).trans F₅
   refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), ?_, ⟨N₂, ?_, ?_, ?_, ?_, ?_⟩,
     FF.mono (by decide) (by omega)⟩
-  · unfold costBD; nlinarith
-  · have := F₄.2.2.2.2.2.1
+  · omega_nf
+  · 
     rw [d0]
     show c.nreg ALLOC ≤ rd c₄ bDecomp 3
     omega
   · rw [d0, m₅, A₅]; exact hNW₂
   · exact isNF_congr hNF₁ hc₂ ha₂ hr₂ hs₂
   · rw [F_congr hc₂, hF₁]
-  · have : N₂.nChords = N₁.nChords := by unfold NF.nChords; rw [hc₂]
-    rw [this, ← s2]; exact hdec₂
+  grind [NF.nChords]
 
 end
 

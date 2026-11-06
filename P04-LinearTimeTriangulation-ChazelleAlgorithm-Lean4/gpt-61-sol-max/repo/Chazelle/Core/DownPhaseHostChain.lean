@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseHostArc
 
 /-!
@@ -32,11 +34,7 @@ theorem hostPoly_n : (hostPoly Q S R).n = nk (interiorModel Q) S R := by
 
 theorem hostPoly_vtx {i : ℕ} (hi : i < nk (interiorModel Q) S R) :
     (hostPoly Q S R).vtx i = hostPt (interiorModel Q).W (hk (interiorModel Q) S R i) := by
-  have hi' : i < (hostPts (interiorModel Q) S R).length := by simpa [hostPts, nk] using hi
-  unfold hostPoly Polygon.vtx
-  rw [List.getD_eq_getElem _ _ hi']
-  simp only [hostPts, List.getElem_map, hk]
-  rw [List.getD_eq_getElem _ _ (by simpa [hostPts] using hi')]
+  simp_all [hostPts, nk, hostPoly, Polygon.vtx, List.getElem_map, hk] <;> omega_nf
 
 /-- At least three host keys. -/
 theorem three_le_nk (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
@@ -46,7 +44,7 @@ theorem three_le_nk (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   obtain ⟨x, hx, y, hy, z, hz, hxy, hxz, hyz⟩ := three_le hQ hFam hne hR
   unfold nk
   rw [hostKeyList_eq hS, Finset.length_sort]
-  exact Finset.two_lt_card.2 ⟨x, by simpa using hx, y, by simpa using hy, z, by simpa using hz,
+  exact Finset.two_lt_card.2 ⟨x, by simp_all, y, by simp_all, z, by simp_all,
     hxy, hxz, hyz⟩
 
 /-- **The host chain**: the host polygon without the edge after the host key `g`. -/
@@ -56,7 +54,7 @@ noncomputable def hostChain (Q : Polygon) (S : Set (Set Point)) (R : Set Point) 
   s := (g + 1) % nk (interiorModel Q) S R
   m := nk (interiorModel Q) S R - 1
   one_le := by omega
-  add_one_le := by rw [hostPoly_n]; omega
+  add_one_le := by grind [hostPoly_n]
 
 variable {g : ℕ} {h3 : 3 ≤ nk (interiorModel Q) S R}
 
@@ -140,7 +138,7 @@ theorem arc_chain (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
         refine ⟨l, r, harc, fun y hy0 hyn hy => ?_⟩
         rw [← hg'] at hy
         have e3 : ((i_l + (j - 1)) % N + 1) % N = (i_l + (j - 1 + 1)) % N := by
-          rw [Nat.add_mod ((i_l + (j - 1)) % N) 1, Nat.mod_mod, ← Nat.add_mod]; ring_nf
+          grind
         rw [e3] at hy
         exact hgaps (j - 1) (by omega) y hy0 hyn hy
       exact not_arc_and_chord hM hF hfin hN2 hg hAG ⟨c, hc, p, p', t, t', hA, hB, ha, hb, hAB⟩
@@ -152,7 +150,7 @@ theorem arc_chain (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have := chain_idx (j := N - kl) hsN hil
   rw [← hkl, show s + kl + (N - kl) = s + N by omega, Nat.add_mod_right,
     Nat.mod_eq_of_lt hsN] at this
-  exact this.symm
+  omega
 
 end
 

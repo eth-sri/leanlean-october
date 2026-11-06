@@ -29,18 +29,21 @@ theorem getD_lt_of_perm {N : ℕ} (hp : E.Perm (range N)) {m : ℕ} (hm : m < E.
   rw [getD_eq_getElem?_getD, getElem?_eq_getElem hm, Option.getD_some]
   exact mem_range.1 (hp.mem_iff.1 (getElem_mem hm))
 
+section
+variable (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.length)
+include h hm
 /-- The key of the first sorted code is at most the key of any later one. -/
-theorem Input.key_first_le (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.length) :
+theorem Input.key_first_le :
     M.key (Qof P) (wposOf L (E.getD 0 0)) ≤ M.key (Qof P) (wposOf L (E.getD m 0)) := by
   rcases Nat.eq_zero_or_pos m with rfl | hpos
   · exact le_rfl
   rw [h.key_s (by omega), h.key_s hm, BuildSort.kap_eq (by rw [h.length_evs]; omega),
     BuildSort.kap_eq (by rw [h.length_evs]; exact hm)]
   exact BuildSort.key_le_of_evLe (List.pairwise_iff_getElem.1 h.sorted 0 m (by
-    rw [length_map]; omega) (by rw [length_map]; exact hm) hpos)
+    grind) (by simp_all) hpos)
 
 /-- **The weight of an arc record** by the machine formula. -/
-theorem Input.arcW_eq (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.length)
+theorem Input.arcW_eq
     (hgap : m ∈ gapStarts M (Qof P) L E) {lo hi : ℕ}
     (hc : ∀ p, p < M.W.n → (M.counted p ↔ lo ≤ p ∧ p < hi)) (hhi : hi ≤ M.W.n) {pz : ℕ}
     (hpz : pz = 1 ↔ M.counted (wposOf L (E.getD ((m + 1) % E.length) 0)).edge ∧
@@ -64,12 +67,14 @@ theorem Input.arcW_eq (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.length)
   by_cases hw : m + 1 < E.length
   · rw [ite_eq_left hw, Nat.mod_eq_of_lt hw]
     have := (h.gap_iff hm).1 hgap
-    simp only [show m + 1 ≠ E.length by omega, false_or] at this
-    exact ⟨fun _ => this, fun _ => rfl⟩
+    grind
   · rw [ite_eq_right hw, show (m + 1) % E.length = 0 by
       rw [show m + 1 = E.length by omega, Nat.mod_self]]
     refine ⟨fun h' => absurd h' (by norm_num), fun h' => ?_⟩
     exact absurd (h.key_first_le hm) (not_le.2 h')
+
+
+end
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Visibility.Chord
 public import Chazelle.Existence.Arc
 
@@ -69,30 +71,34 @@ theorem n_pos : 0 < C.P.n := by have := C.add_one_le; omega
 
 theorem m_lt : C.m < C.P.n := by have := C.add_one_le; omega
 
+section
+variable (k : ℕ)
+include k
 /-- The index in `P` of the `k`-th edge of the chain. -/
-def edgeIdx (k : ℕ) : ℕ := (C.s + k) % C.P.n
+def edgeIdx : ℕ := (C.s + k) % C.P.n
 
-theorem edgeIdx_lt (k : ℕ) : C.edgeIdx k < C.P.n := Nat.mod_lt _ C.n_pos
+theorem edgeIdx_lt : C.edgeIdx k < C.P.n := Nat.mod_lt _ C.n_pos
 
-theorem edgeIdx_succ (k : ℕ) : (C.edgeIdx k + 1) % C.P.n = C.edgeIdx (k + 1) :=
+theorem edgeIdx_succ : (C.edgeIdx k + 1) % C.P.n = C.edgeIdx (k + 1) :=
   Existence.mod_add_one_mod _ _ _
 
 /-- The `k`-th vertex of the chain (`k = 0, …, m`). -/
-def vertex (k : ℕ) : Point := C.P.vtx (C.edgeIdx k)
+def vertex : Point := C.P.vtx (C.edgeIdx k)
 
 /-- The `k`-th edge of the chain (`k = 0, …, m - 1`), as a set. -/
-def chainEdge (k : ℕ) : Set Point := C.P.edge (C.edgeIdx k)
+def chainEdge : Set Point := C.P.edge (C.edgeIdx k)
 
-theorem chainEdge_eq (k : ℕ) :
+theorem chainEdge_eq :
     C.chainEdge k = Chazelle.segment (C.vertex k) (C.vertex (k + 1)) := by
   unfold chainEdge Polygon.edge vertex
   rw [edgeIdx_succ]
 
+
+end
+
 /-- The point set of the chain: the union of its edges. -/
 def set : Set Point := {p | ∃ k, k < C.m ∧ p ∈ C.chainEdge k}
 
-/-- The vertices of the chain. -/
-def vertices : Set Point := {p | ∃ k, k ≤ C.m ∧ p = C.vertex k}
 
 theorem chainEdge_subset_boundary (k : ℕ) : C.chainEdge k ⊆ C.P.boundary :=
   Existence.edge_subset_boundary C.P (C.edgeIdx_lt k)
@@ -104,15 +110,13 @@ theorem set_subset_boundary : C.set ⊆ C.P.boundary := by
 
 theorem set_eq_biUnion : C.set = ⋃ k ∈ Finset.range C.m, C.chainEdge k := by
   ext p
-  simp [set, Finset.mem_range]
+  aesop
 
 /-- The chain is a closed set. -/
 theorem isClosed_set : IsClosed C.set := by
   rw [set_eq_biUnion]
   exact isClosed_biUnion_finset fun k _ => isClosed_edge C.P _
 
-/-- The complement of the chain is open. -/
-theorem isOpen_compl : IsOpen C.setᶜ := C.isClosed_set.isOpen_compl
 
 theorem vertex_mem_chainEdge (k : ℕ) : C.vertex k ∈ C.chainEdge k := by
   rw [chainEdge_eq]; exact Geometry.left_mem_segment _ _
@@ -192,9 +196,9 @@ theorem compl_connected (hP : C.P.Simple) : IsPreconnected C.setᶜ := by
   refine hU.subset_closure ?_ ?_
   · rintro p ((hp | hp) | (hp | hp))
     · exact fun h => hp.2 (C.set_subset_boundary h)
-    · rw [mem_singleton_iff] at hp; subst hp; exact hqC
+    · simp_all
     · exact fun h => hp (boundary_subset_filled _ (C.set_subset_boundary h))
-    · rw [mem_singleton_iff] at hp; subst hp; exact hqC
+    simp_all
   · intro p hp
     by_cases hb : p ∈ C.P.boundary
     · exact closure_mono (subset_union_left.trans subset_union_left)
@@ -208,7 +212,7 @@ theorem compl_connected (hP : C.P.Simple) : IsPreconnected C.setᶜ := by
 theorem exists_top : ∃ k, k ≤ C.m ∧ ∀ j, j ≤ C.m → (C.vertex j).2 ≤ (C.vertex k).2 := by
   obtain ⟨k, hk, hmax⟩ := Finset.exists_max_image (Finset.range (C.m + 1))
     (fun k => (C.vertex k).2) ⟨0, by simp⟩
-  refine ⟨k, by simpa [Nat.lt_succ_iff] using hk, fun j hj => hmax j ?_⟩
+  refine ⟨k, by simp_all, fun j hj => hmax j ?_⟩
   simp [hj]
 
 /-- The index of a topmost vertex of the chain: the **least** such index (`Nat.find`), so that it
@@ -219,9 +223,7 @@ noncomputable def topIdx : ℕ := by
   exact Nat.find C.exists_top
 
 theorem topIdx_spec : C.topIdx ≤ C.m ∧ ∀ j, j ≤ C.m → (C.vertex j).2 ≤ (C.vertex C.topIdx).2 := by
-  classical
-  unfold topIdx
-  convert Nat.find_spec C.exists_top
+  grind [topIdx]
 
 theorem topIdx_le : C.topIdx ≤ C.m := C.topIdx_spec.1
 
@@ -247,7 +249,6 @@ theorem snd_le_top_of_mem_set {p : Point} (hp : p ∈ C.set) : p.2 ≤ C.top.2 :
   obtain ⟨s, hs0, hs1, rfl⟩ := hp
   have h1 := C.vertex_snd_le_top (j := k) (by omega)
   have h2 := C.vertex_snd_le_top (j := k + 1) (by omega)
-  show (C.vertex k).2 + s * ((C.vertex (k + 1)).2 - (C.vertex k).2) ≤ C.top.2
   nlinarith
 
 /-! ### The box -/
@@ -259,7 +260,7 @@ theorem mem_box_iff {r : ℝ} {p : Point} : p ∈ box r ↔ |p.1| < r ∧ |p.2| 
 
 theorem isOpen_box (r : ℝ) : IsOpen (box r) := by
   have : box r = (fun p : Point => p.1) ⁻¹' Ioo (-r) r ∩ (fun p : Point => p.2) ⁻¹' Ioo (-r) r := by
-    ext p; simp [box, abs_lt]
+    grind [box, abs_lt]
   rw [this]
   exact (isOpen_Ioo.preimage continuous_fst).inter (isOpen_Ioo.preimage continuous_snd)
 
@@ -276,9 +277,7 @@ theorem continuous_clampR (r : ℝ) : Continuous (clampR r) :=
   continuous_const.max (continuous_const.min continuous_id)
 
 theorem abs_clampR_le {r : ℝ} (hr : 0 ≤ r) (a : ℝ) : |clampR r a| ≤ r := by
-  unfold clampR
-  rw [abs_le]
-  exact ⟨le_max_left _ _, max_le (by linarith) (min_le_left _ _)⟩
+  aesop (add simp [clampR, abs_le]) (add safe (by omega))
 
 theorem clampR_eq_self {r a : ℝ} (h : |a| ≤ r) : clampR r a = a := by
   unfold clampR
@@ -286,10 +285,7 @@ theorem clampR_eq_self {r a : ℝ} (h : |a| ≤ r) : clampR r a = a := by
   rw [min_eq_right h.2, max_eq_right h.1]
 
 theorem abs_clampR_eq {r a : ℝ} (hr : 0 ≤ r) (h : r < |a|) : |clampR r a| = r := by
-  unfold clampR
-  rcases lt_abs.1 h with h | h
-  · rw [min_eq_left h.le, max_eq_right (by linarith), abs_of_nonneg hr]
-  · rw [min_eq_right (by linarith), max_eq_left (by linarith), abs_neg, abs_of_nonneg hr]
+  core_grind
 
 /-- Clamp a point into the closed square of half-side `r`. -/
 def clampPt (r : ℝ) (p : Point) : Point := (clampR r p.1, clampR r p.2)
@@ -315,25 +311,17 @@ theorem box_sdiff_set_connected (hP : C.P.Simple) {r : ℝ} (hr : coordBound C.P
   have hy2 : |y.2| < r := hy.1.2
   have hmax : max (max |x.1| |x.2|) (max (max |y.1| |y.2|) B) < r :=
     max_lt (max_lt hx1 hx2) (max_lt (max_lt hy1 hy2) hr)
-  have hr'r : r' < r := by rw [hr']; linarith
+  have hr'r : r' < r := by linarith
   have hBr' : B < r' := by
-    rw [hr']
-    linarith [(le_max_right (max |y.1| |y.2|) B).trans
-      (le_max_right (max |x.1| |x.2|) (max (max |y.1| |y.2|) B))]
+    grind
   have hx1' : |x.1| ≤ r' := by
-    rw [hr']
-    linarith [(le_max_left |x.1| |x.2|).trans (le_max_left (max |x.1| |x.2|) (max (max |y.1| |y.2|) B))]
+    grind
   have hx2' : |x.2| ≤ r' := by
-    rw [hr']
-    linarith [(le_max_right |x.1| |x.2|).trans (le_max_left (max |x.1| |x.2|) (max (max |y.1| |y.2|) B))]
+    grind
   have hy1' : |y.1| ≤ r' := by
-    rw [hr']
-    linarith [((le_max_left |y.1| |y.2|).trans (le_max_left (max |y.1| |y.2|) B)).trans
-      (le_max_right (max |x.1| |x.2|) (max (max |y.1| |y.2|) B))]
+    grind
   have hy2' : |y.2| ≤ r' := by
-    rw [hr']
-    linarith [((le_max_right |y.1| |y.2|).trans (le_max_left (max |y.1| |y.2|) B)).trans
-      (le_max_right (max |x.1| |x.2|) (max (max |y.1| |y.2|) B))]
+    grind
   have hr'0 : 0 ≤ r' := (C.coordBound_nonneg.trans hBr'.le)
   refine ⟨clampPt r' '' C.setᶜ, ?_, ?_, ?_,
     (C.compl_connected hP).image _ (continuous_clampPt r').continuousOn⟩
@@ -343,14 +331,14 @@ theorem box_sdiff_set_connected (hP : C.P.Simple) {r : ℝ} (hr : coordBound C.P
     intro hmem
     by_cases hin : |p.1| ≤ r' ∧ |p.2| ≤ r'
     · rw [clampPt_eq_self hin.1 hin.2] at hmem
-      exact hp hmem
+      grind
     · have hcoord := C.abs_le_coordBound_of_mem_set hmem
       simp only [clampPt] at hcoord
       rcases not_and_or.1 hin with h | h
       · rw [abs_clampR_eq hr'0 (not_le.1 h)] at hcoord
-        linarith [hcoord.1]
+        linarith
       · rw [abs_clampR_eq hr'0 (not_le.1 h)] at hcoord
-        linarith [hcoord.2]
+        linarith
   · exact ⟨x, hx.2, clampPt_eq_self hx1' hx2'⟩
   · exact ⟨y, hy.2, clampPt_eq_self hy1' hy2'⟩
 
@@ -388,10 +376,7 @@ theorem mem_slit_iff {p : Point} :
   · intro hp
     refine ⟨fst_eq_of_mem_segment_vertical (u := C.top) (v := C.slitTop) rfl hp, ?_⟩
     obtain ⟨t, ht0, ht1, rfl⟩ := hp
-    show C.top.2 ≤ C.top.2 + t * (C.slitTop.2 - C.top.2) ∧
-      C.top.2 + t * (C.slitTop.2 - C.top.2) ≤ C.radius
-    simp only [slitTop]
-    constructor <;> nlinarith
+    simp_all [slitTop] <;> nlinarith
   · rintro ⟨h1, h2, h3⟩
     exact mem_segment_of_vertical rfl h1 h2 h3
 
@@ -413,11 +398,17 @@ theorem dom_subset_box : C.dom ⊆ box C.radius := fun _ h => h.1
 theorem mem_dom_iff {p : Point} : p ∈ C.dom ↔ p ∈ box C.radius ∧ p ∉ C.set ∧ p ∉ C.slit := by
   simp only [dom, obstacle, Set.mem_sdiff, mem_union, not_or]
 
-theorem not_mem_set_of_mem_dom {p : Point} (hp : p ∈ C.dom) : p ∉ C.set :=
+section
+variable {p : Point} (hp : p ∈ C.dom)
+include hp
+theorem not_mem_set_of_mem_dom : p ∉ C.set :=
   (C.mem_dom_iff.1 hp).2.1
 
-theorem not_mem_slit_of_mem_dom {p : Point} (hp : p ∈ C.dom) : p ∉ C.slit :=
+theorem not_mem_slit_of_mem_dom : p ∉ C.slit :=
   (C.mem_dom_iff.1 hp).2.2
+
+
+end
 
 theorem set_subset_dom_compl : C.set ⊆ C.domᶜ := fun _ hp hd => C.not_mem_set_of_mem_dom hd hp
 
@@ -437,9 +428,8 @@ theorem dom_nonempty : C.dom.Nonempty := by
   have hB := C.coordBound_nonneg
   have hBr := C.coordBound_lt_radius
   have htop := (abs_le.1 (C.abs_le_coordBound_of_mem_set C.top_mem_set).1).2
-  refine C.mem_dom_of_high ⟨?_, ?_⟩ (by simp only; linarith) (by simp only; linarith)
-  · simp only; rw [abs_of_nonneg (by linarith)]; linarith
-  · simp only; rw [abs_of_nonneg (by linarith)]; linarith
+  refine C.mem_dom_of_high ⟨?_, ?_⟩ (by linarith) (by linarith)
+  all_goals grind
 
 /-! ### Corridors of the box around the chain -/
 
@@ -585,13 +575,7 @@ theorem slit_mem_closure_upperL {p : Point} (hp : p ∈ box C.radius) (hp1 : p.1
   have hε : 0 < C.radius - |p.1| := by linarith [hp.1]
   filter_upwards [Ioo_mem_nhdsGT hε] with δ hδ
   refine ⟨⟨⟨?_, hp.2⟩, ?_⟩, ?_⟩
-  · simp only
-    calc |p.1 - δ| ≤ |p.1| + |δ| := abs_sub _ _
-      _ < C.radius := by rw [abs_of_pos hδ.1]; linarith [hδ.2]
-  · simp only [mem_ofPred_eq]
-    exact hp2
-  · simp only [mem_ofPred_eq]
-    linarith [hδ.1]
+  all_goals grind
 
 /-- A convex subset of a set with no separation crossing lies on one side. -/
 theorem convex_side {u v D K : Set Point} (hu : IsOpen u) (hv : IsOpen v) (hK : Convex ℝ K)
@@ -601,8 +585,7 @@ theorem convex_side {u v D K : Set Point} (hu : IsOpen u) (hv : IsOpen v) (hK : 
     · exfalso
       obtain ⟨p, hpK, hpuv⟩ := hK.isPreconnected u v hu hv (hKD.trans hcov) hKu hKv
       have : p ∈ D ∩ (u ∩ v) := ⟨hKD hpK, hpuv⟩
-      rw [hempty] at this
-      exact this
+      simp_all
     · left
       intro p hp
       rcases hcov (hKD hp) with h | h
@@ -623,8 +606,7 @@ theorem convex_same_side {u v D K K' : Set Point} (hu : IsOpen u) (hv : IsOpen v
   · exfalso
     obtain ⟨p, hpK, hpK'⟩ := hmeet
     have : p ∈ D ∩ (u ∩ v) := ⟨hKD hpK, hKu hpK, h hpK'⟩
-    rw [hempty] at this
-    exact this
+    simp_all
 
 /-- The core of the connectedness argument: if both halves of the upper corridor lie in `u`,
 then `u, v` cannot separate the domain. -/
@@ -647,8 +629,7 @@ theorem dom_connected_aux (hP : C.P.Simple) {u v : Set Point} (hu : IsOpen u) (h
         have : q = C.top := Prod.ext hq1 h.symm
         rw [this]; exact C.top_mem_set
     · rcases hcov (C.mem_dom_iff.2 ⟨hq.1, hq.2, hqs⟩) with h | h
-      · exact Or.inl (Or.inl h)
-      · exact Or.inr h
+      all_goals simp_all
   have hne0 : ((box C.radius \ C.set) ∩ (u ∪ C.upper)).Nonempty := by
     obtain ⟨q, hq⟩ := C.upperL_inter_corrL
     exact ⟨q, hdom0 (C.upperL_subset_dom hq.1), Or.inl (hL hq.1)⟩
@@ -659,8 +640,7 @@ theorem dom_connected_aux (hP : C.P.Simple) {u v : Set Point} (hu : IsOpen u) (h
   by_cases hpD : p ∈ C.dom
   · rcases hpu with hpu | hpu
     · have : p ∈ C.dom ∩ (u ∩ v) := ⟨hpD, hpu, hpv⟩
-      rw [hempty] at this
-      exact this
+      simp_all
     · -- `p` is in the upper corridor and off the slit: in one of the two halves
       have hslit := C.not_mem_slit_of_mem_dom hpD
       have hy : C.top.2 < p.2 := hpu.2
@@ -672,8 +652,7 @@ theorem dom_connected_aux (hP : C.P.Simple) {u v : Set Point} (hu : IsOpen u) (h
         · exact hL ⟨hpu, h⟩
         · exact hR ⟨hpu, h⟩
       have : p ∈ C.dom ∩ (u ∩ v) := ⟨hpD, hpu', hpv⟩
-      rw [hempty] at this
-      exact this
+      simp_all
   · -- `p` is on the open slit: a nearby point of the upper-left corridor is in `v`
     have hpslit : p ∈ C.slit := by
       by_contra h
@@ -689,8 +668,7 @@ theorem dom_connected_aux (hP : C.P.Simple) {u v : Set Point} (hu : IsOpen u) (h
     have hcl := C.slit_mem_closure_upperL hp0.1 hp1 hp2'
     obtain ⟨q, hqv, hqU⟩ := mem_closure_iff.1 hcl v hv hpv
     have : q ∈ C.dom ∩ (u ∩ v) := ⟨C.upperL_subset_dom hqU, hL hqU, hqv⟩
-    rw [hempty] at this
-    exact this
+    simp_all
 
 /-- **The domain is connected.** -/
 theorem dom_connected (hP : C.P.Simple) : IsPreconnected C.dom := by
@@ -709,8 +687,8 @@ theorem dom_connected (hP : C.P.Simple) : IsPreconnected C.dom := by
       hempty' C.corrB_inter_corrR h2 C.corrB_subset_dom
     exact convex_same_side hw hw' C.convex_upperR C.upperR_subset_dom hcov' hempty'
       C.corrR_inter_upperR h3 C.corrR_subset_dom
-  have hempty_symm : C.dom ∩ (v ∩ u) = ∅ := by rw [inter_comm v u]; exact hempty
-  have hcov_symm : C.dom ⊆ v ∪ u := by rw [union_comm]; exact hcov
+  have hempty_symm : C.dom ∩ (v ∩ u) = ∅ := by grind
+  have hcov_symm : C.dom ⊆ v ∪ u := by grind
   rcases convex_side hu hv C.convex_upperL C.upperL_subset_dom hcov hempty with hL | hL
   · exact C.dom_connected_aux hP hu hv hcov hnev hempty hL (hchain u v hu hv hcov hempty hL)
   · exact C.dom_connected_aux hP hv hu hcov_symm hneu hempty_symm hL

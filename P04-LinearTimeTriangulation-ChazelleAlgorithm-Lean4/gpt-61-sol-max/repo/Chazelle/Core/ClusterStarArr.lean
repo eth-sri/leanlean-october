@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterTrees
 
 /-!
@@ -33,15 +35,15 @@ theorem star_dual_enc {opp fp fpi : ℕ → ℕ} (hopp : ∀ d : Fin N, opp d = 
     (hSF : ∀ d, d < N → G.vert d = d ∧ G.vert (N + d) = d ∧ G.vert (2 * N + d) = fpi d)
     (hSFi : ∀ d, d < N → G.first d = d) :
     EnvEnc G (star M).dual (fun g => (g : ℕ)) (enc N) := by
-  refine ⟨fun v => by rw [hGnv]; exact v.2, fun v w h => Fin.ext h, fun u hu => ⟨⟨u, by omega⟩, rfl⟩,
+  refine ⟨fun v => by omega, fun v w h => Fin.ext h, fun u hu => ⟨⟨u, by omega⟩, rfl⟩,
     fun x => by rw [hGN]; exact enc_lt x, fun x y h => enc_inj h, fun e he => ?_,
     fun x => ?_, fun x => ?_, fun x => ?_, fun v => ⟨.inl v, by rw [hSFi v v.2]; rfl, rfl⟩⟩
   · rw [hGN] at he
     by_cases h1 : e < N
     · exact ⟨.inl ⟨e, h1⟩, rfl⟩
     · by_cases h2 : e < 2 * N
-      · exact ⟨.inr (.inl ⟨e - N, by omega⟩), by simp only [enc]; omega⟩
-      · exact ⟨.inr (.inr ⟨e - 2 * N, by omega⟩), by simp only [enc]; omega⟩
+      · exact ⟨.inr (.inl ⟨e - N, by omega⟩), by core_grind⟩
+      · exact ⟨.inr (.inr ⟨e - 2 * N, by omega⟩), by core_grind⟩
   · rcases x with d | d | d
     · show G.opp d = enc N (starOpp M (.inl d))
       rw [(hSO d d.2).1, hopp]; rfl
@@ -80,9 +82,7 @@ theorem starTree_isTreeDart_inl (d : Fin N) :
     · rcases h with h | h <;> cases h
   · rintro ⟨v, hv, h⟩
     refine ⟨.inl v, fun h' => hv (Sum.inl_injective h'), ?_⟩
-    rcases h with rfl | rfl
-    · left; rfl
-    · right; rfl
+    aesop
 
 omit [Fintype F] [DecidableEq F] in
 theorem starTree_isTreeDart_inl_inr (d : Fin N) :
@@ -90,14 +90,7 @@ theorem starTree_isTreeDart_inl_inr (d : Fin N) :
   constructor
   · rintro ⟨y, hy, h⟩
     rcases y with v | g
-    · rcases h with h | h <;> cases h
-    · rcases h with h | h
-      · have : d = a g := by
-          have := congrArg (fun x : Fin N ⊕ Fin N ⊕ Fin N => match x with
-            | .inr (.inl e) => e | _ => d) h
-          simpa [starTree] using this
-        rw [this, ha]
-      · cases h
+    all_goals (simp_all [starTree] <;> omega_nf)
   · intro h
     refine ⟨.inr (M.face d), by simp [starTree], Or.inl ?_⟩
     show Sum.inr (Sum.inl d) = Sum.inr (Sum.inl (a (M.face d)))
@@ -109,14 +102,7 @@ theorem starTree_isTreeDart_inr_inr (d : Fin N) :
   constructor
   · rintro ⟨y, hy, h⟩
     rcases y with v | g
-    · rcases h with h | h <;> cases h
-    · rcases h with h | h
-      · cases h
-      · have : d = a g := by
-          have := congrArg (fun x : Fin N ⊕ Fin N ⊕ Fin N => match x with
-            | .inr (.inr e) => e | _ => d) h
-          simpa [starTree] using this
-        rw [this, ha]
+    all_goals (simp_all [starTree] <;> omega_nf)
   · intro h
     refine ⟨.inr (M.face d), by simp [starTree], Or.inr ?_⟩
     show Sum.inr (Sum.inr d) = starOpp M (Sum.inr (Sum.inl (a (M.face d))))
@@ -130,11 +116,9 @@ theorem att_fun {att : ℕ → ℕ} (hlt : ∀ d : Fin N, att d < N)
     ∃ (a : F → Fin N) (_ha : ∀ g, M.face (a g) = g), ∀ d : Fin N, (a (M.face d) : ℕ) = att d := by
   classical
   let rep : F → Fin N := fun g => Classical.choose (M.face_surj g)
-  have hrep : ∀ g, M.face (rep g) = g := fun g => Classical.choose_spec (M.face_surj g)
+  
   refine ⟨fun g => ⟨att (rep g), hlt _⟩, fun g => ?_, fun d => ?_⟩
-  · rw [hface (rep g) (hlt _), hrep]
-  · show att (rep (M.face d)) = att d
-    exact hconst _ _ (hrep _)
+  all_goals grind
 
 end
 

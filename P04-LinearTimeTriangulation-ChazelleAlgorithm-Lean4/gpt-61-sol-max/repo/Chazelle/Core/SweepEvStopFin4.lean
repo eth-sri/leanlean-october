@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopFin3
 public import Chazelle.Core.SweepEvStopM3
 public import Chazelle.Core.SweepEvStopM4
@@ -37,8 +39,11 @@ def SlfParOK (P : Polygon) (J : Merge.Junction) (N₂ : NF) (e : Set Point) (par
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {P : Polygon} {W : ℕ} {c₀ c : Config} {J : Merge.Junction} {N₁ N₂ : NF}
 
+section
+variable (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
+include hP hN
 /-- **The parent facts from the parent scan.** -/
-theorem slfParOK_scan (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
+theorem slfParOK_scan
     {kind k b : ℕ} (hD : OrgD P J N₂ kind k b) (h1 : kind ≠ 1) {p h par : ℕ}
     (hA : Arrival (chainModel J.right).W (stOrig J (Qof P) N₂ kind k b) (-dirOf b) p
       ((chainModel J.right).param (Qof P) ⟨p, h⟩))
@@ -60,14 +65,13 @@ theorem slfParOK_scan (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) 
   refine ⟨hle, fun cc hcc hec => ?_, hsub⟩
   obtain ⟨i, hi, rfl⟩ := chord_of_mem hcc
   have hp : 0 < par := by
-    by_contra h0
-    exact hzero (by omega) i hi ((hiff i hi).2 hec)
+    grind
   refine ⟨hp, ?_⟩
   have e := stopSet_eq J (Qof P) N₂ kind k b
   exact parent_eq hP hN hD (chord_mem (by omega)) hcc (e ▸ hsub hp) (e ▸ hec)
 
 /-- **The parent facts of a wall code.** -/
-theorem slfParOK_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
+theorem slfParOK_wall
     {k b : ℕ} (hD : OrgD P J N₂ 1 k b) :
     SlfParOK P J N₂ (stopSet J (Qof P) N₂ 1 k b) (k + 1) := by
   have hk : k < N₂.nChords := (hD.ok.2.2.1 rfl).1
@@ -76,6 +80,9 @@ theorem slfParOK_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) 
   simp only [Nat.add_sub_cancel]
   exact ⟨hk, fun cc hcc hec => ⟨Nat.succ_pos _, parent_eq hP hN hD (chord_mem hk) hcc hw hec⟩,
     fun _ => hw⟩
+
+
+end
 
 set_option maxHeartbeats 4000000 in
 /-- **The parent step.** -/
@@ -119,7 +126,7 @@ theorem slfPar_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     rw [ite_eq_right hk]
     exact (IRS.ifT h0 (scan hk)).mono (by omega) (fun _ h => h)
   · refine (IRS.ifF (K := if c.nreg oKd = 1 then 3 else κp * (N₂.nChords + 1) + 2) h0 ?_).mono
-      (by split_ifs <;> omega) (fun _ h => h)
+      (by grind) (fun _ h => h)
     by_cases h2 : c.nreg K1 < c.nreg oKd
     · have hk : c.nreg oKd ≠ 1 := by omega
       rw [ite_eq_right hk]
@@ -131,7 +138,7 @@ theorem slfPar_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       have hTW := E.hTW
       have hpar : IScr oPar := iscr_sw' (by norm_num) (by norm_num)
       refine IRS.ifF h2 ((IRS.block [.addN oPar oKk K1] hI
-        ⟨⟨hpar, by first | (rw [k1]; omega)⟩, trivial⟩).mono (by simp) ?_)
+        ⟨⟨hpar, by omega⟩, trivial⟩).mono (by simp) ?_)
       rintro c' rfl
       have hv : regB c.nmem [.addN oPar oKk K1] c.nreg oPar = c.nreg oKk + 1 := by
         simp only [regB, regI, upd_same]; rw [k1]
@@ -140,7 +147,7 @@ theorem slfPar_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       · simp only [regB, regI]
         rw [upd_other _ _ _ (fun h => hr (Or.inl h))]
       · simp only [regB, regI]
-        rw [upd_other _ _ _ (by unfold ALLOC oPar sw; omega)]
+        omega_nf
 
 end
 

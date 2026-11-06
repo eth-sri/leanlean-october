@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepZipSp3
 
 /-!
@@ -21,7 +23,7 @@ namespace OracleR
 def PLe (x y : ℕ × ℕ) : Prop := x.1 < y.1 ∨ (x.1 = y.1 ∧ x.2 ≤ y.2)
 
 theorem PLe.antisymm {x y : ℕ × ℕ} (h : PLe x y) (h' : PLe y x) : x = y := by
-  unfold PLe at *; ext <;> omega
+  core_grind
 
 open Classical in
 /-- The kept pair at position `t`. -/
@@ -32,7 +34,12 @@ noncomputable def dedupF (n : ℕ) (pr : ℕ → ℕ × ℕ) (s : ℕ → ℕ) (
 def SortedSeq (pr : ℕ → ℕ × ℕ) (s : ℕ → ℕ) (n : ℕ) : Prop :=
   ∀ t t', t ≤ t' → t' < n → PLe (pr (s t)) (pr (s t'))
 
-theorem dedup_key {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hs : SortedSeq pr s n) {a a' : ℕ}
+section
+variable {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ}
+section
+variable (hs : SortedSeq pr s n)
+include hs
+theorem dedup_key {a a' : ℕ}
     {b : ℕ × ℕ} (hlt : a < a') (h1 : dedupF n pr s a = some b) (h2 : dedupF n pr s a' = some b) :
     False := by
   unfold dedupF at h1 h2
@@ -46,7 +53,7 @@ theorem dedup_key {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hs : So
     rw [e] at e1
     exact c2 (PLe.antisymm e2 e1).symm
 
-theorem dedup_nodup {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hs : SortedSeq pr s n) :
+theorem dedup_nodup :
     (emitted (dedupF n pr s) n).Nodup := by
   unfold emitted
   refine List.Nodup.filterMap (fun a a' b hb hb' => ?_) List.nodup_range
@@ -55,32 +62,33 @@ theorem dedup_nodup {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hs : 
   · exact h
   · exact absurd (dedup_key hs h hb' hb) id
 
-theorem mem_dedup {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hsurj : ∀ i, i < n → ∃ t, t < n ∧ s t = i)
+
+end
+
+theorem mem_dedup (hsurj : ∀ i, i < n → ∃ t, t < n ∧ s t = i)
     (hlt : ∀ t, t < n → s t < n) {x : ℕ × ℕ} :
     x ∈ emitted (dedupF n pr s) n ↔ ∃ i, i < n ∧ pr i = x := by
   rw [mem_emitted]
   constructor
-  · rintro ⟨t, ht, h⟩
-    unfold dedupF at h
-    split_ifs at h
-    cases h
-    exact ⟨s t, hlt t ht, rfl⟩
+  · grind [dedupF]
   · rintro ⟨i, hi, rfl⟩
     classical
     have hex : ∃ t, t < n ∧ pr (s t) = pr i := by
-      obtain ⟨t, ht, e⟩ := hsurj i hi; exact ⟨t, ht, by rw [e]⟩
+      ram_grind
     let t0 := Nat.find hex
     obtain ⟨h0, e0⟩ := Nat.find_spec hex
     refine ⟨t0, h0, ?_⟩
     have hcond : t0 = 0 ∨ pr (s t0) ≠ pr (s (t0 - 1)) := by
       by_cases hz : t0 = 0
-      · exact Or.inl hz
+      · omega
       · right
         intro e
         have := Nat.find_min hex (show t0 - 1 < t0 by omega)
-        exact this ⟨by omega, by rw [← e, e0]⟩
-    unfold dedupF
-    rw [ite_eq_left ⟨h0, hcond⟩, e0]
+        grind
+    grind [dedupF]
+
+
+end
 
 end
 

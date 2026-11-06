@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoSpec
 public import Chazelle.Core.SweepEvOrigin
 public import Chazelle.Core.SweepEvCand3
@@ -42,15 +44,11 @@ theorem chordFamily_hPoly (C : Chain) {F : Set (Set Point)} (hfin : F.Finite)
     (hF : F ⊆ Merge.augChords C) : (chainModel C).ChordFamily (hPoly F hfin) F := by
   refine ⟨hfin, hF, fun c hc => ?_⟩
   have hmem : ((0 : ℝ), (Merge.lend c).2) ∈ (hPoly F hfin).vertices := by
-    simp only [hPoly]
-    exact List.mem_map.2 ⟨c, by simp [hc], rfl⟩
+    aesop (add simp [hPoly]) (add safe (by omega))
   obtain ⟨h, hh, he⟩ := List.mem_iff_getElem.1 hmem
   obtain ⟨y, a, b, -, -, hcd, hl, -⟩ := Merge.augChords_spec (hF hc)
   refine ⟨h, hh, a, b, ?_⟩
-  have hv : (hPoly F hfin).vtx h = ((0 : ℝ), (Merge.lend c).2) := by
-    unfold Polygon.vtx
-    rw [List.getD_eq_getElem _ _ hh, he]
-  rw [hv, hl, hcd]
+  simp_all [Polygon.vtx] 
 
 /-! ## The query point -/
 
@@ -67,16 +65,18 @@ theorem left_pt_right_dom (hP : J.P.Simple) {z : Point} (hz : z ∈ J.left.set)
     exact J.left.set_subset_box hz
   · have : z ∈ J.left.set ∩ J.right.set := ⟨hz, hs⟩
     rw [J.left_inter_right hP] at this
-    exact hzv this
+    simp_all
 
+section
+variable {z : Point}
 /-- A point of `C₁` is strictly inside the box of `C`. -/
-theorem left_pt_abs {z : Point} (hz : z ∈ J.left.set) : |z.2| < J.whole.radius := by
+theorem left_pt_abs (hz : z ∈ J.left.set) : |z.2| < J.whole.radius := by
   rw [← FuseMath.radius_of_P J (C' := J.left) rfl]
   exact (J.left.set_subset_box hz).2
 
 /-- **The first hit of `C₁`**: unless the hit point of `C` is on `C₂` and off `C₁`, the first hit
 of `C` is the first hit of `C₁`. -/
-theorem left_hit_of {z : Point} (hz₁ : z.2 ≤ J.left.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
+theorem left_hit_of (hz₁ : z.2 ≤ J.left.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
     (hfree : FreeAt J.whole z σ)
     (hc : ¬ (rayPt z σ (J.whole.hitParam z σ) ∈ J.right.set ∧
       rayPt z σ (J.whole.hitParam z σ) ∉ J.left.set)) :
@@ -87,11 +87,11 @@ theorem left_hit_of {z : Point} (hz₁ : z.2 ≤ J.left.top.2) {σ : ℝ} (hσ :
   have hy : ∀ t, (rayPt z σ t).2 = z.2 := fun t => rfl
   have hfree₁ : Merge.FreeAt J.left z σ := by
     filter_upwards [hfree] with t ht
-    exact dom_left J ht (by rw [hy]; exact hz₁)
+    exact dom_left J ht (by simp_all)
   obtain ⟨hT₁, hw₁D, hdom₁⟩ := Merge.hit_of_freeAt J.left hz₁ hσ hfree₁
   have hwD₁ : rayPt z σ T ∉ J.left.dom := by
     intro hmem
-    rcases (Merge.not_mem_dom_iff J.whole (p := rayPt z σ T) (by rw [hy]; exact hz')).1 hwD
+    rcases (Merge.not_mem_dom_iff J.whole (p := rayPt z σ T) (by simp_all)).1 hwD
       with h | h
     · apply h
       rw [← FuseMath.radius_of_P J (C' := J.left) rfl]
@@ -101,13 +101,12 @@ theorem left_hit_of {z : Point} (hz₁ : z.2 ≤ J.left.top.2) {σ : ℝ} (hσ :
       · exact J.left.not_mem_set_of_mem_dom hmem h
       · exact hc ⟨h, fun h' => J.left.not_mem_set_of_mem_dom hmem h'⟩
   rcases lt_trichotomy (J.left.hitParam z σ) T with h | h | h
-  · exact absurd (dom_left J (hdom _ hT₁ h) (by rw [hy]; exact hz₁)) hw₁D
-  · exact h
-  · exact absurd (hdom₁ T hT h) hwD₁
+  · exact absurd (dom_left J (hdom _ hT₁ h) (by simp_all)) hw₁D
+  all_goals grind
 
 /-- **The first hit of `C₂`**: if the hit point of `C` is on `C₂` (and the query is not above the
 top of `C₂`), the first hit of `C` is the first hit of `C₂`. -/
-theorem right_hit_of {z : Point} (hz₂ : z.2 ≤ J.right.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
+theorem right_hit_of (hz₂ : z.2 ≤ J.right.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
     (hfree : FreeAt J.whole z σ) (hw : rayPt z σ (J.whole.hitParam z σ) ∈ J.right.set) :
     J.right.hitParam z σ = J.whole.hitParam z σ := by
   have hz' : z.2 ≤ J.whole.top.2 := hz₂.trans J.right_top_le
@@ -116,23 +115,28 @@ theorem right_hit_of {z : Point} (hz₂ : z.2 ≤ J.right.top.2) {σ : ℝ} (hσ
   have hy : ∀ t, (rayPt z σ t).2 = z.2 := fun t => rfl
   have hfree₂ : Merge.FreeAt J.right z σ := by
     filter_upwards [hfree] with t ht
-    exact dom_right J ht (by rw [hy]; exact hz₂)
+    exact dom_right J ht (by simp_all)
   obtain ⟨hT₂, hw₂D, hdom₂⟩ := Merge.hit_of_freeAt J.right hz₂ hσ hfree₂
   rcases lt_trichotomy (J.right.hitParam z σ) T with h | h | h
-  · exact absurd (dom_right J (hdom _ hT₂ h) (by rw [hy]; exact hz₂)) hw₂D
+  · exact absurd (dom_right J (hdom _ hT₂ h) (by simp_all)) hw₂D
   · exact h
   · exact absurd hw (J.right.not_mem_set_of_mem_dom (hdom₂ T hT h))
 
 /-! ## Regions faced near a key -/
 
+
+end
+
 section Gen
 
 variable {M : Model}
 
+section
+variable (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite) {g : ℕ} (hg : g < M.W.n)
+include hM hF hfin hg
 /-- **The region faced just after a key**: a non-cut position inside a walk edge, after the key
 with no cut in between, faces the region faced just after the key. -/
-theorem after_of_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
-    {g : ℕ} (hg : g < M.W.n) {U : Set Point} (hU : U ∈ M.regions F) {pa : ℕ} {ta : ℝ}
+theorem after_of_near {U : Set Point} (hU : U ∈ M.regions F) {pa : ℕ} {ta : ℝ}
     (hpa : pa < M.W.n) (hta : 0 ≤ ta) {q : ℕ} {u : ℝ} (hq : q < M.W.n)
     (hu : u ∈ Ioo (0 : ℝ) 1) (hqc : ¬ M.IsCut F (q + u)) (hqf : M.Faces q u U)
     (hlt : off M.W.n g (pa + ta) < off M.W.n g (q + u))
@@ -151,27 +155,27 @@ theorem after_of_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (
   have hsδ : s < δ₁ := lt_of_lt_of_le hs1 (min_le_left _ _)
   have hnc : ¬ M.IsCut F ((pa : ℝ) + (ta + s)) := by
     have := hsub ⟨hs0, hsδ⟩
-    rw [Set.mem_ofPred_eq] at this
-    rwa [← add_assoc]
+    grind
   have hts : ta + s ∈ Ioo (0 : ℝ) 1 := ⟨by linarith, hs2⟩
   obtain ⟨U', hU', hf'⟩ := hM.exists_faces_of_not_cut hF hfin hpa hts hnc
   have hoff : off M.W.n g ((pa : ℝ) + (ta + s)) = off M.W.n g ((pa : ℝ) + ta) + s :=
     off_add_small hg hpa hta hs0.le hs2
   have heq := same_region_of_gap hM hF hfin hg0 hgn hU' hU hpa hq hts hu hnc hqc hf' hqf
-    (by rw [hoff]; linarith) (fun x hx hx0 hxn ⟨h1, h2⟩ => hgap x hx hx0 hxn ⟨by linarith, h2⟩)
-  rw [← heq]
-  exact hf'
+    (by linarith) (fun x hx hx0 hxn ⟨h1, h2⟩ => hgap x hx hx0 hxn ⟨by linarith, h2⟩)
+  grind
 
 /-- **A region faced just after a position** is faced at a non-cut position of the same edge, at an
 offset just after it. -/
-theorem near_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
-    {g : ℕ} (hg : g < M.W.n) {p : ℕ} (hp : p < M.W.n) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
+theorem near_after {p : ℕ} (hp : p < M.W.n) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
     {U : Set Point} (hW : AfterFaces M p t U) {ε : ℝ} (hε : 0 < ε) :
     ∃ s, 0 < s ∧ s < ε ∧ t + s ∈ Ioo (0 : ℝ) 1 ∧ ¬ M.IsCut F ((p : ℝ) + (t + s)) ∧
       M.Faces p (t + s) U ∧
       off M.W.n g ((p : ℝ) + (t + s)) = off M.W.n g ((p : ℝ) + t) + s := by
   obtain ⟨s, hs0, hsε, hs1, hnc, hf⟩ := faces_near_after hM hF hfin ht0 ht1 hW hε
   exact ⟨s, hs0, hsε, ⟨by linarith, hs1⟩, hnc, hf, off_add_small hg hp ht0 hs0.le hs1⟩
+
+
+end
 
 end Gen
 

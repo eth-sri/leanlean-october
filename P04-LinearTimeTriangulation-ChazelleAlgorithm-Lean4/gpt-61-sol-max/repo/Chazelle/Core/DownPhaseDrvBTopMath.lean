@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvBTopProg
 public import Chazelle.Core.DownPhaseDrvBSize
 public import Chazelle.Core.Setup
@@ -33,7 +35,7 @@ theorem desc_int {m : ℕ → ℕ} {D : ℕ} {Q : Polygon} (h : ModelDescAt m D 
     m D = 1 ∧ (m (D + 1) = 1 ↔ Mountain.LeftInside Q) := by
   rcases h with ⟨-, H, C, -, hC⟩ | ⟨h1, h2, -⟩
   · exact absurd hC.symm (Restore.chainModel_ne_interior C Q)
-  · exact ⟨h1, h2⟩
+  simp_all
 
 theorem liBit_iff {m : ℕ → ℕ} {D : ℕ} {Q : Polygon} (h : ModelDescAt m D Q (interiorModel Q)) :
     liBit m D = true ↔ Mountain.LeftInside Q := by
@@ -47,7 +49,7 @@ theorem descWF_int {P : Polygon} {A : ℕ} {m : ℕ → ℕ} {D : ℕ}
 /-! ## Sizes of the regions -/
 
 theorem host_run_length {n : ℕ} (hn : 1 ≤ n) : (Host.pts n [HostItem.run 0 (n - 1)]).length = n := by
-  simp [Host.pts, HostItem.pts]; omega
+  core_grind [HostItem.pts]
 
 theorem topGrade_le' (n : ℕ) : topGrade n ≤ n := by
   unfold topGrade
@@ -80,16 +82,14 @@ theorem reg_sizes (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P))
   · have hL : L = [] := List.length_eq_zero_iff.1 hK
     subst hL
     have hE : E = [] := by
-      have := hperm.length_eq
-      simpa using this
+      simp_all
     have hnγ : (Qof P).n ≤ γ := n_le_of_empty hQ hE hwt
     refine ⟨fun r _ => ?_, fun _ => by omega, fun r _ j _ => ?_⟩
     · unfold ptsB
       rw [ite_eq_left hK, wlist_length, host_run_length (by omega)]
       omega
     · unfold arcCnt
-      have := Nat.mod_lt ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) [] E).arc j).e.edge
-        (show 0 < P.n by omega)
+      
       have := Nat.mod_lt (((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) [] E).arc j).e.edge +
         P.n - ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) [] E).arc j).s.edge)
         (show 0 < P.n by omega)
@@ -99,7 +99,7 @@ theorem reg_sizes (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P))
       ⟨hRC, hCS, hAO, hRO⟩, hli⟩
     have hR : ∀ r, r < L.length + 1 →
         r < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions := fun r hr => by
-      simp only [NF.nRegions, BuildNF.buildNF, List.length_map, List.length_range]; exact hr
+      core_grind [BuildNF.buildNF, List.length_map, List.length_range]
     refine ⟨fun r hr => ?_, fun h => absurd h hK, fun r hr j hj => ?_⟩
     · unfold ptsB
       rw [ite_eq_right hK]
@@ -110,8 +110,7 @@ theorem reg_sizes (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P))
           (reg r) + 1) * γ ≤ 5 * γ := Nat.mul_le_mul_right _ (by omega)
       omega
     · have := arcCnt_le B (hR r hr) hwt hj
-      rw [hn] at this
-      exact this
+      simp_all
 
 /-- **The completed chord list**: valid, and containing every vertex chord of `Q`. -/
 theorem newLB_facts (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P)) (Qof P) L)
@@ -143,8 +142,7 @@ theorem count_le {K c p b : ℕ} (h : K * 2 ^ b ≤ c * (2 ^ p + 2 ^ b)) : K ≤
   have h1 : 1 ≤ 2 ^ b := Nat.one_le_two_pow
   have h2 : c * (2 ^ p + 2 ^ b) ≤ c * (2 ^ p + 1) * 2 ^ b := by
     have : 2 ^ p + 2 ^ b ≤ (2 ^ p + 1) * 2 ^ b := by
-      have : 2 ^ p ≤ 2 ^ p * 2 ^ b := Nat.le_mul_of_pos_right _ (by omega)
-      rw [Nat.add_mul, Nat.one_mul]; omega
+      simp_all [Nat.add_mul, Nat.one_mul] 
     calc c * (2 ^ p + 2 ^ b) ≤ c * ((2 ^ p + 1) * 2 ^ b) := Nat.mul_le_mul_left _ this
       _ = c * (2 ^ p + 1) * 2 ^ b := by ring
   exact Nat.le_of_mul_le_mul_right (h.trans h2) (by omega)
@@ -181,14 +179,11 @@ theorem top_cost {n K K₂ A K' S₀ Cm Mb Cc Γ κR κS κD κB : ℕ} (hK : K 
         κB * ((3 * Cc + 2) * (n + 1)) + 40 * (n + 1) := by
     unfold topK; ring
   have hX1 : K + 1 ≤ (3 * Cc + 1) * (n + 1) := by
-    have : Cc * (2 * n + 3) ≤ 3 * Cc * (n + 1) := by nlinarith
-    nlinarith
+    grind
   have hX2 : K + K₂ + A + 1 ≤ (9 * Cc + 2) * (n + 1) := by
-    have : Cc * (2 * n + 3) ≤ 3 * Cc * (n + 1) := by nlinarith
-    nlinarith
+    grind
   have hX3 : K + K₂ + 1 ≤ (3 * Cc + 2) * (n + 1) := by
-    have : Cc * (2 * n + 3) ≤ 3 * Cc * (n + 1) := by nlinarith
-    nlinarith
+    grind
   have hX4 : K' + 1 ≤ (3 * Cc + 2) * (n + 1) := by omega
   have t1 : κR * (K + 1) * (S₀ + 1) * (Cm + 1) ≤
       κR * ((3 * Cc + 1) * (n + 1)) * (5 * Γ + 9) * (Γ + 3) :=
@@ -199,7 +194,6 @@ theorem top_cost {n K K₂ A K' S₀ Cm Mb Cc Γ κR κS κD κB : ℕ} (hK : K 
     Nat.mul_le_mul (Nat.mul_le_mul_left _ hX2) hcl
   have t3 : κD * (K + K₂ + 1) ≤ κD * ((3 * Cc + 2) * (n + 1)) := Nat.mul_le_mul_left _ hX3
   have t4 : κB * (K' + 1) ≤ κB * ((3 * Cc + 2) * (n + 1)) := Nat.mul_le_mul_left _ hX4
-  rw [e]
   omega
 
 end

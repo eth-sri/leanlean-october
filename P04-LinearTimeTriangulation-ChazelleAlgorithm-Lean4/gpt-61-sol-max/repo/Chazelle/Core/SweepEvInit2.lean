@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvInit
 
 /-!
@@ -47,11 +49,11 @@ theorem frame_regs {c c' : Config} (k : ℕ) (hr : ∀ r, bandOf r ∉ ioBands �
     (ho : c'.output = c.output) : Frame ioBands c c' k := by
   have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC alloc_not_io
   exact ⟨fun r h _ => hr r h, fun r _ => by rw [hrr], fun a _ => by rw [hm],
-    fun a _ => by rw [hrm], ho, by rw [hA], by rw [hA]; omega⟩
+    fun a _ => by rw [hrm], ho, by rw [hA], by omega⟩
 
 theorem frame_ioB {B : Finset ℕ} {c c' : Config} {k : ℕ} (h : Frame (B ∪ B) c c' k) :
     Frame B c c' k := by
-  rw [Finset.union_self] at h; exact h
+  simp_all
 
 /-- Registers of the sweep's band are in `ioBands`. -/
 theorem sw_io {r : ℕ} (h1 : 240000 ≤ r) (h2 : r < 250000) : bandOf r ∈ ioBands := by
@@ -76,20 +78,20 @@ theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
       (∃ s : SymPt, SymPtIn c' cT1 s ∧ s.Lt P.n ∧ s.eval (Qof P) = J.left.top) ∧
       ∀ r, bandOf r ∉ oracleBands → r ≠ ALLOC → (r < sw 645 ∨ sw 647 < r) →
         (r < sw 705 ∨ sw 709 < r) → c'.nreg r = c.nreg r := by
-  have hW6 : 6 ≤ W := by have := hctx.2.2.2.2.2; omega
+  have hW6 : 6 ≤ W := by  omega
   have e₁ := exec_regB (P := P) [.constN iE 6, .constN iH 0] hw
-    (by simp only [okW, okWI]; exact ⟨hW6, by omega, trivial⟩)
+    (by simp_all [okW, okWI] )
   set c₁ : Config := { c with nreg := regB c.nmem [.constN iE 6, .constN iH 0] c.nreg } with hc₁
   have hw₁ := e₁.wb_right
   have q1 : ∀ r, r ≠ iE → r ≠ iH → c₁.nreg r = c.nreg r := fun r h1 h2 => by
-    simp only [hc₁, regB, regI]; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
+    simp_all [regB, regI] 
   have qE : c₁.nreg iE = 6 := by
-    simp only [hc₁, regB, regI]; rw [upd_other _ _ _ (by swoInit2), upd_same]
-  have qH : c₁.nreg iH = 0 := by simp only [hc₁, regB, regI]; rw [upd_same]
+    simp_all [regB, regI, upd_same] <;> omega_nf
+  have qH : c₁.nreg iH = 0 := by simp_all [regB, regI, upd_same] 
   have hI₁ : IInv W c₁ c₁ := ⟨hw₁, fun _ _ => rfl, le_rfl, fun _ _ => rfl, fun _ _ => rfl⟩
   have hctx₁ : ChainCtx P W c₁ (sw 20) J.left :=
     hctx.transport (q1 _ (by swoInit2) (by swoInit2)) (fun _ _ => rfl)
-      (by rw [q1 _ (by swoInit2) (by swoInit2)])
+      (by ram_grind)
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := q1 _ (by swoInit2)
     (by swoInit2)
   have hm1 := J.left.one_le
@@ -97,17 +99,16 @@ theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
   obtain ⟨c₂, k₂, e₂, hk₂, hI₂, hf₂, ⟨s, hs, hsl, hse⟩, hk2, -, -⟩ :=
     callSym_irs (P := P) (re := iE) (rh := iH) (o := iY) hI₁ hctx₁
       (by swoInit2) (by swoInit2) (by rw [qE])
-      (by rw [qE]; omega) (by rw [qE, qH]; exact ⟨by rw [hpar], by rw [hpar]; norm_num,
-        Nat.zero_le _⟩)
-      (by rw [qE, qH]; exact ⟨fun _ => hpar, fun _ => rfl⟩) (by rw [hA₁]; exact hroom)
+      (by omega) (by ram_grind)
+      (by omega_nf) (by omega)
   rw [qE, qH] at hse
   have hpos : (chainModel J.left).pos (Qof P) ⟨6, 0⟩ = J.left.top := by
     show Chazelle.Chain.sidePt _ _ _ = _
-    rw [hpar, Chazelle.Chain.sidePt_zero, walk_vtx_six]
+    grind [Chazelle.Chain.sidePt_zero, walk_vtx_six]
   rw [hpos] at hse
   have hw₂ := e₂.wb_right
   have e₃ := exec_regB (P := P) symCp hw₂ (by
-    simp only [symCp, okW, okWI]; exact ⟨trivial, trivial, trivial, trivial⟩)
+    grind [symCp, okW, okWI])
   set c₃ : Config := { c₂ with nreg := regB c₂.nmem symCp c₂.nreg } with hc₃
   have q3 : ∀ r, (r < sw 645 ∨ sw 647 < r) → c₃.nreg r = c₂.nreg r := fun r hr => by
     simp only [hc₃, symCp, regB, regI, cT1, sw] at hr ⊢
@@ -124,7 +125,7 @@ theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
     exact frame_ioB (frame_ioB (f₁.trans (f₂.trans f₃)))
   · refine symPtIn_transport hs ?_ ?_ ?_ <;>
     simp only [hc₃, symCp, regB, regI, cT1, iY, sw, Nat.reduceAdd] <;>
-    simp only [upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true]
+    omega_nf
   · intro r hr hrA h1 h2
     rw [q3 r h1, hk2 r hr (by swoInit2) hrA]
     exact q1 r (by swoInit2) (by swoInit2)
@@ -158,10 +159,9 @@ theorem mdCpW_step {P : Polygon} {W : ℕ} {c c₁ : Config} {A S j k : ℕ}
     ∃ c₂, Exec P W (block (mdCpW k)) c₁ c₂ 4 ∧ MdInv c A S (j + 1) c₂ := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9⟩ := hI
   have n20 : c₁.nreg (sw 20) = S := by
-    rw [h6 _ (by swoInit2) (by swoInit2) (by swoInit2)
-      (by swoInit2), hS]
-  have nk : c₁.nreg k = j := by rw [h6 _ hk1 hk2 hk3 hk4, hk]
-  have e₁ := Exec.addN (P := P) hw iA (sw 20) k (by rw [n20, nk]; omega)
+    ram_grind
+  have nk : c₁.nreg k = j := by ram_simp
+  have e₁ := Exec.addN (P := P) hw iA (sw 20) k (by omega)
   have e₂ := Exec.loadN (P := P) e₁.wb_right iV iA
   have e₃ := Exec.addN (P := P) e₂.wb_right iA CD₁ k (by
     simp only
@@ -173,15 +173,11 @@ theorem mdCpW_step {P : Polygon} {W : ℕ} {c c₁ : Config} {A S j k : ℕ}
   have vA : ∀ v, upd (upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) iA
       ((upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) CD₁ +
         (upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) k) iA = A + 1 + j := by
-    intro v
-    rw [upd_same, upd_other _ _ _ (by swoInit2),
-      upd_other _ _ _ (by swoInit2), upd_other _ _ _ hk4,
-      upd_other _ _ _ hk3, h2, nk]
+    ram_simp
   have vV : ∀ v, upd (upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) iA
       ((upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) CD₁ +
         (upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) k) iV = v := by
-    intro v
-    rw [upd_other _ _ _ (by swoInit2), upd_same]
+    omega_nf
   simp only
   rw [vA, vV, upd_same, n20, nk]
   have hsrc : c₁.nmem (S + j) = c.nmem (S + j) := h5 _ (by omega)
@@ -191,12 +187,12 @@ theorem mdCpW_step {P : Polygon} {W : ℕ} {c c₁ : Config} {A S j k : ℕ}
       upd_other _ _ _ (by swoInit2), h1]
   · rw [upd_other _ _ _ (by swoInit2), upd_other _ _ _ (by swoInit2),
       upd_other _ _ _ (by swoInit2), h2]
-  · rw [upd_other _ _ _ (by omega), h3]
+  · ram_simp
   · rcases Nat.lt_or_ge i j with h | h
-    · rw [upd_other _ _ _ (by omega), h4 i h]
-    · rw [show i = j by omega, upd_same, hsrc]
-  · rw [upd_other _ _ _ (by omega), h5 a ha]
-  · rw [upd_other _ _ _ r3, upd_other _ _ _ r4, upd_other _ _ _ r3, h6 r r1 r2 r3 r4]
+    · ram_simp
+    grind [upd_same]
+  · ram_simp
+  · ram_simp
 
 set_option maxRecDepth 20000 in
 theorem mdHead_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
@@ -206,12 +202,12 @@ theorem mdHead_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   unfold mdHead MdInv
   simp only [MD₁, CD₁, K0, K1, ALLOC, iA, iV, sw, Nat.reduceAdd] at *
   exec_block
-  · config_simp; rw [k1]; omega
-  · refine ⟨rfl, by config_simp, by config_simp; rw [k1], by config_simp; rw [k0],
+  · omega_nf
+  · refine ⟨rfl, by config_simp, by ram_simp, by ram_simp,
       fun i hi => absurd hi (Nat.not_lt_zero _), fun a ha => ?_, fun r h1 h2 _ _ => ?_,
       rfl, rfl, rfl⟩
-    · config_simp; rw [upd_other _ _ _ (by omega)]
-    · config_simp; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
+    · ram_simp
+    · ram_simp
 
 set_option maxRecDepth 20000 in
 /-- **The model descriptor of `C₁`** at the allocator `A`: `0` at `A`, the five words of the
@@ -231,7 +227,7 @@ theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
   have hSA : S + 5 ≤ A := hS
   have nk : ∀ q, (q = K0 ∨ q = K1 ∨ q = K2 ∨ q = K3 ∨ q = K4) →
       q ≠ MD₁ ∧ q ≠ CD₁ ∧ q ≠ iA ∧ q ≠ iV := by
-    rintro q (rfl | rfl | rfl | rfl | rfl) <;> refine ⟨?_, ?_, ?_, ?_⟩ <;> swoInit2
+    omega_nf
   obtain ⟨c₂, e₄, I₂⟩ := mdCpW_step (P := P) eH.wb_right I₁ rfl hSA (by omega) (by norm_num) k0
     (nk K0 (by simp)).1 (nk K0 (by simp)).2.1 (nk K0 (by simp)).2.2.1 (nk K0 (by simp)).2.2.2
   obtain ⟨c₃, e₅, I₃⟩ := mdCpW_step (P := P) e₄.wb_right I₂ rfl hSA (by omega) (by norm_num) k1
@@ -248,13 +244,13 @@ theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
   have g6' : c₆.nreg K6 = 6 := by
     rw [g6 _ (by swoInit2) (by swoInit2) (by swoInit2)
       (by swoInit2), k6]
-  have e₉ := Exec.addN (P := P) e₈.wb_right ALLOC ALLOC K6 (by rw [gA, g6']; omega)
+  have e₉ := Exec.addN (P := P) e₈.wb_right ALLOC ALLOC K6 (by omega)
   refine ⟨_, _, .seq eH (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉))))), by omega, ?_, ?_, ?_,
     g3, g4, g5, fun r h0 h1 h2 h3 h4 => ?_, g7, g8, g9⟩
-  · simp only [upd_same]; rw [gA, g6']
-  · simp only; rw [upd_other _ _ _ (by swoInit2), g1]
-  · simp only; rw [upd_other _ _ _ (by swoInit2), g2]
-  · simp only; rw [upd_other _ _ _ h0, g6 r h1 h2 h3 h4]
+  · ram_simp
+  · ram_simp
+  · ram_simp
+  · ram_simp
 
 end
 

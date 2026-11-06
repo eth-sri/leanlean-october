@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFLocateMath
 
 /-!
@@ -39,16 +41,7 @@ open Chazelle.Chain (sideInArc)
 a `Frame S`. -/
 theorem frame_of_frameB {B : ℕ → Bool} {S : Finset ℕ} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → bandOf r ∈ S ∧ r ≠ ALLOC) (k : ℕ) : Frame S c c' k := by
-  have hA : B ALLOC = false := by
-    by_contra h'
-    exact (hB ALLOC (by simpa using h')).2 rfl
-  have hal := h.1 ALLOC hA
-  refine ⟨fun r hr _ => h.1 r ?_, fun r hr => h.2.1 r ?_, fun a _ => by rw [h.2.2.1],
-    fun a _ => by rw [h.2.2.2.1], h.2.2.2.2, by rw [hal], by rw [hal]; omega⟩
-  · by_contra h'
-    exact hr (hB r (by simpa using h')).1
-  · by_contra h'
-    exact hr (hB r (by simpa using h')).1
+  core_grind
 
 /-! ## The direction procedure -/
 
@@ -85,36 +78,29 @@ theorem wr_locSetup : wr Bloc locSetup = true := by decide
 
 theorem Bloc_band (r : ℕ) (h : Bloc r = true) : bandOf r ∈ ({bLocate, bSign} : Finset ℕ) ∧
     r ≠ ALLOC := by
-  unfold Bloc at h
-  simp only [Bool.or_eq_true, decide_eq_true_eq] at h
-  unfold bandOf bLocate bSign ALLOC
-  simp only [Finset.mem_insert, Finset.mem_singleton]
-  omega
+  ram_grind
 
 theorem Bdir_band (r : ℕ) (h : Bdir r = true) : bandOf r ∈ ({bLocate, bSign} : Finset ℕ) ∧
     r ≠ ALLOC := by
-  unfold Bdir at h
-  simp only [Bool.or_eq_true, decide_eq_true_eq] at h
-  unfold bandOf bLocate bSign ALLOC
-  simp only [Finset.mem_insert, Finset.mem_singleton]
-  omega
+  ram_grind
 
 /-! ## Uniqueness of what the layout determines -/
 
 theorem aRec_ext {a b : ARec} (h1 : a.reg = b.reg) (h2 : a.s.edge = b.s.edge)
     (h3 : a.s.hgt = b.s.hgt) (h4 : a.e.edge = b.e.edge) (h5 : a.e.hgt = b.e.hgt) : a = b := by
   obtain ⟨_, ⟨_, _⟩, ⟨_, _⟩⟩ := a
-  obtain ⟨_, ⟨_, _⟩, ⟨_, _⟩⟩ := b
   simp_all
 
 theorem cRec_ext {a b : CRec} (h1 : a.h = b.h) (h2 : a.lp = b.lp) (h3 : a.rp = b.rp)
     (h4 : a.up = b.up) (h5 : a.dn = b.dn) : a = b := by
   obtain ⟨_, _, _, _, _⟩ := a
-  obtain ⟨_, _, _, _, _⟩ := b
   simp_all
 
+section
+variable {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N')
+include m B h h'
 /-- The layout determines the arc records. -/
-theorem nfAt_arcs_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
+theorem nfAt_arcs_eq :
     N'.arcs = N.arcs := by
   have hl : N'.arcs.length = N.arcs.length := h'.2.1.symm.trans h.2.1
   apply List.ext_getElem hl
@@ -128,7 +114,7 @@ theorem nfAt_arcs_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h
     (e'.2.2.2.1.symm.trans e.2.2.2.1) (e'.2.2.2.2.symm.trans e.2.2.2.2)
 
 /-- The layout determines the chord records. -/
-theorem nfAt_chords_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
+theorem nfAt_chords_eq :
     N'.chords = N.chords := by
   have hl : N'.chords.length = N.chords.length := h'.1.symm.trans h.1
   apply List.ext_getElem hl
@@ -142,6 +128,9 @@ theorem nfAt_chords_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) 
     (e'.2.2.2.1.symm.trans e.2.2.2.1) (e'.2.2.2.2.symm.trans e.2.2.2.2)
 
 /-! ## Correctness of the procedure -/
+
+
+end
 
 /-- On table entries, the predicate of the search is `KeyPred`. -/
 theorem cmpPr_eq {P : Polygon} {M : Model} {N : NF} {m : ℕ → ℕ} {B : ℕ} (hN : NFAt m B N)

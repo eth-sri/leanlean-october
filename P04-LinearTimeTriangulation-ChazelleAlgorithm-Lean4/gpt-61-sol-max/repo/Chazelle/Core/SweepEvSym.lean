@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepPrimAbs
 public import Chazelle.Core.SweepIoPrim
 
@@ -74,8 +76,10 @@ def symAt : Stmt := .seq pHead symCore
 
 theorem wr_symAt : wr Bprim symAt = true := by decide
 
-theorem symVtx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
-    (hE : CEnv P W H C c) {e hc : ℕ} (h01 : c.nreg 50201 = e) (he6 : 6 ≤ e)
+section
+variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config) (hE : CEnv P W H C c)
+include hE
+theorem symVtx_exec {e hc : ℕ} (h01 : c.nreg 50201 = e) (he6 : 6 ≤ e)
     (hen : e < 2 * C.m + 7) (hpar : (chainModel C).param (Qof P) ⟨e, hc⟩ = 0) :
     ∃ c' k, Exec P W symVtx c c' k ∧ k ≤ 27 * H.length + 41 ∧
       ∃ s : SymPt, SymPtIn c' 50210 s ∧ s.Lt P.n ∧
@@ -85,11 +89,10 @@ theorem symVtx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := e - 6)
     (by simp [h01, hE.r81]) (by omega) (dst := 50210) (by norm_num)
   have hv : (chainModel C).pos (Qof P) ⟨e, hc⟩ = (chainModel C).W.vtx (e - 6 + 6) := by
-    rw [pos_eq_sidePt, hpar, Chazelle.Chain.sidePt_zero, show e - 6 + 6 = e by omega]
+    simp_all [pos_eq_sidePt, Chazelle.Chain.sidePt_zero] 
   exact ⟨c₂, _, .seq e₁ e₂, by omega, sp, isp, lsp, by rw [vsp, hv]⟩
 
-theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
-    (hE : CEnv P W H C c) (hreg : HostRegular P.n H) {e hc : ℕ} (h01 : c.nreg 50201 = e)
+theorem symInt_exec (hreg : HostRegular P.n H) {e hc : ℕ} (h01 : c.nreg 50201 = e)
     (h02 : c.nreg 50202 = hc) (he6 : 6 ≤ e) (hen : e < 2 * C.m + 6)
     (ht : 0 < (chainModel C).param (Qof P) ⟨e, hc⟩) (hhn : hc ≤ P.n) :
     ∃ c' k, Exec P W symInt c c' k ∧ k ≤ 60 * H.length + 200 ∧
@@ -120,7 +123,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     (by rw [hc₃]; simp [f₂.1 _ (by decide : Btv 50130 50120 = false) ▸ q20, hE₂.r32])
     (by omega) (dst := 50136) (by norm_num)
   have i₁' : SymPtIn c₄ 50130 s₁ := symPtIn_keep (symPtIn_of_eq i₁ fun j h1 h2 => by
-    rw [hc₃]; simp [show j ≠ 50120 by omega]) f₄
+    ram_simp) f₄
     (by intro j h1 h2; interval_cases j <;> decide)
   obtain ⟨c₅, k₅, e₅, hk₅, v₅, r₅⟩ := edgeIdxS_exec (P := P) c₄ e₄.wb_right (by omega)
     hE₄.r32 i₁' i₂ l₁ l₂
@@ -128,12 +131,11 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     rw [r₅ _ (by decide) (by decide) (by decide), f₄.1 _ (by decide), hc₃]
     simp only
     rw [upd_other _ _ _ (by decide), f₂.1 _ (by decide), hc₁]
-    simp only
-    rw [upd_other _ _ _ (by decide), h02]
+    ram_simp 
   have q32 : c₅.nreg 50032 = 1 := by
     rw [r₅ _ (by decide) (by decide) (by decide), hE₄.r32]
   have ht' : 0 < (chainModel C).param (Qof P) ⟨i + 6, hc⟩ := by
-    rw [show i + 6 = e by omega]; exact ht
+    grind
   obtain ⟨hEi, hpt⟩ := tour_pt hE.hG hE.hP hreg hNn hlt x₁ x₂ l₁ l₂ v₁ v₂ ht'
   have hc1 : 1 ≤ hc := by
     rcases Nat.eq_zero_or_pos hc with rfl | h
@@ -145,12 +147,15 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     have hw₅ := e₅.wb_right
     exec_block
     all_goals try omega
-    refine ⟨rfl, by config_simp, by config_simp; exact v₅, ?_⟩
-    config_simp; rw [q02, q32]
+    refine ⟨rfl, by config_simp, by ram_simp, ?_⟩
+    config_simp; omega
   have ex : Exec P W symInt c c₆ (1 + (k₂ + (1 + (k₄ + (k₅ + k₆))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
-  refine ⟨c₆, _, ex, by have := hE.hlen; omega, _, q, ⟨hEi, by omega⟩, ?_⟩
-  rw [show e = i + 6 by omega, hpt]
+  refine ⟨c₆, _, ex, by omega, _, q, ⟨hEi, by omega⟩, ?_⟩
+  grind
+
+
+end
 
 /-- The input condition of `symAt`: a tour position with a normalised height code, a regular
 host. -/
@@ -202,8 +207,8 @@ theorem symPtIn_transport {c c' : Config} {r r' : ℕ} {s : SymPt} (h : SymPtIn 
     (h0 : c'.nreg r' = c.nreg r) (h1 : c'.nreg (r' + 1) = c.nreg (r + 1))
     (h2 : c'.nreg (r' + 2) = c.nreg (r + 2)) : SymPtIn c' r' s := by
   cases s with
-  | vtx i => exact ⟨by rw [h0]; exact h.1, by rw [h1]; exact h.2⟩
-  | onEdge e k => exact ⟨by rw [h0]; exact h.1, by rw [h1]; exact h.2.1, by rw [h2]; exact h.2.2⟩
+  | vtx i => core_grind
+  | onEdge e k => core_grind
 
 /-- `symAt` on the descriptor `dsc`, the position `(re, rh)`, output at `o … o + 2`. -/
 def callSym (dsc re rh o : ℕ) : Stmt :=
@@ -228,31 +233,31 @@ theorem callSym_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
     (outs := [(o, 50210), (o + 1, 50211), (o + 2, 50212)]) symAt_meets
     primBands_oracle hI
     (nodup3 (by norm_num) (by norm_num) (by norm_num))
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
+    (by grind)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
         exact ⟨band5_oracle (by norm_num) (by norm_num), band5_oracle (by norm_num) (by norm_num),
           band5_oracle (by norm_num) (by norm_num)⟩)
     (nodup3 (by omega) (by omega) (by omega))
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
+    (by grind)
+    (by grind)
     (fun c₁ hm hA e1 e2 => by
       simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1
       obtain ⟨g0, g1, g2⟩ := e1
       have hctx₁ := hctx.transport g0 (fun a _ => by rw [hm]) (by rw [hA])
       refine primPre_of hctx₁ ⟨?_, ?_, ?_, ?_, ?_⟩
-      · rw [g1]; exact h6
-      · rw [g1]; exact hen
-      · rw [g1, g2]; exact hpp
-      · rw [g1, g2]; exact hnorm
+      · omega
+      · omega
+      · omega_nf
+      · omega_nf
       · rw [hm, g0]; exact hctx.hostReg)
-    (by simp only [List.length_cons, List.length_nil]; omega)
+    (by omega)
   refine h.mono (by simp) ?_
   rintro c' ⟨c₁, c₂, hm, e1, e2, hpost, f1, hk, hA, hm'⟩
   simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1 f1
   obtain ⟨g0, g1, g2⟩ := e1
   obtain ⟨k0, k1, k2⟩ := f1
   obtain ⟨H, hC, -⟩ := hctx.2.2.2.1
-  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hm, g0]; exact hC
+  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by grind
   obtain ⟨s, hs, hsl, hse⟩ := hpost H C hC₁
   rw [g1, g2] at hse
   refine ⟨⟨s, symPtIn_transport hs k0 k1 k2, hsl, hse⟩, fun r hr h0 hra => hk r hr

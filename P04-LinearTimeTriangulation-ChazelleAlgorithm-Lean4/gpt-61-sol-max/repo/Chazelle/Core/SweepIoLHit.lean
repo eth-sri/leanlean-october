@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoMin
 public import Chazelle.Core.SweepIoLocal
 public import Chazelle.Core.SweepIoShot
@@ -81,42 +83,37 @@ def put3 : Stmt :=
   block [.copyN lL ALLOC, .storeN ALLOC lR0, .addN ALLOC ALLOC K1, .storeN ALLOC lR1,
     .addN ALLOC ALLOC K1, .storeN ALLOC lR2, .addN ALLOC ALLOC K1]
 
-theorem nbrRegsL_val (m f : ℕ → ℕ) :
+section
+variable (m f : ℕ → ℕ)
+theorem nbrRegsL_val :
     regB m nbrRegsL f lR0 = m (f lAB + 5 * m (f lSB + f lJP)) ∧
     regB m nbrRegsL f lR1 = m (f lAB + 5 * m (f lSB + f lJ)) ∧
     regB m nbrRegsL f lR2 = m (f lAB + 5 * m (f lSB + f lJN)) := by
   simp only [nbrRegsL, regOfL, List.cons_append, List.nil_append, regB, regI, upd, lX, lY, lSB,
     lAB, lJP, lJ, lJN, lR0, lR1, lR2, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  exact ⟨congrArg m (by ring), congrArg m (by ring), congrArg m (by ring)⟩
+  simp_all +arith
 
-theorem nbrRegsL_other (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ lX) (h2 : q ≠ lY) (h3 : q ≠ lR0)
+theorem nbrRegsL_other {q : ℕ} (h1 : q ≠ lX) (h2 : q ≠ lY) (h3 : q ≠ lR0)
     (h4 : q ≠ lR1) (h5 : q ≠ lR2) : regB m nbrRegsL f q = f q :=
   regB_other m nbrRegsL f (fun i hi => by
     simp only [nbrRegsL, regOfL, List.cons_append, List.nil_append, List.mem_cons,
       List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-      rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> intro h <;> subst h <;>
+      rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> core_grind <;> intro h <;> subst h <;>
       simp_all)
 
-theorem nbrHead_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk4 : f K4 = 4) (hk6 : f K6 = 6) :
+theorem nbrHead_val (hk1 : f K1 = 1) (hk4 : f K4 = 4) (hk6 : f K6 = 6) :
     regB m nbrHead f lA = m (f lNF + 1) ∧ regB m nbrHead f lSB = m (f lNF + 6) ∧
     regB m nbrHead f lAB = m (f lNF + 4) := by
-  have e1 : f 240611 = 1 := hk1
-  have e4 : f 240613 = 4 := hk4
-  have e6 : f 240612 = 6 := hk6
-  simp only [nbrHead, regB, regI, upd, lX, lA, lSB, lAB, lNF, K1, K4, K6, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e4, e6]
-  exact ⟨trivial, trivial, trivial⟩
+  simp_all [nbrHead, regB, regI, upd, lX, lA, lSB, lAB, lNF, K1, K4, K6, sw, Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false] 
 
-theorem nbrHead_other (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ lX) (h2 : q ≠ lA) (h3 : q ≠ lSB)
+theorem nbrHead_other {q : ℕ} (h1 : q ≠ lX) (h2 : q ≠ lA) (h3 : q ≠ lSB)
     (h4 : q ≠ lAB) : regB m nbrHead f q = f q :=
   regB_other m nbrHead f (fun i hi => by
     simp only [nbrHead, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> intro h <;>
-      subst h <;> simp_all)
+    core_grind)
 
-theorem nbrHead_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk4 : f K4 = 4) (hk6 : f K6 = 6)
+theorem nbrHead_ok (hk1 : f K1 = 1) (hk4 : f K4 = 4) (hk6 : f K6 = 6)
     (hb : f lNF + 6 ≤ W) : okB W m nbrHead f := by
   have e1 : f 240611 = 1 := hk1
   have e4 : f 240613 = 4 := hk4
@@ -125,12 +122,9 @@ theorem nbrHead_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk4 : f K4 = 4) (hk6 : 
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
     iscr_sw (by omega) (by omega)
   simp only [nbrHead, okB, okI, regI, upd, lX, lA, lSB, lAB, lNF, K1, K4, K6, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e4, e6]
-  exact ⟨⟨s 1112 (by norm_num) (by norm_num), by omega⟩, s 1114 (by norm_num) (by norm_num),
-    ⟨s 1112 (by norm_num) (by norm_num), by omega⟩, s 1115 (by norm_num) (by norm_num),
-    ⟨s 1112 (by norm_num) (by norm_num), by omega⟩, s 1116 (by norm_num) (by norm_num), trivial⟩
+  grind
 
-theorem nbrRegsL_ok (m f : ℕ → ℕ) (hb : ∀ p, p = lJP ∨ p = lJ ∨ p = lJN →
+theorem nbrRegsL_ok (hb : ∀ p, p = lJP ∨ p = lJ ∨ p = lJN →
       f lSB + f p ≤ W ∧ f lAB + 5 * m (f lSB + f p) ≤ W) : okB W m nbrRegsL f := by
   obtain ⟨a1, a2⟩ := hb lJP (Or.inl rfl)
   obtain ⟨b1, b2⟩ := hb lJ (Or.inr (Or.inl rfl))
@@ -146,23 +140,18 @@ theorem nbrRegsL_ok (m f : ℕ → ℕ) (hb : ∀ p, p = lJP ∨ p = lJ ∨ p = 
   simp only [nbrRegsL, regOfL, List.cons_append, List.nil_append, okB, okI, regI, upd, lX, lY,
     lSB, lAB, lJP, lJ, lJN, lR0, lR1, lR2, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  refine ⟨⟨s 1112 (by norm_num) (by norm_num), a1'⟩, s 1112 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    s 1109 (by norm_num) (by norm_num),
-    ⟨s 1112 (by norm_num) (by norm_num), b1'⟩, s 1112 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    s 1110 (by norm_num) (by norm_num),
-    ⟨s 1112 (by norm_num) (by norm_num), d1'⟩, s 1112 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    s 1111 (by norm_num) (by norm_num), trivial⟩
+  grind
+
+
+end
 
 /-- The memory after `put3`. -/
 def mem3 (m : ℕ → ℕ) (A v0 v1 v2 : ℕ) : ℕ → ℕ := upd (upd (upd m A v0) (A + 1) v1) (A + 2) v2
 
-theorem put3_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 3 ≤ W) :
+section
+variable (hI : IInv W c₀ c) (hK : Consts c)
+include hI hK
+theorem put3_irs (hroom : c.nreg ALLOC + 3 ≤ W) :
     IRS P W c₀ put3 c 7 (fun c' => c'.nreg ALLOC = c.nreg ALLOC + 3 ∧ c'.nreg lL = c.nreg ALLOC ∧
       (∀ r, r ≠ ALLOC → r ≠ lL → c'.nreg r = c.nreg r) ∧
       c'.nmem = mem3 c.nmem (c.nreg ALLOC) (c.nreg lR0) (c.nreg lR1) (c.nreg lR2)) := by
@@ -198,7 +187,7 @@ theorem put3_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 3 
   rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
 
 /-- The neighbouring spine positions. -/
-theorem nbrJ_irs (hI : IInv W c₀ c) (hK : Consts c) {A j : ℕ} (hA : c.nreg lA = A)
+theorem nbrJ_irs {A j : ℕ} (hA : c.nreg lA = A)
     (hj : c.nreg lJ = j) (hjA : j < A) :
     IRS P W c₀ nbrJ c 7 (fun c' => c'.nreg lJP = predP A j ∧ c'.nreg lJN = succP A j ∧
       (∀ r, r ≠ lJP → r ≠ lJN → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
@@ -268,6 +257,9 @@ theorem nbrJ_irs (hI : IInv W c₀ c) (hK : Consts c) {A j : ℕ} (hA : c.nreg l
     exact ⟨w1, w2, w3, by show c₂.nmem = c.nmem; rw [hc2, hc1]⟩
 
 /-! ## The context -/
+
+
+end
 
 /-- A valid normal form of a chain model has an arc. -/
 theorem arcs_pos {C : Chain} (hP : C.P.Simple) {N : NF} (hNF : IsNF (chainModel C) (Qof P) N) :

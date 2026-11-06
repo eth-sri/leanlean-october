@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterSetup
 public import Mathlib.Tactic.IntervalCases
 
@@ -146,7 +148,10 @@ theorem setupA_exec {c : Config} (hw : WordsBounded W c) (hB2 : c.nreg 130000 + 
   simp only
   repeat (rw [Machine.upd_other _ _ _ (by omega)])
 
-theorem kminS_exec {c : Config} (hw : WordsBounded W c) :
+section
+variable {c : Config} (hw : WordsBounded W c)
+include hw
+theorem kminS_exec :
     ∃ c' k, Exec P W kminS c c' k ∧ k ≤ 3 ∧ WordsBounded W c' ∧ c'.nmem = c.nmem ∧
       c'.nreg 130015 = min (c.nreg 130013) (c.nreg 130011) ∧
       (∀ r, r ≠ 130015 → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧
@@ -161,19 +166,21 @@ theorem kminS_exec {c : Config} (hw : WordsBounded W c) :
   · have e := Exec.copyN (P := P) hw 130015 130011
     refine ⟨_, 1 + 2, .ifLtN_false h e, by omega, e.wb_right, rfl, ?_, fun r hr => ?_, rfl, rfl,
       rfl⟩
-    · simp only [Machine.upd_same]; omega
-    · simp only [Machine.upd_other _ _ _ hr]
+    all_goals simp_all
 
+section
+variable (hone : c.nreg 130001 = 1)
+include hone
 /-- One clamped addition. -/
-theorem sBody_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1)
+theorem sBody_exec
     {j a mu : ℕ} (hj : c.nreg 130091 = j) (hacc : c.nreg 130016 = min (j * a) mu)
     (ha : c.nreg 130015 = a) (hmu : c.nreg 130011 = mu) (hW : mu + a ≤ W) (hjW : j + 1 ≤ W) :
     ∃ c' k, Exec P W sBody c c' k ∧ k ≤ 5 ∧ WordsBounded W c' ∧ c'.nmem = c.nmem ∧
       c'.nreg 130091 = j + 1 ∧ c'.nreg 130016 = min ((j + 1) * a) mu ∧
       (∀ r, r ≠ 130016 → r ≠ 130091 → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
       c'.rmem = c.rmem ∧ c'.output = c.output := by
-  have hm : min (j * a) mu + a ≤ W := by have := min_le_right (j * a) mu; omega
-  have e1 := Exec.addN (P := P) hw 130016 130016 130015 (by rw [hacc, ha]; exact hm)
+  have hm : min (j * a) mu + a ≤ W := by omega
+  have e1 := Exec.addN (P := P) hw 130016 130016 130015 (by omega)
   set c1 := { c with nreg := upd c.nreg 130016 (c.nreg 130016 + c.nreg 130015) }
   have hsa : (j + 1) * a = j * a + a := by ring
   by_cases h : c1.nreg 130011 < c1.nreg 130016
@@ -188,12 +195,7 @@ theorem sBody_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 
     · simp only [c1, c2, Machine.upd_same, Machine.upd_other _ _ _
         (show (130016 : ℕ) ≠ 130091 by omega), Machine.upd_other _ _ _
         (show (130011 : ℕ) ≠ 130016 by omega)] at h ⊢
-      rw [hmu] at h ⊢; rw [hacc, ha] at h
-      rw [hsa]
-      have := min_le_right (j * a) mu
-      rcases le_total (j * a) mu with h' | h'
-      · rw [min_eq_left h'] at h; omega
-      · rw [min_eq_right h'] at h; omega
+      omega
     · simp only [c1, c2, Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2]
   · have e3 := Exec.addN (P := P) e1.wb_right 130091 130091 130001 (by
       simp only [c1, Machine.upd_other _ _ _ (show (130091 : ℕ) ≠ 130016 by omega),
@@ -204,15 +206,11 @@ theorem sBody_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 
     · simp only [c1, Machine.upd_same, Machine.upd_other _ _ _
         (show (130016 : ℕ) ≠ 130091 by omega), Machine.upd_other _ _ _
         (show (130011 : ℕ) ≠ 130016 by omega)] at h ⊢
-      rw [hmu, hacc, ha] at h
-      rw [hacc, ha, hsa]
-      rcases le_total (j * a) mu with h' | h'
-      · rw [min_eq_left h'] at h ⊢; rw [min_eq_left (by omega)]
-      · rw [min_eq_right h'] at h ⊢; omega
+      omega
     · simp only [c1, Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2]
 
 /-- `s := min (a a) μ`. -/
-theorem sS_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1) {a mu : ℕ}
+theorem sS_exec {a mu : ℕ}
     (ha : c.nreg 130015 = a) (hmu : c.nreg 130011 = mu) (hW : mu + a + 1 ≤ W) :
     ∃ c' k, Exec P W sS c c' k ∧ k ≤ 7 * a + 4 ∧ WordsBounded W c' ∧ c'.nmem = c.nmem ∧
       c'.nreg 130016 = min (a * a) mu ∧
@@ -225,9 +223,7 @@ theorem sS_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1) 
         (∀ r, r ≠ 130016 → r ≠ 130091 → c1.nreg r = c.nreg r) ∧ c1.rreg = c.rreg ∧
         c1.rmem = c.rmem ∧ c1.output = c.output := by
     exec_block
-    all_goals try omega
-    refine ⟨rfl, ‹_›, rfl, by config_simp, by config_simp, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
-    simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2]
+    all_goals simp_all
   obtain ⟨c', k, e, hk, hw', hi', hn', h16', hfr', hm', hrr', hrm', ho'⟩ := forN (P := P) (W := W)
     (ri := 130091) (rn := 130015) (body := sBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130091 = j ∧ c'.nreg 130015 = a ∧
@@ -239,15 +235,13 @@ theorem sS_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1) 
       obtain ⟨c3, k3, e3, hk3, hw3, hm3, hi3, hacc3, hfr3, hrr3, hrm3, ho3⟩ :=
         sBody_exec (P := P) hw2 ((hfr2 _ (by omega) (by omega)).trans hone) hi2 hacc2 ha2
           ((hfr2 _ (by omega) (by omega)).trans hmu) (by omega) (by omega)
-      refine ⟨c3, k3, e3, hk3, hw3, hi3, by rw [hfr3 _ (by omega) (by omega)]; exact ha2, hacc3,
-        fun r h1 h2 => (hfr3 r h1 h2).trans (hfr2 r h1 h2), hm3.trans hm2, hrr3.trans hrr2,
-        hrm3.trans hrm2, ho3.trans ho2⟩)
-    (j₀ := 0) ⟨hw1, h91, by rw [hr1 _ (by omega) (by omega)]; exact ha, by rw [h16]; simp,
+      grind)
+    (j₀ := 0) ⟨hw1, h91, by simp_all, by omega,
       hr1, hm1, hrr1, hrm1, ho1⟩ (Nat.zero_le _)
   exact ⟨c', k1 + k, .seq e1 e, by omega, hw', hm', h16', hfr', hrr', hrm', ho'⟩
 
 /-- `L := clog₂ x`, `P := 2 ^ L` for `x = N + μ + 1`. -/
-theorem LS_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1) {x : ℕ}
+theorem LS_exec {x : ℕ}
     (hx : c.nreg 130014 + c.nreg 130011 + 1 = x) (hW : 2 * x ≤ W) :
     ∃ c' k, Exec P W LS c c' k ∧ k ≤ 4 * Nat.clog 2 x + 6 ∧ WordsBounded W c' ∧
       c'.nmem = c.nmem ∧ c'.nreg 130017 = Nat.clog 2 x ∧ c'.nreg 130018 = 2 ^ Nat.clog 2 x ∧
@@ -284,25 +278,27 @@ theorem LS_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1) 
       have hj2p : j < 2 ^ j := Nat.lt_two_pow_self
       unfold LBody
       exec_block
-      · rw [hp2]; omega
-      · config_simp; rw [hj2, hone2]; omega
-      · refine ⟨⟨‹_›, j + 1, by config_simp; rw [hj2, hone2], by config_simp; rw [hp2]; ring,
+      · omega
+      · config_simp; omega
+      · refine ⟨⟨‹_›, j + 1, by config_simp; omega, by config_simp; omega,
           by omega, fun r h1 h2 => ?_, hm2, hrr2, hrm2, ho2⟩, ?_⟩
         · simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2]
-          exact hfr2 r h1 h2
-        · config_simp; rw [hj2, hone2]; omega)
-    ⟨hw1, 0, h17, by rw [h18]; rfl, Nat.zero_le _, fun _ _ _ => rfl, hm1, hrr1, hrm1, ho1⟩
+          grind
+        · config_simp; omega)
+    ⟨hw1, 0, h17, by omega, Nat.zero_le _, fun _ _ _ => rfl, hm1, hrr1, hrm1, ho1⟩
   have hx' : c'.nreg 130092 = x := (hfr' _ (by omega) (by omega)).trans h92
   rw [hp', hx'] at htest
   have hjx' : Nat.clog 2 x ≤ j := (Nat.clog_le_iff_le_pow h2).mpr (by omega)
   have hjeq : j = Nat.clog 2 x := le_antisymm hjx hjx'
   subst hjeq
   refine ⟨c', k1 + k, .seq e1 e, ?_, hw', hm', hj, hp', fun r h1 h2 h3 => ?_, hrr', hrm', ho'⟩
-  · simp only [h17] at hk; omega
-  · rw [hfr' r h1 h2, hr1 r h1 h2 h3]
+  all_goals grind
+
+
+end
 
 /-- `U`. -/
-theorem UB_exec {c : Config} (hw : WordsBounded W c)
+theorem UB_exec
     (hW : c.nreg 130014 + c.nreg 130011 + c.nreg 130018 + 3 ≤ W) :
     ∃ c' k, Exec P W UB c c' k ∧ k = 4 ∧ WordsBounded W c' ∧ c'.nmem = c.nmem ∧
       c'.nreg 130019 = c.nreg 130014 + c.nreg 130011 + c.nreg 130018 + 3 ∧
@@ -315,7 +311,7 @@ theorem UB_exec {c : Config} (hw : WordsBounded W c)
   simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2]
 
 /-- `L U`. -/
-theorem LUS_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1) {L U : ℕ}
+theorem LUS_exec (hone : c.nreg 130001 = 1) {L U : ℕ}
     (hL : c.nreg 130017 = L) (hU : c.nreg 130019 = U) (hW : L * U + L + 1 ≤ W) :
     ∃ c' k, Exec P W LUS c c' k ∧ k ≤ 4 * L + 4 ∧ WordsBounded W c' ∧ c'.nmem = c.nmem ∧
       c'.nreg 130026 = L * U ∧
@@ -328,9 +324,7 @@ theorem LUS_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1)
         (∀ r, r ≠ 130026 → r ≠ 130094 → c1.nreg r = c.nreg r) ∧ c1.rreg = c.rreg ∧
         c1.rmem = c.rmem ∧ c1.output = c.output := by
     exec_block
-    all_goals try omega
-    refine ⟨rfl, ‹_›, rfl, by config_simp, by config_simp, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
-    simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2]
+    all_goals simp_all
   obtain ⟨c', k, e, hk, hw', hi', hn', h26', hfr', hm', hrr', hrm', ho'⟩ := forN (P := P) (W := W)
     (ri := 130094) (rn := 130017) (body := LUBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130094 = j ∧ c'.nreg 130017 = L ∧
@@ -344,18 +338,18 @@ theorem LUS_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1)
       have hjU : (j + 1) * U ≤ L * U := Nat.mul_le_mul_right _ (by omega)
       unfold LUBody
       exec_block
-      · rw [hacc2, hU2]; rw [Nat.succ_mul] at hjU; omega
-      · config_simp; rw [hi2, hone2]; omega
-      · refine ⟨le_refl _, ‹_›, by config_simp; rw [hi2, hone2], by config_simp; exact hL2,
-          by config_simp; rw [hacc2, hU2]; ring, fun r h1 h2 => ?_, hm2, hrr2, hrm2, ho2⟩
+      · grind
+      · config_simp; omega
+      · refine ⟨le_refl _, ‹_›, by config_simp; omega, by config_simp; exact hL2,
+          by config_simp; grind, fun r h1 h2 => ?_, hm2, hrr2, hrm2, ho2⟩
         simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2]
-        exact hfr2 r h1 h2)
-    (j₀ := 0) ⟨hw1, h94, by rw [hr1 _ (by omega) (by omega)]; exact hL, by rw [h26]; simp,
+        grind)
+    (j₀ := 0) ⟨hw1, h94, by simp_all, by omega,
       hr1, hm1, hrr1, hrm1, ho1⟩ (Nat.zero_le _)
   exact ⟨c', k1 + k, .seq e1 e, by omega, hw', hm', h26', hfr', hrr', hrm', ho'⟩
 
 /-- The table bases. -/
-theorem endB_exec {c : Config} (hw : WordsBounded W c)
+theorem endB_exec
     (hW : c.nreg 130084 + c.nreg 130026 + c.nreg 130026 ≤ W) :
     ∃ c' k, Exec P W endB c c' k ∧ k = 2 ∧ WordsBounded W c' ∧ c'.nmem = c.nmem ∧
       c'.nreg 130085 = c.nreg 130084 + c.nreg 130026 ∧
@@ -364,9 +358,10 @@ theorem endB_exec {c : Config} (hw : WordsBounded W c)
       c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold endB
   exec_block
-  all_goals try (config_simp; omega)
-  refine ⟨rfl, ‹_›, rfl, by config_simp, by config_simp, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
-  simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2]
+  all_goals (aesop (add safe (by omega)))
+
+
+end
 
 set_option maxHeartbeats 8000000 in
 /-- The slot bases. -/
@@ -388,24 +383,29 @@ theorem basesB_exec {c : Config} (hw : WordsBounded W c) {A0 U : ℕ} (hA : c.nr
 def gOf (c : Config) : GV := ⟨c.nreg 130000, c.nreg 130001, c.nreg 130002, c.nreg 130003,
   c.nreg 9999, c.nmem (c.nreg 130000), c.nmem (c.nreg 130000 + 1), c.nmem (c.nreg 130000 + 2)⟩
 
-theorem GV.two_pow_L (g : GV) : g.N + g.μ + 1 ≤ 2 ^ g.L :=
+section
+variable (g : GV)
+theorem GV.two_pow_L : g.N + g.μ + 1 ≤ 2 ^ g.L :=
   Nat.le_pow_clog (by omega) _
 
-theorem GV.U_eq (g : GV) : g.U = g.N + g.μ + 2 ^ g.L + 3 := rfl
+theorem GV.U_eq : g.U = g.N + g.μ + 2 ^ g.L + 3 := rfl
 
-theorem GV.U_ge (g : GV) : g.N + g.μ + 3 ≤ g.U := by
-  rw [GV.U_eq]; generalize 2 ^ g.L = p; omega
+theorem GV.U_ge : g.N + g.μ + 3 ≤ g.U := by
+  grind [GV.U_eq]
 
-theorem GV.P_le_U (g : GV) : 2 ^ g.L ≤ g.U := by
-  rw [GV.U_eq]; generalize 2 ^ g.L = p; omega
+theorem GV.P_le_U : 2 ^ g.L ≤ g.U := by
+  core_grind
 
-theorem GV.END_eq (g : GV) : g.END = g.A0 + 54 * g.U + 2 * (g.L * g.U) := rfl
+theorem GV.END_eq : g.END = g.A0 + 54 * g.U + 2 * (g.L * g.U) := rfl
 
-theorem GV.base_eq (g : GV) (j : ℕ) : g.base j = g.A0 + j * g.U := rfl
+theorem GV.base_eq (j : ℕ) : g.base j = g.A0 + j * g.U := rfl
 
-theorem GV.L_le_U (g : GV) : g.L ≤ g.U := by
+theorem GV.L_le_U : g.L ≤ g.U := by
   have := Nat.lt_two_pow_self (n := g.L)
   unfold GV.U; omega
+
+
+end
 
 /-- **The setup.** -/
 theorem setupStmt_exec {c : Config} (hw : WordsBounded W c) (hB2 : c.nreg 130000 + 2 ≤ W)
@@ -417,13 +417,13 @@ theorem setupStmt_exec {c : Config} (hw : WordsBounded W c) (hB2 : c.nreg 130000
   set g := gOf c with hg
   have hP := g.two_pow_L
   have hLU := g.L_le_U
-  have hLUm : g.L * g.U ≥ g.L := Nat.le_mul_of_pos_right _ (by unfold GV.U; omega)
+  
   have hEND' : g.A0 + 54 * g.U + 2 * (g.L * g.U) ≤ W := hEND
   have hUdef : g.U = g.N + g.μ + 2 ^ g.L + 3 := rfl
   have hNdef : g.N = 2 * g.E := rfl
   have hk' : g.k' ≤ g.μ := min_le_right _ _
   have hk'def : g.k' = min g.k g.μ := rfl
-  have hsdef : g.s = min (g.k' * g.k') g.μ := rfl
+  
   have hLdef : g.L = Nat.clog 2 (g.N + g.μ + 1) := rfl
   have e0 : g.B = c.nreg 130000 := rfl
   have e1 : g.μ = c.nreg 130001 := rfl
@@ -438,36 +438,29 @@ theorem setupStmt_exec {c : Config} (hw : WordsBounded W c) (hB2 : c.nreg 130000
   have q2 : ∀ r, r ≠ 130015 → c2.nreg r = c1.nreg r := hf2
   -- s
   obtain ⟨c3, k3, x3, hk3, hw3, hm3, r16, hf3, hrr3, hrm3, ho3⟩ := sS_exec (P := P) hw2
-    (by rw [q2 _ (by omega)]; exact r01) (a := g.k') (mu := g.μ)
-    (by rw [r15, r13, r11]; rfl) (by rw [q2 _ (by omega), r11]; rfl) (by omega)
+    (by grind) (a := g.k') (mu := g.μ)
+    (by omega) (by grind) (by omega)
   -- L
   obtain ⟨c4, k4, x4, hk4, hw4, hm4, r17, r18, hf4, hrr4, hrm4, ho4⟩ := LS_exec (P := P) hw3
-    (by rw [hf3 _ (by omega) (by omega), q2 _ (by omega)]; exact r01) (x := g.N + g.μ + 1)
-    (by rw [hf3 _ (by omega) (by omega), hf3 _ (by omega) (by omega), q2 _ (by omega),
-      q2 _ (by omega), r14, r11]; rfl) (by omega)
+    (by grind) (x := g.N + g.μ + 1)
+    (by grind) (by omega)
   rw [← hLdef] at r17 r18 hk4
   -- U
   obtain ⟨c5, k5, x5, hk5, hw5, hm5, r19, hf5, hrr5, hrm5, ho5⟩ := UB_exec (P := P) hw4
-    (by rw [r18, hf4 _ (by omega) (by omega) (by omega), hf4 _ (by omega) (by omega) (by omega),
-      hf3 _ (by omega) (by omega), hf3 _ (by omega) (by omega), q2 _ (by omega), q2 _ (by omega),
-      r14, r11]; omega)
+    (by grind)
   have hU5 : c5.nreg 130019 = g.U := by
-    rw [r19, hf4 _ (by omega) (by omega) (by omega), hf4 _ (by omega) (by omega) (by omega),
-      hf3 _ (by omega) (by omega), hf3 _ (by omega) (by omega), q2 _ (by omega), q2 _ (by omega),
-      r14, r11, r18]; rfl
+    grind
   -- the bases
   have hA5 : c5.nreg 130020 = g.A0 := by
-    rw [hf5 _ (by omega) (by omega), hf4 _ (by omega) (by omega) (by omega),
-      hf3 _ (by omega) (by omega), q2 _ (by omega), r20]; rfl
+    grind
   obtain ⟨c6, k6, x6, hk6, hw6, hm6, rb6, hf6, hrr6, hrm6, ho6⟩ := basesB_exec (P := P) hw5 hA5
     hU5 (by omega)
   -- L U
   obtain ⟨c7, k7, x7, hk7, hw7, hm7, r26, hf7, hrr7, hrm7, ho7⟩ := LUS_exec (P := P) hw6
     (L := g.L) (U := g.U)
-    (by rw [hf6 _ (by omega), hf5 _ (by omega) (by omega), hf4 _ (by omega) (by omega) (by omega),
-      hf3 _ (by omega) (by omega), q2 _ (by omega)]; exact r01)
-    (by rw [hf6 _ (by omega), hf5 _ (by omega) (by omega)]; exact r17)
-    (by rw [hf6 _ (by omega)]; exact hU5) (by omega)
+    (by grind)
+    (by grind)
+    (by grind) (by omega)
   obtain ⟨c8, k8, x8, hk8, hw8, hm8, r85, r86, hf8, hrr8, hrm8, ho8⟩ := endB_exec (P := P) hw7
     (by rw [hf7 _ (by omega) (by omega), rb6 54 le_rfl, r26]; omega)
   -- the registers at the end
@@ -479,9 +472,8 @@ theorem setupStmt_exec {c : Config} (hw : WordsBounded W c) (hB2 : c.nreg 130000
   refine ⟨c8, k1 + (k2 + (k3 + (k4 + (k5 + (k6 + (k7 + k8)))))),
     .seq x1 (.seq x2 (.seq x3 (.seq x4 (.seq x5 (.seq x6 (.seq x7 x8)))))), ?_, hw8, ?_, ?_,
     fun r hr => ?_, ?_, ?_, ?_⟩
-  · have : g.k' ≤ g.μ := hk'
-    omega
-  · rw [hm8, hm7, hm6, hm5, hm4, hm3, hm2, hm1]
+  · grind
+  · grind
   · refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun j hj => ?_,
       ?_, ?_⟩
     · rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
@@ -517,7 +509,7 @@ theorem setupStmt_exec {c : Config} (hw : WordsBounded W c) (hB2 : c.nreg 130000
         (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]; exact r22
     · rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
         (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]; exact r23
-    · rw [hf8 _ (by omega) (by omega), r26]
+    · grind
     · rw [hf8 _ (by omega) (by omega), hf7 _ (by omega) (by omega), rb6 j hj]; rfl
     · rw [r85, hf7 _ (by omega) (by omega), rb6 54 le_rfl, r26]
     · rw [r86, hf7 _ (by omega) (by omega), rb6 54 le_rfl, r26]; unfold GV.END; ring
@@ -525,9 +517,9 @@ theorem setupStmt_exec {c : Config} (hw : WordsBounded W c) (hB2 : c.nreg 130000
     rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
       (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]
     exact hf1 r (by unfold SetRG; omega)
-  · rw [hrr8, hrr7, hrr6, hrr5, hrr4, hrr3, hrr2, hrr1]
-  · rw [hrm8, hrm7, hrm6, hrm5, hrm4, hrm3, hrm2, hrm1]
-  · rw [ho8, ho7, ho6, ho5, ho4, ho3, ho2, ho1]
+  · grind
+  · grind
+  grind
 
 end proofs
 

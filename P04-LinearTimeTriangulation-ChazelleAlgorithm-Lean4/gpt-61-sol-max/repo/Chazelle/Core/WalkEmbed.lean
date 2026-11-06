@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SpecMerge
 public import Chazelle.Core.Facts2
 public import Chazelle.Core.FactsL23
@@ -41,10 +43,10 @@ namespace WalkEmbed
 noncomputable def off (n g x : ℝ) : ℝ := if g ≤ x then x - g else x - g + n
 
 theorem off_nonneg {n g x : ℝ} (hx : 0 ≤ x) (hg : g < n) : 0 ≤ off n g x := by
-  unfold off; split_ifs <;> linarith
+  core_grind
 
 theorem off_lt {n g x : ℝ} (hx : x < n) (hg : 0 ≤ g) : off n g x < n := by
-  unfold off; split_ifs <;> linarith
+  core_grind
 
 theorem off_self (n g : ℝ) : off n g g = 0 := by simp [off]
 
@@ -54,9 +56,7 @@ theorem off_key {n g d : ℕ} (hg : g < n) (hd : d < n) {t : ℝ} (ht : 0 ≤ t)
   unfold off
   by_cases h : g + d < n
   · rw [Nat.mod_eq_of_lt h]
-    push_cast
-    rw [ite_eq_left (by linarith)]
-    ring
+    grind
   · obtain ⟨k, hk⟩ : ∃ k, g + d = n + k := ⟨g + d - n, by omega⟩
     have hkg : k + 1 ≤ g := by omega
     have e : (g + d) % n = k := by
@@ -64,15 +64,17 @@ theorem off_key {n g d : ℕ} (hg : g < n) (hd : d < n) {t : ℝ} (ht : 0 ≤ t)
     rw [e]
     have hlt' : (k : ℝ) + 1 ≤ g := by exact_mod_cast hkg
     have hk' : (g : ℝ) + d = n + k := by exact_mod_cast hk
-    rw [ite_eq_right (by linarith)]
-    linarith
+    grind
 
 /-- The offset (as a natural number) of the walk vertex `p` from the walk vertex `g`. -/
 def dOf (n g p : ℕ) : ℕ := (p + n - g) % n
 
 theorem dOf_lt {n : ℕ} (hn : 0 < n) (g p : ℕ) : dOf n g p < n := Nat.mod_lt _ hn
 
-theorem add_dOf {n g p : ℕ} (hg : g < n) (hp : p < n) : (g + dOf n g p) % n = p := by
+section
+variable {n g p : ℕ} (hg : g < n) (hp : p < n)
+include hg hp
+theorem add_dOf : (g + dOf n g p) % n = p := by
   unfold dOf
   by_cases h : g ≤ p
   · have e : (p + n - g) % n = p - g := by
@@ -82,10 +84,13 @@ theorem add_dOf {n g p : ℕ} (hg : g < n) (hp : p < n) : (g + dOf n g p) % n = 
     rw [e, show g + (p + n - g) = p + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hp]
 
 /-- The offset of a key on the walk vertex `p`. -/
-theorem off_key' {n g p : ℕ} (hg : g < n) (hp : p < n) {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
+theorem off_key' {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
     off n g ((p : ℝ) + t) = dOf n g p + t := by
   have h := off_key hg (dOf_lt (by omega) g p) ht ht1
   rwa [add_dOf hg hp] at h
+
+
+end
 
 /-- Injectivity of `d ↦ (g + d) mod n` on `[0, n)`. -/
 theorem add_mod_inj {n g d d' : ℕ} (hd : d < n) (hd' : d' < n) (h : (g + d) % n = (g + d') % n) :
@@ -97,12 +102,7 @@ theorem add_mod_inj {n g d d' : ℕ} (hd : d < n) (hd' : d' < n) (h : (g + d) % 
 theorem sideInArc_iff_off {n g u w x : ℝ} (_hg : 0 ≤ g) (_hgn : g < n) (hu : 0 ≤ u) (hun : u < n)
     (hw : 0 ≤ w) (hwn : w < n) (hx : 0 ≤ x) (hxn : x < n) (huw : off n g u < off n g w) :
     sideInArc u w x ↔ off n g u < off n g x ∧ off n g x < off n g w := by
-  unfold off at *
-  unfold sideInArc
-  split_ifs at * <;> constructor <;>
-    first
-    | (rintro ⟨h1, h2⟩; first | (constructor! <;> linarith) | (right; linarith))
-    | (rintro (h1 | h1) <;> first | (constructor <;> linarith))
+  grind [off, sideInArc]
 
 /-- **Convexity**: a cyclic interval not containing the base `g` contains every key whose
 offset lies between the offsets of two of its keys. -/
@@ -110,64 +110,25 @@ theorem sideInArc_convex {n g a b x y w : ℝ} (_hg : 0 ≤ g) (_hgn : g < n) (h
     (_hxn : x < n) (_hy : 0 ≤ y) (hyn : y < n) (hw : 0 ≤ w) (hwn : w < n)
     (hga : ¬ sideInArc a b g) (hxa : sideInArc a b x) (hya : sideInArc a b y)
     (h1 : off n g x < off n g w) (h2 : off n g w < off n g y) : sideInArc a b w := by
-  by_cases hab : a < b
-  · have hg' : g ≤ a ∨ b ≤ g := by
-      unfold sideInArc at hga; rw [ite_eq_left hab] at hga
-      by_contra h; push Not at h; exact hga ⟨h.1, h.2⟩
-    unfold sideInArc at hxa hya ⊢; rw [ite_eq_left hab] at hxa hya ⊢
-    unfold off at h1 h2
-    rcases hg' with hg' | hg' <;> split_ifs at h1 h2 <;>
-      first | (constructor <;> linarith)
-  · have hg' : b ≤ g ∧ g ≤ a := by
-      unfold sideInArc at hga; rw [ite_eq_right hab] at hga
-      push Not at hga; exact ⟨hga.2, hga.1⟩
-    unfold sideInArc at hxa hya ⊢; rw [ite_eq_right hab] at hxa hya ⊢
-    unfold off at h1 h2
-    rcases hxa with hxa | hxa <;> rcases hya with hya | hya <;> split_ifs at h1 h2 <;>
-      first | (left; linarith) | (right; linarith)
+  core_grind
 
+section
+variable {l r z x : ℝ} (hlr : l ≠ r) (hz : sideInArc l r z) (hx : ¬ sideInArc l r x)
+include l r hlr hz hx
 /-- If `z` is inside `(l, r)` and `x` is not (and `x ≠ r`), then `r` lies between `z` and `x`. -/
-theorem sideInArc_right {l r z x : ℝ} (hlr : l ≠ r) (hz : sideInArc l r z) (hx : ¬ sideInArc l r x)
+theorem sideInArc_right
     (hxr : x ≠ r) : sideInArc z x r := by
-  rcases lt_or_gt_of_ne hlr with h | h
-  · unfold sideInArc at *
-    rw [ite_eq_left h] at hz hx
-    have hx' : x ≤ l ∨ r < x := by
-      by_contra hc; push Not at hc
-      exact hx ⟨lt_of_le_of_ne' hc.1.le (by intro e; subst e; linarith [hc.1]),
-        lt_of_le_of_ne hc.2 hxr⟩
-    rcases hx' with hx' | hx'
-    · rw [ite_eq_right (by linarith)]; left; linarith [hz.2]
-    · rw [ite_eq_left (by linarith)]; exact ⟨hz.2, hx'⟩
-  · unfold sideInArc at *
-    rw [ite_eq_right (by linarith)] at hz hx
-    push Not at hx
-    have hx' : r < x := lt_of_le_of_ne hx.2 (Ne.symm hxr)
-    rcases hz with hz | hz
-    · rw [ite_eq_right (by linarith)]; right; exact hx'
-    · rw [ite_eq_left (by linarith)]; exact ⟨hz, hx'⟩
+  core_grind
 
 /-- If `z` is inside `(l, r)` and `x` is not (and `x ≠ l`), then `l` lies between `x` and `z`. -/
-theorem sideInArc_left {l r z x : ℝ} (hlr : l ≠ r) (hz : sideInArc l r z) (hx : ¬ sideInArc l r x)
+theorem sideInArc_left
     (hxl : x ≠ l) : sideInArc x z l := by
-  rcases lt_or_gt_of_ne hlr with h | h
-  · unfold sideInArc at *
-    rw [ite_eq_left h] at hz hx
-    have hx' : x < l ∨ r ≤ x := by
-      by_contra hc; push Not at hc
-      exact hx ⟨lt_of_le_of_ne hc.1 (Ne.symm hxl), hc.2⟩
-    rcases hx' with hx' | hx'
-    · rw [ite_eq_left (by linarith [hz.1])]; exact ⟨hx', hz.1⟩
-    · rw [ite_eq_right (by linarith [hz.2])]; right; exact hz.1
-  · unfold sideInArc at *
-    rw [ite_eq_right (by linarith)] at hz hx
-    push Not at hx
-    have hx' : x < l := lt_of_le_of_ne hx.1 hxl
-    rcases hz with hz | hz
-    · rw [ite_eq_left (by linarith)]; exact ⟨hx', hz⟩
-    · rw [ite_eq_right (by linarith)]; left; exact hx'
+  core_grind
 
 /-! ## Agreeing stretches of two walks -/
+
+
+end
 
 /-- The walks `W` and `W'` **agree** on the stretch of length `L` starting at their vertices `g`
 and `g'`: for `d ≤ L`, vertex `g + d` of `W` is vertex `g' + d` of `W'` (indices modulo the
@@ -176,7 +137,7 @@ def Agree (W W' : Polygon) (g g' L : ℕ) : Prop :=
   ∀ d, d ≤ L → W.vtx ((g + d) % W.n) = W'.vtx ((g' + d) % W'.n)
 
 theorem mod_succ_mod (n g d : ℕ) : ((g + d) % n + 1) % n = (g + (d + 1)) % n := by
-  rw [Nat.mod_add_mod, Nat.add_assoc]
+  grind
 
 theorem mod_pred_mod {n : ℕ} (hn : 0 < n) (g : ℕ) {d : ℕ} (hd : 1 ≤ d) :
     ((g + d) % n + n - 1) % n = (g + (d - 1)) % n := by
@@ -187,32 +148,39 @@ namespace Agree
 
 variable {W W' : Polygon} {g g' L : ℕ}
 
+section
+variable (hA : Agree W W' g g' L) {d : ℕ} (hd : d < L)
+include hA hd
 /-- Agreeing stretches have the same point at the same offset. -/
-theorem sidePt_eq (hA : Agree W W' g g' L) {d : ℕ} (hd : d < L) (t : ℝ) :
+theorem sidePt_eq (t : ℝ) :
     sidePt W ((g + d) % W.n) t = sidePt W' ((g' + d) % W'.n) t := by
   unfold sidePt
   rw [mod_succ_mod, mod_succ_mod, hA d hd.le, hA (d + 1) hd]
 
 /-- Agreeing stretches have the same next vertex at the same offset. -/
-theorem sideNext_eq (hA : Agree W W' g g' L) {d : ℕ} (hd : d < L) :
+theorem sideNext_eq :
     sideNext W ((g + d) % W.n) = sideNext W' ((g' + d) % W'.n) := by
   unfold sideNext
   rw [mod_succ_mod, mod_succ_mod, hA (d + 1) hd]
 
+
+end
+
+section
+variable (hA : Agree W W' g g' L) (hn : 0 < W.n) (hn' : 0 < W'.n) {d : ℕ} (hd : d < L) {t : ℝ} (ht : t = 0 → 1 ≤ d)
+include hA hn hn' hd ht
 /-- Agreeing stretches have the same previous point at the same offset, away from the start. -/
-theorem sidePrev_eq (hA : Agree W W' g g' L) (hn : 0 < W.n) (hn' : 0 < W'.n) {d : ℕ}
-    (hd : d < L) {t : ℝ} (ht : t = 0 → 1 ≤ d) :
+theorem sidePrev_eq :
     sidePrev W ((g + d) % W.n) t = sidePrev W' ((g' + d) % W'.n) t := by
   unfold sidePrev
   by_cases h0 : t = 0
   · rw [ite_eq_left h0, ite_eq_left h0, mod_pred_mod hn _ (ht h0), mod_pred_mod hn' _ (ht h0),
       hA (d - 1) (by omega)]
-  · rw [ite_eq_right h0, ite_eq_right h0, hA d hd.le]
+  aesop (add safe (by omega))
 
 /-- **Agreeing stretches have the same left sectors** at the same offset, away from the
 start. -/
-theorem sideLeft_eq (hA : Agree W W' g g' L) (hn : 0 < W.n) (hn' : 0 < W'.n) {d : ℕ}
-    (hd : d < L) {t : ℝ} (ht : t = 0 → 1 ≤ d) :
+theorem sideLeft_eq :
     sideLeft W ((g + d) % W.n) t = sideLeft W' ((g' + d) % W'.n) t := by
   funext x
   unfold sideLeft
@@ -220,8 +188,7 @@ theorem sideLeft_eq (hA : Agree W W' g g' L) (hn : 0 < W.n) (hn' : 0 < W'.n) {d 
 
 /-- **Agreeing stretches attach the same sets** at the same offset (the walk embedding preserves
 `SideAttach`). -/
-theorem sideAttach_iff (hA : Agree W W' g g' L) (hn : 0 < W.n) (hn' : 0 < W'.n) {d : ℕ}
-    (hd : d < L) {t : ℝ} (ht : t = 0 → 1 ≤ d) (c : Set Point) :
+theorem sideAttach_iff (c : Set Point) :
     SideAttach W c ((g + d) % W.n) t ↔ SideAttach W' c ((g' + d) % W'.n) t := by
   unfold SideAttach
   rw [hA.sideLeft_eq hn hn' hd ht, hA.sidePt_eq hd]
@@ -231,13 +198,15 @@ theorem sideAttach_iff (hA : Agree W W' g g' L) (hn : 0 < W.n) (hn' : 0 < W'.n) 
 
 /-- A set attached to `W'` at an offset of the stretch attaches its subsets through the same
 point to `W` at the same offset. -/
-theorem sideAttach_subset (hA : Agree W W' g g' L) (hn : 0 < W.n) (hn' : 0 < W'.n) {d : ℕ}
-    (hd : d < L) {t : ℝ} (ht : t = 0 → 1 ≤ d) {c e : Set Point}
+theorem sideAttach_subset {c e : Set Point}
     (hc : SideAttach W' c ((g' + d) % W'.n) t) (hec : e ⊆ c)
     (he : sidePt W' ((g' + d) % W'.n) t ∈ e) : SideAttach W e ((g + d) % W.n) t := by
   rw [hA.sideAttach_iff hn hn' hd ht]
   obtain ⟨hp, ht0, ht1, -, r, hr, hl⟩ := hc
   exact ⟨hp, ht0, ht1, he, r, hr, fun x hx => hl x (hec hx)⟩
+
+
+end
 
 end Agree
 
@@ -262,9 +231,7 @@ theorem exists_arc_around {M : Model} (hM : GoodModel M) {Q : Polygon} {F : Set 
   rcases F.eq_empty_or_nonempty with rfl | hne
   · obtain ⟨⟨U, hU, a, b, harc⟩, -⟩ := arcCover M Q ∅ hM hF
     rcases harc.2.2.2.2.1 with ⟨⟨c, hc, -⟩, -⟩ | ⟨-, rfl, rfl⟩
-    · exact absurd hc (Set.notMem_empty c)
-    · refine ⟨U, hU, 0, 0, harc, ?_⟩
-      unfold sideInArc; rw [ite_eq_right (lt_irrefl _)]; exact Or.inl hx0
+    all_goals (grind [sideInArc])
   · exact (walkAx_of_goodModel hM).arc_around hF.2.1 hF.1 hne hx
 
 /-- **The stretch bound (step (a) of the `γ + 1` bound).**  Let the counted edges and the cuts of
@@ -294,7 +261,7 @@ theorem arcWt_le_of_stretch {M M' : Model} (hM' : GoodModel M') {Q : Polygon}
   have hkey : ∀ p : ℕ, p < n → ∀ t : ℝ, 0 ≤ t → t < 1 → 0 ≤ (p : ℝ) + t ∧ (p : ℝ) + t < n :=
     fun p hp t ht ht1 => by
       have : (p : ℝ) + 1 ≤ n := by exact_mod_cast hp
-      exact ⟨by positivity, by linarith⟩
+      grind
   have hkey' : ∀ p : ℕ, p < n' → ∀ t : ℝ, 0 ≤ t → t < 1 →
       0 ≤ (p : ℝ) + t ∧ (p : ℝ) + t < n' :=
     fun p hp t ht ht1 => by
@@ -308,12 +275,12 @@ theorem arcWt_le_of_stretch {M M' : Model} (hM' : GoodModel M') {Q : Polygon}
     have hs := hstr _ (hkey p hp t ht.le ht1).1 (hkey p hp t ht.le ht1).2 hx
     rw [hoff] at hs
     refine ⟨?_, (add_dOf hg hp).symm, hoff⟩
-    have : (dOf n g p : ℝ) < L := by linarith [hs.2]
+    have : (dOf n g p : ℝ) < L := by linarith
     exact_mod_cast this
   -- the base of the stretch is not in the interval
   have hga : ¬ sideInArc a b g := fun h => by
     have := (hstr g (Nat.cast_nonneg g) hgR h).1
-    rw [off_self] at this; exact lt_irrefl _ this
+    rw [off_self] at this; grind
   -- a cut of `F'` strictly inside the stretch between two keys of the interval gives a cut
   -- of `F` inside the interval
   have htransfer : ∀ (p q : ℕ) (t u : ℝ), p < n → q < n → 0 < t → t < 1 → 0 < u → u < 1 →
@@ -334,7 +301,6 @@ theorem arcWt_le_of_stretch {M M' : Model} (hM' : GoodModel M') {Q : Polygon}
         linarith
       exact_mod_cast this
     have hcut' := hcut dr hdrL tr htr0 htr1 (by
-      have : (0 : ℝ) ≤ dOf n g p := Nat.cast_nonneg _
       linarith) (by rw [add_dOf hg' hpr]; exact ⟨c, hc, pr, tr, hA, rfl⟩)
     have hoffy := off_key hg (show dr < n by omega) htr0 htr1
     have hyb := hkey ((g + dr) % n) (Nat.mod_lt _ hn) tr htr0 htr1
@@ -342,10 +308,10 @@ theorem arcWt_le_of_stretch {M M' : Model} (hM' : GoodModel M') {Q : Polygon}
     have hqb := hkey q hq u hu.le hu1
     refine hfree _ ?_ hcut'
     exact sideInArc_convex (Nat.cast_nonneg g) hgR hpb.1 hpb.2 hqb.1 hqb.2 hyb.1 hyb.2 hga
-      hpin hqin (by rw [hoffp, hoffy]; exact h1) (by rw [hoffq, hoffy]; exact h2)
+      hpin hqin (by grind) (by grind)
   rw [Model.arcWt_eq]
   rcases (M.arcEdges a b).eq_empty_or_nonempty with hE | ⟨p₀, hp₀n, -, t₀, ht₀, ht₀1, hx₀⟩
-  · rw [hE, Set.ncard_empty]; exact Nat.zero_le _
+  · rw [hE, Set.ncard_empty]; omega
   obtain ⟨hd₀L, hp₀, hoff₀⟩ := hin p₀ hp₀n t₀ ht₀ ht₀1 hx₀
   set d₀ := dOf n g p₀
   set z' : ℝ := (((g' + d₀) % n' : ℕ) : ℝ) + t₀ with hz'
@@ -421,7 +387,7 @@ theorem arcWt_le_of_stretch {M M' : Model} (hM' : GoodModel M') {Q : Polygon}
 
 theorem off_inj {n g x y : ℝ} (_hg : 0 ≤ g) (_hgn : g < n) (hx : 0 ≤ x) (hxn : x < n) (hy : 0 ≤ y)
     (hyn : y < n) (h : off n g x = off n g y) : x = y := by
-  unfold off at h; split_ifs at h <;> linarith
+  core_grind
 
 /-- **A piece of the walk of `M`**: a stretch starting at the walk vertex `g`, of length `L < n`,
 whose two end keys lie in `K`, along which every `F`-cut-free key interval meets at most `γ`
@@ -441,9 +407,9 @@ theorem arcWt_le_of_pieces {M : Model} {F : Set (Set Point)} {K : Set ℝ} {γ :
     {a b : ℝ} (hK : ∀ x ∈ K, ¬ sideInArc a b x) (hfree : ∀ x, sideInArc a b x → ¬ M.IsCut F x) :
     M.arcWt a b ≤ γ := by
   classical
-  have hE := M.arcEdges_finite a b
+  
   rcases (M.arcEdges a b).eq_empty_or_nonempty with hE0 | ⟨p₀, hp₀n, hp₀c, t₀, ht₀, ht₀1, hx₀⟩
-  · rw [Model.arcWt_eq, hE0, Set.ncard_empty]; exact Nat.zero_le _
+  · grind [Model.arcWt_eq, Set.ncard_empty]
   obtain ⟨g, L, ⟨hg, hLn, hgK, heK, hbound⟩, hz0, hzL⟩ := hcover p₀ hp₀n hp₀c t₀ ht₀ ht₀1
   refine hbound a b (fun x hx0 hxn hx => ?_) hfree
   set n := M.W.n
@@ -457,7 +423,7 @@ theorem arcWt_le_of_pieces {M : Model} {F : Set (Set Point)} {K : Set ℝ} {γ :
     rcases (off_nonneg hx0 hgR).lt_or_eq with h | h
     · exact h
     · exact absurd (off_inj (Nat.cast_nonneg g) hgR hx0 hxn (Nat.cast_nonneg g) hgR
-        (by rw [off_self]; exact h.symm)) hxg
+        (by grind [off_self])) hxg
   refine ⟨hx0', ?_⟩
   by_contra hge
   push Not at hge
@@ -466,73 +432,45 @@ theorem arcWt_le_of_pieces {M : Model} {F : Set (Set Point)} {K : Set ℝ} {γ :
   have heR : (e : ℝ) < n := by exact_mod_cast hen
   have hoffe : off n g e = L := by
     have := off_key (t := 0) hg hLn le_rfl one_pos
-    simpa using this
+    grind
   have hea : ¬ sideInArc a b e := hK _ heK
   rcases hge.lt_or_eq with hlt | heq
   · exact hea (sideInArc_convex (Nat.cast_nonneg g) hgR hz.1 hz.2 hx0 hxn (Nat.cast_nonneg e) heR
-      hga hx₀ hx (by rw [hoffe]; exact hzL) (by rw [hoffe]; exact hlt))
-  · have := off_inj (Nat.cast_nonneg g) hgR hx0 hxn (Nat.cast_nonneg e) heR (by rw [hoffe]; exact heq.symm)
-    exact hea (this ▸ hx)
+      hga hx₀ hx (by grind) (by grind))
+  · have := off_inj (Nat.cast_nonneg g) hgR hx0 hxn (Nat.cast_nonneg e) heR (by grind)
+    simp_all
 
 /-! ## Small cyclic facts -/
 
-theorem sideInArc_sub_left {a b k x : ℝ} (hk : sideInArc a b k) (hx : sideInArc a k x) :
+section
+variable {a b k x : ℝ} (hk : sideInArc a b k)
+include hk
+theorem sideInArc_sub_left (hx : sideInArc a k x) :
     sideInArc a b x := by
-  unfold sideInArc at *
-  by_cases hab : a < b
-  · rw [ite_eq_left hab] at hk ⊢
-    rw [ite_eq_left hk.1] at hx
-    exact ⟨hx.1, hx.2.trans hk.2⟩
-  · rw [ite_eq_right hab] at hk ⊢
-    by_cases hak : a < k
-    · rw [ite_eq_left hak] at hx; exact Or.inl hx.1
-    · rw [ite_eq_right hak] at hx
-      rcases hk with hk | hk
-      · exact absurd hk hak
-      · rcases hx with hx | hx
-        · exact Or.inl hx
-        · exact Or.inr (hx.trans hk)
+  core_grind
 
-theorem sideInArc_sub_right {a b k x : ℝ} (hk : sideInArc a b k) (hx : sideInArc k b x) :
+theorem sideInArc_sub_right (hx : sideInArc k b x) :
     sideInArc a b x := by
-  unfold sideInArc at *
-  by_cases hab : a < b
-  · rw [ite_eq_left hab] at hk ⊢
-    rw [ite_eq_left hk.2] at hx
-    exact ⟨hk.1.trans hx.1, hx.2⟩
-  · rw [ite_eq_right hab] at hk ⊢
-    by_cases hkb : k < b
-    · rw [ite_eq_left hkb] at hx; exact Or.inr hx.2
-    · rw [ite_eq_right hkb] at hx
-      rcases hk with hk | hk
-      · rcases hx with hx | hx
-        · exact Or.inl (hk.trans hx)
-        · exact Or.inr hx
-      · exact absurd hk hkb
+  core_grind
 
+
+end
+
+section
+variable {a b k q x : ℝ} (hk : sideInArc a b k) (hq : ¬ sideInArc a b q)
+include a b hk hq
 /-- A cut `q` just after an inner key `k` bounds the part of the interval after `k`. -/
-theorem sideInArc_before_cut {a b k q x : ℝ} (hk : sideInArc a b k) (hq : ¬ sideInArc a b q)
+theorem sideInArc_before_cut
     (hkq : k < q) (hx : sideInArc k b x) : sideInArc k q x := by
-  have hqk : ¬ sideInArc k b q := fun h => hq (sideInArc_sub_right hk h)
-  unfold sideInArc at hqk hx ⊢
-  rw [ite_eq_left hkq]
-  by_cases hkb : k < b
-  · rw [ite_eq_left hkb] at hqk hx
-    exact ⟨hx.1, lt_of_lt_of_le hx.2 (by by_contra h; push Not at h; exact hqk ⟨hkq, h⟩)⟩
-  · rw [ite_eq_right hkb] at hqk
-    exact absurd (Or.inl hkq) hqk
+  core_grind
 
 /-- A cut `q` just before an inner key `k` bounds the part of the interval before `k`. -/
-theorem sideInArc_after_cut {a b k q x : ℝ} (hk : sideInArc a b k) (hq : ¬ sideInArc a b q)
+theorem sideInArc_after_cut
     (hqk' : q < k) (hx : sideInArc a k x) : sideInArc q k x := by
-  have hqk : ¬ sideInArc a k q := fun h => hq (sideInArc_sub_left hk h)
-  unfold sideInArc at hqk hx ⊢
-  rw [ite_eq_left hqk']
-  by_cases hak : a < k
-  · rw [ite_eq_left hak] at hqk hx
-    exact ⟨lt_of_le_of_lt (by by_contra h; push Not at h; exact hqk ⟨h, hqk'⟩) hx.1, hx.2⟩
-  · rw [ite_eq_right hak] at hqk
-    exact absurd (Or.inr hqk') hqk
+  core_grind
+
+
+end
 
 /-- An interval inside one walk edge meets at most that edge. -/
 theorem arcWt_le_one_of_within (M : Model) {k : ℕ} {a b : ℝ} (hab : a < b) (ha : (k : ℝ) ≤ a)
@@ -543,11 +481,11 @@ theorem arcWt_le_one_of_within (M : Model) {k : ℕ} {a b : ℝ} (hab : a < b) (
         rintro p ⟨-, -, t, ht0, ht1, hx⟩
         unfold sideInArc at hx
         rw [ite_eq_left hab] at hx
-        have h1 : (p : ℝ) < k + 1 := by linarith [hx.1]
-        have h2 : (k : ℝ) < p + 1 := by linarith [hx.2]
+        have h1 : (p : ℝ) < k + 1 := by linarith
+        have h2 : (k : ℝ) < p + 1 := by linarith
         have h1' : p < k + 1 := by exact_mod_cast h1
         have h2' : k < p + 1 := by exact_mod_cast h2
-        exact Set.mem_singleton_iff.2 (by omega)
+        grind
     _ = 1 := Set.ncard_singleton k
 
 end WalkEmbed

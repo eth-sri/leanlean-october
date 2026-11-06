@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopSort3
 
 /-!
@@ -35,15 +37,15 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
     hout⟩ := I
   have hctx' := hctx
   obtain ⟨-, -, -, -, j0, j1, -, -⟩ := hctx'
-  have hBW : B1 ≤ W := by omega
+  
   -- the next index
   obtain ⟨rX, rO⟩ := ssRd_val d.nmem d.nreg
   have e₁ := exec_regB (P := P) ssRd hw (by
-    simp only [ssRd, okW, okWI]; exact ⟨by rw [hsb, hqj]; omega, trivial, trivial⟩)
+    grind [ssRd, okW, okWI])
   set d₁ : Config := { d with nreg := regB d.nmem ssRd d.nreg } with hd₁
   set x := L.getD j 0 with hxd
   have hxL : L[j]? = some x := by
-    rw [hxd, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]; rfl
+    grind
   have hxS : x < S := hLm x (List.mem_of_getElem? hxL)
   have q1X : d₁.nreg srX = x := by
     show regB _ _ _ srX = _
@@ -51,7 +53,7 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
   have q1o : ∀ r, r ≠ srA → r ≠ srX → d₁.nreg r = d.nreg r := rO
   have hw₁ := e₁.wb_right
   have r1 : ∀ r, bandOf r ∉ oracleBands → (r < sw 3003 ∨ sw 3016 < r) → d₁.nreg r = d.nreg r :=
-    fun r _ h => q1o r (by rintro rfl; simp only [srA, sw] at h; omega) (by rintro rfl; simp only [srX, sw] at h; omega)
+    fun r _ h => q1o r (by core_grind) (by grind [srX, sw])
   have hctx₁ : SsCtx J d2 RB S A₀ m₀ d₁ := ssCtx_keep hctx (fun r a b c' _ =>
     r1 r (not_oracle_sw a b) c') (fun _ _ => rfl)
   have K0₁ : d₁.nreg K0 = 0 := hctx₁.2.2.2.2.1
@@ -80,18 +82,18 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
       refine ⟨trivial, ?_, trivial⟩
       rw [upd_other _ _ _ (by ssoSrt), upd_other _ _ _ (by ssoSrt), j₃, k₃]; omega)
     have ko : ∀ r, r ≠ srP → r ≠ srJ → regB d₃.nmem ssAdv d₃.nreg r = d₃.nreg r := vo
-    refine ⟨_, e, e.wb_right, by show regB _ _ _ srJ = _; rw [vJ, j₃, k₃], ?_, ?_, ?_, ?_, m₃,
+    refine ⟨_, e, e.wb_right, by grind, ?_, ?_, ?_, ?_, m₃,
       ⟨O', D₃, by show regB _ _ _ sC = _; rw [ko _ (by ssoSrt) (by ssoSrt)]; exact C₃, l₃,
-        fun _ => ⟨x, by simpa using hxL, by show regB _ _ _ srP = _; rw [vP, x₃]⟩, st₃, ax₃⟩,
+        fun _ => ⟨x, by grind, by grind⟩, st₃, ax₃⟩,
       fun r h1 h2 h3 => ?_, rr₃, rm₃, o₃⟩
-    · exact ssCtx_keep c₃ (fun r _ _ h _ => ko r (by rintro rfl; simp only [srP, sw] at h; omega)
-        (by rintro rfl; simp only [srJ, sw] at h; omega)) (fun _ _ => rfl)
+    · exact ssCtx_keep c₃ (fun r _ _ h _ => ko r (by grind [srP, sw])
+        (by rintro rfl; grind [srJ, sw])) (fun _ _ => rfl)
     · show regB _ _ _ srSB = _; rw [ko _ (by ssoSrt) (by ssoSrt)]; exact sb₃
     · show regB _ _ _ sB = _; rw [ko _ (by ssoSrt) (by ssoSrt)]; exact b1₃
     · show regB _ _ _ aB = _; rw [ko _ (by ssoSrt) (by ssoSrt)]; exact b2₃
     · show regB _ _ _ r = _
-      rw [ko r (by rintro rfl; simp only [srP, sw] at h2; omega) (by rintro rfl; simp only [srJ, sw] at h2; omega)]
-      exact g₃ r h1 h2 h3
+      rw [ko r (by grind [srP, sw]) (by rintro rfl; grind [srJ, sw])]
+      grind
   by_cases hj0 : j = 0
   · -- the first index: written
     subst hj0
@@ -120,12 +122,12 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
       (fun a ha => by rw [m₂ a ha]; exact hmem a ha)
       ((hD.step hLs hxL).1 (Or.inl rfl)) sC₂ (by simp) st₂ ax₂
       (fun r ho h hs => (k₂ r ho h hs).trans (hregs r ho h hs))
-      (fun r ho => by rw [rr₂]; exact hrr r ho) (by rw [rm₂]; exact hrm) (by rw [o₂]; exact hout)
-    have nlt : ¬ d₁.nreg K0 < d₁.nreg srJ := by rw [K0₁, qJ₁]; omega
-    exact ⟨d', _, .seq e₁ (.seq (.ifLtN_false nlt e₂) ex'), by simp [ssRd]; omega, by
+      (fun r ho => by rw [rr₂]; exact hrr r ho) (by grind) (by grind)
+    have nlt : ¬ d₁.nreg K0 < d₁.nreg srJ := by omega
+    exact ⟨d', _, .seq e₁ (.seq (.ifLtN_false nlt e₂) ex'), by omega, by
       simp [ssRd]; omega, hI'⟩
   · -- a later index: compared with the previous one
-    have hlt : d₁.nreg K0 < d₁.nreg srJ := by rw [K0₁, qJ₁]; omega
+    have hlt : d₁.nreg K0 < d₁.nreg srJ := by omega
     obtain ⟨x', hx', hqP⟩ := hprev (by omega)
     have hx'S : x' < S := hLm x' (List.mem_of_getElem? hx')
     have hqP₁ : d₁.nreg srP = x' := (q1o _ (by ssoSrt) (by ssoSrt)).trans hqP
@@ -133,21 +135,20 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
     have hsort : KLe (ssKey P J m₀ RB x') (ssKey P J m₀ RB x) := by
       have := List.pairwise_iff_getElem.1 hLs (j - 1) j (by omega) (by omega) (by omega)
       rw [List.getElem?_eq_getElem (by omega)] at hx' hxL
-      simp only [Option.some.injEq] at hx' hxL
-      rwa [hx', hxL] at this
+      grind
     -- the inputs of the comparator
     obtain ⟨c0, c1, co⟩ := ssCp_val d₁.nmem d₁.nreg
     have e₂ := exec_regB (P := P) [.copyN 30000 srX, .copyN 30001 srP] hw₁ (by
-      simp only [okW, okWI]; exact ⟨trivial, trivial, trivial⟩)
+      simp only [okW, okWI]; grind)
     set d₂ : Config := { d₁ with
       nreg := regB d₁.nmem [.copyN 30000 srX, .copyN 30001 srP] d₁.nreg } with hd₂
     have k₂ : ∀ r, r ≠ 30000 → r ≠ 30001 → d₂.nreg r = d₁.nreg r := co
     have hw₂ := e₂.wb_right
     have hctx₂ : SsCtx J d2 RB S A₀ m₀ d₂ := ssCtx_keep hctx₁ (fun r a _ _ _ =>
-      k₂ r (by rintro rfl; omega) (by rintro rfl; omega)) (fun _ _ => rfl)
+      k₂ r (by omega) (by omega)) (fun _ _ => rfl)
     obtain ⟨d₃, k₃, e₃, hk₃, hctx₃, hbit, hr₃, hrr₃, hm₃, hrm₃, ho₃⟩ := hcmp d₂ hw₂ hctx₂
-    have i0 : d₂.nreg 30000 = x := by show regB _ _ _ 30000 = _; rw [c0, q1X]
-    have i1 : d₂.nreg 30001 = x' := by show regB _ _ _ 30001 = _; rw [c1, hqP₁]
+    have i0 : d₂.nreg 30000 = x := by grind
+    have i1 : d₂.nreg 30001 = x' := by grind
     rw [i0, i1] at hbit
     have hiff := ssLe_in (P := P) (J := J) (m := m₀) (RB := RB) hxS hx'S
     -- registers kept by the comparator
@@ -167,8 +168,8 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
     by_cases hle : KLe (ssKey P J m₀ RB x) (ssKey P J m₀ RB x')
     · -- equal keys: skipped
       have heq : ssKey P J m₀ RB x' = ssKey P J m₀ RB x := KLe.antisymm' hsort hle
-      have b1 : d₃.nreg 30002 = 1 := by rw [hbit, ite_eq_left (hiff.2 hle)]
-      have t : d₃.nreg K0 < d₃.nreg 30002 := by rw [K0₃, b1]; omega
+      have b1 : d₃.nreg 30002 = 1 := by grind
+      have t : d₃.nreg K0 < d₃.nreg 30002 := by omega
       obtain ⟨d', ex', hI'⟩ := adv d₃ O e₃.wb_right qX₃
         (by rw [k₃ srJ (kb _ (by ssoSrt) (by ssoSrt)), k₂ srJ (by ssoSrt) (by ssoSrt), qJ₁])
         hctx₃.2.2.2.2.2.1 hctx₃
@@ -177,23 +178,21 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
         (by rw [k31 aB (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]; exact hb2)
         (fun a ha => by rw [hm₃' a]; exact hmem a ha)
         ((hD.step hLs hxL).2 ⟨by omega, fun y hy => by
-          rw [hx'] at hy; cases hy; exact heq⟩)
+          grind⟩)
         (by rw [k31 sC (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]; exact hC) (by omega)
-        (by rw [hm₃]; exact hst) (by rw [hm₃]; exact hax)
+        (by grind) (by grind)
         (fun r ho h _ => (k31 r ho h).trans (hregs r ho h (by
-          rintro rfl; exact absurd h (by unfold sC sw; omega))))
+          omega)))
         (fun r ho => by
           rw [hrr₃ r (ssBc_sub ho)]; exact hrr r ho)
-        (by rw [hrm₃]; exact hrm) (by rw [ho₃]; exact hout)
+        (by grind) (by grind)
       refine ⟨d', _, .seq e₁ (.seq (.ifLtN_true hlt (.seq e₂ (.seq e₃
         (.ifLtN_true t (.skip e₃.wb_right))))) ex'), by simp [ssRd]; omega, by simp [ssRd]; omega, hI'⟩
     · -- a new key: written
-      have b0 : d₃.nreg 30002 = 0 := by rw [hbit, ite_eq_right (fun h => hle (hiff.1 h))]
-      have t : ¬ d₃.nreg K0 < d₃.nreg 30002 := by rw [K0₃, b0]; omega
+      have b0 : d₃.nreg 30002 = 0 := by grind
+      have t : ¬ d₃.nreg K0 < d₃.nreg 30002 := by omega
       have hne : ∀ y, L[j - 1]? = some y → ssKey P J m₀ RB y ≠ ssKey P J m₀ RB x := by
-        intro y hy h
-        rw [hx'] at hy; cases hy
-        exact hle (by rw [← h]; exact Or.inr ⟨rfl, le_rfl⟩)
+        grind
       have sC₃ : d₃.nreg sC = O.length := by
         rw [k31 sC (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]; exact hC
       obtain ⟨d₄, k₄, e₄, hk₄, sC₄, st₄, ax₄, m₄, r₄, rr₄, rm₄, o₄⟩ := ssWr_step (P := P) (O := O)
@@ -201,7 +200,7 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
         (by rw [k31 sB (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]; exact hb1)
         (by rw [k31 aB (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]; exact hb2)
         (fun a ha => (hm₃' a).trans (hmem a ha)) qX₃ hxS sC₃ hOS
-        (by rw [hm₃]; exact hst) (by rw [hm₃]; exact hax)
+        (by grind) (by grind)
       have k₄ : ∀ r, bandOf r ∉ oracleBands → (r < sw 3003 ∨ sw 3016 < r) → r ≠ sC →
           d₄.nreg r = d.nreg r := fun r ho h hs => by
         rw [r₄ r (by rintro rfl; simp only [sr1, sw] at h; omega) (by rintro rfl; simp only [sr2, sw] at h; omega)
@@ -229,9 +228,11 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
       refine ⟨d', _, .seq e₁ (.seq (.ifLtN_true hlt (.seq e₂ (.seq e₃
         (.ifLtN_false t e₄)))) ex'), by simp [ssRd]; omega, by simp [ssRd]; omega, hI'⟩
 
+section
+variable {P : Polygon} {W : ℕ}
 /-- **A loop with bounded body costs**: an invariant indexed by the number `j` of iterations done,
 the test true exactly while `j < L`, each body cost in `[Bmin, Bmax]`. -/
-theorem while_range {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} (I : ℕ → Config → Prop)
+theorem while_range {a b : ℕ} {body : Stmt} (I : ℕ → Config → Prop)
     (L Bmin Bmax : ℕ) (htest : ∀ j d, I j d → (d.nreg a < d.nreg b ↔ j < L))
     (hwb : ∀ j d, I j d → WordsBounded W d)
     (hbody : ∀ j d, I j d → j < L →
@@ -251,13 +252,10 @@ theorem while_range {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} (I : ℕ �
     obtain ⟨d₁, k₁, e₁, hk1, hk2, hI₁⟩ := hbody j d hI hlt
     obtain ⟨d', k', e', hk1', hk2', hI'⟩ := ih (j + 1) d₁ hI₁ (by omega) (by omega)
     refine ⟨d', _, Exec.whileLtN_true ((htest j d hI).2 hlt) e₁ e', ?_, ?_, hI'⟩
-    · have : (Bmin + 2) * (n + 1) = (Bmin + 2) * n + (Bmin + 2) := by ring
-      omega
-    · have : (Bmax + 2) * (n + 1) = (Bmax + 2) * n + (Bmax + 2) := by ring
-      omega
+    all_goals grind
 
 /-- **The dedupe pass.** -/
-theorem ssDedup_exec {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : ℕ} {m₀ : ℕ → ℕ}
+theorem ssDedup_exec {J : Merge.Junction} {d2 RB S A₀ : ℕ} {m₀ : ℕ → ℕ}
     {L : List ℕ} {SBv B1 : ℕ} {d₀ : Config}
     (hcmp : CmpOK P W ssCmp ssBc (SsCtx J d2 RB S A₀ m₀) (ssLe P J m₀ RB S) 12000)
     (hLlen : L.length = S) (hLm : ∀ x ∈ L, x < S)
@@ -273,7 +271,10 @@ theorem ssDedup_exec {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ 
     (fun j d h => h.wb)
     (fun j d h hj => ssBody_step hcmp hLlen hLm hLs hLmem hSB hS hAB hroom h hj)
     0 d₀ I (Nat.zero_le _)
-  exact ⟨d', k, ex, by simpa using h1, by simpa using h2, hI⟩
+  exact ⟨d', k, ex, by omega, by omega, hI⟩
+
+
+end
 
 end
 

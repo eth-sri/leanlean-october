@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildNF
 
 /-!
@@ -46,27 +48,23 @@ theorem range_map_evOf (n : ℕ) :
     simp only [map_cons, map_nil, flatMap_cons, flatMap_nil, append_nil, append_assoc,
       singleton_append]
     have h1 : evOf M Q L (2 * n) = eL M Q L n := by
-      unfold evOf; rw [ite_eq_left (by omega), show 2 * n / 2 = n by omega]
+      aesop (add simp [evOf]) (add safe (by omega))
     have h2 : evOf M Q L (2 * n + 1) = eR M Q L n := by
-      unfold evOf; rw [ite_eq_right (by omega), show (2 * n + 1) / 2 = n by omega]
-    rw [h1, h2]
-    rfl
+      grind [evOf]
+    aesop
 
 theorem key_wposOf (c : ℕ) : M.key Q (wposOf L c) = (evOf M Q L c).2.1 := by
   unfold wposOf evOf
-  split_ifs <;> rfl
+  aesop
 
 /-- The supremum of the values of a list of naturals is its `foldr max 0`. -/
 theorem sSup_list (l : List ℕ) : sSup {x | x ∈ l} = l.foldr max 0 := by
   have hle : ∀ y ∈ l, y ≤ l.foldr max 0 := by
     intro y hy
     induction l with
-    | nil => exact absurd hy (List.not_mem_nil)
+    | nil => simp_all
     | cons x l ih =>
-      rw [foldr_cons]
-      rcases mem_cons.1 hy with rfl | hy
-      · exact le_max_left _ _
-      · exact (ih hy).trans (le_max_right _ _)
+      grind
   rcases l with _ | ⟨x, l⟩
   · simp
   · have hmem : ∀ (x : ℕ) (l : List ℕ), (x :: l).foldr max 0 ∈ x :: l := by
@@ -74,10 +72,7 @@ theorem sSup_list (l : List ℕ) : sSup {x | x ∈ l} = l.foldr max 0 := by
       induction l generalizing x with
       | nil => simp
       | cons y l ih =>
-        rw [foldr_cons]
-        rcases le_total x ((y :: l).foldr max 0) with h1 | h1
-        · rw [max_eq_right h1]; exact mem_cons_of_mem _ (ih y)
-        · rw [max_eq_left h1]; exact mem_cons_self
+        grind
     exact IsGreatest.csSup_eq ⟨hmem x l, fun y hy => hle y hy⟩
 
 namespace Input
@@ -105,8 +100,7 @@ theorem length_evs (_h : Input M Q L E) : (evs M Q L E).length = E.length := len
 theorem key_s {m : ℕ} (hm : m < E.length) :
     M.key Q (wposOf L (E.getD m 0)) = kap (evs M Q L E) m := by
   rw [key_wposOf, BuildSort.kap_eq (by rw [h.length_evs]; exact hm)]
-  unfold evs
-  rw [getElem_map, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hm, Option.getD_some]
+  grind [evs, getElem_map, List.getD_eq_getElem?_getD, Option.getD_some]
 
 omit h in
 /-- The chords of the computed normal form are the chords of the list. -/
@@ -119,11 +113,7 @@ theorem F_eq (_h : Input M Q L E) : (buildNF M Q L E).F M Q = famOf M Q L := by
   · rintro ⟨x, hx, rfl⟩
     obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hx
     refine ⟨_, ⟨i, hi, rfl⟩, ?_⟩
-    have : L.getD i (0, 0, 0) = L[i] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
-    unfold chordRec
-    rw [this]
-    rfl
+    aesop (add simp [List.getD_eq_getElem?_getD, Option.getD_some, chordRec]) (add safe (by omega))
 
 omit h in
 /-- The chord record `i` of the computed normal form. -/
@@ -150,9 +140,7 @@ theorem split_first {i : ℕ} (hi : i < L.length) :
   obtain ⟨u, v, hsplit⟩ := List.append_of_mem (h.ctx.e1_mem hi)
   refine ⟨u, v, hsplit, ?_⟩
   have hnd := h.ctx.nodup
-  rw [hsplit, nodup_append] at hnd
-  have hnot : e1 M Q L i ∉ u := fun h1 => hnd.2.2 _ h1 _ mem_cons_self rfl
-  rw [hsplit, List.idxOf_append_of_notMem hnot, idxOf_cons_self, add_zero]
+  grind
 
 /-- The region of index `r`. -/
 noncomputable def regF (r : ℕ) : Set Point := reg M Q L (evs M Q L E) (lab r)
@@ -160,18 +148,11 @@ noncomputable def regF (r : ℕ) : Set Point := reg M Q L (evs M Q L E) (lab r)
 omit h in
 theorem labelOK_lab {r : ℕ} (hr : r < L.length + 1) : LabelOK L.length (lab r) := by
   intro i hi
-  unfold lab at hi
-  by_cases h0 : r = 0
-  · rw [ite_eq_left h0] at hi; cases hi
-  · rw [ite_eq_right h0] at hi
-    have : r - 1 = i := Option.some.inj hi
-    omega
+  aesop (add simp [lab]) (add safe (by omega))
 
 omit h in
 theorem ridx_lt {ℓ : Option ℕ} (hℓ : LabelOK L.length ℓ) : ridx ℓ < L.length + 1 := by
-  cases ℓ with
-  | none => simp [ridx]
-  | some i => have := hℓ i rfl; simp only [ridx]; omega
+  aesop (add simp [ridx]) (add safe (by omega))
 
 /-- **The region correspondence** of the computed normal form. -/
 theorem regionCorr : RegionCorr M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (E := E)) := by
@@ -181,7 +162,7 @@ theorem regionCorr : RegionCorr M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L
   · have := h2 _ _ (labelOK_lab hr) (labelOK_lab hr') heq
     rw [← ridx_lab r, ← ridx_lab r', this]
   · obtain ⟨ℓ, hℓ, hU⟩ := h3 U hU
-    exact ⟨ridx ℓ, ridx_lt hℓ, by unfold regF; rw [lab_ridx]; exact hU⟩
+    exact ⟨ridx ℓ, ridx_lt hℓ, by grind [regF, lab_ridx]⟩
 
 /-- **The sides of the chord records.** -/
 theorem sides_rec {i : ℕ} (hi : i < L.length) :
@@ -193,7 +174,7 @@ theorem sides_rec {i : ℕ} (hi : i < L.length) :
   have hsides := hC.sides hsplit hi
   have hfirst := hC.label_first hsplit hi
   have hout : outside M Q L E i = BuildStack.label (word M Q L E) u.length := by
-    unfold outside; rw [hlen]
+    grind [outside]
   have hOK : LabelOK L.length (outside M Q L E i) := by rw [hout]; exact hC.label_ok _
   have hword : word M Q L E = (evs M Q L E).map Prod.fst := rfl
   rw [hword] at hout
@@ -202,17 +183,11 @@ theorem sides_rec {i : ℕ} (hi : i < L.length) :
   unfold chordRec regF
   split_ifs with hk
   · refine ⟨ridx_lt hOK, ?_, ?_, ?_⟩
-    · show i + 1 < L.length + 1
-      omega
-    · rw [lab_ridx, hout]; exact (hsides.2.2.1 hk).2
-    · rw [← hri, lab_ridx]; exact (hsides.2.2.1 hk).1
+    all_goals (grind [lab_ridx])
   · have hk' : kr M Q L i < kl M Q L i :=
       lt_of_le_of_ne (not_lt.1 hk) (Ne.symm (hC.kl_ne_kr hi))
     refine ⟨?_, ridx_lt hOK, ?_, ?_⟩
-    · show i + 1 < L.length + 1
-      omega
-    · rw [← hri, lab_ridx]; exact (hsides.2.2.2 hk').1
-    · rw [lab_ridx, hout]; exact (hsides.2.2.2 hk').2
+    all_goals (grind [lab_ridx])
 
 /-- **The chord sides** of the computed normal form. -/
 theorem chordSidesOK :
@@ -233,7 +208,7 @@ theorem mem_gapStarts {m : ℕ} :
     m ∈ gapStarts M Q L E ↔ m < E.length ∧
       (m + 1 = E.length ∨ kap (evs M Q L E) m < kap (evs M Q L E) (m + 1)) := by
   unfold gapStarts
-  rw [mem_filter, List.mem_range, decide_eq_true_eq]
+  simp_all
 
 omit h in
 /-- The gap starts are increasing. -/
@@ -245,21 +220,22 @@ omit h in
 theorem arc_eq {j : ℕ} (hK : L.length ≠ 0) (hj : j < (arcList M Q L E).length) :
     (buildNF M Q L E).arc j = arcRec M Q L E ((gapStarts M Q L E)[j]'(by
       unfold arcList at hj; rw [ite_eq_right hK, length_map] at hj; exact hj)) := by
-  unfold NF.arc buildNF
-  simp only
-  unfold arcList
-  simp only [ite_eq_right hK]
-  rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_eq_getElem, Option.map_some,
-    Option.getD_some]
+  core_grind [buildNF, arcList, List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_eq_getElem, Option.map_some, Option.getD_some]
 
+section
+variable {m : ℕ} (hm : m < E.length)
+include hm
 /-- The start key of the arc of the gap at `m`. -/
-theorem key_arcRec_s {m : ℕ} (hm : m < E.length) :
+theorem key_arcRec_s :
     M.key Q (arcRec M Q L E m).s = kap (evs M Q L E) m := h.key_s hm
 
 /-- The end key of the arc of the gap at `m`. -/
-theorem key_arcRec_e {m : ℕ} (hm : m < E.length) :
+theorem key_arcRec_e :
     M.key Q (arcRec M Q L E m).e = kap (evs M Q L E) ((m + 1) % E.length) :=
   h.key_s (Nat.mod_lt _ (by omega))
+
+
+end
 
 /-- **The arc of a gap is an arc of the region of its record.** -/
 theorem arcRec_isArc {m : ℕ} (hK : L.length ≠ 0) (hm : m ∈ gapStarts M Q L E) :
@@ -276,7 +252,7 @@ theorem arcRec_isArc {m : ℕ} (hK : L.length ≠ 0) (hm : m ∈ gapStarts M Q L
   simp only [arcRec]
   rw [lab_ridx]
   rcases hgap with hlast | hlt
-  · have hS : (evs M Q L E).length = m + 1 := by rw [hlev, hlast]
+  · 
     rw [hlast, Nat.mod_self, show word M Q L E = (evs M Q L E).map Prod.fst from rfl, ← hlev,
       hC.label_ends.2, show m = (evs M Q L E).length - 1 by omega]
     exact hC.arc_of_wrap (Nat.pos_of_ne_zero hK)
@@ -284,13 +260,13 @@ theorem arcRec_isArc {m : ℕ} (hK : L.length ≠ 0) (hm : m ∈ gapStarts M Q L
       rcases lt_or_ge (m + 1) E.length with h1 | h1
       · exact h1
       · exfalso
-        have h1' : m + 1 = (evs M Q L E).length := by rw [hlev]; omega
+        
         have h0 : kap (evs M Q L E) (m + 1) = 0 := by
           unfold kap; rw [List.getD_eq_default _ _ (by omega)]
-        have := (hC.kap_bounds (m := m) (by rw [hlev]; exact hml)).1
+        have := (hC.kap_bounds (m := m) (by omega)).1
         linarith
     rw [Nat.mod_eq_of_lt hm1]
-    exact hC.arc_of_gap (by rw [hlev]; exact hm1) hlt
+    exact hC.arc_of_gap (by omega) hlt
 
 /-- Two arcs with the same keys of regions of the computed normal form have the same region. -/
 theorem reg_eq_of_arcs (hK : L.length ≠ 0) {r r' : ℕ} (hr : r < L.length + 1)
@@ -329,30 +305,27 @@ theorem arcsOK : ArcsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (
   rw [h.F_eq, nRegions, harcsN]
   by_cases hK : L.length = 0
   · -- no chord: the single pinned arc
-    have hA : arcList M Q L E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by unfold arcList; rw [ite_eq_left hK]
+    have hA : arcList M Q L E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by grind [arcList]
     have hkey0 : M.key Q ⟨0, 0⟩ = 0 := by simp [Model.key, Model.param]
     have harc0 : (buildNF M Q L E).arc 0 = ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ := by
-      unfold NF.arc; rw [harcsN, hA]; rfl
+      core_grind
     have hreg0 : regF (M := M) (Q := Q) (L := L) (E := E) 0 = reg M Q L (evs M Q L E) none := rfl
     refine ⟨fun j hj => ?_, fun j j' hj hj' _ _ => ?_, fun r hr a b harc => ?_, ?_⟩
     · rw [hA, length_singleton] at hj
       have : j = 0 := by omega
       subst this
       rw [harc0]
-      refine ⟨by show 0 < L.length + 1; omega, ?_⟩
+      refine ⟨by simp_all, ?_⟩
       show M.IsArc _ (regF 0) (M.key Q ⟨0, 0⟩) (M.key Q ⟨0, 0⟩)
       rw [hkey0, hreg0]
       exact hC.arc_of_empty hK
-    · rw [hA, length_singleton] at hj hj'; omega
+    · simp_all
     · obtain ⟨rfl, rfl⟩ := hC.gap_of_arc_empty hK harc
-      refine ⟨0, by rw [hA]; simp, ?_, ?_, ?_⟩
-      · rw [harc0]; show 0 = r; omega
-      · rw [harc0]; exact hkey0
-      · rw [harc0]; exact hkey0
-    · intro r hr j; rw [← harcsN]; exact hlast r (by rw [nRegions]; exact hr) j
+      simp_all
+    grind [nRegions]
   · have hA : arcList M Q L E = (gapStarts M Q L E).map (arcRec M Q L E) := by
-      unfold arcList; rw [ite_eq_right hK]
-    have hlenA : (arcList M Q L E).length = (gapStarts M Q L E).length := by rw [hA, length_map]
+      grind [arcList]
+    have hlenA : (arcList M Q L E).length = (gapStarts M Q L E).length := by simp_all
     refine ⟨fun j hj => ?_, fun j j' hj hj' hreg hkey => ?_, fun r hr a b harc => ?_, ?_⟩
     · rw [arc_eq hK hj]
       exact h.arcRec_isArc hK (getElem_mem _)
@@ -374,10 +347,8 @@ theorem arcsOK : ArcsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (
         have hml' := (hmem k' hk').1
         rcases hgap with hlast | hgap
         · omega
-        · exact hgap.trans_le (BuildSort.kap_mono hC.sorted hlt (by rw [hlev]; exact hml'))
-      rcases lt_or_gt_of_ne hne with hlt | hlt
-      · exact (key_lt j j' hj1 hj1' hlt).ne hkey
-      · exact (key_lt j' j hj1' hj1 hlt).ne hkey.symm
+        · exact hgap.trans_le (BuildSort.kap_mono hC.sorted hlt (by omega))
+      grind
     · have hS : (evs M Q L E).length = E.length := hlev
       -- the gap of the arc
       obtain ⟨m, hmG, rfl, rfl⟩ : ∃ m ∈ gapStarts M Q L E,
@@ -389,7 +360,7 @@ theorem arcsOK : ArcsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (
         · have hE : 0 < E.length := by rw [h.length_E]; omega
           refine ⟨E.length - 1, (mem_gapStarts (M := M) (Q := Q) (L := L) (E := E)).2
             ⟨by omega, Or.inl (by omega)⟩, by rw [hS], ?_⟩
-          rw [Nat.sub_add_cancel hE, Nat.mod_self]
+          grind [Nat.mod_self]
       obtain ⟨j, hj, hjm⟩ := List.mem_iff_getElem.1 hmG
       have hjA : j < (arcList M Q L E).length := hlenA ▸ hj
       have hmE := ((mem_gapStarts (M := M) (Q := Q) (L := L) (E := E)).1 hmG).1
@@ -401,7 +372,7 @@ theorem arcsOK : ArcsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (
         exact (h.reg_eq_of_arcs hK hr hreg harc harc').symm
       · rw [arc_eq hK hjA]; simp only [hjm]; exact h.key_arcRec_s hmE
       · rw [arc_eq hK hjA]; simp only [hjm]; exact h.key_arcRec_e hmE
-    · intro r hr j; rw [← harcsN]; exact hlast r (by rw [nRegions]; exact hr) j
+    aesop (add simp [nRegions]) (add safe (by omega))
 
 /-! ## Regions and the sequence -/
 
@@ -427,21 +398,13 @@ theorem touches_iff {i : ℕ} (hi : i < L.length) {r : ℕ} (hr : r < L.length +
   have heqU : regF (M := M) (Q := Q) (L := L) (E := E) (chordRec M Q L E i).up = Up := by
     obtain ⟨δ, h1, h2, -⟩ := ((hA z hzc hzD).and (hside z hzc hzD)).exists
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint (hcorr.1 _ hup) hUp with h' | h'
-    · exact h'
-    · exact absurd (h'.le_bot ⟨h1, h2⟩) (fun h => h)
+    all_goals grind
   have heqD : regF (M := M) (Q := Q) (L := L) (E := E) (chordRec M Q L E i).dn = Dn := by
     obtain ⟨δ, h1, -, h2⟩ := ((hB z hzc hzD).and (hside z hzc hzD)).exists
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint (hcorr.1 _ hdn) hDn with h' | h'
-    · exact h'
-    · exact absurd (h'.le_bot ⟨h1, h2⟩) (fun h => h)
+    all_goals grind
   rw [htouch _ (hcorr.1 r hr), ← heqU, ← heqD]
-  constructor
-  · rintro (h1 | h1)
-    · exact Or.inl (hcorr.2.1 _ _ hup hr h1.symm)
-    · exact Or.inr (hcorr.2.1 _ _ hdn hr h1.symm)
-  · rintro (h1 | h1)
-    · exact Or.inl (by rw [h1])
-    · exact Or.inr (by rw [h1])
+  grind
 
 /-- **The region records** of the computed normal form. -/
 theorem regionsOK : RegionsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (E := E)) := by
@@ -472,13 +435,13 @@ theorem regionsOK : RegionsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L :
     constructor
     · intro hx
       obtain ⟨j, hj, rfl⟩ := List.mem_map.1 hx
-      have hj' := (h4 r (by rw [nRegions]; exact hr) j).1 (by rw [h.region_eq hr]; exact hj)
+      have hj' := (h4 r (by grind [nRegions]) j).1 (by rw [h.region_eq hr]; exact hj)
       obtain ⟨-, harc⟩ := h1 j hj'.1
       rw [hj'.2] at harc
       exact ⟨(M.key Q ((buildNF M Q L E).arc j).s, M.key Q ((buildNF M Q L E).arc j).e), harc, rfl⟩
     · rintro ⟨ab, harc, rfl⟩
       obtain ⟨j, hj, hjr, hs, he⟩ := h3 r hr ab.1 ab.2 harc
-      have hjr' := (h4 r (by rw [nRegions]; exact hr) j).2 ⟨hj, hjr⟩
+      have hjr' := (h4 r (by grind [nRegions]) j).2 ⟨hj, hjr⟩
       rw [h.region_eq hr] at hjr'
       refine List.mem_map.2 ⟨j, hjr', ?_⟩
       show M.arcWt (M.key Q ((buildNF M Q L E).arc j).s) (M.key Q ((buildNF M Q L E).arc j).e) = _
@@ -494,11 +457,10 @@ theorem seqOK : SeqOK M Q (buildNF M Q L E) := by
   simp only [getElem_range]
   rw [length_range] at hj hj'
   by_cases hK : L.length = 0
-  · have : (arcList M Q L E).length = 1 := by unfold arcList; rw [ite_eq_left hK]; rfl
-    omega
+  · aesop (add simp [arcList]) (add safe (by omega))
   · have hC := h.ctx
     have hlenA : (arcList M Q L E).length = (gapStarts M Q L E).length := by
-      unfold arcList; rw [ite_eq_right hK, length_map]
+      grind [arcList, length_map]
     rw [arc_eq hK hj, arc_eq hK hj']
     have hj1 : j < (gapStarts M Q L E).length := hlenA ▸ hj
     have hj1' : j' < (gapStarts M Q L E).length := hlenA ▸ hj'
@@ -507,7 +469,7 @@ theorem seqOK : SeqOK M Q (buildNF M Q L E) := by
     rw [h.key_arcRec_s (hmem j hj1).1, h.key_arcRec_s (hmem j' hj1').1]
     have hlt := pairwise_iff_getElem.1 (gapStarts_sorted (M := M) (Q := Q) (L := L) (E := E))
       j j' hj1 hj1' hjj
-    exact BuildSort.kap_mono hC.sorted hlt.le (by rw [h.length_evs]; exact (hmem j' hj1').1)
+    exact BuildSort.kap_mono hC.sorted hlt.le (by rw [h.length_evs]; simp_all)
 
 /-- The walk positions of the events are positions of the walk proper. -/
 theorem properPos_wposOf {c : ℕ} (hc : c ∈ E) : ProperPos M Q Q.n (wposOf L c) := by
@@ -518,38 +480,37 @@ theorem properPos_wposOf {c : ℕ} (hc : c ∈ E) : ProperPos M Q Q.n (wposOf L 
   unfold wposOf
   split_ifs
   · have hA := hC.attL hi
-    exact ⟨hA.2.1, hA.2.2.1, by show (crec L (c / 2)).h + 1 ≤ Q.n; omega⟩
+    exact ⟨hA.2.1, hA.2.2.1, by aesop⟩
   · have hA := hC.attR hi
-    exact ⟨hA.2.1, hA.2.2.1, by show (crec L (c / 2)).h + 1 ≤ Q.n; omega⟩
+    exact ⟨hA.2.1, hA.2.2.1, by aesop⟩
 
 /-- The ends of the arc records are positions of the walk proper. -/
 theorem properPos_arcs {j : ℕ} (hj : j < (arcList M Q L E).length) :
     ProperPos M Q Q.n ((buildNF M Q L E).arc j).s ∧ ProperPos M Q Q.n ((buildNF M Q L E).arc j).e := by
   by_cases hK : L.length = 0
-  · have hA : arcList M Q L E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by unfold arcList; rw [ite_eq_left hK]
+  · have hA : arcList M Q L E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by grind [arcList]
     rw [hA, length_singleton] at hj
     have : j = 0 := by omega
     subst this
     have harc0 : (buildNF M Q L E).arc 0 = ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ := by
-      unfold NF.arc; show (arcList M Q L E).getD 0 _ = _; rw [hA]; rfl
+      aesop (add simp [NF.arc]) (add safe (by omega))
     rw [harc0]
-    have hp : ProperPos M Q Q.n ⟨0, 0⟩ := ⟨le_refl _, by simp [Model.param], Nat.zero_le _⟩
-    exact ⟨hp, hp⟩
+    have hp : ProperPos M Q Q.n ⟨0, 0⟩ := ⟨le_refl _, by positivity, Nat.zero_le _⟩
+    simp_all
   · rw [arc_eq hK hj]
     have hlenA : (arcList M Q L E).length = (gapStarts M Q L E).length := by
-      unfold arcList; rw [ite_eq_right hK, length_map]
+      grind [arcList, length_map]
     have hj1 : j < (gapStarts M Q L E).length := hlenA ▸ hj
     have hm := ((mem_gapStarts (M := M) (Q := Q) (L := L) (E := E)).1 (getElem_mem hj1)).1
     have hgetD : ∀ k, k < E.length → E.getD k 0 ∈ E := fun k hk => by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk, Option.getD_some]
-      exact getElem_mem hk
+      simp_all
     exact ⟨h.properPos_wposOf (hgetD _ hm), h.properPos_wposOf (hgetD _ (Nat.mod_lt _ (by omega)))⟩
 
 /-- **WP-C: the computed normal form is valid** (`IsNF`), with the chords of the list in order
 and no decomposition. -/
 theorem isNF : IsNF M Q (buildNF M Q L E) ∧
     (buildNF M Q L E).chords.map (fun r => (r.h, r.lp, r.rp)) = L ∧ (buildNF M Q L E).dec = [] := by
-  have hC := h.ctx
+  
   refine ⟨⟨?_, fun i i' hi hi' heq => ?_, fun i hi => ?_, regF, h.regionCorr, h.chordSidesOK,
     h.arcsOK, h.regionsOK, h.seqOK, fun i hi => ?_, fun j hj => h.properPos_arcs hj⟩, ?_, rfl⟩
   · rw [h.F_eq]; exact h.valid.1

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.MergeAsmMath
 public import Chazelle.Core.GranNFBounds
 
@@ -87,14 +89,14 @@ def setG : Stmt := block [.copyN 90000 100010, .copyN 90001 80005, .copyN 90002 
 def outS : Stmt := block [.copyN 100008 90004]
 
 /-- **The merge** (Lemma 3.5): fuse, restore conformality, restore granularity. -/
-def mergeMk (fMk : Stmt → Stmt) (rMk : Stmt → Stmt → Stmt) (gS : Stmt) (sh cu : Stmt) : Stmt :=
+def mergeMk (fMk : Stmt → Stmt) (rMk : Stmt → Stmt → Stmt) (gS sh cu : Stmt) : Stmt :=
   .seq setF (.seq (fMk sh) (.seq descS (.seq mdInit (.seq mdLoop (.seq gamS (.seq setR
     (.seq (rMk sh cu) (.seq setG (.seq gS outS)))))))))
 
 /-! ## Register-only blocks -/
 
 /-- A band predicate. -/
-def inBand (b : ℕ) (r : ℕ) : Bool := decide (bandOf r = b)
+def inBand (b r : ℕ) : Bool := decide (bandOf r = b)
 
 theorem wr_setF : wr (inBand bFuse) setF = true := by decide
 theorem wr_setR : wr (inBand bRestore) setR = true := by decide
@@ -103,7 +105,10 @@ theorem wr_mdInit : wr (inBand bMerge) mdInit = true := by decide
 theorem wr_mdLoop : wr (inBand bMerge) mdLoop = true := by decide
 theorem wr_gamS : wr (inBand bMerge) gamS = true := by decide
 
-theorem setF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
+section
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include hw
+theorem setF_exec :
     ∃ c' k, Exec P W setF c c' k ∧ k = 8 ∧
       rd c' bFuse 0 = rd c bMerge 0 ∧ rd c' bFuse 1 = rd c bMerge 1 ∧
       rd c' bFuse 2 = rd c bMerge 2 ∧ rd c' bFuse 3 = rd c bMerge 3 ∧
@@ -117,11 +122,11 @@ theorem setF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
       rd c' bFuse 6 = rd c bMerge 7 ∧ rd c' bFuse 8 = rd c bMerge 9) := by
     unfold setF
     exec_block
-    exact ⟨rfl, by simp [rd, bandReg, bFuse, bMerge]⟩
+    omega_nf
   exact ⟨c', k, e, hk, h.1, h.2.1, h.2.2.1, h.2.2.2.1, h.2.2.2.2.1, h.2.2.2.2.2.1,
     h.2.2.2.2.2.2.1, h.2.2.2.2.2.2.2, exec_frameB e wr_setF⟩
 
-theorem setR_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
+theorem setR_exec :
     ∃ c' k, Exec P W setR c c' k ∧ k = 6 ∧
       rd c' bRestore 0 = c.nreg 100010 ∧ rd c' bRestore 1 = rd c bFuse 7 ∧
       rd c' bRestore 2 = c.nreg 100032 ∧ rd c' bRestore 3 = rd c bMerge 7 ∧
@@ -133,11 +138,11 @@ theorem setR_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
       rd c' bRestore 4 = c.nreg 100045 ∧ rd c' bRestore 6 = rd c bMerge 9) := by
     unfold setR
     exec_block
-    exact ⟨rfl, by simp [rd, bandReg, bFuse, bMerge, bRestore]⟩
+    omega_nf
   exact ⟨c', k, e, hk, h.1, h.2.1, h.2.2.1, h.2.2.2.1, h.2.2.2.2.1, h.2.2.2.2.2,
     exec_frameB e wr_setR⟩
 
-theorem setG_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
+theorem setG_exec :
     ∃ c' k, Exec P W setG c c' k ∧ k = 4 ∧
       rd c' bGran 0 = c.nreg 100010 ∧ rd c' bGran 1 = rd c bRestore 5 ∧
       rd c' bGran 2 = rd c bMerge 7 ∧ rd c' bGran 3 = rd c bMerge 6 ∧
@@ -147,22 +152,22 @@ theorem setG_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
       rd c' bGran 2 = rd c bMerge 7 ∧ rd c' bGran 3 = rd c bMerge 6) := by
     unfold setG
     exec_block
-    exact ⟨rfl, by simp [rd, bandReg, bGran, bMerge, bRestore]⟩
+    omega_nf
   exact ⟨c', k, e, hk, h.1, h.2.1, h.2.2.1, h.2.2.2, exec_frameB e wr_setG⟩
 
-theorem outS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
+theorem outS_exec :
     ∃ c' k, Exec P W outS c c' k ∧ k = 1 ∧ rd c' bMerge 8 = rd c bGran 4 ∧
       FrameB (fun r => r == 100008) c c' := by
   have ⟨c', k, e, hk, h⟩ : ∃ c' k, Exec P W outS c c' k ∧ k = 1 ∧
       rd c' bMerge 8 = rd c bGran 4 := by
     unfold outS
     exec_block
-    exact ⟨rfl, by simp [rd, bandReg, bGran, bMerge]⟩
+    omega_nf
   exact ⟨c', k, e, hk, h, exec_frameB e (by decide)⟩
 
 /-! ## `γ_R` -/
 
-theorem gamS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+theorem gamS_exec
     (h20 : c.nreg 100020 = 1) {g m : ℕ} (hg : rd c bMerge 5 = g)
     (hm : c.nmem (rd c bMerge 2 + 2) = m) (hgW : g + 1 ≤ W) (hmW : 2 * m ≤ W)
     (h2W : rd c bMerge 2 + 2 ≤ W) :
@@ -177,45 +182,38 @@ theorem gamS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       k₁ = 5 ∧ c₁.nreg 100040 = g ∧ c₁.nreg 100043 = 2 * m ∧
       ∀ r, r < 100040 → c₁.nreg r = c.nreg r := by
     exec_block
-    all_goals try omega
-    all_goals try (simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, hg', hm']; omega)
-    refine ⟨rfl, ?_, ?_, fun r hr => ?_⟩
-    · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hg']
-    · simp (disch := omega) only [Machine.upd_same,
-        hm']
-      ring
-    · simp (disch := omega) only [Machine.upd_other]
+    all_goals (grind [Machine.upd_same, Machine.upd_other])
   have hw₁ := e₁.wb_right
   have tail : ∀ c₂ : Config, WordsBounded W c₂ → c₂.nreg 100045 = min g (2 * m) →
       c₂.nreg 100020 = 1 → ∃ c₃, Exec P W (block [.addN 100045 100045 100020]) c₂ c₃ 1 ∧
         c₃.nreg 100045 = min g (2 * m) + 1 ∧ ∀ r, r ≠ 100045 → c₃.nreg r = c₂.nreg r :=
     fun c₂ hw₂ h45 h20' => by
       have e := Exec.addN (P := P) hw₂ 100045 100045 100020 (by
-        rw [h45, h20']; have := min_le_left g (2 * m); omega)
-      exact ⟨_, .seq e (.skip e.wb_right), by simp only [upd_same]; rw [h45, h20'],
-        fun r hr => by simp only [upd_other _ _ _ hr]⟩
+        omega)
+      exact ⟨_, .seq e (.skip e.wb_right), by omega_nf,
+        fun r hr => by ram_simp⟩
   by_cases hlt : c₁.nreg 100040 < c₁.nreg 100043
   · have e₂ := Exec.copyN (P := P) hw₁ 100045 100040
     obtain ⟨c₃, e₃, v₃, r₃⟩ := tail _ e₂.wb_right (by
-        simp only [upd_same]; rw [v40]; rw [v40, v43] at hlt; omega)
-      (by simp only [upd_other _ _ _ (show (100020 : ℕ) ≠ 100045 by decide)]
-          rw [r₁ _ (by decide), h20])
+        ram_simp)
+      (by ram_simp)
     have ex : Exec P W gamS c c₃ (k₁ + ((1 + 0) + 1 + 1)) :=
       .seq e₁ (.seq (.ifLtN_true hlt (.seq e₂ (.skip e₂.wb_right))) e₃)
     refine ⟨c₃, _, ex, by omega, v₃, exec_frameB ex wr_gamS, fun r hr => ?_⟩
     rw [r₃ r (by omega)]
-    simp only [upd_other _ _ _ (show r ≠ 100045 by omega)]; exact r₁ r hr
+    ram_simp <;> omega_nf
   · have e₂ := Exec.copyN (P := P) hw₁ 100045 100043
     obtain ⟨c₃, e₃, v₃, r₃⟩ := tail _ e₂.wb_right (by
-        simp only [upd_same]; rw [v43]; rw [v40, v43] at hlt; omega)
-      (by simp only [upd_other _ _ _ (show (100020 : ℕ) ≠ 100045 by decide)]
-          rw [r₁ _ (by decide), h20])
+        omega_nf)
+      (by ram_simp)
     have ex : Exec P W gamS c c₃ (k₁ + ((1 + 0) + 2 + 1)) :=
       .seq e₁ (.seq (.ifLtN_false hlt (.seq e₂ (.skip e₂.wb_right))) e₃)
     refine ⟨c₃, _, ex, by omega, v₃, exec_frameB ex wr_gamS, fun r hr => ?_⟩
     rw [r₃ r (by omega)]
-    simp only [upd_other _ _ _ (show r ≠ 100045 by omega)]; exact r₁ r hr
+    ram_simp <;> omega_nf
+
+
+end
 
 end
 

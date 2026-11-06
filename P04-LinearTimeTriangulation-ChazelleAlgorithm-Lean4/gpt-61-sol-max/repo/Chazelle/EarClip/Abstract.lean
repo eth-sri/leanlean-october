@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.EarClip.SubPoly
 
 /-!
@@ -40,13 +42,15 @@ variable (P : Polygon)
 
 /-! ### The ear test -/
 
+section
+variable (l : List ℕ)
 /-- The predecessor index of position `p` in a list of length `m`. -/
-theorem prevIdx_subPoly (l : List ℕ) (p : ℕ) :
+theorem prevIdx_subPoly (p : ℕ) :
     prevIdx (subPoly P l) p = (p + l.length - 1) % l.length := by
-  unfold prevIdx; rw [n_subPoly]
+  core_grind [n_subPoly]
 
 /-- `getD` of a rotated list. -/
-theorem getD_rotate (l : List ℕ) (r k : ℕ) (hk : k < l.length) (d : ℕ) :
+theorem getD_rotate (r k : ℕ) (hk : k < l.length) (d : ℕ) :
     (l.rotate r).getD k d = l.getD ((k + r) % l.length) d := by
   rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_rotate hk]
 
@@ -54,12 +58,18 @@ theorem getD_rotate (l : List ℕ) (r k : ℕ) (hk : k < l.length) (d : ℕ) :
 
 /-! ### The algorithm -/
 
+
+end
+
+section
+variable (l : List ℕ) (p : ℕ)
+include l p
 /-- The emitted triangle at position `p`: `(l[p-1], l[p], l[p+1])` in original indices. -/
-def earTri (l : List ℕ) (p : ℕ) : Polygon.Triangle :=
+def earTri : Polygon.Triangle :=
   (l.getD ((p + l.length - 1) % l.length) 0, l.getD p 0, l.getD ((p + 1) % l.length) 0)
 
 /-- `earTri` is the ear triangle of `subPoly P l` relabelled to original indices. -/
-theorem relabelList_earTriangle (l : List ℕ) (p : ℕ) :
+theorem relabelList_earTriangle :
     relabelList l (earTriangle (subPoly P l) p) = earTri l p := by
   unfold relabelList earTriangle earTri
   rw [prevIdx_subPoly, n_subPoly]
@@ -67,6 +77,9 @@ theorem relabelList_earTriangle (l : List ℕ) (p : ℕ) :
 /-! ### The invariant -/
 
 /-! ### Correctness -/
+
+
+end
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvHPart
 
 /-!
@@ -56,19 +58,10 @@ theorem HEnv.keep {W n : ℕ} {N : NF} {r : ℕ} {li : Bool} {T : ℕ} {d d' : C
   have g27 : d'.nreg 215027 = d.nreg 215027 := g _ (by decide)
   have g28 : d'.nreg 215028 = d.nreg 215028 := g _ (by decide)
   have g29 : d'.nreg 215029 = d.nreg 215029 := g _ (by decide)
-  refine ⟨h.K.frame hf (by decide), h.F, by rw [g _ (by decide), h.aR],
-    by rw [g _ (by decide), h.kR], by rw [g _ (by decide), h.tR], fun t ht => ?_, fun v hv => ?_,
+  refine ⟨h.K.frame hf (by decide), h.F, by ram_grind,
+    by ram_grind, by ram_grind, fun t ht => ?_, fun v hv => ?_,
     fun j hj => ?_, fun i hi => ?_, h.hT, h.hn, h.hn0⟩
-  · obtain ⟨a1, a2⟩ := h.arcs t ht
-    rw [g27, g28, hm _ a2]; exact ⟨a1, a2⟩
-  · obtain ⟨a1, a2⟩ := h.chs v hv
-    rw [g27, g29, hm _ a2]; exact ⟨a1, a2⟩
-  · obtain ⟨a1, a2, a3, a4, a5⟩ := h.arcR j hj
-    rw [g26, hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ a5]
-    exact ⟨a1, a2, a3, a4, a5⟩
-  · obtain ⟨a1, a2, a3, a4⟩ := h.chR i hi
-    rw [g25, hm _ (by omega), hm _ (by omega), hm _ a4]
-    exact ⟨a1, a2, a3, a4⟩
+  all_goals ram_grind
 
 theorem add_1_1 (a : ℕ) : a + 1 + 1 = a + 2 := rfl
 theorem add_5 (a b : ℕ) : a + (b + b + (b + b) + b) = a + 5 * b := by ring
@@ -76,7 +69,7 @@ theorem add_5 (a b : ℕ) : a + (b + b + (b + b) + b) = a + 5 * b := by ring
 theorem mod_succ_of_lt {t A : ℕ} (ht : t < A) : (t + 1) % A = if t + 1 < A then t + 1 else 0 := by
   split_ifs with h
   · exact Nat.mod_eq_of_lt h
-  · rw [show t + 1 = A by omega, Nat.mod_self]
+  grind [Nat.mod_self]
 
 section exec
 
@@ -95,7 +88,7 @@ theorem ldS_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r : �
       d'.nreg 215051 = (N.arc ((N.region r).arcs.getD ((t + 1) % (N.region r).arcs.length) 0)).e.hgt ∧
       d'.nmem = d.nmem ∧ FrameM Bld d d' := by
   have hmem : ∀ t', t' < (N.region r).arcs.length → (N.region r).arcs.getD t' 0 ∈ (N.region r).arcs :=
-    fun t' h' => by rw [List.getD_eq_getElem _ _ h']; exact List.getElem_mem h'
+    fun t' h' => by simp_all
   have K := hE.K
   have hT := hE.hT
   obtain ⟨b1, b2⟩ := hE.arcs t ht
@@ -168,20 +161,17 @@ theorem cpEm_exec (a b : ℕ) (hb : b ≠ 215064) (d : Config)
   set d₁ : Config := { d with nreg := upd d.nreg 215064 (d.nreg a) } with hd₁
   set d₂ : Config := { d₁ with nreg := upd d₁.nreg 215065 (d₁.nreg b) } with hd₂
   have g : ∀ q, q ≠ 215064 → q ≠ 215065 → d₂.nreg q = d.nreg q := fun q h1 h2 => by
-    rw [hd₂, hd₁]; simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2]
-  have K₂ : Kst n li d₂ := ⟨by rw [g _ (by decide) (by decide), hK.one],
-    by rw [g _ (by decide) (by decide), hK.nn], by rw [g _ (by decide) (by decide), hK.zero],
-    by rw [g _ (by decide) (by decide), hK.three], by rw [g _ (by decide) (by decide), hK.two],
-    by rw [g _ (by decide) (by decide), hK.li]⟩
-  have B₂ : Buf n T xs d₂ := ⟨hB.1, by rw [g _ (by decide) (by decide), hB.2.1],
-    by rw [g _ (by decide) (by decide), hB.2.2.1], by rw [g _ (by decide) (by decide), hB.2.2.2]⟩
+    simp_all
+  have K₂ : Kst n li d₂ := ⟨by ram_grind,
+    by ram_grind, by ram_grind,
+    by ram_grind, by ram_grind,
+    by ram_grind⟩
+  have B₂ : Buf n T xs d₂ := ⟨hB.1, by ram_grind,
+    by ram_grind, by ram_grind⟩
   have v64 : d₂.nreg 215064 = e := by
-    rw [hd₂, hd₁]; simp only [Machine.upd_other _ _ _ (show (215064 : ℕ) ≠ 215065 by decide),
-      Machine.upd_same, h1]
+    simp_all
   have v65 : d₂.nreg 215065 = h := by
-    rw [hd₂, hd₁]
-    simp only [Machine.upd_same]
-    rw [Machine.upd_other _ _ _ hb, h2]
+    simp_all
   have eb : Exec P W (block [.copyN 215064 a, .copyN 215065 b]) d d₂ 2 :=
     .seq e₁ (.seq e₂ (.skip e₂.wb_right))
   have fb : FrameM (fun q => decide (q = 215064) || decide (q = 215065)) d d₂ :=
@@ -190,11 +180,11 @@ theorem cpEm_exec (a b : ℕ) (hb : b ≠ 215064) (d : Config)
     hW1 hW2 hW3
   refine ⟨d₃, 2 + k₃, .seq eb e₃, by omega, B₃, fun x hx => by rw [m₃ x hx], ?_⟩
   exact (fb.mono fun q hq => by
-      simp only [Bool.or_eq_true, decide_eq_true_eq] at hq ⊢; omega).trans
-    (f₃.mono fun q hq => by simp only [Bool.or_eq_true] at hq ⊢; exact Or.inl (Or.inl hq))
+      grind).trans
+    (f₃.mono fun q hq => by simp_all)
 
 theorem wpos_ne {p s : WPos} (h : p ≠ s) : ¬ (p.edge = s.edge ∧ p.hgt = s.hgt) := by
-  rintro ⟨h1, h2⟩; apply h; cases p; cases s; simp_all
+  rintro ⟨h1, h2⟩; apply h; cases p; simp_all
 
 /-- **The junction point.** -/
 theorem junS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T : ℕ} {xs : List HostItem}
@@ -245,21 +235,16 @@ theorem partner_bounds {n : ℕ} {N : NF} {r : ℕ} (hF : HFacts n N r) {x : WPo
     (partner N r x).edge < n ∧ (partner N r x).hgt ≤ n := by
   rw [partner_eq]
   cases hf : (N.region r).chords.find? (pmatch N x) with
-  | none => exact ⟨hx, hxh⟩
+  | none => aesop
   | some i =>
     have hi := List.mem_of_find?_eq_some hf
     obtain ⟨-, hl, hr, hh⟩ := hF.hch i hi
-    simp only [resOf]
-    split_ifs <;> simp only [CRec.lpos, CRec.rpos] <;> omega
+    grind [resOf, CRec.lpos, CRec.rpos]
 
 theorem sub_Bdyn {B : ℕ → Bool} (h : ∀ q, B q = true → q = 215011 ∨ q = 215012 ∨
     (215040 ≤ q ∧ q < 216000)) {c c' : Config} (hf : FrameM B c c') : FrameM Bdyn c c' :=
   hf.mono fun q hq => by
-    simp only [Bdyn, Bool.or_eq_true, decide_eq_true_eq]
-    rcases h q hq with h | h | h
-    · exact Or.inl (Or.inl h)
-    · exact Or.inl (Or.inr h)
-    · exact Or.inr h
+    core_grind
 
 set_option maxHeartbeats 2000000 in
 /-- **One iteration of the arc loop**: appends `arcIt li n N r t`. -/
@@ -270,7 +255,7 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
       Buf n T (pre li n N r (t + 1)) d' ∧ (∀ a, a < T → d'.nmem a = d.nmem a) ∧
       FrameM Bdyn d d' := by
   have hmem : ∀ t', t' < (N.region r).arcs.length → (N.region r).arcs.getD t' 0 ∈ (N.region r).arcs :=
-    fun t' h' => by rw [List.getD_eq_getElem _ _ h']; exact List.getElem_mem h'
+    fun t' h' => by simp_all
   set jp := (N.region r).arcs.getD t 0 with hjp
   set j := (N.region r).arcs.getD ((t + 1) % (N.region r).arcs.length) 0 with hj
   obtain ⟨-, -, -, hxe, hxh⟩ := hE.F.harc jp (hmem t ht)

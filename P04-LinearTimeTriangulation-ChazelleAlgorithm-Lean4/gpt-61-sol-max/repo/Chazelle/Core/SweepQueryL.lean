@@ -36,8 +36,7 @@ theorem left_split_top (h : 0 < lδ J) :
       (chainModel J.left).W.n) = J.left.top := by
   have hτ := tpos_lt J.left J.m₁
   have e : lL1 J + lδ J = 2 * J.left.m - tpos J.left J.m₁ + 7 := by
-    unfold lL1 lδ at *
-    split_ifs at h ⊢ <;> omega
+    grind [lL1, lδ]
   rw [e, show 6 + tpos J.left J.m₁ + (2 * J.left.m - tpos J.left J.m₁ + 7) =
     6 + tpos J.left J.m₁ + (2 * J.left.m - tpos J.left J.m₁) + 7 by omega]
   exact walk_box J.left J.m₁ 7 le_rfl

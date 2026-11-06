@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Jordan.Parity
 public import Mathlib.Data.Nat.ModEq
 
@@ -27,7 +29,7 @@ open Chazelle.Jordan
 
 /-- `(s + i) % n + 1` and `s + i + 1` agree modulo `n`. -/
 theorem mod_add_one_mod (s i n : ℕ) : ((s + i) % n + 1) % n = (s + (i + 1)) % n := by
-  rw [Nat.mod_add_mod, Nat.add_assoc]
+  simp_all +arith
 
 /-- Surjectivity of `i ↦ (s + i) % n` on `range n`. -/
 theorem exists_rot_index {n : ℕ} (hn : 0 < n) (s j : ℕ) (hj : j < n) :
@@ -37,7 +39,7 @@ theorem exists_rot_index {n : ℕ} (hn : 0 < n) (s j : ℕ) (hj : j < n) :
   have h1 : s % n < n := Nat.mod_lt s hn
   have h2 : n * (s / n) + s % n = s := Nat.div_add_mod s n
   have h3 : s + (j + n - s % n) = n * (s / n + 1) + j := by
-    rw [Nat.mul_succ]; omega
+    grind
   rw [h3, Nat.mul_add_mod, Nat.mod_eq_of_lt hj]
 
 /-- Injectivity of `i ↦ (s + i) % n` on `range n`. -/
@@ -56,10 +58,7 @@ theorem sum_range_rot {M : Type} [AddCommMonoid M] (f : ℕ → M) (s n : ℕ) :
     rw [Nat.zero_add, Nat.mod_eq_of_lt hi]
   | succ s ih =>
     rw [← ih, ← sum_range_succ_mod (fun i => f ((s + i) % n)) n]
-    apply Finset.sum_congr rfl
-    intro i _
-    show f ((s + 1 + i) % n) = f ((s + (i + 1) % n) % n)
-    rw [Nat.add_mod_mod, Nat.add_assoc, Nat.add_comm 1 i]
+    simp_all +arith
 
 /-! ### The rotated polygon -/
 
@@ -71,14 +70,19 @@ def _root_.Chazelle.Polygon.rotate (P : Chazelle.Polygon) (s : ℕ) : Chazelle.P
 def relabel (s n : ℕ) (t : Polygon.Triangle) : Polygon.Triangle :=
   ((s + t.1) % n, (s + t.2.1) % n, (s + t.2.2) % n)
 
-@[simp] theorem relabel_fst (s n : ℕ) (t : Polygon.Triangle) :
+section
+variable (s n : ℕ) (t : Polygon.Triangle)
+@[simp] theorem relabel_fst :
     (relabel s n t).1 = (s + t.1) % n := rfl
 
-@[simp] theorem relabel_snd_fst (s n : ℕ) (t : Polygon.Triangle) :
+@[simp] theorem relabel_snd_fst :
     (relabel s n t).2.1 = (s + t.2.1) % n := rfl
 
-@[simp] theorem relabel_snd_snd (s n : ℕ) (t : Polygon.Triangle) :
+@[simp] theorem relabel_snd_snd :
     (relabel s n t).2.2 = (s + t.2.2) % n := rfl
+
+
+end
 
 variable (P : Polygon) (s : ℕ)
 
@@ -86,24 +90,30 @@ variable (P : Polygon) (s : ℕ)
 @[simp] theorem n_rotate : (P.rotate s).n = P.n := by
   simp [Polygon.rotate, Polygon.n]
 
+section
+variable {i : ℕ} (hi : i < P.n)
+include hi
 /-- Vertex `i < n` of the rotated polygon is vertex `(s + i) % n` of `P`. -/
-theorem vtx_rotate {i : ℕ} (hi : i < P.n) : (P.rotate s).vtx i = P.vtx ((s + i) % P.n) := by
-  simp [Polygon.rotate, Polygon.vtx, List.getD_eq_getElem?_getD, List.getElem?_range hi]
+theorem vtx_rotate : (P.rotate s).vtx i = P.vtx ((s + i) % P.n) := by
+  simp_all [Polygon.rotate, Polygon.vtx, List.getD_eq_getElem?_getD] <;> omega_nf
 
 /-- The successor vertex of the rotated polygon (modulus written as `P.n`). -/
-theorem vtx_rotate_succ_n {i : ℕ} (hi : i < P.n) :
+theorem vtx_rotate_succ_n :
     (P.rotate s).vtx ((i + 1) % P.n) = P.vtx (((s + i) % P.n + 1) % P.n) := by
   rw [vtx_rotate P s (Nat.mod_lt _ (by omega)), Nat.add_mod_mod, mod_add_one_mod]
 
 /-- The successor vertex of the rotated polygon. -/
-theorem vtx_rotate_succ {i : ℕ} (hi : i < P.n) :
+theorem vtx_rotate_succ :
     (P.rotate s).vtx ((i + 1) % (P.rotate s).n) = P.vtx (((s + i) % P.n + 1) % P.n) := by
   rw [n_rotate, vtx_rotate_succ_n P s hi]
 
 /-- Edge `i < n` of the rotated polygon is edge `(s + i) % n` of `P`. -/
-theorem edge_rotate {i : ℕ} (hi : i < P.n) : (P.rotate s).edge i = P.edge ((s + i) % P.n) := by
+theorem edge_rotate : (P.rotate s).edge i = P.edge ((s + i) % P.n) := by
   unfold Polygon.edge
   rw [vtx_rotate P s hi, vtx_rotate_succ P s hi]
+
+
+end
 
 /-- The common endpoints of two edges of the rotated polygon. -/
 theorem commonEndpoints_rotate {i j : ℕ} (hi : i < P.n) (hj : j < P.n) :
@@ -128,9 +138,11 @@ theorem filled_rotate : (P.rotate s).filled = P.filled := by
   unfold Polygon.filled
   rw [boundary_rotate]
 
+section
+variable {t : Polygon.Triangle} (h : t.1 < P.n ∧ t.2.1 < P.n ∧ t.2.2 < P.n)
+include h
 /-- The rotated polygon has the same triangle sets, for triangles with indices in range. -/
-theorem triSet_rotate {t : Polygon.Triangle}
-    (h : t.1 < P.n ∧ t.2.1 < P.n ∧ t.2.2 < P.n) :
+theorem triSet_rotate :
     (P.rotate s).triSet t = P.triSet (relabel s P.n t) := by
   unfold Polygon.triSet Polygon.triVertices
   rw [vtx_rotate P s h.1, vtx_rotate P s h.2.1, vtx_rotate P s h.2.2]
@@ -138,12 +150,14 @@ theorem triSet_rotate {t : Polygon.Triangle}
 
 /-- The rotated polygon has the same triangle vertex sets, for triangles with indices in
 range. -/
-theorem triVertices_rotate {t : Polygon.Triangle}
-    (h : t.1 < P.n ∧ t.2.1 < P.n ∧ t.2.2 < P.n) :
+theorem triVertices_rotate :
     (P.rotate s).triVertices t = P.triVertices (relabel s P.n t) := by
   unfold Polygon.triVertices
   rw [vtx_rotate P s h.1, vtx_rotate P s h.2.1, vtx_rotate P s h.2.2]
   rfl
+
+
+end
 
 /-- A valid triangle of the rotated polygon relabels to a valid triangle of `P`. -/
 theorem validTriangle_rotate {t : Polygon.Triangle}
@@ -158,7 +172,7 @@ theorem validTriangle_rotate {t : Polygon.Triangle}
 /-- Rotation preserves simplicity. -/
 theorem simple_rotate (hP : P.Simple) : (P.rotate s).Simple := by
   obtain ⟨h3, hinj, hedge⟩ := hP
-  refine ⟨by rw [n_rotate]; exact h3, ?_, ?_⟩
+  refine ⟨by core_grind, ?_, ?_⟩
   · intro i j hi hj hij
     rw [n_rotate] at hi hj
     rw [vtx_rotate P s hi, vtx_rotate P s hj] at hij

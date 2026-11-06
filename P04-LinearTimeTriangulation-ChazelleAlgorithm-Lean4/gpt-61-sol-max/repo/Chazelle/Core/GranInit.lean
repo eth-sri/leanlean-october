@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranInitB
 
 /-!
@@ -69,8 +71,7 @@ theorem init_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   obtain ⟨c₅, k₅, e₅, hk₅, I₅, G₅⟩ := initA_exec (P := P) hw h0 h1 h2 h3 hWh hwf hMD hNW hNF hRC
     hRO hdeg (by omega) hK1 hR1
   obtain ⟨c₈, k₈, e₈, hk₈, I₈, G₈⟩ := initB_exec (P := P) I₅ hG hWh hwf hMD hGM hNW hNF hne
-    (by rw [I₅.alloc]; show c.nreg ALLOC + (dmOf N.nChords N.arcs.length N.nRegions D 0).oEnd + _ ≤ W
-        omega)
+    (by rw [I₅.alloc]; aesop)
   set E := envOf M P N reg γ D (c.nmem MD) (c.nmem (MD + 3)) with hEd
   set d := dmOf N.nChords N.arcs.length N.nRegions D (c.nreg ALLOC) with hd
   set st := st0 E d c₈.nmem with hst
@@ -87,7 +88,7 @@ theorem init_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       fun j hj => ⟨(I₈.ring j hj).2.2.2.1, (I₈.ring j hj).2.2.2.2⟩⟩
   have hI : Inv E st := Inv.init hE hstat hdeg hsemi
   have hsz : E.sz ≤ W := by rw [envOf_sz hMD]; exact szOf_le hwf hMD hWh
-  have hW3 : 3 ≤ W := by unfold hostWords at hWh; omega
+  have hW3 : 3 ≤ W := by omega_nf
   have hEnd : d.oEnd = (dmOf N.nChords N.arcs.length N.nRegions D 0).oEnd := rfl
   have hDim : DimOK E d W := ⟨rfl, rfl, rfl, rfl, by show c.nreg ALLOC + d.oEnd ≤ W; omega, hsz,
     hW3⟩

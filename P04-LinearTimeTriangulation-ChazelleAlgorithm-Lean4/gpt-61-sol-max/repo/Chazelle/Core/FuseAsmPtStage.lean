@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FuseAsmPtRam
 public import Chazelle.Core.MergeAsmDesc
 
@@ -42,19 +44,29 @@ def Bpt (r : ℕ) : Bool := Bprim r || decide (50200 ≤ r ∧ r < 50210) ||
 /-- The real registers that the point queries may write. -/
 def BR (r : ℕ) : Bool := Bprim r || Btp r
 
-theorem br_prim {r : ℕ} (h : BR r = false) : Bprim r = false := by
-  simp only [BR, Bool.or_eq_false_iff] at h; exact h.1
+section
+variable {r : ℕ} (h : BR r = false)
+include h
+theorem br_prim : Bprim r = false := by
+  simp_all [BR, Bool.or_eq_false_iff] <;> omega_nf
 
-theorem br_tp {r : ℕ} (h : BR r = false) : Btp r = false := by
-  simp only [BR, Bool.or_eq_false_iff] at h; exact h.2
+theorem br_tp : Btp r = false := by
+  simp_all [BR, Bool.or_eq_false_iff] <;> omega_nf
 
-theorem bprim_of {r : ℕ} (h : Bpt r = false) : Bprim r = false := by
-  simp only [Bpt, Bool.or_eq_false_iff] at h; exact h.1.1.1.1
 
-theorem btp_of {r : ℕ} (h : Bpt r = false) : Btp r = false := by
-  simp only [Bpt, Bprim, Btp, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
-    at h ⊢
-  omega
+end
+
+section
+variable {r : ℕ} (h : Bpt r = false)
+include h
+theorem bprim_of : Bprim r = false := by
+  simp_all [Bpt, Bool.or_eq_false_iff] 
+
+theorem btp_of : Btp r = false := by
+  grind [Bpt, Bprim, Btp, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
+
+
+end
 
 /-- The vertex queries at the vertex stored at `D + off`. -/
 def vtxPts (D off : ℕ) : Stmt :=

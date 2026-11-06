@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.Lemma41ExecA
 
 /-!
@@ -46,7 +48,7 @@ theorem l41B_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
       c8.rreg = c5.rreg ∧ c8.rmem = c5.rmem ∧ c8.output = c5.output := by
   have hAl : ALLOC = 9999 := rfl
   have hn3 : 3 ≤ P.n := hG.1.1
-  have hWn' : 128 * P.n + 3 ≤ W := by unfold hostWords at hWh; omega
+  have hWn' : 128 * P.n + 3 ≤ W := by omega_nf
   have hRaw := hR.holds
   have hΛ : 1 ≤ c.nmem h := by omega
   obtain ⟨t0, t1, t2, t3, tS0, tS1, tS1lt, tpow, thalf, tent⟩ := tab_lt hR (by omega) hΛ
@@ -57,9 +59,9 @@ theorem l41B_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
   rw [hD] at thalf s20
   rw [hT] at tent s22
   have hltg : lam ≤ topGrade P.n + 1 := by have := hRaw.1; omega
-  have hpl : 2 ^ lam = 2 * 2 ^ (lam - 1) := by rw [← pow_succ']; congr 1; omega
-  have hj2l : (cover lam (a + L) a).length ≤ 2 * lam := cover_length_le (by omega) (by omega)
-  have hsq : 40 * lam ^ 2 + 160 * lam = (20 * lam + 80) * (2 * lam) := by ring
+  have hpl : 2 ^ lam = 2 * 2 ^ (lam - 1) := by rw [← pow_succ']; grind
+  
+  
   -- 6. the cover
   have hCR : CovRegs c5 lam (a + L) D (S + 2) T A := ⟨s11, s26, s24, s20, s21, s22, s27⟩
   have hent5 : ∀ g, g ≤ lam - 1 → ∀ i, (i + 1) * 2 ^ g ≤ a + L →
@@ -70,9 +72,7 @@ theorem l41B_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
     have hic : i < gradeCount P.n g := by
       unfold gradeCount
       have : i * 2 ^ g ≤ P.n - 2 := by
-        have := Nat.one_le_two_pow (n := g)
-        have e : (i + 1) * 2 ^ g = i * 2 ^ g + 2 ^ g := by ring
-        omega
+        grind
       have := (Nat.le_div_iff_mul_le hpos).mpr this
       omega
     obtain ⟨eT, eO, -, -⟩ := tent g i hgΛ hic
@@ -98,15 +98,15 @@ theorem l41B_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
   have c75 : ∀ r, r ≠ 160066 → ¬ CovRG r → c7.nreg r = c5.nreg r := fun r a1 a2 => by
     rw [fr7 r a1, fr6 r a2]
   have c7A : c7.nreg ALLOC = A + 7 := by
-    rw [c75 _ (by rw [hAl]; decide) (by rw [hAl]; unfold CovRG AscRG; decide)]; exact h5A
+    rw [c75 _ (by omega) (by omega_nf)]; exact h5A
   -- 8. the level array of the leaves
   obtain ⟨c8, k8, e8, hk8, hw8, h8A, h8Ak, hent8, hm87, fr8, hrr8, hrm8, ho8⟩ :=
     l0S_exec (P := P) hw7 c7A (by rw [fr7 _ (by decide)]; exact h615)
       (by rw [fr7 _ (by decide)]; exact h614)
-      (by rw [c75 _ (by decide) (by unfold CovRG AscRG; decide)]; exact s24)
-      (by rw [c75 _ (by decide) (by unfold CovRG AscRG; decide)]; exact s81)
-      (by rw [c75 _ (by decide) (by unfold CovRG AscRG; decide)]; exact s82)
-      (by rw [c75 _ (by decide) (by unfold CovRG AscRG; decide)]; exact s87)
+      (by rw [c75 _ (by decide) (by omega_nf)]; exact s24)
+      (by rw [c75 _ (by decide) (by omega_nf)]; exact s81)
+      (by rw [c75 _ (by decide) (by omega_nf)]; exact s82)
+      (by rw [c75 _ (by decide) (by omega_nf)]; exact s87)
       (by nlinarith)
   have m65 : ∀ x, x < A + 7 → c6.nmem x = c5.nmem x := fun x hx => hm65 x (Or.inl hx)
   have m86 : ∀ x, x < A + 7 + 6 * j → c8.nmem x = c6.nmem x := fun x hx => by
@@ -122,8 +122,8 @@ theorem l41B_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
     fun x hx => by rw [m86 x (by omega), m65 x (by omega), m5c x hx], ?_, ?_,
     fun r a1 a2 a3 a4 => by rw [fr8 r a2 a4]; exact c75 r a3 a1, by rw [hrr8, hrr7, hrr6],
     by rw [hrm8, hrm7, hrm6], by rw [ho8, ho7, ho6]⟩
-  · rw [fr8 _ (by unfold L0RG; decide) (by rw [hAl]; decide), fr7 _ (by decide)]; exact h614
-  · rw [fr8 _ (by unfold L0RG; decide) (by rw [hAl]; decide), b66]; exact h615
+  · rw [fr8 _ (by omega_nf) (by omega), fr7 _ (by decide)]; exact h614
+  · rw [fr8 _ (by omega_nf) (by omega), b66]; exact h615
 
 end proofs
 

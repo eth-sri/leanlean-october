@@ -33,15 +33,21 @@ namespace Geometry
 /-! ### Coordinates of vector operations -/
 
 @[simp] theorem add_fst (a b : Point) : (a + b).1 = a.1 + b.1 := rfl
-@[simp] theorem add_snd (a b : Point) : (a + b).2 = a.2 + b.2 := rfl
-@[simp] theorem sub_fst (a b : Point) : (a - b).1 = a.1 - b.1 := rfl
-@[simp] theorem sub_snd (a b : Point) : (a - b).2 = a.2 - b.2 := rfl
-@[simp] theorem neg_fst (a : Point) : (-a).1 = -a.1 := rfl
-@[simp] theorem neg_snd (a : Point) : (-a).2 = -a.2 := rfl
-@[simp] theorem smul_fst (t : ℝ) (a : Point) : (t • a).1 = t * a.1 := rfl
-@[simp] theorem smul_snd (t : ℝ) (a : Point) : (t • a).2 = t * a.2 := rfl
-@[simp] theorem zero_fst : ((0 : Point)).1 = 0 := rfl
-@[simp] theorem zero_snd : ((0 : Point)).2 = 0 := rfl
+section
+variable (a b : Point)
+@[simp] theorem add_snd : (a + b).2 = a.2 + b.2 := rfl
+@[simp] theorem sub_fst : (a - b).1 = a.1 - b.1 := rfl
+@[simp] theorem sub_snd : (a - b).2 = a.2 - b.2 := rfl
+
+end
+
+section
+variable (t : ℝ) (a : Point)
+@[simp] theorem smul_fst : (t • a).1 = t * a.1 := rfl
+@[simp] theorem smul_snd : (t • a).2 = t * a.2 := rfl
+
+end
+
 
 /-- Two points are equal iff both coordinates agree. -/
 theorem point_ext_iff {a b : Point} : a = b ↔ a.1 = b.1 ∧ a.2 = b.2 := Prod.ext_iff
@@ -55,26 +61,30 @@ theorem point_ext {a b : Point} (h1 : a.1 = b.1) (h2 : a.2 = b.2) : a = b := Pro
 (`t = 0` gives `a`, `t = 1` gives `b`). -/
 def lerp (a b : Point) (t : ℝ) : Point := (a.1 + t * (b.1 - a.1), a.2 + t * (b.2 - a.2))
 
-@[simp] theorem lerp_fst (a b : Point) (t : ℝ) : (lerp a b t).1 = a.1 + t * (b.1 - a.1) := rfl
-@[simp] theorem lerp_snd (a b : Point) (t : ℝ) : (lerp a b t).2 = a.2 + t * (b.2 - a.2) := rfl
+section
+variable (a b : Point) (t : ℝ)
+@[simp] theorem lerp_fst : (lerp a b t).1 = a.1 + t * (b.1 - a.1) := rfl
+@[simp] theorem lerp_snd : (lerp a b t).2 = a.2 + t * (b.2 - a.2) := rfl
 
 /-- `lerp a b t = a + t • (b - a)` as vectors. -/
-theorem lerp_eq_add_smul (a b : Point) (t : ℝ) : lerp a b t = a + t • (b - a) := by
-  ext <;> simp [lerp]
+theorem lerp_eq_add_smul : lerp a b t = a + t • (b - a) := by
+  aesop
 
 /-- `lerp a b t = (1 - t) • a + t • b` as vectors. -/
-theorem lerp_eq_smul_add_smul (a b : Point) (t : ℝ) : lerp a b t = (1 - t) • a + t • b := by
+theorem lerp_eq_smul_add_smul : lerp a b t = (1 - t) • a + t • b := by
   ext <;> simp [lerp] <;> ring
 
-@[simp] theorem lerp_zero (a b : Point) : lerp a b 0 = a := by ext <;> simp [lerp]
 
-@[simp] theorem lerp_one (a b : Point) : lerp a b 1 = b := by ext <;> simp [lerp]
+end
 
-@[simp] theorem lerp_self (a : Point) (t : ℝ) : lerp a a t = a := by ext <;> simp [lerp]
+@[simp] theorem lerp_zero (a b : Point) : lerp a b 0 = a := by grind [lerp]
+
+@[simp] theorem lerp_one (a b : Point) : lerp a b 1 = b := by grind [lerp]
+
 
 /-- Reversing the segment: `lerp b a t = lerp a b (1 - t)`. -/
 theorem lerp_symm (a b : Point) (t : ℝ) : lerp b a t = lerp a b (1 - t) := by
-  ext <;> simp [lerp] <;> ring
+  grind [lerp]
 
 /-- `lerp a b` is continuous in the parameter. -/
 theorem continuous_lerp (a b : Point) : Continuous (lerp a b) := by
@@ -83,19 +93,7 @@ theorem continuous_lerp (a b : Point) : Continuous (lerp a b) := by
 /-- `lerp a b t` is injective in `t` when `a ≠ b`. -/
 theorem lerp_injective {a b : Point} (hab : a ≠ b) : Function.Injective (lerp a b) := by
   intro s t hst
-  rw [point_ext_iff] at hst
-  simp only [lerp_fst, lerp_snd] at hst
-  by_contra hne
-  apply hab
-  apply point_ext
-  · have : (s - t) * (b.1 - a.1) = 0 := by linear_combination hst.1
-    rcases mul_eq_zero.1 this with h | h
-    · exact absurd (sub_eq_zero.1 h) hne
-    · linarith
-  · have : (s - t) * (b.2 - a.2) = 0 := by linear_combination hst.2
-    rcases mul_eq_zero.1 this with h | h
-    · exact absurd (sub_eq_zero.1 h) hne
-    · linarith
+  grind [point_ext_iff, lerp_fst, lerp_snd]
 
 /-! ### The specification's segment is Mathlib's segment -/
 
@@ -125,53 +123,65 @@ theorem mem_segment_iff_weights {a b p : Point} :
       ∃ s t : ℝ, 0 ≤ s ∧ 0 ≤ t ∧ s + t = 1 ∧ s • a + t • b = p := by
   rw [segment_eq]; rfl
 
+section
+variable (a b : Point)
 /-- The segment is symmetric. -/
-theorem segment_comm (a b : Point) : Chazelle.segment a b = Chazelle.segment b a := by
-  rw [segment_eq, segment_eq, segment_symm]
+theorem segment_comm : Chazelle.segment a b = Chazelle.segment b a := by
+  grind [segment_eq, segment_symm]
 
 /-- The left endpoint lies on the segment. -/
-theorem left_mem_segment (a b : Point) : a ∈ Chazelle.segment a b := by
+theorem left_mem_segment : a ∈ Chazelle.segment a b := by
   rw [segment_eq]; exact _root_.left_mem_segment ℝ a b
 
 /-- The right endpoint lies on the segment. -/
-theorem right_mem_segment (a b : Point) : b ∈ Chazelle.segment a b := by
+theorem right_mem_segment : b ∈ Chazelle.segment a b := by
   rw [segment_eq]; exact _root_.right_mem_segment ℝ a b
 
 /-- The segment is the convex hull of its endpoints. -/
-theorem segment_eq_convexHull_pair (a b : Point) :
+theorem segment_eq_convexHull_pair :
     Chazelle.segment a b = convexHull ℝ {a, b} := by
   rw [segment_eq, convexHull_pair]
 
 /-- A segment is convex. -/
-theorem segment_convex (a b : Point) : Convex ℝ (Chazelle.segment a b) := by
+theorem segment_convex : Convex ℝ (Chazelle.segment a b) := by
   rw [segment_eq]; exact convex_segment a b
 
+
+end
+
+section
+variable {s : Set Point}
 /-- A segment with both endpoints in `s` lies in the convex hull of `s`. -/
-theorem segment_subset_convexHull {s : Set Point} {a b : Point} (ha : a ∈ s) (hb : b ∈ s) :
+theorem segment_subset_convexHull {a b : Point} (ha : a ∈ s) (hb : b ∈ s) :
     Chazelle.segment a b ⊆ convexHull ℝ s := by
   rw [segment_eq]; exact _root_.segment_subset_convexHull ha hb
 
 /-- A segment with both endpoints in a convex set lies in it. -/
-theorem segment_subset_of_convex {s : Set Point} (hs : Convex ℝ s) {a b : Point}
+theorem segment_subset_of_convex (hs : Convex ℝ s) {a b : Point}
     (ha : a ∈ s) (hb : b ∈ s) : Chazelle.segment a b ⊆ s := by
   rw [segment_eq]; exact hs.segment_subset ha hb
 
 /-- The convex hull of a finite set of points is compact. -/
-theorem isCompact_convexHull_of_finite {s : Set Point} (hs : s.Finite) :
+theorem isCompact_convexHull_of_finite (hs : s.Finite) :
     IsCompact (convexHull ℝ s) :=
   hs.isCompact_convexHull ℝ
 
+
+end
+
+section
+variable (a b : Point)
 /-- A segment is compact. -/
-theorem isCompact_segment (a b : Point) : IsCompact (Chazelle.segment a b) := by
+theorem isCompact_segment : IsCompact (Chazelle.segment a b) := by
   rw [segment_eq_convexHull_pair]
   exact isCompact_convexHull_of_finite ((Set.finite_singleton b).insert a)
 
 /-- A segment is closed. -/
-theorem isClosed_segment (a b : Point) : IsClosed (Chazelle.segment a b) :=
+theorem isClosed_segment : IsClosed (Chazelle.segment a b) :=
   (isCompact_segment a b).isClosed
 
 /-- A segment is the continuous image of `[0,1]` under `lerp a b`. -/
-theorem segment_eq_image_lerp (a b : Point) :
+theorem segment_eq_image_lerp :
     Chazelle.segment a b = lerp a b '' Set.Icc (0 : ℝ) 1 := by
   ext p
   constructor
@@ -180,20 +190,21 @@ theorem segment_eq_image_lerp (a b : Point) :
 
 /-! ### Bounded sets -/
 
+
+end
+
 /-- The specification's boundedness is Mathlib's `Bornology.IsBounded` (sup norm). -/
 theorem isBoundedSet_iff {S : Set Point} : IsBoundedSet S ↔ Bornology.IsBounded S := by
   constructor
   · rintro ⟨R, hR⟩
     refine isBounded_iff_forall_norm_le.2 ⟨R, fun p hp => ?_⟩
-    rw [norm_prod_le_iff, Real.norm_eq_abs, Real.norm_eq_abs]
-    exact hR p hp
+    grind [norm_prod_le_iff, Real.norm_eq_abs]
   · intro h
     obtain ⟨C, hC⟩ := isBounded_iff_forall_norm_le.1 h
     refine ⟨C, fun p hp => ?_⟩
     have h1 := (norm_fst_le p).trans (hC p hp)
     have h2 := (norm_snd_le p).trans (hC p hp)
-    rw [Real.norm_eq_abs] at h1 h2
-    exact ⟨h1, h2⟩
+    simp_all
 
 /-- A subset of a bounded set is bounded. -/
 theorem isBoundedSet_of_subset {S T : Set Point} (hT : IsBoundedSet T) (h : S ⊆ T) :
@@ -203,7 +214,7 @@ theorem isBoundedSet_of_subset {S T : Set Point} (hT : IsBoundedSet T) (h : S �
 
 /-- A compact set is bounded. -/
 theorem isBoundedSet_of_isCompact {S : Set Point} (hS : IsCompact S) : IsBoundedSet S := by
-  rw [isBoundedSet_iff]; exact hS.isBounded
+  grind [isBoundedSet_iff]
 
 end
 

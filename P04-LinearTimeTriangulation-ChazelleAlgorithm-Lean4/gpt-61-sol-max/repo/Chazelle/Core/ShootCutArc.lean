@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutFirst2
 
 /-!
@@ -26,7 +28,7 @@ namespace ShootCut
 theorem Chained.get {x y : WPos} {ps : List Pc} (h : Chained x ps y) :
     ∀ i (hi : i + 1 < ps.length), (ps[i]'(by omega)).e = (ps[i + 1]'hi).s := by
   induction ps generalizing x with
-  | nil => intro i hi; simp at hi
+  | nil => simp_all
   | cons p ps ih =>
     intro i hi
     obtain ⟨_, h2⟩ := h
@@ -38,12 +40,11 @@ theorem Chained.get {x y : WPos} {ps : List Pc} (h : Chained x ps y) :
         simp only [List.getElem_cons_zero, List.getElem_cons_succ]
         exact h2.1.symm
     | succ i =>
-      simp only [List.getElem_cons_succ]
-      exact ih h2 i (by simp at hi ⊢; omega)
+      grind
 
 theorem Chained.append' : ∀ {x y z : WPos} {ps qs : List Pc}, Chained x ps y → Chained y qs z →
     Chained x (ps ++ qs) z
-  | _, _, _, [], _, h, hq => by simp only [Chained] at h; subst h; exact hq
+  | _, _, _, [], _, h, hq => by simp_all [Chained] 
   | _, _, _, _ :: _, _, ⟨h1, h2⟩, hq => ⟨h1, Chained.append' h2 hq⟩
 
 theorem Chained.last : ∀ {x y : WPos} {ps : List Pc}, Chained x ps y → (hne : ps ≠ []) →
@@ -56,7 +57,7 @@ theorem Chained.last : ∀ {x y : WPos} {ps : List Pc}, Chained x ps y → (hne 
 
 theorem upath_chained {n : ℕ} : ∀ {u : ℕ} {ps : List Pc} {u' : ℕ}, UPath n u ps u' →
     Chained ⟨u % n, 0⟩ ps ⟨u' % n, 0⟩
-  | _, [], _, h => by simp only [UPath] at h; subst h; rfl
+  | _, [], _, h => by grind [Chazelle.Core.ShootCut.Chained, UPath]
   | _, _ :: _, _, ⟨h1, _, _, h3, h4⟩ => ⟨h1, by rw [h3]; exact upath_chained h4⟩
 
 variable (C : Chain) (Q : Polygon)
@@ -81,15 +82,13 @@ theorem key_range {N : ℕ} {x : WPos} (hx : ProperPos (chainModel C) Q N x)
     0 ≤ (chainModel C).key Q x ∧ (chainModel C).key Q x < ((2 * C.m + 7 : ℕ) : ℝ) := by
   have := key_bounds hx
   have e : (x.edge : ℝ) + 1 ≤ ((2 * C.m + 7 : ℕ) : ℝ) := by exact_mod_cast h1
-  constructor
-  · linarith [show (0 : ℝ) ≤ x.edge by positivity]
-  · linarith
+  ram_grind
 
-theorem T_unw (k k' : ℝ) (n : ℝ) : ∃ j : ℤ, k + len n k k' = k' + j * n := by
+theorem T_unw (k k' n : ℝ) : ∃ j : ℤ, k + len n k k' = k' + j * n := by
   unfold len
   split_ifs
-  · exact ⟨0, by ring⟩
-  · exact ⟨1, by push_cast; ring⟩
+  · simp_all
+  · exact ⟨1, by grind⟩
 
 /-- **A single piece** `[s, e]`. -/
 theorem arcOK_single {N : ℕ} {s e : WPos} (hs : ProperPos (chainModel C) Q N s)
@@ -101,7 +100,7 @@ theorem arcOK_single {N : ℕ} {s e : WPos} (hs : ProperPos (chainModel C) Q N s
   refine ⟨by simp, hps, by simp [hpe], fun i hi => by simp at hi, fun i hi => by simp at hi, ?_,
     fun pc hpc => ?_⟩
   swap
-  · rw [List.mem_singleton] at hpc; subst hpc; exact ⟨Or.inl hps, Or.inl hpe⟩
+  · simp_all
   have hl := len_pos ((2 * C.m + 7 : ℕ) : ℝ) ((chainModel C).key Q s) ((chainModel C).key Q e)
     ks.2 ke.1
   refine ⟨⟨0, by simp [hps]⟩, (chainModel C).key Q s + len ((2 * C.m + 7 : ℕ) : ℝ)
@@ -122,7 +121,7 @@ theorem UPath.ends {n : ℕ} : ∀ {u : ℕ} {ps : List Pc} {u' : ℕ}, UPath n 
   | _, [], _, _, _, h => by simp at h
   | _, _ :: _, _, ⟨h1, _, _, h2, h3⟩, pc, hpc => by
     rcases List.mem_cons.1 hpc with rfl | hpc
-    · exact ⟨by rw [h1], by rw [h2]⟩
+    · simp_all
     · exact UPath.ends h3 pc hpc
 
 /-- **The general case**: the first piece to the walk vertex of `U₀`, the main loop from `U₀`
@@ -144,7 +143,7 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
   set ks := M.key Q s
   set ke := M.key Q e
   set T := ks + len (n : ℝ) ks ke with hT
-  have hn0 : (0 : ℝ) < (n : ℝ) := by rw [hn]; positivity
+  have hn0 : (0 : ℝ) < (n : ℝ) := by grind
   have kS := key_range hs hs1
   have kE := key_range he he1
   have hTle : T ≤ ks + n := by
@@ -156,14 +155,14 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
     rw [key_hgt0, Int.cast_natCast]
     have := Nat.mod_add_div u n
     have e : ((u % n : ℕ) : ℝ) + ((u / n : ℕ) : ℝ) * (n : ℝ) = (u : ℝ) := by
-      exact_mod_cast (show u % n + u / n * n = u by rw [Nat.mul_comm]; omega)
+      exact_mod_cast (show u % n + u / n * n = u by grind)
     linarith
   have hfinP : KPath M Q (n : ℝ) (F : ℝ) fin T := by
     rcases hfin with ⟨rfl, hlt⟩ | ⟨rfl, heq⟩
     · exact ⟨hkU F, T, hlt, hTu, rfl⟩
     · exact heq
   have hkp : KPath M Q (n : ℝ) ks (p₁ :: (loop ++ fin)) T :=
-    ⟨⟨0, by rw [hp₁s]; ring⟩, U₀, hks, by rw [hp₁e]; exact hkU U₀,
+    ⟨⟨0, by grind⟩, U₀, hks, by rw [hp₁e]; exact hkU U₀,
       (kpath_of_upath hloop).append fin hfinP⟩
   have hne : p₁ :: (loop ++ fin) ≠ [] := List.cons_ne_nil _ _
   -- the last key is the key of `e`
@@ -171,7 +170,7 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
     obtain ⟨j, hj⟩ := KPath.last hkp hne
     obtain ⟨j', hj'⟩ := hTu
     have hb := (pcOK_keys (hok _ (List.getLast_mem hne))).2
-    exact key_eq_of_unw hn0 hb kE (i := j) (j := j') (by rw [← hj, ← hj'])
+    exact key_eq_of_unw hn0 hb kE (i := j) (j := j') (by grind)
   -- consecutive
   have hch : Chained s (p₁ :: (loop ++ fin)) ((p₁ :: (loop ++ fin)).getLast hne).e := by
     have hc : ∃ y, Chained s (p₁ :: (loop ++ fin)) y := by
@@ -185,15 +184,14 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
   swap
   · intro pc hpc
     rcases List.mem_cons.1 hpc with rfl | hpc
-    · exact ⟨Or.inl hp₁s, Or.inr (by rw [hp₁e])⟩
+    · ram_grind
     rcases List.mem_append.1 hpc with hpc | hpc
-    · have := UPath.ends hloop pc hpc; exact ⟨Or.inr this.1, Or.inr this.2⟩
+    · have := UPath.ends hloop pc hpc; omega
     · rcases hfin with ⟨rfl, _⟩ | ⟨rfl, _⟩
       · rw [List.mem_singleton] at hpc; subst hpc; exact ⟨Or.inr rfl, Or.inl rfl⟩
-      · simp at hpc
+      grind
   have := e6_of_kpath hn0 hkp (by linarith) (fun pc hpc => pcOK_keys (hok pc hpc)) hne i hi
-  rw [hlast] at this
-  exact this
+  grind
 
 end ShootCut
 

@@ -30,13 +30,13 @@ variable (J : Merge.Junction)
 def GapPair (S₂ : Set (Set Point)) (G V : Set Point) : Prop :=
   GapLab J S₂ V ∧ ∃ Vg, GapLab J S₂ Vg ∧ RLabel J S₂ G Vg
 
+section
+variable (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂) (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {ρ θ : ℝ} (hρ : ρ = 1 ∨ ρ = -1) (hθ : θ = 1 ∨ θ = -1)
+include hP Q hS₂ hF hρ hθ
 /-- **Walking along a chain** without `TopStrict`.  As `half_walk`, with the chord of the model
 of `C₂` in `S₂x`; the tracked region may switch sides of the slit at the split vertex, and the
 walk ends with a label, a bound, or a pair of gap labels. -/
-theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {ρ θ : ℝ} (hρ : ρ = 1 ∨ ρ = -1)
-    (hθ : θ = 1 ∨ θ = -1) {G : Set Point}
+theorem half_walk2 {G : Set Point}
     (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂)) :
     ∀ (N d : ℕ) (t : ℝ) (f : Set Point) (pf : ℕ) (tf : ℝ) (V : Set Point),
       V ∈ (chainModel J.right).regions S₂ →
@@ -74,7 +74,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
   have hN0 : 0 < off W.n (g : ℝ) ((((g + d) % W.n : ℕ) : ℝ) + t) := by
     rw [hoN]
     rcases ht0.lt_or_eq with h | h
-    · have : (0 : ℝ) ≤ d := Nat.cast_nonneg d
+    · 
       linarith
     · have := hd0 h.symm
       have : (1 : ℝ) ≤ d := by exact_mod_cast Nat.one_le_iff_ne_zero.2 this
@@ -151,8 +151,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
           rw [hseg'] at hz
           obtain ⟨s, hs0, hs1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hz
           simp only [Geometry.lerp_fst] at hz'
-          have : θ * ρ * (Bp.1 - (Pf.1 + s * (Bp.1 - Pf.1))) =
-              (1 - s) * (θ * ρ * (Bp.1 - Pf.1)) := by ring
+          
           nlinarith
       exact ih _ (lt_of_lt_of_le hlt hN) d' 0 f' pb tb V' hV' le_rfl hd' le_rfl zero_lt_one
         (fun _ => hd'0) hf' hA' hB (Ne.symm hBne) hS' hori' ⟨c', hc', hfc', hVs'⟩
@@ -163,10 +162,10 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
       refine chord_bound hM hFs hf' hA' hB (Ne.symm hBne) hρ hG hS' hθ hori' hg0 hgn ?_ ?_
         fun _ _ _ _ _ _ _ _ => Or.inr ?_
       · rw [hoF0]
-        have : (1 : ℝ) ≤ d' := by exact_mod_cast Nat.one_le_iff_ne_zero.2 hd'0
+        
         linarith
       · rw [hoF0]
-        have : (d' : ℝ) + 1 ≤ ((L : ℕ) : ℝ) := by exact_mod_cast hd'
+        
         linarith
       · by_contra hc
         push Not at hc
@@ -220,10 +219,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
         (hstep f' V rfl (hsec' rfl).1 hf' hne hA' hS' hV hpart)
 
 /-- **The bound from one chord of a tie** without `TopStrict` (as `end_bound`). -/
-theorem end_bound2 (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {ρ θ : ℝ} (hρ : ρ = 1 ∨ ρ = -1)
-    (hθ : θ = 1 ∨ θ = -1) {G V : Set Point}
+theorem end_bound2 {G V : Set Point}
     (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
     (hV : V ∈ (chainModel J.right).regions S₂) {d : ℕ} (hd : d < rL1 J + rL2 J) (hd0 : d ≠ 0)
     {f : Set Point} (hf : f ∈ F₂plus J S₂)
@@ -265,6 +261,9 @@ theorem end_bound2 (hP : J.P.Simple) {Q : Polygon}
   · by_contra hc
     push Not at hc
     exact hBout ⟨hc.2, hc.1⟩
+
+
+end
 
 /-- A gap pair of `G` and a label of `G` make the (K3) alternative. -/
 theorem gapPair_label (hP : J.P.Simple) {S₂ : Set (Set Point)}
@@ -339,7 +338,7 @@ theorem label_side_gen2 (hP : J.P.Simple) {Q : Polygon}
       have ho := hC.off_M hd'' ht''.1.le ht''.2
       have hpos : 0 < off W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ)
           ((((6 + tpos J.whole J.m₁ + d'') % W.n : ℕ) : ℝ) + t'') := by
-        rw [ho]; have : (0 : ℝ) ≤ d'' := Nat.cast_nonneg _; linarith [ht''.1]
+        rw [ho];  linarith [ht''.1]
       have hlt : off W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ)
           ((((6 + tpos J.whole J.m₁ + d'') % W.n : ℕ) : ℝ) + t'') <
             ((rL1 J + rL2 J : ℕ) : ℝ) := by

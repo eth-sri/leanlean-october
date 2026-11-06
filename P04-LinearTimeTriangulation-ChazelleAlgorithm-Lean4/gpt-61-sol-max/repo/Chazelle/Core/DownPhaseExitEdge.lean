@@ -23,9 +23,12 @@ open Chazelle.Chain (SideAttach sideInArc sidePt TouchesIn)
 
 variable {M : Model} {F : Set (Set Point)} {U : Set Point}
 
+section
+variable (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
+include hM hF hfin
 /-- Two attachment keys `A ≠ B` of `U` with no host key strictly between them (cyclically) are
 consecutive host keys. -/
-theorem consecutive_of_empty (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
+theorem consecutive_of_empty
     (h2 : 2 ≤ nk M F U) {a b : ℝ} (ha : a ∈ hostKeys M F U) (hb : b ∈ hostKeys M F U)
     (hab : a ≠ b) (hnone : ∀ x ∈ hostKeys M F U, ¬ sideInArc a b x) :
     ∃ i, i < nk M F U ∧ hk M F U i = a ∧ hk M F U ((i + 1) % nk M F U) = b := by
@@ -37,7 +40,7 @@ theorem consecutive_of_empty (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite
 
 /-- **Every exit chord joins two consecutive host keys**: a chord gap witnessed by the chord,
 which is the segment between the two host points. -/
-theorem exit_chordGap (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
+theorem exit_chordGap
     (hU : U ∈ M.regions F) (h2 : 2 ≤ nk M F U) {c : Set Point} (hc : c ∈ F)
     (ht : TouchesIn M.D c U) :
     ∃ i, i < nk M F U ∧ ∃ (p p' : ℕ) (t t' : ℝ), SideAttach M.W c p t ∧
@@ -45,7 +48,7 @@ theorem exit_chordGap (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
       sidePt M.W p t ≠ sidePt M.W p' t' ∧
       c = Chazelle.segment (sidePt M.W p t) (sidePt M.W p' t') := by
   obtain ⟨a, b, hab, -, -, -, ⟨⟨pa, ta, hA, hAa⟩, -⟩, ⟨⟨pb, tb, hB, hBb⟩, -⟩⟩ := hM.ends c (hF hc)
-  have hAB : sidePt M.W pa ta ≠ sidePt M.W pb tb := by rw [hAa, hBb]; exact hab
+  have hAB : sidePt M.W pa ta ≠ sidePt M.W pb tb := by simp_all
   have hcA : (pa : ℝ) + ta ∈ hostKeys M F U := Or.inl ⟨c, hc, ht, pa, ta, hA, rfl⟩
   have hcB : (pb : ℝ) + tb ∈ hostKeys M F U := Or.inl ⟨c, hc, ht, pb, tb, hB, rfl⟩
   have hkne := WalkAx.key_ne_of_pt_ne hA hB hAB
@@ -65,6 +68,9 @@ theorem exit_chordGap (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
     obtain ⟨i, hi, e1, e2⟩ := consecutive_of_empty hM hF hfin h2 hcB hcA (Ne.symm hkne) h1'
     exact ⟨i, hi, pb, pa, tb, ta, hB, hA, e1, e2, Ne.symm hAB,
       (hM.attach_seg (hF hc) hB hA (Ne.symm hAB)).1⟩
+
+
+end
 
 end
 

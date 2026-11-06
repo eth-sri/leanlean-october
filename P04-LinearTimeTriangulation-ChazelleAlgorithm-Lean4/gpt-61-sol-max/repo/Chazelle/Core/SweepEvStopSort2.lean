@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopSort
 
 /-!
@@ -51,51 +53,39 @@ macro "ssoSrt" : tactic =>
 /-- The word of the raw record copied to word `t < 5` of the stop record. -/
 def ssOff (t : ℕ) : ℕ := if t < 2 then t else t + 1
 
+section
+variable (m : ℕ → ℕ)
+include m
 /-- The memory after writing `nd` words of the stop record at `D` and `ne` words of the
 auxiliary record at `E` from the raw record at `Src`. -/
-def ssWM (m : ℕ → ℕ) (Src D E nd ne : ℕ) (a : ℕ) : ℕ :=
+def ssWM (Src D E nd ne a : ℕ) : ℕ :=
   if D ≤ a ∧ a < D + nd then m (Src + ssOff (a - D))
   else if E ≤ a ∧ a < E + ne then m (Src + 6 + (a - E)) else m a
 
-theorem ssWM_zero (m : ℕ → ℕ) (Src D E : ℕ) : ssWM m Src D E 0 0 = m := by
-  funext a; unfold ssWM; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+theorem ssWM_zero (Src D E : ℕ) : ssWM m Src D E 0 0 = m := by
+  grind [ssWM]
 
-theorem ssWM_src {m : ℕ → ℕ} {Src D E nd ne : ℕ} (hSD : Src + 11 ≤ D) (hDE : D + 5 ≤ E)
+
+end
+
+section
+variable {m : ℕ → ℕ} {Src D E nd ne : ℕ}
+theorem ssWM_src (hSD : Src + 11 ≤ D) (hDE : D + 5 ≤ E)
     {u : ℕ} (hu : u < 11) : ssWM m Src D E nd ne (Src + u) = m (Src + u) := by
-  unfold ssWM; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+  grind [ssWM]
 
-theorem ssWM_stepD {m : ℕ → ℕ} {Src D E nd ne : ℕ} (_hDE : D + 5 ≤ E) (hnd : nd < 5) (_hne : ne ≤ 5) :
+theorem ssWM_stepD (_hDE : D + 5 ≤ E) (hnd : nd < 5) (_hne : ne ≤ 5) :
     upd (ssWM m Src D E nd ne) (D + nd) (m (Src + ssOff nd)) = ssWM m Src D E (nd + 1) ne := by
-  funext a
-  unfold ssWM
-  rw [upd_apply]
-  by_cases h : a = D + nd
-  · subst h
-    rw [ite_eq_left rfl, ite_eq_left (show D ≤ D + nd ∧ D + nd < D + (nd + 1) by omega),
-      show D + nd - D = nd by omega]
-  · rw [ite_eq_right h]
-    by_cases h2 : D ≤ a ∧ a < D + nd
-    · rw [ite_eq_left h2, ite_eq_left (show D ≤ a ∧ a < D + (nd + 1) by omega)]
-    · rw [ite_eq_right h2, ite_eq_right (show ¬ (D ≤ a ∧ a < D + (nd + 1)) by omega)]
+  grind [ssWM, upd_apply]
 
-theorem ssWM_stepE {m : ℕ → ℕ} {Src D E nd ne : ℕ} (hDE : D + 5 ≤ E) (hnd : nd ≤ 5) (hne : ne < 5) :
+theorem ssWM_stepE (hDE : D + 5 ≤ E) (hnd : nd ≤ 5) (hne : ne < 5) :
     upd (ssWM m Src D E nd ne) (E + ne) (m (Src + 6 + ne)) = ssWM m Src D E nd (ne + 1) := by
-  funext a
-  unfold ssWM
-  rw [upd_apply]
-  by_cases h : a = E + ne
-  · subst h
-    rw [ite_eq_left rfl, ite_eq_right (show ¬ (D ≤ E + ne ∧ E + ne < D + nd) by omega),
-      ite_eq_left (show E ≤ E + ne ∧ E + ne < E + (ne + 1) by omega), show E + ne - E = ne by omega]
-  · rw [ite_eq_right h]
-    by_cases h2 : D ≤ a ∧ a < D + nd
-    · rw [ite_eq_left h2, ite_eq_left h2]
-    · rw [ite_eq_right h2, ite_eq_right h2]
-      by_cases h3 : E ≤ a ∧ a < E + ne
-      · rw [ite_eq_left h3, ite_eq_left (show E ≤ a ∧ a < E + (ne + 1) by omega)]
-      · rw [ite_eq_right h3, ite_eq_right (show ¬ (E ≤ a ∧ a < E + (ne + 1)) by omega)]
+  grind [ssWM, upd_apply]
 
 /-! ## One copied word -/
+
+
+end
 
 /-- Copy the word at `srS` to the address in `R`, advancing both. -/
 def ssCw (R : ℕ) : List Instr := [.loadN srV srS, .storeN R srV, .addN srS srS K1, .addN R R K1]
@@ -107,27 +97,18 @@ theorem ssCw_exec {P : Polygon} {W : ℕ} {d : Config} (hw : WordsBounded W d) {
       d'.nreg R = d.nreg R + 1 ∧ (∀ r, r ≠ srV → r ≠ srS → r ≠ R → d'.nreg r = d.nreg r) ∧
       d'.nmem = upd d.nmem (d.nreg R) (d.nmem (d.nreg srS)) ∧ d'.rreg = d.rreg ∧
       d'.rmem = d.rmem ∧ d'.output = d.output := by
-  have nK1 : K1 ≠ srV ∧ K1 ≠ srS := by constructor <;> ssoSrt
+  have nK1 : K1 ≠ srV ∧ K1 ≠ srS := by omega_nf
   have nVS : srS ≠ srV := by ssoSrt
   have e₁ := Exec.loadN (P := P) hw srV srS
   have e₂ := Exec.storeN (P := P) e₁.wb_right R srV
   have e₃ := Exec.addN (P := P) e₂.wb_right srS srS K1 (by
-    simp only; rw [upd_other _ _ _ nVS, upd_other _ _ _ nK1.1, hK1]; exact hs)
+    simp_all)
   have e₄ := Exec.addN (P := P) e₃.wb_right R R K1 (by
-    simp only
-    rw [upd_other _ _ _ hR2, upd_other _ _ _ hR1, upd_other _ _ _ nK1.2, upd_other _ _ _ nK1.1,
-      hK1]; exact ht)
+    simp_all)
   refine ⟨_, Exec.block_cons e₁ (Exec.block_cons e₂ (Exec.block_cons e₃ (Exec.block_cons e₄
     (Exec.block_nil e₄.wb_right)))), ?_, ?_, fun r a b c' => ?_, ?_, rfl, rfl, rfl⟩
-  · simp only
-    rw [upd_other _ _ _ (Ne.symm hR2), upd_same, upd_other _ _ _ nVS, upd_other _ _ _ nK1.1, hK1]
-  · simp only [upd_same]
-    rw [upd_other _ _ _ hR2, upd_other _ _ _ hR1, upd_other _ _ _ nK1.2, upd_other _ _ _ nK1.1,
-      hK1]
-  · simp only
-    rw [upd_other _ _ _ c', upd_other _ _ _ b, upd_other _ _ _ a]
-  · simp only
-    rw [upd_other _ _ _ hR1, upd_same]
+  · ram_simp
+  all_goals (ram_simp )
 
 /-! ## The record write -/
 
@@ -193,13 +174,12 @@ theorem ssWr_exec {P : Polygon} {W : ℕ} {d : Config} (hw : WordsBounded W d)
   obtain ⟨vS, vD, vE, vo⟩ := ssWrHead_val d.nmem d.nreg
   have e₀ := exec_regB (P := P) ssWrHead hw (ssWrHead_ok d.nmem d.nreg (by omega) (by omega) (by omega))
   set d₀ : Config := { d with nreg := regB d.nmem ssWrHead d.nreg } with hd₀
-  have p0S : d₀.nreg srS = Src := by show regB _ _ _ srS = _; rw [vS]; omega
-  have p0D : d₀.nreg srD = D := by show regB _ _ _ srD = _; rw [vD]; omega
-  have p0E : d₀.nreg srE = E := by show regB _ _ _ srE = _; rw [vE]; omega
+  have p0S : d₀.nreg srS = Src := by grind
+  have p0D : d₀.nreg srD = D := by grind
+  have p0E : d₀.nreg srE = E := by grind
   have p0o : ∀ r, r ≠ sr1 → r ≠ sr2 → r ≠ sr3 → r ≠ sr4 → r ≠ srS → r ≠ srD → r ≠ srE →
       d₀.nreg r = d.nreg r := vo
-  have p0K : d₀.nreg K1 = 1 := by
-    rw [p0o K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hK1
+  
   have hSDv : Src + 11 ≤ D := by omega
   have hDEv : D + 5 ≤ E := by omega
   have hCW : d.nreg sC + 1 ≤ W := by omega
@@ -217,29 +197,29 @@ theorem ssWr_exec {P : Polygon} {W : ℕ} {d : Config} (hw : WordsBounded W d)
     intro nd ne u d' ⟨w', s1, s2, s3, s4, s5, s6, s7, s8⟩ hnd hne hu
     have hK : d'.nreg K1 = 1 := by
       rw [s5 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hK1
-    have hu11 : u < 11 := by rw [← hu]; unfold ssOff; split_ifs <;> omega
+    have hu11 : u < 11 := by grind [ssOff]
     obtain ⟨d'', ex, t1, t2, t3, t4, t5, t6, t7⟩ := ssCw_exec (P := P) (R := srD) w' hK (by ssoSrt)
-      (by ssoSrt) (by ssoSrt) (by rw [s1]; omega) (by rw [s2]; omega)
-    refine ⟨d'', ex, ex.wb_right, by rw [t1, s1]; omega, by rw [t2, s2]; omega, ?_, ?_,
+      (by ssoSrt) (by ssoSrt) (by omega) (by omega)
+    refine ⟨d'', ex, ex.wb_right, by omega, by omega, ?_, ?_,
       fun r a b c' e f g h i => ?_, by rw [t5, s6], by rw [t6, s7], by rw [t7, s8]⟩
     · rw [t3 srE (by ssoSrt) (by ssoSrt) (by ssoSrt), s3]
     · rw [t4, s4, s2, s1, ssWM_src hSDv hDEv hu11, ← hu]
       exact ssWM_stepD hDEv hnd hne
-    · rw [t3 r i f g, s5 r a b c' e f g h i]
+    grind
   have stepE : ∀ ne u d', St 5 ne u d' → ne < 5 → 6 + ne = u →
       ∃ d'', Exec P W (block (ssCw srE)) d' d'' 4 ∧ St 5 (ne + 1) (u + 1) d'' := by
     intro ne u d' ⟨w', s1, s2, s3, s4, s5, s6, s7, s8⟩ hne hu
     have hK : d'.nreg K1 = 1 := by
       rw [s5 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hK1
     obtain ⟨d'', ex, t1, t2, t3, t4, t5, t6, t7⟩ := ssCw_exec (P := P) (R := srE) w' hK (by ssoSrt)
-      (by ssoSrt) (by ssoSrt) (by rw [s1]; omega) (by rw [s3]; omega)
-    refine ⟨d'', ex, ex.wb_right, by rw [t1, s1]; omega, ?_, by rw [t2, s3]; omega, ?_,
+      (by ssoSrt) (by ssoSrt) (by omega) (by omega)
+    refine ⟨d'', ex, ex.wb_right, by omega, ?_, by omega, ?_,
       fun r a b c' e f g h i => ?_, by rw [t5, s6], by rw [t6, s7], by rw [t7, s8]⟩
     · rw [t3 srD (by ssoSrt) (by ssoSrt) (by ssoSrt), s2]
     · rw [t4, s4, s3, s1, ssWM_src hSDv hDEv (by omega), ← hu,
         show Src + (6 + ne) = Src + 6 + ne by omega]
       exact ssWM_stepE hDEv le_rfl hne
-    · rw [t3 r i f h, s5 r a b c' e f g h i]
+    · ram_simp
   obtain ⟨d₁, x₁, S1⟩ := stepD 0 0 0 d₀ S0 (by norm_num) (by norm_num) rfl
   obtain ⟨d₂, x₂, S2⟩ := stepD 1 0 1 d₁ S1 (by norm_num) (by norm_num) rfl
   -- skip word `2`
@@ -249,11 +229,11 @@ theorem ssWr_exec {P : Polygon} {W : ℕ} {d : Config} (hw : WordsBounded W d)
   have x₃ := Exec.addN (P := P) w₂ srS srS K1 (by rw [s21, hK₂]; omega)
   set d₃ : Config := { d₂ with nreg := upd d₂.nreg srS (d₂.nreg srS + d₂.nreg K1) } with hd₃
   have S3 : St 2 0 3 d₃ := by
-    refine ⟨x₃.wb_right, by simp only [hd₃, upd_same]; rw [s21, hK₂], ?_, ?_, s24,
+    refine ⟨x₃.wb_right, by ram_simp, ?_, ?_, s24,
       fun r a b c' e f g h i => ?_, s26, s27, s28⟩
-    · simp only [hd₃]; rw [upd_other _ _ _ (show srD ≠ srS by ssoSrt)]; exact s22
-    · simp only [hd₃]; rw [upd_other _ _ _ (show srE ≠ srS by ssoSrt)]; exact s23
-    · simp only [hd₃]; rw [upd_other _ _ _ f]; exact s25 r a b c' e f g h i
+    · ram_simp
+    · ram_simp
+    · ram_simp
   obtain ⟨d₄, x₄, S4⟩ := stepD 2 0 3 d₃ S3 (by norm_num) (by norm_num) rfl
   obtain ⟨d₅, x₅, S5⟩ := stepD 3 0 4 d₄ S4 (by norm_num) (by norm_num) rfl
   obtain ⟨d₆, x₆, S6⟩ := stepD 4 0 5 d₅ S5 (by norm_num) (by norm_num) rfl
@@ -267,12 +247,12 @@ theorem ssWr_exec {P : Polygon} {W : ℕ} {d : Config} (hw : WordsBounded W d)
     rw [s115 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hK1
   have hC₁₁ : d₁₁.nreg sC = d.nreg sC :=
     s115 sC (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)
-  have x₁₂ := Exec.addN (P := P) w₁₁ sC sC K1 (by rw [hC₁₁, hK₁₁]; exact hCW)
+  have x₁₂ := Exec.addN (P := P) w₁₁ sC sC K1 (by omega)
   refine ⟨_, _, .seq e₀ (.seq x₁ (.seq x₂ (.seq x₃ (.seq x₄ (.seq x₅ (.seq x₆ (.seq x₇ (.seq x₈
     (.seq x₉ (.seq x₁₀ (.seq x₁₁ x₁₂))))))))))), by simp [ssWrHead], s114, ?_,
     fun r a b c' e f g h i j => ?_, s116, s117, s118⟩
-  · simp only [upd_same]; rw [hC₁₁, hK₁₁]
-  · simp only; rw [upd_other _ _ _ j]; exact s115 r a b c' e f g h i
+  · ram_simp
+  · ram_simp
 
 end
 

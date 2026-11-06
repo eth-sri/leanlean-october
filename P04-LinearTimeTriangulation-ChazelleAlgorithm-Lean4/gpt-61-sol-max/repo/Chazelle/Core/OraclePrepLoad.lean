@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepSort
 
 /-!
@@ -79,8 +81,8 @@ theorem pLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
         (c.nmem (c.nreg 110001 + 5)) (c.nmem (c.nreg 110001 + 6)) (c.nmem (c.nreg 110001 + 7)) c' := by
   have hQn : (Qof P).n = P.n := shear_n _ _
   obtain ⟨-, -, hd1, hd2, hd3, -⟩ := hD
-  have hmn : C.m < P.n := by have := C.m_lt; rw [hCQ, hQn] at this; exact this
-  have hs : C.s < P.n := by rw [hCQ, hQn] at hsl; exact hsl
+  have hmn : C.m < P.n := by have := C.m_lt; simp_all
+  
   have htl := C.topIdx_le
   set D := c.nreg 110000
   set NB := c.nreg 110001
@@ -91,10 +93,9 @@ theorem pLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     unfold pLoadA
     exec_block
     all_goals (try omega)
-    exact ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
-      by config_simp; rfl, by config_simp; rfl, rfl⟩
+    ram_simp
   obtain ⟨a10, a11, a12, a48, a28, a13, a14, m₁⟩ := v₁
-  have f₁ := exec_frameB e₁ (B := BPL) (by decide)
+  
   -- the chain descriptor and the areas
   obtain ⟨c₂, k₂, e₂, hk₂, v₂⟩ : ∃ c₂ k₂, Exec P W qLoadB c₁ c₂ k₂ ∧ k₂ = 25 ∧
       (c₂.nreg 120015 = C.s ∧ c₂.nreg 120016 = C.m ∧ c₂.nreg 120017 = C.topIdx ∧
@@ -105,7 +106,7 @@ theorem pLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     have w₁ := e₁.wb_right
     unfold qLoadB
     exec_block
-    all_goals (config_simp; (try simp only [a11, a13, a14, m₁, hd2, Nat.add_assoc] at *); (try norm_num); (try omega))
+    all_goals (config_simp; (try simp only [a11, a13, a14, m₁, hd2, Nat.add_assoc] at *); ram_grind)
   obtain ⟨b15, b16, b17, b18, b19, b20, b29, b43, b44, b45, b46, b47⟩ := v₂
   have f₂ := exec_frameB e₂ (B := BLdB) wr_qLoadB
   have g₂ : ∀ r, BLdB r = false → c₂.nreg r = c₁.nreg r := f₂.1
@@ -116,28 +117,28 @@ theorem pLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       c₃.nreg 120021 = (if c.nmem (D + 4) = 1 then C.topIdx else 2 * C.m - C.topIdx) ∧
       c₃.nreg 120022 = (C.s + C.topIdx) % P.n ∧
       (∀ r, r ≠ 120021 → r ≠ 120022 → c₃.nreg r = c₂.nreg r) ∧ c₃.nmem = c₂.nmem := by
-    have h11 : c₂.nreg 120011 = 1 := by rw [g₂ _ (by decide)]; exact a11
-    have h10 : c₂.nreg 120010 = P.n := by rw [g₂ _ (by decide)]; exact a10
+    have h11 : c₂.nreg 120011 = 1 := by ram_grind
+    have h10 : c₂.nreg 120010 = P.n := by ram_grind
     obtain ⟨c₁', k₁', e₁', hk₁', v₁', r₁'⟩ : ∃ c₁' k₁', Exec P W (ifEq 120018 120011
         (.instr (.copyN 120021 120017)) (.instr (.subN 120021 120019 120017))) c₂ c₁' k₁' ∧
         k₁' ≤ 5 ∧ c₁'.nreg 120021 = (if c.nmem (D + 4) = 1 then C.topIdx else 2 * C.m - C.topIdx) ∧
         (∀ r, r ≠ 120021 → c₁'.nreg r = c₂.nreg r) := by
       by_cases hb : c.nmem (D + 4) = 1
       · obtain ⟨cc, ec, vc, rc⟩ := copy_exec (P := P) w₂ 120021 120017
-        exact ⟨cc, _, ifEq_eq_exec (by rw [b18, h11, hb]) ec, by omega,
-          by rw [vc, b17, ite_eq_left hb], rc⟩
+        exact ⟨cc, _, ifEq_eq_exec (by omega) ec, by omega,
+          by ram_simp, rc⟩
       · obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (S := .instr (.copyN 120021 120017))
-          (show c₂.nreg 120018 ≠ c₂.nreg 120011 by rw [b18, h11]; exact hb)
+          (show c₂.nreg 120018 ≠ c₂.nreg 120011 by omega)
           (Exec.subN (P := P) w₂ 120021 120019 120017)
         refine ⟨_, _, e', by omega, ?_, fun r hr => ?_⟩
-        · config_simp; rw [b19, b17, ite_eq_right hb]
-        · config_simp; rw [Machine.upd_other _ _ _ hr]
+        · simp_all
+        simp_all
     have w₁' := e₁'.wb_right
     obtain ⟨cA, eA, vA, rA, mA⟩ := add_exec (P := P) w₁' 120022 120015 120017 (by
-      rw [r₁' _ (by decide), r₁' _ (by decide), b15, b17]; omega)
+      ram_grind)
     rw [r₁' _ (by decide), r₁' _ (by decide), b15, b17] at vA
     obtain ⟨cB, kB, eB, hkB, vB, rB, mB, -⟩ := modSub_exec (P := P) (r := 120022) (nr := 120010)
-      (by decide) cA eA.wb_right (by rw [vA, rA _ (by decide), r₁' _ (by decide), h10]; omega)
+      (by decide) cA eA.wb_right (by ram_grind)
     rw [vA, rA _ (by decide), r₁' _ (by decide), h10] at vB
     have v21' : cB.nreg 120021 = (if c.nmem (D + 4) = 1 then C.topIdx else 2 * C.m - C.topIdx) := by
       rw [rB _ (by decide), rA _ (by decide)]; exact v₁'
@@ -150,11 +151,11 @@ theorem pLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   obtain ⟨c₄, k₄, e₄, hk₄, v30, v39, r₄⟩ : ∃ c₄ k₄, Exec P W pLoadD c₃ c₄ k₄ ∧ k₄ = 3 ∧
       c₄.nreg 120030 = N.arcs.length ∧ c₄.nreg 120039 = N.chords.length ∧
       (∀ r, r ≠ 120190 → r ≠ 120030 → r ≠ 120039 → c₄.nreg r = c₃.nreg r) := by
-    have h14 : c₃.nreg 120014 = NB := by rw [r₃ _ (by decide) (by decide), g₂ _ (by decide)]; exact a14
-    have h11 : c₃.nreg 120011 = 1 := by rw [r₃ _ (by decide) (by decide), g₂ _ (by decide)]; exact a11
+    have h14 : c₃.nreg 120014 = NB := by ram_simp
+    have h11 : c₃.nreg 120011 = 1 := by ram_simp
     unfold pLoadD
     exec_block
-    · rw [h14, h11]; omega
+    · omega
     · refine ⟨rfl, ?_, ?_, fun r h1 h2 h3 => ?_⟩
       · config_simp; rw [h14, h11, m₃, m₂]; exact hNF.2.1
       · config_simp; rw [h14, m₃, m₂]; exact hNF.1
@@ -163,16 +164,9 @@ theorem pLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   -- the final values
   have R4 : ∀ r, r ≠ 120190 → r ≠ 120030 → r ≠ 120039 → r ≠ 120021 → r ≠ 120022 →
       c₄.nreg r = c₂.nreg r := fun r a b c d e => by rw [r₄ r a b c, r₃ r d e]
-  have R1 : ∀ r, BLdB r = false → r ≠ 120190 → r ≠ 120030 → r ≠ 120039 → r ≠ 120021 →
-      r ≠ 120022 → c₄.nreg r = c₁.nreg r := fun r h a b c d e => by rw [R4 r a b c d e, g₂ r h]
+  
   refine ⟨c₄, _, ex, by omega, exec_frameB ex wr_pLoad, ?_⟩
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  all_goals first
-    | (rw [R1 _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)];
-       assumption)
-    | (rw [R4 _ (by decide) (by decide) (by decide) (by decide) (by decide)]; assumption)
-    | (rw [r₄ _ (by decide) (by decide) (by decide)]; assumption)
-    | assumption
+  ram_grind
 
 end
 

@@ -87,24 +87,26 @@ namespace Junction
 
 variable (J : Junction)
 
+section
+variable {p : Point}
 /-- A point off the domain of `C₁` at height `≤ C₁.top.2` is off the domain of `C`. -/
-theorem not_mem_whole_dom_of_left {p : Point} (hp : p.2 ≤ J.left.top.2) (h : p ∉ J.left.dom) :
+theorem not_mem_whole_dom_of_left (hp : p.2 ≤ J.left.top.2) (h : p ∉ J.left.dom) :
     p ∉ J.whole.dom := by
   rw [not_mem_dom_iff J.whole (hp.trans J.left_top_le)]
   rcases (not_mem_dom_iff J.left hp).1 h with h' | h'
-  · exact Or.inl h'
+  · aesop
   · exact Or.inr (J.left_set_subset h')
 
 /-- A point off the domain of `C₂` at height `≤ C₂.top.2` is off the domain of `C`. -/
-theorem not_mem_whole_dom_of_right {p : Point} (hp : p.2 ≤ J.right.top.2)
+theorem not_mem_whole_dom_of_right (hp : p.2 ≤ J.right.top.2)
     (h : p ∉ J.right.dom) : p ∉ J.whole.dom := by
   rw [not_mem_dom_iff J.whole (hp.trans J.right_top_le)]
   rcases (not_mem_dom_iff J.right hp).1 h with h' | h'
-  · exact Or.inl h'
+  · aesop
   · exact Or.inr (J.right_set_subset h')
 
 /-- A point of the domain of `C₁` below the top of `C₁` and off `C₂` is in the domain of `C`. -/
-theorem mem_whole_dom_of_left {p : Point} (hp : p.2 ≤ J.left.top.2) (h : p ∈ J.left.dom)
+theorem mem_whole_dom_of_left (hp : p.2 ≤ J.left.top.2) (h : p ∈ J.left.dom)
     (h2 : p ∉ J.right.set) : p ∈ J.whole.dom := by
   by_contra hnd
   rcases (not_mem_dom_iff J.whole (hp.trans J.left_top_le)).1 hnd with h' | h'
@@ -112,10 +114,10 @@ theorem mem_whole_dom_of_left {p : Point} (hp : p.2 ≤ J.left.top.2) (h : p ∈
   · rw [whole_set] at h'
     rcases h' with h' | h'
     · exact J.left.not_mem_set_of_mem_dom h h'
-    · exact h2 h'
+    simp_all
 
 /-- A point of the domain of `C₂` below the top of `C₂` and off `C₁` is in the domain of `C`. -/
-theorem mem_whole_dom_of_right {p : Point} (hp : p.2 ≤ J.right.top.2) (h : p ∈ J.right.dom)
+theorem mem_whole_dom_of_right (hp : p.2 ≤ J.right.top.2) (h : p ∈ J.right.dom)
     (h1 : p ∉ J.left.set) : p ∈ J.whole.dom := by
   by_contra hnd
   rcases (not_mem_dom_iff J.whole (hp.trans J.right_top_le)).1 hnd with h' | h'
@@ -126,7 +128,7 @@ theorem mem_whole_dom_of_right {p : Point} (hp : p.2 ≤ J.right.top.2) (h : p �
     · exact J.right.not_mem_set_of_mem_dom h h'
 
 /-- A point of the domain of `C` at height `≤ C₁.top.2` is in the domain of `C₁`. -/
-theorem mem_left_dom_of_whole {p : Point} (hp : p.2 ≤ J.left.top.2) (h : p ∈ J.whole.dom) :
+theorem mem_left_dom_of_whole (hp : p.2 ≤ J.left.top.2) (h : p ∈ J.whole.dom) :
     p ∈ J.left.dom := by
   by_contra hnd
   rcases (not_mem_dom_iff J.left hp).1 hnd with h' | h'
@@ -134,12 +136,15 @@ theorem mem_left_dom_of_whole {p : Point} (hp : p.2 ≤ J.left.top.2) (h : p ∈
   · exact J.whole.not_mem_set_of_mem_dom h (J.left_set_subset h')
 
 /-- A point of the domain of `C` at height `≤ C₂.top.2` is in the domain of `C₂`. -/
-theorem mem_right_dom_of_whole {p : Point} (hp : p.2 ≤ J.right.top.2) (h : p ∈ J.whole.dom) :
+theorem mem_right_dom_of_whole (hp : p.2 ≤ J.right.top.2) (h : p ∈ J.whole.dom) :
     p ∈ J.right.dom := by
   by_contra hnd
   rcases (not_mem_dom_iff J.right hp).1 hnd with h' | h'
   · exact h' (J.whole.dom_subset_box h)
   · exact J.whole.not_mem_set_of_mem_dom h (J.right_set_subset h')
+
+
+end
 
 /-- The chords of `C` at the shared vertex (Chazelle's chords "incident upon the vertices of
 `∂C` resulting from the duplication of the vertex `C₁ ∩ C₂`"). -/
@@ -157,16 +162,18 @@ def fusion (S₁ S₂ : Set (Set Point)) : Set (Set Point) :=
 /-- The shared-vertex chords are vertex chords of `C`. -/
 theorem sharedChords_subset_chords : J.sharedChords ⊆ J.whole.chords := by
   rintro d ⟨σ, hσ, h, rfl⟩
-  exact ⟨J.m₁, σ, by rw [whole_m]; omega, hσ, h, rfl⟩
+  exact ⟨J.m₁, σ, by simp_all, hσ, h, rfl⟩
 
 /-- The shared-vertex chords belong to the fusion. -/
 theorem sharedChords_subset_fusion (S₁ S₂ : Set (Set Point)) :
     J.sharedChords ⊆ J.fusion S₁ S₂ :=
   fun _ h => Or.inr h
 
+section
+variable {c : Set Point}
 /-- The endpoints of an augmented chord of `C₁` are off the domain of `C`, at height
 `≤ C.top.2`. -/
-theorem ends_left {c : Set Point} (hc : c ∈ augChords J.left) :
+theorem ends_left (hc : c ∈ augChords J.left) :
     (lend c).2 ≤ J.left.top.2 ∧ lend c ∉ J.whole.dom ∧ (rend c).2 ≤ J.left.top.2 ∧
       rend c ∉ J.whole.dom := by
   obtain ⟨y, a, b, h, hy, -, hl, hr⟩ := augChords_spec hc
@@ -176,13 +183,16 @@ theorem ends_left {c : Set Point} (hc : c ∈ augChords J.left) :
 
 /-- The endpoints of an augmented chord of `C₂` are off the domain of `C`, at height
 `≤ C₂.top.2`. -/
-theorem ends_right {c : Set Point} (hc : c ∈ augChords J.right) :
+theorem ends_right (hc : c ∈ augChords J.right) :
     (lend c).2 ≤ J.right.top.2 ∧ lend c ∉ J.whole.dom ∧ (rend c).2 ≤ J.right.top.2 ∧
       rend c ∉ J.whole.dom := by
   obtain ⟨y, a, b, h, hy, -, hl, hr⟩ := augChords_spec hc
   rw [hl, hr]
   exact ⟨hy, J.not_mem_whole_dom_of_right hy h.left_not, hy,
     J.not_mem_whole_dom_of_right hy h.right_not⟩
+
+
+end
 
 /-- **The fusion is an augmented submap of `V(C)`.** -/
 theorem fusion_subset_augChords {S₁ S₂ : Set (Set Point)} (hS₁ : S₁ ⊆ augChords J.left)
@@ -206,13 +216,13 @@ theorem sharedChords_finite : J.sharedChords.Finite := by
   refine ((finite_singleton (-1 : ℝ)).insert 1).image (fun σ => J.whole.chordSet J.m₁ σ)
     |>.subset ?_
   rintro d ⟨σ, hσ, -, rfl⟩
-  exact ⟨σ, by rcases hσ with rfl | rfl <;> simp, rfl⟩
+  grind
 
 /-- There are at most two shared-vertex chords. -/
 theorem sharedChords_ncard_le : J.sharedChords.ncard ≤ 2 := by
   have hsub : J.sharedChords ⊆ (fun σ => J.whole.chordSet J.m₁ σ) '' ({1, -1} : Set ℝ) := by
     rintro d ⟨σ, hσ, -, rfl⟩
-    exact ⟨σ, by rcases hσ with rfl | rfl <;> simp, rfl⟩
+    grind
   calc J.sharedChords.ncard
       ≤ ((fun σ => J.whole.chordSet J.m₁ σ) '' ({1, -1} : Set ℝ)).ncard :=
         ncard_le_ncard hsub ((toFinite _).image _)
@@ -224,19 +234,20 @@ theorem fusion_subset_image (S₁ S₂ : Set (Set Point)) :
     J.fusion S₁ S₂ ⊆ (fun c => shoot J.whole (lend c) 1) '' (S₁ ∪ S₂) ∪
       (fun c => shoot J.whole (rend c) (-1)) '' (S₁ ∪ S₂) ∪ J.sharedChords := by
   rintro d ((⟨c, hc, -, rfl⟩ | ⟨c, hc, -, rfl⟩) | hd)
-  · exact Or.inl (Or.inl ⟨c, hc, rfl⟩)
-  · exact Or.inl (Or.inr ⟨c, hc, rfl⟩)
-  · exact Or.inr hd
+  all_goals grind
 
+section
+variable {S₁ S₂ : Set (Set Point)} (h₁ : S₁.Finite) (h₂ : S₂.Finite)
+include h₁ h₂
 /-- The fusion of finite submaps is finite. -/
-theorem fusion_finite {S₁ S₂ : Set (Set Point)} (h₁ : S₁.Finite) (h₂ : S₂.Finite) :
+theorem fusion_finite :
     (J.fusion S₁ S₂).Finite :=
   ((((h₁.union h₂).image _).union ((h₁.union h₂).image _)).union J.sharedChords_finite).subset
     (J.fusion_subset_image S₁ S₂)
 
 /-- **Size of the fusion**: at most two chords per chord of `S₁ ∪ S₂`, plus the two chords at
 the shared vertex. -/
-theorem ncard_fusion_le {S₁ S₂ : Set (Set Point)} (h₁ : S₁.Finite) (h₂ : S₂.Finite) :
+theorem ncard_fusion_le :
     (J.fusion S₁ S₂).ncard ≤ 2 * (S₁.ncard + S₂.ncard) + 2 := by
   have h12 := h₁.union h₂
   have hu : (S₁ ∪ S₂).ncard ≤ S₁.ncard + S₂.ncard := ncard_union_le _ _
@@ -255,8 +266,14 @@ theorem ncard_fusion_le {S₁ S₂ : Set (Set Point)} (h₁ : S₁.Finite) (h₂
 
 /-! ### Endpoints are preserved -/
 
+
+end
+
+section
+variable {c : Set Point} (hc : c ∈ augChords J.left ∪ augChords J.right)
+include hc
 /-- A chord of `C₁` shot from its left endpoint along itself w.r.t. `C` stays inside it. -/
-theorem shoot_lend_subset {c : Set Point} (hc : c ∈ augChords J.left ∪ augChords J.right) :
+theorem shoot_lend_subset :
     shoot J.whole (lend c) 1 ⊆ c := by
   rcases hc with hc | hc
   · obtain ⟨y, a, b, h, hy, rfl, hl, -⟩ := augChords_spec hc
@@ -268,7 +285,7 @@ theorem shoot_lend_subset {c : Set Point} (hc : c ∈ augChords J.left ∪ augCh
 
 /-- A chord of `C₁` or `C₂` shot from its right endpoint along itself w.r.t. `C` stays
 inside it. -/
-theorem shoot_rend_subset {c : Set Point} (hc : c ∈ augChords J.left ∪ augChords J.right) :
+theorem shoot_rend_subset :
     shoot J.whole (rend c) (-1) ⊆ c := by
   rcases hc with hc | hc
   · obtain ⟨y, a, b, h, hy, rfl, -, hr⟩ := augChords_spec hc
@@ -278,30 +295,45 @@ theorem shoot_rend_subset {c : Set Point} (hc : c ∈ augChords J.left ∪ augCh
     rw [hr]
     exact shoot_subset_neg J.whole h.lt (J.not_mem_whole_dom_of_right hy h.left_not)
 
+
+end
+
+section
+variable (hP : J.P.Simple) {p : Point}
+include hP
 /-- An endpoint of an augmented chord of `C₁` lies on `C₂` only if it is the shared vertex. -/
-theorem end_not_mem_right_of_left (hP : J.P.Simple) {p : Point} (hp : p.2 ≤ J.left.top.2)
+theorem end_not_mem_right_of_left (hp : p.2 ≤ J.left.top.2)
     (hnd : p ∉ J.left.dom) (hne : p ≠ J.shared) : p ∉ J.right.set := by
   intro hr
   rcases (not_mem_dom_iff J.left hp).1 hnd with h | h
   · exact h (J.right.set_subset_box hr)
   · have : p ∈ J.left.set ∩ J.right.set := ⟨h, hr⟩
     rw [J.left_inter_right hP] at this
-    exact hne this
+    simp_all
 
 /-- An endpoint of an augmented chord of `C₂` lies on `C₁` only if it is the shared vertex. -/
-theorem end_not_mem_left_of_right (hP : J.P.Simple) {p : Point} (hp : p.2 ≤ J.right.top.2)
+theorem end_not_mem_left_of_right (hp : p.2 ≤ J.right.top.2)
     (hnd : p ∉ J.right.dom) (hne : p ≠ J.shared) : p ∉ J.left.set := by
   intro hl
   rcases (not_mem_dom_iff J.right hp).1 hnd with h | h
   · exact h (J.left.set_subset_box hl)
   · have : p ∈ J.left.set ∩ J.right.set := ⟨hl, h⟩
     rw [J.left_inter_right hP] at this
-    exact hne this
+    simp_all
 
+
+end
+
+section
+variable (hP : J.P.Simple) {c : Set Point}
+include hP
+section
+variable (hc : c ∈ augChords J.left)
+include hc
 /-- **Endpoints are preserved (left chords, left endpoint).**  For a chord `c` of `S₁` whose left
 endpoint is not the shared vertex, the rightward direction at `lend c` is free for `C`; so the
 fusion contains a chord `shoot C (lend c) 1 ⊆ c` with endpoint `lend c`. -/
-theorem lend_freeAt_left (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChords J.left)
+theorem lend_freeAt_left
     (hne : lend c ≠ J.shared) : FreeAt J.whole (lend c) 1 := by
   obtain ⟨y, a, b, h, hy, rfl, hl, -⟩ := augChords_spec hc
   rw [hl] at hne ⊢
@@ -310,10 +342,10 @@ theorem lend_freeAt_left (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChords
   filter_upwards [hev, Ioo_mem_nhdsGT (show (0 : ℝ) < b - a by linarith [h.lt])] with t ht1 ht2
   have e : rayPt ((a, y) : Point) 1 t = ((a + t, y) : Point) := by simp [rayPt]
   rw [e] at ht1 ⊢
-  exact J.mem_whole_dom_of_left hy (h.open_mem _ (by linarith [ht2.1]) (by linarith [ht2.2])) ht1
+  exact J.mem_whole_dom_of_left hy (h.open_mem _ (by simp_all) (by grind)) ht1
 
 /-- Endpoints are preserved (left chords, right endpoint). -/
-theorem rend_freeAt_left (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChords J.left)
+theorem rend_freeAt_left
     (hne : rend c ≠ J.shared) : FreeAt J.whole (rend c) (-1) := by
   obtain ⟨y, a, b, h, hy, rfl, -, hr⟩ := augChords_spec hc
   rw [hr] at hne ⊢
@@ -323,10 +355,16 @@ theorem rend_freeAt_left (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChords
   have e : rayPt ((b, y) : Point) (-1) t = ((b - t, y) : Point) := by
     simp [rayPt, sub_eq_add_neg]
   rw [e] at ht1 ⊢
-  exact J.mem_whole_dom_of_left hy (h.open_mem _ (by linarith [ht2.2]) (by linarith [ht2.1])) ht1
+  exact J.mem_whole_dom_of_left hy (h.open_mem _ (by grind) (by simp_all)) ht1
 
+
+end
+
+section
+variable (hc : c ∈ augChords J.right)
+include hc
 /-- Endpoints are preserved (right chords, left endpoint). -/
-theorem lend_freeAt_right (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChords J.right)
+theorem lend_freeAt_right
     (hne : lend c ≠ J.shared) : FreeAt J.whole (lend c) 1 := by
   obtain ⟨y, a, b, h, hy, rfl, hl, -⟩ := augChords_spec hc
   rw [hl] at hne ⊢
@@ -335,10 +373,10 @@ theorem lend_freeAt_right (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChord
   filter_upwards [hev, Ioo_mem_nhdsGT (show (0 : ℝ) < b - a by linarith [h.lt])] with t ht1 ht2
   have e : rayPt ((a, y) : Point) 1 t = ((a + t, y) : Point) := by simp [rayPt]
   rw [e] at ht1 ⊢
-  exact J.mem_whole_dom_of_right hy (h.open_mem _ (by linarith [ht2.1]) (by linarith [ht2.2])) ht1
+  exact J.mem_whole_dom_of_right hy (h.open_mem _ (by simp_all) (by grind)) ht1
 
 /-- Endpoints are preserved (right chords, right endpoint). -/
-theorem rend_freeAt_right (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChords J.right)
+theorem rend_freeAt_right
     (hne : rend c ≠ J.shared) : FreeAt J.whole (rend c) (-1) := by
   obtain ⟨y, a, b, h, hy, rfl, -, hr⟩ := augChords_spec hc
   rw [hr] at hne ⊢
@@ -348,7 +386,13 @@ theorem rend_freeAt_right (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChord
   have e : rayPt ((b, y) : Point) (-1) t = ((b - t, y) : Point) := by
     simp [rayPt, sub_eq_add_neg]
   rw [e] at ht1 ⊢
-  exact J.mem_whole_dom_of_right hy (h.open_mem _ (by linarith [ht2.2]) (by linarith [ht2.1])) ht1
+  exact J.mem_whole_dom_of_right hy (h.open_mem _ (by grind) (by simp_all)) ht1
+
+
+
+end
+
+end
 
 /-- **Endpoints are preserved** (summary): every endpoint of a chord of `S₁ ∪ S₂` other than the
 shared vertex is an endpoint of a chord of the fusion contained in that chord. -/
@@ -358,9 +402,7 @@ theorem end_mem_fusion (hP : J.P.Simple) {S₁ S₂ : Set (Set Point)}
     (lend c ≠ J.shared → ∃ d ∈ J.fusion S₁ S₂, lend c ∈ d ∧ d ⊆ c) ∧
       (rend c ≠ J.shared → ∃ d ∈ J.fusion S₁ S₂, rend c ∈ d ∧ d ⊆ c) := by
   have hc' : c ∈ augChords J.left ∪ augChords J.right := by
-    rcases hc with hc | hc
-    · exact Or.inl (hS₁ hc)
-    · exact Or.inr (hS₂ hc)
+    grind
   refine ⟨fun hne => ⟨_, Or.inl (Or.inl ⟨c, hc, ?_, rfl⟩), Geometry.left_mem_segment _ _,
     J.shoot_lend_subset hc'⟩, fun hne => ⟨_, Or.inl (Or.inr ⟨c, hc, ?_, rfl⟩),
     Geometry.left_mem_segment _ _, J.shoot_rend_subset hc'⟩⟩

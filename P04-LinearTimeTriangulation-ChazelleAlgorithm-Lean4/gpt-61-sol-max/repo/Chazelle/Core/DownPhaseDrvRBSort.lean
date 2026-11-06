@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRBkt
 public import Chazelle.Core.NFBuildEvCmp
 
@@ -55,8 +57,7 @@ theorem cbBody_exec (d : Config) (hw : WordsBounded W d) {i X src : ℕ}
       .addN 210056 210056 210034]) d d' k ∧ k = 5 ∧ d'.nreg 210056 = i + 1 ∧
       d'.nmem = upd d.nmem (X + i) (d.nmem (src + i)) := by
     exec_block
-    all_goals try (config_simp; (try simp only [h56, h55, h05, h34]); omega)
-    refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp [h56, h55, h05, h34]
+    all_goals (simp_all +zetaDelta )
   exact ⟨d', k, ex, hk, h1, h2, exec_frameM ex wrM_cb⟩
 
 /-- **The copy-back loop.** -/
@@ -82,17 +83,12 @@ theorem copyBack_exec {d : Config} (hw : WordsBounded W d) {X src len : ℕ}
         (g _ (by decide)).trans h4, (g _ (by decide)).trans h5, hf.trans hf', fun a => ?_⟩,
         by omega⟩
       rw [hm', Machine.upd_apply]
-      by_cases ha : a = X + i
-      · rw [ite_eq_left ha, hm (src + i), ite_eq_right (by omega), ite_eq_left (by omega),
-          show a - X = i by omega]
-      · rw [ite_eq_right ha, hm a]; split_ifs <;> first | rfl | omega)
-    (j := 0) ⟨hw, h56, h54, h55, h05, h34, FrameM.refl _ _, fun a => by rw [ite_eq_right (by omega)]⟩
+      ram_grind)
+    (j := 0) ⟨hw, h56, h54, h55, h05, h34, FrameM.refl _ _, fun a => by omega_nf⟩
     (Nat.zero_le _)
   refine ⟨d', k, ex, by omega, w', ?_, fun a ha => ?_, hf'⟩
-  · unfold seg; apply List.map_congr_left; intro i hi
-    rw [List.mem_range] at hi
-    rw [hm', ite_eq_left (by omega), show X + i - X = i by omega]
-  · rw [hm', ite_eq_right (by omega)]
+  · simp_all [seg, List.mem_range] 
+  ram_grind
 
 set_option maxHeartbeats 2000000 in
 /-- **Sorting a segment of event codes in place.** -/
@@ -118,7 +114,7 @@ theorem sortBack_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       (∀ a, a < c.nreg ALLOC → c'.rmem a = c.rmem a) ∧ c'.output = c.output ∧
       c'.nreg 40000 = D ∧ c'.nreg 42000 = T ∧ c'.nreg 42001 = 2 * L.length ∧
       (∀ r, 43000 ≤ r → r < 44000 → c'.nreg r = c.nreg r) := by
-  have hW1 : 1 ≤ W := by unfold hostWords at hWn; omega
+  
   -- the sort's inputs
   obtain ⟨c₁, k₁, e₁, hk₁, v3, v4, g₁, m₁, rr₁, rm₁, o₁⟩ : ∃ c₁ k₁,
       Exec P W (block [.copyN 30003 210055, .copyN 30004 210054]) c c₁ k₁ ∧ k₁ = 2 ∧
@@ -126,27 +122,24 @@ theorem sortBack_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       (∀ r, r ≠ 30003 → r ≠ 30004 → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem ∧
       c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     exec_block
-    refine ⟨rfl, ?_, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩ <;> config_simp
-    · exact h55
-    · exact h54
-    · simp [h1, h2]
+    ram_simp
   have w₁ := e₁.wb_right
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by decide) (by decide)
   -- the sort
   have hcmp := evCmp_ok (P := P) (W := W) hG hWn (m₀ := c₁.nmem) (A₀ := c₁.nreg ALLOC)
-    (D := D) (T := T) (M := M) (L := L) (by omega) (by rw [hA₁, m₁]; exact hwf)
-    (by rw [m₁]; exact hM) hL (by rw [m₁]; exact hR) (by omega) c₁.nreg
+    (D := D) (T := T) (M := M) (L := L) (by omega) (by ram_simp)
+    (by ram_simp) hL (by ram_simp) (by omega) c₁.nreg
   have hJ₁ : EvJ c₁.nmem (c₁.nreg ALLOC) D T (2 * L.length) c₁.nreg c₁ :=
-    ⟨by rw [g₁ _ (by decide) (by decide), h40], by rw [g₁ _ (by decide) (by decide), h42],
-      by rw [g₁ _ (by decide) (by decide), h42'], fun _ _ => rfl, fun _ _ _ => rfl⟩
+    ⟨by ram_simp, by ram_simp,
+      by ram_simp, fun _ _ => rfl, fun _ _ _ => rfl⟩
   have hseg : seg c₁.nmem (c₁.nreg 30003) (seg c.nmem X len).length = seg c.nmem X len := by
-    rw [v3, seg_length, m₁]
+    ram_simp
   obtain ⟨c₂, k₂, e₂, hk₂, J₂, F₂, s₁, s₂, Ls, hLs, hperm, hsort⟩ := SortR.sortStmt_exec
     (P := P) (W := W) hcmp (by decide)
     (fun a b d h1 h2 => evLeB_trans M (Qof P) L _ a b d h1 h2)
     (fun a b => evLeB_total M (Qof P) L _ a b) w₁ hJ₁ (evJ_stable _ _ _ _ _ _)
-    (seg c.nmem X len) hseg (by rw [v4, seg_length]) (by rw [v3, seg_length, hA₁]; exact hX)
-    (by rw [seg_length, hA₁]; omega)
+    (seg c.nmem X len) hseg (by ram_simp) (by simp_all)
+    (by grind [seg_length])
   rw [seg_length] at hk₂ s₂ hLs
   obtain ⟨j1, j2, j3, j4, j5⟩ := J₂
   have w₂ := e₂.wb_right
@@ -156,13 +149,12 @@ theorem sortBack_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   have g₃ : ∀ r, r ≠ 210056 → c₃.nreg r = c₂.nreg r := fun r hr => by rw [hc₃]; simp [hr]
   have hb2 : ∀ r, bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) → r ≠ ALLOC →
       c₂.nreg r = c₁.nreg r := fun r hr hra => F₂.1 r (by
-        simpa [Finset.mem_insert, Finset.mem_singleton] using hr) hra
+        omega) hra
   have b21 : ∀ r, 210000 ≤ r → r < 220000 → bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) :=
-    fun r h1 h2 => by simp [bandOf, bSort, bSign, bBuild]; omega
-  have b3 : ∀ r, 30000 ≤ r → r < 40000 → bandOf r = bSort := fun r h1 h2 => by
-    simp [bandOf, bSort]; omega
+    fun r h1 h2 => by grind [bandOf, bSort, bSign, bBuild]
+  
   obtain ⟨c₄, k₄, e₄, hk₄, w₄, hs₄, hm₄, hf₄⟩ := copyBack_exec (P := P) e₃.wb_right
-    (X := X) (src := c₂.nreg 30005) (len := len) (by rw [hc₃]; simp)
+    (X := X) (src := c₂.nreg 30005) (len := len) (by ram_simp)
     (by rw [g₃ _ (by decide), hb2 _ (b21 _ (by norm_num) (by norm_num)) (by decide),
       g₁ _ (by decide) (by decide), h54])
     (by rw [g₃ _ (by decide), hb2 _ (b21 _ (by norm_num) (by norm_num)) (by decide),
@@ -170,7 +162,7 @@ theorem sortBack_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     (g₃ _ (by decide))
     (by rw [g₃ _ (by decide), hb2 _ (b21 _ (by norm_num) (by norm_num)) (by decide),
       g₁ _ (by decide) (by decide), h34])
-    (by rw [hA₁] at s₁; omega) (by have := F₂.2.2.2.2.2.2; rw [hA₁] at this; omega)
+    (by omega) (by have := F₂.2.2.2.2.2.2; omega)
   have g₄ : ∀ r, Bcb r = false → c₄.nreg r = c₃.nreg r := hf₄.1
   have hA₂ := F₂.2.2.2.2.2.1
   have hA₂' := F₂.2.2.2.2.2.2
@@ -178,28 +170,25 @@ theorem sortBack_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   refine ⟨c₄, k₁ + (k₂ + (1 + k₄)), .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, w₄, ?_, ?_,
     fun a ha hX' => ?_, ?_, ?_, fun r hr hcb hra => ?_, fun r hr hcb => ?_, fun a ha => ?_, ?_,
     ?_, ?_, ?_, fun r h1 h2 => ?_⟩
-  · rw [hs₄, show c₃.nmem = c₂.nmem from rfl, hLs]; exact hperm
+  · ram_grind
   · rw [hs₄, show c₃.nmem = c₂.nmem from rfl, hLs]
     refine hsort.imp_of_mem fun {a b} ha hb hab => ?_
-    have ha' := hcodes a (hperm.mem_iff.1 ha)
-    have hb' := hcodes b (hperm.mem_iff.1 hb)
-    unfold evLeB at hab; rw [ite_eq_left ha', ite_eq_left hb'] at hab
-    simpa using hab
-  · rw [hm₄ a hX', show c₃.nmem = c₂.nmem from rfl, F₂.2.2.1 a (by rw [hA₁]; exact ha), m₁]
+    grind [evLeB]
+  · ram_grind
   · rw [g₄ _ (by decide), g₃ _ (by decide)]; omega
   · rw [g₄ _ (by decide), g₃ _ (by decide)]; omega
-  · have h56 : r ≠ 210056 := fun h => by subst h; simp [Bcb] at hcb
+  · have h56 : r ≠ 210056 := fun h => by grind [Bcb]
     rw [g₄ r hcb, g₃ r h56, hb2 r hr hra]
     exact g₁ r (fun h => by subst h; exact hr (by simp [bandOf, bSort])) (fun h => by
       subst h; exact hr (by simp [bandOf, bSort]))
   · rw [hf₄.2.1 r hcb, show c₃.rreg = c₂.rreg from rfl,
-      F₂.2.1 r (by simpa [Finset.mem_insert, Finset.mem_singleton] using hr), rr₁]
-  · rw [hf₄.2.2.1, show c₃.rmem = c₂.rmem from rfl, F₂.2.2.2.1 a (by rw [hA₁]; exact ha), rm₁]
+      F₂.2.1 r (by omega), rr₁]
+  · rw [hf₄.2.2.1, show c₃.rmem = c₂.rmem from rfl, F₂.2.2.2.1 a (by omega), rm₁]
   · rw [hf₄.2.2.2, show c₃.output = c₂.output from rfl, F₂.2.2.2.2.1, o₁]
-  · rw [g₄ _ (by decide), g₃ _ (by decide), j1]
-  · rw [g₄ _ (by decide), g₃ _ (by decide), j2]
-  · rw [g₄ _ (by decide), g₃ _ (by decide), j3]
-  · rw [g₄ _ (by simp only [Bcb, decide_eq_false_iff_not]; omega), g₃ _ (by omega),
+  · ram_simp
+  · ram_simp
+  · ram_simp
+  · rw [g₄ _ (by grind [Bcb, decide_eq_false_iff_not]), g₃ _ (by omega),
       j5 r h1 h2, g₁ _ (by omega) (by omega)]
 
 end exec

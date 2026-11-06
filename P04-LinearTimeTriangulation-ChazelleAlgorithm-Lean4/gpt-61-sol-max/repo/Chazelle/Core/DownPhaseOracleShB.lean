@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseOracleShA
 
 /-!
@@ -12,9 +14,6 @@ arc `A` (its answer in `140010 … 140012`), `updI` turns a hit into its boundar
 `cmpI`): `updI_exec`, the running best then describes the first hit on the union.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -51,16 +50,7 @@ def Bupd (r : ℕ) : Bool :=
   decide (170070 ≤ r ∧ r < 170074) || decide (170130 ≤ r ∧ r < 170142) || Bk r
 
 theorem wr_updI : wr Bupd updI = true := by
-  have hk : ∀ a b d op, wr Bupd (kbit a b d op 170141) = true := fun a b d op =>
-    SweepPrim.wr_mono (SweepPrim.wr_kbit a b d op 170141) (fun r hr => by
-      simp only [SweepPrim.Bkb, Bool.or_eq_true, beq_iff_eq] at hr
-      unfold Bupd; rcases hr with hr | hr
-      · simp [hr]
-      · subst hr; simp)
-  have hs := SweepPrim.wr_mono wr_hsI (B' := Bupd) (fun r hr => by
-    simp only [Bhs, Bupd, Bool.or_eq_true, decide_eq_true_eq] at hr ⊢; omega)
-  simp only [updI, cmpI, takeI, wr, block, wrOK, hk, hs, Bool.and_true, Bool.true_and]
-  decide
+  aesop
 
 /-! ## The running best hit -/
 
@@ -77,8 +67,8 @@ theorem BestI.keep {P : Polygon} {c c' : Config} {S : Set Point} {z : Point} {σ
     BestI P c' S z σ := by
   obtain ⟨h0, h1, h2⟩ := h
   have k0 : c'.nreg 170070 = c.nreg 170070 := hk _ le_rfl (by norm_num)
-  refine ⟨by rw [k0]; exact h0, fun hf => ?_, fun hf => h2 (by rw [← k0]; exact hf)⟩
-  obtain ⟨sb, t, hs, hb, hfh, hev⟩ := h1 (by rw [← k0]; exact hf)
+  refine ⟨by omega, fun hf => ?_, fun hf => h2 (by omega)⟩
+  obtain ⟨sb, t, hs, hb, hfh, hev⟩ := h1 (by omega)
   exact ⟨sb, t, symPtIn_of_eq hs (fun j h1 h2 => hk j (by omega) (by omega)), hb, hfh, hev⟩
 
 /-- The empty best: no hit on the empty set. -/
@@ -92,8 +82,11 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
+section
+variable (c : Config) (hw : WordsBounded W c)
+include hw
 /-- **Taking the new hit.** -/
-theorem takeI_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {sn : SymPt}
+theorem takeI_exec (hW : 1 ≤ W) {sn : SymPt}
     (hs : SymPtIn c 170130 sn) :
     ∃ c' k, Exec P W takeI c c' k ∧ k = 4 ∧ c'.nreg 170070 = 1 ∧ SymPtIn c' 170071 sn ∧
       FrameB (fun r => decide (170070 ≤ r ∧ r < 170074)) c c' := by
@@ -103,10 +96,13 @@ theorem takeI_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {sn : Sym
   refine ⟨rfl, by config_simp, NFLoc.symPtIn_copy hs (by config_simp) (by config_simp)
     (by config_simp), ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
   simp only [decide_eq_false_iff_not] at hr
-  simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+  simp only [Config.nreg_mk, upd]; ram_grind
 
+section
+variable (hG : GoodEnv P)
+include hG
 /-- **The comparison of two hits on one ray.** -/
-theorem cmpI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
+theorem cmpI_exec (hW : P.n + 3 ≤ W)
     (h11 : c.nreg 170011 = 1) {sn sb : SymPt} (hsn : SymPtIn c 170130 sn)
     (hsb : SymPtIn c 170071 sb) (hln : sn.Lt P.n) (hlb : sb.Lt P.n) {z : Point} {t₁ t₂ : ℝ}
     (hen : sn.eval (Qof P) = rayPt z (dirOf (c.nreg 170008)) t₂)
@@ -115,32 +111,31 @@ theorem cmpI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : P.
       (c'.nreg 170141 = 1 ↔ t₂ < t₁) ∧ FrameB (SweepPrim.Bkb 170141) c c' := by
   unfold cmpI
   by_cases h1 : c.nreg 170008 < c.nreg 170011
-  · have hd : dirOf (c.nreg 170008) = -1 := by unfold dirOf; rw [ite_eq_right (by omega)]
+  · have hd : dirOf (c.nreg 170008) = -1 := by simp_all [dirOf] <;> omega_nf
     obtain ⟨c', k, e, hk, F, b1, b2⟩ := kbit_exec (P := P) hG hW c hw (a := 170071) (b := 170130)
       (d := 170071) (op := 0) (dst := 170141) (by norm_num) (by norm_num) (by norm_num)
       (by norm_num) (by norm_num) hlb hln hlb hsb hsn hsb
     refine ⟨c', _, .ifLtN_true h1 e, by omega, b1, ?_, F⟩
     rw [b2, SignTest, heb, hen, hd]; simp only [Visibility.rayPt_fst]
-    constructor <;> intro h <;> linarith
+    ram_grind
   · by_cases h2 : c.nreg 170011 < c.nreg 170008
-    · have hd : dirOf (c.nreg 170008) = -1 := by unfold dirOf; rw [ite_eq_right (by omega)]
+    · have hd : dirOf (c.nreg 170008) = -1 := by simp_all [dirOf] <;> omega_nf
       obtain ⟨c', k, e, hk, F, b1, b2⟩ := kbit_exec (P := P) hG hW c hw (a := 170071) (b := 170130)
         (d := 170071) (op := 0) (dst := 170141) (by norm_num) (by norm_num) (by norm_num)
         (by norm_num) (by norm_num) hlb hln hlb hsb hsn hsb
       refine ⟨c', _, .ifLtN_false h1 (.ifLtN_true h2 e), by omega, b1, ?_, F⟩
       rw [b2, SignTest, heb, hen, hd]; simp only [Visibility.rayPt_fst]
-      constructor <;> intro h <;> linarith
-    · have hd : dirOf (c.nreg 170008) = 1 := by unfold dirOf; rw [ite_eq_left (by omega)]
+      ram_grind
+    · have hd : dirOf (c.nreg 170008) = 1 := by simp_all [dirOf] <;> omega_nf
       obtain ⟨c', k, e, hk, F, b1, b2⟩ := kbit_exec (P := P) hG hW c hw (a := 170130) (b := 170071)
         (d := 170130) (op := 0) (dst := 170141) (by norm_num) (by norm_num) (by norm_num)
         (by norm_num) (by norm_num) hln hlb hln hsn hsb hsn
       refine ⟨c', _, .ifLtN_false h1 (.ifLtN_false h2 e), by omega, b1, ?_, F⟩
-      rw [b2, SignTest, heb, hen, hd]; simp only [Visibility.rayPt_fst]
-      constructor <;> intro h <;> linarith
+      simp_all [SignTest, Visibility.rayPt_fst] <;> omega_nf
 
 /-- **The update of the running best hit** after a shot at a chain arc `A` of the chain `C`
 (the shooter's answer in `140010 … 140012`). -/
-theorem updI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) {cs L S v : ℕ}
+theorem updI_exec {cs L S v : ℕ}
     (hR : HRegs P W c cs L S v) {C : Chain} (hC : C.P = Qof P) (hCs : C.s = cs) (hCm : C.m = L)
     (hCS : C.sideS C.sideBeta = S) (hv : v = (C.s + C.topIdx) % (Qof P).n) {e h : ℕ}
     (he : c.nreg 140011 = e) (hh : c.nreg 140012 = h) (he2 : c.nreg 140010 = 1 → e < 2 * L + 7)
@@ -174,21 +169,21 @@ theorem updI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) {cs L S 
   obtain ⟨t₂, hA, hp, hpos⟩ := hhit hf
   -- the symbolic point of the hit
   obtain ⟨c₁, k₁, e₁, hk₁, s₁, F₁⟩ := hsI_exec (P := P) c hw hR he hh he2
-  have hv' : v = (C.s + C.topIdx) % C.P.n := by rw [hC]; exact hv
-  have hcm : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
-  have hsym := hitSym_ch (C := C) hv' (e := e) (h := h) (by rw [hCm]; exact he2)
+  have hv' : v = (C.s + C.topIdx) % C.P.n := by ram_grind
+  
+  have hsym := hitSym_ch (C := C) hv' (e := e) (h := h) (by omega)
   rw [hCs, hCm, show sSV C.sideBeta C.topIdx L = S by rw [← hCS]; unfold sSV Chain.sideS; rw [hCm],
     hC, hQ] at hsym
   have hmem : (chainModel C).pos C.P ⟨e, h⟩ ∈ C.set := by
     rw [hC, hpos]; exact hAC hA.2.1
-  have hDC : DistinctHeights C.P := by rw [hC]; exact hD
+  have hDC : DistinctHeights C.P := by ram_grind
   have hpC : ProperPos (chainModel C) C.P C.P.n ⟨e, h⟩ := by
-    rw [hC, hQ]; exact hp
-  obtain ⟨hbsym, hev⟩ := hitSym_spec C hDC hpC (by rw [hCm]; exact he2) hmem
+    ram_grind
+  obtain ⟨hbsym, hev⟩ := hitSym_spec C hDC hpC (by omega) hmem
   rw [hsym, hC] at hbsym hev
   rw [hpos] at hev
   set sn := hitSymV P.n cs L S v e h with hsn
-  have hlt : sn.Lt P.n := by have := hbsym.lt; rw [hQ] at this; exact this
+  have hlt : sn.Lt P.n := by have := hbsym.lt; ram_grind
   have w₁ := e₁.wb_right
   have f₁ : ∀ r, Bhs r = false → c₁.nreg r = c.nreg r := F₁.1
   refine spec_seq ⟨c₁, k₁, e₁, ?_⟩
@@ -196,31 +191,31 @@ theorem updI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) {cs L S 
   have b11 : c₁.nreg 170011 = 1 := by rw [f₁ _ (by decide)]; exact hR.r11
   by_cases g : c₁.nreg 170070 < c₁.nreg 170011
   · -- no best yet: take the new hit
-    have hb0 : c.nreg 170070 ≠ 1 := by rw [b70, b11] at g; omega
+    have hb0 : c.nreg 170070 ≠ 1 := by omega
     refine spec_ifLtN_true g ?_
     obtain ⟨c₂, k₂, e₂, hk₂, a70, s₂, -⟩ := takeI_exec (P := P) c₁ w₁ (by omega) s₁
     refine ⟨c₂, k₂, e₂, by omega, by omega, fun _ => ⟨sn, t₂, s₂, hbsym, ?_, hev⟩,
       fun h => absurd a70 h⟩
     exact noHit_firstHit (hb3 hb0) hA
   refine spec_ifLtN_false g ?_
-  have hb1' : c.nreg 170070 = 1 := by rw [b70, b11] at g; omega
+  have hb1' : c.nreg 170070 = 1 := by omega
   obtain ⟨sb, t₁, hsb, hbsb, hfh, hevb⟩ := hb2 hb1'
   have hsb₁ : SymPtIn c₁ 170071 sb := symPtIn_of_eq hsb (fun j h1 h2 => f₁ j (by
-    unfold Bhs; simp only [decide_eq_false_iff_not]; omega))
-  have hltb : sb.Lt P.n := by have := hbsb.lt; rw [hQ] at this; exact this
+    omega_nf))
+  have hltb : sb.Lt P.n := by have := hbsb.lt; ram_grind
   have d8 : c₁.nreg 170008 = c.nreg 170008 := f₁ _ (by decide)
   obtain ⟨c₂, k₂, e₂, hk₂, b41, i41, F₂⟩ := cmpI_exec (P := P) c₁ w₁ hG (by omega) b11 s₁ hsb₁
-    hlt hltb (z := z) (t₁ := t₁) (t₂ := t₂) (by rw [d8, ← hσ]; exact hev)
-    (by rw [d8, ← hσ]; exact hevb)
+    hlt hltb (z := z) (t₁ := t₁) (t₂ := t₂) (by ram_grind)
+    (by ram_grind)
   have f₂ : ∀ r, 10500 ≤ r → r ≠ 170141 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
     F₂.1 r (by simp only [SweepPrim.Bkb, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
-      beq_eq_false_iff_ne]; exact ⟨by omega, h2⟩)
+      beq_eq_false_iff_ne]; omega)
   have w₂ := e₂.wb_right
   refine spec_seq ⟨c₂, k₂, e₂, ?_⟩
   have c12 : c₂.nreg 170012 = 0 := by
     rw [f₂ _ (by norm_num) (by norm_num), f₁ _ (by decide)]; exact hR.r12
   by_cases g2 : c₂.nreg 170012 < c₂.nreg 170141
-  · have ht : t₂ < t₁ := i41.1 (by rw [c12] at g2; omega)
+  · have ht : t₂ < t₁ := i41.1 (by omega)
     refine spec_ifLtN_true g2 ?_
     have s₂ : SymPtIn c₂ 170130 sn := symPtIn_of_eq s₁ (fun j h1 h2 => f₂ j (by omega) (by omega))
     obtain ⟨c₃, k₃, e₃, hk₃, a70, s₃, -⟩ := takeI_exec (P := P) c₂ w₂ (by omega) s₂
@@ -228,16 +223,22 @@ theorem updI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) {cs L S 
       fun h => absurd a70 h⟩
     rw [Set.union_comm]
     exact firstHit_min hA hfh ht.le
-  · have ht : ¬ t₂ < t₁ := fun h => g2 (by rw [c12, i41.2 h]; omega)
+  · have ht : ¬ t₂ < t₁ := fun h => g2 (by ram_grind)
     refine spec_ifLtN_false g2 (spec_skip w₂ ?_)
     have k70 : ∀ r, 170070 ≤ r → r < 170074 → c₂.nreg r = c.nreg r := fun r h1 h2 => by
-      have hb : Bhs r = false := by unfold Bhs; simp only [decide_eq_false_iff_not]; omega
+      have hb : Bhs r = false := by omega_nf
       rw [f₂ r (by omega) (by omega), f₁ r hb]
     refine ⟨by omega, ?_⟩
     have hB' : BestI P c (Sp ∪ A) z σ := ⟨hb1, fun _ => ⟨sb, t₁, hsb, hbsb,
       firstHit_min hfh hA (not_lt.1 ht), hevb⟩,
       fun h => absurd hb1' h⟩
     exact hB'.keep k70
+
+
+
+end
+
+end
 
 end exec
 

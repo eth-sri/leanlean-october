@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleCostB
 public import Chazelle.Core.OracleCost
 public import Chazelle.Cost.Oracle
@@ -36,11 +38,10 @@ theorem chords_ncard {Q : Polygon} (hN : IsNF (chainModel C) Q N) :
     · rintro ⟨r, hr, rfl⟩
       obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
       refine ⟨i, hi, ?_⟩
-      show (N.chord i).toSet _ _ = _
-      unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]
+      grind [NF.chord]
     · rintro ⟨i, hi, rfl⟩
       refine ⟨N.chord i, ?_, rfl⟩
-      unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]; exact List.getElem_mem hi
+      grind [NF.chord]
   rw [hFn, Set.InjOn.ncard_image (s := Set.Iio N.chords.length)
     (f := fun i => (N.chord i).toSet (chainModel C) Q) (fun a ha b hb h => hinj a b ha hb h),
     ← Finset.coe_range, Set.ncard_coe_finset, Finset.card_range]
@@ -109,7 +110,7 @@ theorem QAt.qcost_le (h : QAt P m O E V H C N B k) :
     have e2 : (2525 : ℝ) ^ ((2 : ℝ) / 3) ≤ 2525 := by
       have := Real.rpow_le_rpow_of_exponent_le (x := (2525 : ℝ)) (by norm_num)
         (show (2 : ℝ) / 3 ≤ 1 by norm_num)
-      rwa [Real.rpow_one] at this
+      grind [Real.rpow_one]
     have e3 : (0 : ℝ) ≤ ((V.m : ℝ) + 1) ^ ((2 : ℝ) / 3) := by positivity
     nlinarith
   have hLR : (V.L : ℝ) ≤ 20200 * G + 1 := by
@@ -118,28 +119,21 @@ theorem QAt.qcost_le (h : QAt P m O E V H C N B k) :
   -- the scans in reals
   set X : ℕ := k ^ 2 with hX
   have hX1 : 1 ≤ X := Nat.one_le_pow _ _ hk1
-  have hscan' : ((w : ℝ) + 1) * (X : ℝ) ≤ 134688 * G := by
-    rw [hX]; push_cast; norm_num at hscan ⊢; linarith
+  
   -- the cost in naturals
-  have hNC : NCof w = 5660 * w + 62500 := by unfold NCof; ring
+  have hNC : NCof w = 5660 * w + 62500 := by omega_nf
   have hcost : 100 + (715 * V.L + 700 + dstarCost m V + 4 * candCost V (NCof w) (8 * X) + 500) ≤
       23424 + 22715 * V.L + 7947142 * ((w + 1) * X) := by
     unfold candCost
     rw [hNC] at hds ⊢
     have hXw : w ≤ w * X := Nat.le_mul_of_pos_right _ hX1
-    have e1 : (8 * X + 2) * (5660 * w + 62500 + 80) =
-        45280 * (w * X) + 500640 * X + 11320 * w + 125160 := by ring
-    have e2 : 7 * X * (5660 * w + 62500 + 6) = 39620 * (w * X) + 437542 * X := by ring
-    have e3 : (w + 1) * X = w * X + X := by ring
-    rw [e1, e3]; rw [e2] at hds
-    omega
+    grind
   have hcR : ((100 + (715 * V.L + 700 + dstarCost m V + 4 * candCost V (NCof w) (8 * X) + 500) :
       ℕ) : ℝ) ≤ 23424 + 22715 * (V.L : ℝ) + 7947142 * (((w : ℝ) + 1) * (X : ℝ)) := by
     exact_mod_cast hcost
   have hκ : (κq : ℝ) = 2 * 10 ^ 12 := by unfold κq; norm_num
   rw [hκ]
-  have hwX : (0 : ℝ) ≤ ((w : ℝ) + 1) * (X : ℝ) := by positivity
-  linarith
+  grind
 
 end
 

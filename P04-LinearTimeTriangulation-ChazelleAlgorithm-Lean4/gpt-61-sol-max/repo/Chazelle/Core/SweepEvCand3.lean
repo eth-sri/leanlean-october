@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvCand
 public import Chazelle.Core.SweepEvMap4
 public import Chazelle.Core.SweepMachine5
@@ -39,11 +41,11 @@ theorem arrival_unique {C : Chain} (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C
   obtain ⟨hτ, hdom, hwD⟩ := hg
   set w := rayPt a σ τ with hw
   have hback : ∀ s, rayPt w (-σ) s = rayPt a σ (τ - s) := fun s => rayPt_back a σ τ s
-  have hw2 : w.2 ≤ C.top.2 := by rw [hw, rayPt_snd]; exact ha
-  have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
+  have hw2 : w.2 ≤ C.top.2 := by simp_all
+  have hnσ : -σ = 1 ∨ -σ = -1 := by grind
   have hfree : FreeAt C w (-σ) := by
     filter_upwards [Ioo_mem_nhdsGT hτ] with s hs
-    rw [hback]; exact hdom _ (by linarith [hs.2]) (by linarith [hs.1])
+    simp_all
   have he : Merge.shoot C w (-σ) ∈ Merge.augChords C :=
     Merge.shoot_mem_augChords C hw2 hwD hnσ hfree
   obtain ⟨hT, -, -⟩ := Merge.hit_of_freeAt C hw2 hnσ hfree
@@ -52,11 +54,7 @@ theorem arrival_unique {C : Chain} (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C
     unfold Merge.shoot
     rw [Geometry.mem_segment_iff_lerp]
     refine ⟨s / C.hitParam w (-σ), div_nonneg hs.1.le hT.le, (div_le_one hT).2 hs.2.le, ?_⟩
-    apply point_ext
-    · simp only [Geometry.lerp_fst, rayPt_fst]
-      field_simp
-      ring
-    · simp only [Geometry.lerp_snd, rayPt_snd]; ring
+    grind [Geometry.lerp_fst, rayPt_fst, Geometry.lerp_snd, rayPt_snd]
   have att : ∀ {q : ℕ} {u : ℝ}, Arrival (chainModel C).W w σ q u →
       SideAttach (chainModel C).W (Merge.shoot C w (-σ)) q u := by
     intro q u h
@@ -65,7 +63,7 @@ theorem arrival_unique {C : Chain} (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C
     have hev' := hev
     rw [← hpt] at hsec hev' he'
     have := sideAttach_of_along C hP he' hq hu0 hu1 hnσ hsec hev'
-    rwa [hpt] at this
+    simp_all
   have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
   exact hM.attach_unique he (att hA) (att hA') (by rw [hA.2.2.2.1, hA'.2.2.2.1])
 
@@ -79,9 +77,9 @@ theorem posW_of_inner {P : Polygon} {e h : ℕ} (he : e < (chainModel J.whole).W
   subst h0
   have hv : (chainModel J.whole).pos (Qof P) ⟨e, 0⟩ = (chainModel J.whole).W.vtx e := by
     show sidePt _ _ ((chainModel J.whole).param (Qof P) ⟨e, 0⟩) = _
-    rw [show (chainModel J.whole).param (Qof P) ⟨e, 0⟩ = 0 from rfl, Chazelle.Chain.sidePt_zero]
+    simp_all [Chazelle.Chain.sidePt_zero] 
   rw [hv, Restore.chain_box_vtx_abs J.whole h6] at hy
-  exact lt_irrefl _ hy
+  simp_all
 
 /-- **An accepted candidate**: the chord of `C` seen from `a` in the direction `σ` belongs to
 `F₂⁺`, ends at the position `(e, h)` of the `C₁` part, before the far end of the chord of `C₂`. -/
@@ -99,8 +97,7 @@ def CandOK (P : Polygon) (J : Merge.Junction) (S₂ : Set (Set Point)) (a : Poin
 theorem b₁_lt : b₁ J < (chainModel J.left).W.n := by
   have := tpos_lt J.left J.m₁
   have hn : (chainModel J.left).W.n = 2 * J.left.m + 7 := cm_n J.left
-  have hm1 : J.left.m = J.m₁ := rfl
-  unfold b₁; split_ifs <;> omega
+  grind [b₁]
 
 /-- **The checks of the RAM give an accepted candidate.** -/
 theorem candOK_of {P : Polygon} (hP : J.P.Simple) {S₂ : Set (Set Point)}
@@ -129,7 +126,7 @@ theorem candOK_of {P : Polygon} (hP : J.P.Simple) {S₂ : Set (Set Point)}
     ⟨h1, h2, fun h => h3 ⟨h.1, h.2.1, fun h0 => h.2.2 (hnorm.1 h0)⟩⟩
   rw [← hpd] at hA
   obtain ⟨hfree, hhit, hmem, hS, hpt, hO⟩ := cand_sound hP hS₂ hS₂f hc ha haR hav ha₁ hg hlt hMV' hA
-  have hσ : σ = 1 ∨ σ = -1 := by rcases ha with ⟨h, -⟩ | ⟨h, -⟩ <;> simp [h]
+  
   obtain ⟨-, ha₂, -, hR, -, -⟩ := right_hit_end (hS₂ hc) ha
   have hpar : (chainModel J.whole).param (Qof P) ⟨mEdge J d, hN⟩ = t := by
     rcases hpp.1.lt_or_eq with htp | ht0
@@ -143,10 +140,10 @@ theorem candOK_of {P : Polygon} (hP : J.P.Simple) {S₂ : Set (Set Point)}
   rw [← hpar] at hS hpt hO
   have hlt' : mEdge J d < (chainModel J.whole).W.n := by
     unfold mEdge; exact Nat.mod_lt _ (by omega)
-  refine ⟨hfree, hmem, hS, by rw [hpt, hhit], ?_, posW_of_inner hlt'
+  refine ⟨hfree, hmem, hS, by grind, ?_, posW_of_inner hlt'
     ⟨by rw [hpar]; exact hpp.1, by rw [hpar]; exact hpp.2.1, hpp.2.2⟩ ?_, ?_⟩
   · rw [hO]
-    have : (0 : ℝ) ≤ ψ J d := Nat.cast_nonneg _
+    
     have : (0 : ℝ) ≤ (chainModel J.whole).param (Qof P) ⟨mEdge J d, hN⟩ := by rw [hpar]; exact hpp.1
     linarith
   · show |(sidePt (chainModel J.whole).W (mEdge J d)
@@ -155,7 +152,7 @@ theorem candOK_of {P : Polygon} (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have hRR : J.whole.radius = J.right.radius := rfl
     rw [hRR]
     exact lt_of_le_of_lt (J.right.abs_le_coordBound_of_mem_set haR).2 J.right.coordBound_lt_radius
-  · rw [hhit, hR]; exact hlt
+  grind
 
 /-- **The `C₁` part is read within one turn of the walk of `C₁`.** -/
 theorem E₁_le (hP : J.P.Simple) : E₁ J ≤ (chainModel J.left).W.n := by
@@ -165,19 +162,14 @@ theorem E₁_le (hP : J.P.Simple) : E₁ J ≤ (chainModel J.left).W.n := by
   by_cases hVNT : VNotTop J
   · have hlen : Lst J + llen J = (chainModel J.whole).W.n := by
       rw [Lst_rlen]; exact rlen_add_llen J hVNT
-    unfold E₁
-    have hll := lL1_add_lL2 J
-    unfold llen lδ at *
-    split_ifs at * <;> omega
+    grind [E₁, llen, lδ]
   · obtain ⟨hτ0, hδ0, hl1, hl2, hll⟩ := nvt_left J hP hVNT
     unfold E₁
     by_cases hbox : Lst J < lOff J
     · obtain ⟨-, hlo, hτs, hLst⟩ := caseB_facts J hbox
-      have hm : J.whole.m = J.m₁ + J.m₂ := rfl
-      omega
+      simp_all +arith
     · obtain ⟨hτs, hlo, hLst⟩ := caseC_facts J hVNT hbox
-      have hm : J.whole.m = J.m₁ + J.m₂ := rfl
-      omega
+      simp_all +arith
 
 end Sweep
 

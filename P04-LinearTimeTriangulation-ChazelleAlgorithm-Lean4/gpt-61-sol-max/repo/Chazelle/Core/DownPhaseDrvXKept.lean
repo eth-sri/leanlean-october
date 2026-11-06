@@ -41,8 +41,7 @@ theorem attach_disj {W W' : Polygon} {y a b : ℝ} (hab : a < b) {p p' : ℕ} {t
   obtain ⟨-, -, -, hmem, r1, hr1, hs1⟩ := h1
   obtain ⟨-, -, -, -, r2, hr2, hs2⟩ := h2
   obtain ⟨x, hxc, hne, hxd⟩ := Extract.exists_near_mem hab hmem (lt_min hr1 hr2)
-  exact hdisj x (hs1 x hxc hne (lt_of_lt_of_le hxd (min_le_left _ _)))
-    (hs2 x hxc (hpt ▸ hne) (hpt ▸ lt_of_lt_of_le hxd (min_le_right _ _)))
+  grind
 
 /-- The right endpoint of a horizontal segment written as a segment of two points is one of
 them. -/
@@ -50,9 +49,7 @@ theorem right_end_of_segment {a' b' : Point} {y a b : ℝ} (hab : a < b) (hy : a
     (h : hseg y a b = Chazelle.segment a' b') : ((b, y) : Point) = a' ∨ ((b, y) : Point) = b' := by
   rw [Visibility.segment_horizontal_eq_hseg hy] at h
   obtain ⟨h1, -, h2⟩ := Merge.hseg_inj hab.le h
-  rcases le_total a'.1 b'.1 with hl | hl
-  · right; rw [max_eq_right hl] at h2; exact Prod.ext h2 (h1.trans hy)
-  · left; rw [max_eq_left hl] at h2; exact Prod.ext h2 h1
+  grind
 
 section
 
@@ -76,12 +73,12 @@ include Y
 
 /-- Host point `k` is the point of the host description. -/
 theorem hpt_eval {k : ℕ} (hk : k < xK) : C.P.vtx k = (hpt (Qof P).n xH k).eval (Qof P) := by
-  rw [Y.vtx_sig hk, hostPoly_vtx (sig_lt li (by have := Y.three; omega) _ _),
-    rep_eval Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR Y.X.hli Y.X.hdh (sig_lt li (by have := Y.three; omega) _ _)
+  rw [Y.vtx_sig hk, hostPoly_vtx (sig_lt li (by omega) _ _),
+    rep_eval Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR Y.X.hli Y.X.hdh (sig_lt li (by omega) _ _)
       (Y.hrep k hk)]
 
 theorem hidx_lt {k : ℕ} (hkK : k < xK) : hidx (hpt (Qof P).n xH k) < (Qof P).n := by
-  have hσ : sig li xK i0 k < xK := sig_lt li (by have := Y.three; omega) i0 k
+  have hσ : sig li xK i0 k < xK := sig_lt li (by omega) i0 k
   rcases Y.hrep k hkK with ⟨-, h⟩ | ⟨-, h', hh', -, (⟨-, -, h⟩ | ⟨-, h⟩)⟩ <;> rw [h]
   · exact ivB_lt li (by
       have hb := hostKeys_bounds (hk_mem (walkAx_interiorModel Y.X.hQ) Y.X.hFam.2.1 Y.X.hFam.1
@@ -110,7 +107,7 @@ theorem chord_data {i : ℕ} (hi : i < NR.nChords) :
         ((chainModel C).param (Qof P) (NR.chord i).rpos) = ((B, ((Qof P).vtx (NR.chord i).h).2) : Point) := by
   obtain ⟨hFam, -, hatt, -, -, -, -, -, -, hh, -⟩ := Y.X.hNR
   have hmemF : (NR.chord i).toSet (chainModel C) (Qof P) ∈ NR.F (chainModel C) (Qof P) :=
-    ⟨NR.chord i, by unfold NF.chord; rw [List.getD_eq_getElem _ _ hi]; exact List.getElem_mem hi,
+    ⟨NR.chord i, by unfold NF.chord; rw [List.getD_eq_getElem _ _ hi]; grind,
       rfl⟩
   have hadm := hFam.2.1 hmemF
   obtain ⟨y, a, b, hIC, -, hceq⟩ := hFam.2.1 hmemF
@@ -121,12 +118,8 @@ theorem chord_data {i : ℕ} (hi : i < NR.nChords) :
   have hAB : A < B := by rw [← e2, ← e3]; exact hIC.lt
   obtain ⟨hl, hr⟩ := hatt i hi
   rw [hc] at hl hr
-  have hpl : sidePt (C.sideWalk C.sideBeta) (NR.chord i).lp
-      ((chainModel C).param (Qof P) (NR.chord i).lpos) = (chainModel C).pos (Qof P) (NR.chord i).lpos :=
-    rfl
-  have hpr : sidePt (C.sideWalk C.sideBeta) (NR.chord i).rp
-      ((chainModel C).param (Qof P) (NR.chord i).rpos) = (chainModel C).pos (Qof P) (NR.chord i).rpos :=
-    rfl
+  
+  
   refine ⟨A, B, hAB, hc, hh i hi, hadm, hl, hr, ?_, ?_⟩
   · have hm : sidePt (C.sideWalk C.sideBeta) (NR.chord i).lp
         ((chainModel C).param (Qof P) (NR.chord i).lpos) ∈ hseg ((Qof P).vtx (NR.chord i).h).2 A B :=
@@ -137,10 +130,12 @@ theorem chord_data {i : ℕ} (hi : i < NR.nChords) :
       hr.2.2.2.1
     exact Prod.ext rfl hm.1
 
+section
+variable {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ} (hat : SideAttach (C.sideWalk C.sideBeta) (hseg ((Qof P).vtx h).2 A B) p t)
+include hh A B hAB t hat
 /-- **The start-vertex test**: for an end attached at walk edge `p` of the tour (or up the slit),
 `tZ` holds iff the parameter is `0`. -/
-theorem tZ_iff {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
-    (hat : SideAttach (C.sideWalk C.sideBeta) (hseg ((Qof P).vtx h).2 A B) p t) (h6 : 6 ≤ p)
+theorem tZ_iff (h6 : 6 ≤ p)
     (hp : p ≤ 2 * C.m + 6) :
     tZ (Qof P).n xH C.m C.topIdx C.sideBeta h p ↔ t = 0 := by
   have hm := Y.hm
@@ -166,23 +161,17 @@ theorem tZ_iff {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ
           (C.P.vtx (tK C.m C.topIdx C.sideBeta p))
           (C.P.vtx (kNext (decide (tU C.m C.topIdx C.sideBeta p < C.m))
             (tK C.m C.topIdx C.sideBeta p))) t := by
-        unfold sidePt; rw [hv0, hv1]
+        unfold sidePt; grind
       rw [hpt, Chazelle.Geometry.lerp_snd, ← hheight] at hz
       have hflat : (C.P.vtx (kNext (decide (tU C.m C.topIdx C.sideBeta p < C.m))
           (tK C.m C.topIdx C.sideBeta p))).2 = (C.P.vtx (tK C.m C.topIdx C.sideBeta p)).2 := by
-        have : t * ((C.P.vtx (kNext (decide (tU C.m C.topIdx C.sideBeta p < C.m))
-            (tK C.m C.topIdx C.sideBeta p))).2 - ((Qof P).vtx h).2) = 0 := by
-          linarith
-        rcases mul_eq_zero.1 this with h0 | h0
-        · exact absurd h0 ht0'.ne'
-        · linarith
+        grind
       obtain ⟨x, hxc, hne, hxd⟩ := Extract.exists_near_mem hAB hmem hrA
       have hx := (hse x).1 (hsec x hxc hne hxd)
       have hxy : x.2 = ((Qof P).vtx h).2 := hxc.1
       unfold det at hx
       rw [hxy, hflat, ← hheight] at hx
-      simp only [sub_self, mul_zero] at hx
-      exact lt_irrefl _ hx
+      grind
     · -- up the slit: above the top vertex
       subst hp'
       have hb := (C.sidePt_box C.sideBeta t).2.2.2.2.2.2
@@ -193,7 +182,7 @@ theorem tZ_iff {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ
       rw [hT] at hheight
       have htop : C.top = C.P.vtx C.topIdx := by
         have := Y.X.hCm
-        unfold Chain.top; exact chain_vertex_eq Y.X.hCs (by have := C.topIdx_le; omega)
+        unfold Chain.top; exact chain_vertex_eq Y.X.hCs (by  omega)
       rw [← htop] at hheight
       have := C.top_snd_lt_radius
       nlinarith
@@ -205,8 +194,7 @@ theorem tZ_iff {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ
     exact Y.X.hdh _ _ hh (Y.hidx_lt (by omega)) hne (by rw [← hz, hheight])
 
 /-- **An end at a regular inner position: the chord meets `R`.** -/
-theorem meet_of_regIn {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
-    (hat : SideAttach (C.sideWalk C.sideBeta) (hseg ((Qof P).vtx h).2 A B) p t)
+theorem meet_of_regIn
     (hreg : RegIn (Qof P).n xH li C.m C.topIdx C.sideBeta h p) :
     (hseg ((Qof P).vtx h).2 A B ∩ reg r).Nonempty := by
   have hm := Y.hm
@@ -236,6 +224,9 @@ theorem meet_of_regIn {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {
     exact meet_of_attach Y hcs (ExtG.attach_of_sector hpt.symm hsec
       (by rw [Y.gn]; exact sig_lt li (by omega) _ _) le_rfl one_pos hat)
 
+
+end
+
 /-- **A kept chord is an interior chord of the host polygon.** -/
 theorem adm_G {c : Set Point} (hc : c ∈ (chainModel C).Adm) (hk : (c ∩ reg r).Nonempty) :
     c ∈ (interiorModel xG).Adm := by
@@ -249,8 +240,11 @@ theorem adm_G {c : Set Point} (hc : c ∈ (chainModel C).Adm) (hk : (c ∩ reg r
   rw [← hReq]
   exact hsub ⟨⟨rfl, hxa.le, hxb.le⟩, hIC.open_mem x hxa hxb⟩
 
+section
+variable {h : ℕ} {A B : ℝ} (hAB : A < B)
+include hAB
 /-- The ends of a kept chord are attached to the host polygon. -/
-theorem kept_ends {h : ℕ} {A B : ℝ} (hAB : A < B)
+theorem kept_ends
     (hc : hseg ((Qof P).vtx h).2 A B ∈ (chainModel C).Adm)
     (hk : (hseg ((Qof P).vtx h).2 A B ∩ reg r).Nonempty) :
     (∃ q s, SideAttach xG (hseg ((Qof P).vtx h).2 A B) q s ∧
@@ -273,7 +267,7 @@ theorem kept_ends {h : ℕ} {A B : ℝ} (hAB : A < B)
 
 /-- **An end of a kept chord** is on the tour (not on the box or the slit above the top vertex),
 and if it is at a regular position, that position is on the inner side. -/
-theorem end_ok {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
+theorem end_ok {p : ℕ} {t : ℝ}
     (hat : SideAttach (C.sideWalk C.sideBeta) (hseg ((Qof P).vtx h).2 A B) p t) {q : ℕ} {s : ℝ}
     (hG : SideAttach xG (hseg ((Qof P).vtx h).2 A B) q s)
     (hpt : sidePt xG q s = sidePt (C.sideWalk C.sideBeta) p t) :
@@ -317,6 +311,9 @@ theorem end_ok {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
       (by rw [hGn]; exact sig_lt li (by omega) _ _) hs0 hs1 le_rfl one_pos (hpt.trans hpt')
     subst hq hs
     exact attach_disj hAB hat hG hpt' hsec
+
+
+end
 
 /-- The chain ends are the ends of the chord gap edge of `G`. -/
 theorem sig_ends : (sig li xK i0 0 = g ∧ sig li xK i0 C.m = (g + 1) % xK) ∨

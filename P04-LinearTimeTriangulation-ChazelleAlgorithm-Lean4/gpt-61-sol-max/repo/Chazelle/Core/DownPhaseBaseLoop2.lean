@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseBaseLoop1
 
 /-!
@@ -23,20 +25,11 @@ theorem dropE_take_succ {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E 
     (ht : t < E.length) :
     dropE li n L (E.take (t + 1)) = dropE li n L (E.take t) ++
       if keptC li n L (E.getD t 0) then [newCode li n L (E.getD t 0)] else [] := by
-  have he : E.getD t 0 = E[t] := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
-  unfold dropE
-  rw [List.take_add_one, List.getElem?_eq_getElem ht, Option.toList_some, List.filter_append,
-    List.map_append, he]
-  congr 1
-  simp only [List.filter_cons, List.filter_nil]
-  split_ifs <;> simp
+  grind [List.getD_eq_getElem?_getD, Option.getD_some, dropE, List.take_add_one, Option.toList_some, List.filter_append, List.map_append, List.filter_cons, List.filter_nil]
 
 theorem dropE_take_length_le {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} (t : ℕ) :
     (dropE li n L (E.take t)).length ≤ t := by
-  unfold dropE
-  rw [List.length_map]
-  exact (List.length_filter_le _ _).trans (List.length_take_le _ _)
+  core_grind
 
 /-- The memory after `t` events. -/
 def mem2 (m₁ : ℕ → ℕ) (li : Bool) (n : ℕ) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (SE' t a : ℕ) :
@@ -45,32 +38,26 @@ def mem2 (m₁ : ℕ → ℕ) (li : Bool) (n : ℕ) (L : List (ℕ × ℕ × ℕ
     (dropE li n L (E.take t)).getD (a - SE') 0
   else m₁ a
 
-theorem mem2_keep {m₁ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
-    {SE' t : ℕ} (hm : ∀ a, m a = mem2 m₁ li n L E SE' t a) (ht : t < E.length)
+section
+variable {m₁ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {SE' t : ℕ} (hm : ∀ a, m a = mem2 m₁ li n L E SE' t a) (ht : t < E.length)
+include hm ht
+theorem mem2_keep
     (hk : keptC li n L (E.getD t 0) = true) (a : ℕ) :
     (if a = SE' + (dropE li n L (E.take t)).length then newCode li n L (E.getD t 0) else m a) =
       mem2 m₁ li n L E SE' (t + 1) a := by
   rw [hm a]
   unfold mem2
-  rw [dropE_take_succ ht, ite_eq_left hk, List.length_append, List.length_singleton]
-  set l := dropE li n L (E.take t)
-  by_cases h1 : a = SE' + l.length
-  · subst h1
-    rw [ite_eq_left rfl, ite_eq_left (by omega), show SE' + l.length - SE' = l.length by omega,
-      List.getD_append_right _ _ _ _ (le_refl _), Nat.sub_self]
-    rfl
-  · rw [ite_eq_right h1]
-    by_cases h2 : SE' ≤ a ∧ a < SE' + l.length
-    · rw [ite_eq_left h2, ite_eq_left (by omega), List.getD_append _ _ _ _ (by omega)]
-    · rw [ite_eq_right h2, ite_eq_right (by omega)]
+  grind [Chazelle.Core.DownBase.dropE_take_succ]
 
-theorem mem2_skip {m₁ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
-    {SE' t : ℕ} (hm : ∀ a, m a = mem2 m₁ li n L E SE' t a) (ht : t < E.length)
+theorem mem2_skip
     (hk : keptC li n L (E.getD t 0) = false) (a : ℕ) : m a = mem2 m₁ li n L E SE' (t + 1) a := by
   rw [hm a]
   unfold mem2
   rw [dropE_take_succ ht, hk]
   simp
+
+
+end
 
 /-- The invariant of the event pass. -/
 structure Inv2 (m₁ : ℕ → ℕ) (li : Bool) (n : ℕ) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ)
@@ -223,15 +210,13 @@ theorem dLoop2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
         dBody2_exec hE hSE hX hXS hEl hperm hW hwd hId ht
       have := hId.r136
       refine ⟨d', k, e, ⟨hw', hI'⟩, ?_, ?_⟩
-      · rw [hi']; rw [this] at ht; omega
-      · rw [hi']; omega)
+      all_goals omega)
     ⟨hw, hI⟩
   have hi := hI'.t_le
   rw [hI'.r136] at htest
   have hend : d'.nreg 200130 = E.length := by omega
   refine ⟨d', k, e, hw', hI', hend, ?_, ?_⟩
-  · rw [h0, hend] at hψ; omega
-  · rw [h0] at hk; omega
+  all_goals omega
 
 end exec
 

@@ -33,11 +33,14 @@ open WalkEmbed
 
 namespace Sweep
 
+section
+variable {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
+include hM hF
 /-- **The side of a chord confines the positions facing it** (the core of `chord_bound`): if `G`
 is on the side `ρ` of `f`, attached at `N` and `Fr`, with orientation `θ`, then no position
 facing `G` lies in the cyclic interval from `Fr` to `N` (`θ = 1`) or from `N` to `Fr`
 (`θ = -1`). -/
-theorem side_arc {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
+theorem side_arc
     {f : Set Point} (hf : f ∈ F) {pn pf : ℕ} {tn tf : ℝ} (hN : SideAttach M.W f pn tn)
     (hFr : SideAttach M.W f pf tf) (hNF : sidePt M.W pn tn ≠ sidePt M.W pf tf) {ρ : ℝ}
     (hρ : ρ = 1 ∨ ρ = -1) {G : Set Point} (hG : G ∈ M.regions F) (hS : SideOf M ρ f G)
@@ -51,12 +54,12 @@ theorem side_arc {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
   have hmidD := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
   have hsym : lerp (sidePt M.W pf tf) (sidePt M.W pn tn) (1 / 2) =
       lerp (sidePt M.W pn tn) (sidePt M.W pf tf) (1 / 2) := by
-    apply Geometry.point_ext <;> simp [Geometry.lerp] <;> ring
+    grind [Geometry.lerp]
   constructor
   · intro hθ1
     subst hθ1
     have hleft := left_of_side hρ hS (a := sidePt M.W pf tf) (b := sidePt M.W pn tn) hy.symm
-      (by rw [hsym]; exact hmid) (by rw [hsym]; exact hmidD) (by linarith)
+      (by grind) (by grind) (by linarith)
     exact fun hin => hM.not_left_of_after hF hf hFr hN (Ne.symm hNF) hG hp ht hin hfG hleft
   · intro hθ1
     subst hθ1
@@ -65,17 +68,18 @@ theorem side_arc {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
     exact fun hin => hM.not_left_of_after hF hf hN hFr hNF hG hp ht hin hfG hleft
 
 /-- **A third chord at a tie** is one of the two chords of the tie. -/
-theorem tie_third {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
+theorem tie_third
     {c c' e : Set Point} (hc : c ∈ F) (hc' : c' ∈ F) (he : e ∈ F) (hne : c ≠ c') {p : ℕ}
     {t : ℝ} (hA : SideAttach M.W c p t) (hA' : SideAttach M.W c' p t)
     (hE : SideAttach M.W e p t) : e = c ∨ e = c' := by
   rcases hM.tie_pair hF hc hc' hne hA hA' with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · obtain ⟨-, -, h⟩ := hM.tie_shape hF hc hc' hA hA' h1 h2
-    exact h e he hE
+    simp_all
   · obtain ⟨-, -, h⟩ := hM.tie_shape hF hc' hc hA' hA h2 h1
-    rcases h e he hE with h | h
-    · exact Or.inr h
-    · exact Or.inl h
+    grind
+
+
+end
 
 /-- A key of a chord is one of two given keys of it with distinct points. -/
 theorem key_of_two {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm)
@@ -96,10 +100,13 @@ section ChainWalk
 
 variable (J : Merge.Junction)
 
+section
+variable (S₂ : Set (Set Point))
+include S₂
 /-- **An invariant propagated across ties** of the right stretch: if `Φ` holds for a chord `f`
 at its near attachment, and `f'` is the other chord of the tie at the far attachment of `f`
 (both in the right stretch), then `Φ` holds for `f'` at that attachment. -/
-def Propag (S₂ : Set (Set Point)) (Φ : Set Point → ℝ → Prop) : Prop :=
+def Propag (Φ : Set Point → ℝ → Prop) : Prop :=
   ∀ (f f' : Set Point) (pn : ℕ) (tn : ℝ) (pf pb : ℕ) (tb : ℝ), f ∈ F₂plus J S₂ →
     f' ∈ F₂plus J S₂ → f' ≠ f → SideAttach (chainModel J.whole).W f pn tn →
     SideAttach (chainModel J.whole).W f pf 0 →
@@ -119,7 +126,7 @@ def Propag (S₂ : Set (Set Point)) (Φ : Set Point → ℝ → Prop) : Prop :=
 
 /-- **The forward invariant**: chords of `F₂⁺` (other than `f`) with an attachment beyond `lo`
 and one inside the right stretch have the latter before `o`. -/
-def PhiI (S₂ : Set (Set Point)) (lo : ℝ) (f : Set Point) (o : ℝ) : Prop :=
+def PhiI (lo : ℝ) (f : Set Point) (o : ℝ) : Prop :=
   ∀ e ∈ F₂plus J S₂, e ≠ f → ∀ (pw : ℕ) (tw : ℝ) (pb : ℕ) (tb : ℝ),
     SideAttach (chainModel J.whole).W e pw tw → SideAttach (chainModel J.whole).W e pb tb →
     sidePt (chainModel J.whole).W pw tw ≠ sidePt (chainModel J.whole).W pb tb →
@@ -130,7 +137,7 @@ def PhiI (S₂ : Set (Set Point)) (lo : ℝ) (f : Set Point) (o : ℝ) : Prop :=
 
 /-- **The backward invariant**: chords of `F₂⁺` (other than `f`) with an attachment in the `C₁`
 part and one inside the right stretch before `o` have the latter before `oA` (weakly). -/
-def PhiK (S₂ : Set (Set Point)) (oA : ℝ) (f : Set Point) (o : ℝ) : Prop :=
+def PhiK (oA : ℝ) (f : Set Point) (o : ℝ) : Prop :=
   ∀ e ∈ F₂plus J S₂, e ≠ f → ∀ (pw : ℕ) (tw : ℝ) (pb : ℕ) (tb : ℝ),
     SideAttach (chainModel J.whole).W e pw tw → SideAttach (chainModel J.whole).W e pb tb →
     sidePt (chainModel J.whole).W pw tw ≠ sidePt (chainModel J.whole).W pb tb →
@@ -143,16 +150,15 @@ def PhiK (S₂ : Set (Set Point)) (oA : ℝ) (f : Set Point) (o : ℝ) : Prop :=
 
 /-! ## The ends of a chain -/
 
+
+end
+
+section
+variable (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂) {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1) {G : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂)) {h : Set Point} (hh : h ∈ F₂plus J S₂) {ph pz : ℕ} {th tz : ℝ} (hPa : SideAttach (chainModel J.whole).W h ph th) (hZa : SideAttach (chainModel J.whole).W h pz tz) (hne : sidePt (chainModel J.whole).W ph th ≠ sidePt (chainModel J.whole).W pz tz) (hS : SideOf (chainModel J.whole) ρ h G)
+include hP Q hS₂ hρ hG h hh hPa hZa hne hS
 /-- **The backward end** of a chain (orientation `-1`) lies in the `C₁` part before every
 non-cut position facing `G` there. -/
-theorem back_end (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂) {ρ : ℝ}
-    (hρ : ρ = 1 ∨ ρ = -1) {G : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    {h : Set Point} (hh : h ∈ F₂plus J S₂) {ph pz : ℕ} {th tz : ℝ}
-    (hPa : SideAttach (chainModel J.whole).W h ph th)
-    (hZa : SideAttach (chainModel J.whole).W h pz tz)
-    (hne : sidePt (chainModel J.whole).W ph th ≠ sidePt (chainModel J.whole).W pz tz)
-    (hS : SideOf (chainModel J.whole) ρ h G)
+theorem back_end
     (hori : 0 < -1 * ρ * ((sidePt (chainModel J.whole).W ph th).1 -
       (sidePt (chainModel J.whole).W pz tz).1))
     (hPL : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
@@ -184,7 +190,7 @@ theorem back_end (hP : J.P.Simple) {Q : Polygon}
     by_contra hlt
     push Not at hlt
     rcases hZ0.lt_or_eq with hpos | hzero
-    · exact hZout ⟨hpos, hlt⟩
+    · grind
     · apply hsa
       rcases hP0.lt_or_eq with hP0' | hP0'
       · exact (sideInArc_rev_iff_off hg0 hgn kZ0 kZ1 kP0 kP1 kx0 kx1 (by linarith)).2
@@ -206,14 +212,7 @@ theorem back_end (hP : J.P.Simple) {Q : Polygon}
 
 /-- **The forward end** of a chain (orientation `1`) is the shared vertex copy at offset `0`, or
 lies in the `C₁` part after every non-cut position facing `G` there. -/
-theorem fwd_end (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂) {ρ : ℝ}
-    (hρ : ρ = 1 ∨ ρ = -1) {G : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    {h : Set Point} (hh : h ∈ F₂plus J S₂) {ph pz : ℕ} {th tz : ℝ}
-    (hPa : SideAttach (chainModel J.whole).W h ph th)
-    (hZa : SideAttach (chainModel J.whole).W h pz tz)
-    (hne : sidePt (chainModel J.whole).W ph th ≠ sidePt (chainModel J.whole).W pz tz)
-    (hS : SideOf (chainModel J.whole) ρ h G)
+theorem fwd_end
     (hori : 0 < 1 * ρ * ((sidePt (chainModel J.whole).W ph th).1 -
       (sidePt (chainModel J.whole).W pz tz).1))
     (hPL : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
@@ -244,9 +243,7 @@ theorem fwd_end (hP : J.P.Simple) {Q : Polygon}
   · right
     have hLZ : ((rL1 J + rL2 J : ℕ) : ℝ) ≤
         off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by
-      by_contra hlt
-      push Not at hlt
-      exact hZout ⟨hpos, hlt⟩
+      grind
     refine ⟨hLZ, ?_⟩
     have hPZ : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
         off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by linarith
@@ -258,7 +255,10 @@ theorem fwd_end (hP : J.P.Simple) {Q : Polygon}
     rcases hle.lt_or_eq with hq | hq
     · exact hq
     · exact absurd ⟨h, hh, pz, tz, hZa, off_inj hg0 hgn kx0 kx1 kZ0 kZ1 hq⟩ hnc₀
-  · exact Or.inl hzero.symm
+  grind
+
+
+end
 
 end ChainWalk
 

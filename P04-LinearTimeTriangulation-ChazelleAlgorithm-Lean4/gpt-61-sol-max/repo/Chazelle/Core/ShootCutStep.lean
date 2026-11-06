@@ -33,7 +33,7 @@ theorem single_ok (e x0 dir pw : ℕ) {c : ℕ} (hc : c + 1 < 2 * C.m + 7) :
   refine ⟨proper_vtx' P C _, proper_vtx' P C _, by simp; omega, by simp; omega, Or.inl rfl,
     fun _ => ?_, fun h1 => by simp at h1⟩
   simp only [key_hgt0]
-  exact wt_within (chainModel C) (e := c) (by push_cast; linarith) le_rfl (by push_cast; linarith)
+  exact wt_within (chainModel C) (e := c) (by simp_all) le_rfl (by simp_all)
 
 /-- **The grade of a block of weight at most `γ ≤ cap`** is processed and its granularity is
 at most `cutGran γ`. -/
@@ -42,13 +42,9 @@ theorem block_grade {g Λ : ℕ} (hg : 1 ≤ g) (hγ : 2 ^ g ≤ γ) (hcap : γ 
   have h1 : g ≤ Λ - 1 := by
     have := (Nat.pow_le_pow_iff_right (by norm_num : 1 < 2)).1 (hγ.trans hcap)
     exact this
-  have h2 : 2 ≤ 2 ^ g := by
-    calc 2 = 2 ^ 1 := by norm_num
-      _ ≤ 2 ^ g := Nat.pow_le_pow_right (by norm_num) hg
+  
   refine ⟨by
-    rcases Nat.eq_zero_or_pos Λ with h0 | h0
-    · subst h0; simp at hcap; omega
-    · omega, ?_⟩
+    omega, ?_⟩
   unfold cutGran
   apply gradeGran_mono
   have : 2 ^ g ≤ 2 ^ Nat.clog 2 γ := hγ.trans (Nat.le_pow_clog (by norm_num) γ)
@@ -66,7 +62,7 @@ theorem blockUp_ok {c q L g b e : ℕ} (hwalk : ∀ d, d ≤ L →
   have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
   rcases Nat.eq_zero_or_pos g with rfl | hg
   · simp only [pow_zero, lt_irrefl, ite_false]
-    exact single_ok e (b * 1) 1 1 (by simp at e1 hhi; omega)
+    exact single_ok e (b * 1) 1 1 (by omega)
   · simp only [hg, ite_true]
     have hγ : 2 ^ g ≤ γ := by omega
     obtain ⟨hΛ, hgran⟩ := block_grade hg hγ hcap
@@ -80,7 +76,7 @@ theorem blockUp_ok {c q L g b e : ℕ} (hwalk : ∀ d, d ≤ L →
       omega
     · simp only [↓reduceIte]
       rw [Nat.add_assoc, hwalk _ (by omega)]
-      congr 1; omega
+      grind
 
 /-- **A block of a downward stretch** from the top `q` (walk vertices `c + d ↦ Q.vtx (q - d)`). -/
 theorem blockDn_ok {c q L g b e : ℕ} (hwalk : ∀ d, d ≤ L →
@@ -94,7 +90,7 @@ theorem blockDn_ok {c q L g b e : ℕ} (hwalk : ∀ d, d ≤ L →
   have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
   rcases Nat.eq_zero_or_pos g with rfl | hg
   · simp only [pow_zero, lt_irrefl, ite_false]
-    exact single_ok e (b * 1) 0 1 (by simp at e1 hhi; omega)
+    exact single_ok e (b * 1) 0 1 (by omega)
   · simp only [hg, ite_true]
     have hγ : 2 ^ g ≤ γ := by omega
     obtain ⟨hΛ, hgran⟩ := block_grade hg hγ hcap
@@ -107,7 +103,7 @@ theorem blockDn_ok {c q L g b e : ℕ} (hwalk : ∀ d, d ≤ L →
       omega
     · simp only [show (0 : ℕ) ≠ 1 by decide, ↓reduceIte]
       rw [Nat.add_assoc, hwalk _ (by omega)]
-      congr 1; omega
+      grind
 
 end ShootCut
 

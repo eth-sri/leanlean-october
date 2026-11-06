@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFCover
 public import Chazelle.Core.MergeAsmMath
 
@@ -39,14 +41,13 @@ theorem region_arcs_le {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hNF :
     have hj' := List.mem_toFinset.1 hj'
     obtain ⟨hjl, hjr⟩ := (hArcs.2.2.2 r hr j).1 hj
     obtain ⟨hjl', hjr'⟩ := (hArcs.2.2.2 r hr j').1 hj'
-    exact hArcs.2.1 j j' hjl hjl' (by rw [hjr, hjr']) (congrArg Prod.fst he)
+    exact hArcs.2.1 j j' hjl hjl' (by omega) (congrArg Prod.fst he)
   have hsub : f '' (↑l.toFinset : Set ℕ) ⊆ {ab : ℝ × ℝ | M.IsArc (N.F M Q) (reg r) ab.1 ab.2} := by
     rintro _ ⟨j, hj, rfl⟩
     have hj := List.mem_toFinset.1 hj
     obtain ⟨hjl, hjr⟩ := (hArcs.2.2.2 r hr j).1 hj
     have := (hArcs.1 j hjl).2
-    rw [hjr] at this
-    exact this
+    grind
   obtain ⟨hfin, hcard⟩ := hM.arcs_bound hFam.2.1 hFam.1 hU
   have hl : l.length = (↑l.toFinset : Set ℕ).ncard := by
     rw [Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd]
@@ -60,19 +61,25 @@ theorem region_arcs_le {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hNF :
 
 variable {E : FEnv} {c₀ : Config}
 
+section
+variable (E : FEnv) (m : ℕ → ℕ) (L i : ℕ)
+include E m L i
 /-- The key of the start of piece `i` of the list at `L` in memory `m`. -/
-noncomputable def psK (E : FEnv) (m : ℕ → ℕ) (L i : ℕ) : ℝ :=
+noncomputable def psK : ℝ :=
   E.M.key (Qof E.P) ⟨m (L + 1 + 7 * i + 0), m (L + 1 + 7 * i + 1)⟩
 
 /-- The key of the end of piece `i`. -/
-noncomputable def peK (E : FEnv) (m : ℕ → ℕ) (L i : ℕ) : ℝ :=
+noncomputable def peK : ℝ :=
   E.M.key (Qof E.P) ⟨m (L + 1 + 7 * i + 2), m (L + 1 + 7 * i + 3)⟩
+
+
+end
 
 theorem key_bounds {M : Model} {Q : Polygon} {n : ℕ} {x : WPos} (hx : ProperPos M Q n x)
     (he : x.edge < M.W.n) : 0 ≤ M.key Q x ∧ M.key Q x < M.W.n := by
   have hk : M.key Q x = x.edge + M.param Q x := rfl
   have : (x.edge : ℝ) + 1 ≤ M.W.n := by exact_mod_cast he
-  rw [hk]; constructor <;> linarith [hx.1, hx.2.1, (Nat.cast_nonneg x.edge : (0 : ℝ) ≤ x.edge)]
+  ram_grind
 
 /-- The arc `t` of the region is an arc of every region map of the normal form. -/
 theorem arc_isArc (hE : FGood E c₀) {reg : ℕ → Set Point}
@@ -83,16 +90,17 @@ theorem arc_isArc (hE : FGood E c₀) {reg : ℕ → Set Point}
   have hr : E.r < E.N.nRegions := hE.hr
   set j := (E.N.region E.r).arcs.getD t 0 with hjdef
   have hjm : j ∈ (E.N.region E.r).arcs := by
-    rw [hjdef, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
-    exact List.getElem_mem ht
+    simp_all
   obtain ⟨hj, hjr⟩ := (hArcs.2.2.2 E.r hr j).1 hjm
   have := (hArcs.1 j hj).2
   rw [hjr] at this
   exact this
 
+section
+variable (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : ℕ} (ht : t < (E.N.region E.r).arcs.length)
+include hE hch ht
 /-- The ends of an arc of a region with an exit chord differ. -/
-theorem arc_ne (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : ℕ}
-    (ht : t < (E.N.region E.r).arcs.length) :
+theorem arc_ne :
     E.M.key (Qof E.P) (arcOf E.N E.r t).s ≠ E.M.key (Qof E.P) (arcOf E.N E.r t).e := by
   obtain ⟨reg, hregs⟩ := nfregs_of hE
   obtain ⟨-, -, -, -, hc, -⟩ := arc_isArc hE hregs ht
@@ -106,14 +114,12 @@ theorem arc_ne (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : �
     have hmem : E.N.chord i ∈ E.N.chords := by
       unfold NF.chord
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi', Option.getD_some]
-      exact List.getElem_mem hi'
+      ram_grind
     have : (E.N.chord i).toSet E.M (Qof E.P) ∈ E.N.F E.M (Qof E.P) := ⟨E.N.chord i, hmem, rfl⟩
-    rw [hF] at this
-    exact this
+    simp_all
 
 /-- **The pieces of the cut of arc `t` tile it.** -/
-theorem tile_of_cut (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : ℕ}
-    (ht : t < (E.N.region E.r).arcs.length) {m : ℕ → ℕ} {A L : ℕ}
+theorem tile_of_cut {m : ℕ → ℕ} {A L : ℕ}
     (hcp : CutPost E (normOf E.M (Qof E.P) (arcOf E.N E.r t).s)
       (normOf E.M (Qof E.P) (arcOf E.N E.r t).e) m A L) :
     Tile E.M.W.n (E.M.key (Qof E.P) (arcOf E.N E.r t).s) (E.M.key (Qof E.P) (arcOf E.N E.r t).e)
@@ -139,13 +145,16 @@ theorem tile_of_cut (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {
     rw [e1] at this
     exact this
 
+
+end
+
 /-- **A piece weighs at most its arc.** -/
 theorem piece_wt_le {n a b : ℝ} {q : ℕ} {s e : ℕ → ℝ} {M : Model} (hn : n = M.W.n)
     (h : Tile n a b q s e) {i : ℕ} (hi : i < q) : M.arcWt (s i) (e i) ≤ M.arcWt a b := by
   refine Set.ncard_le_ncard (fun p hp => ?_) ((Set.finite_Iio M.W.n).subset fun x hx => hx.1)
   obtain ⟨hp, hc, τ, h0, h1, hin⟩ := hp
   have hpn : (p : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp
-  exact ⟨hp, hc, τ, h0, h1, tile_inner h hi ⟨by positivity, by rw [hn]; linarith⟩ hin⟩
+  exact ⟨hp, hc, τ, h0, h1, tile_inner h hi ⟨by positivity, by linarith⟩ hin⟩
 
 
 /-! ## A kind-1 piece -/
@@ -156,9 +165,11 @@ theorem arcWt_le_size (M : Model) (a b : ℝ) : M.arcWt a b ≤ M.size :=
 theorem qof_simple (hE : FGood E c₀) : (Qof E.P).Simple :=
   (shearInvariance (epsOf E.P) E.P).1 hE.hG.1
 
+section
+variable (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : ℕ} (ht : t < (E.N.region E.r).arcs.length)
+include hE hch ht
 /-- **The facts of a kind-1 piece**, from the cutter's contract. -/
-theorem k1hyp_of (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : ℕ}
-    (ht : t < (E.N.region E.r).arcs.length) {c' : Config} (hI' : FInv E.W c₀ c') {L : ℕ}
+theorem k1hyp_of {c' : Config} (hI' : FInv E.W c₀ c') {L : ℕ}
     (hcp : CutPost E (normOf E.M (Qof E.P) (arcOf E.N E.r t).s)
       (normOf E.M (Qof E.P) (arcOf E.N E.r t).e) c'.nmem (c'.nreg ALLOC) L)
     {i : ℕ} (hi : i < c'.nmem L) (hk : c'.nmem (prOf L i + 4) = 1) :
@@ -245,8 +256,7 @@ theorem k1hyp_of (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t :
 
 
 /-- **Every piece of the cut of an arc is good** for a piece bound `Kp` dominating the handlers. -/
-theorem pgood_of (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : ℕ}
-    (ht : t < (E.N.region E.r).arcs.length) {Kp : ℕ} (hk0 : k0K E ≤ Kp)
+theorem pgood_of {Kp : ℕ} (hk0 : k0K E ≤ Kp)
     (hk1 : ∀ (Cα : Chain) (N : NF) (γ' : ℕ), Cα.P = Qof E.P →
       IsCanonicalNF (chainModel Cα) (Qof E.P) N γ' 4 → γ' ≤ E.H E.γ → Cα.m ≤ E.γ →
       k1K E Cα N ≤ Kp) :
@@ -254,9 +264,12 @@ theorem pgood_of (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t :
   intro c' hI' hcp i hi
   have hcp' := hcp
   obtain ⟨hLq, -, -, -, -, -, -, -, -, hpos, -⟩ := hcp'
-  refine ⟨by show c'.nreg 81076 + 1 + 7 * i + 6 < _; omega, (hpos i hi).2.2.1, hk0, fun hk => ?_⟩
+  refine ⟨by omega_nf, (hpos i hi).2.2.1, hk0, fun hk => ?_⟩
   obtain ⟨Hs, Cα, N, γ', hK, hγ', hm⟩ := k1hyp_of hE hch ht hI' hcp hi hk
   exact ⟨Hs, Cα, N, γ', hK, hk1 Cα N γ' hK.hQ hK.hcan hγ' hm⟩
+
+
+end
 
 end
 

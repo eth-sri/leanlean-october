@@ -39,22 +39,15 @@ theorem exists_trapH (hS : GoodH R S t) {G : Set (Set Point)} (hfull : FullAt R 
   obtain ⟨a, ha, hanot, hain⟩ := exists_hit_westH hS hq
   obtain ⟨b, hb, hbnot, hbin⟩ := exists_hit_eastH hS hq
   have hina : ∀ x, min a q.1 < x → x < max a q.1 → ((x, q.2) : Point) ∈ dom R S := by
-    intro x h1 h2
-    rw [min_eq_left ha.le] at h1; rw [max_eq_right ha.le] at h2
-    exact hain x h1 h2.le
+    grind
   have hinb : ∀ x, min b q.1 < x → x < max b q.1 → ((x, q.2) : Point) ∈ dom R S := by
-    intro x h1 h2
-    rw [min_eq_right hb.le] at h1; rw [max_eq_left hb.le] at h2
-    exact hbin x h1.le h2
+    grind
   obtain ⟨sL, hsL, hL1, hL2, hLx⟩ := hit_wall hS (hit_mem_obsH hS hq hanot hina)
     (hit_not_vert hfull hq hqG hina) ha.ne hina
   obtain ⟨sR, hsR, hR1, hR2, hRx⟩ := hit_wall hS (hit_mem_obsH hS hq hbnot hinb)
     (hit_not_vert hfull hq hqG hinb) hb.ne' hinb
   have hseg : ∀ x, a < x → x < b → ((x, q.2) : Point) ∈ dom R S := by
-    intro x h1 h2
-    rcases le_total x q.1 with h | h
-    · exact hain x h1 h
-    · exact hbin x h h2
+    grind
   have hnoq : ∀ v, IsVert S v → v.2 = q.2 → a ≤ v.1 → v.1 ≤ b → False := by
     intro v hv hvq h1 h2
     rcases h1.lt_or_eq with h1 | h1
@@ -63,9 +56,9 @@ theorem exists_trapH (hS : GoodH R S t) {G : Set (Set Point)} (hfull : FullAt R 
         rw [show ((v.1, q.2) : Point) = v from point_ext rfl hvq.symm] at this
         exact this.2 (vert_mem_obs hv)
       · exact hit_not_vert hfull hq hqG hinb
-          (by rw [show ((b, q.2) : Point) = v from point_ext h2.symm hvq.symm]; exact hv)
+          (by grind)
     · exact hit_not_vert hfull hq hqG hina
-        (by rw [show ((a, q.2) : Point) = v from point_ext h1 hvq.symm]; exact hv)
+        (by grind)
   have hV := finite_vertsH hS
   have hup : sL.1.2 < sL.2.2 := hL1.trans hL2
   have hupR : sR.1.2 < sR.2.2 := hR1.trans hR2
@@ -75,47 +68,40 @@ theorem exists_trapH (hS : GoodH R S t) {G : Set (Set Point)} (hfull : FullAt R 
     refine Set.Finite.union ?_ ((finite_singleton _).insert _)
     refine (hV.image fun v => v.2).subset ?_
     rintro y ⟨v, hv, rfl, -⟩
-    exact ⟨v, hv, rfl⟩
+    grind
   obtain ⟨y₂, hy₂C, hmin⟩ := Set.exists_min_image C₂ id hC₂f ⟨sL.2.2, Or.inr (Or.inl rfl)⟩
   have hall₂ : ∀ y ∈ C₂, q.2 < y := by
     rintro y (⟨v, -, rfl, h, -⟩ | h)
     · exact h
     · simp only [mem_insert_iff, mem_singleton_iff] at h
-      rcases h with rfl | rfl
-      · exact hL2
-      · exact hR2
+      grind
   set C₁ : Set ℝ := {y | ∃ v, IsVert S v ∧ v.2 = y ∧ y < q.2 ∧ xAt sL y ≤ v.1 ∧ v.1 ≤ xAt sR y} ∪
     {sL.1.2, sR.1.2} with hC₁
   have hC₁f : C₁.Finite := by
     refine Set.Finite.union ?_ ((finite_singleton _).insert _)
     refine (hV.image fun v => v.2).subset ?_
     rintro y ⟨v, hv, rfl, -⟩
-    exact ⟨v, hv, rfl⟩
+    grind
   obtain ⟨y₁, hy₁C, hmax⟩ := Set.exists_max_image C₁ id hC₁f ⟨sL.1.2, Or.inr (Or.inl rfl)⟩
   have hall₁ : ∀ y ∈ C₁, y < q.2 := by
     rintro y (⟨v, -, rfl, h, -⟩ | h)
     · exact h
     · simp only [mem_insert_iff, mem_singleton_iff] at h
       rcases h with rfl | rfl
-      · exact hL1
-      · exact hR1
-  refine ⟨sL, sR, y₁, y₂, ⟨hsL, hsR, by rw [← hLx]; exact ha, by rw [← hRx]; exact hb,
-    by rw [← hLx, ← hRx]; exact hseg, hall₁ _ hy₁C, hall₂ _ hy₂C,
+      all_goals omega
+  refine ⟨sL, sR, y₁, y₂, ⟨hsL, hsR, by grind, by grind,
+    by grind, hall₁ _ hy₁C, hall₂ _ hy₂C,
     hmax _ (Or.inr (Or.inl rfl)), hmax _ (Or.inr (Or.inr rfl)),
     hmin _ (Or.inr (Or.inl rfl)), hmin _ (Or.inr (Or.inr rfl)), ?_, ?_, ?_⟩⟩
   · intro v hv h1 h2 h3 h4
     rcases lt_trichotomy v.2 q.2 with hlt | heq | hgt
     · have := hmax _ (Or.inl ⟨v, hv, rfl, hlt, h3, h4⟩)
-      simp only [id] at this
-      linarith
-    · rw [heq, ← hLx] at h3
-      rw [heq, ← hRx] at h4
-      exact hnoq v hv heq h3 h4
+      grind
+    · grind
     · have := hmin _ (Or.inl ⟨v, hv, rfl, hgt, h3, h4⟩)
-      simp only [id] at this
-      linarith
+      grind
   · rcases hy₂C with ⟨v, hv, hvy, -, h3, h4⟩ | h
-    · exact ⟨v, hv, hvy, fun _ => ⟨hvy ▸ h3, hvy ▸ h4⟩⟩
+    · grind
     · simp only [mem_insert_iff, mem_singleton_iff] at h
       rcases h with rfl | rfl
       · exact ⟨sL.2, ⟨sL, hsL, Or.inr rfl⟩, rfl, fun hle => ⟨by rw [xAt_hi hup],
@@ -123,7 +109,7 @@ theorem exists_trapH (hS : GoodH R S t) {G : Set (Set Point)} (hfull : FullAt R 
       · exact ⟨sR.2, ⟨sR, hsR, Or.inr rfl⟩, rfl, fun hle => ⟨by rw [← xAt_hi hupR]; exact hle,
           by rw [xAt_hi hupR]⟩⟩
   · rcases hy₁C with ⟨v, hv, hvy, -, h3, h4⟩ | h
-    · exact ⟨v, hv, hvy, fun _ => ⟨hvy ▸ h3, hvy ▸ h4⟩⟩
+    · grind
     · simp only [mem_insert_iff, mem_singleton_iff] at h
       rcases h with rfl | rfl
       · exact ⟨sL.1, ⟨sL, hsL, Or.inl rfl⟩, rfl, fun hle => ⟨by rw [xAt_lo],
@@ -142,22 +128,35 @@ open HSegObs
 variable {R : ℝ} {S : Set (Point × Point)} {t : ℕ}
 variable {q : Point} {sL sR : Point × Point} {y₁ y₂ : ℝ}
 
-theorem upL (h : Trap R S q sL sR y₁ y₂) : sL.1.2 < sL.2.2 :=
+section
+variable (h : Trap R S q sL sR y₁ y₂)
+include h
+theorem upL : sL.1.2 < sL.2.2 :=
   lt_of_le_of_lt h.botL (h.y₁_lt_y₂.trans_le h.topL)
 
-theorem upR (h : Trap R S q sL sR y₁ y₂) : sR.1.2 < sR.2.2 :=
+theorem upR : sR.1.2 < sR.2.2 :=
   lt_of_le_of_lt h.botR (h.y₁_lt_y₂.trans_le h.topR)
 
-theorem memLH (h : Trap R S q sL sR y₁ y₂) {p : Point} (h1 : y₁ ≤ p.2)
-    (h2 : p.2 ≤ y₂) (hx : p.1 = xAt sL p.2) : p ∈ obs S :=
+section
+variable {p : Point} (h1 : y₁ ≤ p.2) (h2 : p.2 ≤ y₂)
+include p h1 h2
+theorem memLH (hx : p.1 = xAt sL p.2) : p ∈ obs S :=
   seg_subset_obs h.hL ((mem_seg_iff h.upL).2 ⟨h.botL.trans h1, h2.trans h.topL, hx⟩)
 
-theorem memRH (h : Trap R S q sL sR y₁ y₂) {p : Point} (h1 : y₁ ≤ p.2)
-    (h2 : p.2 ≤ y₂) (hx : p.1 = xAt sR p.2) : p ∈ obs S :=
+theorem memRH (hx : p.1 = xAt sR p.2) : p ∈ obs S :=
   seg_subset_obs h.hR ((mem_seg_iff h.upR).2 ⟨h.botR.trans h1, h2.trans h.topR, hx⟩)
 
+
+
+end
+
+end
+
+section
+variable (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂)
+include hS h
 /-- **The walls do not cross** strictly between the heights. -/
-theorem walls_ltH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {y : ℝ} (h1 : y₁ < y)
+theorem walls_ltH {y : ℝ} (h1 : y₁ < y)
     (h2 : y < y₂) : xAt sL y < xAt sR y := by
   by_contra hle
   push Not at hle
@@ -167,7 +166,7 @@ theorem walls_ltH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {y : ℝ} 
     ((continuous_xAt sR).sub (continuous_xAt sL)) (a := q.2) (b := y)
     (show (0 : ℝ) < xAt sR q.2 - xAt sL q.2 by have := h.lt_q; have := h.q_lt; linarith)
     (show xAt sR y - xAt sL y ≤ 0 by linarith)
-  have hc' : xAt sR c - xAt sL c = 0 := hc
+  
   have hc1' : y₁ < c := lt_of_lt_of_le (lt_min h.bot_lt h1) hc1
   have hc2' : c < y₂ := lt_of_le_of_lt hc2 (max_lt h.lt_top h2)
   have hmL : ((xAt sL c, c) : Point) ∈ seg sL :=
@@ -179,7 +178,7 @@ theorem walls_ltH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {y : ℝ} 
     (show xAt sL c ≤ xAt sR c by linarith)
 
 /-- **No obstacle point strictly inside the corridor.** -/
-theorem no_obsH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {p : Point} (hp : p ∈ obs S)
+theorem no_obsH {p : Point} (hp : p ∈ obs S)
     (h1 : y₁ < p.2) (h2 : p.2 < y₂) (h3 : xAt sL p.2 < p.1) (h4 : p.1 < xAt sR p.2) : False := by
   obtain ⟨s, hs, hps⟩ := mem_iUnion₂.1 hp
   rcases (hS.le s hs).lt_or_eq with hsu | hf
@@ -198,12 +197,12 @@ theorem no_obsH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {p : Point} 
     · rw [not_and_or, not_lt, not_lt] at hin
       rcases hin with hle | hge
       · have hne : s ≠ sL := by
-          intro e; subst e; linarith
+          grind
         obtain ⟨c, hc, hc1, hc2, -⟩ := exists_zero_between (f := fun y => xAt s y - xAt sL y)
           ((continuous_xAt s).sub (continuous_xAt sL)) (a := p.2) (b := y')
           (show (0 : ℝ) < xAt s p.2 - xAt sL p.2 by linarith)
           (show xAt s y' - xAt sL y' ≤ 0 by linarith)
-        have hc' : xAt s c - xAt sL c = 0 := hc
+        
         have hc1' : y₁ < c := lt_of_lt_of_le (lt_min h1 hy'in1) hc1
         have hc2' : c < y₂ := lt_of_le_of_lt hc2 (max_lt h2 hy'in2)
         have hcs1 : s.1.2 ≤ c := le_trans (le_min hp1 hy'1) hc1
@@ -216,12 +215,12 @@ theorem no_obsH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {p : Point} 
         exact h.no_vertex _ (hS.cross s hs sL h.hL hne _ hmS hmL) hc1' hc2' le_rfl
           (h.walls_ltH hS hc1' hc2').le
       · have hne : s ≠ sR := by
-          intro e; subst e; linarith
+          grind
         obtain ⟨c, hc, hc1, hc2, -⟩ := exists_zero_between (f := fun y => xAt sR y - xAt s y)
           ((continuous_xAt sR).sub (continuous_xAt s)) (a := p.2) (b := y')
           (show (0 : ℝ) < xAt sR p.2 - xAt s p.2 by linarith)
           (show xAt sR y' - xAt s y' ≤ 0 by linarith)
-        have hc' : xAt sR c - xAt s c = 0 := hc
+        
         have hc1' : y₁ < c := lt_of_lt_of_le (lt_min h1 hy'in1) hc1
         have hc2' : c < y₂ := lt_of_le_of_lt hc2 (max_lt h2 hy'in2)
         have hcs1 : s.1.2 ≤ c := le_trans (le_min hp1 hy'1) hc1
@@ -247,21 +246,9 @@ theorem no_obsH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {p : Point} 
       · exact h.no_vertex _ e1 h1 h2 hc.1 hc.2
       · exact h.no_vertex _ e2 h1 h2 hc.1 hc.2
     have hlo : min s.1.1 s.2.1 < xAt sL p.2 := by
-      rcases min_choice s.1.1 s.2.1 with e | e <;> rw [e] <;> rw [e] at hmin
-      · rcases out _ (Or.inl rfl) with o | o
-        · exact o
-        · linarith
-      · rcases out _ (Or.inr rfl) with o | o
-        · exact o
-        · linarith
+      grind
     have hhi : xAt sR p.2 < max s.1.1 s.2.1 := by
-      rcases max_choice s.1.1 s.2.1 with e | e <;> rw [e] <;> rw [e] at hmax
-      · rcases out _ (Or.inl rfl) with o | o
-        · linarith
-        · exact o
-      · rcases out _ (Or.inr rfl) with o | o
-        · linarith
-        · exact o
+      grind
     have hne : s ≠ sL := by
       intro e; rw [e] at hf; exact absurd hf h.upL.ne
     have hmS : ((xAt sL p.2, p.2) : Point) ∈ seg s :=
@@ -271,7 +258,7 @@ theorem no_obsH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {p : Point} 
     exact h.no_vertex _ (hS.cross s hs sL h.hL hne _ hmS hmL) h1 h2 le_rfl hwl.le
 
 /-- The trapezoid lies in the domain. -/
-theorem tr_subset_domH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) :
+theorem tr_subset_domH :
     tr sL sR y₁ y₂ ⊆ dom R S := by
   rintro p ⟨h1, h2, h3, h4⟩
   have hlo := (abs_le.1 (hS.inbox sL h.hL _ (lo_mem_seg sL)).2).1
@@ -283,14 +270,16 @@ theorem tr_subset_domH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) :
   refine ⟨⟨abs_lt.2 ⟨by linarith, by linarith⟩, abs_lt.2 ⟨by linarith, by linarith⟩⟩,
     fun hp => h.no_obsH hS hp h1 h2 h3 h4⟩
 
+section
+variable {w : Point} (hw : w ∈ obs S)
+include w hw
 /-- **An obstacle point of the open top side is a vertex or lies on a horizontal segment.** -/
-theorem top_sideH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {w : Point}
-    (hw : w ∈ obs S) (hwy : w.2 = y₂) (h3 : xAt sL y₂ < w.1) (h4 : w.1 < xAt sR y₂) :
+theorem top_sideH (hwy : w.2 = y₂) (h3 : xAt sL y₂ < w.1) (h4 : w.1 < xAt sR y₂) :
     IsVert S w ∨ ∃ s ∈ S, s.1.2 = s.2.2 ∧ w ∈ seg s := by
   obtain ⟨s, hs, hws⟩ := mem_iUnion₂.1 hw
   rcases (hS.le s hs).lt_or_eq with hsu | hf
   · by_cases hv : IsVert S w
-    · exact Or.inl hv
+    · grind
     obtain ⟨hs1, hs2, hsx⟩ := (mem_seg_iff hsu).1 hws
     have hs1' : s.1.2 < w.2 := lt_of_le_of_ne hs1 fun e => hv ⟨s, hs, Or.inl (eq_lo hsu hws e.symm)⟩
     have hs2' : w.2 < s.2.2 := lt_of_le_of_ne hs2 fun e => hv ⟨s, hs, Or.inr (eq_hi hsu hws e)⟩
@@ -298,24 +287,23 @@ theorem top_sideH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {w : Point
     exfalso
     have hev : ∀ᶠ y in 𝓝 y₂, xAt sL y < xAt s y ∧ xAt s y < xAt sR y :=
       ((continuous_xAt sL).continuousAt.eventually_lt (continuous_xAt s).continuousAt
-        (by rw [← hsx]; exact h3)).and
+        (by simp_all)).and
       ((continuous_xAt s).continuousAt.eventually_lt (continuous_xAt sR).continuousAt
-        (by rw [← hsx]; exact h4))
+        (by simp_all))
     have hlt : max y₁ s.1.2 < y₂ := max_lt h.y₁_lt_y₂ hs1'
     have e1 : ∀ᶠ y in 𝓝[<] y₂, y ∈ Ioo (max y₁ s.1.2) y₂ := Ioo_mem_nhdsLT hlt
     obtain ⟨y, ⟨hy1, hy2⟩, hy3, hy4⟩ := (e1.and (nhdsWithin_le_nhds hev)).exists
     exact h.no_obsH hS (seg_subset_obs hs (pt_mem_seg hsu (le_of_max_le_right hy1.le)
       (hy2.le.trans hs2'.le))) (lt_of_le_of_lt (le_max_left _ _) hy1) hy2 hy3 hy4
-  · exact Or.inr ⟨s, hs, hf, hws⟩
+  grind
 
 /-- **An obstacle point of the open bottom side is a vertex or lies on a horizontal segment.** -/
-theorem bot_sideH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {w : Point}
-    (hw : w ∈ obs S) (hwy : w.2 = y₁) (h3 : xAt sL y₁ < w.1) (h4 : w.1 < xAt sR y₁) :
+theorem bot_sideH (hwy : w.2 = y₁) (h3 : xAt sL y₁ < w.1) (h4 : w.1 < xAt sR y₁) :
     IsVert S w ∨ ∃ s ∈ S, s.1.2 = s.2.2 ∧ w ∈ seg s := by
   obtain ⟨s, hs, hws⟩ := mem_iUnion₂.1 hw
   rcases (hS.le s hs).lt_or_eq with hsu | hf
   · by_cases hv : IsVert S w
-    · exact Or.inl hv
+    · grind
     obtain ⟨hs1, hs2, hsx⟩ := (mem_seg_iff hsu).1 hws
     have hs1' : s.1.2 < w.2 := lt_of_le_of_ne hs1 fun e => hv ⟨s, hs, Or.inl (eq_lo hsu hws e.symm)⟩
     have hs2' : w.2 < s.2.2 := lt_of_le_of_ne hs2 fun e => hv ⟨s, hs, Or.inr (eq_hi hsu hws e)⟩
@@ -323,16 +311,22 @@ theorem bot_sideH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {w : Point
     exfalso
     have hev : ∀ᶠ y in 𝓝 y₁, xAt sL y < xAt s y ∧ xAt s y < xAt sR y :=
       ((continuous_xAt sL).continuousAt.eventually_lt (continuous_xAt s).continuousAt
-        (by rw [← hsx]; exact h3)).and
+        (by simp_all)).and
       ((continuous_xAt s).continuousAt.eventually_lt (continuous_xAt sR).continuousAt
-        (by rw [← hsx]; exact h4))
+        (by simp_all))
     have hlt : y₁ < min y₂ s.2.2 := lt_min h.y₁_lt_y₂ hs2'
     have e1 : ∀ᶠ y in 𝓝[>] y₁, y ∈ Ioo y₁ (min y₂ s.2.2) := Ioo_mem_nhdsGT hlt
     obtain ⟨y, ⟨hy1, hy2⟩, hy3, hy4⟩ := (e1.and (nhdsWithin_le_nhds hev)).exists
     exact h.no_obsH hS (seg_subset_obs hs (pt_mem_seg hsu (hs1'.le.trans hy1.le)
       (le_of_lt (lt_of_lt_of_le hy2 (min_le_right _ _))))) hy1
       (lt_of_lt_of_le hy2 (min_le_left _ _)) hy3 hy4
-  · exact Or.inr ⟨s, hs, hf, hws⟩
+  grind
+
+
+
+end
+
+end
 
 end Trap
 

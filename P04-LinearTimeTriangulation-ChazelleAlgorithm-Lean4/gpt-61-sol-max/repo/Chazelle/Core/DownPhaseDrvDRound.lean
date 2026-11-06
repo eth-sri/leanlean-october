@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvDReg
 public import Chazelle.Core.DownPhaseDrvRSplG
 public import Chazelle.Core.DownPhaseDrvRRoundSpec
@@ -135,7 +137,7 @@ theorem hdS_exec (c : Config) (hw : WordsBounded W c) {H : ℕ} (h05 : c.nreg 21
     all_goals try (config_simp; (try simp only [h05, h02, h0205]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     all_goals config_simp
-    all_goals try simp only [h05, h02, h0205]
+    all_goals omega_nf
     all_goals try rfl
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
     q.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.2.2,
@@ -221,7 +223,7 @@ theorem splArgs_exec (c : Config) (hw : WordsBounded W c) :
       c'.nreg 210023 = c.nreg 216017 ∧ c'.nreg 210024 = c.nreg 216005) := by
     unfold splArgs
     exec_block
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+    ram_all
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (by decide)⟩
 
 /-- The round counter. -/
@@ -232,8 +234,7 @@ theorem incr_exec (c : Config) (hw : WordsBounded W c) {t : ℕ} (h10 : c.nreg 2
   obtain ⟨c', k, ex, hk, q⟩ : ∃ c' k, Exec P W (block [.addN 216010 216010 216002]) c c' k ∧
       k = 1 ∧ c'.nreg 216010 = t + 1 := by
     exec_block
-    · rw [h10, h02]; exact ht
-    · refine ⟨rfl, ?_⟩; config_simp; rw [h10, h02]
+    all_goals simp_all
   exact ⟨c', k, ex, hk, q, exec_frameB ex (by decide)⟩
 
 end exec

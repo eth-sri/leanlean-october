@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildPhaseBSetup
 
 /-!
@@ -25,7 +27,7 @@ theorem sum_ind (k R : ℕ) :
   | succ R ih =>
     rw [List.range_succ, List.map_append, List.sum_append, ih]
     simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
-    split_ifs <;> omega
+    grind
 
 theorem sum_cntF (key : ℕ → ℕ) {n R : ℕ} (h : ∀ j, j < n → key j < R) :
     ((List.range R).map (cntF key n)).sum = n := by
@@ -46,18 +48,17 @@ theorem sum_cnt2F_le (u v : ℕ → ℕ) (n R : ℕ) : ((List.range R).map (cnt2
       apply List.map_congr_left; intro r _; exact cnt2F_succ u v n r
     have hle : ((List.range R).map fun r => if u n = r ∨ v n = r then 1 else 0).sum ≤ 2 := by
       have : ∀ r, (if u n = r ∨ v n = r then 1 else 0) ≤
-          (if u n = r then 1 else 0) + (if v n = r then 1 else 0) := fun r => by split_ifs <;> omega
+          (if u n = r then 1 else 0) + (if v n = r then 1 else 0) := fun r => by grind
       calc _ ≤ ((List.range R).map fun r =>
               (if u n = r then 1 else 0) + (if v n = r then 1 else 0)).sum :=
             List.sum_le_sum (fun r _ => this r)
         _ = _ := by rw [List.sum_map_add]
-        _ ≤ 2 := by rw [sum_ind, sum_ind]; split_ifs <;> omega
-    rw [e, List.sum_map_add]
-    omega
+        _ ≤ 2 := by rw [sum_ind, sum_ind]; grind
+    grind [List.sum_map_add]
 
 theorem offF_eq (cA cC : ℕ → ℕ) (R : ℕ) :
     offF cA cC R = ((List.range R).map cA).sum + ((List.range R).map cC).sum := by
-  unfold offF; rw [List.sum_map_add]
+  core_grind [List.sum_map_add]
 
 /-- **The size of the list table.** -/
 theorem offF_R_le (key u v : ℕ → ℕ) {A K R : ℕ} (h : ∀ j, j < A → key j < R) :
@@ -66,16 +67,21 @@ theorem offF_R_le (key u v : ℕ → ℕ) {A K R : ℕ} (h : ∀ j, j < A → ke
   have := sum_cnt2F_le u v K R
   omega
 
-theorem lstF_congr {key key' : ℕ → ℕ} {n : ℕ} (h : ∀ j, j < n → key j = key' j) (r : ℕ) :
+section
+variable {key key' : ℕ → ℕ} {n : ℕ} (h : ∀ j, j < n → key j = key' j)
+include h
+theorem lstF_congr (r : ℕ) :
     lstF key n r = lstF key' n r := by
   unfold lstF
   apply List.filter_congr
-  intro j hj
-  rw [h j (List.mem_range.1 hj)]
+  simp_all
 
-theorem cntF_congr {key key' : ℕ → ℕ} {n : ℕ} (h : ∀ j, j < n → key j = key' j) :
+theorem cntF_congr :
     cntF key n = cntF key' n := by
   funext r; unfold cntF; rw [lstF_congr h]
+
+
+end
 
 theorem wmaxF_congr {key key' w w' : ℕ → ℕ} {n : ℕ} (h : ∀ j, j < n → key j = key' j)
     (hw : ∀ j, j < n → w j = w' j) : wmaxF key w n = wmaxF key' w' n := by
@@ -83,21 +89,21 @@ theorem wmaxF_congr {key key' w w' : ℕ → ℕ} {n : ℕ} (h : ∀ j, j < n �
   unfold wmaxF
   rw [lstF_congr h]
   congr 1
-  apply List.map_congr_left
-  intro j hj
-  unfold lstF at hj
-  exact hw j (List.mem_range.1 (List.mem_filter.1 hj).1)
+  simp_all [lstF] <;> omega_nf
 
-theorem lst2F_congr {u v u' v' : ℕ → ℕ} {n : ℕ} (hu : ∀ i, i < n → u i = u' i)
-    (hv : ∀ i, i < n → v i = v' i) (r : ℕ) : lst2F u v n r = lst2F u' v' n r := by
+section
+variable {u v u' v' : ℕ → ℕ} {n : ℕ} (hu : ∀ i, i < n → u i = u' i) (hv : ∀ i, i < n → v i = v' i)
+include hu hv
+theorem lst2F_congr (r : ℕ) : lst2F u v n r = lst2F u' v' n r := by
   unfold lst2F
   apply List.filter_congr
-  intro i hi
-  rw [hu i (List.mem_range.1 hi), hv i (List.mem_range.1 hi)]
+  simp_all
 
-theorem cnt2F_congr {u v u' v' : ℕ → ℕ} {n : ℕ} (hu : ∀ i, i < n → u i = u' i)
-    (hv : ∀ i, i < n → v i = v' i) : cnt2F u v n = cnt2F u' v' n := by
+theorem cnt2F_congr : cnt2F u v n = cnt2F u' v' n := by
   funext r; unfold cnt2F; rw [lst2F_congr hu hv]
+
+
+end
 
 /-- The counted interval of a chain descriptor fits the word bound. -/
 theorem twice_m_le {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {D : ℕ} {M : Model}

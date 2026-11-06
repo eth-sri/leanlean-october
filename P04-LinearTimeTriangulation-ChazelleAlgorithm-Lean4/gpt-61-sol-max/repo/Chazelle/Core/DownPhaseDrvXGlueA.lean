@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvXContracts
 public import Chazelle.Core.DownPhaseDrvXPos2
 public import Chazelle.Core.DownPhaseDrvXKept
@@ -30,9 +32,7 @@ open DrvR (regHost OnArcKey)
 /-- An empty region has an empty host. -/
 theorem ga_regHost_nil (li : Bool) (n : ℕ) (N : NF) (r : ℕ) (h : (N.region r).arcs.length = 0) :
     regHost li n N r = [] := by
-  unfold regHost DrvR.walkItems
-  rw [h]
-  split_ifs <;> simp
+  simp_all [regHost, DrvR.walkItems] 
 
 /-- An end on an arc of the region is on one of the arcs of the arc list, by comparisons. -/
 theorem ga_onArc {P : Polygon} {li : Bool} {N : NF} {r : ℕ}
@@ -45,7 +45,7 @@ theorem ga_onArc {P : Polygon} {li : Bool} {N : NF} {r : ℕ}
     ∃ t, t < (N.region r).arcs.length ∧ OnArcP (Qof P) li N (rasOf N r t) x := by
   obtain ⟨t, ht, rfl⟩ := List.mem_iff_getElem.1 hj
   have e : rasOf N r t = (N.region r).arcs[t] := by
-    unfold rasOf; rw [List.getD_eq_getElem _ _ ht]
+    simp_all [rasOf] 
   have hjA := hras t ht
   rw [List.getD_eq_getElem _ _ ht] at hjA
   refine ⟨t, ht, ?_⟩
@@ -63,7 +63,7 @@ theorem xeGlue : XEGlue := by
   have hn3 : 3 ≤ (Qof P).n := by have := hQ.1; omega
   have hWn : 256 * P.n + 16 ≤ W := hWh
   have hli : decide (c.nreg 217002 = 1) = true ↔ Mountain.LeftInside (Qof P) := by
-    rw [decide_eq_true_iff]; exact hbit
+    simp_all
   obtain ⟨-, -, -, reg, hRC, hCS, hAO, hRO, -⟩ := DownMath.isNF_build hQ hok hperm hsort
   have X : XHyp P (decide (c.nreg 217002 = 1)) L E reg (c.nreg 217001) C NR :=
     ⟨hG, hli, hLne, hok, hperm, hsort, ⟨hRC, hCS, hAO, hRO⟩, hr, hCP, hCs, hCm, hNR⟩
@@ -90,7 +90,7 @@ theorem xeGlue : XEGlue := by
   obtain ⟨hlen64, hwfP, -, -⟩ := (hMDwf.2 hMD0).2 _ _ hCD
   have hwf : HostWF (Qof P).n (regHost (decide (c.nreg 217002 = 1)) (Qof P).n
       (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)) := by
-    have h := hwfP; rwa [← hn] at h
+    ram_grind
   have hmp : C.m + 1 = ((regHost (decide (c.nreg 217002 = 1)) (Qof P).n
       (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)).pts (Qof P).n).length := by
     rw [hCm, hCP]; simp [Host.poly, Polygon.n]
@@ -104,8 +104,7 @@ theorem xeGlue : XEGlue := by
     by_contra h0
     have hnil := ga_regHost_nil (decide (c.nreg 217002 = 1)) (Qof P).n
       (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001) (by omega)
-    rw [hnil] at hmp
-    simp [Host.pts] at hmp
+    grind
   have hnRA32 := regHost_length_ge (decide (c.nreg 217002 = 1)) (Qof P).n
     (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)
   have hr' : c.nreg 217001 < (buildNF (interiorModel (Qof P)) (Qof P) L E).regions.length := hr
@@ -115,7 +114,7 @@ theorem xeGlue : XEGlue := by
   have hA1 : 1 ≤ (buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length := by
     have := hras 0 (by omega); omega
   have hAB := b3 _ (show (buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length - 1 < _ by omega)
-  refine ⟨⟨hG, hli, hdh, by omega, by rw [hn]; exact hWn, rfl, by show _ + 5 * NR.chords.length ≤ W; omega,
+  refine ⟨⟨hG, hli, hdh, by omega, by omega, rfl, by show _ + 5 * NR.chords.length ≤ W; omega,
     fun mm hmm => hHost mm hmm, hwf, hlen64, hHB, hm1, hmp, C.topIdx_le, ?_, ?_, ?_, rfl,
     fun j hj => hgood j hj, hinc, hnext, hfree, ?_, ?_, fun t ht => hras t ht, ?_, ?_, ?_, ?_, ?_,
     rfl, rfl⟩, ?_⟩

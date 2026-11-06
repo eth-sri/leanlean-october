@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseOracleQPlan
 
 /-!
@@ -12,9 +14,6 @@ public import Chazelle.Core.DownPhaseOracleQPlan
   `140012` (`outI_exec`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -76,7 +75,10 @@ section exec
 
 variable {P : Polygon} {W : ℕ} {O : OracleIface} {s : Stat}
 
-theorem setOne_exec (c : Config) (hw : WordsBounded W c) :
+section
+variable (c : Config) (hw : WordsBounded W c)
+include hw
+theorem setOne_exec :
     ∃ c' k, Exec P W setOne c c' k ∧ k = 5 ∧ c'.nreg 170033 = c.nreg 170001 ∧
       c'.nreg 170034 = c.nreg 170002 ∧ c'.nreg 170035 = c.nreg 170031 ∧
       c'.nreg 170036 = c.nreg 170030 ∧ c'.nreg 170037 = c.nreg 170032 ∧ FrameB Bset c c' := by
@@ -87,9 +89,9 @@ theorem setOne_exec (c : Config) (hw : WordsBounded W c) :
     exact ⟨c', k, e, h1, h2, h3, h4, h5, h6, exec_frameB e wr_setOne⟩
   unfold setOne
   exec_block
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+  ram_all
 
-theorem setTwoA_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) :
+theorem setTwoA_exec (hW : 2 ≤ W) :
     ∃ c' k, Exec P W setTwoA c c' k ∧ k = 5 ∧ c'.nreg 170033 = c.nreg 170001 ∧
       c'.nreg 170034 = c.nreg 170002 ∧ c'.nreg 170035 = 2 ∧ c'.nreg 170036 = 0 ∧
       c'.nreg 170037 = 2 ∧ FrameB Bset c c' := by
@@ -100,10 +102,12 @@ theorem setTwoA_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) :
     exact ⟨c', k, e, h1, h2, h3, h4, h5, h6, exec_frameB e wr_setTwoA⟩
   unfold setTwoA
   exec_block
-  all_goals first | omega | skip
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+  all_goals simp_all
 
-theorem setTwoB_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
+section
+variable (hS : SEnv P W O s c)
+include hS
+theorem setTwoB_exec
     (he1 : s.e₁ < P.n) :
     ∃ c' k, Exec P W setTwoB c c' k ∧ k ≤ 8 ∧ c'.nreg 170033 = (s.e₁ + 2) % P.n ∧
       c'.nreg 170034 = 0 ∧ c'.nreg 170035 = c.nreg 170031 - 2 ∧
@@ -120,23 +124,23 @@ theorem setTwoB_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   unfold setTwoB
   refine spec_seq ?_
   exec_block
-  · config_simp; rw [hS.r1, hS.r18]; omega
+  · ram_grind
   · omega
   by_cases h : s.e₁ + 2 < P.n
-  · refine spec_ifLtN_true (by config_simp; rw [hS.r1, hS.r18, hS.r10]; exact h) ?_
+  · refine spec_ifLtN_true (by config_simp; ram_grind) ?_
     refine spec_skip ‹_› ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
     · rw [hS.r1, hS.r18, Nat.mod_eq_of_lt h]
     · rw [hS.r18]
-    · rw [hS.r18]
-  · refine spec_ifLtN_false (by config_simp; rw [hS.r1, hS.r18, hS.r10]; exact h) ?_
+    ram_grind
+  · refine spec_ifLtN_false (by config_simp; ram_grind) ?_
     exec_block
     refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
     · rw [hS.r1, hS.r18, hS.r10, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
     · rw [hS.r18]
-    · rw [hS.r18]
+    ram_grind
 
 /-- **The answer of the interior shooter.** -/
-theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S : Set Point}
+theorem outI_exec {S : Set Point}
     {z : Point} {σ : ℝ} (hB : BestI P c S z σ) :
     ∃ c' k, Exec P W outI c c' k ∧ k ≤ 20 ∧
       (c'.nreg 140010 = 1 → ∃ t, FirstHit S z σ t ∧
@@ -163,9 +167,9 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
   · refine spec_ifLtN_true g ?_
     exec_block
     · omega
-    refine ⟨by omega, fun h => by config_simp at h, fun _ => hb3 (by rw [hS.r11] at g; omega)⟩
+    refine ⟨by omega, fun h => by simp_all, fun _ => hb3 (by ram_grind)⟩
   refine spec_ifLtN_false g ?_
-  obtain ⟨sb, t, hsb, hbs, hfh, hev⟩ := hb2 (by rw [hS.r11] at g; omega)
+  obtain ⟨sb, t, hsb, hbs, hfh, hev⟩ := hb2 (by ram_grind)
   have hbsQ := hbs
   rw [← hQ] at hn
   obtain ⟨hpp, hlt, hpos⟩ := iPos_spec hD hn hbsQ
@@ -173,7 +177,7 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
   cases sb with
   | vtx q =>
     obtain ⟨k0, kq⟩ := hsb
-    refine spec_ifLtN_true (by rw [k0, hS.r11]; omega) ?_
+    refine spec_ifLtN_true (by ram_grind) ?_
     unfold outV
     refine spec_seq ?_
     exec_block
@@ -192,30 +196,36 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
     · config_simp; rw [hiv]; exact hpos
   | onEdge e h =>
     obtain ⟨k0, ke, kh⟩ := hsb
-    refine spec_ifLtN_false (by rw [k0, hS.r11]; omega) ?_
+    refine spec_ifLtN_false (by omega) ?_
     unfold outE
     refine spec_seq ?_
     exec_block
     have w := ‹WordsBounded W { c with nreg := upd c.nreg 170095 (c.nreg 170072) }›
-    have he : e < P.n := by have := hbs.1; rw [hQ] at this; exact this
-    have hh : h < P.n := by have := hbs.2.1; rw [hQ] at this; exact this
+    have he : e < P.n := by have := hbs.1; omega
+    have hh : h < P.n := by have := hbs.2.1; omega
     obtain ⟨c₂, k₂, e₂, hk₂, i96, ir, im, irr, irm, io⟩ := iEdgeF_exec (P := P) _ w
       (by config_simp; exact hS.r11) (by config_simp; exact hS.r10) (by config_simp; exact hS.r19)
-      (by config_simp; rw [ke]; omega)
+      (by config_simp; ram_grind)
     refine spec_seq ⟨c₂, k₂, e₂, ?_⟩
     have w₂ := e₂.wb_right
-    have b73 : c₂.nreg 170073 = h := by rw [ir _ (by decide) (by decide)]; config_simp; exact kh
+    have b73 : c₂.nreg 170073 = h := by ram_simp
     have b11 : c₂.nreg 170011 = 1 := by rw [ir _ (by decide) (by decide)]; config_simp; exact hS.r11
     have hie : c₂.nreg 170096 = iEdge (Qof P) e := by
       rw [i96]; config_simp; rw [ke, ← hS.iev e]
     exec_block
     · omega
-    · config_simp; rw [b73, b11]; omega
+    · omega_nf
     refine ⟨by omega, fun _ => ⟨t, hfh, ?_, ?_, ?_⟩, fun h => (h (by config_simp)).elim⟩
     · config_simp; rw [hie, b73, b11]; rw [hQ] at hpp; exact hpp
     · config_simp; rw [hie, mi_n]; exact hlt
     · config_simp; rw [hie, b73, b11]; exact hpos
 
+
+
+
+end
+
+end
 
 end exec
 

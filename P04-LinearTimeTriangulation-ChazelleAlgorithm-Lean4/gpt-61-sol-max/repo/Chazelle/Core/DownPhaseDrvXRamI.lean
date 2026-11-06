@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvXRamH
 
 /-!
@@ -63,12 +65,8 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
     · config_simp; rw [h40, hg.r27]; omega
     · config_simp; rw [h40, hg.r27]; omega
     · config_simp; rw [h40, mh, hg.r27]; omega
-    · refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h40, hg.r27]
-      · exact mh
-      · exact k1' _ (by omega)
-      · exact k2' _ (by omega)
-      · rw [mh]
-      · exact k1' _ (by omega)
+    · refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> ram_grind
+      all_goals omega
   have f1 : FrameB (fun r => decide ((217050 ≤ r ∧ r ≤ 217053) ∨ r = 217060 ∨ r = 217104)) d d1 :=
     exec_frameB e1 (by decide)
   have hw1 := e1.wb_right
@@ -77,7 +75,7 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
   -- step 2: the left end
   obtain ⟨d2, k2, e2, hk2, bL, encL, f2⟩ := clsS_exec (P := P) d1 hw1 (n := (Qof P).n)
     (m := v.m) (T := v.T) (HB := v.HB) (h := (NR.chord i).h) (p := (NR.chord i).lp) (β := v.β)
-    (li := v.li) (H := v.H) (E.hHost _ (fun a ha => by rw [m1]; exact hmem a ha)) E.hwf E.hlen
+    (li := v.li) (H := v.H) (E.hHost _ (fun a ha => by ram_simp)) E.hwf E.hlen
     hHBW E.hW E.hm1 E.hmp E.hT hlp g1.r20 g1.r21 g1.r22 g1.r25 g1.r26 g1.r27 g1.r34 g1.r35
     g1.r41 g1.r42 g1.r44 a50 a60
   have hw2 := e2.wb_right
@@ -90,7 +88,7 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
       d3.nreg 217056 = d2.nreg 217071 ∧ d3.nreg 217057 = d2.nreg 217072 ∧
       d3.nreg 217060 = d2.nreg 217052 := by
     exec_block
-    refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+    omega_nf
   have f3 : FrameB (fun r => decide ((217054 ≤ r ∧ r ≤ 217057) ∨ r = 217060)) d2 d3 :=
     exec_frameB e3 (by decide)
   have hw3 := e3.wb_right
@@ -103,7 +101,7 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
   -- step 4: the right end
   obtain ⟨d4, k4, e4, hk4, bR, encR, f4⟩ := clsS_exec (P := P) d3 hw3 (n := (Qof P).n)
     (m := v.m) (T := v.T) (HB := v.HB) (h := (NR.chord i).h) (p := (NR.chord i).rp) (β := v.β)
-    (li := v.li) (H := v.H) (E.hHost _ (fun a ha => by rw [m3]; exact hmem a ha)) E.hwf E.hlen
+    (li := v.li) (H := v.H) (E.hHost _ (fun a ha => by ram_grind)) E.hwf E.hlen
     hHBW E.hW E.hm1 E.hmp E.hT hrp g3.r20 g3.r21 g3.r22 g3.r25 g3.r26 g3.r27 g3.r34 g3.r35
     g3.r41 g3.r42 g3.r44 c50 c60
   have hw4 := e4.wb_right
@@ -115,10 +113,10 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
   -- the registers kept from `d`
   have q4 : ∀ r, (r = 217038 ∨ r = 217039 ∨ r = 217040 ∨ r = 217045 ∨ r = 217046) →
       d4.nreg r = d.nreg r := fun r hr => by
-    rw [f4.1 _ (by simp only [Bcls, decide_eq_false_iff_not]; omega),
-      f3.1 _ (by simp only [decide_eq_false_iff_not]; omega),
-      f2.1 _ (by simp only [Bcls, decide_eq_false_iff_not]; omega),
-      f1.1 _ (by simp only [decide_eq_false_iff_not]; omega)]
+    rw [f4.1 _ (by grind [Bcls, decide_eq_false_iff_not]),
+      f3.1 _ (by grind),
+      f2.1 _ (by grind [Bcls, decide_eq_false_iff_not]),
+      f1.1 _ (by grind)]
   have c53 : d4.nreg 217053 = (NR.chord i).h + 1 := by
     rw [f4.1 _ (by decide), f3.1 _ (by decide), f2.1 _ (by decide), a53]
   have c50' : d4.nreg 217050 = (NR.chord i).h := by rw [f4.1 _ (by decide), c50]
@@ -147,14 +145,14 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
         E.hn2 (N := N) (sL := sPt P v (NR.chord i).lp) (sR := sPt P v (NR.chord i).rp)
         (h := (NR.chord i).h) (LxB := v.LxB) (BkB := v.BkB) (cnt := cnt) (AB := v.AB) (RA := v.RA)
         (nRA := v.nRA) (ras := ras) hsL hsR eL encR hxL hxR hexL hexR hgood' E.hinc E.hnext
-        E.hfree (fun j hj => E.hAm d4.nmem (fun a ha => by rw [m4]; exact hmem a ha) j (E.hA ▸ hj))
-        (fun t ht => ⟨E.hRm d4.nmem (fun a ha => by rw [m4]; exact hmem a ha) t ht,
+        E.hfree (fun j hj => E.hAm d4.nmem (fun a ha => by ram_grind) j (E.hA ▸ hj))
+        (fun t ht => ⟨E.hRm d4.nmem (fun a ha => by ram_grind) t ht,
           by rw [E.hA]; exact E.hras t ht⟩)
         (fun j hj => by have := E.hAW j (E.hA ▸ hj); omega) (by have := E.hRW; omega)
         (by rw [E.hA]; exact E.hA2) hnW g4.r20 g4.r26 g4.r27 (g4.r30.trans E.hA.symm) g4.r31
-        g4.r32 g4.r33 g4.r44 c50' c53 (by rw [q4 _ (by omega), h38])
-        (by rw [q4 _ (by omega), h45]) (by rw [q4 _ (by omega), h46])
-        (by have := E.hK; omega) (by have := E.hK; omega) (by have := E.hK; omega)
+        g4.r32 g4.r33 g4.r44 c50' c53 (by ram_grind)
+        (by ram_grind) (by ram_grind)
+        (by omega) (by omega) (by  omega)
       have p39 : d5.nreg 217039 = i := by
         rw [f5.1 _ (by decide), q4 _ (by omega), h39]
       have p40 : d5.nreg 217040 = v.CB + 5 * i := by
@@ -177,9 +175,9 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
         fun h => hk (Or.inr h)
       exact ⟨d4, 0 + 1 + 1, .ifLtN_true (by rw [hbL, ite_eq_right hl, g4.r27]; omega)
         (.ifLtN_true (by rw [bR, ite_eq_right hr, g4.r27]; omega) (.skip hw4)), by omega,
-        fun h => absurd h hk, fun _ => ⟨m4, by rw [q4 _ (by omega), h38],
-          by rw [q4 _ (by omega), h45], by rw [q4 _ (by omega), h46]⟩,
-        by rw [q4 _ (by omega), h39], by rw [q4 _ (by omega), h40]⟩
+        fun h => absurd h hk, fun _ => ⟨m4, by ram_grind,
+          by ram_grind, by ram_grind⟩,
+        by ram_grind, by ram_grind⟩
   have hw5 := e5.wb_right
   have g5 : XG P v d5 := g4.frameM (exec_frameM e5 (B := Bch) (by decide)) (by decide)
   -- step 6: advance
@@ -191,7 +189,7 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
       d6.nreg 217046 = d5.nreg 217046 := by
     have r27 := g5.r27
     exec_block
-    all_goals (try (config_simp; omega))
+    all_goals omega_nf
   have f6 : FrameB (fun r => decide (r = 217039 ∨ r = 217040)) d5 d6 := exec_frameB e6 (by decide)
   have ex : Exec P W chS d d6 (k1 + (k2 + (k3 + (k4 + (k5 + k6))))) := by
     simp only [chS, seqs_cons₂, seqs_one]

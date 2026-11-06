@@ -76,16 +76,20 @@ def OfferRel (P : Polygon) (J : Merge.Junction) (c c' : Config) (e h u d : ℕ) 
 def RejAt (c c' : Config) : Prop :=
   (∀ x, x < c.nreg ALLOC → c'.nmem x = c.nmem x) ∧ BestSame c c'
 
+section
+variable (P : Polygon) (J : Merge.Junction) (S₂ : Set (Set Point)) (T j u d : ℕ) (a : Point) (σ : ℝ) (c c' : Config)
+include P J S₂ T j u d a σ c c'
 /-- A candidate accepted at the position `(e, h)`. -/
-def AccAt (P : Polygon) (J : Merge.Junction) (S₂ : Set (Set Point)) (T j u d : ℕ) (a : Point)
-    (σ : ℝ) (c c' : Config) (e h : ℕ) : Prop :=
+def AccAt (e h : ℕ) : Prop :=
   CandOK P J S₂ a σ e h ∧ (∀ x, x < c.nreg ALLOC → c'.nmem x = tabUpd c.nmem T j e h x) ∧
     OfferRel P J c c' e h u d
 
 /-- **The result of a candidate**: rejected, or accepted at a position with `CandOK`. -/
-def CandRes (P : Polygon) (J : Merge.Junction) (S₂ : Set (Set Point)) (T j u d : ℕ) (a : Point)
-    (σ : ℝ) (c c' : Config) : Prop :=
+def CandRes : Prop :=
   RejAt c c' ∨ ∃ e h, AccAt P J S₂ T j u d a σ c c' e h
+
+
+end
 
 /-- The registers a candidate may write. -/
 def CandR (r : ℕ) : Prop :=

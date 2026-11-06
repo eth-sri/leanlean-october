@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutShK0
 
 /-!
@@ -38,7 +40,7 @@ theorem seg_pt {a b X : Point} (hab : a.2 ≠ b.2) (hX : X ∈ Chazelle.segment 
       (X.2 - a.2) / (b.2 - a.2) ≤ 1 := by
   obtain ⟨t, h0, h1, rfl⟩ := hX
   have hne : b.2 - a.2 ≠ 0 := sub_ne_zero.2 (Ne.symm hab)
-  have ht : (a.2 + t * (b.2 - a.2) - a.2) / (b.2 - a.2) = t := by field_simp; ring
+  have ht : (a.2 + t * (b.2 - a.2) - a.2) / (b.2 - a.2) = t := by simp_all
   simp only
   rw [ht]
   exact ⟨rfl, h0, h1⟩
@@ -52,15 +54,14 @@ theorem walk_pos_at {M : Model} {Q : Polygon} {p h : ℕ} {X : Point}
   obtain ⟨hXe, h0, h1⟩ := seg_pt hne hX
   have hpar : M.param Q ⟨p, h + 1⟩ = (X.2 - (M.wa p).2) / ((M.wb p).2 - (M.wa p).2) := by
     show (if (M.wa p).2 = (M.wb p).2 then 0 else _) = _
-    rw [ite_eq_right hne, hXh]
+    ram_grind
   have hd : (M.wb p).2 - (M.wa p).2 ≠ 0 := sub_ne_zero.2 (Ne.symm hne)
-  refine ⟨?_, by rw [hpar]; exact h0, ?_⟩
+  refine ⟨?_, by ram_grind, ?_⟩
   · show lerp (M.wa p) (M.wb p) (M.param Q ⟨p, h + 1⟩) = X
-    rw [hpar]; exact hXe.symm
+    ram_grind
   · rw [hpar]
     refine lt_of_le_of_ne h1 fun h => hb ?_
-    rw [div_eq_one_iff_eq hd] at h
-    linarith
+    ram_grind
 
 /-- The abscissa of a point of an edge of `Q` at a given height. -/
 theorem edge_x {Q : Polygon} {e h : ℕ} {X : Point} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2)
@@ -119,15 +120,14 @@ theorem k1_hit (hD : DistinctHeights Q) (hS : Q.Simple) {p₀ x0 w dir : ℕ}
   have atEnd : ∀ {a b : Point}, a.2 ≠ b.2 → X ∈ Chazelle.segment a b → X.2 = b.2 → X = b :=
     fun {a b} hne hX hy => by
       obtain ⟨hXe, -, -⟩ := seg_pt hne hX
-      rw [hXe, hy, div_self (sub_ne_zero.2 (Ne.symm hne))]
-      ext <;> simp [lerp]
+      grind [lerp]
   have hw' : ∀ i j, i < Q.n → j < Q.n → Q.vtx i = Q.vtx j → i = j := fun i j hi hj he =>
     Chazelle.Jordan.simple_vtx_inj hS hi hj he
   have hpp : ∀ q, ProperPos M Q Q.n ⟨q, 0⟩ := fun q => proper_vtx _ _ _ _
   suffices key : ∃ q : WPos, k1Out p₀ x0 w dir e' h = q ∧ q.edge < 2 * C.m + 7 ∧
       ProperPos M Q Q.n q ∧ M.pos Q q = X by
     obtain ⟨q, hq, a, b, c⟩ := key
-    rw [hq]; exact ⟨a, b, c, hx, hbox⟩
+    ram_grind
   unfold k1Out
   by_cases hin : x0 ≤ e' ∧ e' < x0 + w
   · rw [ite_eq_left hin]
@@ -138,26 +138,24 @@ theorem k1_hit (hD : DistinctHeights Q) (hS : Q.Simple) {p₀ x0 w dir : ℕ}
     have hEe := SweepPrim.edge_heights_ne hD hn2 he'
     rw [Nat.mod_eq_of_lt (show e' + 1 < Q.n by omega)] at hEe
     have hXe' : X ∈ Chazelle.segment (Q.vtx e') (Q.vtx (e' + 1)) := by
-      rw [← edge_eq _ (by omega)]; exact hXe
+      ram_grind
     rcases hdir with rfl | rfl
     · rw [ite_eq_left rfl]
       have ha : M.W.vtx (p₀ + j) = Q.vtx e' := by
-        have := hblk j (by omega); rw [ite_eq_left rfl] at this; rw [this, hj]
+        have := hblk j (by omega); ram_grind
       have hb : M.W.vtx (p₀ + j + 1) = Q.vtx (e' + 1) := by
-        have := hblk (j + 1) (by omega); rw [ite_eq_left rfl] at this
-        rw [show p₀ + j + 1 = p₀ + (j + 1) by ring, this, hj]; ring_nf
+        have := hblk (j + 1) (by omega); ram_grind
       have hwa : M.wa (p₀ + j) = Q.vtx e' := ha
       have hwb : M.wb (p₀ + j) = Q.vtx (e' + 1) := by rw [wv _ (by omega), hb]
       by_cases hhe : h = e' + 1
       · rw [ite_eq_left hhe]
-        refine ⟨_, rfl, by simp only; omega, hpp _, ?_⟩
-        rw [hpos0, hb]
-        exact (atEnd hEe hXe' (by rw [hXh, hhe])).symm
+        refine ⟨_, rfl, by ram_grind, hpp _, ?_⟩
+        ram_grind
       · rw [ite_eq_right hhe]
         obtain ⟨hp, h0, h1⟩ := walk_pos_at (M := M) (Q := Q) (p := p₀ + j) (h := h)
-          (by rw [hwa, hwb]; exact hEe) (by rw [hwa, hwb]; exact hXe') hXh
-          (by rw [hwb, hXh]; intro he; exact hhe (hvinj _ _ hh (by omega) he))
-        exact ⟨_, rfl, by simp only; omega, ⟨h0, h1, by show h + 1 ≤ Q.n; omega⟩, hp⟩
+          (by ram_grind) (by ram_grind) hXh
+          (by ram_grind)
+        exact ⟨_, rfl, by ram_grind, ⟨h0, h1, by ram_grind⟩, hp⟩
     · rw [ite_eq_right (by norm_num : ¬ (0 = 1))]
       set p := p₀ + (w - 1 - j)
       have ha : M.W.vtx p = Q.vtx (e' + 1) := by
@@ -166,21 +164,20 @@ theorem k1_hit (hD : DistinctHeights Q) (hS : Q.Simple) {p₀ x0 w dir : ℕ}
       have hb : M.W.vtx (p + 1) = Q.vtx e' := by
         have := hblk (w - 1 - j + 1) (by omega)
         rw [ite_eq_right (by norm_num : ¬ (0 = 1))] at this
-        rw [show p + 1 = p₀ + (w - 1 - j + 1) by simp only [p]; ring, this, hj]; congr 1; omega
+        rw [show p + 1 = p₀ + (w - 1 - j + 1) by omega, this, hj]; congr 1; omega
       have hwa : M.wa p = Q.vtx (e' + 1) := ha
       have hwb : M.wb p = Q.vtx e' := by rw [wv _ (by omega), hb]
       have hXr : X ∈ Chazelle.segment (Q.vtx (e' + 1)) (Q.vtx e') := by
         rw [Chazelle.Geometry.segment_comm]; exact hXe'
       by_cases hhe : h = e'
       · rw [ite_eq_left hhe]
-        refine ⟨_, rfl, by simp only; omega, hpp _, ?_⟩
-        rw [hpos0, hb]
-        exact (atEnd (Ne.symm hEe) hXr (by rw [hXh, hhe])).symm
+        refine ⟨_, rfl, by ram_grind, hpp _, ?_⟩
+        ram_grind
       · rw [ite_eq_right hhe]
         obtain ⟨hp, h0, h1⟩ := walk_pos_at (M := M) (Q := Q) (p := p) (h := h)
-          (by rw [hwa, hwb]; exact Ne.symm hEe) (by rw [hwa, hwb]; exact hXr) hXh
-          (by rw [hwb, hXh]; intro he; exact hhe (hvinj _ _ hh he' he))
-        exact ⟨_, rfl, by simp only; omega, ⟨h0, h1, by show h + 1 ≤ Q.n; omega⟩, hp⟩
+          (by ram_grind) (by ram_grind) hXh
+          (by ram_grind)
+        exact ⟨_, rfl, by ram_grind, ⟨h0, h1, by ram_grind⟩, hp⟩
   -- outside the block: `X` is an end of the chain
   rw [ite_eq_right hin]
   obtain ⟨k, hk1, hk2, hXk⟩ : ∃ k, x0 ≤ k ∧ k < x0 + w ∧ X ∈ Q.edge k := by
@@ -188,9 +185,7 @@ theorem k1_hit (hD : DistinctHeights Q) (hS : Q.Simple) {p₀ x0 w dir : ℕ}
     · refine ⟨x0 + d, by omega, by omega, ?_⟩
       rw [edge_eq _ (by omega)]
       have ha := hblk d (by omega); rw [ite_eq_left rfl] at ha
-      have hb := hblk (d + 1) (by omega); rw [ite_eq_left rfl] at hb
-      rw [ha, show p₀ + d + 1 = p₀ + (d + 1) by ring, hb] at hXd
-      rwa [show x0 + (d + 1) = x0 + d + 1 by ring] at hXd
+      have hb := hblk (d + 1) (by omega); ram_grind
     · refine ⟨x0 + w - d - 1, by omega, by omega, ?_⟩
       rw [edge_eq _ (by omega)]
       have ha := hblk d (by omega); rw [ite_eq_right (by norm_num : ¬ (0 = 1))] at ha
@@ -208,20 +203,19 @@ theorem k1_hit (hD : DistinctHeights Q) (hS : Q.Simple) {p₀ x0 w dir : ℕ}
     rcases e1 with e | e
     · exact ⟨k, by omega, by omega, e⟩
     · exact ⟨k + 1, by omega, by omega, e⟩
-  have hhv : h = v := hvinj _ _ hh (by omega) (by rw [← hXh, hXv])
+  have hhv : h = v := hvinj _ _ hh (by omega) (by ram_grind)
   have hvend : v = x0 ∨ v = x0 + w := by
     by_contra hc
     push Not at hc
     rcases e2 with e | e
-    · have := hw' _ _ (by omega) he' (hXv.symm.trans e); exact hin (by omega)
+    · ram_grind
     · rcases Nat.lt_or_ge (e' + 1) Q.n with hl | hl
       · rw [Nat.mod_eq_of_lt hl] at e
-        have := hw' _ _ (by omega) hl (hXv.symm.trans e); exact hin (by omega)
+        ram_grind
       · rw [show e' + 1 = Q.n by omega, Nat.mod_self] at e
         have := hw' _ _ (by omega) (by omega) (hXv.symm.trans e); omega
   have hv0 : M.W.vtx p₀ = Q.vtx (if dir = 1 then x0 else x0 + w) := by
-    have := hblk 0 (by omega); rw [Nat.add_zero] at this; rw [this]
-    split_ifs <;> simp
+    have := hblk 0 (by omega); omega
   have hvw : M.W.vtx (p₀ + w) = Q.vtx (if dir = 1 then x0 + w else x0) := by
     have := hblk w le_rfl; rw [this]
     split_ifs <;> simp
@@ -230,18 +224,18 @@ theorem k1_hit (hD : DistinctHeights Q) (hS : Q.Simple) {p₀ x0 w dir : ℕ}
     rw [ite_eq_left rfl] at hv0 hvw
     by_cases hx0 : h = x0
     · rw [ite_eq_left hx0]
-      exact ⟨_, rfl, by simp only; omega, hpp _, by rw [hpos0, hv0, hXv, ← hhv, hx0]⟩
+      exact ⟨_, rfl, by ram_grind, hpp _, by ram_grind⟩
     · rw [ite_eq_right hx0]
       have : v = x0 + w := by omega
-      exact ⟨_, rfl, by simp only; omega, hpp _, by rw [hpos0, hvw, hXv, this]⟩
+      exact ⟨_, rfl, by ram_grind, hpp _, by ram_grind⟩
   · rw [ite_eq_right (by norm_num : ¬ (0 = 1))]
     rw [ite_eq_right (by norm_num : ¬ (0 = 1))] at hv0 hvw
     by_cases hx0 : h = x0
     · rw [ite_eq_left hx0]
-      exact ⟨_, rfl, by simp only; omega, hpp _, by rw [hpos0, hvw, hXv, ← hhv, hx0]⟩
+      exact ⟨_, rfl, by ram_grind, hpp _, by ram_grind⟩
     · rw [ite_eq_right hx0]
       have : v = x0 + w := by omega
-      exact ⟨_, rfl, by simp only; omega, hpp _, by rw [hpos0, hv0, hXv, this]⟩
+      exact ⟨_, rfl, by ram_grind, hpp _, by ram_grind⟩
 
 end ShootCut
 

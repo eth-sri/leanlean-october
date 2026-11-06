@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvXRamC
 
 /-!
@@ -21,11 +23,11 @@ open DrvR (ivB qE)
 @[expose] public section
 
 theorem hltF_le (P : Polygon) (u v : ℕ) : hltF P u v ≤ 1 := by
-  unfold hltF; split_ifs <;> omega
+  core_grind
 
 theorem hltF_eq_one {P : Polygon} (hG : GoodEnv P) {u v : ℕ} (hu : u < (Qof P).n)
     (hv : v < (Qof P).n) : hltF P u v = 1 ↔ ((Qof P).vtx u).2 < ((Qof P).vtx v).2 := by
-  rw [hlt_iff hG hu hv]; unfold hltF; split_ifs with h <;> simp [h]
+  rw [hlt_iff hG hu hv]; simp_all [hltF] 
 
 open Classical in
 /-- **`posLtS` decides the key order** of two positions at vertex heights. -/
@@ -44,8 +46,7 @@ theorem posLtF_iff {P : Polygon} (hG : GoodEnv P) (li : Bool) {x y : WPos}
         hltF P (x.hgt - 1) (y.hgt - 1) := by
     unfold EdgeUp; rw [← h1, ← h2]; omega
   unfold posLtF PosLt
-  rw [hiff]
-  split_ifs <;> omega
+  grind
 
 section pieces
 
@@ -72,8 +73,7 @@ theorem eq2S_exec (d : Config) (hw : WordsBounded W d) {a b c e dst : ℕ} (ha :
   rw [n2.1, n1.1, Machine.upd_upd_same]
   simp only [Machine.upd_other _ _ _ ha, Machine.upd_other _ _ _ hb, Machine.upd_other _ _ _ hc,
     Machine.upd_other _ _ _ he, Machine.upd_same]
-  congr 1
-  split_ifs <;> omega
+  ram_grind
 
 set_option maxHeartbeats 2000000 in
 /-- `dst := posLt (a, b) (c, e)`. -/
@@ -90,19 +90,16 @@ theorem posLtOn_exec (d : Config) (hw : WordsBounded W d) {a b c e dst n : ℕ} 
       d1.nreg 217153 = d.nreg e ∧ (∀ r, r < 217150 → d1.nreg r = d.nreg r) := by
     exec_block
     refine ⟨by omega, ?_, ?_, ?_, ?_, fun r hr => ?_⟩ <;> config_simp
-    · rw [Machine.upd_other _ _ _ (show b ≠ 217150 by omega)]
-    · rw [Machine.upd_other _ _ _ (show c ≠ 217151 by omega),
-        Machine.upd_other _ _ _ (show c ≠ 217150 by omega)]
-    · rw [Machine.upd_other _ _ _ (show e ≠ 217152 by omega),
-        Machine.upd_other _ _ _ (show e ≠ 217151 by omega),
-        Machine.upd_other _ _ _ (show e ≠ 217150 by omega)]
+    · ram_simp
+    · ram_simp
+    · ram_simp
     · rw [Machine.upd_other _ _ _ (show r ≠ 217153 by omega),
         Machine.upd_other _ _ _ (show r ≠ 217152 by omega),
         Machine.upd_other _ _ _ (show r ≠ 217151 by omega),
         Machine.upd_other _ _ _ (show r ≠ 217150 by omega)]
   obtain ⟨d2, k2, e2, hk2, v2, -⟩ := posLtS_exec (P := P) d1 e1.wb_right
-    (by rw [g1 _ (by omega), h20]) (by rw [g1 _ (by omega), h26]) (by rw [g1 _ (by omega), h27])
-    (by rw [a50]; exact hae) hnW hW
+    (by ram_simp) (by simp_all +arith) (by ram_simp)
+    (by omega) hnW hW
   obtain ⟨d3, k3, e3, hk3, n3⟩ := x_copy (P := P) d2 e2.wb_right dst 217154
   refine ⟨d3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, ?_⟩
   rw [n3.same, v2, a50, a51, a52, a53]
@@ -133,7 +130,7 @@ theorem onS_exec (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) (h27 : d.nr
     n2.2.2.2.2.trans n1.2.2.2.2⟩
   rw [n2.1, n1.1, Machine.upd_upd_same]
   config_simp
-  simp only [h27]
+  ram_grind
 
 /-- The registers `bktFS` writes. -/
 def BbktF (r : ℕ) : Bool := decide (r = 217112 ∨ r = 217128)
@@ -155,41 +152,39 @@ theorem bktFS_exec (d : Config) (hw : WordsBounded W d) {A j : ℕ} (hj : j < A)
           else 2 * j + 1) := by
     unfold bktFS
     by_cases c1 : d.nreg 217122 < 1
-    · refine spec_ifLtN_true (by rw [h27]; exact c1) ?_
+    · refine spec_ifLtN_true (by omega) ?_
       by_cases c2 : d.nreg 217123 < 1
-      · refine spec_ifLtN_true (by rw [h27]; exact c2) ?_
+      · refine spec_ifLtN_true (by omega) ?_
         by_cases c3 : d.nreg 217125 < 1
-        · refine spec_ifLtN_true (by rw [h27]; exact c3) ?_
+        · refine spec_ifLtN_true (by omega) ?_
+          exec_block
+          all_goals simp_all
+        · refine spec_ifLtN_false (by omega) ?_
           exec_block
           · omega
-          · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left c1, ite_eq_left c2, ite_eq_left c3]
-        · refine spec_ifLtN_false (by rw [h27]; exact c3) ?_
-          exec_block
-          · omega
-          · config_simp; omega
-          · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left c1, ite_eq_left c2, ite_eq_right c3]; omega
-      · refine spec_ifLtN_false (by rw [h27]; exact c2) ?_
+          · omega_nf
+          simp_all +arith
+      · refine spec_ifLtN_false (by omega) ?_
         refine spec_seq ?_
         exec_block
         · omega
         by_cases c4 : j + 1 < A
-        · refine spec_ifLtN_true (by config_simp; omega) ?_
+        · refine spec_ifLtN_true (by ram_simp) ?_
           exec_block
-          · config_simp; omega
-          · config_simp; omega
+          · omega_nf
+          · omega_nf
           · refine ⟨by omega, ?_⟩; config_simp
             rw [ite_eq_left c1, ite_eq_right c2, Nat.mod_eq_of_lt c4]; omega
-        · refine spec_ifLtN_false (by config_simp; omega) ?_
+        · refine spec_ifLtN_false (by ram_simp) ?_
           exec_block
           · omega
           · refine ⟨by omega, ?_⟩; config_simp
-            have h0 : (j + 1) % A = 0 := by rw [show j + 1 = A by omega, Nat.mod_self]
-            rw [ite_eq_left c1, ite_eq_right c2, h0]
-    · refine spec_ifLtN_false (by rw [h27]; exact c1) ?_
+            grind [Nat.mod_self]
+    · refine spec_ifLtN_false (by omega) ?_
       exec_block
       · omega
-      · config_simp; omega
-      · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right c1]; omega
+      · omega_nf
+      simp_all +arith
   exact ⟨d', k, ex, hk, hv, exec_frameB ex wr_bktF⟩
 
 /-- The registers `arcRdS` writes. -/

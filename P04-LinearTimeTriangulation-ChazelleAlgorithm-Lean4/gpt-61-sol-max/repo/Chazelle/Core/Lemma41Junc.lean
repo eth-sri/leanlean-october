@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.Lemma41Desc
 public import Chazelle.Core.Lemma41Host
 
@@ -19,26 +21,37 @@ open Chazelle Chazelle.Merge
 @[expose] public section
 
 theorem chain_eq {C C' : Chain} (h1 : C.P = C'.P) (h2 : C.s = C'.s) (h3 : C.m = C'.m) : C = C' := by
-  cases C; cases C'; simp only at h1 h2 h3; subst h1 h2 h3; rfl
+  cases C; simp_all
 
+section
+variable (C₁ C₂ : Chain) (h : C₁.m + C₂.m + 1 ≤ C₁.P.n)
+include C₁ C₂ h
 /-- The junction of two chains, `C₂` following `C₁`. -/
-def jOf (C₁ C₂ : Chain) (h : C₁.m + C₂.m + 1 ≤ C₁.P.n) : Junction := Junction.ofChains C₁ C₂ h
+def jOf : Junction := Junction.ofChains C₁ C₂ h
 
-theorem jOf_left (C₁ C₂ : Chain) (h : C₁.m + C₂.m + 1 ≤ C₁.P.n) : (jOf C₁ C₂ h).left = C₁ :=
+theorem jOf_left : (jOf C₁ C₂ h).left = C₁ :=
   chain_eq rfl rfl rfl
 
-theorem jOf_right {C₁ C₂ : Chain} (h : C₁.m + C₂.m + 1 ≤ C₁.P.n) (hP : C₂.P = C₁.P)
+
+end
+
+section
+variable {C₁ C₂ : Chain} (h : C₁.m + C₂.m + 1 ≤ C₁.P.n)
+theorem jOf_right (hP : C₂.P = C₁.P)
     (hs : C₂.s = C₁.s + C₁.m) : (jOf C₁ C₂ h).right = C₂ :=
   chain_eq hP.symm hs.symm rfl
 
-theorem jOf_whole_s {C₁ C₂ : Chain} (h : C₁.m + C₂.m + 1 ≤ C₁.P.n) :
+theorem jOf_whole_s :
     (jOf C₁ C₂ h).whole.s = C₁.s := rfl
 
-theorem jOf_whole_m {C₁ C₂ : Chain} (h : C₁.m + C₂.m + 1 ≤ C₁.P.n) :
+theorem jOf_whole_m :
     (jOf C₁ C₂ h).whole.m = C₁.m + C₂.m := rfl
 
-theorem jOf_whole_P {C₁ C₂ : Chain} (h : C₁.m + C₂.m + 1 ≤ C₁.P.n) :
+theorem jOf_whole_P :
     (jOf C₁ C₂ h).whole.P = C₁.P := rfl
+
+
+end
 
 /-- **The descriptor of the union.** -/
 theorem descWhole {m : ℕ → ℕ} {Q : Polygon} {H : Host} {C₁ C₂ : Chain} {B₁ B₂ B : ℕ}
@@ -53,12 +66,10 @@ theorem descWhole {m : ℕ → ℕ} {Q : Polygon} {H : Host} {C₁ C₂ : Chain}
   have hr : J.right = C₂ := jOf_right h hP hs
   obtain ⟨a0, a1, -, -, -, a5⟩ := h1
   obtain ⟨-, -, -, -, -, b5⟩ := h2
-  refine ⟨by rw [e0]; exact a0, by rw [jOf_whole_P]; exact a1, e1, e2, ?_, ?_⟩
+  refine ⟨by simp_all, by grind [jOf_whole_P], e1, e2, ?_, ?_⟩
   · rw [e3, whole_topIdx J, hl, hr]; rfl
   · rw [e4, whole_sideBeta J, hl, hr]
-    split_ifs
-    · exact a5
-    · exact b5
+    ram_grind
 
 end
 

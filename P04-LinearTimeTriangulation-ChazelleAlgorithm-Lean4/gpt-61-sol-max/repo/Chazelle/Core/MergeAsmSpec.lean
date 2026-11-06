@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.MergeAsmMain
 
 /-!
@@ -69,7 +71,7 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
   have hS : S ≤ β * (m + 1) := by
     have := S_le hK1b hK2b
     simp only [Merge.Junction.left_m, Merge.Junction.right_m] at this
-    rw [hβ, hmdef, Merge.Junction.whole_m]; unfold βf; exact this
+    rw [hβ, hmdef, Merge.Junction.whole_m]; omega_nf
   have hregW : HostRegular (Qof P).n Hs := by
     rw [show (Qof P).n = P.n from shear_n _ _]; exact hJWF.2.2.2 Hs hJ.2.2.1
   obtain ⟨hF1, hG1⟩ := oracle_pos_merge hloc hsh hcu hw hGE hWh (hA0 ▸ hX)
@@ -133,7 +135,7 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
   rw [f6, hD] at hNfD
   rw [f5, hγ₀] at hNfS
   simp only [fuseLoss] at hNfS
-  have hKf : Nf.nChords + 1 ≤ 8 * S := by rw [hSdef]; omega
+  have hKf : Nf.nChords + 1 ≤ 8 * S := by omega
   set Hf := rd c2 bFuse 7 with hHf
   -- 3. the model descriptor
   have a2 : A0 ≤ c2.nreg ALLOC := by rw [← a1]; exact frF.2.2.2.2.2.1
@@ -142,7 +144,7 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
     rw [keepF frF r (by rw [hr]; decide) (by intro h; rw [h] at hr; exact absurd hr (by decide)),
       fr1.1 r (by simp [inBand, hr]; decide)]
   have mem2 : ∀ a, a < A0 → c2.nmem a = c.nmem a := fun a ha => by
-    rw [frF.2.2.1 a (by rw [a1]; exact ha), m1]
+    rw [frF.2.2.1 a (by omega), m1]
   obtain ⟨A, hA⟩ : ∃ x, c2.nreg ALLOC = x := ⟨_, rfl⟩
   obtain ⟨c3, k3, e3, hk3, v10, a3, v20, v21, h3A, h3c, m3, r3, rr3, rm3, o3⟩ :=
     descS_exec (P := P) c2 e2.wb_right hA (bw := bw) ((r2 _ (by decide)).trans hbw)
@@ -170,16 +172,15 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
     e4.wb_right (by rw [r4 _ (by decide)]; exact v20) (by rw [r4 _ (by decide)]; exact v21)
     (by rw [v34, hR]) (fun r hr => by
       rw [m4, show c3.nmem (Hf + 5) + 2 + 5 * r = c3.nmem (Hf + 5) + 5 * r + 2 by ring]
-      exact (hNfA3.2.2.2.2.2.2.2.1 r hr).2.1) (by rw [v30]; omega) (by simp only [v31, v30, Nat.mul_zero, Nat.add_zero])
-    (by rw [v32]; omega) (fun r hr => by rw [v30] at hr; omega)
+      exact (hNfA3.2.2.2.2.2.2.2.1 r hr).2.1) (by omega) (by omega)
+    (by omega) (fun r hr => by omega)
   have fr5 := exec_frameB e5 wr_mdLoop
   obtain ⟨d₀, hd₀⟩ : ∃ x, c5.nreg 100032 = x := ⟨_, rfl⟩
   rw [hd₀] at hall hcap5
   have hDeg0 : (chainModel J.whole).DegLe (Nf.F (chainModel J.whole) (Qof P)) d₀ :=
     degLe_of_lens hNf hall
   -- 5. `γ_R`
-  have r45 : ∀ r, bandOf r ≠ bMerge → c5.nreg r = c3.nreg r := fun r hr => by
-    rw [fr5.1 r (by simp [inBand, hr]), fr4.1 r (by simp [inBand, hr])]
+  
   have r35 : ∀ r, r < 100030 → c5.nreg r = c3.nreg r := fun r hr => by
     rw [r5 r (by omega) (by omega) (by omega) (by omega), r4 r hr]
   have mem5 : c5.nmem = c3.nmem := by rw [m5, m4]
@@ -268,7 +269,7 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
     show 8 * (β + 7) * κR d₀ D * S * Y ≤ 8 * (β + 7) * kr * S * Y
     gcongr
   obtain ⟨c8, k8, e8, hk8, postR, frR⟩ := hRes P W c7 e7.wb_right hpreR (by
-    rw [a7]; beta_reduce; have := hcostR; omega)
+    rw [a7]; beta_reduce;  omega)
   have hk8' : k8 ≤ PR := hk8.trans hcostR
   have F8 : Frame MB c7 c8 k8 := frR.mono (by decide) le_rfl
   obtain ⟨Nr, -, hNrW, hNr, -, hNrD, hNrS, hNrK⟩ := postR (chainModel J.whole) Nf
@@ -323,7 +324,7 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
       _ ≤ cr * (8 * S) := Nat.mul_le_mul this hKf
       _ = 8 * cr * S := by ring
   obtain ⟨c10, k10, e10, hk10, postG, frG⟩ := hGr P W c9 e9.wb_right hpreG (by
-    rw [a9]; beta_reduce; have := hcostG; omega)
+    rw [a9]; beta_reduce;  omega)
   have hk10' : k10 ≤ PG := hk10.trans hcostG
   have F10 : Frame MB c9 c10 k10 := frG.mono (by decide) le_rfl
   -- 8. the output
@@ -347,7 +348,7 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
     rw [hD, hK1, hK2, hγ₀, hbw, hm]
     show _ ≤ κM κF capF κR cR κG c23 D * S * Fq * Gq * (Hq + L + 1)
     rw [hT]
-    have h5 : k5 ≤ 56 * S + 2 := by omega
+    
     omega
   · -- the postcondition
     intro Hs' J' N₁' N₂' hJ' hN1' hN2'
@@ -366,7 +367,7 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
     obtain ⟨N'', hN''A, hN''W, -, hN''⟩ := postG (chainModel J'.whole) Nr' (by rw [g0]; exact hMD9')
       (by rw [g1, mem9]; exact hNrW'.nfAt)
     rw [g2, g3] at hN''
-    have a10 : c9.nreg ALLOC ≤ c10.nreg ALLOC := frG.2.2.2.2.2.1
+    
     have a11 : c11.nreg ALLOC = c10.nreg ALLOC := fr11.1 ALLOC (by decide)
     have c9A : c.nreg ALLOC ≤ c9.nreg ALLOC := by
       have := (ftr F1 (ftr F2 (ftr F3 (ftr F4 (ftr F5 (ftr F6 (ftr F7 (ftr F8 F9)))))))).2.2.2.2.2.1

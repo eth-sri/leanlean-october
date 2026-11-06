@@ -50,7 +50,7 @@ open Chazelle.Chain (SideAttach sideInArc sidePt sideLeft regionsIn)
 open Chazelle.Visibility (rayPt)
 
 /-- **The contract of a candidate test.** -/
-def TestOK (s : Stmt) (κt : ℕ → ℕ) (F : ℕ → ℕ) (X : MemCtx) (Ok : Polygon → Model → Prop)
+def TestOK (s : Stmt) (κt F : ℕ → ℕ) (X : MemCtx) (Ok : Polygon → Model → Prop)
     (Bo : Finset ℕ) : Prop :=
   Meets s (restoreBands ∪ Bo)
     (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧

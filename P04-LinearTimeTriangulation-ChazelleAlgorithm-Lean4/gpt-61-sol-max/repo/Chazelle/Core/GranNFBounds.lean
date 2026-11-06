@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranInitL5
 
 /-!
@@ -27,19 +29,12 @@ theorem robust_addr3 {E : ℕ} {m : ℕ → ℕ} {b₁ p₂ t v : ℕ} (hp₂ : 
     by_contra hge
     set Z := E + b₁ + m p₂ + t + 1 with hZ
     have := h (Function.update (Function.update m b₁ Z) (Z + m p₂ + t) (v + 1))
-      (fun a ha => by rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega)])
-    simp only at this
-    rw [Function.update_of_ne (show b₁ ≠ Z + m p₂ + t by omega), Function.update_self,
-      Function.update_of_ne (show p₂ ≠ Z + m p₂ + t by omega),
-      Function.update_of_ne (show p₂ ≠ b₁ by omega), Function.update_self] at this
-    omega
+      (fun a ha => by ram_simp)
+    grind
   by_contra hge
   have := h (Function.update m (m b₁ + m p₂ + t) (v + 1)) (fun a ha => by
-    rw [Function.update_of_ne (by omega)])
-  simp only at this
-  rw [Function.update_of_ne (show b₁ ≠ m b₁ + m p₂ + t by omega),
-    Function.update_of_ne (show p₂ ≠ m b₁ + m p₂ + t by omega), Function.update_self] at this
-  omega
+    ram_simp)
+  grind
 
 /-- **The areas of a normal form readable below `E`.** -/
 theorem nf_areas {m : ℕ → ℕ} {B E : ℕ} {N : NF} (h : NFWithin m B E N) :
@@ -56,30 +51,29 @@ theorem nf_areas {m : ℕ → ℕ} {B E : ℕ} {N : NF} (h : NFWithin m B E N) :
   · have := robust_addr2 (b := B + 3) (o := 5 * i + 4) (v := (N.chord i).dn)
       (fun m' hm' => by
         have := ((h m' hm').2.2.2.2.2.1 i hi).2.2.2.2
-        simpa only [Nat.add_assoc] using this)
+        omega)
     omega
   · have := robust_addr2 (b := B + 5) (o := 5 * r + 4) (v := (N.region r).wt)
       (fun m' hm' => by
         have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.1
-        simpa only [Nat.add_assoc] using this)
+        omega)
     omega
   · have hp : m (B + 5) + 5 * r + 3 < E := by
       have := robust_addr2 (b := B + 5) (o := 5 * r + 4) (v := (N.region r).wt)
         (fun m' hm' => by
           have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.1
-          simpa only [Nat.add_assoc] using this)
+          omega)
       omega
     have := robust_addr3 (b₁ := B + 7) (p₂ := m (B + 5) + 5 * r + 3) (t := t)
       (v := (N.region r).chords.getD t 0) hp (fun m' hm' => by
         have e5 : m' (B + 5) = m (B + 5) := hm' _ (by omega)
         have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.2.2 t ht
-        rw [e5] at this
-        exact this)
+        simp_all)
     exact this
   · have := robust_addr2 (b := B + 4) (o := 5 * j + 4) (v := (N.arc j).e.hgt)
       (fun m' hm' => by
         have := ((h m' hm').2.2.2.2.2.2.1 j hj).2.2.2.2
-        simpa only [Nat.add_assoc] using this)
+        omega)
     omega
   · have := robust_addr2 (b := B + 6) (o := j) (v := N.seq.getD j 0)
       (fun m' hm' => (h m' hm').2.2.2.2.2.2.2.2.1 j hj)

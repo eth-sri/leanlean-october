@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseMathGroup
 
 /-!
@@ -32,15 +34,7 @@ theorem attach_third {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.A
     (hx : x ∈ DownDrv.attachKeys M c) (hy : y ∈ DownDrv.attachKeys M c)
     (hz : z ∈ DownDrv.attachKeys M c) (hxy : x ≠ y) (hzx : z ≠ x) : z = y := by
   obtain ⟨k₁, k₂, hsub⟩ := DownDrv.attachKeys_sub hM hc
-  have m0 := hsub hx
-  have m1 := hsub hy
-  have m2 := hsub hz
-  simp only [mem_insert_iff, mem_singleton_iff] at m0 m1 m2
-  rcases m0 with e0 | e0 <;> rcases m1 with e1 | e1 <;> rcases m2 with e2 | e2
-  all_goals first
-    | exact (hxy (e0.trans e1.symm)).elim
-    | exact (hzx (e2.trans e0.symm)).elim
-    | exact e2.trans e1.symm
+  grind
 
 variable (hQ : Q.Simple) (hdh : DistinctHeights Q) (hN : IsNF (interiorModel Q) Q N)
   (hne : (N.F (interiorModel Q) Q).Nonempty)
@@ -53,7 +47,7 @@ theorem chord_of_mem {c : Set Point} (hc : c ∈ N.F (interiorModel Q) Q) :
     ∃ i, i < N.nChords ∧ c = (N.chord i).toSet (interiorModel Q) Q := by
   obtain ⟨rc, hrc, rfl⟩ := hc
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hrc
-  exact ⟨i, hi, by unfold NF.chord; rw [List.getD_eq_getElem _ _ hi]⟩
+  exact ⟨i, hi, by simp_all [NF.chord] <;> omega_nf⟩
 
 include hQ hdh hN hne hR hRC in
 /-- **The end of an arc is an end of an exit chord record of the region.** -/
@@ -113,16 +107,14 @@ theorem partner_key {x : WPos} (hx : ChordPos N x) {m : ℕ}
     · rw [hp]; exact ⟨hAl, hAr, ekl, ekr, chordPos_ne hN hM hi₀n⟩
     · rw [hp]; exact ⟨hAr, hAl, ekr, ekl, (chordPos_ne hN hM hi₀n).symm⟩
   have hpos : ChordPos N (partner N r x) := by
-    rcases hcases with ⟨-, hp⟩ | ⟨-, hp⟩
-    · exact ⟨i₀, hi₀n, Or.inr hp⟩
-    · exact ⟨i₀, hi₀n, Or.inl hp⟩
+    grind [Chazelle.Core.DownMath.ChordPos]
   -- after the end: the chord continues to the next host key
   have hex : hk (interiorModel Q) (N.F (interiorModel Q) Q) R m ∈
       exitKeys (interiorModel Q) (N.F (interiorModel Q) Q) R :=
-    ⟨c₀, hc₀S, ht₀, _, _, hAx, by rw [hkm]; exact ekx⟩
+    ⟨c₀, hc₀S, ht₀, _, _, hAx, by simp_all⟩
   have hAp' := DownMath.arcGap_prev_of_end hQ hN.1 hne hR hm (by rw [hkm]; exact harc)
   obtain ⟨-, hnext⟩ := end_chord hQ hN.1 hne hR hm hex hAp'
-  obtain ⟨p', t', hA', he'⟩ := hnext c₀ hc₀S ht₀ _ _ hAx (by rw [hkm]; exact ekx)
+  obtain ⟨p', t', hA', he'⟩ := hnext c₀ hc₀S ht₀ _ _ hAx (by grind)
   have hz : hk (interiorModel Q) (N.F (interiorModel Q) Q) R
       ((m + 1) % nk (interiorModel Q) (N.F (interiorModel Q) Q) R) =
       (interiorModel Q).key Q (partner N r x) := by

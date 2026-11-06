@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FactsInterior
 public import Chazelle.Core.BruteCorner
 
@@ -89,80 +91,59 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
     (hns : sideNonSpike (b - v) (a - v)) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     sideLeftOf a v b (rayPt v σ 1) ↔ emitG a v b σ := by
   have eBX : sideCross (b - v) ((σ, 0) : Point) = -σ * (b.2 - v.2) := by
-    unfold sideCross; simp only [Prod.snd_sub, Prod.fst_sub]; ring
+    grind [sideCross, Prod.snd_sub, Prod.fst_sub]
   have eXA : sideCross ((σ, 0) : Point) (a - v) = σ * (a.2 - v.2) := by
-    unfold sideCross; simp only [Prod.snd_sub, Prod.fst_sub]; ring
+    grind [sideCross, Prod.snd_sub, Prod.fst_sub]
   have eBA : sideCross (b - v) (a - v) =
       (b.1 - v.1) * (a.2 - v.2) - (b.2 - v.2) * (a.1 - v.1) := by
-    unfold sideCross; simp only [Prod.snd_sub, Prod.fst_sub]
-  have eDBA : sideDot (b - v) (a - v) =
-      (b.1 - v.1) * (a.1 - v.1) + (b.2 - v.2) * (a.2 - v.2) := by
-    unfold sideDot; simp only [Prod.snd_sub, Prod.fst_sub]
+    grind [sideCross, Prod.snd_sub, Prod.fst_sub]
+  
   unfold sideLeftOf
   rw [FuseMath.rayPt_sub_one, sideCcw_iff_raw]
   unfold emitG
   by_cases ha : a.2 = v.2
   · rw [ite_eq_left ha]
-    have ha' : a.2 - v.2 = 0 := by rw [ha, sub_self]
+    have ha' : a.2 - v.2 = 0 := by simp_all
     have ha1 : a.1 - v.1 ≠ 0 := fun h => hav (Prod.ext (by linarith) ha)
-    have cXA : sideCross ((σ, 0) : Point) (a - v) = 0 := by rw [eXA, ha', mul_zero]
+    have cXA : sideCross ((σ, 0) : Point) (a - v) = 0 := by simp_all
     by_cases hb : b.2 = v.2
     · -- both neighbours at the height of `v`: only a spike contains a horizontal direction
-      rw [ite_eq_left hb]
-      have hb' : b.2 - v.2 = 0 := by rw [hb, sub_self]
-      have cBX : sideCross (b - v) ((σ, 0) : Point) = 0 := by rw [eBX, hb', mul_zero]
-      have cBA : sideCross (b - v) (a - v) = 0 := by rw [eBA, ha', hb']; ring
-      rw [cBX, cBA]
-      simp only [iff_false]
-      rintro (⟨-, h, -⟩ | ⟨h, -⟩ | ⟨-, -, h⟩ | ⟨-, hd, -⟩)
-      · exact lt_irrefl _ h
-      · exact lt_irrefl _ h
-      · exact lt_irrefl _ h
-      · exact hns ⟨cBA, hd⟩
+      ram_grind
     · rw [ite_eq_right hb]
       have hb0 : b.2 - v.2 ≠ 0 := sub_ne_zero.2 hb
       have cBA : sideCross (b - v) (a - v) = -((b.2 - v.2) * (a.1 - v.1)) := by
-        rw [eBA, ha']; ring
-      have hne : (b.2 - v.2) * (a.1 - v.1) ≠ 0 := mul_ne_zero hb0 ha1
+        simp_all
+      
       rw [cXA, cBA, eBX]
       by_cases hvb : v.2 < b.2
       · rw [ite_eq_left hvb]
-        have hbp : 0 < b.2 - v.2 := by linarith
+        
         constructor
         · rintro (⟨-, -, h⟩ | ⟨h1, h2 | h2⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
-          · exact absurd h (lt_irrefl _)
+          · simp_all
           · refine ⟨?_, ?_⟩
             · rcases hσ with rfl | rfl
-              · exfalso; linarith
-              · rfl
-            · by_contra hc; push Not at hc
-              nlinarith
-          · exact absurd h2 (lt_irrefl _)
-          · exact absurd (neg_eq_zero.1 h1) hne
-          · exact absurd (neg_eq_zero.1 h1) hne
+              all_goals linarith
+            simp_all +arith
+          · simp_all
+          · simp_all
+          simp_all
         · rintro ⟨rfl, h2⟩
           right; left
-          refine ⟨?_, Or.inl ?_⟩
-          · have : 0 < (b.2 - v.2) * (a.1 - v.1) := mul_pos hbp (by linarith)
-            linarith
-          · linarith
+          simp_all +arith
       · rw [ite_eq_right hvb]
         have hbn : b.2 - v.2 < 0 := by
-          rcases lt_or_gt_of_ne hb0 with h | h
-          · exact h
-          · exact absurd (by linarith) hvb
+          grind
         constructor
         · rintro (⟨-, -, h⟩ | ⟨h1, h2 | h2⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
-          · exact absurd h (lt_irrefl _)
+          · simp_all
           · refine ⟨?_, ?_⟩
-            · rcases hσ with rfl | rfl
-              · rfl
-              · exfalso; linarith
+            · grind
             · by_contra hc; push Not at hc
               nlinarith
-          · exact absurd h2 (lt_irrefl _)
-          · exact absurd (neg_eq_zero.1 h1) hne
-          · exact absurd (neg_eq_zero.1 h1) hne
+          · simp_all
+          · simp_all
+          simp_all
         · rintro ⟨rfl, h2⟩
           right; left
           refine ⟨?_, Or.inl ?_⟩
@@ -173,11 +154,11 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
     have ha0 : a.2 - v.2 ≠ 0 := sub_ne_zero.2 ha
     by_cases hb : b.2 = v.2
     · rw [ite_eq_left hb]
-      have hb' : b.2 - v.2 = 0 := by rw [hb, sub_self]
+      
       have hb1 : b.1 - v.1 ≠ 0 := fun h => hbv (Prod.ext (by linarith) hb)
-      have cBX : sideCross (b - v) ((σ, 0) : Point) = 0 := by rw [eBX, hb', mul_zero]
+      have cBX : sideCross (b - v) ((σ, 0) : Point) = 0 := by simp_all
       have cBA : sideCross (b - v) (a - v) = (b.1 - v.1) * (a.2 - v.2) := by
-        rw [eBA, hb']; ring
+        simp_all
       have hne : (b.1 - v.1) * (a.2 - v.2) ≠ 0 := mul_ne_zero hb1 ha0
       rw [cBX, cBA, eXA]
       by_cases hva : v.2 < a.2
@@ -185,16 +166,14 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
         have hap : 0 < a.2 - v.2 := by linarith
         constructor
         · rintro (⟨-, h, -⟩ | ⟨h1, h2 | h2⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
-          · exact absurd h (lt_irrefl _)
-          · exact absurd h2 (lt_irrefl _)
+          · simp_all
+          · simp_all
           · refine ⟨?_, ?_⟩
             · rcases hσ with rfl | rfl
-              · rfl
-              · exfalso; linarith
+              all_goals linarith
             · by_contra hc; push Not at hc
               nlinarith
-          · exact absurd h1 hne
-          · exact absurd h1 hne
+          all_goals simp_all
         · rintro ⟨rfl, h2⟩
           right; left
           refine ⟨?_, Or.inr ?_⟩
@@ -202,21 +181,16 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
           · linarith
       · rw [ite_eq_right hva]
         have han : a.2 - v.2 < 0 := by
-          rcases lt_or_gt_of_ne ha0 with h | h
-          · exact h
-          · exact absurd (by linarith) hva
+          grind
         constructor
         · rintro (⟨-, h, -⟩ | ⟨h1, h2 | h2⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
-          · exact absurd h (lt_irrefl _)
-          · exact absurd h2 (lt_irrefl _)
+          · simp_all
+          · simp_all
           · refine ⟨?_, ?_⟩
-            · rcases hσ with rfl | rfl
-              · exfalso; linarith
-              · rfl
+            · grind
             · by_contra hc; push Not at hc
               nlinarith
-          · exact absurd h1 hne
-          · exact absurd h1 hne
+          all_goals simp_all
         · rintro ⟨rfl, h2⟩
           right; left
           refine ⟨?_, Or.inr ?_⟩
@@ -224,9 +198,7 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
           · linarith
     · rw [ite_eq_right hb]
       have h := Brute.sideLeftOf_horiz ha hb hσ
-      unfold sideLeftOf at h
-      rw [FuseMath.rayPt_sub_one, sideCcw_iff_raw] at h
-      exact h
+      grind [sideLeftOf, FuseMath.rayPt_sub_one, sideCcw_iff_raw]
 
 /-- **The corner test by the decision.**  For a simple polygon with the interior on its left,
 direction `σ = ±1` at vertex `p` is locally interior iff the corner decision holds. -/

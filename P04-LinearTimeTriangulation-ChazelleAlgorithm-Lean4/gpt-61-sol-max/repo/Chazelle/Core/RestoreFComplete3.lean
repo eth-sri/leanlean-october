@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFComplete2
 public import Chazelle.Core.ShootCutCutterOK
 
@@ -34,16 +36,14 @@ theorem uncounted_le (hE : FGood E c₀) : {p | p < E.M.W.n ∧ ¬ E.M.counted p
       simp only [chainModel, not_and, not_lt] at hc
       simp only [List.coe_toFinset, List.mem_cons, List.not_mem_nil, or_false,
         mem_ofPred_eq]
-      by_cases h6 : 6 ≤ p
-      · have := hc h6; omega
-      · omega
+      omega
     calc _ ≤ (([0, 1, 2, 3, 4, 5, 2 * C.m + 6].toFinset : Finset ℕ) : Set ℕ).ncard :=
           Set.ncard_le_ncard hsub (Finset.finite_toSet _)
       _ ≤ 7 := by rw [Set.ncard_coe_finset]; exact List.toFinset_card_le _
   · have : {p | p < E.M.W.n ∧ ¬ E.M.counted p} = ∅ := by
       ext p; simp only [mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and]
       intro _ h; apply h; rw [hM]; trivial
-    rw [this, Set.ncard_empty]; omega
+    simp_all
 
 /-- **A closed piece from unwrapped bounds.** -/
 theorem closed_of_unwrap {n a x y z : ℝ} (ha : 0 ≤ a ∧ a < n) (hx : 0 ≤ x ∧ x < n)
@@ -61,12 +61,15 @@ theorem closed_of_unwrap {n a x y z : ℝ} (ha : 0 ≤ a ∧ a < n) (hx : 0 ≤ 
 theorem dir_bit {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     ∃ σb, σb ≤ 1 ∧ dirOf σb = σ := by
   rcases hσ with rfl | rfl
-  · exact ⟨1, le_rfl, by simp [dirOf]⟩
+  · aesop
   · exact ⟨0, by norm_num, by simp [dirOf]⟩
 
 
+section
+variable (hE : FGood E c₀)
+include hE
 /-- **A pair run of the good vertex's arcs finds a success.** -/
-theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
+theorem pair_complete {reg : ℕ → Set Point}
     (hregs : NFRegs E.M (Qof E.P) E.N reg) {X : WPos} {σ T : ℝ} {po : ℕ} {tq : ℝ}
     {ti tj : ℕ} (hG : GoodSet E reg X σ T po tq ti tj) {f : ℕ} (hpd : PairDone E c₀ ti tj f) :
     f = 1 := by
@@ -82,8 +85,7 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
   have hXe : X.edge < E.M.W.n := hG.hgc.2.1
   have hXX : X = ⟨X.edge, 0⟩ := by cases X; simp only at hX0 ⊢; rw [hX0]
   have hxk : 0 ≤ (X.edge : ℝ) + 0 ∧ (X.edge : ℝ) + 0 < E.M.W.n := by
-    have : (X.edge : ℝ) + 1 ≤ E.M.W.n := by exact_mod_cast hXe
-    constructor <;> linarith [(Nat.cast_nonneg X.edge : (0 : ℝ) ≤ X.edge)]
+    omega_nf
   have hXi := hG.hXi
   unfold aK bK at hXi
   obtain ⟨u1, u2⟩ := (closedArc_unwrap hT.ha hT.hb hxk hT.hab).1 hXi
@@ -98,7 +100,7 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
   have hPD := hdone i' hi'
   have hk : c₃.nmem (L + 1 + 7 * i' + 4) ≤ 1 := hkind i' hi'
   rcases (show c₃.nmem (prOf L i' + 4) = 0 ∨ c₃.nmem (prOf L i' + 4) = 1 by
-    show c₃.nmem (L + 1 + 7 * i' + 4) = 0 ∨ c₃.nmem (L + 1 + 7 * i' + 4) = 1; omega) with hk0 | hk1
+    omega_nf) with hk0 | hk1
   · -- a kind-0 piece
     obtain ⟨t, ht, htx⟩ := light_cover (uncounted_le hE) (hpos i' hi').1 (hpos i' hi').2.2.1
       (key_bounds (hpos i' hi').2.1 (hpos i' hi').2.2.2) hspe (hk0w i' hi' hk0) hXe hcl
@@ -120,7 +122,7 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
     have hmn : Cα'.m < n := hK.hmn
     have hm1 := Cα'.one_le
     have kS : psK E c₃.nmem L i' = (s : ℝ) := by
-      unfold psK; simp only at hpw0; rw [hpw0]; exact key_vtx' _ _ _
+      unfold psK; simp only at hpw0; rw [hpw0]; omega_nf
     have kE : peK E c₃.nmem L i' = (((s + Cα'.m) % n : ℕ) : ℝ) := by
       unfold peK; simp only at hpw3 hpwe; rw [hpw3, hpwe]; exact key_vtx' _ _ _
     have hwt'' : E.M.arcWt (s : ℝ) (((s + Cα'.m) % n : ℕ) : ℝ) = Cα'.m := by
@@ -155,7 +157,7 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
     -- the target
     have hAj := arc_isArc hE hregs hG.htj
     have haj : E.M.key (Qof E.P) (arcOf E.N E.r tj).s =
-        E.M.key (Qof E.P) ⟨c₃.nreg 81140, c₃.nreg 81141⟩ := by rw [h40, h41]
+        E.M.key (Qof E.P) ⟨c₃.nreg 81140, c₃.nreg 81141⟩ := by ram_simp
     have hAOK := hE.arcOK hG.hch hG.htj
     have htc : 0 < c₃.nreg 81141 ∨ c₃.nreg 81021 ≤ c₃.nreg 81140 :=
       far_range hE₃ (far := ⟨c₃.nreg 81140, c₃.nreg 81141⟩) (by show _ < n; rw [h40]; exact hAOK.se)
@@ -216,13 +218,16 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
 
 /-- **Completeness of the search**: if the region has more exits than the full maps allow, the
 pair runs set the flag. -/
-theorem find_complete (hE : FGood E c₀) {f : ℕ}
+theorem find_complete {f : ℕ}
     (hpd : ∀ i, i < kOf E → ∀ j, j < kOf E → PairDone E c₀ i j f) {reg : ℕ → Set Point}
     (hregs : NFRegs E.M (Qof E.P) E.N reg) (hfull : E.M.FullDegLe (Qof E.P) E.D)
     (hdeg : E.D < E.M.deg (E.N.F E.M (Qof E.P)) (reg E.r)) : f = 1 := by
   obtain ⟨X, σ, T, po, tq, ti, tj, hG⟩ := good_set hE hregs hfull hdeg
   have hk : kOf E = (E.N.region E.r).arcs.length := by unfold kOf; rw [ite_eq_right hG.hch]
   exact pair_complete hE hregs hG (hpd ti (by rw [hk]; exact hG.hti) tj (by rw [hk]; exact hG.htj))
+
+
+end
 
 end
 

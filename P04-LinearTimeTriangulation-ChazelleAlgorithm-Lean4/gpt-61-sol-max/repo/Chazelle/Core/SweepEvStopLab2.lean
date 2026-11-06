@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopLab
 
 /-!
@@ -79,8 +81,8 @@ theorem slb_U2 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       sidePt (chainModel J.right).W (cpA J d) 0 := hC.sidePt_eq hd 0
   set w := sidePt (chainModel J.whole).W ((gW J + d) % (chainModel J.whole).W.n) 0 with hwd
   have hwe : w ∈ e := hA.2.2.2.1
-  have hwe' : w ∈ e' := hA'.2.2.2.1
-  have hwc' : w ∈ c' := by rw [hw]; exact hcA.2.2.2.1
+  
+  
   have hwc'' : w ∈ c'' := by rw [hw]; exact hA''.2.2.2.1
   have dE := hM.attach_dir (hC.hF he) hA
   have dE' := hM.attach_dir (hC.hF he') hA'
@@ -92,8 +94,8 @@ theorem slb_U2 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       ((∀ z ∈ e, z.1 ≤ w.1) ∧ ∀ z ∈ e', w.1 ≤ z.1) := by
     rcases dE with h1 | h1 <;> rcases dE' with h2 | h2
     · exact absurd (hM.attach_east_unique hC.hF he' he hA' hA h2 h1) hne
-    · exact Or.inl ⟨h1, h2⟩
-    · exact Or.inr ⟨h1, h2⟩
+    · ram_grind
+    · ram_grind
     · exact absurd (hM.attach_west_unique hC.hF he' he hA' hA h2 h1) hne
   -- `c'` goes the way of `e'`
   have hc'way : ((∀ z ∈ e', w.1 ≤ z.1) → ∀ z ∈ c', w.1 ≤ z.1) ∧
@@ -107,7 +109,7 @@ theorem slb_U2 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       rcases dC' with h' | h'
       · exact (dir_not_both hM (hC.hF he') hA' (fun z hz => h' z (he'c' hz)) h).elim
       · exact h'
-  have hcA' : SideAttach (chainModel J.right).W c' (cpA J d) 0 := hcA
+  
   rcases hopp with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · -- `e` east, `e'` and `c'` west
     have hc'w := hc'way.2 h2
@@ -124,9 +126,7 @@ theorem slb_U2 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
         (hnf c'' hc'')
 
 theorem slb_cpB_eq {d : ℕ} (hd0 : d ≠ 0) (hdr : d ≠ rL1 J) : cpB J d = cpA J d := by
-  have h : dq (rL1 J) (rδ J) (d - 1) + 1 = dq (rL1 J) (rδ J) d := by
-    unfold dq; split_ifs <;> omega
-  unfold cpA cpB; rw [h]
+  grind [dq, cpA, cpB]
 
 /-- **The middle region of a tie with a fused partner** (away from the base and the split
 vertex): its label is faced at the counterpart position. -/

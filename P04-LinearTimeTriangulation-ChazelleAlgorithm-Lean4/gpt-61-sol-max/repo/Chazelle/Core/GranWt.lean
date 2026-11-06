@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.GranRemove
 
 /-!
@@ -46,13 +48,13 @@ theorem ncard_counted {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
       ext p
       simp only [mem_ofPred_eq, mem_Ico]
       constructor
-      · rintro ⟨-, -, h1, h2⟩; exact ⟨h1, h2⟩
+      · omega
       · rintro ⟨h1, h2⟩
         exact ⟨by omega, (hD.2 p (by omega)).2 (Or.inl rfl), h1, h2⟩
     rw [e, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]
     rfl
   | true =>
-    have hm := hD.1 rfl
+    
     have e : {p : ℕ | p < M.W.n ∧ M.counted p ∧ l ≤ p ∧ p < r} =
         Ico (max l 6) (min r (2 * m + 6)) := by
       ext p
@@ -60,9 +62,7 @@ theorem ncard_counted {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
       constructor
       · rintro ⟨hp, hc, h1, h2⟩
         have := (hD.2 p hp).1 hc
-        rcases this with h | h
-        · exact absurd h (by decide)
-        · refine ⟨max_le h1 h.1, lt_min h2 h.2⟩
+        simp_all
       · rintro ⟨h1, h2⟩
         have h1' := le_of_max_le_left h1
         have h1'' := le_of_max_le_right h1
@@ -94,11 +94,10 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
         have : (eb : ℝ) + 1 ≤ p := by exact_mod_cast (show eb + 1 ≤ p by omega)
         linarith
       · intro h
-        have : (p : ℝ) ≤ eb := by exact_mod_cast (show p ≤ eb by omega)
+        have : (p : ℝ) ≤ eb := by simp_all
         linarith
     · have ht0 : tb = 0 := le_antisymm (not_lt.1 ht) hb0
-      rw [ht0, add_zero, Nat.add_zero]
-      exact_mod_cast Iff.rfl
+      simp_all
   -- `a < p + 1` for some point of the open edge iff `ea ≤ p`
   have hafter : ∀ p : ℕ, ((ea : ℝ) + ta < p + 1 ↔ ea ≤ p) := by
     intro p
@@ -108,7 +107,7 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
       have : (p : ℝ) + 1 ≤ ea := by exact_mod_cast (show p + 1 ≤ ea by omega)
       linarith
     · intro h
-      have : (ea : ℝ) ≤ p := by exact_mod_cast h
+      have : (ea : ℝ) ≤ p := by simp_all
       linarith
   split_ifs with h1 h2
   · -- the whole walk
@@ -117,30 +116,23 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
     ext p
     simp only [mem_ofPred_eq]
     constructor
-    · rintro ⟨hp, hc, -⟩; exact ⟨hp, hc, Nat.zero_le _, hp⟩
+    · simp_all
     · rintro ⟨hp, hc, -, -⟩
       refine ⟨hp, hc, ?_⟩
       -- some point of the open edge differs from the key
       by_cases hq : (p : ℝ) + 1 / 2 = ea + ta
       · refine ⟨1 / 4, by norm_num, by norm_num, ?_⟩
-        unfold sideInArc; rw [← h1, ite_eq_right (lt_irrefl _)]
-        right; linarith
+        core_grind
       · refine ⟨1 / 2, by norm_num, by norm_num, ?_⟩
-        unfold sideInArc; rw [← h1, ite_eq_right (lt_irrefl _)]
-        rcases lt_or_gt_of_ne hq with h | h
-        · right; exact h
-        · left; exact h
+        core_grind
   · -- `a < b`
-    have hr : eb + bump tb ≤ M.W.n := by unfold bump; split_ifs <;> omega
+    have hr : eb + bump tb ≤ M.W.n := by grind [bump]
     rw [← ncard_counted hD hr]
     congr 1
     ext p
     simp only [mem_ofPred_eq]
     constructor
-    · rintro ⟨hp, hc, t, ht0, ht1, hin⟩
-      unfold sideInArc at hin
-      rw [ite_eq_left h2] at hin
-      refine ⟨hp, hc, (hafter p).1 (by linarith [hin.1]), (hbump p).1 (by linarith [hin.2])⟩
+    · grind [sideInArc]
     · rintro ⟨hp, hc, hl, hr'⟩
       refine ⟨hp, hc, ?_⟩
       have e1 := (hafter p).2 hl
@@ -149,31 +141,19 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
       set lo := max ((ea : ℝ) + ta) p
       set hi := min ((eb : ℝ) + tb) (p + 1)
       have hlohi : lo < hi := by
-        simp only [lo, hi]
-        refine max_lt (lt_min h2 e1) (lt_min e2 (by linarith))
+        grind
       refine ⟨(lo + hi) / 2 - p, ?_, ?_, ?_⟩
-      · have : (p : ℝ) ≤ lo := le_max_right _ _
-        linarith
-      · have : hi ≤ (p : ℝ) + 1 := min_le_right _ _
-        linarith
-      · unfold sideInArc
-        rw [ite_eq_left h2]
-        have : (ea : ℝ) + ta ≤ lo := le_max_left _ _
-        have : hi ≤ (eb : ℝ) + tb := min_le_left _ _
-        constructor <;> linarith
+      · grind
+      · grind
+      grind [sideInArc]
   · -- `b < a`: the wrap-around
-    have hlt : (eb : ℝ) + tb < ea + ta := lt_of_le_of_ne (not_lt.1 h2) (Ne.symm h1)
-    have hle : eb ≤ ea := by
-      by_contra h'
-      have : (ea : ℝ) + 1 ≤ eb := by exact_mod_cast (show ea + 1 ≤ eb by omega)
-      linarith
+    
+    
     have hr : min (eb + bump tb) ea ≤ M.W.n := (min_le_right _ _).trans ha.le
     have hdisj : Disjoint {p : ℕ | p < M.W.n ∧ M.counted p ∧ 0 ≤ p ∧ p < min (eb + bump tb) ea}
         {p : ℕ | p < M.W.n ∧ M.counted p ∧ ea ≤ p ∧ p < M.W.n} := by
       rw [Set.disjoint_left]
-      rintro p ⟨-, -, -, h1'⟩ ⟨-, -, h2', -⟩
-      have := lt_of_lt_of_le h1' (min_le_right _ _)
-      omega
+      grind
     have hf1 : {p : ℕ | p < M.W.n ∧ M.counted p ∧ 0 ≤ p ∧ p < min (eb + bump tb) ea}.Finite :=
       (Set.finite_lt_nat M.W.n).subset fun p hp => hp.1
     have hf2 : {p : ℕ | p < M.W.n ∧ M.counted p ∧ ea ≤ p ∧ p < M.W.n}.Finite :=
@@ -185,13 +165,7 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
       constructor
       · rintro ⟨hp, hc, t, ht0, ht1, hin⟩
         unfold sideInArc at hin
-        rw [ite_eq_right h2] at hin
-        rcases hin with hin | hin
-        · exact Or.inr ⟨hp, hc, (hafter p).1 (by linarith), hp⟩
-        · have e2 := (hbump p).1 (by linarith)
-          by_cases hpe : p < ea
-          · exact Or.inl ⟨hp, hc, Nat.zero_le _, lt_min e2 hpe⟩
-          · exact Or.inr ⟨hp, hc, by omega, hp⟩
+        grind
       · rintro (⟨hp, hc, -, hr'⟩ | ⟨hp, hc, hl, -⟩)
         · have e2 := (hbump p).2 (lt_of_lt_of_le hr' (min_le_left _ _))
           set hi := min ((eb : ℝ) + tb) (p + 1)
@@ -199,20 +173,14 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
           have hhi1 : hi ≤ (p : ℝ) + 1 := min_le_right _ _
           have hhi2 : hi ≤ (eb : ℝ) + tb := min_le_left _ _
           refine ⟨hp, hc, (hi - p) / 2, by linarith, by linarith, ?_⟩
-          unfold sideInArc
-          rw [ite_eq_right h2]
-          right
-          linarith
+          core_grind
         · have e1 := (hafter p).2 hl
           set lo := max ((ea : ℝ) + ta) p
           have hlo1 : lo < (p : ℝ) + 1 := max_lt e1 (by linarith)
           have hlo2 : (p : ℝ) ≤ lo := le_max_right _ _
           have hlo3 : (ea : ℝ) + ta ≤ lo := le_max_left _ _
           refine ⟨hp, hc, (lo + p + 1) / 2 - p, by linarith, by linarith, ?_⟩
-          unfold sideInArc
-          rw [ite_eq_right h2]
-          left
-          linarith
+          core_grind
 
 end
 

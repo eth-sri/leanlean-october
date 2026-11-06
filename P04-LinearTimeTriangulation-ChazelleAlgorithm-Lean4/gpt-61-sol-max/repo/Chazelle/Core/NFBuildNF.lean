@@ -49,12 +49,10 @@ def ridx : Option ℕ → ℕ
 def lab (r : ℕ) : Option ℕ := if r = 0 then none else some (r - 1)
 
 theorem lab_ridx (ℓ : Option ℕ) : lab (ridx ℓ) = ℓ := by
-  cases ℓ <;> simp [lab, ridx]
+  cases ℓ <;> aesop
 
 theorem ridx_lab (r : ℕ) : ridx (lab r) = r := by
-  unfold lab; split_ifs with h
-  · rw [h]; rfl
-  · simp only [ridx]; omega
+  grind [lab, ridx]
 
 variable (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ)
 

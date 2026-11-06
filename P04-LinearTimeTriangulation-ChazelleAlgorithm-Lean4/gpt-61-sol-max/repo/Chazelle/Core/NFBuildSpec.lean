@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildCmp
 public import Chazelle.Core.NFLocateSpec
 
@@ -50,16 +52,7 @@ def BuildNFRamSpec : Prop :=
 theorem chordListAt_unique {m : ℕ → ℕ} {A : ℕ} {L L' : List (ℕ × ℕ × ℕ)} (h : ChordListAt m A L)
     (h' : ChordListAt m A L') (hlen : L.length = L'.length) : L = L' := by
   apply List.ext_getElem hlen
-  intro i hi hi'
-  obtain ⟨a1, a2, a3⟩ := h i hi
-  obtain ⟨b1, b2, b3⟩ := h' i hi'
-  have e1 : L.getD i (0, 0, 0) = L[i] := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
-  have e2 : L'.getD i (0, 0, 0) = L'[i] := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi', Option.getD_some]
-  rw [e1] at a1 a2 a3
-  rw [e2] at b1 b2 b3
-  exact Prod.ext (a1.symm.trans b1) (Prod.ext (a2.symm.trans b2) (a3.symm.trans b3))
+  core_grind
 
 /-- **The reduction**: the RAM part implies `BuildNFSpec`. -/
 theorem buildNFSpec_of_ram (hram : BuildNFRamSpec) : BuildNFSpec := by
@@ -72,7 +65,7 @@ theorem buildNFSpec_of_ram (hram : BuildNFRamSpec) : BuildNFSpec := by
   obtain rfl := chordListAt_unique hL₀ hL (hlen₀.symm.trans hlen)
   obtain ⟨E, hperm, hsort, hB, hN⟩ := hpost M₀ L₀ hM hlen hL
   obtain ⟨hnf, hch, hdec⟩ := isNF_goodModel hgood hok hperm hsort
-  exact ⟨buildNF M₀ (Qof P) L₀ E, hB, hN, hnf, hch, hdec⟩
+  ram_grind
 
 end
 

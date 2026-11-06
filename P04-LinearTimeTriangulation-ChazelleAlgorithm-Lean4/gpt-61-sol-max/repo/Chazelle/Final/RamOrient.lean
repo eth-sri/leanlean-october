@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Final.Transfer
 public import Chazelle.Final.RamPieceTri
 public import Chazelle.Final.RamSplit
@@ -75,10 +77,10 @@ theorem orMinBody_inv {c₀ c : Config} (hI : OrInv P W c₀ c) (ht : c.nreg 232
   refine spec_seq ?_
   exec_block
   refine spec_name fun c₁ hc₁ => ?_
-  have hw₁ : WordsBounded W c₁ := by rw [hc₁]; assumption
+  have hw₁ : WordsBounded W c₁ := by simp_all
   have e1 : c₁.nreg = c.nreg := by rw [hc₁]
-  have ex : (c₁.rreg 230, c₁.rreg 231) = P.vtx (c.nreg 232) := by rw [hc₁]; config_simp
-  have ey : (c₁.rreg 232, c₁.rreg 233) = P.vtx (c.nreg 231) := by rw [hc₁]; config_simp
+  have ex : (c₁.rreg 230, c₁.rreg 231) = P.vtx (c.nreg 232) := by simp_all
+  have ey : (c₁.rreg 232, c₁.rreg 233) = P.vtx (c.nreg 231) := by simp_all
   have hupd : ∃ c₂ k₂, Exec P W (ylexTest 230 231 232 233 (.instr (.copyN 231 232)) .skip) c₁ c₂ k₂ ∧
       k₂ ≤ 1 + 6 ∧ (c₂.nreg 231 = if ylexLT (P.vtx (c.nreg 232)) (P.vtx (c.nreg 231))
         then c.nreg 232 else c.nreg 231) ∧ (∀ r, r ≠ 231 → c₂.nreg r = c.nreg r) ∧
@@ -86,48 +88,38 @@ theorem orMinBody_inv {c₀ c : Config} (hI : OrInv P W c₀ c) (ht : c.nreg 232
     refine ylexTest_exec c₁ (fun h => ?_) (fun h => ?_)
     · rw [ex, ey] at h
       refine ⟨_, 1, Exec.copyN hw₁ 231 232, le_rfl, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-      · config_simp; rw [ite_eq_left h, e1]
+      · config_simp; grind
       · config_simp; rw [Machine.upd_other _ _ _ hr, e1]
     · rw [ex, ey] at h
       refine ⟨c₁, 0, Exec.skip hw₁, by omega, ?_, fun r _ => by rw [e1], rfl, rfl, rfl, rfl⟩
-      rw [ite_eq_right h, e1]
+      grind
   refine spec_seq (spec_use hupd ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨h231, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩
   have e232 : c₂.nreg 232 = c.nreg 232 := hfn₂ 232 (by decide)
-  have e233 : c₂.nreg 233 = 1 := by rw [hfn₂ 233 (by decide), h233]
-  refine spec_instr (Exec.addN hw₂ 232 232 233 (by rw [e232, e233]; have := hw.1 230; omega))
+  have e233 : c₂.nreg 233 = 1 := by grind
+  refine spec_instr (Exec.addN hw₂ 232 232 233 (by ram_grind))
     fun hw₃ => ?_
   refine ⟨⟨hw₃, ?_, ?_, ?_, ?_, ?_, fun i hi => ?_, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩,
     by omega, ?_⟩
-  · config_simp; omega
-  · config_simp; rw [e232, e233]; omega
-  · config_simp; rw [h231, e232, e233]; split_ifs <;> omega
-  · config_simp; rw [hfn₂ 230 (by decide), h230]
-  · config_simp; exact e233
+  · omega_nf
+  · omega_nf
+  · config_simp; grind
+  · ram_simp
+  · ram_simp
   · config_simp at hi
     rw [e232, e233] at hi
     config_simp
-    rw [h231]
-    split_ifs with hy
-    · intro h'
-      by_cases hic : i = c.nreg 232
-      · subst hic; exact Chazelle.Mountain.ylexLT_irrefl _ h'
-      · exact hmin i (by omega) (Chazelle.Mountain.ylexLT_trans h' hy)
-    · by_cases hic : i = c.nreg 232
-      · subst hic; exact hy
-      · exact hmin i (by omega)
-  · config_simp
-    rw [Machine.upd_other _ _ _ (by omega), hfn₂ r (by omega)]
-    exact hfn r hr
+    grind [Chazelle.Mountain.ylexLT, Chazelle.WordsBounded]
+  · ram_simp
   · config_simp
     rw [hfr₂, hc₁]; config_simp
     rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
       Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
-    exact hfr r hr
-  · config_simp; rw [hnm₂, hc₁]; exact hnm
-  · config_simp; rw [hrm₂, hc₁]; exact hrm
-  · config_simp; rw [hout₂, hc₁]; exact hout
-  · config_simp; rw [e232, e233]; omega
+    grind
+  · grind
+  · grind
+  · grind
+  · omega_nf
 
 /-- **Spec of the orientation program**: with `Q` simple and related to `P` by a shear, cost
 `≤ 14 n + 45`, and `rreg 100 = orient Q`; only the natural registers `230 … 236` and the real
@@ -141,7 +133,7 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
   obtain ⟨ε, -, hQe, hag⟩ := hPQ
   have hn3 : 3 ≤ Q.n := hQ.1
   have hQn : Q.n = P.n := by rw [hQe]; exact Chazelle.Core.shear_n ε P
-  have hn : 3 ≤ P.n := by omega
+  
   unfold orientStmt
   refine spec_seq ?_
   exec_block
@@ -151,13 +143,13 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
   · omega
   refine spec_name fun c₁ hc₁ => ?_
   have hI₀ : OrInv P W c₁ c₁ := by
-    refine ⟨by rw [hc₁]; assumption, ?_, ?_, ?_, ?_, ?_, fun i hi => ?_, fun _ _ => rfl,
+    refine ⟨by simp_all, ?_, ?_, ?_, ?_, ?_, fun i hi => ?_, fun _ _ => rfl,
       fun _ _ => rfl, rfl, rfl, rfl⟩
-    · rw [hc₁]; simp
-    · rw [hc₁]; config_simp; omega
-    · rw [hc₁]; simp
-    · rw [hc₁]; simp
-    · rw [hc₁]; simp
+    · ram_simp
+    · simp_all +zetaDelta <;> omega
+    · simp_all
+    · ram_simp
+    · ram_simp
     · rw [hc₁] at hi ⊢; config_simp at hi; config_simp
       have : i = 0 := by omega
       subst this
@@ -168,7 +160,7 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
   unfold orMinLoop
   refine spec_seq ⟨c₂, k₂, ex₂, ?_⟩
   rw [h230₂] at hexit₂
-  have e232 : c₂.nreg 232 = P.n := by omega
+  
   set k := c₂.nreg 231 with hk
   have hkn : k < P.n := by omega
   have hminP : ∀ i < P.n, ¬ ylexLT (P.vtx i) (P.vtx k) := fun i hi => hmin₂ i (by omega)
@@ -178,22 +170,22 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
   exec_block
   · omega
   refine spec_name fun c₃ hc₃ => ?_
-  have hw₃ : WordsBounded W c₃ := by rw [hc₃]; assumption
+  have hw₃ : WordsBounded W c₃ := by grind
   have r3 : ∀ r, r ≠ 235 → c₃.nreg r = c₂.nreg r := by
     intro r hr; rw [hc₃]; config_simp; exact Machine.upd_other _ _ _ hr
   have hprev : ∃ c₄ k₄, Exec P W (.ifLtN 235 231 (.instr (.subN 234 231 233))
       (.instr (.subN 234 230 233))) c₃ c₄ k₄ ∧ k₄ ≤ 3 ∧
       c₄.nreg 234 = (k + P.n - 1) % P.n ∧ (∀ r, r ≠ 234 → c₄.nreg r = c₃.nreg r) ∧
       c₄.rreg = c₃.rreg ∧ c₄.nmem = c₃.nmem ∧ c₄.rmem = c₃.rmem ∧ c₄.output = c₃.output := by
-    have e235 : c₃.nreg 235 = 0 := by rw [hc₃]; config_simp
+    have e235 : c₃.nreg 235 = 0 := by ram_simp
     by_cases hk0 : 0 < k
-    · refine spec_ifLtN_true (by rw [e235, r3 231 (by decide)]; exact hk0)
+    · refine spec_ifLtN_true (by grind)
         (spec_instr (Exec.subN hw₃ 234 231 233) fun _ => ?_)
       refine ⟨by omega, ?_, fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
       config_simp
       rw [r3 231 (by decide), r3 233 (by decide), h233₂, ← hk,
         show k + P.n - 1 = (k - 1) + P.n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-    · refine spec_ifLtN_false (by rw [e235, r3 231 (by decide)]; exact hk0)
+    · refine spec_ifLtN_false (by grind)
         (spec_instr (Exec.subN hw₃ 234 230 233) fun _ => ?_)
       refine ⟨by omega, ?_, fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
       config_simp
@@ -207,7 +199,7 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
   exec_block
   · rw [r4 231 (by decide) (by decide), r4 233 (by decide) (by decide), h233₂]; omega
   refine spec_name fun c₅ hc₅ => ?_
-  have hw₅ : WordsBounded W c₅ := by rw [hc₅]; assumption
+  have hw₅ : WordsBounded W c₅ := by grind
   have hnext : ∃ c₆ k₆, Exec P W (.ifLtN 236 230 .skip (.instr (.constN 236 0))) c₅ c₆ k₆ ∧
       k₆ ≤ 3 ∧ c₆.nreg 236 = (k + 1) % P.n ∧ (∀ r, r ≠ 236 → c₆.nreg r = c₅.nreg r) ∧
       c₆.rreg = c₅.rreg ∧ c₆.nmem = c₅.nmem ∧ c₆.rmem = c₅.rmem ∧ c₆.output = c₅.output := by
@@ -215,11 +207,11 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
       rw [hc₅]; config_simp; rw [r4 231 (by decide) (by decide), r4 233 (by decide) (by decide),
         h233₂]
     have e230 : c₅.nreg 230 = P.n := by
-      rw [hc₅]; config_simp; rw [r4 230 (by decide) (by decide), h230₂]
+      rw [hc₅]; ram_simp 
     by_cases hk1 : k + 1 < P.n
-    · refine spec_ifLtN_true (by rw [e236, e230]; exact hk1) (spec_skip hw₅ ?_)
+    · refine spec_ifLtN_true (by omega) (spec_skip hw₅ ?_)
       exact ⟨by omega, by rw [e236, Nat.mod_eq_of_lt hk1], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
-    · refine spec_ifLtN_false (by rw [e236, e230]; exact hk1)
+    · refine spec_ifLtN_false (by omega)
         (spec_instr (Exec.constN hw₅ 236 0 (Nat.zero_le _)) fun _ => ?_)
       refine ⟨by omega, ?_, fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
       config_simp
@@ -233,18 +225,18 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
   refine spec_seq ?_
   exec_block
   refine spec_name fun c₇ hc₇ => ?_
-  have hw₇ : WordsBounded W c₇ := by rw [hc₇]; assumption
+  have hw₇ : WordsBounded W c₇ := by grind
   refine spec_seq (spec_use (detInto_exec (P := P) 240 241 242 234 235 236 237 238 239
     (by decide) (by decide) (by decide)
-    (fun r hr => by rcases hr with rfl | rfl | rfl | rfl | rfl | rfl <;> decide) c₇ hw₇) ?_)
+    (fun r hr => by omega) c₇ hw₇) ?_)
   rintro c₈ k₈ hk₈ hw₈ ⟨hdet, hfr₈, hn₈, hnm₈, hrm₈, hout₈⟩
   have hdetv : c₈.rreg 240 = det (P.vtx ((k + P.n - 1) % P.n)) (P.vtx k)
       (P.vtx ((k + 1) % P.n)) := by
-    rw [hdet, hc₇]; config_simp; rw [e234₆, e231₆, h236]
+    rw [hdet, hc₇]; config_simp; grind
   refine spec_seq ?_
   exec_block
   refine spec_name fun c₉ hc₉ => ?_
-  have hw₉ : WordsBounded W c₉ := by rw [hc₉]; assumption
+  have hw₉ : WordsBounded W c₉ := by grind
   have e243 : c₉.rreg 243 = 0 := by rw [hc₉]; config_simp; simp
   have e240 : c₉.rreg 240 = c₈.rreg 240 := by rw [hc₉]; config_simp
   -- the orientation of `Q`
@@ -256,7 +248,7 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
     rcases Chazelle.Mountain.ylexLT_trichotomy (Q.vtx k) (Q.vtx i) with h | h | h
     · exact Chazelle.Mountain.ylexLE_of_ylexLT h
     · rw [h]; exact Chazelle.Mountain.ylexLE_refl _
-    · exact absurd h h1
+    grind
   have hdetQ : det (Q.vtx ((k + Q.n - 1) % Q.n)) (Q.vtx k) (Q.vtx ((k + 1) % Q.n)) =
       det (P.vtx ((k + P.n - 1) % P.n)) (P.vtx k) (P.vtx ((k + 1) % P.n)) := by
     rw [hQn, hQe, shear_vtx, shear_vtx, shear_vtx, det_shearPt]
@@ -284,30 +276,23 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
     rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
       Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
   have hmem9 : c₉.nmem = c.nmem := by
-    rw [hc₉]; config_simp; rw [hnm₈, hc₇]; config_simp; rw [hnm₆, hc₅]; config_simp
-    rw [hnm₄, hc₃]; config_simp; rw [hnm₂, hc₁]
+    grind
   have hrm9 : c₉.rmem = c.rmem := by
-    rw [hc₉]; config_simp; rw [hrm₈, hc₇]; config_simp; rw [hrm₆, hc₅]; config_simp
-    rw [hrm₄, hc₃]; config_simp; rw [hrm₂, hc₁]
+    grind
   have hout9 : c₉.output = c.output := by
-    rw [hc₉]; config_simp; rw [hout₈, hc₇]; config_simp; rw [hout₆, hc₅]; config_simp
-    rw [hout₄, hc₃]; config_simp; rw [hout₂, hc₁]
+    grind
   have hk₂' : k₂ ≤ 14 * P.n := by
-    have e : c₁.nreg 232 = 1 := by rw [hc₁]; config_simp
-    rw [e] at hk₂
-    have : 14 * (P.n - 1) + 2 ≤ 14 * P.n := by omega
+    have e : c₁.nreg 232 = 1 := by ram_simp
     omega
   by_cases hpos : 0 < det (P.vtx ((k + P.n - 1) % P.n)) (P.vtx k) (P.vtx ((k + 1) % P.n))
-  · refine spec_ifLtR_true (by rw [e243, e240, hdetv]; exact hpos)
+  · refine spec_ifLtR_true (by grind)
       (spec_instr (Exec.constR hw₉ 100 1) fun _ => ?_)
     refine ⟨by omega, ?_, fun r hr => ?_, fun r h1 hr => ?_, ?_, ?_, ?_⟩
-    · config_simp; rw [hor, ite_eq_left hpos]; simp
+    · config_simp; grind
     · config_simp; exact hfn_all r hr
     · config_simp; rw [Machine.upd_other _ _ _ h1]; exact hfr_all r h1 hr
-    · exact hmem9
-    · exact hrm9
-    · exact hout9
-  · refine spec_ifLtR_false (by rw [e243, e240, hdetv]; exact hpos) (spec_skip hw₉ ?_)
+    all_goals omega
+  · refine spec_ifLtR_false (by grind) (spec_skip hw₉ ?_)
     refine ⟨by omega, ?_, hfn_all, hfr_all, hmem9, hrm9, hout9⟩
     rw [hor, ite_eq_right hpos, hc₉]; config_simp; simp
 

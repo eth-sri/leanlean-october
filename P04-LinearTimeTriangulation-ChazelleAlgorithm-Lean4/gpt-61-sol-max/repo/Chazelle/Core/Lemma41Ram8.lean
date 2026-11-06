@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.Lemma41Ram7
 public import Chazelle.Core.FactsL23
 public import Chazelle.Core.FactsInterior
@@ -50,21 +52,22 @@ theorem nf_chords_ncard {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainMode
     · rintro ⟨r, hr, rfl⟩
       obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
       refine ⟨i, hi, ?_⟩
-      show (N.chord i).toSet _ _ = _
-      unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]
+      grind [NF.chord]
     · rintro ⟨i, hi, rfl⟩
       refine ⟨N.chord i, ?_, rfl⟩
-      unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]; exact List.getElem_mem hi
+      grind [NF.chord]
   rw [hFn, Set.InjOn.ncard_image (s := Set.Iio N.chords.length)
     (f := fun i => (N.chord i).toSet (chainModel C) Q) (fun a ha b hb h => hinj a b ha hb h),
     ← Finset.coe_range, Set.ncard_coe_finset, Finset.card_range]
 
+section
+variable {P : Polygon} {m : ℕ → ℕ} {A hp d f : ℕ} {C : Chain}
 /-- **Lemma 2.3 for a node**: `K γ ≤ 60 (2 m + 7)`. -/
-theorem NodeOK.chords_le {P : Polygon} {m : ℕ → ℕ} {A hp d f : ℕ} {C : Chain} {γ : ℕ}
+theorem NodeOK.chords_le {γ : ℕ}
     (hG : GoodEnv P) (h : NodeOK P m A hp d f C γ) : m f * γ ≤ 60 * (2 * C.m + 7) := by
   obtain ⟨-, hCP, -, -, -, -, N, hN, hc⟩ := h
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
-  have hGM : GoodModel (chainModel C) := Or.inl ⟨C, by rw [hCP]; exact hQ, rfl⟩
+  have hGM : GoodModel (chainModel C) := Or.inl ⟨C, by simp_all, rfl⟩
   have hM := walkAx_of_goodModel hGM
   have hF := hc.1.1
   have := hM.lemma23_walk hF.2.1 hF.1 hc.2.1 hc.2.2.1
@@ -72,13 +75,16 @@ theorem NodeOK.chords_le {P : Polygon} {m : ℕ → ℕ} {A hp d f : ℕ} {C : C
   rw [nf_chords_ncard hc.1, hn] at this
   rw [hN.holds.1]; omega
 
-theorem NodeOK.chords_kb {P : Polygon} {m : ℕ → ℕ} {A hp d f : ℕ} {C : Chain} {x : Shp}
+theorem NodeOK.chords_kb {x : Shp}
     (hG : GoodEnv P) (h : NodeOK P m A hp d f C x.2.2) (hm : C.m = x.2.1) (hγ : 1 ≤ x.2.2) :
     m f ≤ kb x := by
   have := h.chords_le hG
   rw [hm] at this
   unfold kb
   exact (Nat.le_div_iff_mul_le hγ).mpr this
+
+
+end
 
 theorem mergeCostV_mono (κ F G H : ℕ → ℕ) {x x' y y' : ℕ} (γ M : ℕ) (hx : x ≤ x') (hy : y ≤ y') :
     mergeCostV κ F G H x y γ M ≤ mergeCostV κ F G H x' y' γ M := by
@@ -112,7 +118,7 @@ theorem forStep2 {ri rn : ℕ} {body : Stmt} (I : ℕ → Config → Prop) (N : 
         Finset.sum_eq_sum_Ico_succ_bot (show p < (N + 1) / 2 by omega)]
       omega) ⟨0, hc, Nat.zero_le _⟩
   obtain ⟨-, hri, hrn⟩ := hI p' c' hIp
-  have hpn : p' = (N + 1) / 2 := by rw [hri, hrn] at htest; omega
+  have hpn : p' = (N + 1) / 2 := by omega
   subst hpn
   refine ⟨c', k, e, ?_, hIp, hψ⟩
   obtain ⟨-, hri0, -⟩ := hI 0 c hc
@@ -152,7 +158,7 @@ variable {P : Polygon} {W : ℕ}
 
 theorem not_pairRG {r : ℕ} (h : r < 160035 ∨ (160056 < r ∧ r < 160062) ∨ (160065 < r ∧ r < 160090)
     ∨ 160093 < r) : ¬ PairRG r := by
-  unfold PairRG DescRG; omega
+  omega_nf
 
 theorem bandOK_l41 {r : ℕ} (h1 : 160000 ≤ r) (h2 : r < 170000) :
     bandOf r ∉ mergeBands ∪ oracleBands := by
@@ -183,7 +189,7 @@ theorem pairL_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
   have hAl : ALLOC = 9999 := rfl
   set j := ns.length with hjdef
   set pcs := pairCost κ F G H ns γ₀ with hpcs
-  have hnp : (j - 1 + 1) / 2 = j / 2 := by congr 1; omega
+  have hnp : (j - 1 + 1) / 2 = j / 2 := by omega
   have hsum_mono : ∀ p, p ≤ j / 2 → ∑ q ∈ range p, (pcs q + 8) ≤
       ∑ q ∈ range (j / 2), (pcs q + 8) := fun p hp =>
     Finset.sum_le_sum_of_subset (Finset.range_subset_range.mpr hp)
@@ -191,13 +197,13 @@ theorem pairL_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
     (body := pairS sM) (PairSt P W X c0 A0 B hp hX tgt ns pcs) (j - 1) (fun q => pcs q + 329)
     (fun p c h => ⟨h.1, h.2.1, by
       rw [h.2.2.2.2.2.2.2.2.2.1 _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega))
-        (by rw [hAl]; omega)]; exact h67⟩)
+        (by omega)]; exact h67⟩)
     (fun p c hp h => by
       obtain ⟨hwc, c62, c65, c64, cA0, cA1, cm, crm, co, cr, crr, cX, ccap, ee, hee, hprev⟩ := h
       have cr' : ∀ r, 160000 ≤ r → r < 160035 → c.nreg r = c0.nreg r := fun r a b =>
-        cr r (bandOK_l41 a (by omega)) (not_pairRG (by omega)) (by rw [hAl]; omega)
+        cr r (bandOK_l41 a (by omega)) (not_pairRG (by omega)) (by omega)
       have cr'' : ∀ r, 160065 < r → r < 160090 → c.nreg r = c0.nreg r := fun r a b =>
-        cr r (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rw [hAl]; omega)
+        cr r (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by omega)
       set A := c.nreg ALLOC with hAdef
       have hp1 : 2 * p + 1 < j := by omega
       obtain ⟨C1, s1, m1', n1⟩ := hL (2 * p) (by omega)
@@ -233,19 +239,19 @@ theorem pairL_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
           (by rw [cr'' _ (by omega) (by omega)]; exact h81)
           (by rw [cr'' _ (by omega) (by omega)]; exact h83)
           (by rw [cr'' _ (by omega) (by omega)]; exact h84)
-          (by rw [cmA _ (by omega)]; congr 1; omega)
-          (by rw [cmA _ (by omega)]; congr 1; omega)
-          (by rw [cmA _ (by omega)]; congr 1; omega)
-          (by rw [cmA _ (by omega)]; congr 1; omega)
-          n1c n2c (by rw [← s1] at *; exact hγ _ (by omega)) (hγ _ hp1) hcons cX
-          (by rw [ccap]; exact hcap) htg (by omega) (by omega) (by omega) (by omega)
+          (by rw [cmA _ (by omega)]; grind)
+          (by rw [cmA _ (by omega)]; grind)
+          (by rw [cmA _ (by omega)]; grind)
+          (by rw [cmA _ (by omega)]; grind)
+          n1c n2c (by grind) (hγ _ hp1) hcons cX
+          (by omega) htg (by omega) (by omega) (by omega) (by omega)
       refine ⟨c'', k'', e'', by omega, ?_, hAk''⟩
-      refine ⟨hw'', by rw [q62]; ring, by rw [q65]; ring, q64, by omega, ?_,
-        fun a ha => by rw [mem'' a (by omega)]; exact cm a ha,
-        fun a ha => by rw [rmem'' a (by omega)]; exact crm a ha, by rw [out'']; exact co,
+      refine ⟨hw'', by omega, by omega, q64, by omega, ?_,
+        fun a ha => by ram_simp,
+        fun a ha => by ram_simp, by grind,
         fun r h1 h2 h3 => by rw [fr'' r h1 h2 h3]; exact cr r h1 h2 h3,
         fun r h1 h2 => by rw [frr'' r h1 h2]; exact crr r h1 h2,
-        by rw [hA'']; exact hX'', by rw [cap'']; exact ccap,
+        by grind, by omega,
         fun q => if q = p then E else ee q, fun q hq => ?_, fun _ => by simp [q63]⟩
       · rw [hA'', Finset.sum_range_succ]; omega
       · rcases Nat.lt_or_ge q p with hqp | hqp
@@ -261,17 +267,16 @@ theorem pairL_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
           simp only [ite_true]
           refine ⟨by omega, by omega, fun hq1 => ?_, C, ?_, ?_, ?_⟩
           · simp only [show q - 1 ≠ q by omega, ite_false]
-            rw [w2, hprev hq1]
+            omega
           · rw [hCs, s1]
-          · rw [hCm, m1', m2']
-          · rw [w0, w1, hA'']; exact hN)
-    (⟨hw, by rw [h62], by rw [h65]; ring, h64, by omega, by rw [hA]; simp,
+          · omega
+          grind)
+    (⟨hw, by rw [h62], by omega, h64, by omega, by omega,
       fun _ _ => rfl, fun _ _ => rfl, rfl, fun _ _ _ _ => rfl, fun _ _ _ => rfl,
-      by rw [hA]; exact hXh, rfl, fun _ => 0, fun q hq => by omega, fun h => by omega⟩)
+      by grind, rfl, fun _ => 0, fun q hq => by omega, fun h => by omega⟩)
   rw [hnp] at hk hI
-  refine ⟨c', k, e, ?_, by rw [← hA]; exact hψ, hI⟩
-  have : ∑ q ∈ range (j / 2), (pcs q + 329 + 2) = ∑ q ∈ range (j / 2), (pcs q + 331) :=
-    Finset.sum_congr rfl fun _ _ => by ring
+  refine ⟨c', k, e, ?_, by omega, hI⟩
+  
   omega
 
 end proofs

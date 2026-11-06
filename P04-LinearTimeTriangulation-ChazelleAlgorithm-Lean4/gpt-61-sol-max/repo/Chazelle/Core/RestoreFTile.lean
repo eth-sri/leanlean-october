@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseHostArc
 public import Chazelle.Core.RestorePrune
 
@@ -37,15 +39,18 @@ structure Tile (n a b : ℝ) (q : ℕ) (s e : ℕ → ℝ) : Prop where
   hse : ∀ i, i + 1 < q → e i = s (i + 1)
   hin : ∀ i, i + 1 < q → sideInArc (s i) b (e i)
 
-theorem unwrap_b (h : Tile n a b q s e) : a < unwrapK n a b := by
-  have := unwrapK_bounds h.ha h.hb
+section
+variable (h : Tile n a b q s e)
+include h
+theorem unwrap_b : a < unwrapK n a b := by
+  
   unfold unwrapK at *
   split_ifs at * with h1
   · exact lt_of_le_of_ne h1 h.hab
   · linarith [h.ha.2, h.hb.1]
 
 /-- **The unwrapped piece starts increase** and stay below the arc's end. -/
-theorem tile_mono (h : Tile n a b q s e) :
+theorem tile_mono :
     ∀ i, i < q → a ≤ unwrapK n a (s i) ∧ unwrapK n a (s i) < unwrapK n a b ∧
       unwrapK n a (s i) < unwrapK n a (e i) ∧ unwrapK n a (e i) ≤ unwrapK n a b := by
   have hub := unwrap_b h
@@ -54,33 +59,25 @@ theorem tile_mono (h : Tile n a b q s e) :
     intro i hi h1 h2
     by_cases hl : i + 1 < q
     · have := (cyc_unwrap h.ha (h.hs i hi) h.hb (h.he i hi) h2).1 (h.hin i hl)
-      exact ⟨this.1, this.2.le⟩
+      ram_grind
     · have : i = q - 1 := by omega
-      subst this
-      rw [h.eq]; exact ⟨h2, le_rfl⟩
+      ram_grind
   intro i
   induction i with
   | zero =>
-    intro hi
-    have h0 : unwrapK n a (s 0) = a := by rw [h.s0, unwrapK_self]
-    refine ⟨by rw [h0], by rw [h0]; exact hub, ?_⟩
-    exact hlast 0 hi (by rw [h0]) (by rw [h0]; exact hub)
+    core_grind
   | succ i ih =>
     intro hi
     obtain ⟨h1, h2, h3, -⟩ := ih (by omega)
     have hn := (cyc_unwrap h.ha (h.hs i (by omega)) h.hb (h.he i (by omega)) h2).1
       (h.hin i hi)
-    rw [← h.hse i hi]
-    refine ⟨by linarith, hn.2, ?_⟩
-    have := hlast (i + 1) hi (by rw [← h.hse i hi]; linarith) (by rw [← h.hse i hi]; exact hn.2)
-    rw [← h.hse i hi] at this
-    exact this
+    ram_grind
 
 /-- **Every key of the closed arc lies in a closed piece.** -/
-theorem tile_cover (h : Tile n a b q s e) {x : ℝ} (_hx : 0 ≤ x ∧ x < n)
+theorem tile_cover {x : ℝ} (_hx : 0 ≤ x ∧ x < n)
     (hxa : a ≤ unwrapK n a x) (hxb : unwrapK n a x ≤ unwrapK n a b) :
     ∃ i, i < q ∧ unwrapK n a (s i) ≤ unwrapK n a x ∧ unwrapK n a x ≤ unwrapK n a (e i) := by
-  have hm := tile_mono h
+  
   -- the last piece starting at or before `x`
   classical
   have hex : ∃ i, i < q ∧ unwrapK n a (s i) ≤ unwrapK n a x := ⟨0, h.hq, by
@@ -99,18 +96,20 @@ theorem tile_cover (h : Tile n a b q s e) {x : ℝ} (_hx : 0 ≤ x ∧ x < n)
     omega
   · have : i = q - 1 := by omega
     have he' : e i = b := by rw [this, h.eq]
-    rw [he'] at hc
-    linarith
+    grind
 
 /-- **A key strictly inside a piece is strictly inside the arc.** -/
-theorem tile_inner (h : Tile n a b q s e) {i : ℕ} (hi : i < q) {y : ℝ} (hy : 0 ≤ y ∧ y < n)
+theorem tile_inner {i : ℕ} (hi : i < q) {y : ℝ} (hy : 0 ≤ y ∧ y < n)
     (hiy : sideInArc (s i) (e i) y) : sideInArc a b y := by
   obtain ⟨h1, -, h3, h4⟩ := tile_mono h i hi
   have hub := unwrap_b h
   have := (cyc_unwrap h.ha (h.hs i hi) (h.he i hi) hy h3).1 hiy
   have ha0 : unwrapK n a a = a := unwrapK_self
-  exact (cyc_unwrap h.ha h.ha h.hb hy (by rw [ha0]; exact hub)).2
-    ⟨by rw [ha0]; linarith [this.1], by linarith [this.2]⟩
+  exact (cyc_unwrap h.ha h.ha h.hb hy (by simp_all)).2
+    ⟨by linarith, by linarith⟩
+
+
+end
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseBoxChord
 
 /-!
@@ -29,20 +31,21 @@ open Set Chazelle.Chain Chazelle.Visibility
 theorem pos_mul_iff {p c : ℝ} (hp : 0 < p) :
     (0 < p * c ↔ 0 < c) ∧ (p * c < 0 ↔ c < 0) ∧ (p * c = 0 ↔ c = 0) := by
   refine ⟨⟨fun h => ?_, fun h => mul_pos hp h⟩,
-    ⟨fun h => ?_, fun h => mul_neg_of_pos_of_neg hp h⟩, ⟨fun h => ?_, fun h => by rw [h, mul_zero]⟩⟩
-  · by_contra h'; nlinarith
-  · by_contra h'; nlinarith
-  · rcases mul_eq_zero.1 h with h | h
-    · linarith
-    · exact h
+    ⟨fun h => ?_, fun h => mul_neg_of_pos_of_neg hp h⟩, ⟨fun h => ?_, fun h => by simp_all⟩⟩
+  all_goals nlinarith
 
-theorem sideCross_smul (a b : ℝ) (u v : Point) :
+section
+variable (a b : ℝ) (u v : Point)
+theorem sideCross_smul :
     sideCross (a • u) (b • v) = (a * b) * sideCross u v := by
-  unfold sideCross; simp only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]; ring
+  grind [sideCross, Prod.smul_fst, Prod.smul_snd, smul_eq_mul]
 
-theorem sideDot_smul (a b : ℝ) (u v : Point) :
+theorem sideDot_smul :
     sideDot (a • u) (b • v) = (a * b) * sideDot u v := by
-  unfold sideDot; simp only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]; ring
+  grind [sideDot, Prod.smul_fst, Prod.smul_snd, smul_eq_mul]
+
+
+end
 
 /-- **The sector test is invariant under positive scalings.** -/
 theorem sideCcw_smul {l k m : ℝ} (hl : 0 < l) (hk : 0 < k) (hm : 0 < m) (B X A : Point) :
@@ -54,36 +57,35 @@ theorem sideCcw_smul {l k m : ℝ} (hl : 0 < l) (hk : 0 < k) (hm : 0 < m) (B X A
   obtain ⟨c1, -, -⟩ := pos_mul_iff (c := sideCross X A) (mul_pos hk hm)
   obtain ⟨d1, d2, -⟩ := pos_mul_iff (c := sideDot B A) (mul_pos hl hm)
   obtain ⟨-, e2, -⟩ := pos_mul_iff (c := sideDot B X) (mul_pos hl hk)
-  simp only [a1, a2, a3, b1, b3, c1, d1, d2, e2, ne_eq]
+  ram_grind
 
+section
+variable (W : Polygon) (p : ℕ)
 /-- The left sector test at a walk position, in terms of the corner vectors. -/
-theorem sideLeft_eq (W : Polygon) (p : ℕ) (t : ℝ) (x : Point) :
+theorem sideLeft_eq (t : ℝ) (x : Point) :
     sideLeft W p t x ↔ sideCcw (sideNext W p - sidePt W p t) (x - sidePt W p t)
       (sidePrev W p t - sidePt W p t) := Iff.rfl
 
-theorem next_sub_pt (W : Polygon) (p : ℕ) (t : ℝ) :
+theorem next_sub_pt (t : ℝ) :
     sideNext W p - sidePt W p t = (1 - t) • (W.vtx ((p + 1) % W.n) - W.vtx p) := by
   unfold sideNext sidePt
-  apply Prod.ext <;> simp [Geometry.lerp] <;> ring
+  ext <;> simp_all [Geometry.lerp] <;> ring
 
-theorem prev_sub_pt (W : Polygon) (p : ℕ) {t : ℝ} (ht : t ≠ 0) :
+theorem prev_sub_pt {t : ℝ} (ht : t ≠ 0) :
     sidePrev W p t - sidePt W p t = (-t) • (W.vtx ((p + 1) % W.n) - W.vtx p) := by
-  unfold sidePrev sidePt
-  rw [ite_eq_right ht]
-  apply Prod.ext <;> simp [Geometry.lerp]
+  ext <;> simp_all [sidePrev, sidePt, Geometry.lerp] 
 
-theorem prev_sub_pt_zero (W : Polygon) (p : ℕ) :
+theorem prev_sub_pt_zero :
     sidePrev W p 0 - sidePt W p 0 =
       (-1 : ℝ) • (W.vtx p - W.vtx ((p + W.n - 1) % W.n)) := by
-  unfold sidePrev sidePt
-  rw [ite_eq_left rfl]
-  apply Prod.ext <;> simp [Geometry.lerp]
+  simp_all [sidePrev, sidePt, Geometry.lerp] 
+
+
+end
 
 theorem prev_succ {n p : ℕ} (hp : p < n) : ((p + n - 1) % n + 1) % n = p := by
   rcases Nat.eq_zero_or_pos p with h0 | h0
-  · subst h0
-    have e : (0 + n - 1) % n = n - 1 := by rw [Nat.zero_add]; exact Nat.mod_eq_of_lt (by omega)
-    rw [e, Nat.sub_add_cancel (by omega : 1 ≤ n), Nat.mod_self]
+  · simp_all +arith
   · have e : (p + n - 1) % n = p - 1 := by
       rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
     rw [e, Nat.sub_add_cancel h0, Nat.mod_eq_of_lt hp]
@@ -99,12 +101,12 @@ theorem sig_slope (a b : ℝ) :
   · have h1 : stretch (bnd C C') (kk C C') a < stretch (bnd C C') (kk C C') b := sig_lt_iff.2 hab
     refine ⟨(stretch (bnd C C') (kk C C') b - stretch (bnd C C') (kk C C') a) / (b - a),
       div_pos (by linarith) (by linarith), ?_⟩
-    field_simp [show b - a ≠ 0 by linarith]
+    grind
   · exact ⟨1, one_pos, by ring⟩
   · have h1 : stretch (bnd C C') (kk C C') b < stretch (bnd C C') (kk C C') a := sig_lt_iff.2 hab
     refine ⟨(stretch (bnd C C') (kk C C') b - stretch (bnd C C') (kk C C') a) / (b - a),
       div_pos_of_neg_of_neg (by linarith) (by linarith), ?_⟩
-    field_simp [show b - a ≠ 0 by linarith]
+    grind
 
 namespace Twin
 
@@ -117,12 +119,10 @@ theorem scale_pt {u v : Point} (hk : u.2 = v.2 ∨ u.1 = v.1 ∨ (u ∈ C.set �
   rcases hk with hk | hk | ⟨hu, hv⟩
   · obtain ⟨l, hl, e⟩ := sig_slope (C := C) (C' := C') u.1 v.1
     refine ⟨l, hl, Prod.ext ?_ ?_⟩
-    · simpa [phi, stretchPt] using e
-    · simp [phi, stretchPt, hk]
+    all_goals (simp_all [phi, stretchPt] <;> omega_nf)
   · obtain ⟨l, hl, e⟩ := sig_slope (C := C) (C' := C') u.2 v.2
     refine ⟨l, hl, Prod.ext ?_ ?_⟩
-    · simp [phi, stretchPt, hk]
-    · simpa [phi, stretchPt] using e
+    all_goals (simp_all [phi, stretchPt] <;> omega_nf)
   · exact ⟨1, one_pos, by rw [h.phi_fix hu, h.phi_fix hv, one_smul]⟩
 
 /-- **Walk edges scale positively.** -/
@@ -169,8 +169,7 @@ theorem sector_scale {p : ℕ} {t t' : ℝ} (hp : p < (C.sideWalk C.sideBeta).n)
     have htp' : 0 < t' := lt_of_le_of_ne ht'.1 (Ne.symm ht0')
     refine ⟨t' * l / t, div_pos (mul_pos htp' hl) htp, eN, ?_⟩
     rw [prev_sub_pt _ _ ht0, prev_sub_pt _ _ ht0', hn, e, smul_smul, smul_smul]
-    congr 1
-    field_simp
+    grind
 
 /-- **Attachment transfers.**  A set on a horizontal line attached to the walk of `C` at `(p, t)`
 has its stretch attached to the walk of `C'` at the corresponding position `(p, t')`. -/
@@ -191,8 +190,7 @@ theorem attach_transfer {d : Set Point} {y : ℝ} (hdy : ∀ z ∈ d, z.2 = y) {
   rintro x' ⟨z, hz, rfl⟩ hne hdist
   set s := sidePt (C.sideWalk C.sideBeta) p t
   have hzd : dist z s < r := by
-    have := hball _ hdist
-    rwa [hψ z, hpt, hψ s] at this
+    grind
   have hzne : z ≠ s := fun e => hne (by rw [e, hpt])
   have hL := hnear z hz hzne hzd
   have hz2 : s.2 = z.2 := (hdy s hmem).trans (hdy z hz).symm

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseTransDeg
 public import Chazelle.Core.BruteCorner
 
@@ -40,7 +42,7 @@ theorem up_in_one_corner {a v b : Point} {h : ℝ} (hh : 0 < h) (ha : a.2 < v.2)
   have hD : Chazelle.det a v b = (v.1 - a.1) * (b.2 - a.2) - (b.1 - a.1) * (v.2 - a.2) := rfl
   rcases lt_trichotomy (Chazelle.det a v b) 0 with hd | hd | hd
   · by_cases h1 : v.1 < b.1 ∨ a.1 < v.1
-    · exact Or.inl (Or.inr (Or.inl ⟨hd, h1⟩))
+    · simp_all
     · push Not at h1
       right; left
       refine ⟨by linarith, ?_, ?_⟩
@@ -50,9 +52,9 @@ theorem up_in_one_corner {a v b : Point} {h : ℝ} (hh : 0 < h) (ha : a.2 < v.2)
       · rcases h1.1.lt_or_eq with h2 | h2
         · exact h2
         · exfalso; rw [← h2] at hD; nlinarith
-  · exact Or.inl (Or.inr (Or.inr (Or.inr ⟨hd, hb⟩)))
+  · simp_all
   · by_cases h1 : v.1 < b.1 ∧ a.1 < v.1
-    · exact Or.inl (Or.inl ⟨hd, h1⟩)
+    · simp_all
     · right; right; left
       refine ⟨by linarith, ?_⟩
       by_contra h2; push Not at h1 h2
@@ -81,7 +83,7 @@ theorem up_not_corner (hQ : Q.Simple) (T : Top Q C) {p : ℕ} (hp : p < (interio
       (W.vtx ((p + 1) % W.n) - C.top) (C.slitTop - C.top)
       (W.vtx ((p + W.n - 1) % W.n) - C.top)
     rw [one_smul, one_smul] at this
-    exact this.2 hc
+    grind
   obtain ⟨rC, hrC, hclean⟩ := FactsInterior.clean hWs hWo hp le_rfl zero_lt_one
   have hrad : C.top.2 < C.radius := C.top_snd_lt_radius
   set ε := rC / (2 * (C.radius - C.top.2)) with hε
@@ -107,9 +109,8 @@ theorem up_not_corner (hQ : Q.Simple) (T : Top Q C) {p : ℕ} (hp : p < (interio
   have hyb : y ∈ ball (sidePt W p 0) rC := by rw [hpt, mem_ball, hdist]; linarith
   have hyD : y ∈ Q.filled \ Q.boundary := by
     by_contra hyD
-    exact hclean y hyb (by rw [hWb, hWf]; exact hyD) (hup ε hε0)
+    exact hclean y hyb (by grind) (hup ε hε0)
   have := T.filled_below_top hQ hyD.1
-  rw [hy2] at this
   linarith
 
 theorem iw_n : (interiorWalk Q).n = Q.n := by
@@ -118,7 +119,7 @@ theorem iw_n : (interiorWalk Q).n = Q.n := by
   · exact FactsInterior.rev_n Q
 
 theorem iw_vtx_left (h : Mountain.LeftInside Q) (j : ℕ) : (interiorWalk Q).vtx j = Q.vtx j := by
-  unfold interiorWalk; simp only [h, ↓reduceIte]
+  simp_all [interiorWalk, reduceIte] 
 
 theorem iw_vtx_right (h : ¬ Mountain.LeftInside Q) {j : ℕ} (hj : j < Q.n) :
     (interiorWalk Q).vtx j = Q.vtx (Q.n - 1 - j) := by
@@ -133,8 +134,11 @@ theorem Top.nbr_lt (T : Top Q C) (hD : DistinctH Q) {k : ℕ} (hk : k < Q.n) (hk
   rw [h2] at h1 ⊢
   exact lt_of_le_of_ne h1 (hD k C.topIdx hk hT hkT)
 
+section
+variable (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q)
+include hQ T hD
 /-- **The tour start is not inside the inner side.** -/
-theorem sA_inner (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
+theorem sA_inner :
     (Mountain.LeftInside Q → sA C C.sideBeta = 0 ∨ C.m ≤ sA C C.sideBeta) ∧
       (¬ Mountain.LeftInside Q → sA C C.sideBeta ≤ C.m) := by
   have hTm := C.topIdx_le
@@ -157,9 +161,9 @@ theorem sA_inner (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
         by_contra hcon
         push Not at hcon
         have h0 : 0 < C.topIdx := Nat.pos_of_ne_zero hcon.1
-        have h1 : C.topIdx < C.m := hcon.2
+        
         have hc := hbeta.1 hb
-        apply up_not_corner hQ T (p := C.topIdx) (by rw [iw_n]; omega)
+        apply up_not_corner hQ T (p := C.topIdx) (by grind [iw_n])
           (by rw [iw_vtx_left hL]; exact (hvT _ hTm).symm)
         rw [iw_n, iw_vtx_left hL, iw_vtx_left hL,
           Nat.mod_eq_of_lt (show C.topIdx + 1 < Q.n by omega),
@@ -168,12 +172,11 @@ theorem sA_inner (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
               Nat.mod_eq_of_lt (by omega)],
           ← hvT _ (by omega), ← hvT _ (by omega)]
         exact hc
-      · left; exact hT
-      · right; omega
-    · rw [hs]; right; omega
+      all_goals omega
+    omega
   · intro hL
     rcases C.sideS_mod C.sideBeta with ⟨hs, -⟩ | ⟨hs, hT0, hb⟩
-    · rw [hs]; exact hTm
+    · omega
     · rw [hs]
       by_contra hcon
       push Not at hcon
@@ -181,7 +184,7 @@ theorem sA_inner (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
       -- the reversed corner contains the up direction
       have hnc : ¬ sideCcw (C.vertex (C.topIdx + 1) - C.top) (C.slitTop - C.top)
           (C.vertex (C.topIdx - 1) - C.top) := fun h => by
-        have := hbeta.2 h; rw [hb] at this; exact Bool.false_ne_true this
+        simp_all
       have hlo1 : (C.vertex (C.topIdx - 1)).2 < C.top.2 := by
         rw [hvT _ (by omega)]; exact T.nbr_lt hD (by omega) (by omega)
       have hlo2 : (C.vertex (C.topIdx + 1)).2 < C.top.2 := by
@@ -189,7 +192,7 @@ theorem sA_inner (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
       have hor := up_in_one_corner (v := C.top) hrad hlo1 hlo2
       rw [← hup] at hor
       have hrev := hor.resolve_left hnc
-      apply up_not_corner hQ T (p := C.m - C.topIdx) (by rw [iw_n]; omega)
+      apply up_not_corner hQ T (p := C.m - C.topIdx) (by grind [iw_n])
         (by rw [iw_vtx_right hL (by omega), show Q.n - 1 - (C.m - C.topIdx) = C.topIdx by omega];
             exact (hvT _ hTm).symm)
       rw [iw_n, iw_vtx_right hL (Nat.mod_lt _ (by omega)),
@@ -204,7 +207,7 @@ theorem sA_inner (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
       exact hrev
 
 /-- **The inner side is one run of the chain walk.** -/
-theorem exists_shift (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
+theorem exists_shift :
     ∃ c₀ : ℕ, 6 ≤ c₀ ∧ c₀ + C.m ≤ 2 * C.m + 6 ∧
       ∀ j, j ≤ C.m → (C.sideWalk C.sideBeta).vtx (j + c₀) = (interiorWalk Q).vtx j := by
   have hmn : C.m + 1 = Q.n := T.hm
@@ -221,16 +224,15 @@ theorem exists_shift (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
         rw [TourA.tourA_succ (by omega) (by omega), ih (by omega)]; ring
     refine ⟨tourA C C.sideBeta 0 + 6, by omega, ?_, fun j hj => ?_⟩
     · have := TourA.tourA_lt (C := C) (β := C.sideBeta) (C.m - 1)
-      rw [hlin _ (by omega)] at this; omega
+      grind
     · rw [iw_vtx_left hL]
       rcases hj.lt_or_eq with hj | rfl
       · rw [show j + (tourA C C.sideBeta 0 + 6) = tourA C C.sideBeta j + 6 by
-          rw [hlin j hj]; ring, TourA.vtx_tourA hj, hvT j hj.le]
+          grind, TourA.vtx_tourA hj, hvT j hj.le]
       · have e := TourA.vtx_tourA_succ (C := C) (β := C.sideBeta) (k := C.m - 1) (by omega)
         rw [Nat.sub_add_cancel hm1, C.sideWalk_next_tour _ (TourA.tourA_lt _),
           hlin _ (by omega)] at e
-        rw [← hvT _ le_rfl, ← e]
-        congr 1; omega
+        grind
   · have hs := hL2 hL
     have hlin : ∀ j, j < C.m → tourB C C.sideBeta (C.m - 1 - j) = tourB C C.sideBeta (C.m - 1) + j := by
       intro j hj
@@ -239,22 +241,22 @@ theorem exists_shift (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
       | succ j ih =>
         have := TourB.tourB_succ (C := C) (β := C.sideBeta) (k := C.m - 1 - (j + 1)) (by omega)
           (by omega)
-        rw [show C.m - 1 - (j + 1) + 1 = C.m - 1 - j by omega, ih (by omega)] at this
-        rw [this]; ring
+        grind
     refine ⟨tourB C C.sideBeta (C.m - 1) + 6, by omega, ?_, fun j hj => ?_⟩
     · have := TourB.tourB_lt (C := C) (β := C.sideBeta) (C.m - 1 - (C.m - 1))
       rw [hlin _ (by omega)] at this; omega
     · rw [iw_vtx_right hL (by omega)]
       rcases hj.lt_or_eq with hj | rfl
       · rw [show j + (tourB C C.sideBeta (C.m - 1) + 6) = tourB C C.sideBeta (C.m - 1 - j) + 6 by
-          rw [hlin j hj]; ring, TourB.vtx_tourB (by omega),
+          simp_all +arith, TourB.vtx_tourB (by omega),
           show C.m - 1 - j + 1 = Q.n - 1 - j by omega, hvT _ (by omega)]
       · have e := TourB.vtx_tourB_succ (C := C) (β := C.sideBeta) (k := 0) (by omega)
         rw [C.sideWalk_next_tour _ (TourB.tourB_lt _)] at e
         have h0 := hlin (C.m - 1) (by omega)
-        rw [show C.m - 1 - (C.m - 1) = 0 by omega] at h0
-        rw [show Q.n - 1 - C.m = 0 by omega, ← hvT 0 (by omega), ← e, h0]
-        congr 1; omega
+        grind
+
+
+end
 
 end
 

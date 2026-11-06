@@ -55,7 +55,7 @@ theorem runTask_of (hGen : GenTask) (hStop : StopTask) (hWin : WinTask) (hOrgs :
     (by omega) rfl
   unfold runProg
   refine IRS.mono (IRS.seq (hPr sh Bs F X Ok P W c₀ c₀ J N₁ N₂ E hI0 E.hTA.symm (by
-      have := Nat.mul_le_mul_left κP (Nat.le_refl (N₁.nChords + N₂.nChords + 1)); omega)) ?_)
+      omega)) ?_)
     hsum (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' hPO
   refine IRS.seq (hS sh Bs F X Ok P W c₀ c₁ J N₁ N₂ E hI₁ (by omega)) ?_

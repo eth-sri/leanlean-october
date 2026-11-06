@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvPDesc
 public import Chazelle.Core.DownPhaseDrvTFiltS
 public import Chazelle.Core.DownPhaseWallChain
@@ -18,9 +20,6 @@ Registers: loop `218070` record index, `218071` read cursor, `218072 … 218074`
 `218079 = 2`, `218080 = 4` (and `218020 = 0`, `218021 = 1`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -116,16 +115,13 @@ theorem memD_keep {m₀ m : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {B' i
     rw [ite_eq_right h3, ite_eq_right h4, ite_eq_left rfl, ite_eq_left (by omega),
       show B' + 3 * j - B' = 3 * j + 0 by omega, htw 0 (by norm_num)]
     try simp
-  rw [ite_eq_right h3, ite_eq_right h4, ite_eq_right h5]
-  split_ifs <;> first | rfl | omega
+  grind
 
 theorem memD_drop {m₀ : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {B' i : ℕ}
     (hi : i < L₀.length) (hk : keepW (L₀.getD i (0, 0, 0)) = false) (a : ℕ) :
     memD m₀ L₀ B' i a = memD m₀ L₀ B' (i + 1) a := by
   have hr := DownBase.rankF_succ keepW (0, 0, 0) hi
-  rw [hk] at hr
-  simp only [Bool.false_eq_true, ite_false, Nat.add_zero] at hr
-  unfold memD; rw [hr]
+  simp_all [Bool.false_eq_true, ite_false, Nat.add_zero, memD]
 
 /-! ## The pieces of one record -/
 
@@ -184,14 +180,14 @@ theorem dTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) (h21 : c.
         (R := fun c' => c'.nreg 218077 = 1 ∧ (∀ r, r ≠ 218077 → c'.nreg r = c.nreg r) ∧
           c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output)
         h21 h79 h80 (fun _ => by
-          obtain ⟨c', k, ex, hk, h⟩ := hset; exact ⟨c', k, ex, by omega, h⟩)
+          grind)
         (fun h' => absurd hr h')
       obtain ⟨c', k, ex, hk, h⟩ := isOT_exec (P := P) (W := W) c (p := 218073)
         (t := isOT 218074 (.instr (.constN 218077 1)) .skip) (e := .skip) (K := 15)
         (R := fun c' => c'.nreg 218077 = 1 ∧ (∀ r, r ≠ 218077 → c'.nreg r = c.nreg r) ∧
           c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output)
         h21 h79 h80 (fun _ => ⟨c₁, k₁, ex₁, by omega, h₁⟩) (fun h' => absurd hl h')
-      exact ⟨c', k, ex, by omega, h⟩
+      grind
     · rw [ite_eq_right (fun h => hr h.2)]
       obtain ⟨c₁, k₁, ex₁, hk₁, h₁⟩ := isOT_exec (P := P) (W := W) c (p := 218074)
         (t := .instr (.constN 218077 1)) (e := .skip) (K := 8)
@@ -203,14 +199,14 @@ theorem dTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) (h21 : c.
         (R := fun c' => c'.nreg 218077 = 0 ∧ (∀ r, r ≠ 218077 → c'.nreg r = c.nreg r) ∧
           c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output)
         h21 h79 h80 (fun _ => ⟨c₁, k₁, ex₁, by omega, h₁⟩) (fun h' => absurd hl h')
-      exact ⟨c', k, ex, by omega, h⟩
+      grind
   · rw [ite_eq_right (fun h => hl h.1)]
     obtain ⟨c', k, ex, hk, h⟩ := isOT_exec (P := P) (W := W) c (p := 218073)
       (t := isOT 218074 (.instr (.constN 218077 1)) .skip) (e := .skip) (K := 8)
       (R := fun c' => c'.nreg 218077 = 0 ∧ (∀ r, r ≠ 218077 → c'.nreg r = c.nreg r) ∧
         c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output)
       h21 h79 h80 (fun h' => absurd h' hl) (fun _ => hskip)
-    exact ⟨c', k, ex, by omega, h⟩
+    grind
 
 set_option maxHeartbeats 4000000 in
 theorem dLoad_exec (c : Config) (hw : WordsBounded W c) {a : ℕ} (h71 : c.nreg 218071 = a)
@@ -284,7 +280,7 @@ theorem dBody_exec {m₀ : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {CB B'
   have hle := DownBase.rankF_le keepW L₀ i
   obtain ⟨l1, l2, l3⟩ := hR i ht
   have hmL : ∀ q, q < 3 → d.nmem (CB + 5 * i + q) = m₀ (CB + 5 * i + q) := fun q hq => by
-    rw [hI.mem]; unfold memD; rw [ite_eq_right (by omega)]
+    rw [hI.mem]; grind [memD]
   have hW1 : 1 ≤ W := by omega
   clear hCB
   -- load
@@ -307,10 +303,10 @@ theorem dBody_exec {m₀ : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {CB B'
   rw [hx3] at v₂
   have g5 : ∀ r, r ≠ 218071 → r ≠ 218072 → r ≠ 218073 → r ≠ 218074 → r ≠ 218077 →
       d₂.nreg r = d.nreg r := fun r a1 a2 a3 a4 a5 => by
-    rw [r₂ r a5, r₁ r a1 a2 a3 a4 a5]
-  have e72 : d₂.nreg 218072 = x.1 := by rw [r₂ _ (by norm_num), v72]
-  have e73 : d₂.nreg 218073 = x.2.1 := by rw [r₂ _ (by norm_num), v73]
-  have e74 : d₂.nreg 218074 = x.2.2 := by rw [r₂ _ (by norm_num), v74]
+    grind
+  have e72 : d₂.nreg 218072 = x.1 := by grind
+  have e73 : d₂.nreg 218073 = x.2.1 := by grind
+  have e74 : d₂.nreg 218074 = x.2.2 := by grind
   have hm5 : d₂.nmem = d.nmem := by rw [m₂, m₁]
   -- the branch
   obtain ⟨d₆, k₆, e₆, hk₆, hk₆', g6, mem6, n75, n76, rr₆, rm₆, o₆⟩ : ∃ d₆ k₆,
@@ -329,64 +325,47 @@ theorem dBody_exec {m₀ : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {CB B'
     have hr := DownBase.rankF_succ keepW (0, 0, 0) (L := L₀) ht
     cases hk : keepW x
     · have hwall : BoxT.WallRec x := by
-        unfold keepW at hk; simpa using hk
+        grind [keepW]
       rw [ite_eq_left hwall] at v₂
-      have hn : ¬ d₂.nreg 218077 < d₂.nreg 218021 := by rw [h21, v₂]; omega
+      have hn : ¬ d₂.nreg 218077 < d₂.nreg 218021 := by omega
       rw [← hx, hk] at hr
       simp only [Bool.false_eq_true, ite_false, Nat.add_zero] at hr
       refine ⟨d₂, _, .ifLtN_false hn (.skip e₂.wb_right), by omega, by omega,
         fun _ _ _ => rfl, fun a => ?_, by rw [h75, hr], by rw [h76, hr], rfl, rfl, rfl⟩
       rw [hm5, hI.mem a, ← hi]
-      exact memD_drop ht (by rw [← hx]; exact hk) a
+      exact memD_drop ht (by omega) a
     · have hwall : ¬ BoxT.WallRec x := by
-        unfold keepW at hk; simpa using hk
+        grind [keepW]
       rw [ite_eq_right hwall] at v₂
-      have hp : d₂.nreg 218077 < d₂.nreg 218021 := by rw [h21, v₂]; omega
+      have hp : d₂.nreg 218077 < d₂.nreg 218021 := by omega
       have hjK : j + 1 ≤ L₀.length := by
-        have := DownBase.rankF_lt_length keepW (0, 0, 0) ht (by rw [← hx]; exact hk)
-        have h2 := (List.length_filter_le keepW L₀)
         omega
       obtain ⟨d₆, k₆, e₆', hk₆, w75, w76, r₆, mm₆, rr₆, rm₆, o₆⟩ :=
         dKeep_exec (P := P) d₂ e₂.wb_right h75 h76 h21 (by omega) (by omega)
       rw [← hx, hk] at hr
       simp only [ite_true] at hr
       refine ⟨d₆, _, .ifLtN_true hp e₆', by omega, by omega, r₆, fun a => ?_,
-        by rw [w75, hr]; ring, by rw [w76, hr], rr₆, rm₆, o₆⟩
+        by omega, by rw [w76, hr], rr₆, rm₆, o₆⟩
       rw [mm₆, e72, e73, e74, hm5]
       have := memD_keep (m₀ := m₀) (m := d.nmem) (B' := B') (hI.mem) ht
-        (by rw [← hx]; exact hk) a
-      rw [← hi, ← hj] at this
-      rw [← this]
+        (by omega) a
+      omega
   -- the increment
   have h70 : d₆.nreg 218070 = i := by
-    rw [g6 _ (by norm_num) (by norm_num), g5 _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num)]
+    grind
   have h21' : d₆.nreg 218021 = 1 := by
-    rw [g6 _ (by norm_num) (by norm_num), g5 _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num), hI.r21]
-  have e₇ := Exec.addN (P := P) e₆.wb_right 218070 218070 218021 (by rw [h70, h21']; omega)
+    grind [Chazelle.Core.DrvP.DInv.r21]
+  have e₇ := Exec.addN (P := P) e₆.wb_right 218070 218070 218021 (by omega)
   set d₇ : Config := { d₆ with nreg := upd d₆.nreg 218070 (d₆.nreg 218070 + d₆.nreg 218021) }
     with hd₇
   have g7 : ∀ r, r ≠ 218070 → d₇.nreg r = d₆.nreg r := fun r hr => by rw [hd₇]; simp [hr]
   have v7 : d₇.nreg 218070 = i + 1 := by rw [hd₇]; simp [h70, h21']
   have g : ∀ r, (r < 218070 ∨ 218077 < r) → d₇.nreg r = d.nreg r := fun r hr => by
-    rw [g7 r (by omega), g6 r (by omega) (by omega),
-      g5 r (by omega) (by omega) (by omega) (by omega) (by omega)]
+    grind
   have X' : Exec P W dBody d d₇ (k₁ + (k₂ + (k₆ + 1))) :=
     .seq e₁ (.seq e₂ (.seq e₆ (Exec.block_cons e₇ (Exec.block_nil e₇.wb_right))))
   refine ⟨d₇, _, X', e₇.wb_right, ?_, v7, by omega, by omega⟩
-  refine ⟨by rw [v7]; omega, by rw [g _ (by norm_num), hI.rK], ?_, ?_, ?_,
-    by rw [g _ (by norm_num), hI.r21], by rw [g _ (by norm_num), hI.r79],
-    by rw [g _ (by norm_num), hI.r80],
-    fun r hr => by rw [g r hr, hI.fr r hr], ?_, ?_, ?_, fun a => ?_⟩
-  · rw [v7, g7 _ (by norm_num), g6 _ (by norm_num) (by norm_num), r₂ _ (by norm_num), v71]
-    ring
-  · rw [v7, g7 _ (by norm_num), n75]
-  · rw [v7, g7 _ (by norm_num), n76]
-  · show d₆.rreg = cI.rreg; rw [rr₆, rr₂, rr₁, hI.rr]
-  · show d₆.rmem = cI.rmem; rw [rm₆, rm₂, rm₁, hI.rm]
-  · show d₆.output = cI.output; rw [o₆, o₂, o₁, hI.out]
-  · show d₆.nmem a = _; rw [v7, mem6]
+  ram_grind
 
 /-- **The pass.** -/
 theorem dLoop_exec {m₀ : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {CB B' : ℕ}
@@ -403,15 +382,12 @@ theorem dLoop_exec {m₀ : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {CB B'
       obtain ⟨d', k, e, hw', hI', hi', hk1, hk2⟩ := dBody_exec hR hCB hBW hwd hId ht
       have := hId.rK
       refine ⟨d', k, e, ⟨hw', hI'⟩, ?_, ?_⟩
-      · rw [hi']; rw [this] at ht; omega
-      · rw [hi']; omega)
+      all_goals omega)
     ⟨hw, hI⟩
   have hi := hI'.i_le
   rw [hI'.rK] at htest
   refine ⟨d', k, e, hw', hI', by omega, ?_, ?_⟩
-  · rw [h0] at hψ; have : d'.nreg 218070 = L₀.length := by omega
-    rw [this] at hψ; omega
-  · rw [h0] at hk; omega
+  all_goals omega
 
 end exec
 
@@ -427,12 +403,9 @@ theorem chordListAt_memD {m₀ m : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)
     rw [hm]; unfold memD; rw [hlen, ite_eq_left (by omega), show B' + 3 * j + q - B' = 3 * j + q by
       omega]; rfl
   refine ⟨?_, ?_, ?_⟩
-  · have := hq 0 (by norm_num); rw [Nat.add_zero, Nat.add_zero] at this; rw [this]
-    unfold tw; rw [show 3 * j % 3 = 0 by omega, show 3 * j / 3 = j by omega]; simp
-  · rw [hq 1 (by norm_num)]
-    unfold tw; rw [show (3 * j + 1) % 3 = 1 by omega, show (3 * j + 1) / 3 = j by omega]; simp
-  · rw [hq 2 (by norm_num)]
-    unfold tw; rw [show (3 * j + 2) % 3 = 2 by omega, show (3 * j + 2) / 3 = j by omega]; simp
+  · have := hq 0 (by norm_num); rw [Nat.add_zero, Nat.add_zero] at this; grind [tw]
+  · grind [tw]
+  grind [tw]
 
 section exec2
 
@@ -479,36 +452,34 @@ theorem dropS_exec (c : Config) (hw : WordsBounded W c) {N : NF}
   have hNA := hN.holds
   obtain ⟨hBA, -⟩ := DrvT.nfAt_robust_bound hN
   set K₀ := N.chords.length with hK₀
-  have hlen₀ : (DrvT.triplesOf N).length = K₀ := by unfold DrvT.triplesOf; rw [List.length_map]
+  have hlen₀ : (DrvT.triplesOf N).length = K₀ := by core_grind
   obtain ⟨c₁, k₁, e₁, hk₁, v79, v80, v78, v71, v75, v16, v76, v70, g₁, mm₁, rr₁, rm₁, o₁⟩ :=
     dSetup_exec (P := P) c hw (A := A) (B₀ := B₀) (K₀ := K₀) (CB := c.nmem (B₀ + 3)) rfl rfl
       hBA hNA.1 rfl h21 (by omega)
   have hR := DrvT.recsT_of_nfAt hN (m' := c₁.nmem) (fun a _ => by rw [mm₁])
   have hI₁ : DInv c₁.nmem (DrvT.triplesOf N) (c.nmem (B₀ + 3)) A c₁ c₁ :=
-    { i_le := by rw [v70]; omega
-      rK := by rw [v78, hlen₀]
-      r71 := by rw [v71, v70]; ring
-      r75 := by rw [v75, v70]; simp [rankF]
-      r76 := by rw [v76, v70]; simp [rankF]
-      r21 := by rw [g₁ _ (by norm_num) (by norm_num), h21]
+    { i_le := by omega
+      rK := by omega
+      r71 := by omega
+      r75 := by grind [rankF]
+      r76 := by grind [rankF]
+      r21 := by simp_all
       r79 := v79
       r80 := v80
       fr := fun _ _ => rfl
       rr := rfl
       rm := rfl
       out := rfl
-      mem := fun a => by rw [v70]; unfold memD; simp [rankF] }
+      mem := fun a => by grind [memD, rankF] }
   have hCB : (DrvT.triplesOf N).length = 0 ∨
       c.nmem (B₀ + 3) + 5 * (DrvT.triplesOf N).length ≤ A := by
     rcases Nat.eq_zero_or_pos (DrvT.triplesOf N).length with h0 | hpos
-    · left; exact h0
+    · omega
     · right
       have := (DrvT.nfAt_robust_bound hN).2 (K₀ - 1) (by omega)
-      rw [hlen₀]
-      have : c.nmem (B₀ + 3) + 5 * (K₀ - 1) + 4 < A := this
       omega
   obtain ⟨c₂, k₂, e₂, hw₂, hI₂, h70, hk₂, hk₂'⟩ := dLoop_exec (P := P) hR hCB
-    (by rw [hlen₀]; omega) e₁.wb_right hI₁ v70
+    (by omega) e₁.wb_right hI₁ v70
   rw [hlen₀] at hk₂ hk₂' h70
   have g₂ : ∀ r, (r < 218070 ∨ 218077 < r) → c₂.nreg r = c₁.nreg r := hI₂.fr
   have hcnt : c₂.nreg 218076 = (BoxT.dropWalls (DrvT.triplesOf N)).length := by
@@ -535,12 +506,12 @@ theorem dropS_exec (c : Config) (hw : WordsBounded W c) {N : NF}
   have ex : Exec P W dropS c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
   refine ⟨c₃, _, ex, by omega, by omega, ?_, v17, v99, ?_, fun a ha => ?_, fun r h1 h2 h3 h4 => ?_,
     by rw [hr₃, hI₂.rr, rr₁], by rw [hrm₃, hI₂.rm, rm₁], by rw [ho₃, hI₂.out, o₁]⟩
-  · rw [r₃ _ (by norm_num) (by decide), g₂ _ (by norm_num), v16]
+  · ram_grind
   · rw [m₃]
     refine chordListAt_memD (m₀ := c₁.nmem) (fun a => ?_)
     rw [hI₂.mem a, h70, hlen₀]
-  · rw [m₃, hI₂.mem, h70]; unfold memD; rw [ite_eq_right (by omega), mm₁]
-  · rw [r₃ r h2 h4, g₂ r (by omega), g₁ r h1 (by omega)]
+  · rw [m₃, hI₂.mem, h70]; grind [memD]
+  grind
 
 end exec2
 

@@ -53,8 +53,11 @@ structure Acc where
 /-- The initial state. -/
 def Acc.init : Acc := ⟨false, false, false, false, 0, 0, 0, 0⟩
 
+section
+variable (b : Bool)
+include b
 /-- One chord record. -/
-def accStep (b : Bool) (n ri : ℕ) (a : Acc) (c : CRec) : Acc where
+def accStep (n ri : ℕ) (a : Acc) (c : CRec) : Acc where
   hT := a.hT || decide (c.dn = ri)
   hB := a.hB || !decide (c.dn = ri)
   hL := a.hL || !decide (wv b n c.lp = c.h)
@@ -65,23 +68,23 @@ def accStep (b : Bool) (n ri : ℕ) (a : Acc) (c : CRec) : Acc where
   pr := if wv b n c.rp = c.h then a.pr else c.rp
 
 /-- The scan of the exit chords of region `ri`. -/
-def accOf (b : Bool) (n : ℕ) (N : NF) (ri : ℕ) : Acc :=
+def accOf (n : ℕ) (N : NF) (ri : ℕ) : Acc :=
   ((N.region ri).chords.map N.chord).foldl (accStep b n ri) Acc.init
 
 /-- Completion of the record. -/
-def finish (b : Bool) (n : ℕ) (a : Acc) : Final.TrapRec :=
+def finish (n : ℕ) (a : Acc) : Final.TrapRec :=
   let pl := if a.hL then a.pl else if a.hT then wv b n a.vt else nxt n a.pr
   let pr := if a.hR then a.pr else if a.hB then wv b n a.vb else nxt n pl
   ⟨inp b n pl, inp b n pr, if a.hT then a.vt else wv b n (nxt n pr),
     if a.hB then a.vb else wv b n (nxt n pl)⟩
 
 /-- **The trapezoid record of region `ri`.** -/
-def trapOf (b : Bool) (n : ℕ) (N : NF) (ri : ℕ) : Final.TrapRec := finish b n (accOf b n N ri)
+def trapOf (n : ℕ) (N : NF) (ri : ℕ) : Final.TrapRec := finish b n (accOf b n N ri)
 
 /-! ## The scan -/
 
 /-- The flags of the scan. -/
-theorem fold_flags (b : Bool) (n ri : ℕ) (L : List CRec) (a : Acc) :
+theorem fold_flags (n ri : ℕ) (L : List CRec) (a : Acc) :
     ((L.foldl (accStep b n ri) a).hT = true ↔ a.hT = true ∨ ∃ c ∈ L, c.dn = ri) ∧
       ((L.foldl (accStep b n ri) a).hB = true ↔ a.hB = true ∨ ∃ c ∈ L, c.dn ≠ ri) ∧
       ((L.foldl (accStep b n ri) a).hL = true ↔ a.hL = true ∨ ∃ c ∈ L, wv b n c.lp ≠ c.h) ∧
@@ -94,50 +97,26 @@ theorem fold_flags (b : Bool) (n ri : ℕ) (L : List CRec) (a : Acc) :
     refine ⟨?_, ?_, ?_, ?_⟩
     · rw [h1]; simp only [accStep, Bool.or_eq_true, decide_eq_true_eq, List.mem_cons]
       constructor
-      · rintro ((h | h) | ⟨c', hc', h'⟩)
-        · exact Or.inl h
-        · exact Or.inr ⟨c, Or.inl rfl, h⟩
-        · exact Or.inr ⟨c', Or.inr hc', h'⟩
-      · rintro (h | ⟨c', (rfl | hc'), h'⟩)
-        · exact Or.inl (Or.inl h)
-        · exact Or.inl (Or.inr h')
-        · exact Or.inr ⟨c', hc', h'⟩
+      · grind
+      grind
     · rw [h2]; simp only [accStep, Bool.or_eq_true, Bool.not_eq_true', decide_eq_false_iff_not,
         List.mem_cons]
       constructor
-      · rintro ((h | h) | ⟨c', hc', h'⟩)
-        · exact Or.inl h
-        · exact Or.inr ⟨c, Or.inl rfl, h⟩
-        · exact Or.inr ⟨c', Or.inr hc', h'⟩
-      · rintro (h | ⟨c', (rfl | hc'), h'⟩)
-        · exact Or.inl (Or.inl h)
-        · exact Or.inl (Or.inr h')
-        · exact Or.inr ⟨c', hc', h'⟩
+      · grind
+      grind
     · rw [h3]; simp only [accStep, Bool.or_eq_true, Bool.not_eq_true', decide_eq_false_iff_not,
         List.mem_cons]
       constructor
-      · rintro ((h | h) | ⟨c', hc', h'⟩)
-        · exact Or.inl h
-        · exact Or.inr ⟨c, Or.inl rfl, h⟩
-        · exact Or.inr ⟨c', Or.inr hc', h'⟩
-      · rintro (h | ⟨c', (rfl | hc'), h'⟩)
-        · exact Or.inl (Or.inl h)
-        · exact Or.inl (Or.inr h')
-        · exact Or.inr ⟨c', hc', h'⟩
+      · grind
+      grind
     · rw [h4]; simp only [accStep, Bool.or_eq_true, Bool.not_eq_true', decide_eq_false_iff_not,
         List.mem_cons]
       constructor
-      · rintro ((h | h) | ⟨c', hc', h'⟩)
-        · exact Or.inl h
-        · exact Or.inr ⟨c, Or.inl rfl, h⟩
-        · exact Or.inr ⟨c', Or.inr hc', h'⟩
-      · rintro (h | ⟨c', (rfl | hc'), h'⟩)
-        · exact Or.inl (Or.inl h)
-        · exact Or.inl (Or.inr h')
-        · exact Or.inr ⟨c', hc', h'⟩
+      · grind
+      grind
 
 /-- The values of the scan, when every record satisfies the facts of `chord_facts`. -/
-theorem fold_vals (b : Bool) (n ri T B pI pJ : ℕ) (L : List CRec)
+theorem fold_vals (n ri T B pI pJ : ℕ) (L : List CRec)
     (hL : ∀ c ∈ L, (c.dn = ri → c.h = T) ∧ (c.dn ≠ ri → c.h = B) ∧
       (wv b n c.lp ≠ c.h → c.lp = pI) ∧ (wv b n c.rp ≠ c.h → c.rp = pJ))
     (a : Acc) (ha : (a.hT = true → a.vt = T) ∧ (a.hB = true → a.vb = B) ∧
@@ -155,25 +134,22 @@ theorem fold_vals (b : Bool) (n ri T B pI pJ : ℕ) (L : List CRec)
     refine ⟨fun h => ?_, fun h => ?_, fun h => ?_, fun h => ?_⟩ <;>
       simp only [accStep, Bool.or_eq_true, decide_eq_true_eq, Bool.not_eq_true',
         decide_eq_false_iff_not] at h ⊢
-    · split_ifs with hc
-      · exact h1 hc
-      · exact a1 (h.resolve_right hc)
-    · split_ifs with hc
-      · exact a2 (h.resolve_right (not_not.2 hc))
-      · exact h2 hc
-    · split_ifs with hc
-      · exact a3 (h.resolve_right (not_not.2 hc))
-      · exact h3 hc
-    · split_ifs with hc
-      · exact a4 (h.resolve_right (not_not.2 hc))
-      · exact h4 hc
+    · grind
+    · grind
+    all_goals grind
 
 /-! ## Correctness of the record -/
 
+
+end
+
 variable {Q : Polygon} {N : NF} {reg : ℕ → Set Point}
 
+section
+variable (H : RegCtx Q N reg)
+include H
 /-- **The computed record of a region is its trapezoid record.** -/
-theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : TrapData Q)
+theorem trapOf_eq {ri : ℕ} (hr : ri < N.nRegions) (D : TrapData Q)
     (hD : D.region = reg ri) : trapOf (revOf Q) Q.n N ri = Final.trapRecOf D := by
   have hQ := H.simple
   have hn3 : 3 ≤ Q.n := hQ.1
@@ -181,8 +157,8 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
   have hj := D.isTrap.hj
   have hpi := inp_lt (b := revOf Q) hi
   have hpj := inp_lt (b := revOf Q) hj
-  have htn := D.top_lt hQ
-  have hbn := D.bot_lt hQ
+  
+  
   have hy1 := D.bot_snd hQ
   have hy2 := D.top_snd hQ
   set L := (N.region ri).chords.map N.chord with hL
@@ -212,7 +188,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
       wv (revOf Q) Q.n (nxt Q.n (inp (revOf Q) Q.n D.j)) = D.top := by
     intro h
     have hno : ∀ k ∈ (N.region ri).chords, (N.chord k).dn ≠ ri := fun k hk hdn => by
-      have := fT.2 ⟨_, hmemk k hk, hdn⟩; rw [h] at this; exact Bool.false_ne_true this
+      grind
     obtain ⟨e1, e2⟩ := OutGeom.top_empty hQ H.dh D (H.no_top hr D hD hno)
     exact ⟨walk_left_upper hQ D (OutGeom.top_left_upper hQ D e1),
       walk_right_upper hQ D (OutGeom.top_right_upper hQ D e2)⟩
@@ -220,8 +196,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
       wv (revOf Q) Q.n (inp (revOf Q) Q.n D.j) = D.bot := by
     intro h
     have hno : ∀ k ∈ (N.region ri).chords, (N.chord k).dn = ri := fun k hk => by
-      by_contra hdn
-      have := fB.2 ⟨_, hmemk k hk, hdn⟩; rw [h] at this; exact Bool.false_ne_true this
+      grind
     obtain ⟨e1, e2⟩ := OutGeom.bot_empty hQ H.dh D (H.no_bot hr D hD hno)
     exact ⟨walk_left_lower hQ D (OutGeom.bot_left_lower hQ D e1),
       walk_right_lower hQ D (OutGeom.bot_right_lower hQ D e2)⟩
@@ -230,8 +205,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
     intro h
     have hall : ∀ k ∈ (N.region ri).chords,
         wv (revOf Q) Q.n (N.chord k).lp = (N.chord k).h := fun k hk => by
-      by_contra hne
-      have := fL.2 ⟨_, hmemk k hk, hne⟩; rw [h] at this; exact Bool.false_ne_true this
+      grind
     obtain ⟨e1, e2⟩ := H.all_left hr D hD hall
     exact ⟨walk_left_upper hQ D (OutGeom.top_left_upper hQ D (point_ext e1 hy2)),
       walk_left_lower hQ D (OutGeom.bot_left_lower hQ D (point_ext e2 hy1))⟩
@@ -240,8 +214,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
     intro h
     have hall : ∀ k ∈ (N.region ri).chords,
         wv (revOf Q) Q.n (N.chord k).rp = (N.chord k).h := fun k hk => by
-      by_contra hne
-      have := fR.2 ⟨_, hmemk k hk, hne⟩; rw [h] at this; exact Bool.false_ne_true this
+      grind
     obtain ⟨e1, e2⟩ := H.all_right hr D hD hall
     exact ⟨walk_right_upper hQ D (OutGeom.top_right_upper hQ D (point_ext e1 hy2)),
       walk_right_lower hQ D (OutGeom.bot_right_lower hQ D (point_ext e2 hy1))⟩
@@ -256,9 +229,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
       wv_inj hpi (nxt_lt hpj) (p1.trans p2.symm)
     have e2 : inp (revOf Q) Q.n D.j = nxt Q.n (inp (revOf Q) Q.n D.i) :=
       wv_inj hpj (nxt_lt hpi) (v2.trans v1.symm)
-    rw [e2] at e1
-    unfold nxt at e1
-    split_ifs at e1 <;> omega
+    grind [nxt]
   have hLR : a.hL = true ∨ a.hR = true := by
     by_contra hcon
     push Not at hcon
@@ -266,29 +237,21 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
     have hempty : ∀ k ∈ (N.region ri).chords, False := fun k hk => by
       have hkN : k < N.nChords := (((H.regs ri hr).1 k).1 hk).1
       refine H.not_both hkN ?_ ?_
-      · by_contra hne
-        have := fL.2 ⟨_, hmemk k hk, hne⟩; rw [hcon.1] at this; exact Bool.false_ne_true this
-      · by_contra hne
-        have := fR.2 ⟨_, hmemk k hk, hne⟩; rw [hcon.2] at this; exact Bool.false_ne_true this
-    rcases hTB with h | h
-    · obtain ⟨c, hc, -⟩ := fT.1 h
-      obtain ⟨k, hk, -⟩ := List.mem_map.1 hc
-      exact hempty k hk
-    · obtain ⟨c, hc, -⟩ := fB.1 h
-      obtain ⟨k, hk, -⟩ := List.mem_map.1 hc
-      exact hempty k hk
+      · grind
+      grind
+    grind
   -- the walk edge of the left side
   have hpl : (if a.hL then a.pl else if a.hT then wv (revOf Q) Q.n a.vt else nxt Q.n a.pr) =
       inp (revOf Q) Q.n D.i := by
     cases hLa : a.hL
     · cases hTa : a.hT
-      · have hRa : a.hR = true := hLR.resolve_left (by rw [hLa]; decide)
+      · have hRa : a.hR = true := hLR.resolve_left (by grind)
         simp only [Bool.false_eq_true, ite_false]
         rw [vR hRa]
         exact (wv_inj (nxt_lt hpj) hpi ((peak hTa).2.trans (peak hTa).1.symm))
       · simp only [Bool.false_eq_true, ite_false, ite_true]
         rw [vT hTa, ← (noL hLa).1, wv_wv hpi]
-    · simp only [ite_true]; exact vL hLa
+    grind
   have hpr : (if a.hR then a.pr else if a.hB then wv (revOf Q) Q.n a.vb
       else nxt Q.n (inp (revOf Q) Q.n D.i)) = inp (revOf Q) Q.n D.j := by
     cases hRa : a.hR
@@ -297,20 +260,15 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
         exact wv_inj (nxt_lt hpi) hpj ((valley hBa).1.trans (valley hBa).2.symm)
       · simp only [Bool.false_eq_true, ite_false, ite_true]
         rw [vB hBa, ← (noR hRa).2, wv_wv hpj]
-    · simp only [ite_true]; exact vR hRa
+    grind
   simp only [trapOf, finish, ← ha]
   rw [hpl, hpr]
   simp only [Final.trapRecOf, Final.TrapRec.mk.injEq]
   refine ⟨inp_inp hi, inp_inp hj, ?_, ?_⟩
-  · cases hTa : a.hT
-    · simp only [Bool.false_eq_true, ite_false]; exact (peak hTa).2
-    · simp only [ite_true]; exact vT hTa
-  · cases hBa : a.hB
-    · simp only [Bool.false_eq_true, ite_false]; exact (valley hBa).1
-    · simp only [ite_true]; exact vB hBa
+  all_goals grind
 
 /-- **The records of all regions form a trapezoid table of `Q`.** -/
-theorem table_ok (H : RegCtx Q N reg) :
+theorem table_ok :
     Final.IsTrapTable Q ((List.range N.nRegions).map (trapOf (revOf Q) Q.n N)) := by
   have hQ := H.simple
   have hregQ : ∀ s, s < N.nRegions → reg s ∈ regions Q := fun s hs => by
@@ -324,7 +282,7 @@ theorem table_ok (H : RegCtx Q N reg) :
     rw [List.pmap_congr_left (q := fun s => s ∈ List.range N.nRegions)
       (g := fun s _ => trapOf (revOf Q) Q.n N s) _ (H₂ := fun _ h => h)
       (fun s hs h1 _ => (trapOf_eq H (List.mem_range.1 hs) (Dof s h1) (hDspec s h1)).symm)]
-    exact List.pmap_eq_map _
+    simp_all
   · rw [List.map_pmap]
     rw [List.pmap_congr_left (q := fun s => s ∈ List.range N.nRegions) (g := fun s _ => reg s) _
       (H₂ := fun _ h => h) (fun s _ h1 _ => hDspec s h1), List.pmap_eq_map]
@@ -332,17 +290,18 @@ theorem table_ok (H : RegCtx Q N reg) :
     exact H.corr.2.1 x y (List.mem_range.1 hx) (List.mem_range.1 hy) hxy
   · rw [← model_regions H.full] at hR
     obtain ⟨s, hs, rfl⟩ := H.corr.2.2 R hR
-    exact ⟨Dof s (List.mem_range.2 hs), List.mem_pmap.2 ⟨s, List.mem_range.2 hs, rfl⟩,
-      hDspec s (List.mem_range.2 hs)⟩
-  · rintro ⟨D, -, rfl⟩
-    exact D.region_mem_regions hQ
+    grind
+  grind
+
+
+end
 
 /-- **No vertex-to-vertex chords** (distinct heights): the empty vertex-chord table is valid. -/
 theorem vtxChordTable_nil (hQ : Q.Simple) (hdh : DistinctHeights Q) :
     Final.IsVtxChordTable Q [] := by
   refine ⟨fun c => ⟨fun h => absurd h List.not_mem_nil, fun ⟨h1, h2, h3, h4⟩ => ?_⟩, List.nodup_nil⟩
   exfalso
-  have hy : (Q.vtx c.dst).2 = (Q.vtx c.src).2 := by rw [← h4, chordEnd_snd]
+  have hy : (Q.vtx c.dst).2 = (Q.vtx c.src).2 := by grind [chordEnd_snd]
   have hsd : c.dst = c.src := by
     by_contra hne; exact hdh _ _ h2 h1 hne hy
   exact chordEnd_ne_vtx hQ h1 h3 (by rw [h4, hsd])
@@ -377,17 +336,9 @@ theorem chords_length_le (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) 
       by_contra hne
       exact H.dh _ _ hv (H.hlt k hkN) hne e1
     obtain ⟨f1, f2, -, -⟩ := H.facts hr D hD hk
-    have hfk : f k = chordSet Q (N.chord k).h σ := by rw [hf]; simp only; rw [hS, hvh]
-    rw [hfk, hT]
-    by_cases hdn : (N.chord k).dn = ri
-    · rw [f1 hdn]; rcases hσ with rfl | rfl <;> simp
-    · rw [f2 hdn]; rcases hσ with rfl | rfl <;> simp
+    grind
   have hT4 : T.card ≤ 4 := by
-    rw [hT]
-    refine (Finset.card_insert_le _ _).trans ?_
-    refine Nat.succ_le_succ ((Finset.card_insert_le _ _).trans ?_)
-    refine Nat.succ_le_succ ((Finset.card_insert_le _ _).trans ?_)
-    simp
+    grind
   have := Finset.card_le_card hsub
   rw [List.toFinset_card_of_nodup hnd, List.length_map] at this
   omega

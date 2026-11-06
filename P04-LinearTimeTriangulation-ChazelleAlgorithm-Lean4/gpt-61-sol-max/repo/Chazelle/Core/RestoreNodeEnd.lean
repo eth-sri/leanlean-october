@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreStretch
 
 /-!
@@ -25,63 +27,40 @@ open Chazelle.Chain (sidePt SideAttach sideLeft sideInArc)
 theorem lt_after (a k : ℝ) : ∀ᶠ ε in 𝓝[>] (0 : ℝ), (a < k + ε ↔ a ≤ k) := by
   by_cases h : a ≤ k
   · filter_upwards [self_mem_nhdsWithin] with ε hε
-    exact ⟨fun _ => h, fun _ => by have : (0 : ℝ) < ε := hε; linarith⟩
+    aesop (add safe (by nlinarith))
   · push Not at h
     filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < a - k by linarith)] with ε hε
-    exact ⟨fun h' => by linarith [hε.2], fun h' => by linarith⟩
+    ram_grind
 
 theorem after_lt (b k : ℝ) : ∀ᶠ ε in 𝓝[>] (0 : ℝ), (k + ε < b ↔ k < b) := by
   by_cases h : k < b
   · filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < b - k by linarith)] with ε hε
-    exact ⟨fun _ => h, fun _ => by linarith [hε.2]⟩
+    aesop (add safe (by nlinarith))
   · push Not at h
     filter_upwards [self_mem_nhdsWithin] with ε hε
-    exact ⟨fun h' => by have : (0 : ℝ) < ε := hε; linarith, fun h' => by linarith⟩
+    ram_grind
 
 /-- **The side just after a key.** -/
 theorem side_after {a b : ℝ} (hab : a ≠ b) (k : ℝ) :
     ∀ᶠ ε in 𝓝[>] (0 : ℝ), (sideInArc a b (k + ε) ↔ (k = a ∨ sideInArc a b k)) := by
   filter_upwards [lt_after a k, after_lt b k] with ε h1 h2
-  unfold sideInArc
-  split_ifs with h
-  · rw [h1, h2]
-    constructor
-    · rintro ⟨h3, h4⟩
-      rcases h3.lt_or_eq with h3 | h3
-      · exact Or.inr ⟨h3, h4⟩
-      · exact Or.inl h3.symm
-    · rintro (rfl | ⟨h3, h4⟩)
-      · exact ⟨le_rfl, h⟩
-      · exact ⟨h3.le, h4⟩
-  · rw [h1, h2]
-    have hba : b < a := lt_of_le_of_ne (not_lt.1 h) (Ne.symm hab)
-    constructor
-    · rintro (h3 | h3)
-      · rcases h3.lt_or_eq with h3 | h3
-        · exact Or.inr (Or.inl h3)
-        · exact Or.inl h3.symm
-      · exact Or.inr (Or.inr h3)
-    · rintro (rfl | h3 | h3)
-      · exact Or.inl le_rfl
-      · exact Or.inl h3.le
-      · exact Or.inr h3
+  ram_grind
 
 /-- Just after its start, a key interval contains the keys. -/
 theorem after_start (a b : ℝ) : ∀ᶠ ε in 𝓝[>] (0 : ℝ), sideInArc a b (a + ε) := by
   by_cases hab : a = b
   · subst hab
     filter_upwards [self_mem_nhdsWithin] with ε hε
-    have : (0 : ℝ) < ε := hε
-    unfold sideInArc; rw [ite_eq_right (lt_irrefl a)]; left; linarith
+    simp_all [sideInArc] <;> omega_nf
   · filter_upwards [side_after hab a] with ε h
-    exact h.2 (Or.inl rfl)
+    simp_all
 
 /-- **The side of the good vertex** after a failed test at `a`, from `prune`. -/
 theorem end_side {ka kf kx aj bj : ℝ} (hakf : ka ≠ kf)
     (hpr : ∀ y, sideInArc aj bj y → (sideInArc ka kf kx ↔ sideInArc ka kf y)) :
     sideInArc ka kf kx ↔ (aj = ka ∨ sideInArc ka kf aj) := by
   obtain ⟨ε, h1, h2⟩ := ((after_start aj bj).and (side_after hakf aj)).exists
-  exact (hpr _ h1).trans h2
+  ram_grind
 
 /-- **The side of the good vertex after a failed test**, in the terms of `prune`. -/
 theorem prune_side {M : Model} (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm)

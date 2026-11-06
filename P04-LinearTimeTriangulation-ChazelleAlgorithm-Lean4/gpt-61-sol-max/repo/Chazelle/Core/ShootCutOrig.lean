@@ -38,13 +38,7 @@ def OnLine (u w a : Point) : Prop := a.1 = xAt u w a.2
 /-- **Two points of a line define it.** -/
 theorem xAt_eq_of_line {u w a b : Point} (huw : u.2 ≠ w.2) (hab : a.2 ≠ b.2) (ha : OnLine u w a)
     (hb : OnLine u w b) (y : ℝ) : xAt a b y = xAt u w y := by
-  unfold OnLine at ha hb
-  unfold xAt at ha hb ⊢
-  have h1 : w.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm huw)
-  have h2 : b.2 - a.2 ≠ 0 := sub_ne_zero.2 (Ne.symm hab)
-  rw [ha, hb]
-  field_simp
-  ring
+  grind [OnLine, xAt]
 
 /-- **The edge of `Q` carrying a host edge** (for `HostEdgeOK` pairs). -/
 def edgeOf (n : ℕ) : SymPt → SymPt → ℕ
@@ -54,7 +48,13 @@ def edgeOf (n : ℕ) : SymPt → SymPt → ℕ
 
 variable {Q : Polygon}
 
-theorem vtx_onLine (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e : ℕ} (he : e < Q.n) :
+section
+variable (hD : DistinctHeights Q) (hn : 2 ≤ Q.n)
+include hD hn
+section
+variable {e : ℕ} (he : e < Q.n)
+include e he
+theorem vtx_onLine :
     OnLine (Q.vtx e) (Q.vtx ((e + 1) % Q.n)) (Q.vtx e) ∧
       OnLine (Q.vtx e) (Q.vtx ((e + 1) % Q.n)) (Q.vtx ((e + 1) % Q.n)) := by
   have hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2 :=
@@ -62,20 +62,23 @@ theorem vtx_onLine (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e : ℕ} (he : e <
       intro h
       rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h' | h'
       · rw [Nat.mod_eq_of_lt h'] at h; omega
-      · rw [h', Nat.mod_self] at h; omega)
+      grind [Nat.mod_self])
   exact ⟨(xAt_left _ _).symm, (xAt_right hne).symm⟩
 
 /-- The edges of `Q` are not horizontal. -/
-theorem edge_nh (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e : ℕ} (he : e < Q.n) :
+theorem edge_nh :
     (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2 :=
   hD _ _ he (Nat.mod_lt _ (by omega)) (by
       intro h
       rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h' | h'
       · rw [Nat.mod_eq_of_lt h'] at h; omega
-      · rw [h', Nat.mod_self] at h; omega)
+      grind [Nat.mod_self])
+
+
+end
 
 /-- **The symbolic points of a regular host edge lie on the line of its edge of `Q`.** -/
-theorem hostEdge_onLine (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {sp₁ sp₂ : SymPt}
+theorem hostEdge_onLine {sp₁ sp₂ : SymPt}
     (hl₁ : sp₁.Lt Q.n) (hl₂ : sp₂.Lt Q.n) (hok : HostEdgeOK Q.n sp₁ sp₂)
     (hnh : (sp₁.eval Q).2 ≠ (sp₂.eval Q).2) :
     edgeOf Q.n sp₁ sp₂ < Q.n ∧
@@ -90,11 +93,11 @@ theorem hostEdge_onLine (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {sp₁ sp₂ :
       simp only [HostEdgeOK] at hok
       simp only [SymPt.Lt] at hl₁ hl₂
       by_cases hj : j = (i + 1) % Q.n
-      · have e : edgeOf Q.n (.vtx i) (.vtx j) = i := by simp [edgeOf, hj]
+      · have e : edgeOf Q.n (.vtx i) (.vtx j) = i := by grind [edgeOf]
         rw [e]
         subst hj
         exact ⟨hl₁, (vtx_onLine hD hn hl₁).1, (vtx_onLine hD hn hl₁).2⟩
-      · have e : edgeOf Q.n (.vtx i) (.vtx j) = j := by simp [edgeOf, hj]
+      · have e : edgeOf Q.n (.vtx i) (.vtx j) = j := by grind [edgeOf]
         rw [e]
         have hi : i = (j + 1) % Q.n := hok.resolve_left hj
         subst hi
@@ -119,7 +122,10 @@ theorem hostEdge_onLine (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {sp₁ sp₂ :
       simp only [HostEdgeOK] at hok
       rcases hok with rfl | rfl
       · exact absurd rfl hnh
-      · exact onE e h' hl₁.1
+      aesop
+
+
+end
 
 /-- **A walk position at a vertex height on a non-horizontal regular host edge** is the symbolic
 point `onEdge e h`, `e` the edge of `Q` carrying the host edge. -/
@@ -132,7 +138,7 @@ theorem pos_eq_onEdge (M : Model) (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {p h
   have hQnh := edge_nh hD hn he
   unfold Model.pos Model.param
   simp only
-  rw [ite_eq_right (by rw [ha, hb]; exact hnh), ha, hb]
+  rw [ite_eq_right (by simp_all), ha, hb]
   have hy : (lerp (sp₁.eval Q) (sp₂.eval Q)
       (((Q.vtx h).2 - (sp₁.eval Q).2) / ((sp₂.eval Q).2 - (sp₁.eval Q).2))).2 = (Q.vtx h).2 :=
     hpar_snd hnh _
@@ -150,18 +156,14 @@ theorem firstHit_shift {S : Set Point} {z z' : Point} {σ : ℝ} (hσ : σ = 1 �
     (hy : z.2 = z'.2) (hahead : ∀ x ∈ S, x.2 = z.2 → 0 < σ * (x.1 - z.1) ∧ 0 < σ * (x.1 - z'.1)) :
     (∀ t', FirstHit S z' σ t' → FirstHit S z σ (t' + σ * (z'.1 - z.1))) ∧
       (NoHit S z' σ → NoHit S z σ) := by
-  have hσ2 : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
+  have hσ2 : σ * σ = 1 := by grind
   have key : ∀ t, rayPt z σ t = rayPt z' σ (t - σ * (z'.1 - z.1)) := by
-    intro t
-    ext
-    · simp only [rayPt_fst]; rw [mul_sub, ← mul_assoc, hσ2, one_mul]; ring
-    · simp only [rayPt_snd]; exact hy
+    grind [rayPt_fst, mul_sub, mul_assoc, one_mul, rayPt_snd]
   -- parameters of points of `S` on the line
   have ahead_z : ∀ t, rayPt z σ t ∈ S → 0 < t := by
     intro t ht
     have := (hahead _ ht rfl).1
     simp only [rayPt_fst] at this
-    have : σ * (σ * t) = t := by rw [← mul_assoc, hσ2, one_mul]
     nlinarith
   refine ⟨fun t' ht' => ⟨?_, ?_, fun s hs1 hs2 hsS => ?_⟩, fun hN t ht hS => ?_⟩
   · apply ahead_z
@@ -169,19 +171,11 @@ theorem firstHit_shift {S : Set Point} {z z' : Point} {σ : ℝ} (hσ : σ = 1 �
   · rw [key]; simp only [add_sub_cancel_right]; exact ht'.2.1
   · rw [key] at hsS
     have hpos : 0 < s - σ * (z'.1 - z.1) := by
-      have := (hahead _ hsS (by simp [rayPt_snd, hy])).2
-      simp only [rayPt_fst] at this
-      have e : σ * (σ * (s - σ * (z'.1 - z.1))) = s - σ * (z'.1 - z.1) := by
-        rw [← mul_assoc, hσ2, one_mul]
-      nlinarith
+      grind [rayPt_snd, rayPt_fst, mul_assoc, one_mul]
     exact ht'.2.2 _ hpos (by linarith) hsS
   · rw [key] at hS
     have hpos : 0 < t - σ * (z'.1 - z.1) := by
-      have := (hahead _ hS (by simp [rayPt_snd, hy])).2
-      simp only [rayPt_fst] at this
-      have e : σ * (σ * (t - σ * (z'.1 - z.1))) = t - σ * (z'.1 - z.1) := by
-        rw [← mul_assoc, hσ2, one_mul]
-      nlinarith
+      grind [rayPt_snd, rayPt_fst, mul_assoc, one_mul]
     exact hN _ hpos hS
 
 end ShootCut

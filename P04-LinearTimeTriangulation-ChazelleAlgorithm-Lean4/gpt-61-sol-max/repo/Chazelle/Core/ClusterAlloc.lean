@@ -40,17 +40,16 @@ theorem bumpS_exec {c : Config} (hw : WordsBounded W c) {E : ℕ} (h1 : c.nreg 1
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output)
     (fun c' => 3 * (E - c'.nreg ALLOC)) (fun c' => c'.nreg ALLOC) (fun c' h => h.1)
     (fun c1 ⟨hw1, hA1, hr1, hm1, hrr1, hrm1, ho1⟩ htest => by
-      have e1 : c1.nreg 130001 = 1 := by rw [hr1 _ (by rw [hAl]; omega)]; exact h1
-      have e2 : c1.nreg 130086 = E := by rw [hr1 _ (by rw [hAl]; omega)]; exact hE
+      have e1 : c1.nreg 130001 = 1 := by simp_all
+      have e2 : c1.nreg 130086 = E := by simp_all
       rw [e2] at htest
-      have ex := Exec.addN (P := P) hw1 ALLOC ALLOC 130001 (by rw [e1]; omega)
+      have ex := Exec.addN (P := P) hw1 ALLOC ALLOC 130001 (by omega)
       refine ⟨_, 1, ex, ⟨ex.wb_right, ?_, fun r hr => ?_, hm1, hrr1, hrm1, ho1⟩, ?_, ?_⟩
-      · simp only [Machine.upd_same]; rw [e1]; omega
-      · simp only; rw [Machine.upd_other _ _ _ hr]; exact hr1 r hr
-      · simp only [Machine.upd_same]; rw [e1]; omega
-      · simp only [Machine.upd_same]; rw [e1])
+      · simp_all
+      · simp_all
+      all_goals (grind [Machine.upd_same]))
     ⟨hw, hA, fun r _ => rfl, rfl, rfl, rfl, rfl⟩
-  have e2 : c'.nreg 130086 = E := by rw [hr' _ (by rw [hAl]; omega)]; exact hE
+  have e2 : c'.nreg 130086 = E := by simp_all
   rw [e2] at htest
   exact ⟨c', k, e, hk, hw', by omega, hψ, hr', hm', hrr', hrm', ho'⟩
 

@@ -33,28 +33,23 @@ theorem exists_first_exit_dir {D : Set Point} (hD : IsOpen D) {z : Point} (hz : 
       ((z.1 + σ * s, z.2) : Point) ∉ D := by
   rcases hσ with rfl | rfl
   · obtain ⟨s, hs, h1, h2⟩ := exists_first_exit hD hz (R := B) (fun x hx => (abs_lt.1 (hB x hx)).2)
-    exact ⟨s, hs, fun s' hs' => by rw [one_mul]; exact h1 s' hs', by rw [one_mul]; exact h2⟩
+    grind
   · set f : Point → Point := fun p => (-p.1, p.2)
     have hf : Continuous f := by fun_prop
     set D' := f ⁻¹' D
     have hD' : IsOpen D' := hD.preimage hf
-    have hz' : ((-z.1, z.2) : Point) ∈ D' := by show f (-z.1, z.2) ∈ D; simpa [f] using hz
+    have hz' : ((-z.1, z.2) : Point) ∈ D' := by grind
     obtain ⟨s, hs, h1, h2⟩ := exists_first_exit hD' hz' (R := B) (fun x hx => by
-      have := hB _ hx; simp only [f] at this; rw [abs_neg] at this; exact (abs_lt.1 this).2)
-    refine ⟨s, hs, fun s' hs' => ?_, ?_⟩
-    · have := h1 s' hs'
-      simp only [D', f, mem_preimage] at this
-      rw [show z.1 + -1 * s' = -(-z.1 + s') by ring]; exact this
-    · intro h
-      apply h2
-      simp only [D', f, mem_preimage]
-      rw [show -(-z.1 + s) = z.1 + -1 * s by ring]; exact h
+      grind)
+    grind
 
 variable {Q : Polygon} {S : Set (Set Point)} {R : Set Point}
 
+section
+variable (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S) (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S)
+include hQ hFam hne hR
 /-- **A horizontal ray leaves the region on an arc piece.** -/
-theorem ray_hit (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
-    (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S) {z : Point} (hzR : z ∈ R)
+theorem ray_hit {z : Point} (hzR : z ∈ R)
     (hvQ : ∀ i, i < Q.n → z.2 ≠ (Q.vtx i).2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     ∃ s > (0 : ℝ), ∃ i i' : ℕ, i < nk (interiorModel Q) S R ∧ i' < nk (interiorModel Q) S R ∧
       i' = (i + 1) % nk (interiorModel Q) S R ∧
@@ -80,21 +75,21 @@ theorem ray_hit (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     (fun x hx => by
       have := (filled_subset_square Q hx.1).1; linarith) hσ
   set q : Point := (z.1 + σ * s, z.2) with hqdef
-  have hσ2 : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
+  have hσ2 : σ * σ = 1 := by grind
   have hqf : q ∈ Q.filled := by
     by_contra hnf
     obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 (isClosed_filled Q).isOpen_compl _ hnf
     set ε := min r s / 2 with hε
-    have hε0 : 0 < ε := by rw [hε]; have := lt_min hr hs; linarith
-    have hεr : ε < r := by rw [hε]; have := min_le_left r s; linarith
-    have hεs : ε < s := by rw [hε]; have := min_le_right r s; linarith
+    have hε0 : 0 < ε := by grind
+    have hεr : ε < r := by grind
+    have hεs : ε < s := by grind
     apply hball (show ((z.1 + σ * (s - ε), z.2) : Point) ∈ ball q r by
       rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
       simp only [hqdef, sub_self, abs_zero]
       rw [show z.1 + σ * (s - ε) - (z.1 + σ * s) = -(σ * ε) by ring, abs_neg, abs_mul]
-      have : |σ| = 1 := by rcases hσ with rfl | rfl <;> norm_num
+      have : |σ| = 1 := by grind
       rw [this, one_mul, abs_of_pos hε0]
-      exact max_lt hεr hr)
+      grind)
     exact (hseg (s - ε) ⟨by linarith, by linarith⟩).1
   have hqb : q ∈ M.W.boundary := by
     show q ∈ (interiorWalk Q).boundary
@@ -111,9 +106,9 @@ theorem ray_hit (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       show ∃ k, k < Q.n ∧ (interiorWalk Q).vtx j = Q.vtx k
       unfold interiorWalk
       split_ifs
-      · exact ⟨j, hj', rfl⟩
+      · grind
       · exact ⟨Q.n - 1 - j, by omega, FactsInterior.rev_vtx Q j hj'⟩
-    exact hvQ k hk (by rw [← hkv, ← h])
+    grind
   obtain ⟨p, hp, t, ht, hqe⟩ := exists_openEdge_of_mem_boundary M.W hqb hqv
   have hpt : sidePt M.W p t = q := hqe.symm
   -- the segment lies in `R`
@@ -133,16 +128,16 @@ theorem ray_hit (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     exact hch c hc _ hA.2.2.2.1 (by rw [hpt])
   obtain ⟨X, hX, a, b, harc, hin⟩ := hM.arc_around hF hfin hne hncut
   have hfX : ∀ᶠ s in 𝓝[>] (0 : ℝ), M.Faces p (t + s * (1 - t)) X := by
-    have h1 := (Loc.tendsto_mul_const_nhdsGT (show 0 < 1 - t by linarith [ht.2])).eventually
+    have h1 := (Loc.tendsto_mul_const_nhdsGT (show 0 < 1 - t by grind)).eventually
       (cyc_open hin)
     filter_upwards [h1, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)] with s h1 hs1
     have hs0 : 0 < s := hs1.1
     refine harc.2.2.2.2.2.2 p _ hp (by nlinarith [ht.1, ht.2]) (by nlinarith [ht.1, ht.2, hs1.2]) ?_
-    rw [← add_assoc]; exact h1
+    grind
   obtain ⟨r0, hr0, hnear0⟩ := Loc.near_sub_region hQ hF hfin hp ht.1.le ht.2 hncut hX hfX
   have hXR : X = R := by
     set ε := min s r0 / 2 with hε
-    have hε0 : 0 < ε := by rw [hε]; have := lt_min hs hr0; linarith
+    have hε0 : 0 < ε := by positivity
     have hεs : ε < s := by rw [hε]; have := min_le_left s r0; linarith
     have hεr : ε < r0 := by rw [hε]; have := min_le_right s r0; linarith
     have hmem := hsegR (s - ε) ⟨by linarith, by linarith⟩
@@ -178,26 +173,25 @@ theorem ray_hit (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hxu := (cyc_unwrap hlb hlb hrb hxb hab').1 hin
   rw [unwrapK_self] at hxu
   set xx := unwrapK n a ((p : ℝ) + t) with hxx
-  have hxa : ukey M S X i_l 0 < xx := by rw [hu0]; exact hxu.1
+  
   have hxd : xx < ukey M S X i_l d := by rw [hA.hud]; exact hxu.2
   have hd0 := hA.hd0
   have hdN := hA.hdN
   have hex : ∃ j, xx < ukey M S X i_l (j + 1) := ⟨d - 1, by
-    rw [Nat.sub_add_cancel hd0]; exact hxd⟩
+    grind⟩
   classical
   set j := Nat.find hex
   have hj1 : xx < ukey M S X i_l (j + 1) := Nat.find_spec hex
   have hjd : j < d := by
     by_contra h; push Not at h
     have := Nat.find_min' hex (show xx < ukey M S X i_l (d - 1 + 1) by
-      rw [Nat.sub_add_cancel hd0]; exact hxd)
+      grind)
     omega
   have hj0 : ukey M S X i_l j ≤ xx := by
     rcases Nat.eq_zero_or_pos j with h0 | h0
-    · rw [h0]; exact hxa.le
+    · grind
     · have := Nat.find_min hex (show j - 1 < j by omega)
-      push Not at this
-      rwa [Nat.sub_add_cancel h0] at this
+      grind
   have hjj : ukey M S X i_l j < ukey M S X i_l (j + 1) :=
     ukey_mono hM hF hfin hA.hil (Nat.lt_succ_self j) (by omega)
   obtain ⟨q', -, -, -, hq'⟩ := arc_piece hM hF hfin hA hjd
@@ -208,20 +202,19 @@ theorem ray_hit (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have e3 := hq' _ hjj.le le_rfl
   rw [wrapK_ukey hM hF hfin hA.hil (by omega)] at e2 e3
   refine ⟨s, hs, (i_l + j) % N, (i_l + (j + 1)) % N, Nat.mod_lt _ (by omega),
-    Nat.mod_lt _ (by omega), by rw [Nat.mod_add_mod, add_assoc],
+    Nat.mod_lt _ (by omega), by grind,
     (xx - ukey M S X i_l j) / (ukey M S X i_l (j + 1) - ukey M S X i_l j),
     ⟨div_nonneg (by linarith) (by linarith), (div_le_one (by linarith)).2 (by linarith)⟩, ?_,
-    r0, hr0, fun x hx hxD => hnear0 x (by rw [hpt]; exact hx) hxD⟩
+    r0, hr0, fun x hx hxD => hnear0 x (by grind) hxD⟩
   rw [e2, e3, lerp_lerp]
   calc q = hostPt M.W (wrapK n xx) := hw.symm
     _ = _ := e1
     _ = _ := by
       have hne : ukey M S X i_l (j + 1) - ukey M S X i_l j ≠ 0 := sub_ne_zero.2 hjj.ne'
-      congr 1; field_simp; ring
+      grind
 
 /-- **A region lies within the coordinate bound of its host points.** -/
-theorem region_abs_le (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
-    (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S) {B : ℝ}
+theorem region_abs_le {B : ℝ}
     (hB : ∀ i, i < nk (interiorModel Q) S R →
       |(hostPt (interiorModel Q).W (hk (interiorModel Q) S R i)).1| ≤ B ∧
       |(hostPt (interiorModel Q).W (hk (interiorModel Q) S R i)).2| ≤ B) :
@@ -242,13 +235,13 @@ theorem region_abs_le (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hz'R : z' ∈ R := hball (by
     rw [Metric.mem_ball, Prod.dist_eq]
     simp only [z', Real.dist_eq, sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hη0]
-    exact max_lt hρ hηρ')
+    simp_all)
   have hvQ : ∀ i, i < Q.n → z'.2 ≠ (Q.vtx i).2 := by
     intro i hi e
     apply hηV
     rw [Finset.coe_image]
     exact ⟨(Q.vtx i).2, Finset.mem_image.2 ⟨i, Finset.mem_range.2 hi, rfl⟩, by
-      simp only [z'] at e; simp only; linarith⟩
+      linarith⟩
   -- the coordinates of a convex combination of host points
   have hcomb : ∀ i i', i < nk M S R → i' < nk M S R → ∀ lam ∈ Icc (0 : ℝ) 1,
       |(lerp (hostPt M.W (hk M S R i)) (hostPt M.W (hk M S R i')) lam).1| ≤ B ∧
@@ -271,8 +264,11 @@ theorem region_abs_le (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   rw [← he₂] at c2
   simp only [z'] at c1 c2
   simp only [abs_le] at c1 c2
-  refine ⟨abs_lt.2 ⟨by linarith [c2.1.1], by linarith [c1.1.2]⟩,
-    abs_lt.2 ⟨by linarith [c1.2.1], by linarith [c1.2.2]⟩⟩
+  refine ⟨abs_lt.2 ⟨by linarith, by linarith⟩,
+    abs_lt.2 ⟨by linarith, by linarith⟩⟩
+
+
+end
 
 end
 

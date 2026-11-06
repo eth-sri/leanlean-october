@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepArr
 
 /-!
@@ -37,7 +39,7 @@ theorem fpos_spec (ρ : ℕ → ℕ) (p : ℕ) :
   classical
   unfold fpos
   refine ⟨Nat.find_spec (⟨p, rfl⟩ : ∃ q, ρ q = ρ p), Nat.find_min' _ rfl, fun q hq => ?_⟩
-  exact Nat.find_min' _ hq
+  aesop
 
 open Classical in
 /-- The star chord of spine position `p`. -/
@@ -49,18 +51,7 @@ noncomputable def starList (ρ : ℕ → ℕ) (A : ℕ) : List (ℕ × ℕ) := e
 
 theorem mem_starList {ρ : ℕ → ℕ} {A : ℕ} {c : ℕ × ℕ} :
     c ∈ starList ρ A ↔ c.2 < A ∧ c.1 = fpos ρ c.2 ∧ fpos ρ c.2 + 2 ≤ c.2 := by
-  unfold starList
-  rw [mem_emitted]
-  constructor
-  · rintro ⟨j, hj, hφ⟩
-    unfold starOf at hφ
-    split_ifs at hφ with h
-    cases hφ
-    exact ⟨hj, rfl, h⟩
-  · rintro ⟨h1, h2, h3⟩
-    refine ⟨c.2, h1, ?_⟩
-    unfold starOf
-    rw [ite_eq_left h3, ← h2]
+  core_grind [mem_emitted, starOf]
 
 /-- Emitted pairs whose second component is the index have no repetition. -/
 theorem emitted_nodup {φ : ℕ → Option (ℕ × ℕ)} (h : ∀ i x, φ i = some x → x.2 = i) (n : ℕ) :
@@ -69,23 +60,25 @@ theorem emitted_nodup {φ : ℕ → Option (ℕ × ℕ)} (h : ∀ i x, φ i = so
   refine List.Nodup.filterMap (fun a a' b hb hb' => ?_) List.nodup_range
   rw [← h a b hb, ← h a' b hb']
 
-theorem starList_nodup (ρ : ℕ → ℕ) (A : ℕ) : (starList ρ A).Nodup :=
+section
+variable (ρ : ℕ → ℕ)
+theorem starList_nodup (A : ℕ) : (starList ρ A).Nodup :=
   emitted_nodup (fun i x hx => by
-    unfold starOf at hx; split_ifs at hx; cases hx; rfl) A
+    grind [starOf]) A
 
-theorem starList_length (ρ : ℕ → ℕ) (A : ℕ) : (starList ρ A).length ≤ A :=
+theorem starList_length (A : ℕ) : (starList ρ A).length ≤ A :=
   emitted_length_le _ A
 
 /-- **The star chords are complete**: every spine position is its region's first, or joined to it
 by a star chord or a spine edge. -/
-theorem starList_complete (ρ : ℕ → ℕ) {A p : ℕ} (hp : p < A) :
+theorem starList_complete {A p : ℕ} (hp : p < A) :
     fpos ρ p = p ∨ (fpos ρ p, p) ∈ starList ρ A ∨ p = fpos ρ p + 1 := by
-  have := (fpos_spec ρ p).2.1
-  by_cases h : fpos ρ p + 2 ≤ p
-  · exact Or.inr (Or.inl (mem_starList.2 ⟨hp, rfl, h⟩))
-  · omega
+  core_grind [Chazelle.Core.OracleR.fpos_spec, Chazelle.Core.OracleR.mem_starList]
 
 /-! ## The region of a spine position -/
+
+
+end
 
 /-- `110065 := ρ p` for the spine position `p` in `110063`: `AB[5 SB[p]]` (scratch `110064`). -/
 def rgS : Stmt :=
@@ -111,13 +104,12 @@ theorem rgS_exec {P : Polygon} {W : ℕ} {d : Config} (hwd : WordsBounded W d) {
   obtain ⟨d', k, e, hk, v⟩ : ∃ d' k, Exec P W rgS d d' k ∧ k = 7 ∧ d'.nreg 110065 = rg (σ p) := by
     unfold rgS
     exec_block
-    · rw [hSB, hp]; omega
-    · config_simp; rw [hSB, hp, hs]; omega
-    · config_simp; rw [hSB, hp, hs]; omega
-    · config_simp; rw [hSB, hp, hs]; omega
-    · config_simp; rw [hSB, hp, hs, hAB]; omega
-    · refine ⟨rfl, ?_⟩
-      config_simp; rw [hSB, hp, hs, hAB, ← hr]; congr 1; ring
+    · omega
+    · simp_all +zetaDelta <;> omega
+    · simp_all +zetaDelta <;> omega
+    · simp_all +zetaDelta <;> omega
+    · simp_all +zetaDelta <;> omega
+    simp_all +arith
   exact ⟨d', k, e, hk, exec_frameB e (by decide), v⟩
 
 /-! ## The first position of each region -/
@@ -151,18 +143,17 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
       c₁.nreg = upd (upd (upd (upd c.nreg 110062 (NB + 2)) 110061 R) 110060 A₀) 9999 (A₀ + R) ∧
       c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     exec_block
-    · rw [hNB, h2]; omega
-    · config_simp; rw [hNB, h2, hR, hAl]; omega
-    · refine ⟨rfl, ?_, rfl, rfl, rfl, rfl⟩
-      config_simp; rw [hNB, h2, hR, hAl]
+    · omega
+    · simp_all +zetaDelta <;> omega
+    simp_all
   have hr₁ : ∀ r, BFR r = false → c₁.nreg r = c.nreg r := fun r hr => by
     simp only [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-    rw [n₁]; simp only [upd]; split_ifs <;> first | omega
-  have v60 : c₁.nreg 110060 = A₀ := by rw [n₁]; config_simp
-  have v44 : c₁.nreg 120044 = AB := by rw [hr₁ _ (by decide), hAB]
-  have v46 : c₁.nreg 120046 = SB := by rw [hr₁ _ (by decide), hSB]
-  have v30 : c₁.nreg 120030 = A := by rw [hr₁ _ (by decide), hA]
-  have v11 : c₁.nreg 120011 = 1 := by rw [hr₁ _ (by decide), h1]
+    rw [n₁]; grind [upd]
+  have v60 : c₁.nreg 110060 = A₀ := by simp_all
+  have v44 : c₁.nreg 120044 = AB := by simp_all
+  have v46 : c₁.nreg 120046 = SB := by simp_all
+  have v30 : c₁.nreg 120030 = A := by simp_all
+  have v11 : c₁.nreg 120011 = 1 := by simp_all
   let K : ℕ → Bool := fun r => decide (r = 110060) || decide (r = 120044) || decide (r = 120046) ||
     decide (r = 120030) || decide (r = 120011)
   let J : Config → Prop := JK c₁ K A₀
@@ -171,9 +162,8 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
     (B := fun r => decide (110063 ≤ r ∧ r ≤ 110067)) (by decide) (by decide) (by decide)
     (by decide) (by decide) J A₀
     (fun d d' hJ hr hm => JK.stable (rs := [110069]) (fun r hr' => by
-      simp only [K, Bool.or_eq_true, decide_eq_true_eq] at hr'
-      rcases hr' with (((rfl | rfl) | rfl) | rfl) | rfl <;> decide) hJ
-      (fun r a b => hr r a (by simpa using b)) hm)
+      grind) hJ
+      (fun r a b => hr r a (by grind)) hm)
     (n := A) (κ := 12) (fun i => A₀ + ρ (A - 1 - i)) (fun i => A - 1 - i) (fun i _ => by omega)
     (fun i d hi hJ hwd hri => by
       have g60 : d.nreg 110060 = A₀ := by rw [hJ.1 _ (by decide), v60]
@@ -182,57 +172,50 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
       have g30 : d.nreg 120030 = A := by rw [hJ.1 _ (by decide), v30]
       have g11 : d.nreg 120011 = 1 := by rw [hJ.1 _ (by decide), v11]
       have hMd : RgMem d.nmem AB SB A σ rg := ⟨fun p hp => by
-          rw [hJ.2 _ (by omega), m₁]; exact hM.seq p hp, hM.σ_lt,
-        fun j hj => by rw [hJ.2 _ (by omega), m₁]; exact hM.reg j hj⟩
+          rw [hJ.2 _ (by omega), m₁]; ram_grind, hM.σ_lt,
+        fun j hj => by rw [hJ.2 _ (by omega), m₁]; ram_grind⟩
       obtain ⟨d₁, k₁', e₁', hk₁', n₁', -⟩ : ∃ d₁ k₁', Exec P W
           (block [.subN 110063 120030 120011, .subN 110063 110063 110069]) d d₁ k₁' ∧ k₁' = 2 ∧
           d₁.nreg = upd d.nreg 110063 (A - 1 - i) ∧ True := by
         exec_block
-        refine ⟨rfl, ?_, trivial⟩
-        config_simp; rw [g30, g11, hri]
+        grind
       have f₁' : ∀ r, r ≠ 110063 → d₁.nreg r = d.nreg r := fun r hr => by
-        rw [n₁']; exact upd_other _ _ _ hr
+        ram_simp
       have hm₁' : d₁.nmem = d.nmem :=
         (exec_frameB e₁' (B := fun r => decide (r = 110063)) (by decide)).2.2.1
       obtain ⟨d₂, k₂', e₂', hk₂', f₂', v₂'⟩ := rgS_exec (P := P) e₁'.wb_right (p := A - 1 - i)
-        (by rw [hm₁']; exact hMd) (by rw [f₁' _ (by decide), g44])
-        (by rw [f₁' _ (by decide), g46]) (by rw [n₁']; config_simp) (by omega) (by omega)
+        (by rw [hm₁']; exact hMd) (by grind)
+        (by grind) (by rw [n₁']; config_simp) (by omega) (by omega)
         (by omega)
       have hρl := hρR (A - 1 - i) (by omega)
       obtain ⟨d₃, k₃', e₃', hk₃', v67, v66⟩ : ∃ d₃ k₃', Exec P W
           (block [.addN 110067 110060 110065, .copyN 110066 110063]) d₂ d₃ k₃' ∧ k₃' = 2 ∧
           d₃.nreg 110067 = A₀ + ρ (A - 1 - i) ∧ d₃.nreg 110066 = A - 1 - i := by
-        have a60 : d₂.nreg 110060 = A₀ := by rw [f₂'.1 _ (by decide), f₁' _ (by decide), g60]
+        have a60 : d₂.nreg 110060 = A₀ := by ram_grind
         have a63 : d₂.nreg 110063 = A - 1 - i := by rw [f₂'.1 _ (by decide), n₁']; config_simp
         have w₂ := e₂'.wb_right
         exec_block
-        · rw [a60, v₂']; omega
+        · omega
         · refine ⟨rfl, ?_, ?_⟩
-          · config_simp; rw [a60, v₂']
+          · config_simp; ram_grind
           · config_simp; rw [a63]
       have ex : Exec P W frBody d d₃ _ := .seq e₁' (.seq e₂' e₃')
       exact ⟨d₃, _, ex, by omega, exec_frameB ex (by decide), v67, v66⟩)
     e₁.wb_right (JK.refl _ _ _) v30 v11 (by omega)
   refine ⟨c₂, _, .seq e₁ e₂, by nlinarith, ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => ?_,
-    fun a ha => by rw [rm₂, rm₁], by rw [o₂, o₁]⟩, ?_, ?_, fun p hp => ?_⟩
-  · simp only [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-    rw [r₂ r (by simp; omega) (by omega)]; exact hr₁ r (by simp [BFR]; omega)
-  · rw [rr₂ r (by simp only [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega),
-      rr₁]
+    fun a ha => by ram_grind, by rw [o₂, o₁]⟩, ?_, ?_, fun p hp => ?_⟩
+  · ram_grind
+  · ram_grind
   · rw [mm₂, scat_below (fun i _ => by omega) ha, m₁]
   · rw [r₂ _ (by decide) (by decide), n₁]; config_simp
-  · rw [r₂ _ (by decide) (by decide), v60]
+  · ram_grind
   · -- the last store at the region of `p` is that of its first position
     obtain ⟨hf1, hf2, hf3⟩ := fpos_spec ρ p
     set q := fpos ρ p
     have hq : q < A := by omega
     have := scat_at (m := c₁.nmem) (g := fun i => A₀ + ρ (A - 1 - i)) (f := fun i => A - 1 - i)
       (n := A) (i := A - 1 - q) (by omega) (fun j hj hij e => by
-        have e' : ρ (A - 1 - j) = ρ p := by
-          have : ρ (A - 1 - j) = ρ (A - 1 - (A - 1 - q)) := by omega
-          rw [this, show A - 1 - (A - 1 - q) = q by omega, hf1]
-        have := hf3 _ e'
-        omega)
+        grind)
     rw [show A - 1 - (A - 1 - q) = q by omega, hf1] at this
     rw [mm₂, this]
 
@@ -281,8 +264,8 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
       c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     unfold chCap at hW ⊢
     exec_block
-    · config_simp; rw [hA]; omega
-    · config_simp; rw [hA]; omega
+    · simp_all +zetaDelta <;> omega
+    · config_simp; omega
     · omega
     · config_simp; rw [hA]; omega
     · config_simp; rw [hA, hAl]; omega

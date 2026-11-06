@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvMap
 
 /-!
@@ -42,11 +44,11 @@ theorem left_top_pts (hv : ¬ VNotTop J) :
       sidePt (chainModel J.left).W (2 * J.left.m + 6) 0 = J.shared := by
   obtain ⟨h1, h2⟩ := sidePt_top_copies J.left
   rw [left_top_eq J hv] at h1 h2
-  exact ⟨h1, h2⟩
+  simp_all
 
 /-- `lδ = 0` forces `lL2 = 0`. -/
 theorem lL2_of_lδ (h : lδ J = 0) : lL2 J = 0 := by
-  unfold lδ lL2 at *; split_ifs at * <;> omega
+  grind [lδ, lL2]
 
 /-- The left case G. -/
 theorem left_G (h : 0 < lδ J) :
@@ -54,9 +56,7 @@ theorem left_G (h : 0 < lδ J) :
       0 < tpos J.left J.m₁ ∧ tpos J.left J.m₁ < 2 * J.m₁ := by
   have := tpos_lt J.left J.m₁
   have hm1 : J.left.m = J.m₁ := rfl
-  rw [hm1] at this
-  unfold lδ lL1 lL2 at *
-  split_ifs at * <;> omega
+  grind [lδ, lL1, lL2]
 
 /-- **Soundness of the reading of the `C₁` part.** -/
 theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) {τ : ℝ}
@@ -91,8 +91,7 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
     refine ⟨hS, ?_⟩
     rw [oW_def, show ((gW J : ℕ) : ℝ) = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) from rfl, hO]
     have : ((lOff J + d' : ℕ) : ℝ) = ((Lst J + ψ J d : ℕ) : ℝ) := by rw [hoff]
-    push_cast at this
-    linarith
+    grind
   -- the split vertex
   have viaSplit : lL1 J < lL1 J + lL2 J → t = 0 →
       ((b₁ J + d) % (chainModel J.left).W.n = 6 ∨
@@ -113,8 +112,7 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
     rw [oW_def, show ((gW J : ℕ) : ℝ) = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) from rfl,
       off_left_gen J (by rw [← lL1_add_lL2 J]; exact hlt) le_rfl one_pos]
     have : ((lOff J + lL1 J : ℕ) : ℝ) = ((Lst J + ψ J d : ℕ) : ℝ) := by rw [hoff]
-    push_cast at this
-    linarith
+    grind
   -- the box block of `C`
   have viaBox : ∀ d'' : ℕ, (hv' : ¬ VNotTop J) → d'' < 7 → (t = 0 → 1 ≤ d'') →
       (b₁ J + d) % (chainModel J.left).W.n = (2 * J.left.m + 6 + d'') % (chainModel J.left).W.n →
@@ -132,21 +130,20 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
     rw [oW_def, show ((gW J : ℕ) : ℝ) = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) from rfl, hO]
     have : ((2 * J.whole.m - tpos J.whole J.m₁ + d'' : ℕ) : ℝ) = ((Lst J + ψ J d : ℕ) : ℝ) := by
       rw [hoff]
-    push_cast at this ⊢
-    linarith
+    grind
   by_cases hVNT : VNotTop J
   · -- case a: the left stretch fills the `C₁` part
     have hlOff : lOff J = Lst J := by rw [lOff_of_vnt J hVNT, Lst_rlen]
     have hlen : Lst J + llen J = (chainModel J.whole).W.n := by
       rw [Lst_rlen]; exact rlen_add_llen J hVNT
-    have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; rw [ite_eq_right (by omega)]
+    have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; grind
     have hE₁ : E₁ J = llen J + lδ J := by unfold E₁; omega
     have hL := lL1_add_lL2 J
     rw [hE₁] at hdE
     rw [hb] at hA hnv viaGen viaSplit
     by_cases hdl : d < lL1 J
-    · have hψ : ψ J d = d := by unfold ψ; rw [ite_eq_right (by omega)]
-      refine viaGen d (by omega) (fun ht => ⟨fun hd0 => ?_, by omega⟩) ?_ (by rw [hψ, hlOff])
+    · have hψ : ψ J d = d := by unfold ψ; ram_grind
+      refine viaGen d (by omega) (fun ht => ⟨fun hd0 => ?_, by omega⟩) ?_ (by omega)
       · apply hnv ht
         rw [hd0, add_zero, Nat.mod_eq_of_lt (by omega)]
         exact left_v_pt
@@ -157,13 +154,13 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
         obtain ⟨h7, hl1, hl2, hτp, hτl⟩ := left_G hδ'
         rw [h7] at hgap hsplit hdE
         by_cases hd1 : d = lL1 J
-        · have ht : t = 0 := by by_contra h; exact hsplit ⟨by omega, hd1, h⟩
+        · have ht : t = 0 := by grind
           refine viaSplit (by omega) ht (Or.inr ?_) ?_
           · rw [hd1, hl1, hn₁, hm1, Nat.mod_eq_of_lt (by omega)]; omega
-          · have hψ : ψ J d = lL1 J := by unfold ψ; rw [ite_eq_right (by omega)]; exact hd1
-            rw [hψ, hlOff]
+          · have hψ : ψ J d = lL1 J := by unfold ψ; ram_grind
+            omega
         · have hd2 : lL1 J + 7 ≤ d := by
-            by_contra h; exact hgap ⟨by omega, by omega, by omega⟩
+            omega
           have hψ : ψ J d = d - 7 := by
             unfold ψ; rw [ite_eq_left ⟨hδ', by omega⟩, ite_eq_right (by omega), h7]
           by_cases hs : d = lL1 J + 7 ∧ t = 0
@@ -171,9 +168,9 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
             · rw [hs.1, hl1, hn₁, hm1]
               rw [show 6 + tpos J.left J.m₁ + (2 * J.m₁ - tpos J.left J.m₁ + 7) =
                 6 + (2 * J.m₁ + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-            · rw [hψ, hlOff]; omega
+            omega
           · refine viaGen (d - 7) (by omega) (fun ht => ⟨by omega, fun h => hs ⟨by omega, ht⟩⟩)
-              ?_ (by rw [hψ, hlOff])
+              ?_ (by omega)
             unfold dq; rw [ite_eq_right (by omega), h7, show d - 7 + 7 = d by omega]
   · -- `v` is the top of `C`: no gap, `ψ = id`
     obtain ⟨hτ0, hδ0, hl1, hl2, hll⟩ := nvt_left J hP hVNT
@@ -181,19 +178,19 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
     obtain ⟨hp6, hp26⟩ := left_top_pts hVNT
     by_cases hbox : Lst J < lOff J
     · obtain ⟨-, hlo, hτs, hLst⟩ := caseB_facts J hbox
-      have hb : b₁ J = 2 * J.left.m + 6 := by unfold b₁; rw [ite_eq_left hbox]
-      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; rw [hn, hδ0]; omega
+      have hb : b₁ J = 2 * J.left.m + 6 := by unfold b₁; grind
+      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; omega
       rw [hE₁] at hdE
       rw [hb] at hA hnv viaGen viaSplit
       by_cases hd7 : d < 7
       · refine viaBox d hVNT hd7 (fun ht => ?_) (by rw [hb]) (by rw [hψ]; unfold gW; omega)
-          (by rw [hψ]; omega)
+          (by omega)
         by_contra h0
         apply hnv ht
         rw [show d = 0 by omega, add_zero, Nat.mod_eq_of_lt (by omega)]
         exact hp26
       · refine viaGen (d - 7) (by omega) (fun ht => ⟨fun h0 => ?_, by omega⟩) ?_
-          (by rw [hψ]; omega)
+          (by omega)
         · apply hnv ht
           rw [hn₁, show 2 * J.left.m + 6 + d = 6 + (2 * J.left.m + 7) by omega, Nat.add_mod_right,
             Nat.mod_eq_of_lt (by omega)]
@@ -202,8 +199,8 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
           rw [show 2 * J.left.m + 6 + d = (6 + 0 + (d - 7)) + (2 * J.left.m + 7) by omega,
             Nat.add_mod_right]
     · obtain ⟨hτs, hlo, hLst⟩ := caseC_facts J hVNT hbox
-      have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; rw [ite_eq_right hbox]
-      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; rw [hn, hδ0]; omega
+      have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; grind
+      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; omega
       rw [hE₁] at hdE
       rw [hb, hτ0] at hA hnv viaGen viaSplit
       by_cases hd2 : d < 2 * J.m₁
@@ -211,7 +208,7 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
         · apply hnv ht
           rw [h0, Nat.mod_eq_of_lt (by omega)]
           exact hp6
-        · unfold dq; rw [ite_eq_left (by omega)]
+        · unfold dq; grind
       · refine viaBox (d - 2 * J.m₁) hVNT (by omega) (fun ht => ?_) ?_ ?_ ?_
         · by_contra h0
           apply hnv ht
@@ -221,7 +218,7 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
           congr 1
           omega
         · rw [hψ]; unfold gW; omega
-        · rw [hψ]; omega
+        omega
 
 end MapSound
 

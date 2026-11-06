@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRMgA
 public import Chazelle.Core.DownPhaseDrvRPlD
 
@@ -72,11 +74,11 @@ variable {P : Polygon} {W : ℕ}
 
 theorem frameB_up {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B' r = false → B r = false) : FrameB B' c c' :=
-  ⟨fun r hr => h.1 r (hB r hr), fun r hr => h.2.1 r (hB r hr), h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
+  by grind [Chazelle.Core.SignK.FrameB]
 
 theorem pts_getD_of_get? {l : List SymPt} {i : ℕ} {sp : SymPt} (h : l[i]? = some sp) :
     l.getD i (.vtx 0) = sp := by
-  rw [List.getD_eq_getElem?_getD, h, Option.getD_some]
+  simp_all
 
 set_option maxHeartbeats 4000000 in
 /-- **The top of the union** of two consecutive sub-chains of the host. -/
@@ -133,7 +135,7 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
         (try simp only [← hD1, ← hD2, q44, q45, h12, h00, h07, h01, t1', t2'])
     refine ⟨c₁, k₁, e₁, hk₁, v20, v23, v21, v25, ⟨e₁.wb_right, v60, v61, v67, v68, v69, m₁⟩, s52,
       n87, k91, exec_frameB e₁ (by decide)⟩
-  have hNP' : (H.pts P.n).length = NP := hNP.symm
+  
   -- the first top point
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, E₂, sp₁, hsp₁, in₁⟩ := NFLoc.hostPt_exec (P := P) c₁ E₁ hHA hwf
     (by omega) (by omega) (by omega) s52 (by rw [n87, hNP]) k91 (by omega) (by omega)

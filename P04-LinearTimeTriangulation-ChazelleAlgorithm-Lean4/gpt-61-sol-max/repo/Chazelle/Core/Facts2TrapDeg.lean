@@ -37,7 +37,7 @@ section Chords
 variable {D : Set Point}
 
 /-- A horizontal chord of the domain `D`. -/
-def HCD (D : Set Point) (c : Set Point) : Prop :=
+def HCD (D c : Set Point) : Prop :=
   ∃ y a b : ℝ, IsHChordIn D y a b ∧ c = hseg y a b
 
 /-- A point of a chord in the domain is strictly inside it. -/
@@ -45,10 +45,7 @@ theorem open_of_mem {y a b : ℝ} (h : IsHChordIn D y a b) {z : Point} (hz : z �
     (hzD : z ∈ D) : a < z.1 ∧ z.1 < b := by
   obtain ⟨hzy, hza, hzb⟩ := hz
   refine ⟨lt_of_le_of_ne hza fun e => h.left_not ?_, lt_of_le_of_ne hzb fun e => h.right_not ?_⟩
-  · have : ((a, y) : Point) = z := point_ext e hzy.symm
-    rw [this]; exact hzD
-  · have : ((b, y) : Point) = z := point_ext e.symm hzy.symm
-    rw [this]; exact hzD
+  all_goals grind
 
 /-- Two chords sharing a point of the domain are equal. -/
 theorem eq_of_common {c c' : Set Point} (hc : HCD D c) (hc' : HCD D c') {z : Point} (hz : z ∈ c)
@@ -60,27 +57,26 @@ theorem eq_of_common {c c' : Set Point} (hc : HCD D c) (hc' : HCD D c') {z : Poi
   · exact absurd (h1 ▸ hzD) h.left_not
   · exact absurd (h1 ▸ hzD) h.right_not
 
+section
+variable {y a b : ℝ} (h : IsHChordIn D y a b)
+include h
 /-- A chord contains every point of its line joined to it inside the domain. -/
-theorem mem_of_joined {y a b : ℝ} (h : IsHChordIn D y a b) {z : Point} (hz : z ∈ hseg y a b)
+theorem mem_of_joined {z : Point} (hz : z ∈ hseg y a b)
     (hzD : z ∈ D) {w : Point} (hw : w.2 = y)
     (hj : ∀ s : ℝ, min z.1 w.1 ≤ s → s ≤ max z.1 w.1 → ((s, y) : Point) ∈ D) :
     w ∈ hseg y a b := by
   obtain ⟨hza, hzb⟩ := open_of_mem h hz hzD
   refine ⟨hw, ?_, ?_⟩
-  · by_contra hwa
-    push Not at hwa
-    exact h.left_not (hj a (by have := min_le_right z.1 w.1; linarith) (by
-      have := le_max_left z.1 w.1; linarith))
-  · by_contra hwb
-    push Not at hwb
-    exact h.right_not (hj b (by have := min_le_left z.1 w.1; linarith) (by
-      have := le_max_right z.1 w.1; linarith))
+  all_goals (grind [Chazelle.Chain.IsHChordIn])
 
 /-- The points of a chord between two of its domain points are in the domain. -/
-theorem between_mem {y a b : ℝ} (h : IsHChordIn D y a b) {z z' : Point}
+theorem between_mem {z z' : Point}
     (hz : z ∈ hseg y a b) (hzD : z ∈ D) (hz' : z' ∈ hseg y a b) (hz'D : z' ∈ D) {s : ℝ}
     (h1 : z.1 ≤ s) (h2 : s ≤ z'.1) : ((s, y) : Point) ∈ D :=
   h.open_mem s (by linarith [(open_of_mem h hz hzD).1]) (by linarith [(open_of_mem h hz' hz'D).2])
+
+
+end
 
 /-- The side of a chord point relative to a point off the domain, read off from the chord. -/
 theorem side_iff {c : Set Point} (hc : HCD D c) {y₀ : ℝ} {w₀ : Point} (hw₀ : w₀ ∉ D)
@@ -93,12 +89,10 @@ theorem side_iff {c : Set Point} (hc : HCD D c) {y₀ : ℝ} {w₀ : Point} (hw�
     by_contra hge
     push Not at hge
     have hne : z.1 ≠ w₀.1 := fun e => hw₀ (by
-      have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rw [this]; exact hzD)
+      grind)
     have := between_mem h hz' hz'D hz hzD hlt.le (lt_of_le_of_ne hge (Ne.symm hne)).le
-    apply hw₀
-    have e : ((w₀.1, y) : Point) = w₀ := point_ext rfl (by rw [hy, hw₀y])
-    rw [← e]; exact this
-  · intro hlt; exact ⟨z, hz, hzD, hzy, hlt⟩
+    grind
+  grind
 
 end Chords
 
@@ -110,12 +104,12 @@ namespace Trap
 
 variable {q : Point} {sL sR : Point × Point} {y₁ y₂ : ℝ}
 
+section
+variable (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ} (hY1 : y₁ ≤ Y) (hY2 : Y ≤ y₂) (hvert : ∀ w ∈ obs S, w.2 = Y → xAt sL Y < w.1 → w.1 < xAt sR Y → IsVert S w) {v : Point} (hv : IsVert S v) (hvY : v.2 = Y)
+include hS h hY1 hY2 hvert v hv hvY
 /-- **Two chords touching the closed trapezoid at a side height `Y`** (whose obstacle points on
 the open side are vertices), on the same side of the vertex `v` at that height, are equal. -/
-theorem side_chords_eq (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ} (hY1 : y₁ ≤ Y)
-    (hY2 : Y ≤ y₂)
-    (hvert : ∀ w ∈ obs S, w.2 = Y → xAt sL Y < w.1 → w.1 < xAt sR Y → IsVert S w)
-    {v : Point} (hv : IsVert S v) (hvY : v.2 = Y)
+theorem side_chords_eq
     {c c' : Set Point} (hc : HCD (dom R S) c) (hc' : HCD (dom R S) c') {z z' : Point}
     (hz : z ∈ c) (hz' : z' ∈ c') (hzD : z ∈ dom R S) (hz'D : z' ∈ dom R S)
     (hzy : z.2 = Y) (hz'y : z'.2 = Y) (hzx : xAt sL Y ≤ z.1 ∧ z.1 ≤ xAt sR Y)
@@ -130,8 +124,7 @@ theorem side_chords_eq (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
     intro w hw hwy h1 h2
     refine ⟨lt_of_le_of_ne h1 fun e => hw.2 (h.memL hS (hwy ▸ hY1) (hwy ▸ hY2) ?_),
       lt_of_le_of_ne h2 fun e => hw.2 (h.memR hS (hwy ▸ hY1) (hwy ▸ hY2) ?_)⟩
-    · rw [hwy]; exact e.symm
-    · rw [hwy]; exact e
+    all_goals grind
   have key : ∀ {c c' : Set Point} {z z' : Point}, HCD (dom R S) c → HCD (dom R S) c' → z ∈ c →
       z' ∈ c' → z ∈ dom R S → z' ∈ dom R S → z.2 = Y → z'.2 = Y →
       xAt sL Y ≤ z.1 ∧ z.1 ≤ xAt sR Y → xAt sL Y ≤ z'.1 ∧ z'.1 ≤ xAt sR Y → z.1 ≤ z'.1 →
@@ -146,28 +139,15 @@ theorem side_chords_eq (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
       refine ⟨⟨abs_lt.2 ⟨by linarith, by linarith⟩, hYR⟩, fun hobs => ?_⟩
       have hw := hvert _ hobs rfl (by linarith) (by linarith)
       have he := hS.distinct v _ hv hw (hvY ▸ hYR) hvY
-      have hsv : s = v.1 := by rw [he]
-      have hzv : z.1 ≠ v.1 := fun e => hvD (by
-        rw [show v = z from point_ext e.symm (hvY.trans hzy.symm)]; exact hzD)
-      have hz'v : z'.1 ≠ v.1 := fun e => hvD (by
-        rw [show v = z' from point_ext e.symm (hvY.trans hz'y.symm)]; exact hz'D)
-      rcases lt_or_gt_of_ne hzv with h3 | h3
-      · have := hside.1 h3; linarith [lt_of_le_of_ne h2 (hsv ▸ hz'v.symm)]
-      · linarith [lt_of_le_of_ne h1 (hsv ▸ hzv)]
-    have hz'c : z' ∈ Visibility.hseg y a b := mem_of_joined hh hz hzD (by rw [hz'y, hy]) (fun s h1 h2 => by
-      rw [min_eq_left hle] at h1; rw [max_eq_right hle] at h2
-      rw [hy]; exact hall s h1 h2)
+      grind
+    have hz'c : z' ∈ Visibility.hseg y a b := mem_of_joined hh hz hzD (by grind) (fun s h1 h2 => by
+      grind)
     exact eq_of_common ⟨y, a, b, hh, rfl⟩ hc' hz'c hz' hz'D
-  rcases le_total z.1 z'.1 with hh | hh
-  · exact key hc hc' hz hz' hzD hz'D hzy hz'y hzx hz'x hh hside
-  · exact (key hc' hc hz' hz hz'D hzD hz'y hzy hz'x hzx hh hside.symm).symm
+  grind
 
 /-- **At most two chords touch the closure of a set inside the closed trapezoid at a side
 height `Y`** that carries a vertex `v` in the closed corridor. -/
-theorem ncard_side_le_two (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ} (hY1 : y₁ ≤ Y)
-    (hY2 : Y ≤ y₂)
-    (hvert : ∀ w ∈ obs S, w.2 = Y → xAt sL Y < w.1 → w.1 < xAt sR Y → IsVert S w)
-    {v : Point} (hv : IsVert S v) (hvY : v.2 = Y) {E : Set (Set Point)}
+theorem ncard_side_le_two {E : Set (Set Point)}
     (hE : ∀ c ∈ E, HCD (dom R S) c ∧ ∃ z ∈ c, z ∈ dom R S ∧ z.2 = Y ∧
       xAt sL Y ≤ z.1 ∧ z.1 ≤ xAt sR Y) : E.ncard ≤ 2 := by
   classical
@@ -180,15 +160,16 @@ theorem ncard_side_le_two (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : 
     have h1 := side_iff hcH hvD hvY hz hzD hzy
     have h2 := side_iff hc'H hvD hvY hz' hz'D hz'y
     have hside : z.1 < v.1 ↔ z'.1 < v.1 := by
-      rw [← h1, ← h2]
-      simp only [f, decide_eq_decide] at hff
-      exact hff
+      grind
     exact h.side_chords_eq hS hY1 hY2 hvert hv hvY hcH hc'H hz hz' hzD hz'D hzy hz'y hzx hz'x hside
   have hBool : (Set.univ : Set Bool).ncard = 2 := by
     rw [ncard_univ, Nat.card_eq_fintype_card]; rfl
   calc E.ncard ≤ (Set.univ : Set Bool).ncard :=
         ncard_le_ncard_of_injOn f (fun _ _ => mem_univ _) hinj
     _ = 2 := hBool
+
+
+end
 
 end Trap
 
@@ -285,9 +266,7 @@ theorem deg_le_four (hS : Good R S) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD
         rintro c ⟨hc, z, hz, hzD, hzU, hzc⟩
         have hz0 := hclle _ hU0 z hzU
         have hmz : q.2 < z.2 ∧ z.2 < y₂ := by
-          rcases hzc with e | e
-          · rw [e] at hz0; linarith
-          · exact e
+          grind
         have hzT := hmid z hzD (hcl hzU) (hqy₁.trans hmz.1) hmz.2
         have hUz := hbelow c hc z hz hzT hmz.1
         have hz0' := hclle _ hUz z₀ hz₀U
@@ -320,9 +299,7 @@ theorem deg_le_four (hS : Good R S) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD
         rintro c ⟨hc, z, hz, hzD, hzU, hzc⟩
         have hz0 := hclge _ hU0 z hzU
         have hmz : y₁ < z.2 ∧ z.2 < q.2 := by
-          rcases hzc with e | e
-          · rw [e] at hz0; linarith
-          · exact e
+          grind
         have hzT := hmid z hzD (hcl hzU) hmz.1 (hmz.2.trans hqy₂)
         have hUz := habove c hc z hz hzT hmz.2
         have hz0' := hclge _ hUz z₀ hz₀U

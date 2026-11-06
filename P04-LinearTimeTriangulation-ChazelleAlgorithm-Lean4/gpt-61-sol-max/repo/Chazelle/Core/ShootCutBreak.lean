@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutWalk
 
 /-!
@@ -39,89 +41,96 @@ def HostBreak (n : ℕ) (H : Host) (u : ℕ) : Prop :=
 noncomputable instance (n : ℕ) (H : Host) : DecidablePred (HostBreak n H) :=
   Classical.decPred _
 
+section
+variable (n : ℕ)
+include n
 /-- The (at most four) break offsets of an item. -/
-def brkOffs (n : ℕ) : HostItem → Finset ℕ
+def brkOffs : HostItem → Finset ℕ
   | .pt _ => {0}
   | .run a ℓ => {0, ℓ, (n - a % n) % n, (2 * n - 1 - a % n) % n}
 
-theorem card_brkOffs (n : ℕ) (it : HostItem) : (brkOffs n it).card ≤ 4 := by
+theorem card_brkOffs (it : HostItem) : (brkOffs n it).card ≤ 4 := by
   cases it with
   | pt x => simp [brkOffs]
   | run a ℓ =>
     unfold brkOffs
     refine (Finset.card_insert_le _ _).trans ?_
-    refine Nat.succ_le_succ ((Finset.card_insert_le _ _).trans ?_)
-    refine Nat.succ_le_succ ((Finset.card_insert_le _ _).trans ?_)
-    simp
+    grind
 
 /-- All break host points. -/
-def brkSet (n : ℕ) (H : Host) : Finset ℕ :=
+def brkSet (H : Host) : Finset ℕ :=
   (Finset.range H.length).biUnion fun r =>
     (brkOffs n (H.getD r (.run 0 0))).image fun t => NFLoc.preLen n H r + t
 
-theorem card_brkSet (n : ℕ) (H : Host) : (brkSet n H).card ≤ 4 * H.length := by
+theorem card_brkSet (H : Host) : (brkSet n H).card ≤ 4 * H.length := by
   unfold brkSet
   refine Finset.card_biUnion_le.trans ?_
   calc ∑ r ∈ Finset.range H.length,
         ((brkOffs n (H.getD r (.run 0 0))).image fun t => NFLoc.preLen n H r + t).card
       ≤ ∑ _r ∈ Finset.range H.length, 4 :=
         Finset.sum_le_sum fun r _ => Finset.card_image_le.trans (card_brkOffs n _)
-    _ = 4 * H.length := by simp [mul_comm]
+    _ = 4 * H.length := by simp_all +arith
+
+
+end
 
 /-- The unique offset in `[0, n)` with a given residue. -/
 theorem off_of_mod {n a t c : ℕ} (hn : 0 < n) (ht : t < n) (_hc : c < n) (h : (a + t) % n = c) :
     t = (n + c - a % n) % n := by
-  have e := Nat.div_add_mod a n
+  
   have e2 := Nat.div_add_mod (a + t) n
   have ha := Nat.mod_lt a hn
   rw [h] at e2
   -- `a % n + t ≡ c`
-  have h2 : (a % n + t) % n = c := by rw [← h, Nat.add_mod, Nat.mod_mod, ← Nat.add_mod]
+  have h2 : (a % n + t) % n = c := by simp_all
   rcases (show a % n + t < n ∨ n ≤ a % n + t by omega) with h3 | h3
   · rw [Nat.mod_eq_of_lt h3] at h2
     rw [show n + c - a % n = t + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt ht]
   · rw [Nat.mod_eq_sub_mod h3, Nat.mod_eq_of_lt (by omega)] at h2
     rw [show n + c - a % n = t by omega, Nat.mod_eq_of_lt ht]
 
+section
+variable {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H)
+include hn hwf
 /-- **Break host points lie in `brkSet`** (for well-formed hosts: runs shorter than `n`). -/
-theorem hostBreak_mem {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H) {u : ℕ}
+theorem hostBreak_mem {u : ℕ}
     (h : HostBreak n H u) : u ∈ brkSet n H := by
   obtain ⟨r, hr, h1, h2, hc⟩ := h
   unfold brkSet
   refine Finset.mem_biUnion.2 ⟨r, Finset.mem_range.2 hr, Finset.mem_image.2 ?_⟩
   refine ⟨u - NFLoc.preLen n H r, ?_, by omega⟩
   have hsucc := NFLoc.preLen_succ n H hr
-  have hget : H.getD r (.run 0 0) = H[r] := by simp [List.getD_eq_getElem?_getD, hr]
+  have hget : H.getD r (.run 0 0) = H[r] := by simp_all
   rw [hget] at hc ⊢
   have hit := hwf H[r] (List.getElem_mem hr)
   generalize H[r] = it at hc hsucc hit
   cases it with
   | pt x =>
-    simp only [NFLoc.itemCnt] at hsucc
-    simp only [brkOffs, Finset.mem_singleton]
-    omega
+    simp_all [NFLoc.itemCnt, brkOffs, Finset.mem_singleton] 
   | run a ℓ =>
     simp only [NFLoc.itemCnt] at hsucc
     simp only at hit
     have ht : u - NFLoc.preLen n H r < n := by omega
     simp only [brkOffs, Finset.mem_insert, Finset.mem_singleton]
     rcases hc with hc | hc | hc | hc
-    · exact Or.inl hc
-    · exact Or.inr (Or.inl hc)
+    · omega
+    · omega
     · right; right; left
       rw [off_of_mod hn ht hn hc, Nat.add_zero]
     · right; right; right
       rw [off_of_mod hn ht (by omega) hc]
-      congr 1
-      omega
+      grind
 
-theorem card_hostBreak_le {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H) (N : ℕ) :
+theorem card_hostBreak_le (N : ℕ) :
     ((Finset.range N).filter (HostBreak n H)).card ≤ 4 * H.length := by
   classical
   refine le_trans (Finset.card_le_card fun u hu => ?_) (card_brkSet n H)
   exact hostBreak_mem hn hwf (Finset.mem_filter.1 hu).2
 
 /-! ## Tour positions -/
+
+
+end
 
 variable (C : Chain)
 
@@ -171,13 +180,13 @@ theorem card_fiber_le (u : ℕ) :
         by_contra h0
         have : C.P.n ≤ C.P.n * q := Nat.le_mul_of_pos_right _ (by omega)
         omega
-      subst hq0; omega
+      grind
     · obtain ⟨q, hq⟩ := (Nat.modEq_iff_dvd' hle).1 (by unfold Nat.ModEq; exact h)
       have hq0 : q = 0 := by
         by_contra h0
         have : C.P.n ≤ C.P.n * q := Nat.le_mul_of_pos_right _ (by omega)
         omega
-      subst hq0; omega
+      grind
   refine le_trans (Finset.card_le_card (t := ((Finset.range (2 * C.m)).filter fun i =>
       tJ C i = sideE C.m (tJ C (Classical.epsilon fun i => i < 2 * C.m ∧ uOf C i = u))) ∪
     ((Finset.range (2 * C.m)).filter fun i =>
@@ -194,12 +203,7 @@ theorem card_fiber_le (u : ℕ) :
   have hki := hk _ _ (hi.2.trans hsp.2.symm)
   simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_range]
   have hlt := tJ_lt C i
-  unfold sideE at hki
-  split_ifs at hki with h1 h2 h2
-  · left; exact ⟨hi.1, by unfold sideE; rw [ite_eq_left h2]; exact hki⟩
-  · left; exact ⟨hi.1, by unfold sideE; rw [ite_eq_right h2]; exact hki⟩
-  · right; refine ⟨hi.1, ?_⟩; unfold sideE; rw [ite_eq_left h2]; omega
-  · right; refine ⟨hi.1, ?_⟩; unfold sideE; rw [ite_eq_right h2]; omega
+  grind [sideE]
 
 /-- **Few tour positions are breaks**: turns of the tour or break host points. -/
 theorem card_brk_le {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H) :
@@ -211,12 +215,7 @@ theorem card_brk_le {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H) :
       ((Finset.range (2 * C.m)).filter fun i => tJ C i = 0) ∪
       (((Finset.range (2 * C.m)).filter fun i => tJ C i = C.m) ∪
       ((Finset.range (2 * C.m)).filter fun i => HostBreak n H (uOf C i))) := by
-    intro i hi
-    simp only [Finset.mem_filter, Finset.mem_union] at hi ⊢
-    rcases hi.2 with h | h | h
-    · exact Or.inl ⟨hi.1, h⟩
-    · exact Or.inr (Or.inl ⟨hi.1, h⟩)
-    · exact Or.inr (Or.inr ⟨hi.1, h⟩)
+    grind
   have hA := card_tJ_eq C 0
   have hB := card_tJ_eq C C.m
   have hC : ((Finset.range (2 * C.m)).filter fun i => HostBreak n H (uOf C i)).card ≤
@@ -224,9 +223,7 @@ theorem card_brk_le {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H) :
         (uOf C)).card :=
     Finset.card_le_mul_card_image (f := uOf C) _ 2 fun u _ => by
       refine le_trans (Finset.card_le_card ?_) (card_fiber_le C u)
-      intro i hi
-      simp only [Finset.mem_filter] at hi ⊢
-      exact ⟨hi.1.1, hi.2⟩
+      grind
   have hI : (((Finset.range (2 * C.m)).filter fun i => HostBreak n H (uOf C i)).image
       (uOf C)).card ≤ 4 * H.length := by
     refine le_trans (Finset.card_le_card fun u hu => ?_) (card_hostBreak_le hn hwf C.P.n)

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepIoCand1R
 public import Chazelle.Core.SweepIoCand1Tab
 public import Chazelle.Core.SweepIoCand1Shr
@@ -29,9 +31,7 @@ namespace Cand1
 /-- The cost of a local hit with its inputs is linear. -/
 theorem lhsK_le (T Fg D : ℕ) : lhsK T Fg D ≤ SweepEv.κGen D * (Fg + T + 1) := by
   have := SweepEv.genK_le Fg D T
-  unfold SweepEv.genK at this
-  unfold lhsK
-  omega
+  core_grind [SweepEv.genK]
 
 end Cand1
 
@@ -52,9 +52,7 @@ theorem cand1Spec_of (hB : BruteSpec) (hT : TabStepSpec) (hS : ShrStepSpec) : Ca
   rw [← hKB] at hroom ⊢
   have hKB' : BruteQ J N₂ (c.nreg qJ) z →
       κB * (N₁.arcs.length + 1) * (F (c₀.nreg (sw 5)) + 1) ≤ KB := by
-    intro h
-    rw [hKB, ite_eq_left h]
-    exact Nat.mul_le_mul (Nat.mul_le_mul_right _ (by omega)) le_rfl
+    simp_all +arith
   have hLK := Cand1.lhsK_le (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))
   have h1 : κB + κT + κS + 30000 ≤
       (κB + κT + κS + 30000) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) :=

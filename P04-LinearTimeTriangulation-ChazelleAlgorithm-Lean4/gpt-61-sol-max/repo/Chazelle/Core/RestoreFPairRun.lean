@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.RestoreFPair
 
 /-!
@@ -32,8 +34,7 @@ theorem FRS.callF {B : Finset ℕ} {P : Polygon} {W : ℕ} {s : Stmt} {B' : Fins
       ∀ r, bandOf r ∉ B' → r ≠ ALLOC → c'.nreg r = c.nreg r) := by
   obtain ⟨c', k, ex, hk, hpost, hfr⟩ := hs P W c hI.hw hpre hroom
   have hp : ∀ q, FFix q → c'.nreg q = c.nreg q := fun q hq => hfr.1 q (by
-      have : bandOf q = bRestore := by unfold bandOf bRestore; unfold FFix at hq; omega
-      rw [this]; exact h8) (by unfold ALLOC; unfold FFix at hq; omega)
+      grind [bandOf, bRestore, FFix]) (by omega_nf)
   exact ⟨c', k, ex, hk, ⟨ex.wb_right, fun q hq => (hp q hq).trans (hI.hin q hq),
     le_trans hI.hA hfr.2.2.2.2.2.1,
     fun a ha => (hfr.2.2.1 a (lt_of_lt_of_le ha hI.hA)).trans (hI.hm a ha)⟩,
@@ -84,18 +85,18 @@ theorem prReads_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
       c'.nreg 81140 = (arcOf E.N E.r j).s.edge ∧ c'.nreg 81141 = (arcOf E.N E.r j).s.hgt ∧
       ∀ q, ¬ RdW q → c'.nreg q = c.nreg q) := by
   have hN : NFWithin c₀.nmem E.NH (c₀.nreg ALLOC) E.N := by rw [hE.m0, hE.a0]; exact hE.hNW
-  have e01 : c.nreg 81001 = E.NH := by rw [hI.hin _ (by unfold FFix; omega), hE.i1]
-  have e02 : c.nreg 81002 = E.r := by rw [hI.hin _ (by unfold FFix; omega), hE.i2]
+  have e01 : c.nreg 81001 = E.NH := by rw [hI.hin _ (by omega_nf), hE.i1]
+  have e02 : c.nreg 81002 = E.r := by rw [hI.hin _ (by omega_nf), hE.i2]
   have ok1 : okB E.W c.nmem prL1 c.nreg := by
     simp only [prL1, okB, okI, FScr, FOut]; norm_num
   refine FRS.seq (K₁ := 3) (K₂ := 67) (FRS.block hB _ hI ok1) (fun c₁ hI₁ _ h₁ => ?_)
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem prL1 c.nreg q := fun q => by rw [h₁]
-  have v34 : c₁.nreg 81134 = E.NH := by rw [e₁]; simp [prL1, regB, regI, upd, e01]
-  have v21 : c₁.nreg 81121 = E.r := by rw [e₁]; simp [prL1, regB, regI, upd, e02]
-  have v00 : c₁.nreg 81100 = i := by rw [e₁]; simp [prL1, regB, regI, upd, hi]
+  have v34 : c₁.nreg 81134 = E.NH := by aesop
+  have v21 : c₁.nreg 81121 = E.r := by aesop
+  have v00 : c₁.nreg 81100 = i := by aesop
   have f₁ : ∀ q, q ≠ 81134 → q ≠ 81121 → q ≠ 81100 → c₁.nreg q = c.nreg q := fun q a b d => by
     rw [e₁]; simp [prL1, regB, regI, upd, a, b, d]
-  refine FRS.seq (K₁ := 30) (K₂ := 37) (arcLoad_fs hE hB hI₁ (N := E.N) (by rw [v34]; exact hN)
+  refine FRS.seq (K₁ := 30) (K₂ := 37) (arcLoad_fs hE hB hI₁ (N := E.N) (by simp_all)
     (by rw [v21]; exact hE.hr) (by rw [v21, v00]; exact hAi.ht) (by rw [v21, v00]; exact hAi.hj))
     (fun c₂ hI₂ _ h₂ => ?_)
   obtain ⟨-, a03, a06, a07, a08, f₂⟩ := h₂

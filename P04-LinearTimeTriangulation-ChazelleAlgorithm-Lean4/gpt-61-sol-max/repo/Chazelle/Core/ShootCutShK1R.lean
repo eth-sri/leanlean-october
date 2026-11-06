@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutShK1
 
 /-!
@@ -11,10 +13,6 @@ structure (the third word of its grade-table entry `140255`), then the candidate
 (`140237 = 0`), the piece has no hit and nothing is done.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -45,8 +43,7 @@ theorem qOriginIn_of_eq {c c' : Config} {r : ℕ} {o : QOrigin} (h : QOriginIn c
   cases o with
   | sym s => exact symPtIn_of_eq h he
   | box h' =>
-    obtain ⟨h1, h2⟩ := h
-    exact ⟨by rw [he r le_rfl (by omega), h1], by rw [he (r + 1) (by omega) (by omega), h2]⟩
+    core_grind
 
 theorem qOriginIn_copy {c c' : Config} {r r' : ℕ} {o : QOrigin} (h : QOriginIn c r o)
     (h0 : c'.nreg r' = c.nreg r) (h1 : c'.nreg (r' + 1) = c.nreg (r + 1))
@@ -54,8 +51,7 @@ theorem qOriginIn_copy {c c' : Config} {r r' : ℕ} {o : QOrigin} (h : QOriginIn
   cases o with
   | sym s => exact NFLoc.symPtIn_copy h h0 h1 h2
   | box h' =>
-    obtain ⟨a, b⟩ := h
-    exact ⟨by rw [h0, a], by rw [h1, b]⟩
+    core_grind
 
 /-- The band-`14` registers written by `pieceK1`. -/
 def Wk1 (r : ℕ) : Bool :=
@@ -87,9 +83,7 @@ theorem qSet_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {en 
     unfold qSet
     simp only [K1]
     exec_block
-    all_goals first | omega | (config_simp; rw [h55, h1']; omega) | skip
-    refine ⟨rfl, ?_, by config_simp, by config_simp, by config_simp, by config_simp⟩
-    config_simp; rw [h55, h1']
+    all_goals (simp_all +zetaDelta <;> omega)
   exact ⟨c', k, ex, hk, v0, v1, v2, v3, v4, exec_frameB ex wr_qSet⟩
 
 /-- The registers written by `qHit`. -/
@@ -111,8 +105,8 @@ theorem qHit_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
   obtain ⟨c₁, k₁, e₁, hk₁, v25, v26, f₁⟩ := k1OutR_exec (P := P) c hw h1 h50 h56 h57 h58 h06 h36
     hdir hW1 hW2 hW3 hW4
   have k₁' : ∀ r, Bko r = false → c₁.nreg r = c.nreg r := f₁.1
-  have q06 : c₁.nreg 120006 = e' := by rw [k₁' _ (by decide), h06]
-  have q36 : c₁.nreg 140236 = h := by rw [k₁' _ (by decide), h36]
+  have q06 : c₁.nreg 120006 = e' := by ram_simp
+  have q36 : c₁.nreg 140236 = h := by ram_simp
   obtain ⟨c₂, k₂, e₂, hk₂, v20, v21, v22, v23, v24, g₂⟩ : ∃ c₂ k₂, Exec P W (block
       [.constN 140220 1, .constN 140221 1, .constN 140222 1, .copyN 140223 120006,
         .copyN 140224 140236]) c₁ c₂ k₂ ∧ k₂ = 5 ∧ c₂.nreg 140220 = 1 ∧ c₂.nreg 140221 = 1 ∧
@@ -121,24 +115,22 @@ theorem qHit_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
     have w₁ := e₁.wb_right
     exec_block
     all_goals first | omega | skip
-    refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp; exact q06,
-      by config_simp; exact q36, fun r hr => ?_⟩
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    grind [upd]
   have ex : Exec P W qHit c c₂ (k₁ + k₂) := .seq e₁ e₂
   obtain ⟨ho1, ho2, ho3, ho4, ho5⟩ := hout
   have hnW : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
   refine ⟨c₂, _, ex, by omega, ⟨by rw [v20], fun h' => absurd v20 h', fun _ => ⟨X.1, ⟨C.radius_pos,
     Or.inr (Or.inr ⟨v21, ho5, .onEdge e' h, ⟨v22, v23, v24⟩, ⟨he', hh⟩, ho4.symm⟩)⟩, hF,
-    by rw [g₂ _ (by omega), g₂ _ (by omega), v25, v26]; exact ho2,
-    by rw [g₂ _ (by omega), v25, hnW]; exact ho1,
-    by rw [g₂ _ (by omega), g₂ _ (by omega), v25, v26, ho3]; ext <;> simp [hXz]⟩⟩,
+    by ram_simp,
+    by ram_simp,
+    by rw [g₂ _ (by omega), g₂ _ (by omega), v25, v26, ho3]; grind⟩⟩,
     exec_frameB ex wr_qHit⟩
 
 /-- A frame of a statement writing only registers of `B` and bands of `oracleBands`. -/
 theorem frame_ob {B : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → (bandOf r = 1 ∨ bandOf r = 5 ∨ bandOf r = 12 ∨ bandOf r = 14) ∧
       r ≠ ALLOC) (k : ℕ) : Frame oracleBands c c' k :=
-  frame_of_frameB h (fun r hr => ⟨oracleBands_mem r (by have := (hB r hr).1; omega),
+  frame_of_frameB h (fun r hr => ⟨oracleBands_mem r (by grind),
     (hB r hr).2⟩) k
 
 theorem pieceK1_exec {O : OracleIface} (hV : O.Valid) (c : Config) (hw : WordsBounded W c)
@@ -166,14 +158,14 @@ theorem pieceK1_exec {O : OracleIface} (hV : O.Valid) (c : Config) (hw : WordsBo
       (∀ r, 140000 ≤ r → r < 160000 → Wk1 r = false → c'.nreg r = c.nreg r) ∧
       ShEnv P W H C z σ c' := by
   set S := (chainModel C).arcSet (p₀ : ℝ) ((p₀ + w : ℕ) : ℝ) with hSdef
-  have hW' : P.n + 3 ≤ W := by have := E.hW; unfold hostWords at this; omega
+  have hW' : P.n + 3 ≤ W := by have := E.hW; grind [hostWords]
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hD := distinct_Qof E.hG
   have k1 := E.k1
   unfold pieceK1
   by_cases t0 : c.nreg 140237 < c.nreg K1
   · -- no query: no hit
-    have hN := hq0 (by rw [k1] at t0; omega)
+    have hN := hq0 (by omega)
     obtain ⟨x₁, c₁', r₁⟩ := hB.cand
     have hu := cand_union E.hσ c₁' (show Cand S z σ 0 0 from ⟨fun h => absurd h (by norm_num),
       fun _ => hN⟩)
@@ -181,7 +173,7 @@ theorem pieceK1_exec {O : OracleIface} (hV : O.Valid) (c : Config) (hw : WordsBo
     exact ⟨c, _, .ifLtN_true t0 (.skip hw), by omega, CandAt.of_cand hB.1 hu r₁,
       frame_of_frameB (FrameB.refl (fun _ => false) c) (fun r h => by simp at h) _,
       fun _ _ _ _ => rfl, E⟩
-  have hq : c.nreg 140237 = 1 := by rw [k1] at t0; omega
+  have hq : c.nreg 140237 = 1 := by omega
   obtain ⟨hyk, o, hoIn, hoLt, hrel⟩ := hq1 hq
   -- the origin is at the height of a vertex of `Q`
   obtain ⟨-, hzR, -, hhi, hzh⟩ : c.nreg 140234 = 1 ∧ |z.2| < C.radius ∧
@@ -192,27 +184,19 @@ theorem pieceK1_exec {O : OracleIface} (hV : O.Valid) (c : Config) (hw : WordsBo
   -- the query inputs
   obtain ⟨c₁, k₁, e₁, hk₁, v0, v1, v2, v3, v4, f₁⟩ := qSet_exec (P := P) c hw k1 h55 hWen
   have kq₁ : ∀ r, r ≠ 140350 → ¬ (120000 ≤ r ∧ r < 120005) → c₁.nreg r = c.nreg r :=
-    fun r h1 h2 => f₁.1 r (by simp [h1]; omega)
+    fun r h1 h2 => f₁.1 r (by grind)
   have hm₁ : c₁.nmem = c.nmem := f₁.2.2.1
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := kq₁ _ (by decide) (by simp [ALLOC])
   have hoIn₁ : QOriginIn c₁ (bandReg bOQuery 1) o := qOriginIn_copy hoIn v1 v2 v3
   have hq0' : rd c₁ bOQuery 0 = c.nmem (en + 2) := v0
   -- the query
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, F₂⟩ := hV.2.2 P W c₁ e₁.wb_right
-    ⟨E.hG, E.hW, by rw [hm₁, hq0']; exact hAt, o, hoLt, hoIn₁⟩ (by
-      dsimp only
-      rw [hA₁]
-      have : ⌈(O.κ : ℝ) * ((c₁.nmem (rd c₁ bOQuery 0 + 2) : ℝ) ^ ((1 : ℝ) / 3) *
-          ((c₁.nmem (c₁.nmem (rd c₁ bOQuery 0) + 2) : ℝ) + 1) ^ ((2 : ℝ) / 3) + 1)⌉₊ ≤ Kq := by
-        rw [hm₁, hq0']; exact hcost
-      omega)
+    ⟨E.hG, E.hW, by grind, o, hoLt, hoIn₁⟩ (by
+      grind)
   replace hk₂ : k₂ ≤ Kq := by
-    refine le_trans hk₂ ?_
-    show ⌈(O.κ : ℝ) * ((c₁.nmem (rd c₁ bOQuery 0 + 2) : ℝ) ^ ((1 : ℝ) / 3) *
-      ((c₁.nmem (c₁.nmem (rd c₁ bOQuery 0) + 2) : ℝ) + 1) ^ ((2 : ℝ) / 3) + 1)⌉₊ ≤ Kq
-    rw [hm₁, hq0']; exact hcost
+    grind
   obtain ⟨Hs, Cα, hCd, hCs⟩ := hCα
-  have hpost := post₂ Hs Cα o (by rw [hm₁, hq0']; exact hCd) hoIn₁
+  have hpost := post₂ Hs Cα o (by grind) hoIn₁
   have hdir₁ : dirOf (rd c₁ bOQuery 4) = σ := by show dirOf (c₁.nreg 120004) = σ; rw [v4, h08]
   rw [hdir₁] at hpost
   -- the frame of the query
@@ -223,12 +207,12 @@ theorem pieceK1_exec {O : OracleIface} (hV : O.Valid) (c : Config) (hw : WordsBo
       Finset.mem_union, Finset.mem_insert, Finset.mem_singleton]
     omega
   have k₂' : ∀ r, 140000 ≤ r → r < 160000 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
-    kq₂ r (band14 r h1 h2) (by unfold ALLOC; omega)
+    kq₂ r (band14 r h1 h2) (by omega_nf)
   have hE₂ : ShEnv P W H C z σ c₂ := by
-    refine ShEnv.of_agree E (fun r hr hra => ?_) (fun a ha => ?_) (by rw [← hA₁]; exact Fa1)
+    refine ShEnv.of_agree E (fun r hr hra => ?_) (fun a ha => ?_) (by omega)
     · have h14 : 140000 ≤ r ∧ r < 160000 := by unfold envR K1 ALLOC at hr; unfold ALLOC at hra; omega
       rw [k₂' r h14.1 h14.2, kq₁ r (by unfold envR K1 ALLOC at hr; omega) (by omega)]
-    · rw [Fm a (by rw [hA₁]; exact ha), hm₁]
+    grind
   have hSC : ∀ x ∈ S, InC C x := fun x hx => block_inC hw1 hp6 hp hx
   have htr := query_transfer (S := S) (z := z) E.hσ hrel (by rw [hCs]) hSC
   rw [hCs] at hpost
@@ -250,22 +234,22 @@ theorem pieceK1_exec {O : OracleIface} (hV : O.Valid) (c : Config) (hw : WordsBo
       (.ifLtN K1 120005 cand0 qHit)) c₂ c₃ k₃ ∧ k₃ ≤ 50 ∧ CandAt P C c₃ 140220 S z σ ∧
       FrameB (fun r => Bqh r || r == 140220) c₂ c₃ := by
     by_cases t1 : c₂.nreg 120005 < c₂.nreg K1
-    · have hN := htr.2 (hpost.2 (by rw [k1₂] at t1; show c₂.nreg 120005 ≠ 1; omega))
+    · have hN := htr.2 (hpost.2 (by omega_nf))
       obtain ⟨c₃, k, ex, hk, ca, -⟩ := cand0_exec (P := P) (C := C) c₂ w₂ hN
       exact ⟨c₃, _, .ifLtN_true t1 ex, by omega, ca, exec_frameB ex wr_c0⟩
     by_cases t2 : c₂.nreg K1 < c₂.nreg 120005
-    · have hN := htr.2 (hpost.2 (by rw [k1₂] at t2; show c₂.nreg 120005 ≠ 1; omega))
+    · have hN := htr.2 (hpost.2 (by omega_nf))
       obtain ⟨c₃, k, ex, hk, ca, -⟩ := cand0_exec (P := P) (C := C) c₂ w₂ hN
       exact ⟨c₃, _, .ifLtN_false t1 (.ifLtN_true t2 ex), by omega, ca, exec_frameB ex wr_c0⟩
-    have hf : c₂.nreg 120005 = 1 := by rw [k1₂] at t1 t2; omega
+    have hf : c₂.nreg 120005 = 1 := by omega
     obtain ⟨t', hF', he'n, hXe⟩ := hpost.1 hf
     obtain ⟨hFz, hXz⟩ := htr.1 t' hF'
     set X := rayPt (o.eval (Qof P) Cα σ) σ t' with hX
     have hXS : X ∈ S := by rw [← hXz]; exact hFz.2.1
     have hXy : X.2 = z.2 := by rw [← hXz, rayPt_snd]
     set e' := rd c₂ bOQuery 6 with he'def
-    have hout := k1_hit (C := C) hD hQs hblk hw1 (by rw [hQn]; exact hxw) hp6 hp hdir hXS hXe
-      (by rw [hQn]; exact he'n) (by rw [hQn]; exact hhi) (by rw [hXy, hzh])
+    have hout := k1_hit (C := C) hD hQs hblk hw1 (by omega) hp6 hp hdir hXS hXe
+      (by omega) (by rw [hQn]; exact hhi) (by grind)
     rw [hQn] at hout
     obtain ⟨c₃, k, ex, hk, ca, f⟩ := qHit_exec (P := P) (C := C) (S := S) (X := X) c₂ w₂ k1₂ r50 r56
       r57 r58 rfl r36 hdir (by omega) hW2
@@ -292,9 +276,7 @@ theorem pieceK1_exec {O : OracleIface} (hV : O.Valid) (c : Config) (hw : WordsBo
       Frame.mono ⟨Fr, Frr, Fm, Frm, Fo, Fa1, Fa2⟩ (by
         intro b hb
         simp only [oracleBands, Finset.mem_union, Finset.mem_singleton, Finset.mem_insert] at hb ⊢
-        rcases hb with hb | hb
-        · exact Or.inl hb
-        · exact Or.inr (Or.inl hb)) le_rfl
+        grind) le_rfl
     have F3 : Frame oracleBands c₂ c₃ k₃ := frame_ob fc (fun r hr => by
       simp only [Bqh, Bko, Bool.or_eq_true, beq_iff_eq, decide_eq_true_eq] at hr
       unfold bandOf ALLOC; omega) k₃

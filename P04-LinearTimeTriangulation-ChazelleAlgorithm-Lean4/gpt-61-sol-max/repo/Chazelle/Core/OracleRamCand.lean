@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleRamPos
 
 /-!
@@ -94,26 +96,22 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     have q23 := hq.hz
     have q11 := hq.one
     exec_block
-    · config_simp; rw [hq.hz, hq.one]; omega
-    · refine ⟨rfl, by config_simp; exact hq.MD, by config_simp; exact hq.NB, ?_, ?_,
-        fun r hr => by config_simp; upd_solve, rfl⟩
-      · config_simp; ((try simp only [Machine.upd_apply]); (repeat' split_ifs) <;> first | omega)
-      · config_simp; rw [hq.hz, hq.one]
+    all_goals (grind [Machine.upd_apply])
   obtain ⟨x50000, x50001, x50002, x50003, r₁, m₁⟩ := v₁
   have hq₁ : QConst P V c₁ := hq.congr fun r h1 h2 => r₁ r (by omega)
   have hm₁ : c₁.nmem = c.nmem := m₁
   -- 2. double identification
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hp₂, hloc1, hloc2⟩ := myLoc_exec hcov (P := P) (W := W) (c := c₁)
     e₁.wb_right ⟨hG, by omega, by rw [x50000]; exact hL.md_le, by rw [x50000, hm₁]; exact hL.chwf,
-      M, by rw [x50000, hm₁]; exact hL.md, by rw [x50002]; exact hwn⟩ hG (by omega)
+      M, by rw [x50000, hm₁]; exact hL.md, by omega⟩ hG (by omega)
     (by rw [x50000, hm₁]; exact hL.md) hL.good (by rw [x50001, hm₁]; exact hL.nf) hL.isNF
-    (by rw [x50002, x50003]; exact hx) hL.st hq₁.TB hq₁.L hq₁.zero hq₁.one
+    (by ram_simp) hL.st hq₁.TB hq₁.L hq₁.zero hq₁.one
     (fun j hj => by rw [hm₁]; exact hL.tab j hj) (by rw [← hL.A]; exact hL.A_lt)
     (by rw [x50001]; exact hL.NB_le) (by rw [x50001, hm₁, ← hL.A]; exact hL.AB_le)
     (by rw [x50001, hm₁, ← hL.A]; exact hL.SB_le) hL.TB_le
   rw [x50002, x50003] at hloc1 hloc2
   have hBLc : ∀ r, 120010 ≤ r → r ≤ 120049 → BL r = false := fun r h1 h2 => by
-    simp only [BL, Bdir, Bloc, Bcmp, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+    grind [BL, Bdir, Bloc, Bcmp, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]
   have hq₂ : QConst P V c₂ := hq₁.frame f₂ hBLc
   have m₂ : c₂.nmem = c.nmem := f₂.2.2.1.trans hm₁
   obtain ⟨p, hp⟩ : ∃ p, c₂.nreg 120170 = p := ⟨_, rfl⟩
@@ -137,12 +135,12 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   have hm₃ : c₃.nmem = c.nmem := by
     rw [← m₂]; exact (exec_frameB e₃ (B := fun r => decide (r = 120110)) (by decide)).2.2.1
   have hb₃ : BestOK P.n V.s V.m c₃ := by
-    unfold BestOK; rw [r₃ 120050 (by decide), r₃ 120051 (by decide), r₃ 120052 (by decide)]; exact hb₂
+    grind [BestOK]
   have hbo₃ : bestOf c₃ = bestOf c := by
-    unfold bestOf; rw [r₃ 120050 (by decide), r₃ 120052 (by decide)]; exact hbo₂
+    grind [bestOf]
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, hb₄, hit₄⟩ := clusS_exec (P := P) hG hW hs c₃ e₃.wb_right hq₃ hb₃
-    (by rw [hm₃]; exact hm) (by rw [hm₃]; exact hO) (by rw [v₃]; exact hpμ) (NC := NC)
-    (fun u hu => by rw [hm₃]; exact hNC u hu) (S := S) (by rw [hbo₃]; exact hS)
+    (by grind) (by grind) (by omega) (NC := NC)
+    (fun u hu => by grind) (S := S) (by grind)
   rw [v₃, hm₃] at hk₄ hit₄
   have hq₄ : QConst P V c₄ := hq₃.frame f₄ BC_const
   have hm₄ : c₄.nmem = c.nmem := f₄.2.2.1.trans hm₃
@@ -159,39 +157,36 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
           d₁.nreg 120186 = p ∧ (∀ r, r ≠ 120110 → r ≠ 120186 → d₁.nreg r = c₄.nreg r) ∧
           d₁.nmem = c₄.nmem ∧ d₁.rreg = c₄.rreg ∧ d₁.rmem = c₄.rmem ∧ d₁.output = c₄.output) := by
       exec_block
-      · config_simp; rw [x170, hq₄.one]; have := hL.A_le; have := hO.μ_le; omega
-      · refine ⟨rfl, ?_, ?_, fun r h1 h2 => by config_simp; upd_solve, rfl, rfl, rfl, rfl⟩
+      · config_simp; rw [x170, hq₄.one];  have := hO.μ_le; omega
+      · refine ⟨rfl, ?_, ?_, fun r h1 h2 => by ram_simp, rfl, rfl, rfl, rfl⟩
         · config_simp; rw [x170, hq₄.one]
-        · config_simp; exact x170
+        · ram_simp
     obtain ⟨q110, q186, qr, qm, qrr, qrm, qo⟩ := q
     have hqA : d₁.nreg 120030 = V.A := (qr _ (by decide) (by decide)).trans hq₄.A
     by_cases hs1 : p + 1 < V.A
-    · refine ⟨d₁, _, .seq e₁' (.ifLtN_true (by rw [q110, hqA]; exact hs1) (.skip e₁'.wb_right)),
+    · refine ⟨d₁, _, .seq e₁' (.ifLtN_true (by omega) (.skip e₁'.wb_right)),
         by omega, ?_, q186, qr, qm, qrr, qrm, qo⟩
-      rw [q110]; unfold succP; rw [ite_eq_left hs1]
+      grind [succP]
     · obtain ⟨d₂, e₂', v₂', r₂'⟩ := const_exec (P := P) e₁'.wb_right 120110 0 (by omega)
       have f₂' := exec_frameB e₂' (B := fun r => decide (r = 120110)) (by decide)
-      refine ⟨d₂, _, .seq e₁' (.ifLtN_false (by rw [q110, hqA]; exact hs1) e₂'), by omega, ?_,
-        by rw [r₂' _ (by decide)]; exact q186, fun r h1 h2 => by rw [r₂' r h1]; exact qr r h1 h2,
+      refine ⟨d₂, _, .seq e₁' (.ifLtN_false (by omega) e₂'), by omega, ?_,
+        by grind, fun r h1 h2 => by grind,
         f₂'.2.2.1.trans qm, by rw [show d₂.rreg = d₁.rreg from funext fun r =>
           exec_rframe e₂' (B := fun _ => false) (by decide) r rfl]; exact qrr,
         f₂'.2.2.2.1.trans qrm, f₂'.2.2.2.2.trans qo⟩
-      rw [v₂']; unfold succP; rw [ite_eq_right hs1]
+      grind [succP]
   obtain ⟨v110, v186, r₅, m₅, rr₅, rm₅, o₅⟩ := v₅
   have hq₅ : QConst P V c₅ := hq₄.congr fun r h1 h2 => r₅ r (by omega) (by omega)
   have hm₅ : c₅.nmem = c.nmem := m₅.trans hm₄
   have hb₅ : BestOK P.n V.s V.m c₅ := by
-    unfold BestOK
-    rw [r₅ 120050 (by decide) (by decide), r₅ 120051 (by decide) (by decide),
-      r₅ 120052 (by decide) (by decide)]
-    exact hb₄
+    grind [BestOK]
   have hbo₅ : bestOf c₅ = bestOf c₄ := by
-    unfold bestOf; rw [r₅ 120050 (by decide) (by decide), r₅ 120052 (by decide) (by decide)]
+    grind [bestOf]
   have hsμ : succP V.A p < V.μ := by have := succP_lt hpA; have := hL.A_le; omega
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, hb₆, hit₆⟩ := clusS_exec (P := P) hG hW hs c₅ e₅.wb_right hq₅ hb₅
-    (by rw [hm₅]; exact hm) (by rw [hm₅]; exact hO) (by rw [v110]; exact hsμ) (NC := NC)
-    (fun u hu => by rw [hm₅]; exact hNC u hu)
-    (S := S ∪ clusPts c.nmem V C (lab c.nmem V p)) (by rw [hbo₅]; exact hit₄)
+    (by grind) (by grind) (by omega) (NC := NC)
+    (fun u hu => by grind)
+    (S := S ∪ clusPts c.nmem V C (lab c.nmem V p)) (by grind)
   rw [v110, hm₅] at hk₆ hit₆
   have hq₆ : QConst P V c₆ := hq₅.frame f₆ BC_const
   have hm₆ : c₆.nmem = c.nmem := f₆.2.2.1.trans hm₅
@@ -204,25 +199,23 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     have w₆ := e₆.wb_right
     by_cases h0 : 0 < p
     · refine ⟨_, _, .ifLtN_true (by rw [hq₆.zero, x186]; exact h0) (Exec.subN w₆ _ _ _), by omega,
-        ?_, fun r hr => by config_simp; upd_solve, rfl⟩
-      config_simp; rw [x186, hq₆.one]; unfold predP; rw [ite_eq_right (by omega)]
-    · refine ⟨_, _, .ifLtN_false (by rw [hq₆.zero, x186]; exact h0) (Exec.subN w₆ _ _ _), by omega,
-        ?_, fun r hr => by config_simp; upd_solve, rfl⟩
-      config_simp; rw [hq₆.A, hq₆.one]; unfold predP; rw [ite_eq_left (by omega)]
+        ?_, fun r hr => by ram_simp, rfl⟩
+      config_simp; rw [x186, hq₆.one]; grind [predP]
+    · refine ⟨_, _, .ifLtN_false (by omega) (Exec.subN w₆ _ _ _), by omega,
+        ?_, fun r hr => by ram_simp, rfl⟩
+      config_simp; rw [hq₆.A, hq₆.one]; grind [predP]
   have hq₇ : QConst P V c₇ := hq₆.congr fun r h1 h2 => r₇ r (by omega)
   have hm₇ : c₇.nmem = c.nmem := m₇.trans hm₆
   have hb₇ : BestOK P.n V.s V.m c₇ := by
-    unfold BestOK
-    rw [r₇ 120050 (by decide), r₇ 120051 (by decide), r₇ 120052 (by decide)]
-    exact hb₆
+    grind [BestOK]
   have hbo₇ : bestOf c₇ = bestOf c₆ := by
-    unfold bestOf; rw [r₇ 120050 (by decide), r₇ 120052 (by decide)]
+    grind [bestOf]
   have hpμ' : predP V.A p < V.μ := by have := predP_lt hpA; have := hL.A_le; omega
   obtain ⟨c₈, k₈, e₈, hk₈, f₈, hb₈, hit₈⟩ := clusS_exec (P := P) hG hW hs c₇ e₇.wb_right hq₇ hb₇
-    (by rw [hm₇]; exact hm) (by rw [hm₇]; exact hO) (by rw [v₇]; exact hpμ') (NC := NC)
-    (fun u hu => by rw [hm₇]; exact hNC u hu)
+    (by grind) (by grind) (by omega) (NC := NC)
+    (fun u hu => by grind)
     (S := S ∪ clusPts c.nmem V C (lab c.nmem V p) ∪ clusPts c.nmem V C (lab c.nmem V (succP V.A p)))
-    (by rw [hbo₇]; exact hit₆)
+    (by grind)
   rw [v₇, hm₇] at hk₈ hit₈
   -- the frame
   have ex : Exec P W (candS rP) c c₈ (k₁ + (k₂ + (1 + (k₄ + (k₅ + (k₆ + (k₇ + k₈))))))) :=
@@ -234,18 +227,18 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   have f₇ := exec_frameB e₇ (B := fun r => decide (r = 120110)) (by decide)
   have fr : FrameB BCa c c₈ := by
     have g1 : FrameB BCa c c₁ := FrameB.mono f₁ fun r hr => by
-      simp only [decide_eq_true_eq] at hr; simp [BCa, BL, Bloc]; omega
-    have g2 : FrameB BCa c₁ c₂ := FrameB.mono f₂ fun r hr => by simp [BCa, hr]
+      simp only [decide_eq_true_eq] at hr; grind [BCa, BL, Bloc]
+    have g2 : FrameB BCa c₁ c₂ := FrameB.mono f₂ fun r hr => by grind [BCa]
     have g3 : FrameB BCa c₂ c₃ := FrameB.mono f₃ fun r hr => by
-      simp only [decide_eq_true_eq] at hr; simp [BCa, hr]
-    have g4 : FrameB BCa c₃ c₄ := FrameB.mono f₄ fun r hr => by simp [BCa, hr]
+      simp only [decide_eq_true_eq] at hr; grind [BCa]
+    have g4 : FrameB BCa c₃ c₄ := FrameB.mono f₄ fun r hr => by grind [BCa]
     have g5 : FrameB BCa c₄ c₅ := FrameB.mono f₅ fun r hr => by
       simp only [Bool.or_eq_true, decide_eq_true_eq] at hr
-      rcases hr with hr | hr <;> simp [BCa, hr]
-    have g6 : FrameB BCa c₅ c₆ := FrameB.mono f₆ fun r hr => by simp [BCa, hr]
+      grind [BCa]
+    have g6 : FrameB BCa c₅ c₆ := FrameB.mono f₆ fun r hr => by grind [BCa]
     have g7 : FrameB BCa c₆ c₇ := FrameB.mono f₇ fun r hr => by
-      simp only [decide_eq_true_eq] at hr; simp [BCa, hr]
-    have g8 : FrameB BCa c₇ c₈ := FrameB.mono f₈ fun r hr => by simp [BCa, hr]
+      simp only [decide_eq_true_eq] at hr; grind [BCa]
+    have g8 : FrameB BCa c₇ c₈ := FrameB.mono f₈ fun r hr => by grind [BCa]
     exact g1.trans (g2.trans (g3.trans (g4.trans (g5.trans (g6.trans (g7.trans g8))))))
   refine ⟨c₈, _, p, ex, ?_, fr, hb₈, hpA, hloc1, hloc2, ?_⟩
   · have a4 := hCS p hpμ
@@ -258,9 +251,7 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     have b8 : (clusSize c.nmem V (lab c.nmem V (predP V.A p)) + 2) * (NC + 80) ≤
         (CS + 2) * (NC + 80) := Nat.mul_le_mul_right _ (by omega)
     omega
-  · unfold clusPts3
-    rw [← Set.union_assoc, ← Set.union_assoc]
-    exact hit₈
+  grind [clusPts3, Set.union_assoc]
 
 end
 

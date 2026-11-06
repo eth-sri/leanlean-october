@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.NFBuildPhaseB
 
 /-!
@@ -27,15 +29,8 @@ theorem Model.arcWt_self (M : Model) {lo hi : ℕ}
     ext p
     simp only [mem_ofPred_eq, Finset.coe_Ico, mem_Ico]
     rw [Model.mem_arcEdges_iff, ite_eq_right (lt_irrefl x)]
-    constructor
-    · rintro ⟨hp, hcp, -⟩
-      exact (hc p hp).1 hcp
-    · rintro ⟨h1, h2⟩
-      refine ⟨by omega, (hc p (by omega)).2 ⟨h1, h2⟩, ?_⟩
-      by_cases h : (p : ℝ) < x
-      · exact Or.inl h
-      · right; push Not at h; linarith
-  rw [hset, ncard_coe_finset, Nat.card_Ico]
+    grind
+  grind [ncard_coe_finset, Nat.card_Ico]
 
 namespace BuildRam
 
@@ -76,7 +71,7 @@ def zeroCase : Stmt :=
       .copyN 40003 44000]))
 
 /-- The 24 words written by `zeroCase` at `H`. -/
-def zeroW (H wt : ℕ) (f : ℕ) : ℕ :=
+def zeroW (H wt f : ℕ) : ℕ :=
   if f = 1 ∨ f = 2 ∨ f = 17 ∨ f = 20 then 1 else if f = 3 ∨ f = 4 then H + 12
   else if f = 5 then H + 17 else if f = 6 then H + 22 else if f = 7 then H + 23
   else if f = 8 ∨ f = 10 then H else if f = 21 then wt else 0
@@ -116,7 +111,7 @@ theorem nfAt_zero {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : 
   have e17 : m (H + 17) = 1 := v 17 (by norm_num)
   have e18 : m (H + 18) = 0 := v 18 (by norm_num)
   have e19 : m (H + 19) = 0 := v 19 (by norm_num)
-  have e20 : m (H + 20) = 1 := v 20 (by norm_num)
+  
   have e21 : m (H + 21) = BuildNF.regWt M Q [] E 0 := v 21 (by norm_num)
   have e22 : m (H + 22) = 0 := v 22 (by norm_num)
   have e23 : m (H + 23) = 0 := v 23 (by norm_num)
@@ -128,25 +123,19 @@ theorem nfAt_zero {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : 
     unfold BuildNF.regChords; simp
   refine ⟨?_, ?_, ?_, ?_, ?_, fun i hi => ?_, fun j hj => ?_, fun r hr => ?_, fun j hj => ?_,
     fun k hk => ?_, fun r hr => ?_⟩
-  · rw [e0]; simp [BuildNF.buildNF]
+  · grind [BuildNF.buildNF]
   · rw [e1]; show 1 = (BuildNF.arcList M Q [] E).length; rw [hA]; rfl
-  · rw [e2]; simp [BuildNF.buildNF]
+  · grind [BuildNF.buildNF]
   · rw [e9]; rfl
   · rw [e11]; rfl
   · simp [BuildNF.buildNF] at hi
   · have hj' : j = 0 := by
       have : (BuildNF.buildNF M Q [] E).arcs = BuildNF.arcList M Q [] E := rfl
-      rw [this, hA] at hj; simp at hj; exact hj
+      ram_grind
     subst hj'
     have ha : (BuildNF.buildNF M Q [] E).arc 0 = ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ := by
       unfold NF.arc; show (BuildNF.arcList M Q [] E).getD 0 _ = _; rw [hA]; rfl
-    rw [e4, ha]
-    refine ⟨?_, ?_, ?_, ?_, ?_⟩
-    · rw [Nat.mul_zero, Nat.add_zero, show H + 12 = H + 12 from rfl, e12]
-    · rw [Nat.mul_zero, Nat.add_zero, show H + 12 + 1 = H + 13 from rfl, e13]
-    · rw [Nat.mul_zero, Nat.add_zero, show H + 12 + 2 = H + 14 from rfl, e14]
-    · rw [Nat.mul_zero, Nat.add_zero, show H + 12 + 3 = H + 15 from rfl, e15]
-    · rw [Nat.mul_zero, Nat.add_zero, show H + 12 + 4 = H + 16 from rfl, e16]
+    ram_grind
   · have hr' : r = 0 := by simpa [BuildNF.buildNF] using hr
     subst hr'
     have hreg := (show (BuildNF.buildNF M Q [] E).region 0 =
@@ -155,9 +144,9 @@ theorem nfAt_zero {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : 
     rw [e5, hreg, hRA, hRC]
     simp only [Nat.mul_zero, Nat.add_zero]
     refine ⟨?_, ?_, ?_, fun t ht => ?_, fun t ht => ?_⟩
-    · rw [show H + 17 = H + 17 from rfl, e17]; rfl
-    · rw [show H + 17 + 2 = H + 19 from rfl, e19]; rfl
-    · rw [show H + 17 + 4 = H + 21 from rfl, e21]
+    · omega
+    · omega
+    · omega
     · simp only [List.length_singleton, Nat.lt_one_iff] at ht
       subst ht
       rw [e7, show H + 17 + 1 = H + 18 from rfl, e18, Nat.add_zero, Nat.add_zero,
@@ -165,12 +154,12 @@ theorem nfAt_zero {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : 
     · simp at ht
   · have hj' : j = 0 := by
       have : (BuildNF.buildNF M Q [] E).seq = List.range (BuildNF.arcList M Q [] E).length := rfl
-      rw [this, hA] at hj; simp at hj; exact hj
+      ram_grind
     subst hj'
     rw [e6, Nat.add_zero, show H + 22 = H + 22 from rfl, e22]
     rfl
-  · simp [BuildNF.buildNF] at hk
-  · simp [BuildNF.buildNF] at hr
+  · grind [BuildNF.buildNF]
+  grind [BuildNF.buildNF]
 
 /-- The stores of `zeroCase`. -/
 def zeroStores : Stmt :=
@@ -196,7 +185,7 @@ theorem zeroStores_exec (d : Config) (hw : WordsBounded W d) {H hd : ℕ}
   simp only
   exec_block
   all_goals first
-    | (config_simp; simp (config := { failIfUnchanged := false }) only [hH]; omega)
+    | (config_simp; omega)
     | skip
   refine ⟨by omega, by omega, ?_, fun r h1 h2 => ?_, fun f hf => ?_, fun a ha => ?_⟩ <;>
     config_simp
@@ -216,11 +205,11 @@ theorem regWt_zero {M : Model} {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E :
   have hL' : L = [] := List.length_eq_zero_iff.1 hL
   subst hL'
   have hA : BuildNF.arcList M (Qof P) [] E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by
-    unfold BuildNF.arcList; simp
+    aesop
   have hRA : BuildNF.regArcs M (Qof P) [] E 0 = [0] := by
-    unfold BuildNF.regArcs; rw [hA]; decide
+    simp_all [BuildNF.regArcs] 
   obtain ⟨hc, hhi⟩ := countedIv (P := P) hM
-  have hlohi : loOf m D ≤ hiOf m D P.n := by unfold loOf hiOf; split_ifs <;> omega
+  have hlohi : loOf m D ≤ hiOf m D P.n := by core_grind
   unfold BuildNF.regWt
   rw [hRA, hA]
   simp only [List.map_cons, List.map_nil, List.foldr_cons, List.foldr_nil, List.getD_cons_zero]
@@ -253,25 +242,22 @@ theorem zeroCase_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounde
       c₁.nmem = c.nmem := by
     exec_block
     · omega
-    · config_simp; rw [hH]; omega
-    · refine ⟨rfl, ?_, ?_, fun r h1 h2 h3 => ?_, rfl⟩ <;> config_simp
-      · rw [hH]
-      · rw [hH]
-      · simp (disch := omega) only [upd_other]
+    · omega_nf
+    · ram_simp
   have w₁ := x₁.wb_right
   obtain ⟨c₂, k₂, x₂, hk₂, l1, l2, l3, l4, f₂⟩ := lohiS_exec (P := P) c₁ w₁ (D := D)
-    (by rw [g₁ _ (by norm_num) (by norm_num) (by norm_num), hD])
-    (by rw [mm₁]; exact twice_m_le hM hCW) (by omega) (by unfold hostWords at hWn; omega)
-    (by unfold hostWords at hWn; omega)
+    (by ram_simp)
+    (by rw [mm₁]; exact twice_m_le hM hCW) (by omega) (by omega_nf)
+    (by omega)
   rw [mm₁] at l1 l2 l3
   have w₂ := x₂.wb_right
   obtain ⟨c₃, k₃, x₃, hk₃, hk₃', v40003, g₃, T1, T2⟩ := zeroStores_exec (P := P) c₂ w₂ (H := H)
-    (hd := hdOf c.nmem D P.n) (by rw [f₂.1 _ (by decide), v1]) l2 hroom
+    (hd := hdOf c.nmem D P.n) (by ram_grind) l2 hroom
   have X : Exec P W zeroCase c c₃ (k₁ + (k₂ + k₃)) := by
     rw [zeroCase_eq]; exact .seq x₁ (.seq x₂ x₃)
-  have h9999 : c₃.nreg 9999 = H + 24 := by rw [g₃ _ (by omega) (by omega), f₂.1 _ (by decide), v2]
+  have h9999 : c₃.nreg 9999 = H + 24 := by ram_grind
   refine ⟨c₃, _, X, by omega, by omega, x₃.wb_right, exec_frameM X wr_zeroCase, v40003, h9999,
-    fun a ha => by rw [T2 a (Or.inl ha), f₂.2.2.1, mm₁], ?_⟩
+    fun a ha => by ram_grind, ?_⟩
   intro m' hm'
   rw [h9999] at hm'
   apply nfAt_zero hL

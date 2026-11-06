@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OraclePrepZipBody
 
 /-!
@@ -43,9 +45,9 @@ theorem zipBody_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, o₁, -, fl₁, mir₁⟩ := prepS_exec hw h hx hxA d
   have h₁ : ZEnv P W lo C N V c₁ := h.stable (fun r hr => f₁.1 r (by
     simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr
-    simp only [BPR, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
-    (fun a _ => by rw [f₁.2.2.1])
-  have x₁ : c₁.nreg 110299 = x := by rw [f₁.1 _ (by decide), hx]
+    core_grind))
+    (fun a _ => by ram_grind)
+  have x₁ : c₁.nreg 110299 = x := by ram_grind
   have hA := h.mem.1.A
   have hkx : (chainModel C).key C.P (endPos N d x) =
       if d then sk (chainModel C) (Qof P) N x else ek (chainModel C) (Qof P) N x := by
@@ -56,18 +58,18 @@ theorem zipBody_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, h.simple, rfl⟩
   by_cases hI : InI C ((chainModel C).key C.P (endPos N d x))
   · rw [ite_eq_left hI] at fl₁
-    have ht : c₁.nreg 120012 < c₁.nreg 110104 := by rw [h₁.pk.zero, fl₁]; exact Nat.one_pos
+    have ht : c₁.nreg 120012 < c₁.nreg 110104 := by rw [h₁.pk.zero, fl₁]; omega
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, q, hqA, hq, n₂, s₂⟩ := locS_exec e₁.wb_right h₁ x₁ hxA d o₁ hI mir₁
     have ex : Exec P W (zipBody d) c c₂ _ :=
       .seq e₁ (.ifLtN_true (e := .instr (.constN 110290 0)) ht e₂)
-    have fr : FrameB BZB c c₂ := (FrameB.mono f₁ fun r hr => by simp [BZB, hr]).trans
-      (FrameB.mono f₂ fun r hr => by simp [BZB, hr])
+    have fr : FrameB BZB c c₂ := (FrameB.mono f₁ fun r hr => by core_grind).trans
+      (FrameB.mono f₂ fun r hr => by core_grind)
     -- the pair function is `normP x q`
     suffices H : zipF C (Qof P) N d x = normP x q by
-      rw [H]; exact ⟨_, _, ex, by omega, fr, n₂, s₂⟩
+      grind
     rw [hkx] at hI
-    have hqN : q < N.arcs.length := by rw [← hA]; exact hqA
-    have hxN : x < N.arcs.length := by rw [← hA]; exact hxA
+    have hqN : q < N.arcs.length := by omega
+    
     by_cases hne : (N.F (chainModel C) (Qof P)).Nonempty
     · have hq' := hq hne
       rw [hkx'] at hq'
@@ -98,27 +100,23 @@ theorem zipBody_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c
         · exact normP_none_of_le_one hA1 (by omega) (befArc_lt C (Qof P) N _)
         · rfl
   · rw [ite_eq_right hI] at fl₁
-    have ht : ¬ c₁.nreg 120012 < c₁.nreg 110104 := by rw [h₁.pk.zero, fl₁]; exact Nat.lt_irrefl 0
+    have ht : ¬ c₁.nreg 120012 < c₁.nreg 110104 := by omega
     have e₂ := Exec.constN (P := P) e₁.wb_right 110290 0 (Nat.zero_le _)
     have ex : Exec P W (zipBody d) c _ _ := .seq e₁ (.ifLtN_false (t := locS d) ht e₂)
-    have fr : FrameB BZB c _ := (FrameB.mono f₁ fun r hr => by simp [BZB, hr]).trans
+    have fr : FrameB BZB c _ := (FrameB.mono f₁ fun r hr => by core_grind).trans
       (FrameB.mono (exec_frameB e₂ (B := fun r => decide (r = 110290)) (by decide))
         fun r hr => by simp at hr; subst hr; decide)
     have hnone : zipF C (Qof P) N d x = none := by
       rw [hkx] at hI
       unfold zipF
       cases d
-      · simp only [Bool.false_eq_true, ite_false] at hI ⊢
-        unfold zipEk; rw [ite_eq_right (fun h' => hI h'.1)]
-      · simp only [ite_true] at hI ⊢
-        unfold zipSk; rw [ite_eq_right (fun h' => hI h'.1)]
+      all_goals (simp_all [Bool.false_eq_true, ite_false, zipEk, ite_true, zipSk] )
     refine ⟨_, _, ex, by omega, fr, fun _ => by config_simp, fun z hz => ?_⟩
-    rw [hnone] at hz; cases hz
+    simp_all
 
 theorem BZB_keep {r : ℕ} (h : ZKeep r = true ∨ (110293 ≤ r ∧ r ≤ 110299)) : BZB r = false := by
   simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at h
-  simp [BZB, BPR, BLS, BL, Bdir, Bloc, Bcmp, Bk]
-  omega
+  core_grind
 
 /-- The capacity of the raw pair arrays. -/
 def zCap (A : ℕ) : ℕ := 2 * A + 5
@@ -153,28 +151,21 @@ theorem zS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : Co
     unfold zCap at hW ⊢
     have hA := h.rA
     exec_block
-    · config_simp; rw [hA]; omega
-    · omega
-    · config_simp; rw [hA]; omega
-    · config_simp; rw [hA, hAl]; omega
-    · config_simp; rw [hA, hAl]; omega
-    · omega
-    · refine ⟨rfl, ?_, rfl, rfl, rfl, rfl⟩
-      config_simp; rw [hA, hAl]
-      funext r; simp only [upd]; split_ifs <;> first | omega
+    · omega_nf
+    all_goals (grind [upd])
   have R₁ : ∀ r, BZS r = false → c₁.nreg r = c.nreg r := fun r hr => by
     simp only [BZS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-    rw [n₁]; simp only [upd]; split_ifs <;> first | omega
+    rw [n₁]; grind [upd]
   have h₁ : ZEnv P W lo C N V c₁ := h.stable (fun r hr => R₁ r (by
       simp only [BZS, Bool.or_eq_false_iff, decide_eq_false_iff_not]
       refine ⟨⟨?_, BZB_keep (Or.inl hr)⟩, ?_⟩ <;>
-      simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr <;> omega))
+      ram_grind <;> omega))
     (fun a _ => by rw [m₁])
-  have v93 : c₁.nreg 110293 = A₀ := by rw [n₁]; config_simp
-  have v94 : c₁.nreg 110294 = A₀ + zCap V.A := by rw [n₁]; config_simp
-  have v95 : c₁.nreg 110295 = 0 := by rw [n₁]; config_simp
-  have v97 : c₁.nreg 110297 = zCap V.A := by rw [n₁]; config_simp
-  have v9 : c₁.nreg 9999 = A₀ + 2 * zCap V.A := by rw [n₁]; config_simp
+  have v93 : c₁.nreg 110293 = A₀ := by simp_all
+  have v94 : c₁.nreg 110294 = A₀ + zCap V.A := by simp_all
+  have v95 : c₁.nreg 110295 = 0 := by simp_all
+  have v97 : c₁.nreg 110297 = zCap V.A := by simp_all
+  have v9 : c₁.nreg 9999 = A₀ + 2 * zCap V.A := by simp_all
   have hJs : ∀ d d', ZEnv P W lo C N V d →
       (∀ r, BZB r = false → r ≠ 110299 → r ≠ 110295 → r ≠ 110296 → d'.nreg r = d.nreg r) →
       (∀ a, a < A₀ → d'.nmem a = d.nmem a) → ZEnv P W lo C N V d' := fun d d' hJ hr hm =>
@@ -195,8 +186,8 @@ theorem zS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : Co
     (fun i d hi hJ hwd hri => by
       obtain ⟨d', k, e, hk, f, a, b⟩ := zipBody_exec hwd hJ hri hi true
       exact ⟨d', k, e, hk, f, a, b⟩)
-    e₁.wb_right h₁ h₁.rA h₁.pk.one v93 v94 v95 (by unfold zCap; omega)
-    (by unfold zCap at hW ⊢; omega)
+    e₁.wb_right h₁ h₁.rA h₁.pk.one v93 v94 v95 (by omega_nf)
+    (by grind [zCap])
   rw [Nat.zero_add] at cnt₂
   simp only [Nat.add_zero] at pr₂
   set L1 := emitted (zipSk C (Qof P) N) V.A
@@ -217,34 +208,30 @@ theorem zS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : Co
     (fun i d hi hJ hwd hri => by
       obtain ⟨d', k, e, hk, f, a, b⟩ := zipBody_exec hwd hJ hri hi false
       exact ⟨d', k, e, hk, f, a, b⟩)
-    e₂.wb_right J₂ J₂.rA J₂.pk.one g93 g94 cnt₂ (by unfold zCap; omega)
-    (by unfold zCap at hW ⊢; omega)
+    e₂.wb_right J₂ J₂.rA J₂.pk.one g93 g94 cnt₂ (by omega_nf)
+    (by grind [zCap])
   set L2 := emitted (zipEk C (Qof P) N) V.A
   have hL2 : L2.length ≤ V.A := emitted_length_le _ _
   have hB : ∀ r, BZS r = false → BZB r = false ∧ r ≠ 110299 ∧ r ≠ 110295 ∧ r ≠ 110296 := by
     intro r hr
     simp only [BZS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-    exact ⟨hr.1.2, by omega, by omega, by omega⟩
+    grind
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ?_, ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => ?_,
-    fun a _ => by rw [rm₃, rm₂, rm₁], by rw [o₃, o₂, o₁]⟩, ?_, ?_, ?_, ?_, ?_, ?_, J₃⟩
-  · have : V.A * (5500 * (V.L + 1) + 400 + 10) ≤ V.A * (5500 * (V.L + 1) + 410) := le_refl _
+    fun a _ => by grind, by grind⟩, ?_, ?_, ?_, ?_, ?_, ?_, J₃⟩
+  · 
     nlinarith
-  · obtain ⟨a, b, c', d'⟩ := hB r hr
-    rw [r₃ r a b c' d', r₂ r a b c' d']; exact R₁ r hr
-  · obtain ⟨a, -⟩ := hB r hr
-    rw [rr₃ r a, rr₂ r a, rr₁]
-  · have ha1 : a < A₀ + L1.length := by omega
-    have ha2 : a < A₀ + 0 := by omega
-    rw [mm₃ a (Or.inl ha1), mm₂ a (Or.inl ha2), m₁]
+  · grind
+  · grind
+  · grind
   · rw [r₃ _ (by decide) (by decide) (by decide) (by decide),
       r₂ _ (by decide) (by decide) (by decide) (by decide), v9]
   · rw [r₃ _ (BZB_keep (Or.inr (by norm_num))) (by decide) (by decide) (by decide), g93]
   · rw [r₃ _ (BZB_keep (Or.inr (by norm_num))) (by decide) (by decide) (by decide), g94]
   · rw [r₃ _ (BZB_keep (Or.inr (by norm_num))) (by decide) (by decide) (by decide),
       r₂ _ (BZB_keep (Or.inr (by norm_num))) (by decide) (by decide) (by decide), v97]
-  · rw [cnt₃, List.length_append]
+  · grind
   · refine PairsAt.append (PairsAt.congr pr₂ fun t ht => ⟨mm₃ _ (Or.inl (by omega)),
-      mm₃ _ (Or.inr (Or.inl ⟨by unfold zCap at *; omega, by omega⟩))⟩) pr₃
+      mm₃ _ (Or.inr (Or.inl ⟨by omega_nf, by omega⟩))⟩) pr₃
 
 end
 

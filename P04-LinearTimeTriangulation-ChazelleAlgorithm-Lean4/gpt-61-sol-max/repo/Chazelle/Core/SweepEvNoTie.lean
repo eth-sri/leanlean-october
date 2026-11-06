@@ -40,8 +40,8 @@ theorem noTie_top (C : Chain) (hP : C.P.Simple) {F : Set (Set Point)}
       (∀ z ∈ ce, (sidePt (chainModel C).W k 0).1 ≤ z.1) ∧
       (∀ z ∈ cw, z.1 ≤ (sidePt (chainModel C).W k 0).1) := by
     rcases hM.tie_pair hF hc hc' hne hA hA' with ⟨h1, h2⟩ | ⟨h1, h2⟩
-    · exact ⟨c, c', hc, hc', hA, hA', h1, h2⟩
-    · exact ⟨c', c, hc', hc, hA', hA, h2, h1⟩
+    · grind
+    grind
   obtain ⟨-, s₁, s₂, hs₁, hs₂, hsE, hsW⟩ := hM.tie_setup (hF hce) (hF hcw) hAe hAw hE hW
   have v6 : (chainModel C).W.vtx 6 = C.top := by
     rw [cm_W, show (6 : ℕ) = 0 + 6 from rfl, C.sideWalk_vtx_tour _ (by omega), C.sideTour_zero]
@@ -114,7 +114,7 @@ theorem noTieV (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merg
   intro e he e' he' hne p t hA hA' hpt hL
   have hF : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := F₂plus_subset J hS₂
   have hm1 : J.m₁ ≤ J.whole.m := by
-    show J.m₁ ≤ J.m₁ + J.m₂; omega
+    simp_all
   obtain ⟨rfl, i, hi, rfl, hidx⟩ := pos_eq_vertex J.whole hP J.whole.sideBeta hA.1 hA.2.1 hA.2.2.1 hm1
     (hpt.trans J.whole_vertex_m₁.symm)
   have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
@@ -124,7 +124,7 @@ theorem noTieV (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merg
   have hoff : oW J (((i + 6 : ℕ) : ℝ) + 0) = (dOf (chainModel J.whole).W.n (gW J) (i + 6) : ℝ) :=
     by rw [oW, off_key' hg hp le_rfl one_pos, add_zero]
   rw [hoff, Lst, rL1_add_rL2] at hL
-  have hL' : rlen J < dOf (chainModel J.whole).W.n (gW J) (i + 6) := by exact_mod_cast hL
+  have hL' : rlen J < dOf (chainModel J.whole).W.n (gW J) (i + 6) := by simp_all
   have hcase : i = 0 ∨ i = 2 * J.whole.m := by
     have h2 := J.right.one_le
     have h1 := J.one_le_m₁
@@ -133,7 +133,7 @@ theorem noTieV (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merg
     rw [Chazelle.Chain.sideIdx_eq] at hidx
     exact noTieV_arith (m := J.whole.m) (m₁ := J.m₁) (m₂ := J.m₂) (b := bS J.whole) rfl h1 h2
       (bS_le J.whole) hi hidx hL'
-  exact hne (noTie_top J.whole hP hF he he' (by rcases hcase with rfl | rfl <;> simp) hA hA')
+  exact hne (noTie_top J.whole hP hF he he' (by omega) hA hA')
 
 end Sweep
 

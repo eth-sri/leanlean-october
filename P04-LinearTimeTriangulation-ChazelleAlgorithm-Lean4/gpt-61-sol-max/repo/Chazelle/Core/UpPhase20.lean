@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.UpPhase19
 
 /-!
@@ -18,13 +20,19 @@ open Machine Machine.Stmt Programs Chazelle Chazelle.Core.L41
 /-- **All grades.** -/
 def gradesL (sB sL sG sP : Stmt) : Stmt := .whileLtN 170007 170006 (gradeB sB sL sG sP)
 
+section
+variable (κB κL : ℕ) (κG : ℕ → ℕ)
+include κB κL κG
 /-- The budget of grade `g`. -/
-noncomputable def gT (κB κL : ℕ) (κG : ℕ → ℕ) (κO n g : ℕ) : ℕ :=
+noncomputable def gT (κO n g : ℕ) : ℕ :=
   gradeC κB κL κG κO n g + stepB κB κL κG κO g + 10
 
 /-- **The cost bound of all grades.** -/
-noncomputable def upT (κB κL : ℕ) (κG : ℕ → ℕ) (κO n : ℕ) : ℕ :=
+noncomputable def upT (κO n : ℕ) : ℕ :=
   ∑ j ∈ Finset.range (topGrade n + 1), gT κB κL κG κO n j
+
+
+end
 
 section proofs
 
@@ -34,25 +42,20 @@ theorem sq_le_two_pow (p : ℕ) : (p + 3) ^ 2 ≤ 16 * 2 ^ p := by
   induction p with
   | zero => norm_num
   | succ k ih =>
-    rw [pow_succ 2 k]
-    have h : (k + 1 + 3) ^ 2 ≤ 2 * (k + 3) ^ 2 := by ring_nf; omega
-    linarith
+    grind
 
 /-- `γ'_{g+1}` is small against the word bound. -/
 theorem gradeGran_succ_le {n g : ℕ} (hn : 2 ≤ n) (hg : g ≤ topGrade n) :
     gradeGran (g + 1) + g + 3 ≤ 128 * n := by
   have h2 := two_pow_le_of_le_top hn hg
-  have hp := two_pow_le_of_le_top hn (le_refl (topGrade n))
+  
   have hsq := sq_le_two_pow g
-  have hgp : 2 ^ g ≤ 2 ^ topGrade n := Nat.pow_le_pow_right (by norm_num) hg
+  
   have hcb : Cost.ceilBeta (g + 1) ≤ g + 1 := Cost.ceilBeta_le _
   have h3 : 2 ^ Cost.ceilBeta (g + 1) ≤ 2 ^ (g + 1) := Nat.pow_le_pow_right (by norm_num) hcb
   have hcl : Nat.clog 2 (g + 1) ≤ g + 1 := Nat.clog_le_of_le_pow Nat.lt_two_pow_self.le
   have h4 : (g + 1) * (Nat.clog 2 (g + 1) + 2) ≤ (g + 3) ^ 2 := by nlinarith
-  unfold gradeGran fuseLoss
-  rw [pow_succ 2 g] at h3
-  have hg2 : g ≤ 2 ^ g := Nat.lt_two_pow_self.le
-  omega
+  core_grind [fuseLoss]
 
 set_option maxHeartbeats 32000000 in
 /-- **All grades.** -/
@@ -73,7 +76,7 @@ theorem gradesL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB :
   set F := gT κB κL κG O.κ P.n with hF
   obtain ⟨A0, hA0⟩ : ∃ A0, c.nreg ALLOC = A0 := ⟨_, rfl⟩
   rw [hA0] at hW ⊢
-  have hWn : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
+  
   let I : Config → Prop := fun c' => ∃ g h' R', g ≤ p + 1 ∧ WordsBounded W c' ∧
     GradeInv O P c' g h' hp R' S D ∧ A0 ≤ c'.nreg ALLOC ∧
     c'.nreg ALLOC ≤ A0 + ∑ j ∈ Finset.range g, F j ∧
@@ -102,20 +105,19 @@ theorem gradesL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB :
         have hFg : F g = gradeC κB κL κG O.κ P.n g + stepB κB κL κG O.κ g + 10 := rfl
         obtain ⟨c3, k3, h3, R3, e3, hk3, hw3, b1, b2, hI3, m3, r3, o3, f3, ff3⟩ :=
           gradeB_exec (O := O) hB hL hGr hV hG hWh hn hw2 hI2 hg (by omega)
-            (by have := gradeGran_succ_le hn hg; unfold hostWords at hWh; omega)
+            (by have := gradeGran_succ_le hn hg; grind [hostWords])
         refine ⟨c3, k3, e3, ⟨g + 1, h3, R3, by omega, hw3, hI3, by omega, ?_,
-          fun a ha => by rw [m3 a (by omega), mm a ha],
-          fun a ha => by rw [r3 a (by omega), mr a ha], by rw [o3, mo],
-          fun r hr => by rw [f3 r hr, fr r hr], fun r hr => by rw [ff3 r hr, frr r hr]⟩, ?_,
+          fun a ha => by ram_grind,
+          fun a ha => by ram_grind, by rw [o3, mo],
+          fun r hr => by ram_grind, fun r hr => by ram_grind⟩, ?_,
           by omega⟩
-        · rw [Finset.sum_range_succ]; omega
+        · ram_grind
         · rw [hI3.1.r07, hI2.1.r07]; omega) hI0
   have hgp' : g = p + 1 := by rw [hI'.1.r07, hI'.2.2.2.2.1] at htest; omega
   subst hgp'
   refine ⟨c', k, h', R', e, ?_, hw', a1, by omega, hI', mm, mr, mo, fr, frr⟩
   have := htot 0 (by omega)
   rw [hI.1.r07] at hk
-  simp only [Finset.range_zero, Finset.sum_empty, zero_add] at this
   omega
 
 end proofs

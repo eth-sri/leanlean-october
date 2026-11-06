@@ -25,8 +25,10 @@ section loops
 
 variable {P : Polygon} {W : ℕ}
 
+section
+variable {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop)
 /-- **A counted loop with a fixed cost per iteration.** -/
-theorem forLoop {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (Kb N : ℕ)
+theorem forLoop (Kb N : ℕ)
     (hI : ∀ j c, Inv j c → WordsBounded W c ∧ c.nreg ir = j ∧ c.nreg nr = N)
     (hbody : ∀ j c, j < N → Inv j c → ∃ c' k, Exec P W body c c' k ∧ Inv (j + 1) c' ∧ k ≤ Kb)
     {j : ℕ} {c : Config} (hc : Inv j c) (hj : j ≤ N) :
@@ -36,18 +38,17 @@ theorem forLoop {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (Kb 
     have hjN : j = N := by omega
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by omega) hw, hc, by omega⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
     have hlt : j < N := by omega
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁⟩ := hbody j c hlt hc
     obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_⟩
-    rw [Nat.mul_succ]
-    omega
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by omega) e₁ e₂, hI', ?_⟩
+    grind
 
 /-- **A counted loop with a cost `f j` for the iteration at counter value `j`.** -/
-theorem forLoopSum {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (f : ℕ → ℕ) (N : ℕ)
+theorem forLoopSum (f : ℕ → ℕ) (N : ℕ)
     (hI : ∀ j c, Inv j c → WordsBounded W c ∧ c.nreg ir = j ∧ c.nreg nr = N)
     (hbody : ∀ j c, j < N → Inv j c →
       ∃ c' k, Exec P W body c c' k ∧ Inv (j + 1) c' ∧ k ≤ f j)
@@ -59,15 +60,18 @@ theorem forLoopSum {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (
     have hjN : j = N := by omega
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by simp⟩
+    exact ⟨c, 2, .whileLtN_false (by omega) hw, hc, by simp⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
     have hlt : j < N := by omega
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁⟩ := hbody j c hlt hc
     obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_⟩
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by omega) e₁ e₂, hI', ?_⟩
     rw [Finset.sum_eq_sum_Ico_succ_bot hlt]
     omega
+
+
+end
 
 end loops
 

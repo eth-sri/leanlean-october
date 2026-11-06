@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ShootCutStepR
 
 /-!
@@ -13,9 +15,6 @@ public import Chazelle.Core.ShootCutStepR
 * `single_post`, `up_post`, `dn_post`: a single edge, a climbing and a descending stretch.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -47,33 +46,38 @@ variable {O : OracleIface} {P : Polygon} {C : Chain} {H : Host} {Hh h γ : ℕ} 
 
 theorem SEnv.hQn (_S : SEnv O P C H Hh h γ m₀ A₀ W) : (Qof P).n = P.n := shear_n _ _
 
-theorem SEnv.hN (S : SEnv O P C H Hh h γ m₀ A₀ W) : C.P.n = (H.pts P.n).length := by
+section
+variable (S : SEnv O P C H Hh h γ m₀ A₀ W)
+include S
+theorem SEnv.hN : C.P.n = (H.pts P.n).length := by
   rw [S.hP, ← S.hQn]; simp [Host.poly, Polygon.n]
 
-theorem SEnv.hNn (S : SEnv O P C H Hh h γ m₀ A₀ W) : (H.pts P.n).length ≤ 64 * P.n := by
+theorem SEnv.hNn : (H.pts P.n).length ≤ 64 * P.n := by
   have := Host.pts_length_le S.hwf
   have := S.hlen
   nlinarith
 
-theorem SEnv.hm2' (S : SEnv O P C H Hh h γ m₀ A₀ W) : 2 * C.m + 9 ≤ 128 * P.n + 8 := by
+theorem SEnv.hm2' : 2 * C.m + 9 ≤ 128 * P.n + 8 := by
   have := C.m_lt
   have := S.hNn
   rw [S.hN] at *
   omega
 
-theorem SEnv.hm2 (S : SEnv O P C H Hh h γ m₀ A₀ W) : 2 * C.m + 9 ≤ hostWords P.n := by
+theorem SEnv.hm2 : 2 * C.m + 9 ≤ hostWords P.n := by
   have := S.hm2'
-  unfold hostWords; omega
+  omega_nf
 
 /-- **The tables of the sweeps.** -/
-theorem swEnv_of (S : SEnv O P C H Hh h γ m₀ A₀ W) :
+theorem swEnv_of :
     SwEnv P.n W A₀ (m₀ (h + 2)) (m₀ (h + 3)) (m₀ (h + 1) + 2) (topGrade P.n) m₀ := by
   have hG := S.hR.holds
   obtain ⟨-, hpow, hhalf⟩ := grade_low S.hR
   refine ⟨fun x hx => ⟨hG.2.2.1 x hx, hhalf x hx⟩, fun j hj => ⟨?_, hpow j hj⟩, S.hAW⟩
   have := (hG.2.1.2.2.1 j hj).1
-  rw [show m₀ (h + 1) + 2 + j = m₀ (h + 1) + 2 + j from rfl]
-  exact this
+  omega
+
+
+end
 
 theorem tg_ok (_hn : 2 ≤ P.n) : P.n - 1 ≤ 2 ^ topGrade P.n := Nat.le_pow_clog (by norm_num) _
 
@@ -116,12 +120,12 @@ theorem single_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have kk : ∀ r, 150089 ≤ r → r < 150100 → d'.nreg r = e.nreg r := fun r h1 h2 =>
     kp r (Or.inr ⟨by omega, h2⟩) (by omega)
   refine ⟨d', k, ex, hk', ⟨hI', ⟨rfl, rfl⟩, fun p hp => by
-      simp only [List.mem_singleton] at hp; rw [hp]; exact hpv, by simp, le_rfl, hlim,
+      grind, by simp, le_rfl, hlim,
     Or.inr (Or.inr ⟨rfl, hb⟩), o40, fun r h1 h2 h3 => (kp r (Or.inl ⟨h1, h2⟩) h3).trans
-      (hk r h1 h2 h3), by rw [kk _ (by omega) (by omega)]; exact h90,
-    by rw [kk _ (by omega) (by omega)]; exact h91, by rw [kk _ (by omega) (by omega)]; exact h92,
-    by rw [kk _ (by omega) (by omega)]; exact h93, by rw [kk _ (by omega) (by omega)]; exact h96,
-    ex.wb_right, fun a ha => by rw [mem' a ha]; exact hm a ha⟩⟩
+      (hk r h1 h2 h3), by grind,
+    by grind, by grind,
+    by grind, by grind,
+    ex.wb_right, fun a ha => by grind⟩⟩
 
 /-- `(a + t + L) mod n` from `q = (a + t) mod n` without wrap. -/
 theorem mod_add_of {n a t q L : ℕ} (hq : (a + t) % n = q) (hqL : q + L < n) :
@@ -137,15 +141,12 @@ theorem mod_sub_of {n a t q L : ℕ} (hn : 0 < n) (hq : (a + t) % n = q) (hLq : 
   have e2 : a + (t - L) = n * ((a + t) / n) + (q - L) := by omega
   rw [e2, Nat.mul_add_mod, Nat.mod_eq_of_lt (by have := Nat.mod_lt (a + t) hn; omega)]
 
+section
+variable (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt} {I : List Pc → Config → Prop} {K : ℕ} (hE : EmitOK P W emit A₀ (VPc P C m₀ h γ) I K) {ps : List Pc} (d e : Config) (hw : WordsBounded W e) (hm : ∀ a, a < A₀ → e.nmem a = m₀ a) {c lim J r a ℓ t q : ℕ} (h40 : e.nreg 150040 = c) (h90 : e.nreg 150090 = 0) (h91 : e.nreg 150091 = 1) (h34 : e.nreg 150034 = m₀ (h + 2)) (h35 : e.nreg 150035 = m₀ (h + 3)) (h36 : e.nreg 150036 = m₀ (h + 1) + 2)
+include S hE hw hm h40 h90 h91 h34 h35 h36
 /-- **A climbing stretch** from the walk vertex `c` (tour position `i = c - 6`, host point in the
 run `H[r] = run a ℓ` at offset `t < ℓ`, `q = (a + t) mod n`). -/
-theorem up_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
-    {I : List Pc → Config → Prop} {K : ℕ} (hE : EmitOK P W emit A₀ (VPc P C m₀ h γ) I K)
-    {ps : List Pc} (d e : Config) (hw : WordsBounded W e)
-    (hm : ∀ a, a < A₀ → e.nmem a = m₀ a) {c lim J r a ℓ t q : ℕ} (h40 : e.nreg 150040 = c)
-    (h90 : e.nreg 150090 = 0) (h91 : e.nreg 150091 = 1)
-    (h34 : e.nreg 150034 = m₀ (h + 2)) (h35 : e.nreg 150035 = m₀ (h + 3))
-    (h36 : e.nreg 150036 = m₀ (h + 1) + 2)
+theorem up_post
     (h23 : e.nreg 150023 = C.m) (h61 : e.nreg 150061 = J) (h69 : e.nreg 150069 = ℓ)
     (h66 : e.nreg 150066 = t) (h27 : e.nreg 150027 = P.n) (h70 : e.nreg 150070 = q)
     (h72 : e.nreg 150072 = lim)
@@ -183,28 +184,22 @@ theorem up_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       a90, a91, a92, a93, a96, w', m'⟩⟩
   -- the breakpoint
   by_cases h1 : L = lim
-  · exact Or.inl h1
+  · omega
   right; left
   have hlt : min (min (C.m - J) (ℓ - t)) (P.n - q - 1) < lim := by omega
   have hLe : L = min (min (C.m - J) (ℓ - t)) (P.n - q - 1) := by omega
   rcases (show L = C.m - J ∨ L = ℓ - t ∨ L = P.n - q - 1 by omega) with h2 | h2 | h2
   · right; left
-    rw [tJ_add C (by rw [hJ]; omega), hJ]; omega
+    rw [tJ_add C (by omega), hJ]; omega
   · have hu' := uOf_up C S.hP (i := c - 6) (d := L) (by omega) hr hrun hu (by omega)
     exact brk_run C hr hrun (t := t + L) hu' (by omega) (Or.inr (Or.inl (by omega)))
   · have hu' := uOf_up C S.hP (i := c - 6) (d := L) (by omega) hr hrun hu (by omega)
     refine brk_run C hr hrun (t := t + L) hu' (by omega) (Or.inr (Or.inr (Or.inr ?_)))
-    rw [mod_add_of hq (by rw [hQn]; omega), hQn]; omega
+    rw [mod_add_of hq (by omega), hQn]; omega
 
 /-- **A descending stretch** from the walk vertex `c` (host point in the run `H[r] = run a ℓ` at
 offset `0 < t`, `0 < q = (a + t) mod n`). -/
-theorem dn_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
-    {I : List Pc → Config → Prop} {K : ℕ} (hE : EmitOK P W emit A₀ (VPc P C m₀ h γ) I K)
-    {ps : List Pc} (d e : Config) (hw : WordsBounded W e)
-    (hm : ∀ a, a < A₀ → e.nmem a = m₀ a) {c lim J r a ℓ t q : ℕ} (h40 : e.nreg 150040 = c)
-    (h90 : e.nreg 150090 = 0) (h91 : e.nreg 150091 = 1)
-    (h34 : e.nreg 150034 = m₀ (h + 2)) (h35 : e.nreg 150035 = m₀ (h + 3))
-    (h36 : e.nreg 150036 = m₀ (h + 1) + 2)
+theorem dn_post
     (h29 : e.nreg 150029 = 2 * C.m) (h61 : e.nreg 150061 = J)
     (h66 : e.nreg 150066 = t) (h70 : e.nreg 150070 = q)
     (h72 : e.nreg 150072 = lim)
@@ -226,7 +221,7 @@ theorem dn_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have hwalk : ∀ d, d ≤ L → (chainModel C).W.vtx (c + d) = (Qof P).vtx (q - d) := by
     intro d hd
     have := run_down C S.hP (i := c - 6) (d := d) (by omega) (by omega) (by omega) hr hrun hu
-      ht (by omega) (by rw [hq]; omega) hn
+      ht (by omega) (by omega) hn
     rw [show c - 6 + d + 6 = c + d by omega, hq] at this
     exact this
   have hblk := dnBlocks_of (O := O) S.hR S.hAW (W := W) hwalk hc6 (by omega) hqn (by omega)
@@ -243,12 +238,12 @@ theorem dn_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     ⟨hI', hch, hv, hlen, hL1, hLl, ?_, o40, fun r h1 h2 h3 => (kp r h1 h2 h3).trans (hk r h1 h2 h3),
       a90, a91, a92, a93, a96, w', m'⟩⟩
   by_cases h1 : L = lim
-  · exact Or.inl h1
+  · omega
   right; left
   rcases (show L = 2 * C.m - J ∨ L = t ∨ L = q by omega) with h2 | h2 | h2
   · left
     have e1 : tJ C (c - 6 + L) = (tJ C (c - 6) + L) % (2 * C.m) := by
-      unfold tJ; rw [Nat.mod_add_mod, Nat.add_assoc]
+      unfold tJ; grind
     rw [e1, hJ, show J + L = 2 * C.m by omega, Nat.mod_self]
   · have hu' := uOf_down C S.hP (i := c - 6) (d := L) (by omega) (by omega) hr hrun hu ht
       (by omega)
@@ -257,6 +252,9 @@ theorem dn_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       (by omega)
     refine brk_run C hr hrun (t := t - L) hu' (by omega) (Or.inr (Or.inr (Or.inl ?_)))
     rw [mod_sub_of hn hq (by omega) (by omega)]; omega
+
+
+end
 
 end
 

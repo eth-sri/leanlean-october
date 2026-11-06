@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.FactsAttach
 public import Chazelle.Core.NFLocateMath
 
@@ -52,7 +54,7 @@ theorem arcCover : NFLoc.ArcCoverSpec := by
   have hstart : ∀ y : ℝ, M.IsCut F y → ∃ U ∈ M.regions F, ∃ b : ℝ, M.IsArc F U y b := by
     rintro y ⟨c, hc, p, t, hA, rfl⟩
     obtain ⟨U, -, -, r, hU, -, -, harc, -⟩ := hW.attach_face hAdm hfin hc hA
-    exact ⟨U, hU, r, harc⟩
+    ram_grind
   refine ⟨?_, hstart⟩
   rcases F.eq_empty_or_nonempty with rfl | hne
   · obtain ⟨z, hz⟩ := hW.nonempty
@@ -62,7 +64,7 @@ theorem arcCover : NFLoc.ArcCoverSpec := by
       rw [hfree] at hz' ⊢
       exact hW.preconn.connectedComponentIn hz'
     have hU : connectedComponentIn M.D z ∈ M.regions (∅ : Set (Set Point)) :=
-      ⟨z, by rw [hfree]; exact hz, by rw [hfree]⟩
+      ⟨z, by simp_all, by rw [hfree]⟩
     have hnocut : ∀ x, ¬ M.IsCut ∅ x := fun x ⟨c, hc, _⟩ => hc
     obtain ⟨p₀, t₀, hp₀, -, -, -⟩ := hW.exists_faces (empty_subset _) finite_empty hU
     have hn : (0 : ℝ) < M.W.n := by exact_mod_cast (Nat.zero_lt_of_lt hp₀)
@@ -70,12 +72,11 @@ theorem arcCover : NFLoc.ArcCoverSpec := by
       fun x _ => hnocut x, fun p t hp ht0 ht1 _ => ?_⟩
     obtain ⟨U', hU', hf⟩ :=
       hW.exists_faces_of_not_cut (empty_subset _) finite_empty hp ⟨ht0, ht1⟩ (hnocut _)
-    rw [hall _ hU, ← hall _ hU']
-    exact hf
+    grind
   · obtain ⟨c, hc⟩ := hne
     obtain ⟨-, -, -, -, -, -, ⟨⟨p, t, hA, -⟩, -⟩, -⟩ := hW.ends c (hAdm hc)
     obtain ⟨U, hU, b, harc⟩ := hstart _ ⟨c, hc, p, t, hA, rfl⟩
-    exact ⟨U, hU, _, b, harc⟩
+    ram_grind
 
 /-! ## C10: which side the walk faces after an attachment -/
 
@@ -90,13 +91,13 @@ theorem eventually_mul_pos {P : ℝ → Prop} (h : ∀ᶠ ε in 𝓝[>] (0 : ℝ
       rw [zero_mul] at this
       exact this.mono_left nhdsWithin_le_nhds
     · filter_upwards [self_mem_nhdsWithin] with δ hδ
-      exact mul_pos hδ hw
-  exact ht.eventually h
+      simp_all
+  aesop
 
 /-- The offsets of the midpoint of a horizontal segment. -/
 theorem offset_mid_ab {a b : Point} (hy : a.2 = b.2) (δ : ℝ) :
     offset a b (1 / 2) δ = ((lerp a b (1 / 2)).1, (lerp a b (1 / 2)).2 + δ * (b.1 - a.1)) := by
-  apply point_ext <;> simp [offset, nrm, lerp, hy]
+  simp_all [offset, nrm, lerp] 
 
 namespace WalkAx
 
@@ -154,9 +155,9 @@ theorem upSide : UpSideSpec := by
   -- a position just after `A`, facing `U`
   obtain ⟨ε, hε1, hε2, hε3⟩ := ((WalkAx.exists_pos_after hA.2.1 hA.2.2.1).and
     ((WalkAx.eventually_after_start hkne).and (Ioo_mem_nhdsGT hδ))).exists
-  have hin : sideInArc (p + t) (pb + tb) (p + (t + ε)) := by rw [← add_assoc]; exact hε2
+  have hin : sideInArc (p + t) (pb + tb) (p + (t + ε)) := by grind
   have hfU : M.Faces p (t + ε) U := (hfac p (t + ε) hA.1 hε1.1 hε1.2).1
-    (Or.inl ⟨by linarith [hε3.1], by linarith [hε3.2]⟩)
+    (Or.inl ⟨by linarith, by linarith⟩)
   have hnot := hW.not_left_of_after hAdm hc hA hB hAB hU hA.1 hε1 hin hfU
   -- the midpoint of the chord
   set a := sidePt M.W p t with ha
@@ -183,12 +184,7 @@ theorem upSide : UpSideSpec := by
         rw [offset_mid_ab hy]
         exact h'
       · exact h
-    have hVUp : V = Up := by
-      rcases hV2 with h | h
-      · exact h
-      · exact absurd (hUDn.trans h.symm) hUV
-    rw [hUDn, hVUp]
-    exact ⟨hBelow, hAbove⟩
+    ram_grind
   · -- `a` is the right endpoint: `U` is above
     have hlt : b.1 < a.1 := lt_of_le_of_ne (hpt ▸ hright b hbc) (Ne.symm hne1)
     have hUUp : U = Up := by
@@ -200,14 +196,8 @@ theorem upSide : UpSideSpec := by
         rw [h]
         refine this.mono fun δ' h' => ?_
         rw [offset_mid_ab hy]
-        convert h' using 2
-        ring
-    have hVDn : V = Dn := by
-      rcases hV2 with h | h
-      · exact absurd (hUUp.trans h.symm) hUV
-      · exact h
-    rw [hUUp, hVDn]
-    exact ⟨hAbove, hBelow⟩
+        grind
+    ram_grind
 
 end
 

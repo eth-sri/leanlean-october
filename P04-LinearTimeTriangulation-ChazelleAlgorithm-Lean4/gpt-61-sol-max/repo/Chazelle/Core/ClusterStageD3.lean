@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterStageD2
 public import Chazelle.Core.ClusterPlace
 
@@ -48,20 +50,18 @@ theorem placeS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have b36 := g.base_eq 36
   set bo := blkOf g.μ lev hl blk with hbo
   have hinj : ∀ v w, v < g.μ → w < g.μ → key v = key w → v = w := fun v w hv hw h => by
-    have h1 := hk1 v hv; have h2 := hk1 w hw
-    rw [← h1.2.2, ← h2.2.2, ← h1.2.1, ← h2.2.1, h]
+    grind
   have hbo_lt : ∀ v, v < g.μ → (bo v < g.μ ↔ hl (lev v) ≠ 1) := fun v hv => by
     simp only [hbo, blkOf]
     split_ifs with h
-    · simp [h]
-    · simp only [h, ne_eq, not_false_eq_true, iff_true]; exact hblt _ (hlt v hv) h
+    all_goals grind
   unfold placeS
   have e1 := Exec.constN (P := P) hw 130860 0 (by omega)
   set c1 := { c with nreg := upd c.nreg 130860 0 } with hc1
   have f1 : PFr StDRG (PlMem g) c c1 :=
     ⟨fun r hr => by simp only [c1, Machine.upd_other _ _ _ (show r ≠ 130860 by
-        unfold StDRG at hr; omega)], rfl, rfl, rfl, fun a _ => rfl⟩
-  have hG1 : GR g c1 := hG.frame (fun r hr => f1.1 r (by unfold GRReg at hr; unfold StDRG; omega))
+        grind [StDRG])], rfl, rfl, rfl, fun a _ => rfl⟩
+  have hG1 : GR g c1 := hG.frame (fun r hr => f1.1 r (by grind [GRReg, StDRG]))
   obtain ⟨c', k, e, hk', hw', hi', hn', hf', hm'⟩ := forN (P := P) (W := W)
     (ri := 130860) (rn := 130014) (body := placeBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130860 = j ∧ c'.nreg 130014 = g.N ∧
@@ -70,7 +70,7 @@ theorem placeS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     g.N 30 (fun j c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c3 hj ⟨hw3, hi3, hn3, hf3, hI3⟩ => by
       have hG3 : GR g c3 := hG.frame (fun r hr => hf3.1 r (by
-        unfold GRReg at hr; unfold StDRG; omega))
+        unfold GRReg at hr; omega_nf))
       have keep : ∀ a, a < g.base 42 → c3.nmem a = c.nmem a := fun a ha =>
         hf3.2.2.2.2 a (by unfold PlMem; omega)
       set v := vert (inv j) with hv
@@ -80,39 +80,35 @@ theorem placeS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       obtain ⟨c4, k4, e4, hk4, hw4, hf4, hi4, hm4⟩ := placeBody_exec (P := P) hw3 hG3
         (gg := inv j) (v := v) (f := first v) (l := lev v) (h := hl (lev v)) (b := b)
         (q := c3.nmem (g.base 42 + b)) hi3 hj
-        (by rw [keep _ (by omega)]; exact hinv j hj) (by have := hvW j hj; omega)
-        (by have := hvW j hj; rw [keep _ (by omega)]; exact hvert j hj) hvμ
-        (by rw [keep _ (by omega)]; exact hfst v hvμ)
-        (fun _ => by rw [keep _ (by omega)]; exact hlev v hvμ) (fun _ => hlv)
-        (fun _ => by rw [keep _ (by omega)]; exact hhl _ hlv) (fun _ => hhl1 _ hlv)
-        (fun _ => by rw [keep _ (by omega)]; exact hblk _ hlv) (fun _ h => hblt _ hlv h)
+        (by grind) (by grind)
+        (by grind) hvμ
+        (by grind)
+        (fun _ => by grind) (fun _ => hlv)
+        (fun _ => by grind) (fun _ => hhl1 _ hlv)
+        (fun _ => by grind) (fun _ h => hblt _ hlv h)
         (fun _ => rfl) (fun hf hh => by
           have hkv : key v = j := hk2 j hj hf
-          have hbv : bo v = b := by simp only [hbo, blkOf, ite_eq_right hh, hb]
+          have hbv : bo v = b := by grind [blkOf]
           have hbμ : b < g.μ := hblt _ hlv hh
           rw [hI3.cnt b hbμ, ← hbv, ← hkv, ← rk_eq_cB]
           have := rk_lt (bo := bo) (key := key) hvμ
           have := cntLt_succ bo g.μ (bo v); have := cntLt_le bo g.μ (bo v + 1)
           omega) hW
       refine ⟨c4, k4, e4, hk4, hw4, hi4, by
-        rw [hf4.1 _ (by unfold PLRG; omega)]; exact hn3,
-        hf3.trans (hf4.mono (fun r h => by unfold PLRG at h; unfold StDRG; omega)
+        rw [hf4.1 _ (by omega_nf)]; exact hn3,
+        hf3.trans (hf4.mono (fun r h => by grind [PLRG, StDRG])
           (fun a h => h)), ?_⟩
       rw [hm4]
       split_ifs with hc
       · have hkv : key v = j := hk2 j hj hc.1
-        have hbv : bo v = b := by simp only [hbo, blkOf, ite_eq_right hc.2, hb]
+        have hbv : bo v = b := by grind [blkOf]
         have hbμ : bo v < g.μ := (hbo_lt v hvμ).2 hc.2
         have hq : c3.nmem (g.base 42 + b) = plPos g.μ bo key v := by
-          rw [← hbv, hI3.cnt _ hbμ]; unfold plPos; rw [rk_eq_cB, hkv]
+          rw [← hbv, hI3.cnt _ hbμ]; unfold plPos; grind [rk_eq_cB]
         have := hI3.step hinj (by omega) (by omega) hvμ hkv hbμ
         rw [hq, ← hbv]; exact this
       · refine hI3.skip (fun w hw hkw hbw => hc ?_)
-        have h1 := hk1 w hw
-        have hwv : v = w := by rw [hv, ← hkw, h1.2.1, h1.2.2]
-        rw [← hwv] at hbw
-        refine ⟨?_, (hbo_lt v hvμ).1 hbw⟩
-        rw [hwv, ← h1.2.1, hkw])
+        ram_grind)
     (j₀ := 0) ⟨e1.wb_right, by simp [c1], hG1.rN, f1, PlInv.zero hcnt⟩ (Nat.zero_le _)
   exact ⟨c', 1 + k, .seq e1 e, by omega, hw', hf', hm'⟩
 

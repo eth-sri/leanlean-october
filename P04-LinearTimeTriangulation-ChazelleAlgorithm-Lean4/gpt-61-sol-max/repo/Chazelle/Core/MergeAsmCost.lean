@@ -28,8 +28,7 @@ theorem clog_S {S β m : ℕ} (h : S ≤ β * (m + 1)) : Nat.clog 2 S ≤ β + N
 
 theorem clog_8 (x : ℕ) : Nat.clog 2 (8 * x) ≤ 3 + Nat.clog 2 x := by
   refine (clog_mul_le 8 x).trans ?_
-  have : Nat.clog 2 8 = 3 := by decide
-  omega
+  aesop
 
 /-- The fusion stage. -/
 theorem fuse_le {κ S β m F₀ F G H : ℕ} (hS : S ≤ β * (m + 1)) (hF : F₀ ≤ F) (hF1 : 1 ≤ F)
@@ -44,7 +43,7 @@ theorem fuse_le {κ S β m F₀ F G H : ℕ} (hS : S ≤ β * (m + 1)) (hF : F�
   have hY2 : L + 1 ≤ F * G * (H + L + 1) := by
     calc L + 1 = 1 * 1 * (L + 1) := by ring
       _ ≤ F * G * (H + L + 1) := by gcongr; omega
-  have hY3 : 1 ≤ F * G * (H + L + 1) := by omega
+  
   set Y := F * G * (H + L + 1)
   have : F₀ + Nat.clog 2 S + 1 ≤ (β + 2) * Y := by nlinarith
   calc κ * S * (F₀ + Nat.clog 2 S + 1) ≤ κ * S * ((β + 2) * Y) := Nat.mul_le_mul_left _ this
@@ -83,9 +82,7 @@ theorem gran_le {κ K c S β m F G H : ℕ} (hS : S ≤ β * (m + 1)) (hK : K �
   have e1 : K * (Nat.clog 2 K + 1) ≤ 8 * c * S * ((8 * c * β + 1) * (L + 1)) := by
     calc K * (Nat.clog 2 K + 1) ≤ 8 * c * S * (8 * c * β + L + 1) := by gcongr
       _ ≤ 8 * c * S * ((8 * c * β + 1) * (L + 1)) := by
-        gcongr
-        rw [show (8 * c * β + 1) * (L + 1) = 8 * c * β * L + (8 * c * β + L + 1) by ring]
-        exact Nat.le_add_left _ _
+        ring_nf <;> omega
   have e2 : K * (Nat.clog 2 K + 1) + 1 ≤ (8 * c * (8 * c * β + 1) + 1) * S * Y := by
     have : (8 * c * (8 * c * β + 1) + 1) * S * (L + 1) ≤ (8 * c * (8 * c * β + 1) + 1) * S * Y :=
       Nat.mul_le_mul_left _ hY

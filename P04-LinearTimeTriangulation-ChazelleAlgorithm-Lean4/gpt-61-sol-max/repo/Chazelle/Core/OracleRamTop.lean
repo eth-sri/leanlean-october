@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.OracleRamMain
 
 /-!
@@ -60,9 +62,9 @@ theorem topS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
       (c'.nreg 120053 = 1 → c'.nreg 120005 = 0) := by
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, b₁, s₁⟩ := sgnS_exec (P := P) hG (by omega) 1 (by norm_num)
     (.vtx 120022) (.vtx 120023) (.vtx 120022) c hw (by decide) (by decide) (by decide) rfl rfl rfl
-    (show c.nreg 120022 < P.n by rw [hq.tv]; exact htv)
-    (show c.nreg 120023 < P.n by rw [hq.hz]; exact hv.hz_lt)
-    (show c.nreg 120022 < P.n by rw [hq.tv]; exact htv)
+    (show c.nreg 120022 < P.n by ram_grind)
+    (show c.nreg 120023 < P.n by ram_grind)
+    (show c.nreg 120022 < P.n by ram_grind)
   simp only [SignTest, SymPt.eval, hq.tv, hq.hz] at s₁
   have hz₁ : c₁.nreg 120012 = 0 := (f₁.1 _ (by decide)).trans hq.zero
   have w₁ := e₁.wb_right
@@ -73,21 +75,20 @@ theorem topS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
     obtain ⟨c', k, ex, hk, f, h1, h2, h3⟩ := H
     refine ⟨c', _, .seq e₁ ex, by omega, (FrameB.mono f₁ fun r hr => by simp [hr]).trans
       (FrameB.mono f fun r hr => by
-        simp only [Bool.or_eq_true, decide_eq_true_eq] at hr
-        rcases hr with hr | hr <;> simp [hr]), h1, by rw [h2]; exact s₁, h3⟩
+        grind), h1, by ram_simp, h3⟩
   by_cases hb : c₁.nreg 10010 = 1
   · obtain ⟨c₂, k₂, e₂, hk₂, v₂⟩ : ∃ c₂ k₂, Exec P W (block [.constN 120005 0, .constN 120053 1])
         c₁ c₂ k₂ ∧ k₂ = 2 ∧ c₂.nreg 120005 = 0 ∧ c₂.nreg 120053 = 1 := by
       exec_block
       · omega
       · omega
-      · exact ⟨rfl, by config_simp, by config_simp⟩
-    refine ⟨c₂, _, .ifLtN_true (by rw [hz₁, hb]; omega) e₂, by omega,
-      exec_frameB e₂ (by decide), by omega, by rw [v₂.2]; simp [hb], fun _ => v₂.1⟩
+      · ram_simp
+    refine ⟨c₂, _, .ifLtN_true (by omega) e₂, by omega,
+      exec_frameB e₂ (by decide), by omega, by omega, fun _ => v₂.1⟩
   · have hb0 : c₁.nreg 10010 = 0 := by omega
     obtain ⟨c₂, e₂, v₂, -⟩ := const_exec (P := P) w₁ 120053 0 (by omega)
-    refine ⟨c₂, _, .ifLtN_false (by rw [hz₁, hb0]; omega) e₂, by omega,
-      exec_frameB e₂ (by decide), by omega, by rw [v₂]; simp [hb], fun h => by omega⟩
+    refine ⟨c₂, _, .ifLtN_false (by omega) e₂, by omega,
+      exec_frameB e₂ (by decide), by omega, by omega, fun h => by omega⟩
 
 theorem symIdx_of_in {c : Config} {p : SymPt} (h : SymPtIn c 120123 p) :
     c.nreg 120124 = symIdx p := by
@@ -123,23 +124,23 @@ theorem degS_exec {P : Polygon} {W : ℕ} (hW : 8 * P.n + 32 ≤ W) {C : Chain} 
   unfold degS
   by_cases hf : found
   swap
-  · have : c.nreg 120140 = 0 := by have := mt h140'.1 hf; omega
-    exact ⟨c, _, .ifLtN_false (by rw [hq.zero, this]; omega) (.skip hw), by omega,
+  · have : c.nreg 120140 = 0 := by ram_grind
+    exact ⟨c, _, .ifLtN_false (by omega) (.skip hw), by omega,
       fun _ _ => rfl, fun h => absurd h.1 hf⟩
   have hf1 : c.nreg 120140 = 1 := h140'.2 hf
   by_cases hd : deg
   swap
-  · have : c.nreg 120143 = 0 := by have := h143 hf; have := mt (h143' hf).1 hd; omega
-    exact ⟨c, _, .ifLtN_true (by rw [hq.zero, hf1]; omega)
-      (.ifLtN_false (by rw [hq.zero, this]; omega) (.skip hw)), by omega,
+  · have : c.nreg 120143 = 0 := by ram_grind
+    exact ⟨c, _, .ifLtN_true (by ram_grind)
+      (.ifLtN_false (by omega) (.skip hw)), by omega,
       fun _ _ => rfl, fun h => absurd h.2 hd⟩
   have hd1 : c.nreg 120143 = 1 := (h143' hf).2 hd
   obtain ⟨c₁, k₁, e₁, hk₁, v₁⟩ : ∃ c₁ k₁, Exec P W (block [.copyN 120120 120142, .copyN 120121 120023])
       c c₁ k₁ ∧ k₁ = 2 ∧ (c₁.nreg 120120 = far ∧ c₁.nreg 120121 = V.hz ∧
         ∀ r, r ≠ 120120 → r ≠ 120121 → c₁.nreg r = c.nreg r) := by
     exec_block
-    exact ⟨rfl, by config_simp; exact h142 hf, by config_simp; exact hq.hz,
-      fun r h1 h2 => by config_simp; upd_solve⟩
+    exact ⟨rfl, by ram_simp, by config_simp; exact hq.hz,
+      fun r h1 h2 => by ram_simp⟩
   obtain ⟨x120, x121, r₁⟩ := v₁
   have hq₁ : QConst P V c₁ := hq.congr fun r h1 h2 => r₁ r (by omega) (by omega)
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, v₂, s₂⟩ := xpS_exec (P := P) (by omega) hv c₁ e₁.wb_right hq₁
@@ -165,7 +166,7 @@ theorem degS_exec {P : Polygon} {W : ℕ} (hW : 8 * P.n + 32 ≤ W) {C : Chain} 
           c₃.nreg 120006 = c₂.nreg 120124 := by
         exec_block
         · omega
-        · exact ⟨rfl, by config_simp, by config_simp⟩
+        simp_all
       exact ⟨c₃, _, .ifLtN_false (by rw [v₂, hq₂.one, h1]; omega)
         (.ifLtN_true (by rw [v₂, hq₂.two, h1]; omega) e₃), by omega,
         fun _ => ⟨v₃.1, by rw [v₃.2]; exact symIdx_of_in (s₂ h1)⟩, fun h => absurd h1 h⟩
@@ -176,8 +177,7 @@ theorem degS_exec {P : Polygon} {W : ℕ} (hW : 8 * P.n + 32 ≤ W) {C : Chain} 
   obtain ⟨c₄, e₄, v₄, r₄⟩ := const_exec (P := P) e₃.wb_right 120053 1 (by omega)
   refine ⟨c₄, _, .ifLtN_true (by rw [hq.zero, hf1]; omega) (.ifLtN_true (by rw [hq.zero, hd1]; omega)
     (.seq e₁ (.seq e₂ (.seq e₃ e₄)))), by omega, fun h => absurd ⟨hf, hd⟩ h, fun _ => ⟨v₄, ?_, ?_⟩⟩
-  · intro h; rw [r₄ _ (by decide), r₄ _ (by decide)]; exact a₃ h
-  · intro h; rw [r₄ _ (by decide)]; exact b₃ h
+  all_goals ram_grind
 
 /-- The registers written by `restS`. -/
 def BRest (r : ℕ) : Bool :=
@@ -189,10 +189,8 @@ theorem selOf_congr {C : Chain} {V : QV} {bD : Option ℕ} {f f' : Prop} {w w' :
     selOf C V bD f w cb = selOf C V bD f' w' cb' := by
   unfold selOf
   by_cases h : f
-  · have h' : f' := hf.1 h
-    rw [hw h, propext (hcb h), propext hf]
-  · have h' : ¬ f' := fun x => h (hf.2 x)
-    rw [ite_eq_right (fun x => h x.1), ite_eq_right (fun x => h' x.1)]
+  · ram_all
+  · ram_grind
 
 /-- The partition point of the chord search. -/
 def PartC (P : Polygon) (C : Chain) (V : QV) (m : ℕ → ℕ) (t : ℕ) : Prop :=

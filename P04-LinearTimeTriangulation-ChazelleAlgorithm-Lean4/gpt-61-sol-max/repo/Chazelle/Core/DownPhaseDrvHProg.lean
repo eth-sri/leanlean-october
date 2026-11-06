@@ -198,29 +198,35 @@ def hostS : Stmt := .seq setupS (.seq arcLoop (.seq finS (.seq cpyLoop padLoopH)
 
 open BuildRam
 
+section
+variable (q : ℕ)
+include q
 /-- The registers of the host RAM (and the allocator). -/
-def Ball (q : ℕ) : Bool := decide (215000 ≤ q ∧ q < 216000) || decide (q = 9999)
+def Ball : Bool := decide (215000 ≤ q ∧ q < 216000) || decide (q = 9999)
 
 /-- The registers written after the setup by the arc loop. -/
-def Bdyn (q : ℕ) : Bool := decide (q = 215011) || decide (q = 215012) ||
+def Bdyn : Bool := decide (q = 215011) || decide (q = 215012) ||
   decide (215040 ≤ q ∧ q < 216000)
 
 /-- The registers `emitS` writes. -/
-def Bem (q : ℕ) : Bool := decide (q = 215011) || decide (q = 215012) || decide (q = 215040) ||
+def Bem : Bool := decide (q = 215011) || decide (q = 215012) || decide (q = 215040) ||
   decide (215066 ≤ q ∧ q ≤ 215069)
 
 /-- The registers `runS` writes. -/
-def Brun (q : ℕ) : Bool := decide (q = 215011) || decide (q = 215012) || decide (q = 215040) ||
+def Brun : Bool := decide (q = 215011) || decide (q = 215012) || decide (q = 215040) ||
   decide (q = 215063) || decide (215069 ≤ q ∧ q ≤ 215076)
 
 /-- The registers `partS` writes. -/
-def Bpart (q : ℕ) : Bool := decide (q = 215045) || decide (215052 ≤ q ∧ q ≤ 215063)
+def Bpart : Bool := decide (q = 215045) || decide (215052 ≤ q ∧ q ≤ 215063)
 
 /-- The registers `junS`, `stS`, `enS` write. -/
-def Bjun (q : ℕ) : Bool := Bem q || decide (215060 ≤ q ∧ q ≤ 215065)
+def Bjun : Bool := Bem q || decide (215060 ≤ q ∧ q ≤ 215065)
 
 /-- The registers `ldS` writes. -/
-def Bld (q : ℕ) : Bool := decide (215042 ≤ q ∧ q ≤ 215051)
+def Bld : Bool := decide (215042 ≤ q ∧ q ≤ 215051)
+
+
+end
 
 theorem wrM_setupS : wrM Ball setupS = true := by decide
 theorem wrM_chBody : wrM Bpart chBody = true := by decide

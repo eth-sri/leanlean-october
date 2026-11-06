@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDegCount
 public import Chazelle.Core.Facts2Chain
 public import Chazelle.Core.SpecPhases
@@ -30,17 +32,14 @@ open Chazelle.Geometry (point_ext)
 theorem vtx_mem_vertices {P : Polygon} {i : ℕ} (hi : i < P.n) : P.vtx i ∈ P.vertices := by
   simp only [Polygon.vtx]
   rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
-  exact List.getElem_mem hi
+  grind
 
 namespace ChainObs
 
 open SegObs HSegObs
 
 theorem ord_le (u w : Point) : (ord u w).1.2 ≤ (ord u w).2.2 := by
-  unfold ord
-  split_ifs with h
-  · exact h.le
-  · exact not_lt.1 h
+  grind [ord]
 
 variable {C : Chain}
 
@@ -56,23 +55,21 @@ theorem goodH (hP : C.P.Simple) {t : ℕ}
   · refine Set.Finite.union (((Set.finite_Iio C.m).image
       fun k => ord (C.vertex k) (C.vertex (k + 1))).subset ?_) (Set.toFinite _)
     rintro s ⟨k, hk, rfl⟩
-    exact ⟨k, hk, rfl⟩
+    grind
   · intro s hs
     rcases hs with ⟨k, hk, rfl⟩ | hs
     · exact ord_le _ _
     · simp only [mem_insert_iff, mem_singleton_iff] at hs
       rcases hs with rfl | rfl | rfl
       · exact htop.le
-      · simp only [sideL]; linarith
-      · simp only [sideR]; linarith
+      all_goals (grind [sideL, sideR])
   · intro s hs p hp
     rcases seg_cases hs hp with ⟨h, -⟩ | ⟨-, h⟩ | ⟨-, h, h'⟩ | ⟨-, h, h'⟩
     · have := C.abs_le_coordBound_of_mem_set h
       exact ⟨this.1.trans C.coordBound_lt_radius.le, this.2.trans C.coordBound_lt_radius.le⟩
     · rw [C.mem_slit_iff] at h
-      refine ⟨by rw [h.1]; exact abs_top_fst_lt.le, abs_le.2 ⟨by linarith [h.2.1], h.2.2⟩⟩
-    · exact ⟨by rw [h, abs_neg, abs_of_pos hR], h'⟩
-    · exact ⟨by rw [h, abs_of_pos hR], h'⟩
+      refine ⟨by rw [h.1]; exact abs_top_fst_lt.le, abs_le.2 ⟨by linarith, h.2.2⟩⟩
+    all_goals ram_grind
   · intro s hs s' hs' hne p hp hp'
     have hslit : ∀ {p : Point}, p ∈ C.set → p ∈ C.slit → IsVert (segs C) p := by
       intro p h1 h2
@@ -83,25 +80,25 @@ theorem goodH (hP : C.P.Simple) {t : ℕ}
     have hsetL : ∀ {p : Point}, p ∈ C.set → p.1 = -C.radius → False := by
       intro p h1 h2
       have := abs_fst_lt_of_set h1
-      rw [h2, abs_neg, abs_of_pos hR] at this; exact lt_irrefl _ this
+      grind
     have hsetR : ∀ {p : Point}, p ∈ C.set → p.1 = C.radius → False := by
       intro p h1 h2
       have := abs_fst_lt_of_set h1
-      rw [h2, abs_of_pos hR] at this; exact lt_irrefl _ this
+      grind
     have hslitL : ∀ {p : Point}, p ∈ C.slit → p.1 = -C.radius → False := by
       intro p h1 h2
       rw [C.mem_slit_iff] at h1
       have := abs_top_fst_lt (C := C)
-      rw [← h1.1, h2, abs_neg, abs_of_pos hR] at this; exact lt_irrefl _ this
+      grind
     have hslitR : ∀ {p : Point}, p ∈ C.slit → p.1 = C.radius → False := by
       intro p h1 h2
       rw [C.mem_slit_iff] at h1
       have := abs_top_fst_lt (C := C)
-      rw [← h1.1, h2, abs_of_pos hR] at this; exact lt_irrefl _ this
+      grind
     rcases seg_cases hs hp with ⟨h1, k, hk, rfl⟩ | ⟨rfl, h1⟩ | ⟨rfl, h1, -⟩ | ⟨rfl, h1, -⟩ <;>
       rcases seg_cases hs' hp' with ⟨h2, j, hj, rfl⟩ | ⟨rfl, h2⟩ | ⟨rfl, h2, -⟩ | ⟨rfl, h2, -⟩
     · -- two chain edges
-      have hkj : k ≠ j := by rintro rfl; exact hne rfl
+      have hkj : k ≠ j := by grind
       have hidx : C.edgeIdx k ≠ C.edgeIdx j := fun h => hkj (C.edgeIdx_inj hk hj h)
       have hmem : p ∈ C.P.edge (C.edgeIdx k) ∩ C.P.edge (C.edgeIdx j) := by
         refine ⟨?_, ?_⟩
@@ -111,25 +108,23 @@ theorem goodH (hP : C.P.Simple) {t : ℕ}
       obtain ⟨h | h, -⟩ := hmem
       · rw [h]; exact ⟨_, Or.inl ⟨k, hk, rfl⟩, (ord_ends _ _).1⟩
       · rw [h, ← C.vertex_succ_eq]; exact ⟨_, Or.inl ⟨k, hk, rfl⟩, (ord_ends _ _).2⟩
-    · exact hslit h1 h2
-    · exact (hsetL h1 h2).elim
-    · exact (hsetR h1 h2).elim
-    · exact hslit h2 h1
-    · exact (hne rfl).elim
-    · exact (hslitL h1 h2).elim
-    · exact (hslitR h1 h2).elim
-    · exact (hsetL h2 h1).elim
-    · exact (hslitL h2 h1).elim
-    · exact (hne rfl).elim
-    · rw [h1] at h2; linarith
-    · exact (hsetR h2 h1).elim
-    · exact (hslitR h2 h1).elim
-    · rw [h1] at h2; linarith
-    · exact (hne rfl).elim
+    · grind
+    · grind
+    · grind
+    · grind
+    · grind
+    · grind
+    · grind
+    · grind
+    · grind
+    · grind
+    · linarith
+    · grind
+    all_goals grind
   · intro y hy
     have hsub : {v | IsVert (segs C) v ∧ v.2 = y} ⊆ {p | p ∈ C.P.vertices ∧ p.2 = y} := by
       rintro v ⟨hv, hvy⟩
-      obtain ⟨j, -, rfl⟩ := vert_eq_vertex hv (by rw [hvy]; exact hy)
+      obtain ⟨j, -, rfl⟩ := vert_eq_vertex hv (by simp_all)
       exact ⟨vtx_mem_vertices (C.edgeIdx_lt j), hvy⟩
     exact (ncard_le_ncard hsub ((List.finite_toSet _).subset fun p hp => hp.1)).trans (ht y)
 
@@ -146,26 +141,29 @@ theorem fullDegLe_host {C : Chain} (hP : C.P.Simple) {t : ℕ}
   show {c | c ∈ C.chords ∪ F ∧ TouchesIn C.dom c U}.ncard ≤ 2 * (t + 1)
   rw [← hdom]
   refine HSegObs.deg_leH (ChainObs.goodH hP ht) (G := C.chords ∪ F) ?_
-    (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by rw [hdom]; exact hU)
+    (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by aesop)
   rintro c (hc | hc)
   · obtain ⟨k, σ, -, -, -, rfl, hh⟩ := C.chords_spec hc
-    exact ⟨_, _, _, by rw [hdom]; exact hh, C.chordSet_eq_hseg k σ⟩
+    exact ⟨_, _, _, by ram_grind, C.chordSet_eq_hseg k σ⟩
   · obtain ⟨y, a, b, hh, -, rfl⟩ := hF.2.1 hc
-    exact ⟨y, a, b, by rw [hdom]; exact hh, rfl⟩
+    core_grind
 
 /-! ## Host vertices at one height -/
 
+section
+variable (Q : Polygon) (hDH : DistinctHeights Q)
+include hDH
 /-- Two vertices of `Q` (indices reduced modulo `n`) at one height coincide (distinct heights). -/
-theorem vtx_mod_eq (Q : Polygon) (hDH : DistinctHeights Q) {i j : ℕ}
+theorem vtx_mod_eq {i j : ℕ}
     (h : (Q.vtx (i % Q.n)).2 = (Q.vtx (j % Q.n)).2) : Q.vtx (i % Q.n) = Q.vtx (j % Q.n) := by
   rcases Nat.eq_zero_or_pos Q.n with h0 | h0
   · have hnil : Q.vertices = [] := List.eq_nil_of_length_eq_zero h0
-    simp [Polygon.vtx, hnil]
+    grind [Polygon.vtx]
   · by_contra hne
     exact hDH _ _ (Nat.mod_lt _ h0) (Nat.mod_lt _ h0) (fun e => hne (by rw [e])) h
 
 /-- The points of one host item at one height: at most one. -/
-theorem item_ncard_le (Q : Polygon) (hDH : DistinctHeights Q) (it : HostItem) (y : ℝ) :
+theorem item_ncard_le (it : HostItem) (y : ℝ) :
     {p | p ∈ (it.pts Q.n).map (SymPt.eval Q) ∧ p.2 = y}.ncard ≤ 1 := by
   rw [Set.ncard_le_one ((List.finite_toSet _).subset fun p hp => hp.1)]
   rintro p ⟨hp, hpy⟩ p' ⟨hp', hp'y⟩
@@ -173,16 +171,12 @@ theorem item_ncard_le (Q : Polygon) (hDH : DistinctHeights Q) (it : HostItem) (y
   | run a ℓ =>
     simp only [HostItem.pts, List.map_map, List.mem_map, List.mem_range,
       Function.comp_apply] at hp hp'
-    obtain ⟨k, -, rfl⟩ := hp
-    obtain ⟨k', -, rfl⟩ := hp'
-    simp only [SymPt.eval] at hpy hp'y ⊢
-    exact vtx_mod_eq Q hDH (hpy.trans hp'y.symm)
+    grind [Chazelle.Core.vtx_mod_eq, SymPt.eval]
   | pt x =>
-    simp only [HostItem.pts, List.map_cons, List.map_nil, List.mem_singleton] at hp hp'
-    rw [hp, hp']
+    simp_all [HostItem.pts, List.map_cons, List.map_nil, List.mem_singleton] 
 
 /-- **A host has at most `H.length` vertices at one height.** -/
-theorem host_ncard_le (Q : Polygon) (hDH : DistinctHeights Q) (H : Host) (y : ℝ) :
+theorem host_ncard_le (H : Host) (y : ℝ) :
     {p | p ∈ (Host.poly Q H).vertices ∧ p.2 = y}.ncard ≤ H.length := by
   show {p | p ∈ (Host.pts Q.n H).map (SymPt.eval Q) ∧ p.2 = y}.ncard ≤ H.length
   induction H with
@@ -191,17 +185,16 @@ theorem host_ncard_le (Q : Polygon) (hDH : DistinctHeights Q) (H : Host) (y : �
     have hsub : {p | p ∈ (Host.pts Q.n (it :: H)).map (SymPt.eval Q) ∧ p.2 = y} ⊆
         {p | p ∈ (it.pts Q.n).map (SymPt.eval Q) ∧ p.2 = y} ∪
           {p | p ∈ (Host.pts Q.n H).map (SymPt.eval Q) ∧ p.2 = y} := by
-      rintro p ⟨hp, hpy⟩
-      simp only [Host.pts, List.flatMap_cons, List.map_append, List.mem_append] at hp
-      rcases hp with hp | hp
-      · exact Or.inl ⟨hp, hpy⟩
-      · exact Or.inr ⟨hp, hpy⟩
+      grind [Host.pts, List.flatMap_cons, List.map_append, List.mem_append]
     have h1 := item_ncard_le Q hDH it y
     calc _ ≤ _ := ncard_le_ncard hsub
           ((((List.finite_toSet _).subset fun p hp => hp.1)).union
             ((List.finite_toSet _).subset fun p hp => hp.1))
       _ ≤ _ := ncard_union_le _ _
-      _ ≤ (it :: H).length := by simp only [List.length_cons]; omega
+      _ ≤ (it :: H).length := by ram_grind
+
+
+end
 
 end
 

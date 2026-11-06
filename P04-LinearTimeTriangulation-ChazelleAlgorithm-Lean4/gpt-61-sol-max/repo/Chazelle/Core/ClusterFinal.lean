@@ -23,9 +23,11 @@ section reach
 variable {μ k s : ℕ} {H : Finset ℕ} {slab : ℕ → ℕ} {Adj : ℕ → ℕ → Prop} {act : ℕ → ℕ}
   {fin : Finset (ℕ × ℕ)} {D : Finset ℕ} {nsp : ℕ}
 
+section
+variable {G : Env} (hI : SInv μ k s H slab Adj act [] fin D nsp) (hstep : ∀ u w, G.Step u w → Adj u w ∧ u ∉ H ∧ u ∉ D ∧ w ∉ H ∧ w ∉ D)
+include hI hstep
 /-- **Reachability stays in a finished segment.** -/
-theorem reach_items {G : Env} (hI : SInv μ k s H slab Adj act [] fin D nsp)
-    (hstep : ∀ u w, G.Step u w → Adj u w ∧ u ∉ H ∧ u ∉ D ∧ w ∉ H ∧ w ∉ D)
+theorem reach_items
     {p : ℕ × ℕ} (hp : p ∈ fin) {x y : ℕ} (hx : x ∈ items act p) (hr : G.Reach x y) :
     y ∈ items act p := by
   induction hr with
@@ -35,12 +37,11 @@ theorem reach_items {G : Env} (hI : SInv μ k s H slab Adj act [] fin D nsp)
     obtain ⟨hadj, h1, h2, h3, h4⟩ := hstep _ _ hst
     obtain ⟨q, hq, hbq, hcq⟩ := hI.edge _ _ hadj h1 h2 h3 h4
     by_cases hqp : q = p
-    · rw [← hqp]; exact hcq
+    · simp_all
     · exact absurd (Finset.disjoint_left.mp (hI.disj q p hq (Or.inr hp) hqp) hbq) (not_not.mpr ih)
 
 /-- **A label class has at most `s` vertices.** -/
-theorem class_card {G : Env} (hI : SInv μ k s H slab Adj act [] fin D nsp)
-    (hstep : ∀ u w, G.Step u w → Adj u w ∧ u ∉ H ∧ u ∉ D ∧ w ∉ H ∧ w ∉ D)
+theorem class_card
     {lab : ℕ → ℕ} {X : Finset ℕ} (hX : ∀ v ∈ X, v < μ ∧ v ∉ H ∧ v ∉ D)
     (hlab : ∀ x ∈ X, ∀ y ∈ X, lab x = lab y → G.Reach x y) (l : ℕ) :
     (X.filter (fun v => lab v = l)).card ≤ s := by
@@ -56,7 +57,10 @@ theorem class_card {G : Env} (hI : SInv μ k s H slab Adj act [] fin D nsp)
     calc _ ≤ (items act p).card := Finset.card_le_card hsub
       _ = len p := items_card (hI.inj p hp)
       _ ≤ s := hI.small p hpf
-  · rw [Finset.not_nonempty_iff_eq_empty.mp hne]; simp
+  simp_all
+
+
+end
 
 end reach
 
@@ -86,12 +90,11 @@ theorem dstar_bound {μ k k' s D H : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : 
     (hk' : k' = min k μ) (hs : s = min (k' * k') μ) (hD : s * D ≤ 6 * k' * μ)
     (hH : k' * H ≤ μ) : D + H ≤ 7 * k ^ 2 := by
   rcases Nat.le_total k μ with hkμ | hkμ
-  · have e : k' = k := by rw [hk']; exact min_eq_left hkμ
+  · have e : k' = k := by omega
     subst e
     have hH' : H ≤ k' ^ 2 := by
       have : k' * H ≤ k' * k' ^ 2 := by
-        have e3 : k' * k' ^ 2 = k' ^ 3 := by ring
-        omega
+        ring_nf <;> omega
       exact Nat.le_of_mul_le_mul_left this (by omega)
     have hD' : D ≤ 6 * k' ^ 2 := by
       rcases Nat.le_total (k' * k') μ with h | h
@@ -103,20 +106,18 @@ theorem dstar_bound {μ k k' s D H : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : 
         exact Nat.le_of_mul_le_mul_left this (Nat.mul_pos (by omega) (by omega))
       · rw [hs, min_eq_right h] at hD
         have : μ * D ≤ μ * (6 * k') := by
-          calc μ * D ≤ 6 * k' * μ := hD
-            _ = μ * (6 * k') := by ring
+          grind
         have := Nat.le_of_mul_le_mul_left this hμ
         have : k' ≤ k' ^ 2 := by nlinarith
         omega
     omega
-  · have e : k' = μ := by rw [hk']; exact min_eq_right hkμ
+  · have e : k' = μ := by omega
     subst e
     have hs' : s = k' := by rw [hs]; exact min_eq_right (Nat.le_mul_of_pos_left _ hμ)
     rw [hs'] at hD
     have hD' : D ≤ 6 * k' := by
       have : k' * D ≤ k' * (6 * k') := by
-        calc k' * D ≤ 6 * k' * k' := hD
-          _ = k' * (6 * k') := by ring
+        grind
       exact Nat.le_of_mul_le_mul_left this hμ
     have hH' : H ≤ 1 := by
       have : k' * H ≤ k' * 1 := by omega
@@ -126,10 +127,10 @@ theorem dstar_bound {μ k k' s D H : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : 
 
 /-- The cluster size is at most `k²`. -/
 theorem s_le_sq {μ k k' s : ℕ} (hk' : k' = min k μ) (hs : s = min (k' * k') μ) : s ≤ k ^ 2 := by
-  have h1 : k' ≤ k := by rw [hk']; exact min_le_left _ _
-  have h2 : s ≤ k' * k' := by rw [hs]; exact min_le_left _ _
+  have h1 : k' ≤ k := by omega
+  have h2 : s ≤ k' * k' := by omega
   have : k' * k' ≤ k * k := Nat.mul_le_mul h1 h1
-  rw [sq]; omega
+  grind [sq]
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseDrvRLib
 public import Chazelle.Core.SortList
 
@@ -46,8 +48,7 @@ theorem cpBody_exec (d : Config) (hw : WordsBounded W d) {i S D : ℕ}
       d'.nreg 210060 = i + 1 ∧ d'.nmem = upd d.nmem (D + i) (d.nmem (S + i)) := by
     unfold cpBody
     exec_block
-    all_goals try (config_simp; (try simp only [h60, h62, h63, h34]); omega)
-    refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp [h60, h62, h63, h34]
+    all_goals (simp_all +zetaDelta <;> omega)
   exact ⟨d', k, ex, hk, h1, h2, exec_frameM ex wrM_cpBody⟩
 
 /-- **The copy.** -/
@@ -60,7 +61,7 @@ theorem cpS_exec {d : Config} (hw : WordsBounded W d) {S D len : ℕ}
       (∀ a, (a < D ∨ D + len ≤ a) → d'.nmem a = d.nmem a) ∧ FrameM Bcp d d' := by
   have e₀ := Exec.constN (P := P) hw 210060 0 (Nat.zero_le _)
   set d₀ : Config := { d with nreg := upd d.nreg 210060 0 } with hd₀
-  have g₀ : ∀ r, r ≠ 210060 → d₀.nreg r = d.nreg r := fun r hr => by rw [hd₀]; simp [hr]
+  
   have f₀ : FrameM Bcp d d₀ := exec_frameM e₀ (by decide)
   let Inv : ℕ → Config → Prop := fun i e => WordsBounded W e ∧ e.nreg 210060 = i ∧
     e.nreg 210061 = len ∧ e.nreg 210062 = S ∧ e.nreg 210063 = D ∧ e.nreg 210034 = 1 ∧
@@ -77,18 +78,13 @@ theorem cpS_exec {d : Config} (hw : WordsBounded W d) {S D len : ℕ}
         (g _ (by decide)).trans h4, (g _ (by decide)).trans h5, hf.trans hf', fun a => ?_⟩,
         by omega⟩
       rw [hm', Machine.upd_apply]
-      by_cases ha : a = D + i
-      · rw [ite_eq_left ha, hm (S + i), ite_eq_right (by omega), ite_eq_left (by omega),
-          show a - D = i by omega]
-      · rw [ite_eq_right ha, hm a]; split_ifs <;> first | rfl | omega)
-    (j := 0) ⟨e₀.wb_right, by rw [hd₀]; simp, by rw [g₀ _ (by decide), h61],
-      by rw [g₀ _ (by decide), h62], by rw [g₀ _ (by decide), h63], by rw [g₀ _ (by decide), h34],
-      f₀, fun a => by rw [ite_eq_right (by omega)]⟩ (Nat.zero_le _)
+      grind)
+    (j := 0) ⟨e₀.wb_right, by simp_all, by simp_all,
+      by simp_all, by simp_all, by simp_all,
+      f₀, fun a => by simp_all⟩ (Nat.zero_le _)
   refine ⟨d', 1 + k, .seq e₀ ex, by omega, w', ?_, fun a ha => ?_, hf'⟩
-  · unfold seg; apply List.map_congr_left; intro i hi
-    rw [List.mem_range] at hi
-    rw [hm', ite_eq_left (by omega), show D + i - D = i by omega]
-  · rw [hm', ite_eq_right (by omega)]
+  · unfold seg; apply List.map_congr_left; simp_all
+  ram_grind
 
 end exec
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SortRam
 
 /-!
@@ -32,8 +34,6 @@ open Machine Machine.Stmt Programs SortL SortR
 
 /-! ## The program -/
 
-/-- Register `i` of the band of double identification. -/
-def lr (i : ℕ) : ℕ := 50000 + i
 
 /-- Constants: `one`, `p := 1`, `L := 0`, table base `T := ALLOC`, `pos := 0`, `n + 1`, `0`. -/
 def srchInit : Stmt := block [.constN 50106 1, .constN 50107 1, .constN 50108 0, .copyN 50109 9999,
@@ -48,24 +48,30 @@ def tabBody : Stmt :=
 /-- The table of the powers `2 ^ j ≤ n`. -/
 def tabLoop : Stmt := .whileLtN 50107 50114 tabBody
 
+section
+variable (cmp : Stmt)
+include cmp
 /-- Probe `A[pos + step - 1]`; move `pos` to `pos + step` if the predicate holds there. -/
-def probe (cmp : Stmt) : Stmt :=
+def probe : Stmt :=
   .seq (block [.addN 50113 50105 50111, .subN 50110 50113 50106, .addN 50110 50103 50110,
       .loadN 50100 50110])
     (.seq cmp (.ifLtN 50102 50106 .skip (.instr (.copyN 50105 50113))))
 
 /-- `i := i - 1`, `step := T[i]`; probe if `pos + step ≤ n`. -/
-def liftBody (cmp : Stmt) : Stmt :=
+def liftBody : Stmt :=
   .seq (block [.subN 50112 50112 50106, .addN 50110 50109 50112, .loadN 50111 50110,
       .subN 50116 50104 50105])
     (.ifLtN 50116 50111 .skip (probe cmp))
 
 /-- The binary lifting, `i = L, …, 1`. -/
-def liftLoop (cmp : Stmt) : Stmt := .whileLtN 50115 50112 (liftBody cmp)
+def liftLoop : Stmt := .whileLtN 50115 50112 (liftBody cmp)
 
 /-- **The search.** -/
-def searchStmt (cmp : Stmt) : Stmt :=
+def searchStmt : Stmt :=
   .seq srchInit (.seq tabLoop (.seq (.instr (.copyN 50112 50108)) (liftLoop cmp)))
+
+
+end
 
 /-- The cost bound of the search for a predicate procedure of cost `≤ κ`. -/
 def searchCost (κ n : ℕ) : ℕ := (κ + 37) * (Nat.clog 2 n + 1)
@@ -98,28 +104,33 @@ def SLL (A₀ : ℕ) (c c' : Config) : Prop :=
   (∀ r, bandOf r ≠ bLocate → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
     (∀ a, a < A₀ → c'.nmem a = c.nmem a) ∧ c'.rmem = c.rmem ∧ c'.output = c.output
 
+section
+variable (Bc : Finset ℕ) (A₀ : ℕ)
+include Bc A₀
 /-- The global frame of the search relative to its entry configuration `c₀`. -/
-def LocL (Bc : Finset ℕ) (A₀ : ℕ) (c₀ c : Config) : Prop :=
+def LocL (c₀ c : Config) : Prop :=
   (∀ r, bandOf r ∉ Bc → bandOf r ≠ bLocate → r ≠ ALLOC → c.nreg r = c₀.nreg r) ∧
     (∀ r, bandOf r ∉ Bc → c.rreg r = c₀.rreg r) ∧ (∀ a, a < A₀ → c.nmem a = c₀.nmem a) ∧
     c.rmem = c₀.rmem ∧ c.output = c₀.output
 
 /-- The entry configuration is within the frame. -/
-theorem LocL.refl (Bc : Finset ℕ) (A₀ : ℕ) (c : Config) : LocL Bc A₀ c c :=
-  ⟨fun _ _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, rfl⟩
+theorem LocL.refl (c : Config) : LocL Bc A₀ c c :=
+  by core_grind
+
+
+end
 
 /-- A step of the search keeps the global frame. -/
 theorem LocL.sl {Bc : Finset ℕ} {A₀ : ℕ} {c₀ c c' : Config} (h : LocL Bc A₀ c₀ c)
     (h' : SLL A₀ c c') : LocL Bc A₀ c₀ c' :=
   ⟨fun r h1 h2 h3 => (h'.1 r h2 h3).trans (h.1 r h1 h2 h3),
-    fun r h1 => by rw [h'.2.1]; exact h.2.1 r h1,
+    fun r h1 => by ram_grind,
     fun a ha => (h'.2.2.1 a ha).trans (h.2.2.1 a ha), h'.2.2.2.1.trans h.2.2.2.1,
     h'.2.2.2.2.trans h.2.2.2.2⟩
 
 /-- The band of a register outside the band `bLocate`. -/
 theorem bandOf_loc {r : ℕ} (h : bandOf r ≠ bLocate) : r < 50000 ∨ 60000 ≤ r := by
-  unfold bandOf bLocate at h
-  omega
+  omega_nf
 
 /-- The predicate procedure keeps the global frame. -/
 theorem LocL.cmp {Bc : Finset ℕ} {A₀ : ℕ} {c₀ c c' : Config} (h : LocL Bc A₀ c₀ c)
@@ -128,9 +139,9 @@ theorem LocL.cmp {Bc : Finset ℕ} {A₀ : ℕ} {c₀ c c' : Config} (h : LocL B
     (hrr : ∀ r, bandOf r ∉ Bc → c'.rreg r = c.rreg r) (hm : c'.nmem = c.nmem)
     (hrm : c'.rmem = c.rmem) (ho : c'.output = c.output) : LocL Bc A₀ c₀ c' := by
   refine ⟨fun r h1 h2 h3 => ?_, fun r h1 => (hrr r h1).trans (h.2.1 r h1),
-    fun a ha => by rw [hm]; exact h.2.2.1 a ha, hrm.trans h.2.2.2.1, ho.trans h.2.2.2.2⟩
+    fun a ha => by ram_grind, hrm.trans h.2.2.2.1, ho.trans h.2.2.2.2⟩
   have := bandOf_loc h2
-  exact (hr r (by omega) (by omega) (by omega) (Or.inl h1)).trans (h.1 r h1 h2 h3)
+  ram_grind
 
 /-! ## The table of powers -/
 
@@ -200,14 +211,14 @@ theorem tabLoop_inv (hJs : JStableL J A₀) {c : Config} (h : TabInv W J Bc A₀
             d₁.rreg = d.rreg ∧ d₁.rmem = d.rmem ∧ d₁.output = d.output) := by
         have hw := hd.wb
         exec_block
-        · rw [hd.rT]; omega
+        · ram_grind
         · config_simp; rw [hd.one]; omega
         · config_simp; rw [hd.one, show (9999 : ℕ) = ALLOC from rfl, hal]; omega
         · refine ⟨rfl, ?_⟩
           refine ⟨by config_simp; rw [hd.rT], by config_simp; rw [hd.one],
             by config_simp; rw [hd.one], by config_simp; rw [hd.rn], fun r h1 h2 h3 h4 => ?_,
             rfl, rfl, rfl⟩
-          simp [h1, h2, h3, h4]
+          simp_all
       obtain ⟨m₁, l₁, a₁, s₁, r₁, rr₁, rm₁, o₁⟩ := q
       have w₁ := e₁.wb_right
       have p₁ : d₁.nreg 50107 = d.nreg 50107 := r₁ _ (by omega) (by omega) (by omega) (by omega)
@@ -222,12 +233,12 @@ theorem tabLoop_inv (hJs : JStableL J A₀) {c : Config} (h : TabInv W J Bc A₀
           d₂.rmem = d₁.rmem ∧ d₂.output = d₁.output := by
         by_cases hc : n - d.nreg 50107 < d.nreg 50107
         · obtain ⟨d₂, e₂, n₂, m₂, rr₂, rm₂, o₂⟩ := copyN_char (P := P) w₁ 50107 50114
-          refine ⟨d₂, _, .ifLtN_true (by rw [s₁, p₁]; exact hc) e₂, by omega, ?_,
+          refine ⟨d₂, _, .ifLtN_true (by omega) e₂, by omega, ?_,
             fun r hr => by rw [n₂, Machine.upd_other _ _ _ hr], m₂, rr₂, rm₂, o₂⟩
           rw [n₂, Machine.upd_same, n1₁, ite_eq_left hc]
         · obtain ⟨d₂, e₂, n₂, m₂, rr₂, rm₂, o₂⟩ := addN_char (P := P) w₁ 50107 50107 50107
-            (by rw [p₁]; omega)
-          refine ⟨d₂, _, .ifLtN_false (by rw [s₁, p₁]; exact hc) e₂, by omega, ?_,
+            (by omega)
+          refine ⟨d₂, _, .ifLtN_false (by omega) e₂, by omega, ?_,
             fun r hr => by rw [n₂, Machine.upd_other _ _ _ hr], m₂, rr₂, rm₂, o₂⟩
           rw [n₂, Machine.upd_same, p₁, ite_eq_right hc]
       have R : ∀ r, r ≠ 50107 → r ≠ 50110 → r ≠ 50108 → r ≠ 9999 → r ≠ 50116 →
@@ -237,10 +248,9 @@ theorem tabLoop_inv (hJs : JStableL J A₀) {c : Config} (h : TabInv W J Bc A₀
           have := bandOf_loc hb
           exact R r (by omega) (by omega) (by omega) ha (by omega), rr₂.trans rr₁,
         fun x hx => by
-          rw [m₂, m₁, Machine.upd_other _ _ _ (by omega)], rm₂.trans rm₁, o₂.trans o₁⟩
-      refine ⟨d₂, _, .seq e₁ e₂, ?_, by rw [L₂]; omega, by
-        show d₂.nreg 9999 ≤ d.nreg 9999 + (k₁ + k₂)
-        rw [r₂ _ (by omega), a₁]; omega⟩
+          ram_simp, rm₂.trans rm₁, o₂.trans o₁⟩
+      refine ⟨d₂, _, .seq e₁ e₂, ?_, by omega, by
+        ram_grind⟩
       exact
       { wb := e₂.wb_right, hJ := hJs d d₂ hd.hJ hsl.1 hsl.2.1 hsl.2.2.1 hsl.2.2.2.1 hsl.2.2.2.2,
         loc := hd.loc.sl hsl,
@@ -252,36 +262,23 @@ theorem tabLoop_inv (hJs : JStableL J A₀) {c : Config} (h : TabInv W J Bc A₀
         rn1 := (R _ (by omega) (by omega) (by omega) (by omega) (by omega)).trans hn1,
         zero := (R _ (by omega) (by omega) (by omega) (by omega) (by omega)).trans hd.zero,
         alloc := by
-          show d₂.nreg 9999 = _
-          rw [r₂ _ (by omega), a₁, L₂, show (9999 : ℕ) = ALLOC from rfl, hal]; omega,
+          ram_grind,
         tab := fun j hj => by
           rw [L₂] at hj
           rw [m₂, m₁, Machine.upd_apply]
-          by_cases hjj : j = d.nreg 50108
-          · rw [ite_eq_left (by rw [hjj]), hjj, ← hp]
-          · rw [ite_eq_right (by omega)]; exact hd.tab j (by omega),
+          grind [Chazelle.Core.SearchR.TabInv.tab],
         pow := fun h' => by
-          rw [hp₂] at h' ⊢
-          by_cases hc : n - d.nreg 50107 < d.nreg 50107
-          · rw [ite_eq_left hc] at h'; omega
-          · rw [ite_eq_right hc] at h' ⊢; rw [L₂, pow_succ, hp]; omega,
+          grind,
         big := fun h' => by
-          rw [hp₂] at h'
-          rw [L₂, pow_succ, ← hp]
-          by_cases hc : n - d.nreg 50107 < d.nreg 50107
-          · omega
-          · rw [ite_eq_right hc] at h'; omega,
+          grind,
         pn1 := by
-          rw [hp₂]
-          by_cases hc : n - d.nreg 50107 < d.nreg 50107
-          · rw [ite_eq_left hc]
-          · rw [ite_eq_right hc]; omega,
-        lb := Or.inr (by rw [L₂, Nat.add_sub_cancel, ← hp]; omega),
+          grind,
+        lb := Or.inr (by grind),
         bW := hbW, bn := hbn }) h
-  have hL := tab_len_le I'.lb
+  
   have hn1 := I'.rn1
   rw [hn1] at hex
-  refine ⟨c', k, e, I', I'.big (by omega), by rw [hL0] at hk; omega, hψ⟩
+  refine ⟨c', k, e, I', I'.big (by omega), by omega, hψ⟩
 
 end tab
 
@@ -316,11 +313,11 @@ structure LiftInv (W : ℕ) (J : Config → Prop) (Bc : Finset ℕ) (A₀ : ℕ)
 
 variable {c₀ cT : Config} {pr : ℕ → Bool} {A n L : ℕ}
 
+section
+variable {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ) (hJs : JStableL J A₀) (hB : bLocate ∉ Bc) (hmono : ∀ i j, i ≤ j → j < n → pr (c₀.nmem (A + j)) = true → pr (c₀.nmem (A + i)) = true) {c : Config} (h : LiftInv W J Bc A₀ c₀ cT pr A n L c)
+include hcmp hJs hB hmono h
 /-- **One lifting step** (cost `≤ κ + 13`). -/
-theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
-    (hJs : JStableL J A₀) (hB : bLocate ∉ Bc)
-    (hmono : ∀ i j, i ≤ j → j < n → pr (c₀.nmem (A + j)) = true → pr (c₀.nmem (A + i)) = true)
-    {c : Config} (h : LiftInv W J Bc A₀ c₀ cT pr A n L c) (ht : c.nreg 50115 < c.nreg 50112) :
+theorem liftBody_inv (ht : c.nreg 50115 < c.nreg 50112) :
     ∃ c' k, Exec P W (liftBody cmp) c c' k ∧ LiftInv W J Bc A₀ c₀ cT pr A n L c' ∧
       k ≤ κ + 13 ∧ c'.nreg 50112 < c.nreg 50112 := by
   rw [h.zero] at ht
@@ -341,22 +338,22 @@ theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
     · config_simp; rw [h.rT, h.one]; omega
     · refine ⟨rfl, by config_simp; rw [h.one], by config_simp; rw [h.rT, h.one]; exact hstep,
         by config_simp; rw [h.rn], fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl, rfl⟩
-      simp [h1, h2, h3, h4]
+      simp_all
   obtain ⟨i₁, s₁, m₁, r₁, mm₁, rr₁, rm₁, o₁⟩ := q
   have w₁ := e₁.wb_right
   have sl₁ : SLL A₀ c c₁ := ⟨fun r hb _ => by
-      have := bandOf_loc hb; exact r₁ r (by omega) (by omega) (by omega) (by omega), rr₁,
+      have := bandOf_loc hb; grind, rr₁,
     fun x _ => by rw [mm₁], rm₁, o₁⟩
   have hJ₁ : J c₁ := hJs c c₁ h.hJ sl₁.1 sl₁.2.1 sl₁.2.2.1 sl₁.2.2.2.1 sl₁.2.2.2.2
   have pos₁ : c₁.nreg 50105 = pos := r₁ _ (by omega) (by omega) (by omega) (by omega)
   -- the common part of the new invariant
   have h2p : 0 < 2 ^ (i - 1) := Nat.two_pow_pos _
   have hpow : 2 ^ i = 2 ^ (i - 1) + 2 ^ (i - 1) := by
-    rw [← two_mul, ← pow_succ']; congr 1; omega
+    rw [← two_mul, ← pow_succ']; grind
   by_cases hc : n - pos < 2 ^ (i - 1)
   · -- no probe
-    refine ⟨c₁, _, .seq e₁ (.ifLtN_true (by rw [m₁, s₁]; exact hc) (.skip w₁)), ?_, by omega,
-      by rw [i₁]; omega⟩
+    refine ⟨c₁, _, .seq e₁ (.ifLtN_true (by omega) (.skip w₁)), ?_, by omega,
+      by omega⟩
     exact
     { wb := w₁, hJ := hJ₁, loc := h.loc.sl sl₁,
       rA := (r₁ _ (by omega) (by omega) (by omega) (by omega)).trans h.rA,
@@ -366,9 +363,9 @@ theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
       zero := (r₁ _ (by omega) (by omega) (by omega) (by omega)).trans h.zero,
       mem := mm₁.trans h.mem,
       alloc := (r₁ _ (by decide) (by decide) (by decide) (by decide)).trans h.alloc,
-      iL := by rw [i₁]; omega, posn := by rw [pos₁]; omega, tab := h.tab, bA := hbA, bT := hbT,
+      iL := by omega, posn := by omega, tab := h.tab, bA := hbA, bT := hbT,
       pre := by rw [pos₁]; exact h.pre,
-      post := by rw [pos₁, i₁]; intro h'; omega }
+      post := by grind }
   · -- the probe
     have hle : pos + 2 ^ (i - 1) ≤ n := by omega
     obtain ⟨c₂, k₂, e₂, hk₂, q⟩ : ∃ c₂ k₂, Exec P W (block [.addN 50113 50105 50111,
@@ -379,13 +376,11 @@ theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
           (∀ r, r ≠ 50113 → r ≠ 50110 → r ≠ 50100 → c₂.nreg r = c₁.nreg r) ∧
           c₂.nmem = c₁.nmem ∧ c₂.rreg = c₁.rreg ∧ c₂.rmem = c₁.rmem ∧ c₂.output = c₁.output) := by
       exec_block
-      · rw [pos₁, s₁]; omega
-      · config_simp; rw [(r₁ _ (by omega) (by omega) (by omega) (by omega)).trans h.rA,
-          (r₁ _ (by omega) (by omega) (by omega) (by omega)).trans h.one, pos₁, s₁]; omega
-      · refine ⟨rfl, by config_simp; rw [pos₁, s₁], ?_, fun r h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
+      · omega
+      · config_simp; grind [Chazelle.Core.SearchR.LiftInv.rA, Chazelle.Core.SearchR.LiftInv.one]
+      · refine ⟨rfl, by config_simp; omega, ?_, fun r h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
         · config_simp
-          rw [(r₁ _ (by omega) (by omega) (by omega) (by omega)).trans h.rA,
-            (r₁ _ (by omega) (by omega) (by omega) (by omega)).trans h.one, pos₁, s₁, mm₁]
+          grind [Chazelle.Core.SearchR.LiftInv.rA, Chazelle.Core.SearchR.LiftInv.one]
         · simp [h1, h2, h3]
     obtain ⟨t₂, x₂, r₂, mm₂, rr₂, rm₂, o₂⟩ := q
     have w₂ := e₂.wb_right
@@ -399,9 +394,9 @@ theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
     obtain ⟨c₃, k₃, e₃, hk₃, hJ₃, bit₃, r₃, rr₃, m₃, rm₃, o₃⟩ := hcmp c₂ w₂ hJ₂
     rw [x₂, hx] at bit₃
     have R₃ : ∀ r, bandOf r = bLocate → r ≠ 50100 → r ≠ 50101 → r ≠ 50102 →
-        c₃.nreg r = c₂.nreg r := fun r hr h0 h1 h2 => r₃ r h0 h1 h2 (Or.inl (by rw [hr]; exact hB))
+        c₃.nreg r = c₂.nreg r := fun r hr h0 h1 h2 => r₃ r h0 h1 h2 (Or.inl (by grind))
     have bl : ∀ r, 50000 ≤ r → r < 60000 → bandOf r = bLocate := fun r h1 h2 => by
-      unfold bandOf bLocate; omega
+      omega_nf
     have loc₃ : LocL Bc A₀ c₀ c₃ := ((h.loc.sl sl₁).sl sl₂).cmp r₃ rr₃ m₃ rm₃ o₃
     -- registers after the comparator, in terms of `c`
     have K₃ : ∀ r, 50000 ≤ r → r < 60000 → r ≠ 50100 → r ≠ 50101 → r ≠ 50102 → r ≠ 50110 →
@@ -442,7 +437,7 @@ theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
             (by omega) (by omega) (by omega) (by omega) (by omega)).trans h.rT,
           zero := (hr _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
             (by omega) (by omega) (by omega) (by omega) (by omega)).trans h.zero,
-          mem := hm, alloc := ha.trans h.alloc, iL := by rw [hi']; omega, posn := hp,
+          mem := hm, alloc := ha.trans h.alloc, iL := by omega, posn := hp,
           tab := h.tab, bA := hbA, bT := hbT, pre := hpre, post := hpost }
     by_cases hp : pr (c₀.nmem (A + (pos + 2 ^ (i - 1) - 1))) = true
     · -- move
@@ -453,14 +448,14 @@ theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
       have p₄ : c₄.nreg 50105 = pos + 2 ^ (i - 1) := by rw [n₄, Machine.upd_same, t₃]
       have sl₄ : SLL A₀ c₃ c₄ := ⟨fun r hb _ => by
           have := bandOf_loc hb; exact R₄ r (by omega), rr₄, fun x _ => by rw [m₄], rm₄, o₄⟩
-      refine ⟨c₄, _, .seq e₁ (.ifLtN_false (by rw [m₁, s₁]; exact hc) (.seq e₂ (.seq e₃
-        (.ifLtN_false (by rw [bit₃, one₃]; decide) e₄)))), ?_, by omega,
+      refine ⟨c₄, _, .seq e₁ (.ifLtN_false (by omega) (.seq e₂ (.seq e₃
+        (.ifLtN_false (by omega) e₄)))), ?_, by omega,
         by rw [R₄ _ (by omega), i₃]; omega⟩
       refine base c₄ e₄.wb_right (hJs c₃ c₄ hJ₃ sl₄.1 sl₄.2.1 sl₄.2.2.1 sl₄.2.2.2.1 sl₄.2.2.2.2)
-        (loc₃.sl sl₄) (by rw [m₄, mem₃]) (by rw [R₄ _ (by decide), al₃])
+        (loc₃.sl sl₄) (by grind) (by rw [R₄ _ (by decide), al₃])
         (fun r h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 => (R₄ r h6).trans
           (K₃ r h1 h2 h3 h4 h5 h7 h8 h9 h10 h11))
-        (by rw [R₄ _ (by omega), i₃]) (by rw [p₄]; exact hle) ?_ ?_
+        (by rw [R₄ _ (by omega), i₃]) (by omega) ?_ ?_
       · rw [p₄]
         intro j hj
         by_cases hj' : j < pos
@@ -468,28 +463,23 @@ theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
         · exact hmono j _ (by omega) (by omega) hp
       · rw [p₄, R₄ _ (by omega), i₃]
         intro h'
-        have := h.post (show pos + 2 ^ i ≤ n by rw [hpow]; omega)
-        rwa [show pos + 2 ^ (i - 1) + 2 ^ (i - 1) - 1 = pos + 2 ^ i - 1 by omega]
+        have := h.post (show pos + 2 ^ i ≤ n by omega)
+        grind
     · -- stay
       rw [ite_eq_right hp] at bit₃
-      refine ⟨c₃, _, .seq e₁ (.ifLtN_false (by rw [m₁, s₁]; exact hc) (.seq e₂ (.seq e₃
-        (.ifLtN_true (by rw [bit₃, one₃]; decide) (.skip e₃.wb_right))))), ?_, by omega,
-        by rw [i₃]; omega⟩
+      refine ⟨c₃, _, .seq e₁ (.ifLtN_false (by omega) (.seq e₂ (.seq e₃
+        (.ifLtN_true (by omega) (.skip e₃.wb_right))))), ?_, by omega,
+        by omega⟩
       have p₃ : c₃.nreg 50105 = pos :=
         (K₃ _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
           (by omega) (by omega) (by omega))
       refine base c₃ e₃.wb_right hJ₃ loc₃ mem₃ al₃
         (fun r h1 h2 h3 h4 h5 _ h7 h8 h9 h10 h11 => K₃ r h1 h2 h3 h4 h5 h7 h8 h9 h10 h11)
-        i₃ (by rw [p₃]; omega) (by rw [p₃]; exact h.pre) ?_
-      rw [p₃, i₃]
-      intro _
-      simpa using hp
+        i₃ (by omega) (by rw [p₃]; exact h.pre) ?_
+      grind
 
 /-- **The lifting loop**: at the end `pos` is the partition point; cost `≤ (κ + 15) i + 2`. -/
-theorem liftLoop_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
-    (hJs : JStableL J A₀) (hB : bLocate ∉ Bc)
-    (hmono : ∀ i j, i ≤ j → j < n → pr (c₀.nmem (A + j)) = true → pr (c₀.nmem (A + i)) = true)
-    {c : Config} (h : LiftInv W J Bc A₀ c₀ cT pr A n L c) :
+theorem liftLoop_inv :
     ∃ c' k, Exec P W (liftLoop cmp) c c' k ∧ LiftInv W J Bc A₀ c₀ cT pr A n L c' ∧
       k ≤ (κ + 15) * c.nreg 50112 + 2 ∧
       (c'.nreg 50105 < n → pr (c₀.nmem (A + c'.nreg 50105)) = false) := by
@@ -501,8 +491,11 @@ theorem liftLoop_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
   refine ⟨c', k, e, I', hk, fun hlt => ?_⟩
   have hz := I'.zero
   rw [hz] at hex
-  have := I'.post (by rw [show c'.nreg 50112 = 0 by omega, pow_zero]; omega)
-  rwa [show c'.nreg 50112 = 0 by omega, pow_zero, Nat.add_sub_cancel] at this
+  have := I'.post (by simp_all)
+  simp_all
+
+
+end
 
 end lift
 
@@ -536,7 +529,7 @@ theorem searchStmt_exec {P : Polygon} {W : ℕ} {cmp : Stmt} {Bc : Finset ℕ} {
   set A := c.nreg 50103 with hAdef
   set n := c.nreg 50104 with hndef
   have hc0 : 37 * (Nat.clog 2 n + 1) ≤ searchCost κ n := by
-    unfold searchCost; exact Nat.mul_le_mul_right _ (by omega)
+    omega_nf
   have hcost := searchCost_ge κ n
   -- initialisation
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W srchInit c c₁ k₁ ∧ k₁ = 7 ∧
@@ -553,14 +546,11 @@ theorem searchStmt_exec {P : Polygon} {W : ℕ} {cmp : Stmt} {Bc : Finset ℕ} {
     · omega
     · config_simp; omega
     · omega
-    · refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp; rfl,
-        by config_simp, by config_simp; rfl, by config_simp,
-        fun r h1 h2 h3 h4 h5 h6 h7 => ?_, rfl, rfl, rfl, rfl⟩
-      simp [h1, h2, h3, h4, h5, h6, h7]
+    ram_simp <;> omega_nf
   obtain ⟨o₁, p₁, l₁, t₁, s₁, n₁, z₁, r₁, m₁, rr₁, rm₁, out₁⟩ := q
   have sl₁ : SLL A₀ c c₁ := ⟨fun r hb _ => by
       have := bandOf_loc hb
-      exact r₁ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
+      grind,
     rr₁, fun x _ => by rw [m₁], rm₁, out₁⟩
   have T₁ : TabInv W J Bc A₀ c A n c₁ :=
     { wb := e₁.wb_right, hJ := hJs c c₁ hJ sl₁.1 sl₁.2.1 sl₁.2.2.1 sl₁.2.2.2.1 sl₁.2.2.2.2,
@@ -571,18 +561,18 @@ theorem searchStmt_exec {P : Polygon} {W : ℕ} {cmp : Stmt} {Bc : Finset ℕ} {
       alloc := by
         rw [l₁, r₁ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
           (by decide)]; omega,
-      tab := fun j hj => by rw [l₁] at hj; omega,
-      pow := fun _ => by rw [p₁, l₁]; rfl, big := fun h' => by rw [l₁]; rw [p₁] at h'; simpa using h',
-      pn1 := by rw [p₁]; omega, lb := Or.inl l₁, bW := by omega, bn := by omega }
+      tab := fun j hj => by omega,
+      pow := fun _ => by grind, big := fun h' => by grind,
+      pn1 := by omega, lb := Or.inl l₁, bW := by omega, bn := by omega }
   -- the table
   obtain ⟨c₂, k₂, e₂, T₂, hbig, hk₂, ha₂⟩ := tabLoop_inv (P := P) (hJs := hJs) T₁ l₁
   have hL := tab_len_le T₂.lb
   -- `i := L`
   obtain ⟨c₃, e₃, n₃, m₃, rr₃, rm₃, out₃⟩ := copyN_char (P := P) T₂.wb 50112 50108
   have R₃ : ∀ r, r ≠ 50112 → c₃.nreg r = c₂.nreg r := fun r hr => by
-    rw [n₃, Machine.upd_other _ _ _ hr]
+    ram_simp
   have sl₃ : SLL A₀ c₂ c₃ := ⟨fun r hb _ => by
-      have := bandOf_loc hb; exact R₃ r (by omega), rr₃, fun x _ => by rw [m₃], rm₃, out₃⟩
+      ram_grind, rr₃, fun x _ => by rw [m₃], rm₃, out₃⟩
   have i₃ : c₃.nreg 50112 = c₂.nreg 50108 := by rw [n₃, Machine.upd_same]
   have I₃ : LiftInv W J Bc A₀ c c₃ pr A n (c₂.nreg 50108) c₃ :=
     { wb := e₃.wb_right, hJ := hJs c₂ c₃ T₂.hJ sl₃.1 sl₃.2.1 sl₃.2.2.1 sl₃.2.2.2.1 sl₃.2.2.2.2,
@@ -593,7 +583,7 @@ theorem searchStmt_exec {P : Polygon} {W : ℕ} {cmp : Stmt} {Bc : Finset ℕ} {
       tab := fun j hj => by rw [m₃]; exact T₂.tab j hj, bA := hA, bT := by omega,
       pre := fun j hj => by rw [(R₃ _ (by omega)).trans T₂.pos0] at hj; omega,
       post := fun h' => by
-        rw [(R₃ _ (by omega)).trans T₂.pos0, i₃] at h'; omega }
+        grind }
   -- the lifting
   obtain ⟨c₄, k₄, e₄, I₄, hk₄, hfin⟩ := liftLoop_inv (P := P) hcmp hJs hB hmono I₃
   rw [i₃] at hk₄
@@ -606,14 +596,12 @@ theorem searchStmt_exec {P : Polygon} {W : ℕ} {cmp : Stmt} {Bc : Finset ℕ} {
       Nat.mul_le_mul_left _ hL
     omega
   · refine ⟨fun r hr ha => ?_, fun r hr => ?_, fun a ha => loc₄.2.2.1 a ha,
-      fun a _ => by rw [loc₄.2.2.2.1], loc₄.2.2.2.2, by rw [al₄, al₂]; omega, ?_⟩
+      fun a _ => by rw [loc₄.2.2.2.1], loc₄.2.2.2.2, by omega, ?_⟩
     · rw [Finset.mem_insert, not_or] at hr
       exact loc₄.1 r hr.2 hr.1 ha
     · rw [Finset.mem_insert, not_or] at hr
       exact loc₄.2.1 r hr.2
-    · rw [al₄]
-      have : c₁.nreg ALLOC = A₀ := by rw [al₁, l₁]; omega
-      omega
+    omega
 
 end
 

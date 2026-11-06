@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.DownPhaseOracleCuR4
 
 /-!
@@ -11,9 +13,6 @@ first (`ps = (slotsOf c 4).flatMap (slotPcs m n)`), sets the answer register `15
 the allocator past the list, within `42 |ps| + 60` steps, in the frame of the interior oracles.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -27,7 +26,7 @@ open Machine Machine.Stmt Programs SignK WalkKey SweepPrim
 def Basm' (r : ℕ) : Bool := Basm r || decide (r = 170221)
 
 theorem basm_io {r : ℕ} (h : Basm' r = true) : bandOf r ∈ ioBands ∧ r ≠ ALLOC :=
-  io_of_band' (Or.inl (by simp only [Basm', Basm, Bool.or_eq_true, decide_eq_true_eq] at h; omega))
+  io_of_band' (Or.inl (by ram_grind))
 
 section exec
 
@@ -61,7 +60,7 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
       Frame ioBands c c' k := by
   set O := c.nreg ALLOC with hO
   set Lf : ℕ → ℕ := fun j => ((slotsOf c j).flatMap (slotPcs c.nmem n)).length with hLf
-  have hL0 : Lf 0 = 0 := by simp [hLf, slotsOf]
+  have hL0 : Lf 0 = 0 := by grind [slotsOf]
   have hLle : ∀ j, j ≤ 4 → Lf j ≤ Lf 4 := fun j hj => flat_le hj
   -- the start
   have hA9 : c.nreg 9999 = O := rfl
@@ -71,17 +70,11 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
       c₁.nmem = c.nmem := by
     unfold asmInit
     exec_block
-    · config_simp; rw [h11, hA9]; omega
-    · omega
-    refine ⟨rfl, ?_, ?_, ?_, fun r h1 h2 h3 => ?_, rfl⟩
-    · config_simp; exact hA9
-    · config_simp; rw [h11, hA9]
-    · config_simp
-    · config_simp; simp [upd, h1, h2, h3]
+    all_goals (grind [upd])
   have F₁ : BuildRam.FrameM Basm' c c₁ := BuildRam.exec_frameM x₁ (by decide)
   have A₁ : AsmSt c.nmem n O (slotsOf c 0) c₁ :=
-    ⟨a21, by simp [slotsOf, a22], by simp [slotsOf, a23], fun a _ => by rw [am],
-      fun j hj => by simp [slotsOf] at hj⟩
+    ⟨a21, by ram_grind, by ram_grind, fun a _ => by rw [am],
+      fun j hj => by ram_grind⟩
   -- one slot
   have step : ∀ k, k < 4 → ∀ d : Config, WordsBounded W d → AsmSt c.nmem n O (slotsOf c k) d →
       BuildRam.FrameM Basm' c d →
@@ -91,13 +84,12 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
     have hsl : ∀ r, 170200 ≤ r → r < 170220 → d.nreg r = c.nreg r := by
       intro r r1 r2
       apply hF.1 r
-      simp only [Basm', Basm, Bool.or_eq_false_iff, decide_eq_false_iff_not]
-      omega
+      core_grind
     obtain ⟨d', k', e', h1, h2, hA', F'⟩ := asmK_exec (P := P) k hk d wd (c₀ := c) (Hγ := Hγ)
       (e₁ := e₁) hA hsl
       ((hF.1 _ (by decide)).trans h10) ((hF.1 _ (by decide)).trans h11) (hbit k hk)
       (fun hf => SlotsOK.mem hok _ (mem_slotsOf_of hf (by omega))) hn hnW
-      (by have := hLle (k + 1) (by omega); simp only [hLf] at this; omega)
+      (by ram_grind)
     exact ⟨d', k', e', h1, h2, hA', hF.trans (frameM_mono F' (fun r hr => by
       simp only [Basm', hr, Bool.true_or]))⟩
   obtain ⟨c₂, k₂, e₂, p2, q2, A₂, F₂⟩ := step 0 (by norm_num) c₁ x₁.wb_right A₁ F₁
@@ -118,17 +110,17 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
     exec_block
     refine ⟨rfl, ?_, ?_, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
     · config_simp; exact g21
-    · config_simp; rw [g22, show (ALLOC : ℕ) = 9999 from rfl, upd_same]
-    · config_simp; rw [g21, g23]
-    · config_simp; unfold ALLOC at h2; simp [upd, h1, h2]
+    · omega_nf
+    · ram_simp <;> omega_nf
+    · config_simp; unfold ALLOC at h2; ram_simp <;> omega_nf
   have ex : Exec P W asmC c c₆ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k₆))))) :=
     .seq x₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
   have hk := asm_cost p2 p3 p4 p5
   have hl := asm_low q2 q3 q4 q5
   simp only [Nat.reduceAdd] at hl hk
-  refine ⟨c₆, _, ex, by rw [hk₁, hk₆]; exact hk, b10, by rw [bm, upd_same], fun j hj f hf => ?_,
+  refine ⟨c₆, _, ex, by ram_grind, b10, by ram_simp <;> omega_nf, fun j hj f hf => ?_,
     bA, ⟨fun r hr ha => ?_, fun r hr => ?_, fun a ha => ?_, fun a _ => ?_, by rw [bo, F₅.2.2.2],
-      by rw [bA]; omega, by rw [bA, hk₁, hk₆]; omega⟩⟩
+      by omega, by omega⟩⟩
   · rw [bm, upd_other _ _ _ (by omega)]
     exact A₅.out j hj f hf
   · have hb : Basm' r = false := by

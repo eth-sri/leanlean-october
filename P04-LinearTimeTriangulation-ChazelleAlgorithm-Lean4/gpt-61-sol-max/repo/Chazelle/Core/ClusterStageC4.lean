@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.ClusterStageC3
 
 /-!
@@ -46,7 +48,7 @@ theorem stageC_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have fr : ∀ {Am : ℕ → Prop} {c1 c2 : Config}, PFr StCRG Am c1 c2 → (∀ a, Am a → CMem g a) →
       PFr StCRG (CMem g) c1 c2 := fun h hA => h.mono (fun r h => h) hA
   have gr : ∀ {c1 : Config}, PFr StCRG (CMem g) c c1 → GR g c1 := fun h =>
-    hG.frame (fun r hr => h.1 r (by unfold GRReg at hr; unfold StCRG; omega))
+    hG.frame (fun r hr => h.1 r (by grind [GRReg, StCRG]))
   unfold stageC
   obtain ⟨c1, k1, e1, hk1, hw1, hf1, hh1⟩ := halfS_exec (P := P) hw hG hW
   have f1 : PFr StCRG (CMem g) c c1 := fr hf1 (fun a h => by unfold CMem; omega)
@@ -55,7 +57,7 @@ theorem stageC_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   obtain ⟨c3, k3, e3, hk3, hw3, hf3, hr3⟩ := resS_exec (P := P) hw2 (gr f2) hk hkμ hW
   have f3 : PFr StCRG (CMem g) c c3 := f2.trans (fr hf3 (fun a h => by unfold CMem; omega))
   obtain ⟨c4, k4, e4, hk4, hw4, hf4, hc4⟩ := rcS_exec (P := P) hw3 (gr f3) hk hkμ
-    (lev := lev) (fun v hv => by rw [f3.2.2.2.2 _ (by unfold CMem; omega)]; exact hlev v hv) hlt
+    (lev := lev) (fun v hv => by rw [f3.2.2.2.2 _ (by unfold CMem; omega)]; ram_grind) hlt
     hr3 hW
   have f4 : PFr StCRG (CMem g) c c4 := f3.trans (fr hf4 (fun a h => by unfold CMem; omega))
   obtain ⟨c5, k5, e5, hk5, hw5, hf5, hρ5, hmin5⟩ := argS_exec (P := P) hw4 (gr f4) hk hkμ hc4
@@ -63,7 +65,7 @@ theorem stageC_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have f5 : PFr StCRG (CMem g) c c5 := f4.trans (fr hf5 (fun a h => h.elim))
   obtain ⟨c6, k6, e6, hk6, hw6, hf6, -, hlv6⟩ := lvS_exec (P := P) hw5 (gr f5) hk hkμ rfl hρ5 hW
   have f6 : PFr StCRG (CMem g) c c6 := f5.trans (fr hf6 (fun a h => by
-    unfold LvMem at h; unfold CMem; omega))
+    grind [LvMem, CMem]))
   have k16 : ∀ a, ¬ LvMem g a → ¬ (g.base 33 ≤ a ∧ a < g.base 33 + g.μ) →
       ¬ (g.base 34 ≤ a ∧ a < g.base 34 + g.k') → c6.nmem a = c2.nmem a := fun a h6 h3 h4 => by
     rw [hf6.2.2.2.2 a h6, hf5.2.2.2.2 a id, hf4.2.2.2.2 a h4, hf3.2.2.2.2 a h3]
@@ -71,8 +73,8 @@ theorem stageC_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 e6)))), by omega, hw6, f6,
     fun w hw' => ?_, fun j hj => ?_, c5.nreg 130836, hρ5, hlv6, hmin5⟩
   · rw [k16 _ (by unfold LvMem; omega) (by omega) (by omega),
-      hf2.2.2.2.2 _ (by omega)]; exact hh1 w hw'
-  · rw [k16 _ (by unfold LvMem; omega) (by omega) (by omega)]; exact hp2 j hj
+      hf2.2.2.2.2 _ (by omega)]; ram_grind
+  · rw [k16 _ (by unfold LvMem; omega) (by omega) (by omega)]; ram_grind
 
 end proofs
 

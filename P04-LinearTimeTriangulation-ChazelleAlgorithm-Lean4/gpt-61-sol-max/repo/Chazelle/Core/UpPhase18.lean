@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.UpPhase17
 
 /-!
@@ -51,36 +53,34 @@ theorem two_pow_le_of_le_top {n g : ℕ} (hn : 2 ≤ n) (hg : g ≤ topGrade n) 
     unfold topGrade at h1
     have h3 : 1 ≤ Nat.clog 2 (n - 1) := by
       rcases Nat.eq_zero_or_pos (Nat.clog 2 (n - 1)) with h0 | h0
-      · have := Nat.le_pow_clog (b := 2) (by norm_num) (n - 1); rw [h0] at this; simp at this
-        omega
+      · have := Nat.le_pow_clog (b := 2) (by norm_num) (n - 1); grind
       · exact h0
     have e : 2 ^ Nat.clog 2 (n - 1) = 2 * 2 ^ (Nat.clog 2 (n - 1)).pred := by
-      rw [← pow_succ', show (Nat.clog 2 (n - 1)).pred + 1 = Nat.clog 2 (n - 1) by rw [Nat.pred_eq_sub_one]; omega]
+      rw [← pow_succ', show (Nat.clog 2 (n - 1)).pred + 1 = Nat.clog 2 (n - 1) by simp_all]
     omega
   · have : topGrade n = 0 := by
       unfold topGrade; rw [show n - 1 = 1 by omega]; simp
-    rw [this] at h1; simp at h1; omega
+    grind
 
-theorem GK.kept {r : ℕ} (h : GK r) : Kept r ∧ r ≠ 170015 ∧ r ≠ 170016 ∧ r ≠ 170017 ∧
+section
+variable {r : ℕ} (h : GK r)
+include h
+theorem GK.kept : Kept r ∧ r ≠ 170015 ∧ r ≠ 170016 ∧ r ≠ 170017 ∧
     r ≠ 170018 ∧ r ≠ 170035 ∧ r ≠ 170036 := by
   unfold GK at h
   rcases h with ⟨h1, h2⟩ | h
-  · refine ⟨Or.inl ⟨h1, h2⟩, ?_⟩
-    rcases h1 with h1 | h1
-    · unfold OutB bandOf at h1; omega
-    · omega
-  · refine ⟨Or.inr ⟨by unfold bandOf bUp; omega, by omega⟩, by omega⟩
+  · ram_grind
+  · refine ⟨Or.inr ⟨by omega_nf, by omega⟩, by omega⟩
 
-theorem GK.ne_alloc {r : ℕ} (h : GK r) : r ≠ ALLOC := h.kept.1.ne_alloc
+theorem GK.ne_alloc : r ≠ ALLOC := h.kept.1.ne_alloc
 
-theorem GK.range {r : ℕ} (h : GK r) : r < 10000 ∨ r = 230000 ∨ 250000 ≤ r ∨
+theorem GK.range : r < 10000 ∨ r = 230000 ∨ 250000 ≤ r ∨
     (170000 ≤ r ∧ r ≤ 170004) ∨ r = 170006 ∨ (170020 ≤ r ∧ r ≤ 170029) ∨ r = 170037 ∨
     (170080 ≤ r ∧ r < 180000) := by
-  unfold GK at h
-  rcases h with ⟨h1 | h1, -⟩ | h
-  · unfold OutB bandOf at h1; omega
-  · omega
-  · omega
+  ram_grind
+
+
+end
 
 end proofs
 

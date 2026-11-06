@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvInit2
 
 /-!
@@ -44,7 +46,7 @@ def tabS : Stmt :=
 
 /-- **A loop with an exact count**: an invariant indexed by the number `j` of iterations done,
 the test true exactly while `j < L`, a body of cost exactly `B`. -/
-theorem while_exact {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} (I : ℕ → Config → Prop)
+theorem while_exact {P : Polygon} {W a b : ℕ} {body : Stmt} (I : ℕ → Config → Prop)
     (L B : ℕ) (htest : ∀ j d, I j d → (d.nreg a < d.nreg b ↔ j < L))
     (hwb : ∀ j d, I j d → WordsBounded W d)
     (hbody : ∀ j d, I j d → j < L → ∃ d', Exec P W body d d' B ∧ I (j + 1) d') :
@@ -54,9 +56,7 @@ theorem while_exact {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} (I : ℕ �
   induction hn : L - j generalizing j d with
   | zero =>
     have hjL : j = L := by omega
-    subst hjL
-    exact ⟨d, .whileLtN_false (fun h => absurd ((htest j d hI).1 h) (lt_irrefl _)) (hwb j d hI),
-      hI⟩
+    grind [Chazelle.Machine.Exec.whileLtN_false]
   | succ n ih =>
     have hlt : j < L := by omega
     obtain ⟨d₁, e₁, hI₁⟩ := hbody j d hI hlt
@@ -95,7 +95,7 @@ theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   set a₂ := c.nmem (c.nreg (sw 4) + 1) with ha₂
   set A₀ := c.nreg ALLOC with hA₀
   set Lf := Nat.clog 2 (a₁ + a₂ + 1) with hLf
-  have hLpow : a₁ + a₂ + 1 ≤ 2 ^ Lf := Nat.le_pow_clog (by norm_num) _
+  
   have hLle : Lf ≤ a₁ + a₂ + 1 := by
     rw [hLf, Nat.clog_le_iff_le_pow (by norm_num)]
     exact (Nat.lt_two_pow_self).le
@@ -104,12 +104,11 @@ theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have e₁ := exec_regB (P := P) tabHead hw (by
     simp only [tabHead, okW, okWI, regI, TBR, TLR, iX, iA, iN, iV, K1, ALLOC, sw, Nat.reduceAdd,
       upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true, true_and, and_true]
-    simp only [K1, sw, Nat.reduceAdd] at hK1 h3 h4 ha₁ ha₂
-    rw [hK1]; refine ⟨by omega, by omega, by omega, by omega, by omega⟩)
+    ram_grind)
   set c₁ : Config := { c with nreg := regB c.nmem tabHead c.nreg } with hc₁
   have n₁ : ∀ r, r ≠ TBR → r ≠ TLR → r ≠ iX → r ≠ iA → r ≠ iN → r ≠ iV → c₁.nreg r = c.nreg r :=
     vo
-  have g11 : c₁.nreg K1 = 1 := by rw [n₁ _ (by swoInit3) (by swoInit3) (by swoInit3) (by swoInit3) (by swoInit3) (by swoInit3), hK1]
+  have g11 : c₁.nreg K1 = 1 := by ram_grind
   have gA : c₁.nreg ALLOC = A₀ :=
     n₁ _ (by swoInit3) (by swoInit3) (by swoInit3) (by swoInit3) (by swoInit3) (by swoInit3)
   have gB : c₁.nreg TBR = A₀ := vB
@@ -134,8 +133,8 @@ theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
         have d11 : d.nreg K1 = 1 := by rw [hr _ (by swoInit3) (by swoInit3) (by swoInit3), g11]
         have ht : 2 ^ j < a₁ + a₂ + 1 := by
           rw [← Nat.lt_clog_iff_pow_lt (by norm_num)]; exact hjl
-        have hjL : j ≤ Lf := hjl.le
-        have e₁ := Exec.addN (P := P) hwd iP TBR TLR (by rw [dB, hj]; omega)
+        
+        have e₁ := Exec.addN (P := P) hwd iP TBR TLR (by omega)
         have e₂ := Exec.storeN (P := P) e₁.wb_right iP iX
         have e₃ := Exec.addN (P := P) e₂.wb_right iX iX iX (by
           simp only
@@ -155,32 +154,30 @@ theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
         · simp only [upd_same]
           rw [upd_other _ _ _ (show iX ≠ iP by swoInit3), dB, hj]
           rcases Nat.lt_or_ge t j with h | h
-          · rw [upd_other _ _ _ (by omega)]; exact htab t h
-          · rw [show t = j by omega, upd_same, hx]
+          · ram_simp
+          grind [upd_same]
         · simp only
-          rw [upd_other _ _ _ c', upd_other _ _ _ a, upd_other _ _ _ b]; exact hr r a b c'
+          rw [upd_other _ _ _ c', upd_other _ _ _ a, upd_other _ _ _ b]; ram_grind
         · simp only
-          rw [upd_other _ _ _ (by simp only [upd_same]; rw [dB, hj]; omega)]
-          exact hm a ha)
+          rw [upd_other _ _ _ (by ram_simp <;> omega_nf)]
+          ram_grind)
       0 c₁ I₁ (Nat.zero_le _)
   -- the end of the loop
   have g9 : c₂.nreg ALLOC = A₀ := by rw [hr₂ _ (by swoInit3) (by swoInit3) (by swoInit3), gA]
-  have e₃ := Exec.addN (P := P) w₂ ALLOC ALLOC TLR (by rw [hj, g9]; omega)
+  have e₃ := Exec.addN (P := P) w₂ ALLOC ALLOC TLR (by omega)
   refine ⟨_, _, .seq e₁ (.seq e₂ e₃), ?_, ?_, ?_, ?_, fun t ht => ?_, fun a ha => ?_,
-    fun r h0 h1 h2 h3 h4 h5 h6 h7 => ?_, by simp only; rw [rr₂], by simp only; rw [rm₂],
-    by simp only; rw [o₂]⟩
-  · simp only [tabHead, List.length_cons, List.length_nil]; omega
+    fun r h0 h1 h2 h3 h4 h5 h6 h7 => ?_, by omega, by omega,
+    by omega⟩
+  · grind [tabHead, List.length_cons, List.length_nil]
   · simp only; rw [upd_other _ _ _ (by swoInit3), hr₂ _ (by swoInit3) (by swoInit3) (by swoInit3), gB]
-  · simp only; rw [upd_other _ _ _ (by swoInit3), hj]
-  · simp only [upd_same]; rw [upd_other _ _ _ (by swoInit3), hj, g9]
+  · ram_simp
+  · ram_simp
   · simp only
     simp only at ht
     rw [upd_other _ _ _ (by swoInit3), hj] at ht
-    exact htab t ht
-  · simp only; rw [hm₂ a ha]
-  · simp only
-    rw [upd_other _ _ _ h0, hr₂ r h3 h7 h2]
-    exact n₁ r h1 h2 h3 h4 h5 h6
+    ram_grind
+  · ram_simp
+  · ram_simp
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public meta import Chazelle.Arithmetic
+
 public import Chazelle.Core.SweepEvStopSort4
 
 /-!
@@ -61,18 +63,15 @@ theorem ssIdx_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   set A := c.nreg ALLOC with hA
   set S := c.nreg gRC with hS
   have e₀ := exec_regB (P := P) ssIdxHead hw (by
-    simp only [ssIdxHead, okW, okWI]; exact ⟨trivial, trivial, by omega, trivial⟩)
+    simp_all [ssIdxHead, okW, okWI] <;> omega_nf)
   set c₁ : Config := { c with nreg := regB c.nmem ssIdxHead c.nreg } with hc₁
   have v1 : ∀ r, r ≠ srA0 → r ≠ srIB → r ≠ srI → c₁.nreg r = c.nreg r := fun r a b d => by
-    simp only [hc₁, ssIdxHead, regB, regI]
-    rw [upd_other _ _ _ d, upd_other _ _ _ b, upd_other _ _ _ a]
+    simp_all [ssIdxHead, regB, regI] <;> omega_nf
   have vI : c₁.nreg srI = 0 := by simp only [hc₁, ssIdxHead, regB, regI, upd_same]
   have vB : c₁.nreg srIB = A := by
-    simp only [hc₁, ssIdxHead, regB, regI]
-    rw [upd_other _ _ _ (by ssoSrt), upd_same, upd_other _ _ _ (show ALLOC ≠ srA0 by ssoSrt)]
+    simp_all [ssIdxHead, regB, regI, upd_same] <;> omega_nf
   have v0 : c₁.nreg srA0 = A := by
-    simp only [hc₁, ssIdxHead, regB, regI]
-    rw [upd_other _ _ _ (by ssoSrt), upd_other _ _ _ (by ssoSrt), upd_same]
+    simp_all [ssIdxHead, regB, regI, upd_same] <;> omega_nf
   have vA : c₁.nreg ALLOC = A := v1 _ (by ssoSrt) (by ssoSrt) (by ssoSrt)
   have vS : c₁.nreg gRC = S := v1 _ (by ssoSrt) (by ssoSrt) (by ssoSrt)
   have vK : c₁.nreg K1 = 1 := (v1 _ (by ssoSrt) (by ssoSrt) (by ssoSrt)).trans hK1
@@ -87,9 +86,9 @@ theorem ssIdx_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       (fun i d h => by rw [h.2.1, h.2.2.2.2.1 _ (by ssoSrt) (by ssoSrt), vS])
       (fun i d h => h.1)
       (fun i d ⟨hwd, hi, ht, hm, hr, rr, rm, o⟩ hlt => by
-        have dB : d.nreg srIB = A := by rw [hr _ (by ssoSrt) (by ssoSrt), vB]
-        have dK : d.nreg K1 = 1 := by rw [hr _ (by ssoSrt) (by ssoSrt), vK]
-        have x₁ := Exec.addN (P := P) hwd srA srIB srI (by rw [dB, hi]; omega)
+        have dB : d.nreg srIB = A := by ram_grind
+        have dK : d.nreg K1 = 1 := by ram_grind
+        have x₁ := Exec.addN (P := P) hwd srA srIB srI (by omega)
         have x₂ := Exec.storeN (P := P) x₁.wb_right srA srI
         have x₃ := Exec.addN (P := P) x₂.wb_right srI srI K1 (by
           simp only
@@ -102,25 +101,24 @@ theorem ssIdx_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
         · simp only [upd_same]
           rw [upd_other _ _ _ (show srI ≠ srA by ssoSrt), dB, hi]
           rcases Nat.lt_or_ge t i with h | h
-          · rw [upd_other _ _ _ (by omega)]; exact ht t h
-          · rw [show t = i by omega, upd_same]
+          · ram_simp <;> omega_nf
+          grind [upd_same]
         · simp only [upd_same]
-          rw [upd_other _ _ _ (by rw [dB, hi]; omega)]; exact hm a ha
-        · simp only
-          rw [upd_other _ _ _ h1, upd_other _ _ _ h2]; exact hr r h1 h2)
+          rw [upd_other _ _ _ (by omega)]; ram_grind
+        ram_simp <;> omega_nf)
       0 c₁ I₀ (Nat.zero_le _)
-  have gA : c₂.nreg ALLOC = A := by rw [hr2 _ (by ssoSrt) (by ssoSrt), vA]
-  have gS : c₂.nreg gRC = S := by rw [hr2 _ (by ssoSrt) (by ssoSrt), vS]
-  have x₄ := Exec.addN (P := P) w₂ ALLOC ALLOC gRC (by rw [gA, gS]; omega)
-  refine ⟨_, _, .seq e₀ (.seq e₁ x₄), by simp [ssIdxHead]; ring, ?_, ?_, ?_, ?_, ?_,
+  have gA : c₂.nreg ALLOC = A := by ram_grind
+  have gS : c₂.nreg gRC = S := by ram_grind
+  have x₄ := Exec.addN (P := P) w₂ ALLOC ALLOC gRC (by omega)
+  refine ⟨_, _, .seq e₀ (.seq e₁ x₄), by core_grind, ?_, ?_, ?_, ?_, ?_,
     fun r h0 h1 h2 h3 h4 => ?_, rr2, rm2, o2⟩
-  · simp only [upd_same]; rw [gA, gS]
+  · ram_simp <;> omega_nf
   · simp only
     rw [upd_other _ _ _ (by ssoSrt), hr2 _ (by ssoSrt) (by ssoSrt), v0]
   · simp only
     rw [upd_other _ _ _ (by ssoSrt), hr2 _ (by ssoSrt) (by ssoSrt), vB]
-  · intro i hi; exact ht2 i hi
-  · intro a ha; exact hm2 a ha
+  · omega
+  · omega
   · simp only
     rw [upd_other _ _ _ h0, hr2 r h3 h4, v1 r h1 h2 h3]
 
@@ -143,11 +141,7 @@ theorem ssAllocL_val (m f : ℕ → ℕ) :
 set_option maxRecDepth 20000 in
 theorem ssAllocL_ok {W : ℕ} (m f : ℕ → ℕ)
     (h : f ALLOC + 10 * f gRC ≤ W) : okW W m ssAllocL f := by
-  simp only [ALLOC, gRC, sw, Nat.reduceAdd] at h
-  simp only [ssAllocL, okW, okWI, regI, srSB, sB, srT, aB, ALLOC, sC, srJ, gRC, sw,
-    Nat.reduceAdd, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true, true_and,
-    and_true]
-  omega
+  simp_all [ALLOC, gRC, sw, Nat.reduceAdd, ssAllocL, okW, okWI, regI, srSB, sB, srT, aB, sC, srJ, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true, true_and, and_true] <;> omega_nf
 
 end
 
