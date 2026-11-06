@@ -96,7 +96,6 @@ theorem CombinedPointsWitness.orderedXZ_dist_le {P : AdmissibleParams}
     (points.consistent_XZ q p hqp)
   linarith
 
-
 end
 
 end MIPStarRE.QPBT

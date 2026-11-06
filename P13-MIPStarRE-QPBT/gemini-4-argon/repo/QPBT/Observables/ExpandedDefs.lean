@@ -70,12 +70,6 @@ inductive Placement where
   | AB''
   deriving DecidableEq, Repr, Inhabited
 
-instance instFintypePlacement : Fintype Placement where
-  elems := {.AA', .BA'', .BB', .AB''}
-  complete := by
-    intro placement
-    cases placement <;> simp
-
 /-- The strategy-player side supplying the local Hilbert space in each of the
 four register placements at paper
 `14_analysis_of_the_pauli_basis_test.tex:420-450`. -/
@@ -443,11 +437,6 @@ noncomputable def tauPointMeas (W : PauliKind)
     exact tauPointProj_nonneg W u) (by
     exact sum_tauPointProj_eq_one W u)
 
-/-- The effects of the Pauli point measurement are the point projectors. -/
-@[simp] theorem tauPointMeas_effect (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
-    (tauPointMeas W u).effect a = tauPointProj W u a := rfl
-
 /-- The fine product measurement underlying the convolution definition of an
 expanded point measurement. Its outcome records the strategy and Pauli point
 values separately. Paper
@@ -474,15 +463,6 @@ noncomputable def pointTauMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
         _ = 1 := by
           rw [(S.pointMeas side W u).sum_eq_one, sum_tauPointProj_eq_one]
           exact Matrix.one_kronecker_one)
-
-/-- Effects of the fine product measurement are the corresponding Kronecker
-products of strategy and Pauli point effects. -/
-@[simp] theorem pointTauMeas_effect (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
-    (p : PauliScalar P × PauliScalar P) :
-    (S.pointTauMeas side W u).effect p =
-      heteroKron ((S.pointMeas side W u).effect p.1)
-        (tauPointProj W u p.2) := rfl
 
 /-- Expanded point effects are positive semidefinite. This is the positivity
 obligation in `def:expanded-point-measurement`, paper

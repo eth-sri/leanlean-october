@@ -234,21 +234,6 @@ def directCombinedStrategy (D : DirectLdParams) (S : Strategy (directLdGame D)) 
     (S.B (directCombinedMeasuredQuestion D q)).postprocess
       (directCombinedAnswerMap D q)
 
-@[simp] theorem directCombinedStrategy_state (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) : (directCombinedStrategy D S).ψ = S.ψ := rfl
-
-@[simp] theorem directCombinedStrategy_A (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (q : DirectLdQuestion D.combined) :
-    (directCombinedStrategy D S).A q =
-      (S.A (directCombinedMeasuredQuestion D q)).postprocess
-        (directCombinedAnswerMap D q) := rfl
-
-@[simp] theorem directCombinedStrategy_B (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (q : DirectLdQuestion D.combined) :
-    (directCombinedStrategy D S).B q =
-      (S.B (directCombinedMeasuredQuestion D q)).postprocess
-        (directCombinedAnswerMap D q) := rfl
-
 /-- Projectivity transfer for `def:ld-combined-strategy`: each measurement of
 the combined strategy is a coarse-graining of a measurement of the original
 strategy, and coarse-graining preserves projectivity. -/

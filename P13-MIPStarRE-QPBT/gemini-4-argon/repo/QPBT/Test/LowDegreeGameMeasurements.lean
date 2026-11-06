@@ -3,7 +3,8 @@ module
 public import QPBT.Games.Consistency
 public import QPBT.Games.DistributionMarginals
 public import QPBT.Games.StrategyClasses
-public import QPBT.Games.TypedCondLinear
+public import QPBT.Games.CondLinear
+public import QPBT.Games.DistributionAux
 public import QPBT.Observables.LineDefs
 public import QPBT.Test.LowDegreeGame
 

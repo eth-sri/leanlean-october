@@ -233,15 +233,12 @@ the combined parameters of `def:ld-combining-parameters`, at the pass bound
 `lem:ld-combining-recovery`, into `deltaLd a b ε q m d k` in the nontrivial
 regime `0 < ε ≤ 1`.  Blueprint `ch13_qpbt_test.tex:693-722`; paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:413-458`. -/
-theorem exists_directCombinedTransportConstants :
-    ∃ a b : ℝ, 1 ≤ a ∧ 0 < b ∧ b ≤ 1 ∧
-      ∀ (D : DirectLdParams) (ε : ℝ), 0 < ε → ε ≤ 1 →
-        Test.mainFormalError D.combined.toLDTParameters
-              (directLdAuxParameter D.combined) (3 * (10 * ε)) +
-            ((D.combined.m * D.d : ℕ) : ℝ) / (D.q : ℝ) ≤
-          deltaLd a b ε D.q D.m D.d D.k := by
-  refine ⟨100000000000000000000000, 1 / 80000, by norm_num, by norm_num, by norm_num, ?_⟩
-  intro D ε hε0 hε1
+theorem exists_directCombinedTransportConstants
+    (D : DirectLdParams) (ε : ℝ) (hε0 : 0 < ε) (hε1 : ε ≤ 1) :
+    Test.mainFormalError D.combined.toLDTParameters
+          (directLdAuxParameter D.combined) (3 * (10 * ε)) +
+        ((D.combined.m * D.d : ℕ) : ℝ) / (D.q : ℝ) ≤
+      deltaLd 100000000000000000000000 (1 / 80000) ε D.q D.m D.d D.k := by
   have hm1 : (1 : ℝ) ≤ (D.m : ℝ) := by exact_mod_cast D.hm
   have hd1 : (1 : ℝ) ≤ (D.d : ℝ) := by exact_mod_cast D.hd
   have hk1 : (1 : ℝ) ≤ (D.k : ℝ) := by exact_mod_cast D.hk

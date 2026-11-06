@@ -1,7 +1,12 @@
 module
 
 public import QPBT.Combining.Witnesses
-public import QPBT.Games.Sandwich
+public import QPBT.Games.Sandwich.Pasting.Heterogeneous
+public import QPBT.Games.Sandwich.Pasting.Assembly
+public import QPBT.Games.Sandwich.Pasting.SchmidtMirror
+public import QPBT.Games.Sandwich.Support
+public import MIPStarRE.LDT.MakingMeasurementsProjective.NaimarkCore
+public import QPBT.Games.ErrorFunctions
 
 /-!
 # Combined X/Z line measurement

@@ -1,7 +1,8 @@
 module
 
-public import QPBT.Palomar.ExtractionBridge
-public import QPBT.Palomar.PauliExtraction
+public import QPBT.Palomar.Bridge
+public import QPBT.Palomar.Definitions
+public import QPBT.Test.QubitForm
 public import QPBT.Palomar.PauliGameStrategyBridge
 
 /-!
@@ -26,9 +27,6 @@ have not yet been converted to Lean's module system.
 namespace MIPStarRE.QPBT.Palomar
 
 noncomputable section
-
-attribute [local instance] compactPauliQuestionDecidableEq
-
 /-- The compact admissibility witness has the registered named proposition. -/
 theorem PauliParams.is_admissible_size (P : PauliParams) :
     MIPStarRE.QPBT.IsAdmissibleSize P.q :=
@@ -48,18 +46,6 @@ def PauliParams.toAdmissibleParams (P : PauliParams) :
 @[simp] theorem PauliParams.ofAdmissibleParams_toAdmissibleParams (P : PauliParams) :
     PauliParams.ofAdmissibleParams P.toAdmissibleParams = P := by
   cases P
-  rfl
-
-/-- Registered parameters are recovered exactly after conversion to the compact record. -/
-@[simp] theorem PauliParams.toAdmissibleParams_ofAdmissibleParams
-    (P : MIPStarRE.QPBT.AdmissibleParams) :
-    (PauliParams.ofAdmissibleParams P).toAdmissibleParams = P := by
-  cases P
-  rfl
-
-/-- The compact error function is definitionally the registered `deltaQld`. -/
-@[simp] theorem deltaQld_eq_library (a b epsilon : ℝ) (m d q : ℕ) :
-    deltaQld a b epsilon m d q = MIPStarRE.QPBT.deltaQld a b epsilon m d q :=
   rfl
 
 /-- The concrete compact SPCC predicate is exactly the transported symmetric-game predicate. -/

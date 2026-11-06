@@ -40,39 +40,20 @@ theorem pullingMeas_eval_point_consistent_alice {P : AdmissibleParams}
         (((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)).effect a))
       (fun u a => S.placePlayer .bob ((S.pointMeas .bob W u).effect a)) S.psiHat ≤
         deltaG := by
-  let mu := uniformDistribution (Fin P.m → PauliScalar P)
-  let pulled := fun u => S.blockMeasurement .alice
-    ((pullingMeas w .alice W).postprocess (fun g => evalPoly g u))
-  let point := fun u => S.placedMeasurement .BB' (leftPlacedMeasurement (S.pointMeas .bob W u))
-  let marginal := fun u => S.placedMeasurement .AA'
-    ((w.marginalPoly .alice W).postprocess (fun g => evalPoly g u))
-  let expanded := fun u => S.placedMeasurement .BA'' (S.pointMeasExp .bob W u)
-  have hp := consistencyDefect_eq_one_sub_overlap mu pulled point S.psiHat
-    (uniformDistribution_isProbability _) S.psiHat_norm
-  have hm := consistencyDefect_eq_one_sub_overlap mu marginal expanded S.psiHat
-    (uniformDistribution_isProbability _) S.psiHat_norm
-  have heq : consistencyDefect mu (fun u a => (pulled u).effect a)
-      (fun u a => (point u).effect a) S.psiHat =
-      consistencyDefect mu (fun u a => (marginal u).effect a)
-        (fun u a => (expanded u).effect a) S.psiHat := by
-    rw [hp, hm]
-    apply congrArg (1 - ·)
-    apply avgOver_congr
-    intro u
-    simp only [pulled, point, marginal, expanded, ProjectiveSetting.blockMeasurement_effect,
-      ProjectiveSetting.placedMeasurement_effect]
-    change (∑ a, stateQForm S.psiHat (S.placeSide .alice
-      (((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)).effect a) *
-      S.placePlayer .bob ((S.pointMeas .bob W u).effect a))) = _
-    rw [← stateQForm_finset_sum, sum_pullingMeas_eval_mul_pointMeas]
-    rw [← stateQForm_finset_sum]
-    exact congrArg (stateQForm S.psiHat)
-      (sum_marginalPoly_eval_mul w .AA' W u
-        (fun a => S.place .BA'' ((S.pointMeasExp .bob W u).effect a))).symm
-  have hbound := marginalPoly_pointMeas_consistent_alice w W
-  change consistencyDefect mu (fun u a => (marginal u).effect a)
-    (fun u a => (expanded u).effect a) S.psiHat ≤ deltaG at hbound
-  exact heq.le.trans hbound
+  refine le_of_eq_of_le ?_ (marginalPoly_pointMeas_consistent_alice w W)
+  rw [marginalPoly_pointMeasExp_consistencyDefect_eq]
+  have hp := consistencyDefect_eq_one_sub_overlap
+    (uniformDistribution (Fin P.m → PauliScalar P))
+    (fun u => S.blockMeasurement .alice
+      ((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)))
+    (fun u => S.placedMeasurement .BB' (leftPlacedMeasurement (S.pointMeas .bob W u)))
+    S.psiHat (uniformDistribution_isProbability _) S.psiHat_norm
+  refine hp.trans (congrArg (1 - ·) (avgOver_congr _ _ _ fun u => ?_))
+  change (∑ a, stateQForm S.psiHat (S.placeSide .alice
+    (((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)).effect a) *
+    S.placePlayer .bob ((S.pointMeas .bob W u).effect a))) = _
+  rw [← stateQForm_finset_sum, sum_pullingMeas_eval_mul_pointMeas, stateQForm_finset_sum]
+  rfl
 
 /-- Bob's evaluation defect has the same bound, using the Bob point-consistency
 estimate of the supplied witness and its `BB'`--`AB''` placements. -/
@@ -84,39 +65,20 @@ theorem pullingMeas_eval_point_consistent_bob {P : AdmissibleParams}
       (fun u a => S.placeSide .bob
         (((pullingMeas w .bob W).postprocess (fun g => evalPoly g u)).effect a)) S.psiHat ≤
         deltaG := by
-  let mu := uniformDistribution (Fin P.m → PauliScalar P)
-  let pulled := fun u => S.blockMeasurement .bob
-    ((pullingMeas w .bob W).postprocess (fun g => evalPoly g u))
-  let point := fun u => S.placedMeasurement .AA' (leftPlacedMeasurement (S.pointMeas .alice W u))
-  let marginal := fun u => S.placedMeasurement .BB'
-    ((w.marginalPoly .bob W).postprocess (fun g => evalPoly g u))
-  let expanded := fun u => S.placedMeasurement .AB'' (S.pointMeasExp .alice W u)
-  have hp := consistencyDefect_eq_one_sub_overlap mu point pulled S.psiHat
-    (uniformDistribution_isProbability _) S.psiHat_norm
-  have hm := consistencyDefect_eq_one_sub_overlap mu marginal expanded S.psiHat
-    (uniformDistribution_isProbability _) S.psiHat_norm
-  have heq : consistencyDefect mu (fun u a => (point u).effect a)
-      (fun u a => (pulled u).effect a) S.psiHat =
-      consistencyDefect mu (fun u a => (marginal u).effect a)
-        (fun u a => (expanded u).effect a) S.psiHat := by
-    rw [hp, hm]
-    apply congrArg (1 - ·)
-    apply avgOver_congr
-    intro u
-    simp only [pulled, point, marginal, expanded, ProjectiveSetting.blockMeasurement_effect,
-      ProjectiveSetting.placedMeasurement_effect]
-    change (∑ a, stateQForm S.psiHat
-      (S.placePlayer .alice ((S.pointMeas .alice W u).effect a) * S.placeSide .bob
-        (((pullingMeas w .bob W).postprocess (fun g => evalPoly g u)).effect a))) = _
-    rw [← stateQForm_finset_sum, sum_pointMeas_mul_pullingMeas_eval]
-    rw [← stateQForm_finset_sum]
-    exact congrArg (stateQForm S.psiHat)
-      (sum_marginalPoly_eval_mul w .BB' W u
-        (fun a => S.place .AB'' ((S.pointMeasExp .alice W u).effect a))).symm
-  have hbound := marginalPoly_pointMeas_consistent_bob w W
-  change consistencyDefect mu (fun u a => (marginal u).effect a)
-    (fun u a => (expanded u).effect a) S.psiHat ≤ deltaG at hbound
-  exact heq.le.trans hbound
+  refine le_of_eq_of_le ?_ (marginalPoly_pointMeas_consistent_bob w W)
+  rw [marginalPoly_pointMeasExp_consistencyDefect_eq]
+  have hp := consistencyDefect_eq_one_sub_overlap
+    (uniformDistribution (Fin P.m → PauliScalar P))
+    (fun u => S.placedMeasurement .AA' (leftPlacedMeasurement (S.pointMeas .alice W u)))
+    (fun u => S.blockMeasurement .bob
+      ((pullingMeas w .bob W).postprocess (fun g => evalPoly g u)))
+    S.psiHat (uniformDistribution_isProbability _) S.psiHat_norm
+  refine hp.trans (congrArg (1 - ·) (avgOver_congr _ _ _ fun u => ?_))
+  change (∑ a, stateQForm S.psiHat
+    (S.placePlayer .alice ((S.pointMeas .alice W u).effect a) * S.placeSide .bob
+      (((pullingMeas w .bob W).postprocess (fun g => evalPoly g u)).effect a))) = _
+  rw [← stateQForm_finset_sum, sum_pointMeas_mul_pullingMeas_eval, stateQForm_finset_sum]
+  rfl
 
 /-- Tensoring the strategy state with the two normalized EPR states preserves
 the point-measurement consistency defect. This is the six-register form of

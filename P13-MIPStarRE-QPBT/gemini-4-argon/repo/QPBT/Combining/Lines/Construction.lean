@@ -2,7 +2,10 @@ module
 
 public import QPBT.Combining.Lines.Conditioning
 public import QPBT.Combining.ErrorBounds
-public import QPBT.Combining.ExplicitScalarBounds
+public import QPBT.Combining.PassingError
+public import QPBT.Combining.DirectLowDegree.Transport.Error
+public import QPBT.ExplicitConstants
+public import QPBT.Games.Sandwich.Pasting.Heterogeneous
 
 /-!
 # Construction of consistent combined lines
@@ -41,13 +44,6 @@ def bbAbBipartition (params : AdmissibleParams) (left right : Type*) :
     (indices.1.1, (indices.1.2, indices.2.1.2)))
   left_inv indices := by cases indices; rfl
   right_inv indices := by cases indices; rfl
-
-/-- Coordinates of the `BB' | AB''(A'A'')` bipartition. -/
-@[simp] theorem bbAbBipartition_apply (params : AdmissibleParams) (left right : Type*)
-    (indices : SixReg params left right) :
-    bbAbBipartition params left right indices =
-      ((indices.2.1, indices.2.2.1),
-        ((indices.1.1, indices.2.2.2), (indices.1.2.1, indices.1.2.2))) := rfl
 
 set_option synthInstance.maxSize 400 in
 /-- Every directed opposite placement has an actual heterogeneous

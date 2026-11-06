@@ -36,7 +36,7 @@ def pauliBaselinePointConstant : ℝ :=
     24 * pauliBaselineTwistedConstant + 11008
 
 /-- The one-coordinate direct low-degree coefficient used by the current proof. -/
-def pauliBaselineLowDegreeConstant : ℝ := 2500000000
+def pauliBaselineLowDegreeConstant : ℝ := 100000000000000000000000
 
 /-- The one-coordinate direct low-degree power used by the current proof. -/
 def pauliBaselineLowDegreePower : ℝ := 1 / 80000

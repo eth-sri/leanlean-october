@@ -337,9 +337,6 @@ noncomputable def ldAnswerEquiv (P : LdParams) :
         | inl a => rfl
         | inr a => rfl
 
-instance instInhabitedLdAnswer (P : LdParams) : Inhabited (LdAnswer P) :=
-  ⟨.pointVals (fun _ => 0)⟩
-
 noncomputable instance instFintypeLdAnswer (P : LdParams) : Fintype (LdAnswer P) :=
   Fintype.ofEquiv (LdAnswerCode P) (ldAnswerEquiv P).symm
 

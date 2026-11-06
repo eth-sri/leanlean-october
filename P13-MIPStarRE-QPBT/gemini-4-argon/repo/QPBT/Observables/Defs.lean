@@ -45,12 +45,6 @@ inductive PlayerSide where
   | bob
   deriving DecidableEq, Repr, Inhabited
 
-instance instFintypePlayerSide : Fintype PlayerSide where
-  elems := {.alice, .bob}
-  complete := by
-    intro side
-    cases side <;> simp
-
 /-- A projective strategy satisfying the winning premise used throughout
 Section `sec:commutation`. The structure retains the distinct player spaces and
 measurement families of `Strategy`. Paper
@@ -412,6 +406,53 @@ theorem pointObs_isHermitian (S : ProjectiveSetting P ε) (side : PlayerSide)
     ((S.pointMeas side W u).pos a)).isHermitian.eq]
 
 end ProjectiveSetting
+
+set_option maxRecDepth 20000 in
+theorem pauliQuestionDistribution_symm (P : AdmissibleParams)
+    (x y : PauliQuestion P) :
+    (pauliQuestionDistribution P).weight (x, y) =
+      (pauliQuestionDistribution P).weight (y, x) := by
+  classical
+  have : Nonempty PauliEdge := pauliEdge_nonempty
+  unfold pauliQuestionDistribution
+  rw [uniformDistribution_map_weight, uniformDistribution_map_weight]
+  refine congrArg (fun n : ℕ => (n : Error) * (1 / Fintype.card (PauliEdge × PauliSpace P)))
+    (Finset.card_bij (fun s _ => (⟨s.1.1.swap, by simpa [Sym2.eq_swap] using s.1.2⟩, s.2))
+      (fun s hs => ?_) (fun s₁ _ s₂ _ h => ?_) (fun s hs => ?_))
+  · simp only [Finset.mem_filter, Finset.mem_univ, true_and, Prod.mk.injEq] at hs ⊢
+    exact ⟨hs.2, hs.1⟩
+  · exact Prod.ext (Subtype.ext (Prod.ext (congrArg (fun p => p.1.1.2) h)
+      (congrArg (fun p => p.1.1.1) h))) (congrArg (fun p => p.2) h)
+  · refine ⟨(⟨s.1.1.swap, by simpa [Sym2.eq_swap] using s.1.2⟩, s.2), ?_,
+      Prod.ext (Subtype.ext (Prod.ext rfl rfl)) rfl⟩
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Prod.mk.injEq] at hs ⊢
+    exact ⟨hs.2, hs.1⟩
+
+theorem pauliWinPredicate_symm (P : AdmissibleParams)
+    (x y : PauliQuestion P) (a b : PauliAnswer P) :
+    pauliWinPredicate P x y a b = pauliWinPredicate P y x b a := by
+  obtain ⟨tA, xA⟩ := x
+  obtain ⟨tB, xB⟩ := y
+  dsimp only [pauliWinPredicate]
+  by_cases hT : tA = tB
+  · subst hT
+    rw [if_pos (rfl : tA = tA), if_pos (rfl : tA = tA)]
+    rw [Bool.and_comm (validPauliAnswer tA b) (validPauliAnswer tA a)]
+    exact congrArg (fun c => if validPauliAnswer tA a && validPauliAnswer tA b then c
+      else false) (decide_eq_decide.mpr eq_comm)
+  · cases hvA : validPauliAnswer tA a
+    · cases validPauliAnswer tB b <;> rfl
+    · cases hvB : validPauliAnswer tB b
+      · rfl
+      · rw [Bool.true_and, if_pos (rfl : true = true),
+          if_pos (rfl : true = true), if_neg hT, if_neg (Ne.symm hT)]
+        rcases tA with (_|_)|(_|_)|(_|_)|(_|_)|(_|_)|_|(iA|jA) <;>
+          rcases a with uA|fA|gA|bitsA|bitA|trA|hhA <;>
+          (try exact Bool.noConfusion hvA) <;>
+          rcases tB with (_|_)|(_|_)|(_|_)|(_|_)|(_|_)|_|(iB|jB) <;>
+          rcases b with uB|fB|gB|bitsB|bitB|trB|hhB <;>
+          (try exact Bool.noConfusion hvB) <;>
+          rfl
 
 end
 

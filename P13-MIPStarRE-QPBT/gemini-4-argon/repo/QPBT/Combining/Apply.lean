@@ -4,11 +4,20 @@ public import QPBT.Combining.Points
 public import QPBT.Combining.PairCompletion
 public import QPBT.Combining.ExtendedLines.Estimates
 public import QPBT.Combining.ActualErrorBounds
-public import QPBT.Combining.ExplicitScalarBounds
+public import QPBT.Combining.ErrorBounds
+public import QPBT.Combining.PassingError
+public import QPBT.Combining.DirectLowDegree.Transport.Error
+public import QPBT.ExplicitConstants
+public import QPBT.Games.Sandwich.Pasting.Heterogeneous
 public import QPBT.Combining.ExtendedLineGame.PairPointConsistency
-public import QPBT.Combining.PointErrorObstruction
-public import QPBT.Combining.ErrorObstruction
-public import QPBT.Combining.Lines.SubLineJoint
+public import QPBT.Combining.Witnesses
+public import QPBT.Games.ErrorFunctions
+public import QPBT.Test.PauliBasisTest
+public import Mathlib.Analysis.SpecificLimits.Basic
+public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+public import QPBT.Combining.Lines.SubLineMixture
+public import QPBT.Combining.Lines.RestrictedAverage
+public import QPBT.Combining.Lines.ConsistencyPositivity
 public import QPBT.Test.SoundnessDefs
 
 /-!

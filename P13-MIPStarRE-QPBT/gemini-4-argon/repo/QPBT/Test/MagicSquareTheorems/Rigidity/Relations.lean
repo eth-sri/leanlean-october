@@ -75,14 +75,6 @@ theorem ms_support_card_le :
       Finset.card_image_le
     _ = 36 := by norm_num
 
-/-- A constraint-to-variable incidence belongs to the question support. -/
-theorem ms_forward_incidence_mem_support (i : Fin 6) (k : Fin 3) :
-    (.constraint i, .var (msConstraintVars i k)) ∈
-      (graphDistribution msEdges msEdges_nonempty).support := by
-  apply Finset.mem_filter.mpr
-  refine ⟨Finset.mem_univ _, ?_⟩
-  exact Finset.mem_image.mpr ⟨(i, k), Finset.mem_univ _, rfl⟩
-
 /-- A variable-to-constraint incidence belongs to the question support. -/
 theorem ms_reverse_incidence_mem_support (i : Fin 6) (k : Fin 3) :
     (.var (msConstraintVars i k), .constraint i) ∈
@@ -115,10 +107,6 @@ theorem ms_question_weight_ge {xy : MsType × MsType}
 
 private instance msWinFalseDecidableRel (x y : MsType) :
     DecidableRel (fun a b : MsAnswer => msWinPredicate x y a b = false) :=
-  fun _ _ => inferInstance
-
-private instance msWinTrueDecidableRel (x y : MsType) :
-    DecidableRel (fun a b : MsAnswer => msWinPredicate x y a b = true) :=
   fun _ _ => inferInstance
 
 /-- The rejection mass conditioned on a question pair. -/
@@ -250,35 +238,10 @@ def constraintBitOrZero (k : Fin 3) : MsAnswer → ZMod 2
   | .triple β => β k
   | .bit _ => 0
 
-/-- Whether an answer has the wrong form for a variable question. -/
-def wrongVariableAnswer : MsAnswer → Bool
-  | .triple _ => true
-  | .bit _ => false
-
 /-- Whether an answer has the wrong form for a constraint question. -/
 def wrongConstraintAnswer : MsAnswer → Bool
   | .triple _ => false
   | .bit _ => true
-
-private instance wrongVariableAnswerLeftDecidableRel :
-    DecidableRel (fun a _ : MsAnswer => wrongVariableAnswer a = true) :=
-  fun _ _ => inferInstance
-
-private instance wrongVariableAnswerRightDecidableRel :
-    DecidableRel (fun _ b : MsAnswer => wrongVariableAnswer b = true) :=
-  fun _ _ => inferInstance
-
-private instance wrongConstraintAnswerLeftDecidableRel :
-    DecidableRel (fun a _ : MsAnswer => wrongConstraintAnswer a = true) :=
-  fun _ _ => inferInstance
-
-private instance wrongConstraintAnswerRightDecidableRel :
-    DecidableRel (fun _ b : MsAnswer => wrongConstraintAnswer b = true) :=
-  fun _ _ => inferInstance
-
-private instance forwardCellMismatchDecidableRel (k : Fin 3) :
-    DecidableRel (fun a b : MsAnswer => constraintBitOrZero k a ≠ msBitOrZero b) :=
-  fun _ _ => inferInstance
 
 private instance reverseCellMismatchDecidableRel (k : Fin 3) :
     DecidableRel (fun a b : MsAnswer => msBitOrZero a ≠ constraintBitOrZero k b) :=
@@ -294,42 +257,13 @@ theorem constraint_vars_injective (i : Fin 6) : Function.Injective (msConstraint
 /-- Every Magic Square variable is incident to a row constraint. -/
 theorem every_variable_is_incident (j : Fin 9) :
     ∃ i : Fin 6, ∃ k : Fin 3, msConstraintVars i k = j := by
-  let i : Fin 6 := ⟨j.val / 3, by omega⟩
-  let k : Fin 3 := ⟨j.val % 3, Nat.mod_lt _ (by omega)⟩
-  refine ⟨i, k, ?_⟩
-  apply Fin.ext
-  simp only [msConstraintVars, i, k]
-  rw [if_pos (by omega)]
-  omega
-
-/-- The forward-incidence mass on which the two totalized cell bits disagree. -/
-noncomputable def forwardCellMismatchMass (S : Strategy msGame)
-    (i : Fin 6) (k : Fin 3) : ℝ :=
-  @outcomeEventWeight msGame S (.constraint i) (.var (msConstraintVars i k))
-    (fun a b => constraintBitOrZero k a ≠ msBitOrZero b) (fun _ _ => inferInstance)
+  revert j; decide
 
 /-- The reverse-incidence mass on which the two totalized cell bits disagree. -/
 noncomputable def reverseCellMismatchMass (S : Strategy msGame)
     (i : Fin 6) (k : Fin 3) : ℝ :=
   @outcomeEventWeight msGame S (.var (msConstraintVars i k)) (.constraint i)
     (fun a b => msBitOrZero a ≠ constraintBitOrZero k b) (fun _ _ => inferInstance)
-
-private theorem forward_cell_mismatch_rejects (i : Fin 6) (k : Fin 3)
-    (a b : MsAnswer) (hmismatch : constraintBitOrZero k a ≠ msBitOrZero b) :
-    msWinPredicate (.constraint i) (.var (msConstraintVars i k)) a b = false := by
-  cases a with
-  | bit γa => rfl
-  | triple β =>
-      cases b with
-      | triple βb => rfl
-      | bit γ =>
-          simp only [constraintBitOrZero, msBitOrZero] at hmismatch
-          rw [msWinPredicate, decide_eq_false_iff_not]
-          intro haccept
-          rcases haccept.2 with ⟨l, hl, hbit⟩
-          have hlk : l = k := constraint_vars_injective i hl
-          subst l
-          exact hmismatch hbit
 
 private theorem reverse_cell_mismatch_rejects (i : Fin 6) (k : Fin 3)
     (a b : MsAnswer) (hmismatch : msBitOrZero a ≠ constraintBitOrZero k b) :
@@ -347,19 +281,6 @@ private theorem reverse_cell_mismatch_rejects (i : Fin 6) (k : Fin 3)
           have hlk : l = k := constraint_vars_injective i hl
           subst l
           exact hmismatch hbit.symm
-
-/-- Every forward directed incidence has cell-mismatch mass at most `36 * ε`. -/
-theorem forward_cell_mismatch_mass_le (S : Strategy msGame) (ε : ℝ)
-    (hwin : 1 - ε ≤ S.value) (i : Fin 6) (k : Fin 3) :
-    forwardCellMismatchMass S i k ≤ 36 * ε := by
-  unfold forwardCellMismatchMass
-  calc
-    outcomeEventWeight S (.constraint i) (.var (msConstraintVars i k))
-        (fun a b => constraintBitOrZero k a ≠ msBitOrZero b) ≤
-        rejectionMass S (.constraint i) (.var (msConstraintVars i k)) :=
-      outcome_event_weight_le_rejection_mass S _ _ _ (forward_cell_mismatch_rejects i k)
-    _ ≤ 36 * ε :=
-      rejection_mass_le S ε hwin (ms_forward_incidence_mem_support i k)
 
 /-- Every reverse directed incidence has cell-mismatch mass at most `36 * ε`. -/
 theorem reverse_cell_mismatch_mass_le (S : Strategy msGame) (ε : ℝ)
@@ -408,14 +329,6 @@ def constraintParityProduct : MsAnswer → ℝ
 def ConstraintParityFailure (i : Fin 6) (a : MsAnswer) : Prop :=
   constraintParityProduct a ≠ bitSign (msParity i)
 
-private noncomputable instance constraintParityFailureLeftDecidableRel (i : Fin 6) :
-    DecidableRel (fun a _ : MsAnswer => ConstraintParityFailure i a) :=
-  fun a _ => Classical.propDecidable (ConstraintParityFailure i a)
-
-private noncomputable instance constraintParityFailureRightDecidableRel (i : Fin 6) :
-    DecidableRel (fun _ b : MsAnswer => ConstraintParityFailure i b) :=
-  fun _ b => Classical.propDecidable (ConstraintParityFailure i b)
-
 /-- Equality of the real parity signs is classically decidable on the finite
 Magic Square answer alphabet. -/
 noncomputable instance constraintParityFailureDecidablePred (i : Fin 6) :
@@ -431,33 +344,10 @@ theorem wrong_constraint_answer_implies_parity_failure (i : Fin 6) (a : MsAnswer
       unfold ConstraintParityFailure constraintParityProduct
       exact (bit_sign_ne_zero (msParity i)).symm
 
-/-- Alice's local failure mass for the row or column sign product. -/
-noncomputable def aliceParityFailureMass (S : Strategy msGame) (i : Fin 6) : ℝ :=
-  @aliceEventWeight msGame S (.constraint i) (ConstraintParityFailure i)
-    (constraintParityFailureDecidablePred i)
-
 /-- Bob's local failure mass for the row or column sign product. -/
 noncomputable def bobParityFailureMass (S : Strategy msGame) (i : Fin 6) : ℝ :=
   @bobEventWeight msGame S (.constraint i) (ConstraintParityFailure i)
     (constraintParityFailureDecidablePred i)
-
-private theorem forward_parity_failure_rejects (i : Fin 6) (k : Fin 3)
-    (a b : MsAnswer) (hparity : ConstraintParityFailure i a) :
-    msWinPredicate (.constraint i) (.var (msConstraintVars i k)) a b = false := by
-  cases a with
-  | bit δ => rfl
-  | triple β =>
-      cases b with
-      | triple βb => rfl
-      | bit γ =>
-          rw [msWinPredicate, decide_eq_false_iff_not]
-          intro haccept
-          apply hparity
-          unfold constraintParityProduct
-          calc
-            (∏ l : Fin 3, bitSign (β l)) = bitSign (∑ l : Fin 3, β l) :=
-              (bit_sign_sum_fin_three β).symm
-            _ = bitSign (msParity i) := by rw [haccept.1]
 
 private theorem reverse_parity_failure_rejects (i : Fin 6) (k : Fin 3)
     (a b : MsAnswer) (hparity : ConstraintParityFailure i b) :
@@ -476,20 +366,6 @@ private theorem reverse_parity_failure_rejects (i : Fin 6) (k : Fin 3)
             (∏ l : Fin 3, bitSign (β l)) = bitSign (∑ l : Fin 3, β l) :=
               (bit_sign_sum_fin_three β).symm
             _ = bitSign (msParity i) := by rw [haccept.1]
-
-/-- Alice satisfies each of the six row or column sign products up to mass `36 * ε`. -/
-theorem alice_parity_failure_mass_le (S : Strategy msGame) (ε : ℝ)
-    (hwin : 1 - ε ≤ S.value) (i : Fin 6) :
-    aliceParityFailureMass S i ≤ 36 * ε := by
-  unfold aliceParityFailureMass
-  rw [← outcome_event_weight_left_eq S (.constraint i) (.var (msConstraintVars i 0))]
-  calc
-    outcomeEventWeight S (.constraint i) (.var (msConstraintVars i 0))
-        (fun a _ => ConstraintParityFailure i a) ≤
-        rejectionMass S (.constraint i) (.var (msConstraintVars i 0)) :=
-      outcome_event_weight_le_rejection_mass S _ _ _ (forward_parity_failure_rejects i 0)
-    _ ≤ 36 * ε :=
-      rejection_mass_le S ε hwin (ms_forward_incidence_mem_support i 0)
 
 /-- Bob satisfies each of the six row or column sign products up to mass `36 * ε`. -/
 theorem bob_parity_failure_mass_le (S : Strategy msGame) (ε : ℝ)

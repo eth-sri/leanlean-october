@@ -1,7 +1,7 @@
 module
 
 public import QPBT.Extraction.Consistency
-public import QPBT.Extraction.PointConsistencyPrime
+public import QPBT.Extraction.PointConsistency
 
 /-!
 # Measurements on extraction blocks
@@ -34,25 +34,10 @@ variable {P : AdmissibleParams} {epsilon : ℝ} (S : ProjectiveSetting P epsilon
 /-- Place a complete measurement on a player's full extraction block. -/
 def blockMeasurement (side : PlayerSide) {α : Type*} [Fintype α]
     (A : Measurement α (ExtractionBlock P (S.LocalSpace side))) :
-    Measurement α (SixReg P S.toStrategy.ιA S.toStrategy.ιB) := by
-  refine Measurement.ofSumEqOne (fun a => S.placeSide side (A.effect a)) ?_ ?_
-  · intro a
-    cases side
-    · exact reindexOp_nonneg _ (kronecker_nonneg (A.pos a) Matrix.PosSemidef.one.nonneg)
-    · exact reindexOp_nonneg _ (kronecker_nonneg Matrix.PosSemidef.one.nonneg (A.pos a))
-  · cases side
-    · rw [← S.placeSide_alice_finset_sum, A.sum_eq_one]
-      change reindexOp _ (heteroKron (1 : Op (ExtractionBlock P S.toStrategy.ιA))
-        (1 : Op (ExtractionBlock P S.toStrategy.ιB))) = 1
-      rw [heteroKron_one_one]
-      ext row col
-      simp [reindexOp, Matrix.one_apply]
-    · rw [← S.placeSide_bob_finset_sum, A.sum_eq_one]
-      change reindexOp _ (heteroKron (1 : Op (ExtractionBlock P S.toStrategy.ιA))
-        (1 : Op (ExtractionBlock P S.toStrategy.ιB))) = 1
-      rw [heteroKron_one_one]
-      ext row col
-      simp [reindexOp, Matrix.one_apply]
+    Measurement α (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
+  Measurement.ofSumEqOne (fun a => S.placeSide side (A.effect a))
+    (fun a => S.placeSide_nonneg side (A.pos a))
+    (by rw [← S.placeSide_finset_sum, A.sum_eq_one, S.placeSide_one])
 
 /-- The effects of a block measurement use the existing block placement. -/
 @[simp] theorem blockMeasurement_effect (side : PlayerSide) {α : Type*} [Fintype α]

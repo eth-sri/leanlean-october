@@ -508,7 +508,6 @@ theorem SubLineWitness.extendedMeasurement_axis_degree {params : AdmissibleParam
     · exact lines.axis_degree_Z side _ _ _ _ hsource.2 hdegreeZ
   · exact lines.axis_degree_X side _ _ _ _ hsource.1 hdegreeX
 
-
 end
 
 end MIPStarRE.QPBT

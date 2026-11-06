@@ -216,11 +216,6 @@ theorem directDiagonalAnswerEquiv_apply (D : DirectLdParams)
   hk := L.hk
   hq := L.hq
 
-@[simp] theorem LdParams.toDirectLdParams_model (L : LdParams) :
-    L.toDirectLdParams.model = L.model := by
-  unfold DirectLdParams.model LdParams.model LdParams.toDirectLdParams
-  congr
-
 /-- The canonical answer equivalence between the seed-indexed and directly
 indexed QPBT games: point answers correspond to point answers, axis-line
 answers to axis-line answers, and diagonal-line answers to diagonal-line

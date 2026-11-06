@@ -1,7 +1,11 @@
 module
 
 public import QPBT.Combining.DirectPassingErrorBounds
-public import QPBT.Combining.ExplicitScalarBounds
+public import QPBT.Combining.ErrorBounds
+public import QPBT.Combining.PassingError
+public import QPBT.Combining.DirectLowDegree.Transport.Error
+public import QPBT.ExplicitConstants
+public import QPBT.Games.Sandwich.Pasting.Heterogeneous
 public import QPBT.Combining.RootErrorBounds
 
 /-! # Absorption of the actual rounded polynomial-pair error

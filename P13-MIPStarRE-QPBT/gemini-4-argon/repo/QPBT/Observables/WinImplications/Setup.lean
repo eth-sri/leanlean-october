@@ -38,13 +38,6 @@ noncomputable def ProjectiveSetting.swappedState
   reindexState (Equiv.prodComm S.toStrategy.ιA S.toStrategy.ιB)
     S.toStrategy.ψ
 
-/-- The space of Pauli question pairs is finite because the underlying field
-model is finite. Paper `14_analysis_of_the_pauli_basis_test.tex:197-199`;
-blueprint `lem:qld-win-implications`. -/
-noncomputable instance pauliQuestionPairFintype (P : AdmissibleParams) :
-    Fintype (PauliQuestion P × PauliQuestion P) :=
-  Fintype.ofFinite _
-
 /-- Equality of Pauli question pairs is decidable. This is used in the
 consistency defect from item 1 of blueprint
 `lem:qld-win-implications`. -/

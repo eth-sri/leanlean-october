@@ -1,7 +1,13 @@
 module
 
 public import QPBT.Combining.DirectLowDegree.Transport.Combining.Recovery
-public import QPBT.Games.Sandwich
+public import QPBT.Games.Sandwich.Pasting.Heterogeneous
+public import QPBT.Games.Sandwich.Pasting.Assembly
+public import QPBT.Games.Sandwich.Pasting.SchmidtMirror
+public import QPBT.Games.Sandwich.Support
+public import MIPStarRE.LDT.MakingMeasurementsProjective.NaimarkCore
+public import QPBT.Games.ErrorFunctions
+public import QPBT.Observables.WinImplications.FactorTransport
 
 /-!
 # Transporting a consistency relation along the recovery step
@@ -77,22 +83,6 @@ private theorem diagonalRight_pair_sum {β Γ ιA ιB : Type*}
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
     heteroKron_finset_sum_right, stateQForm_finset_sum, Finset.sum_filter]
 
-/-- The diagonal overlap of a relabelled measurement against a measurement on
-the opposite factor, with the relabelled measurement on the first factor. -/
-private theorem diagonalLeft_pair_sum {β Γ ιA ιB : Type*}
-    [Fintype β] [DecidableEq β] [Fintype Γ] [DecidableEq Γ]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (A : Measurement β ιB) (B : Measurement Γ ιA)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (f : Γ → β) :
-    (∑ b : β, stateQForm ψ
-      (heteroKron ((B.postprocess f).effect b) (A.effect b))) =
-      ∑ b : β, ∑ g : Γ, if f g = b then
-        stateQForm ψ (heteroKron (B.effect g) (A.effect b)) else 0 := by
-  classical
-  refine Finset.sum_congr rfl fun b _ => ?_
-  rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
-    heteroKron_finset_sum_left, stateQForm_finset_sum, Finset.sum_filter]
-
 /-- The diagonal overlap of two relabelled measurements on opposite factors is
 the sum over pairs of outcomes with matching labels. -/
 private theorem diagonalPair_pair_sum {β Γ R ιA ιB : Type*}
@@ -116,46 +106,6 @@ private theorem diagonalPair_pair_sum {β Γ R ιA ιB : Type*}
     refine Finset.sum_congr rfl fun b _ => ?_
     by_cases hb : e b = r
     · rw [if_pos hb, heteroKron_finset_sum_right, stateQForm_finset_sum,
-        Finset.sum_filter]
-      refine Finset.sum_congr rfl fun g _ => ?_
-      by_cases hg : f g = r <;> simp [hb, hg]
-    · simp [hb]
-  simp_rw [hterm]
-  rw [Finset.sum_comm]
-  refine Finset.sum_congr rfl fun b _ => ?_
-  rw [Finset.sum_comm]
-  refine Finset.sum_congr rfl fun g _ => ?_
-  by_cases hbg : e b = f g
-  · rw [hbg]
-    simp
-  · refine Eq.trans (Finset.sum_eq_zero fun r _ => ?_) (by simp [hbg])
-    simp only [ite_eq_right_iff]
-    intro hpair
-    exact (hbg (hpair.1.trans hpair.2.symm)).elim
-
-/-- The diagonal overlap of two relabelled measurements on opposite factors,
-with the second measurement on the first tensor factor. -/
-private theorem diagonalPairLeft_pair_sum {β Γ R ιA ιB : Type*}
-    [Fintype β] [DecidableEq β] [Fintype Γ] [DecidableEq Γ]
-    [Fintype R] [DecidableEq R]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (A : Measurement β ιB) (B : Measurement Γ ιA)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (e : β → R) (f : Γ → R) :
-    (∑ r : R, stateQForm ψ
-      (heteroKron ((B.postprocess f).effect r) ((A.postprocess e).effect r))) =
-      ∑ b : β, ∑ g : Γ, if e b = f g then
-        stateQForm ψ (heteroKron (B.effect g) (A.effect b)) else 0 := by
-  classical
-  have hterm (r : R) : stateQForm ψ
-      (heteroKron ((B.postprocess f).effect r) ((A.postprocess e).effect r)) =
-      ∑ b : β, ∑ g : Γ, if e b = r ∧ f g = r then
-        stateQForm ψ (heteroKron (B.effect g) (A.effect b)) else 0 := by
-    rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
-      MIPStarRE.Quantum.Measurement.postprocess_effect,
-      heteroKron_finset_sum_right, stateQForm_finset_sum, Finset.sum_filter]
-    refine Finset.sum_congr rfl fun b _ => ?_
-    by_cases hb : e b = r
-    · rw [if_pos hb, heteroKron_finset_sum_left, stateQForm_finset_sum,
         Finset.sum_filter]
       refine Finset.sum_congr rfl fun g _ => ?_
       by_cases hg : f g = r <;> simp [hb, hg]
@@ -429,85 +379,10 @@ theorem consistencyDefect_le_of_recoveryBound_right
         (fun z r => heteroKron ((B.postprocess (f₁ z.1 z.2)).effect r) 1)
         (fun z r => heteroKron 1
           (((A z.1).postprocess (e₁ z.1 z.2)).effect r)) ψ + η := by
-  classical
-  set w : X → β → Γ → ℝ := fun x b g =>
-    stateQForm ψ (heteroKron (B.effect g) ((A x).effect b)) with hwdef
-  have hwnonneg : ∀ x b g, 0 ≤ w x b g := fun x b g =>
-    stateQForm_nonneg ψ (MIPStarRE.Quantum.kronecker_nonneg (B.pos g) ((A x).pos b))
-  set W : Γ → ℝ := fun g => stateQForm ψ (heteroKron (B.effect g) (1 : Op ιB))
-    with hWdef
-  have hWnonneg : ∀ g, 0 ≤ W g := fun g =>
-    stateQForm_nonneg ψ (MIPStarRE.Quantum.kronecker_nonneg (B.pos g)
-      (Matrix.PosSemidef.one.nonneg : (0 : Op ιB) ≤ 1))
-  have hfiber : ∀ x g, (∑ b : β, w x b g) = W g := by
-    intro x g
-    rw [hwdef, hWdef]
-    simp only
-    rw [← (A x).sum_eq_one, heteroKron_finset_sum_right, stateQForm_finset_sum]
-  have hWsum : (∑ g : Γ, W g) = 1 := by
-    rw [hWdef]
-    simp only
-    rw [← stateQForm_finset_sum, ← heteroKron_finset_sum_left, B.sum_eq_one,
-      heteroKron_one_one, stateQForm_one, hψ, one_pow]
-  set AgrG : X → ℝ := fun x =>
-    ∑ b : β, ∑ g : Γ, if f x g = b then w x b g else 0 with hAgrG
-  set AgrH : X → Y → ℝ := fun x y =>
-    ∑ b : β, ∑ g : Γ, if e₁ x y b = f₁ x y g then w x b g else 0 with hAgrH
-  have hgoal : consistencyDefect (uniformDistribution X)
-      (fun x b => heteroKron ((B.postprocess (f x)).effect b) 1)
-      (fun x b => heteroKron 1 ((A x).effect b)) ψ =
-      1 - avgOver (uniformDistribution X) AgrG := by
-    rw [consistencyDefect_placed_eq_avg_point (uniformDistribution X)
-      (fun x => B.postprocess (f x)) A]
-    have hpoint : ∀ x : X,
-        (∑ b : β, ∑ b' : β, if b = b' then 0 else stateQForm ψ
-          (heteroKron ((B.postprocess (f x)).effect b) ((A x).effect b'))) =
-          1 - AgrG x := by
-      intro x
-      have h := point_defect_eq
-        (leftPlacedMeasurement (ιB := ιB) (B.postprocess (f x)))
-        (rightPlacedMeasurement (ιA := ιA) (A x)) ψ
-      simp only [leftPlacedMeasurement, rightPlacedMeasurement,
-        MIPStarRE.Quantum.Measurement.ofSumEqOne] at h
-      simp_rw [placed_product_stateQForm_eq] at h
-      rw [h, hψ, one_pow, hAgrG]
-      simp only
-      rw [diagonalLeft_pair_sum (A x) B ψ (f x)]
-    rw [avgOver_congr _ _ _ hpoint, avgOver_sub, avgOver_uniform_const]
-  have hhyp : consistencyDefect (uniformDistribution (X × Y))
-      (fun z r => heteroKron ((B.postprocess (f₁ z.1 z.2)).effect r) 1)
-      (fun z r => heteroKron 1
-        (((A z.1).postprocess (e₁ z.1 z.2)).effect r)) ψ =
-      1 - avgOver (uniformDistribution X)
-        (fun x => avgOver (uniformDistribution Y) (AgrH x)) := by
-    rw [consistencyDefect_placed_eq_avg_point (uniformDistribution (X × Y))
-      (fun z => B.postprocess (f₁ z.1 z.2))
-      (fun z => (A z.1).postprocess (e₁ z.1 z.2))]
-    have hpoint : ∀ z : X × Y,
-        (∑ r : R, ∑ r' : R, if r = r' then 0 else stateQForm ψ
-          (heteroKron ((B.postprocess (f₁ z.1 z.2)).effect r)
-            (((A z.1).postprocess (e₁ z.1 z.2)).effect r'))) =
-          1 - AgrH z.1 z.2 := by
-      intro z
-      have h := point_defect_eq
-        (leftPlacedMeasurement (ιB := ιB) (B.postprocess (f₁ z.1 z.2)))
-        (rightPlacedMeasurement (ιA := ιA) ((A z.1).postprocess (e₁ z.1 z.2))) ψ
-      simp only [leftPlacedMeasurement, rightPlacedMeasurement,
-        MIPStarRE.Quantum.Measurement.ofSumEqOne] at h
-      simp_rw [placed_product_stateQForm_eq] at h
-      rw [h, hψ, one_pow, hAgrH]
-      simp only
-      rw [diagonalPairLeft_pair_sum (A z.1) B ψ (e₁ z.1 z.2) (f₁ z.1 z.2)]
-    rw [avgOver_congr _ _ _ hpoint, avgOver_sub, avgOver_uniform_const,
-      avgOver_uniform_prod (fun x y => AgrH x y)]
-  rw [hgoal, hhyp]
-  have hkey : avgOver (uniformDistribution X)
-      (fun x => avgOver (uniformDistribution Y) (AgrH x)) ≤
-      avgOver (uniformDistribution X) AgrG + η := by
-    rw [hAgrG, hAgrH]
-    exact recovery_avg_le w W f e₁ f₁ F η hwnonneg hWnonneg hfiber hWsum
-      hFbound hFavg
-  linarith
+  have h := consistencyDefect_le_of_recoveryBound A B
+    (reindexState (Equiv.prodComm ιA ιB) ψ) (by rw [reindexState_norm_eq, hψ])
+    f e₁ f₁ F η hFbound hFavg
+  simpa only [WinImplications.consistencyDefect_swappedState] using h
 
 end
 

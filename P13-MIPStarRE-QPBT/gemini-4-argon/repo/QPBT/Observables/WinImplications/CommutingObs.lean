@@ -31,9 +31,6 @@ noncomputable section
 
 namespace WinImplications
 
-local instance pauliEdgeNonemptyCommObs : Nonempty PauliEdge :=
-  pauliEdge_nonempty
-
 /-! ## Algebraic preliminaries -/
 
 /-- The left tensor placement is homogeneous in its left factor.

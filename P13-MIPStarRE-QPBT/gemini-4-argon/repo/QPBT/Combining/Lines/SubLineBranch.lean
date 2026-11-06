@@ -188,69 +188,15 @@ theorem projX_subLineExtDirection_mem_span (P : AdmissibleParams)
         (Set.singleton (subLineSourceDirection P kind (subLineXIndex P k)
           (projX (directPointToPauli P w)))) := by
   rcases extendedCoordinate_cases P.m k with ⟨i, rfl⟩ | ⟨j, rfl⟩ | rfl | rfl <;>
-    cases kind
-  · have hval : projX (directPointToPauli P
-        (coordinateDirection (embX P.m i))) =
-        (coordinateDirection i : Fin P.m → PauliScalar P) := by
-      exact (congrArg projX
-        (directPointToPauli_coordinateDirection P (embX P.m i))).trans
-          (projX_coordinateDirection_embX i)
-    rw [subLineXIndex_embX]
-    change projX (directPointToPauli P
-      (coordinateDirection (embX P.m i))) ∈ _
-    rw [hval]
+    cases kind <;>
+    simp [subLineExtDirection, subLineSourceDirection, subLineXIndex_embX,
+      directPointToPauli_coordinateDirection, projX_coordinateDirection_embX,
+      projX_coordinateDirection_embZ, projX_coordinateDirection_alphaVar,
+      projX_coordinateDirection_betaVar, projX_directPrefixProjection_embX,
+      projX_directPrefixProjection_embZ, projX_directPrefixProjection_alphaVar,
+      projX_directPrefixProjection_betaVar] <;>
     exact Submodule.mem_span_singleton_self _
-  · rw [subLineXIndex_embX]
-    change projX (directPointToPauli P
-      (directPrefixProjection (D := P.extendedDirectLd) (embX P.m i) w)) ∈ _
-    rw [projX_directPrefixProjection_embX]
-    exact Submodule.mem_span_singleton_self _
-  · have hval : projX (directPointToPauli P
-        (coordinateDirection (embZ P.m j))) = 0 := by
-      exact (congrArg projX
-        (directPointToPauli_coordinateDirection P (embZ P.m j))).trans
-          (projX_coordinateDirection_embZ j)
-    change projX (directPointToPauli P
-      (coordinateDirection (embZ P.m j))) ∈ _
-    rw [hval]
-    exact Submodule.zero_mem _
-  · change projX (directPointToPauli P
-      (directPrefixProjection (D := P.extendedDirectLd) (embZ P.m j) w)) ∈ _
-    rw [projX_directPrefixProjection_embZ]
-    exact Submodule.zero_mem _
-  · have hval : projX (directPointToPauli P
-        (coordinateDirection (alphaVar P.m))) = 0 := by
-      exact (congrArg projX
-        (directPointToPauli_coordinateDirection P (alphaVar P.m))).trans
-          projX_coordinateDirection_alphaVar
-    change projX (directPointToPauli P
-      (coordinateDirection (alphaVar P.m))) ∈ _
-    rw [hval]
-    exact Submodule.zero_mem _
-  · change projX (directPointToPauli P
-      (directPrefixProjection (D := P.extendedDirectLd) (alphaVar P.m) w)) ∈ _
-    rw [projX_directPrefixProjection_alphaVar]
-    exact Submodule.zero_mem _
-  · have hval : projX (directPointToPauli P
-        (coordinateDirection (betaVar P.m))) = 0 := by
-      exact (congrArg projX
-        (directPointToPauli_coordinateDirection P (betaVar P.m))).trans
-          projX_coordinateDirection_betaVar
-    change projX (directPointToPauli P
-      (coordinateDirection (betaVar P.m))) ∈ _
-    rw [hval]
-    exact Submodule.zero_mem _
-  · change projX (directPointToPauli P
-      (directPrefixProjection (D := P.extendedDirectLd) (betaVar P.m) w)) ∈ _
-    rw [projX_directPrefixProjection_betaVar]
-    exact Submodule.zero_mem _
 
-/-- The `Z` block of the direction of the extended line of a branch lies in
-the line spanned by the direction of its source `Z` line.  In the diagonal
-branch at an `X`-block coordinate the `Z` block is untruncated, which is why
-the source `Z` line carries the first coordinate there.  Blueprint
-`lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 theorem projZ_subLineExtDirection_mem_span (P : AdmissibleParams)
     (kind : LineKind) (k : Fin (2 * P.m + 2))
     (w : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
@@ -259,68 +205,15 @@ theorem projZ_subLineExtDirection_mem_span (P : AdmissibleParams)
         (Set.singleton (subLineSourceDirection P kind (subLineZIndex P k)
           (projZ (directPointToPauli P w)))) := by
   rcases extendedCoordinate_cases P.m k with ⟨i, rfl⟩ | ⟨j, rfl⟩ | rfl | rfl <;>
-    cases kind
-  · have hval : projZ (directPointToPauli P
-        (coordinateDirection (embX P.m i))) = 0 := by
-      exact (congrArg projZ
-        (directPointToPauli_coordinateDirection P (embX P.m i))).trans
-          (projZ_coordinateDirection_embX i)
-    change projZ (directPointToPauli P
-      (coordinateDirection (embX P.m i))) ∈ _
-    rw [hval]
-    exact Submodule.zero_mem _
-  · rw [subLineZIndex_embX]
-    change projZ (directPointToPauli P
-      (directPrefixProjection (D := P.extendedDirectLd) (embX P.m i) w)) ∈ _
-    rw [projZ_directPrefixProjection_embX]
-    change _ ∈ Submodule.span (PauliScalar P)
-      (Set.singleton (prefixProjection (P := P.toLdParams) (subLineFirstIndex P)
-        (projZ (directPointToPauli P w))))
-    rw [prefixProjection_of_val_zero (L := P.toLdParams)
-      (i := subLineFirstIndex P) rfl]
+    cases kind <;>
+    simp [subLineExtDirection, subLineSourceDirection, subLineZIndex_embX, subLineZIndex_embZ,
+      directPointToPauli_coordinateDirection, projZ_coordinateDirection_embX,
+      projZ_coordinateDirection_embZ, projZ_coordinateDirection_alphaVar,
+      projZ_coordinateDirection_betaVar, projZ_directPrefixProjection_embX,
+      projZ_directPrefixProjection_embZ, projZ_directPrefixProjection_alphaVar,
+      projZ_directPrefixProjection_betaVar, prefixProjection_of_val_zero (L := P.toLdParams)
+      (i := subLineFirstIndex P) rfl] <;>
     exact Submodule.mem_span_singleton_self _
-  · have hval : projZ (directPointToPauli P
-        (coordinateDirection (embZ P.m j))) =
-        (coordinateDirection j : Fin P.m → PauliScalar P) := by
-      exact (congrArg projZ
-        (directPointToPauli_coordinateDirection P (embZ P.m j))).trans
-          (projZ_coordinateDirection_embZ j)
-    rw [subLineZIndex_embZ]
-    change projZ (directPointToPauli P
-      (coordinateDirection (embZ P.m j))) ∈ _
-    rw [hval]
-    exact Submodule.mem_span_singleton_self _
-  · rw [subLineZIndex_embZ]
-    change projZ (directPointToPauli P
-      (directPrefixProjection (D := P.extendedDirectLd) (embZ P.m j) w)) ∈ _
-    rw [projZ_directPrefixProjection_embZ]
-    exact Submodule.mem_span_singleton_self _
-  · have hval : projZ (directPointToPauli P
-        (coordinateDirection (alphaVar P.m))) = 0 := by
-      exact (congrArg projZ
-        (directPointToPauli_coordinateDirection P (alphaVar P.m))).trans
-          projZ_coordinateDirection_alphaVar
-    change projZ (directPointToPauli P
-      (coordinateDirection (alphaVar P.m))) ∈ _
-    rw [hval]
-    exact Submodule.zero_mem _
-  · change projZ (directPointToPauli P
-      (directPrefixProjection (D := P.extendedDirectLd) (alphaVar P.m) w)) ∈ _
-    rw [projZ_directPrefixProjection_alphaVar]
-    exact Submodule.zero_mem _
-  · have hval : projZ (directPointToPauli P
-        (coordinateDirection (betaVar P.m))) = 0 := by
-      exact (congrArg projZ
-        (directPointToPauli_coordinateDirection P (betaVar P.m))).trans
-          projZ_coordinateDirection_betaVar
-    change projZ (directPointToPauli P
-      (coordinateDirection (betaVar P.m))) ∈ _
-    rw [hval]
-    exact Submodule.zero_mem _
-  · change projZ (directPointToPauli P
-      (directPrefixProjection (D := P.extendedDirectLd) (betaVar P.m) w)) ∈ _
-    rw [projZ_directPrefixProjection_betaVar]
-    exact Submodule.zero_mem _
 
 /-! ## Canonical representatives of the two source blocks -/
 

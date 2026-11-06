@@ -70,54 +70,6 @@ theorem place_zero (S : ProjectiveSetting P ε) (p : Placement) :
   ext i j
   cases p <;> simp [place]
 
-/-- The `AA'` placement respects finite sums. -/
-theorem place_AA'_finset_sum (S : ProjectiveSetting P ε) {γ : Type*}
-    (s : Finset γ) (O : γ → Op (S.ExpandedLocalSpace .alice)) :
-    S.place .AA' (∑ g ∈ s, O g : Op (S.ExpandedLocalSpace .alice)) =
-      ∑ g ∈ s, S.place .AA' (O g) :=
-  place_finset_sum S .AA' s O
-
-/-- The `BA''` placement respects finite sums. -/
-theorem place_BA''_finset_sum (S : ProjectiveSetting P ε) {γ : Type*}
-    (s : Finset γ) (O : γ → Op (S.ExpandedLocalSpace .bob)) :
-    S.place .BA'' (∑ g ∈ s, O g : Op (S.ExpandedLocalSpace .bob)) =
-      ∑ g ∈ s, S.place .BA'' (O g) :=
-  place_finset_sum S .BA'' s O
-
-/-- The `AB''` placement respects finite sums. -/
-theorem place_AB''_finset_sum (S : ProjectiveSetting P ε) {γ : Type*}
-    (s : Finset γ) (O : γ → Op (S.ExpandedLocalSpace .alice)) :
-    S.place .AB'' (∑ g ∈ s, O g : Op (S.ExpandedLocalSpace .alice)) =
-      ∑ g ∈ s, S.place .AB'' (O g) :=
-  place_finset_sum S .AB'' s O
-
-/-- The `BB'` placement respects finite sums. -/
-theorem place_BB'_finset_sum (S : ProjectiveSetting P ε) {γ : Type*}
-    (s : Finset γ) (O : γ → Op (S.ExpandedLocalSpace .bob)) :
-    S.place .BB' (∑ g ∈ s, O g : Op (S.ExpandedLocalSpace .bob)) =
-      ∑ g ∈ s, S.place .BB' (O g) :=
-  place_finset_sum S .BB' s O
-
-/-- The `AA'` placement of zero is zero. -/
-theorem place_AA'_zero (S : ProjectiveSetting P ε) :
-    S.place .AA' (0 : Op (S.ExpandedLocalSpace .alice)) = 0 :=
-  place_zero S .AA'
-
-/-- The `BA''` placement of zero is zero. -/
-theorem place_BA''_zero (S : ProjectiveSetting P ε) :
-    S.place .BA'' (0 : Op (S.ExpandedLocalSpace .bob)) = 0 :=
-  place_zero S .BA''
-
-/-- The `AB''` placement of zero is zero. -/
-theorem place_AB''_zero (S : ProjectiveSetting P ε) :
-    S.place .AB'' (0 : Op (S.ExpandedLocalSpace .alice)) = 0 :=
-  place_zero S .AB''
-
-/-- The `BB'` placement of zero is zero. -/
-theorem place_BB'_zero (S : ProjectiveSetting P ε) :
-    S.place .BB' (0 : Op (S.ExpandedLocalSpace .bob)) = 0 :=
-  place_zero S .BB'
-
 /-! ## Effects of the completed measurement families -/
 
 /-- The completed expanded point measurement agrees with the expanded point
@@ -140,36 +92,6 @@ theorem pointMeasExpOption_effect_none (S : ProjectiveSetting P ε)
   apply Finset.sum_eq_zero
   intro a ha
   exact absurd (Finset.mem_filter.mp ha).2 (by simp)
-
-/-- The expanded point effect selected by a line answer is the completed
-expanded point effect at the partial evaluation of the answer. This
-identifies the two presentations of item 2 and item 3 of
-`lem:qld-comm-line-cons`, blueprint `eq:qld-comm-line-pt-cons`, `eq:qld-comm-line-pt-cons2`. -/
-theorem pointMeasExpOption_effect_evalOpt (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (f : DegPoly P.toLdParams (P.m * P.d)) :
-    (S.pointMeasExpOption side W u).effect (evalOpt line u f) =
-      S.expPointEffectAtLineAnswer side W line u f := by
-  unfold expPointEffectAtLineAnswer
-  cases evalOpt line u f with
-  | none => exact S.pointMeasExpOption_effect_none side W u
-  | some a => exact S.pointMeasExpOption_effect_some side W u a
-
-/-- The expanded point effect selected by a line answer, written through the
-convolution form of the expanded point measurement. -/
-theorem expPointEffectAtLineAnswer_eq_elim (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (f : DegPoly P.toLdParams (P.m * P.d)) :
-    S.expPointEffectAtLineAnswer side W line u f =
-      (evalOpt line u f).elim 0 (fun a =>
-        ∑ q ∈ Finset.univ.filter
-          (fun q : PauliScalar P × PauliScalar P => q.1 + q.2 = a),
-          heteroKron ((S.pointMeas side W u).effect q.1)
-            (tauPointProj W u q.2)) := by
-  unfold expPointEffectAtLineAnswer
-  cases evalOpt line u f with
-  | none => rfl
-  | some a => exact S.expPointOp_eq_convolution side W u a
 
 /-- Effects of the expanded evaluation classes are the fiber sums of expanded
 line effects. -/
@@ -541,374 +463,100 @@ variable {P : AdmissibleParams} {ε : ℝ}
 
 /-! ## The four placement pairs -/
 
-/-- A strategy line effect is Hermitian, being positive semidefinite. -/
-private theorem lineMeas_effect_isHermitian (S : ProjectiveSetting P ε)
+theorem lineMeas_effect_isHermitian (S : ProjectiveSetting P ε)
     (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams)
     (f : DegPoly P.toLdParams (P.m * P.d)) :
     ((S.lineMeas side W line).effect f).IsHermitian :=
   (Matrix.nonneg_iff_posSemidef.mp ((S.lineMeas side W line).pos f)).isHermitian
 
-/-- A strategy point effect is Hermitian, being positive semidefinite. -/
-private theorem pointMeas_effect_isHermitian (S : ProjectiveSetting P ε)
+theorem pointMeas_effect_isHermitian (S : ProjectiveSetting P ε)
     (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
     (b : PauliScalar P) :
     ((S.pointMeas side W u).effect b).IsHermitian :=
   (Matrix.nonneg_iff_posSemidef.mp ((S.pointMeas side W u).pos b)).isHermitian
 
-/-- A Pauli line projector is Hermitian, being positive semidefinite. -/
-private theorem tauLineProj_isHermitian (W : PauliKind)
+theorem tauLineProj_isHermitian (W : PauliKind)
     (line : LineDesc P.toLdParams) (f : DegPoly P.toLdParams (P.m * P.d)) :
     (tauLineProj P W line f).IsHermitian :=
   (Matrix.nonneg_iff_posSemidef.mp (tauLineProj_nonneg P W line f)).isHermitian
 
-/-- A Pauli point projector is Hermitian, being positive semidefinite. -/
-private theorem tauPointProj_isHermitian (W : PauliKind)
+theorem tauPointProj_isHermitian (W : PauliKind)
     (u : Fin P.m → PauliScalar P) (b : PauliScalar P) :
     (tauPointProj W u b).IsHermitian :=
   (Matrix.nonneg_iff_posSemidef.mp ((tauPointMeas W u).pos b)).isHermitian
 
 set_option synthInstance.maxSize 400 in
-/-- The expanded overlap of Alice's line measurement on `AA'` with Bob's
-selected point effects on `BA''` is the strategy overlap of Alice's
-evaluation classes with Bob's completed point measurement. This is the
-computation `eq:qld-mhat-line-1`--`eq:qld-comm-line-pt-cons-eps` of
-`lem:qld-comm-line-cons`, paper
-`14_analysis_of_the_pauli_basis_test.tex:560-596`. -/
-theorem overlap_AA'_BA''_eq (S : ProjectiveSetting P ε) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P) :
-    ∑ f : DegPoly P.toLdParams (P.m * P.d),
-        DistanceCalculus.stateQForm S.psiHat
-          (S.place .AA' (S.expLineOp .alice W line f) *
-            S.place .BA'' (S.expPointEffectAtLineAnswer .bob W line u f)) =
-      ∑ o : Option (PauliScalar P),
-        DistanceCalculus.stateQForm S.toStrategy.ψ
-          (heteroKron ((S.lineEvalMeas .alice W line u).effect o)
-            ((S.pointMeasOption .bob W u).effect o)) := by
-  let Φ : Op (S.ExpandedLocalSpace .alice) →
-      Op (S.ExpandedLocalSpace .bob) → ℝ := fun X Y =>
-    DistanceCalculus.stateQForm S.psiHat (S.place .AA' X * S.place .BA'' Y)
-  let Ψ : Op S.toStrategy.ιA → Op S.toStrategy.ιB → ℝ := fun L Q =>
-    DistanceCalculus.stateQForm S.toStrategy.ψ (heteroKron L Q)
-  have hΦ0 : ∀ X, Φ X 0 = 0 := by
-    intro X
-    simp only [Φ]
-    rw [place_BA''_zero, mul_zero, DistanceCalculus.stateQForm_zero]
-  have hΦl : ∀ (s : Finset (DegPoly P.toLdParams (P.m * P.d) ×
-        DegPoly P.toLdParams (P.m * P.d)))
-      (X : DegPoly P.toLdParams (P.m * P.d) × DegPoly P.toLdParams (P.m * P.d) →
-        Op (S.ExpandedLocalSpace .alice))
-      (Y : Op (S.ExpandedLocalSpace .bob)),
-      Φ (∑ i ∈ s, X i) Y = ∑ i ∈ s, Φ (X i) Y := by
-    intro s X Y
-    simp only [Φ]
-    rw [place_AA'_finset_sum, Finset.sum_mul,
-      DistanceCalculus.stateQForm_finset_sum]
-  have hΦr : ∀ (X : Op (S.ExpandedLocalSpace .alice))
-      (t : Finset (PauliScalar P × PauliScalar P))
-      (Y : PauliScalar P × PauliScalar P → Op (S.ExpandedLocalSpace .bob)),
-      Φ X (∑ j ∈ t, Y j) = ∑ j ∈ t, Φ X (Y j) := by
-    intro X t Y
-    simp only [Φ]
-    rw [place_BA''_finset_sum, Finset.mul_sum,
-      DistanceCalculus.stateQForm_finset_sum]
-  have hΨl : ∀ (s : Finset (DegPoly P.toLdParams (P.m * P.d)))
-      (A : DegPoly P.toLdParams (P.m * P.d) → Op S.toStrategy.ιA)
-      (B : Op S.toStrategy.ιB), Ψ (∑ i ∈ s, A i) B = ∑ i ∈ s, Ψ (A i) B := by
-    intro s A B
-    simp only [Ψ]
-    rw [MagicSquareRigidity.heteroKron_finset_sum_left,
-      DistanceCalculus.stateQForm_finset_sum]
-  have hΨ0 : ∀ A, Ψ A 0 = 0 := by
-    intro A
-    simp only [Ψ]
-    rw [heteroKron_zero_right, DistanceCalculus.stateQForm_zero]
-  change ∑ f, Φ (S.expLineOp .alice W line f)
-      (S.expPointEffectAtLineAnswer .bob W line u f) =
-    ∑ o, Ψ (((S.lineMeas .alice W line).postprocess (evalOpt line u)).effect o)
-      (((S.pointMeas .bob W u).postprocess some).effect o)
-  simp_rw [expPointEffectAtLineAnswer_eq_elim]
-  by_cases hu : u ∈ line.pointSet
-  · have hΦfact : ∀ (f' f'' : DegPoly P.toLdParams (P.m * P.d))
-        (b' b'' : PauliScalar P),
-        Φ (heteroKron ((S.lineMeas .alice W line).effect f')
-            (tauLineProj P W line f''))
-          (heteroKron ((S.pointMeas .bob W u).effect b') (tauPointProj W u b'')) =
-        Ψ ((S.lineMeas .alice W line).effect f') ((S.pointMeas .bob W u).effect b') *
+theorem sum_stateQForm_evalClass_eq (S : ProjectiveSetting P ε)
+    (pL pP : Placement) (W : PauliKind)
+    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P)
+    (Ψ : Op (S.LocalSpace pL.side) → Op (S.LocalSpace pP.side) → ℝ)
+    (hΨl : ∀ (s : Finset (DegPoly P.toLdParams (P.m * P.d)))
+      (A : DegPoly P.toLdParams (P.m * P.d) → Op (S.LocalSpace pL.side))
+      (B : Op (S.LocalSpace pP.side)), Ψ (∑ i ∈ s, A i) B = ∑ i ∈ s, Ψ (A i) B)
+    (hΨ0 : ∀ A, Ψ A 0 = 0)
+    (hfact : u ∈ line.pointSet → ∀ (f' f'' : DegPoly P.toLdParams (P.m * P.d))
+      (b' b'' : PauliScalar P),
+      DistanceCalculus.stateQForm S.psiHat
+        (S.place pL (heteroKron ((S.lineMeas pL.side W line).effect f')
+          (tauLineProj P W line f'')) *
+          S.place pP (heteroKron ((S.pointMeas pP.side W u).effect b')
+            (tauPointProj W u b''))) =
+        Ψ ((S.lineMeas pL.side W line).effect f') ((S.pointMeas pP.side W u).effect b') *
           (if evalOpt line u f'' = some b'' then
             DistanceCalculus.stateQForm (eprState (PauliRegister P))
               (heteroKron (tauLineProj P W line f'') (1 : Op (PauliRegister P)))
-          else 0) := by
-      intro f' f'' b' b''
-      simp only [Φ, Ψ]
-      have hfac := stateQForm_place_AA'_mul_BA''_two S
-        ((S.lineMeas .alice W line).effect f') ((S.pointMeas .bob W u).effect b')
-        (tauLineProj P W line f'') (tauPointProj W u b'')
-        (lineMeas_effect_isHermitian S .alice W line f')
-        (pointMeas_effect_isHermitian S .bob W u b')
-        (tauLineProj_isHermitian W line f'') (tauPointProj_isHermitian W u b'')
-      rw [stateQForm_eprState_tauLineProj_tauPointProj P W line u hu f'' b''] at hfac
-      exact hfac
-    exact overlap_identity_of_mem P W (S.lineMeas .alice W line)
-      (S.pointMeas .bob W u) Φ Ψ line u hu hΦ0 hΦl hΦr hΦfact hΨl hΨ0
-  · exact overlap_identity_of_not_mem P W (S.lineMeas .alice W line)
-      (S.pointMeas .bob W u) Φ Ψ line u hu hΦ0 hΨl hΨ0
-
-set_option synthInstance.maxSize 400 in
-/-- The expanded overlap of Bob's line measurement on `BA''` with Alice's
-selected point effects on `AA'` is the strategy overlap of Alice's completed
-point measurement with Bob's evaluation classes. This is the interchanged
-form of the computation in items 2 and 3 of `lem:qld-comm-line-cons`, paper
-`14_analysis_of_the_pauli_basis_test.tex:560-596`. -/
-theorem overlap_BA''_AA'_eq (S : ProjectiveSetting P ε) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P) :
-    ∑ f : DegPoly P.toLdParams (P.m * P.d),
+          else 0)) :
+    ∑ o : Option (PauliScalar P),
         DistanceCalculus.stateQForm S.psiHat
-          (S.place .BA'' (S.expLineOp .bob W line f) *
-            S.place .AA' (S.expPointEffectAtLineAnswer .alice W line u f)) =
+          (S.place pL ((S.lineEvalMeasExp pL.side W line u).effect o) *
+            S.place pP ((S.pointMeasExpOption pP.side W u).effect o)) =
       ∑ o : Option (PauliScalar P),
-        DistanceCalculus.stateQForm S.toStrategy.ψ
-          (heteroKron ((S.pointMeasOption .alice W u).effect o)
-            ((S.lineEvalMeas .bob W line u).effect o)) := by
-  let Φ : Op (S.ExpandedLocalSpace .bob) →
-      Op (S.ExpandedLocalSpace .alice) → ℝ := fun X Y =>
-    DistanceCalculus.stateQForm S.psiHat (S.place .BA'' X * S.place .AA' Y)
-  let Ψ : Op S.toStrategy.ιB → Op S.toStrategy.ιA → ℝ := fun L Q =>
-    DistanceCalculus.stateQForm S.toStrategy.ψ (heteroKron Q L)
-  have hΦ0 : ∀ X, Φ X 0 = 0 := by
-    intro X
-    simp only [Φ]
-    rw [place_AA'_zero, mul_zero, DistanceCalculus.stateQForm_zero]
-  have hΦl : ∀ (s : Finset (DegPoly P.toLdParams (P.m * P.d) ×
-        DegPoly P.toLdParams (P.m * P.d)))
+        Ψ ((S.lineEvalMeas pL.side W line u).effect o)
+          ((S.pointMeasOption pP.side W u).effect o) := by
+  let Φ : Op (S.ExpandedLocalSpace pL.side) → Op (S.ExpandedLocalSpace pP.side) → ℝ :=
+    fun X Y => DistanceCalculus.stateQForm S.psiHat (S.place pL X * S.place pP Y)
+  have hΦ0 : ∀ X, Φ X 0 = 0 := fun X => by
+    simp only [Φ, place_zero, mul_zero, DistanceCalculus.stateQForm_zero]
+  have hΦl : ∀ (s : Finset (DegPoly P.toLdParams (P.m * P.d) × DegPoly P.toLdParams (P.m * P.d)))
       (X : DegPoly P.toLdParams (P.m * P.d) × DegPoly P.toLdParams (P.m * P.d) →
-        Op (S.ExpandedLocalSpace .bob))
-      (Y : Op (S.ExpandedLocalSpace .alice)),
-      Φ (∑ i ∈ s, X i) Y = ∑ i ∈ s, Φ (X i) Y := by
-    intro s X Y
-    simp only [Φ]
-    rw [place_BA''_finset_sum, Finset.sum_mul,
-      DistanceCalculus.stateQForm_finset_sum]
-  have hΦr : ∀ (X : Op (S.ExpandedLocalSpace .bob))
+        Op (S.ExpandedLocalSpace pL.side))
+      (Y : Op (S.ExpandedLocalSpace pP.side)),
+      Φ (∑ i ∈ s, X i) Y = ∑ i ∈ s, Φ (X i) Y := fun s X Y => by
+    simp only [Φ, place_finset_sum, Finset.sum_mul, DistanceCalculus.stateQForm_finset_sum]
+  have hΦr : ∀ (X : Op (S.ExpandedLocalSpace pL.side))
       (t : Finset (PauliScalar P × PauliScalar P))
-      (Y : PauliScalar P × PauliScalar P → Op (S.ExpandedLocalSpace .alice)),
-      Φ X (∑ j ∈ t, Y j) = ∑ j ∈ t, Φ X (Y j) := by
-    intro X t Y
-    simp only [Φ]
-    rw [place_AA'_finset_sum, Finset.mul_sum,
-      DistanceCalculus.stateQForm_finset_sum]
-  have hΨl : ∀ (s : Finset (DegPoly P.toLdParams (P.m * P.d)))
-      (A : DegPoly P.toLdParams (P.m * P.d) → Op S.toStrategy.ιB)
-      (B : Op S.toStrategy.ιA), Ψ (∑ i ∈ s, A i) B = ∑ i ∈ s, Ψ (A i) B := by
-    intro s A B
-    simp only [Ψ]
-    rw [MagicSquareRigidity.heteroKron_finset_sum_right,
-      DistanceCalculus.stateQForm_finset_sum]
-  have hΨ0 : ∀ A, Ψ A 0 = 0 := by
-    intro A
-    simp only [Ψ]
-    rw [heteroKron_zero_left, DistanceCalculus.stateQForm_zero]
-  change ∑ f, Φ (S.expLineOp .bob W line f)
-      (S.expPointEffectAtLineAnswer .alice W line u f) =
-    ∑ o, Ψ (((S.lineMeas .bob W line).postprocess (evalOpt line u)).effect o)
-      (((S.pointMeas .alice W u).postprocess some).effect o)
-  simp_rw [expPointEffectAtLineAnswer_eq_elim]
-  by_cases hu : u ∈ line.pointSet
-  · have hΦfact : ∀ (f' f'' : DegPoly P.toLdParams (P.m * P.d))
-        (b' b'' : PauliScalar P),
-        Φ (heteroKron ((S.lineMeas .bob W line).effect f')
-            (tauLineProj P W line f''))
-          (heteroKron ((S.pointMeas .alice W u).effect b') (tauPointProj W u b'')) =
-        Ψ ((S.lineMeas .bob W line).effect f') ((S.pointMeas .alice W u).effect b') *
-          (if evalOpt line u f'' = some b'' then
-            DistanceCalculus.stateQForm (eprState (PauliRegister P))
-              (heteroKron (tauLineProj P W line f'') (1 : Op (PauliRegister P)))
-          else 0) := by
-      intro f' f'' b' b''
-      simp only [Φ, Ψ]
-      have hfac := stateQForm_place_AA'_mul_BA''_two S
-        ((S.pointMeas .alice W u).effect b') ((S.lineMeas .bob W line).effect f')
-        (tauPointProj W u b'') (tauLineProj P W line f'')
-        (pointMeas_effect_isHermitian S .alice W u b')
-        (lineMeas_effect_isHermitian S .bob W line f')
-        (tauPointProj_isHermitian W u b'') (tauLineProj_isHermitian W line f'')
-      rw [stateQForm_eprState_tauPointProj_tauLineProj P W line u hu f'' b''] at hfac
-      have hcomm := place_AA'_mul_place_BA''_comm S
-        (heteroKron ((S.pointMeas .alice W u).effect b') (tauPointProj W u b''))
-        (heteroKron ((S.lineMeas .bob W line).effect f') (tauLineProj P W line f''))
-      exact (congrArg (DistanceCalculus.stateQForm S.psiHat) hcomm.symm).trans hfac
-    exact overlap_identity_of_mem P W (S.lineMeas .bob W line)
-      (S.pointMeas .alice W u) Φ Ψ line u hu hΦ0 hΦl hΦr hΦfact hΨl hΨ0
-  · exact overlap_identity_of_not_mem P W (S.lineMeas .bob W line)
-      (S.pointMeas .alice W u) Φ Ψ line u hu hΦ0 hΨl hΨ0
-
-set_option synthInstance.maxSize 400 in
-/-- The expanded overlap of Alice's line measurement on `AB''` with Bob's
-selected point effects on `BB'`, on the second bipartition. Paper
-`14_analysis_of_the_pauli_basis_test.tex:560-596`. -/
-theorem overlap_AB''_BB'_eq (S : ProjectiveSetting P ε) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P) :
-    ∑ f : DegPoly P.toLdParams (P.m * P.d),
-        DistanceCalculus.stateQForm S.psiHat
-          (S.place .AB'' (S.expLineOp .alice W line f) *
-            S.place .BB' (S.expPointEffectAtLineAnswer .bob W line u f)) =
-      ∑ o : Option (PauliScalar P),
-        DistanceCalculus.stateQForm S.toStrategy.ψ
-          (heteroKron ((S.lineEvalMeas .alice W line u).effect o)
-            ((S.pointMeasOption .bob W u).effect o)) := by
-  let Φ : Op (S.ExpandedLocalSpace .alice) →
-      Op (S.ExpandedLocalSpace .bob) → ℝ := fun X Y =>
-    DistanceCalculus.stateQForm S.psiHat (S.place .AB'' X * S.place .BB' Y)
-  let Ψ : Op S.toStrategy.ιA → Op S.toStrategy.ιB → ℝ := fun L Q =>
-    DistanceCalculus.stateQForm S.toStrategy.ψ (heteroKron L Q)
-  have hΦ0 : ∀ X, Φ X 0 = 0 := by
-    intro X
-    simp only [Φ]
-    rw [place_BB'_zero, mul_zero, DistanceCalculus.stateQForm_zero]
-  have hΦl : ∀ (s : Finset (DegPoly P.toLdParams (P.m * P.d) ×
-        DegPoly P.toLdParams (P.m * P.d)))
-      (X : DegPoly P.toLdParams (P.m * P.d) × DegPoly P.toLdParams (P.m * P.d) →
-        Op (S.ExpandedLocalSpace .alice))
-      (Y : Op (S.ExpandedLocalSpace .bob)),
-      Φ (∑ i ∈ s, X i) Y = ∑ i ∈ s, Φ (X i) Y := by
-    intro s X Y
-    simp only [Φ]
-    rw [place_AB''_finset_sum, Finset.sum_mul,
-      DistanceCalculus.stateQForm_finset_sum]
-  have hΦr : ∀ (X : Op (S.ExpandedLocalSpace .alice))
-      (t : Finset (PauliScalar P × PauliScalar P))
-      (Y : PauliScalar P × PauliScalar P → Op (S.ExpandedLocalSpace .bob)),
-      Φ X (∑ j ∈ t, Y j) = ∑ j ∈ t, Φ X (Y j) := by
-    intro X t Y
-    simp only [Φ]
-    rw [place_BB'_finset_sum, Finset.mul_sum,
-      DistanceCalculus.stateQForm_finset_sum]
-  have hΨl : ∀ (s : Finset (DegPoly P.toLdParams (P.m * P.d)))
-      (A : DegPoly P.toLdParams (P.m * P.d) → Op S.toStrategy.ιA)
-      (B : Op S.toStrategy.ιB), Ψ (∑ i ∈ s, A i) B = ∑ i ∈ s, Ψ (A i) B := by
-    intro s A B
-    simp only [Ψ]
-    rw [MagicSquareRigidity.heteroKron_finset_sum_left,
-      DistanceCalculus.stateQForm_finset_sum]
-  have hΨ0 : ∀ A, Ψ A 0 = 0 := by
-    intro A
-    simp only [Ψ]
-    rw [heteroKron_zero_right, DistanceCalculus.stateQForm_zero]
-  change ∑ f, Φ (S.expLineOp .alice W line f)
-      (S.expPointEffectAtLineAnswer .bob W line u f) =
-    ∑ o, Ψ (((S.lineMeas .alice W line).postprocess (evalOpt line u)).effect o)
-      (((S.pointMeas .bob W u).postprocess some).effect o)
-  simp_rw [expPointEffectAtLineAnswer_eq_elim]
-  by_cases hu : u ∈ line.pointSet
-  · have hΦfact : ∀ (f' f'' : DegPoly P.toLdParams (P.m * P.d))
-        (b' b'' : PauliScalar P),
-        Φ (heteroKron ((S.lineMeas .alice W line).effect f')
-            (tauLineProj P W line f''))
-          (heteroKron ((S.pointMeas .bob W u).effect b') (tauPointProj W u b'')) =
-        Ψ ((S.lineMeas .alice W line).effect f') ((S.pointMeas .bob W u).effect b') *
-          (if evalOpt line u f'' = some b'' then
-            DistanceCalculus.stateQForm (eprState (PauliRegister P))
-              (heteroKron (tauLineProj P W line f'') (1 : Op (PauliRegister P)))
-          else 0) := by
-      intro f' f'' b' b''
-      simp only [Φ, Ψ]
-      have hfac := stateQForm_place_AB''_mul_BB'_two S
-        ((S.lineMeas .alice W line).effect f') ((S.pointMeas .bob W u).effect b')
-        (tauLineProj P W line f'') (tauPointProj W u b'')
-        (lineMeas_effect_isHermitian S .alice W line f')
-        (pointMeas_effect_isHermitian S .bob W u b')
-        (tauLineProj_isHermitian W line f'') (tauPointProj_isHermitian W u b'')
-      rw [stateQForm_eprState_tauPointProj_tauLineProj P W line u hu f'' b''] at hfac
-      exact hfac
-    exact overlap_identity_of_mem P W (S.lineMeas .alice W line)
-      (S.pointMeas .bob W u) Φ Ψ line u hu hΦ0 hΦl hΦr hΦfact hΨl hΨ0
-  · exact overlap_identity_of_not_mem P W (S.lineMeas .alice W line)
-      (S.pointMeas .bob W u) Φ Ψ line u hu hΦ0 hΨl hΨ0
-
-set_option synthInstance.maxSize 400 in
-/-- The expanded overlap of Bob's line measurement on `BB'` with Alice's
-selected point effects on `AB''`, on the second bipartition. Paper
-`14_analysis_of_the_pauli_basis_test.tex:560-596`. -/
-theorem overlap_BB'_AB''_eq (S : ProjectiveSetting P ε) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P) :
-    ∑ f : DegPoly P.toLdParams (P.m * P.d),
-        DistanceCalculus.stateQForm S.psiHat
-          (S.place .BB' (S.expLineOp .bob W line f) *
-            S.place .AB'' (S.expPointEffectAtLineAnswer .alice W line u f)) =
-      ∑ o : Option (PauliScalar P),
-        DistanceCalculus.stateQForm S.toStrategy.ψ
-          (heteroKron ((S.pointMeasOption .alice W u).effect o)
-            ((S.lineEvalMeas .bob W line u).effect o)) := by
-  let Φ : Op (S.ExpandedLocalSpace .bob) →
-      Op (S.ExpandedLocalSpace .alice) → ℝ := fun X Y =>
-    DistanceCalculus.stateQForm S.psiHat (S.place .BB' X * S.place .AB'' Y)
-  let Ψ : Op S.toStrategy.ιB → Op S.toStrategy.ιA → ℝ := fun L Q =>
-    DistanceCalculus.stateQForm S.toStrategy.ψ (heteroKron Q L)
-  have hΦ0 : ∀ X, Φ X 0 = 0 := by
-    intro X
-    simp only [Φ]
-    rw [place_AB''_zero, mul_zero, DistanceCalculus.stateQForm_zero]
-  have hΦl : ∀ (s : Finset (DegPoly P.toLdParams (P.m * P.d) ×
-        DegPoly P.toLdParams (P.m * P.d)))
-      (X : DegPoly P.toLdParams (P.m * P.d) × DegPoly P.toLdParams (P.m * P.d) →
-        Op (S.ExpandedLocalSpace .bob))
-      (Y : Op (S.ExpandedLocalSpace .alice)),
-      Φ (∑ i ∈ s, X i) Y = ∑ i ∈ s, Φ (X i) Y := by
-    intro s X Y
-    simp only [Φ]
-    rw [place_BB'_finset_sum, Finset.sum_mul,
-      DistanceCalculus.stateQForm_finset_sum]
-  have hΦr : ∀ (X : Op (S.ExpandedLocalSpace .bob))
-      (t : Finset (PauliScalar P × PauliScalar P))
-      (Y : PauliScalar P × PauliScalar P → Op (S.ExpandedLocalSpace .alice)),
-      Φ X (∑ j ∈ t, Y j) = ∑ j ∈ t, Φ X (Y j) := by
-    intro X t Y
-    simp only [Φ]
-    rw [place_AB''_finset_sum, Finset.mul_sum,
-      DistanceCalculus.stateQForm_finset_sum]
-  have hΨl : ∀ (s : Finset (DegPoly P.toLdParams (P.m * P.d)))
-      (A : DegPoly P.toLdParams (P.m * P.d) → Op S.toStrategy.ιB)
-      (B : Op S.toStrategy.ιA), Ψ (∑ i ∈ s, A i) B = ∑ i ∈ s, Ψ (A i) B := by
-    intro s A B
-    simp only [Ψ]
-    rw [MagicSquareRigidity.heteroKron_finset_sum_right,
-      DistanceCalculus.stateQForm_finset_sum]
-  have hΨ0 : ∀ A, Ψ A 0 = 0 := by
-    intro A
-    simp only [Ψ]
-    rw [heteroKron_zero_left, DistanceCalculus.stateQForm_zero]
-  change ∑ f, Φ (S.expLineOp .bob W line f)
-      (S.expPointEffectAtLineAnswer .alice W line u f) =
-    ∑ o, Ψ (((S.lineMeas .bob W line).postprocess (evalOpt line u)).effect o)
-      (((S.pointMeas .alice W u).postprocess some).effect o)
-  simp_rw [expPointEffectAtLineAnswer_eq_elim]
-  by_cases hu : u ∈ line.pointSet
-  · have hΦfact : ∀ (f' f'' : DegPoly P.toLdParams (P.m * P.d))
-        (b' b'' : PauliScalar P),
-        Φ (heteroKron ((S.lineMeas .bob W line).effect f')
-            (tauLineProj P W line f''))
-          (heteroKron ((S.pointMeas .alice W u).effect b') (tauPointProj W u b'')) =
-        Ψ ((S.lineMeas .bob W line).effect f') ((S.pointMeas .alice W u).effect b') *
-          (if evalOpt line u f'' = some b'' then
-            DistanceCalculus.stateQForm (eprState (PauliRegister P))
-              (heteroKron (tauLineProj P W line f'') (1 : Op (PauliRegister P)))
-          else 0) := by
-      intro f' f'' b' b''
-      simp only [Φ, Ψ]
-      have hfac := stateQForm_place_AB''_mul_BB'_two S
-        ((S.pointMeas .alice W u).effect b') ((S.lineMeas .bob W line).effect f')
-        (tauPointProj W u b'') (tauLineProj P W line f'')
-        (pointMeas_effect_isHermitian S .alice W u b')
-        (lineMeas_effect_isHermitian S .bob W line f')
-        (tauPointProj_isHermitian W u b'') (tauLineProj_isHermitian W line f'')
-      rw [stateQForm_eprState_tauLineProj_tauPointProj P W line u hu f'' b''] at hfac
-      have hcomm := place_AB''_mul_place_BB'_comm S
-        (heteroKron ((S.pointMeas .alice W u).effect b') (tauPointProj W u b''))
-        (heteroKron ((S.lineMeas .bob W line).effect f') (tauLineProj P W line f''))
-      exact (congrArg (DistanceCalculus.stateQForm S.psiHat) hcomm.symm).trans hfac
-    exact overlap_identity_of_mem P W (S.lineMeas .bob W line)
-      (S.pointMeas .alice W u) Φ Ψ line u hu hΦ0 hΦl hΦr hΦfact hΨl hΨ0
-  · exact overlap_identity_of_not_mem P W (S.lineMeas .bob W line)
-      (S.pointMeas .alice W u) Φ Ψ line u hu hΦ0 hΨl hΨ0
+      (Y : PauliScalar P × PauliScalar P → Op (S.ExpandedLocalSpace pP.side)),
+      Φ X (∑ j ∈ t, Y j) = ∑ j ∈ t, Φ X (Y j) := fun X t Y => by
+    simp only [Φ, place_finset_sum, Finset.mul_sum, DistanceCalculus.stateQForm_finset_sum]
+  calc
+    _ = ∑ o : Option (PauliScalar P),
+        ∑ f ∈ Finset.univ.filter
+          (fun f : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f = o),
+          Φ (S.expLineOp pL.side W line f)
+            ((S.pointMeasExpOption pP.side W u).effect (evalOpt line u f)) := by
+      refine Finset.sum_congr rfl fun o _ => ?_
+      simp only [Φ, lineEvalMeasExp_effect, place_finset_sum, Finset.sum_mul,
+        DistanceCalculus.stateQForm_finset_sum]
+      exact Finset.sum_congr rfl fun f hf => by rw [(Finset.mem_filter.mp hf).2]
+    _ = ∑ f : DegPoly P.toLdParams (P.m * P.d),
+        Φ (S.expLineOp pL.side W line f)
+          ((evalOpt line u f).elim 0 (fun a =>
+            ∑ q ∈ Finset.univ.filter
+              (fun q : PauliScalar P × PauliScalar P => q.1 + q.2 = a),
+              heteroKron ((S.pointMeas pP.side W u).effect q.1)
+                (tauPointProj W u q.2))) := by
+      refine (Finset.sum_fiberwise Finset.univ (fun f => evalOpt line u f) _).trans
+        (Finset.sum_congr rfl fun f _ => congrArg (Φ _) ?_)
+      rcases evalOpt line u f with _ | a
+      · exact S.pointMeasExpOption_effect_none pP.side W u
+      · exact (S.pointMeasExpOption_effect_some pP.side W u a).trans
+          (S.expPointOp_eq_convolution pP.side W u a)
+    _ = _ := by
+      by_cases hu : u ∈ line.pointSet
+      · exact overlap_identity_of_mem P W (S.lineMeas pL.side W line)
+          (S.pointMeas pP.side W u) Φ Ψ line u hu hΦ0 hΦl hΦr (hfact hu) hΨl hΨ0
+      · exact overlap_identity_of_not_mem P W (S.lineMeas pL.side W line)
+          (S.pointMeas pP.side W u) Φ Ψ line u hu hΦ0 hΨl hΨ0
 
 end ProjectiveSetting
 

@@ -59,17 +59,11 @@ admissibility hypothesis are unchanged. -/
   hk := le_refl 1
   hq := D.hq
 
-@[simp] theorem DirectLdParams.combined_q (D : DirectLdParams) :
-    D.combined.q = D.q := rfl
-
 @[simp] theorem DirectLdParams.combined_m (D : DirectLdParams) :
     D.combined.m = D.m + D.k := rfl
 
 @[simp] theorem DirectLdParams.combined_d (D : DirectLdParams) :
     D.combined.d = D.d := rfl
-
-@[simp] theorem DirectLdParams.combined_k (D : DirectLdParams) :
-    D.combined.k = 1 := rfl
 
 /-- The scalar field of a directly indexed low-degree game has `q` elements. -/
 theorem card_directScalarQ (D : DirectLdParams) :
@@ -115,16 +109,6 @@ theorem directCombinedPolynomial_injective (D : DirectLdParams) :
   funext r
   exact Subtype.ext (congrFun hcomp r)
 
-/-- The one-component polynomial tuple of the combined game carrying the
-combined polynomial of a tuple. -/
-def directCombinedTuple (D : DirectLdParams) (g : DirectPolyTuple D) :
-    DirectPolyTuple D.combined :=
-  fun _ => directCombinedPolynomial D g
-
-@[simp] theorem directCombinedTuple_apply (D : DirectLdParams) (g : DirectPolyTuple D)
-    (r : Fin D.combined.k) :
-    directCombinedTuple D g r = directCombinedPolynomial D g := rfl
-
 /-! ## Recovering the polynomial tuple -/
 
 /-- A polynomial in the variables of the combined parameters is combined when it
@@ -165,12 +149,6 @@ def directTupleOfCombined (D : DirectLdParams)
 def directTupleOfCombinedTuple (D : DirectLdParams)
     (p : DirectPolyTuple D.combined) : DirectPolyTuple D :=
   directTupleOfCombined D (p default)
-
-@[simp] theorem directTupleOfCombinedTuple_directCombinedTuple (D : DirectLdParams)
-    (g : DirectPolyTuple D) :
-    directTupleOfCombinedTuple D (directCombinedTuple D g) = g := by
-  rw [directTupleOfCombinedTuple, directCombinedTuple_apply,
-    directTupleOfCombined_directCombinedPolynomial]
 
 end
 

@@ -1,7 +1,7 @@
 module
 
 public import QPBT.Observables.ExpandedDefs
-public import QPBT.Observables.WinImplications
+public import QPBT.Observables.WinImplications.InterchangedCommutation
 public import QPBT.Test.MagicSquareTheorems.PerfectStrategy.Observables
 
 /-!

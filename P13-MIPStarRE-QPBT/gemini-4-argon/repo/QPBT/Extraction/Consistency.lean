@@ -117,29 +117,25 @@ theorem marginalPoly_pointMeas_consistent_bob {P : AdmissibleParams}
         ((S.pointMeasExp .alice W point).effect answer)) S.psiHat ≤ deltaG := by
   simpa only [w.marginalPoly_postprocess_eval] using w.point_consistent_bob W
 
-/-! ## Non-encoding support -/
-
-/-- The state-dependent mass assigned by a side's polynomial marginal to
-outcomes outside the low-degree encoding image.  The finite support filter is
-written explicitly so the restricted decoder identity is never applied to an
-arbitrary polynomial representative.
-
-This is the left-hand side of blueprint
-`eq:qld-nonencoding-mass`, from
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1458-1602`.
-The support estimate is proved separately from the decoder identity; see
-`docs/paper-gaps/qpbt_decoding-identity.tex`. -/
-noncomputable def nonencodingMarginalMass {P : AdmissibleParams}
-    {epsilon deltaS : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaS) (side : PlayerSide) (W : PauliKind) : ℝ := by
-  classical
-  exact ∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
-    (inner ℂ S.psiHat
-      (applyOperatorToState
-        (S.placeSide side
-          (heteroKron ((w.marginalPoly side W).effect g)
-            (1 : Op (PauliRegister P))))
-        S.psiHat)).re
+theorem marginalPoly_pointMeasExp_consistencyDefect_eq {P : AdmissibleParams}
+    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
+    (w : GlobalPairWitness S deltaG) (p1 p2 : Placement) (W : PauliKind) :
+    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      (fun u a => S.place p1
+        (((w.marginalPoly p1.side W).postprocess (fun g => MvPolynomial.eval u g.1)).effect a))
+      (fun u a => S.place p2 ((S.pointMeasExp p2.side W u).effect a)) S.psiHat =
+      1 - avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+        ∑ g : Poly P, stateQForm S.psiHat
+          (S.place p1 ((w.marginalPoly p1.side W).effect g) *
+            S.place p2 ((S.pointMeasExp p2.side W u).effect (MvPolynomial.eval u g.1)))) := by
+  have h := consistencyDefect_eq_one_sub_overlap
+    (uniformDistribution (Fin P.m → PauliScalar P))
+    (fun u => S.placedMeasurement p1
+      ((w.marginalPoly p1.side W).postprocess (fun g => MvPolynomial.eval u g.1)))
+    (fun u => S.placedMeasurement p2 (S.pointMeasExp p2.side W u))
+    S.psiHat (uniformDistribution_isProbability _) S.psiHat_norm
+  refine h.trans (congrArg (1 - ·) (avgOver_congr _ _ _ fun u => ?_))
+  simp only [placedMeasurement_effect, ← stateQForm_finset_sum, sum_marginalPoly_eval_mul]
 
 end
 

@@ -135,7 +135,6 @@ def SymmetricStrategy.IsSPCC {X A : Type} [Fintype X] [Fintype A]
     (G : SymmetricGame X A) : Prop :=
   (∀ x, (S.meas x).IsProjective) ∧ S.IsConsistent ∧ IsCommutingOn G.μ S.meas S.meas
 
-
 /-- The numerical domain of the classical low individual degree game. -/
 structure LowDegreeParams where
   q : ℕ
@@ -287,7 +286,6 @@ noncomputable def lowDegreeGame {K : Type} [Field K] [Fintype K] [DecidableEq K]
   μ := lowDegreeQuestionPMF P encoding
   decide := lowDegreeWin P encoding
 
-
 /-- Auxiliary finite spaces, local extraction isometries, and a unit auxiliary state. -/
 structure ExtractionWitness {X Y A B R : Type} [Fintype X] [Fintype Y]
     [Fintype A] [Fintype B] [Fintype R] [DecidableEq R]
@@ -357,7 +355,6 @@ noncomputable def bobOperatorError {X Y A B R O : Type}
     (actual ideal : O → Matrix ((w.ιA' × R) × (w.ιB' × R))
       ((w.ιA' × R) × (w.ιB' × R)) ℂ) : ℝ :=
   ∑ o : O, ‖Matrix.toEuclideanLin (actual o - ideal o) (idealExtractionState w)‖ ^ 2
-
 
 noncomputable section
 
@@ -443,7 +440,6 @@ def deltaLd (a b ε : ℝ) (q m d k : ℕ) : ℝ :=
       Real.rpow 2 (-(b * ((m * d : ℕ) : ℝ))))
 
 end
-
 
 /-- The numerical domain of the Pauli basis game. -/
 structure PauliParams where
@@ -686,7 +682,6 @@ noncomputable def pauliGame {K : Type} [Field K] [Fintype K] [DecidableEq K]
   classical
   exact { μ := pauliQuestionPMF P encoding, decide := pauliWin P encoding trace }
 
-
 /-- A compact strategy on the full Pauli question and answer carriers. -/
 abbrev PauliStrategy (P : PauliParams) (K : Type) [Fintype K] :=
   Strategy (PauliQuestion P K) (PauliQuestion P K)
@@ -863,6 +858,5 @@ noncomputable def rawQubitBobError {K : Type} [Field K] [Fintype K]
       ((S.bob (pauliMeasurementQuestion P W)).effect (.pauliOutcome u)))
     (fun u => idealProjectorBob (I' := w.ιA')
       (qubitPauliProj W (binaryRegisterLabel coordinates u)))
-
 
 end MIPStarRE.QPBT.Palomar

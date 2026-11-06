@@ -1,6 +1,6 @@
 module
 
-public import QPBT.Palomar.LowDegreeConsistency
+public import QPBT.Palomar.Definitions
 public import QPBT.Palomar.LowDegreeGameStrategyBridge
 public import QPBT.Test.LowDegreeGameTheorems
 
@@ -32,30 +32,6 @@ noncomputable section
 theorem LowDegreeParams.is_admissible_size (P : LowDegreeParams) :
     MIPStarRE.QPBT.IsAdmissibleSize P.q :=
   P.hq
-
-/-- Copy compact numerical parameters into the registered low-degree domain. -/
-def LowDegreeParams.toLdParams (P : LowDegreeParams) : MIPStarRE.QPBT.LdParams where
-  q := P.q
-  m := P.m
-  d := P.d
-  k := P.k
-  hm := P.hm
-  hd := P.hd
-  hk := P.hk
-  hq := P.is_admissible_size
-  hdvd := P.hdvd
-
-/-- Compact parameters are recovered exactly after conversion to the library record. -/
-@[simp] theorem LowDegreeParams.ofLdParams_toLdParams (P : LowDegreeParams) :
-    LowDegreeParams.ofLdParams P.toLdParams = P := by
-  cases P
-  rfl
-
-/-- Library parameters are recovered exactly after conversion to the compact record. -/
-@[simp] theorem LowDegreeParams.toLdParams_ofLdParams (P : MIPStarRE.QPBT.LdParams) :
-    (LowDegreeParams.ofLdParams P).toLdParams = P := by
-  cases P
-  rfl
 
 /-- Compact postprocessing of a converted library measurement has the original effect. -/
 @[simp] theorem postprocessEffect_ofMeasurement {A B I : Type*}
@@ -101,14 +77,6 @@ theorem toMeasurement_relabel_postprocess_effect {A B C I : Type*}
     MIPStarRE.QPBT.ldPointValuesOrZero L (lowDegreeAnswerEquiv L a) =
       lowDegreePointValuesOrZero a := by
   rcases a with a | (a | a) <;> rfl
-
-/-- Compact and library polynomial-tuple evaluation are definitionally identical. -/
-@[simp] theorem evalLowDegreePolynomialTuple_eq (L : MIPStarRE.QPBT.LdParams)
-    (u : Fin L.m → MIPStarRE.QPBT.ScalarQ L)
-    (g : LowDegreePolynomialTuple (LowDegreeParams.ofLdParams L)
-      (MIPStarRE.QPBT.ScalarQ L)) :
-    evalLowDegreePolynomialTuple u g = MIPStarRE.QPBT.evalPolyTupleAt u g :=
-  rfl
 
 /-- Alice's point-answer effect is unchanged by strategy and answer transport. -/
 theorem lowDegreeStrategyToLibrary_alice_point_effect
@@ -233,12 +201,6 @@ theorem ldPolynomialPolynomialDefect_ofMeasurement_eq
   rw [consistencyDefect_toPMF]
   rfl
 
-/-- The compact error function is definitionally the registered `deltaLd`. -/
-@[simp] theorem deltaLd_eq_library (a b ε : ℝ) (q m d k : ℕ) :
-    Palomar.deltaLd a b ε q m d k = MIPStarRE.QPBT.deltaLd a b ε q m d k :=
-  rfl
-
 end
-
 
 end MIPStarRE.QPBT.Palomar

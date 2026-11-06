@@ -52,9 +52,6 @@ side-indexed global measurements, and use only the basis fixed by `P.model`.
 structure ExtractionWitness {P : AdmissibleParams} {epsilon deltaS : ℝ}
     (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaS)
     (delta : ℝ) where
-  /-- Each swap map is a right unitary. -/
-  swap_right_unitary : ∀ side : PlayerSide,
-    swapUnitary w side * (swapUnitary w side)ᴴ = 1
   /-- Each swap map is a left unitary. -/
   swap_left_unitary : ∀ side : PlayerSide,
     (swapUnitary w side)ᴴ * swapUnitary w side = 1
@@ -79,29 +76,11 @@ structure ExtractionWitness {P : AdmissibleParams} {epsilon deltaS : ℝ}
         S.placeExtractedRegister side (pauliProj W h))
       (S.idealExpState aux) ≤ delta
 
-/-- Construct a conditional extraction witness when the allowed squared error
-is at least four. The auxiliary vector is the normalized original state tensored
-with EPR on the auxiliary registers. Both distances are bounded independently
-of the dimensions and the number of Pauli answers.
-
-**Scope restriction:** This proves the large-error case of blueprint
-`lem:qld-unitary`, paper `14_analysis_of_the_pauli_basis_test.tex:1666-1860`,
-as required by the normalization correction in
-`docs/paper-gaps/qpbt_extraction-transfer.tex`. It does not assert the small-error
-case or construction of the supplied global witness.
-
-**Unfaithful:** The global measurement is supplied as `GlobalPairWitness`,
-rather than constructed from `lem:qld-4-7`. The discrepancy and planned
-composition with `exists_globalPairWitness` are recorded in
-`docs/paper-gaps/qpbt_extraction-transfer.tex`, issue Dengnifer/MIPStarRE-QPBT-bak#123. The
-source-facing
-composition is `exists_extractionWitness`. -/
 theorem exists_extractionWitness_ofGlobalPairWitness_of_four_le
     {P : AdmissibleParams} {epsilon deltaG delta : ℝ}
     (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaG)
     (hdelta : 4 ≤ delta) : Nonempty (ExtractionWitness S w delta) := by
   refine ⟨{
-    swap_right_unitary := swapUnitary_mul_conjTranspose w
     swap_left_unitary := conjTranspose_mul_swapUnitary w
     aux := S.extractionAuxReference
     aux_norm := S.extractionAuxReference_norm
@@ -120,20 +99,6 @@ theorem exists_extractionWitness_ofGlobalPairWitness_of_four_le
     exact (S.extraction_pauli_dist_le_four w S.extractionAuxReference
       S.extractionAuxReference_norm side W).trans hdelta
 
-/-- At construction error at least one, a universal extraction constant at
-least four suffices for the complete witness. This is the large-error branch
-at the unchanged nested scale of `exists_extractionWitness_ofGlobalPairWitness`.
-
-**Scope restriction:** Only the region where `deltaConstructPaulis` is at least
-one is covered. See the normalization correction in
-`docs/paper-gaps/qpbt_extraction-transfer.tex` for blueprint `lem:qld-unitary`,
-paper `14_analysis_of_the_pauli_basis_test.tex:1743-1783`.
-
-**Unfaithful:** The proof uses the supplied-witness helper
-`exists_extractionWitness_ofGlobalPairWitness_of_four_le`. The global-witness
-construction is supplied by `exists_globalPairWitness` in the source-facing
-`exists_extractionWitness`; see issue Dengnifer/MIPStarRE-QPBT-bak#123 and
-`docs/paper-gaps/qpbt_extraction-transfer.tex`. -/
 theorem exists_extractionWitness_ofGlobalPairWitness_of_one_le_construct
     {P : AdmissibleParams} {epsilon deltaG C : ℝ}
     (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaG)
@@ -148,33 +113,6 @@ theorem exists_extractionWitness_ofGlobalPairWitness_of_one_le_construct
   exact hC.trans (le_mul_of_one_le_right (by linarith)
     (hroot.trans (le_add_of_nonneg_right hratio)))
 
-/-- Conditional extraction for the concrete swap maps at the explicit scale
-obtained by applying `deltaExtract` to `deltaConstructPaulis`. Given a
-`GlobalPairWitness`, it supplies the extraction data appearing in
-blueprint `lem:qld-unitary` and paper
-`14_analysis_of_the_pauli_basis_test.tex:1666-1860`.
-
-**Unfaithful:** This result assumes `w : GlobalPairWitness S deltaG`, which is
-derived inside `lem:qld-unitary` rather than assumed by the paper statement.
-The discrepancy is documented in
-`docs/paper-gaps/qpbt_extraction-transfer.tex`. Elimination: obtain `w` from
-`exists_globalPairWitness` before applying this conditional extraction result;
-`exists_extractionWitness` performs that composition under issue Dengnifer/MIPStarRE-QPBT-bak#123.
-
-**Local fix:** the positive-contraction estimate and normalization case split
-repair the two numerical defects at paper lines 1743-1783 without changing the
-conclusion; see `docs/paper-gaps/qpbt_extraction-transfer.tex`.
-
-The auxiliary state is supplied by `exists_extraction_aux_ofGlobalPairWitness`.
-The two evaluated consistency bounds are transported by the concrete swaps in
-`ProjectiveSetting.extraction_pauli_dist_le`. Choose one universal constant
-above both construction coefficients and eighteen, and use
-`extraction_small_error_absorption` when the construction error is at most one.
-The complete large-error witness covers the other case. Thus every supplied
-global polynomial-pair witness yields a normalized auxiliary state, the
-transformed-state estimate, and both total-Pauli comparison bounds. This result
-neither constructs the global witness nor passes from the swap unitaries to the
-isometries of the source theorem. -/
 theorem exists_extraction_witness_of_global_pair_witness_explicit
     (P : AdmissibleParams) (epsilon deltaG : ℝ)
     (hepsilon : 0 ≤ epsilon) (hepsilon_one : epsilon ≤ 1) (hdeltaG : 0 ≤ deltaG)
@@ -216,7 +154,6 @@ theorem exists_extraction_witness_of_global_pair_witness_explicit
     have habsorb := extraction_small_error_absorption C delta P.m P.d P.q
       hC18 hdelta hdelta_one
     refine ⟨{
-      swap_right_unitary := swapUnitary_mul_conjTranspose w
       swap_left_unitary := conjTranspose_mul_swapUnitary w
       aux := aux
       aux_norm := haux

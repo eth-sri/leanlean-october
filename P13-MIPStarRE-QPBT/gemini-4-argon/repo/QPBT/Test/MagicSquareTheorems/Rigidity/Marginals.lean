@@ -1,6 +1,11 @@
 module
 
-public import QPBT.Test.MagicSquareTheorems.Rigidity.Assembly
+public import QPBT.Test.MagicSquareTheorems.Rigidity.JointState
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Transfer
+public import QPBT.Test.MagicSquareTheorems.Rigidity.IdealTarget
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Anticommutation
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Consistency
+public import QPBT.Test.MagicSquareTheorems.PerfectStrategy.Observables
 
 /-!
 # Transporting the first logical pair through the two-qubit controlled swap

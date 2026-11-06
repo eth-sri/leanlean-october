@@ -1,6 +1,7 @@
 module
 
-public import QPBT.Combining.DirectLowDegree.ResampledCoefficientConsistency
+public import QPBT.Combining.DirectLowDegree.CoefficientConsistency
+public import QPBT.Combining.DirectLowDegree.Transport.LineResampling
 
 /-!
 # Extended direct coefficient-collision loss

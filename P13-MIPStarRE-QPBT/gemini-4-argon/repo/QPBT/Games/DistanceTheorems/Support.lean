@@ -598,12 +598,6 @@ noncomputable def pureStateEuclideanVector {ι : Type*}
     (ψ : PureState ι) : EuclideanSpace ℂ ι :=
   (EuclideanSpace.equiv ι ℂ).symm ψ.vector
 
-@[simp] theorem pureStateEuclideanVector_apply {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
-    (ψ : PureState ι) (i : ι) :
-    pureStateEuclideanVector ψ i = ψ.vector i :=
-  rfl
-
 /-- The Euclidean vector associated with an LDT pure state has norm one. -/
 theorem pureStateEuclideanVector_norm {ι : Type*}
     [Fintype ι] [DecidableEq ι] [Nonempty ι]

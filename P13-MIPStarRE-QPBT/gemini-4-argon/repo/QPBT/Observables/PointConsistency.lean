@@ -28,9 +28,6 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
-local instance pauliEdgeNonemptyPointConsistency : Nonempty PauliEdge :=
-  pauliEdge_nonempty
-
 /-! ## Consistency of the unexpanded point measurements -/
 
 /-- Full point-measurement inconsistency is the probability that the two
@@ -153,314 +150,92 @@ namespace ProjectiveSetting
 /-! ## Fine-product consistency on the two bipartitions -/
 
 set_option synthInstance.maxSize 400 in
-/-- Tensoring the strategy point measurements with the perfectly correlated
-Pauli point measurement does not change their consistency defect on the
-`AA' | BA''(B'B'')` bipartition. This is the product step in item 1 of
-`lem:qld-comm-cons`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
-theorem pointTauConsistency_aaBa_eq {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u p => heteroKron ((S.pointTauMeas .alice W u).effect p)
-          (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×
-            (PauliRegister P × PauliRegister P))))
-        (fun u p => heteroKron (1 : Op (S.toStrategy.ιA × PauliRegister P))
-          (heteroKron ((S.pointTauMeas .bob W u).effect p)
-            (1 : Op (PauliRegister P × PauliRegister P))))
-        (reindexState (aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
-          S.psiHat) =
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
-        (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
-        S.toStrategy.ψ := by
-  let X := Fin P.m → PauliScalar P
-  let R := PauliRegister P
-  let μ := uniformDistribution X
-  let e := aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB
-  let fineA : X → Measurement (PauliScalar P × PauliScalar P)
-      (S.toStrategy.ιA × R) := fun u => S.pointTauMeas .alice W u
-  let fineB : X → Measurement (PauliScalar P × PauliScalar P)
-      ((S.toStrategy.ιB × R) × (R × R)) := fun u =>
-    DistanceCalculus.leftPlacedMeasurement (ιB := R × R)
-      (S.pointTauMeas .bob W u)
-  let A : X → Measurement (PauliScalar P × PauliScalar P)
-      ((S.toStrategy.ιA × R) × ((S.toStrategy.ιB × R) × (R × R))) :=
-    fun u => DistanceCalculus.leftPlacedMeasurement (fineA u)
-  let B : X → Measurement (PauliScalar P × PauliScalar P)
-      ((S.toStrategy.ιA × R) × ((S.toStrategy.ιB × R) × (R × R))) :=
-    fun u => DistanceCalculus.rightPlacedMeasurement (fineB u)
-  let pointA : X → Measurement (PauliScalar P)
-      (S.toStrategy.ιA × S.toStrategy.ιB) := fun u =>
-    DistanceCalculus.leftPlacedMeasurement (S.pointMeas .alice W u)
-  let pointB : X → Measurement (PauliScalar P)
-      (S.toStrategy.ιA × S.toStrategy.ιB) := fun u =>
-    DistanceCalculus.rightPlacedMeasurement (S.pointMeas .bob W u)
-  have hμ : μ.IsProbability := uniformDistribution_isProbability X
-  have hgroup : ‖reindexState e S.psiHat‖ = 1 := by
-    rw [reindexState_norm_eq, psiHat_norm]
-  have hfine :
-      consistencyDefect μ (fun u p => (A u).effect p)
-          (fun u p => (B u).effect p) (reindexState e S.psiHat) =
-        1 - avgOver μ (fun u => ∑ p,
-          DistanceCalculus.stateQForm (reindexState e S.psiHat)
-            ((A u).effect p * (B u).effect p)) :=
-    DistanceCalculus.consistencyDefect_eq_one_sub_overlap μ A B _ hμ hgroup
-  have hpoint :
-      consistencyDefect μ (fun u a => (pointA u).effect a)
-          (fun u a => (pointB u).effect a) S.toStrategy.ψ =
-        1 - avgOver μ (fun u => ∑ a,
-          DistanceCalculus.stateQForm S.toStrategy.ψ
-            ((pointA u).effect a * (pointB u).effect a)) :=
-    DistanceCalculus.consistencyDefect_eq_one_sub_overlap μ pointA pointB _ hμ
-      S.toStrategy.ψ_norm
-  change consistencyDefect μ (fun u p => (A u).effect p)
-      (fun u p => (B u).effect p) (reindexState e S.psiHat) =
-    consistencyDefect μ (fun u a => (pointA u).effect a)
-      (fun u a => (pointB u).effect a) S.toStrategy.ψ
-  rw [hfine, hpoint]
-  congr 1
-  apply avgOver_congr
-  intro u
-  have hterm (p : PauliScalar P × PauliScalar P) :
-      DistanceCalculus.stateQForm (reindexState e S.psiHat)
-          ((A u).effect p * (B u).effect p) =
-        DistanceCalculus.stateQForm S.toStrategy.ψ
-            (heteroKron ((S.pointMeas .alice W u).effect p.1)
-              ((S.pointMeas .bob W u).effect p.1)) *
-          DistanceCalculus.stateQForm (eprState (PauliRegister P))
-            (heteroKron (tauPointProj W u p.2) (tauPointProj W u p.2)) := by
-    let OA : Op (S.toStrategy.ιA × R) :=
-      (S.pointTauMeas .alice W u).effect p
-    let OB : Op (S.toStrategy.ιB × R) :=
-      (S.pointTauMeas .bob W u).effect p
-    have hop :
-        reindexOp e (heteroKron OA
-          (heteroKron OB (1 : Op (R × R)))) =
-        S.place .AA' OA * S.place .BA'' OB := by
-      rw [show heteroKron OA (heteroKron OB (1 : Op (R × R))) =
-          heteroKron OA 1 *
-            heteroKron 1 (heteroKron OB (1 : Op (R × R))) by
-        rw [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]]
-      rw [WinImplications.reindexOp_mul,
-        reindexOp_aaBaBipartition_left, reindexOp_aaBaBipartition_right]
-    simp only [A, B, fineA, fineB, DistanceCalculus.leftPlacedMeasurement,
-      DistanceCalculus.rightPlacedMeasurement, Measurement.ofSumEqOne]
-    rw [DistanceCalculus.placed_product_stateQForm_eq,
-      WinImplications.stateQForm_reindexState]
-    change DistanceCalculus.stateQForm S.psiHat
-        (reindexOp e (heteroKron OA (heteroKron OB (1 : Op (R × R))))) = _
-    rw [hop]
-    convert stateQForm_place_AA'_mul_BA'' S
-        ((S.pointMeas .alice W u).effect p.1)
-        ((S.pointMeas .bob W u).effect p.1) (tauPointProj W u p.2)
-      (Matrix.nonneg_iff_posSemidef.mp
-        ((S.pointMeas .alice W u).pos p.1)).isHermitian
-      (Matrix.nonneg_iff_posSemidef.mp
-        ((S.pointMeas .bob W u).pos p.1)).isHermitian
-      (Matrix.nonneg_iff_posSemidef.mp
-        ((tauPointMeas W u).pos p.2)).isHermitian using 1
-    all_goals simp [OA, OB]
-    all_goals rfl
-  simp_rw [hterm]
-  rw [Fintype.sum_prod_type]
-  calc
-    (∑ x : PauliScalar P, ∑ y : PauliScalar P,
-        DistanceCalculus.stateQForm S.toStrategy.ψ
-            (heteroKron ((S.pointMeas .alice W u).effect x)
-              ((S.pointMeas .bob W u).effect x)) *
-          DistanceCalculus.stateQForm (eprState R)
-            (heteroKron (tauPointProj W u y) (tauPointProj W u y))) =
-      (∑ x : PauliScalar P,
-        DistanceCalculus.stateQForm S.toStrategy.ψ
-          (heteroKron ((S.pointMeas .alice W u).effect x)
-            ((S.pointMeas .bob W u).effect x))) *
-        ∑ y : PauliScalar P, DistanceCalculus.stateQForm (eprState R)
-          (heteroKron (tauPointProj W u y) (tauPointProj W u y)) := by
-      rw [Finset.sum_mul]
-      simp_rw [Finset.mul_sum]
-    _ = ∑ a : PauliScalar P,
-        DistanceCalculus.stateQForm S.toStrategy.ψ
-          ((pointA u).effect a * (pointB u).effect a) := by
-      rw [sum_tauPointProj_pair_stateQForm_eprState, mul_one]
-      simp only [pointA, pointB, DistanceCalculus.leftPlacedMeasurement,
-        DistanceCalculus.rightPlacedMeasurement, Measurement.ofSumEqOne]
-      simp_rw [DistanceCalculus.placed_product_stateQForm_eq]
-
-set_option synthInstance.maxSize 400 in
-/-- Tensoring the strategy point measurements with the perfectly correlated
-Pauli point measurement does not change their consistency defect on the
-`AB'' | BB'(A'A'')` bipartition. This is the second explicit product placement
-in item 1 of `lem:qld-comm-cons`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
-theorem pointTauConsistency_abBb_eq {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u p => heteroKron ((S.pointTauMeas .alice W u).effect p)
-          (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×
-            (PauliRegister P × PauliRegister P))))
-        (fun u p => heteroKron (1 : Op (S.toStrategy.ιA × PauliRegister P))
-          (heteroKron ((S.pointTauMeas .bob W u).effect p)
-            (1 : Op (PauliRegister P × PauliRegister P))))
-        (reindexState (abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB)
-          S.psiHat) =
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
-        (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
-        S.toStrategy.ψ := by
-  let X := Fin P.m → PauliScalar P
-  let R := PauliRegister P
-  let μ := uniformDistribution X
-  let e := abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB
-  let fineA : X → Measurement (PauliScalar P × PauliScalar P)
-      (S.toStrategy.ιA × R) := fun u => S.pointTauMeas .alice W u
-  let fineB : X → Measurement (PauliScalar P × PauliScalar P)
-      ((S.toStrategy.ιB × R) × (R × R)) := fun u =>
-    DistanceCalculus.leftPlacedMeasurement (ιB := R × R)
-      (S.pointTauMeas .bob W u)
-  let A : X → Measurement (PauliScalar P × PauliScalar P)
-      ((S.toStrategy.ιA × R) × ((S.toStrategy.ιB × R) × (R × R))) :=
-    fun u => DistanceCalculus.leftPlacedMeasurement (fineA u)
-  let B : X → Measurement (PauliScalar P × PauliScalar P)
-      ((S.toStrategy.ιA × R) × ((S.toStrategy.ιB × R) × (R × R))) :=
-    fun u => DistanceCalculus.rightPlacedMeasurement (fineB u)
-  let pointA : X → Measurement (PauliScalar P)
-      (S.toStrategy.ιA × S.toStrategy.ιB) := fun u =>
-    DistanceCalculus.leftPlacedMeasurement (S.pointMeas .alice W u)
-  let pointB : X → Measurement (PauliScalar P)
-      (S.toStrategy.ιA × S.toStrategy.ιB) := fun u =>
-    DistanceCalculus.rightPlacedMeasurement (S.pointMeas .bob W u)
-  have hμ : μ.IsProbability := uniformDistribution_isProbability X
-  have hgroup : ‖reindexState e S.psiHat‖ = 1 := by
-    rw [reindexState_norm_eq, psiHat_norm]
-  have hfine :
-      consistencyDefect μ (fun u p => (A u).effect p)
-          (fun u p => (B u).effect p) (reindexState e S.psiHat) =
-        1 - avgOver μ (fun u => ∑ p,
-          DistanceCalculus.stateQForm (reindexState e S.psiHat)
-            ((A u).effect p * (B u).effect p)) :=
-    DistanceCalculus.consistencyDefect_eq_one_sub_overlap μ A B _ hμ hgroup
-  have hpoint :
-      consistencyDefect μ (fun u a => (pointA u).effect a)
-          (fun u a => (pointB u).effect a) S.toStrategy.ψ =
-        1 - avgOver μ (fun u => ∑ a,
-          DistanceCalculus.stateQForm S.toStrategy.ψ
-            ((pointA u).effect a * (pointB u).effect a)) :=
-    DistanceCalculus.consistencyDefect_eq_one_sub_overlap μ pointA pointB _ hμ
-      S.toStrategy.ψ_norm
-  change consistencyDefect μ (fun u p => (A u).effect p)
-      (fun u p => (B u).effect p) (reindexState e S.psiHat) =
-    consistencyDefect μ (fun u a => (pointA u).effect a)
-      (fun u a => (pointB u).effect a) S.toStrategy.ψ
-  rw [hfine, hpoint]
-  congr 1
-  apply avgOver_congr
-  intro u
-  have hterm (p : PauliScalar P × PauliScalar P) :
-      DistanceCalculus.stateQForm (reindexState e S.psiHat)
-          ((A u).effect p * (B u).effect p) =
-        DistanceCalculus.stateQForm S.toStrategy.ψ
-            (heteroKron ((S.pointMeas .alice W u).effect p.1)
-              ((S.pointMeas .bob W u).effect p.1)) *
-          DistanceCalculus.stateQForm (eprState (PauliRegister P))
-            (heteroKron (tauPointProj W u p.2) (tauPointProj W u p.2)) := by
-    let OA : Op (S.toStrategy.ιA × R) :=
-      (S.pointTauMeas .alice W u).effect p
-    let OB : Op (S.toStrategy.ιB × R) :=
-      (S.pointTauMeas .bob W u).effect p
-    have hop :
-        reindexOp e (heteroKron OA
-          (heteroKron OB (1 : Op (R × R)))) =
-        S.place .AB'' OA * S.place .BB' OB := by
-      rw [show heteroKron OA (heteroKron OB (1 : Op (R × R))) =
-          heteroKron OA 1 *
-            heteroKron 1 (heteroKron OB (1 : Op (R × R))) by
-        rw [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]]
-      rw [WinImplications.reindexOp_mul,
-        reindexOp_abBbBipartition_left, reindexOp_abBbBipartition_right]
-    simp only [A, B, fineA, fineB, DistanceCalculus.leftPlacedMeasurement,
-      DistanceCalculus.rightPlacedMeasurement, Measurement.ofSumEqOne]
-    rw [DistanceCalculus.placed_product_stateQForm_eq,
-      WinImplications.stateQForm_reindexState]
-    change DistanceCalculus.stateQForm S.psiHat
-        (reindexOp e (heteroKron OA (heteroKron OB (1 : Op (R × R))))) = _
-    rw [hop]
-    convert stateQForm_place_AB''_mul_BB' S
-        ((S.pointMeas .alice W u).effect p.1)
-        ((S.pointMeas .bob W u).effect p.1) (tauPointProj W u p.2)
-      (Matrix.nonneg_iff_posSemidef.mp
-        ((S.pointMeas .alice W u).pos p.1)).isHermitian
-      (Matrix.nonneg_iff_posSemidef.mp
-        ((S.pointMeas .bob W u).pos p.1)).isHermitian
-      (Matrix.nonneg_iff_posSemidef.mp
-        ((tauPointMeas W u).pos p.2)).isHermitian using 1
-    all_goals simp [OA, OB]
-    all_goals rfl
-  simp_rw [hterm]
-  rw [Fintype.sum_prod_type]
-  calc
-    (∑ x : PauliScalar P, ∑ y : PauliScalar P,
-        DistanceCalculus.stateQForm S.toStrategy.ψ
-            (heteroKron ((S.pointMeas .alice W u).effect x)
-              ((S.pointMeas .bob W u).effect x)) *
-          DistanceCalculus.stateQForm (eprState R)
-            (heteroKron (tauPointProj W u y) (tauPointProj W u y))) =
-      (∑ x : PauliScalar P,
-        DistanceCalculus.stateQForm S.toStrategy.ψ
-          (heteroKron ((S.pointMeas .alice W u).effect x)
-            ((S.pointMeas .bob W u).effect x))) *
-        ∑ y : PauliScalar P, DistanceCalculus.stateQForm (eprState R)
-          (heteroKron (tauPointProj W u y) (tauPointProj W u y)) := by
-      rw [Finset.sum_mul]
-      simp_rw [Finset.mul_sum]
-    _ = ∑ a : PauliScalar P,
-        DistanceCalculus.stateQForm S.toStrategy.ψ
-          ((pointA u).effect a * (pointB u).effect a) := by
-      rw [sum_tauPointProj_pair_stateQForm_eprState, mul_one]
-      simp only [pointA, pointB, DistanceCalculus.leftPlacedMeasurement,
-        DistanceCalculus.rightPlacedMeasurement, Measurement.ofSumEqOne]
-      simp_rw [DistanceCalculus.placed_product_stateQForm_eq]
-
-/-! ## Data processing and transport back to the six registers -/
-
-set_option synthInstance.maxSize 400 in
-/-- Expanded point consistency for the directed `AA'`--`BA''` placement pair.
-This is the explicit data-processing estimate for item 1 of
-`lem:qld-comm-cons`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:468-489`,
-blueprint `ch14_qpbt_observables.tex:1155-1163`. -/
-theorem expPointDist_aaBa_le {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem expPointDist_bipartition_le {P : AdmissibleParams} {ε : ℝ}
+    (S : ProjectiveSetting P ε) (W : PauliKind)
+    (placeA : Op (S.toStrategy.ιA × PauliRegister P) →
+      Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB))
+    (placeB : Op (S.toStrategy.ιB × PauliRegister P) →
+      Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB))
+    (e : SixReg P S.toStrategy.ιA S.toStrategy.ιB ≃
+      (S.toStrategy.ιA × PauliRegister P) ×
+        ((S.toStrategy.ιB × PauliRegister P) × (PauliRegister P × PauliRegister P)))
+    (he_left : ∀ OA, reindexOp e (heteroKron OA 1) = placeA OA)
+    (he_right : ∀ OB, reindexOp e (heteroKron 1 (heteroKron OB 1)) = placeB OB)
+    (hstate : ∀ (A : Op S.toStrategy.ιA) (B : Op S.toStrategy.ιB) (C : Op (PauliRegister P)),
+      A.IsHermitian → B.IsHermitian → C.IsHermitian →
+      DistanceCalculus.stateQForm S.psiHat (placeA (heteroKron A C) * placeB (heteroKron B C)) =
+        DistanceCalculus.stateQForm S.toStrategy.ψ (heteroKron A B) *
+          DistanceCalculus.stateQForm (eprState (PauliRegister P)) (heteroKron C C)) :
     opFamilyDistSq (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u a => S.place .AA' ((S.pointMeasExp .alice W u).effect a))
-        (fun u a => S.place .BA'' ((S.pointMeasExp .bob W u).effect a))
+        (fun u a => placeA ((S.pointMeasExp .alice W u).effect a))
+        (fun u a => placeB ((S.pointMeasExp .bob W u).effect a))
         S.psiHat ≤ 2 * ((Fintype.card PauliEdge : ℝ) * ε) := by
   let X := Fin P.m → PauliScalar P
   let R := PauliRegister P
   let μ := uniformDistribution X
-  let e := aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB
-  let add : PauliScalar P × PauliScalar P → PauliScalar P :=
-    fun p => p.1 + p.2
-  let fineA : X → Measurement (PauliScalar P × PauliScalar P)
-      (S.toStrategy.ιA × R) := fun u => S.pointTauMeas .alice W u
-  let fineB : X → Measurement (PauliScalar P × PauliScalar P)
-      ((S.toStrategy.ιB × R) × (R × R)) := fun u =>
-    DistanceCalculus.leftPlacedMeasurement (ιB := R × R)
-      (S.pointTauMeas .bob W u)
-  have hfine :
-      consistencyDefect μ
-          (fun u p => heteroKron ((fineA u).effect p)
-            (1 : Op ((S.toStrategy.ιB × R) × (R × R))))
-          (fun u p => heteroKron (1 : Op (S.toStrategy.ιA × R))
-            ((fineB u).effect p))
-          (reindexState e S.psiHat) ≤ (Fintype.card PauliEdge : ℝ) * ε := by
-    calc
-      _ = consistencyDefect (uniformDistribution X)
-          (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
-          (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
-          S.toStrategy.ψ := by
-        convert pointTauConsistency_aaBa_eq S W using 1
-        all_goals rfl
-      _ ≤ (Fintype.card PauliEdge : ℝ) * ε := point_self_consistency_le S W
+  let add : PauliScalar P × PauliScalar P → PauliScalar P := fun p => p.1 + p.2
+  let fineA : X → Measurement (PauliScalar P × PauliScalar P) (S.toStrategy.ιA × R) :=
+    fun u => S.pointTauMeas .alice W u
+  let fineB : X → Measurement (PauliScalar P × PauliScalar P) ((S.toStrategy.ιB × R) × (R × R)) :=
+    fun u => DistanceCalculus.leftPlacedMeasurement (ιB := R × R) (S.pointTauMeas .bob W u)
+  let A : X → Measurement (PauliScalar P × PauliScalar P)
+      ((S.toStrategy.ιA × R) × ((S.toStrategy.ιB × R) × (R × R))) :=
+    fun u => DistanceCalculus.leftPlacedMeasurement (fineA u)
+  let B : X → Measurement (PauliScalar P × PauliScalar P)
+      ((S.toStrategy.ιA × R) × ((S.toStrategy.ιB × R) × (R × R))) :=
+    fun u => DistanceCalculus.rightPlacedMeasurement (fineB u)
+  let pointA : X → Measurement (PauliScalar P) (S.toStrategy.ιA × S.toStrategy.ιB) :=
+    fun u => DistanceCalculus.leftPlacedMeasurement (S.pointMeas .alice W u)
+  let pointB : X → Measurement (PauliScalar P) (S.toStrategy.ιA × S.toStrategy.ιB) :=
+    fun u => DistanceCalculus.rightPlacedMeasurement (S.pointMeas .bob W u)
+  have hμ : μ.IsProbability := uniformDistribution_isProbability X
+  have hgroup : ‖reindexState e S.psiHat‖ = 1 := by rw [reindexState_norm_eq, psiHat_norm]
+  have hfine_eq :
+      consistencyDefect μ (fun u p => (A u).effect p)
+          (fun u p => (B u).effect p) (reindexState e S.psiHat) =
+        consistencyDefect μ (fun u a => (pointA u).effect a)
+          (fun u a => (pointB u).effect a) S.toStrategy.ψ := by
+    rw [DistanceCalculus.consistencyDefect_eq_one_sub_overlap μ A B _ hμ hgroup,
+      DistanceCalculus.consistencyDefect_eq_one_sub_overlap μ pointA pointB _ hμ
+        S.toStrategy.ψ_norm]
+    congr 1
+    apply avgOver_congr
+    intro u
+    have hterm (p : PauliScalar P × PauliScalar P) :
+        DistanceCalculus.stateQForm (reindexState e S.psiHat)
+            ((A u).effect p * (B u).effect p) =
+          DistanceCalculus.stateQForm S.toStrategy.ψ
+              (heteroKron ((S.pointMeas .alice W u).effect p.1)
+                ((S.pointMeas .bob W u).effect p.1)) *
+            DistanceCalculus.stateQForm (eprState R)
+              (heteroKron (tauPointProj W u p.2) (tauPointProj W u p.2)) := by
+      let OA : Op (S.toStrategy.ιA × R) := (S.pointTauMeas .alice W u).effect p
+      let OB : Op (S.toStrategy.ιB × R) := (S.pointTauMeas .bob W u).effect p
+      have hop : reindexOp e (heteroKron OA (heteroKron OB (1 : Op (R × R)))) =
+          placeA OA * placeB OB := by
+        rw [show heteroKron OA (heteroKron OB (1 : Op (R × R))) =
+            heteroKron OA 1 * heteroKron 1 (heteroKron OB (1 : Op (R × R))) by
+          rw [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]]
+        rw [WinImplications.reindexOp_mul, he_left, he_right]
+      simp only [A, B, fineA, fineB, DistanceCalculus.leftPlacedMeasurement,
+        DistanceCalculus.rightPlacedMeasurement, Measurement.ofSumEqOne]
+      rw [DistanceCalculus.placed_product_stateQForm_eq,
+        WinImplications.stateQForm_reindexState]
+      change DistanceCalculus.stateQForm S.psiHat
+        (reindexOp e (heteroKron OA (heteroKron OB (1 : Op (R × R))))) = _
+      rw [hop]
+      exact hstate ((S.pointMeas .alice W u).effect p.1)
+        ((S.pointMeas .bob W u).effect p.1) (tauPointProj W u p.2)
+        (Matrix.nonneg_iff_posSemidef.mp ((S.pointMeas .alice W u).pos p.1)).isHermitian
+        (Matrix.nonneg_iff_posSemidef.mp ((S.pointMeas .bob W u).pos p.1)).isHermitian
+        (Matrix.nonneg_iff_posSemidef.mp ((tauPointMeas W u).pos p.2)).isHermitian
+    simp_rw [hterm]
+    rw [Fintype.sum_prod_type]
+    simp_rw [← Finset.mul_sum]
+    rw [← Finset.sum_mul, sum_tauPointProj_pair_stateQForm_eprState, mul_one]
+    simp only [pointA, pointB, DistanceCalculus.leftPlacedMeasurement,
+      DistanceCalculus.rightPlacedMeasurement, Measurement.ofSumEqOne]
+    simp_rw [DistanceCalculus.placed_product_stateQForm_eq]
   have hcoarse :
       consistencyDefect μ
           (fun u a => heteroKron (((fineA u).postprocess add).effect a)
@@ -468,196 +243,28 @@ theorem expPointDist_aaBa_le {P : AdmissibleParams} {ε : ℝ}
           (fun u a => heteroKron (1 : Op (S.toStrategy.ιA × R))
             (((fineB u).postprocess add).effect a))
           (reindexState e S.psiHat) ≤ (Fintype.card PauliEdge : ℝ) * ε :=
-    le_trans (consistencyDefect_postprocess_le μ fineA fineB
-      (reindexState e S.psiHat) add) hfine
+    (consistencyDefect_postprocess_le μ fineA fineB (reindexState e S.psiHat) add).trans
+      (hfine_eq.le.trans (point_self_consistency_le S W))
   have hdist := WinImplications.opFamilyDistSq_placed_le_of_consistencyDefect_le
     μ (fun u => (fineA u).postprocess add)
       (fun u => (fineB u).postprocess add) (reindexState e S.psiHat) hcoarse
   have hAeff (u : X) (a : PauliScalar P) :
-      ((fineA u).postprocess add).effect a =
-        (S.pointMeasExp .alice W u).effect a := by
-    convert
-      (S.pointMeasExp_effect_eq_pointTauMeas_postprocess .alice W u a).symm
-        using 1 <;> rfl
+      ((fineA u).postprocess add).effect a = (S.pointMeasExp .alice W u).effect a :=
+    (S.pointMeasExp_effect_eq_pointTauMeas_postprocess .alice W u a).symm
   have hBeff (u : X) (a : PauliScalar P) :
       ((fineB u).postprocess add).effect a =
         heteroKron ((S.pointMeasExp .bob W u).effect a) (1 : Op (R × R)) := by
-    calc
-      _ = heteroKron
-          (((S.pointTauMeas .bob W u).postprocess add).effect a)
-          (1 : Op (R × R)) := by
-        convert leftPlacedMeasurement_postprocess_effect
-          (S.pointTauMeas .bob W u) add a using 1 <;> rfl
-      _ = _ := by
-        rw [← S.pointMeasExp_effect_eq_pointTauMeas_postprocess .bob W u a]
-  have hnorm (u : X) (a : PauliScalar P) :
-      ‖applyOperatorToState
-          (S.place .AA' ((S.pointMeasExp .alice W u).effect a) -
-            S.place .BA'' ((S.pointMeasExp .bob W u).effect a)) S.psiHat‖ =
-        ‖applyOperatorToState
-          (heteroKron (((fineA u).postprocess add).effect a) 1 -
-            heteroKron 1 (((fineB u).postprocess add).effect a))
-          (reindexState e S.psiHat)‖ := by
-    let OA : Op (S.toStrategy.ιA × R) :=
-      (S.pointMeasExp .alice W u).effect a
-    let OB : Op (S.toStrategy.ιB × R) :=
-      (S.pointMeasExp .bob W u).effect a
-    have hop :
-        reindexOp e
-            (heteroKron OA
-                (1 : Op ((S.toStrategy.ιB × R) × (R × R))) -
-              heteroKron (1 : Op (S.toStrategy.ιA × R))
-                (heteroKron OB (1 : Op (R × R)))) =
-          S.place .AA' OA - S.place .BA'' OB := by
-      rw [WinImplications.reindexOp_sub,
-        reindexOp_aaBaBipartition_left, reindexOp_aaBaBipartition_right]
-    rw [hAeff, hBeff, WinImplications.norm_applyOperatorToState_reindexState]
-    change ‖applyOperatorToState (S.place .AA' OA - S.place .BA'' OB)
-        S.psiHat‖ =
-      ‖applyOperatorToState
-        (reindexOp e
-          (heteroKron OA (1 : Op ((S.toStrategy.ιB × R) × (R × R))) -
-            heteroKron (1 : Op (S.toStrategy.ιA × R))
-              (heteroKron OB (1 : Op (R × R))))) S.psiHat‖
-    rw [hop]
-  change opFamilyDistSq μ
-      (fun u a => S.place .AA' ((S.pointMeasExp .alice W u).effect a))
-      (fun u a => S.place .BA'' ((S.pointMeasExp .bob W u).effect a))
-      S.psiHat ≤ _
-  calc
-    _ = opFamilyDistSq μ
-        (fun u a => heteroKron (((fineA u).postprocess add).effect a) 1)
-        (fun u a => heteroKron 1 (((fineB u).postprocess add).effect a))
-        (reindexState e S.psiHat) := by
-      unfold opFamilyDistSq
-      apply avgOver_congr
-      intro u
-      apply Finset.sum_congr rfl
-      intro a _
-      rw [hnorm]
-    _ ≤ 2 * ((Fintype.card PauliEdge : ℝ) * ε) := hdist
-
-set_option synthInstance.maxSize 400 in
-/-- Expanded point consistency for the directed `AB''`--`BB'` placement pair.
-This is the second bipartition of item 1 and does not assume strategy symmetry;
-paper `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:468-489`,
-blueprint `ch14_qpbt_observables.tex:1155-1163`. -/
-theorem expPointDist_abBb_le {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
-    opFamilyDistSq (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u a => S.place .AB'' ((S.pointMeasExp .alice W u).effect a))
-        (fun u a => S.place .BB' ((S.pointMeasExp .bob W u).effect a))
-        S.psiHat ≤ 2 * ((Fintype.card PauliEdge : ℝ) * ε) := by
-  let X := Fin P.m → PauliScalar P
-  let R := PauliRegister P
-  let μ := uniformDistribution X
-  let e := abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB
-  let add : PauliScalar P × PauliScalar P → PauliScalar P :=
-    fun p => p.1 + p.2
-  let fineA : X → Measurement (PauliScalar P × PauliScalar P)
-      (S.toStrategy.ιA × R) := fun u => S.pointTauMeas .alice W u
-  let fineB : X → Measurement (PauliScalar P × PauliScalar P)
-      ((S.toStrategy.ιB × R) × (R × R)) := fun u =>
-    DistanceCalculus.leftPlacedMeasurement (ιB := R × R)
-      (S.pointTauMeas .bob W u)
-  have hfine :
-      consistencyDefect μ
-          (fun u p => heteroKron ((fineA u).effect p)
-            (1 : Op ((S.toStrategy.ιB × R) × (R × R))))
-          (fun u p => heteroKron (1 : Op (S.toStrategy.ιA × R))
-            ((fineB u).effect p))
-          (reindexState e S.psiHat) ≤ (Fintype.card PauliEdge : ℝ) * ε := by
-    calc
-      _ = consistencyDefect (uniformDistribution X)
-          (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
-          (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
-          S.toStrategy.ψ := by
-        convert pointTauConsistency_abBb_eq S W using 1
-        all_goals rfl
-      _ ≤ (Fintype.card PauliEdge : ℝ) * ε := point_self_consistency_le S W
-  have hcoarse :
-      consistencyDefect μ
-          (fun u a => heteroKron (((fineA u).postprocess add).effect a)
-            (1 : Op ((S.toStrategy.ιB × R) × (R × R))))
-          (fun u a => heteroKron (1 : Op (S.toStrategy.ιA × R))
-            (((fineB u).postprocess add).effect a))
-          (reindexState e S.psiHat) ≤ (Fintype.card PauliEdge : ℝ) * ε :=
-    le_trans (consistencyDefect_postprocess_le μ fineA fineB
-      (reindexState e S.psiHat) add) hfine
-  have hdist := WinImplications.opFamilyDistSq_placed_le_of_consistencyDefect_le
-    μ (fun u => (fineA u).postprocess add)
-      (fun u => (fineB u).postprocess add) (reindexState e S.psiHat) hcoarse
-  have hAeff (u : X) (a : PauliScalar P) :
-      ((fineA u).postprocess add).effect a =
-        (S.pointMeasExp .alice W u).effect a := by
-    convert
-      (S.pointMeasExp_effect_eq_pointTauMeas_postprocess .alice W u a).symm
-        using 1 <;> rfl
-  have hBeff (u : X) (a : PauliScalar P) :
-      ((fineB u).postprocess add).effect a =
-        heteroKron ((S.pointMeasExp .bob W u).effect a) (1 : Op (R × R)) := by
-    calc
-      _ = heteroKron
-          (((S.pointTauMeas .bob W u).postprocess add).effect a)
-          (1 : Op (R × R)) := by
-        convert leftPlacedMeasurement_postprocess_effect
-          (S.pointTauMeas .bob W u) add a using 1 <;> rfl
-      _ = _ := by
-        rw [← S.pointMeasExp_effect_eq_pointTauMeas_postprocess .bob W u a]
-  have hnorm (u : X) (a : PauliScalar P) :
-      ‖applyOperatorToState
-          (S.place .AB'' ((S.pointMeasExp .alice W u).effect a) -
-            S.place .BB' ((S.pointMeasExp .bob W u).effect a)) S.psiHat‖ =
-        ‖applyOperatorToState
-          (heteroKron (((fineA u).postprocess add).effect a) 1 -
-            heteroKron 1 (((fineB u).postprocess add).effect a))
-          (reindexState e S.psiHat)‖ := by
-    let OA : Op (S.toStrategy.ιA × R) :=
-      (S.pointMeasExp .alice W u).effect a
-    let OB : Op (S.toStrategy.ιB × R) :=
-      (S.pointMeasExp .bob W u).effect a
-    have hop :
-        reindexOp e
-            (heteroKron OA
-                (1 : Op ((S.toStrategy.ιB × R) × (R × R))) -
-              heteroKron (1 : Op (S.toStrategy.ιA × R))
-                (heteroKron OB (1 : Op (R × R)))) =
-          S.place .AB'' OA - S.place .BB' OB := by
-      rw [WinImplications.reindexOp_sub,
-        reindexOp_abBbBipartition_left, reindexOp_abBbBipartition_right]
-    rw [hAeff, hBeff, WinImplications.norm_applyOperatorToState_reindexState]
-    change ‖applyOperatorToState (S.place .AB'' OA - S.place .BB' OB)
-        S.psiHat‖ =
-      ‖applyOperatorToState
-        (reindexOp e
-          (heteroKron OA (1 : Op ((S.toStrategy.ιB × R) × (R × R))) -
-            heteroKron (1 : Op (S.toStrategy.ιA × R))
-              (heteroKron OB (1 : Op (R × R))))) S.psiHat‖
-    rw [hop]
-  change opFamilyDistSq μ
-      (fun u a => S.place .AB'' ((S.pointMeasExp .alice W u).effect a))
-      (fun u a => S.place .BB' ((S.pointMeasExp .bob W u).effect a))
-      S.psiHat ≤ _
-  calc
-    _ = opFamilyDistSq μ
-        (fun u a => heteroKron (((fineA u).postprocess add).effect a) 1)
-        (fun u a => heteroKron 1 (((fineB u).postprocess add).effect a))
-        (reindexState e S.psiHat) := by
-      unfold opFamilyDistSq
-      apply avgOver_congr
-      intro u
-      apply Finset.sum_congr rfl
-      intro a _
-      rw [hnorm]
-    _ ≤ 2 * ((Fintype.card PauliEdge : ℝ) * ε) := hdist
+    rw [leftPlacedMeasurement_postprocess_effect,
+      ← S.pointMeasExp_effect_eq_pointTauMeas_postprocess .bob W u a]
+  refine le_of_eq_of_le (avgOver_congr _ _ _ fun u => Finset.sum_congr rfl fun a _ => ?_) hdist
+  dsimp only
+  rw [hAeff, hBeff, WinImplications.norm_applyOperatorToState_reindexState,
+    WinImplications.reindexOp_sub, he_left, he_right]
 
 end ProjectiveSetting
 
 /-- The four directed cross-party placement pairs asserted by the source's
-“symmetric equivalents” clause. The relation lists the two orientations of
-each of the `AA'`--`BA''` and `BB'`--`AB''` pairs; paper
-`14_analysis_of_the_pauli_basis_test.tex:420-450`, blueprint
-`def:symmetric-equivalents`. -/
+“symmetric equivalents” clause. -/
 def Placement.IsOpposite : Placement → Placement → Prop
   | .AA', .BA'' => True
   | .BA'', .AA' => True
@@ -666,9 +273,7 @@ def Placement.IsOpposite : Placement → Placement → Prop
   | _, _ => False
 
 /-- Expanded point measurements are self-consistent with the fixed coefficient
-`172 = 2 * |PauliEdge|`. This is item 1 of `lem:qld-comm-cons`, paper
-`14_analysis_of_the_pauli_basis_test.tex:455-465`, blueprint
-`lem:qld-comm-cons`. -/
+`172 = 2 * |PauliEdge|`. -/
 theorem exp_point_self_cons_explicit :
     ∀ (P : AdmissibleParams) (ε : ℝ) (S : ProjectiveSetting P ε)
       (p₁ p₂ : Placement), p₁.IsOpposite p₂ →
@@ -680,17 +285,24 @@ theorem exp_point_self_cons_explicit :
             ((S.pointMeasExp p₂.side W u).effect a))
           S.psiHat ≤ 172 * ε := by
   intro P ε S p₁ p₂ hopp W
+  have haa := ProjectiveSetting.expPointDist_bipartition_le S W
+    (S.place .AA') (S.place .BA'')
+    (ProjectiveSetting.aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
+    (ProjectiveSetting.reindexOp_aaBaBipartition_left S)
+    (ProjectiveSetting.reindexOp_aaBaBipartition_right S)
+    (ProjectiveSetting.stateQForm_place_AA'_mul_BA'' S)
+  have hab := ProjectiveSetting.expPointDist_bipartition_le S W
+    (S.place .AB'') (S.place .BB')
+    (ProjectiveSetting.abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB)
+    (ProjectiveSetting.reindexOp_abBbBipartition_left S)
+    (ProjectiveSetting.reindexOp_abBbBipartition_right S)
+    (ProjectiveSetting.stateQForm_place_AB''_mul_BB' S)
+  rw [pauli_edge_card, Nat.cast_ofNat] at haa hab
   cases p₁ <;> cases p₂ <;> simp only [Placement.IsOpposite] at hopp
-  · convert ProjectiveSetting.expPointDist_aaBa_le S W using 1 <;>
-      simp only [Placement.side, pauli_edge_card, Nat.cast_ofNat] <;> ring
-  · rw [DistanceCalculus.opFamilyDistSq_symm]
-    convert ProjectiveSetting.expPointDist_aaBa_le S W using 1 <;>
-      simp only [Placement.side, pauli_edge_card, Nat.cast_ofNat] <;> ring
-  · rw [DistanceCalculus.opFamilyDistSq_symm]
-    convert ProjectiveSetting.expPointDist_abBb_le S W using 1 <;>
-      simp only [Placement.side, pauli_edge_card, Nat.cast_ofNat] <;> ring
-  · convert ProjectiveSetting.expPointDist_abBb_le S W using 1 <;>
-      simp only [Placement.side, pauli_edge_card, Nat.cast_ofNat] <;> ring
+  · linarith
+  · rw [DistanceCalculus.opFamilyDistSq_symm]; linarith
+  · rw [DistanceCalculus.opFamilyDistSq_symm]; linarith
+  · linarith
 
 end
 

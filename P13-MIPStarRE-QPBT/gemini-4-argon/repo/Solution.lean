@@ -3,7 +3,6 @@ module
 public import QPBT.Palomar.PauliCompleteness
 public import QPBT.Palomar.LowDegreeSoundness
 public import QPBT.Palomar.PauliSoundness
-public import QPBT.Test.AxiomAudit
 import QPBT.Algebra.FieldBasis
 import QPBT.Algebra.Pauli
 import QPBT.Combining.Defs
@@ -42,8 +41,6 @@ import QPBT.Extraction.BlockMeasurement
 import QPBT.Extraction.EncodingSupport
 import QPBT.Extraction.NonencodingSupport
 import QPBT.Games.CondLinear
-import QPBT.Games.CondLinearTheorems
-import QPBT.Games.CondLinearTheorems.Reindex
 import QPBT.Games.Defs
 import QPBT.Games.DistanceTheorems.ProjectiveRounding
 import QPBT.Games.DistanceTheorems.Support
@@ -59,8 +56,6 @@ import QPBT.Observables.LineMeasurement
 import QPBT.Observables.LineMeasurement.Expanded
 import QPBT.Observables.LineMeasurement.Projector
 import QPBT.Observables.PointConsistency
-import QPBT.Observables.WinImplications.Approx
-import QPBT.Observables.WinImplications.ApproxLines
 import QPBT.Observables.WinImplications.Averages
 import QPBT.Observables.WinImplications.CommutingObs
 import QPBT.Observables.WinImplications.InterchangedCommutation
@@ -70,7 +65,7 @@ import QPBT.Observables.WinImplications.Setup
 import QPBT.Observables.WinImplications.TwistedCommutation
 import QPBT.Palomar.Bridge
 import QPBT.Palomar.Definitions
-import QPBT.Palomar.ExtractionBridge
+import QPBT.Test.QubitForm
 import QPBT.Palomar.LowDegreeConsistencyBridge
 import QPBT.Palomar.LowDegreeGameBridge
 import QPBT.Palomar.LowDegreeGameStrategyBridge
@@ -81,17 +76,19 @@ import QPBT.Test.Completeness.HonestStrategy
 import QPBT.Test.LowDegreeGame
 import QPBT.Test.LowDegreeGameMeasurements
 import QPBT.Test.MagicSquare
-import QPBT.Test.MagicSquareTheorems
-import QPBT.Test.MagicSquareTheorems.PerfectStrategy.Measurements
-import QPBT.Test.MagicSquareTheorems.PerfectStrategy.Observables
-import QPBT.Test.MagicSquareTheorems.Rigidity.Constants
-import QPBT.Test.MagicSquareTheorems.Rigidity.Dilation
-import QPBT.Test.MagicSquareTheorems.Rigidity.IdealTarget
+import QPBT.Test.MagicSquareTheorems.Basic
+import QPBT.Test.MagicSquareTheorems.PerfectStrategy
 import QPBT.Test.MagicSquareTheorems.Rigidity.Relations
-import QPBT.Test.MagicSquareTheorems.Rigidity.Swap
-import QPBT.Test.MagicSquareTheorems.Rigidity.TwoQubitSwap
+import QPBT.Test.MagicSquareTheorems.Rigidity.Dilation
+import QPBT.Test.MagicSquareTheorems.Rigidity.Anticommutation
+import QPBT.Test.MagicSquareTheorems.Rigidity.Transfer
+import QPBT.Test.MagicSquareTheorems.PerfectStrategy.Observables
+import QPBT.Test.MagicSquareTheorems.Rigidity.Consistency
+import QPBT.Test.MagicSquareTheorems.Rigidity.IdealTarget
+import QPBT.Test.MagicSquareTheorems.Rigidity.JointState
+import QPBT.Test.MagicSquareTheorems.Rigidity.Marginals
+import QPBT.Test.MagicSquareTheorems.PerfectStrategy.Measurements
 import QPBT.Test.PauliBasisTest
-import QPBT.Test.QubitForm
 import QPBT.Test.Soundness.NaimarkReduction
 import QPBT.Test.SoundnessDefs
 

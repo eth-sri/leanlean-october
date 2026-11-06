@@ -1,6 +1,6 @@
 module
 
-public import QPBT.Observables.WinImplications.Approx
+public import QPBT.Observables.WinImplications.FactorTransport
 
 /-!
 # Self-consistency of the strategy point observables
@@ -28,9 +28,6 @@ open MIPStarRE.Quantum
 noncomputable section
 
 namespace WinImplications
-
-local instance pauliEdgeNonemptyPointObs : Nonempty PauliEdge :=
-  pauliEdge_nonempty
 
 /-! ## Linearity of the tensor placement -/
 

@@ -342,7 +342,6 @@ theorem fixedEdgeRejection_le_error {P : AdmissibleParams} {ε : ℝ}
       exact mul_le_mul_of_nonneg_left (pauliRejectionAverage_le_error S)
         (Nat.cast_nonneg _)
 
-
 end WinImplications
 
 end

@@ -2,7 +2,6 @@ module
 
 public import QPBT.Algebra.Pauli
 public import QPBT.Algebra.SelfDualBasisTheorems
-public import QPBT.Algebra.Subspaces
 public import QPBT.State
 public import MIPStarRE.LDT.Preliminaries.FiniteFields
 

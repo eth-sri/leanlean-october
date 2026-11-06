@@ -1,6 +1,6 @@
 module
 
-public import QPBT.Palomar.PauliGame
+public import QPBT.Palomar.Definitions
 public import QPBT.Palomar.LowDegreeGameBridge
 public import QPBT.Test.PauliBasisTest
 
@@ -302,14 +302,6 @@ theorem pauliLowDegreeMap_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
   cases pauliLowDegreeParams_eq P
   exact lowDegreeMap_equiv P.toLdParams t z
 
-/-- Reading the selected compact point block commutes with the space equivalence. -/
-@[simp] theorem pauliSpaceEquiv_pointBlock (P : MIPStarRE.QPBT.AdmissibleParams)
-    (W : PauliKind)
-    (z : PauliSpace (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) :
-    MIPStarRE.QPBT.pauliPointBlock (pauliKindEquiv W) (pauliSpaceEquiv P z) =
-      pauliPointBlock W z := by
-  cases W <;> rfl
-
 /-- Restriction to one low-degree block commutes with the coordinate equivalence. -/
 theorem pauliLowDegreeSpace_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
     (W : PauliKind)
@@ -439,16 +431,6 @@ theorem pauliQuestionPMF_map (P : MIPStarRE.QPBT.AdmissibleParams) :
 @[simp] theorem pauliSpaceEquiv_zBlock (P : MIPStarRE.QPBT.AdmissibleParams)
     (z : PauliSpace (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) :
     MIPStarRE.QPBT.pauliZBlock (pauliSpaceEquiv P z) = z.2.1 :=
-  rfl
-
-@[simp] theorem pauliSpaceEquiv_scalarBlock (P : MIPStarRE.QPBT.AdmissibleParams)
-    (z : PauliSpace (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) :
-    MIPStarRE.QPBT.pauliScalarBlock (pauliSpaceEquiv P z) = z.2.2.1 :=
-  rfl
-
-@[simp] theorem pauliSpaceEquiv_directionBlock (P : MIPStarRE.QPBT.AdmissibleParams)
-    (z : PauliSpace (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) :
-    MIPStarRE.QPBT.pauliDirectionBlock (pauliSpaceEquiv P z) = z.2.2.2.1 :=
   rfl
 
 @[simp] theorem pauliSpaceEquiv_rxBlock (P : MIPStarRE.QPBT.AdmissibleParams)

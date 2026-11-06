@@ -1,7 +1,6 @@
 module
 
 public import QPBT.Test.MagicSquareTheorems.Rigidity.Transfer
-public import QPBT.Test.MagicSquareTheorems.Rigidity.AnticommutatorB
 public import QPBT.Test.MagicSquareTheorems.Rigidity.CellRelations
 
 /-!

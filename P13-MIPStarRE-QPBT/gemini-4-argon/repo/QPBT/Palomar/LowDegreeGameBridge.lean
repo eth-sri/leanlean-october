@@ -1,6 +1,6 @@
 module
 
-public import QPBT.Palomar.LowDegreeGame
+public import QPBT.Palomar.Definitions
 public import QPBT.Palomar.Bridge
 public import QPBT.Test.LowDegreeGameMeasurements
 
@@ -91,12 +91,6 @@ def lowDegreeQuestionPairEquiv (P : MIPStarRE.QPBT.LdParams) :
     lowDegreeChiIndex (LowDegreeParams.ofLdParams P)
         (MIPStarRE.QPBT.binaryRepresentation P.model) s =
       MIPStarRE.QPBT.chiIndex P s := by
-  rfl
-
-/-- The compact prefix projection is the original prefix projection. -/
-@[simp] theorem lowDegreePrefix_eq (P : MIPStarRE.QPBT.LdParams)
-    (i : Fin P.m) (v : Fin P.m → MIPStarRE.QPBT.ScalarQ P) :
-    lowDegreePrefix i v = MIPStarRE.QPBT.prefixProjection i v :=
   rfl
 
 /-- The compact least nonzero coordinate is the one used by the published formula. -/
@@ -259,24 +253,6 @@ theorem lowDegreeQuestionPMF_map (P : MIPStarRE.QPBT.LdParams) :
 @[simp] theorem lowDegreeSpaceEquiv_direction (P : MIPStarRE.QPBT.LdParams)
     (z : LowDegreeSpace (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P)) :
     MIPStarRE.QPBT.LdSpace.direction (lowDegreeSpaceEquiv P z) = z.2 := by
-  rfl
-
-/-- Point-value answers map to the original point-value constructor. -/
-@[simp] theorem lowDegreeAnswerEquiv_point (P : MIPStarRE.QPBT.LdParams)
-    (a : Fin P.k → MIPStarRE.QPBT.ScalarQ P) :
-    lowDegreeAnswerEquiv P (.inl a) = .pointVals a := by
-  rfl
-
-/-- Axis-line answers map to the original axis-line constructor. -/
-@[simp] theorem lowDegreeAnswerEquiv_aline (P : MIPStarRE.QPBT.LdParams)
-    (a : Fin P.k → Fin (P.d + 1) → MIPStarRE.QPBT.ScalarQ P) :
-    lowDegreeAnswerEquiv P (.inr (.inl a)) = .alinePolys a := by
-  rfl
-
-/-- Diagonal-line answers map to the original diagonal-line constructor. -/
-@[simp] theorem lowDegreeAnswerEquiv_dline (P : MIPStarRE.QPBT.LdParams)
-    (a : Fin P.k → Fin (P.m * P.d + 1) → MIPStarRE.QPBT.ScalarQ P) :
-    lowDegreeAnswerEquiv P (.inr (.inr a)) = .dlinePolys a := by
   rfl
 
 /-- The compact Boolean verifier is exactly the original verifier after relabeling. -/

@@ -1,3 +1,0 @@
-module
-public import QPBT.Combining.Lines.NondegeneratePastingDistribution
-public import QPBT.Combining.Lines.RestrictedConsistency

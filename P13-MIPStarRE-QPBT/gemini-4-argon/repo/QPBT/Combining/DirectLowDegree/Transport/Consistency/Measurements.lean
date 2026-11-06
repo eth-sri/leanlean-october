@@ -350,14 +350,6 @@ noncomputable def seedFiberCompressPolyMeasTuple
       (iota × Fin (L.q / L.m))) : PolyMeasTuple L iota := by
   exact seedFiberCompressMeasurement L G
 
-@[simp] theorem seedFiberCompressPolyMeasTuple_effect
-    (L : LdParams) {iota : Type*} [Fintype iota] [DecidableEq iota]
-    (G : DirectPolyMeasTuple L.toDirectLdParams
-      (iota × Fin (L.q / L.m))) (g : PolyTuple L) :
-    (seedFiberCompressPolyMeasTuple L G).effect g =
-      averageDiagonalBlock (G.effect g) :=
-  rfl
-
 /-- Polynomial evaluation commutes exactly with compression of the correlated
 seed-residue carrier. -/
 theorem seedFiberCompressPolyMeasTuple_evaluation
@@ -406,7 +398,7 @@ private theorem matrixMeasurementTransport_eq_postprocess
   intro b
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
   rw [Finset.sum_eq_single (e.symm b)]
-  · simp
+  · rfl
   · intro a haMem ha
     have hea : e a = b := (Finset.mem_filter.mp haMem).2
     exact (ha (e.injective (hea.trans (e.apply_symm_apply b).symm))).elim

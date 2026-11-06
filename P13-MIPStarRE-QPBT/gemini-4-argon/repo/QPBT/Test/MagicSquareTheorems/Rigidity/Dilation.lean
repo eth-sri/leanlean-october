@@ -213,14 +213,6 @@ theorem naimarkInflation_apply {ι α : Type} [Fintype ι] [DecidableEq ι]
     naimarkInflation (α := α) M p q =
       if p.2 = none ∧ q.2 = none then M p.1 q.1 else 0 := rfl
 
-/-- Inflating an operator to the enlarged space and compressing it back returns
-the original operator. -/
-@[simp]
-theorem naimarkCompression_naimarkInflation {ι α : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype α] [DecidableEq α] (M : Op ι) :
-    naimarkCompression (α := α) (naimarkInflation (α := α) M) = M := by
-  ext i j; simp
-
 /-- The compression to the ground slice respects differences. -/
 theorem naimarkCompression_sub {ι α : Type} [Fintype ι] [DecidableEq ι]
     [Fintype α] [DecidableEq α] (M N : Op (ι × Option α)) :
@@ -332,12 +324,6 @@ noncomputable def naimarkDilatedMeasurement {α d : Type} [Fintype α] [Decidabl
     MIPStarRE.Quantum.Measurement α (d × Option α) :=
   MIPStarRE.Quantum.Measurement.ofSumEqOne (naimarkDilatedEffect M a₀)
     (naimarkDilatedEffect_pos M a₀) (naimarkDilatedEffect_sum M a₀)
-
-/-- The effects of the dilated measurement are the dilated effects. -/
-@[simp]
-theorem naimarkDilatedMeasurement_effect {α d : Type} [Fintype α] [DecidableEq α]
-    [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) (a₀ a : α) :
-    (naimarkDilatedMeasurement M a₀).effect a = naimarkDilatedEffect M a₀ a := rfl
 
 /-- The dilated measurement is projective, which is the property the self-testing
 argument of `thm:ms-rigidity` uses. -/
@@ -467,26 +453,6 @@ noncomputable def msDilatedStrategy (S : Strategy msGame) : Strategy msGame wher
   A x := naimarkDilatedMeasurement (α := MsAnswer) (S.A x) (MsAnswer.bit 0)
   B y := naimarkDilatedMeasurement (α := MsAnswer) (S.B y) (MsAnswer.bit 0)
 
-/-- The state of the dilated strategy is the image of the original state under
-the two ground embeddings. -/
-@[simp]
-theorem msDilatedStrategy_psi (S : Strategy msGame) :
-    (msDilatedStrategy S).ψ = naimarkDilatedState MsAnswer S.ψ := rfl
-
-/-- Alice's dilated question measurements are the Naimark dilations of her
-original ones. -/
-@[simp]
-theorem msDilatedStrategy_A_effect (S : Strategy msGame) (x : MsType) (a : MsAnswer) :
-    ((msDilatedStrategy S).A x).effect a =
-      naimarkDilatedEffect (α := MsAnswer) (S.A x) (MsAnswer.bit 0) a := rfl
-
-/-- Bob's dilated question measurements are the Naimark dilations of his
-original ones. -/
-@[simp]
-theorem msDilatedStrategy_B_effect (S : Strategy msGame) (y : MsType) (b : MsAnswer) :
-    ((msDilatedStrategy S).B y).effect b =
-      naimarkDilatedEffect (α := MsAnswer) (S.B y) (MsAnswer.bit 0) b := rfl
-
 /-- Every question measurement of the dilated strategy is projective, which is
 the hypothesis under which the Coladangelo--Stark self-test is stated. -/
 theorem msDilatedStrategy_isProjective_A (S : Strategy msGame) (x : MsType) :
@@ -515,14 +481,6 @@ theorem ms_dilated_strategy_outcome_weight (S : Strategy msGame) (x y : MsType)
   rw [inner_heteroKron_naimarkDilatedState, naimarkCompression_naimarkDilatedEffect,
     naimarkCompression_naimarkDilatedEffect]
 
-/-- The dilation preserves Alice's marginal Born masses. -/
-theorem ms_dilated_strategy_alice_outcome_weight (S : Strategy msGame) (x : MsType)
-    (a : MsAnswer) :
-    aliceOutcomeWeight (msDilatedStrategy S) x a = aliceOutcomeWeight S x a := by
-  rw [← sum_outcome_weight_right (msDilatedStrategy S) x x a,
-    ← sum_outcome_weight_right S x x a]
-  exact Finset.sum_congr rfl fun b _ => ms_dilated_strategy_outcome_weight S x x a b
-
 /-- The dilation preserves Bob's marginal Born masses. -/
 theorem ms_dilated_strategy_bob_outcome_weight (S : Strategy msGame) (y : MsType)
     (b : MsAnswer) :
@@ -539,15 +497,6 @@ theorem ms_dilated_strategy_outcome_event_weight (S : Strategy msGame) (x y : Ms
   exact Finset.sum_congr rfl fun a _ => Finset.sum_congr rfl fun b _ => by
     by_cases h : E a b <;> simp [h, ms_dilated_strategy_outcome_weight]
 
-/-- The dilation preserves the mass of every event depending only on Alice's
-answer. -/
-theorem ms_dilated_strategy_alice_event_weight (S : Strategy msGame) (x : MsType)
-    (E : MsAnswer → Prop) [DecidablePred E] :
-    aliceEventWeight (msDilatedStrategy S) x E = aliceEventWeight S x E := by
-  unfold aliceEventWeight
-  exact Finset.sum_congr rfl fun a _ => by
-    by_cases h : E a <;> simp [h, ms_dilated_strategy_alice_outcome_weight]
-
 /-- The dilation preserves the mass of every event depending only on Bob's
 answer. -/
 theorem ms_dilated_strategy_bob_event_weight (S : Strategy msGame) (y : MsType)
@@ -557,22 +506,11 @@ theorem ms_dilated_strategy_bob_event_weight (S : Strategy msGame) (y : MsType)
   exact Finset.sum_congr rfl fun b _ => by
     by_cases h : E b <;> simp [h, ms_dilated_strategy_bob_outcome_weight]
 
-/-- The dilation preserves the forward cell-consistency defect. -/
-theorem ms_dilated_strategy_forward_cell_mismatch_mass (S : Strategy msGame)
-    (i : Fin 6) (k : Fin 3) :
-    forwardCellMismatchMass (msDilatedStrategy S) i k = forwardCellMismatchMass S i k :=
-  ms_dilated_strategy_outcome_event_weight S _ _ _
-
 /-- The dilation preserves the reverse cell-consistency defect. -/
 theorem ms_dilated_strategy_reverse_cell_mismatch_mass (S : Strategy msGame)
     (i : Fin 6) (k : Fin 3) :
     reverseCellMismatchMass (msDilatedStrategy S) i k = reverseCellMismatchMass S i k :=
   ms_dilated_strategy_outcome_event_weight S _ _ _
-
-/-- The dilation preserves Alice's row or column parity-failure mass. -/
-theorem ms_dilated_strategy_alice_parity_failure_mass (S : Strategy msGame) (i : Fin 6) :
-    aliceParityFailureMass (msDilatedStrategy S) i = aliceParityFailureMass S i :=
-  ms_dilated_strategy_alice_event_weight S _ _
 
 /-- The dilation preserves Bob's row or column parity-failure mass. -/
 theorem ms_dilated_strategy_bob_parity_failure_mass (S : Strategy msGame) (i : Fin 6) :
@@ -582,8 +520,7 @@ theorem ms_dilated_strategy_bob_parity_failure_mass (S : Strategy msGame) (i : F
 /-! ## Composition of the dilation with later local isometries -/
 
 /-- The matrix of a linear isometry of Euclidean spaces in the computational
-bases.  Formalization-only support for blueprint
-`thm:ms-rigidity`. -/
+bases. -/
 noncomputable def isometryMatrix {ι ι' : Type} [Fintype ι] [DecidableEq ι]
     [Fintype ι'] [DecidableEq ι']
     (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι') : Matrix ι' ι ℂ :=
@@ -630,10 +567,7 @@ theorem isometryMatrix_comp {ι κ ν : Type} [Fintype ι] [DecidableEq ι]
   simp only [isometryMatrix_apply E]
   simpa [Matrix.mulVec, dotProduct] using h.symm
 
-/-- Conjugating by a composite isometry is conjugating twice.  This is how the
-ground embeddings of the dilation combine with the local isometries produced by
-the self-testing argument of blueprint
-`thm:ms-rigidity`. -/
+/-- Conjugating by a composite isometry is conjugating twice. -/
 theorem conjIsometry_comp {ι κ ν : Type} [Fintype ι] [DecidableEq ι]
     [Fintype κ] [DecidableEq κ] [Fintype ν] [DecidableEq ν]
     (φ : EuclideanSpace ℂ κ →ₗᵢ[ℂ] EuclideanSpace ℂ ν)
@@ -657,9 +591,7 @@ theorem isometryTensor_apply_eq {ιA ιB κA κB : Type}
     EuclideanSpace.equiv, mul_assoc]
 
 /-- Applying two local isometries after two others is the same as applying their
-composites.  Together with `conjIsometry_comp` this is the composition rule used
-to turn a rigidity witness for the dilated strategy into one for the original
-strategy. -/
+composites. -/
 theorem isometryTensor_comp {ιA ιB κA κB νA νB : Type}
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
@@ -686,9 +618,7 @@ theorem isometryTensor_comp {ιA ιB κA κB νA νB : Type}
 
 /-! ## Transfer of state-dependent bounds -/
 
-/-- Conjugating an operator by the ground embedding inflates it: the result acts
-as the original operator on the ground slice and annihilates the orthogonal
-complement. -/
+/-- Conjugating an operator by the ground embedding inflates it. -/
 theorem conjIsometry_naimarkEmbedding {ι α : Type} [Fintype ι] [DecidableEq ι]
     [Fintype α] [DecidableEq α] (M : Op ι) :
     conjIsometry (naimarkEmbedding ι α) M = naimarkInflation (α := α) M := by
@@ -701,9 +631,7 @@ theorem conjIsometry_naimarkEmbedding {ι α : Type} [Fintype ι] [DecidableEq �
   · simp [hp]
 
 /-- Conjugating an operator by the ground embedding followed by a later local
-isometry is conjugating its inflation by that isometry.  This is the form in
-which the conclusions of a self-testing argument applied to the dilated strategy
-are read back on the original strategy. -/
+isometry is conjugating its inflation by that isometry. -/
 theorem conjIsometry_comp_naimarkEmbedding {ι α κ : Type} [Fintype ι] [DecidableEq ι]
     [Fintype α] [DecidableEq α] [Fintype κ] [DecidableEq κ]
     (φ : EuclideanSpace ℂ (ι × Option α) →ₗᵢ[ℂ] EuclideanSpace ℂ κ) (M : Op ι) :
@@ -718,14 +646,6 @@ theorem naimarkCompression_msDilatedStrategy_A_effect (S : Strategy msGame)
     naimarkCompression (α := MsAnswer) (((msDilatedStrategy S).A x).effect a) =
       (S.A x).effect a :=
   naimarkCompression_naimarkDilatedEffect (α := MsAnswer) (S.A x) (MsAnswer.bit 0) a
-
-/-- Compressing one of Bob's dilated Magic Square effects to the ground slice
-returns his original effect. -/
-theorem naimarkCompression_msDilatedStrategy_B_effect (S : Strategy msGame)
-    (y : MsType) (b : MsAnswer) :
-    naimarkCompression (α := MsAnswer) (((msDilatedStrategy S).B y).effect b) =
-      (S.B y).effect b :=
-  naimarkCompression_naimarkDilatedEffect (α := MsAnswer) (S.B y) (MsAnswer.bit 0) b
 
 /-- The action of an operator on the dilated state only sees its ground-slice
 columns. -/

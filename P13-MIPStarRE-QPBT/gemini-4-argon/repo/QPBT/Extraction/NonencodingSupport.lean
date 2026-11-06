@@ -284,45 +284,23 @@ theorem global_marginal_encoding_consistency_explicit :
       exact (WinImplications.heteroKron_left_right_comm _ _).symm)] at h
     exact h
 
-/-- A marginal acting on `AA'` has the same mass in the extraction-block
-notation and the two-player expanded state. The unused registers carry identities. -/
-theorem stateQForm_placeSide_alice_tensor_one {P : AdmissibleParams} {epsilon : ℝ}
+theorem stateQForm_place_AA' {P : AdmissibleParams} {epsilon : ℝ}
     (S : ProjectiveSetting P epsilon) (A : Op (S.ExpandedLocalSpace .alice))
     (hA : A.IsHermitian) :
-    stateQForm S.psiHat (S.placeSide .alice (heteroKron A (1 : Op (PauliRegister P)))) =
+    stateQForm S.psiHat (S.place .AA' A) =
       stateQForm (ExtendedLineGame.pairState S) (heteroKron A 1) := by
-  have hplace : S.placeSide .alice (heteroKron A (1 : Op (PauliRegister P))) =
-      S.place .AA' A := by
-    ext row col
-    simp only [placeSide, sixRegExtractionEquiv, reindexOp, place, heteroKron,
-      Matrix.kronecker, Matrix.one_apply, mul_ite, ite_mul]
-    split_ifs <;> simp_all
-  rw [hplace]
-  have h := ExtendedLineGame.stateQForm_pairState_eq_AA'_BA'' S A 1 hA
-    Matrix.isHermitian_one
-  have hone : S.place .BA'' (1 : Op (S.ExpandedLocalSpace .bob)) = 1 := by
-    convert S.place_one .BA'' using 1
+  have h := ExtendedLineGame.stateQForm_pairState_eq_AA'_BA'' S A 1 hA Matrix.isHermitian_one
+  have hone : S.place .BA'' (1 : Op (S.ExpandedLocalSpace .bob)) = 1 := S.place_one .BA''
   rw [hone, Matrix.mul_one] at h
   exact h.symm
 
-/-- The corresponding marginal-mass identity for `BB'`. The opposite placement
-uses the second EPR pair, as in the witness's Bob consistency hypothesis. -/
-theorem stateQForm_placeSide_bob_tensor_one {P : AdmissibleParams} {epsilon : ℝ}
+theorem stateQForm_place_BB' {P : AdmissibleParams} {epsilon : ℝ}
     (S : ProjectiveSetting P epsilon) (B : Op (S.ExpandedLocalSpace .bob))
     (hB : B.IsHermitian) :
-    stateQForm S.psiHat (S.placeSide .bob (heteroKron B (1 : Op (PauliRegister P)))) =
+    stateQForm S.psiHat (S.place .BB' B) =
       stateQForm (ExtendedLineGame.pairState S) (heteroKron 1 B) := by
-  have hplace : S.placeSide .bob (heteroKron B (1 : Op (PauliRegister P))) =
-      S.place .BB' B := by
-    ext row col
-    simp only [placeSide, sixRegExtractionEquiv, reindexOp, place, heteroKron,
-      Matrix.kronecker, Matrix.one_apply, mul_ite, ite_mul]
-    split_ifs <;> simp_all
-  rw [hplace]
-  have h := ExtendedLineGame.stateQForm_pairState_eq_AB''_BB' S 1 B
-    Matrix.isHermitian_one hB
-  have hone : S.place .AB'' (1 : Op (S.ExpandedLocalSpace .alice)) = 1 := by
-    convert S.place_one .AB'' using 1
+  have h := ExtendedLineGame.stateQForm_pairState_eq_AB''_BB' S 1 B Matrix.isHermitian_one hB
+  have hone : S.place .AB'' (1 : Op (S.ExpandedLocalSpace .alice)) = 1 := S.place_one .AB''
   rw [hone, Matrix.one_mul] at h
   exact h.symm
 

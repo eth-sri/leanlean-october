@@ -23,7 +23,7 @@ namespace MIPStarRE.QPBT.Palomar
 
 noncomputable section
 
-local instance compactPauliQuestionDecidableEq
+instance compactPauliQuestionDecidableEq
     (P : MIPStarRE.QPBT.AdmissibleParams) :
     DecidableEq
       (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) :=
@@ -141,14 +141,6 @@ def relabel {X A X' A' : Type}
   ψ_norm := S.ψ_norm
   ψ_swap := S.ψ_swap
   meas := fun x => POVM.relabel eA (S.meas (eX.symm x))
-
-/-- Symmetric relabeling agrees with relabeling the underlying general strategy. -/
-@[simp] theorem relabel_toStrategy {X A X' A' : Type}
-    [Fintype X] [Fintype A] [Fintype X'] [Fintype A']
-    (S : SymmetricStrategy X A) (eX : X ≃ X') (eA : A ≃ A') :
-    (relabel S eX eA).toStrategy =
-      Strategy.relabel S.toStrategy eX eX eA eA :=
-  rfl
 
 /-- Symmetric relabeling preserves projectivity of the measurement family exactly. -/
 theorem relabel_isProjective_iff {X A X' A' : Type}
@@ -305,27 +297,6 @@ noncomputable def pauliSymmetricGame (P : MIPStarRE.QPBT.AdmissibleParams) :
         (MIPStarRE.QPBT.binaryRepresentation P.model)
         (MIPStarRE.QPBT.fixedBinTrace P.model) :=
       Game.relabel_symm_relabel _ _ _ _ _
-
-/-- Convert a compact symmetric Pauli strategy into a registered symmetric strategy. -/
-def pauliSymmetricStrategyToLibrary (P : MIPStarRE.QPBT.AdmissibleParams)
-    (S : SymmetricStrategy
-      (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
-      (PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))) :
-    MIPStarRE.QPBT.SymmetricStrategy (MIPStarRE.QPBT.pauliBasisTestSymm P) :=
-  SymmetricStrategy.toSymmetricStrategy
-    (SymmetricStrategy.relabel S (pauliQuestionEquiv P) (pauliAnswerEquivCompact P))
-
-/-- Symmetric conversion is exactly the relabeled compact symmetric strategy. -/
-@[simp] theorem of_pauliSymmetricStrategyToLibrary
-    (P : MIPStarRE.QPBT.AdmissibleParams)
-    (S : SymmetricStrategy
-      (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
-      (PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))) :
-    SymmetricStrategy.ofSymmetricStrategy (pauliSymmetricStrategyToLibrary P S) =
-      SymmetricStrategy.relabel S (pauliQuestionEquiv P)
-        (pauliAnswerEquivCompact P) := by
-  simp [pauliSymmetricStrategyToLibrary]
-  rfl
 
 end
 

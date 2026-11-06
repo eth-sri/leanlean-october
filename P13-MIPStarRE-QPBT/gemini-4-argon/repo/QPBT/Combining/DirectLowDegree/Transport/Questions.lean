@@ -62,12 +62,8 @@ theorem lineRepMap_add_smul
     {K : Type*} [Field K] {m : ℕ}
     (v u : Fin m → K) (t : K) :
     lineRepMap v (u + t • v) = lineRepMap v u := by
-  let W : Submodule K (Fin m → K) := Submodule.span K ({v} : Set (Fin m → K))
-  have hv : v ∈ W := Submodule.subset_span (Set.mem_singleton v)
   have hzero : lineRepMap v v = 0 := by
-    simp [lineRepMap, canonicalProjOfKernel, W, LinearMap.comp_apply,
-      Submodule.projectionOnto_apply_of_mem_right
-        (isCompl_registerSubmodule_canonicalComplement W).symm hv]
+    by_cases hv : v = 0 <;> simp [lineRepMap, explicitLineRep, hv, linePivotIndex_ne_zero]
   simp [map_add, map_smul, hzero]
 
 /-- For a nonzero direction, the canonical rebase parameter is unique. -/

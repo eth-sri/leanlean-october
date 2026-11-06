@@ -507,32 +507,9 @@ theorem applyOperatorToState_leftTensor_one_sub_groundProjection (α : Type) [Fi
   rw [h, hsub, applyOperatorToState_one, applyOperatorToState_leftTensor_groundProjection,
     sub_self]
 
-/-- The complement of the ground slice annihilates the dilated state on Bob's
-side. -/
-theorem applyOperatorToState_rightTensor_one_sub_groundProjection (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
-    applyOperatorToState (heteroKron 1 (1 - groundProjection ιB α))
-      (naimarkDilatedState α ψ) = 0 := by
-  have h : heteroKron (1 : Op (ιA × Option α)) (1 - groundProjection ιB α) =
-      1 - heteroKron 1 (groundProjection ιB α) := by
-    rw [heteroKron_sub_right, heteroKron_one_one]
-  have hsub : applyOperatorToState (1 - heteroKron 1 (groundProjection ιB α))
-      (naimarkDilatedState α ψ) =
-      applyOperatorToState 1 (naimarkDilatedState α ψ) -
-        applyOperatorToState (heteroKron 1 (groundProjection ιB α))
-          (naimarkDilatedState α ψ) := by
-    simp [applyOperatorToState]
-  rw [h, hsub, applyOperatorToState_one, applyOperatorToState_rightTensor_groundProjection,
-    sub_self]
-
-/-! ## Leakage out of the ground slice is bounded by the intertwining defect -/
-
 /-- The leakage of a left-placed operator `P` out of the ground slice on the
 dilated state is at most the intertwining defect of `P ⊗ 1` against any
-right-placed operator `1 ⊗ Q`, because `(1 - Π) ⊗ 1` annihilates `1 ⊗ Q ψ'`.
-This is the estimate replacing the `≈_δ` preservation that Naimark dilation
-lacks (`references/ldt-paper/orthonormalization.tex:82-101`). -/
+right-placed operator `1 ⊗ Q`. -/
 theorem norm_leftTensor_one_sub_groundProjection_mul_le (α : Type) [Fintype α]
     [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
     [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB))
@@ -567,52 +544,6 @@ theorem norm_leftTensor_one_sub_groundProjection_mul_le (α : Type) [Fintype α]
       applyOperatorToState_mul, hL0, applyOperatorToState_zero, add_zero]
   rw [key]
   exact norm_applyOperatorToState_le hLcontr _
-
-/-- The leakage of a right-placed operator `Q` out of the ground slice on the
-dilated state is at most its intertwining defect against any left-placed
-operator. -/
-theorem norm_rightTensor_one_sub_groundProjection_mul_le (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB))
-    (P : Op (ιA × Option α)) (Q : Op (ιB × Option α)) :
-    ‖applyOperatorToState (heteroKron 1 ((1 - groundProjection ιB α) * Q))
-        (naimarkDilatedState α ψ)‖ ≤
-      ‖applyOperatorToState (heteroKron P 1 - heteroKron 1 Q)
-        (naimarkDilatedState α ψ)‖ := by
-  set ψ' := naimarkDilatedState α ψ
-  set L : Op ((ιA × Option α) × (ιB × Option α)) :=
-    heteroKron 1 (1 - groundProjection ιB α)
-  have hL0 : applyOperatorToState L ψ' = 0 :=
-    applyOperatorToState_rightTensor_one_sub_groundProjection α ψ
-  have hLcontr : Lᴴ * L ≤ 1 :=
-    conjTranspose_mul_le_one_rightTensor
-      (conjTranspose_mul_le_one_of_isProj (isProj_groundProjection ιB α).one_sub)
-  have hsplit : heteroKron (1 : Op (ιA × Option α))
-      ((1 - groundProjection ιB α) * Q) = L * heteroKron 1 Q := by
-    rw [heteroKron_mul, Matrix.one_mul]
-  have hcomm : L * heteroKron P 1 = heteroKron P 1 * L := by
-    rw [heteroKron_mul, heteroKron_mul, Matrix.one_mul, Matrix.mul_one, Matrix.one_mul,
-      Matrix.mul_one]
-  have key : applyOperatorToState (heteroKron 1 ((1 - groundProjection ιB α) * Q)) ψ' =
-      applyOperatorToState L
-        (applyOperatorToState (heteroKron 1 Q - heteroKron P 1) ψ') := by
-    rw [hsplit, applyOperatorToState_mul]
-    have hdec : applyOperatorToState (heteroKron 1 Q) ψ' =
-        applyOperatorToState (heteroKron 1 Q - heteroKron P 1) ψ' +
-          applyOperatorToState (heteroKron P 1) ψ' := by
-      simp [applyOperatorToState]
-    rw [hdec, applyOperatorToState_add, ← applyOperatorToState_mul L (heteroKron P 1), hcomm,
-      applyOperatorToState_mul, hL0, applyOperatorToState_zero, add_zero]
-  have hneg : -applyOperatorToState (heteroKron P 1 - heteroKron 1 Q) ψ' =
-      applyOperatorToState (heteroKron 1 Q - heteroKron P 1) ψ' := by
-    simp [applyOperatorToState]
-  rw [key]
-  calc ‖applyOperatorToState L
-          (applyOperatorToState (heteroKron 1 Q - heteroKron P 1) ψ')‖ ≤
-        ‖applyOperatorToState (heteroKron 1 Q - heteroKron P 1) ψ'‖ :=
-        norm_applyOperatorToState_le hLcontr _
-    _ = ‖applyOperatorToState (heteroKron P 1 - heteroKron 1 Q) ψ'‖ := by
-        rw [← hneg, norm_neg]
 
 end
 

@@ -83,10 +83,6 @@ def directCombinedPointEquiv (D : DirectLdParams) :
     · simp only [Sum.elim_inr]
       rw [← hi, Equiv.apply_symm_apply]
 
-@[simp] theorem directCombinedPointEquiv_apply (D : DirectLdParams)
-    (z : (Fin D.m → DirectScalarQ D) × (Fin D.k → DirectScalarQ D)) :
-    directCombinedPointEquiv D z = combinedPoint z.1 z.2 := rfl
-
 /-! ## The point measurement of the combined strategy -/
 
 /-- On a point question of the combined game the combined strategy measures the

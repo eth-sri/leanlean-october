@@ -1,6 +1,7 @@
 module
 
-public import QPBT.Games.Sandwich.Quantitative
+public import QPBT.Games.Sandwich.Support
+public import MIPStarRE.LDT.MakingMeasurementsProjective.NaimarkCore
 public import QPBT.Games.Sandwich.Pasting.SchmidtMirror
 
 /-! # Consistency and commutation of the pasting codeword families

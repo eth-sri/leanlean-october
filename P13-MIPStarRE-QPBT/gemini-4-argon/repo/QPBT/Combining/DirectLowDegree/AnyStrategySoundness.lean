@@ -338,12 +338,12 @@ theorem direct_ld_soundness_of_k_eq_one_any_strategy_explicit :
                   (fun _ g => heteroKron 1 (GB.effect g))
                   S.ψ ≤ deltaLd pauliBaselineLowDegreeConstant
                     pauliBaselineLowDegreePower ε D.q D.m D.d D.k := by
-  intro D ε hk hε S hwin
+  intro D ε _hk hε S hwin
   have hwin' : 1 - ε ≤ (directLdNaimarkStrategy D S).value := by
     rw [directLdNaimarkStrategy_value]
     exact hwin
   obtain ⟨GA, GB, h1, h2, h3⟩ :=
-    direct_ld_soundness_of_k_eq_one_explicit D ε hk hε
+    direct_ld_soundness_of_k_eq_one_explicit D ε hε
       (directLdNaimarkStrategy D S) (directLdNaimarkStrategy_isProjective D S) hwin'
   exact directLdNaimarkStrategy_compress_soundness D S
     (deltaLd pauliBaselineLowDegreeConstant pauliBaselineLowDegreePower

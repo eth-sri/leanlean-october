@@ -109,26 +109,6 @@ theorem norm_alice_sub_bob_signObs_sq_le (T : Strategy G) (x : G.QuestionA)
     rw [not_not] at hab
     rw [hab, sub_self]
 
-/-- Alice's sign observable deviates from a constant sign by at most twice the
-square root of the mass of the answers carrying the other label. -/
-theorem norm_alice_signObs_sub_const_sq_le (T : Strategy G) (x : G.QuestionA)
-    (y : G.QuestionB) (hA : MIPStarRE.QPBT.Measurement.IsProjective (T.A x))
-    (hB : MIPStarRE.QPBT.Measurement.IsProjective (T.B y))
-    (f : G.AnswerA → ZMod 2) (c : ZMod 2) :
-    ‖applyOperatorToState (heteroKron (signObs (T.A x) f) 1 -
-        ((bitSign c : ℝ) : ℂ) • (1 : Op (T.ιA × T.ιB))) T.ψ‖ ^ 2 ≤
-      4 * aliceEventWeight T x (fun a => f a ≠ c) := by
-  classical
-  have hconst : heteroKron (1 : Op T.ιA) (signObs (T.B y) (fun _ => c)) =
-      ((bitSign c : ℝ) : ℂ) • (1 : Op (T.ιA × T.ιB)) := by
-    rw [signObs, ← smul_one_eq_sum_smul_effect (T.B y) (((bitSign c : ℝ) : ℂ)),
-      heteroKron_smul_right, heteroKron_one_one]
-  have h := norm_alice_sub_bob_signObs_sq_le T x y hA hB f (fun _ => c)
-  rw [hconst] at h
-  refine le_trans h (le_of_eq ?_)
-  congr 1
-  exact outcome_event_weight_left_eq T x y (fun a => f a ≠ c)
-
 /-- Bob's sign observable deviates from a constant sign by at most twice the
 square root of the mass of the answers carrying the other label. -/
 theorem norm_bob_signObs_sub_const_sq_le (T : Strategy G) (x : G.QuestionA)
@@ -174,13 +154,6 @@ private theorem normCloseOn_of_sq_le {ι : Type} [Fintype ι] [DecidableEq ι]
     _ ≤ Real.sqrt ((12 * Real.sqrt ε) ^ 2) := Real.sqrt_le_sqrt hbound
     _ = 12 * Real.sqrt ε := Real.sqrt_sq (by positivity)
 
-/-- Formalization-only: monotonicity of Alice's marginal event mass. -/
-private theorem alice_event_weight_mono (T : Strategy msGame) (x : MsType)
-    (E F : MsAnswer → Prop) [DecidablePred E] [DecidablePred F]
-    (h : ∀ a, E a → F a) : aliceEventWeight T x E ≤ aliceEventWeight T x F := by
-  rw [← outcome_event_weight_left_eq T x x E, ← outcome_event_weight_left_eq T x x F]
-  exact outcome_event_weight_mono T x x _ _ fun a _ ha => h a ha
-
 /-- Formalization-only: monotonicity of Bob's marginal event mass. -/
 private theorem bob_event_weight_mono (T : Strategy msGame) (y : MsType)
     (E F : MsAnswer → Prop) [DecidablePred E] [DecidablePred F]
@@ -190,31 +163,8 @@ private theorem bob_event_weight_mono (T : Strategy msGame) (y : MsType)
 
 /-! ## The Magic Square reflections of the dilated strategy -/
 
-/-- Alice's cell reflection at one position of a constraint question of the
-dilated strategy, placed on its composite space.  This is a pre-isometry
-observable of `msDilatedStrategy S`; the state-dependent relations below
-evaluate it on `(msDilatedStrategy S).ψ`.  It is not the paper's post-isometry
-operator $\tilde A$.  The post-isometry operators on the ideal state in
-`thm:ms-rigidity` arise later by conjugating with the local isometries and using
-the transfer theorems of issue Dengnifer/MIPStarRE-QPBT-bak#104.  Formalization-only
-operator-relation
-support for blueprint `ch13_qpbt_test.tex:224-253` and paper
-`08_classical_and_quantum_low_degree_tests.tex:612-652`. -/
-noncomputable def msCellObsA (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
-    Op ((msDilatedStrategy S).ιA × (msDilatedStrategy S).ιB) :=
-  heteroKron (signObs ((msDilatedStrategy S).A (MsType.constraint i))
-    (constraintBitOrZero k)) 1
-
 /-- Bob's cell reflection at one position of a constraint question of the
-dilated strategy, placed on its composite space.  This is a pre-isometry
-observable of `msDilatedStrategy S`; the state-dependent relations below
-evaluate it on `(msDilatedStrategy S).ψ`.  It is not the paper's post-isometry
-operator $\tilde B$.  The post-isometry operators on the ideal state in
-`thm:ms-rigidity` arise later by conjugating with the local isometries and using
-the transfer theorems of issue Dengnifer/MIPStarRE-QPBT-bak#104.  Formalization-only
-operator-relation
-support for blueprint `ch13_qpbt_test.tex:224-253` and paper
-`08_classical_and_quantum_low_degree_tests.tex:612-652`. -/
+dilated strategy, placed on its composite space. -/
 noncomputable def msCellObsB (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
     Op ((msDilatedStrategy S).ιA × (msDilatedStrategy S).ιB) :=
   heteroKron 1 (signObs ((msDilatedStrategy S).B (MsType.constraint i))
@@ -225,18 +175,6 @@ the composite space. -/
 noncomputable def msVarObsA (S : Strategy msGame) (j : Fin 9) :
     Op ((msDilatedStrategy S).ιA × (msDilatedStrategy S).ιB) :=
   heteroKron (signObs ((msDilatedStrategy S).A (MsType.var j)) msBitOrZero) 1
-
-/-- Bob's reflection at a variable question of the dilated strategy, placed on
-the composite space. -/
-noncomputable def msVarObsB (S : Strategy msGame) (j : Fin 9) :
-    Op ((msDilatedStrategy S).ιA × (msDilatedStrategy S).ιB) :=
-  heteroKron 1 (signObs ((msDilatedStrategy S).B (MsType.var j)) msBitOrZero)
-
-/-- Alice's cell operators are binary observables. -/
-theorem isBinaryObservable_msCellObsA (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
-    IsBinaryObservable (msCellObsA S i k) :=
-  isBinaryObservable_heteroKron_one
-    (isBinaryObservable_signObs _ (msDilatedStrategy_isProjective_A S _) _)
 
 /-- Bob's cell operators are binary observables. -/
 theorem isBinaryObservable_msCellObsB (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
@@ -250,30 +188,12 @@ theorem isBinaryObservable_msVarObsA (S : Strategy msGame) (j : Fin 9) :
   isBinaryObservable_heteroKron_one
     (isBinaryObservable_signObs _ (msDilatedStrategy_isProjective_A S _) _)
 
-/-- Bob's variable operators are binary observables. -/
-theorem isBinaryObservable_msVarObsB (S : Strategy msGame) (j : Fin 9) :
-    IsBinaryObservable (msVarObsB S j) :=
-  isBinaryObservable_one_heteroKron
-    (isBinaryObservable_signObs _ (msDilatedStrategy_isProjective_B S _) _)
-
-/-- The three cell reflections of one constraint question commute exactly. -/
-theorem msCellObsA_comm (S : Strategy msGame) (i : Fin 6) (k l : Fin 3) :
-    msCellObsA S i k * msCellObsA S i l = msCellObsA S i l * msCellObsA S i k := by
-  rw [msCellObsA, msCellObsA, heteroKron_mul, heteroKron_mul,
-    signObs_comm _ (msDilatedStrategy_isProjective_A S _)]
-
 /-- The three cell reflections of one constraint question commute exactly, on
 Bob's side as well. -/
 theorem msCellObsB_comm (S : Strategy msGame) (i : Fin 6) (k l : Fin 3) :
     msCellObsB S i k * msCellObsB S i l = msCellObsB S i l * msCellObsB S i k := by
   rw [msCellObsB, msCellObsB, heteroKron_mul, heteroKron_mul,
     signObs_comm _ (msDilatedStrategy_isProjective_B S _)]
-
-/-- Alice's cell reflection commutes exactly with Bob's variable reflection. -/
-theorem msCellObsA_comm_msVarObsB (S : Strategy msGame) (i : Fin 6) (k : Fin 3)
-    (j : Fin 9) :
-    msCellObsA S i k * msVarObsB S j = msVarObsB S j * msCellObsA S i k :=
-  heteroKron_comm _ _
 
 /-- Alice's variable reflection commutes exactly with Bob's cell reflection. -/
 theorem msVarObsA_comm_msCellObsB (S : Strategy msGame) (j : Fin 9) (i : Fin 6)
@@ -304,17 +224,6 @@ theorem constraintParityFailure_of_bitSum_ne (i : Fin 6) (a : MsAnswer)
       rw [Fin.sum_univ_three] at hbit
       exact hbit
 
-/-- The product of Alice's three cell reflections of a constraint question is
-the reflection attached to the sum of the three reported bits. -/
-theorem msCellObsA_prod (S : Strategy msGame) (i : Fin 6) :
-    msCellObsA S i 0 * msCellObsA S i 1 * msCellObsA S i 2 =
-      heteroKron (signObs ((msDilatedStrategy S).A (MsType.constraint i))
-        constraintBitSum) 1 := by
-  rw [msCellObsA, msCellObsA, msCellObsA, heteroKron_mul, heteroKron_mul,
-    signObs_mul _ (msDilatedStrategy_isProjective_A S _),
-    signObs_mul _ (msDilatedStrategy_isProjective_A S _), mul_one, one_mul]
-  rfl
-
 /-- The product of Bob's three cell reflections of a constraint question is the
 reflection attached to the sum of the three reported bits. -/
 theorem msCellObsB_prod (S : Strategy msGame) (i : Fin 6) :
@@ -326,42 +235,11 @@ theorem msCellObsB_prod (S : Strategy msGame) (i : Fin 6) :
     signObs_mul _ (msDilatedStrategy_isProjective_B S _), mul_one, one_mul]
   rfl
 
-/-- Formalization-only: nonnegativity of Alice's marginal event mass. -/
-private theorem alice_event_weight_nonneg (T : Strategy msGame) (x : MsType)
-    (E : MsAnswer → Prop) [DecidablePred E] : 0 ≤ aliceEventWeight T x E := by
-  rw [← outcome_event_weight_left_eq T x x E]
-  exact outcome_event_weight_nonneg T x x _
-
 /-- Formalization-only: nonnegativity of Bob's marginal event mass. -/
 private theorem bob_event_weight_nonneg (T : Strategy msGame) (y : MsType)
     (E : MsAnswer → Prop) [DecidablePred E] : 0 ≤ bobEventWeight T y E := by
   rw [← outcome_event_weight_right_eq T y y E]
   exact outcome_event_weight_nonneg T y y _
-
-/-- Each of the six row and column relations holds for Alice's cell reflections
-on the dilated state, with the sign prescribed by the corresponding linear
-equation and with error `12 * sqrt ε`.  This is the first operator consequence
-of `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:224-253`. -/
-theorem msCellObsA_prod_close (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε ≤ S.value)
-    (i : Fin 6) :
-    NormCloseOn (msDilatedStrategy S).ψ (12 * Real.sqrt ε)
-      (msCellObsA S i 0 * msCellObsA S i 1 * msCellObsA S i 2)
-      (((bitSign (msParity i) : ℝ) : ℂ) • 1) := by
-  classical
-  have hsq := norm_alice_signObs_sub_const_sq_le (msDilatedStrategy S)
-    (MsType.constraint i) (MsType.constraint i)
-    (msDilatedStrategy_isProjective_A S _) (msDilatedStrategy_isProjective_B S _)
-    constraintBitSum (msParity i)
-  rw [← msCellObsA_prod] at hsq
-  refine normCloseOn_of_sq_le hsq (alice_event_weight_nonneg _ _ _) ?_
-  calc aliceEventWeight (msDilatedStrategy S) (MsType.constraint i)
-        (fun a => constraintBitSum a ≠ msParity i)
-      ≤ aliceEventWeight (msDilatedStrategy S) (MsType.constraint i)
-          (ConstraintParityFailure i) :=
-        alice_event_weight_mono _ _ _ _ fun a ha =>
-          constraintParityFailure_of_bitSum_ne i a ha
-    _ = aliceParityFailureMass S i := ms_dilated_strategy_alice_parity_failure_mass S i
-    _ ≤ 36 * ε := alice_parity_failure_mass_le S ε hwin i
 
 /-- Each of the six row and column relations holds for Bob's cell reflections on
 the dilated state, with the sign prescribed by the corresponding linear equation
@@ -389,25 +267,6 @@ theorem msCellObsB_prod_close (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε �
 
 /-! ## Agreement of the two reflections attached to a common cell -/
 
-/-- Alice's cell reflection agrees, on the dilated state and up to
-`12 * sqrt ε`, with Bob's reflection at the same cell. -/
-theorem msCellObsA_close_msVarObsB (S : Strategy msGame) (ε : ℝ)
-    (hwin : 1 - ε ≤ S.value) (i : Fin 6) (k : Fin 3) :
-    NormCloseOn (msDilatedStrategy S).ψ (12 * Real.sqrt ε) (msCellObsA S i k)
-      (msVarObsB S (msConstraintVars i k)) := by
-  classical
-  have hsq := norm_alice_sub_bob_signObs_sq_le (msDilatedStrategy S)
-    (MsType.constraint i) (MsType.var (msConstraintVars i k))
-    (msDilatedStrategy_isProjective_A S _) (msDilatedStrategy_isProjective_B S _)
-    (constraintBitOrZero k) msBitOrZero
-  refine normCloseOn_of_sq_le hsq (outcome_event_weight_nonneg _ _ _ _) ?_
-  calc outcomeEventWeight (msDilatedStrategy S) (MsType.constraint i)
-        (MsType.var (msConstraintVars i k))
-        (fun a b => constraintBitOrZero k a ≠ msBitOrZero b)
-      = forwardCellMismatchMass S i k :=
-        ms_dilated_strategy_forward_cell_mismatch_mass S i k
-    _ ≤ 36 * ε := forward_cell_mismatch_mass_le S ε hwin i k
-
 /-- Alice's variable reflection agrees, on the dilated state and up to
 `12 * sqrt ε`, with Bob's reflection at the same cell read from a constraint
 question. -/
@@ -428,29 +287,6 @@ theorem msVarObsA_close_msCellObsB (S : Strategy msGame) (ε : ℝ)
     _ ≤ 36 * ε := reverse_cell_mismatch_mass_le S ε hwin i k
 
 /-! ## Permuted row and column products -/
-
-/-- The product of Alice's three cell reflections of a constraint question, in
-any order in which the three positions occur once each, is the reflection
-attached to the sum of the three reported bits. -/
-theorem msCellObsA_prod_of (S : Strategy msGame) (i : Fin 6) (k₀ k₁ k₂ : Fin 3)
-    (hsum : ∀ a, constraintBitOrZero k₀ a + constraintBitOrZero k₁ a +
-      constraintBitOrZero k₂ a = constraintBitSum a) :
-    msCellObsA S i k₀ * msCellObsA S i k₁ * msCellObsA S i k₂ =
-      heteroKron (signObs ((msDilatedStrategy S).A (MsType.constraint i))
-        constraintBitSum) 1 := by
-  have hkey : signObs ((msDilatedStrategy S).A (MsType.constraint i))
-        (constraintBitOrZero k₀) *
-      signObs ((msDilatedStrategy S).A (MsType.constraint i)) (constraintBitOrZero k₁) *
-      signObs ((msDilatedStrategy S).A (MsType.constraint i)) (constraintBitOrZero k₂) =
-      signObs ((msDilatedStrategy S).A (MsType.constraint i)) constraintBitSum := by
-    rw [signObs_mul _ (msDilatedStrategy_isProjective_A S _),
-      signObs_mul _ (msDilatedStrategy_isProjective_A S _)]
-    congr 1
-    funext a
-    exact hsum a
-  rw [msCellObsA, msCellObsA, msCellObsA, heteroKron_mul, heteroKron_mul]
-  simp only [mul_one]
-  rw [hkey]
 
 /-- The product of Bob's three cell reflections of a constraint question, in any
 order in which the three positions occur once each, is the reflection attached
@@ -474,19 +310,6 @@ theorem msCellObsB_prod_of (S : Strategy msGame) (i : Fin 6) (k₀ k₁ k₂ : F
   rw [msCellObsB, msCellObsB, msCellObsB, heteroKron_mul, heteroKron_mul]
   simp only [mul_one]
   rw [hkey]
-
-/-- Each permuted row or column product of Alice's cell reflections is close, on
-the dilated state, to the sign prescribed by the corresponding linear
-equation. -/
-theorem msCellObsA_prod_close_of (S : Strategy msGame) (ε : ℝ)
-    (hwin : 1 - ε ≤ S.value) (i : Fin 6) (k₀ k₁ k₂ : Fin 3)
-    (hsum : ∀ a, constraintBitOrZero k₀ a + constraintBitOrZero k₁ a +
-      constraintBitOrZero k₂ a = constraintBitSum a) :
-    NormCloseOn (msDilatedStrategy S).ψ (12 * Real.sqrt ε)
-      (msCellObsA S i k₀ * msCellObsA S i k₁ * msCellObsA S i k₂)
-      (((bitSign (msParity i) : ℝ) : ℂ) • 1) := by
-  rw [msCellObsA_prod_of S i k₀ k₁ k₂ hsum, ← msCellObsA_prod S i]
-  exact msCellObsA_prod_close S ε hwin i
 
 /-- Each permuted row or column product of Bob's cell reflections is close, on
 the dilated state, to the sign prescribed by the corresponding linear

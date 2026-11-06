@@ -38,8 +38,7 @@ noncomputable section
 -- state; they are stated for an arbitrary finite index type in
 -- `MIPStarRE/QPBT/Games/DistanceTheorems/Support.lean`.
 export MIPStarRE.QPBT.DistanceCalculus (pureStateEuclideanVector
-  pureStateEuclideanVector_apply pureStateEuclideanVector_norm
-  pureState_stateQForm_eq_ev)
+  pureStateEuclideanVector_norm pureState_stateQForm_eq_ev)
 
 /-- For complete projective families and a pure bipartite state, the LDT
 consistency relation is exactly the QPBT off-diagonal defect.  In
@@ -131,14 +130,6 @@ noncomputable def gameStrategyPureState {G : Game} (S : Strategy G) :
   letI : Nonempty (S.ιA × S.ιB) :=
     (strategyQuantumState_isNormalized S).nonempty
   exact strategyPureState S
-
-@[simp] theorem gameStrategyPureState_vector {G : Game} (S : Strategy G) :
-    letI : Nonempty (S.ιA × S.ιB) :=
-      (strategyQuantumState_isNormalized S).nonempty
-    (gameStrategyPureState S).vector = S.ψ := by
-  letI : Nonempty (S.ιA × S.ιB) :=
-    (strategyQuantumState_isNormalized S).nonempty
-  rfl
 
 /-- The Euclidean vector of the strategy's pure-state presentation is the
 original game vector. -/
@@ -389,56 +380,6 @@ The names below were used before the constructions above were named after the
 low individual degree test they belong to.  They are retained only because the
 stacked branch `issue-134-simultaneous-polynomial-measurements` refers to them.
 -/
-
-/-- Former name of `ldtCoordinatePointMeasurementA`, kept for the stacked
-branch of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias matureCoordinatePointMeasurementA := ldtCoordinatePointMeasurementA
-
-/-- Former name of `ldtCoordinatePointMeasurementB`, kept for the stacked
-branch of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias matureCoordinatePointMeasurementB := ldtCoordinatePointMeasurementB
-
-/-- Former name of `ldtPolynomialEvaluationMeasurement`, kept for the stacked
-branch of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialEvaluationMeasurement := ldtPolynomialEvaluationMeasurement
-
-/-- Former name of `ldtPointAPlaced`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePointAPlaced := ldtPointAPlaced
-
-/-- Former name of `ldtPointBPlaced`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePointBPlaced := ldtPointBPlaced
-
-/-- Former name of `ldtPolynomialEvaluationLeft`, kept for the stacked branch
-of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialEvaluationLeft := ldtPolynomialEvaluationLeft
-
-/-- Former name of `ldtPolynomialEvaluationRight`, kept for the stacked branch
-of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialEvaluationRight := ldtPolynomialEvaluationRight
-
-/-- Former name of `ldtPolynomialLeftPlaced`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialLeftPlaced := ldtPolynomialLeftPlaced
-
-/-- Former name of `ldtPolynomialRightPlaced`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialRightPlaced := ldtPolynomialRightPlaced
-
-/-- Former name of `directLdtPointNonempty`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias directMaturePointNonempty := directLdtPointNonempty
 
 end
 

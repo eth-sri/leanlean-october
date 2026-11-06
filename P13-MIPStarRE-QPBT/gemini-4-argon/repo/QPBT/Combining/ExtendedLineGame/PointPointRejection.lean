@@ -1,27 +1,10 @@
 module
 
-public import QPBT.Combining.ExtendedLineGame.MixedLinePointRejection
+public import QPBT.Combining.ExtendedLineGame.LinePointRejection
 public import QPBT.Combining.Points.Placement
 
 /-!
 # Point/point rejection for the extended direct game
-
-This module bounds the point-agreement branch of the directly indexed
-low-degree strategy by the self-consistency error of the supplied joint point
-measurements.  The common extended point is transported by one coordinate
-equivalence to the jointly uniform tuple `(x, z, alpha, beta)` before the
-scalar coarse-graining is applied.
-
-This is a formalization-only auxiliary for the supplied-witness route in the
-proof of `lem:qld-4-7`; it does not construct the point witness or establish
-the complete passing-value estimate.
-
-## References
-
-- `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:689-709`
-- `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1279-1288`
-- `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:295-311`
-- Issue Dengnifer/MIPStarRE-QPBT-bak#313.
 -/
 
 @[expose] public section
@@ -50,8 +33,7 @@ variable {points : CombinedPointsWitness setting deltaQ}
   simp only [Equiv.piCongrLeft_apply, eq_rec_constant]
 
 /-- Split a direct extended point into its two Pauli points and two scalar
-coordinates.  This is a single bijection, so uniformity is joint rather than
-an inference from four separate marginals. -/
+coordinates. -/
 noncomputable def directPointExtendedQuestionEquiv (P : AdmissibleParams) :
     (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) ≃
       ExtendedPointQuestion P :=
@@ -72,30 +54,20 @@ theorem directPointExtendedQuestionEquiv_apply
       ((projX (directPointToPauli P u), projZ (directPointToPauli P u)),
         (directPointToPauli P u (alphaVar P.m),
           directPointToPauli P u (betaVar P.m))) := by
-  apply Prod.ext
-  · apply Prod.ext
-    · funext i
-      change (finCombineEquiv P.m).piCongrLeft (fun _ => PauliScalar P)
-        (fun j => extendedDirectScalarEquiv P (u j)) (.inl (.inl i)) = _
-      rw [piCongrLeft_const_apply]
-      rfl
-    · funext i
-      change (finCombineEquiv P.m).piCongrLeft (fun _ => PauliScalar P)
-        (fun j => extendedDirectScalarEquiv P (u j)) (.inl (.inr i)) = _
-      rw [piCongrLeft_const_apply]
-      rfl
-  · apply Prod.ext
-    · change (finCombineEquiv P.m).piCongrLeft (fun _ => PauliScalar P)
-        (fun j => extendedDirectScalarEquiv P (u j)) (.inr 0) = _
-      rw [piCongrLeft_const_apply]
-      rfl
-    · change (finCombineEquiv P.m).piCongrLeft (fun _ => PauliScalar P)
-        (fun j => extendedDirectScalarEquiv P (u j)) (.inr 1) = _
-      rw [piCongrLeft_const_apply]
-      rfl
+  refine Prod.ext (Prod.ext (funext fun i => ?_) (funext fun i => ?_)) (Prod.ext ?_ ?_)
+  · change (finCombineEquiv P.m).piCongrLeft (fun _ => PauliScalar P)
+      (fun j => extendedDirectScalarEquiv P (u j)) (.inl (.inl i)) = _
+    rw [piCongrLeft_const_apply]; rfl
+  · change (finCombineEquiv P.m).piCongrLeft (fun _ => PauliScalar P)
+      (fun j => extendedDirectScalarEquiv P (u j)) (.inl (.inr i)) = _
+    rw [piCongrLeft_const_apply]; rfl
+  · change (finCombineEquiv P.m).piCongrLeft (fun _ => PauliScalar P)
+      (fun j => extendedDirectScalarEquiv P (u j)) (.inr 0) = _
+    rw [piCongrLeft_const_apply]; rfl
+  · change (finCombineEquiv P.m).piCongrLeft (fun _ => PauliScalar P)
+      (fun j => extendedDirectScalarEquiv P (u j)) (.inr 1) = _
+    rw [piCongrLeft_const_apply]; rfl
 
-/-- Question-dependent coarse-graining on opposite tensor factors cannot
-increase their consistency defect. -/
 private theorem consistencyDefect_dependent_postprocess_le
     {X Alpha Beta IA IB : Type*}
     [Fintype X] [DecidableEq X] [Fintype Alpha] [DecidableEq Alpha]
@@ -111,15 +83,12 @@ private theorem consistencyDefect_dependent_postprocess_le
         (fun x a => heteroKron ((A x).effect a) 1)
         (fun x a => heteroKron 1 ((B x).effect a)) psi := by
   unfold consistencyDefect
-  apply avgOver_mono
-  intro x
+  refine avgOver_mono _ _ _ fun x => ?_
   have h := consistencyDefect_postprocess_le (uniformDistribution Unit)
     (fun _ => A x) (fun _ => B x) psi (f x)
   unfold consistencyDefect at h
   simpa only [avgOver_uniform_const] using h
 
-/-- A jointly uniform auxiliary coordinate can be discarded when both
-operator families depend only on the first coordinate. -/
 private theorem consistencyDefect_uniform_fst
     {X Y Alpha IA IB : Type*}
     [Fintype X] [DecidableEq X] [Nonempty X]
@@ -144,69 +113,6 @@ private theorem consistencyDefect_uniform_fst
     avgOver (uniformDistribution X) f
   exact avgOver_uniform_fst f
 
-private theorem point_point_win_iff_read_eq
-    (sample : DirectLdSpace P.extendedDirectLd)
-    (valuesA valuesB : Fin P.extendedDirectLd.k →
-      DirectScalarQ P.extendedDirectLd) :
-    directLdWinPredicate P.extendedDirectLd
-        (.point, directLdMap P.extendedDirectLd .point sample)
-        (.point, directLdMap P.extendedDirectLd .point sample)
-        (.pointVals valuesA) (.pointVals valuesB) = true ↔
-      pointGameRead (.pointVals valuesA) = pointGameRead (.pointVals valuesB) := by
-  simp only [directLdWinPredicate, validDirectLdAnswer,
-    Bool.and_self, if_true, decide_eq_true_eq, pointGameRead, Option.some.injEq]
-  change valuesA = valuesB ↔
-    (extendedDirectScalarEquiv P)
-        (valuesA ⟨0, by change 0 < 1; decide⟩) =
-      (extendedDirectScalarEquiv P)
-        (valuesB ⟨0, by change 0 < 1; decide⟩)
-  constructor
-  · intro h
-    rw [h]
-  · intro h
-    funext i
-    have hval : i.val = 0 := by
-      have hlt : i.val < 1 := i.isLt
-      omega
-    have hi : i = ⟨0, by change 0 < 1; decide⟩ := Fin.ext hval
-    subst i
-    exact (extendedDirectScalarEquiv P).injective h
-
-private theorem point_rejected_term_eq_read_mismatch
-    (lines : ExtendedLinesWitness setting points deltaL)
-    (sample : DirectLdSpace P.extendedDirectLd)
-    (answerA answerB : DirectLdAnswer P.extendedDirectLd) :
-    (if directLdWinPredicate P.extendedDirectLd
-        (.point, directLdMap P.extendedDirectLd .point sample)
-        (.point, directLdMap P.extendedDirectLd .point sample) answerA answerB then
-      0
-    else outcomeWeight (strategy lines)
-      (.point, directLdMap P.extendedDirectLd .point sample)
-      (.point, directLdMap P.extendedDirectLd .point sample) answerA answerB) =
-      if pointGameRead answerA = pointGameRead answerB then 0
-      else outcomeWeight (strategy lines)
-        (.point, directLdMap P.extendedDirectLd .point sample)
-        (.point, directLdMap P.extendedDirectLd .point sample) answerA answerB := by
-  classical
-  cases answerA with
-  | pointVals valuesA =>
-      cases answerB with
-      | pointVals valuesB =>
-          have hiff := point_point_win_iff_read_eq (P := P) sample valuesA valuesB
-          exact if_congr hiff rfl rfl
-      | alinePolys _ =>
-          rw [outcomeWeight_eq_zero_of_invalid lines _ _ _ _ (Or.inr rfl)]
-          simp [pointGameRead, directLdWinPredicate, validDirectLdAnswer]
-      | dlinePolys _ =>
-          rw [outcomeWeight_eq_zero_of_invalid lines _ _ _ _ (Or.inr rfl)]
-          simp [pointGameRead, directLdWinPredicate, validDirectLdAnswer]
-  | alinePolys _ =>
-      rw [outcomeWeight_eq_zero_of_invalid lines _ _ _ _ (Or.inl rfl)]
-      cases answerB <;> simp [pointGameRead, directLdWinPredicate, validDirectLdAnswer]
-  | dlinePolys _ =>
-      rw [outcomeWeight_eq_zero_of_invalid lines _ _ _ _ (Or.inl rfl)]
-      cases answerB <;> simp [pointGameRead, directLdWinPredicate, validDirectLdAnswer]
-
 private theorem point_rejectedMass_eq_read_mismatch
     (lines : ExtendedLinesWitness setting points deltaL)
     (sample : DirectLdSpace P.extendedDirectLd) :
@@ -216,36 +122,17 @@ private theorem point_rejectedMass_eq_read_mismatch
       outcomeEventWeight (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.point, directLdMap P.extendedDirectLd .point sample)
-        (fun answerA answerB => pointGameRead answerA ≠ pointGameRead answerB) := by
-  classical
-  unfold directRejectedMass outcomeEventWeight
-  apply Finset.sum_congr rfl
-  intro answerA _
-  apply Finset.sum_congr rfl
-  intro answerB _
-  have hterm := point_rejected_term_eq_read_mismatch lines sample answerA answerB
-  by_cases hread : pointGameRead answerA = pointGameRead answerB
-  · simpa [hread] using hterm
-  · simpa [hread] using hterm
-
-/-- The completed point read of the direct-game answer measurement is the
-corresponding scalar coarse-graining of the supplied joint point measurement. -/
-theorem point_read_effect
-    (lines : ExtendedLinesWitness setting points deltaL) (side : PlayerSide)
-    (sample : DirectLdSpace P.extendedDirectLd) (answer : Option (PauliScalar P)) :
-    (((answerMeasurement lines side
-        (.point, directLdMap P.extendedDirectLd .point sample)).postprocess
-      pointGameRead).effect answer) =
-      ((points.Q side
-        (projX (directPointToPauli P sample.point))
-        (projZ (directPointToPauli P sample.point))).postprocess fun values =>
-          some (directPointToPauli P sample.point (alphaVar P.m) * values.1 +
-            directPointToPauli P sample.point (betaVar P.m) * values.2)).effect answer := by
-  classical
-  unfold answerMeasurement CombinedPointsWitness.extendedQ
-  rw [MIPStarRE.Quantum.Measurement.postprocess_comp,
-    MIPStarRE.Quantum.Measurement.postprocess_comp]
-  rfl
+        (fun answerA answerB => pointGameRead answerA ≠ pointGameRead answerB) :=
+  rejectedMass_eq_read_mismatch_of_win_iff lines _ _ _ _ fun a b ha hb => by
+    cases a <;> cases b <;> try contradiction
+    rename_i valuesA valuesB
+    simp only [directLdWinPredicate, validDirectLdAnswer,
+      Bool.and_self, ite_true, decide_eq_true_eq, pointGameRead, Option.some.injEq,
+      (extendedDirectScalarEquiv P).injective.eq_iff]
+    refine ⟨fun h => h ▸ rfl, fun h => funext fun i => ?_⟩
+    have hi : i = onlyCoordinate := by
+      ext; have := i.isLt; change i.val < 1 at this; change i.val = 0; omega
+    exact hi ▸ h
 
 /-- The point/point branch rejection is exactly the consistency defect of the
 two completed scalar point readouts under the common uniform point question. -/

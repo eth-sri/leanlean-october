@@ -1,7 +1,8 @@
 module
 
 public import MIPStarRE.LDT.MakingMeasurementsProjective.QXPLayerIdentities.PositiveGram.Completion
-public import QPBT.Games.Sandwich.Quantitative
+public import QPBT.Games.Sandwich.Support
+public import MIPStarRE.LDT.MakingMeasurementsProjective.NaimarkCore
 
 /-! # State-dependent Schmidt mirrors
 

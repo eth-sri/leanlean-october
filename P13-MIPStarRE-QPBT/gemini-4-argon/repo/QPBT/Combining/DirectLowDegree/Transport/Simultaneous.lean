@@ -5,7 +5,17 @@ public import MIPStarRE.LDT.Test.MainTheorem.MainFormal
 public import QPBT.Combining.DirectLowDegree.Transport.Consistency.Defect
 public import QPBT.Combining.DirectLowDegree.Transport.Error
 public import QPBT.Combining.DirectLowDegree.Transport.PassConversion
-public import QPBT.Combining.QuantitativeScalars
+public import QPBT.Combining.ActualErrorBounds
+public import QPBT.Combining.ErrorBounds
+public import QPBT.Combining.PassingError
+public import QPBT.ExplicitConstants
+public import QPBT.Games.Sandwich.Pasting.Heterogeneous
+public import MIPStarRE.LDT.Test.MainTheorem.ScalarBounds.CascadeBounds.SigmaZeta1
+public import MIPStarRE.LDT.Test.MainTheorem.SourceScalars
+public import QPBT.Upstream
+public import MIPStarRE.LDT.Preliminaries.DistanceBounds
+public import MIPStarRE.LDT.Preliminaries.Triangles.Core
+public import MIPStarRE.LDT.Test.MainTheorem.SourceRoleRegister.Final
 
 /-!
 # Simultaneous polynomial measurements for the direct low-degree game

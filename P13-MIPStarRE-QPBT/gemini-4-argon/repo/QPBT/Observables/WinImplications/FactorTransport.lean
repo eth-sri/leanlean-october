@@ -187,6 +187,75 @@ theorem opDistSq_smul_swappedState {X ιA ιB : Type*}
   rw [reindexOp_sub, reindexOp_smul, reindexOp_prodComm_heteroKron,
     reindexOp_prodComm_heteroKron]
 
+noncomputable def pauliStrategySwap {P : AdmissibleParams}
+    (S : Strategy (pauliBasisTest P)) : Strategy (pauliBasisTest P) where
+  ιA := S.ιB
+  ιB := S.ιA
+  ψ := reindexState (Equiv.prodComm S.ιA S.ιB) S.ψ
+  ψ_norm := by
+    have h := norm_applyOperatorToState_reindexState
+      (Equiv.prodComm S.ιA S.ιB) (1 : Op (S.ιB × S.ιA)) S.ψ
+    rwa [reindexOp_one, applyOperatorToState_one, applyOperatorToState_one, S.ψ_norm] at h
+  A := S.B
+  B := S.A
+
+set_option maxRecDepth 20000 in
+theorem pauliStrategySwap_value {P : AdmissibleParams}
+    (S : Strategy (pauliBasisTest P)) :
+    (pauliStrategySwap S).value = S.value := by
+  classical
+  have hout (x y : PauliQuestion P) (a b : PauliAnswer P) :
+      outcomeWeight (pauliStrategySwap S) x y a b = outcomeWeight S y x b a := by
+    change DistanceCalculus.stateQForm (reindexState (Equiv.prodComm S.ιA S.ιB) S.ψ)
+        (heteroKron ((S.B x).effect a) ((S.A y).effect b)) =
+      DistanceCalculus.stateQForm S.ψ
+        (heteroKron ((S.A y).effect b) ((S.B x).effect a))
+    rw [stateQForm_reindexState, reindexOp_prodComm_heteroKron]
+  have havg (T : Strategy (pauliBasisTest P)) :
+      avgOver (uniformDistribution (PauliEdge × PauliSpace P))
+        (fun ez => pauliRejectionAt T ez.1 ez.2) = 1 - T.value := by
+    rw [← rejectionEventAverage_eq_one_sub_value T]
+    unfold pauliBasisTest pauliQuestionDistribution
+    rw [Distribution.avgOver_map]
+    rfl
+  let swapEdge : PauliEdge ≃ PauliEdge :=
+    { toFun e := ⟨e.1.swap, by simpa [Sym2.eq_swap] using e.2⟩
+      invFun e := ⟨e.1.swap, by simpa [Sym2.eq_swap] using e.2⟩
+      left_inv _ := rfl
+      right_inv _ := rfl }
+  have hrej : avgOver (uniformDistribution (PauliEdge × PauliSpace P))
+        (fun ez => pauliRejectionAt (pauliStrategySwap S) ez.1 ez.2) =
+      avgOver (uniformDistribution (PauliEdge × PauliSpace P))
+        (fun ez => pauliRejectionAt S ez.1 ez.2) := by
+    rw [avgOver_eq_sum_univ, avgOver_eq_sum_univ,
+      ← (swapEdge.prodCongr (Equiv.refl (PauliSpace P))).sum_comp]
+    refine Finset.sum_congr rfl fun ⟨e, z⟩ _ => ?_
+    have hw : (uniformDistribution (PauliEdge × PauliSpace P)).weight
+        ((swapEdge.prodCongr (Equiv.refl (PauliSpace P))) (e, z)) =
+        (uniformDistribution (PauliEdge × PauliSpace P)).weight (e, z) := by
+      simp [uniformDistribution, Distribution.uniformOnFinset_weight]
+    rw [hw]
+    congr 1
+    unfold pauliRejectionAt outcomeEventWeight pauliSourceQuestions
+    dsimp [swapEdge]
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl fun a _ => Finset.sum_congr rfl fun b _ => ?_
+    change (if pauliWinPredicate P (e.1.2, pauliCL P e.1.2 z) (e.1.1, pauliCL P e.1.1 z) b a = false
+        then outcomeWeight (pauliStrategySwap S) (e.1.2, pauliCL P e.1.2 z)
+          (e.1.1, pauliCL P e.1.1 z) b a else 0) =
+      if pauliWinPredicate P (e.1.1, pauliCL P e.1.1 z) (e.1.2, pauliCL P e.1.2 z) a b = false then
+        outcomeWeight S (e.1.1, pauliCL P e.1.1 z) (e.1.2, pauliCL P e.1.2 z) a b else 0
+    rw [pauliWinPredicate_symm P _ _ b a, hout]
+  linarith [havg (pauliStrategySwap S), havg S]
+
+/-- The interchanged projective setting with Alice and Bob swapped. -/
+noncomputable def _root_.MIPStarRE.QPBT.ProjectiveSetting.swap
+    {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) :
+    ProjectiveSetting P ε where
+  toStrategy := pauliStrategySwap S.toStrategy
+  isProjective := ⟨S.isProjective.2, S.isProjective.1⟩
+  win := by rw [pauliStrategySwap_value]; exact S.win
+
 end WinImplications
 
 end

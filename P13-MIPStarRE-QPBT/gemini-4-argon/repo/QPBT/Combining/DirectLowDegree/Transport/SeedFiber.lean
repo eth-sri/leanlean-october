@@ -45,14 +45,6 @@ noncomputable def matrixMeasurementTransport
           Equiv.sum_comp e.symm M.effect
         _ = 1 := M.sum_eq_one)
 
-@[simp] theorem matrixMeasurementTransport_effect
-    {alpha beta iota : Type*}
-    [Fintype alpha] [Fintype beta] [Fintype iota] [DecidableEq iota]
-    (e : alpha ≃ beta) (M : MIPStarRE.Quantum.Measurement alpha iota)
-    (b : beta) :
-    (matrixMeasurementTransport e M).effect b = M.effect (e.symm b) :=
-  rfl
-
 /-- Relabeling a projective matrix measurement preserves projectivity. -/
 theorem matrixMeasurementTransport_isProjective
     {alpha beta iota : Type*}
@@ -201,26 +193,6 @@ theorem ldStrategyToDirect_isProjective (L : LdParams)
     intro residue
     apply matrixMeasurementTransport_isProjective
     exact hS.2 (seededLdQuestion L q residue)
-
-@[simp] theorem ldStrategyToDirect_A_effect (L : LdParams)
-    (S : Strategy (ldGame L))
-    (q : DirectLdQuestion L.toDirectLdParams)
-    (answer : DirectLdAnswer L.toDirectLdParams) :
-    ((ldStrategyToDirect L S).A q).effect answer =
-      Matrix.blockDiagonal fun residue =>
-        (S.A (seededLdQuestion L q residue)).effect
-          ((ldDirectAnswerEquiv L).symm answer) :=
-  rfl
-
-@[simp] theorem ldStrategyToDirect_B_effect (L : LdParams)
-    (S : Strategy (ldGame L))
-    (q : DirectLdQuestion L.toDirectLdParams)
-    (answer : DirectLdAnswer L.toDirectLdParams) :
-    ((ldStrategyToDirect L S).B q).effect answer =
-      Matrix.blockDiagonal fun residue =>
-        (S.B (seededLdQuestion L q residue)).effect
-          ((ldDirectAnswerEquiv L).symm answer) :=
-  rfl
 
 /-- Coordinate formula for the correlated residue lift. -/
 theorem seedFiberLiftedState_apply

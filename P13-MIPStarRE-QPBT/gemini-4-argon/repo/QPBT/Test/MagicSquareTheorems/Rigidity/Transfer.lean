@@ -95,45 +95,6 @@ theorem sum_stateQForm_reverse_eq (S : Strategy msGame) (i : Fin 6) (k : Fin 3) 
   · simp [h]
   · simp [h, Ne.symm h]
 
-/-- The Born overlap of Alice's totalized constraint bit with Bob's totalized
-variable bit, summed over the bit, is the complement of the forward
-cell-mismatch mass. -/
-theorem sum_stateQForm_forward_eq (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
-    ∑ b : ZMod 2, stateQForm S.ψ (heteroKron
-        (((S.A (.constraint i)).postprocess (constraintBitOrZero k)).effect b)
-        (((S.B (.var (msConstraintVars i k))).postprocess msBitOrZero).effect b)) =
-      1 - forwardCellMismatchMass S i k := by
-  classical
-  have hterm : ∀ b : ZMod 2, stateQForm S.ψ (heteroKron
-        (((S.A (.constraint i)).postprocess (constraintBitOrZero k)).effect b)
-        (((S.B (.var (msConstraintVars i k))).postprocess msBitOrZero).effect b)) =
-      ∑ a : msGame.AnswerA, ∑ c : msGame.AnswerB,
-        if constraintBitOrZero k a = b then
-          (if msBitOrZero c = b then
-            outcomeWeight S (.constraint i) (.var (msConstraintVars i k)) a c else 0)
-        else 0 := by
-    intro b
-    rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
-      MIPStarRE.Quantum.Measurement.postprocess_effect,
-      heteroKron_finset_sum_left, stateQForm_finset_sum, Finset.sum_filter]
-    refine Finset.sum_congr rfl fun a _ => ?_
-    split_ifs
-    · rw [heteroKron_finset_sum_right, stateQForm_finset_sum, Finset.sum_filter]
-      rfl
-    · simp
-  have htotal := outcomeWeight_sum_eq_one S (.constraint i) (.var (msConstraintVars i k))
-  unfold forwardCellMismatchMass outcomeEventWeight
-  simp_rw [hterm]
-  rw [Finset.sum_comm, eq_sub_iff_add_eq, ← htotal, ← Finset.sum_add_distrib]
-  refine Finset.sum_congr rfl fun a _ => ?_
-  rw [Finset.sum_comm, ← Finset.sum_add_distrib]
-  refine Finset.sum_congr rfl fun c _ => ?_
-  rw [Finset.sum_ite_eq]
-  simp only [Finset.mem_univ, if_true]
-  by_cases h : constraintBitOrZero k a = msBitOrZero c
-  · simp [h]
-  · simp [h, Ne.symm h]
-
 /-! ## The dilated effects on the enlarged ground spaces -/
 
 /-- Alice's dilated postprocessed effect, typed on the enlarged local space
@@ -150,9 +111,7 @@ abbrev dilatedEffectB (S : Strategy msGame) (y : MsType) (f : MsAnswer → ZMod 
 
 /-- Alice's dilated variable bit approximately intertwines with Bob's dilated
 constraint bit: the summed squared defect is at most twice the reverse
-cell-mismatch mass of the original strategy.  This is the first item of
-blueprint `fact:agreement`, applied to the
-dilated strategy, whose Born masses are those of the original one. -/
+cell-mismatch mass of the original strategy. -/
 theorem sum_norm_sq_intertwining_le_reverse (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
     ∑ b : ZMod 2, ‖applyOperatorToState
         (heteroKron (dilatedEffectA S (.var (msConstraintVars i k)) msBitOrZero b) 1 -
@@ -183,39 +142,6 @@ theorem sum_norm_sq_intertwining_le_reverse (S : Strategy msGame) (i : Fin 6) (k
       2 * (1 ^ 2 - (1 - reverseCellMismatchMass S i k)) := h1
   linarith
 
-/-- Alice's dilated constraint bit approximately intertwines with Bob's dilated
-variable bit: the summed squared defect is at most twice the forward
-cell-mismatch mass of the original strategy. -/
-theorem sum_norm_sq_intertwining_le_forward (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
-    ∑ b : ZMod 2, ‖applyOperatorToState
-        (heteroKron (dilatedEffectA S (.constraint i) (constraintBitOrZero k) b) 1 -
-          heteroKron 1 (dilatedEffectB S (.var (msConstraintVars i k)) msBitOrZero b))
-        (naimarkDilatedState MsAnswer S.ψ)‖ ^ 2 ≤ 2 * forwardCellMismatchMass S i k := by
-  set S' := msDilatedStrategy S
-  set PA := (S'.A (.constraint i)).postprocess (constraintBitOrZero k)
-  set QB := (S'.B (.var (msConstraintVars i k))).postprocess msBitOrZero
-  have h1 := point_distance_le_two_defect (leftPlacedMeasurement (ιB := S'.ιB) PA)
-    (rightPlacedMeasurement (ιA := S'.ιA) QB) S'.ψ
-  rw [point_defect_eq] at h1
-  have hnorm : ‖S'.ψ‖ = 1 := S'.ψ_norm
-  have hover : ∑ a : ZMod 2, stateQForm S'.ψ
-      ((leftPlacedMeasurement (ιB := S'.ιB) PA).effect a *
-        (rightPlacedMeasurement (ιA := S'.ιA) QB).effect a) =
-      1 - forwardCellMismatchMass S i k := by
-    rw [← ms_dilated_strategy_forward_cell_mismatch_mass S i k,
-      ← sum_stateQForm_forward_eq S' i k]
-    refine Finset.sum_congr rfl fun a _ => ?_
-    change stateQForm S'.ψ (heteroKron (PA.effect a) 1 * heteroKron 1 (QB.effect a)) =
-      stateQForm S'.ψ (heteroKron (PA.effect a) (QB.effect a))
-    rw [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]
-  rw [hnorm, hover] at h1
-  have h2 : ∑ b : ZMod 2, ‖applyOperatorToState
-      (heteroKron (dilatedEffectA S (.constraint i) (constraintBitOrZero k) b) 1 -
-        heteroKron 1 (dilatedEffectB S (.var (msConstraintVars i k)) msBitOrZero b))
-      (naimarkDilatedState MsAnswer S.ψ)‖ ^ 2 ≤
-      2 * (1 ^ 2 - (1 - forwardCellMismatchMass S i k)) := h1
-  linarith
-
 /-! ## Compressions of the dilated postprocessed effects -/
 
 /-- Compressing one of Alice's dilated postprocessed effects returns her original
@@ -228,16 +154,6 @@ theorem naimarkCompression_dilatedEffectA (S : Strategy msGame) (x : MsType)
     (Finset.sum_congr rfl fun a _ => naimarkCompression_msDilatedStrategy_A_effect S x a)
   exact h
 
-/-- Compressing one of Bob's dilated postprocessed effects returns his original
-postprocessed effect. -/
-theorem naimarkCompression_dilatedEffectB (S : Strategy msGame) (y : MsType)
-    (f : MsAnswer → ZMod 2) (b : ZMod 2) :
-    naimarkCompression (dilatedEffectB S y f b) = ((S.B y).postprocess f).effect b := by
-  have h := (naimarkCompression_finset_sum (Finset.univ.filter fun a : MsAnswer => f a = b)
-    fun a => ((msDilatedStrategy S).B y).effect a).trans
-    (Finset.sum_congr rfl fun a _ => naimarkCompression_msDilatedStrategy_B_effect S y a)
-  exact h
-
 /-- The inflation of Alice's original postprocessed effect is the ground
 compression `Π P Π` of her dilated one. -/
 theorem naimarkInflation_postprocess_A (S : Strategy msGame) (x : MsType)
@@ -246,15 +162,6 @@ theorem naimarkInflation_postprocess_A (S : Strategy msGame) (x : MsType)
       groundProjection S.ιA MsAnswer * dilatedEffectA S x f b *
         groundProjection S.ιA MsAnswer := by
   rw [← naimarkCompression_dilatedEffectA, naimarkInflation_naimarkCompression]
-
-/-- The inflation of Bob's original postprocessed effect is the ground
-compression `Π Q Π` of his dilated one. -/
-theorem naimarkInflation_postprocess_B (S : Strategy msGame) (y : MsType)
-    (f : MsAnswer → ZMod 2) (b : ZMod 2) :
-    naimarkInflation (α := MsAnswer) (((S.B y).postprocess f).effect b) =
-      groundProjection S.ιB MsAnswer * dilatedEffectB S y f b *
-        groundProjection S.ιB MsAnswer := by
-  rw [← naimarkCompression_dilatedEffectB, naimarkInflation_naimarkCompression]
 
 /-! ## Transfer of the effect estimates -/
 

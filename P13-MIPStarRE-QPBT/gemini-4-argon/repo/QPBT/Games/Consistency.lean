@@ -160,24 +160,4 @@ theorem opDistSq_eq_opFamilyDistSq {X ι : Type*}
     opDistSq μ M N ψ = opFamilyDistSq μ (fun x (_ : Unit) => M x)
       (fun x (_ : Unit) => N x) ψ := rfl
 
-/-- The strategy-distance relation `def:strategy-distance`. The two strategies'
-local Hilbert spaces are identified, and both measurement distances are
-evaluated on the first strategy's state. Blueprint
-`def:strategy-distance`, paper `06_nonlocal_games_and_mipstar.tex:273-285`. -/
-structure AreCloseStrategies (G : Game) (S S' : Strategy G) (δ : ℝ) : Prop where
-  /-- Identification of Alice's local Hilbert spaces. -/
-  hA : S.ιA = S'.ιA
-  /-- Identification of Bob's local Hilbert spaces. -/
-  hB : S.ιB = S'.ιB
-  state : stateDistSq S.ψ (reindexState
-      (Equiv.prodCongr (Equiv.cast hA).symm (Equiv.cast hB).symm) S'.ψ) ≤ δ
-  alice : opFamilyDistSq (G.μ.map Prod.fst)
-      (fun x a => heteroKron ((S.A x).effect a) 1)
-      (fun x a => heteroKron (reindexOp (Equiv.cast hA) ((S'.A x).effect a)) 1)
-      S.ψ ≤ δ
-  bob : opFamilyDistSq (G.μ.map Prod.snd)
-      (fun y b => heteroKron 1 ((S.B y).effect b))
-      (fun y b => heteroKron 1 (reindexOp (Equiv.cast hB) ((S'.B y).effect b)))
-      S.ψ ≤ δ
-
 end MIPStarRE.QPBT

@@ -1,7 +1,7 @@
 module
 
 public import QPBT.Combining.ExtendedLines.Measurement
-public import QPBT.Combining.SubLineXDeficit
+public import QPBT.Combining.SubLineZDeficit
 public import QPBT.Combining.Lines.SubLineUniform
 
 /-!
@@ -385,16 +385,17 @@ theorem SubLineWitness.extended_consistencyDefect_le {params : AdmissibleParams}
 def orderedSublineOverlap {params : AdmissibleParams} {error pointError lineError : ℝ}
     (setting : ProjectiveSetting params error) (points : CombinedPointsWitness setting pointError)
     (lines : CombinedLinesWitness setting points lineError) (first second : Placement)
-    (sample : SubLineTriple params) : ℝ :=
-  avgOver (uniformDistribution (DirectScalarQ params.extendedDirectLd)) (fun parameter =>
-    let point := directPointToPauli params (sample.1.base + parameter • sample.1.direction)
-    ∑ pair, stateQForm setting.psiHat
-      (setting.place first ((lines.T first.side sample.2.1 sample.2.2).effect pair) *
+    (s : SubLineTriple params × DirectScalarQ params.extendedDirectLd) : ℝ :=
+  let point := directPointToPauli params (s.1.1.base + s.2 • s.1.1.direction)
+  ∑ answer : Option (PauliScalar params) × Option (PauliScalar params),
+    stateQForm setting.psiHat
+      ((setting.placedMeasurement first
+        ((lines.T first.side s.1.2.1 s.1.2.2).postprocess (fun pair =>
+          (evalOpt s.1.2.1 (projX point) pair.1,
+            evalOpt s.1.2.2 (projZ point) pair.2)))).effect answer *
         setting.place second
-          ((setting.pointMeasExpOption second.side .Z (projZ point)).effect
-              (evalOpt sample.2.2 (projZ point) pair.2) *
-            (setting.pointMeasExpOption second.side .X (projX point)).effect
-              (evalOpt sample.2.1 (projX point) pair.1))))
+          ((setting.pointMeasExpOption second.side .Z (projZ point)).effect answer.2 *
+            (setting.pointMeasExpOption second.side .X (projX point)).effect answer.1))
 
 /-- The first-route replacement by the ordered point product holds for any
 placement, in particular for the missing second-player orientation. Its only
@@ -406,7 +407,9 @@ theorem SubLineWitness.paired_ordered_overlap_gap_le {params : AdmissibleParams}
     (sublines : SubLineWitness params) (lines : CombinedLinesWitness setting points lineError)
     (first second : Placement) :
     |avgOver sublines.D (pairedSublineOverlap setting points lines first second) -
-      avgOver sublines.D (orderedSublineOverlap setting points lines first second)| ≤
+      avgOver (Distribution.prod sublines.D
+        (uniformDistribution (DirectScalarQ params.extendedDirectLd)))
+        (orderedSublineOverlap setting points lines first second)| ≤
         Real.sqrt (4 * pointError) := by
   let law := Distribution.prod sublines.D
     (uniformDistribution (DirectScalarQ params.extendedDirectLd))
@@ -461,30 +464,17 @@ theorem SubLineWitness.paired_ordered_overlap_gap_le {params : AdmissibleParams}
     exact points.orderedZX_dist_le second
   have hgap := abs_overlap_gap_le_sqrt_of_opFamilyDistSq law lineMeasurement joint ordered
     setting.psiHat hprob setting.psiHat_norm (4 * pointError) hdist
-  have hregroup (right : (SubLineTriple params × DirectScalarQ params.extendedDirectLd) →
-      Option (PauliScalar params) × Option (PauliScalar params) →
-        Op (setting.ExpandedLocalSpace second.side)) :
+  have hregroup :
       avgOver law (fun sample => ∑ answer, stateQForm setting.psiHat
-        ((lineMeasurement sample).effect answer * setting.place second (right sample answer))) =
-      avgOver sublines.D (fun sample =>
-        avgOver (uniformDistribution (DirectScalarQ params.extendedDirectLd)) (fun parameter =>
-          ∑ pair, stateQForm setting.psiHat
-            (setting.place first ((lines.T first.side sample.2.1 sample.2.2).effect pair) *
-              setting.place second (right (sample, parameter)
-                (evalOpt sample.2.1 (projX (point (sample, parameter))) pair.1,
-                  evalOpt sample.2.2 (projZ (point (sample, parameter))) pair.2))))) := by
+        ((lineMeasurement sample).effect answer * joint sample answer)) =
+      avgOver sublines.D (pairedSublineOverlap setting points lines first second) := by
     change avgOver (Distribution.prod sublines.D
       (uniformDistribution (DirectScalarQ params.extendedDirectLd))) _ = _
     rw [SandwichProduct.avgOver_distribution_prod]
-    apply avgOver_congr
-    intro sample
-    apply avgOver_congr
-    intro parameter
-    exact placed_overlap_postprocess setting first second _ _ _
-  dsimp only [joint, ordered] at hgap
-  rw [hregroup, hregroup] at hgap
+    exact avgOver_congr _ _ _ fun sample => avgOver_congr _ _ _ fun parameter =>
+      placed_overlap_postprocess setting first second _ _ _
+  rw [hregroup] at hgap
   exact hgap
-
 
 end
 

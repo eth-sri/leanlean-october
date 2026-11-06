@@ -349,151 +349,52 @@ theorem honestMeasurement_projective (P : AdmissibleParams) (t : PauliType)
     (z : PauliSpace P) :
     MIPStarRE.QPBT.Measurement.IsProjective (honestMeasurement P t z) := by
   cases t with
-  | point W =>
-      simpa [honestMeasurement, honestPointMeasurement] using
-        (placedPauliMeasurement_projective
-          (pauliPointMeasurement P W (pauliPointBlock W z))
-          (pauliPointMeasurement_projective P W (pauliPointBlock W z))
-          (fun a => PauliAnswer.value a) (by intro; simp))
-  | aline W =>
-      simpa [honestMeasurement, honestALineMeasurement] using
-        (placedPauliMeasurement_projective (pauliALineMeasurement P W z)
-          (pauliALineMeasurement_projective P W z)
-          (fun a => PauliAnswer.alinePoly a) (by intro; simp))
-  | dline W =>
-      simpa [honestMeasurement, honestDLineMeasurement] using
-        (placedPauliMeasurement_projective (pauliDLineMeasurement P W z)
-          (pauliDLineMeasurement_projective P W z)
-          (fun a => PauliAnswer.dlinePoly a) (by intro; simp))
-  | pauli W =>
-      simpa [honestMeasurement, honestPauliMeasurement] using
-        (placedPauliMeasurement_projective (pauliBasisMeasurement W)
-          (fun a => pauliProj_isProj W a)
-          (fun a => PauliAnswer.pauliOutcome a) (by intro; simp))
-  | pairW W =>
-      simpa [honestMeasurement, honestPairWMeasurement] using
-        (placedPauliMeasurement_projective
-          (pauliTraceMeasurement P W (pauliPointBlock W z)
-            (match W with | .X => pauliRXBlock z | .Z => pauliRZBlock z))
-          (pauliTraceMeasurement_projective P W _ _)
-          (fun a => PauliAnswer.bit a) (by intro; simp))
   | pair =>
       classical
-      by_cases hg : pauliPairGamma P z = 0
-      · simpa [honestMeasurement, honestPairMeasurement, hg] using
-          (placedPauliMeasurement_projective (pauliPairMeasurement P z hg)
-            (pauliPairMeasurement_projective P z hg)
-            (fun a => PauliAnswer.pairBits a) (by intro; simp))
-      · simpa [honestMeasurement, honestPairMeasurement, hg] using
-          (deterministicMeasurement_projective
-            (V := HonestIndex P) (α := PauliAnswer P) (.pairBits (0, 0)))
+      by_cases hg : pauliPairGamma P z = 0 <;>
+        simp only [honestMeasurement, honestPairMeasurement, hg, dite_true, dite_false]
+      · exact placedPauliMeasurement_projective _ (pauliPairMeasurement_projective P z hg) _ (by intro; simp)
+      · exact deterministicMeasurement_projective _
   | ms t =>
       classical
-      by_cases hg : pauliPairGamma P z = 0
-      · simpa [honestMeasurement, honestMagicMeasurement, hg] using
-          (deterministicMeasurement_projective
-            (V := HonestIndex P) (α := PauliAnswer P)
-            (match t with
-            | .constraint _ => (.msTriple 0 : PauliAnswer P)
-            | .var _ => (.bit 0 : PauliAnswer P)))
-      · simpa [honestMeasurement, honestMagicMeasurement, hg] using
-          (SandwichProduct.postprocess_isProjective (pauliMagicMeasurement P z hg t)
-            (pauliMagicMeasurement_projective P z hg t) pauliAnswerOfMs)
+      by_cases hg : pauliPairGamma P z = 0 <;>
+        simp only [honestMeasurement, honestMagicMeasurement, hg, dite_true, dite_false]
+      · exact deterministicMeasurement_projective _
+      · exact SandwichProduct.postprocess_isProjective _ (pauliMagicMeasurement_projective P z hg t) _
+  | _ =>
+      exact placedPauliMeasurement_projective _
+        (by first
+          | exact pauliBasisMeasurement_postprocess_projective _ _
+          | exact pauliProj_isProj _
+          | exact pauliTraceMeasurement_projective P _ _ _) _ (by intro; simp)
 
-/-- The honest `Point/W` effects are symmetric matrices: each is a sum of
-generalized Pauli projectors, and those are symmetric in the computational
-basis.  Symmetry of the effects is what lets the maximally entangled state
-transfer a player's measurement to its partner in the consistency step of
-`lem:pauli-completeness`. -/
-theorem pauliPointMeasurement_effect_transpose (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
-    ((pauliPointMeasurement P W u).effect a)ᵀ =
-      (pauliPointMeasurement P W u).effect a := by
-  apply postprocess_effect_transpose
-  intro h
-  exact pauliProj_transpose W h
-
-/-- The honest `ALine/W` effects are symmetric matrices, by the same
-coarse-graining of symmetric generalized Pauli projectors as in the `Point`
-case. -/
-theorem pauliALineMeasurement_effect_transpose (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) (a : Fin (P.d + 1) → PauliScalar P) :
-    ((pauliALineMeasurement P W z).effect a)ᵀ =
-      (pauliALineMeasurement P W z).effect a := by
-  apply postprocess_effect_transpose
-  intro h
-  exact pauliProj_transpose W h
-
-/-- The honest `DLine/W` effects are symmetric matrices, by the same
-coarse-graining of symmetric generalized Pauli projectors as in the `Point`
-case. -/
-theorem pauliDLineMeasurement_effect_transpose (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) (a : Fin (P.m * P.d + 1) → PauliScalar P) :
-    ((pauliDLineMeasurement P W z).effect a)ᵀ =
-      (pauliDLineMeasurement P W z).effect a := by
-  apply postprocess_effect_transpose
-  intro h
-  exact pauliProj_transpose W h
-
-/-- The global honest measurement has symmetric effects. -/
 theorem honestMeasurement_effect_transpose (P : AdmissibleParams) (t : PauliType)
     (z : PauliSpace P) (a : PauliAnswer P) :
     ((honestMeasurement P t z).effect a)ᵀ =
       (honestMeasurement P t z).effect a := by
   cases t with
-  | point W =>
-      change ((honestPointMeasurement P W z).effect a)ᵀ =
-        (honestPointMeasurement P W z).effect a
-      exact placedPauliMeasurement_effect_transpose _
-        (pauliPointMeasurement_effect_transpose P W (pauliPointBlock W z)) _ _
-  | aline W =>
-      change ((honestALineMeasurement P W z).effect a)ᵀ =
-        (honestALineMeasurement P W z).effect a
-      exact placedPauliMeasurement_effect_transpose _
-        (pauliALineMeasurement_effect_transpose P W z) _ _
-  | dline W =>
-      change ((honestDLineMeasurement P W z).effect a)ᵀ =
-        (honestDLineMeasurement P W z).effect a
-      exact placedPauliMeasurement_effect_transpose _
-        (pauliDLineMeasurement_effect_transpose P W z) _ _
-  | pauli W =>
-      change ((honestPauliMeasurement P W).effect a)ᵀ =
-        (honestPauliMeasurement P W).effect a
-      exact placedPauliMeasurement_effect_transpose (pauliBasisMeasurement W)
-        (pauliProj_transpose W) _ _
-  | pairW W =>
-      change ((honestPairWMeasurement P W z).effect a)ᵀ =
-        (honestPairWMeasurement P W z).effect a
-      exact placedPauliMeasurement_effect_transpose _
-        (pauliTraceMeasurement_effect_transpose P W _ _) _ _
   | pair =>
       classical
-      by_cases hg : pauliPairGamma P z = 0
-      · simpa [honestMeasurement, honestPairMeasurement, hg] using
-          (placedPauliMeasurement_effect_transpose (pauliPairMeasurement P z hg)
-            (fun β => by
-              change (pauliPairEffect P z β)ᵀ = pauliPairEffect P z β
-              rw [pauliPairEffect, Matrix.transpose_mul,
-                pauliTraceMeasurement_effect_transpose,
-                pauliTraceMeasurement_effect_transpose]
-              exact (pauliTraceMeasurement_effect_commute P z hg β.1 β.2).eq.symm)
-            (fun a => PauliAnswer.pairBits a) a)
-      · simpa [honestMeasurement, honestPairMeasurement, hg] using
-          (deterministicMeasurement_effect_transpose
-            (α := PauliAnswer P) (V := HonestIndex P) (.pairBits (0, 0)) a)
+      by_cases hg : pauliPairGamma P z = 0 <;>
+        simp only [honestMeasurement, honestPairMeasurement, hg, dite_true, dite_false]
+      · refine placedPauliMeasurement_effect_transpose _ (fun β => ?_) _ _
+        change (pauliPairEffect P z β)ᵀ = pauliPairEffect P z β
+        rw [pauliPairEffect, Matrix.transpose_mul,
+          pauliTraceMeasurement_effect_transpose, pauliTraceMeasurement_effect_transpose]
+        exact (pauliTraceMeasurement_effect_commute P z hg β.1 β.2).eq.symm
+      · exact deterministicMeasurement_effect_transpose _ a
   | ms t =>
       classical
-      by_cases hg : pauliPairGamma P z = 0
-      · simpa [honestMeasurement, honestMagicMeasurement, hg] using
-          (deterministicMeasurement_effect_transpose
-            (α := PauliAnswer P) (V := HonestIndex P)
-            (match t with
-            | .constraint _ => (.msTriple 0 : PauliAnswer P)
-            | .var _ => (.bit 0 : PauliAnswer P)) a)
-      · simpa [honestMeasurement, honestMagicMeasurement, hg] using
-          (postprocess_effect_transpose (pauliMagicMeasurement P z hg t)
-            pauliAnswerOfMs
-            (fun b => pauliMagicMeasurement_effect_transpose P z hg t b) a)
+      by_cases hg : pauliPairGamma P z = 0 <;>
+        simp only [honestMeasurement, honestMagicMeasurement, hg, dite_true, dite_false]
+      · exact deterministicMeasurement_effect_transpose _ a
+      · exact postprocess_effect_transpose _ _ (pauliMagicMeasurement_effect_transpose P z hg t) a
+  | _ =>
+      exact placedPauliMeasurement_effect_transpose _
+        (by first
+          | exact postprocess_effect_transpose _ _ (pauliProj_transpose _)
+          | exact pauliProj_transpose _
+          | exact pauliTraceMeasurement_effect_transpose P _ _ _) _ _
 
 /-- The global honest measurement is consistent on the maximally entangled
 state of the honest local space, every effect being symmetric. -/

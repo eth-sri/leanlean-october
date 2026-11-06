@@ -2,9 +2,8 @@ module
 
 public import QPBT.Combining.Lines.Construction
 public import QPBT.Combining.Lines.CombinedMeasurement
-public import QPBT.Combining.Lines.ConditionalConsistency
-public import QPBT.Combining.Lines.Marginal
 public import QPBT.Combining.Lines.ConsistencyPositivity
+public import QPBT.Games.RestrictedAverage
 public import QPBT.Combining.Lines.ConditionalCollision
 public import QPBT.Combining.Lines.AxisLineResampling
 public import QPBT.Combining.Lines.DiagonalResampling
@@ -14,21 +13,16 @@ public import QPBT.Combining.Lines.NondegeneratePastingDistribution
 public import QPBT.Combining.Lines.NondegeneratePastingMass
 public import QPBT.Combining.Lines.PairStateConsistencyTransport
 public import QPBT.Combining.Lines.RestrictedAverage
-public import QPBT.Combining.Lines.NondegeneratePastingResampling
 public import QPBT.Combining.Lines.SubLineMixture
 public import QPBT.Combining.Lines.UniformAffineCollision
 public import QPBT.Combining.Lines.WeightedCollision
 public import QPBT.Combining.Lines.PointwiseDefect
-public import QPBT.Combining.Lines.PointSelfConsistencyCompleted
+public import QPBT.Combining.Lines.Conditioning
 public import QPBT.Combining.Points
 public import QPBT.Combining.Witnesses
 public import QPBT.Combining.Lines.AffineEvaluation
 public import QPBT.Combining.Lines.FiberCollision
-public import QPBT.Combining.Lines.NondegenerateFiberCollision
 public import QPBT.Combining.Lines.ZeroDirectionMass
-public import QPBT.Combining.Lines.RestrictedConsistency
-public import QPBT.Combining.Lines.PastingRestoration
-public import QPBT.Games.RestrictedAverage
 
 /-!
 # Combined lines and restricted line distributions
@@ -151,20 +145,15 @@ theorem exists_subLineWitness (P : AdmissibleParams) :
   refine ⟨{ D := subLineDist P
             isProbability := subLineDist_isProbability P
             extended_marginal := subLineDist_map_fst P
-            incidence := ?_
             compatibility := ?_
             source_mixture := subLineDist_source_mixture P
             axis_closure := ?_ }⟩
-  · intro sample hsample u hu
-    obtain ⟨kind, k, w, hx, hz, rfl⟩ :=
-      exists_samplingData_of_mem_subLineDist_support P hsample
-    exact subLineTripleOf_incidence P kind k w hx hz hu
   · intro sample hsample
     obtain ⟨kind, k, w, hx, hz, rfl⟩ :=
       exists_samplingData_of_mem_subLineDist_support P hsample
     exact subLineTripleOf_compatibility P kind k w hx hz
   · intro sample hsample haxis
-    obtain ⟨kind, k, w, hx, hz, rfl⟩ :=
+    obtain ⟨kind, k, w, _, _, rfl⟩ :=
       exists_samplingData_of_mem_subLineDist_support P hsample
     exact subLineTripleOf_axis_closure P kind k w haxis
 

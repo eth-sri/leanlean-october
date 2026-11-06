@@ -39,16 +39,13 @@ the same effect as applying it once. -/
 theorem lineRepMap_apply_self {K : Type*} [Field K] {m : ℕ}
     (v u : Fin m → K) :
     lineRepMap v (lineRepMap v u) = lineRepMap v u := by
-  simp [lineRepMap, canonicalProjOfKernel, LinearMap.comp_apply]
+  by_cases hv : v = 0 <;> simp [lineRepMap, explicitLineRep, hv, linePivotIndex_ne_zero, sub_smul]
 
 /-- The two presentations of lines used by the low-degree question sampler. -/
 inductive LineKind where
   | axis
   | diagonal
   deriving DecidableEq
-
-instance LineKind.instFintype : Fintype LineKind :=
-  ⟨{.axis, .diagonal}, by intro x; cases x <;> simp⟩
 
 /-- A seed-bearing line description for blueprint
 `def:line-point-dist`, paper

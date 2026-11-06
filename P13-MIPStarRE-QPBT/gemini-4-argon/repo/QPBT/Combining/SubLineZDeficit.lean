@@ -212,9 +212,9 @@ theorem zPointOverlap_eq_at (lines : CombinedLinesWitness S points δP)
     zPointOverlapAt lines first second ((w.1.1, w.2.1), w.2.2) =
       ∑ o : Option (PauliScalar P) × Option (PauliScalar P),
         stateQForm S.psiHat
-          (S.place first
-            (((lines.T first.side w.1.1 w.2.1).postprocess fun fs =>
-              (evalOpt w.1.1 w.1.2 fs.1, evalOpt w.2.1 w.2.2 fs.2)).effect o) *
+          ((S.placedMeasurement first
+            ((lines.T first.side w.1.1 w.2.1).postprocess fun fs =>
+              (evalOpt w.1.1 w.1.2 fs.1, evalOpt w.2.1 w.2.2 fs.2))).effect o *
             S.place second ((S.pointMeasExpOption second.side .Z w.2.2).effect o.2)) :=
   (regroup_line_answer_sum_at lines first second w.1.1 w.2.1 w.1.2 w.2.2
     (fun _ o2 => (S.pointMeasExpOption second.side .Z w.2.2).effect o2)).symm
@@ -262,7 +262,6 @@ theorem SubLineWitness.avgOver_zPointOverlap_le_one_at (sublines : SubLineWitnes
       S.psiHat_norm
       (fun w o => S.place_isProj _ (S.pointMeasExpOption_isProj _ _ _ _))
       (fun w o => S.place_comm first second hopposite _ _)
-    simp only [ProjectiveSetting.placedMeasurement_effect] at h
     rw [avgOver_congr _ _ _ fun w => zPointOverlap_eq_at lines first second w]
     exact h
   calc
@@ -284,24 +283,67 @@ theorem SubLineWitness.one_sub_avgOver_zPointOverlap_le_at
       2 * Real.sqrt (4 * (P.m : ℝ) ^ 2 * δP) + 2 * Real.sqrt (4 * δQ) := by
   obtain ⟨components, hcomp, hmix⟩ :=
     SubLineWitness.exists_avgOver_Z_eq_mixture P sublines (zPointOverlapAt lines first second)
-  rw [hmix]
-  have hsplit : avgOver components (fun c => 1 -
-      avgOver (Distribution.prod (restrictedLinePointDist P c.1 c.2.1)
-        (restrictedLinePointDist P c.1 c.2.2))
-        (fun w => zPointOverlapAt lines first second ((w.1.1, w.2.1), w.2.2))) =
-      1 - avgOver components (fun c =>
-        avgOver (Distribution.prod (restrictedLinePointDist P c.1 c.2.1)
-          (restrictedLinePointDist P c.1 c.2.2))
-          (fun w => zPointOverlapAt lines first second ((w.1.1, w.2.1), w.2.2))) := by
-    rw [avgOver_sub, avgOver_const_of_isProbability components hcomp]
-  rw [← hsplit]
-  calc
-    _ ≤ avgOver components (fun _ =>
-        2 * Real.sqrt (4 * (P.m : ℝ) ^ 2 * δP) + 2 * Real.sqrt (4 * δQ)) := by
-      refine avgOver_mono _ _ _ fun c => ?_
-      rw [avgOver_congr _ _ _ fun w => zPointOverlap_eq_at lines first second w]
-      exact lines.one_sub_Z_overlap_restricted_le_at first second hopposite c.1 c.1 c.2.1 c.2.2
-    _ = _ := avgOver_const_of_isProbability components hcomp _
+  rw [hmix, ← avgOver_const_of_isProbability components hcomp 1, ← avgOver_sub]
+  refine (avgOver_mono _ _ _ fun c => ?_).trans_eq
+    (avgOver_const_of_isProbability components hcomp _)
+  rw [avgOver_congr _ _ _ fun w => zPointOverlap_eq_at lines first second w]
+  exact lines.one_sub_overlap_restricted_le_at first second hopposite c.1 c.1 c.2.1 c.2.2
+    (fun _ z o => (S.pointMeasExpOption second.side .Z z).effect o.2)
+    (fun x _ o => (S.pointMeasExpOption second.side .X x).effect o.1)
+    (fun x z ab => (S.pointMeasExp second.side .Z z).effect ab.2 *
+      (S.pointMeasExp second.side .X x).effect ab.1)
+    (fun _ _ _ => S.pointMeasExpOption_isProj _ _ _ _)
+    (fun _ _ _ => S.pointMeasExpOption_isProj _ _ _ _)
+    (fun _ _ _ => by rw [S.pointMeasExpOption_effect_some, S.pointMeasExpOption_effect_some])
+    (fun _ _ _ => by rw [S.pointMeasExpOption_effect_none, mul_zero])
+    (fun _ _ _ => by rw [S.pointMeasExpOption_effect_none, zero_mul])
+    (points.orderedZX_dist_le second)
+
+def xPointOverlapAt (lines : CombinedLinesWitness S points δP)
+    (first second : Placement)
+    (w : (LineDesc P.toLdParams × LineDesc P.toLdParams) ×
+      (Fin P.m → PauliScalar P)) : ℝ :=
+  ∑ fX, ∑ fZ, stateQForm S.psiHat
+    (S.place first ((lines.T first.side w.1.1 w.1.2).effect (fX, fZ)) *
+      S.place second ((S.pointMeasExpOption second.side .X w.2).effect (evalOpt w.1.1 w.2 fX)))
+
+theorem xPointOverlap_eq_at (lines : CombinedLinesWitness S points δP)
+    (first second : Placement) (w : LinePointPairSample P) :
+    xPointOverlapAt lines first second ((w.1.1, w.2.1), w.1.2) =
+      ∑ o : Option (PauliScalar P) × Option (PauliScalar P),
+        stateQForm S.psiHat
+          ((S.placedMeasurement first
+            ((lines.T first.side w.1.1 w.2.1).postprocess fun fs =>
+              (evalOpt w.1.1 w.1.2 fs.1, evalOpt w.2.1 w.2.2 fs.2))).effect o *
+            S.place second ((S.pointMeasExpOption second.side .X w.1.2).effect o.1)) :=
+  (regroup_line_answer_sum_at lines first second w.1.1 w.2.1 w.1.2 w.2.2
+    (fun o1 _ => (S.pointMeasExpOption second.side .X w.1.2).effect o1)).symm
+
+theorem SubLineWitness.one_sub_avgOver_xPointOverlap_le_at
+    (sublines : SubLineWitness P) (lines : CombinedLinesWitness S points δP)
+    (first second : Placement) (hopposite : first.IsOpposite second) :
+    1 - avgOver sublines.D (fun sample =>
+      avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd))
+        (fun t => xPointOverlapAt lines first second (sample.2, projX (directPointToPauli P
+          (sample.1.base + t • sample.1.direction))))) ≤
+      2 * Real.sqrt (4 * (P.m : ℝ) ^ 2 * δP) + 2 * Real.sqrt (4 * δQ) := by
+  obtain ⟨components, hcomp, hmix⟩ :=
+    SubLineWitness.exists_avgOver_X_eq_mixture P sublines (xPointOverlapAt lines first second)
+  rw [hmix, ← avgOver_const_of_isProbability components hcomp 1, ← avgOver_sub]
+  refine (avgOver_mono _ _ _ fun c => ?_).trans_eq
+    (avgOver_const_of_isProbability components hcomp _)
+  rw [avgOver_congr _ _ _ fun w => xPointOverlap_eq_at lines first second w]
+  exact lines.one_sub_overlap_restricted_le_at first second hopposite c.1 c.1 c.2.1 c.2.2
+    (fun x _ o => (S.pointMeasExpOption second.side .X x).effect o.1)
+    (fun _ z o => (S.pointMeasExpOption second.side .Z z).effect o.2)
+    (fun x z ab => (S.pointMeasExp second.side .X x).effect ab.1 *
+      (S.pointMeasExp second.side .Z z).effect ab.2)
+    (fun _ _ _ => S.pointMeasExpOption_isProj _ _ _ _)
+    (fun _ _ _ => S.pointMeasExpOption_isProj _ _ _ _)
+    (fun _ _ _ => by rw [S.pointMeasExpOption_effect_some, S.pointMeasExpOption_effect_some])
+    (fun _ _ _ => by rw [S.pointMeasExpOption_effect_none, zero_mul])
+    (fun _ _ _ => by rw [S.pointMeasExpOption_effect_none, mul_zero])
+    (points.orderedXZ_dist_le second)
 
 end Overlaps
 

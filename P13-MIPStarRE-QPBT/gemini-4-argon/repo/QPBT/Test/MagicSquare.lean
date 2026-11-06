@@ -108,8 +108,6 @@ noncomputable def msAnswerEquiv : MsAnswer ≃ MsAnswerCode where
 noncomputable instance instFintypeMsAnswer : Fintype MsAnswer :=
   Fintype.ofEquiv MsAnswerCode msAnswerEquiv.symm
 
-instance instInhabitedMsAnswer : Inhabited MsAnswer := ⟨.bit 0⟩
-
 /-- The Magic Square consistency predicate.  Constructor mismatches are
 rejected, as required by blueprint `def:ms-game`; paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:512-610`.

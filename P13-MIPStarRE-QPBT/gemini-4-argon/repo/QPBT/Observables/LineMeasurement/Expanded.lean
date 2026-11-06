@@ -165,43 +165,6 @@ operators. -/
     (f : DegPoly P.toLdParams (P.m * P.d)) :
     (S.lineMeasExp side W line).effect f = S.expLineOp side W line f := rfl
 
-/-- The fine product measurement underlying the convolution definition of an
-expanded line measurement. Its outcome records the strategy and Pauli line
-polynomials separately. Blueprint `def:line-tau-product-measurement`, paper
-`14_analysis_of_the_pauli_basis_test.tex:552-558`. -/
-noncomputable def lineTauMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (line : LineDesc P.toLdParams) :
-    Measurement (DegPoly P.toLdParams (P.m * P.d) ×
-      DegPoly P.toLdParams (P.m * P.d)) (S.ExpandedLocalSpace side) :=
-  Measurement.ofSumEqOne
-    (fun p => heteroKron ((S.lineMeas side W line).effect p.1)
-      ((tauLineMeas P W line).effect p.2))
-    (fun p => Quantum.kronecker_nonneg
-      ((S.lineMeas side W line).pos p.1) ((tauLineMeas P W line).pos p.2))
-    (by
-      change ∑ p : DegPoly P.toLdParams (P.m * P.d) ×
-          DegPoly P.toLdParams (P.m * P.d),
-          heteroKron ((S.lineMeas side W line).effect p.1)
-            (tauLineProj P W line p.2) = 1
-      rw [Fintype.sum_prod_type]
-      calc
-        (∑ x, ∑ y, heteroKron ((S.lineMeas side W line).effect x)
-            (tauLineProj P W line y)) =
-            heteroKron (∑ x, (S.lineMeas side W line).effect x)
-              (∑ y, tauLineProj P W line y) := (heteroKron_sum_sum _ _).symm
-        _ = 1 := by
-          rw [(S.lineMeas side W line).sum_eq_one, sum_tauLineProj_eq_one]
-          exact heteroKron_one_one)
-
-/-- Effects of the fine product measurement are the corresponding Kronecker
-products of strategy and Pauli line effects. -/
-@[simp] theorem lineTauMeas_effect (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams)
-    (p : DegPoly P.toLdParams (P.m * P.d) × DegPoly P.toLdParams (P.m * P.d)) :
-    (S.lineTauMeas side W line).effect p =
-      heteroKron ((S.lineMeas side W line).effect p.1)
-        (tauLineProj P W line p.2) := rfl
-
 /-- An expanded line effect is idempotent: the strategy line projectors and
 the Pauli line projectors are both orthogonal families, so distinct
 convolution terms annihilate one another. This is the projectivity
@@ -302,18 +265,6 @@ noncomputable def pointMeasExpOption (S : ProjectiveSetting P ε)
     (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P) :
     Measurement (Option (PauliScalar P)) (S.ExpandedLocalSpace side) :=
   (S.pointMeasExp side W u).postprocess some
-
-/-- The point effect indexed by a line answer, with zero assigned when the
-answer has no evaluation at the sampled point. This is the zero-direction
-completion used in item 2 of `lem:qld-comm-line-cons`, blueprint
-`eq:qld-comm-line-pt-cons`. -/
-noncomputable def expPointEffectAtLineAnswer (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (f : DegPoly P.toLdParams (P.m * P.d)) :
-    Op (S.ExpandedLocalSpace side) :=
-  match evalOpt line u f with
-  | some a => (S.pointMeasExp side W u).effect a
-  | none => 0
 
 end ProjectiveSetting
 

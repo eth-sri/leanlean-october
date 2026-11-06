@@ -59,30 +59,9 @@ private theorem directLdPointValuesOrZero_eq_of_win (D : DirectLdParams)
     (hwin : directLdWinPredicate D (directLdPointQuestionOf D p)
       (directLdPointQuestionOf D p) a b = true) :
     directLdPointValuesOrZero D a = directLdPointValuesOrZero D b := by
-  cases a with
-  | pointVals u =>
-      cases b with
-      | pointVals v =>
-          have huv : u = v := by
-            simpa [directLdWinPredicate, directLdPointQuestionOf,
-              validDirectLdAnswer] using hwin
-          subst huv
-          rfl
-      | alinePolys _ =>
-          simp [directLdWinPredicate, directLdPointQuestionOf,
-            validDirectLdAnswer] at hwin
-      | dlinePolys _ =>
-          simp [directLdWinPredicate, directLdPointQuestionOf,
-            validDirectLdAnswer] at hwin
-  | alinePolys _ =>
-      simp [directLdWinPredicate, directLdPointQuestionOf,
-        validDirectLdAnswer] at hwin
-  | dlinePolys _ =>
-      simp [directLdWinPredicate, directLdPointQuestionOf,
-        validDirectLdAnswer] at hwin
+  cases a <;> cases b <;>
+    simp_all [directLdWinPredicate, directLdPointQuestionOf, validDirectLdAnswer]
 
-/-- Postprocessing the associated projective measurement has the same effects
-as postprocessing the original measurement. -/
 private theorem projMeas_postprocess_outcome_eq
     {alpha beta iota : Type*} [Fintype alpha] [DecidableEq alpha]
     [Fintype beta] [DecidableEq beta] [Fintype iota] [DecidableEq iota]
@@ -96,8 +75,6 @@ private theorem projMeas_postprocess_outcome_eq
     matrixMeasurementToLDTProjMeas_outcome,
     MIPStarRE.Quantum.Measurement.postprocess_effect]
 
-/-- The uniform average of the rejected mass at the canonical point questions
-is the point-agreement branch rejection probability. -/
 private theorem avgOver_directRejectedMass_point_eq (D : DirectLdParams)
     (S : Strategy (directLdGame D)) :
     avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
@@ -108,20 +85,9 @@ private theorem avgOver_directRejectedMass_point_eq (D : DirectLdParams)
   let f : (Fin D.m → DirectScalarQ D) → ℝ := fun p =>
     directRejectedMass D S (directLdPointQuestionOf D p)
       (directLdPointQuestionOf D p)
-  calc avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) f
-      = avgOver (uniformDistribution ((Fin D.m → DirectScalarQ D) × Fin D.m))
-          (fun pi => f pi.1) := (avgOver_uniform_fst f).symm
-    _ = avgOver (uniformDistribution (DirectLdSpace D))
-          (fun sample => f ((directLdSpaceSplitEquiv D sample).1).1) :=
-        (avgOver_uniform_equiv_fst (directLdSpaceSplitEquiv D)
-          (fun pi => f pi.1)).symm
-    _ = _ := by
-        apply avgOver_congr
-        intro sample
-        rfl
+  exact (avgOver_uniform_fst f).symm.trans
+    (avgOver_uniform_equiv_fst (directLdSpaceSplitEquiv D) (fun pi => f pi.1)).symm
 
-/-- One of the nine ordered type branches carries at most nine times the
-uniformly weighted rejection probability. -/
 private theorem directLdBranchRejectionProbability_le_nine_mul
     (D : DirectLdParams) (S : Strategy (directLdGame D))
     (types : LdType × LdType) (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
@@ -133,15 +99,12 @@ private theorem directLdBranchRejectionProbability_le_nine_mul
         ∑ t : LdType × LdType, directLdBranchRejectionProbability D S t :=
     avgOver_uniform_eq_inv_card_mul_sum _
   rw [hcard] at hsum
-  have hsingle : directLdBranchRejectionProbability D S types ≤
-      ∑ t : LdType × LdType, directLdBranchRejectionProbability D S t :=
-    Finset.single_le_sum
-      (f := fun t => directLdBranchRejectionProbability D S t)
-      (fun t _ => directLdBranchRejectionProbability_nonneg D S t)
-      (Finset.mem_univ types)
+  have hsingle := Finset.single_le_sum
+    (f := fun t => directLdBranchRejectionProbability D S t)
+    (fun t _ => directLdBranchRejectionProbability_nonneg D S t)
+    (Finset.mem_univ types)
   have hrej : directLdRejectionProbability D S ≤ ε := by
-    rw [directLdRejectionProbability_eq_one_sub_value]
-    linarith
+    rw [directLdRejectionProbability_eq_one_sub_value]; linarith
   norm_num at hsum
   linarith
 
@@ -260,61 +223,16 @@ theorem ldStrategyToDirect_pointPair_compression
           (((S.B (ldPointQuestionOf L u)).postprocess
             (ldPointValuesOrZero L)).effect a)) S.ψ := by
   classical
-  letI : Nonempty (Fin (L.q / L.m)) :=
-    Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
-  have hA : ∀ (u : Fin L.m → ScalarQ L) (a : Fin L.k → ScalarQ L),
-      (((ldStrategyToDirect L S).A
-        (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
-          (directLdPointValuesOrZero L.toDirectLdParams)).effect a =
-        Matrix.blockDiagonal fun _ : Fin (L.q / L.m) =>
-          ((S.A (ldPointQuestionOf L u)).postprocess
-            (ldPointValuesOrZero L)).effect a := by
-    intro u a
-    rw [ldStrategyToDirect_pointMeasurementA, blockDiagonalMeasurement_effect]
-  have hB : ∀ (u : Fin L.m → ScalarQ L) (a : Fin L.k → ScalarQ L),
-      (((ldStrategyToDirect L S).B
-        (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
-          (directLdPointValuesOrZero L.toDirectLdParams)).effect a =
-        Matrix.blockDiagonal fun _ : Fin (L.q / L.m) =>
-          ((S.B (ldPointQuestionOf L u)).postprocess
-            (ldPointValuesOrZero L)).effect a := by
-    intro u a
-    rw [ldStrategyToDirect_pointMeasurementB, blockDiagonalMeasurement_effect]
-  calc consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
-        (fun u a => heteroKron
-          ((((ldStrategyToDirect L S).A
-            (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
-              (directLdPointValuesOrZero L.toDirectLdParams)).effect a) 1)
-        (fun u a => heteroKron 1
-          ((((ldStrategyToDirect L S).B
-            (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
-              (directLdPointValuesOrZero L.toDirectLdParams)).effect a))
-        (ldStrategyToDirect L S).ψ
-      = consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
-          (fun u a => heteroKron
-            (Matrix.blockDiagonal fun _ : Fin (L.q / L.m) =>
-              ((S.A (ldPointQuestionOf L u)).postprocess
-                (ldPointValuesOrZero L)).effect a) 1)
-          (fun u a => heteroKron 1
-            (Matrix.blockDiagonal fun _ : Fin (L.q / L.m) =>
-              ((S.B (ldPointQuestionOf L u)).postprocess
-                (ldPointValuesOrZero L)).effect a))
-          (seedFiberLiftedState S L) :=
-        consistencyDefect_congr _ _ _ _ _ (seedFiberLiftedState S L)
-          (fun u a => by rw [hA u a]; rfl) (fun u a => by rw [hB u a]; rfl)
-    _ = consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
-          (fun u a => heteroKron
-            (((S.A (ldPointQuestionOf L u)).postprocess
-              (ldPointValuesOrZero L)).effect a) 1)
-          (fun u a => heteroKron 1
-            (averageDiagonalBlock
-              (Matrix.blockDiagonal fun _ : Fin (L.q / L.m) =>
-                ((S.B (ldPointQuestionOf L u)).postprocess
-                  (ldPointValuesOrZero L)).effect a))) S.ψ :=
-        consistencyDefect_seedFiber_compress_right S L _ _ _
-    _ = _ :=
-        consistencyDefect_congr _ _ _ _ _ S.ψ (fun _ _ => rfl)
-          (fun _ _ => by rw [averageDiagonalBlock_blockDiagonal_const])
+  letI : Nonempty (Fin (L.q / L.m)) := Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
+  refine (consistencyDefect_congr _ _ _ _ _ (seedFiberLiftedState S L)
+    (fun u a => by rw [ldStrategyToDirect_pointMeasurementA, blockDiagonalMeasurement_effect]; rfl)
+    (fun u a => by rw [ldStrategyToDirect_pointMeasurementB, blockDiagonalMeasurement_effect]; rfl)).trans
+    ((consistencyDefect_seedFiber_compress_right S L _
+      (fun u a => ((S.A (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L)).effect a)
+      (fun u a => Matrix.blockDiagonal fun _ =>
+        ((S.B (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L)).effect a)).trans
+      (consistencyDefect_congr _ _ _ _ _ S.ψ (fun _ _ => rfl) fun _ _ => by
+        rw [averageDiagonalBlock_blockDiagonal_const]))
 
 /-- The two point readouts of a projective seed-indexed strategy of value at
 least `1 - ε` are consistent up to `9 ε` on a uniformly random point.

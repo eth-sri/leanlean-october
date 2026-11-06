@@ -368,23 +368,6 @@ theorem opFamilyDistSq_congr {X α ι : Type*}
   intro a _
   rw [hA x a, hB x a]
 
-/-- Formalization-only auxiliary lemma for approximate commutation at paper
-lines 410--461: pointwise equal operator differences have equal state-dependent
-distance. -/
-theorem opFamilyDistSq_congr_sub {X α ι : Type*}
-    [Fintype α] [Fintype ι] [DecidableEq ι]
-    (μ : Distribution X) (A B A' B' : X → α → Op ι)
-    (ψ : EuclideanSpace ℂ ι)
-    (h : ∀ x a, A x a - B x a = A' x a - B' x a) :
-    opFamilyDistSq μ A B ψ = opFamilyDistSq μ A' B' ψ := by
-  unfold opFamilyDistSq avgOver
-  apply Finset.sum_congr rfl
-  intro x _
-  congr 1
-  apply Finset.sum_congr rfl
-  intro a _
-  rw [h x a]
-
 /-- Formalization-only definition used in approximate commutation at paper
 lines 410--461: exchange the final two coordinates of a nested product. -/
 def swapLast (α β γ : Type*) : ((α × γ) × β) ≃ ((α × β) × γ) where

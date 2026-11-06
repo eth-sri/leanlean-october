@@ -2,7 +2,8 @@ module
 
 public import QPBT.Algebra.LowDegreeCode
 public import QPBT.Algebra.Pauli
-public import QPBT.Games.TypedCondLinear
+public import QPBT.Games.CondLinear
+public import QPBT.Games.DistributionAux
 public import QPBT.Test.LowDegreeGame
 public import QPBT.Test.MagicSquare
 

@@ -118,22 +118,6 @@ theorem sum_tauLineProj_eq_one (P : AdmissibleParams) (W : PauliKind)
       (fun e => pauliProj W e)]
   exact sum_pauliProj_eq_one W
 
-/-- The projective line measurement on one Pauli register obtained by
-measuring the generalized Pauli basis and restricting the low-degree encoding
-of the outcome to `line`. This is the ancillary measurement of
-`def:expanded-line-measurement`, paper
-`14_analysis_of_the_pauli_basis_test.tex:552-556`. -/
-noncomputable def tauLineMeas (P : AdmissibleParams) (W : PauliKind)
-    (line : LineDesc P.toLdParams) :
-    Measurement (DegPoly P.toLdParams (P.m * P.d)) (PauliRegister P) :=
-  Measurement.ofSumEqOne (tauLineProj P W line) (tauLineProj_nonneg P W line)
-    (sum_tauLineProj_eq_one P W line)
-
-/-- The effects of the Pauli line measurement are the line projectors. -/
-@[simp] theorem tauLineMeas_effect (P : AdmissibleParams) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (f : DegPoly P.toLdParams (P.m * P.d)) :
-    (tauLineMeas P W line).effect f = tauLineProj P W line f := rfl
-
 /-- On an axis-parallel line, Pauli line projectors vanish outside the
 embedded degree-`d` subspace, because every restricted low-degree encoding has
 degree at most `d` there. This is the ancillary half of the last assertion of

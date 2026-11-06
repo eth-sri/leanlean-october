@@ -3,7 +3,12 @@ module
 public import QPBT.Combining.Lines.PointComparison
 public import QPBT.Combining.Lines.CombinedMeasurement
 public import QPBT.Combining.Lines.ConsistencyPositivity
-public import QPBT.Games.Sandwich
+public import QPBT.Games.Sandwich.Pasting.Heterogeneous
+public import QPBT.Games.Sandwich.Pasting.Assembly
+public import QPBT.Games.Sandwich.Pasting.SchmidtMirror
+public import QPBT.Games.Sandwich.Support
+public import MIPStarRE.LDT.MakingMeasurementsProjective.NaimarkCore
+public import QPBT.Games.ErrorFunctions
 public import QPBT.Combining.Lines.ConditionalCollision
 public import QPBT.Combining.Lines.NondegeneratePastingMass
 public import QPBT.Combining.Lines.DiscardedMass

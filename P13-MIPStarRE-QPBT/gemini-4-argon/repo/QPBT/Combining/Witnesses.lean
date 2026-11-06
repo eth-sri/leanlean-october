@@ -1,10 +1,40 @@
 module
 
 public import QPBT.Combining.Defs
-public import QPBT.Combining.DirectLowDegree
+public import QPBT.Combining.DirectLowDegree.Soundness
+public import QPBT.Combining.DirectLowDegree.AnyStrategySoundness
+public import QPBT.Combining.DirectLowDegree.CoefficientCollision
+public import QPBT.Combining.DirectLowDegree.CoefficientConsistency
+public import QPBT.Combining.DirectLowDegree.Transport.Consistency.Compression
+public import QPBT.Combining.DirectLowDegree.Transport.Consistency.Defect
+public import QPBT.Combining.DirectLowDegree.Transport.LineResampling
+public import QPBT.Combining.DirectLowDegree.Transport.Strategy
+public import QPBT.Combining.DirectLowDegree.GameValue
+public import QPBT.Combining.DirectLowDegree.RejectionBounds
+public import QPBT.Combining.DirectLowDegree.Transport.PassConversion
+public import QPBT.Combining.DirectLowDegree.Transport.SeedFiberValue
+public import QPBT.Combining.DirectLowDegree.Transport.Error
+public import QPBT.Combining.DirectLowDegree.Transport.Simultaneous
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Linearity
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Strategy
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.QuestionLaw
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.GameValue
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.WinPredicate
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Value
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Restriction
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Coefficients
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.ExactLinearity
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Recovery
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.RecoveryDefect
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.RecoveryTransport
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.SimultaneousGeneral
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Error
+public import QPBT.Combining.DirectLowDegree.Transport.PointAgreement
+public import QPBT.Games.Sandwich.Support
+public import QPBT.Combining.DirectLowDegree.ExtendedCoefficientLoss
 public import QPBT.Games.Consistency
 public import QPBT.Observables.LineMeasurement
-public import QPBT.Observables.WinImplications
+public import QPBT.Observables.WinImplications.InterchangedCommutation
 
 /-!
 # Witnesses for combining the Pauli bases
@@ -218,10 +248,6 @@ structure SubLineWitness (P : AdmissibleParams) where
   /-- Its extended-line marginal is the direct line-point marginal. -/
   extended_marginal : D.map Prod.fst =
     (directLinePointDist P.extendedDirectLd).map Prod.fst
-  /-- Every point of an extended line projects onto both stored source lines. -/
-  incidence : ∀ sample ∈ D.support, ∀ u ∈ sample.1.pointSet,
-    projX (directPointToPauli P u) ∈ sample.2.1.pointSet ∧
-      projZ (directPointToPauli P u) ∈ sample.2.2.pointSet
   /-- Each line triple carries affine data sufficient for
   `combineLinePoly_spec`. -/
   compatibility : ∀ sample ∈ D.support,

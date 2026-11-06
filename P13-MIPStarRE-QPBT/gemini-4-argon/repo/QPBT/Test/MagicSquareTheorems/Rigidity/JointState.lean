@@ -1,6 +1,8 @@
 module
 
-public import QPBT.Test.MagicSquareTheorems.Rigidity.SwapTransport
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Transfer
+public import QPBT.Test.MagicSquareTheorems.PerfectStrategy.Observables
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Anticommutation
 public import QPBT.Test.MagicSquareTheorems.Rigidity.IdealTarget
 
 /-!

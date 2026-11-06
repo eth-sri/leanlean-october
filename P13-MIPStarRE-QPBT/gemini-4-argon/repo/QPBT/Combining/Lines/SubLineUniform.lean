@@ -284,69 +284,6 @@ theorem alphaVar_val (m : ℕ) : (alphaVar m).val = 2 * m := by
 theorem betaVar_val (m : ℕ) : (betaVar m).val = 2 * m + 1 := by
   simp [betaVar, finCombineEquiv]
 
-/-! ## The blocks of a point of an extended line -/
-
-/-- Transporting the extended scalar field to the source scalar field carries
-a point of a line to a point of the transported line, since the transport is
-a coordinatewise field isomorphism.  Blueprint
-`lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem directPointToPauli_mem_linePoints (P : AdmissibleParams)
-    {b d x : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd}
-    (hx : x ∈ linePoints b d) :
-    directPointToPauli P x ∈
-      linePoints (directPointToPauli P b) (directPointToPauli P d) := by
-  obtain ⟨t, rfl⟩ := hx
-  refine ⟨extendedDirectScalarEquiv P t, ?_⟩
-  funext i
-  change extendedDirectScalarEquiv P (b i + t * d i) =
-    extendedDirectScalarEquiv P (b i) +
-      extendedDirectScalarEquiv P t * extendedDirectScalarEquiv P (d i)
-  rw [map_add, map_mul]
-
-/-- The `X` block of a point of a line lies on the source line through the
-canonical representative of the `X` block of the base, as soon as the `X`
-block of the direction is a multiple of the source direction.  Blueprint
-`lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projX_mem_linePoints {K : Type*} [Field K] {m : ℕ}
-    (b d : Fin (2 * m + 2) → K) (dX : Fin m → K)
-    (hd : projX d ∈ Submodule.span K ({dX} : Set (Fin m → K)))
-    {x : Fin (2 * m + 2) → K} (hx : x ∈ linePoints b d) :
-    projX x ∈ linePoints (lineRepMap dX (projX b)) dX := by
-  obtain ⟨t, rfl⟩ := hx
-  obtain ⟨c, hc⟩ := Submodule.mem_span_singleton.mp hd
-  rw [linePoints_eq_of_mem _ dX (projX b)
-    (mem_linePoints_lineRepMap dX (projX b))]
-  refine ⟨t * c, ?_⟩
-  rw [projX_add, projX_smul, ← hc]
-  module
-
-/-- The `Z` block of a point of a line lies on the source line through the
-canonical representative of the `Z` block of the base, as soon as the `Z`
-block of the direction is a multiple of the source direction.  Blueprint
-`lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projZ_mem_linePoints {K : Type*} [Field K] {m : ℕ}
-    (b d : Fin (2 * m + 2) → K) (dZ : Fin m → K)
-    (hd : projZ d ∈ Submodule.span K ({dZ} : Set (Fin m → K)))
-    {x : Fin (2 * m + 2) → K} (hx : x ∈ linePoints b d) :
-    projZ x ∈ linePoints (lineRepMap dZ (projZ b)) dZ := by
-  obtain ⟨t, rfl⟩ := hx
-  obtain ⟨c, hc⟩ := Submodule.mem_span_singleton.mp hd
-  rw [linePoints_eq_of_mem _ dZ (projZ b)
-    (mem_linePoints_lineRepMap dZ (projZ b))]
-  refine ⟨t * c, ?_⟩
-  rw [projZ_add, projZ_smul, ← hc]
-  module
-
-/-! ## Incidence of the blocks of an extended line -/
-
-/-- The identification of the extended scalar field with the source scalar
-field carries an elementary coordinate direction to the elementary coordinate
-direction at the same coordinate.  Blueprint
-`lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 theorem directPointToPauli_coordinateDirection (P : AdmissibleParams)
     (k : Fin P.extendedDirectLd.m) :
     directPointToPauli P (coordinateDirection k) = coordinateDirection k := by
@@ -364,48 +301,6 @@ theorem directPointToPauli_coordinateDirection (P : AdmissibleParams)
           DirectScalarQ P.extendedDirectLd) j) =
       (Pi.single k 1 : Fin (2 * P.m + 2) → PauliScalar P) j
     rw [Pi.single_eq_of_ne (Ne.symm h), map_zero]
-
-/-- Incidence of the `X` blocks: if a source line has as base the canonical
-representative, in its own direction, of the `X` block of the base of an
-extended line, and if the `X` block of the direction of the extended line
-lies in the span of the source direction, then the `X` block of every point
-of the extended line is a point of the source line.  Blueprint
-`lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projX_mem_pointSet (P : AdmissibleParams)
-    (base dir : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
-    (lineX : LineDesc P.toLdParams)
-    (hbase : lineX.base =
-      lineRepMap lineX.direction (projX (directPointToPauli P base)))
-    (hdir : projX (directPointToPauli P dir) ∈
-      Submodule.span (PauliScalar P)
-        ({lineX.direction} : Set (Fin P.m → PauliScalar P)))
-    {u : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd}
-    (hu : u ∈ linePoints base dir) :
-    projX (directPointToPauli P u) ∈ lineX.pointSet := by
-  rw [LineDesc.pointSet, hbase]
-  exact projX_mem_linePoints _ _ _ hdir (directPointToPauli_mem_linePoints P hu)
-
-/-- Incidence of the `Z` blocks: if a source line has as base the canonical
-representative, in its own direction, of the `Z` block of the base of an
-extended line, and if the `Z` block of the direction of the extended line
-lies in the span of the source direction, then the `Z` block of every point
-of the extended line is a point of the source line.  Blueprint
-`lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projZ_mem_pointSet (P : AdmissibleParams)
-    (base dir : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
-    (lineZ : LineDesc P.toLdParams)
-    (hbase : lineZ.base =
-      lineRepMap lineZ.direction (projZ (directPointToPauli P base)))
-    (hdir : projZ (directPointToPauli P dir) ∈
-      Submodule.span (PauliScalar P)
-        ({lineZ.direction} : Set (Fin P.m → PauliScalar P)))
-    {u : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd}
-    (hu : u ∈ linePoints base dir) :
-    projZ (directPointToPauli P u) ∈ lineZ.pointSet := by
-  rw [LineDesc.pointSet, hbase]
-  exact projZ_mem_linePoints _ _ _ hdir (directPointToPauli_mem_linePoints P hu)
 
 end
 
