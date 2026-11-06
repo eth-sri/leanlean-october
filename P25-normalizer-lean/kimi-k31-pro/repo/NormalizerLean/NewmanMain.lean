@@ -1,7 +1,6 @@
 module
 
 public import NormalizerLean.NewmanFacts
-public import NormalizerLean.NewmanLocal
 
 @[expose] public section
 
@@ -23,8 +22,8 @@ noncomputable section
 
 theorem dvd_of_forall_vz_le {m x : ℤ} (hm : m ≠ 0) (hx : x ≠ 0)
     (h : ∀ p : ℕ, p.Prime → vz p m ≤ vz p x) : m ∣ x := by
-  rw [← Int.natAbs_dvd_natAbs]
-  rw [← Nat.factorization_le_iff_dvd (Int.natAbs_ne_zero.2 hm) (Int.natAbs_ne_zero.2 hx)]
+  rw [← Int.natAbs_dvd_natAbs,
+    ← Nat.factorization_le_iff_dvd (Int.natAbs_ne_zero.2 hm) (Int.natAbs_ne_zero.2 hx)]
   intro p
   by_cases hp : p.Prime
   · exact h p hp

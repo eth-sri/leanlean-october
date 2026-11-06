@@ -1,6 +1,6 @@
 module
 
-public import NormalizerDelta.SIota
+public import NormalizerLean.NewmanRat
 
 @[expose] public section
 
@@ -20,28 +20,28 @@ namespace NormalizerLean
 noncomputable section
 
 /-- D = diag(M, 1) in SL₂(ℝ). -/
-abbrev Dm (M : ℕ) : SL(2, ℝ) := projSL !![(M : ℝ), 0; 0, 1]
+abbrev Dm (M : ℕ) : SLℝ := projSL !![(M : ℝ), 0; 0, 1]
 
 theorem coe_Dm {M : ℕ} (hM : 0 < M) :
-    (Dm M : Matrix (Fin 2) (Fin 2) ℝ) = !![Real.sqrt M, 0; 0, (Real.sqrt M)⁻¹] := by
-  have hdet : 0 < (!![(M : ℝ), 0; 0, 1] : Matrix (Fin 2) (Fin 2) ℝ).det := by
+    (Dm M : Matℝ) = !![Real.sqrt M, 0; 0, (Real.sqrt M)⁻¹] := by
+  have hdet : 0 < (!![(M : ℝ), 0; 0, 1] : Matℝ).det := by
     rw [det_fin_two_of]; simp; exact_mod_cast hM
   have hs : Real.sqrt M ≠ 0 := (Real.sqrt_pos.2 (by exact_mod_cast hM)).ne'
   rw [Dm, coe_projSL _ hdet]
   simp only [det_fin_two_of, mul_one, mul_zero, sub_zero]
-  ext i j; fin_cases i <;> fin_cases j <;> simp
+  mat_smp
   field_simp
   rw [Real.sq_sqrt (Nat.cast_nonneg _)]
 
 /-- Conjugation by D: [[a, b], [c, d]] ↦ [[a, Mb], [c/M, d]]. -/
-theorem coe_conj_Dm {M : ℕ} (hM : 0 < M) {Y : SL(2, ℝ)} {a b c d : ℝ}
-    (hY : (Y : Matrix (Fin 2) (Fin 2) ℝ) = !![a, b; c, d]) :
-    ((MulAut.conj (Dm M) Y : SL(2, ℝ)) : Matrix (Fin 2) (Fin 2) ℝ) =
+theorem coe_conj_Dm {M : ℕ} (hM : 0 < M) {Y : SLℝ} {a b c d : ℝ}
+    (hY : (Y : Matℝ) = !![a, b; c, d]) :
+    ((MulAut.conj (Dm M) Y : SLℝ) : Matℝ) =
       !![a, M * b; c / M, d] := by
   have hs : Real.sqrt M ≠ 0 := (Real.sqrt_pos.2 (by exact_mod_cast hM)).ne'
   have hss : Real.sqrt M * Real.sqrt M = M := Real.mul_self_sqrt (Nat.cast_nonneg _)
   rw [MulAut.conj_apply, coe_conj, coe_Dm hM, hY, adjugate_fin_two_of]
-  ext i j; fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Fin.sum_univ_two] <;>
+  mat_smp [Matrix.mul_apply, Fin.sum_univ_two] <;>
     field_simp <;> (try rw [Real.sq_sqrt (Nat.cast_nonneg _)]) <;> ring
 
 end

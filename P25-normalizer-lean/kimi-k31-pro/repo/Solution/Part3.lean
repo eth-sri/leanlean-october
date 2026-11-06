@@ -1,10 +1,7 @@
 module
 
-public import NormalizerDelta.StatementsExtra
-import NormalizerDelta.MDelta
-import NormalizerLean.Defs
-import NormalizerLean.Embed
-import NormalizerLean.LocalRels
+public import NormalizerDelta.SigmaHCount
+public import NormalizerDelta.HDeltaCases
 
 @[expose] public section
 

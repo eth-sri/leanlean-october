@@ -1,7 +1,6 @@
 module
 
 public import NormalizerLean.NewmanCond
-public import NormalizerLean.RelBasic
 
 @[expose] public section
 
@@ -45,9 +44,7 @@ def vv (B p : ℕ) (x : ℤ) : ℕ := if x = 0 then B else vz p x
 
 theorem vv_of_ne {B p : ℕ} {x : ℤ} (hx : x ≠ 0) : vv B p x = vz p x := if_neg hx
 
-theorem vv_neg (B p : ℕ) (x : ℤ) : vv B p (-x) = vv B p x := by
-  unfold vv
-  simp [vz_neg]
+theorem vv_neg (B p : ℕ) (x : ℤ) : vv B p (-x) = vv B p x := by simp [vv, vz_neg]
 
 /-- From `X ∣ K·x·y`: v(X) ≤ v(K) + v(x) + v(y). -/
 theorem le_vv2 {B p : ℕ} {X K x y : ℤ} (hK : K ≠ 0) (hB : vz p X ≤ B) (h : X ∣ K * (x * y)) :
@@ -98,16 +95,16 @@ theorem vz_sub_eq {p : ℕ} (hp : p.Prime) {A C : ℤ} (hAC : A - C ≠ 0) (hA :
     omega
 
 /-- The ultrametric relation for e = αδ − βγ, in terms of `vv`. -/
-theorem ultra_vv {B p : ℕ} (hp : p.Prime) {α β γ δ : ℤ} (he : α * δ - β * γ ≠ 0)
-    (hB : vz p (α * δ - β * γ) < B) :
-    min (vv B p α + vv B p δ) (vv B p β + vv B p γ) ≤ vz p (α * δ - β * γ) ∧
+theorem ultra_vv {B p : ℕ} (hp : p.Prime) {α β γ δ : ℤ} (he : detS α β γ δ ≠ 0)
+    (hB : vz p (detS α β γ δ) < B) :
+    min (vv B p α + vv B p δ) (vv B p β + vv B p γ) ≤ vz p (detS α β γ δ) ∧
       (vv B p α + vv B p δ ≠ vv B p β + vv B p γ →
-        vz p (α * δ - β * γ) = min (vv B p α + vv B p δ) (vv B p β + vv B p γ)) := by
+        vz p (detS α β γ δ) = min (vv B p α + vv B p δ) (vv B p β + vv B p γ)) := by
   by_cases had : α = 0 ∨ δ = 0
   · have hbg : β * γ ≠ 0 := by rcases had with rfl | rfl <;> simpa using he
     have hβ : β ≠ 0 := left_ne_zero_of_mul hbg
     have hγ : γ ≠ 0 := right_ne_zero_of_mul hbg
-    have hev : vz p (α * δ - β * γ) = vv B p β + vv B p γ := by
+    have hev : vz p (detS α β γ δ) = vv B p β + vv B p γ := by
       rcases had with rfl | rfl <;>
       · simp only [zero_mul, mul_zero, zero_sub, vz_neg]
         rw [vz_mul hβ hγ, vv_of_ne hβ, vv_of_ne hγ]
@@ -116,7 +113,7 @@ theorem ultra_vv {B p : ℕ} (hp : p.Prime) {α β γ δ : ℤ} (he : α * δ - 
     constructor <;> [omega; (intro; omega)]
   push Not at had
   by_cases hbg' : β = 0 ∨ γ = 0
-  · have hev : vz p (α * δ - β * γ) = vv B p α + vv B p δ := by
+  · have hev : vz p (detS α β γ δ) = vv B p α + vv B p δ := by
       rcases hbg' with rfl | rfl <;>
       · simp only [zero_mul, mul_zero, sub_zero]
         rw [vz_mul had.1 had.2, vv_of_ne had.1, vv_of_ne had.2]
@@ -139,10 +136,6 @@ theorem factorization_24 (p : ℕ) :
   simp only [Finsupp.add_apply, Finsupp.single_apply]
   split_ifs <;> omega
 
-theorem factorization_two (p : ℕ) : (2 : ℕ).factorization p = if p = 2 then 1 else 0 := by
-  rw [Nat.prime_two.factorization, Finsupp.single_apply]
-  split_ifs <;> omega
-
 theorem factorization_hPart (N p : ℕ) :
     (hPart N).factorization p = if p = 2 then min 3 (N.factorization 2 / 2) else
       if p = 3 then min 1 (N.factorization 3 / 2) else 0 := by
@@ -158,20 +151,10 @@ theorem factorization_epsPart {N : ℕ} (hN : N ≠ 0) (p : ℕ) :
   rw [Nat.factorization_gcd hN (by norm_num)]
   rfl
 
-/-- The local data at p: ν = v_p(N), j = v_p(ε), k = v_p(h), e₂ = v_p(2). -/
 theorem local_constants {N p : ℕ} (hN : N ≠ 0) :
-    ((p = 2 ∧ (epsPart N).factorization p = min (N.factorization p) 3 ∧
-        (2 : ℕ).factorization p = 1) ∨
-      (p = 3 ∧ (epsPart N).factorization p = min (N.factorization p) 1 ∧
-        (2 : ℕ).factorization p = 0) ∨
-      ((epsPart N).factorization p = 0 ∧ (2 : ℕ).factorization p = 0)) ∧
     (hPart N).factorization p = min ((epsPart N).factorization p) (N.factorization p / 2) := by
-  rw [factorization_epsPart hN, factorization_24, factorization_two, factorization_hPart]
-  by_cases h2 : p = 2
-  · subst h2; simp; omega
-  by_cases h3 : p = 3
-  · subst h3; simp; omega
-  simp [h2, h3]
+  rw [factorization_epsPart hN, factorization_24, factorization_hPart]
+  split_ifs <;> simp_all <;> omega
 
 end NormalizerLean
 

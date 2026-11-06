@@ -1,7 +1,7 @@
 module
 
 public import NormalizerLean.NewmanMain
-public import NormalizerDelta.Defs
+public import NormalizerLean.Defs
 
 @[expose] public section
 
@@ -30,86 +30,73 @@ noncomputable section
 def nOf (N η : ℕ) : ℕ := N / η ^ 2
 
 /-- An integer matrix with N ∣ M₁₀ and ϵ ∣ M₁₁ − M₀₀. -/
-def InLe (N ϵ : ℕ) (M : Matrix (Fin 2) (Fin 2) ℝ) : Prop :=
+def InLe (N ϵ : ℕ) (M : Matℝ) : Prop :=
   ∃ a b c d : ℤ, M = !![(a : ℝ), b; c, d] ∧ (N : ℤ) ∣ c ∧ (ϵ : ℤ) ∣ d - a
 
 /-- The hypotheses of Newman's argument for Γ ≤ Γ₀(N), with lattice parameter ϵ and output η. -/
-structure NewmanData (N : ℕ) (Γ : Subgroup SL(2, ℝ)) (ϵ η : ℕ) : Prop where
+structure NewmanData (N : ℕ) (Γ : Subgroup SLℝ) (ϵ η : ℕ) : Prop where
   le : Γ ≤ Gamma0R N
   T_mem : matT ∈ Γ
   U_mem : matU N ∈ Γ
-  inL : ∀ Y ∈ Γ, InLe N ϵ (Y : Matrix (Fin 2) (Fin 2) ℝ)
+  inL : ∀ Y ∈ Γ, InLe N ϵ (Y : Matℝ)
   eps_dvd : ϵ ∣ N
   h_pos : 0 < η
   h_sq_dvd : η ^ 2 ∣ N
   h_fact : ∀ p, η.factorization p = min (ϵ.factorization p) (N.factorization p / 2)
   gamma : ∀ p : ℕ, p.Prime → p ∣ N → ϵ.factorization p < N.factorization p →
     ∃ x y t : ℤ, x * t - y * N = 1 ∧
-      (∃ γ ∈ Γ, (γ : Matrix (Fin 2) (Fin 2) ℝ) = !![(x : ℝ), y; N, t]) ∧
+      (∃ γ ∈ Γ, (γ : Matℝ) = !![(x : ℝ), y; N, t]) ∧
       t - x ≠ 0 ∧ vz p (t - x) = ϵ.factorization p
 
-variable {Γ : Subgroup SL(2, ℝ)} {ϵ η : ℕ}
+variable {Γ : Subgroup SLℝ} {ϵ η N : ℕ} [NeZero N] {g : SLℝ} {κ : ℝ} {α β γ δ : ℤ}
+  (D : NewmanData N Γ ϵ η) (hgN : g ∈ NormG Γ)
+  (hg : (g : Matℝ) = κ • Smat η α β γ δ) (he : detS α β γ δ ≠ 0)
 
 theorem NewmanData.n_mul_sq {N : ℕ} (D : NewmanData N Γ ϵ η) : nOf N η * η ^ 2 = N :=
   Nat.div_mul_cancel D.h_sq_dvd
 
+theorem NewmanData.n_ne_zero {N : ℕ} (D : NewmanData N Γ ϵ η) (hN : N ≠ 0) : nOf N η ≠ 0 :=
+  fun h => hN (by rw [← D.n_mul_sq, h, zero_mul])
+
 theorem NewmanData.factorization_n {N : ℕ} (D : NewmanData N Γ ϵ η) (hN : N ≠ 0) (p : ℕ) :
     (nOf N η).factorization p + 2 * η.factorization p = N.factorization p := by
-  have h := D.n_mul_sq
-  have hn : nOf N η ≠ 0 := by rintro h0; rw [h0, zero_mul] at h; exact hN h.symm
-  have := congrArg (fun m => m.factorization p) h
-  rw [Nat.factorization_mul hn (by have := D.h_pos; positivity), Nat.factorization_pow] at this
-  simp only [Finsupp.add_apply, Finsupp.smul_apply, smul_eq_mul] at this
+  have h := congrArg (fun m => m.factorization p) D.n_mul_sq
+  rw [Nat.factorization_mul (D.n_ne_zero hN) (by have := D.h_pos; positivity),
+    Nat.factorization_pow] at h
+  simp only [Finsupp.add_apply, Finsupp.smul_apply, smul_eq_mul] at h
   omega
 
-/-- The local valuation lemma of T2 (`local_form`) for arbitrary j = v_p(ϵ) ≤ v_p(N). -/
-theorem local_form_gen (ν j k e₂ δ₀ a b c d : ℕ)
-    (_hj : j ≤ ν) (_he₂ : e₂ ≤ 1)
-    (hk : k = min j (ν / 2))
-    (prim : a = 0 ∨ b = 0 ∨ c = 0 ∨ d = 0)
-    (u1 : min (a + d) (b + c) ≤ δ₀) (u2 : a + d ≠ b + c → δ₀ = min (a + d) (b + c))
-    (_C1 : δ₀ ≤ k + a + c) (C2 : δ₀ ≤ 2 * a) (C3 : δ₀ + ν ≤ 2 * k + 2 * c)
-    (C4 : j + δ₀ ≤ e₂ + k + a + c) (_C5 : δ₀ + k ≤ ν + b + d) (C6 : δ₀ + 2 * k ≤ ν + 2 * b)
-    (C7 : δ₀ ≤ 2 * d) (C8 : j + δ₀ + k ≤ e₂ + ν + b + d) (_C9 : δ₀ ≤ j + b + c)
-    (C10 : δ₀ + k ≤ j + a + b) (C11 : δ₀ + ν ≤ j + k + c + d) (C12 : δ₀ ≤ e₂ + b + c)
-    (_C13 : δ₀ ≤ k + c + d) (C14 : j + δ₀ ≤ e₂ + k + c + d) (C15 : δ₀ + k ≤ ν + a + b)
-    (C16 : j + δ₀ + k ≤ e₂ + ν + a + b) (C17 : δ₀ + k ≤ j + b + d)
-    (C18 : δ₀ + ν ≤ j + k + a + c) :
-    (δ₀ = 0 ∧ ν - 2 * k ≤ c) ∨
-      (δ₀ = ν - 2 * k ∧ ν - 2 * k ≤ a ∧ ν - 2 * k ≤ c ∧ ν - 2 * k ≤ d) := by
-  omega
-
-theorem InLe.add {N : ℕ} {M M' : Matrix (Fin 2) (Fin 2) ℝ} (h : InLe N ϵ M) (h' : InLe N ϵ M') :
+theorem InLe.add {N : ℕ} {M M' : Matℝ} (h : InLe N ϵ M) (h' : InLe N ϵ M') :
     InLe N ϵ (M + M') := by
   obtain ⟨a, b, c, d, rfl, hc, hd⟩ := h
   obtain ⟨a', b', c', d', rfl, hc', hd'⟩ := h'
   refine ⟨a + a', b + b', c + c', d + d', ?_, dvd_add hc hc', ?_⟩
-  · ext i j; fin_cases i <;> fin_cases j <;> simp
+  · mat_smp
   · rw [show d + d' - (a + a') = (d - a) + (d' - a') by ring]; exact dvd_add hd hd'
 
-theorem InLe.zsmul {N : ℕ} {M : Matrix (Fin 2) (Fin 2) ℝ} (h : InLe N ϵ M) (m : ℤ) :
+theorem InLe.zsmul {N : ℕ} {M : Matℝ} (h : InLe N ϵ M) (m : ℤ) :
     InLe N ϵ ((m : ℝ) • M) := by
   obtain ⟨a, b, c, d, rfl, hc, hd⟩ := h
   refine ⟨m * a, m * b, m * c, m * d, ?_, dvd_mul_of_dvd_right hc _, ?_⟩
-  · ext i j; fin_cases i <;> fin_cases j <;> simp
+  · mat_smp
   · rw [show m * d - m * a = m * (d - a) by ring]; exact dvd_mul_of_dvd_right hd _
 
-theorem InLe.sub {N : ℕ} {M M' : Matrix (Fin 2) (Fin 2) ℝ} (h : InLe N ϵ M) (h' : InLe N ϵ M') :
+theorem InLe.sub {N : ℕ} {M M' : Matℝ} (h : InLe N ϵ M) (h' : InLe N ϵ M') :
     InLe N ϵ (M - M') := by
   have := h.add (h'.zsmul (-1))
   convert this using 1
   simp [sub_eq_add_neg]
 
 theorem InLe.one (N : ℕ) : InLe N ϵ 1 :=
-  ⟨1, 0, 0, 1, by ext i j; fin_cases i <;> fin_cases j <;> simp, dvd_zero _, by simp⟩
+  ⟨1, 0, 0, 1, by mat_smp, dvd_zero _, by simp⟩
 
 
 /-- The products of entries that are integers. -/
-theorem products_intG {N : ℕ} {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ η) (hg : g ∈ NormG Γ) {x y z w : ℝ}
-    (hx : (g : Matrix (Fin 2) (Fin 2) ℝ) 0 0 = x) (hy : (g : Matrix (Fin 2) (Fin 2) ℝ) 0 1 = y)
-    (hz : (g : Matrix (Fin 2) (Fin 2) ℝ) 1 0 = z) (hw : (g : Matrix (Fin 2) (Fin 2) ℝ) 1 1 = w) :
+theorem products_intG {N : ℕ} {g : SLℝ} (D : NewmanData N Γ ϵ η) (hg : g ∈ NormG Γ) {x y z w : ℝ}
+    (hx : (g : Matℝ) 0 0 = x) (hy : (g : Matℝ) 0 1 = y)
+    (hz : (g : Matℝ) 1 0 = z) (hw : (g : Matℝ) 1 1 = w) :
     IsIntR (x * x) ∧ IsIntR (x * z) ∧ IsIntR (z * z) ∧ IsIntR (N * (y * y)) ∧
-      IsIntR (N * (w * w)) ∧ IsIntR (N * (y * w)) ∧ IsIntR (N * (x * w)) ∧
+      IsIntR (N * (y * w)) ∧ IsIntR (N * (x * w)) ∧
       IsIntR (N * (x * y)) ∧ IsIntR (N * (z * w)) ∧ IsIntR (N * (y * z)) := by
   have hconj : ∀ Y ∈ Γ, g * Y * g⁻¹ ∈ Γ := fun Y hY =>
     (Subgroup.mem_normalizer_iff.1 hg Y).1 hY
@@ -117,32 +104,30 @@ theorem products_intG {N : ℕ} {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ η) (hg
   have hU := isIntR_entries_of_mem (D.le (hconj _ D.U_mem))
   have hTU := isIntR_entries_of_mem (D.le (hconj _ (mul_mem D.T_mem D.U_mem)))
   have hdet : x * w - y * z = 1 := by
-    have := g.2
-    rw [det_fin_two, hx, hy, hz, hw] at this
-    exact this
+    simpa only [det_fin_two, hx, hy, hz, hw] using g.2
   -- explicit conjugates
-  have eT : ∀ i j, ((g * matT * g⁻¹ : SL(2, ℝ)) : Matrix (Fin 2) (Fin 2) ℝ) i j =
+  have eT : ∀ i j, ((g * matT * g⁻¹ : SLℝ) : Matℝ) i j =
       !![1 - x * z, x * x; -(z * z), 1 + x * z] i j := by
     intro i j
     rw [coe_conj, adjugate_fin_two]
     fin_cases i <;> fin_cases j <;>
       simp [matT, Matrix.mul_apply, Fin.sum_univ_two, hx, hy, hz, hw] <;>
-      first | ring1 | (linear_combination hdet) | (linear_combination (-1 : ℝ) * hdet)
-  have eU : ∀ i j, ((g * matU N * g⁻¹ : SL(2, ℝ)) : Matrix (Fin 2) (Fin 2) ℝ) i j =
+      first | ring1 | (linear_combination hdet)
+  have eU : ∀ i j, ((g * matU N * g⁻¹ : SLℝ) : Matℝ) i j =
       !![1 + N * (y * w), -(N * (y * y)); N * (w * w), 1 - N * (y * w)] i j := by
     intro i j
     rw [coe_conj, adjugate_fin_two]
     fin_cases i <;> fin_cases j <;>
       simp [matU, Matrix.mul_apply, Fin.sum_univ_two, hx, hy, hz, hw] <;>
-      first | ring1 | (linear_combination hdet) | (linear_combination (-1 : ℝ) * hdet)
-  have eTU : ∀ i j, ((g * (matT * matU N) * g⁻¹ : SL(2, ℝ)) : Matrix (Fin 2) (Fin 2) ℝ) i j =
+      first | ring1 | (linear_combination hdet)
+  have eTU : ∀ i j, ((g * (matT * matU N) * g⁻¹ : SLℝ) : Matℝ) i j =
       !![1 - x * z + N * (y * w) + N * (x * w), x * x - N * (y * y) - N * (x * y);
         -(z * z) + N * (w * w) + N * (z * w), 1 + x * z - N * (y * w) - N * (y * z)] i j := by
     intro i j
     rw [coe_conj, Matrix.SpecialLinearGroup.coe_mul, adjugate_fin_two]
     fin_cases i <;> fin_cases j <;>
       simp [matT, matU, Matrix.mul_apply, Fin.sum_univ_two, hx, hy, hz, hw] <;>
-      first | ring1 | (linear_combination hdet) | (linear_combination (-1 : ℝ) * hdet)
+      first | ring1 | (linear_combination hdet)
   have t01 := hT 0 1; rw [eT] at t01; simp at t01
   have t00 := hT 0 0; rw [eT] at t00; simp at t00
   have t10 := hT 1 0; rw [eT] at t10; simp at t10
@@ -161,7 +146,7 @@ theorem products_intG {N : ℕ} {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ η) (hg
   have hyw : IsIntR (N * (y * w)) := by
     have := u00.sub IsIntR.one
     simpa using this
-  refine ⟨t01, hxz, hzz, hyy, u10, hyw, ?_, ?_, ?_, ?_⟩
+  refine ⟨t01, hxz, hzz, hyy, hyw, ?_, ?_, ?_, ?_⟩
   · have := ((v00.sub IsIntR.one).add hxz).sub hyw
     convert this using 1; ring
   · have := ((t01.sub hyy).sub v01)
@@ -173,20 +158,18 @@ theorem products_intG {N : ℕ} {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ η) (hg
 
 /-- **Step 1** ([Nw §2]): g = κ·[[α, β/h], [hγ, δ]] with α, β, γ, δ ∈ ℤ without a common prime
 factor. -/
-theorem exists_prim_formG {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ η) (hg : g ∈ NormG Γ) :
+theorem exists_prim_formG {N : ℕ} [NeZero N] {g : SLℝ} (D : NewmanData N Γ ϵ η) (hg : g ∈ NormG Γ) :
     ∃ (κ : ℝ) (α β γ δ : ℤ), κ ≠ 0 ∧
       (∀ p : ℕ, p.Prime → ¬ ((p : ℤ) ∣ α ∧ (p : ℤ) ∣ β ∧ (p : ℤ) ∣ γ ∧ (p : ℤ) ∣ δ)) ∧
-      (g : Matrix (Fin 2) (Fin 2) ℝ) =
+      (g : Matℝ) =
         κ • !![(α : ℝ), (β : ℝ) / η; (η : ℝ) * γ, (δ : ℝ)] := by
-  set x := (g : Matrix (Fin 2) (Fin 2) ℝ) 0 0 with hx
-  set y := (g : Matrix (Fin 2) (Fin 2) ℝ) 0 1 with hy
-  set z := (g : Matrix (Fin 2) (Fin 2) ℝ) 1 0 with hz
-  set w := (g : Matrix (Fin 2) (Fin 2) ℝ) 1 1 with hw
-  obtain ⟨hxx, hxz, hzz, hyy, hww, hyw, hxw, hxy, hzw, hyz⟩ :=
+  set x := (g : Matℝ) 0 0 with hx
+  set y := (g : Matℝ) 0 1 with hy
+  set z := (g : Matℝ) 1 0 with hz
+  set w := (g : Matℝ) 1 1 with hw
+  obtain ⟨hxx, hxz, hzz, hyy, hyw, hxw, hxy, hzw, hyz⟩ :=
     products_intG D hg hx.symm hy.symm hz.symm hw.symm
-  have hdet : x * w - y * z = 1 := by
-    have := g.2
-    rwa [det_fin_two] at this
+  have hdet : x * w - y * z = 1 := by simpa only [det_fin_two] using g.2
   have hN : (N : ℝ) ≠ 0 := Nat.cast_ne_zero.2 (NeZero.ne N)
   have hh : (η : ℝ) ≠ 0 := Nat.cast_ne_zero.2 D.h_pos.ne'
   -- a nonzero t with N t x, N t y, N t z, N t w integral
@@ -221,40 +204,29 @@ theorem exists_prim_formG {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData 
   have hG0 : G ≠ 0 := by
     intro hG0
     simp only [hG, Int.gcd_eq_zero_iff, Nat.cast_eq_zero] at hG0
-    obtain ⟨⟨h0, h1⟩, h2, h3⟩ := hG0
+    obtain ⟨⟨h0, h1⟩, -, -⟩ := hG0
+    have hIx0 : Ix = 0 := by
+      simp only [M0] at h0
+      exact (mul_eq_zero.1 h0).resolve_left (by exact_mod_cast D.h_pos.ne')
+    have hIy0 : Iy = 0 := by
+      simp only [M1] at h1
+      exact (mul_eq_zero.1 h1).resolve_left (pow_ne_zero 2 (by exact_mod_cast D.h_pos.ne'))
     have hx0 : x = 0 := by
-      have : (N : ℝ) * t * x = 0 := by
-        rw [hIx]
-        have : Ix = 0 := by
-          simp only [M0] at h0
-          rcases mul_eq_zero.1 h0 with h' | h'
-          · exact absurd (by exact_mod_cast h') D.h_pos.ne'
-          · exact h'
-        simp [this]
+      have : (N : ℝ) * t * x = 0 := by rw [hIx, hIx0]; simp
       exact (mul_eq_zero.1 this).resolve_left hNt
     have hy0 : y = 0 := by
-      have : (N : ℝ) * t * y = 0 := by
-        rw [hIy]
-        have : Iy = 0 := by
-          simp only [M1] at h1
-          rcases mul_eq_zero.1 h1 with h' | h'
-          · have h'' : (h : ℤ) = 0 := (pow_eq_zero_iff two_ne_zero).1 h'
-            exact absurd (by exact_mod_cast h'' : h = 0) D.h_pos.ne'
-          · exact h'
-        simp [this]
+      have : (N : ℝ) * t * y = 0 := by rw [hIy, hIy0]; simp
       exact (mul_eq_zero.1 this).resolve_left hNt
     rw [hx0, hy0] at hdet
     simp at hdet
-  have hGdvd : ∀ m : ℤ, m = M0 ∨ m = M1 ∨ m = M2 ∨ m = M3 → (G : ℤ) ∣ m := by
-    rintro m (rfl | rfl | rfl | rfl)
-    · exact (Int.gcd_dvd_left _ _).trans (Int.gcd_dvd_left _ _)
-    · exact (Int.gcd_dvd_left _ _).trans (Int.gcd_dvd_right _ _)
-    · exact (Int.gcd_dvd_right _ _).trans (Int.gcd_dvd_left _ _)
-    · exact (Int.gcd_dvd_right _ _).trans (Int.gcd_dvd_right _ _)
-  obtain ⟨α, hα⟩ := hGdvd M0 (Or.inl rfl)
-  obtain ⟨β, hβ⟩ := hGdvd M1 (Or.inr (Or.inl rfl))
-  obtain ⟨γ, hγ⟩ := hGdvd M2 (Or.inr (Or.inr (Or.inl rfl)))
-  obtain ⟨δ, hδ⟩ := hGdvd M3 (Or.inr (Or.inr (Or.inr rfl)))
+  obtain ⟨α, hα⟩ : (G : ℤ) ∣ M0 := by
+    rw [hG]; exact (Int.gcd_dvd_left _ _).trans (Int.gcd_dvd_left _ _)
+  obtain ⟨β, hβ⟩ : (G : ℤ) ∣ M1 := by
+    rw [hG]; exact (Int.gcd_dvd_left _ _).trans (Int.gcd_dvd_right _ _)
+  obtain ⟨γ, hγ⟩ : (G : ℤ) ∣ M2 := by
+    rw [hG]; exact (Int.gcd_dvd_right _ _).trans (Int.gcd_dvd_left _ _)
+  obtain ⟨δ, hδ⟩ : (G : ℤ) ∣ M3 := by
+    rw [hG]; exact (Int.gcd_dvd_right _ _).trans (Int.gcd_dvd_right _ _)
   refine ⟨G / ((h : ℝ) * N * t), α, β, γ, δ, ?_, ?_, ?_⟩
   · exact div_ne_zero (Nat.cast_ne_zero.2 hG0) (mul_ne_zero (mul_ne_zero hh hN) ht)
   · rintro p hp ⟨hpα, hpβ, hpγ, hpδ⟩
@@ -278,8 +250,7 @@ theorem exists_prim_formG {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData 
     have eβ : (G : ℝ) * β = h ^ 2 * (N * t * y) := by rw [hIy]; exact_mod_cast hβ.symm
     have eγ : (G : ℝ) * γ = N * t * z := by rw [hIz]; exact_mod_cast hγ.symm
     have eδ : (G : ℝ) * δ = h * (N * t * w) := by rw [hIw]; exact_mod_cast hδ.symm
-    ext i j
-    fin_cases i <;> fin_cases j <;> simp [← hx, ← hy, ← hz, ← hw]
+    mat_smp [← hx, ← hy, ← hz, ← hw]
     · field_simp
       linear_combination -eα
     · field_simp
@@ -289,59 +260,52 @@ theorem exists_prim_formG {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData 
     · field_simp
       linear_combination -eδ
 
-theorem InLe.entries {N : ℕ} {M : Matrix (Fin 2) (Fin 2) ℝ} (h : InLe N ϵ M) :
+theorem InLe.entries {N : ℕ} {M : Matℝ} (h : InLe N ϵ M) :
     ∃ a b c d : ℤ, M 0 0 = a ∧ M 0 1 = b ∧ M 1 0 = c ∧ M 1 1 = d ∧ (N : ℤ) ∣ c ∧
       (ϵ : ℤ) ∣ d - a := by
   obtain ⟨a, b, c, d, rfl, hc, hd⟩ := h
   exact ⟨a, b, c, d, by simp, by simp, by simp, by simp, hc, hd⟩
 
 
-theorem phi_InLe {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ η) (hgN : g ∈ NormG Γ) {κ : ℝ} {α β γ δ : ℤ}
-    (hg : (g : Matrix (Fin 2) (Fin 2) ℝ) = κ • Smat (η) α β γ δ) {Y : SL(2, ℝ)}
-    (hY : Y ∈ Γ) : InLe N ϵ (Phi (η) α β γ δ (Y : Matrix (Fin 2) (Fin 2) ℝ)) := by
+include D hgN hg in
+theorem phi_InLe {Y : SLℝ}
+    (hY : Y ∈ Γ) : InLe N ϵ (Phi η α β γ δ (Y : Matℝ)) := by
   rw [← coe_conj_eq_Phi hg D.h_pos.ne']
   exact D.inL _ ((Subgroup.mem_normalizer_iff.1 hgN Y).1 hY)
 
-theorem InLe.nsmul' {N : ℕ} {M : Matrix (Fin 2) (Fin 2) ℝ} (h : InLe N ϵ M) (m : ℕ) :
-    InLe N ϵ ((m : ℝ) • M) := by
-  have := h.zsmul m
-  simpa using this
-
+include D hgN hg he in
 /-- The four basic facts in `InLe` form. -/
-theorem InLe_basic {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ η) (hgN : g ∈ NormG Γ) {κ : ℝ} {α β γ δ : ℤ}
-    (hg : (g : Matrix (Fin 2) (Fin 2) ℝ) = κ • Smat (η) α β γ δ)
-    (he : α * δ - β * γ ≠ 0) :
-    InLe N ϵ (Phi (η) α β γ δ !![0, 1; 0, 0]) ∧
-      InLe N ϵ ((N : ℝ) • Phi (η) α β γ δ !![0, 0; 1, 0]) ∧
-      InLe N ϵ ((N : ℝ) • Phi (η) α β γ δ !![0, 0; 0, 1]) := by
+theorem InLe_basic :
+    InLe N ϵ (Phi η α β γ δ !![0, 1; 0, 0]) ∧
+      InLe N ϵ ((N : ℝ) • Phi η α β γ δ !![0, 0; 1, 0]) ∧
+      InLe N ϵ ((N : ℝ) • Phi η α β γ δ !![0, 0; 0, 1]) := by
   have hh : η ≠ 0 := D.h_pos.ne'
-  have h1 : InLe N ϵ (Phi (η) α β γ δ 1) := by rw [Phi_one hh he]; exact InLe.one N
+  have h1 : InLe N ϵ (Phi η α β γ δ 1) := by rw [Phi_one hh he]; exact InLe.one N
+  have hN1 : InLe N ϵ ((N : ℝ) • Phi η α β γ δ 1) := by simpa using h1.zsmul N
   have hT := phi_InLe D hgN hg D.T_mem
   have hU := phi_InLe D hgN hg D.U_mem
   have hTU := phi_InLe D hgN hg (mul_mem D.T_mem D.U_mem)
-  have eE12 : (!![0, 1; 0, 0] : Matrix (Fin 2) (Fin 2) ℝ) = (matT : Matrix (Fin 2) (Fin 2) ℝ) - 1 := by
-    ext i j; fin_cases i <;> fin_cases j <;> simp [matT]
-  have eE21 : (N : ℝ) • (!![0, 0; 1, 0] : Matrix (Fin 2) (Fin 2) ℝ) =
-      (matU N : Matrix (Fin 2) (Fin 2) ℝ) - 1 := by
-    ext i j; fin_cases i <;> fin_cases j <;> simp [matU]
-  have eE22 : (N : ℝ) • (!![0, 0; 0, 1] : Matrix (Fin 2) (Fin 2) ℝ) =
-      (N : ℝ) • 1 - (((matT * matU N : SL(2, ℝ)) : Matrix (Fin 2) (Fin 2) ℝ) -
-        (matT : Matrix (Fin 2) (Fin 2) ℝ) - (matU N : Matrix (Fin 2) (Fin 2) ℝ) + 1) := by
+  have eE12 : (!![0, 1; 0, 0] : Matℝ) = (matT : Matℝ) - 1 := by
+    mat_smp [matT]
+  have eE21 : (N : ℝ) • (!![0, 0; 1, 0] : Matℝ) =
+      (matU N : Matℝ) - 1 := by
+    mat_smp [matU]
+  have eE22 : (N : ℝ) • (!![0, 0; 0, 1] : Matℝ) =
+      (N : ℝ) • 1 - (((matT * matU N : SLℝ) : Matℝ) -
+        (matT : Matℝ) - (matU N : Matℝ) + 1) := by
     rw [Matrix.SpecialLinearGroup.coe_mul]
-    ext i j; fin_cases i <;> fin_cases j <;> simp [matT, matU, Matrix.mul_apply] <;> ring
+    mat_smp [matT, matU]
   refine ⟨?_, ?_, ?_⟩
   · rw [eE12, Phi_sub]; exact hT.sub h1
   · rw [← Phi_smul, eE21, Phi_sub]; exact hU.sub h1
   · rw [← Phi_smul, eE22, Phi_sub, Phi_smul, Phi_add, Phi_sub, Phi_sub]
-    exact (h1.nsmul' N).sub (((hTU.sub hT).sub hU).add h1)
+    exact hN1.sub (((hTU.sub hT).sub hU).add h1)
 
+include D hgN hg he in
 /-- The γ_p fact in `InLe` form, for γ_p = [[x, y], [N, t]] ∈ Γ. -/
-theorem InLe_s {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ η) (hgN : g ∈ NormG Γ)
-    {κ : ℝ} {α β γ δ : ℤ}
-    (hg : (g : Matrix (Fin 2) (Fin 2) ℝ) = κ • Smat (η) α β γ δ)
-    (he : α * δ - β * γ ≠ 0) {x y t : ℤ} {γp : SL(2, ℝ)} (hγp : γp ∈ Γ)
-    (hγm : (γp : Matrix (Fin 2) (Fin 2) ℝ) = !![(x : ℝ), y; N, t]) :
-    InLe N ϵ (((t - x : ℤ) : ℝ) • Phi (η) α β γ δ !![0, 0; 0, 1]) ∧
+theorem InLe_s {x y t : ℤ} {γp : SLℝ} (hγp : γp ∈ Γ)
+    (hγm : (γp : Matℝ) = !![(x : ℝ), y; N, t]) :
+    InLe N ϵ (((t - x : ℤ) : ℝ) • Phi η α β γ δ !![0, 0; 0, 1]) ∧
       (ϵ : ℤ) ∣ t - x := by
   have hh : η ≠ 0 := D.h_pos.ne'
   have hε : (ϵ : ℤ) ∣ t - x := by
@@ -355,40 +319,61 @@ theorem InLe_s {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ η)
     subst_vars
     exact hd
   refine ⟨?_, hε⟩
-  have h1 : InLe N ϵ (Phi (η) α β γ δ 1) := by rw [Phi_one hh he]; exact InLe.one N
+  have h1 : InLe N ϵ (Phi η α β γ δ 1) := by rw [Phi_one hh he]; exact InLe.one N
   have hP := phi_InLe D hgN hg hγp
   obtain ⟨hE12, hE21, -⟩ := InLe_basic D hgN hg he
-  have eE : ((t - x : ℤ) : ℝ) • (!![0, 0; 0, 1] : Matrix (Fin 2) (Fin 2) ℝ) =
-      (γp : Matrix (Fin 2) (Fin 2) ℝ) - (x : ℝ) • 1 - (y : ℝ) • !![0, 1; 0, 0] -
+  have eE : ((t - x : ℤ) : ℝ) • (!![0, 0; 0, 1] : Matℝ) =
+      (γp : Matℝ) - (x : ℝ) • 1 - (y : ℝ) • !![0, 1; 0, 0] -
         (N : ℝ) • !![0, 0; 1, 0] := by
     rw [hγm]
-    ext i j; fin_cases i <;> fin_cases j <;> simp
+    mat_smp
   rw [← Phi_smul, eE, Phi_sub, Phi_sub, Phi_sub, Phi_smul, Phi_smul, Phi_smul]
   exact ((hP.sub (h1.zsmul x)).sub (hE12.zsmul y)).sub hE21
 
+include he in
+theorem int_facts_E22 {s : ℤ} (hh : η ≠ 0)
+    (P : InLe N ϵ ((s : ℝ) • Phi η α β γ δ !![0, 0; 0, 1])) (hε : (ϵ : ℤ) ∣ s) :
+    (detS α β γ δ) ∣ s * (β * γ) ∧
+      (detS α β γ δ) * (η : ℤ) ∣ s * (α * β) ∧
+      (detS α β γ δ) * N ∣ (s * (η : ℤ)) * (γ * δ) ∧
+      (detS α β γ δ) * (ϵ : ℤ) ∣ (2 * s) * (β * γ) := by
+  obtain ⟨a, b, c, d, j00, j01, j10, j11, hc, hd⟩ := P.entries
+  rw [Phi_E22 hh] at j00 j01 j10 j11
+  have t00 := int_eq_of_real (X := -(s * (β * γ))) he (by rw [← j00]; simp; ring)
+  have t01 := int_eq_of_real_div (X := s * (α * β)) he hh (by rw [← j01]; simp; ring)
+  have t10 := int_eq_of_real (X := -(s * (η : ℤ) * (γ * δ))) he
+    (by rw [← j10]; simp; ring)
+  have t11 := int_eq_of_real (X := s * (α * δ)) he (by rw [← j11]; simp; ring)
+  obtain ⟨c', rfl⟩ := hc
+  obtain ⟨k, hk⟩ := hd
+  have hd' : d - a = s - 2 * a := mul_left_cancel₀ he (by linear_combination -t11 - t00)
+  refine ⟨⟨-a, by linear_combination -t00⟩, ⟨b, by linear_combination t01⟩,
+    ⟨-c', by linear_combination -t10⟩, ?_⟩
+  have h2a : (ϵ : ℤ) ∣ 2 * a := by
+    have : (ϵ : ℤ) ∣ s - (d - a) := dvd_sub hε ⟨k, hk⟩
+    rw [hd'] at this
+    simpa using this
+  obtain ⟨k', hk'⟩ := h2a
+  exact ⟨-k', by linear_combination -2 * t00 - (detS α β γ δ) * hk'⟩
+
+include D hgN hg he in
 /-- The integer divisibilities F1–F12. -/
-theorem int_factsG {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ η) (hgN : g ∈ NormG Γ) {κ : ℝ} {α β γ δ : ℤ}
-    (hg : (g : Matrix (Fin 2) (Fin 2) ℝ) = κ • Smat (η) α β γ δ)
-    (he : α * δ - β * γ ≠ 0) :
-    (α * δ - β * γ) ∣ (η : ℤ) * (α * γ) ∧ (α * δ - β * γ) ∣ 1 * α ^ 2 ∧ (α * δ - β * γ) * N ∣ (η : ℤ) ^ 2 * γ ^ 2 ∧ (α * δ - β * γ) * (ϵ : ℤ) ∣ (2 * (η : ℤ)) * (α * γ) ∧
-    (α * δ - β * γ) ∣ ((nOf N η : ℤ) * (η : ℤ)) * (β * δ) ∧ (α * δ - β * γ) ∣ (nOf N η : ℤ) * β ^ 2 ∧ (α * δ - β * γ) ∣ 1 * δ ^ 2 ∧ (α * δ - β * γ) * (ϵ : ℤ) ∣ (2 * (nOf N η : ℤ) * (η : ℤ)) * (β * δ) ∧
-    (α * δ - β * γ) ∣ (N : ℤ) * (β * γ) ∧ (α * δ - β * γ) * (η : ℤ) ∣ (N : ℤ) * (α * β) ∧ (α * δ - β * γ) * N ∣ ((N : ℤ) * (η : ℤ)) * (γ * δ) ∧
-    (α * δ - β * γ) * (ϵ : ℤ) ∣ (2 * (N : ℤ)) * (β * γ) := by
+theorem int_factsG :
+    (detS α β γ δ) ∣ 1 * α ^ 2 ∧ (detS α β γ δ) * N ∣ (η : ℤ) ^ 2 * γ ^ 2 ∧ (detS α β γ δ) * (ϵ : ℤ) ∣ (2 * (η : ℤ)) * (α * γ) ∧
+    (detS α β γ δ) ∣ ((nOf N η : ℤ) * (η : ℤ)) * (β * δ) ∧ (detS α β γ δ) ∣ (nOf N η : ℤ) * β ^ 2 ∧ (detS α β γ δ) ∣ 1 * δ ^ 2 ∧ (detS α β γ δ) * (ϵ : ℤ) ∣ (2 * (nOf N η : ℤ) * (η : ℤ)) * (β * δ) ∧
+    (detS α β γ δ) ∣ (N : ℤ) * (β * γ) ∧ (detS α β γ δ) * (η : ℤ) ∣ (N : ℤ) * (α * β) ∧ (detS α β γ δ) * N ∣ ((N : ℤ) * (η : ℤ)) * (γ * δ) ∧
+    (detS α β γ δ) * (ϵ : ℤ) ∣ (2 * (N : ℤ)) * (β * γ) := by
   have hh : η ≠ 0 := D.h_pos.ne'
   have hhr : (η : ℝ) ≠ 0 := Nat.cast_ne_zero.2 hh
-  have hNr : (N : ℝ) = nOf N η * (η : ℝ) ^ 2 := by
-    exact_mod_cast D.n_mul_sq.symm
-  have hNz : (N : ℤ) = (nOf N η : ℤ) * (η : ℤ) ^ 2 := by exact_mod_cast D.n_mul_sq.symm
+  have hNr : (N : ℝ) = nOf N η * (η : ℝ) ^ 2 := by exact_mod_cast D.n_mul_sq.symm
   have hN0 : (N : ℤ) ≠ 0 := Nat.cast_ne_zero.2 (NeZero.ne N)
   obtain ⟨P12, P21, P22⟩ := InLe_basic D hgN hg he
-  -- E₁₂
   obtain ⟨a1, b1, c1, d1, h00, h01, h10, h11, hc1, hd1⟩ := P12.entries
   rw [Phi_E12] at h00 h01 h10 h11
   have r00 := int_eq_of_real (X := -(α * (η : ℤ) * γ)) he (by rw [← h00]; simp)
   have r01 := int_eq_of_real (X := α ^ 2) he (by rw [← h01]; simp)
   have r10 := int_eq_of_real (X := -((η : ℤ) ^ 2 * γ ^ 2)) he (by rw [← h10]; simp)
   have r11 := int_eq_of_real (X := α * (η : ℤ) * γ) he (by rw [← h11]; simp)
-  -- E₂₁ (times N)
   obtain ⟨a2, b2, c2, d2, i00, i01, i10, i11, hc2, hd2⟩ := P21.entries
   rw [Phi_E21 hh] at i00 i01 i10 i11
   have s00 := int_eq_of_real (X := (nOf N η : ℤ) * (η : ℤ) * (β * δ)) he
@@ -398,110 +383,64 @@ theorem int_factsG {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ
   have s10 := int_eq_of_real (X := (N : ℤ) * δ ^ 2) he (by rw [← i10]; simp; ring)
   have s11 := int_eq_of_real (X := -((nOf N η : ℤ) * (η : ℤ) * (β * δ))) he
     (by rw [← i11]; simp [hNr]; field_simp)
-  -- E₂₂ (times N)
-  obtain ⟨a3, b3, c3, d3, j00, j01, j10, j11, hc3, hd3⟩ := P22.entries
-  rw [Phi_E22 hh] at j00 j01 j10 j11
-  have t00 := int_eq_of_real (X := -((N : ℤ) * (β * γ))) he (by rw [← j00]; simp; ring)
-  have t01 := int_eq_of_real (X := (nOf N η : ℤ) * (η : ℤ) * (α * β)) he
-    (by rw [← j01]; simp [hNr]; field_simp)
-  have t10 := int_eq_of_real (X := -((N : ℤ) * (η : ℤ) * (γ * δ))) he
-    (by rw [← j10]; simp; ring)
-  have t11 := int_eq_of_real (X := (N : ℤ) * (α * δ)) he (by rw [← j11]; simp; ring)
+  obtain ⟨F9, F10, F11, F12⟩ := int_facts_E22 he hh (by simpa using P22)
+    (Int.natCast_dvd_natCast.2 D.eps_dvd)
   obtain ⟨c1', rfl⟩ := hc1
   obtain ⟨c2', rfl⟩ := hc2
-  obtain ⟨c3', rfl⟩ := hc3
   obtain ⟨k1, hk1⟩ := hd1
   obtain ⟨k2, hk2⟩ := hd2
-  obtain ⟨k3, hk3⟩ := hd3
-  have hε : (ϵ : ℤ) ∣ (N : ℤ) := Int.natCast_dvd_natCast.2 D.eps_dvd
-  obtain ⟨m, hm⟩ := hε
   have ha1 : a1 = -d1 := mul_left_cancel₀ he (by linear_combination -r00 - r11)
   have ha2 : d2 = -a2 := mul_left_cancel₀ he (by linear_combination -s11 - s00)
-  have hd3' : d3 - a3 = N - 2 * a3 := mul_left_cancel₀ he (by linear_combination -t11 - t00)
-  refine ⟨⟨d1, by linear_combination r11⟩, ⟨b1, by linear_combination r01⟩,
+  exact ⟨⟨b1, by linear_combination r01⟩,
     ⟨-c1', by linear_combination -r10⟩,
-    ⟨k1, by linear_combination 2 * r11 + (α * δ - β * γ) * hk1 + (α * δ - β * γ) * ha1⟩,
+    ⟨k1, by linear_combination 2 * r11 + (detS α β γ δ) * hk1 + (detS α β γ δ) * ha1⟩,
     ⟨a2, by linear_combination s00⟩, ⟨-b2, by linear_combination -s01⟩,
     ⟨c2', mul_left_cancel₀ hN0 (by linear_combination s10)⟩,
-    ⟨-k2, by linear_combination 2 * s00 - (α * δ - β * γ) * hk2 + (α * δ - β * γ) * ha2⟩,
-    ⟨-a3, by linear_combination -t00⟩, ⟨b3, by rw [hNz]; linear_combination (η : ℤ) * t01⟩,
-    ⟨-c3', by linear_combination -t10⟩, ?_⟩
-  -- F12: ε ∣ N − 2 a3 and ε ∣ N give ε ∣ 2 a3
-  have h2a : (ϵ : ℤ) ∣ 2 * a3 := by
-    have : (ϵ : ℤ) ∣ (N : ℤ) - (d3 - a3) := dvd_sub ⟨m, hm⟩ ⟨k3, hk3⟩
-    rw [hd3'] at this
-    simpa using this
-  obtain ⟨k4, hk4⟩ := h2a
-  exact ⟨-k4, by linear_combination -2 * t00 - (α * δ - β * γ) * hk4⟩
+    ⟨-k2, by linear_combination 2 * s00 - (detS α β γ δ) * hk2 + (detS α β γ δ) * ha2⟩,
+    F9, F10, F11, F12⟩
 
 
+include D hgN hg he in
 /-- The four facts with s = t − x in place of N. -/
-theorem int_facts_sG {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ η) (hgN : g ∈ NormG Γ) {κ : ℝ} {α β γ δ : ℤ}
-    (hg : (g : Matrix (Fin 2) (Fin 2) ℝ) = κ • Smat (η) α β γ δ)
-    (he : α * δ - β * γ ≠ 0) {x y t : ℤ} {γp : SL(2, ℝ)} (hγp : γp ∈ Γ)
-    (hγm : (γp : Matrix (Fin 2) (Fin 2) ℝ) = !![(x : ℝ), y; N, t]) :
-    (α * δ - β * γ) ∣ (t - x) * (β * γ) ∧
-      (α * δ - β * γ) * (η : ℤ) ∣ (t - x) * (α * β) ∧
-      (α * δ - β * γ) * N ∣ ((t - x) * (η : ℤ)) * (γ * δ) ∧
-      (α * δ - β * γ) * (ϵ : ℤ) ∣ (2 * (t - x)) * (β * γ) := by
-  have hh : η ≠ 0 := D.h_pos.ne'
+theorem int_facts_sG {x y t : ℤ} {γp : SLℝ} (hγp : γp ∈ Γ)
+    (hγm : (γp : Matℝ) = !![(x : ℝ), y; N, t]) :
+    (detS α β γ δ) ∣ (t - x) * (β * γ) ∧
+      (detS α β γ δ) * (η : ℤ) ∣ (t - x) * (α * β) ∧
+      (detS α β γ δ) * N ∣ ((t - x) * (η : ℤ)) * (γ * δ) ∧
+      (detS α β γ δ) * (ϵ : ℤ) ∣ (2 * (t - x)) * (β * γ) := by
   obtain ⟨P, hε⟩ := InLe_s D hgN hg he hγp hγm
-  obtain ⟨a4, b4, c4, d4, j00, j01, j10, j11, hc4, hd4⟩ := P.entries
-  rw [Phi_E22 hh] at j00 j01 j10 j11
-  have t00 := int_eq_of_real (X := -((t - x) * (β * γ))) he (by rw [← j00]; simp; ring)
-  have t01 := int_eq_of_real_div (X := (t - x) * (α * β)) he hh
-    (by rw [← j01]; simp; ring)
-  have t10 := int_eq_of_real (X := -((t - x) * (η : ℤ) * (γ * δ))) he
-    (by rw [← j10]; simp; ring)
-  have t11 := int_eq_of_real (X := (t - x) * (α * δ)) he (by rw [← j11]; simp; ring)
-  obtain ⟨c4', rfl⟩ := hc4
-  obtain ⟨k4, hk4⟩ := hd4
-  have hd4' : d4 - a4 = (t - x) - 2 * a4 := mul_left_cancel₀ he (by linear_combination -t11 - t00)
-  refine ⟨⟨-a4, by linear_combination -t00⟩, ⟨b4, by linear_combination t01⟩,
-    ⟨-c4', by linear_combination -t10⟩, ?_⟩
-  have h2a : (ϵ : ℤ) ∣ 2 * a4 := by
-    have : (ϵ : ℤ) ∣ (t - x) - (d4 - a4) := dvd_sub hε ⟨k4, hk4⟩
-    rw [hd4'] at this
-    simpa using this
-  obtain ⟨k5, hk5⟩ := h2a
-  exact ⟨-k5, by linear_combination -2 * t00 - (α * δ - β * γ) * hk5⟩
+  exact int_facts_E22 he D.h_pos.ne' P hε
 
+include D hgN hg he in
 /-- The local conclusion at a prime p. -/
-theorem local_conclusionG {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ η) (hgN : g ∈ NormG Γ) {κ : ℝ}
-    {α β γ δ : ℤ} (hg : (g : Matrix (Fin 2) (Fin 2) ℝ) = κ • Smat (η) α β γ δ)
-    (hginv : ((g⁻¹ : SL(2, ℝ)) : Matrix (Fin 2) (Fin 2) ℝ) =
-      κ • Smat (η) δ (-β) (-γ) α)
-    (he : α * δ - β * γ ≠ 0)
+theorem local_conclusionG
+    (hginv : ((g⁻¹ : SLℝ) : Matℝ) =
+      κ • Smat η δ (-β) (-γ) α)
     (hprim : ∀ p : ℕ, p.Prime → ¬ ((p : ℤ) ∣ α ∧ (p : ℤ) ∣ β ∧ (p : ℤ) ∣ γ ∧ (p : ℤ) ∣ δ))
     {p : ℕ} (hp : p.Prime) :
-    let B := vz p (α * δ - β * γ) + N.factorization p + 1
-    (vz p (α * δ - β * γ) = 0 ∧ (nOf N η).factorization p ≤ vv B p γ) ∨
-      (vz p (α * δ - β * γ) = (nOf N η).factorization p ∧
+    let B := vz p (detS α β γ δ) + N.factorization p + 1
+    (vz p (detS α β γ δ) = 0 ∧ (nOf N η).factorization p ≤ vv B p γ) ∨
+      (vz p (detS α β γ δ) = (nOf N η).factorization p ∧
         (nOf N η).factorization p ≤ vv B p α ∧ (nOf N η).factorization p ≤ vv B p γ ∧
         (nOf N η).factorization p ≤ vv B p δ) := by
   intro B
   have hN := NeZero.ne N
   have hNz : (N : ℤ) ≠ 0 := Nat.cast_ne_zero.2 hN
   have hhz : (η : ℤ) ≠ 0 := Nat.cast_ne_zero.2 D.h_pos.ne'
-  have hn0 : nOf N η ≠ 0 := by
-    intro h0
-    have := D.n_mul_sq
-    rw [h0, zero_mul] at this
-    exact hN this.symm
-  have hnz : (nOf N η : ℤ) ≠ 0 := Nat.cast_ne_zero.2 hn0
+  have hnz : (nOf N η : ℤ) ≠ 0 := Nat.cast_ne_zero.2 (D.n_ne_zero hN)
   have hε0 : ϵ ≠ 0 := (Nat.pos_of_dvd_of_pos D.eps_dvd (Nat.pos_of_ne_zero hN)).ne'
   have hεz : (ϵ : ℤ) ≠ 0 := Nat.cast_ne_zero.2 hε0
   -- the local constants
-  set ν := N.factorization p with hν
-  set j := (ϵ).factorization p with hj
-  set k := (η).factorization p with hk
+  set ν := N.factorization p
+  set j := ϵ.factorization p
+  set k := η.factorization p
   set e₂ := (2 : ℕ).factorization p with he₂
-  set nν := (nOf N η).factorization p with hnν
-  set δ₀ := vz p (α * δ - β * γ) with hδ₀
+  set nν := (nOf N η).factorization p
+  set δ₀ := vz p (detS α β γ δ)
   have hkj : k = min j (ν / 2) := D.h_fact p
   have hnk : nν + 2 * k = ν := D.factorization_n hN p
   have hjν : j ≤ ν := (Nat.factorization_le_iff_dvd hε0 hN).2 D.eps_dvd p
-  have he₂1 : e₂ ≤ 1 := by rw [he₂, factorization_two]; split_ifs <;> omega
+  have he₂1 : e₂ ≤ 1 := by rw [he₂, Nat.prime_two.factorization, Finsupp.single_apply]; split_ifs <;> omega
   -- valuations of the constants
   have vN : vz p (N : ℤ) = ν := vz_natCast p N
   have vh : vz p (η : ℤ) = k := vz_natCast p _
@@ -535,28 +474,25 @@ theorem local_conclusionG {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData 
   -- ultrametric relation
   obtain ⟨u1, u2⟩ := ultra_vv (B := B) hp he (by simp only [B]; omega)
   -- the facts
-  obtain ⟨F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12⟩ := int_factsG D hgN hg he
-  have he' : δ * α - -β * -γ = α * δ - β * γ := by ring
+  obtain ⟨F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12⟩ := int_factsG D hgN hg he
+  have he' : δ * α - -β * -γ = detS α β γ δ := by ring
   have he'0 : δ * α - -β * -γ ≠ 0 := by rw [he']; exact he
-  obtain ⟨G1, G2, G3, G4, G5, G6, G7, G8, G9, G10, G11, G12⟩ :=
+  obtain ⟨G2, G3, G4, G5, G6, G7, G8, G9, G10, G11, G12⟩ :=
     int_factsG D (inv_mem hgN) hginv he'0
-  rw [he'] at G1 G2 G3 G4 G5 G6 G7 G8 G9 G10 G11 G12
+  rw [he'] at G2 G3 G4 G5 G6 G7 G8 G9 G10 G11 G12
   -- valuations of the moduli
-  have vX : ∀ X : ℤ, X ≠ 0 → vz p ((α * δ - β * γ) * X) = δ₀ + vz p X := fun X hX =>
+  have vX : ∀ X : ℤ, X ≠ 0 → vz p ((detS α β γ δ) * X) = δ₀ + vz p X := fun X hX =>
     vz_mul he hX
-  have hBe : vz p (α * δ - β * γ) ≤ B := by simp only [B]; omega
-  have hBN : vz p ((α * δ - β * γ) * N) ≤ B := by rw [vX _ hNz, vN]; simp only [B]; omega
-  have hBε : vz p ((α * δ - β * γ) * (ϵ : ℤ)) ≤ B := by
+  have hBe : vz p (detS α β γ δ) ≤ B := by simp only [B]; omega
+  have hBN : vz p ((detS α β γ δ) * N) ≤ B := by rw [vX _ hNz, vN]; simp only [B]; omega
+  have hBε : vz p ((detS α β γ δ) * (ϵ : ℤ)) ≤ B := by
     rw [vX _ hεz, vε]; simp only [B]; omega
-  have hBh : vz p ((α * δ - β * γ) * (η : ℤ)) ≤ B := by
+  have hBh : vz p ((detS α β γ δ) * (η : ℤ)) ≤ B := by
     rw [vX _ hhz, vh]; simp only [B]
     omega
-  -- the inequalities from g
-  have c1 := le_vv2 (B := B) hhz hBe F1
   have c2 := le_vv_sq (B := B) one_ne_zero hBe F2
   have c3 := le_vv_sq (B := B) (pow_ne_zero 2 hhz) hBN F3
   have c4 := le_vv2 (B := B) (mul_ne_zero two0 hhz) hBε F4
-  have c5 := le_vv2 (B := B) (mul_ne_zero hnz hhz) hBe F5
   have c6 := le_vv_sq (B := B) hnz hBe F6
   have c7 := le_vv_sq (B := B) one_ne_zero hBe F7
   have c8 := le_vv2 (B := B) (mul_ne_zero (mul_ne_zero two0 hnz) hhz) hBε F8
@@ -564,22 +500,19 @@ theorem local_conclusionG {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData 
   have c10 := le_vv2 (B := B) hNz hBh F10
   have c11 := le_vv2 (B := B) (mul_ne_zero hNz hhz) hBN F11
   have c12 := le_vv2 (B := B) (mul_ne_zero two0 hNz) hBε F12
-  -- and from g⁻¹
-  have d1 := le_vv2 (B := B) hhz hBe G1
   have d2 := le_vv_sq (B := B) one_ne_zero hBe G2
-  have d4 := le_vv2 (B := B) (mul_ne_zero two0 hhz) hBε G4
   have d5 := le_vv2 (B := B) (mul_ne_zero hnz hhz) hBe G5
   have d7 := le_vv_sq (B := B) one_ne_zero hBe G7
   have d8 := le_vv2 (B := B) (mul_ne_zero (mul_ne_zero two0 hnz) hhz) hBε G8
   have d10 := le_vv2 (B := B) hNz hBh G10
   have d11 := le_vv2 (B := B) (mul_ne_zero hNz hhz) hBN G11
-  simp only [hb', hc'] at d1 d4 d5 d8 d10 d11
-  simp only [vX _ hNz, vX _ hεz, vX _ hhz, vz_mul two0 hhz, vz_mul hnz hhz,
+  simp only [hb', hc'] at d5 d8 d10 d11
+  simp only [vX _ hNz, vX _ hεz, vX _ hhz, vz_mul two0 hhz,
     vz_mul (mul_ne_zero two0 hnz) hhz, vz_mul two0 hnz, vz_mul hNz hhz, vz_mul two0 hNz,
-    vz_mul hhz hhz, pow_two, vN, vh, vn, vε, v2, v1] at c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12
-  simp only [vX _ hNz, vX _ hεz, vX _ hhz, vz_mul two0 hhz, vz_mul hnz hhz,
-    vz_mul (mul_ne_zero two0 hnz) hhz, vz_mul two0 hnz, vz_mul hNz hhz, vz_mul two0 hNz,
-    vz_mul hhz hhz, pow_two, vN, vh, vn, vε, v2, v1] at d1 d2 d4 d5 d7 d8 d10 d11
+    vz_mul hhz hhz, pow_two, vN, vh, vn, vε, v2, v1] at c2 c3 c4 c6 c7 c8 c9 c10 c11 c12
+  simp only [vX _ hNz, vX _ hεz, vX _ hhz, vz_mul hnz hhz,
+    vz_mul (mul_ne_zero two0 hnz) hhz, vz_mul two0 hnz, vz_mul hNz hhz,
+    vN, vh, vn, vε, v2, v1] at d2 d5 d7 d8 d10 d11
   -- the conditions C9–C12, C17, C18 with j: from N if ν = j, from γ_p otherwise
   obtain ⟨C9, C10, C11, C12, C17, C18⟩ : δ₀ ≤ j + b + c ∧ δ₀ + k ≤ j + a + b ∧
       δ₀ + ν ≤ j + k + c + d ∧ δ₀ ≤ e₂ + b + c ∧ δ₀ + k ≤ j + b + d ∧ δ₀ + ν ≤ j + k + c + a := by
@@ -603,121 +536,7 @@ theorem local_conclusionG {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData 
     simp only [vX _ hNz, vX _ hεz, vX _ hhz, vz_mul hs0 hhz, vz_mul two0 hs0, hvs, vh, vN, vε,
       v2] at s9 s10 s11 s12 t10 t11
     refine ⟨by omega, by omega, by omega, by omega, by omega, by omega⟩
-  have := local_form_gen ν j k e₂ δ₀ a b c d hjν he₂1 hkj prim u1 u2 (by omega) (by omega) (by omega)
-    (by omega) (by omega) (by omega) (by omega) (by omega) C9 C10 C11 C12 (by omega) (by omega)
-    (by omega) (by omega) C17 (by omega)
-  have hn2 : ν - 2 * k = nν := by omega
-  rw [hn2] at this
-  exact this
-
-/-- **Newman's argument for Γ**: every element of the normalizer of Γ has the form `IsNewmanFormH`
-with parameter η. -/
-theorem newmanG {N : ℕ} [NeZero N] {g : SL(2, ℝ)} (D : NewmanData N Γ ϵ η) (hg : g ∈ NormG Γ) :
-    IsNewmanFormH N η g := by
-  obtain ⟨κ, α, β, γ, δ, hκ, hprim, hgm⟩ := exists_prim_formG D hg
-  have hh : η ≠ 0 := D.h_pos.ne'
-  have hhr : (η : ℝ) ≠ 0 := Nat.cast_ne_zero.2 hh
-  have hN := NeZero.ne N
-  have hgS : (g : Matrix (Fin 2) (Fin 2) ℝ) = κ • Smat (η) α β γ δ := by rw [hgm]; rfl
-  have hdet : κ ^ 2 * ((α * δ - β * γ : ℤ) : ℝ) = 1 := by
-    have := g.2
-    rw [hgS, det_smul, Fintype.card_fin, det_Smat hh] at this
-    exact this
-  have he : α * δ - β * γ ≠ 0 := by
-    intro h0
-    rw [h0] at hdet
-    simp at hdet
-  have hepos : 0 < α * δ - β * γ := by
-    have hκ2 : 0 < κ ^ 2 := by positivity
-    have : (0 : ℝ) < ((α * δ - β * γ : ℤ) : ℝ) := by
-      by_contra hc
-      push Not at hc
-      nlinarith
-    exact_mod_cast this
-  have hginv : ((g⁻¹ : SL(2, ℝ)) : Matrix (Fin 2) (Fin 2) ℝ) =
-      κ • Smat (η) δ (-β) (-γ) α := by
-    rw [coe_inv_of_coe_eq_smul hgm]
-    congr 1
-    ext i j
-    fin_cases i <;> fin_cases j <;> simp [Smat] <;> ring
-  have hloc := fun (p : ℕ) (hp : p.Prime) => local_conclusionG D hg hgS hginv he hprim hp
-  have hn0 : nOf N η ≠ 0 := by
-    intro h0
-    have := D.n_mul_sq
-    rw [h0, zero_mul] at this
-    exact hN this.symm
-  have hnz : (nOf N η : ℤ) ≠ 0 := Nat.cast_ne_zero.2 hn0
-  -- e ∣ n, n ∣ γ, e ∣ α, e ∣ δ
-  have hen : (α * δ - β * γ) ∣ (nOf N η : ℤ) := by
-    refine dvd_of_forall_vz_le he hnz (fun p hp => ?_)
-    have := hloc p hp
-    simp only at this
-    rw [vz_natCast]
-    rcases this with ⟨h1, -⟩ | ⟨h1, -⟩ <;> omega
-  have hnγ : (nOf N η : ℤ) ∣ γ := by
-    by_cases hγ : γ = 0
-    · rw [hγ]; exact dvd_zero _
-    refine dvd_of_forall_vz_le hnz hγ (fun p hp => ?_)
-    have := hloc p hp
-    simp only [vv_of_ne hγ] at this
-    rw [vz_natCast]
-    rcases this with ⟨-, h2⟩ | ⟨-, -, h2, -⟩ <;> omega
-  have heα : (α * δ - β * γ) ∣ α := by
-    by_cases hα : α = 0
-    · rw [hα]; exact dvd_zero _
-    refine dvd_of_forall_vz_le he hα (fun p hp => ?_)
-    have := hloc p hp
-    simp only [vv_of_ne hα] at this
-    rcases this with ⟨h1, -⟩ | ⟨h1, h2, -⟩ <;> omega
-  have heδ : (α * δ - β * γ) ∣ δ := by
-    by_cases hδ : δ = 0
-    · rw [hδ]; exact dvd_zero _
-    refine dvd_of_forall_vz_le he hδ (fun p hp => ?_)
-    have := hloc p hp
-    simp only [vv_of_ne hδ] at this
-    rcases this with ⟨h1, -⟩ | ⟨h1, -, -, h2⟩ <;> omega
-  obtain ⟨a', ha'⟩ := heα
-  obtain ⟨d', hd'⟩ := heδ
-  obtain ⟨c', hc'⟩ := hnγ
-  obtain ⟨m, hm⟩ := hen
-  set E := α * δ - β * γ with hE
-  -- e as a natural number
-  set e : ℕ := E.toNat with he_def
-  have hEe : (e : ℤ) = E := Int.toNat_of_nonneg hepos.le
-  have he0 : 0 < e := by omega
-  have her : (e : ℝ) = (E : ℝ) := by exact_mod_cast hEe
-  have hsq : Real.sqrt e * Real.sqrt e = e := Real.mul_self_sqrt (Nat.cast_nonneg _)
-  have hs0 : Real.sqrt e ≠ 0 := (Real.sqrt_pos.2 (Nat.cast_pos.2 he0)).ne'
-  refine ⟨a', β, c', d', e, he0, ⟨m.toNat, ?_⟩, ?_, κ * Real.sqrt e, ?_, ?_⟩
-  · have hm0 : 0 ≤ m := by
-      by_contra hneg
-      push Not at hneg
-      have : (nOf N η : ℤ) < 0 := by rw [hm]; exact mul_neg_of_pos_of_neg hepos hneg
-      omega
-    have : ((nOf N η : ℕ) : ℤ) = ((e * m.toNat : ℕ) : ℤ) := by
-      push_cast
-      rw [Int.toNat_of_nonneg hm0, hEe]
-      exact hm
-    exact_mod_cast this
-  · rw [hEe]
-    have h1 : E = α * δ - β * γ := rfl
-    rw [ha', hd', hc'] at h1
-    simp only [nOf] at h1 ⊢
-    linear_combination -h1
-  · have h1 : (κ * Real.sqrt e) ^ 2 = 1 := by
-      rw [mul_pow, Real.sq_sqrt (Nat.cast_nonneg _), her]
-      exact hdet
-    have h2 : (κ * Real.sqrt e) * (κ * Real.sqrt e) = 1 := by rw [← pow_two]; exact h1
-    exact mul_self_eq_one_iff.1 h2
-  · have hNr : (N : ℝ) = nOf N η * (η : ℝ) ^ 2 := by
-      exact_mod_cast D.n_mul_sq.symm
-    have hα' : (α : ℝ) = a' * e := by rw [her, ha']; push_cast; ring
-    have hγ' : (γ : ℝ) = nOf N η * c' := by rw [hc']; push_cast; ring
-    have hδ' : (δ : ℝ) = d' * e := by rw [her, hd']; push_cast; ring
-    rw [hgm, mul_div_assoc, div_self hs0, mul_one]
-    congr 1
-    ext i j
-    fin_cases i <;> fin_cases j <;> simp [hα', hγ', hδ', hNr] <;> field_simp <;> ring
+  omega
 
 end
 

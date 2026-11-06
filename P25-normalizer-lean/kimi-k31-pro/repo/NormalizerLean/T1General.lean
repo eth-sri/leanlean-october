@@ -21,12 +21,9 @@ noncomputable section
 
 /-! ### D⁻¹Γ₀(n)D -/
 
-theorem coe_projSL (A : Matrix (Fin 2) (Fin 2) ℝ) (hA : 0 < A.det) :
-    ((projSL A : SL(2, ℝ)) : Matrix (Fin 2) (Fin 2) ℝ) = (Real.sqrt A.det)⁻¹ • A := by
-  have : projSL A = ⟨(Real.sqrt A.det)⁻¹ • A, by
-      rw [det_smul, Fintype.card_fin, inv_pow, Real.sq_sqrt hA.le, inv_mul_cancel₀ hA.ne']⟩ :=
-    dif_pos hA
-  rw [this]
+theorem coe_projSL (A : Matℝ) (hA : 0 < A.det) :
+    ((projSL A : SLℝ) : Matℝ) = (Real.sqrt A.det)⁻¹ • A := by
+  simp [projSL, hA]
 
 end
 

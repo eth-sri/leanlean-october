@@ -1,6 +1,6 @@
 module
 
-public import NormalizerDelta.Gamma1KK
+public import NormalizerDelta.GammaConj
 
 @[expose] public section
 
@@ -29,12 +29,11 @@ variable {N : ℕ}
 /-! ### The general product law -/
 
 theorem isAtkinLehner_mul_gen [NeZero N] {Q₁ Q₂ : ℕ} (hQ₁ : Q₁ ∣ N) (hQ₂ : Q₂ ∣ N)
-    {g₁ g₂ : SL(2, ℝ)} (h₁ : IsAtkinLehner N Q₁ g₁) (h₂ : IsAtkinLehner N Q₂ g₂) :
+    {g₁ g₂ : SLℝ} (h₁ : IsAtkinLehner N Q₁ g₁) (h₂ : IsAtkinLehner N Q₂ g₂) :
     IsAtkinLehner N (Q₁ / Nat.gcd Q₁ Q₂ * (Q₂ / Nat.gcd Q₁ Q₂)) (g₁ * g₂) := by
   have hQ10 : Q₁ ≠ 0 := by rintro rfl; exact NeZero.ne N (Nat.eq_zero_of_zero_dvd hQ₁)
   have hQ20 : Q₂ ≠ 0 := by rintro rfl; exact NeZero.ne N (Nat.eq_zero_of_zero_dvd hQ₂)
-  obtain ⟨G, hGdef⟩ : ∃ G, G = Nat.gcd Q₁ Q₂ := ⟨_, rfl⟩
-  rw [← hGdef]
+  set G := Nat.gcd Q₁ Q₂ with hGdef
   have hG0 : 0 < G := hGdef ▸ Nat.gcd_pos_of_pos_left _ (Nat.pos_of_ne_zero hQ10)
   obtain ⟨q₁, hq₁⟩ : G ∣ Q₁ := hGdef ▸ Nat.gcd_dvd_left Q₁ Q₂
   obtain ⟨q₂, hq₂⟩ : G ∣ Q₂ := hGdef ▸ Nat.gcd_dvd_right Q₁ Q₂
@@ -79,8 +78,8 @@ theorem isAtkinLehner_mul_gen [NeZero N] {Q₁ Q₂ : ℕ} (hQ₁ : Q₁ ∣ N) 
     congr 1
     rw [hLN, hq₁, hq₂]
     push_cast
-    ext i j; fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Fin.sum_univ_two] <;>
-      field_simp <;> ring
+    mat_smp [Matrix.mul_apply, Fin.sum_univ_two] <;>
+      field_simp
 
 /-! ### Exact divisors -/
 
@@ -90,10 +89,6 @@ theorem isAtkinLehner_mul_gen [NeZero N] {Q₁ Q₂ : ℕ} (hQ₁ : Q₁ ∣ N) 
 
 /-! ### σ : Nor(±Γ₁(N)) → (ℤ/2)^{primes of N} -/
 
-section Sigma
-
-variable [NeZero N] (hN : N ≠ 4)
-
 theorem mul_div_gcd_dvd {Q₁ Q₂ : ℕ} (hQ₁ : Q₁ ∣ N) (hQ₂ : Q₂ ∣ N) :
     Q₁ / Nat.gcd Q₁ Q₂ * (Q₂ / Nat.gcd Q₁ Q₂) ∣ N := by
   have h1 : Q₁ / Nat.gcd Q₁ Q₂ * (Q₂ / Nat.gcd Q₁ Q₂) ∣ Q₁ / Nat.gcd Q₁ Q₂ * Q₂ :=
@@ -102,8 +97,6 @@ theorem mul_div_gcd_dvd {Q₁ Q₂ : ℕ} (hQ₁ : Q₁ ∣ N) (hQ₂ : Q₂ ∣
     rw [Nat.lcm, Nat.div_mul_right_comm (Nat.gcd_dvd_left _ _)]
   rw [h2] at h1
   exact h1.trans (Nat.lcm_dvd hQ₁ hQ₂)
-
-end Sigma
 
 end
 

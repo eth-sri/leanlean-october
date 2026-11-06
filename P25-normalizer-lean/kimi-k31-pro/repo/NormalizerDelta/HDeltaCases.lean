@@ -22,6 +22,9 @@ noncomputable section
 
 variable {N : ℕ}
 
+set_option quotPrecheck false in
+notation "pmΔ" D:max m:max => ∀ u ∈ D, IsPmOneMod m u
+
 theorem isPmOneMod_iff_val [NeZero N] (m : ℕ) (u : (ZMod N)ˣ) :
     IsPmOneMod m u ↔ (((u : ZMod N).val : ℕ) : ZMod m) = 1 ∨ (((u : ZMod N).val : ℕ) : ZMod m) = -1 := by
   unfold IsPmOneMod; rw [ZMod.cast_eq_val]
@@ -53,31 +56,28 @@ theorem dvd_val_sq_iff_sixteen [NeZero N] (hN : 2 ≤ N) (u : (ZMod N)ˣ) :
 /-- The local criterion at a prime p. -/
 theorem factorization_hDelta_ne_iff [NeZero N] (Δ : Subgroup (ZMod N)ˣ) {p : ℕ} (hp : p.Prime) :
     (hDelta N Δ).factorization p ≠ (hPart N).factorization p ↔
-      (5 ≤ p ∧ p ^ 2 ∣ N ∧ ∀ u ∈ Δ, IsPmOneMod p u) ∨ (p = 3 ∧ 3 ^ 4 ∣ N ∧ ∀ u ∈ Δ, IsPmOneMod 9 u) ∨
-        (p = 2 ∧ 2 ^ 8 ∣ N ∧ ∀ u ∈ Δ, IsPmOneMod 8 u) := by
+      (5 ≤ p ∧ p ^ 2 ∣ N ∧ pmΔ Δ p) ∨ (p = 3 ∧ 3 ^ 4 ∣ N ∧ pmΔ Δ 9) ∨
+        (p = 2 ∧ 2 ^ 8 ∣ N ∧ pmΔ Δ 8) := by
   have hN := NeZero.ne N
   have hε0 : epsDelta N Δ ≠ 0 := epsDelta_pos.ne'
-  rw [factorization_hDelta, (local_constants (p := p) hN).2]
+  rw [factorization_hDelta, local_constants (p := p) hN]
+  have hgcd := gcd24_dvd_epsDelta Δ
   have hle : (epsPart N).factorization p ≤ (epsDelta N Δ).factorization p :=
-    (Nat.factorization_le_iff_dvd (Nat.gcd_pos_of_pos_left _ (Nat.pos_of_ne_zero hN)).ne' hε0).2
-      (gcd24_dvd_epsDelta Δ) p
+    (Nat.factorization_le_iff_dvd (Nat.gcd_pos_of_pos_left _ (Nat.pos_of_ne_zero hN)).ne' hε0).2 hgcd p
   have heν : (epsDelta N Δ).factorization p ≤ N.factorization p :=
     (Nat.factorization_le_iff_dvd hε0 hN).2 epsDelta_dvd p
-  -- m ∣ ε_Δ ⟺ ∀ u ∈ Δ, …, given m ∣ N
-  have hconv : ∀ {m m' : ℕ}, m ∣ N → 2 ≤ N →
-      (∀ u : (ZMod N)ˣ, m ∣ (u : ZMod N).val ^ 2 - 1 ↔ IsPmOneMod m' u) →
-      (m ∣ epsDelta N Δ ↔ ∀ u ∈ Δ, IsPmOneMod m' u) := by
-    intro m m' hmN _ hiff
+  have hconv {m m' : ℕ} (hmN : m ∣ N)
+      (hiff : ∀ u : (ZMod N)ˣ, m ∣ (u : ZMod N).val ^ 2 - 1 ↔ IsPmOneMod m' u) :
+      m ∣ epsDelta N Δ ↔ ∀ u ∈ Δ, IsPmOneMod m' u := by
     rw [dvd_epsDelta_iff]
     exact ⟨fun h u hu => (hiff u).1 (h.2 u hu), fun h => ⟨hmN, fun u hu => (hiff u).2 (h u hu)⟩⟩
-  have hN2 : ∀ {q : ℕ}, 2 ≤ q → q ∣ N → 2 ≤ N := fun hq hqN =>
-    le_trans hq (Nat.le_of_dvd (Nat.pos_of_ne_zero hN) hqN)
+  have hN2 {q : ℕ} (hq : 2 ≤ q) (hqN : q ∣ N) : 2 ≤ N :=
+    hq.trans (Nat.le_of_dvd (Nat.pos_of_ne_zero hN) hqN)
   have hg : (epsPart N).factorization p =
       min (N.factorization p) (if p = 2 then 3 else if p = 3 then 1 else 0) := by
     rw [factorization_epsPart hN, factorization_24]
   by_cases h2 : p = 2
-  · -- p = 2
-    subst h2
+  · subst h2
     rw [if_pos rfl] at hg
     rw [hg] at hle ⊢
     have e1 : 2 ^ 8 ∣ N ↔ 8 ≤ N.factorization 2 := Nat.prime_two.pow_dvd_iff_le_factorization hN
@@ -87,20 +87,17 @@ theorem factorization_hDelta_ne_iff [NeZero N] (Δ : Subgroup (ZMod N)ˣ) {p : �
     · intro hne
       have h256 : 2 ^ 8 ∣ N := e1.2 (by omega)
       have h16 : 16 ∣ N := (pow_dvd_pow 2 (by norm_num : 4 ≤ 8)).trans h256
-      refine Or.inr (Or.inr ⟨rfl, h256, ?_⟩)
-      exact (hconv h16 (hN2 (by norm_num) h16) (dvd_val_sq_iff_sixteen (hN2 (by norm_num) h16))).1
-        (e2.2 (by omega))
+      refine Or.inr (Or.inr ⟨rfl, h256, (hconv h16 (dvd_val_sq_iff_sixteen
+        (hN2 (by norm_num) h16))).1 (e2.2 (by omega))⟩)
     · rintro (⟨h5, -⟩ | ⟨h3, -⟩ | ⟨-, h256, h8⟩)
       · omega
       · omega
       have h16 : 16 ∣ N := (pow_dvd_pow 2 (by norm_num : 4 ≤ 8)).trans h256
-      have := e2.1 ((hconv h16 (hN2 (by norm_num) h16)
-        (dvd_val_sq_iff_sixteen (hN2 (by norm_num) h16))).2 h8)
+      have := e2.1 ((hconv h16 (dvd_val_sq_iff_sixteen (hN2 (by norm_num) h16))).2 h8)
       have := e1.1 h256
       omega
   by_cases h3 : p = 3
-  · -- p = 3
-    subst h3
+  · subst h3
     rw [if_neg (by norm_num : (3 : ℕ) ≠ 2), if_pos rfl] at hg
     rw [hg] at hle ⊢
     have e1 : 3 ^ 4 ∣ N ↔ 4 ≤ N.factorization 3 := Nat.prime_three.pow_dvd_iff_le_factorization hN
@@ -110,19 +107,16 @@ theorem factorization_hDelta_ne_iff [NeZero N] (Δ : Subgroup (ZMod N)ˣ) {p : �
     · intro hne
       have h81 : 3 ^ 4 ∣ N := e1.2 (by omega)
       have h9 : 9 ∣ N := (pow_dvd_pow 3 (by norm_num : 2 ≤ 4)).trans h81
-      refine Or.inr (Or.inl ⟨rfl, h81, ?_⟩)
-      exact (hconv h9 (hN2 (by norm_num) h9) (dvd_val_sq_iff_nine (hN2 (by norm_num) h9))).1
-        (e2.2 (by omega))
+      refine Or.inr (Or.inl ⟨rfl, h81, (hconv h9 (dvd_val_sq_iff_nine
+        (hN2 (by norm_num) h9))).1 (e2.2 (by omega))⟩)
     · rintro (⟨h5, -⟩ | ⟨-, h81, h9'⟩ | ⟨h3, -⟩)
       · omega
       · have h9 : 9 ∣ N := (pow_dvd_pow 3 (by norm_num : 2 ≤ 4)).trans h81
-        have := e2.1 ((hconv h9 (hN2 (by norm_num) h9)
-          (dvd_val_sq_iff_nine (hN2 (by norm_num) h9))).2 h9')
+        have := e2.1 ((hconv h9 (dvd_val_sq_iff_nine (hN2 (by norm_num) h9))).2 h9')
         have := e1.1 h81
         omega
       · omega
-  · -- p ≥ 5
-    rw [if_neg h2, if_neg h3, min_zero] at hg
+  · rw [if_neg h2, if_neg h3, min_zero] at hg
     rw [hg] at hle ⊢
     have h5 : 5 ≤ p := by
       have := hp.two_le
@@ -136,22 +130,22 @@ theorem factorization_hDelta_ne_iff [NeZero N] (Δ : Subgroup (ZMod N)ˣ) {p : �
     constructor
     · intro hne
       have hpp : p ^ 2 ∣ N := e1.2 (by omega)
-      refine Or.inl ⟨h5, hpp, ?_⟩
-      exact (hconv (hp2N hpp) (hN2 hp.two_le (hp2N hpp)) (dvd_val_sq_iff_prime hp
-        (hN2 hp.two_le (hp2N hpp)))).1 (e2.2 (by omega))
+      have hpN := hp2N hpp
+      exact Or.inl ⟨h5, hpp, (hconv hpN (dvd_val_sq_iff_prime hp (hN2 hp.two_le hpN))).1
+        (e2.2 (by omega))⟩
     · rintro (⟨-, hpp, hpm⟩ | ⟨h3', -⟩ | ⟨h2', -⟩)
-      · have := e2.1 ((hconv (hp2N hpp) (hN2 hp.two_le (hp2N hpp)) (dvd_val_sq_iff_prime hp
-          (hN2 hp.two_le (hp2N hpp)))).2 hpm)
+      · have hpN := hp2N hpp
+        have := e2.1 ((hconv hpN (dvd_val_sq_iff_prime hp (hN2 hp.two_le hpN))).2 hpm)
         have := e1.1 hpp
         omega
       · exact absurd h3' h3
       · exact absurd h2' h2
 
-theorem hDelta_eq_hPart_iff' (N : ℕ) [NeZero N] (Δ : Subgroup (ZMod N)ˣ) :
+theorem hDelta_eq_hPart_iff (N : ℕ) [NeZero N] (Δ : Subgroup (ZMod N)ˣ) :
     hDelta N Δ = hPart N ↔
-      ¬ ((∃ p : ℕ, p.Prime ∧ 5 ≤ p ∧ p ^ 2 ∣ N ∧ ∀ d ∈ Δ, IsPmOneMod p d) ∨
-        (3 ^ 4 ∣ N ∧ ∀ d ∈ Δ, IsPmOneMod 9 d) ∨
-        (2 ^ 8 ∣ N ∧ ∀ d ∈ Δ, IsPmOneMod 8 d)) := by
+      ¬ ((∃ p : ℕ, p.Prime ∧ 5 ≤ p ∧ p ^ 2 ∣ N ∧ pmΔ Δ p) ∨
+        (3 ^ 4 ∣ N ∧ pmΔ Δ 9) ∨
+        (2 ^ 8 ∣ N ∧ pmΔ Δ 8)) := by
   constructor
   · intro h habc
     rcases habc with ⟨p, hp, h5, hp2, hpm⟩ | ⟨h81, h9⟩ | ⟨h256, h8⟩

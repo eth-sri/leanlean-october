@@ -23,23 +23,21 @@ noncomputable section
 
 variable {N : ℕ} {Δ : Subgroup (ZMod N)ˣ}
 
-theorem mem_toR {Γ : Subgroup SL(2, ℤ)} {g : SL(2, ℝ)} : g ∈ toR Γ ↔ ∃ γ ∈ Γ, ofZ γ = g :=
+theorem mem_toR {Γ : Subgroup SLℤ} {g : SLℝ} : g ∈ toR Γ ↔ ∃ γ ∈ Γ, ofZ γ = g :=
   Subgroup.mem_map
 
-theorem ofZ_mem_toR {Γ : Subgroup SL(2, ℤ)} {γ : SL(2, ℤ)} (h : γ ∈ Γ) : ofZ γ ∈ toR Γ :=
+theorem ofZ_mem_toR {Γ : Subgroup SLℤ} {γ : SLℤ} (h : γ ∈ Γ) : ofZ γ ∈ toR Γ :=
   Subgroup.mem_map_of_mem _ h
 
-theorem coe_ofZ (γ : SL(2, ℤ)) :
-    (ofZ γ : Matrix (Fin 2) (Fin 2) ℝ) = !![(γ 0 0 : ℝ), γ 0 1; γ 1 0, γ 1 1] := by
-  ext i j; fin_cases i <;> fin_cases j <;> rfl
-
-theorem GammaDelta_le_Gamma0 : GammaDelta N Δ ≤ CongruenceSubgroup.Gamma0 N := fun _ h => h.1
+theorem coe_ofZ (γ : SLℤ) :
+    (ofZ γ : Matℝ) = !![(γ 0 0 : ℝ), γ 0 1; γ 1 0, γ 1 1] := by
+  mat_rfl
 
 theorem GammaDeltaR_le_Gamma0R : GammaDeltaR N Δ ≤ Gamma0R N :=
-  Subgroup.map_mono GammaDelta_le_Gamma0
+  Subgroup.map_mono (fun _ h => h.1)
 
 /-- An integer matrix of determinant 1. -/
-def mkSL (a b c d : ℤ) (h : a * d - b * c = 1) : SL(2, ℤ) := ⟨!![a, b; c, d], by
+def mkSL (a b c d : ℤ) (h : a * d - b * c = 1) : SLℤ := ⟨!![a, b; c, d], by
   rw [det_fin_two_of]; exact h⟩
 
 theorem mkSL_mem_GammaDelta {a b c d : ℤ} (h : a * d - b * c = 1) (hc : (N : ℤ) ∣ c)
@@ -50,7 +48,7 @@ theorem mkSL_mem_GammaDelta {a b c d : ℤ} (h : a * d - b * c = 1) (hc : (N : �
   simpa [mkSL] using (ZMod.intCast_zmod_eq_zero_iff_dvd c N).2 hc
 
 theorem coe_ofZ_mkSL {a b c d : ℤ} (h : a * d - b * c = 1) :
-    (ofZ (mkSL a b c d h) : Matrix (Fin 2) (Fin 2) ℝ) = !![(a : ℝ), b; c, d] := by
+    (ofZ (mkSL a b c d h) : Matℝ) = !![(a : ℝ), b; c, d] := by
   rw [coe_ofZ]; rfl
 
 theorem matT_mem_GammaDeltaR : matT ∈ GammaDeltaR N Δ := by
@@ -106,8 +104,8 @@ theorem epsDelta_dvd_val_int [NeZero N] {u : (ZMod N)ˣ} (hu : u ∈ Δ) :
   rwa [Nat.cast_sub (Nat.one_le_pow _ _ h1), Nat.cast_pow, Nat.cast_one] at this
 
 /-- Every element of Γ_Δ(N) lies in the lattice L_{ε_Δ}. -/
-theorem inLe_of_mem_GammaDeltaR [NeZero N] {Y : SL(2, ℝ)} (hY : Y ∈ GammaDeltaR N Δ) :
-    InLe N (epsDelta N Δ) (Y : Matrix (Fin 2) (Fin 2) ℝ) := by
+theorem inLe_of_mem_GammaDeltaR [NeZero N] {Y : SLℝ} (hY : Y ∈ GammaDeltaR N Δ) :
+    InLe N (epsDelta N Δ) (Y : Matℝ) := by
   obtain ⟨γ, ⟨h0, u, hu, hγ⟩, rfl⟩ := mem_toR.1 hY
   refine ⟨γ 0 0, γ 0 1, γ 1 0, γ 1 1, coe_ofZ γ, ?_, ?_⟩
   · exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ N).1 (CongruenceSubgroup.Gamma0_mem.1 h0)

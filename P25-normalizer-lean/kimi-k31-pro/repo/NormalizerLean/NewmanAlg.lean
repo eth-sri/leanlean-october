@@ -27,11 +27,7 @@ noncomputable section
 theorem cross_of_prop {κ κ' : ℝ} (hκ : κ ≠ 0) {x y x' y' : ℤ}
     (h1 : κ * x = κ' * x') (h2 : κ * y = κ' * y') : x * y' = y * x' := by
   have : κ * ((x : ℝ) * y') = κ * ((y : ℝ) * x') := by
-    calc κ * ((x : ℝ) * y') = (κ * x) * y' := by ring
-      _ = κ' * x' * y' := by rw [h1]
-      _ = (κ' * y') * x' := by ring
-      _ = κ * y * x' := by rw [h2]
-      _ = κ * ((y : ℝ) * x') := by ring
+    linear_combination (y' : ℝ) * h1 - (x' : ℝ) * h2
   exact_mod_cast mul_left_cancel₀ hκ this
 
 /-! ### Products -/

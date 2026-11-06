@@ -24,9 +24,9 @@ noncomputable section
 
 /-! ### Scalar bookkeeping -/
 
-theorem coe_inv_of_coe_eq_smul {g : SL(2, ℝ)} {s a b c d : ℝ}
-    (h : (g : Matrix (Fin 2) (Fin 2) ℝ) = s • !![a, b; c, d]) :
-    ((g⁻¹ : SL(2, ℝ)) : Matrix (Fin 2) (Fin 2) ℝ) = s • !![d, -b; -c, a] := by
+theorem coe_inv_of_coe_eq_smul {g : SLℝ} {s a b c d : ℝ}
+    (h : (g : Matℝ) = s • !![a, b; c, d]) :
+    ((g⁻¹ : SLℝ) : Matℝ) = s • !![d, -b; -c, a] := by
   rw [Matrix.SpecialLinearGroup.coe_inv, h, adjugate_smul, adjugate_fin_two_of]
   simp
 
