@@ -1,0 +1,59 @@
+{
+  "problem_idx": 9,
+  "id": "PALOMAR-2026-10-09-000008-v1",
+  "title": "Finite Chains of Two-Complexes and Acyclic Covers",
+  "abstract": "Whitehead's asphericity problem would have a negative answer if a non-aspherical two-complex began an infinite chain whose inclusions induce zero maps on second homotopy groups. This Lean formalization proves the article's main finite-length characterization: a connected two-complex K begins such chains of every finite length if and only if K has a connected acyclic regular cover. It also formalizes the finite acyclic enhancement.",
+  "authors": [
+    "Laurent Bartholdi",
+    "Roman Mikhailov"
+  ],
+  "repository": "laurentbartholdi/whitehead",
+  "repository_url": "https://github.com/laurentbartholdi/whitehead",
+  "commit": "e0683c947a3120af725ac7a29fc95a059798b64e",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc3",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "L",
+  "baseline_tokens": 975198,
+  "lean_files": 1228,
+  "protected_theorem_names": [
+    "Whitehead.TheoremA"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "challenge_module": "Challenge",
+  "challenge_path": "Challenge.lean",
+  "solution_module": "Solution",
+  "solution_path": "Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "math.GT",
+    "math.GR"
+  ],
+  "msc2020": [
+    "55P15"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "Finite Chains of Two-Complexes and Acyclic Covers",
+      "authors": [
+        "Laurent Bartholdi",
+        "Roman Mikhailov"
+      ],
+      "type": "paper",
+      "identifier": "arXiv:2610.10074",
+      "location": "Theorem A",
+      "relationship": "formalizes"
+    }
+  ],
+  "dependency_graph_nodes": 10206,
+  "dependency_graph_edges": 124745,
+  "project_path": "repos/PALOMAR-2026-10-09-000008-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-09-000008-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-09-000008-v1/LICENSE"
+}
