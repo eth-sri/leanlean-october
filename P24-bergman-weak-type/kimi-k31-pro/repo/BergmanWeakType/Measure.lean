@@ -31,12 +31,8 @@ theorem area_ball (c : ℂ) (r : ℝ) : area (Metric.ball c r) = ENNReal.ofReal 
 
 theorem area_closedBall (c : ℂ) (r : ℝ) :
     area (Metric.closedBall c r) = ENNReal.ofReal r ^ 2 := by
-  rw [area, Measure.smul_apply, smul_eq_mul, Complex.volume_closedBall]
-  rw [ENNReal.ofReal_inv_of_pos Real.pi_pos, ← NNReal.coe_real_pi,
-    ENNReal.ofReal_coe_nnreal]
-  rw [mul_left_comm,
-    ENNReal.inv_mul_cancel (ENNReal.coe_ne_zero.mpr NNReal.pi_ne_zero) ENNReal.coe_ne_top,
-    mul_one]
+  rw [area, Measure.smul_apply, smul_eq_mul, Measure.addHaar_closedBall_eq_addHaar_ball]
+  simpa [area, Measure.smul_apply, smul_eq_mul] using area_ball c r
 
 theorem area_disk : area disk = 1 := by
   simpa [disk] using area_ball 0 1
@@ -74,11 +70,7 @@ theorem map_norm_sq_diskArea :
       have hset : Set.Iic t ∩ Set.Icc (0 : ℝ) 1 = Set.Icc 0 t := by
         ext x
         simp only [Set.mem_inter_iff, Set.mem_Iic, Set.mem_Icc]
-        constructor
-        · rintro ⟨hxt, hx0, _⟩
-          exact ⟨hx0, hxt⟩
-        · rintro ⟨hx0, hxt⟩
-          exact ⟨hxt, hx0, hxt.trans ht1.le⟩
+        grind
       simp [hset]
     · have hsub : disk ⊆ Metric.closedBall (0 : ℂ) (Real.sqrt t) := by
         intro z hz
@@ -97,8 +89,7 @@ theorem map_norm_sq_diskArea :
       ext x
       simp only [Set.mem_inter_iff, Set.mem_Iic, Set.mem_Icc, Set.mem_empty_iff_false,
         iff_false, not_and]
-      intro hxt hx0 _
-      exact ht (hx0.trans hxt)
+      grind
     simp [hset]
 
 /-- The radial weight is normalized for every admissible exponent. -/

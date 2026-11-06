@@ -35,22 +35,6 @@ theorem integral_real_beta {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
       rw [← Complex.ofReal_add]
       simp only [Complex.Gamma_ofReal, Complex.ofReal_div, Complex.ofReal_mul]
 
-theorem beta_sin_substitution_integrand (α : ℝ) {x y : ℝ} (hx : 0 < x) (hy : 0 < y) :
-    (x ^ 2) ^ ((α - 1) / 2) * (y ^ 2) ^ (-(1 / 2 : ℝ)) * (2 * x * y) = 2 * x ^ α := by
-  rw [← Real.rpow_natCast x 2, ← Real.rpow_mul hx.le,
-    ← Real.rpow_natCast y 2, ← Real.rpow_mul hy.le]
-  norm_num only [Nat.cast_ofNat]
-  have ha : (2 : ℝ) * ((α - 1) / 2) = α - 1 := by ring
-  rw [ha, Real.rpow_neg_one]
-  have hc : x ^ (α - 1) * x = x ^ α := by
-    calc
-      _ = x ^ (α - 1) * x ^ (1 : ℝ) := by rw [Real.rpow_one]
-      _ = x ^ ((α - 1) + 1) := (Real.rpow_add hx _ _).symm
-      _ = x ^ α := by congr 1; ring
-  calc
-    _ = 2 * (x ^ (α - 1) * x) * (y⁻¹ * y) := by ring
-    _ = _ := by rw [hc, inv_mul_cancel₀ hy.ne', mul_one]
-
 theorem integral_sin_rpow_half {α : ℝ} (hα : -1 < α) :
     (∫ x in (0 : ℝ)..Real.pi / 2, Real.sin x ^ α) =
       Real.sqrt Real.pi * Real.Gamma ((α + 1) / 2) /
@@ -82,7 +66,19 @@ theorem integral_sin_rpow_half {α : ℝ} (hα : -1 < α) :
     dsimp only
     rw [show 1 - Real.sin x ^ 2 = Real.cos x ^ 2 by
       nlinarith [Real.sin_sq_add_cos_sq x]]
-    exact beta_sin_substitution_integrand α hs hc
+    rw [← Real.rpow_natCast (Real.sin x) 2, ← Real.rpow_mul hs.le,
+      ← Real.rpow_natCast (Real.cos x) 2, ← Real.rpow_mul hc.le]
+    norm_num only [Nat.cast_ofNat]
+    have ha : (2 : ℝ) * ((α - 1) / 2) = α - 1 := by ring
+    rw [ha, Real.rpow_neg_one]
+    have hpow : Real.sin x ^ (α - 1) * Real.sin x = Real.sin x ^ α := by
+      calc
+        _ = Real.sin x ^ (α - 1) * Real.sin x ^ (1 : ℝ) := by rw [Real.rpow_one]
+        _ = Real.sin x ^ ((α - 1) + 1) := (Real.rpow_add hs _ _).symm
+        _ = Real.sin x ^ α := by congr 1; ring
+    calc
+      _ = 2 * (Real.sin x ^ (α - 1) * Real.sin x) * ((Real.cos x)⁻¹ * Real.cos x) := by ring
+      _ = _ := by rw [hpow, inv_mul_cancel₀ hc.ne', mul_one]
   dsimp only [Function.comp_def] at hsub
   rw [heq] at hsub
   have hbeta := integral_real_beta

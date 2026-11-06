@@ -30,9 +30,7 @@ theorem measurable_halfDiskPower (α : ℝ) : Measurable (halfDiskPower α) := b
 
 theorem halfDiskPower_nonneg (α : ℝ) (z : ℂ) : 0 ≤ halfDiskPower α z := by
   unfold halfDiskPower
-  split_ifs with h
-  · exact Real.rpow_nonneg (by positivity) _
-  · exact le_rfl
+  split_ifs <;> positivity
 
 theorem halfDiskPower_le {α : ℝ} (hα : 0 ≤ α) {z : ℂ} {R : ℝ} (hz : ‖z‖ ≤ R) :
     halfDiskPower α z ≤ (2 * R) ^ α := by
@@ -41,13 +39,6 @@ theorem halfDiskPower_le {α : ℝ} (hα : 0 ≤ α) {z : ℂ} {R : ℝ} (hz : �
   · apply Real.rpow_le_rpow (by positivity) _ hα
     exact mul_le_mul_of_nonneg_left ((Complex.re_le_norm z).trans hz) (by norm_num)
   · exact Real.rpow_nonneg (by linarith [norm_nonneg z]) _
-
-theorem integrable_halfDiskPower {α : ℝ} (hα : 0 ≤ α) :
-    Integrable (halfDiskPower α) diskArea := by
-  apply (integrable_const ((2 : ℝ) ^ α)).mono' (measurable_halfDiskPower α).aestronglyMeasurable
-  filter_upwards [ae_mem_disk] with z hz
-  rw [Real.norm_of_nonneg (halfDiskPower_nonneg α z)]
-  simpa only [mul_one] using halfDiskPower_le hα ((mem_disk_iff z).mp hz).le
 
 theorem intervalIntegrable_halfDiskPower_circle {α : ℝ} (hα : 0 ≤ α) (r η a b : ℝ)
     (hab : a ≤ b) :
@@ -106,7 +97,11 @@ theorem circleAverage_halfDiskPower {α : ℝ} (hα : 0 ≤ α) {r : ℝ} (hr : 
 
 theorem integral_halfDiskPower {α : ℝ} (hα : 0 ≤ α) :
     (∫ z, halfDiskPower α z ∂diskArea) = gammaConstant α / (α + 2) := by
-  rw [integral_diskArea_eq_circleAverage (integrable_halfDiskPower hα)]
+  rw [integral_diskArea_eq_circleAverage (by
+    apply (integrable_const ((2 : ℝ) ^ α)).mono' (measurable_halfDiskPower α).aestronglyMeasurable
+    filter_upwards [ae_mem_disk] with z hz
+    rw [Real.norm_of_nonneg (halfDiskPower_nonneg α z)]
+    simpa only [mul_one] using halfDiskPower_le hα ((mem_disk_iff z).mp hz).le)]
   have heq : (∫ r in Ioo (0 : ℝ) 1, (2 * r) • circleAverage (halfDiskPower α) 0 r) =
       gammaConstant α * ∫ r in Ioo (0 : ℝ) 1, r ^ (α + 1) := by
     rw [← integral_const_mul]

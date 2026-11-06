@@ -45,22 +45,6 @@ theorem circleMobius_neg_one {r : ℝ} (hr : |r| < 1) : circleMobius r (-1) = 1 
   unfold circleDenominator
   ring
 
-theorem continuousOn_circleMobius {r : ℝ} (hr : |r| < 1) :
-    ContinuousOn (circleMobius r) (Set.Icc (-1 : ℝ) 1) := by
-  unfold circleMobius
-  apply ContinuousOn.div (by fun_prop) (by unfold circleDenominator; fun_prop)
-  exact fun x hx ↦ (circleDenominator_pos hr hx).ne'
-
-theorem hasDerivAt_circleMobius {r x : ℝ} (hr : |r| < 1)
-    (hx : x ∈ Set.Icc (-1 : ℝ) 1) :
-    HasDerivAt (circleMobius r) (-(1 - r ^ 2) ^ 2 / circleDenominator r x ^ 2) x := by
-  have hn := ((hasDerivAt_id x).const_mul (1 + r ^ 2)).const_sub (2 * r)
-  have hd := ((hasDerivAt_id x).const_mul (2 * r)).const_sub (1 + r ^ 2)
-  convert! hn.div hd (circleDenominator_pos hr hx).ne' using 1
-  unfold circleDenominator
-  simp only [id_eq]
-  ring
-
 theorem one_sub_circleMobius_sq {r x : ℝ} (hr : |r| < 1)
     (hx : x ∈ Set.Icc (-1 : ℝ) 1) :
     1 - circleMobius r x ^ 2 =
@@ -76,8 +60,7 @@ theorem sqrt_one_sub_circleMobius_sq {r x : ℝ} (hr : |r| < 1)
     Real.sqrt (1 - circleMobius r x ^ 2) =
       (1 - r ^ 2) * Real.sqrt (1 - x ^ 2) / circleDenominator r x := by
   have hr₂ : 0 < 1 - r ^ 2 := by
-    nlinarith [mul_pos (by linarith [(abs_lt.mp hr).1] : 0 < 1 + r)
-      (sub_pos.mpr (abs_lt.mp hr).2)]
+    exact sub_pos.mpr ((sq_lt_one_iff_abs_lt_one r).mpr hr)
   have hx₂ : 0 ≤ 1 - x ^ 2 := by
     nlinarith [mul_nonneg (by linarith [hx.1] : 0 ≤ 1 + x) (sub_nonneg.mpr hx.2)]
   have hd := circleDenominator_pos hr hx
@@ -94,11 +77,21 @@ theorem integral_circleMobius_weight (F : ℝ → ℝ) {r : ℝ} (hr : |r| < 1) 
     (a := (-1 : ℝ)) (b := 1) (f := circleMobius r)
     (f' := fun x ↦ -(1 - r ^ 2) ^ 2 / circleDenominator r x ^ 2)
     (g := fun x ↦ F x / Real.sqrt (1 - x ^ 2))
-    (by simpa only [Set.uIcc_of_le (by norm_num : (-1 : ℝ) ≤ 1)] using
-      continuousOn_circleMobius hr)
-    (fun x hx ↦ hasDerivAt_circleMobius hr (by
-      norm_num at hx
-      exact ⟨hx.1.le, hx.2.le⟩))
+    (by
+      rw [Set.uIcc_of_le (by norm_num : (-1 : ℝ) ≤ 1)]
+      unfold circleMobius
+      apply ContinuousOn.div (by fun_prop) (by unfold circleDenominator; fun_prop)
+      exact fun x hx ↦ (circleDenominator_pos hr hx).ne')
+    (fun x hx ↦ by
+      have hx' : x ∈ Set.Icc (-1 : ℝ) 1 := by
+        norm_num at hx
+        exact ⟨hx.1.le, hx.2.le⟩
+      have hn := ((hasDerivAt_id x).const_mul (1 + r ^ 2)).const_sub (2 * r)
+      have hd := ((hasDerivAt_id x).const_mul (2 * r)).const_sub (1 + r ^ 2)
+      convert! hn.div hd (circleDenominator_pos hr hx').ne' using 1
+      unfold circleDenominator
+      simp only [id_eq]
+      ring)
     (fun x _ ↦ div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr (sq_nonneg _)) (sq_nonneg _))
   rw [circleMobius_neg_one hr, circleMobius_one hr,
     intervalIntegral.integral_symm (f := fun x ↦ F x / Real.sqrt (1 - x ^ 2))] at hsub
@@ -112,10 +105,8 @@ theorem integral_circleMobius_weight (F : ℝ → ℝ) {r : ℝ} (hr : |r| < 1) 
     intro x hx
     dsimp only [Function.comp_def]
     have hd := (circleDenominator_pos hr ⟨hx.1.le, hx.2.le⟩).ne'
-    have hr₂ : 1 - r ^ 2 ≠ 0 := by
-      apply ne_of_gt
-      nlinarith [mul_pos (by linarith [(abs_lt.mp hr).1] : 0 < 1 + r)
-        (sub_pos.mpr (abs_lt.mp hr).2)]
+    have hr₂ : 1 - r ^ 2 ≠ 0 :=
+      (sub_pos.mpr ((sq_lt_one_iff_abs_lt_one r).mpr hr)).ne'
     have hs : Real.sqrt (1 - x ^ 2) ≠ 0 := by
       apply (Real.sqrt_pos.mpr _).ne'
       nlinarith [mul_pos (by linarith [hx.1] : 0 < 1 + x) (sub_pos.mpr hx.2)]
@@ -172,8 +163,7 @@ theorem integral_circleDenominator_transform (α : ℝ) {r : ℝ} (hr : |r| < 1)
   intro x hx
   dsimp only
   have hδ : 0 < 1 - r ^ 2 := by
-    nlinarith [mul_pos (by linarith [(abs_lt.mp hr).1] : 0 < 1 + r)
-      (sub_pos.mpr (abs_lt.mp hr).2)]
+    exact sub_pos.mpr ((sq_lt_one_iff_abs_lt_one r).mpr hr)
   rw [circleDenominator_circleMobius hr ⟨hx.1.le, hx.2.le⟩]
   have heq := mobius_rpow_factor α hδ (circleDenominator_pos hr ⟨hx.1.le, hx.2.le⟩)
   calc

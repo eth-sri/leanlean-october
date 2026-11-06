@@ -58,7 +58,7 @@ theorem continuousOn_boundaryKernel_norm (p : ℝ) :
   have hz' := (mem_disk_iff z).mp hz
   simp [← h] at hz'
 
-theorem continuousOn_normalizer (α : ℝ) : ContinuousOn (normalizer α) (Set.Ico 0 1) := by
+@[fun_prop] theorem continuousOn_normalizer (α : ℝ) : ContinuousOn (normalizer α) (Set.Ico 0 1) := by
   change ContinuousOn (fun r ↦ normalizer α r) (Set.Ico 0 1)
   simp_rw [normalizer_eq_circleAverage_radius]
   apply Real.ContinuousOn.circleAverage
@@ -66,20 +66,18 @@ theorem continuousOn_normalizer (α : ℝ) : ContinuousOn (normalizer α) (Set.I
       (mem_disk_iff z).mpr (by simpa using hz.2)
   · exact fun r hr ↦ hr.1
 
-theorem circleIntegrable_boundaryKernel (α : ℝ) {r : ℝ} (hr : |r| < 1) :
-    CircleIntegrable (fun z : ℂ ↦ ‖1 - z‖ ^ (-(α + 2))) 0 r := by
-  apply ContinuousOn.circleIntegrable'
-  apply (continuousOn_boundaryKernel_norm (-(α + 2))).mono
-  intro z hz
-  apply (mem_disk_iff z).mpr
-  simpa only [Metric.mem_sphere, dist_zero_right] using lt_of_eq_of_lt hz hr
-
-theorem normalizer_lower {α r : ℝ} (hα : -1 < α) (hr : |r| < 1) :
-    (1 + |r|) ^ (-(α + 2)) ≤ normalizer α r := by
+theorem normalizer_pos {α r : ℝ} (hα : -1 < α) (hr : |r| < 1) :
+    0 < normalizer α r := by
+  apply (Real.rpow_pos_of_pos (x := 1 + |r|) (by positivity) (-(α + 2))).trans_le
   rw [normalizer_eq_circleAverage_radius,
     ← Real.circleAverage_const ((1 + |r|) ^ (-(α + 2))) 0 r]
   apply Real.circleAverage_mono continuousOn_const.circleIntegrable'
-    (circleIntegrable_boundaryKernel α hr)
+    (by
+      apply ContinuousOn.circleIntegrable'
+      apply (continuousOn_boundaryKernel_norm (-(α + 2))).mono
+      intro z hz
+      apply (mem_disk_iff z).mpr
+      simpa only [Metric.mem_sphere, dist_zero_right] using lt_of_eq_of_lt hz hr)
   intro z hz
   have hz' : ‖z‖ = |r| := by simpa using hz
   have hn : 0 < ‖1 - z‖ := by
@@ -89,10 +87,6 @@ theorem normalizer_lower {α r : ℝ} (hα : -1 < α) (hr : |r| < 1) :
   have hbound : ‖1 - z‖ ≤ 1 + |r| := by
     simpa only [norm_one, hz'] using norm_sub_le (1 : ℂ) z
   exact Real.rpow_le_rpow_of_nonpos hn hbound (by linarith)
-
-theorem normalizer_pos {α r : ℝ} (hα : -1 < α) (hr : |r| < 1) :
-    0 < normalizer α r :=
-  (Real.rpow_pos_of_pos (by positivity) _).trans_le (normalizer_lower hα hr)
 
 /-- Duplication expresses the proposed sharp constant in the boundary beta-integral form. -/
 theorem gammaConstant_eq_boundaryGamma {α : ℝ} (hα : -1 < α) :
@@ -227,19 +221,6 @@ theorem circleAverage_norm_sq_mono {g : ℂ → ℂ} {r R : ℝ}
   have hz' : ‖z‖ = r := by simpa [abs_of_nonneg hr] using hz
   simpa [Metric.mem_ball, dist_zero_right, hz'] using hrR
 
-theorem differentiableOn_boundaryPower (α : ℝ) {R : ℝ} (hR : R < 1) :
-    DifferentiableOn ℂ (fun z : ℂ ↦ (1 - z) ^ ((α / 2 : ℝ) : ℂ))
-      (Metric.closedBall 0 R) := by
-  apply DifferentiableOn.cpow_const
-    ((differentiable_const (1 : ℂ)).sub differentiable_id).differentiableOn
-  intro z hz
-  apply Complex.mem_slitPlane_iff.mpr
-  left
-  have hz' : ‖z‖ ≤ R := by simpa using hz
-  change 0 < (1 - z).re
-  simp only [Complex.sub_re, Complex.one_re]
-  linarith [Complex.re_le_norm z]
-
 theorem norm_boundaryPower_sq (α : ℝ) (z : ℂ) :
     ‖(1 - z) ^ ((α / 2 : ℝ) : ℂ)‖ ^ 2 = ‖1 - z‖ ^ α := by
   rw [Complex.norm_cpow_real, ← Real.rpow_natCast _ 2,
@@ -253,7 +234,17 @@ theorem circleAverage_boundaryPower_mono (α : ℝ) {r R : ℝ}
       Real.circleAverage (fun z : ℂ ↦ ‖1 - z‖ ^ α) 0 R := by
   rcases hrR.eq_or_lt with rfl | hrR
   · rfl
-  have h := circleAverage_norm_sq_mono hr hrR (differentiableOn_boundaryPower α hR)
+  have h := circleAverage_norm_sq_mono
+    (g := fun z : ℂ ↦ (1 - z) ^ ((α / 2 : ℝ) : ℂ)) hr hrR (by
+    apply DifferentiableOn.cpow_const
+      ((differentiable_const (1 : ℂ)).sub differentiable_id).differentiableOn
+    intro z hz
+    apply Complex.mem_slitPlane_iff.mpr
+    left
+    have hz' : ‖z‖ ≤ R := by simpa using hz
+    change 0 < (1 - z).re
+    simp only [Complex.sub_re, Complex.one_re]
+    linarith [Complex.re_le_norm z])
   simpa only [norm_boundaryPower_sq] using h
 
 end BergmanWeakType

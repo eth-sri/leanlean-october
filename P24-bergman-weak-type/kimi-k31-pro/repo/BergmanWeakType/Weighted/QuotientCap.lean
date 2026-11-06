@@ -27,37 +27,11 @@ def quotientRadialSecond (F Fr Frr : ℝ → ℝ → ℝ) (J Jr Jrr : ℝ → �
   Frr r θ / J r - F r θ * Jrr r / J r ^ 2 - 2 * Fr r θ * Jr r / J r ^ 2 +
     2 * F r θ * Jr r ^ 2 / J r ^ 3
 
-theorem quotientRadialFirst_hasDerivAt {F Fr Frr : ℝ → ℝ → ℝ} {J Jr Jrr : ℝ → ℝ}
-    {r θ : ℝ} (hF : HasDerivAt (fun u ↦ F u θ) (Fr r θ) r)
-    (hFr : HasDerivAt (fun u ↦ Fr u θ) (Frr r θ) r)
-    (hJ : HasDerivAt J (Jr r) r) (hJr : HasDerivAt Jr (Jrr r) r) (hJ0 : J r ≠ 0) :
-    HasDerivAt (fun u ↦ quotientRadialFirst F Fr J Jr u θ)
-      (quotientRadialSecond F Fr Frr J Jr Jrr r θ) r := by
-  convert ((hFr.mul hJ).sub (hF.mul hJr)).div (hJ.pow 2) (pow_ne_zero 2 hJ0) using 1
-  · rfl
-  · unfold quotientRadialSecond
-    dsimp only [Pi.pow_apply, Pi.sub_apply, Pi.mul_apply]
-    field_simp [hJ0]
-    ring
-
 def quotientWeight (k : ℝ) (J : ℝ → ℝ) (r : ℝ) : ℝ :=
   (1 - r ^ 2) ^ k * J r ^ 2
 
 def quotientWeightDeriv (k : ℝ) (J Jr : ℝ → ℝ) (r : ℝ) : ℝ :=
   quotientWeight k J r * (-(2 * k * r / (1 - r ^ 2)) + 2 * Jr r / J r)
-
-theorem quotientWeight_hasDerivAt {k r : ℝ} {J Jr : ℝ → ℝ}
-    (hr : r ^ 2 < 1) (hJ0 : J r ≠ 0) (hJ : HasDerivAt J (Jr r) r) :
-    HasDerivAt (quotientWeight k J) (quotientWeightDeriv k J Jr r) r := by
-  have ht : 0 < 1 - r ^ 2 := sub_pos.mpr hr
-  have hd := (((hasDerivAt_id r).pow 2).const_sub 1).rpow_const (p := k) (Or.inl ht.ne')
-  convert hd.mul (hJ.pow 2) using 1
-  · rfl
-  · unfold quotientWeightDeriv quotientWeight
-    dsimp only [Pi.pow_apply, id_eq]
-    rw [Real.rpow_sub_one ht.ne']
-    field_simp [hJ0, ht.ne']
-    ring
 
 theorem antitoneOn_angularMean_min_quotient {F Fr Frr Ft Ftt : ℝ → ℝ → ℝ}
     {J Jr Jrr : ℝ → ℝ} (k c : ℝ)
@@ -114,8 +88,14 @@ theorem antitoneOn_angularMean_min_quotient {F Fr Frr Ft Ftt : ℝ → ℝ → �
   · intro r hr θ
     exact (hFd r hr θ).div (hJd r hr) (hJpos r ⟨hr.1.le, hr.2⟩).ne'
   · intro r hr θ
-    exact quotientRadialFirst_hasDerivAt (hFd r hr θ) (hFrd r hr θ) (hJd r hr)
-      (hJrd r hr) (hJpos r ⟨hr.1.le, hr.2⟩).ne'
+    have hj := (hJpos r ⟨hr.1.le, hr.2⟩).ne'
+    convert (((hFrd r hr θ).mul (hJd r hr)).sub
+      ((hFd r hr θ).mul (hJrd r hr))).div ((hJd r hr).pow 2) (pow_ne_zero 2 hj) using 1
+    · rfl
+    · unfold quotientRadialSecond
+      dsimp only [Pi.pow_apply, Pi.sub_apply, Pi.mul_apply]
+      field_simp [hj]
+      ring
   · intro r hr θ
     exact (hFdt r hr θ).div_const (J r)
   · intro r hr θ
@@ -126,9 +106,18 @@ theorem antitoneOn_angularMean_min_quotient {F Fr Frr Ft Ftt : ℝ → ℝ → �
     rw [hperiodFt r hr]
   · exact hbase.mul (hJ.pow 2)
   · intro r hr
-    exact quotientWeight_hasDerivAt
-      ((sq_lt_one_iff_abs_lt_one r).mpr (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩))
-      (hJpos r ⟨hr.1.le, hr.2⟩).ne' (hJd r hr)
+    have hr' : r ^ 2 < 1 := (sq_lt_one_iff_abs_lt_one r).mpr
+      (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩)
+    have hj := (hJpos r ⟨hr.1.le, hr.2⟩).ne'
+    have ht : 0 < 1 - r ^ 2 := sub_pos.mpr hr'
+    have hd := (((hasDerivAt_id r).pow 2).const_sub 1).rpow_const (p := k) (Or.inl ht.ne')
+    convert hd.mul ((hJd r hr).pow 2) using 1
+    · rfl
+    · unfold quotientWeightDeriv quotientWeight
+      dsimp only [Pi.pow_apply, id_eq]
+      rw [Real.rpow_sub_one ht.ne']
+      field_simp [hj, ht.ne']
+      ring
   · intro r hr
     apply mul_pos (Real.rpow_pos_of_pos _ _) (sq_pos_of_pos (hJpos r ⟨hr.1.le, hr.2⟩))
     exact sub_pos.mpr ((sq_lt_one_iff_abs_lt_one r).mpr
@@ -137,10 +126,20 @@ theorem antitoneOn_angularMean_min_quotient {F Fr Frr Ft Ftt : ℝ → ℝ → �
     have hj := hJpos r ⟨hr.1.le, hr.2⟩
     have ht : 0 < 1 - r ^ 2 := sub_pos.mpr ((sq_lt_one_iff_abs_lt_one r).mpr
       (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩))
-    have h := quotient_polar_operator_nonpos hj hr.1.ne'
-      (a := 1 / r - 2 * k * r / (1 - r ^ 2)) (b := -(k ^ 2 / (1 - r ^ 2)))
-      (by simpa only [neg_mul, ← sub_eq_add_neg] using hJode r hr)
-      (by simpa only [neg_mul, ← sub_eq_add_neg] using hFode r hr θ)
+    have hjo := by simpa only [neg_mul, ← sub_eq_add_neg] using hJode r hr
+    have hfo := by simpa only [neg_mul, ← sub_eq_add_neg] using hFode r hr θ
+    have heq : J r * ((Frr r θ / J r - F r θ * Jrr r / J r ^ 2 -
+        2 * Fr r θ * Jr r / J r ^ 2 + 2 * F r θ * Jr r ^ 2 / J r ^ 3) +
+        (1 / r - 2 * k * r / (1 - r ^ 2) + 2 * Jr r / J r) *
+          ((Fr r θ * J r - F r θ * Jr r) / J r ^ 2) + (Ftt r θ / J r) / r ^ 2) =
+        Frr r θ + (1 / r - 2 * k * r / (1 - r ^ 2)) * Fr r θ + Ftt r θ / r ^ 2 -
+          (k ^ 2 / (1 - r ^ 2)) * F r θ - (F r θ / J r) *
+            (Jrr r + (1 / r - 2 * k * r / (1 - r ^ 2)) * Jr r -
+              (k ^ 2 / (1 - r ^ 2)) * J r) := by
+      field_simp [hj.ne', hr.1.ne']
+      ring
+    rw [hjo, mul_zero, sub_zero] at heq
+    have h := nonpos_of_mul_nonpos_right (heq.trans_le hfo) hj
     have hm := mul_nonpos_of_nonneg_of_nonpos
       (mul_nonneg hr.1.le (mul_nonneg (Real.rpow_nonneg ht.le k) (sq_nonneg (J r)))) h
     convert hm using 1

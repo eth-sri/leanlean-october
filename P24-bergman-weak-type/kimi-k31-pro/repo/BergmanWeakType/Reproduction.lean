@@ -24,27 +24,6 @@ open scoped ENNReal
 
 namespace BergmanWeakType
 
-/-- The weighted kernels tend uniformly to one as the input point tends to zero. -/
-theorem exists_uniform_weightedKernel_near_one (α : ℝ) {ε : ℝ} (hε : 0 < ε) :
-    ∃ r : ℝ, 0 < r ∧ r < 1 ∧ ∀ z ∈ disk, ∀ w ∈ Metric.ball (0 : ℂ) r,
-      ‖weightedKernel α z w - 1‖ < ε := by
-  have hc : ContinuousAt (fun u : ℂ ↦ u ^ (-(α + 2) : ℂ)) 1 :=
-    continuousAt_cpow_const Complex.one_mem_slitPlane
-  obtain ⟨δ, hδ, hclose⟩ := Metric.continuousAt_iff.mp hc ε hε
-  refine ⟨min (δ / 2) (1 / 2), lt_min (half_pos hδ) (by norm_num),
-    (min_le_right _ _).trans_lt (by norm_num), ?_⟩
-  intro z hz w hw
-  have hw' : ‖w‖ < δ := by
-    have := (Metric.mem_ball.mp hw)
-    simp only [dist_zero_right] at this
-    exact (this.trans_le (min_le_left _ _)).trans (half_lt_self hδ)
-  have hmul : ‖z * star w‖ < δ := by
-    rw [norm_mul, norm_star]
-    exact (mul_le_of_le_one_left (norm_nonneg w) ((mem_disk_iff z).mp hz).le).trans_lt hw'
-  have hbase : dist (1 - z * star w) 1 < δ := by
-    simpa [dist_eq_norm] using hmul
-  simpa [weightedKernel, dist_eq_norm] using hclose hbase
-
 theorem weightedProjection_indicator_eq_setIntegral (α : ℝ) {s : Set ℂ}
     (hs : MeasurableSet s) (z : ℂ) :
     weightedProjection α (s.indicator (fun _ ↦ (1 : ℂ))) z =
@@ -83,7 +62,25 @@ theorem one_le_weightedProjection_constant (α : ℝ) (hα : -1 < α) :
   have ht' : 0 < (t : ℝ) := ht
   have ht1' : (t : ℝ) < 1 := by exact_mod_cast ht1
   have hε : 0 < (1 - (t : ℝ)) / 2 := by linarith
-  obtain ⟨r, hr, hr1, hclose⟩ := exists_uniform_weightedKernel_near_one α hε
+  obtain ⟨r, hr, hr1, hclose⟩ := show ∃ r : ℝ, 0 < r ∧ r < 1 ∧
+    ∀ z ∈ disk, ∀ w ∈ Metric.ball (0 : ℂ) r,
+      ‖weightedKernel α z w - 1‖ < (1 - (t : ℝ)) / 2 from by
+    have hc : ContinuousAt (fun u : ℂ ↦ u ^ (-(α + 2) : ℂ)) 1 :=
+      continuousAt_cpow_const Complex.one_mem_slitPlane
+    obtain ⟨δ, hδ, hclose⟩ := Metric.continuousAt_iff.mp hc _ hε
+    refine ⟨min (δ / 2) (1 / 2), lt_min (half_pos hδ) (by norm_num),
+      (min_le_right _ _).trans_lt (by norm_num), ?_⟩
+    intro z hz w hw
+    have hw' : ‖w‖ < δ := by
+      have := (Metric.mem_ball.mp hw)
+      simp only [dist_zero_right] at this
+      exact (this.trans_le (min_le_left _ _)).trans (half_lt_self hδ)
+    have hmul : ‖z * star w‖ < δ := by
+      rw [norm_mul, norm_star]
+      exact (mul_le_of_le_one_left (norm_nonneg w) ((mem_disk_iff z).mp hz).le).trans_lt hw'
+    have hbase : dist (1 - z * star w) 1 < δ := by
+      simpa [dist_eq_norm] using hmul
+    simpa [weightedKernel, dist_eq_norm] using hclose hbase
   let s := Metric.ball (0 : ℂ) r
   let f : ℂ → ℂ := s.indicator (fun _ ↦ 1)
   let m := (weightedArea α).real s
@@ -122,9 +119,5 @@ theorem one_le_weightedProjection_constant (α : ℝ) (hα : -1 < α) :
 theorem one_le_projection_constant :
     1 ≤ weakTypeConstant diskArea (fun f z ↦ ‖projection f z‖ₑ) := by
   simpa using one_le_weightedProjection_constant 0 (by norm_num)
-
-theorem one_le_positiveProjection_constant :
-    1 ≤ weakTypeConstant diskArea positiveProjection :=
-  one_le_projection_constant.trans projection_constant_le_positiveProjection_constant
 
 end BergmanWeakType

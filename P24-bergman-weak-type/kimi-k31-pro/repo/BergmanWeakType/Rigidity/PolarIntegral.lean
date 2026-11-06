@@ -111,27 +111,34 @@ theorem integral_diskArea_eq_circleAverage [CompleteSpace E] {f : ℂ → E}
   congr 1
   field_simp
 
-theorem image_sq_unit_interval : (fun r : ℝ ↦ r ^ 2) '' Ioo 0 1 = Ioo 0 1 := by
+theorem image_rpow_unit_interval {q : ℝ} (hq : 0 < q) :
+    (fun x : ℝ ↦ x ^ q) '' Ioo 0 1 = Ioo 0 1 := by
   ext y
   constructor
-  · rintro ⟨r, hr, rfl⟩
-    exact ⟨sq_pos_of_pos hr.1, by nlinarith [hr.1, hr.2]⟩
+  · rintro ⟨x, hx, rfl⟩
+    exact ⟨Real.rpow_pos_of_pos hx.1 _, Real.rpow_lt_one hx.1.le hx.2 hq⟩
   · intro hy
-    refine ⟨Real.sqrt y, ⟨Real.sqrt_pos.mpr hy.1, ?_⟩, Real.sq_sqrt hy.1.le⟩
-    exact (Real.sqrt_lt' (by norm_num : (0 : ℝ) < 1)).mpr (by simpa using hy.2)
+    exact ⟨y ^ q⁻¹, ⟨Real.rpow_pos_of_pos hy.1 _,
+      Real.rpow_lt_one hy.1.le hy.2 (inv_pos.mpr hq)⟩, Real.rpow_inv_rpow hy.1.le hq.ne'⟩
+
+theorem integral_unit_interval_rpow [CompleteSpace E] {q : ℝ} (hq : 0 < q) (F : ℝ → E) :
+    (∫ y in Ioo (0 : ℝ) 1, F y) =
+      ∫ x in Ioo (0 : ℝ) 1, (q * x ^ (q - 1)) • F (x ^ q) := by
+  have hi : InjOn (fun x : ℝ ↦ x ^ q) (Ioo 0 1) := by
+    intro x hx y hy hxy
+    exact (Real.rpow_left_inj hx.1.le hy.1.le hq.ne').mp hxy
+  nth_rw 1 [← image_rpow_unit_interval hq]
+  rw [integral_image_eq_integral_abs_deriv_smul measurableSet_Ioo
+    (fun x hx ↦ (Real.hasDerivAt_rpow_const (p := q) (Or.inl hx.1.ne')).hasDerivWithinAt) hi]
+  apply setIntegral_congr_fun measurableSet_Ioo
+  intro x hx
+  dsimp only
+  rw [abs_of_pos (mul_pos hq (Real.rpow_pos_of_pos hx.1 _))]
 
 theorem integral_unit_interval_sq [CompleteSpace E] (F : ℝ → E) :
     (∫ y in Ioo (0 : ℝ) 1, F y) = ∫ r in Ioo (0 : ℝ) 1, (2 * r) • F (r ^ 2) := by
-  have hd (r : ℝ) : HasDerivWithinAt (fun r : ℝ ↦ r ^ 2) (2 * r) (Ioo 0 1) r := by
-    simpa using (hasDerivAt_pow 2 r).hasDerivWithinAt
-  have hi : InjOn (fun r : ℝ ↦ r ^ 2) (Ioo 0 1) := by
-    intro r hr s hs hrs
-    nlinarith [hr.1, hs.1]
-  nth_rw 1 [← image_sq_unit_interval]
-  rw [integral_image_eq_integral_abs_deriv_smul measurableSet_Ioo (fun r _ ↦ hd r) hi]
-  apply setIntegral_congr_fun measurableSet_Ioo
-  intro r hr
-  simp only [abs_of_pos (mul_pos (by norm_num : (0 : ℝ) < 2) hr.1)]
+  simpa [Real.rpow_natCast, show (2 : ℝ) - 1 = 1 by norm_num, Real.rpow_one] using
+    (integral_unit_interval_rpow (E := E) (q := (2 : ℝ)) (by norm_num) F)
 
 /-- Squared radius is the uniform radial coordinate for normalized disk area. -/
 theorem integral_diskArea_eq_circleAverage_sqrt [CompleteSpace E] {f : ℂ → E}

@@ -49,23 +49,6 @@ theorem kernel_denominator_re_pos {z w : ℂ} (hz : z ∈ disk) (hw : w ∈ disk
 theorem norm_kernel (z w : ℂ) : ‖kernel z w‖ = ‖1 - z * star w‖⁻¹ ^ 2 := by
   simp [kernel, norm_pow, norm_inv]
 
-@[simp]
-theorem kernel_zero_left (w : ℂ) : kernel 0 w = 1 := by
-  simp [kernel]
-
-@[simp]
-theorem kernel_zero_right (z : ℂ) : kernel z 0 = 1 := by
-  simp [kernel]
-
-@[simp]
-theorem projection_at_zero (f : ℂ → ℂ) : projection f 0 = ∫ w, f w ∂diskArea := by
-  simp [projection]
-
-@[simp]
-theorem positiveProjection_at_zero (f : ℂ → ℂ) :
-    positiveProjection f 0 = ∫⁻ w, ‖f w‖ₑ ∂diskArea := by
-  simp [positiveProjection]
-
 /-- The positive extended integral bounds the complex Bochner integral pointwise. -/
 theorem enorm_projection_le_positiveProjection (f : ℂ → ℂ) (z : ℂ) :
     ‖projection f z‖ₑ ≤ positiveProjection f z := by
@@ -96,16 +79,6 @@ theorem weightedArea_zero : weightedArea 0 = diskArea := by
 theorem weightedProjection_zero (f : ℂ → ℂ) : weightedProjection 0 f = projection f := by
   funext z
   simp [weightedProjection, projection]
-
-@[simp]
-theorem weightedPositiveProjection_zero (f : ℂ → ℂ) :
-    weightedPositiveProjection 0 f = positiveProjection f := by
-  funext z
-  simp [weightedPositiveProjection, positiveProjection]
-
-@[simp]
-theorem gammaConstant_zero : gammaConstant 0 = 1 := by
-  simp [gammaConstant]
 
 theorem gammaConstant_pos {α : ℝ} (hα : -1 < α) : 0 < gammaConstant α := by
   apply div_pos

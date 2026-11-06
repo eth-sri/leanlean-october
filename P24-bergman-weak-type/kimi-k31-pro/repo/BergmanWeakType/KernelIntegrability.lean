@@ -31,6 +31,19 @@ theorem measurableSet_disk : MeasurableSet disk := Metric.isOpen_ball.measurable
 theorem ae_mem_disk_weighted (α : ℝ) : ∀ᵐ w ∂weightedArea α, w ∈ disk :=
   (withDensity_absolutelyContinuous diskArea _).ae_le ae_mem_disk
 
+theorem kernel_denominator_ne_zero_closed_input {R : ℝ} (hR : R < 1) {z w : ℂ}
+    (hz : z ∈ Metric.closedBall 0 R) (hw : w ∈ Metric.closedBall 0 1) :
+    1 - z * star w ≠ 0 := by
+  have hz' : ‖z‖ < 1 := (by simpa using hz : ‖z‖ ≤ R).trans_lt hR
+  have hw' : ‖w‖ ≤ 1 := by simpa using hw
+  have hm : ‖z * star w‖ < 1 := by
+    rw [norm_mul, norm_star]
+    exact (mul_le_of_le_one_right (norm_nonneg _) hw').trans_lt hz'
+  intro heq
+  have : z * star w = 1 := (sub_eq_zero.mp heq).symm
+  rw [this, norm_one] at hm
+  exact (lt_irrefl _ hm)
+
 /-- A fixed interior output point keeps the kernel denominator uniformly away from zero. -/
 theorem kernel_denominator_norm_lower (z : ℂ) {w : ℂ} (hw : w ∈ disk) :
     1 - ‖z‖ ≤ ‖1 - z * star w‖ := by
@@ -89,11 +102,6 @@ theorem integrable_weightedKernel_mul {α : ℝ} (hα : -1 < α) {f : ℂ → �
     Integrable (fun w ↦ weightedKernel α z w * f w) (weightedArea α) := by
   apply hf.bdd_mul (aestronglyMeasurable_weightedKernel α hz)
   exact (ae_mem_disk_weighted α).mono fun w hw ↦ norm_weightedKernel_le hα hz hw
-
-theorem positiveProjection_lt_top {f : ℂ → ℂ} (hf : Integrable f diskArea) {z : ℂ}
-    (hz : z ∈ disk) : positiveProjection f z < ∞ := by
-  simpa only [positiveProjection, enorm_mul, ofReal_norm] using
-    (hasFiniteIntegral_iff_enorm.mp (integrable_kernel_mul hf hz).hasFiniteIntegral)
 
 theorem weightedPositiveProjection_lt_top {α : ℝ} (hα : -1 < α) {f : ℂ → ℂ}
     (hf : Integrable f (weightedArea α)) {z : ℂ} (hz : z ∈ disk) :

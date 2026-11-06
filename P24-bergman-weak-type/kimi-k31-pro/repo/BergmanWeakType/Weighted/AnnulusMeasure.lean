@@ -34,11 +34,7 @@ theorem weightedArea_norm_gt {α r : ℝ} (hα : -1 < α) (hr : 0 ≤ r) (hr1 : 
   have hset : Set.Ioi (r ^ 2) ∩ Set.Icc (0 : ℝ) 1 = Set.Ioc (r ^ 2) 1 := by
     ext x
     simp only [Set.mem_inter_iff, Set.mem_Ioi, Set.mem_Icc, Set.mem_Ioc]
-    constructor
-    · rintro ⟨hx, _, hx1⟩
-      exact ⟨hx, hx1⟩
-    · rintro ⟨hx, hx1⟩
-      exact ⟨hx, (sq_nonneg r).trans hx.le, hx1⟩
+    grind [sq_nonneg r]
   rw [hset]
   have hf : IntervalIntegrable (fun u : ℝ ↦ (1 - u) ^ α) volume (r ^ 2) 1 := by
     convert! ((intervalIntegral.intervalIntegrable_rpow'

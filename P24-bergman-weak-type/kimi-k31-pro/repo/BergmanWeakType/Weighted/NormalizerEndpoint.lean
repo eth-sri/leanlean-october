@@ -47,6 +47,10 @@ theorem tendsto_circleAverage_boundaryPower_neg {α : ℝ} (hα : -1 < α) (hα0
     simpa only [F, ← norm_boundaryKernel_circleMap_rpow, Complex.ofReal_one, one_mul] using h
   have hb : ∀ᶠ r : ℝ in 𝓝[<] 1, r ∈ Set.Ioo (1 / 2 : ℝ) 1 :=
     Ioo_mem_nhdsLT (by norm_num)
+  have hθI {θ : ℝ} (hθ : θ ≠ 2 * Real.pi) (hθmem : θ ∈ Set.uIoc (0 : ℝ) (2 * Real.pi)) :
+      θ ∈ Set.Ioo (0 : ℝ) (2 * Real.pi) := by
+    simp only [Set.uIoc_of_le (by positivity : (0 : ℝ) ≤ 2 * Real.pi), Set.mem_Ioc] at hθmem
+    exact ⟨hθmem.1, lt_of_le_of_ne hθmem.2 hθ⟩
   have hlim : Tendsto (fun r ↦ ∫ θ in (0 : ℝ)..2 * Real.pi, F r θ)
       (𝓝[<] 1) (𝓝 (∫ θ in (0 : ℝ)..2 * Real.pi, F 1 θ)) := by
     apply intervalIntegral.tendsto_integral_filter_of_dominated_convergence
@@ -62,9 +66,7 @@ theorem tendsto_circleAverage_boundaryPower_neg {α : ℝ} (hα : -1 < α) (hα0
     · filter_upwards [hb] with r hr
       filter_upwards [show ∀ᵐ θ : ℝ, θ ≠ 2 * Real.pi by rw [ae_iff]; simp] with θ hθ
       intro hθmem
-      have hθ' : θ ∈ Set.Ioo (0 : ℝ) (2 * Real.pi) := by
-        simp only [Set.uIoc_of_le (by positivity : (0 : ℝ) ≤ 2 * Real.pi), Set.mem_Ioc] at hθmem
-        exact ⟨hθmem.1, lt_of_le_of_ne hθmem.2 hθ⟩
+      have hθ' := hθI hθ hθmem
       have hd := boundary_circleDenominator_pos hθ'
       have he : (1 / 2 : ℝ) * circleDenominator 1 (Real.cos θ) ≤
           circleDenominator r (Real.cos θ) := by
@@ -80,9 +82,7 @@ theorem tendsto_circleAverage_boundaryPower_neg {α : ℝ} (hα : -1 < α) (hα0
     · exact hi.const_mul _
     · filter_upwards [show ∀ᵐ θ : ℝ, θ ≠ 2 * Real.pi by rw [ae_iff]; simp] with θ hθ
       intro hθmem
-      have hθ' : θ ∈ Set.Ioo (0 : ℝ) (2 * Real.pi) := by
-        simp only [Set.uIoc_of_le (by positivity : (0 : ℝ) ≤ 2 * Real.pi), Set.mem_Ioc] at hθmem
-        exact ⟨hθmem.1, lt_of_le_of_ne hθmem.2 hθ⟩
+      have hθ' := hθI hθ hθmem
       have hc : ContinuousAt (fun r ↦ F r θ) 1 :=
         (show ContinuousAt (fun r ↦ circleDenominator r (Real.cos θ)) 1 by
           dsimp [circleDenominator]; fun_prop).rpow_const
@@ -115,20 +115,15 @@ theorem tendsto_circleAverage_boundaryPower {α : ℝ} (hα : -1 < α) :
     simpa only [circleAverage_boundaryPower_eq_radius] using hlim
   · exact tendsto_circleAverage_boundaryPower_neg hα (lt_of_not_ge hα0)
 
-theorem circleAverage_boundaryPower_le_gammaConstant {α r : ℝ}
-    (hα : -1 < α) (hr : 0 ≤ r) (hr1 : r < 1) :
-    Real.circleAverage (fun ζ : ℂ ↦ ‖1 - (r : ℂ) * ζ‖ ^ α) 0 1 ≤ gammaConstant α := by
-  apply ge_of_tendsto (tendsto_circleAverage_boundaryPower hα)
-  filter_upwards [Ioo_mem_nhdsLT hr1] with R hR
-  simp only [circleAverage_boundaryPower_eq_radius]
-  exact circleAverage_boundaryPower_mono α hr hR.1.le hR.2
-
 /-- The sharp radial estimate used by the weighted weak-type upper bound. -/
 theorem radialMass_mul_normalizer_le {α r : ℝ}
     (hα : -1 < α) (hr : 0 ≤ r) (hr1 : r < 1) :
     (1 - r ^ 2) ^ (α + 1) * normalizer α r ≤ gammaConstant α := by
   rw [radialMass_mul_normalizer α (by simpa only [abs_of_nonneg hr] using hr1)]
-  exact circleAverage_boundaryPower_le_gammaConstant hα hr hr1
+  apply ge_of_tendsto (tendsto_circleAverage_boundaryPower hα)
+  filter_upwards [Ioo_mem_nhdsLT hr1] with R hR
+  simp only [circleAverage_boundaryPower_eq_radius]
+  exact circleAverage_boundaryPower_mono α hr hR.1.le hR.2
 
 theorem tendsto_radialMass_mul_normalizer {α : ℝ} (hα : -1 < α) :
     Tendsto (fun r : ℝ ↦ (1 - r ^ 2) ^ (α + 1) * normalizer α r)

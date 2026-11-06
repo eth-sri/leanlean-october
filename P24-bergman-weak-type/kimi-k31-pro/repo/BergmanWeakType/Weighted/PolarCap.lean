@@ -79,6 +79,13 @@ theorem antitoneOn_angularMean_min_of_polar_flux {F Fr Frr Ft Ftt : ℝ → ℝ 
   · exact hwd
   · exact hwpos
   · intro r hr θ
-    exact smoothCap_polar_flux_nonpos hε hr.1 (hwpos r hr) (hineq r hr θ)
+    have hd₁ := (smoothCapInputDeriv_mem_Icc (c := c) (x := F r θ) hε).1
+    have hd₂ := smoothCap_secondDeriv_nonpos (ε := ε) (c := c) (x := F r θ)
+    have hfirst := mul_nonpos_of_nonneg_of_nonpos hd₁ (hineq r hr θ)
+    have hsecond := mul_nonpos_of_nonpos_of_nonneg hd₂
+      (show 0 ≤ r * w r * (Fr r θ) ^ 2 + (w r / r) * (Ft r θ) ^ 2 by
+        exact add_nonneg (mul_nonneg (mul_nonneg hr.1.le (hwpos r hr).le) (sq_nonneg _))
+          (mul_nonneg (div_nonneg (hwpos r hr).le hr.1.le) (sq_nonneg _)))
+    nlinarith
 
 end BergmanWeakType.Weighted

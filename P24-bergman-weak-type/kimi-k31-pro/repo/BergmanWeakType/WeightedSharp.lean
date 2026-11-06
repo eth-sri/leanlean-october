@@ -6,7 +6,7 @@ Authors: Yongxi Lin
 module
 
 public import BergmanWeakType.Weighted.WeightedPotential
-public import BergmanWeakType.Weighted.RadialLevel
+public import BergmanWeakType.Weighted.RadialBasic
 public import BergmanWeakType.Weighted.MassCoordinate
 public import BergmanWeakType.Weighted.AnnularSharpness
 public import BergmanWeakType.Comparison
@@ -35,7 +35,9 @@ theorem integral_weightedLevelFraction_le {α : ℝ} (hα : -1 < α) {f : ℂ �
     exact antitoneOn_circleAverage_min_weightedDiskPotential hα hf c
       ⟨(massRadius_mem_unit hα hu).1.le, (massRadius_mem_unit hα hu).2⟩
       ⟨(massRadius_mem_unit hα hy).1.le, (massRadius_mem_unit hα hy).2⟩
-      (massRadius_antitone hα ⟨hy.1.le, hy.2.le⟩ ⟨hu.1.le, hu.2.le⟩ hyu)
+      (by
+        apply sqrt_le_sqrt
+        exact sub_le_sub_left (rpow_le_rpow hy.1.le hyu (inv_nonneg.mpr (by linarith))) 1)
   · intro y hy c
     exact circleAverage_min_weightedDiskPotential_le_mass hα hf
       ⟨(massRadius_mem_unit hα hy).1.le, (massRadius_mem_unit hα hy).2⟩ c
@@ -77,29 +79,6 @@ theorem integral_radialLevelFraction_eq_weightedMeasure {α : ℝ} (hα : -1 < �
   rw [heq, ← integral_weightedArea_eq_circleAverage_mass hα hSi]
   simpa using integral_indicator_const (μ := weightedArea α) (1 : ℝ) hS
 
-theorem weightedPositiveProjection_level_subset {α : ℝ} (hα : -1 < α) {f : ℂ → ℂ}
-    (hf : Integrable f (weightedArea α)) {t : ℝ} (ht : 0 ≤ t) {z : ℂ} (hz : z ∈ disk)
-    (hlevel : ENNReal.ofReal t < weightedPositiveProjection α f z) :
-    (t / gammaConstant α) * (1 - ‖z‖ ^ 2) ^ (α + 1) < weightedDiskPotential α f z := by
-  have hz1 := (mem_disk_iff z).mp hz
-  have hJ : 0 < normalizer α ‖z‖ := normalizer_pos hα (by simpa using hz1)
-  have hD := gammaConstant_pos hα
-  have hm : 0 < (1 - ‖z‖ ^ 2) ^ (α + 1) :=
-    rpow_pos_of_pos (by nlinarith [norm_nonneg z]) _
-  have hbound := radialMass_mul_normalizer_le hα (norm_nonneg z) hz1
-  have hF : t < weightedPotential α f z := by
-    rw [weightedPotential_eq_toReal hα hf hz]
-    exact (ENNReal.ofReal_lt_iff_lt_toReal ht
-      (weightedPositiveProjection_lt_top hα hf hz).ne).mp hlevel
-  rw [weightedDiskPotential_eq hz, weightedNormalizedPotential, lt_div_iff₀ hJ]
-  have hscale := mul_le_mul_of_nonneg_left hbound (div_nonneg ht hD.le)
-  have hcancel : (t / gammaConstant α) * gammaConstant α = t := div_mul_cancel₀ t hD.ne'
-  rw [hcancel] at hscale
-  calc
-    _ = (t / gammaConstant α) * ((1 - ‖z‖ ^ 2) ^ (α + 1) * normalizer α ‖z‖) := by ring
-    _ ≤ t := hscale
-    _ < _ := hF
-
 /-- The sharp positive weighted weak type bound for every admissible standard weight. -/
 theorem isWeakTypeBound_weightedPositiveProjection {α : ℝ} (hα : -1 < α) :
     IsWeakTypeBound (weightedArea α) (weightedPositiveProjection α)
@@ -115,7 +94,26 @@ theorem isWeakTypeBound_weightedPositiveProjection {α : ℝ} (hα : -1 < α) :
       weightedArea α (disk ∩ {z | s * (1 - ‖z‖ ^ 2) ^ (α + 1) < weightedDiskPotential α f z}) := by
     apply measure_mono_ae
     filter_upwards [ae_mem_disk_weightedArea α] with z hz
-    exact fun hlev ↦ ⟨hz, weightedPositiveProjection_level_subset hα hf ht.le hz hlev⟩
+    exact fun hlev ↦ ⟨hz, by
+      change (t / gammaConstant α) * (1 - ‖z‖ ^ 2) ^ (α + 1) < weightedDiskPotential α f z
+      have hz1 := (mem_disk_iff z).mp hz
+      have hJ : 0 < normalizer α ‖z‖ := normalizer_pos hα (by simpa using hz1)
+      have hD := gammaConstant_pos hα
+      have hm : 0 < (1 - ‖z‖ ^ 2) ^ (α + 1) :=
+        rpow_pos_of_pos (by nlinarith [norm_nonneg z]) _
+      have hbound := radialMass_mul_normalizer_le hα (norm_nonneg z) hz1
+      have hF : t < weightedPotential α f z := by
+        rw [weightedPotential_eq_toReal hα hf hz]
+        exact (ENNReal.ofReal_lt_iff_lt_toReal ht.le
+          (weightedPositiveProjection_lt_top hα hf hz).ne).mp hlev
+      rw [weightedDiskPotential_eq hz, weightedNormalizedPotential, lt_div_iff₀ hJ]
+      have hscale := mul_le_mul_of_nonneg_left hbound (div_nonneg ht.le hD.le)
+      have hcancel : (t / gammaConstant α) * gammaConstant α = t := div_mul_cancel₀ t hD.ne'
+      rw [hcancel] at hscale
+      calc
+        _ = (t / gammaConstant α) * ((1 - ‖z‖ ^ 2) ^ (α + 1) * normalizer α ‖z‖) := by ring
+        _ ≤ t := hscale
+        _ < _ := hF⟩
   have hmreal := ENNReal.toReal_mono (measure_ne_top _ _) hm
   have hreal : t * (weightedArea α).real
       {z | ENNReal.ofReal t < weightedPositiveProjection α f z} ≤

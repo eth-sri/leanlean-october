@@ -96,8 +96,9 @@ theorem antitoneOn_angularMean_of_polar_flux {F Fr Frr Ft Ftt : ℝ → ℝ → 
     have hir := intervalIntegrable_polar_slice hFr hr'
     have hirr := intervalIntegrable_polar_slice hFrr hr'
     have hitt := intervalIntegrable_polar_slice hFtt hr'
-    have hz := integral_periodic_derivative_eq_zero two_pi_pos.le
-      (fun θ _ ↦ hFtd r hr θ) hitt (hperiod r hr)
+    have hz := intervalIntegral.integral_eq_sub_of_hasDerivAt
+      (by simpa only [uIcc_of_le two_pi_pos.le] using fun θ _ ↦ hFtd r hr θ) hitt
+    rw [hperiod r hr, sub_self] at hz
     have hn := integral_radial_term_nonpos (c := w r / r) two_pi_pos.le
       ((hirr.const_mul (r * w r)).add (hir.const_mul (w r + r * w' r))) hitt hz
       (fun θ _ ↦ hineq r hr θ)

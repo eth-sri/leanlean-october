@@ -46,43 +46,6 @@ def normalizerSecond (α r : ℝ) : ℝ :=
   polarIntegral (polarKernelRR (-(α + 2) / 2)) cos sin
     (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r 0
 
-theorem normalizer_hasDerivAt (α : ℝ) {r : ℝ} (hr : r ^ 2 < 1) :
-    HasDerivAt (normalizer α) (normalizerFirst α r) r := by
-  have hd := polarIntegral_kernel_hasDerivAt_r isCompact_Icc
-    (ae_restrict_mem measurableSet_Icc)
-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
-    continuous_cos.continuousOn continuous_sin.continuousOn
-    (fun t _ ↦ (cos_sq_add_sin_sq t).le) (-(α + 2) / 2) hr 0
-  simpa only [polarIntegral_boundary_eq_normalizer, normalizerFirst] using hd
-
-theorem normalizerFirst_hasDerivAt (α : ℝ) {r : ℝ} (hr : r ^ 2 < 1) :
-    HasDerivAt (normalizerFirst α) (normalizerSecond α r) r := by
-  exact polarIntegral_kernelR_hasDerivAt_r isCompact_Icc
-    (ae_restrict_mem measurableSet_Icc)
-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
-    continuous_cos.continuousOn continuous_sin.continuousOn
-    (fun t _ ↦ (cos_sq_add_sin_sq t).le) (-(α + 2) / 2) hr 0
-
-theorem continuousOn_normalizerFirst (α : ℝ) :
-    ContinuousOn (normalizerFirst α) (Set.Ico 0 1) := by
-  apply (continuousOn_polarIntegral_unit isCompact_Icc
-    (ae_restrict_mem measurableSet_Icc)
-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
-    (continuousOn_polarKernelR_source continuous_cos.continuousOn
-      continuous_sin.continuousOn (fun t _ ↦ (cos_sq_add_sin_sq t).le)
-      (-(α + 2) / 2))).comp (continuous_id.prodMk continuous_const).continuousOn
-  exact fun r hr ↦ ⟨hr, Set.mem_univ _⟩
-
-theorem continuousOn_normalizerSecond (α : ℝ) :
-    ContinuousOn (normalizerSecond α) (Set.Ico 0 1) := by
-  apply (continuousOn_polarIntegral_unit isCompact_Icc
-    (ae_restrict_mem measurableSet_Icc)
-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
-    (continuousOn_polarKernelRR_source continuous_cos.continuousOn
-      continuous_sin.continuousOn (fun t _ ↦ (cos_sq_add_sin_sq t).le)
-      (-(α + 2) / 2))).comp (continuous_id.prodMk continuous_const).continuousOn
-  exact fun r hr ↦ ⟨hr, Set.mem_univ _⟩
-
 theorem polarIntegral_boundary_angular_eq_zero (α : ℝ) {r : ℝ} (hr : r ^ 2 < 1)
     (θ : ℝ) :
     polarIntegral (polarKernelT (-(α + 2) / 2)) cos sin
@@ -127,7 +90,7 @@ theorem normalizer_ode (α : ℝ) {r : ℝ} (hr : r ^ 2 < 1) (hr0 : r ≠ 0) :
     continuous_cos.continuousOn continuous_sin.continuousOn
     (fun t _ ↦ (cos_sq_add_sin_sq t).le) (α + 2) hr hr0 0
     (fun t _ ↦ cos_sq_add_sin_sq t)
-  simpa only [polarIntegral_boundary_eq_normalizer,
+  simpa only [polarOperator, polarIntegral_boundary_eq_normalizer,
     polarIntegral_boundary_angular_second_eq_zero α hr, normalizerFirst, normalizerSecond,
     zero_div, add_zero] using heq
 

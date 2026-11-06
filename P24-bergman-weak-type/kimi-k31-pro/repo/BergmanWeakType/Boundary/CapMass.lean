@@ -37,11 +37,7 @@ theorem boundary_affine_mem_disk {R : ℝ} (hR : 0 < R) (u : ℂ) :
     1 - (R : ℂ) * u ∈ disk ↔ R * ‖u‖ ^ 2 < 2 * u.re := by
   rw [mem_disk_iff]
   have hid := norm_sq_boundary_affine R u
-  constructor
-  · intro hu
-    nlinarith [norm_nonneg (1 - (R : ℂ) * u)]
-  · intro hu
-    nlinarith [norm_nonneg (1 - (R : ℂ) * u)]
+  constructor <;> intro hu <;> nlinarith [norm_nonneg (1 - (R : ℂ) * u)]
 
 theorem integral_boundary_affine_area (f : ℂ → ℝ) {R : ℝ} (hR : 0 < R) :
     ∫ u, f (1 - (R : ℂ) * u) ∂area = (R ^ 2)⁻¹ * ∫ z, f z ∂area := by
@@ -119,64 +115,49 @@ theorem weightedArea_boundaryCap_rescaled {α R : ℝ} (hα : -1 < α) (hR : 0 <
         ∫ u, capProfile α R u ∂diskArea := by ring
     _ = _ := by rw [hp, mul_one]
 
-theorem measurable_capProfile (α R : ℝ) : Measurable (capProfile α R) := by
-  unfold capProfile
-  have hm : Measurable (fun u : ℂ ↦ (2 * u.re - R * ‖u‖ ^ 2) ^ α) := by fun_prop
-  exact hm.ite (measurableSet_lt (by fun_prop) (by fun_prop)) measurable_const
-
-theorem capProfile_nonneg (α R : ℝ) (u : ℂ) : 0 ≤ capProfile α R u := by
-  unfold capProfile
-  split_ifs with h
-  · exact Real.rpow_nonneg (by linarith) _
-  · exact le_rfl
-
-theorem capProfile_le {α R : ℝ} (hα : 0 ≤ α) (hR : 0 ≤ R) {u : ℂ}
-    (hu : u ∈ disk) : capProfile α R u ≤ 2 ^ α := by
-  unfold capProfile
-  split_ifs with h
-  · apply Real.rpow_le_rpow (by linarith) _ hα
-    have := (mem_disk_iff u).mp hu
-    nlinarith [Complex.re_le_norm u, mul_nonneg hR (sq_nonneg ‖u‖)]
-  · positivity
-
-theorem tendsto_capProfile (α : ℝ) (u : ℂ) :
-    Filter.Tendsto (fun R ↦ capProfile α R u) (𝓝[>] (0 : ℝ)) (𝓝 (halfDiskPower α u)) := by
-  by_cases hu : 0 < u.re
-  · have hbase : Filter.Tendsto (fun R : ℝ ↦ 2 * u.re - R * ‖u‖ ^ 2)
-        (𝓝[>] (0 : ℝ)) (𝓝 (2 * u.re)) := by
-      have hc : Continuous (fun R : ℝ ↦ 2 * u.re - R * ‖u‖ ^ 2) := by fun_prop
-      simpa only [zero_mul, sub_zero] using
-        hc.continuousAt.tendsto.mono_left
-          (show 𝓝[>] (0 : ℝ) ≤ 𝓝 0 from nhdsWithin_le_nhds)
-    have hevent : ∀ᶠ R : ℝ in 𝓝[>] 0, R * ‖u‖ ^ 2 < 2 * u.re := by
-      filter_upwards [hbase.eventually (lt_mem_nhds (by positivity : 0 < 2 * u.re))] with R hR
-      linarith
-    rw [halfDiskPower, ite_eq_left hu]
-    apply Filter.Tendsto.congr' (hevent.mono fun R hR ↦ ?_)
-      (hbase.rpow_const (Or.inl (by positivity)))
-    simp only [capProfile, ite_eq_left hR]
-  · have heq : ∀ᶠ R : ℝ in 𝓝[>] 0, capProfile α R u = 0 := by
-      filter_upwards [self_mem_nhdsWithin] with R hR
-      have hR' : 0 < R := hR
-      have hn : ¬ R * ‖u‖ ^ 2 < 2 * u.re := by
-        have := le_of_not_gt hu
-        nlinarith [mul_nonneg hR'.le (sq_nonneg ‖u‖)]
-      simp only [capProfile, ite_eq_right hn]
-    rw [halfDiskPower, ite_eq_right hu]
-    exact tendsto_const_nhds.congr' (heq.mono fun R hR ↦ hR.symm)
-
 theorem tendsto_integral_capProfile {α : ℝ} (hα : 0 ≤ α) :
     Filter.Tendsto (fun R ↦ ∫ u, capProfile α R u ∂diskArea) (𝓝[>] (0 : ℝ))
       (𝓝 (gammaConstant α / (α + 2))) := by
   rw [← integral_halfDiskPower hα]
   apply tendsto_integral_filter_of_dominated_convergence (fun _ ↦ (2 : ℝ) ^ α)
-  · exact Filter.Eventually.of_forall fun R ↦ (measurable_capProfile α R).aestronglyMeasurable
+  · exact Filter.Eventually.of_forall fun R ↦ (show Measurable (capProfile α R) from by
+      unfold capProfile
+      have hm : Measurable (fun u : ℂ ↦ (2 * u.re - R * ‖u‖ ^ 2) ^ α) := by fun_prop
+      exact hm.ite (measurableSet_lt (by fun_prop) (by fun_prop)) measurable_const).aestronglyMeasurable
   · filter_upwards [self_mem_nhdsWithin] with R hR
     filter_upwards [ae_mem_disk] with u hu
-    rw [Real.norm_of_nonneg (capProfile_nonneg α R u)]
-    exact capProfile_le hα (le_of_lt hR) hu
+    rw [Real.norm_of_nonneg (by unfold capProfile; split_ifs <;> positivity)]
+    unfold capProfile
+    split_ifs with h
+    · apply Real.rpow_le_rpow (by linarith) _ hα
+      have := (mem_disk_iff u).mp hu
+      nlinarith [Complex.re_le_norm u, mul_nonneg hR.le (sq_nonneg ‖u‖)]
+    · positivity
   · exact integrable_const _
-  · exact Filter.Eventually.of_forall (tendsto_capProfile α)
+  · exact Filter.Eventually.of_forall fun u ↦ by
+      by_cases hu : 0 < u.re
+      · have hbase : Filter.Tendsto (fun R : ℝ ↦ 2 * u.re - R * ‖u‖ ^ 2)
+            (𝓝[>] (0 : ℝ)) (𝓝 (2 * u.re)) := by
+          have hc : Continuous (fun R : ℝ ↦ 2 * u.re - R * ‖u‖ ^ 2) := by fun_prop
+          simpa only [zero_mul, sub_zero] using
+            hc.continuousAt.tendsto.mono_left
+              (show 𝓝[>] (0 : ℝ) ≤ 𝓝 0 from nhdsWithin_le_nhds)
+        have hevent : ∀ᶠ R : ℝ in 𝓝[>] 0, R * ‖u‖ ^ 2 < 2 * u.re := by
+          filter_upwards [hbase.eventually (lt_mem_nhds (by positivity : 0 < 2 * u.re))] with R hR
+          linarith
+        rw [halfDiskPower, ite_eq_left hu]
+        apply Filter.Tendsto.congr' (hevent.mono fun R hR ↦ ?_)
+          (hbase.rpow_const (Or.inl (by positivity)))
+        simp only [capProfile, ite_eq_left hR]
+      · have heq : ∀ᶠ R : ℝ in 𝓝[>] 0, capProfile α R u = 0 := by
+          filter_upwards [self_mem_nhdsWithin] with R hR
+          have hR' : 0 < R := hR
+          have hn : ¬ R * ‖u‖ ^ 2 < 2 * u.re := by
+            have := le_of_not_gt hu
+            nlinarith [mul_nonneg hR'.le (sq_nonneg ‖u‖)]
+          simp only [capProfile, ite_eq_right hn]
+        rw [halfDiskPower, ite_eq_right hu]
+        exact tendsto_const_nhds.congr' (heq.mono fun R hR ↦ hR.symm)
 
 theorem tendsto_rescaled_boundaryCap_real {α : ℝ} (hα : 0 ≤ α) :
     Filter.Tendsto (fun R ↦ R ^ (-(α + 2)) * (weightedArea α).real (boundaryCap R))

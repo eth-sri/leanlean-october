@@ -19,67 +19,6 @@ open scoped ENNReal Topology
 
 namespace BergmanWeakType
 
-theorem ball_subset_disk {a : ℂ} {r : ℝ} (hr : r ≤ 1 - ‖a‖) :
-    Metric.ball a r ⊆ disk := by
-  intro w hw
-  apply (mem_disk_iff w).mpr
-  have hw' : ‖w - a‖ < r := by simpa only [Metric.mem_ball, dist_eq_norm] using hw
-  have := norm_add_le (w - a) a
-  rw [sub_add_cancel] at this
-  linarith
-
-theorem weightedArea_interior_ball_pos (α : ℝ) (hα : -1 < α) {a : ℂ} {r : ℝ}
-    (hr : 0 < r) (hr1 : r ≤ 1 - ‖a‖) : 0 < weightedArea α (Metric.ball a r) := by
-  apply pos_iff_ne_zero.mpr
-  intro h
-  have hd := diskArea_absolutelyContinuous_weightedArea α hα h
-  rw [diskArea, Measure.restrict_eq_self _ (ball_subset_disk hr1), area_ball] at hd
-  have hp : 0 < ENNReal.ofReal r ^ 2 := by positivity
-  exact hp.ne' hd
-
-/-- Nearby interior source points produce uniformly close kernel columns on the whole disk. -/
-theorem exists_uniform_weightedKernel_near_source (α : ℝ) {a : ℂ} (ha : a ∈ disk)
-    {ε : ℝ} (hε : 0 < ε) :
-    ∃ r : ℝ, 0 < r ∧ r ≤ 1 - ‖a‖ ∧ ∀ z ∈ disk, ∀ w ∈ Metric.ball a r,
-      ‖weightedKernel α z w - weightedKernel α z a‖ < ε := by
-  let R := (1 + ‖a‖) / 2
-  have ha' : ‖a‖ < 1 := (mem_disk_iff a).mp ha
-  have haR : ‖a‖ < R := by dsimp [R]; linarith
-  have hR1 : R < 1 := by dsimp [R]; linarith
-  have hcont : ContinuousOn (fun u : ℂ ↦ (1 - u) ^ (-(α + 2) : ℂ))
-      (Metric.closedBall 0 R) := by
-    apply (continuous_const.sub continuous_id).continuousOn.cpow_const
-    intro u hu
-    have hu' : ‖u‖ ≤ R := by simpa using hu
-    apply Complex.mem_slitPlane_iff.mpr
-    left
-    change 0 < 1 - u.re
-    linarith [Complex.re_le_norm u]
-  obtain ⟨δ, hδ, hclose⟩ := Metric.uniformContinuousOn_iff.mp
-    ((isCompact_closedBall (0 : ℂ) R).uniformContinuousOn_of_continuous hcont) ε hε
-  refine ⟨min δ (R - ‖a‖), lt_min hδ (sub_pos.mpr haR), ?_, ?_⟩
-  · exact (min_le_right _ _).trans (by linarith)
-  intro z hz w hw
-  have hz' : ‖z‖ ≤ 1 := ((mem_disk_iff z).mp hz).le
-  have hw' : ‖w - a‖ < min δ (R - ‖a‖) := by
-    simpa only [Metric.mem_ball, dist_eq_norm] using hw
-  have hwR : ‖w‖ ≤ R := by
-    have htri := norm_add_le (w - a) a
-    rw [sub_add_cancel] at htri
-    have := hw'.trans_le (min_le_right _ _)
-    linarith
-  have hza : z * star a ∈ Metric.closedBall 0 R := by
-    simp only [Metric.mem_closedBall, dist_zero_right, norm_mul, norm_star]
-    exact (mul_le_of_le_one_left (norm_nonneg a) hz').trans haR.le
-  have hzw : z * star w ∈ Metric.closedBall 0 R := by
-    simp only [Metric.mem_closedBall, dist_zero_right, norm_mul, norm_star]
-    exact (mul_le_of_le_one_left (norm_nonneg w) hz').trans hwR
-  have hdist : dist (z * star w) (z * star a) < δ := by
-    rw [dist_eq_norm, ← mul_sub, ← star_sub, norm_mul, norm_star]
-    exact (mul_le_of_le_one_left (norm_nonneg _) hz').trans_lt
-      (hw'.trans_le (min_le_left _ _))
-  simpa only [weightedKernel, dist_eq_norm] using hclose _ hzw _ hza hdist
-
 theorem norm_weightedProjection_indicator_sub_column_le {α : ℝ} (hα : -1 < α)
     {s : Set ℂ} (hs : MeasurableSet s) {z a : ℂ} (hz : z ∈ disk) {ε : ℝ}
     (hclose : ∀ w ∈ s, ‖weightedKernel α z w - weightedKernel α z a‖ ≤ ε) :
@@ -105,13 +44,64 @@ theorem column_threshold_le_weakBound {α L ℓ : ℝ} {C : ℝ≥0∞} (hα : -
     (hcol : ∀ z ∈ E, L ≤ ‖weightedKernel α z a‖) (hℓ : 0 < ℓ) (hℓL : ℓ < L) :
     ENNReal.ofReal ℓ * weightedArea α E ≤ C := by
   let := weightedArea_isProbabilityMeasure α hα
-  obtain ⟨r, hr, hr1, hclose⟩ := exists_uniform_weightedKernel_near_source α ha
-    (show 0 < (L - ℓ) / 2 by linarith)
+  obtain ⟨r, hr, hr1, hclose⟩ := show ∃ r : ℝ, 0 < r ∧ r ≤ 1 - ‖a‖ ∧
+    ∀ z ∈ disk, ∀ w ∈ Metric.ball a r,
+      ‖weightedKernel α z w - weightedKernel α z a‖ < (L - ℓ) / 2 from by
+    let R := (1 + ‖a‖) / 2
+    have ha' : ‖a‖ < 1 := (mem_disk_iff a).mp ha
+    have haR : ‖a‖ < R := by dsimp [R]; linarith
+    have hR1 : R < 1 := by dsimp [R]; linarith
+    have hcont : ContinuousOn (fun u : ℂ ↦ (1 - u) ^ (-(α + 2) : ℂ))
+        (Metric.closedBall 0 R) := by
+      apply (continuous_const.sub continuous_id).continuousOn.cpow_const
+      intro u hu
+      have hu' : ‖u‖ ≤ R := by simpa using hu
+      apply Complex.mem_slitPlane_iff.mpr
+      left
+      change 0 < 1 - u.re
+      linarith [Complex.re_le_norm u]
+    obtain ⟨δ, hδ, hclose⟩ := Metric.uniformContinuousOn_iff.mp
+      ((isCompact_closedBall (0 : ℂ) R).uniformContinuousOn_of_continuous hcont)
+      ((L - ℓ) / 2) (by linarith)
+    refine ⟨min δ (R - ‖a‖), lt_min hδ (sub_pos.mpr haR), ?_, ?_⟩
+    · exact (min_le_right _ _).trans (by linarith)
+    intro z hz w hw
+    have hz' : ‖z‖ ≤ 1 := ((mem_disk_iff z).mp hz).le
+    have hw' : ‖w - a‖ < min δ (R - ‖a‖) := by
+      simpa only [Metric.mem_ball, dist_eq_norm] using hw
+    have hwR : ‖w‖ ≤ R := by
+      have htri := norm_add_le (w - a) a
+      rw [sub_add_cancel] at htri
+      have := hw'.trans_le (min_le_right _ _)
+      linarith
+    have hza : z * star a ∈ Metric.closedBall 0 R := by
+      simp only [Metric.mem_closedBall, dist_zero_right, norm_mul, norm_star]
+      exact (mul_le_of_le_one_left (norm_nonneg a) hz').trans haR.le
+    have hzw : z * star w ∈ Metric.closedBall 0 R := by
+      simp only [Metric.mem_closedBall, dist_zero_right, norm_mul, norm_star]
+      exact (mul_le_of_le_one_left (norm_nonneg w) hz').trans hwR
+    have hdist : dist (z * star w) (z * star a) < δ := by
+      rw [dist_eq_norm, ← mul_sub, ← star_sub, norm_mul, norm_star]
+      exact (mul_le_of_le_one_left (norm_nonneg _) hz').trans_lt
+        (hw'.trans_le (min_le_left _ _))
+    simpa only [weightedKernel, dist_eq_norm] using hclose _ hzw _ hza hdist
   let s := Metric.ball a r
   let f : ℂ → ℂ := s.indicator (fun _ ↦ 1)
   let m := (weightedArea α).real s
   have hs : MeasurableSet s := Metric.isOpen_ball.measurableSet
-  have hspos : 0 < weightedArea α s := weightedArea_interior_ball_pos α hα hr hr1
+  have hspos : 0 < weightedArea α s := by
+    apply pos_iff_ne_zero.mpr
+    intro h
+    have hd := diskArea_absolutelyContinuous_weightedArea α hα h
+    rw [diskArea, Measure.restrict_eq_self _ (by
+      change Metric.ball a r ⊆ disk
+      intro w hw
+      apply (mem_disk_iff w).mpr
+      have hw' : ‖w - a‖ < r := by simpa only [Metric.mem_ball, dist_eq_norm] using hw
+      have htri := norm_add_le (w - a) a
+      rw [sub_add_cancel] at htri
+      linarith), area_ball] at hd
+    exact (by positivity : 0 < ENNReal.ofReal r ^ 2).ne' hd
   have hsfinite : weightedArea α s ≠ ∞ := measure_ne_top _ _
   have hm : 0 < m := ENNReal.toReal_pos hspos.ne' hsfinite
   have hf : Integrable f (weightedArea α) := (integrable_const (1 : ℂ)).indicator hs

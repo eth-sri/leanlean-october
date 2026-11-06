@@ -57,17 +57,19 @@ theorem integral_norm_corePerturbation {μ : Measure ℂ} [IsFiniteMeasure μ]
   simp only [smul_eq_mul, mul_one]
   ring
 
+theorem norm_mul_corePerturbation {g : ℂ → ℂ} {E : Set ℂ} {ρ : ℝ}
+    (hρ : ρ ∈ Icc (0 : ℝ) 1) : (fun w ↦ ‖g w‖ * ‖corePerturbation E ρ w‖) =
+      (fun w ↦ ‖g w‖ - E.indicator (fun w ↦ ρ * ‖g w‖) w) := by
+  funext w
+  rw [norm_corePerturbation hρ]
+  by_cases hw : w ∈ E <;> simp [hw]
+  ring
+
 theorem integrable_norm_mul_corePerturbation {μ : Measure ℂ} {g : ℂ → ℂ}
     {E : Set ℂ} (hE : MeasurableSet E) (hg : Integrable g μ)
     {ρ : ℝ} (hρ : ρ ∈ Icc (0 : ℝ) 1) :
     Integrable (fun w ↦ ‖g w‖ * ‖corePerturbation E ρ w‖) μ := by
-  have heq : (fun w ↦ ‖g w‖ * ‖corePerturbation E ρ w‖) =
-      (fun w ↦ ‖g w‖ - E.indicator (fun w ↦ ρ * ‖g w‖) w) := by
-    funext w
-    rw [norm_corePerturbation hρ]
-    by_cases hw : w ∈ E <;> simp [hw]
-    ring
-  rw [heq]
+  rw [norm_mul_corePerturbation hρ]
   exact hg.norm.sub ((hg.norm.const_mul ρ).indicator hE)
 
 theorem integral_norm_mul_corePerturbation {μ : Measure ℂ} {g : ℂ → ℂ}
@@ -75,13 +77,7 @@ theorem integral_norm_mul_corePerturbation {μ : Measure ℂ} {g : ℂ → ℂ}
     {ρ : ℝ} (hρ : ρ ∈ Icc (0 : ℝ) 1) :
     (∫ w, ‖g w‖ * ‖corePerturbation E ρ w‖ ∂μ) =
       (∫ w, ‖g w‖ ∂μ) - ρ * ∫ w in E, ‖g w‖ ∂μ := by
-  have heq : (fun w ↦ ‖g w‖ * ‖corePerturbation E ρ w‖) =
-      (fun w ↦ ‖g w‖ - E.indicator (fun w ↦ ρ * ‖g w‖) w) := by
-    funext w
-    rw [norm_corePerturbation hρ]
-    by_cases hw : w ∈ E <;> simp [hw]
-    ring
-  rw [heq, integral_sub hg.norm ((hg.norm.const_mul ρ).indicator hE),
+  rw [norm_mul_corePerturbation hρ, integral_sub hg.norm ((hg.norm.const_mul ρ).indicator hE),
     integral_indicator hE, integral_const_mul]
 
 /-- A positive-area core with uniform cancellation forces the positive weak constant above one. -/

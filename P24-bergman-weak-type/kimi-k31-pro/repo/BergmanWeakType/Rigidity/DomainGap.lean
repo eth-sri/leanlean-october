@@ -52,17 +52,13 @@ theorem IsBergmanKernel.core_integral_coordinate_formula {Ω : Set ℂ}
       (∫ w in φ '' ball 0 r, ‖K (φ z) w‖ ∂area) =
         (∫ w in ball 0 r, ‖deriv φ w * kernel z w‖ ∂area) / ‖deriv φ z‖ := by
   have hsub : ball (0 : ℂ) r ⊆ disk := fun w hw ↦ lt_trans hw hr1
-  constructor
-  · rw [area_integral_image_eq isOpen_ball (hφ.mono hsub) (hbij.injOn.mono hsub),
-      ← integral_div]
-    apply integral_congr_ae
+  constructor <;>
+    rw [area_integral_image_eq isOpen_ball (hφ.mono hsub) (hbij.injOn.mono hsub),
+      ← integral_div] <;>
+    apply integral_congr_ae <;>
     filter_upwards [ae_restrict_mem isOpen_ball.measurableSet] with w hw
-    exact hK.disk_jacobian_formula hΩ hφ hψ hbij hinv hz (hsub hw)
-  · rw [area_integral_image_eq isOpen_ball (hφ.mono hsub) (hbij.injOn.mono hsub),
-      ← integral_div]
-    apply integral_congr_ae
-    filter_upwards [ae_restrict_mem isOpen_ball.measurableSet] with w hw
-    have h := congrArg norm (hK.disk_jacobian_formula hΩ hφ hψ hbij hinv hz (hsub hw))
+  · exact hK.disk_jacobian_formula hΩ hφ hψ hbij hinv hz (hsub hw)
+  · have h := congrArg norm (hK.disk_jacobian_formula hΩ hφ hψ hbij hinv hz (hsub hw))
     simpa only [norm_smul, Real.norm_eq_abs, abs_sq, norm_div, smul_eq_mul] using h
 
 /-- A bounded simply connected nondisk has a positive-area interior set with a uniform strict

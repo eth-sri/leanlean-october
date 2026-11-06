@@ -29,9 +29,7 @@ def affineMeasurableEquiv (a b : ℂ) (hb : b ≠ 0) : ℂ ≃ᵐ ℂ where
 
 theorem hasDerivAt_affine (a b w : ℂ) :
     HasDerivAt (fun z : ℂ ↦ a + b * z) b w := by
-  convert ((hasDerivAt_id w).const_mul b).const_add a using 1
-  · rfl
-  · simp
+  simpa using ((hasDerivAt_id w).const_mul b).const_add a
 
 theorem deriv_affine (a b w : ℂ) : deriv (fun z : ℂ ↦ a + b * z) w = b :=
   (hasDerivAt_affine a b w).deriv

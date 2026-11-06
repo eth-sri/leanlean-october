@@ -23,6 +23,8 @@ public import Mathlib.RingTheory.PicardGroup
 public import Mathlib.RingTheory.SimpleRing.Principal
 public import Mathlib.Topology.Homotopy.Lifting
 import Mathlib.Topology.UniformSpace.Ascoli
+import all Mathlib.Analysis.Complex.RiemannMapping
+public import Mathlib.Analysis.Normed.Module.Connected
 
 /-!
 # Riemann mapping theorem (draft)
@@ -32,22 +34,6 @@ open Set Metric Function Filter
 open scoped Pointwise Topology ComplexConjugate Real BigOperators Uniformity
 
 public section
-
-theorem TendstoUniformly.fun_const_of_tendsto {ι α X : Type*} [UniformSpace X] {f : ι → X}
-    {l : Filter ι} {x : X} (h : Tendsto f l (𝓝 x)) :
-    TendstoUniformly (fun i (_ : α) ↦ f i) (fun _ : α ↦ x) l := by
-  intro U hU
-  filter_upwards [(tendsto_left_nhds_uniformity (a := x)).comp h hU] with i hi y using hi
-
-alias Filter.Tendsto.tendstoUniformly_fun_const := TendstoUniformly.fun_const_of_tendsto
-
-theorem Metric.isPreconnected_ball {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {x : E} {r : ℝ} : IsPreconnected (ball x r) :=
-  (convex_ball _ _).isPreconnected
-
-theorem Metric.isPreconnected_closedBall {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {x : E} {r : ℝ} : IsPreconnected (closedBall x r) :=
-  (convex_closedBall _ _).isPreconnected
 
 namespace Complex
 
@@ -202,68 +188,6 @@ theorem circleIntegral_logDeriv_eq_finsum_analyticOrderNatAdd {f : ℂ → ℂ} 
     simpa only [hzw_eq, Finset.mem_coe] using hwt
   · exact ht_sub
 
-theorem eqOn_zero_or_forall_ne_zero_of_tendstoLocallyUniformlyOn {ι : Type*} {U : Set ℂ}
-    {l : Filter ι} [l.NeBot] [l.IsCountablyGenerated] {F : ι → ℂ → ℂ} {f : ℂ → ℂ}
-    (hUo : IsOpen U) (hUc : IsPreconnected U) (hF : ∀ᶠ i in l, ∀ x ∈ U, F i x ≠ 0)
-    (hFd : ∀ᶠ i in l, DifferentiableOn ℂ (F i) U) (hf : TendstoLocallyUniformlyOn F f l U) :
-    EqOn f 0 U ∨ ∀ x ∈ U, f x ≠ 0 := by
-  have hfd : DifferentiableOn ℂ f U := hf.differentiableOn hFd hUo
-  rw [or_iff_not_imp_left]
-  intro hf₀ c hc hfc
-  rcases hfd.analyticAt (hUo.mem_nhds hc) |>.eventually_eq_zero_or_eventually_ne_zero
-    with hfc₀ | hfc₀
-  · exact hf₀ <| hfd.analyticOnNhd hUo |>.eqOn_zero_of_preconnected_of_eventuallyEq_zero hUc hc hfc₀
-  · obtain ⟨R, hR₀, hRU, hfR⟩ : ∃ R > 0, closedBall c R ⊆ U ∧ ∀ w ∈ sphere c R, f w ≠ 0 := by
-      rw [eventually_nhdsWithin_iff] at hfc₀
-      rcases Metric.nhds_basis_closedBall.eventually_iff.mp (hfc₀.and <| hUo.eventually_mem hc)
-        with ⟨R, hR₀, hR⟩
-      refine ⟨R, hR₀, fun w hw ↦ (hR hw).2, fun w hw ↦ (hR <| sphere_subset_closedBall hw).1 ?_⟩
-      exact ne_of_mem_sphere hw hR₀.ne'
-    have hRU' : sphere c R ⊆ U := sphere_subset_closedBall.trans hRU
-    have hlogDeriv : TendstoUniformlyOn (fun i ↦ logDeriv (F i)) (logDeriv f) l (sphere c R) := by
-      simp only [logDeriv]
-      have := (hf.deriv hFd hUo).mono hRU'
-      rw [← tendstoLocallyUniformlyOn_iff_tendstoUniformlyOn_of_compact
-        (isCompact_sphere c R)]
-      refine this.fun_div₀ (hf.mono hRU') ?_ ?_ ?_
-      · exact hfd.analyticOnNhd hUo |>.deriv |>.continuousOn |>.mono hRU'
-      · exact hfd.continuousOn.mono hRU'
-      · exact hfR
-    have hcirc : Tendsto (fun i ↦ ∮ z in C(c, R), logDeriv (F i) z) l
-        (𝓝 (∮ z in C(c, R), logDeriv f z)) := by
-      apply hlogDeriv.tendsto_circleIntegral_of_continuousOn hR₀.le
-      filter_upwards [hF, hFd] with i hi₀ hiD
-      refine .div ?_ (hiD.continuousOn.mono hRU') ?_
-      · exact hiD.analyticOnNhd hUo |>.deriv |>.continuousOn |>.mono hRU'
-      · exact fun x hx ↦ hi₀ x (hRU' hx)
-    have H₀ : ∀ᶠ i in l, ∮ (z : ℂ) in C(c, R), logDeriv (F i) z = 0 := by
-      filter_upwards [hF, hFd] with i hi hid
-      apply DiffContOnCl.circleIntegral_eq_zero hR₀.le
-      exact (hid.deriv hUo).div hid hi |>.diffContOnCl_ball hRU
-    have := hcirc.congr' H₀
-    rw [tendsto_const_nhds_iff, eq_comm,
-      circleIntegral_logDeriv_eq_finsum_analyticOrderNatAdd, mul_eq_zero] at this
-    · replace this := this.resolve_left (by simp)
-      norm_cast at this
-      refine ne_of_gt ?_ this
-      apply finsum_cond_pos
-      · simp
-      · use c
-        suffices ∃ᶠ (x : ℂ) in 𝓝 c, f x ≠ 0 by
-          simpa [pos_iff_ne_zero, analyticOrderNatAt, analyticOrderAt_eq_zero, hfc,
-            analyticOrderAt_eq_top, hfd.analyticAt (hUo.mem_nhds hc), hR₀]
-        rw [eventually_nhdsWithin_iff] at hfc₀
-        refine Frequently.mp ?_ hfc₀
-        rw [frequently_iff_neBot, ofPred_mem_eq, ← nhdsWithin]
-        infer_instance
-      · have := (isCompact_closedBall c R).finite_sdiff_of_mem_codiscreteWithin
-          ((hfd.analyticOnNhd hUo).mono hRU).codiscreteWithin_setOfPred_analyticOrderAt_eq_zero_or_top
-        refine this.subset ?_
-        simp +contextual [subset_def, analyticOrderNatAt, le_of_lt]
-    · exact hfd.analyticOnNhd hUo |>.mono hRU
-    · exact hfR
-    · exact hR₀.le
-
 theorem eqOn_const_or_injOn_of_tendstoLocallyUniformlyOn {ι : Type*} {U : Set ℂ}
     {l : Filter ι} [l.NeBot] [l.IsCountablyGenerated] {F : ι → ℂ → ℂ} {f : ℂ → ℂ}
     (hUo : IsOpen U) (hUc : IsPreconnected U) (hF : ∀ᶠ i in l, InjOn (F i) U)
@@ -276,77 +200,83 @@ theorem eqOn_const_or_injOn_of_tendstoLocallyUniformlyOn {ι : Type*} {U : Set �
     simp_rw [← subset_compl_singleton_iff, ← subset_inter_iff, ← Metric.mem_nhds_iff]
     simp [hUo.mem_nhds hx, hne]
   have hf_sub : TendstoLocallyUniformlyOn (fun i z ↦ F i z - F i y) (f · - f y) l (ball x r) := by
-    refine (hf.mono hrU).fun_sub <|
-      (Tendsto.tendstoUniformly_fun_const ?_).tendstoUniformlyOn.tendstoLocallyUniformlyOn
-    exact hf.tendsto_at hy
-  refine eqOn_zero_or_forall_ne_zero_of_tendstoLocallyUniformlyOn isOpen_ball isPreconnected_ball
-    (hF.mono fun i hi z hz ↦ ?_) ?_ hf_sub |>.resolve_left ?_ x (by simpa) (by rwa [sub_eq_zero])
-  · rw [sub_ne_zero, hi.ne_iff (hrU hz) hy]
+    refine (hf.mono hrU).fun_sub <| (show
+      TendstoUniformly (fun i (_ : ℂ) ↦ F i y) (fun _ : ℂ ↦ f y) l from by
+      intro V hV
+      filter_upwards [(tendsto_left_nhds_uniformity (a := f y)).comp (hf.tendsto_at hy) hV]
+        with i hi z using hi).tendstoUniformlyOn.tendstoLocallyUniformlyOn
+  have hF0 : ∀ᶠ i in l, ∀ z ∈ ball x r, F i z - F i y ≠ 0 := hF.mono fun i hi z hz ↦ by
+    rw [sub_ne_zero, hi.ne_iff (hrU hz) hy]
     exact ne_of_mem_of_not_mem hz hry
-  · exact hFd.mono fun i hi ↦ hi.mono hrU |>.sub_const _
+  have hFd0 : ∀ᶠ i in l, DifferentiableOn ℂ (fun z ↦ F i z - F i y) (ball x r) :=
+    hFd.mono fun i hi ↦ hi.mono hrU |>.sub_const _
+  refine (show EqOn (f · - f y) 0 (ball x r) ∨ ∀ z ∈ ball x r, f z - f y ≠ 0 from by
+    have hfd := hf_sub.differentiableOn hFd0 isOpen_ball
+    rw [or_iff_not_imp_left]
+    intro hf₀ c hc hfc
+    rcases hfd.analyticAt (isOpen_ball.mem_nhds hc) |>.eventually_eq_zero_or_eventually_ne_zero
+      with hfc₀ | hfc₀
+    · exact hf₀ <| hfd.analyticOnNhd isOpen_ball |>.eqOn_zero_of_preconnected_of_eventuallyEq_zero
+        isPreconnected_ball hc hfc₀
+    · obtain ⟨R, hR₀, hRU, hfR⟩ : ∃ R > 0, closedBall c R ⊆ ball x r ∧
+        ∀ w ∈ sphere c R, f w - f y ≠ 0 := by
+        rw [eventually_nhdsWithin_iff] at hfc₀
+        rcases Metric.nhds_basis_closedBall.eventually_iff.mp
+          (hfc₀.and <| isOpen_ball.eventually_mem hc) with ⟨R, hR₀, hR⟩
+        refine ⟨R, hR₀, fun w hw ↦ (hR hw).2, fun w hw ↦ (hR <| sphere_subset_closedBall hw).1 ?_⟩
+        exact ne_of_mem_sphere hw hR₀.ne'
+      have hRU' : sphere c R ⊆ ball x r := sphere_subset_closedBall.trans hRU
+      have hlogDeriv : TendstoUniformlyOn (fun i ↦ logDeriv (F i · - F i y))
+          (logDeriv (f · - f y)) l (sphere c R) := by
+        simp only [logDeriv]
+        have := (hf_sub.deriv hFd0 isOpen_ball).mono hRU'
+        rw [← tendstoLocallyUniformlyOn_iff_tendstoUniformlyOn_of_compact
+          (isCompact_sphere c R)]
+        refine this.fun_div₀ (hf_sub.mono hRU') ?_ ?_ ?_
+        · exact hfd.analyticOnNhd isOpen_ball |>.deriv |>.continuousOn |>.mono hRU'
+        · exact hfd.continuousOn.mono hRU'
+        · exact hfR
+      have hcirc : Tendsto (fun i ↦ ∮ z in C(c, R), logDeriv (fun z ↦ F i z - F i y) z) l
+          (𝓝 (∮ z in C(c, R), logDeriv (f · - f y) z)) := by
+        apply hlogDeriv.tendsto_circleIntegral_of_continuousOn hR₀.le
+        filter_upwards [hF0, hFd0] with i hi₀ hiD
+        refine .div ?_ (hiD.continuousOn.mono hRU') ?_
+        · exact hiD.analyticOnNhd isOpen_ball |>.deriv |>.continuousOn |>.mono hRU'
+        · exact fun x hx ↦ hi₀ x (hRU' hx)
+      have H₀ : ∀ᶠ i in l, ∮ (z : ℂ) in C(c, R), logDeriv (fun z ↦ F i z - F i y) z = 0 := by
+        filter_upwards [hF0, hFd0] with i hi hid
+        apply DiffContOnCl.circleIntegral_eq_zero hR₀.le
+        exact (hid.deriv isOpen_ball).div hid hi |>.diffContOnCl_ball hRU
+      have := hcirc.congr' H₀
+      rw [tendsto_const_nhds_iff, eq_comm,
+        circleIntegral_logDeriv_eq_finsum_analyticOrderNatAdd, mul_eq_zero] at this
+      · replace this := this.resolve_left (by simp)
+        norm_cast at this
+        refine ne_of_gt ?_ this
+        apply finsum_cond_pos
+        · simp
+        · use c
+          suffices ∃ᶠ (x : ℂ) in 𝓝 c, f x - f y ≠ 0 by
+            simpa [pos_iff_ne_zero, analyticOrderNatAt, analyticOrderAt_eq_zero, hfc,
+              analyticOrderAt_eq_top, hfd.analyticAt (isOpen_ball.mem_nhds hc), hR₀]
+          rw [eventually_nhdsWithin_iff] at hfc₀
+          refine Frequently.mp ?_ hfc₀
+          rw [frequently_iff_neBot, ofPred_mem_eq, ← nhdsWithin]
+          infer_instance
+        · have := (isCompact_closedBall c R).finite_sdiff_of_mem_codiscreteWithin
+            ((hfd.analyticOnNhd isOpen_ball).mono hRU).codiscreteWithin_setOfPred_analyticOrderAt_eq_zero_or_top
+          refine this.subset ?_
+          simp +contextual [subset_def, analyticOrderNatAt, le_of_lt]
+      · exact hfd.analyticOnNhd isOpen_ball |>.mono hRU
+      · exact hfR
+      · exact hR₀.le) |>.resolve_left ?_ x (by simpa) (by rwa [sub_eq_zero])
   · intro heq
     refine hfU ⟨f y, ?_⟩
     refine hf.differentiableOn hFd hUo |>.analyticOnNhd hUo
       |>.eqOn_of_preconnected_of_eventuallyEq analyticOnNhd_const hUc hx ?_
     exact heq.eventuallyEq_of_mem (ball_mem_nhds _ hr₀) |>.mono fun z hz ↦ sub_eq_zero.mp hz
 
-theorem exists_branch_log {X : Type*} [TopologicalSpace X] [LocallyPathConnectedSpace X] {U : Set X}
-    (hUc : IsSimplyConnected U) (hUo : IsOpen U)
-    {g : X → ℂ} (hgc : ContinuousOn g U) (hU₀ : 0 ∉ g '' U) :
-    ∃ f : X → ℂ, ContinuousOn f U ∧ EqOn (exp ∘ f) g U := by
-  classical
-  have := hUc.simplyConnectedSpace
-  have := hUo.locallyPathConnectedSpace
-  rcases hUc.nonempty with ⟨x₀, hx₀U⟩
-  have hx₀ : g x₀ ≠ 0 := ne_of_mem_of_not_mem (mem_image_of_mem g hx₀U) hU₀
-  lift x₀ to U using hx₀U
-  rcases isCoveringMapOn_exp.existsUnique_continuousMap_lifts
-    ⟨U.domRestrict g, continuousOn_iff_continuous_domRestrict.mp hgc⟩ (exp_log hx₀)
-    (fun x ↦ ne_of_mem_of_not_mem (mem_image_of_mem g x.2) hU₀) with ⟨f, ⟨-, hf⟩, -⟩
-  obtain ⟨g, hg⟩ : ∃ g : X → ℂ, ∀ z : U, g z = f z :=
-    ⟨fun z ↦ if hz : z ∈ U then f ⟨z, hz⟩ else 0, by simp⟩
-  refine ⟨g, ?hg_cont, ?hg_inv⟩
-  case hg_cont =>
-    rw [continuousOn_iff_continuous_domRestrict]
-    convert map_continuous f
-    ext z
-    exact hg z
-  case hg_inv =>
-    intro x hx
-    lift x to U using hx
-    simpa [hg, ContinuousMap.coe_mk, Set.domRestrict] using congr($hf x)
-
-theorem exists_branch_nthRoot {X : Type*} [TopologicalSpace X] [LocallyPathConnectedSpace X] {U : Set X}
-    (hUc : IsSimplyConnected U) (hUo : IsOpen U) {g : X → ℂ} (hgc : ContinuousOn g U)
-    (hU₀ : 0 ∉ g '' U) {n : ℕ} (hn : n ≠ 0) :
-    ∃ f : X → ℂ, ContinuousOn f U ∧ ∀ x, f x ^ n = g x := by
-  classical
-  rcases exists_branch_log hUc hUo hgc hU₀ with ⟨f, hfc, hf⟩
-  refine ⟨U.piecewise (exp <| f · / n) (g · ^ (1 / n : ℂ)), ?_, fun z ↦ ?_⟩
-  · rw [continuousOn_iff_continuous_domRestrict, domRestrict_piecewise,
-      ← continuousOn_iff_continuous_domRestrict]
-    fun_prop
-  · by_cases hz : z ∈ U
-    · simp [hz, ← exp_nat_mul, mul_div_cancel₀ (b := ↑n) (f z) (mod_cast hn), ← hf hz,
-        Function.comp_apply]
-    · simp [hz, ← cpow_mul_nat, hn]
-
 namespace UnitDisc
-
-protected theorem exists_branch_nthRoot {X : Type*} [TopologicalSpace X] [LocallyPathConnectedSpace X]
-    {U : Set X} (hUc : IsSimplyConnected U) (hUo : IsOpen U) {g : X → UnitDisc}
-    (hgc : ContinuousOn g U) (hU₀ : 0 ∉ g '' U) (n : ℕ+) :
-    ∃ f : X → UnitDisc, ContinuousOn f U ∧ ∀ x, f x ^ n = g x := by
-  rcases exists_branch_nthRoot hUc hUo
-    (continuous_coe.comp_continuousOn hgc)
-    (by simpa using hU₀) n.ne_zero with ⟨f, hfc, hf⟩
-  suffices ∀ x, ‖f x‖ < 1 by
-    lift f to X → 𝔻 using this
-    refine ⟨f, isEmbedding_coe.continuousOn_iff.mpr hfc, fun x ↦ ?_⟩
-    simpa only [← coe_pow, Function.comp_apply, coe_inj] using hf x
-  intro x
-  rw [← pow_lt_one_iff_of_nonneg (norm_nonneg _) n.ne_zero, ← norm_pow, hf]
-  exact (g x).norm_lt_one
 
 @[fun_prop]
 theorem continuous_shift (z : 𝔻) : Continuous z.shift := by
@@ -354,67 +284,6 @@ theorem continuous_shift (z : 𝔻) : Continuous z.shift := by
   exact .div (by fun_prop) (by fun_prop) fun _ ↦ shift_den_ne_zero _ _
 
 end UnitDisc
-
-theorem exists_mapsTo_unitBall_injOn_deriv_ne_zero_at {U : Set ℂ} (hUo : IsOpen U)
-    (hUc : IsSimplyConnected U) (hU : U ≠ univ) {x : ℂ} (hx : x ∈ U) :
-    ∃ f : ℂ → ℂ, MapsTo f U (ball 0 1) ∧ InjOn f U ∧ ∀ z ∈ U, deriv f z ≠ 0 := by
-  wlog hU₀ : 0 ∉ U
-  · rw [ne_univ_iff_exists_notMem] at hU
-    rcases hU with ⟨a, ha⟩
-    specialize this (hUo.vadd (-a)) (by simpa) (by simp [hU]) (x := -a + x)
-      (by simpa [mem_vadd_set_iff_neg_vadd_mem]) (by simpa [mem_vadd_set_iff_neg_vadd_mem])
-    rcases this with ⟨f, hf₁, hf_inj, hdf⟩
-    refine ⟨f ∘ (-a + ·), hf₁.comp (mapsTo_image _ _),
-      hf_inj.comp (by simp [InjOn]) (mapsTo_image _ _), fun z hz ↦ ?_⟩
-    simpa [Function.comp_def, deriv_comp_const_add] using hdf (-a + z) (mapsTo_image _ _ hz)
-  rcases exists_branch_nthRoot hUc hUo continuousOn_id (by rwa [image_id]) two_ne_zero
-    with ⟨f, hfc, hf_inv⟩
-  replace hf_inv : LeftInverse (· ^ 2) f := hf_inv
-  have hf₀ : ∀ z ∈ U, f z ≠ 0 := by
-    intro z hz hfz
-    simpa [hfz, (ne_of_mem_of_not_mem hz hU₀).symm] using hf_inv z
-  have hdf : ∀ z ∈ U, HasStrictDerivAt f (2 * f z)⁻¹ z := by
-    intro z hz
-    apply HasStrictDerivAt.of_local_left_inverse
-    · exact hfc.continuousAt <| hUo.mem_nhds hz
-    · simpa using hasStrictDerivAt_pow 2 (f z)
-    · simpa using hf₀ z hz
-    · exact .of_forall hf_inv
-  have hdf' : DifferentiableOn ℂ f U := fun z hz ↦
-    (hdf z hz).hasDerivAt.differentiableAt.differentiableWithinAt
-  have hfUx : f '' U ∈ 𝓝 (f x) := by
-    rw [← (hdf x hx).map_nhds_eq (by simpa using hf₀ x hx)]
-    exact Filter.image_mem_map <| hUo.mem_nhds hx
-  have hdisj : ∀ a ∈ U, ∀ b ∈ U, f a + f b ≠ 0 := by
-    intro a ha b hb hfab
-    obtain rfl : b = a := by
-      rw [← hf_inv a, ← hf_inv b]
-      simp [eq_neg_iff_add_eq_zero.mpr hfab]
-    have : f b = 0 := by linear_combination hfab / 2
-    exact hf₀ b hb this
-  have hfUxc : (f '' U)ᶜ ∈ 𝓝 (-f x) := by
-    rw [nhds_neg, Filter.mem_neg]
-    filter_upwards [hfUx]
-    rintro _ ⟨a, ha, rfl⟩ ⟨b, hb, hab⟩
-    exact hdisj a ha b hb (by linear_combination hab)
-  rcases Metric.nhds_basis_closedBall.mem_iff.mp hfUxc with ⟨ε, hε₀, hε⟩
-  use fun z ↦ ε / (f x + f z)
-  refine ⟨?mapsTo, ?injOn, ?deriv⟩
-  case mapsTo =>
-    intro z hz
-    rw [mem_ball_zero_iff, norm_div, norm_real, Real.norm_of_nonneg hε₀.le, div_lt_one₀]
-    · by_contra! hle
-      refine @hε (f z) ?_ (mem_image_of_mem f hz)
-      simpa [dist_eq_norm, add_comm] using hle
-    · simpa using hdisj x hx z hz
-  case injOn =>
-    intro z hz w hw heq
-    simpa [div_eq_mul_inv, hε₀.ne', hf_inv.injective.eq_iff] using heq
-  case deriv =>
-    intro z hz
-    rw [(hasDerivAt_const _ _).fun_div ((hdf z hz).hasDerivAt.const_add _) _ |>.deriv]
-    · simp [hε₀.ne', hf₀ z hz, hdisj x hx z hz]
-    · exact hdisj x hx z hz
 
 theorem UnitDisc.hasDerivWithinAt_shift_comp {f : ℂ → UnitDisc} {z f' : ℂ} {s : Set ℂ}
     (w : UnitDisc) (hf : HasDerivWithinAt (fun x ↦ ↑(f x)) f' s z) :
@@ -442,26 +311,16 @@ theorem UnitDisc.differentiableWithinAt_shift_comp_iff {f : ℂ → UnitDisc} {z
   simpa using (hasDerivWithinAt_shift_comp (-w) h.hasDerivWithinAt).differentiableWithinAt
 
 @[simp]
-theorem UnitDisc.differentiableOn_shift_comp_iff {f : ℂ → UnitDisc} {s : Set ℂ} (w : UnitDisc) :
-    DifferentiableOn ℂ (fun x ↦ w.shift (f x) : ℂ → ℂ) s ↔
-      DifferentiableOn ℂ (f · : ℂ → ℂ) s := by
-  simp [DifferentiableOn]
-
-@[simp]
-theorem UnitDisc.differentiableAt_shift_comp_iff {f : ℂ → UnitDisc} {z : ℂ} (w : UnitDisc) :
-    DifferentiableAt ℂ (fun x ↦ w.shift (f x) : ℂ → ℂ) z ↔
-      DifferentiableAt ℂ (f · : ℂ → ℂ) z := by
-  refine ⟨fun h ↦ ?_, fun h ↦ (hasDerivAt_shift_comp w h.hasDerivAt).differentiableAt⟩
-  simpa using (hasDerivAt_shift_comp (-w) h.hasDerivAt).differentiableAt
-
-@[simp]
 theorem UnitDisc.deriv_shift_comp (f : ℂ → UnitDisc) (z : ℂ) (w : UnitDisc) :
     deriv (fun x ↦ w.shift (f x) : ℂ → ℂ) z =
       (1 - ‖(w : ℂ)‖ ^ 2) / (1 + conj ↑w * f z) ^ 2 * deriv (f · : ℂ → ℂ) z := by
   by_cases hfd : DifferentiableAt ℂ (f · : ℂ → ℂ) z
   · exact (hasDerivAt_shift_comp w hfd.hasDerivAt).deriv
-  · rw [deriv_zero_of_not_differentiableAt hfd, deriv_zero_of_not_differentiableAt, mul_zero]
-    simpa using hfd
+  · rw [deriv_zero_of_not_differentiableAt hfd, mul_zero]
+    apply deriv_zero_of_not_differentiableAt
+    intro hc
+    apply hfd
+    simpa using (hasDerivAt_shift_comp (-w) hc.hasDerivAt).differentiableAt
 
 theorem UnitDisc.deriv_shift_comp_eq_zero (f : ℂ → UnitDisc) (z : ℂ) (w : UnitDisc) :
     deriv (fun x ↦ w.shift (f x) : ℂ → ℂ) z = 0 ↔ deriv (f · : ℂ → ℂ) z = 0 := by
@@ -471,12 +330,12 @@ theorem UnitDisc.deriv_shift_comp_eq_zero (f : ℂ → UnitDisc) (z : ℂ) (w : 
   exact mod_cast sub_ne_zero.mpr w.sq_norm_lt_one.ne'
 
 theorem exists_map_unitDisc_injOn_deriv_ne_zero₀ {U : Set ℂ} (hUo : IsOpen U)
-    (hUc : IsSimplyConnected U) (hU : U ≠ univ) {x : ℂ} (hx : x ∈ U) :
+    (hUc : IsSimplyConnected U) (hU : U ≠ univ) (x : ℂ) :
     ∃ f : ℂ → UnitDisc, f x = 0 ∧ InjOn f U ∧ (∀ z ∈ U, deriv (UnitDisc.coe ∘ f) z ≠ 0) := by
   classical
   obtain ⟨f, hf_inj, hf_deriv⟩ :
       ∃ f : ℂ → UnitDisc, InjOn f U ∧ ∀ z ∈ U, deriv (UnitDisc.coe ∘ f) z ≠ 0 := by
-    rcases exists_mapsTo_unitBall_injOn_deriv_ne_zero_at hUo hUc hU hx with ⟨f, hfU, hf_inj, hdf⟩
+    rcases exists_mapsTo_unitBall_injOn_deriv_ne_zero hUo hUc hU with ⟨f, hfU, hf_inj, hdf⟩
     use fun z ↦ if hz : z ∈ U then .mk (f z) (by simpa using hfU hz) else 0
     constructor
     · simp +contextual [InjOn, UnitDisc.mk_inj, hf_inj.eq_iff]
@@ -498,7 +357,7 @@ theorem exist_map_unitDisc_injOn_norm_deriv_gt {U : Set ℂ} (hUo : IsOpen U)
     ∃ g : ℂ → UnitDisc, g x = 0 ∧ InjOn g U ∧ DifferentiableOn ℂ (UnitDisc.coe ∘ g) U ∧
       ‖deriv (UnitDisc.coe ∘ f) x‖ < ‖deriv (UnitDisc.coe ∘ g) x‖ := by
   by_cases hdf₀ : deriv (UnitDisc.coe ∘ f) x = 0
-  · rcases exists_map_unitDisc_injOn_deriv_ne_zero₀ hUo hUc hU hx with ⟨g, hg₀, hg_inj, hdg⟩
+  · rcases exists_map_unitDisc_injOn_deriv_ne_zero₀ hUo hUc hU x with ⟨g, hg₀, hg_inj, hdg⟩
     refine ⟨g, hg₀, hg_inj, fun z hz ↦ ?_, ?_⟩
     · exact (differentiableAt_of_deriv_ne_zero (hdg z hz)).differentiableWithinAt
     · simpa [hdf₀] using hdg x hx
@@ -506,7 +365,7 @@ theorem exist_map_unitDisc_injOn_norm_deriv_gt {U : Set ℂ} (hUo : IsOpen U)
   have hcf : ContinuousOn f U := by
     rw [UnitDisc.isEmbedding_coe.continuousOn_iff]
     exact hdf.continuousOn
-  rcases UnitDisc.exists_branch_nthRoot hUc hUo ((-c).continuous_shift.comp_continuousOn hcf)
+  rcases UnitDisc.exists_continuousOn_pow_eq hUc hUo ((-c).continuous_shift.comp_continuousOn hcf)
     (by simpa) 2 with ⟨g, hgc, hgf⟩
   have hg₀ : ∀ z ∈ U, g z ≠ 0 := by
     intro z hz
@@ -533,8 +392,10 @@ theorem exist_map_unitDisc_injOn_norm_deriv_gt {U : Set ℂ} (hUo : IsOpen U)
     refine (-g x).shift.injective.comp_injOn fun z hz w hw hzw ↦ ?_
     simpa [hgf, hf_inj.eq_iff hz hw] using congr($hzw ^ (2 : ℕ+))
   case deriv =>
-    exact (-g x).differentiableOn_shift_comp_iff.mpr fun z hz ↦
-      (hdg z hz).differentiableAt.differentiableWithinAt
+    simpa only [DifferentiableOn, Function.comp_def,
+      UnitDisc.differentiableWithinAt_shift_comp_iff] using
+      (show DifferentiableOn ℂ (UnitDisc.coe ∘ g) U from
+        fun z hz ↦ (hdg z hz).differentiableAt.differentiableWithinAt)
   case norm_deriv =>
     have hkey : ‖deriv (UnitDisc.coe ∘ ⇑(-g x).shift ∘ g) x‖ =
         ‖deriv (f · : ℂ → ℂ) x‖ * (√‖(c : ℂ)‖ + √‖(c⁻¹ : ℂ)‖) / 2 := by
@@ -557,49 +418,6 @@ theorem exist_map_unitDisc_injOn_norm_deriv_gt {U : Set ℂ} (hUo : IsOpen U)
       rw [← sub_ne_zero, ← sq_pos_iff, sub_sq, Real.sq_sqrt] at this
       · linear_combination this
       · apply norm_nonneg
-
-theorem uniformEquicontinuousOn_of_thickening_subset_of_forall_norm_le {ι E F : Type*}
-    [NormedAddCommGroup E] [NormedSpace ℂ E] [NormedAddCommGroup F] [NormedSpace ℂ F]
-    {f : ι → E → F} {s U : Set E} {r : ℝ} (hr₀ : 0 < r) (hU : thickening r s ⊆ U)
-    (hfd : ∀ i, DifferentiableOn ℂ (f i) U) (hf : ∃ C, ∀ i, ∀ z ∈ U, ‖f i z‖ ≤ C) :
-    UniformEquicontinuousOn f s := by
-  have hsU : s ⊆ U := (self_subset_thickening hr₀ _).trans hU
-  rw [(uniformity_basis_dist.inf_principal _).uniformEquicontinuousOn_iff uniformity_basis_dist_le]
-  intro ε hε
-  rcases hf with ⟨C, hC⟩
-  rcases exists_pos_mul_lt hε (2 * C / r) with ⟨δ, hδ₀, hδ⟩
-  use min δ r, by positivity
-  simp only [mem_ofPred, mem_inter_iff, prodMk_mem_set_prod_eq]
-  rintro x y ⟨hdist, hx, hy⟩ i
-  rw [lt_min_iff] at hdist
-  rw [thickening_eq_biUnion_ball, iUnion₂_subset_iff] at hU
-  calc
-    dist (f i x) (f i y) ≤ (2 * C / r) * dist x y := by
-      apply dist_le_div_mul_dist_of_mapsTo_ball
-      · exact (hfd i).mono (hU _ hy)
-      · intro z hz
-        rw [mem_closedBall, two_mul]
-        exact dist_le_norm_add_norm _ _ |>.trans <|
-          add_le_add (hC _ _ <| hU y hy hz) (hC _ _ <| hsU hy)
-      · exact hdist.2
-    _ ≤ _ := by
-      grw [hdist.1]
-      · exact hδ.le
-      · have := (norm_nonneg _).trans (hC i x (hsU hx))
-        positivity
-
-theorem equicontinuousAt_of_forall_norm_le {ι E F : Type*}
-    [NormedAddCommGroup E] [NormedSpace ℂ E] [NormedAddCommGroup F] [NormedSpace ℂ F]
-    {f : ι → E → F} {U : Set E} {x : E} (hU : U ∈ 𝓝 x)
-    (hfd : ∀ i, DifferentiableOn ℂ (f i) U) (hf : ∃ C, ∀ i, ∀ z ∈ U, ‖f i z‖ ≤ C) :
-    EquicontinuousAt f x := by
-  rcases nhds_basis_ball.mem_iff.mp hU with ⟨r, hr₀, hr⟩
-  have : thickening (r / 2) (ball x (r / 2)) ⊆ U := by
-    grw [Metric.thickening_ball]
-    rwa [add_halves]
-  have := uniformEquicontinuousOn_of_thickening_subset_of_forall_norm_le (by positivity) this
-    hfd hf |>.equicontinuousOn x (by simpa)
-  rwa [EquicontinuousWithinAt, nhdsWithin_eq_nhds.mpr (ball_mem_nhds _ (by positivity))] at this
 
 open scoped UniformConvergence in
 theorem exists_bijOn_unitBall_map_eq_zero {U : Set ℂ} (hUo : IsOpen U) (hUc : IsSimplyConnected U)
@@ -634,7 +452,7 @@ theorem exists_bijOn_unitBall_map_eq_zero {U : Set ℂ} (hUo : IsOpen U) (hUc : 
       F f x₀ = 0}
   have hsd : ∀ f ∈ s, DifferentiableOn ℂ (F f) U := fun f hf ↦ hf.2.2.1
   have hs_ne : s.Nonempty := by
-    rcases exists_map_unitDisc_injOn_deriv_ne_zero₀ hUo hUc hU hx₀ with ⟨f, hf₀, hf_inj, hfd⟩
+    rcases exists_map_unitDisc_injOn_deriv_ne_zero₀ hUo hUc hU x₀ with ⟨f, hf₀, hf_inj, hfd⟩
     exact ⟨UniformOnFun.ofFun 𝔖 (f ·), fun x hx ↦ (f x).2,
       by simpa [F, InjOn] using hf_inj, fun z hz ↦
         differentiableAt_of_deriv_ne_zero (hfd z hz) |>.differentiableWithinAt,
@@ -643,9 +461,41 @@ theorem exists_bijOn_unitBall_map_eq_zero {U : Set ℂ} (hUo : IsOpen U) (hUc : 
     .id ?eqcont ?bdd
   case eqcont =>
     rintro K ⟨hKU, -⟩ z hz
-    refine equicontinuousAt_of_forall_norm_le (hUo.mem_nhds <| hKU hz) (fun i ↦ hsd _ i.2)
-      ⟨1, fun i z hz ↦ le_of_lt ?_⟩ |>.equicontinuousWithinAt _
-    simpa using i.2.1 hz
+    refine (show EquicontinuousAt (fun i : s ↦ F i) z from by
+      rcases nhds_basis_ball.mem_iff.mp (hUo.mem_nhds <| hKU hz) with ⟨r, hr₀, hr⟩
+      have hU : thickening (r / 2) (ball z (r / 2)) ⊆ U := by
+        grw [Metric.thickening_ball]
+        rwa [add_halves]
+      have heq : UniformEquicontinuousOn (fun i : s ↦ F i) (ball z (r / 2)) := by
+        have hsU : ball z (r / 2) ⊆ U := (self_subset_thickening (by positivity) _).trans hU
+        rw [(uniformity_basis_dist.inf_principal _).uniformEquicontinuousOn_iff
+          uniformity_basis_dist_le]
+        intro ε hε
+        rcases (show ∃ C, ∀ i : s, ∀ z ∈ U, ‖F i z‖ ≤ C from
+          ⟨1, fun i z hz ↦ le_of_lt (by simpa using i.2.1 hz)⟩) with ⟨C, hC⟩
+        rcases exists_pos_mul_lt hε (2 * C / (r / 2)) with ⟨δ, hδ₀, hδ⟩
+        use min δ (r / 2), by positivity
+        simp only [mem_ofPred, mem_inter_iff, prodMk_mem_set_prod_eq]
+        rintro x y ⟨hdist, hx, hy⟩ i
+        rw [lt_min_iff] at hdist
+        rw [thickening_eq_biUnion_ball, iUnion₂_subset_iff] at hU
+        calc
+          dist (F i x) (F i y) ≤ (2 * C / (r / 2)) * dist x y := by
+            apply dist_le_div_mul_dist_of_mapsTo_ball
+            · exact (hsd _ i.2).mono (hU _ hy)
+            · intro w hw
+              rw [mem_closedBall, two_mul]
+              exact dist_le_norm_add_norm _ _ |>.trans <|
+                add_le_add (hC _ _ <| hU y hy hw) (hC _ _ <| hsU hy)
+            · exact hdist.2
+          _ ≤ _ := by
+            grw [hdist.1]
+            · exact hδ.le
+            · have := (norm_nonneg _).trans (hC i x (hsU hx))
+              positivity
+      have := heq.equicontinuousOn z (by simpa)
+      rwa [EquicontinuousWithinAt, nhdsWithin_eq_nhds.mpr (ball_mem_nhds _ (by positivity))]
+        at this).equicontinuousWithinAt _
   case bdd =>
     intro K hK x hx
     exact ⟨closedBall 0 1, isCompact_closedBall _ _, fun i hi ↦

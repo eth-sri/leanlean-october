@@ -21,14 +21,6 @@ open MeasureTheory Set
 
 namespace BergmanWeakType.Weighted
 
-/-- A periodic derivative has zero integral over one period. -/
-theorem integral_periodic_derivative_eq_zero {g g' : ℝ → ℝ} {T : ℝ}
-    (hT : 0 ≤ T) (hg : ∀ θ ∈ Icc 0 T, HasDerivAt g (g' θ) θ)
-    (hgi : IntervalIntegrable g' volume 0 T) (hperiod : g T = g 0) :
-    (∫ θ in (0 : ℝ)..T, g' θ) = 0 := by
-  rw [intervalIntegral.integral_eq_sub_of_hasDerivAt
-    (by simpa only [uIcc_of_le hT] using hg) hgi, hperiod, sub_self]
-
 /-- A nonincreasing radial flux vanishing at the origin forces the mean to decrease. -/
 theorem antitoneOn_of_radial_flux {M M' w F F' : ℝ → ℝ}
     (hM : ContinuousOn M (Ico 0 1))
@@ -76,37 +68,5 @@ theorem hasDerivAt_smoothCap_comp_first {ε c x : ℝ} {U U' : ℝ → ℝ} {U''
   convert ((hasDerivAt_smoothCapInputDeriv (c := c) hε).comp x hU).mul hU' using 1 <;>
     simp only [Function.comp_def, Pi.mul_def]
   ring
-
-/-- Increasing concave truncation preserves the polar divergence inequality. -/
-theorem smoothCap_polar_flux_nonpos {ε c u r w w' ur urr uθ uθθ : ℝ}
-    (hε : 0 < ε) (hr : 0 < r) (hw : 0 < w)
-    (hL : r * w * urr + (w + r * w') * ur + (w / r) * uθθ ≤ 0) :
-    let d₁ := smoothCapInputDeriv ε c u
-    let d₂ := -(ε ^ 2) / (2 * Real.sqrt ((u - c) ^ 2 + ε ^ 2) ^ 3)
-    r * w * (d₂ * ur ^ 2 + d₁ * urr) +
-      (w + r * w') * (d₁ * ur) + (w / r) * (d₂ * uθ ^ 2 + d₁ * uθθ) ≤ 0 := by
-  dsimp only
-  have hd₁ := (smoothCapInputDeriv_mem_Icc (c := c) (x := u) hε).1
-  have hd₂ := smoothCap_secondDeriv_nonpos (ε := ε) (c := c) (x := u)
-  have hfirst := mul_nonpos_of_nonneg_of_nonpos hd₁ hL
-  have hsecond := mul_nonpos_of_nonpos_of_nonneg hd₂
-    (show 0 ≤ r * w * ur ^ 2 + (w / r) * uθ ^ 2 by positivity)
-  nlinarith
-
-/-- Dividing an elliptic supersolution by a positive radial solution removes the potential term.
-The displayed first and second derivatives are the ordinary quotient-rule expressions. -/
-theorem quotient_polar_operator_nonpos {F Fr Frr Fθθ J Jr Jrr a b r : ℝ}
-    (hJ : 0 < J) (hr : r ≠ 0) (hJode : Jrr + a * Jr + b * J = 0)
-    (hFode : Frr + a * Fr + Fθθ / r ^ 2 + b * F ≤ 0) :
-    (Frr / J - F * Jrr / J ^ 2 - 2 * Fr * Jr / J ^ 2 + 2 * F * Jr ^ 2 / J ^ 3) +
-      (a + 2 * Jr / J) * ((Fr * J - F * Jr) / J ^ 2) + (Fθθ / J) / r ^ 2 ≤ 0 := by
-  have heq : J * ((Frr / J - F * Jrr / J ^ 2 - 2 * Fr * Jr / J ^ 2 +
-        2 * F * Jr ^ 2 / J ^ 3) + (a + 2 * Jr / J) * ((Fr * J - F * Jr) / J ^ 2) +
-        (Fθθ / J) / r ^ 2) =
-      Frr + a * Fr + Fθθ / r ^ 2 + b * F - (F / J) * (Jrr + a * Jr + b * J) := by
-    field_simp [hJ.ne', hr]
-    ring
-  rw [hJode, mul_zero, sub_zero] at heq
-  exact nonpos_of_mul_nonpos_right (heq.trans_le hFode) hJ
 
 end BergmanWeakType.Weighted

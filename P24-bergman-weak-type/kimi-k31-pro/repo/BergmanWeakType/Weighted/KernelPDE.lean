@@ -87,15 +87,4 @@ theorem denominator_eq_norm_sq (z w : ℂ) :
   unfold denominator
   ring
 
-theorem denominator_pos {z w : ℂ} (hz : z ∈ disk) (hw : ‖w‖ ≤ 1) :
-    0 < denominator w.re w.im z.re z.im := by
-  have hz' : ‖z‖ < 1 := (mem_disk_iff z).mp hz
-  have hmul : ‖z * star w‖ ≤ ‖z‖ := by
-    rw [norm_mul, norm_star]
-    exact mul_le_of_le_one_right (norm_nonneg z) hw
-  have hsub := norm_sub_norm_le (1 : ℂ) (z * star w)
-  simp only [norm_one] at hsub
-  rw [denominator_eq_norm_sq]
-  exact sq_pos_of_pos (by linarith)
-
 end BergmanWeakType.Weighted

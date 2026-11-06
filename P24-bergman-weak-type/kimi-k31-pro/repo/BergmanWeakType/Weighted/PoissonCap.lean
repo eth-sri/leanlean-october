@@ -8,7 +8,7 @@ module
 public import Mathlib.Analysis.Complex.Harmonic.Poisson
 public import Mathlib.Topology.Order.Lattice
 public import Mathlib.Tactic.Linarith
-public import BergmanWeakType.Weighted.SmoothCap
+public import BergmanWeakType.Weighted.DiskSupermean
 
 /-! # Truncation of functions satisfying the Poisson supermean inequality -/
 
@@ -22,49 +22,6 @@ namespace BergmanWeakType
 
 def poissonExtension (R : ℝ) (v : ℂ → ℝ) (z : ℂ) : ℝ :=
   circleAverage (fun ζ ↦ poissonKernel 0 z ζ * v ζ) 0 R
-
-theorem poissonKernel_nonneg_on_sphere {R : ℝ} {z ζ : ℂ}
-    (hz : z ∈ ball 0 R) (hζ : ζ ∈ sphere 0 |R|) :
-    0 ≤ poissonKernel 0 z ζ := by
-  have hz' : ‖z‖ < R := by simpa using hz
-  have hζ' : ‖ζ‖ = |R| := by simpa using hζ
-  have hR : 0 ≤ R := (norm_nonneg z).trans hz'.le
-  simp only [poissonKernel_def, sub_zero, hζ', abs_of_nonneg hR]
-  exact div_nonneg (by nlinarith [norm_nonneg z]) (sq_nonneg _)
-
-theorem continuousOn_poissonKernel_sphere {R : ℝ} {z : ℂ}
-    (hz : z ∈ ball 0 R) : ContinuousOn (poissonKernel 0 z) (sphere 0 |R|) := by
-  rw [poissonKernel_eq_re_herglotzRieszKernel]
-  apply continuous_re.comp_continuousOn
-  apply continuousOn_herglotzRieszKernel_sphere
-  have hz' : ‖z‖ < R := by simpa using hz
-  have hR : 0 ≤ R := (norm_nonneg z).trans hz'.le
-  simpa [mem_sphere, dist_zero_right, abs_of_nonneg hR] using hz'.ne
-
-theorem poissonExtension_const {R c : ℝ} {z : ℂ} (hz : z ∈ ball 0 R) :
-    poissonExtension R (fun _ ↦ c) z = c := by
-  simpa only [poissonExtension, Pi.smul_def, smul_eq_mul, Pi.mul_def] using
-    (harmonicOnNhd_const c).circleAverage_poissonKernel_smul hz
-
-theorem poissonExtension_min_le {R c : ℝ} {v : ℂ → ℝ} {z : ℂ}
-    (hv : ContinuousOn v (sphere 0 |R|)) (hz : z ∈ ball 0 R)
-    (hsuper : poissonExtension R v z ≤ v z) :
-    poissonExtension R (fun ζ ↦ min (v ζ) c) z ≤ min (v z) c := by
-  have hp := continuousOn_poissonKernel_sphere hz
-  have hm := hv.inf (continuousOn_const (c := c))
-  apply le_min
-  · apply le_trans _ hsuper
-    apply circleAverage_mono (hp.mul hm).circleIntegrable' (hp.mul hv).circleIntegrable'
-    intro ζ hζ
-    exact mul_le_mul_of_nonneg_left (min_le_left _ _) (poissonKernel_nonneg_on_sphere hz hζ)
-  · calc
-      _ ≤ poissonExtension R (fun _ ↦ c) z := by
-        apply circleAverage_mono (hp.mul hm).circleIntegrable'
-          (hp.mul continuousOn_const).circleIntegrable'
-        intro ζ hζ
-        exact mul_le_mul_of_nonneg_left (min_le_right _ _)
-          (poissonKernel_nonneg_on_sphere hz hζ)
-      _ = c := poissonExtension_const hz
 
 theorem poissonExtension_eq_re {R : ℝ} {v : ℂ → ℝ} {z : ℂ}
     (hv : CircleIntegrable v 0 R) (hz : z ∉ sphere 0 |R|) :
@@ -117,34 +74,5 @@ theorem circleAverage_poissonExtension {R r : ℝ} {v : ℂ → ℝ}
       have hR : 0 < |R| := (abs_nonneg r).trans_lt hrR
       have hRn : R ≠ 0 := abs_pos.mp hR
       simp [poissonKernel_def, hζ', hRn]
-
-/-- Poisson supermean inequalities imply that the circular means of every upper truncation
-decrease with the radius. -/
-theorem circleAverage_min_antitone_of_poisson_supermean {R r c : ℝ} {v : ℂ → ℝ}
-    (hr : 0 ≤ r) (hrR : r < R) (hv : ContinuousOn v (closedBall 0 R))
-    (hsuper : ∀ z ∈ ball 0 R, poissonExtension R v z ≤ v z) :
-    circleAverage (fun z ↦ min (v z) c) 0 R ≤
-      circleAverage (fun z ↦ min (v z) c) 0 r := by
-  have hR : 0 ≤ R := hr.trans hrR.le
-  have hcap := hv.inf (continuousOn_const (c := c))
-  have hcapR : CircleIntegrable (fun z ↦ min (v z) c) 0 R := by
-    apply ContinuousOn.circleIntegrable'
-    simpa only [abs_of_nonneg hR] using hcap.mono sphere_subset_closedBall
-  have habs : |r| < |R| := by simpa only [abs_of_nonneg hr, abs_of_nonneg hR] using hrR
-  rw [← circleAverage_poissonExtension hcapR habs]
-  have hsub : sphere (0 : ℂ) |r| ⊆ (sphere 0 |R|)ᶜ := by
-    intro z hz
-    have hz' : ‖z‖ = |r| := by simpa using hz
-    simpa [hz'] using habs.ne
-  apply circleAverage_mono
-    ((continuousOn_poissonExtension hcapR).mono hsub).circleIntegrable'
-    (hcap.mono (by simpa only [abs_of_nonneg hr] using
-      (sphere_subset_closedBall.trans (closedBall_subset_closedBall hrR.le)))).circleIntegrable'
-  intro z hz
-  have hzR : z ∈ ball 0 R := by
-    have hz' : ‖z‖ = r := by simpa [abs_of_nonneg hr] using hz
-    simpa [mem_ball, dist_zero_right, hz'] using hrR
-  apply poissonExtension_min_le _ hzR (hsuper z hzR)
-  simpa only [abs_of_nonneg hR] using hv.mono sphere_subset_closedBall
 
 end BergmanWeakType

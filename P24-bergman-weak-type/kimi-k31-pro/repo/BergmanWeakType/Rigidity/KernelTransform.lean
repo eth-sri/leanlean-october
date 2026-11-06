@@ -28,25 +28,6 @@ theorem IsBergmanKernel.column_memLp {Ω : Set ℂ} {K : ℂ → ℂ → ℂ}
     exact (hK.hermitian w hw z hz).symm
   exact (memLp_congr_ae heq).mp (hK.squareIntegrable z hz).star
 
-/-- The standard reproducing and Hermitian properties uniquely determine a Bergman kernel. -/
-theorem IsBergmanKernel.unique {Ω : Set ℂ} {K L : ℂ → ℂ → ℂ}
-    (hK : IsBergmanKernel Ω K) (hL : IsBergmanKernel Ω L) (hΩ : MeasurableSet Ω)
-    {z w : ℂ} (hz : z ∈ Ω) (hw : w ∈ Ω) : K z w = L z w := by
-  have h₁ := hL.reproduces (fun u ↦ K u w) (hK.holomorphic w hw)
-    (hK.column_memLp hΩ hw) z hz
-  have h₂ := hK.reproduces (fun u ↦ L u z) (hL.holomorphic z hz)
-    (hL.column_memLp hΩ hz) w hw
-  calc
-    K z w = ∫ u, L z u * K u w ∂area.restrict Ω := h₁.symm
-    _ = conj (∫ u, K w u * L u z ∂area.restrict Ω) := by
-      rw [← integral_conj]
-      apply integral_congr_ae
-      filter_upwards [ae_restrict_mem hΩ] with u hu
-      rw [map_mul, starRingEnd_apply, starRingEnd_apply,
-        ← hK.hermitian u hu w hw, ← hL.hermitian z hz u hu, mul_comm]
-    _ = conj (L w z) := congrArg (starRingEnd ℂ) h₂
-    _ = L z w := (hL.hermitian z hz w hw).symm
-
 /-- The holomorphic pullback, including one complex derivative, preserves square integrability. -/
 theorem memLp_pullback_deriv {U V : Set ℂ} {φ f : ℂ → ℂ}
     (hU : IsOpen U) (hφ : DifferentiableOn ℂ φ U) (hbij : BijOn φ U V)
@@ -150,8 +131,22 @@ theorem IsBergmanKernel.disk_coordinate_formula {Ω : Set ℂ} {K : ℂ → ℂ 
     (hbij : BijOn φ disk Ω) (hinv : InvOn ψ φ disk Ω)
     {z w : ℂ} (hz : z ∈ disk) (hw : w ∈ disk) :
     K (φ z) (φ w) = kernel z w / (deriv φ z * star (deriv φ w)) := by
-  have htrans := (hK.pullback Metric.isOpen_ball hΩ hφ hψ hbij hinv).unique
-    isBergmanKernel_disk Metric.isOpen_ball.measurableSet hz hw
+  let hP := hK.pullback Metric.isOpen_ball hΩ hφ hψ hbij hinv
+  have htrans := by
+    have h₁ := isBergmanKernel_disk.reproduces (fun u ↦ pullbackKernel φ K u w)
+      (hP.holomorphic w hw) (hP.column_memLp Metric.isOpen_ball.measurableSet hw) z hz
+    have h₂ := hP.reproduces (fun u ↦ kernel u z) (isBergmanKernel_disk.holomorphic z hz)
+      (isBergmanKernel_disk.column_memLp Metric.isOpen_ball.measurableSet hz) w hw
+    calc
+      pullbackKernel φ K z w = ∫ u, kernel z u * pullbackKernel φ K u w ∂diskArea := h₁.symm
+      _ = conj (∫ u, pullbackKernel φ K w u * kernel u z ∂diskArea) := by
+        rw [← integral_conj]
+        apply integral_congr_ae
+        filter_upwards [ae_mem_disk] with u hu
+        rw [map_mul, starRingEnd_apply, starRingEnd_apply,
+          ← hP.hermitian u hu w hw, ← isBergmanKernel_disk.hermitian z hz u hu, mul_comm]
+      _ = conj (kernel w z) := congrArg (starRingEnd ℂ) h₂
+      _ = kernel z w := (isBergmanKernel_disk.hermitian z hz w hw).symm
   have hz' := deriv_ne_zero_of_bijOn Metric.isOpen_ball hΩ hφ hbij hz
   have hw' := deriv_ne_zero_of_bijOn Metric.isOpen_ball hΩ hφ hbij hw
   apply (eq_div_iff (mul_ne_zero hz' (star_ne_zero.mpr hw'))).mpr

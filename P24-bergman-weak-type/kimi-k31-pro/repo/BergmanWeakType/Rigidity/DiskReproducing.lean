@@ -98,57 +98,6 @@ theorem circleAverage_kernel_mul {f : ℂ → ℂ} (hf : DifferentiableOn ℂ f 
   field_simp
   rfl
 
-/-- The explicit disk kernel reproduces every integrable holomorphic function. -/
-theorem integral_kernel_mul_eq {f : ℂ → ℂ} (hf : DifferentiableOn ℂ f disk)
-    (hfi : Integrable f diskArea) {z : ℂ} (hz : z ∈ disk) :
-    (∫ w, kernel z w * f w ∂diskArea) = f z := by
-  have hz1 : ‖z‖ < 1 := (mem_disk_iff z).mp hz
-  have hmap : MapsTo (fun r : ℝ ↦ (r : ℂ) ^ 2 * z) (Icc 0 1) disk := by
-    intro r hr
-    apply (mem_disk_iff _).mpr
-    rw [norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr.1]
-    have hr2 : r ^ 2 ≤ 1 := by nlinarith [hr.1, hr.2]
-    exact (mul_le_of_le_one_left (norm_nonneg z) hr2).trans_lt hz1
-  have hderiv : ∀ r ∈ Icc (0 : ℝ) 1,
-      HasDerivAt (fun s : ℝ ↦ (s : ℂ) ^ 2 * f ((s : ℂ) ^ 2 * z))
-        ((2 * r) • (f ((r : ℂ) ^ 2 * z) +
-          (r : ℂ) ^ 2 * z * deriv f ((r : ℂ) ^ 2 * z))) r := by
-    intro r hr
-    have hpow := (hasDerivAt_id (r : ℂ)).pow 2
-    have hcomp := (hf.differentiableAt (isOpen_ball.mem_nhds (hmap hr))).hasDerivAt.comp
-      (r : ℂ) (hpow.mul_const z)
-    convert (hpow.mul hcomp).comp_ofReal using 1
-    · rfl
-    · simp only [Pi.pow_apply, Function.comp_apply, id_eq, Nat.reduceSub, pow_one,
-        Nat.cast_ofNat, mul_one, Complex.real_smul, Complex.ofReal_mul, Complex.ofReal_ofNat]
-      ring
-  have hcont : ContinuousOn (fun r : ℝ ↦ (2 * r) •
-      (f ((r : ℂ) ^ 2 * z) + (r : ℂ) ^ 2 * z * deriv f ((r : ℂ) ^ 2 * z))) (Icc 0 1) := by
-    have hs : ContinuousOn (fun r : ℝ ↦ 2 * r) (Icc 0 1) := by fun_prop
-    have ha : ContinuousOn (fun r : ℝ ↦ (r : ℂ) ^ 2 * z) (Icc 0 1) := by fun_prop
-    have hfc := hf.continuousOn.comp ha hmap
-    have hdc := (hf.analyticOnNhd isOpen_ball).deriv.continuousOn.comp ha hmap
-    apply (hs.smul (hfc.add (ha.mul hdc))).congr
-    intro r _
-    rfl
-  rw [integral_diskArea_eq_circleAverage (integrable_kernel_mul hfi hz)]
-  calc
-    _ = ∫ r in Ioo (0 : ℝ) 1, (2 * r) • (f ((r : ℂ) ^ 2 * z) +
-        (r : ℂ) ^ 2 * z * deriv f ((r : ℂ) ^ 2 * z)) := by
-      apply setIntegral_congr_fun measurableSet_Ioo
-      intro r hr
-      dsimp only
-      rw [circleAverage_kernel_mul hf hz hr.1 hr.2]
-    _ = ∫ r in (0 : ℝ)..1, (2 * r) • (f ((r : ℂ) ^ 2 * z) +
-        (r : ℂ) ^ 2 * z * deriv f ((r : ℂ) ^ 2 * z)) := by
-      rw [intervalIntegral.integral_of_le (by norm_num), integral_Ioc_eq_integral_Ioo]
-    _ = f z := by
-      have hi := hcont.intervalIntegrable_of_Icc (μ := volume) (by norm_num : (0 : ℝ) ≤ 1)
-      have ht := intervalIntegral.integral_eq_sub_of_hasDerivAt
-        (fun r hr ↦ hderiv r (by simpa only [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] using hr)) hi
-      simpa only [Complex.ofReal_one, Complex.ofReal_zero, one_pow, zero_pow (by omega : 2 ≠ 0),
-        one_mul, zero_mul, sub_zero] using ht
-
 /-- The explicit unit-disk kernel satisfies the standard Bergman-kernel characterization. -/
 theorem isBergmanKernel_disk : IsBergmanKernel disk kernel where
   holomorphic w hw := by
@@ -163,6 +112,53 @@ theorem isBergmanKernel_disk : IsBergmanKernel disk kernel where
       (ae_mem_disk.mono fun w hw ↦ norm_kernel_le hz hw)
   reproduces f hf hfi z hz := by
     have hfi' : MemLp f 2 diskArea := hfi
-    exact integral_kernel_mul_eq hf (hfi'.integrable (by norm_num)) hz
+    have hfi := hfi'.integrable (by norm_num)
+    have hz1 : ‖z‖ < 1 := (mem_disk_iff z).mp hz
+    have hmap : MapsTo (fun r : ℝ ↦ (r : ℂ) ^ 2 * z) (Icc 0 1) disk := by
+      intro r hr
+      apply (mem_disk_iff _).mpr
+      rw [norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr.1]
+      have hr2 : r ^ 2 ≤ 1 := by nlinarith [hr.1, hr.2]
+      exact (mul_le_of_le_one_left (norm_nonneg z) hr2).trans_lt hz1
+    have hderiv : ∀ r ∈ Icc (0 : ℝ) 1,
+        HasDerivAt (fun s : ℝ ↦ (s : ℂ) ^ 2 * f ((s : ℂ) ^ 2 * z))
+          ((2 * r) • (f ((r : ℂ) ^ 2 * z) +
+            (r : ℂ) ^ 2 * z * deriv f ((r : ℂ) ^ 2 * z))) r := by
+      intro r hr
+      have hpow := (hasDerivAt_id (r : ℂ)).pow 2
+      have hcomp := (hf.differentiableAt (isOpen_ball.mem_nhds (hmap hr))).hasDerivAt.comp
+        (r : ℂ) (hpow.mul_const z)
+      convert (hpow.mul hcomp).comp_ofReal using 1
+      · rfl
+      · simp only [Pi.pow_apply, Function.comp_apply, id_eq, Nat.reduceSub, pow_one,
+          Nat.cast_ofNat, mul_one, Complex.real_smul, Complex.ofReal_mul, Complex.ofReal_ofNat]
+        ring
+    have hcont : ContinuousOn (fun r : ℝ ↦ (2 * r) •
+        (f ((r : ℂ) ^ 2 * z) + (r : ℂ) ^ 2 * z * deriv f ((r : ℂ) ^ 2 * z))) (Icc 0 1) := by
+      have hs : ContinuousOn (fun r : ℝ ↦ 2 * r) (Icc 0 1) := by fun_prop
+      have ha : ContinuousOn (fun r : ℝ ↦ (r : ℂ) ^ 2 * z) (Icc 0 1) := by fun_prop
+      have hfc := hf.continuousOn.comp ha hmap
+      have hdc := (hf.analyticOnNhd isOpen_ball).deriv.continuousOn.comp ha hmap
+      apply (hs.smul (hfc.add (ha.mul hdc))).congr
+      intro r _
+      rfl
+    change (∫ w, kernel z w * f w ∂diskArea) = f z
+    rw [integral_diskArea_eq_circleAverage (integrable_kernel_mul hfi hz)]
+    calc
+      _ = ∫ r in Ioo (0 : ℝ) 1, (2 * r) • (f ((r : ℂ) ^ 2 * z) +
+          (r : ℂ) ^ 2 * z * deriv f ((r : ℂ) ^ 2 * z)) := by
+        apply setIntegral_congr_fun measurableSet_Ioo
+        intro r hr
+        dsimp only
+        rw [circleAverage_kernel_mul hf hz hr.1 hr.2]
+      _ = ∫ r in (0 : ℝ)..1, (2 * r) • (f ((r : ℂ) ^ 2 * z) +
+          (r : ℂ) ^ 2 * z * deriv f ((r : ℂ) ^ 2 * z)) := by
+        rw [intervalIntegral.integral_of_le (by norm_num), integral_Ioc_eq_integral_Ioo]
+      _ = f z := by
+        have hi := hcont.intervalIntegrable_of_Icc (μ := volume) (by norm_num : (0 : ℝ) ≤ 1)
+        have ht := intervalIntegral.integral_eq_sub_of_hasDerivAt
+          (fun r hr ↦ hderiv r (by simpa only [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] using hr)) hi
+        simpa only [Complex.ofReal_one, Complex.ofReal_zero, one_pow, zero_pow (by omega : 2 ≠ 0),
+          one_mul, zero_mul, sub_zero] using ht
 
 end BergmanWeakType

@@ -31,13 +31,6 @@ theorem component_norm_sq (a b θ : ℝ) :
       ring
     _ = _ := by rw [sin_sq_add_cos_sq, mul_one]
 
-theorem radialComponent_hasDerivAt (a b θ : ℝ) :
-    HasDerivAt (radialComponent a b) (angularComponent a b θ) θ := by
-  convert ((hasDerivAt_cos θ).const_mul a).add ((hasDerivAt_sin θ).const_mul b) using 1
-  · rfl
-  · unfold angularComponent
-    ring
-
 theorem angularComponent_hasDerivAt (a b θ : ℝ) :
     HasDerivAt (angularComponent a b) (-radialComponent a b θ) θ := by
   convert ((hasDerivAt_cos θ).const_mul b).sub ((hasDerivAt_sin θ).const_mul a) using 1
@@ -80,7 +73,30 @@ def polarKernelTT (q a b r θ : ℝ) : ℝ :=
 theorem polarDenominator_pos {a b r : ℝ} (hr : r ^ 2 < 1)
     (hw : a ^ 2 + b ^ 2 ≤ 1) (θ : ℝ) : 0 < polarDenominator a b r θ := by
   rw [polarDenominator_eq_denominator]
-  exact denominator_pos_coordinates (by simpa using hr) (by simpa [component_norm_sq] using hw)
+  have hz' : (⟨r, 0⟩ : ℂ) ∈ disk := by
+    apply (mem_disk_iff _).mpr
+    have heq : ‖(⟨r, 0⟩ : ℂ)‖ ^ 2 = r ^ 2 + 0 ^ 2 := by
+      simp only [Complex.sq_norm, Complex.normSq_apply]
+      ring
+    nlinarith [norm_nonneg (⟨r, 0⟩ : ℂ)]
+  have hw' : ‖(⟨radialComponent a b θ, angularComponent a b θ⟩ : ℂ)‖ ≤ 1 := by
+    have heq : ‖(⟨radialComponent a b θ, angularComponent a b θ⟩ : ℂ)‖ ^ 2 =
+        radialComponent a b θ ^ 2 + angularComponent a b θ ^ 2 := by
+      simp only [Complex.sq_norm, Complex.normSq_apply]
+      ring
+    nlinarith [norm_nonneg (⟨radialComponent a b θ, angularComponent a b θ⟩ : ℂ),
+      component_norm_sq a b θ]
+  have hz1 : ‖(⟨r, 0⟩ : ℂ)‖ < 1 := (mem_disk_iff _).mp hz'
+  have hmul : ‖(⟨r, 0⟩ : ℂ) * star (⟨radialComponent a b θ, angularComponent a b θ⟩ : ℂ)‖ ≤
+      ‖(⟨r, 0⟩ : ℂ)‖ := by
+    rw [norm_mul, norm_star]
+    exact mul_le_of_le_one_right (norm_nonneg _) hw'
+  have hsub := norm_sub_norm_le (1 : ℂ)
+    ((⟨r, 0⟩ : ℂ) * star (⟨radialComponent a b θ, angularComponent a b θ⟩ : ℂ))
+  simp only [norm_one] at hsub
+  rw [denominator_eq_norm_sq (⟨r, 0⟩ : ℂ)
+    (⟨radialComponent a b θ, angularComponent a b θ⟩ : ℂ)]
+  exact sq_pos_of_pos (by linarith)
 
 theorem polarKernel_hasDerivAt_r (q a b r θ : ℝ) (hd : 0 < polarDenominator a b r θ) :
     HasDerivAt (fun u ↦ polarKernel q a b u θ) (polarKernelR q a b r θ) r := by
@@ -98,17 +114,18 @@ theorem polarKernelR_hasDerivAt_r (q a b r θ : ℝ) (hd : 0 < polarDenominator 
     polarKernelR, polarKernelRR] using
       powerKernelX_hasDerivAt q (radialComponent a b θ) (angularComponent a b θ) r 0 hd'
 
-theorem polarDenominator_hasDerivAt_t (a b r θ : ℝ) :
-    HasDerivAt (polarDenominator a b r) (-2 * r * angularComponent a b θ) θ := by
-  convert ((radialComponent_hasDerivAt a b θ).const_mul (-2 * r)).const_add
-    ((a ^ 2 + b ^ 2) * r ^ 2 + 1) using 1
-  · funext u
-    unfold polarDenominator
-    ring
-
 theorem polarKernel_hasDerivAt_t (q a b r θ : ℝ) (hd : 0 < polarDenominator a b r θ) :
     HasDerivAt (polarKernel q a b r) (polarKernelT q a b r θ) θ := by
-  convert (polarDenominator_hasDerivAt_t a b r θ).rpow_const (p := q) (Or.inl hd.ne') using 1
+  convert (show HasDerivAt (polarDenominator a b r)
+      (-2 * r * angularComponent a b θ) θ from by
+    convert ((show HasDerivAt (radialComponent a b) (angularComponent a b θ) θ from by
+      convert ((hasDerivAt_cos θ).const_mul a).add ((hasDerivAt_sin θ).const_mul b) using 1
+      · rfl
+      · unfold angularComponent
+        ring).const_mul (-2 * r)).const_add ((a ^ 2 + b ^ 2) * r ^ 2 + 1) using 1
+    · funext u
+      unfold polarDenominator
+      ring).rpow_const (p := q) (Or.inl hd.ne') using 1
   · rfl
   · unfold polarKernelT polarKernel
     ring
@@ -146,16 +163,18 @@ theorem polarKernel_laplacian (q a b r θ : ℝ)
   field_simp [hr]
   ring
 
+/-- The weighted elliptic operator applied to radial and angular kernel values. -/
+def polarOperator (k RR R TT K r : ℝ) : ℝ :=
+  RR + R / r + TT / r ^ 2 - (2 * k * r / (1 - r ^ 2)) * R - (k ^ 2 / (1 - r ^ 2)) * K
+
 /-- The weighted elliptic equation in polar coordinates, with no mixed derivatives. -/
 theorem polarKernel_equation (k a b r θ : ℝ)
     (hd : 0 < polarDenominator a b r θ) (hr : r ≠ 0) (ht : 1 - r ^ 2 ≠ 0) :
-    polarKernelRR (-k / 2) a b r θ + polarKernelR (-k / 2) a b r θ / r +
-      polarKernelTT (-k / 2) a b r θ / r ^ 2 -
-      (2 * k * r / (1 - r ^ 2)) * polarKernelR (-k / 2) a b r θ -
-      (k ^ 2 / (1 - r ^ 2)) * polarKernel (-k / 2) a b r θ =
+    polarOperator k (polarKernelRR (-k / 2) a b r θ) (polarKernelR (-k / 2) a b r θ)
+      (polarKernelTT (-k / 2) a b r θ) (polarKernel (-k / 2) a b r θ) r =
         -(k ^ 2 * (1 - (a ^ 2 + b ^ 2))) /
           ((1 - r ^ 2) * polarDenominator a b r θ) * polarKernel (-k / 2) a b r θ := by
-  rw [polarKernel_laplacian (-k / 2) a b r θ hd hr]
+  rw [polarOperator, polarKernel_laplacian (-k / 2) a b r θ hd hr]
   unfold polarKernelR polarKernel
   rw [Real.rpow_sub_one hd.ne']
   field_simp [hr, ht, hd.ne']
@@ -165,10 +184,8 @@ theorem polarKernel_equation (k a b r θ : ℝ)
 theorem polarKernel_equation_nonpos (k a b r θ : ℝ)
     (hd : 0 < polarDenominator a b r θ) (hr : r ≠ 0) (ht : 0 < 1 - r ^ 2)
     (hw : a ^ 2 + b ^ 2 ≤ 1) :
-    polarKernelRR (-k / 2) a b r θ + polarKernelR (-k / 2) a b r θ / r +
-      polarKernelTT (-k / 2) a b r θ / r ^ 2 -
-      (2 * k * r / (1 - r ^ 2)) * polarKernelR (-k / 2) a b r θ -
-      (k ^ 2 / (1 - r ^ 2)) * polarKernel (-k / 2) a b r θ ≤ 0 := by
+    polarOperator k (polarKernelRR (-k / 2) a b r θ) (polarKernelR (-k / 2) a b r θ)
+      (polarKernelTT (-k / 2) a b r θ) (polarKernel (-k / 2) a b r θ) r ≤ 0 := by
   rw [polarKernel_equation k a b r θ hd hr ht.ne']
   exact mul_nonpos_of_nonpos_of_nonneg
     (div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr

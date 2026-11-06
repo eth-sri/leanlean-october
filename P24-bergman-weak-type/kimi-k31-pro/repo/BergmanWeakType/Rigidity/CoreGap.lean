@@ -8,6 +8,7 @@ module
 public import BergmanWeakType.Rigidity.MobiusGeometry
 public import BergmanWeakType.CompactGap
 public import Mathlib.Analysis.Calculus.ParametricIntegral
+public import BergmanWeakType.Weighted.CompactIntegral
 
 @[expose] public section
 
@@ -41,21 +42,6 @@ theorem continuousOn_integral_of_compact_product {X Y E : Type*}
   · exact hM (mem_image_of_mem _ (show (z, w) ∈ S ×ˢ K from ⟨hz, hw⟩))
   · exact hF.comp (continuous_id.prodMk continuous_const).continuousOn fun z hz ↦ ⟨hz, hw⟩
 
-theorem continuousOn_coreIntegrand_product {q : ℂ → ℂ} (hq : ContinuousOn q disk)
-    {r : ℝ} (hr : r < 1) :
-    ContinuousOn (fun p : ℂ × ℂ ↦ q p.2 * kernel p.1 p.2)
-      (closedBall 0 1 ×ˢ closedBall 0 r) := by
-  have hq' := hq.comp continuous_snd.continuousOn
-    (show MapsTo Prod.snd (closedBall (0 : ℂ) 1 ×ˢ closedBall (0 : ℂ) r) disk from
-      fun p hp ↦ lt_of_le_of_lt hp.2 hr)
-  refine hq'.mul ?_
-  unfold kernel
-  refine ((continuousOn_const.sub (continuous_fst.continuousOn.mul
-    continuous_snd.star.continuousOn)).inv₀ ?_).pow 2
-  intro p hp
-  exact kernel_denominator_ne_zero_closed_left (by simpa using hp.1)
-    (lt_of_le_of_lt hp.2 hr)
-
 theorem core_norm_integral_pos {q : ℂ → ℂ} (hq : ContinuousOn q disk)
     (hne : ∀ w ∈ disk, q w ≠ 0) {ζ : ℂ} (hζ : ‖ζ‖ ≤ 1)
     {r : ℝ} (hr : 0 < r) (hr1 : r < 1) :
@@ -87,7 +73,18 @@ theorem exists_core_relative_gap {φ : ℂ → ℂ} (hφ : DifferentiableOn ℂ 
         (1 - η) * ∫ w in ball 0 r, ‖deriv φ w * kernel ζ w‖ ∂area := by
   have hq : DifferentiableOn ℂ (deriv φ) disk :=
     (hφ.analyticOnNhd isOpen_ball).deriv.differentiableOn
-  have hprod := continuousOn_coreIntegrand_product hq.continuousOn hr1
+  have hprod : ContinuousOn (fun p : ℂ × ℂ ↦ deriv φ p.2 * kernel p.1 p.2)
+      (closedBall 0 1 ×ˢ closedBall 0 r) := by
+    have hq' := hq.continuousOn.comp continuous_snd.continuousOn
+      (show MapsTo Prod.snd (closedBall (0 : ℂ) 1 ×ˢ closedBall (0 : ℂ) r) disk from
+        fun p hp ↦ lt_of_le_of_lt hp.2 hr1)
+    refine hq'.mul ?_
+    unfold kernel
+    refine ((continuousOn_const.sub (continuous_fst.continuousOn.mul
+      continuous_snd.star.continuousOn)).inv₀ ?_).pow 2
+    intro p hp
+    exact kernel_denominator_ne_zero_closed_left (by simpa using hp.1)
+      (lt_of_le_of_lt hp.2 hr1)
   have : IsFiniteMeasure (area.restrict (ball (0 : ℂ) r)) :=
     isFiniteMeasure_restrict.mpr ((isBounded_ball (x := (0 : ℂ)) (r := r)).measure_lt_top).ne
   have hμ : ∀ᵐ w ∂area.restrict (ball (0 : ℂ) r), w ∈ closedBall 0 r :=

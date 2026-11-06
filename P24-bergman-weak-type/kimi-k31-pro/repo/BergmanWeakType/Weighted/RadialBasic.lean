@@ -1,13 +1,8 @@
-/-
-Copyright (c) 2026 Yongxi Lin. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yongxi Lin
--/
 module
 
-public import BergmanWeakType.Weighted.DiskCap
-
-/-! # Distribution estimates from increasing truncations in a radial mass coordinate -/
+public import Mathlib.MeasureTheory.Integral.CircleAverage
+public import Mathlib.MeasureTheory.Integral.Prod
+public import BergmanWeakType.Weighted.MovingCap
 
 @[expose] public section
 
@@ -18,11 +13,18 @@ open scoped Topology
 
 namespace BergmanWeakType.Weighted
 
-def radialCapMean (U : ℂ → ℝ) (ρ : ℝ → ℝ) (y c : ℝ) : ℝ :=
+abbrev radialCapMean (U : ℂ → ℝ) (ρ : ℝ → ℝ) (y c : ℝ) : ℝ :=
   circleAverage (fun z ↦ min (U z) c) 0 (ρ y)
 
-def radialLevelFraction (U : ℂ → ℝ) (ρ : ℝ → ℝ) (t y : ℝ) : ℝ :=
+abbrev radialLevelFraction (U : ℂ → ℝ) (ρ : ℝ → ℝ) (t y : ℝ) : ℝ :=
   circleAverage (fun z ↦ if t * y < U z then (1 : ℝ) else 0) 0 (ρ y)
+
+theorem circleIntegrable_of_measurable_bounded {g : ℂ → ℝ} (hg : Measurable g)
+    {M : ℝ} (hbound : ∀ z, ‖g z‖ ≤ M) (r : ℝ) : CircleIntegrable g 0 r := by
+  rw [CircleIntegrable, intervalIntegrable_iff_integrableOn_Icc_of_le Real.two_pi_pos.le]
+  apply Measure.integrableOn_of_bounded measure_Icc_lt_top.ne
+    (hg.comp (continuous_circleMap 0 r).measurable).aestronglyMeasurable
+  exact Filter.Eventually.of_forall fun θ ↦ hbound _
 
 theorem circleIntegrable_radialLevel {U : ℂ → ℝ} (hU : Measurable U) (t y r : ℝ) :
     CircleIntegrable (fun z ↦ if t * y < U z then (1 : ℝ) else 0) 0 r := by

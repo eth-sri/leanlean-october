@@ -1,8 +1,3 @@
-/-
-Copyright (c) 2026 Yongxi Lin. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yongxi Lin
--/
 module
 
 public import BergmanWeakType.KernelIntegrability
@@ -10,8 +5,6 @@ public import Mathlib.Analysis.Complex.Harmonic.Poisson
 public import Mathlib.MeasureTheory.Integral.Prod
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Ring
-
-/-! # Poisson supermean property of the normalized unweighted kernel -/
 
 @[expose] public section
 
@@ -21,48 +14,6 @@ open MeasureTheory Complex InnerProductSpace
 open scoped Topology
 
 namespace BergmanWeakType.Weighted
-
-def normalizedKernel (z w : ℂ) : ℝ := (1 - ‖z‖ ^ 2) * ‖kernel z w‖
-
-def kernelResolvent (w z : ℂ) : ℂ := z / (1 - z * star w)
-
-def kernelHerglotz (w z : ℂ) : ℂ := (1 + z * star w) / (1 - z * star w)
-
-theorem re_cayley (u : ℂ) :
-    ((1 + u) / (1 - u)).re = (1 - ‖u‖ ^ 2) / ‖1 - u‖ ^ 2 := by
-  simp only [Complex.div_re, Complex.sq_norm,
-    Complex.add_re, Complex.one_re, Complex.sub_re, Complex.add_im,
-    Complex.one_im, Complex.sub_im, Complex.normSq_apply]
-  ring
-
-/-- A harmonic part minus a nonnegative multiple of a holomorphic square. -/
-theorem normalizedKernel_decomposition (z w : ℂ) :
-    normalizedKernel z w = (kernelHerglotz w z).re -
-      (1 - ‖w‖ ^ 2) * ‖kernelResolvent w z‖ ^ 2 := by
-  rw [normalizedKernel, kernelHerglotz, re_cayley, kernelResolvent, norm_kernel]
-  simp only [norm_mul, norm_star, norm_div, div_pow, mul_pow, inv_pow]
-  ring
-
-theorem kernel_denominator_ne_zero_closed {R : ℝ} (hR : R < 1) {z w : ℂ}
-    (hz : z ∈ Metric.closedBall 0 R) (hw : w ∈ disk) : 1 - z * star w ≠ 0 := by
-  apply kernel_denominator_ne_zero _ hw
-  exact (mem_disk_iff z).mpr ((by simpa using hz : ‖z‖ ≤ R).trans_lt hR)
-
-theorem differentiableOn_kernelResolvent {R : ℝ} (hR : R < 1) {w : ℂ} (hw : w ∈ disk) :
-    DifferentiableOn ℂ (kernelResolvent w) (Metric.closedBall 0 R) := by
-  intro z hz
-  apply DifferentiableAt.differentiableWithinAt
-  exact differentiableAt_id.div
-    (differentiableAt_const 1 |>.sub (differentiableAt_id.mul_const (star w)))
-    (kernel_denominator_ne_zero_closed hR hz hw)
-
-theorem differentiableOn_kernelHerglotz {R : ℝ} (hR : R < 1) {w : ℂ} (hw : w ∈ disk) :
-    DifferentiableOn ℂ (kernelHerglotz w) (Metric.closedBall 0 R) := by
-  intro z hz
-  apply DifferentiableAt.differentiableWithinAt
-  exact ((differentiableAt_id.mul_const (star w)).const_add 1).div
-    (differentiableAt_const 1 |>.sub (differentiableAt_id.mul_const (star w)))
-    (kernel_denominator_ne_zero_closed hR hz hw)
 
 theorem continuousOn_poisson_circle {R : ℝ} {z : ℂ} (hz : z ∈ Metric.ball 0 R) :
     ContinuousOn (poissonKernel 0 z) (Metric.sphere 0 |R|) := by
@@ -133,40 +84,5 @@ theorem norm_sq_le_circleAverage_poisson {R : ℝ} {z : ℂ} {g : ℂ → ℂ}
     ((continuousOn_poisson_circle hz).mul (hgs.norm.pow 2)).circleIntegrable'
   intro ζ hζ
   exact mul_le_mul_of_nonneg_left (htangent ζ) (poisson_nonneg_on_circle hz hζ)
-
-/-- Every normalized kernel column is a Poisson supersolution on concentric interior disks. -/
-theorem normalizedKernel_poisson_supermean {R : ℝ} (hR : R < 1) {z w : ℂ}
-    (hz : z ∈ Metric.ball 0 R) (hw : w ∈ disk) :
-    Real.circleAverage (fun ζ ↦ poissonKernel 0 z ζ * normalizedKernel ζ w) 0 R ≤
-      normalizedKernel z w := by
-  have hR0 : 0 < R := Metric.pos_of_mem_ball hz
-  have hH := (differentiableOn_kernelHerglotz hR hw).diffContOnCl_ball (Set.Subset.refl _)
-  have hG := (differentiableOn_kernelResolvent hR hw).diffContOnCl_ball (Set.Subset.refl _)
-  have hs : Metric.sphere (0 : ℂ) |R| ⊆ Metric.closedBall 0 R := by
-    simpa only [abs_of_pos hR0] using Metric.sphere_subset_closedBall
-  have hHs := (differentiableOn_kernelHerglotz hR hw).continuousOn.mono hs
-  have hGs := (differentiableOn_kernelResolvent hR hw).continuousOn.mono hs
-  have hiH : CircleIntegrable
-      (fun ζ ↦ poissonKernel 0 z ζ * (kernelHerglotz w ζ).re) 0 R :=
-    ((continuousOn_poisson_circle hz).mul
-      (Complex.continuous_re.comp_continuousOn hHs)).circleIntegrable'
-  have hiG : CircleIntegrable
-      (fun ζ ↦ poissonKernel 0 z ζ * ‖kernelResolvent w ζ‖ ^ 2) 0 R :=
-    ((continuousOn_poisson_circle hz).mul (hGs.norm.pow 2)).circleIntegrable'
-  have hiGc : CircleIntegrable
-      (fun ζ ↦ (1 - ‖w‖ ^ 2) • (poissonKernel 0 z ζ * ‖kernelResolvent w ζ‖ ^ 2)) 0 R :=
-    hiG.const_smul
-  have heq : (fun ζ ↦ poissonKernel 0 z ζ * normalizedKernel ζ w) =
-      (fun ζ ↦ poissonKernel 0 z ζ * (kernelHerglotz w ζ).re -
-        (1 - ‖w‖ ^ 2) • (poissonKernel 0 z ζ * ‖kernelResolvent w ζ‖ ^ 2)) := by
-    funext ζ
-    rw [normalizedKernel_decomposition]
-    simp only [smul_eq_mul]
-    ring
-  rw [heq, Real.circleAverage_fun_sub hiH hiGc,
-    Real.circleAverage_fun_smul, circleAverage_poisson_re hH hz,
-    normalizedKernel_decomposition, smul_eq_mul]
-  exact sub_le_sub_left (mul_le_mul_of_nonneg_left (norm_sq_le_circleAverage_poisson hG hz)
-    (by nlinarith [(mem_disk_iff w).mp hw, norm_nonneg w])) _
 
 end BergmanWeakType.Weighted

@@ -14,7 +14,6 @@ import BergmanWeakType.Rigidity.BoundedRigidity
 import BergmanWeakType.Rigidity.IntegralPhase
 import BergmanWeakType.Rigidity.RiemannMapping
 import BergmanWeakType.Rigidity.UnitDiscShift
-import BergmanWeakType.Weighted.DiskPotential
 import BergmanWeakType.Weighted.Normalizer
 import BergmanWeakType.Weighted.WeightedPotential
 import BergmanWeakType.WeightedSharp
