@@ -39,7 +39,7 @@ open Set Metric Filter Topology
 /-! ## Analytic maps on `[0,1]` -/
 
 /-- A map analytic near `[0,1]` with infinitely many zeros in `[0,1]` vanishes on `[0,1]`. -/
-private theorem periodic_eqOn_zero_of_infinite {u : ℝ → ℝ} (hu : AnalyticOnNhd ℝ u I)
+theorem periodic_eqOn_zero_of_infinite {u : ℝ → ℝ} (hu : AnalyticOnNhd ℝ u I)
     (hinf : (I ∩ u ⁻¹' {0}).Infinite) : EqOn u 0 I := by
   obtain ⟨x₀, hx₀, hacc⟩ := hinf.exists_accPt_of_subset_isCompact isCompact_Icc inter_subset_left
   exact hu.eqOn_zero_of_preconnected_of_frequently_eq_zero isPreconnected_Icc hx₀
@@ -47,18 +47,11 @@ private theorem periodic_eqOn_zero_of_infinite {u : ℝ → ℝ} (hu : AnalyticO
 
 /-- Maps that agree on `[0,1]` and have derivatives at a point of `[0,1]` have the same
 derivative there. -/
-private theorem periodic_hasDerivAt_unique {u v : ℝ → ℝ} {a b x : ℝ} (hx : x ∈ I)
-    (hu : HasDerivAt u a x) (hv : HasDerivAt v b x) (huv : ∀ y ∈ I, u y = v y) : a = b :=
-  (uniqueDiffOn_Icc zero_lt_one x hx).eq_deriv _ hu.hasDerivWithinAt
-    (hv.hasDerivWithinAt.congr huv (huv x hx))
-
-/-- At points of `[0,1]`, the derivative of a map of the class is real, nonzero and of modulus
-less than one. -/
-private theorem periodic_re_deriv_ne_zero_abs_lt_one {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε)
+theorem periodic_re_deriv_ne_zero_abs_lt_one {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε)
     (hf : InClass ε f) {x : ℝ} (hx : x ∈ I) :
     (deriv f x).re ≠ 0 ∧ |(deriv f x).re| < 1 := by
-  have hcl : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd hε hx)
-  have him : (deriv f x).im = 0 := im_deriv_eq_zero (isOpen_nbhd _) hf.differentiableOn
+  have hcl := subset_closure (ofReal_mem_nbhd hε hx)
+  have him := im_deriv_eq_zero (isOpen_nbhd _) hf.differentiableOn
     hf.im_eq_zero (ofReal_mem_nbhd (by linarith) hx)
   exact ⟨fun h => hf.deriv_ne_zero _ hcl (Complex.ext h him),
     (Complex.abs_re_le_norm _).trans_lt (hf.norm_deriv_lt_one _ hcl)⟩
@@ -70,28 +63,20 @@ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 /-! ## Compositions on `[0,1]` -/
 
 /-- `f_{k w} = f_k ∘ f_w` on `[0,1]`, for the real maps. -/
-private theorem periodic_re_comp_cons (k : Fin N) (w : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
+theorem periodic_re_comp_cons (k : Fin N) (w : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
     (Φ.comp (k :: w) x).re = Φ.realMaps k (Φ.comp w x).re := by
   show (Φ.f k (Φ.comp w x)).re = (Φ.f k ((Φ.comp w x).re : ℂ)).re
   rw [← Φ.comp_ofReal w hx]
 
 /-- `|f_w(x) - f_w(y)| ≤ c_max^{|w|} |x - y|` on `[0,1]`. -/
-private theorem periodic_abs_re_comp_sub_le (w : List (Fin N)) {x y : ℝ} (hx : x ∈ I)
-    (hy : y ∈ I) : |(Φ.comp w x).re - (Φ.comp w y).re| ≤ Φ.cmax ^ w.length * |x - y| := by
-  have h := Φ.norm_comp_sub_le w (ofReal_mem_nbhd Φ.ε_pos hx) (ofReal_mem_nbhd Φ.ε_pos hy)
-  rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at h
-  rw [← Complex.sub_re]
-  exact (Complex.abs_re_le_norm _).trans h
-
-/-- `π(i) = lim f_{i₁ ⋯ i_{mₙ}}(zₙ)` for points `zₙ ∈ [0,1]` and lengths `mₙ → ∞`. -/
 theorem tendsto_re_comp_natProj (i : ℕ → Fin N) {m : ℕ → ℕ} (hm : Tendsto m atTop atTop)
     {z : ℕ → ℝ} (hz : ∀ n, z n ∈ I) :
     Tendsto (fun n => (Φ.comp (List.ofFn fun k : Fin (m n) => i k) (z n)).re) atTop
       (𝓝 (Φ.natProj i)) := by
-  have h0 : (0 : ℝ) ∈ I := left_mem_Icc.2 zero_le_one
+  have h0 : 0 ∈ I := left_mem_Icc.2 zero_le_one
   refine ((Φ.tendsto_natProj i).comp hm).congr_dist (squeeze_zero (fun n => dist_nonneg)
     (fun n => ?_) ((tendsto_pow_atTop_nhds_zero_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one).comp hm))
-  have h := Φ.periodic_abs_re_comp_sub_le (List.ofFn fun k : Fin (m n) => i k) h0 (hz n)
+  have h := Φ.exact_abs_re_comp_sub_le (List.ofFn fun k : Fin (m n) => i k) h0 (hz n)
   rw [List.length_ofFn, Complex.ofReal_zero] at h
   have h1 : |0 - z n| ≤ 1 := by
     rw [zero_sub, abs_neg, abs_le]
@@ -125,19 +110,18 @@ theorem deriv_ne_zero_of_conj_of_nonsingleton (hN : 0 < N) (hnd : ¬ ∃ x, Φ.a
     ∀ x ∈ I, deriv g x ≠ 0 := by
   obtain ⟨hga, hinj⟩ := hg
   intro z hz hgz
-  set Z := I ∩ deriv g ⁻¹' {0} with hZ
+  set Z := I ∩ deriv g ⁻¹' {0} 
   have hZc : IsClosed Z := ContinuousOn.preimage_isClosed_of_isClosed
     (fun x hx => (hga x hx).deriv.continuousAt.continuousWithinAt) isClosed_Icc isClosed_singleton
   -- `g'(f_k(x)) f_k'(x) = λ_k g'(x)` and `f_k' ≠ 0`, so every `f_k` maps `Z` into itself
   have hinv : ∀ k, MapsTo (Φ.realMaps k) Z Z := by
     rintro k x ⟨hx, hx0⟩
-    have hFx : Φ.realMaps k x ∈ I := (Φ.inClass k).re_mem_I x hx
-    have hd : HasDerivAt (Φ.realMaps k) (deriv (Φ.f k) x).re x :=
-      hasDerivAt_re_ofReal (Φ.differentiableAt_f k (subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)))
-    have hid := periodic_hasDerivAt_unique hx ((hga _ hFx).differentiableAt.hasDerivAt.comp x hd)
+    have hFx := (Φ.inClass k).re_mem_I x hx
+    have hd := hasDerivAt_re_ofReal (Φ.differentiableAt_f k (subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)))
+    have hid := hasDerivAt_unique_of_eqOn_I hx ((hga _ hFx).differentiableAt.hasDerivAt.comp x hd)
       (((hga x hx).differentiableAt.hasDerivAt.const_mul (lam k)).add_const (t k)) (hconj k)
     refine ⟨hFx, ?_⟩
-    simp only [mem_preimage, mem_singleton_iff] at hx0 ⊢
+    simp [mem_preimage, mem_singleton_iff] at hx0 ⊢
     rw [hx0, mul_zero] at hid
     exact (mul_eq_zero.1 hid).resolve_right
       (periodic_re_deriv_ne_zero_abs_lt_one Φ.ε_pos (Φ.inClass k) hx).1
@@ -145,7 +129,7 @@ theorem deriv_ne_zero_of_conj_of_nonsingleton (hN : 0 < N) (hnd : ¬ ∃ x, Φ.a
   have hinvw : ∀ w : List (Fin N), MapsTo (fun x : ℝ => (Φ.comp w x).re) Z Z := by
     intro w
     induction w with
-    | nil => intro x hx; simpa using hx
+    | nil => intro x hx; exact hx
     | cons k w ih =>
       intro x hx
       show (Φ.comp (k :: w) x).re ∈ Z
@@ -163,7 +147,7 @@ theorem deriv_ne_zero_of_conj_of_nonsingleton (hN : 0 < N) (hnd : ¬ ∃ x, Φ.a
     apply constant_of_derivWithin_zero
       (fun x hx => (hga x hx).differentiableAt.differentiableWithinAt)
     intro x hx
-    have hxI : x ∈ I := Ico_subset_Icc_self hx
+    have hxI := Ico_subset_Icc_self hx
     rw [(hga x hxI).differentiableAt.derivWithin (uniqueDiffOn_Icc zero_lt_one x hxI)]
     exact hzero hxI
   exact one_ne_zero (hinj (right_mem_Icc.2 zero_le_one) (left_mem_Icc.2 zero_le_one)
@@ -181,30 +165,30 @@ theorem deriv_deriv_div_deriv_eq_of_fixedPoint {g : ℝ → ℝ} (hg : AnalyticO
     (deriv (Φ.comp w) p).re = a ∧
       ((deriv (deriv g) p / deriv g p : ℝ) : ℂ) =
         Φ.dualProj (.fin w.reverse) p / (1 - deriv (Φ.comp w) p) := by
-  have hmem : ∀ {x : ℝ}, x ∈ I → (x : ℂ) ∈ nbhd ε := fun hx => ofReal_mem_nbhd Φ.ε_pos hx
+  have hmem : ∀ {x : ℝ}, x ∈ I → ↑x ∈ nbhd ε := fun hx => ofReal_mem_nbhd Φ.ε_pos hx
   obtain ⟨U, hUo, hU, hd⟩ := Φ.exists_differentiableOn_comp w
-  have hUx : ∀ {x : ℝ}, x ∈ I → (x : ℂ) ∈ U := fun hx => hU (subset_closure (hmem hx))
+  have hUx : ∀ {x : ℝ}, x ∈ I → ↑x ∈ U := fun hx => hU (subset_closure (hmem hx))
   -- the real maps `F = Re f_w`, `F₁ = Re f_w'` and `F₂ = Re f_w''`
   set F : ℝ → ℝ := fun y => (Φ.comp w y).re with hF
   set F₁ : ℝ → ℝ := fun y => (deriv (Φ.comp w) y).re with hF₁
-  set F₂ : ℝ → ℝ := fun y => (deriv (deriv (Φ.comp w)) y).re with hF₂
+  set F₂ := fun y => (deriv (deriv (Φ.comp w)) y).re with hF₂
   have hFd : ∀ x ∈ I, HasDerivAt F (F₁ x) x := fun x hx =>
     hasDerivAt_re_ofReal ((hd _ (hUx hx)).differentiableAt (hUo.mem_nhds (hUx hx)))
   have hF₁d : ∀ x ∈ I, HasDerivAt F₁ (F₂ x) x := fun x hx =>
     hasDerivAt_re_ofReal (((hd.deriv hUo) _ (hUx hx)).differentiableAt (hUo.mem_nhds (hUx hx)))
   have hFI : ∀ x ∈ I, F x ∈ I := fun x hx => Φ.re_comp_mem_I w hx
-  have hgd : ∀ y ∈ I, HasDerivAt g (deriv g y) y := fun y hy =>
+  have hgd := fun y hy =>
     (hg y hy).differentiableAt.hasDerivAt
-  have hg₁d : ∀ y ∈ I, HasDerivAt (deriv g) (deriv (deriv g) y) y := fun y hy =>
+  have hg₁d := fun y hy =>
     (hg y hy).deriv.differentiableAt.hasDerivAt
   -- `g'(f_w(x)) f_w'(x) = λ g'(x)` on `[0,1]`
-  have hA : ∀ x ∈ I, deriv g (F x) * F₁ x = a * deriv g x := fun x hx =>
-    periodic_hasDerivAt_unique hx ((hgd _ (hFI x hx)).comp x (hFd x hx))
+  have hA := fun x hx =>
+    hasDerivAt_unique_of_eqOn_I hx ((hgd _ (hFI x hx)).comp x (hFd x hx))
       (((hgd x hx).const_mul a).add_const b) hconj
   -- `g''(f_w(p)) f_w'(p)² + g'(f_w(p)) f_w''(p) = λ g''(p)`
   have hB : deriv (deriv g) (F p) * F₁ p * F₁ p + deriv g (F p) * F₂ p =
       a * deriv (deriv g) p :=
-    periodic_hasDerivAt_unique hp (((hg₁d _ (hFI p hp)).comp p (hFd p hp)).mul (hF₁d p hp))
+    hasDerivAt_unique_of_eqOn_I hp (((hg₁d _ (hFI p hp)).comp p (hFd p hp)).mul (hF₁d p hp))
       ((hg₁d p hp).const_mul a) hA
   have hFp : F p = p := by
     show (Φ.comp w p).re = p
@@ -216,18 +200,17 @@ theorem deriv_deriv_div_deriv_eq_of_fixedPoint {g : ℝ → ℝ} (hg : AnalyticO
     exact mul_left_cancel₀ hgp (by rw [h, mul_comm])
   refine ⟨hF₁p, ?_⟩
   -- `f_w'(p)` and `f_w''(p)` are real, with `0 < |f_w'(p)| < 1`
-  have hcl : (p : ℂ) ∈ closure (nbhd ε) := subset_closure (hmem hp)
+  have hcl := subset_closure (hmem hp)
   have h₁ : deriv (Φ.comp w) p = (F₁ p : ℂ) :=
     Complex.ext (by simp [hF₁]) (by simp [hF₁, Φ.im_deriv_comp_ofReal w (hmem hp)])
   have h₂ : deriv (deriv (Φ.comp w)) p = (F₂ p : ℂ) := by
-    have him : (deriv (deriv (Φ.comp w)) p).im = 0 :=
+    have him :=
       im_deriv_eq_zero (isOpen_nbhd ε) ((Φ.differentiableOn_comp w).deriv (isOpen_nbhd ε))
         (fun s hs => Φ.im_deriv_comp_ofReal w hs) (hmem hp)
     exact Complex.ext (by simp [hF₂]) (by simp [hF₂, him])
   have hne : F₁ p ≠ 0 := fun h0 =>
     Φ.deriv_comp_ne_zero w hcl (by rw [h₁, h0, Complex.ofReal_zero])
-  have hlt : |F₁ p| < 1 :=
-    calc |F₁ p| ≤ ‖deriv (Φ.comp w) p‖ := Complex.abs_re_le_norm _
+  have hlt := calc |F₁ p| ≤ ‖deriv (Φ.comp w) p‖ := Complex.abs_re_le_norm _
       _ ≤ Φ.cmax ^ w.length := Φ.norm_deriv_comp_le w hcl
       _ < 1 := pow_lt_one₀ Φ.cmax_nonneg Φ.cmax_lt_one (List.length_pos_iff.2 hw).ne'
   have hne' : 1 - F₁ p ≠ 0 := fun h0 => by
@@ -251,14 +234,14 @@ theorem dualProj_eq_of_conjSelfSimilar (hnd : ¬ ∃ x, Φ.attractor = {x})
     (h : ConjSelfSimilar Φ.realMaps) :
     ∀ i j : ℕ → Fin N, ∀ x ∈ I, Φ.dualProj (.inf i) x = Φ.dualProj (.inf j) x := by
   intro i₀ j₀
-  have hN : 0 < N := (i₀ 0).pos
+  have hN := (i₀ 0).pos
   have hε := Φ.ε_pos
   obtain ⟨g, hg, lam, t, hconj⟩ := h
-  have hconj' : ∀ k, ∀ x ∈ I, g (Φ.realMaps k x) = lam k * g x + t k := fun k => (hconj k).2.2
+  have hconj' := fun k => (hconj k).2.2
   -- the first step
   have hg' := Φ.deriv_ne_zero_of_conj_of_nonsingleton hN hnd hg hconj'
   obtain ⟨M, -, -, hM⟩ := Φ.exists_dualProj_bounds
-  have hc : Tendsto (fun n : ℕ => Φ.cmax ^ (n + 1)) atTop (𝓝 0) :=
+  have hc :=
     (tendsto_pow_atTop_nhds_zero_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one).comp
       (tendsto_add_atTop_nat 1)
   -- `g''/g' = H_j` at `π(i)`
@@ -268,16 +251,16 @@ theorem dualProj_eq_of_conjSelfSimilar (hnd : ¬ ∃ x, Φ.attractor = {x})
     intro i j
     have hπ : Φ.natProj i ∈ I := Φ.attractor_subset_I ⟨i, rfl⟩
     -- the words `kₙ = i₁ ⋯ i_{n+1} j_{n+1} ⋯ j₁`
-    set u : ℕ → List (Fin N) := fun n => List.ofFn fun m : Fin (n + 1) => i m with hu
-    set v : ℕ → List (Fin N) := fun n => List.ofFn fun m : Fin (n + 1) => j m with hv
-    set k : ℕ → List (Fin N) := fun n => u n ++ (v n).reverse with hk
+    set u := fun n => List.ofFn fun m : Fin (n + 1) => i m with hu
+    set v := fun n => List.ofFn fun m : Fin (n + 1) => j m with hv
+    set k := fun n => u n ++ (v n).reverse with hk
     have hkne : ∀ n, k n ≠ [] := fun n => by simp [hk, hu]
     -- the fixed points `pₙ` of `f_{kₙ}`
     have hfix : ∀ n, ∃ p, p ∈ I ∧ Φ.comp (k n) p = p := fun n => by
       obtain ⟨ε', hε', hf⟩ := Φ.exists_inClass_comp (hkne n)
       exact (existsUnique_fixedPoint hε' hf).exists
     choose p hp hfp using hfix
-    have hpcl : ∀ n, (p n : ℂ) ∈ closure (nbhd ε) := fun n =>
+    have hpcl := fun n =>
       subset_closure (ofReal_mem_nbhd hε (hp n))
     -- the second step at `pₙ`
     have hid : ∀ n, ((deriv (deriv g) (p n) / deriv g (p n) : ℝ) : ℂ) =
@@ -290,14 +273,12 @@ theorem dualProj_eq_of_conjSelfSimilar (hnd : ¬ ∃ x, Φ.attractor = {x})
       refine (Φ.tendsto_re_comp_natProj i (tendsto_add_atTop_nat 1)
         (z := fun n => (Φ.comp (v n).reverse (p n)).re)
         fun n => Φ.re_comp_mem_I _ (hp n)).congr fun n => ?_
-      show (Φ.comp (u n) ((Φ.comp (v n).reverse (p n)).re : ℂ)).re = p n
       rw [← Φ.comp_ofReal _ (hp n), ← Function.comp_apply (f := Φ.comp (u n)), ← Φ.comp_append]
-      show (Φ.comp (k n) (p n)).re = p n
       rw [hfp n, Complex.ofReal_re]
     -- the left-hand side tends to `g''(π(i))/g'(π(i))`
     have hL : Tendsto (fun n => ((deriv (deriv g) (p n) / deriv g (p n) : ℝ) : ℂ)) atTop
         (𝓝 ((deriv (deriv g) (Φ.natProj i) / deriv g (Φ.natProj i) : ℝ) : ℂ)) := by
-      have hcont : ContinuousAt (fun x => deriv (deriv g) x / deriv g x) (Φ.natProj i) :=
+      have hcont :=
         (hg.1 _ hπ).deriv.deriv.continuousAt.div (hg.1 _ hπ).deriv.continuousAt (hg' _ hπ)
       exact (Complex.continuous_ofReal.tendsto _).comp (hcont.tendsto.comp hplim)
     -- `f_{kₙ}'(pₙ) → 0`
@@ -316,7 +297,7 @@ theorem dualProj_eq_of_conjSelfSimilar (hnd : ¬ ∃ x, Φ.attractor = {x})
       intro l hl
       have hl' : l < (v n).length := by simp only [hv, List.length_ofFn]; exact hl
       have hget : (Word.fin (k n).reverse).get? l = some (j l) := by
-        simp only [hk, Word.get?_fin, List.reverse_append, List.reverse_reverse]
+        simp [hk, Word.get?_fin, List.reverse_append, List.reverse_reverse]
         rw [List.getElem?_append_left hl']
         show (List.ofFn fun m : Fin (n + 1) => j m)[l]? = some (j l)
         simp only [List.getElem?_ofFn, hl, ↓reduceDIte]
@@ -334,7 +315,7 @@ theorem dualProj_eq_of_conjSelfSimilar (hnd : ¬ ∃ x, Φ.attractor = {x})
         ((tendsto_const_nhds : Tendsto (fun _ : ℕ => (1 : ℂ)) atTop (𝓝 1)).sub hD)
         (by rw [sub_zero]; exact one_ne_zero)
       rw [zero_add, sub_zero, div_one] at h
-      exact h.congr fun n => by simp only [Pi.div_apply, sub_add_cancel]
+      exact h.congr fun n => by simp [Pi.div_apply, sub_add_cancel]
     exact tendsto_nhds_unique hL (hR.congr fun n => (hid n).symm)
   -- `H_{i₀} = H_{j₀}` on the infinite attractor, so on `[0,1]` by the identity theorem
   intro x hx
@@ -350,7 +331,7 @@ theorem dualProj_eq_of_conjSelfSimilar (hnd : ¬ ∃ x, Φ.attractor = {x})
 /-! ## The converse -/
 
 /-- `Ĥ_{f_k} = H_{k^∞}` on `[0,1]`. -/
-private theorem periodic_hatH_f_eq_dualProj_const (k : Fin N) :
+theorem periodic_hatH_f_eq_dualProj_const (k : Fin N) :
     ∀ x ∈ I, hatH (Φ.f k) x = Φ.dualProj (.inf fun _ => k) x := by
   intro x hx
   have h := Φ.hatH_comp_eq_dualProj one_pos ![k] x hx
@@ -369,7 +350,7 @@ theorem conjSelfSimilar_of_dualProj_eq
   · subst hN
     exact ⟨id, ⟨analyticOnNhd_id, injOn_id _⟩, 0, 0, fun j => j.elim0⟩
   have hε := Φ.ε_pos
-  have hmem : ∀ {x : ℝ}, x ∈ I → (x : ℂ) ∈ nbhd ε := fun hx => ofReal_mem_nbhd hε hx
+  have hmem : ∀ {x : ℝ}, x ∈ I → ↑x ∈ nbhd ε := fun hx => ofReal_mem_nbhd hε hx
   set k₀ : Fin N := ⟨0, hN⟩
   choose p hp hfp using fun k => (existsUnique_fixedPoint hε (Φ.inClass k)).exists
   -- `H = H_{k^∞} = Ĥ_{f_k}` for every letter `k`
@@ -379,11 +360,11 @@ theorem conjSelfSimilar_of_dualProj_eq
   -- Lemma 5.1 for `f_{k₀}`, with `g(p_{k₀}) = 0` and `g'(p_{k₀}) = 1`: `g'' = H g'`
   obtain ⟨G, ⟨G', hG'd, -, -, hGG'⟩, hinj, hode, -, -⟩ :=
     (lemma_5_1 hε (Φ.inClass k₀) (hp k₀) (hfp k₀)).1 0 1 one_ne_zero
-  have hGd : DifferentiableOn ℂ G (nbhd ε) := hG'd.congr fun z hz => by
+  have hGd := hG'd.congr fun z hz => by
     have := congrFun (congrArg UniformFun.toFun hGG') ⟨z, hz⟩
-    simp only [toNbhd, UniformFun.toFun_ofFun] at this
+    simp [toNbhd, UniformFun.toFun_ofFun] at this
     exact this
-  have hG₁d : DifferentiableOn ℂ (deriv G) (nbhd ε) := hGd.deriv (isOpen_nbhd ε)
+  have hG₁d := hGd.deriv (isOpen_nbhd ε)
   set φ : ℝ → ℝ := fun x => (G x).re with hφ
   set ψ : ℝ → ℝ := fun x => (deriv G x).re with hψ
   have hφd : ∀ x ∈ I, HasDerivAt φ (ψ x) x := fun x hx =>
@@ -430,11 +411,11 @@ theorem subConjSelfSimilar_iff :
     obtain ⟨ε₂, hε₂, hf₂⟩ := Φ.exists_inClass_comp (hne j hm)
     obtain ⟨p₁, ⟨hp₁, hfp₁⟩, -⟩ := existsUnique_fixedPoint hε₁ hf₁
     obtain ⟨p₂, ⟨hp₂, hfp₂⟩, -⟩ := existsUnique_fixedPoint hε₂ hf₂
-    have hci : ∀ x ∈ I, g (Φ.comp (List.ofFn i) x).re = lam 0 * g x + t 0 := (hconj 0).2.2
-    have hcj : ∀ x ∈ I, g (Φ.comp (List.ofFn j) x).re = lam 1 * g x + t 1 := (hconj 1).2.2
-    have hmi : MapsTo (fun x : ℝ => (Φ.comp (List.ofFn i) x).re) I I := fun x hx =>
+    have hci := (hconj 0).2.2
+    have hcj := (hconj 1).2.2
+    have hmi := fun x hx =>
       hf₁.re_mem_I x hx
-    have hmj : MapsTo (fun x : ℝ => (Φ.comp (List.ofFn j) x).re) I I := fun x hx =>
+    have hmj := fun x hx =>
       hf₂.re_mem_I x hx
     have hFi : (Φ.comp (List.ofFn i) p₁).re = p₁ := by rw [hfp₁, Complex.ofReal_re]
     have hFj : (Φ.comp (List.ofFn j) p₂).re = p₂ := by rw [hfp₂, Complex.ofReal_re]
@@ -452,7 +433,7 @@ theorem subConjSelfSimilar_iff :
       obtain ⟨ε₄, hε₄, hf₄⟩ := Φ.exists_inClass_comp (hne (Fin.append j i) hm')
       have hH := hatH_eq_of_eqOn_I hε₃ hf₃ hε₄ hf₄ fun y hy => by
         rw [hcomp y hy, hcomp y hy]
-        exact congrArg _ (hcomm y hy)
+        exact congrArg _ ((comp_comm_of_conj hinj hmi hmj hci hcj hp₁ hFi hFj) y hy)
       refine ⟨m + m, hm', Fin.append i j ∘ Fin.rev, Fin.append j i ∘ Fin.rev,
         hrev_ne fun h => hij (funext fun k => ?_), fun x hx => ?_⟩
       · simpa using congrFun h (Fin.castAdd m k)
@@ -462,15 +443,14 @@ theorem subConjSelfSimilar_iff :
       let Ψ : IFS 2 (ε / 4) := ⟨![Φ.comp (List.ofFn i), Φ.comp (List.ofFn j)],
         by linarith [Φ.ε_pos], Fin.forall_fin_two.2
           ⟨Φ.inClass_comp (hne i hm), Φ.inClass_comp (hne j hm)⟩⟩
-      have hnd : ¬ ∃ x, Ψ.attractor = {x} := by
+      have hall := Ψ.dualProj_eq_of_conjSelfSimilar (by
         rintro ⟨x, hx⟩
-        have hxI : x ∈ I := Ψ.attractor_subset_I (hx ▸ mem_singleton x)
+        have hxI := Ψ.attractor_subset_I (hx ▸ mem_singleton x)
         have hfix := Ψ.fixedPoint_of_attractor_singleton hx
         have hi : Φ.comp (List.ofFn i) x = x := by simpa [Ψ] using hfix 0
         have hj : Φ.comp (List.ofFn j) x = x := by simpa [Ψ] using hfix 1
         exact hpq (((existsUnique_fixedPoint hε₁ hf₁).unique ⟨hp₁, hfp₁⟩ ⟨hxI, hi⟩).trans
-          ((existsUnique_fixedPoint hε₂ hf₂).unique ⟨hxI, hj⟩ ⟨hp₂, hfp₂⟩))
-      have hall := Ψ.dualProj_eq_of_conjSelfSimilar hnd ⟨g, ⟨hg, hinj⟩, lam, t,
+          ((existsUnique_fixedPoint hε₂ hf₂).unique ⟨hxI, hj⟩ ⟨hp₂, hfp₂⟩))) ⟨g, ⟨hg, hinj⟩, lam, t,
         Fin.forall_fin_two.2 ⟨by simpa [Ψ, realMaps] using hconj 0,
           by simpa [Ψ, realMaps] using hconj 1⟩⟩
       have hH : ∀ x ∈ I, hatH (Φ.comp (List.ofFn i)) x =

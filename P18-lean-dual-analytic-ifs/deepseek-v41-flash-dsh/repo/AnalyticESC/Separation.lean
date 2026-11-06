@@ -20,10 +20,10 @@ namespace IFS
 
 variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 
-private theorem zero_mem_I : (0 : ℝ) ∈ I := ⟨le_rfl, zero_le_one⟩
+theorem zero_mem_I : 0 ∈ I := ⟨le_rfl, zero_le_one⟩
 
 /-- Compositions map real points of `I` into the closed unit disc. -/
-private theorem norm_comp_ofReal_le_one (w : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
+theorem norm_comp_ofReal_le_one (w : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
     ‖Φ.comp w x‖ ≤ 1 := by
   rw [Φ.comp_ofReal w hx, Complex.norm_real, Real.norm_eq_abs, abs_le]
   have := Φ.re_comp_mem_I w hx
@@ -31,7 +31,7 @@ private theorem norm_comp_ofReal_le_one (w : List (Fin N)) {x : ℝ} (hx : x ∈
 
 theorem tendsto_natProj (w : ℕ → Fin N) :
     Tendsto (fun n => (Φ.comp (List.ofFn fun k : Fin n => w k) 0).re) atTop (𝓝 (Φ.natProj w)) := by
-  have hz0 : ((0 : ℝ) : ℂ) ∈ nbhd ε := ofReal_mem_nbhd Φ.ε_pos zero_mem_I
+  have hz0 := ofReal_mem_nbhd Φ.ε_pos zero_mem_I
   have hu : ∀ n, dist (Φ.comp (List.ofFn fun k : Fin n => w k) 0).re
       (Φ.comp (List.ofFn fun k : Fin (n + 1) => w k) 0).re ≤ 1 * Φ.cmax ^ n := by
     intro n
@@ -42,10 +42,10 @@ theorem tendsto_natProj (w : ℕ → Fin N) :
     rw [hsplit, Φ.comp_append, Function.comp_apply, Real.dist_eq, one_mul]
     set v := List.ofFn fun k : Fin n => w k
     have hv : v.length = n := List.length_ofFn
-    have hz0' : (0 : ℂ) ∈ nbhd ε := by simpa using hz0
-    have hz1 : Φ.comp [w n] 0 ∈ nbhd ε := Φ.mapsTo_comp [w n] hz0'
-    have h1 : ‖Φ.comp [w n] 0‖ ≤ 1 := by
-      simpa using Φ.norm_comp_ofReal_le_one [w n] zero_mem_I
+    have hz0' : (0 : ℂ) ∈ nbhd ε := by exact hz0
+    have hz1 := Φ.mapsTo_comp [w n] hz0'
+    have h1 := by
+      exact Φ.norm_comp_ofReal_le_one [w n] zero_mem_I
     calc |(Φ.comp v 0).re - (Φ.comp v (Φ.comp [w n] 0)).re|
         = |(Φ.comp v 0 - Φ.comp v (Φ.comp [w n] 0)).re| := by rw [Complex.sub_re]
       _ ≤ ‖Φ.comp v 0 - Φ.comp v (Φ.comp [w n] 0)‖ := Complex.abs_re_le_norm _
@@ -61,23 +61,23 @@ theorem tendsto_natProj (w : ℕ → Fin N) :
 theorem attractor_subset_I : Φ.attractor ⊆ I := by
   rintro _ ⟨w, rfl⟩
   exact isClosed_Icc.mem_of_tendsto (Φ.tendsto_natProj w)
-    (Eventually.of_forall fun n => by simpa using Φ.re_comp_mem_I _ zero_mem_I)
+    (Eventually.of_forall fun n => by exact Φ.re_comp_mem_I _ zero_mem_I)
 
-private theorem bddAbove_supDist (i j : List (Fin N)) :
-    BddAbove (range fun x : I => ‖Φ.comp i ((x : ℝ) : ℂ) - Φ.comp j ((x : ℝ) : ℂ)‖) := by
+theorem bddAbove_supDist (i j : List (Fin N)) :
+    BddAbove (range fun x : I => ‖Φ.comp i ↑x - Φ.comp j ↑x‖) := by
   refine ⟨2, ?_⟩
   rintro _ ⟨x, rfl⟩
-  calc _ ≤ ‖Φ.comp i ((x : ℝ) : ℂ)‖ + ‖Φ.comp j ((x : ℝ) : ℂ)‖ := norm_sub_le _ _
+  calc _ ≤ ‖Φ.comp i ↑x‖ + ‖Φ.comp j ↑x‖ := norm_sub_le _ _
     _ ≤ 1 + 1 := add_le_add (Φ.norm_comp_ofReal_le_one i x.2) (Φ.norm_comp_ofReal_le_one j x.2)
     _ = 2 := by norm_num
 
-private theorem norm_le_supDist (i j : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
+theorem norm_le_supDist (i j : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
     ‖Φ.comp i x - Φ.comp j x‖ ≤ Φ.supDist i j :=
-  le_ciSup (f := fun x : I => ‖Φ.comp i ((x : ℝ) : ℂ) - Φ.comp j ((x : ℝ) : ℂ)‖)
+  le_ciSup (f := fun x : I => ‖Φ.comp i ↑x - Φ.comp j ↑x‖)
     (Φ.bddAbove_supDist i j) ⟨x, hx⟩
 
 /-- Appending a common suffix does not increase the distance. -/
-private theorem supDist_append_le (i j u : List (Fin N)) :
+theorem supDist_append_le (i j u : List (Fin N)) :
     Φ.supDist (i ++ u) (j ++ u) ≤ Φ.supDist i j := by
   have : Nonempty I := ⟨⟨0, zero_mem_I⟩⟩
   refine ciSup_le fun x => ?_
@@ -94,7 +94,7 @@ theorem exists_close_pair_ge (h : ¬ Φ.SESC) {c : ℝ} (hc : 0 < c) (B : ℕ) :
   push Not at hcon
   apply h
   set c₀ := min c 1
-  have hc₀ : 0 < c₀ := lt_min hc one_pos
+  have hc₀ := lt_min hc one_pos
   have hc₀1 : c₀ ≤ 1 := min_le_right _ _
   refine ⟨c₀ ^ (B + 1), pow_pos hc₀ _, fun n i j hij => ?_⟩
   have hn : 0 < n := by

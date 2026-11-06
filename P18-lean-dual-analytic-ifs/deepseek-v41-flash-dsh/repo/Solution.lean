@@ -30,14 +30,14 @@ open Set Metric
 abbrev I : Set ℝ := Icc 0 1
 
 /-- The open `δ`-neighbourhood `B_δ = {z ∈ ℂ : ∃ x ∈ I, |z - x| < δ}` of `I` in `ℂ`. -/
-def nbhd (δ : ℝ) : Set ℂ := {z | ∃ x ∈ I, ‖z - (x : ℂ)‖ < δ}
+def nbhd (δ : ℝ) : Set ℂ := {z | ∃ x ∈ I, ‖z - ↑x‖ < δ}
 
 /-- The class `S^ω_ε(I)` of Section 1.1, for a map given by its holomorphic extension:
 (A) `f` is complex analytic on `B_{2ε}` and real at the real points of `B_{2ε}`;
 (B) `f(I) ⊆ I` and `f(cl B_ε) ⊆ B_ε`; (C) `0 < |f'(z)| < 1` for `z ∈ cl B_ε`. -/
 structure InClass (ε : ℝ) (f : ℂ → ℂ) : Prop where
   differentiableOn : DifferentiableOn ℂ f (nbhd (2 * ε))
-  im_eq_zero : ∀ x : ℝ, (x : ℂ) ∈ nbhd (2 * ε) → (f x).im = 0
+  im_eq_zero : ∀ x : ℝ, ↑x ∈ nbhd (2 * ε) → (f x).im = 0
   re_mem_I : ∀ x ∈ I, (f x).re ∈ I
   mapsTo : ∀ z ∈ closure (nbhd ε), f z ∈ nbhd ε
   deriv_ne_zero : ∀ z ∈ closure (nbhd ε), deriv f z ≠ 0
@@ -138,7 +138,7 @@ noncomputable def divide (a b : ℝ) (_hb : b ≠ 0) : ℝ := a / b
 abbrev Scale := {r : ℝ // 0 < r ∧ r < 1}
 
 /-- Scales tending to zero from above. -/
-def scaleZero : Filter Scale := comap Subtype.val (𝓝[>] (0 : ℝ))
+def scaleZero : Filter Scale := comap Subtype.val (𝓝[>] 0)
 
 /-- The logarithmic ratio at a scale in `(0,1)`. -/
 noncomputable def logRatio (a : ℝ) (r : Scale) : ℝ :=
@@ -287,7 +287,7 @@ theorem nbhd_eq_lib (δ : ℝ) : nbhd δ = AnalyticESC.nbhd δ := by
 theorem inClass_iff_lib {ε : ℝ} {f : ℂ → ℂ} :
     InClass ε f ↔ AnalyticESC.InClass ε f := by
   constructor <;> rintro ⟨h1, h2, h3, h4, h5, h6⟩ <;> constructor <;>
-    (try simp only [nbhd_eq_lib] at *) <;> assumption
+    (try simp [nbhd_eq_lib] at *) <;> assumption
 
 theorem dualProjFin_eq_lib {ε : ℝ} (Φ : AnalyticESC.IFS N ε) (hd : NonzeroDerivatives Φ.f)
     (w : List (Fin N)) (x : I) : dualProjFin Φ.f hd w x = Φ.dualProj (.fin w) x := by
@@ -353,7 +353,7 @@ theorem audit_sesc_of_dualProj {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ → 
         intro k _ _
         simp
       rw [hv] at this
-      simp only [← dualProjFin_eq_lib (toIFS hε f hf) hd]
+      simp [← dualProjFin_eq_lib (toIFS hε f hf) hd]
       exact this
     | inf w => exact absurd hlen (by simp [AnalyticESC.Word.length])
   | inf w =>
@@ -379,12 +379,10 @@ theorem audit_example_criterion {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ →
       (∀ i j : ℕ → Fin N, i ≠ j →
         0 < ⨆ x : I, ‖dualProjInf f hd i x - dualProjInf f hd j x‖) ∧
       SESC f) := by
-  have hsep' : ∀ i j : Fin N, i ≠ j → ∃ x ∈ AnalyticESC.I,
-      α ≤ ‖(toIFS hε f hf).nonlin i x - (toIFS hε f hf).nonlin j x‖ := by
+  obtain ⟨hβ, h⟩ := (toIFS hε f hf).proposition_1_8 hN hα (by
     intro i j hij
     obtain ⟨x, hx⟩ := hsep i j hij
-    exact ⟨x, x.2, hx⟩
-  obtain ⟨hβ, h⟩ := (toIFS hε f hf).proposition_1_8 hN hα hsep'
+    exact ⟨x, x.2, hx⟩)
   refine ⟨hβ, fun hα' => ?_⟩
   have hc_eq : (toIFS hε f hf).cmax = cmax ε f := by
     unfold cmax
@@ -394,7 +392,7 @@ theorem audit_example_criterion {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ →
   refine ⟨fun n i j hij => ?_, fun i j hij => hne (.inf i) (.inf j) (fun h => hij (by cases h; rfl)) rfl, hS⟩
   have hfin := hne (.fin (List.ofFn i)) (.fin (List.ofFn j))
     (fun h => hij (List.ofFn_injective (AnalyticESC.Word.fin.inj h))) (by simp)
-  simp only [← dualProjFin_eq_lib (toIFS hε f hf) hd] at hfin
+  simp [← dualProjFin_eq_lib (toIFS hε f hf) hd] at hfin
   exact hfin
 
 /-- The polynomial example of Section 1.2.2: the system `x/8`, `x/8 + x²/32`, `x/16 + x²/32 + 29/32` lies in
@@ -402,7 +400,6 @@ theorem audit_example_criterion {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ →
 theorem audit_example_sesc : ∃ ε > 0, (∀ i, InClass ε (exampleMaps i)) ∧ SESC exampleMaps := by
   obtain ⟨ε, hε, Φ, hΦ, hS⟩ := AnalyticESC.example_sesc
   obtain ⟨g, gpos, hg⟩ := Φ
-  change g = _ at hΦ
   subst hΦ
   exact ⟨ε, hε, fun i => inClass_iff_lib.mpr (hg i), hS⟩
 
@@ -435,8 +432,8 @@ self-similar IFS, that is, `(f_i, f_j)` is conjugated to a self-similar IFS for 
 theorem audit_subconj_iff {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ → ℂ) (hf : ∀ i, InClass ε (f i)) (hd : NonzeroDerivatives f)
     (hnd : ¬ ∃ x, attractor f = {x}) :
     (∃ (m : ℕ) (i j : Fin m → Fin N), i ≠ j ∧
-      ConjSelfSimilar ![fun x : ℝ => (comp f (List.ofFn i) x).re,
-        fun x : ℝ => (comp f (List.ofFn j) x).re]) ↔
+      ConjSelfSimilar ![fun x => (comp f (List.ofFn i) x).re,
+        fun x => (comp f (List.ofFn j) x).re]) ↔
       ∃ (m : ℕ) (hm : 0 < m) (i j : Fin m → Fin N), i ≠ j ∧
         ∀ x : I, dualProjInf f hd (periodic hm i) x = dualProjInf f hd (periodic hm j) x := by
   constructor
@@ -458,12 +455,12 @@ theorem pressureRatio_tendsto_iff (f : Fin N → ℂ → ℂ) (t : ℝ) :
 
 theorem logRatio_tendsto_iff (mass : ℝ → ℝ) (s : ℝ) :
     Tendsto (fun r : Scale => logRatio (mass r) r) scaleZero (𝓝 s) ↔
-      Tendsto (fun r : ℝ => Real.log (mass r) / Real.log r) (𝓝[>] 0) (𝓝 s) :=
+      Tendsto (fun r => Real.log (mass r) / Real.log r) (𝓝[>] 0) (𝓝 s) :=
   AnalyticESC.scale_tendsto_iff (fun r => Real.log (mass r) / Real.log r) (𝓝 s)
 
 theorem lqDim_eq_lib (μ : Measure ℝ) (q : ℝ) (hq : q - 1 ≠ 0) :
     lqDim μ q hq = AnalyticESC.lqDim μ q :=
-  congrArg (fun t : ℝ => t / (q - 1))
+  congrArg (fun t => t / (q - 1))
     (AnalyticESC.scale_liminf (AnalyticESC.lqRatio μ q))
 
 theorem dimEquality_of_lib {ε : ℝ} (Φ : AnalyticESC.IFS N ε)

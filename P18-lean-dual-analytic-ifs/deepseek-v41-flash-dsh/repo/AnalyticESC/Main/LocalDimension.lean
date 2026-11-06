@@ -45,7 +45,7 @@ def IsGibbs (s : ℝ) (ν : Measure (ℕ → Fin N)) : Prop :=
       ν.real (wordCylinder w) ≤ C * Φ.supDeriv w ^ s
 
 /-- The prefix map `ω ↦ ω₁ ⋯ ωₙ` is measurable. -/
-private theorem measurable_prefix (n : ℕ) : Measurable fun (ω : ℕ → Fin N) (k : Fin n) => ω k :=
+theorem measurable_prefix (n : ℕ) : Measurable fun (ω : ℕ → Fin N) (k : Fin n) => ω k :=
   Measurable.of_eval fun k => measurable_pi_apply (k : ℕ)
 
 /-- The natural projection is measurable, so `ν ∘ π⁻¹` is the image measure of `ν`. -/
@@ -57,10 +57,10 @@ theorem measurable_natProj : Measurable Φ.natProj :=
     (tendsto_pi_nhds.2 Φ.tendsto_natProj)
 
 /-- The cylinder of a word of length `n` is the preimage of the word under the prefix map. -/
-private theorem wordCylinder_ofFn {n : ℕ} (v : Fin n → Fin N) :
+theorem wordCylinder_ofFn {n : ℕ} (v : Fin n → Fin N) :
     wordCylinder (List.ofFn v) = (fun (ω : ℕ → Fin N) (k : Fin n) => ω k) ⁻¹' {v} := by
   ext ω
-  simp only [wordCylinder, mem_ofPred_eq, mem_preimage, mem_singleton_iff, funext_iff]
+  simp [wordCylinder, mem_ofPred_eq, mem_preimage, mem_singleton_iff, funext_iff]
   constructor
   · intro h k
     simpa using h ⟨k, by simp⟩
@@ -69,7 +69,7 @@ private theorem wordCylinder_ofFn {n : ℕ} (v : Fin n → Fin N) :
 
 /-- The measure of the set of infinite words whose prefix of length `n` lies in `S` is the sum of
 the measures of the cylinders of the words in `S`. -/
-private theorem sum_measureReal_wordCylinder (ν : Measure (ℕ → Fin N)) [IsFiniteMeasure ν] (n : ℕ)
+theorem sum_measureReal_wordCylinder (ν : Measure (ℕ → Fin N)) [IsFiniteMeasure ν] (n : ℕ)
     (S : Finset (Fin n → Fin N)) :
     ∑ v ∈ S, ν.real (wordCylinder (List.ofFn v)) =
       ν.real ((fun (ω : ℕ → Fin N) (k : Fin n) => ω k) ⁻¹' ↑S) := by
@@ -79,13 +79,13 @@ private theorem sum_measureReal_wordCylinder (ν : Measure (ℕ → Fin N)) [IsF
   rw [wordCylinder_ofFn, map_measureReal_apply (measurable_prefix n) (MeasurableSet.of_discrete)]
 
 /-- The cylinders of the words of length `n` have total measure `1`. -/
-private theorem sum_measureReal_wordCylinder_univ (ν : Measure (ℕ → Fin N))
+theorem sum_measureReal_wordCylinder_univ (ν : Measure (ℕ → Fin N))
     [IsProbabilityMeasure ν] (n : ℕ) :
     ∑ v : Fin n → Fin N, ν.real (wordCylinder (List.ofFn v)) = 1 := by
   rw [sum_measureReal_wordCylinder, Finset.coe_univ, preimage_univ, probReal_univ]
 
-private theorem bddAbove_norm_deriv_comp (w : List (Fin N)) :
-    BddAbove (range fun x : I => ‖deriv (Φ.comp w) ((x : ℝ) : ℂ)‖) :=
+theorem bddAbove_norm_deriv_comp (w : List (Fin N)) :
+    BddAbove (range fun x : I => ‖deriv (Φ.comp w) ↑x‖) :=
   ⟨Φ.cmax ^ w.length, by
     rintro _ ⟨x, rfl⟩
     exact Φ.norm_deriv_comp_le w (subset_closure (ofReal_mem_nbhd Φ.ε_pos x.2))⟩
@@ -93,7 +93,7 @@ private theorem bddAbove_norm_deriv_comp (w : List (Fin N)) :
 /-- `|f_w'(x)| ≤ ‖f_w'‖` for `x ∈ [0,1]`. -/
 theorem norm_deriv_le_supDeriv (w : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
     ‖deriv (Φ.comp w) x‖ ≤ Φ.supDeriv w :=
-  le_ciSup (f := fun x : I => ‖deriv (Φ.comp w) ((x : ℝ) : ℂ)‖) (Φ.bddAbove_norm_deriv_comp w)
+  le_ciSup (f := fun x : I => ‖deriv (Φ.comp w) ↑x‖) (Φ.bddAbove_norm_deriv_comp w)
     ⟨x, hx⟩
 
 /-- `‖f_w'‖ ≤ c_max^{|w|}`. -/
@@ -114,10 +114,10 @@ theorem tendsto_pressure_iff_of_isGibbs (hN : 0 < N) {s : ℝ} {ν : Measure (�
     Tendsto (fun n : ℕ => Real.log (Φ.pressureSum t n) / n) atTop (𝓝 0) ↔ t = s := by
   obtain ⟨C, hC, hG⟩ := hν
   have hcmin := Φ.cmin_pos hN
-  have hcmax : 0 < Φ.cmax := hcmin.trans_le (Φ.cmin_le_cmax hN)
-  set L := Real.log Φ.cmax with hL_def
-  have hL : L < 0 := Real.log_neg hcmax Φ.cmax_lt_one
-  have hpos : ∀ w, 0 < Φ.supDeriv w := fun w =>
+  have hcmax := hcmin.trans_le (Φ.cmin_le_cmax hN)
+  set L := Real.log Φ.cmax 
+  have hL := Real.log_neg hcmax Φ.cmax_lt_one
+  have hpos := fun w =>
     (pow_pos hcmin _).trans_le (Φ.cmin_pow_le_supDeriv w)
   have hlog : ∀ n (v : Fin n → Fin N), Real.log (Φ.supDeriv (List.ofFn v)) ≤ n * L := by
     intro n v
@@ -147,7 +147,7 @@ theorem tendsto_pressure_iff_of_isGibbs (hN : 0 < N) {s : ℝ} {ν : Measure (�
     rw [← Real.rpow_def_of_pos (hpos w), ← Real.rpow_add (hpos w), add_sub_cancel]
   have hup : s ≤ t → ∀ n, Real.log (Φ.pressureSum t n) ≤ Real.log C + n * ((t - s) * L) := by
     intro hst n
-    have h : Φ.pressureSum t n ≤ C * Real.exp (n * ((t - s) * L)) := by
+    have h := by
       calc Φ.pressureSum t n
           ≤ Φ.pressureSum s n * Real.exp (n * ((t - s) * L)) := by
             rw [pressureSum, pressureSum, Finset.sum_mul]
@@ -165,7 +165,7 @@ theorem tendsto_pressure_iff_of_isGibbs (hN : 0 < N) {s : ℝ} {ν : Measure (�
           rw [Real.log_mul hC.ne' (Real.exp_pos _).ne', Real.log_exp]
   have hlow : t ≤ s → ∀ n, -Real.log C + n * ((t - s) * L) ≤ Real.log (Φ.pressureSum t n) := by
     intro hst n
-    have h : C⁻¹ * Real.exp (n * ((t - s) * L)) ≤ Φ.pressureSum t n := by
+    have h := by
       calc C⁻¹ * Real.exp (n * ((t - s) * L))
           ≤ Φ.pressureSum s n * Real.exp (n * ((t - s) * L)) :=
             mul_le_mul_of_nonneg_right (hPs n).2 (Real.exp_pos _).le
@@ -195,20 +195,20 @@ theorem tendsto_pressure_iff_of_isGibbs (hN : 0 < N) {s : ℝ} {ν : Measure (�
     have hn' : (0 : ℝ) < n := by exact_mod_cast hn
     rw [div_add' _ _ _ hn'.ne', div_le_div_iff_of_pos_right hn']
     linarith
-  have hlim : ∀ b : ℝ, Tendsto (fun n : ℕ => b / n + (t - s) * L) atTop (𝓝 ((t - s) * L)) :=
+  have hlim :=
     fun b => by simpa using (tendsto_const_div_atTop_nhds_zero_nat b).add_const ((t - s) * L)
   constructor
   · intro h
     by_contra hts
     rcases lt_or_gt_of_ne hts with hts | hts
-    · have h1 : (t - s) * L ≤ 0 := le_of_tendsto_of_tendsto (hlim _) h
+    · have h1 := le_of_tendsto_of_tendsto (hlim _) h
         (eventually_atTop.2 ⟨1, fun n hn => hdiv' hn (hlow hts.le n)⟩)
       nlinarith
-    · have h1 : 0 ≤ (t - s) * L := le_of_tendsto_of_tendsto h (hlim _)
+    · have h1 := le_of_tendsto_of_tendsto h (hlim _)
         (eventually_atTop.2 ⟨1, fun n hn => hdiv hn (hup hts.le n)⟩)
       nlinarith
   · rintro rfl
-    rw [show (0 : ℝ) = (t - t) * L by ring]
+    rw [show 0 = (t - t) * L by ring]
     refine tendsto_of_tendsto_of_tendsto_of_le_of_le' (hlim (-Real.log C)) (hlim (Real.log C))
       ?_ ?_
     · exact eventually_atTop.2 ⟨1, fun n hn => hdiv' hn (hlow le_rfl n)⟩
@@ -218,7 +218,7 @@ theorem tendsto_pressure_iff_of_isGibbs (hN : 0 < N) {s : ℝ} {ν : Measure (�
 theorem natProj_eq_comp_prefix (ω : ℕ → Fin N) (k : ℕ) :
     Φ.natProj ω =
       (Φ.comp (List.ofFn fun j : Fin k => ω j) (Φ.natProj fun j => ω (j + k))).re := by
-  set v : ℕ → Fin N := fun j => ω (j + k)
+  set v := fun j => ω (j + k)
   set a := List.ofFn fun j : Fin k => ω j
   have hlist : ∀ n, (List.ofFn fun j : Fin (n + k) => ω j) =
       a ++ List.ofFn fun j : Fin n => v j := fun n =>
@@ -226,8 +226,8 @@ theorem natProj_eq_comp_prefix (ω : ℕ → Fin N) (k : ℕ) :
       rw [List.getElem_append]
       split_ifs with h
       · simp [a]
-      · simp only [a, List.length_ofFn] at h
-        simp only [List.getElem_ofFn, v, a, List.length_ofFn]
+      · simp [a, List.length_ofFn] at h
+        simp [List.getElem_ofFn, v, a, List.length_ofFn]
         congr
         omega
   have hπ : Φ.natProj v ∈ I := Φ.attractor_subset_I ⟨v, rfl⟩
@@ -246,7 +246,7 @@ end IFS
 
 /-- If `a ρ^n ≤ m(r) ≤ b ρ^n` whenever `λ^{n+2} < r ≤ λ^{n+1}`, then
 `log m(r) / log r → log ρ / log λ` as `r → 0⁺`. -/
-private theorem tendsto_log_div_log_of_bounds {m : ℝ → ℝ} {lam ρ a b : ℝ} (hlam0 : 0 < lam)
+theorem tendsto_log_div_log_of_bounds {m : ℝ → ℝ} {lam ρ a b : ℝ} (hlam0 : 0 < lam)
     (hlam1 : lam < 1) (hρ : 0 < ρ) (ha : 0 < a) (hb : 0 < b)
     (h : ∀ (n : ℕ) (r : ℝ), lam ^ (n + 2) < r → r ≤ lam ^ (n + 1) →
       a * ρ ^ n ≤ m r ∧ m r ≤ b * ρ ^ n) :
@@ -254,7 +254,7 @@ private theorem tendsto_log_div_log_of_bounds {m : ℝ → ℝ} {lam ρ a b : �
       (𝓝 (Real.log ρ / Real.log lam)) := by
   set d := Real.log ρ / Real.log lam
   set K := |Real.log a| + |Real.log b| + 2 * |Real.log ρ|
-  have hL : Real.log lam < 0 := Real.log_neg hlam0 hlam1
+  have hL := Real.log_neg hlam0 hlam1
   have hbound : ∀ r, 0 < r → r < lam → |Real.log (m r) - d * Real.log r| ≤ K := by
     intro r hr0 hr
     obtain ⟨k, hk1, hk2⟩ :=
@@ -266,11 +266,11 @@ private theorem tendsto_log_div_log_of_bounds {m : ℝ → ℝ} {lam ρ a b : �
       · exact ⟨n, rfl⟩
     obtain ⟨h1, h2⟩ := h n r hk1 hk2
     have hρn := pow_pos hρ n
-    have hm : 0 < m r := (mul_pos ha hρn).trans_le h1
-    have hl1 : Real.log a + n * Real.log ρ ≤ Real.log (m r) := by
+    have hm := (mul_pos ha hρn).trans_le h1
+    have hl1 := by
       have := Real.log_le_log (mul_pos ha hρn) h1
       rwa [Real.log_mul ha.ne' hρn.ne', Real.log_pow] at this
-    have hl2 : Real.log (m r) ≤ Real.log b + n * Real.log ρ := by
+    have hl2 := by
       have := Real.log_le_log hm h2
       rwa [Real.log_mul hb.ne' hρn.ne', Real.log_pow] at this
     have hr1 : (n + 2) * Real.log lam < Real.log r := by
@@ -291,7 +291,7 @@ private theorem tendsto_log_div_log_of_bounds {m : ℝ → ℝ} {lam ρ a b : �
       rw [div_le_iff_of_neg hL]
       linarith
     have hdr : d * Real.log r = Real.log ρ * t := by
-      simp only [d, t]
+      simp [d, t]
       ring
     rw [hdr, show Real.log (m r) - Real.log ρ * t =
       (Real.log (m r) - n * Real.log ρ) + (n - t) * Real.log ρ by ring]
@@ -311,7 +311,7 @@ private theorem tendsto_log_div_log_of_bounds {m : ℝ → ℝ} {lam ρ a b : �
   rw [tendsto_iff_norm_sub_tendsto_zero]
   refine squeeze_zero' (Eventually.of_forall fun _ => norm_nonneg _) ?_ hK
   filter_upwards [Ioo_mem_nhdsGT hlam0] with r hr
-  have hlr : Real.log r ≠ 0 := (Real.log_neg hr.1 (hr.2.trans hlam1)).ne
+  have hlr := (Real.log_neg hr.1 (hr.2.trans hlam1)).ne
   rw [Real.norm_eq_abs, show Real.log (m r) / Real.log r - d =
     (Real.log (m r) - d * Real.log r) / Real.log r by field_simp, abs_div]
   exact div_le_div_of_nonneg_right (hbound r hr.1 hr.2) (abs_nonneg _)
@@ -321,13 +321,13 @@ private theorem tendsto_log_div_log_of_bounds {m : ℝ → ℝ} {lam ρ a b : �
 The Lean letters `0, 1, 2` index the maps `f₁, f₂, f₃` of the paper. Words over the letters `0, 1`
 are the words `w` with `i ≠ 2` for every letter `i` of `w`. -/
 
-private theorem ld_fin_three (i : Fin 3) (hi : i ≠ 2) : i = 0 ∨ i = 1 := by
+theorem ld_fin_three (i : Fin 3) (hi : i ≠ 2) : i = 0 ∨ i = 1 := by
   revert i
   decide
 
 /-- For the letters `i = 0, 1` and real `x`, `f_i(x)` is real with
 `x/8 ≤ f_i(x) ≤ x/8 + x²/32`. -/
-private theorem ld_f_ofReal (i : Fin 3) (hi : i ≠ 2) (x : ℝ) :
+theorem ld_f_ofReal (i : Fin 3) (hi : i ≠ 2) (x : ℝ) :
     ∃ y : ℝ, exampleIFS.f i x = y ∧ x / 8 ≤ y ∧ y ≤ x / 8 + x ^ 2 / 32 := by
   rcases ld_fin_three i hi with rfl | rfl
   · refine ⟨x / 8, ?_, le_rfl, by nlinarith⟩
@@ -335,52 +335,51 @@ private theorem ld_f_ofReal (i : Fin 3) (hi : i ≠ 2) (x : ℝ) :
     push_cast
     ring
   · refine ⟨x / 8 + x ^ 2 / 32, ?_, by nlinarith, le_rfl⟩
-    change (x : ℂ) / 8 + (x : ℂ) ^ 2 / 32 = _
+    change ↑x / 8 + (x : ℂ) ^ 2 / 32 = _
     push_cast
     ring
 
-private theorem ld_f_two_ofReal (x : ℝ) :
+theorem ld_f_two_ofReal (x : ℝ) :
     exampleIFS.f 2 x = ((x / 16 + x ^ 2 / 32 + 29 / 32 : ℝ) : ℂ) := by
-  change (x : ℂ) / 16 + (x : ℂ) ^ 2 / 32 + 29 / 32 = _
+  change ↑x / 16 + (x : ℂ) ^ 2 / 32 + 29 / 32 = _
   push_cast
   ring
 
-private theorem ld_f_zero (i : Fin 3) (hi : i ≠ 2) : exampleIFS.f i 0 = 0 := by
+theorem ld_f_zero (i : Fin 3) (hi : i ≠ 2) : exampleIFS.f i 0 = 0 := by
   rcases ld_fin_three i hi with rfl | rfl
   · change (0 : ℂ) / 8 = 0
     simp
   · change (0 : ℂ) / 8 + 0 ^ 2 / 32 = 0
     simp
 
-private theorem ld_hasDerivAt_zero (z : ℂ) : HasDerivAt (exampleIFS.f 0) (1 / 8) z := by
-  change HasDerivAt (fun z : ℂ => z / 8) _ z
+theorem ld_hasDerivAt_zero (z : ℂ) : HasDerivAt (exampleIFS.f 0) (1 / 8) z := by
   exact (hasDerivAt_id' z).div_const 8
 
-private theorem ld_hasDerivAt_one (z : ℂ) : HasDerivAt (exampleIFS.f 1) (1 / 8 + z / 16) z := by
-  change HasDerivAt (fun z : ℂ => z / 8 + z ^ 2 / 32) _ z
+theorem ld_hasDerivAt_one (z : ℂ) : HasDerivAt (exampleIFS.f 1) (1 / 8 + z / 16) z := by
+  change HasDerivAt (fun z => z / 8 + z ^ 2 / 32) _ z
   have h := ((hasDerivAt_id' z).div_const 8).add ((hasDerivAt_pow 2 z).div_const 32)
   convert h using 1
   push_cast
   ring
 
-private theorem ld_deriv_f_zero (i : Fin 3) (hi : i ≠ 2) : deriv (exampleIFS.f i) 0 = 1 / 8 := by
+theorem ld_deriv_f_zero (i : Fin 3) (hi : i ≠ 2) : deriv (exampleIFS.f i) 0 = 1 / 8 := by
   rcases ld_fin_three i hi with rfl | rfl
   · exact (ld_hasDerivAt_zero 0).deriv
   · rw [(ld_hasDerivAt_one 0).deriv]
     norm_num
 
-private theorem ld_norm_deriv_f_le (i : Fin 3) (hi : i ≠ 2) {x : ℝ} (hx : 0 ≤ x) :
+theorem ld_norm_deriv_f_le (i : Fin 3) (hi : i ≠ 2) {x : ℝ} (hx : 0 ≤ x) :
     ‖deriv (exampleIFS.f i) x‖ ≤ 1 / 8 + x / 16 := by
   rcases ld_fin_three i hi with rfl | rfl
   · rw [(ld_hasDerivAt_zero _).deriv]
     norm_num
     positivity
-  · rw [(ld_hasDerivAt_one _).deriv, show (1 / 8 : ℂ) + (x : ℂ) / 16 = ((1 / 8 + x / 16 : ℝ) : ℂ)
+  · rw [(ld_hasDerivAt_one _).deriv, show (1 / 8 : ℂ) + ↑x / 16 = ((1 / 8 + x / 16 : ℝ) : ℂ)
       by push_cast; ring, Complex.norm_real, Real.norm_of_nonneg (by positivity)]
 
 /-! ### The local dimension: compositions of `f₁` and `f₂` -/
 
-private theorem ld_comp_zero {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) :
+theorem ld_comp_zero {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) :
     exampleIFS.comp w 0 = 0 := by
   induction w with
   | nil => rfl
@@ -388,22 +387,22 @@ private theorem ld_comp_zero {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) :
     rw [IFS.comp_cons, Function.comp_apply, ih fun j hj => hw j (List.mem_cons_of_mem i hj),
       ld_f_zero i (hw i List.mem_cons_self)]
 
-private theorem ld_deriv_comp_zero {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) :
+theorem ld_deriv_comp_zero {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) :
     deriv (exampleIFS.comp w) 0 = (1 / 8 : ℂ) ^ w.length := by
   induction w with
   | nil => simp [deriv_id]
   | cons i w ih =>
-    have hw' : ∀ j ∈ w, j ≠ 2 := fun j hj => hw j (List.mem_cons_of_mem i hj)
+    have hw' := fun j hj => hw j (List.mem_cons_of_mem i hj)
     rw [exampleIFS.deriv_comp_cons i w (zero_mem_closure_nbhd (by norm_num)), ld_comp_zero hw',
       ih hw', ld_deriv_f_zero i (hw i List.mem_cons_self), List.length_cons, pow_succ']
 
 /-- `8^{-|w|} x ≤ f_w(x)` for words `w` over the letters `0, 1` and `x ∈ [0,1]`. -/
-private theorem ld_le_re_comp {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) {x : ℝ} (hx : x ∈ I) :
+theorem ld_le_re_comp {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) {x : ℝ} (hx : x ∈ I) :
     (1 / 8 : ℝ) ^ w.length * x ≤ (exampleIFS.comp w x).re := by
   induction w with
   | nil => simp
   | cons i w ih =>
-    have hw' : ∀ j ∈ w, j ≠ 2 := fun j hj => hw j (List.mem_cons_of_mem i hj)
+    have hw' := fun j hj => hw j (List.mem_cons_of_mem i hj)
     have hy := exampleIFS.re_comp_mem_I w hx
     obtain ⟨y, hy', h1, -⟩ := ld_f_ofReal i (hw i List.mem_cons_self) _
     have := ih hw'
@@ -412,15 +411,15 @@ private theorem ld_le_re_comp {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) {x 
     nlinarith
 
 /-- `f_w(x) ≤ 8^{-|w|} x (1 + x)` for words `w` over the letters `0, 1` and `x ∈ [0,1]`. -/
-private theorem ld_re_comp_le {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) {x : ℝ} (hx : x ∈ I) :
+theorem ld_re_comp_le {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) {x : ℝ} (hx : x ∈ I) :
     (exampleIFS.comp w x).re ≤ (1 / 8 : ℝ) ^ w.length * (x * (1 + x)) := by
   induction w using List.reverseRecOn generalizing x with
   | nil =>
-    simp only [IFS.comp_nil, id, Complex.ofReal_re, List.length_nil, pow_zero, one_mul]
+    simp [IFS.comp_nil, id, Complex.ofReal_re, List.length_nil, pow_zero, one_mul]
     nlinarith [hx.1]
   | append_singleton u i ih =>
-    have hu : ∀ j ∈ u, j ≠ 2 := fun j hj => hw j (List.mem_append_left _ hj)
-    have hi : i ≠ 2 := hw i (List.mem_append_right _ (List.mem_singleton_self i))
+    have hu := fun j hj => hw j (List.mem_append_left _ hj)
+    have hi := hw i (List.mem_append_right _ (List.mem_singleton_self i))
     obtain ⟨hx0, hx1⟩ := hx
     obtain ⟨y, hy, h1, h2⟩ := ld_f_ofReal i hi x
     have hy0 : 0 ≤ y := by linarith
@@ -429,8 +428,7 @@ private theorem ld_re_comp_le {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) {x 
     rw [exampleIFS.comp_append, Function.comp_apply, hc, hy, List.length_append,
       List.length_singleton, pow_succ]
     have hyy : y * (1 + y) ≤ 1 / 8 * (x * (1 + x)) := by
-      have h3 : y * (1 + y) ≤ (x / 8 + x ^ 2 / 32) * (1 + (x / 8 + x ^ 2 / 32)) :=
-        mul_le_mul h2 (by linarith) (by linarith) (by positivity)
+      have h3 := mul_le_mul h2 (by linarith) (by linarith) (by positivity)
       have h4 : x ^ 2 ≤ x := by nlinarith
       have h5 : x ^ 3 ≤ x ^ 2 := by nlinarith
       have h6 : x ^ 4 ≤ x ^ 3 := by nlinarith
@@ -440,16 +438,16 @@ private theorem ld_re_comp_le {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) {x 
       _ = (1 / 8) ^ u.length * (1 / 8) * (x * (1 + x)) := by ring
 
 /-- `|f_w'(x)| ≤ 8^{-|w|} (1 + x)` for words `w` over the letters `0, 1` and `x ∈ [0,1]`. -/
-private theorem ld_norm_deriv_comp_le {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) {x : ℝ}
+theorem ld_norm_deriv_comp_le {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) {x : ℝ}
     (hx : x ∈ I) : ‖deriv (exampleIFS.comp w) x‖ ≤ (1 / 8 : ℝ) ^ w.length * (1 + x) := by
   induction w using List.reverseRecOn generalizing x with
   | nil =>
-    simp only [IFS.comp_nil, deriv_id, norm_one, List.length_nil, pow_zero, one_mul]
+    simp [IFS.comp_nil, deriv_id, norm_one, List.length_nil, pow_zero, one_mul]
     linarith [hx.1]
   | append_singleton u i ih =>
-    have hu : ∀ j ∈ u, j ≠ 2 := fun j hj => hw j (List.mem_append_left _ hj)
-    have hi : i ≠ 2 := hw i (List.mem_append_right _ (List.mem_singleton_self i))
-    have hz : (x : ℂ) ∈ closure (nbhd (1 / 100)) :=
+    have hu := fun j hj => hw j (List.mem_append_left _ hj)
+    have hi := hw i (List.mem_append_right _ (List.mem_singleton_self i))
+    have hz : ↑x ∈ closure (nbhd (1 / 100)) :=
       subset_closure (ofReal_mem_nbhd (by norm_num) hx)
     obtain ⟨hx0, hx1⟩ := hx
     obtain ⟨y, hy, h1, h2⟩ := ld_f_ofReal i hi x
@@ -460,7 +458,7 @@ private theorem ld_norm_deriv_comp_le {w : List (Fin 3)} (hw : ∀ i ∈ w, i �
       List.length_singleton, pow_succ]
     have h3 := ih hu hyI
     have h4 := ld_norm_deriv_f_le i hi hx0
-    have hpow : (0 : ℝ) ≤ (1 / 8) ^ u.length := by positivity
+    have hpow : 0 ≤ (1 / 8) ^ u.length := by positivity
     calc ‖deriv (exampleIFS.comp u) y‖ * ‖deriv (exampleIFS.f i) x‖
         ≤ ((1 / 8) ^ u.length * (1 + y)) * (1 / 8 + x / 16) :=
           mul_le_mul h3 h4 (norm_nonneg _) (by positivity)
@@ -474,7 +472,7 @@ private theorem ld_norm_deriv_comp_le {w : List (Fin 3)} (hw : ∀ i ∈ w, i �
             _ = _ := by ring
 
 /-- `8^{-|w|} ≤ ‖f_w'‖ ≤ 2 ⋅ 8^{-|w|}` for words `w` over the letters `0, 1`. -/
-private theorem ld_supDeriv_bounds {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) :
+theorem ld_supDeriv_bounds {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) :
     (1 / 8 : ℝ) ^ w.length ≤ exampleIFS.supDeriv w ∧
       exampleIFS.supDeriv w ≤ 2 * (1 / 8 : ℝ) ^ w.length := by
   constructor
@@ -487,9 +485,9 @@ private theorem ld_supDeriv_bounds {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2
     nlinarith [x.2.2]
 
 /-- If `y ≤ x ≤ 2y`, then `x^s` is comparable to `y^s` for every real `s`. -/
-private theorem ld_rpow_bounds {x y : ℝ} (s : ℝ) (hy : 0 < y) (h1 : y ≤ x) (h2 : x ≤ 2 * y) :
+theorem ld_rpow_bounds {x y : ℝ} (s : ℝ) (hy : 0 < y) (h1 : y ≤ x) (h2 : x ≤ 2 * y) :
     min 1 (2 ^ s) * y ^ s ≤ x ^ s ∧ x ^ s ≤ max 1 (2 ^ s) * y ^ s := by
-  have hx : 0 < x := hy.trans_le h1
+  have hx := hy.trans_le h1
   have h2y : (2 * y) ^ s = 2 ^ s * y ^ s := Real.mul_rpow (by norm_num) hy.le
   have hys := Real.rpow_nonneg hy.le s
   rcases le_total 0 s with hs | hs
@@ -511,27 +509,27 @@ private theorem ld_rpow_bounds {x y : ℝ} (s : ℝ) (hy : 0 < y) (h1 : y ≤ x)
 /-! ### The local dimension: cylinders of words over the letters `0, 1` -/
 
 /-- The words of length `n` over the letters `0, 1`. -/
-private def ldWords (n : ℕ) : Finset (Fin n → Fin 3) := Fintype.piFinset fun _ => {0, 1}
+def ldWords (n : ℕ) : Finset (Fin n → Fin 3) := Fintype.piFinset fun _ => {0, 1}
 
-private theorem ld_mem_words {n : ℕ} {v : Fin n → Fin 3} : v ∈ ldWords n ↔ ∀ k, v k ≠ 2 := by
+theorem ld_mem_words {n : ℕ} {v : Fin n → Fin 3} : v ∈ ldWords n ↔ ∀ k, v k ≠ 2 := by
   rw [ldWords, Fintype.mem_piFinset]
   refine forall_congr' fun k => ?_
   generalize v k = i
   revert i
   decide
 
-private theorem ld_card_words (n : ℕ) : (ldWords n).card = 2 ^ n := by
+theorem ld_card_words (n : ℕ) : (ldWords n).card = 2 ^ n := by
   rw [ldWords, Fintype.card_piFinset, Finset.prod_const, Finset.card_univ, Fintype.card_fin]
   rfl
 
-private theorem ld_ofFn_ne_two {n : ℕ} {v : Fin n → Fin 3} (hv : v ∈ ldWords n) :
+theorem ld_ofFn_ne_two {n : ℕ} {v : Fin n → Fin 3} (hv : v ∈ ldWords n) :
     ∀ i ∈ List.ofFn v, i ≠ 2 := by
   intro i hi
   obtain ⟨k, rfl⟩ := List.mem_ofFn.1 hi
   exact ld_mem_words.1 hv k
 
 /-- The Gibbs bounds summed over the words of length `n` over the letters `0, 1`. -/
-private theorem ld_sum_bounds {s C : ℝ} {ν : Measure (ℕ → Fin 3)} (hC : 0 < C)
+theorem ld_sum_bounds {s C : ℝ} {ν : Measure (ℕ → Fin 3)} (hC : 0 < C)
     (hG : ∀ w : List (Fin 3), C⁻¹ * exampleIFS.supDeriv w ^ s ≤ ν.real (wordCylinder w) ∧
       ν.real (wordCylinder w) ≤ C * exampleIFS.supDeriv w ^ s) (n : ℕ) :
     C⁻¹ * min 1 (2 ^ s) * (2 * (1 / 8 : ℝ) ^ s) ^ n ≤
@@ -562,15 +560,15 @@ private theorem ld_sum_bounds {s C : ℝ} {ν : Measure (ℕ → Fin 3)} (hC : 0
   push_cast at hs1 hs2
   constructor
   · calc C⁻¹ * min 1 (2 ^ s) * (2 * (1 / 8 : ℝ) ^ s) ^ n
-        = (2 : ℝ) ^ n * (C⁻¹ * min 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := by rw [mul_pow]; ring
+        = 2 ^ n * (C⁻¹ * min 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := by rw [mul_pow]; ring
       _ ≤ _ := hs1
-  · calc _ ≤ (2 : ℝ) ^ n * (C * max 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := hs2
+  · calc _ ≤ 2 ^ n * (C * max 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := hs2
       _ = C * max 1 (2 ^ s) * (2 * (1 / 8 : ℝ) ^ s) ^ n := by rw [mul_pow]; ring
 
 /-! ### The local dimension: the natural projection near `0` -/
 
 /-- If the first `n` letters of `ω` are `0` or `1`, then `π(ω) ≤ 2 ⋅ 8^{-n}`. -/
-private theorem ld_natProj_le {n : ℕ} {ω : ℕ → Fin 3} (h : (fun k : Fin n => ω k) ∈ ldWords n) :
+theorem ld_natProj_le {n : ℕ} {ω : ℕ → Fin 3} (h : (fun k : Fin n => ω k) ∈ ldWords n) :
     exampleIFS.natProj ω ≤ 2 * (1 / 8 : ℝ) ^ n := by
   have hy := exampleIFS.attractor_subset_I ⟨fun j => ω (j + n), rfl⟩
   rw [exampleIFS.natProj_eq_comp_prefix ω n]
@@ -583,13 +581,9 @@ private theorem ld_natProj_le {n : ℕ} {ω : ℕ → Fin 3} (h : (fun k : Fin n
 
 /-- If the letter of `ω` in position `k` (from `0`) is the first letter `2`, then
 `π(ω) ≥ (29/32) 8^{-k}`. -/
-private theorem ld_le_natProj {k : ℕ} {ω : ℕ → Fin 3} (hk : ω k = 2) (h : ∀ j < k, ω j ≠ 2) :
+theorem ld_le_natProj {k : ℕ} {ω : ℕ → Fin 3} (hk : ω k = 2) (h : ∀ j < k, ω j ≠ 2) :
     29 / 32 * (1 / 8 : ℝ) ^ k ≤ exampleIFS.natProj ω := by
-  have hw : ∀ i ∈ List.ofFn (fun j : Fin k => ω j), i ≠ 2 := by
-    intro i hi
-    obtain ⟨j, rfl⟩ := List.mem_ofFn.1 hi
-    exact h j j.2
-  set σ : ℕ → Fin 3 := fun j => ω (j + k) with hσ
+  set σ := fun j => ω (j + k) with hσ
   have hy := exampleIFS.attractor_subset_I ⟨σ, rfl⟩
   have hz := exampleIFS.attractor_subset_I ⟨fun j => σ (j + 1), rfl⟩
   have h29 : 29 / 32 ≤ exampleIFS.natProj σ := by
@@ -599,7 +593,10 @@ private theorem ld_le_natProj {k : ℕ} {ω : ℕ → Fin 3} (hk : ω k = 2) (h 
       Complex.ofReal_re]
     nlinarith [hz.1]
   rw [exampleIFS.natProj_eq_comp_prefix ω k]
-  refine le_trans ?_ (ld_le_re_comp hw hy)
+  refine le_trans ?_ (ld_le_re_comp (by
+    intro i hi
+    obtain ⟨j, rfl⟩ := List.mem_ofFn.1 hi
+    exact h j j.2) hy)
   rw [List.length_ofFn]
   have hpow : (0 : ℝ) ≤ (1 / 8) ^ k := by positivity
   nlinarith
@@ -615,9 +612,9 @@ theorem example_localDim {s : ℝ} {ν : Measure (ℕ → Fin 3)} [IsProbability
       (𝓝[>] 0) (𝓝 (s - 1 / 3)) := by
   refine ⟨exampleIFS.tendsto_pressure_iff_of_isGibbs (by norm_num) hν, ?_⟩
   obtain ⟨C, hC, hG⟩ := hν
-  set ρ : ℝ := 2 * (1 / 8 : ℝ) ^ s with hρ_def
+  set ρ := 2 * (1 / 8 : ℝ) ^ s with hρ_def
   have hρ : 0 < ρ := mul_pos two_pos (Real.rpow_pos_of_pos (by norm_num) s)
-  have hmin : 0 < min 1 ((2 : ℝ) ^ s) := lt_min one_pos (Real.rpow_pos_of_pos two_pos s)
+  have hmin := lt_min one_pos (Real.rpow_pos_of_pos two_pos s)
   have hmax : 0 < max 1 ((2 : ℝ) ^ s) := lt_max_of_lt_left one_pos
   -- `μ(B(0,r)) = ν(π⁻¹ B(0,r))`
   have hμ : ∀ r, (ν.map exampleIFS.natProj).real (closedBall 0 r) =
@@ -642,7 +639,7 @@ theorem example_localDim {s : ℝ} {ν : Measure (ℕ → Fin 3)} [IsProbability
     rw [IFS.sum_measureReal_wordCylinder]
     refine measureReal_mono fun ω hω => ?_
     rw [mem_preimage, mem_closedBall, Real.dist_eq, sub_zero] at hω
-    have hle : exampleIFS.natProj ω ≤ r := (le_abs_self _).trans hω
+    have hle := (le_abs_self _).trans hω
     have key : ∀ k, k ≤ n → ω k ≠ 2 := by
       intro k
       induction k using Nat.strong_induction_on with
@@ -655,7 +652,7 @@ theorem example_localDim {s : ℝ} {ν : Measure (ℕ → Fin 3)} [IsProbability
     rw [mem_preimage, Finset.mem_coe, ld_mem_words]
     exact fun k => key k (Nat.lt_succ_iff.1 k.2)
   have hd : s - 1 / 3 = Real.log ρ / Real.log (1 / 8) := by
-    have h2 : 0 < Real.log 2 := Real.log_pos one_lt_two
+    have h2 := Real.log_pos one_lt_two
     have h8 : Real.log (1 / 8) = -(3 * Real.log 2) := by
       rw [one_div, Real.log_inv, show (8 : ℝ) = 2 ^ 3 by norm_num, Real.log_pow]
       push_cast

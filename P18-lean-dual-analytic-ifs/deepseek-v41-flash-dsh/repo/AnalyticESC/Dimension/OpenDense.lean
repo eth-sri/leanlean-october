@@ -44,14 +44,14 @@ theorem eq_of_re_eq_self {ε : ℝ} (hε : 0 < ε) {h : ℂ → ℂ} (hh : InCla
     (hasDerivAt_re_ofReal (hh.differentiableOn.differentiableAt
       ((isOpen_nbhd _).mem_nhds (ofReal_mem_nbhd (by linarith) hx)))).sub (hasDerivAt_id x)
   have hcont : ContinuousOn F I := fun x hx => (hderiv x hx).continuousAt.continuousWithinAt
-  have hanti : StrictAntiOn F I := by
+  have hanti := by
     refine strictAntiOn_of_deriv_neg (convex_Icc 0 1) hcont fun x hx => ?_
-    have hxI : x ∈ I := interior_subset hx
+    have hxI := interior_subset hx
     rw [(hderiv x hxI).deriv, sub_neg]
     exact (Complex.re_le_norm _).trans_lt
       (hh.norm_deriv_lt_one x (subset_closure (ofReal_mem_nbhd hε hxI)))
   refine hanti.injOn hx hy ?_
-  simp only [hF, hhx, hhy, sub_self]
+  simp [hF, hhx, hhy, sub_self]
 
 /-- Having no common fixed point in `I` is a `d₂`-open condition in `𝔖_N`: the continuous
 function `∑_i |f_i(x) - x|` has a positive minimum `m` on `I`, and `d₂(f, g) < m/(N+1)` keeps
@@ -64,7 +64,7 @@ theorem exists_forall_d2Sys_lt_not_fixed {N : ℕ} {f : Fin N → ℂ → ℂ} (
   set F : ℝ → ℝ := fun x => ∑ i, |(f i x).re - x| with hF
   have hcont : ContinuousOn F I := by
     refine continuousOn_finsetSum _ fun i _ => ?_
-    have h1 : ContinuousOn (fun x : ℝ => f i x) I :=
+    have h1 :=
       (hfε i).differentiableOn.continuousOn.comp Complex.continuous_ofReal.continuousOn
         fun x hx => ofReal_mem_nbhd (by linarith) hx
     exact ((Complex.continuous_re.comp_continuousOn h1).sub continuousOn_id).abs
@@ -75,7 +75,7 @@ theorem exists_forall_d2Sys_lt_not_fixed {N : ℕ} {f : Fin N → ℂ → ℂ} (
       ⟨i, Finset.mem_univ i, abs_pos.2 (sub_ne_zero.2 hi)⟩
   obtain ⟨x₀, hx₀, hmin⟩ := isCompact_Icc.exists_isMinOn (nonempty_Icc.2 zero_le_one) hcont
   set m := F x₀
-  have hm : 0 < m := hpos x₀ hx₀
+  have hm := hpos x₀ hx₀
   have hN : (0 : ℝ) ≤ N := Nat.cast_nonneg N
   refine ⟨m / (N + 1), div_pos hm (by positivity), ?_⟩
   rintro g ⟨ε', hε', hgε⟩ hd ⟨x, hx, hgx⟩
@@ -86,11 +86,11 @@ theorem exists_forall_d2Sys_lt_not_fixed {N : ℕ} {f : Fin N → ℂ → ℂ} (
     calc |(f i x).re - x| = |(f i x - g i x).re| := by rw [Complex.sub_re, hgx i]
       _ ≤ ‖f i x - g i x‖ := Complex.abs_re_le_norm _
       _ ≤ d2Sys f g := (IFS.Continuity.norm_sub_le_d2 Φ Ψ i hx).1
-  have hsum : F x ≤ N * d2Sys f g := by
+  have hsum := by
     calc F x ≤ ∑ _i : Fin N, d2Sys f g := Finset.sum_le_sum fun i _ => hle i
       _ = N * d2Sys f g := by simp
-  have hmx : m ≤ F x := isMinOn_iff.1 hmin x hx
-  have h1 : (N : ℝ) * d2Sys f g ≤ N * (m / (N + 1)) := mul_le_mul_of_nonneg_left hd.le hN
+  have hmx := isMinOn_iff.1 hmin x hx
+  have h1 := mul_le_mul_of_nonneg_left hd.le hN
   have h2 : (N : ℝ) * (m / (N + 1)) < m := by
     rw [← mul_div_assoc, div_lt_iff₀ (by positivity)]
     linarith
@@ -120,14 +120,14 @@ theorem exists_not_fixed_d2Sys_lt {N : ℕ} (hN : 2 ≤ N) {f : Fin N → ℂ �
   obtain ⟨k, hk⟩ := exists_ne j
   -- the parameter `t`
   set c := Φ.cmin
-  have hc : 0 < c := Φ.cmin_pos (by omega)
+  have hc := Φ.cmin_pos (by omega)
   obtain ⟨K, hK, hK'⟩ := IFS.Coincidences.exists_deriv_deriv_bound Φ
   set t := min (c / (c + 1)) (r / (4 + K)) / 2
   have ht0 : 0 < t := half_pos (lt_min (by positivity) (by positivity))
   have htt : t < min (c / (c + 1)) (r / (4 + K)) := half_lt_self (lt_min (by positivity)
     (by positivity))
-  have ht1 : t * (c + 1) < c := (lt_div_iff₀ (by positivity)).1 (htt.trans_le (min_le_left _ _))
-  have ht2 : t * (4 + K) < r := (lt_div_iff₀ (by positivity)).1 (htt.trans_le (min_le_right _ _))
+  have ht1 := (lt_div_iff₀ (by positivity)).1 (htt.trans_le (min_le_left _ _))
+  have ht2 := (lt_div_iff₀ (by positivity)).1 (htt.trans_le (min_le_right _ _))
   have htI : t ∈ I := ⟨ht0.le, by nlinarith⟩
   set g := Function.update f j (IFS.Coincidences.homotopy Φ t j) with hg
   refine ⟨g, ⟨ε, hε, fun i => ?_⟩, ?_, ?_⟩

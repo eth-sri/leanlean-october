@@ -30,7 +30,7 @@ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 /-! ## Compositions on `I` -/
 
 /-- `|f_w(x) - f_w(y)| ≤ c_max^{|w|} |x - y|` on `I`. -/
-private theorem exact_abs_re_comp_sub_le (w : List (Fin N)) {x y : ℝ} (hx : x ∈ I)
+theorem exact_abs_re_comp_sub_le (w : List (Fin N)) {x y : ℝ} (hx : x ∈ I)
     (hy : y ∈ I) : |(Φ.comp w x).re - (Φ.comp w y).re| ≤ Φ.cmax ^ w.length * |x - y| := by
   have h := Φ.norm_comp_sub_le w (ofReal_mem_nbhd Φ.ε_pos hx) (ofReal_mem_nbhd Φ.ε_pos hy)
   rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at h
@@ -38,32 +38,31 @@ private theorem exact_abs_re_comp_sub_le (w : List (Fin N)) {x y : ℝ} (hx : x 
   exact (Complex.abs_re_le_norm _).trans h
 
 /-- Two points of `I` fixed by `f_w`, for a nonempty word `w`, are equal. -/
-private theorem exact_eq_of_fixed {w : List (Fin N)} (hw : w ≠ []) {x y : ℝ} (hx : x ∈ I)
+theorem exact_eq_of_fixed {w : List (Fin N)} (hw : w ≠ []) {x y : ℝ} (hx : x ∈ I)
     (hy : y ∈ I) (hfx : (Φ.comp w x).re = x) (hfy : (Φ.comp w y).re = y) : x = y := by
   have hle := Φ.exact_abs_re_comp_sub_le w hx hy
   rw [hfx, hfy] at hle
-  have hc : Φ.cmax ^ w.length < 1 :=
-    pow_lt_one₀ Φ.cmax_nonneg Φ.cmax_lt_one (List.length_pos_iff.2 hw).ne'
+  have hc := pow_lt_one₀ Φ.cmax_nonneg Φ.cmax_lt_one (List.length_pos_iff.2 hw).ne'
   by_contra hne
-  have hpos : 0 < |x - y| := abs_pos.2 (sub_ne_zero.2 hne)
+  have hpos := abs_pos.2 (sub_ne_zero.2 hne)
   nlinarith
 
 /-- `f_{uv}(x) = f_u(f_v(x))`, with `f_v(x)` real, for `x ∈ I`. -/
-private theorem exact_comp_append_ofReal (u v : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
+theorem exact_comp_append_ofReal (u v : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
     Φ.comp (u ++ v) x = Φ.comp u ((Φ.comp v x).re : ℂ) := by
   rw [Φ.comp_append, Function.comp_apply, ← Φ.comp_ofReal v hx]
 
 /-! ## The attractor -/
 
 /-- `π(a w) = f_a(π(w))` for a finite word `a` and an infinite word `w`. -/
-private theorem exact_natProj_prepend (a : List (Fin N)) (w : ℕ → Fin N) :
+theorem exact_natProj_prepend (a : List (Fin N)) (w : ℕ → Fin N) :
     Φ.natProj (fun n => if h : n < a.length then a[n] else w (n - a.length)) =
       (Φ.comp a (Φ.natProj w)).re := by
-  set v : ℕ → Fin N := fun n => if h : n < a.length then a[n] else w (n - a.length)
+  set v := fun n => if h : n < a.length then a[n] else w (n - a.length)
   have hlist : ∀ n, (List.ofFn fun k : Fin (n + a.length) => v k) =
       a ++ List.ofFn fun k : Fin n => w k := fun n =>
     List.ext_getElem (by simp [Nat.add_comm]) fun l h1 h2 => by
-      simp only [List.getElem_ofFn, List.getElem_append, v]
+      simp [List.getElem_ofFn, List.getElem_append, v]
   have hπ : Φ.natProj w ∈ I := Φ.attractor_subset_I ⟨w, rfl⟩
   have hc : ContinuousAt (fun t : ℝ => (Φ.comp a t).re) (Φ.natProj w) :=
     Complex.continuous_re.continuousAt.comp ((Φ.differentiableAt_comp a
@@ -75,7 +74,7 @@ private theorem exact_natProj_prepend (a : List (Fin N)) (w : ℕ → Fin N) :
     Φ.exact_comp_append_ofReal _ _ (left_mem_Icc.2 zero_le_one)]
 
 /-- The attractor is invariant under every composition `f_a`. -/
-private theorem exact_re_comp_mem_attractor (a : List (Fin N)) {x : ℝ}
+theorem exact_re_comp_mem_attractor (a : List (Fin N)) {x : ℝ}
     (hx : x ∈ Φ.attractor) : (Φ.comp a x).re ∈ Φ.attractor := by
   obtain ⟨w, rfl⟩ := hx
   exact ⟨_, Φ.exact_natProj_prepend a w⟩
@@ -83,16 +82,16 @@ private theorem exact_re_comp_mem_attractor (a : List (Fin N)) {x : ℝ}
 /-- If the attractor is `{p}`, every map fixes `p`. -/
 theorem fixedPoint_of_attractor_singleton {p : ℝ} (hp : Φ.attractor = {p}) (k : Fin N) :
     Φ.f k p = p := by
-  have hpA : p ∈ Φ.attractor := hp ▸ mem_singleton p
+  have hpA := hp ▸ mem_singleton p
   have h := Φ.exact_re_comp_mem_attractor [k] hpA
   rw [hp] at h
-  have hr : (Φ.f k p).re = p := by simpa using h
+  have hr : (Φ.f k p).re = p := by exact h
   have hi := (Φ.inClass k).im_eq_zero p
     (ofReal_mem_nbhd (by linarith [Φ.ε_pos]) (Φ.attractor_subset_I hpA))
-  exact Complex.ext (by simpa using hr) (by simpa using hi)
+  exact Complex.ext (by exact hr) (by exact hi)
 
 /-- A finite attractor has at most one point. -/
-private theorem exact_attractor_subsingleton (k : Fin N) (hfin : Φ.attractor.Finite) :
+theorem exact_attractor_subsingleton (k : Fin N) (hfin : Φ.attractor.Finite) :
     Φ.attractor.Subsingleton := by
   intro x hx y hy
   have hxI := Φ.attractor_subset_I hx
@@ -121,7 +120,7 @@ private theorem exact_attractor_subsingleton (k : Fin N) (hfin : Φ.attractor.Fi
     (β := Φ.attractor × Φ.attractor) fun n =>
       (⟨_, Φ.exact_re_comp_mem_attractor (List.replicate n k) hx⟩,
         ⟨_, Φ.exact_re_comp_mem_attractor (List.replicate n k) hy⟩)
-  simp only [Prod.mk.injEq, Subtype.mk.injEq] at he
+  simp [Prod.mk.injEq, Subtype.mk.injEq] at he
   rcases lt_or_gt_of_ne hnm with h | h
   · exact key n m h he.1 he.2
   · exact key m n h he.1.symm he.2.symm

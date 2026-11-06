@@ -75,7 +75,7 @@ theorem attractor_nonempty (hN : 0 < N) : Φ.attractor.Nonempty :=
 /-- The attractor is invariant: `Λ = ⋃_i f_i(Λ)`. -/
 theorem attractor_eq_iUnion : Φ.attractor = ⋃ i, Φ.realMap i '' Φ.attractor := by
   ext x
-  simp only [mem_iUnion, mem_image]
+  simp [mem_iUnion, mem_image]
   constructor
   · rintro ⟨ω, rfl⟩
     exact ⟨ω 0, _, ⟨_, rfl⟩, (Φ.natProj_eq_realMap ω).symm⟩
@@ -91,7 +91,7 @@ theorem exists_attractor_eq_singleton_iff (hN : 0 < N) :
     (∃ x, Φ.attractor = {x}) ↔ ∃ x ∈ I, ∀ i, Φ.realMap i x = x := by
   constructor
   · rintro ⟨x, hx⟩
-    have hxK : x ∈ Φ.attractor := hx ▸ mem_singleton x
+    have hxK := hx ▸ mem_singleton x
     refine ⟨x, Φ.attractor_subset_I hxK, fun i => ?_⟩
     have h1 : Φ.natProj (fun _ => i) = x := by
       have h : Φ.natProj (fun _ => i) ∈ Φ.attractor := ⟨_, rfl⟩
@@ -101,9 +101,9 @@ theorem exists_attractor_eq_singleton_iff (hN : 0 < N) :
     rw [h1] at h2
     exact h2.symm
   · rintro ⟨p, hp, hfix⟩
-    have hp' : (p : ℂ) ∈ nbhd ε := ofReal_mem_nbhd Φ.ε_pos hp
+    have hp' := ofReal_mem_nbhd Φ.ε_pos hp
     have hf : ∀ i, Φ.f i p = p := fun i =>
-      Complex.ext (hfix i) (by simpa using Φ.im_f_ofReal i (nbhd_subset_two hp'))
+      Complex.ext (hfix i) (by exact Φ.im_f_ofReal i (nbhd_subset_two hp'))
     have hc : ∀ w, Φ.comp w p = p := by
       intro w
       induction w with
@@ -111,13 +111,11 @@ theorem exists_attractor_eq_singleton_iff (hN : 0 < N) :
       | cons i w ih => rw [comp_cons, Function.comp_apply, ih, hf]
     have hπ : ∀ ω, Φ.natProj ω = p := by
       intro ω
-      have hle : ∀ n, |Φ.natProj ω - p| ≤ Φ.cmax ^ n := by
+      have h0 := ge_of_tendsto' (tendsto_pow_atTop_nhds_zero_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one) (by
         intro n
         have hπ : Φ.natProj (fun j => ω (j + n)) ∈ I := Φ.attractor_subset_I ⟨_, rfl⟩
         have h := Φ.abs_re_comp_sub_le (List.ofFn fun k : Fin n => ω k) hπ hp
-        rwa [List.length_ofFn, hc, Complex.ofReal_re, ← Φ.natProj_eq_comp_prefix] at h
-      have h0 : |Φ.natProj ω - p| ≤ 0 :=
-        ge_of_tendsto' (tendsto_pow_atTop_nhds_zero_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one) hle
+        rwa [List.length_ofFn, hc, Complex.ofReal_re, ← Φ.natProj_eq_comp_prefix] at h)
       exact sub_eq_zero.1 (abs_nonpos_iff.1 h0)
     refine ⟨p, ?_⟩
     ext x
@@ -143,7 +141,7 @@ theorem realComp_realMap (w : List (Fin N)) {x : ℝ} (hx : (x : ℂ) ∈ nbhd �
 /-- `(φ_w)'(x) = f_w'(x)` at the real points of `B_ε`. -/
 theorem deriv_realComp_realMap (w : List (Fin N)) {x : ℝ} (hx : (x : ℂ) ∈ nbhd ε) :
     deriv (realComp Φ.realMap w) x = (deriv (Φ.comp w) x).re := by
-  have heq : realComp Φ.realMap w =ᶠ[𝓝 x] fun t : ℝ => (Φ.comp w t).re := by
+  have heq : realComp Φ.realMap w =ᶠ[𝓝 x] fun t => (Φ.comp w t).re := by
     filter_upwards [(isOpen_setOf_ofReal_mem (isOpen_nbhd ε)).mem_nhds hx] with t ht
     exact Φ.realComp_realMap w ht
   rw [heq.deriv_eq]
@@ -200,9 +198,9 @@ theorem rapaportHyp (hN : 0 < N) (hnd : ¬ ∃ x, Φ.attractor = {x}) (hesc : Φ
     exact hn u v huv
 
 /-- On `I`, the derivative of the real map `f_i` has absolute value `‖f_i'(x)‖`. -/
-private theorem dim_abs_deriv_realMap (i : Fin N) {x : ℝ} (hx : x ∈ I) :
+theorem dim_abs_deriv_realMap (i : Fin N) {x : ℝ} (hx : x ∈ I) :
     |deriv (Φ.realMap i) x| = ‖deriv (Φ.f i) x‖ := by
-  have hcl : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
+  have hcl := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
   have hd : HasDerivAt (Φ.realMap i) (deriv (Φ.f i) x).re x :=
     hasDerivAt_re_ofReal (Φ.differentiableAt_f i hcl)
   rw [hd.deriv]
@@ -210,10 +208,10 @@ private theorem dim_abs_deriv_realMap (i : Fin N) {x : ℝ} (hx : x ∈ I) :
     (Φ.im_deriv_f_ofReal i (nbhd_subset_two (ofReal_mem_nbhd Φ.ε_pos hx)))
 
 /-- `log c_min ≤ log |f_i'(x)| ≤ log c_max` for `x ∈ I`. -/
-private theorem dim_log_abs_deriv_realMap_mem (hN : 0 < N) (i : Fin N) {x : ℝ} (hx : x ∈ I) :
+theorem dim_log_abs_deriv_realMap_mem (hN : 0 < N) (i : Fin N) {x : ℝ} (hx : x ∈ I) :
     Real.log Φ.cmin ≤ Real.log |deriv (Φ.realMap i) x| ∧
       Real.log |deriv (Φ.realMap i) x| ≤ Real.log Φ.cmax := by
-  have hcl : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
+  have hcl := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
   have h1 := Φ.cmin_le_norm_deriv i hcl
   have h2 := Φ.norm_deriv_le_cmax i hcl
   have h0 := Φ.cmin_pos hN
@@ -221,23 +219,21 @@ private theorem dim_log_abs_deriv_realMap_mem (hN : 0 < N) (i : Fin N) {x : ℝ}
   exact ⟨Real.log_le_log h0 h1, Real.log_le_log (h0.trans_le h1) h2⟩
 
 /-- For a probability measure `μ` on `I`, `∫ log |f_i'| dμ ≤ log c_max`. -/
-private theorem dim_integral_le (hN : 0 < N) (i : Fin N) {μ : Measure ℝ}
+theorem dim_integral_le (hN : 0 < N) (i : Fin N) {μ : Measure ℝ}
     [IsProbabilityMeasure μ] (hμ : μ Iᶜ = 0) :
     ∫ x, Real.log |deriv (Φ.realMap i) x| ∂μ ≤ Real.log Φ.cmax := by
-  have hI : ∀ᵐ x ∂μ, x ∈ I := ae_iff.2 hμ
-  have hb : ∀ᵐ x ∂μ, Real.log Φ.cmin ≤ Real.log |deriv (Φ.realMap i) x| ∧
-      Real.log |deriv (Φ.realMap i) x| ≤ Real.log Φ.cmax :=
+  have hI := ae_iff.2 hμ
+  have hb :=
     hI.mono fun x hx => Φ.dim_log_abs_deriv_realMap_mem hN i hx
   have hm : AEStronglyMeasurable (fun x => Real.log |deriv (Φ.realMap i) x|) μ :=
     (measurable_deriv (Φ.realMap i)).abs.log.aestronglyMeasurable
-  have hint : Integrable (fun x => Real.log |deriv (Φ.realMap i) x|) μ := by
+  calc ∫ x, Real.log |deriv (Φ.realMap i) x| ∂μ ≤ ∫ _x, Real.log Φ.cmax ∂μ :=
+        integral_mono_ae (by
     refine Integrable.of_bound hm (|Real.log Φ.cmin| + |Real.log Φ.cmax|)
       (hb.mono fun x hx => ?_)
     rw [Real.norm_eq_abs, abs_le]
     constructor <;> linarith [neg_abs_le (Real.log Φ.cmin), le_abs_self (Real.log Φ.cmax),
-      abs_nonneg (Real.log Φ.cmin), abs_nonneg (Real.log Φ.cmax)]
-  calc ∫ x, Real.log |deriv (Φ.realMap i) x| ∂μ ≤ ∫ _x, Real.log Φ.cmax ∂μ :=
-        integral_mono_ae hint (integrable_const _) (hb.mono fun x hx => hx.2)
+      abs_nonneg (Real.log Φ.cmin), abs_nonneg (Real.log Φ.cmax)]) (integrable_const _) (hb.mono fun x hx => hx.2)
     _ = Real.log Φ.cmax := by simp
 
 /-- The Lyapunov exponent of a self-conformal measure satisfies `χ ≥ -log c_max`. -/
@@ -268,7 +264,7 @@ theorem theorem_1_6 (hM : RapaportMeasureStatement) (hS : RapaportSetStatement) 
     apply (positive_length_tendsto_iff (fun n : ℕ => Real.log (∑ u : Fin n → Fin N,
       (⨆ x : I, |deriv (realComp Φ.realMap (List.ofFn u)) x|) ^ s))).mpr
     refine ((hs s).2 rfl).congr fun n => ?_
-    simp only [pressureSum, supDeriv_eq_iSup_realComp]
+    simp [pressureSum, supDeriv_eq_iSup_realComp]
   · intro p hp μ hμ
     have hm := hM Φ.realMap hφ p hp.1 hp.2 μ hμ.1 hμ.2.1 hμ.2.2
       (Φ.lyapunov_pos hN hp hμ).ne'

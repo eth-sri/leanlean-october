@@ -19,10 +19,10 @@ open Set Metric Filter Topology
 variable {ε : ℝ} {f : ℂ → ℂ}
 
 /-- A function with zero derivative within `[0,1]` at every point of `[0,1]` is constant there. -/
-private theorem eq_of_hasDerivWithinAt_zero_I {u : ℝ → ℝ}
+theorem eq_of_hasDerivWithinAt_zero_I {u : ℝ → ℝ}
     (hu : ∀ x ∈ I, HasDerivWithinAt u 0 I x) {x y : ℝ} (hx : x ∈ I) (hy : y ∈ I) :
     u x = u y := by
-  have hdiff : DifferentiableOn ℝ u I := fun z hz => (hu z hz).differentiableWithinAt
+  have hdiff := fun z hz => (hu z hz).differentiableWithinAt
   have h := constant_of_derivWithin_zero hdiff fun z hz =>
     (hu z (Ico_subset_Icc_self hz)).derivWithin
       (uniqueDiffOn_Icc zero_lt_one z (Ico_subset_Icc_self hz))
@@ -43,20 +43,18 @@ theorem existsUnique_fixedPoint (hε : 0 < ε) (hf : InClass ε f) :
     have hreal : f x = ((f x).re : ℂ) :=
       Complex.ext (by simp) (by simp [hf.im_eq_zero x (ofReal_mem_nbhd h2ε hx)])
     rw [hreal, Complex.ofReal_inj, hF, sub_eq_zero]
-  have hanti : StrictAntiOn F I := by
+  have hanti := by
     refine strictAntiOn_of_deriv_neg (convex_Icc 0 1) hcont fun x hx => ?_
-    have hxI : x ∈ I := interior_subset hx
+    have hxI := interior_subset hx
     rw [(hderiv x hxI).deriv, sub_neg]
     exact (Complex.re_le_norm _).trans_lt
       (hf.norm_deriv_lt_one x (subset_closure (ofReal_mem_nbhd hε hxI)))
   -- the intermediate value theorem gives a zero of `F`
-  obtain ⟨p, hp, hFp⟩ : (0 : ℝ) ∈ F '' I := by
+  obtain ⟨p, hp, hFp⟩ : 0 ∈ F '' I := by
     refine intermediate_value_Icc' zero_le_one hcont ⟨?_, ?_⟩
     · have := (hf.re_mem_I 1 (right_mem_Icc.2 zero_le_one)).2
-      show (f ((1 : ℝ) : ℂ)).re - 1 ≤ 0
       linarith
     · have := (hf.re_mem_I 0 (left_mem_Icc.2 zero_le_one)).1
-      show 0 ≤ (f ((0 : ℝ) : ℂ)).re - 0
       linarith
   refine ⟨p, ⟨hp, (hfix p hp).2 hFp⟩, fun q ⟨hq, hfq⟩ => hanti.injOn hq hp ?_⟩
   rw [(hfix q hq).1 hfq, hFp]
@@ -71,8 +69,8 @@ theorem lemma_5_1 (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p ∈ I) (h
       ∀ g : ℝ → ℝ, DifferentiableOn ℝ g I → DifferentiableOn ℝ (derivWithin g I) I →
         (∀ x ∈ I, derivWithin (derivWithin g I) I x = (hatH f x).re * derivWithin g I x) →
         ∀ x ∈ I, g (f x).re = (deriv f p).re * g x + g p * (1 - (deriv f p).re) := by
-  have hmem : ∀ {x : ℝ}, x ∈ I → (x : ℂ) ∈ nbhd ε := fun hx => ofReal_mem_nbhd hε hx
-  have hkd : DifferentiableOn ℂ (koenigs f p) (nbhd ε) := differentiableOn_koenigs hε hf hp hfp
+  have hmem : ∀ {x : ℝ}, x ∈ I → ↑x ∈ nbhd ε := fun hx => ofReal_mem_nbhd hε hx
+  have hkd := differentiableOn_koenigs hε hf hp hfp
   have hkat : ∀ {x : ℝ}, x ∈ I → DifferentiableAt ℂ (koenigs f p) x := fun hx =>
     hkd.differentiableAt ((isOpen_nbhd ε).mem_nhds (hmem hx))
   -- the real restriction of `ĝ` has derivative `ĝ' > 0` on `I`, so it is strictly increasing
@@ -85,10 +83,10 @@ theorem lemma_5_1 (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p ∈ I) (h
     exact (deriv_koenigs_ofReal hε hf hp hfp (interior_subset hx)).2
   refine ⟨fun a b hb => ?_, fun g hg hg' hODE x hx => ?_⟩
   · -- `g = a + b ĝ`
-    have hderiv : deriv (fun z => (a : ℂ) + b * koenigs f p z) =
+    have hderiv : deriv (fun z => ↑a + b * koenigs f p z) =
         fun z => b * deriv (koenigs f p) z := by
       rw [deriv_const_add', deriv_const_mul_field']
-    refine ⟨fun z => (a : ℂ) + b * koenigs f p z,
+    refine ⟨fun z => ↑a + b * koenigs f p z,
       ⟨_, (hkd.const_mul _).const_add _,
         ((continuousOn_koenigs hε hf hp hfp).const_mul _).const_add _,
         fun x hx => ?_, rfl⟩, ?_, fun x hx => ?_, ?_, ?_⟩
@@ -138,7 +136,7 @@ theorem lemma_5_1 (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p ∈ I) (h
       rw [koenigs_self hε hf hp hfp, Complex.zero_re, mul_zero, sub_zero] at h
       linarith
     -- `ĝ ∘ f = f'(p) ĝ`
-    have hy : (f x).re ∈ I := hf.re_mem_I x hx
+    have hy := hf.re_mem_I x hx
     have hfx : (((f x).re : ℝ) : ℂ) = f x := Complex.ext (by simp)
       (by simp [hf.im_eq_zero x (ofReal_mem_nbhd (by linarith) hx)])
     have hkfx : (koenigs f p (f x).re).re = (deriv f p).re * (koenigs f p x).re := by

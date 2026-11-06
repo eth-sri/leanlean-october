@@ -83,11 +83,10 @@ theorem hasDerivAt_aeval_of_mem_supported {s : Finset ℕ} {p : MvPolynomial ℕ
       map_zero, zero_mul]) (fun h => absurd hm h)]
     simpa [MvPolynomial.pderiv_X_self] using hy m hm
   | algebraMap r =>
-    simp only [Derivation.map_algebraMap, map_zero, zero_mul, Finset.sum_const_zero,
-      AlgHom.commutes]
+    simp [map_zero, zero_mul]
     exact hasDerivAt_const z _
   | add p q _ _ hp hq =>
-    simp only [map_add, add_mul, Finset.sum_add_distrib]
+    simp [map_add, add_mul, Finset.sum_add_distrib]
     exact hp.fun_add hq
   | mul p q _ _ hp hq =>
     simp only [map_mul]
@@ -145,9 +144,9 @@ theorem hasSum_iteratedDeriv_of_summable_norm {ι : Type*} {F : ι → ℂ → �
       (iteratedDeriv m fun w => ∑' i, F i w) atTop U := by
     intro m
     induction m with
-    | zero => simpa using (tendstoUniformlyOn_tsum hu hF_le).tendstoLocallyUniformlyOn
+    | zero => exact (tendstoUniformlyOn_tsum hu hF_le).tendstoLocallyUniformlyOn
     | succ m ih =>
-      simp only [iteratedDeriv_succ]
+      simp [iteratedDeriv_succ]
       exact ih.deriv (Eventually.of_forall fun s w hw =>
         (differentiableAt_iteratedDeriv hU (hG s) m hw).differentiableWithinAt) hU
   exact ((hlim k).tendsto_at hz).congr fun s => iteratedDeriv_fun_sum fun i _ =>
@@ -231,7 +230,7 @@ theorem iteratedDeriv_succ_comp_reverse (w : List (Fin N)) (k : ℕ) {z : ℂ} (
       rw [List.reverse_reverse] at h
       rw [h, mul_div_cancel₀ _ (Φ.deriv_comp_ne_zero _ (subset_closure hz))]
     rw [iteratedDeriv_succ, heq.deriv_eq, (hf'.fun_mul hG).deriv, hH]
-    simp only [gPoly, map_add, map_sum, map_mul, MvPolynomial.aeval_X, iteratedDeriv_zero]
+    simp [gPoly, map_add, map_sum, map_mul, MvPolynomial.aeval_X, iteratedDeriv_zero]
     ring
 
 /-! ## Lemma 2.8 -/
@@ -243,11 +242,10 @@ theorem iteratedDeriv_dualTerm (w : Word N) (k n : ℕ) {z : ℂ} (hz : z ∈ nb
     iteratedDeriv k (Φ.dualTerm w n) z = Φ.dualDerivTerm w k n z := by
   cases h : w.get? n with
   | none =>
-    have hT : Φ.dualTerm w n = fun _ => 0 := funext (Φ.dualTerm_of_get?_eq_none h)
+    have hT := funext (Φ.dualTerm_of_get?_eq_none h)
     simp [hT, dualDerivTerm, h]
   | some i =>
-    have hT : Φ.dualTerm w n = fun u => Φ.nonlin i (Φ.comp (w.take n).reverse u) *
-        deriv (Φ.comp (w.take n).reverse) u := funext (Φ.dualTerm_of_get?_eq_some h)
+    have hT := funext (Φ.dualTerm_of_get?_eq_some h)
     obtain ⟨U, hUo, hU, -, hnl⟩ := Φ.exists_differentiableOn_nonlin i
     obtain ⟨r, hr, hrU⟩ :=
       Metric.isOpen_iff.1 hUo _ (hU (subset_closure (Φ.mapsTo_comp (w.take n).reverse hz)))
@@ -262,7 +260,7 @@ theorem iteratedDeriv_dualTerm (w : Word N) (k n : ℕ) {z : ℂ} (hz : z ∈ nb
       rw [Nat.succ_sub_one]
       exact Φ.iteratedDeriv_succ_comp_reverse _ m hz
     rw [hT, iteratedDeriv_comp_mul_deriv hr (hnl.mono hrU) hfa k]
-    simp only [dualDerivTerm, h]
+    simp [dualDerivTerm, h]
     refine Finset.sum_congr rfl fun c _ => ?_
     rw [Finset.prod_congr rfl fun j _ => hpart _ (c.partSize_pos j), Finset.prod_mul_distrib,
       Fin.prod_const, mul_assoc]
@@ -278,7 +276,7 @@ theorem lemma_2_8 (w : Word N) (k : ℕ) {x : ℝ} (hx : x ∈ I) :
     ((summable_geometric_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one).mul_left C)
     (Φ.differentiableOn_dualTerm w) (isOpen_nbhd ε)
     (fun n z hz => hC w n z (subset_closure hz)) k hx'
-  simp only [Φ.iteratedDeriv_dualTerm w k _ hx'] at h
+  simp [Φ.iteratedDeriv_dualTerm w k _ hx'] at h
   exact ⟨h.summable, h.tsum_eq.symm⟩
 
 end IFS

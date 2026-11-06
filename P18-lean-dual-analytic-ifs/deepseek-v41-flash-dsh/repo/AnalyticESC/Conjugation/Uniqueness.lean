@@ -22,10 +22,10 @@ variable {ε : ℝ} {f : ℂ → ℂ}
 /-! ## Auxiliary lemmas -/
 
 /-- The system consisting of the single map `f`. -/
-private def uniqIFS {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε) (hf : InClass ε f) : IFS 1 ε :=
+def uniqIFS {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε) (hf : InClass ε f) : IFS 1 ε :=
   ⟨fun _ => f, hε, fun _ => hf⟩
 
-private theorem uniqIFS_comp (hε : 0 < ε) (hf : InClass ε f) (n : ℕ) :
+theorem uniqIFS_comp (hε : 0 < ε) (hf : InClass ε f) (n : ℕ) :
     (uniqIFS hε hf).comp (List.replicate n 0) = f^[n] := by
   induction n with
   | zero => rfl
@@ -34,10 +34,10 @@ private theorem uniqIFS_comp (hε : 0 < ε) (hf : InClass ε f) (n : ℕ) :
     rfl
 
 /-- `Ĥ_f` is the dual natural projection of the constant word for the system `{f}`. -/
-private theorem hatH_eq_dualProj_uniq (hε : 0 < ε) (hf : InClass ε f) :
+theorem hatH_eq_dualProj_uniq (hε : 0 < ε) (hf : InClass ε f) :
     hatH f = (uniqIFS hε hf).dualProj (.inf fun _ => 0) := by
   funext z
-  simp only [hatH, IFS.dualProj]
+  simp [hatH, IFS.dualProj]
   refine tsum_congr fun k => ?_
   rw [(uniqIFS hε hf).dualTerm_of_get?_eq_some (Word.get?_inf _ k)]
   simp only [Word.take_inf, List.ofFn_const, List.reverse_replicate, uniqIFS_comp hε hf,
@@ -46,23 +46,13 @@ private theorem hatH_eq_dualProj_uniq (hε : 0 < ε) (hf : InClass ε f) :
 
 /-- Maps that agree on `[0,1]` and are differentiable at `x ∈ [0,1]` have the same derivative
 at `x`. -/
-private theorem hasDerivAt_unique_of_eqOn_I {u v : ℝ → ℝ} {a b x : ℝ} (hx : x ∈ I)
+theorem hasDerivAt_unique_of_eqOn_I {u v : ℝ → ℝ} {a b x : ℝ} (hx : x ∈ I)
     (hu : HasDerivAt u a x) (hv : HasDerivAt v b x) (huv : ∀ y ∈ I, u y = v y) : a = b :=
   (uniqueDiffOn_Icc zero_lt_one x hx).eq_deriv _ hu.hasDerivWithinAt
     (hv.hasDerivWithinAt.congr huv (huv x hx))
 
 /-- A function with zero derivative within `[0,1]` at every point of `[0,1]` is constant there. -/
-private theorem eq_of_hasDerivWithinAt_zero_I_uniq {u : ℝ → ℝ}
-    (hu : ∀ x ∈ I, HasDerivWithinAt u 0 I x) {x y : ℝ} (hx : x ∈ I) (hy : y ∈ I) :
-    u x = u y := by
-  have hdiff : DifferentiableOn ℝ u I := fun z hz => (hu z hz).differentiableWithinAt
-  have h := constant_of_derivWithin_zero hdiff fun z hz =>
-    (hu z (Ico_subset_Icc_self hz)).derivWithin
-      (uniqueDiffOn_Icc zero_lt_one z (Ico_subset_Icc_self hz))
-  rw [h x hx, h y hy]
-
-/-- A complex number with zero imaginary part is real. -/
-private theorem eq_ofReal_re_uniq {w : ℂ} (h : w.im = 0) : w = (w.re : ℂ) :=
+theorem eq_ofReal_re_uniq {w : ℂ} (h : w.im = 0) : w = (w.re : ℂ) :=
   Complex.ext (by simp) (by simp [h])
 
 /-! ## The main statements -/
@@ -97,19 +87,19 @@ theorem deriv_deriv_eq_hatH_mul (hε : 0 < ε) (hf : InClass ε f) {φ : ℝ →
     ∀ x ∈ I, deriv (deriv φ) x = (hatH f x).re * deriv φ x := by
   have h2ε : 0 < 2 * ε := by linarith
   have hU := isOpen_nbhd (2 * ε)
-  have hmem : ∀ {x : ℝ}, x ∈ I → (x : ℂ) ∈ nbhd ε := fun hx => ofReal_mem_nbhd hε hx
-  have hmem2 : ∀ {x : ℝ}, x ∈ I → (x : ℂ) ∈ nbhd (2 * ε) := fun hx => ofReal_mem_nbhd h2ε hx
-  have hf1 : DifferentiableOn ℂ (deriv f) (nbhd (2 * ε)) := hf.differentiableOn.deriv hU
+  have hmem : ∀ {x : ℝ}, x ∈ I → ↑x ∈ nbhd ε := fun hx => ofReal_mem_nbhd hε hx
+  have hmem2 : ∀ {x : ℝ}, x ∈ I → ↑x ∈ nbhd (2 * ε) := fun hx => ofReal_mem_nbhd h2ε hx
+  have hf1 := hf.differentiableOn.deriv hU
   -- `F = Re f` on the real line, with `F' = Re f'` and `F'' = Re f''` on `I`
   set F : ℝ → ℝ := fun y => (f y).re with hF
   set F1 : ℝ → ℝ := fun y => (deriv f y).re with hF1
-  set F2 : ℝ → ℝ := fun y => (deriv (deriv f) y).re with hF2
+  set F2 := fun y => (deriv (deriv f) y).re with hF2
   have hFd : ∀ x ∈ I, HasDerivAt F (F1 x) x := fun x hx =>
     hasDerivAt_re_ofReal (hf.differentiableOn.differentiableAt (hU.mem_nhds (hmem2 hx)))
   have hF1d : ∀ x ∈ I, HasDerivAt F1 (F2 x) x := fun x hx =>
     hasDerivAt_re_ofReal (hf1.differentiableAt (hU.mem_nhds (hmem2 hx)))
   have hFI : ∀ x ∈ I, F x ∈ I := hf.re_mem_I
-  have hfr : ∀ x ∈ I, f x = (F x : ℂ) := fun x hx =>
+  have hfr := fun x hx =>
     eq_ofReal_re_uniq (hf.im_eq_zero x (hmem2 hx))
   have hf1r : ∀ x ∈ I, deriv f x = (F1 x : ℂ) := fun x hx =>
     eq_ofReal_re_uniq (im_deriv_eq_zero hU hf.differentiableOn hf.im_eq_zero (hmem2 hx))
@@ -126,7 +116,7 @@ theorem deriv_deriv_eq_hatH_mul (hε : 0 < ε) (hf : InClass ε f) {φ : ℝ →
   have hφ1d : ∀ y ∈ I, HasDerivAt (deriv φ) (deriv (deriv φ) y) y := fun y hy =>
     (hφ y hy).deriv.differentiableAt.hasDerivAt
   -- differentiate `φ ∘ F = λ φ + t` twice within `I`
-  have hA : ∀ x ∈ I, deriv φ (F x) * F1 x = lam * deriv φ x := fun x hx =>
+  have hA := fun x hx =>
     hasDerivAt_unique_of_eqOn_I hx ((hφd _ (hFI x hx)).comp x (hFd x hx))
       (((hφd x hx).const_mul lam).add_const t) hconj
   have hB : ∀ x ∈ I, deriv (deriv φ) (F x) * F1 x * F1 x + deriv φ (F x) * F2 x =
@@ -134,29 +124,27 @@ theorem deriv_deriv_eq_hatH_mul (hε : 0 < ε) (hf : InClass ε f) {φ : ℝ →
     hasDerivAt_unique_of_eqOn_I hx (((hφ1d _ (hFI x hx)).comp x (hFd x hx)).mul (hF1d x hx))
       ((hφ1d x hx).const_mul lam) hA
   -- `G = φ''/φ'` and `R = Re Ĥ_f` satisfy the same functional equation on `I`
-  set G : ℝ → ℝ := fun y => deriv (deriv φ) y / deriv φ y with hG
+  set G := fun y => deriv (deriv φ) y / deriv φ y with hG
   set R : ℝ → ℝ := fun y => (hatH f y).re with hR
   have hGeq : ∀ x ∈ I, G x = F1 x * G (F x) + F2 x / F1 x := by
     intro x hx
-    have hA := hA x hx
-    have hB := hB x hx
     have h1 := hφ' x hx
     have h2 := hφ' _ (hFI x hx)
     have h3 := hF1ne x hx
-    simp only [hG]
+    simp [hG]
     field_simp
-    linear_combination (deriv (deriv φ) x) * hA - (deriv φ x) * hB
+    linear_combination (deriv (deriv φ) x) * (hA x hx) - (deriv φ x) * (hB x hx)
   have hReq : ∀ x ∈ I, R x = F1 x * R (F x) + F2 x / F1 x := by
     intro x hx
-    simp only [hR]
+    simp [hR]
     rw [hatH_eq_add hε hf (hmem hx), hf2r x hx, hf1r x hx, hfr x hx, ← Complex.ofReal_div,
       Complex.add_re, Complex.ofReal_re, Complex.re_ofReal_mul]
     ring
   -- `D = G - R` satisfies `D = F' · D ∘ F` with `|F'| < 1`, so `D` vanishes where `|D|` is
   -- maximal
-  set D : ℝ → ℝ := fun y => G y - R y with hD
+  set D := fun y => G y - R y with hD
   have hDeq : ∀ x ∈ I, D x = F1 x * D (F x) := fun x hx => by
-    simp only [hD]
+    simp [hD]
     rw [hGeq x hx, hReq x hx]
     ring
   have hGc : ContinuousOn G I := fun y hy =>
@@ -172,9 +160,9 @@ theorem deriv_deriv_eq_hatH_mul (hε : 0 < ε) (hf : InClass ε f) {φ : ℝ →
     have hlt := hF1lt x₀ hx₀
     nlinarith [abs_nonneg (D x₀), abs_nonneg (F1 x₀), abs_nonneg (D (F x₀))]
   intro x hx
-  have hDx : D x = 0 := abs_nonpos_iff.1 ((hmax hx).trans h0)
-  have hGx : G x = R x := sub_eq_zero.1 hDx
-  simp only [hG, hR] at hGx
+  have hDx := abs_nonpos_iff.1 ((hmax hx).trans h0)
+  have hGx := sub_eq_zero.1 hDx
+  simp [hG, hR] at hGx
   rw [div_eq_iff (hφ' x hx)] at hGx
   exact hGx
 
@@ -183,8 +171,8 @@ theorem eq_add_mul_koenigs (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p 
     {φ : ℝ → ℝ} (hφ : AnalyticOnNhd ℝ φ I)
     (hode : ∀ x ∈ I, deriv (deriv φ) x = (hatH f x).re * deriv φ x) :
     ∀ x ∈ I, φ x = φ p + deriv φ p * (koenigs f p x).re := by
-  have hmem : ∀ {x : ℝ}, x ∈ I → (x : ℂ) ∈ nbhd ε := fun hx => ofReal_mem_nbhd hε hx
-  have hkd : DifferentiableOn ℂ (koenigs f p) (nbhd ε) := differentiableOn_koenigs hε hf hp hfp
+  have hmem : ∀ {x : ℝ}, x ∈ I → ↑x ∈ nbhd ε := fun hx => ofReal_mem_nbhd hε hx
+  have hkd := differentiableOn_koenigs hε hf hp hfp
   have hkat : ∀ {x : ℝ}, x ∈ I → DifferentiableAt ℂ (koenigs f p) x := fun hx =>
     hkd.differentiableAt ((isOpen_nbhd ε).mem_nhds (hmem hx))
   have hkre : ∀ x ∈ I, HasDerivAt (fun t : ℝ => (koenigs f p t).re)
@@ -210,7 +198,7 @@ theorem eq_add_mul_koenigs (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p 
     ring
   have hφ'eq : ∀ x ∈ I, deriv φ x = c * G x := by
     intro x hx
-    have h := eq_of_hasDerivWithinAt_zero_I_uniq hu hx hp
+    have h := eq_of_hasDerivWithinAt_zero_I hu hx hp
     rw [hGp, div_one, div_eq_iff (hGpos x hx).ne'] at h
     exact h
   -- `φ - c Re ĝ` has zero derivative, so `φ = φ(p) + c Re ĝ` on `I`
@@ -220,7 +208,7 @@ theorem eq_add_mul_koenigs (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p 
       ((hkre x hx).const_mul c)).hasDerivWithinAt (s := I)
     rwa [hφ'eq x hx, sub_self] at h
   intro x hx
-  have h := eq_of_hasDerivWithinAt_zero_I_uniq hv hx hp
+  have h := eq_of_hasDerivWithinAt_zero_I hv hx hp
   rw [koenigs_self hε hf hp hfp, Complex.zero_re, mul_zero, sub_zero] at h
   linarith
 
@@ -234,8 +222,7 @@ theorem hatH_eq_of_eqOn_I {ε' : ℝ} {g : ℂ → ℂ} (hε : 0 < ε) (hf : InC
   have hU := isOpen_nbhd (2 * δ)
   have hδ2 : nbhd δ ⊆ nbhd (2 * δ) := nbhd_mono (by linarith)
   -- `f = g` on `B_{2δ}` by the identity theorem
-  have hfg : EqOn f g (nbhd (2 * δ)) :=
-    eqOn_nbhd_of_eqOn_Icc h2δ (hf.differentiableOn.mono (nbhd_mono (by linarith)))
+  have hfg := eqOn_nbhd_of_eqOn_Icc h2δ (hf.differentiableOn.mono (nbhd_mono (by linarith)))
       (hg.differentiableOn.mono (nbhd_mono (by linarith))) zero_lt_one subset_rfl h
   -- `f` maps `B_δ` into itself: for `δ = ε` by (B), and for `δ = ε'` since `f = g` there
   have hmaps : MapsTo f (nbhd δ) (nbhd δ) := by
@@ -253,10 +240,9 @@ theorem hatH_eq_of_eqOn_I {ε' : ℝ} {g : ℂ → ℂ} (hε : 0 < ε) (hf : InC
       obtain ⟨h1, h2⟩ := ih (f z) (hmaps hz)
       rw [Function.iterate_succ_apply, Function.iterate_succ_apply, ← hfg (hδ2 hz)]
       exact ⟨h1, h2⟩
-  have hd1 : EqOn (deriv f) (deriv g) (nbhd (2 * δ)) := hfg.deriv hU
-  have hd2 : EqOn (deriv (deriv f)) (deriv (deriv g)) (nbhd (2 * δ)) := hd1.deriv hU
-  have hdk : ∀ k, EqOn (deriv (f^[k])) (deriv (g^[k])) (nbhd δ) :=
-    fun k => EqOn.deriv (fun z hz => (hiter k z hz).1) (isOpen_nbhd δ)
+  have hd1 := hfg.deriv hU
+  have hd2 := hd1.deriv hU
+  have hdk := fun k => EqOn.deriv (fun z hz => (hiter k z hz).1) (isOpen_nbhd δ)
   intro x hx
   have hxδ := ofReal_mem_nbhd hδ hx
   refine tsum_congr fun k => ?_

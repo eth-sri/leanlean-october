@@ -28,13 +28,13 @@ namespace IFS
 variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 
 /-- `β = sup_{x ∈ [0,1], i} |f_i''/f_i'(x)|` (Proposition 1.8). -/
-noncomputable def beta : ℝ := ⨆ (x : I) (i : Fin N), ‖Φ.nonlin i ((x : ℝ) : ℂ)‖
+noncomputable def beta : ℝ := ⨆ (x : I) (i : Fin N), ‖Φ.nonlin i ↑x‖
 
 theorem beta_nonneg : 0 ≤ Φ.beta :=
   Real.iSup_nonneg fun _ => Real.iSup_nonneg fun _ => norm_nonneg _
 
-private theorem bddAbove_beta :
-    BddAbove (range fun x : I => ⨆ i : Fin N, ‖Φ.nonlin i ((x : ℝ) : ℂ)‖) := by
+theorem bddAbove_beta :
+    BddAbove (range fun x : I => ⨆ i : Fin N, ‖Φ.nonlin i ↑x‖) := by
   obtain ⟨M, hM0, hM⟩ := Φ.exists_nonlin_bound
   refine ⟨M, ?_⟩
   rintro _ ⟨x, rfl⟩
@@ -42,7 +42,7 @@ private theorem bddAbove_beta :
 
 theorem norm_nonlin_le_beta (i : Fin N) {x : ℝ} (hx : x ∈ I) : ‖Φ.nonlin i x‖ ≤ Φ.beta :=
   le_ciSup_of_le Φ.bddAbove_beta ⟨x, hx⟩
-    (le_ciSup (f := fun i : Fin N => ‖Φ.nonlin i ((x : ℝ) : ℂ)‖) (finite_range _).bddAbove i)
+    (le_ciSup (f := fun i : Fin N => ‖Φ.nonlin i ↑x‖) (finite_range _).bddAbove i)
 
 /-- The term with index `n` of (1.4) is at most `β c_max^n` at the points of `I`. -/
 theorem norm_dualTerm_le_beta (w : Word N) (n : ℕ) {x : ℝ} (hx : x ∈ I) :
@@ -53,23 +53,22 @@ theorem norm_dualTerm_le_beta (w : Word N) (n : ℕ) {x : ℝ} (hx : x ∈ I) :
     exact mul_nonneg Φ.beta_nonneg (pow_nonneg Φ.cmax_nonneg n)
   | some i =>
     rw [Φ.dualTerm_of_get?_eq_some h, norm_mul]
-    have hxn : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
+    have hxn := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
     have hlen : (w.take n).length = n := by
       have h1 := Word.length_take w n
-      have h2 : (n : ℕ∞) < w.length := (Word.isSome_get?_iff w n).1 (by simp [h])
+      have h2 := (Word.isSome_get?_iff w n).1 (by simp [h])
       rw [min_eq_left h2.le] at h1
       exact_mod_cast h1
-    have h1 : ‖Φ.nonlin i (Φ.comp (w.take n).reverse x)‖ ≤ Φ.beta := by
-      rw [Φ.comp_ofReal _ hx]
-      exact Φ.norm_nonlin_le_beta i (Φ.re_comp_mem_I _ hx)
     have h2 := Φ.norm_deriv_comp_le (w.take n).reverse hxn
     rw [List.length_reverse, hlen] at h2
-    exact mul_le_mul h1 h2 (norm_nonneg _) Φ.beta_nonneg
+    exact mul_le_mul (by
+      rw [Φ.comp_ofReal _ hx]
+      exact Φ.norm_nonlin_le_beta i (Φ.re_comp_mem_I _ hx)) h2 (norm_nonneg _) Φ.beta_nonneg
 
 /-- If `w` begins with `a`, then `|H_w(x) - (f_a''/f_a')(x)| ≤ β c_max/(1 - c_max)` on `I`. -/
 theorem norm_dualProj_sub_nonlin_le {w : Word N} {a : Fin N} (h : w.get? 0 = some a) {x : ℝ}
     (hx : x ∈ I) : ‖Φ.dualProj w x - Φ.nonlin a x‖ ≤ Φ.beta * Φ.cmax / (1 - Φ.cmax) := by
-  have hxn : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
+  have hxn := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
   have h0 : Φ.dualTerm w 0 x = Φ.nonlin a x := by
     rw [Φ.dualTerm_of_get?_eq_some h]
     cases w <;> simp
@@ -103,7 +102,7 @@ theorem exists_dualProj_ne_of_get?_zero {α : ℝ}
   linarith
 
 /-- A word without a first letter is empty. -/
-private theorem eq_fin_nil_of_get?_zero_eq_none {w : Word N} (h : w.get? 0 = none) :
+theorem eq_fin_nil_of_get?_zero_eq_none {w : Word N} (h : w.get? 0 = none) :
     w = .fin [] := by
   cases w with
   | fin w => simpa using h
@@ -157,7 +156,7 @@ theorem exists_dualProj_ne {α : ℝ} (hN : 0 < N)
         simp
   obtain ⟨y, hy, hne⟩ := Φ.exists_dualProj_ne_of_get?_zero hsep hlt hc hd hcd
   obtain ⟨p, q, hp, -, hq, hcmin, -, himg⟩ := Φ.exists_image_comp_eq_Icc u.reverse
-  have hpq : p < q := sub_pos.1 ((pow_pos (Φ.cmin_pos hN) _).trans_le hcmin)
+  have hpq := sub_pos.1 ((pow_pos (Φ.cmin_pos hN) _).trans_le hcmin)
   by_contra hall
   push Not at hall
   -- `H_{i'} = H_{j'}` on `f_{u^←}(I) = [p, q]`
@@ -165,7 +164,7 @@ theorem exists_dualProj_ne {α : ℝ} (hN : 0 < N)
     intro z hz
     rw [← himg] at hz
     obtain ⟨x, hx, rfl⟩ := hz
-    have hxn : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
+    have hxn := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
     have h := hall x hx
     rw [Φ.dualProj_prepend u i' hxn, Φ.dualProj_prepend u j' hxn, add_right_inj] at h
     rw [← Φ.comp_ofReal u.reverse hx]
@@ -179,29 +178,25 @@ theorem proposition_1_8 (hN : 2 ≤ N) {α : ℝ} (hα : 0 < α)
     (hsep : ∀ i j : Fin N, i ≠ j → ∃ x ∈ I, α ≤ ‖Φ.nonlin i x - Φ.nonlin j x‖) :
     0 < Φ.beta ∧ (2 * Φ.beta * Φ.cmax / (1 - Φ.cmax) < α →
       (∀ i j : Word N, i ≠ j → i.length = j.length →
-        0 < ⨆ x : I, ‖Φ.dualProj i ((x : ℝ) : ℂ) - Φ.dualProj j ((x : ℝ) : ℂ)‖) ∧ Φ.SESC) := by
-  have hbeta : 0 < Φ.beta := by
+        0 < ⨆ x : I, ‖Φ.dualProj i ↑x - Φ.dualProj j ↑x‖) ∧ Φ.SESC) := by
+  refine ⟨(by
     obtain ⟨x, hx, hαx⟩ := hsep ⟨0, by omega⟩ ⟨1, by omega⟩ (by simp [Fin.ext_iff])
     have h1 := Φ.norm_nonlin_le_beta ⟨0, by omega⟩ hx
     have h2 := Φ.norm_nonlin_le_beta ⟨1, by omega⟩ hx
     have h3 := norm_sub_le (Φ.nonlin ⟨0, by omega⟩ x) (Φ.nonlin ⟨1, by omega⟩ x)
-    linarith
-  refine ⟨hbeta, fun hlt => ?_⟩
+    linarith), fun hlt => ?_⟩
   have hpos : ∀ i j : Word N, i ≠ j → i.length = j.length →
-      0 < ⨆ x : I, ‖Φ.dualProj i ((x : ℝ) : ℂ) - Φ.dualProj j ((x : ℝ) : ℂ)‖ := by
+      0 < ⨆ x : I, ‖Φ.dualProj i ↑x - Φ.dualProj j ↑x‖ := by
     intro i j hij hlen
     obtain ⟨x, hx, hne⟩ := Φ.exists_dualProj_ne (by omega) hsep hlt hij hlen
     obtain ⟨M, -, hM⟩ := Φ.exists_norm_dualProj_le
-    have hbdd : BddAbove
-        (range fun x : I => ‖Φ.dualProj i ((x : ℝ) : ℂ) - Φ.dualProj j ((x : ℝ) : ℂ)‖) := by
+    exact (norm_pos_iff.2 (sub_ne_zero.2 hne)).trans_le
+      (le_ciSup (f := fun x : I => ‖Φ.dualProj i ↑x - Φ.dualProj j ↑x‖)
+        (by
       refine ⟨M + M, ?_⟩
       rintro _ ⟨x, rfl⟩
-      have hxn : ((x : ℝ) : ℂ) ∈ closure (nbhd ε) :=
-        subset_closure (ofReal_mem_nbhd Φ.ε_pos x.2)
-      exact (norm_sub_le _ _).trans (add_le_add (hM i _ hxn) (hM j _ hxn))
-    exact (norm_pos_iff.2 (sub_ne_zero.2 hne)).trans_le
-      (le_ciSup (f := fun x : I => ‖Φ.dualProj i ((x : ℝ) : ℂ) - Φ.dualProj j ((x : ℝ) : ℂ)‖)
-        hbdd ⟨x, hx⟩)
+      have hxn := subset_closure (ofReal_mem_nbhd Φ.ε_pos x.2)
+      exact (norm_sub_le _ _).trans (add_le_add (hM i _ hxn) (hM j _ hxn))) ⟨x, hx⟩)
   exact ⟨hpos, Φ.theorem_1_5 hpos⟩
 
 end IFS

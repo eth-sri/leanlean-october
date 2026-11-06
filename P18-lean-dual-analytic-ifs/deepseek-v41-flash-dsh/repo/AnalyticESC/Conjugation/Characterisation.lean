@@ -25,16 +25,16 @@ variable {ε : ℝ} {f : ℂ → ℂ}
 
 /-- At points of `[0,1]`, the derivative of a map of the class is real, nonzero and of modulus
 less than one. -/
-private theorem char_re_deriv_ne_zero_abs_lt_one (hε : 0 < ε) (hf : InClass ε f) {x : ℝ}
+theorem char_re_deriv_ne_zero_abs_lt_one (hε : 0 < ε) (hf : InClass ε f) {x : ℝ}
     (hx : x ∈ I) : (deriv f x).re ≠ 0 ∧ |(deriv f x).re| < 1 := by
-  have hcl : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd hε hx)
-  have him : (deriv f x).im = 0 := im_deriv_eq_zero (isOpen_nbhd _) hf.differentiableOn
+  have hcl := subset_closure (ofReal_mem_nbhd hε hx)
+  have him := im_deriv_eq_zero (isOpen_nbhd _) hf.differentiableOn
     hf.im_eq_zero (ofReal_mem_nbhd (by linarith) hx)
   exact ⟨fun h => hf.deriv_ne_zero _ hcl (Complex.ext h him),
     (Complex.abs_re_le_norm _).trans_lt (hf.norm_deriv_lt_one _ hcl)⟩
 
 /-- `Re ĝ ∘ f = Re f'(p) · Re ĝ` on `[0,1]`. -/
-private theorem char_re_koenigs_conj (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p ∈ I)
+theorem char_re_koenigs_conj (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p ∈ I)
     (hfp : f p = p) {x : ℝ} (hx : x ∈ I) :
     (koenigs f p ((f x).re : ℂ)).re = (deriv f p).re * (koenigs f p x).re := by
   have hx' := ofReal_mem_nbhd hε hx
@@ -47,12 +47,12 @@ private theorem char_re_koenigs_conj (hε : 0 < ε) (hf : InClass ε f) {p : ℝ
 derivative on `[0,1]`, vanishes at `p` and solves `φ'' = Re Ĥ_f φ'` on `[0,1]`. -/
 theorem char_re_koenigs_spec (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p ∈ I)
     (hfp : f p = p) :
-    IsAnalyticCoord (fun t : ℝ => (koenigs f p t).re) ∧
+    IsAnalyticCoord (fun t => (koenigs f p t).re) ∧
       (∀ x ∈ I, 0 < deriv (fun t : ℝ => (koenigs f p t).re) x) ∧
       (koenigs f p p).re = 0 ∧
       ∀ x ∈ I, deriv (deriv (fun t : ℝ => (koenigs f p t).re)) x =
         (hatH f x).re * deriv (fun t : ℝ => (koenigs f p t).re) x := by
-  have han : AnalyticOnNhd ℝ (fun t : ℝ => (koenigs f p t).re) I :=
+  have han :=
     analyticOnNhd_re_ofReal hε (differentiableOn_koenigs hε hf hp hfp)
   have hd : ∀ x ∈ I, 0 < deriv (fun t : ℝ => (koenigs f p t).re) x := fun x hx => by
     rw [(hasDerivAt_re_ofReal ((differentiableOn_koenigs hε hf hp hfp).differentiableAt

@@ -24,7 +24,7 @@ theorem isCompact_image_I : IsCompact (((↑) : ℝ → ℂ) '' I) :=
 
 /-- The image of `I` in `ℂ` is convex. -/
 theorem convex_image_I : Convex ℝ (((↑) : ℝ → ℂ) '' I) :=
-  (convex_Icc (0 : ℝ) 1).linear_image Complex.ofRealCLM.toLinearMap
+  (convex_Icc 0 1).linear_image Complex.ofRealCLM.toLinearMap
 
 theorem isOpen_nbhd (δ : ℝ) : IsOpen (nbhd δ) := isOpen_thickening
 
@@ -38,10 +38,10 @@ theorem isBounded_nbhd (δ : ℝ) : Bornology.IsBounded (nbhd δ) :=
 theorem isCompact_closure_nbhd (δ : ℝ) : IsCompact (closure (nbhd δ)) :=
   (isBounded_nbhd δ).isCompact_closure
 
-theorem ofReal_mem_nbhd {δ : ℝ} (hδ : 0 < δ) {x : ℝ} (hx : x ∈ I) : (x : ℂ) ∈ nbhd δ :=
+theorem ofReal_mem_nbhd {δ : ℝ} (hδ : 0 < δ) {x : ℝ} (hx : x ∈ I) : ↑x ∈ nbhd δ :=
   self_subset_thickening hδ _ (mem_image_of_mem _ hx)
 
-theorem ball_subset_nbhd {δ x : ℝ} (hx : x ∈ I) : ball (x : ℂ) δ ⊆ nbhd δ :=
+theorem ball_subset_nbhd {δ x : ℝ} (hx : x ∈ I) : ball ↑x δ ⊆ nbhd δ :=
   ball_subset_thickening (mem_image_of_mem _ hx) δ
 
 theorem nbhd_mono {δ δ' : ℝ} (h : δ ≤ δ') : nbhd δ ⊆ nbhd δ' := thickening_mono h _
@@ -65,12 +65,12 @@ theorem hasDerivAt_re_ofReal {g : ℂ → ℂ} {x : ℝ} (hg : DifferentiableAt 
     HasDerivAt (fun t : ℝ => (g t).re) (deriv g x).re x := hg.hasDerivAt.real_of_complex
 
 /-- The real points of an open subset of `ℂ` form an open subset of `ℝ`. -/
-theorem isOpen_setOf_ofReal_mem {U : Set ℂ} (hU : IsOpen U) : IsOpen {t : ℝ | (t : ℂ) ∈ U} :=
+theorem isOpen_setOf_ofReal_mem {U : Set ℂ} (hU : IsOpen U) : IsOpen {t : ℝ | ↑t ∈ U} :=
   hU.preimage Complex.continuous_ofReal
 
 /-- Iterated derivatives of the real restriction of a holomorphic map. -/
 theorem iteratedDeriv_re_ofReal {g : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
-    (hg : DifferentiableOn ℂ g U) (k : ℕ) {x : ℝ} (hx : (x : ℂ) ∈ U) :
+    (hg : DifferentiableOn ℂ g U) (k : ℕ) {x : ℝ} (hx : ↑x ∈ U) :
     iteratedDeriv k (fun t : ℝ => (g t).re) x = (iteratedDeriv k g x).re := by
   have hdiff : ∀ k, DifferentiableOn ℂ (iteratedDeriv k g) U := by
     intro k
@@ -88,7 +88,7 @@ theorem iteratedDeriv_re_ofReal {g : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
 /-- The real restriction of a holomorphic map is smooth on the real points of its domain. -/
 theorem contDiffOn_re_ofReal {g : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
     (hg : DifferentiableOn ℂ g U) (n : ℕ) :
-    ContDiffOn ℝ n (fun t : ℝ => (g t).re) {t : ℝ | (t : ℂ) ∈ U} := by
+    ContDiffOn ℝ n (fun t : ℝ => (g t).re) {t : ℝ | ↑t ∈ U} := by
   intro x hx
   have h : ContDiffAt ℂ n g x := (hg.contDiffOn hU).contDiffAt (hU.mem_nhds hx)
   exact h.real_of_complex.contDiffWithinAt
@@ -96,14 +96,14 @@ theorem contDiffOn_re_ofReal {g : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
 /-- A holomorphic map that is real at the real points of an open set has real derivative
 there. -/
 theorem im_deriv_eq_zero {g : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U) (hg : DifferentiableOn ℂ g U)
-    (hreal : ∀ t : ℝ, (t : ℂ) ∈ U → (g t).im = 0) {x : ℝ} (hx : (x : ℂ) ∈ U) :
+    (hreal : ∀ t : ℝ, ↑t ∈ U → (g t).im = 0) {x : ℝ} (hx : ↑x ∈ U) :
     (deriv g x).im = 0 := by
-  have hd : HasDerivAt g (deriv g x) x := (hg.differentiableAt (hU.mem_nhds hx)).hasDerivAt
-  have h1 : HasDerivAt (fun t : ℝ => g t) (deriv g x) x := hd.comp_ofReal
-  have h2 : HasDerivAt (fun t : ℝ => (g t).im) (deriv g x).im x :=
+  have hd := (hg.differentiableAt (hU.mem_nhds hx)).hasDerivAt
+  have h1 := hd.comp_ofReal
+  have h2 :=
     Complex.imCLM.hasFDerivAt.comp_hasDerivAt x h1
   have h3 : HasDerivAt (fun t : ℝ => (g t).im) 0 x := by
-    apply (hasDerivAt_const x (0 : ℝ)).congr_of_eventuallyEq
+    apply (hasDerivAt_const x 0).congr_of_eventuallyEq
     filter_upwards [(isOpen_setOf_ofReal_mem hU).mem_nhds hx] with t ht using hreal t ht
   exact h2.unique h3
 
@@ -136,7 +136,7 @@ theorem continuousOn_deriv_f (i : Fin N) : ContinuousOn (deriv (Φ.f i)) (nbhd (
 theorem mapsTo_f (i : Fin N) : MapsTo (Φ.f i) (nbhd ε) (nbhd ε) :=
   fun _ hz => (Φ.inClass i).mapsTo (subset_closure hz)
 
-theorem im_f_ofReal (i : Fin N) {t : ℝ} (ht : (t : ℂ) ∈ nbhd (2 * ε)) : (Φ.f i t).im = 0 :=
+theorem im_f_ofReal (i : Fin N) {t : ℝ} (ht : ↑t ∈ nbhd (2 * ε)) : (Φ.f i t).im = 0 :=
   (Φ.inClass i).im_eq_zero t ht
 
 theorem continuousOn_norm_deriv_f (i : Fin N) :
@@ -189,7 +189,7 @@ theorem cmin_pos (hN : 0 < N) : 0 < Φ.cmin := by
     have : Nonempty (closure (nbhd ε)) := ⟨⟨0, zero_mem_closure_nbhd Φ.ε_pos⟩⟩
     obtain ⟨z, hz, hmin⟩ := (isCompact_closure_nbhd ε).exists_isMinOn
       ⟨0, zero_mem_closure_nbhd Φ.ε_pos⟩ (Φ.continuousOn_norm_deriv_f i)
-    calc (0 : ℝ) < ‖deriv (Φ.f i) z‖ := norm_pos_iff.2 ((Φ.inClass i).deriv_ne_zero z hz)
+    calc 0 < ‖deriv (Φ.f i) z‖ := norm_pos_iff.2 ((Φ.inClass i).deriv_ne_zero z hz)
       _ ≤ ⨅ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖ := le_ciInf fun w => hmin w.2
   have : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
   obtain ⟨i, hi'⟩ := (range_nonempty
@@ -233,16 +233,15 @@ theorem exists_nonlin_bound :
     _ ≤ ∑ i, |C i| :=
         Finset.single_le_sum (f := fun i => |C i|) (fun j _ => abs_nonneg _) (Finset.mem_univ i)
 
-theorem im_deriv_f_ofReal (i : Fin N) {t : ℝ} (ht : (t : ℂ) ∈ nbhd (2 * ε)) :
+theorem im_deriv_f_ofReal (i : Fin N) {t : ℝ} (ht : ↑t ∈ nbhd (2 * ε)) :
     (deriv (Φ.f i) t).im = 0 :=
   im_deriv_eq_zero (isOpen_nbhd _) (Φ.differentiableOn_f i) (fun _ hs => Φ.im_f_ofReal i hs) ht
 
-theorem im_nonlin_ofReal (i : Fin N) {t : ℝ} (ht : (t : ℂ) ∈ nbhd ε) :
+theorem im_nonlin_ofReal (i : Fin N) {t : ℝ} (ht : ↑t ∈ nbhd ε) :
     (Φ.nonlin i t).im = 0 := by
   have ht2 := nbhd_subset_two ht
-  have h1 := (Φ.differentiableOn_f i).deriv (isOpen_nbhd _)
-  have hdd : (deriv (deriv (Φ.f i)) t).im = 0 :=
-    im_deriv_eq_zero (isOpen_nbhd _) h1 (fun _ hs => Φ.im_deriv_f_ofReal i hs) ht2
+  have hdd :=
+    im_deriv_eq_zero (isOpen_nbhd _) ((Φ.differentiableOn_f i).deriv (isOpen_nbhd _)) (fun _ hs => Φ.im_deriv_f_ofReal i hs) ht2
   simp [nonlin, Complex.div_im, Φ.im_deriv_f_ofReal i ht2, hdd]
 
 /-! ## Compositions along finite words -/
@@ -344,18 +343,17 @@ theorem norm_comp_sub_le (w : List (Fin N)) {z z' : ℂ} (hz : z ∈ nbhd ε) (h
     (fun _ hx => Φ.differentiableAt_comp w (subset_closure hx))
     (fun _ hx => Φ.norm_deriv_comp_le w (subset_closure hx)) hz' hz
 
-theorem im_comp_ofReal (w : List (Fin N)) {t : ℝ} (ht : (t : ℂ) ∈ nbhd ε) :
+theorem im_comp_ofReal (w : List (Fin N)) {t : ℝ} (ht : ↑t ∈ nbhd ε) :
     (Φ.comp w t).im = 0 := by
   induction w with
   | nil => simp
   | cons i w ih =>
     rw [comp_cons, Function.comp_apply]
     have h1 : Φ.comp w t = ((Φ.comp w t).re : ℂ) := Complex.ext (by simp) (by simp [ih])
-    have h2 : ((Φ.comp w t).re : ℂ) ∈ nbhd (2 * ε) := by
-      rw [← h1]
-      exact nbhd_subset_two (Φ.mapsTo_comp w ht)
     rw [h1]
-    exact Φ.im_f_ofReal i h2
+    exact Φ.im_f_ofReal i (by
+      rw [← h1]
+      exact nbhd_subset_two (Φ.mapsTo_comp w ht))
 
 theorem comp_ofReal (w : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
     Φ.comp w x = ((Φ.comp w x).re : ℂ) :=
@@ -363,12 +361,12 @@ theorem comp_ofReal (w : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
 
 theorem re_comp_mem_I (w : List (Fin N)) {x : ℝ} (hx : x ∈ I) : (Φ.comp w x).re ∈ I := by
   induction w with
-  | nil => simpa using hx
+  | nil => exact hx
   | cons i w ih =>
     rw [comp_cons, Function.comp_apply, Φ.comp_ofReal w hx]
     exact (Φ.inClass i).re_mem_I _ ih
 
-theorem im_deriv_comp_ofReal (w : List (Fin N)) {t : ℝ} (ht : (t : ℂ) ∈ nbhd ε) :
+theorem im_deriv_comp_ofReal (w : List (Fin N)) {t : ℝ} (ht : ↑t ∈ nbhd ε) :
     (deriv (Φ.comp w) t).im = 0 :=
   im_deriv_eq_zero (isOpen_nbhd ε) (Φ.differentiableOn_comp w)
     (fun _ hs => Φ.im_comp_ofReal w hs) ht
@@ -376,17 +374,17 @@ theorem im_deriv_comp_ofReal (w : List (Fin N)) {t : ℝ} (ht : (t : ℂ) ∈ nb
 /-- The real restriction of a composition is injective on `I`. -/
 theorem injOn_re_comp (w : List (Fin N)) :
     InjOn (fun t : ℝ => (Φ.comp w t).re) I := by
-  have hcl : ∀ t ∈ I, (t : ℂ) ∈ closure (nbhd ε) := fun t ht =>
+  have hcl : ∀ t ∈ I, ↑t ∈ closure (nbhd ε) := fun t ht =>
     subset_closure (ofReal_mem_nbhd Φ.ε_pos ht)
-  have hd : ∀ t ∈ I, HasDerivAt (fun t : ℝ => (Φ.comp w t).re) (deriv (Φ.comp w) t).re t :=
+  have hd :=
     fun t ht => hasDerivAt_re_ofReal (Φ.differentiableAt_comp w (hcl t ht))
-  have hne : ∀ t ∈ I, (deriv (Φ.comp w) t).re ≠ 0 := fun t ht h0 =>
+  have hne := fun t ht h0 =>
     Φ.deriv_comp_ne_zero w (hcl t ht)
       (Complex.ext h0 (Φ.im_deriv_comp_ofReal w (ofReal_mem_nbhd Φ.ε_pos ht)))
   -- Rolle's theorem
   have key : ∀ a ∈ I, ∀ b ∈ I, a < b → (Φ.comp w a).re ≠ (Φ.comp w b).re := by
     intro a ha b hb hab heq
-    have hsub : Icc a b ⊆ I := Icc_subset_Icc ha.1 hb.2
+    have hsub := Icc_subset_Icc ha.1 hb.2
     obtain ⟨c, hc, hc0⟩ := exists_hasDerivAt_eq_zero (f' := fun t => (deriv (Φ.comp w) t).re)
       hab (fun t ht => (hd t (hsub ht)).continuousAt.continuousWithinAt) heq
       (fun t ht => hd t (hsub (Ioo_subset_Icc_self ht)))
@@ -402,16 +400,16 @@ theorem exists_image_comp_eq_Icc (w : List (Fin N)) :
     ∃ p q : ℝ, 0 ≤ p ∧ p ≤ q ∧ q ≤ 1 ∧ Φ.cmin ^ w.length ≤ q - p ∧
       q - p ≤ Φ.cmax ^ w.length ∧ (fun x : ℝ => (Φ.comp w x).re) '' I = Icc p q := by
   set h : ℝ → ℝ := fun x => (Φ.comp w x).re with h_def
-  have hmem : ∀ {x : ℝ}, x ∈ I → (x : ℂ) ∈ nbhd ε := fun hx => ofReal_mem_nbhd Φ.ε_pos hx
+  have hmem : ∀ {x : ℝ}, x ∈ I → ↑x ∈ nbhd ε := fun hx => ofReal_mem_nbhd Φ.ε_pos hx
   have hderiv : ∀ x ∈ I, HasDerivAt h (deriv (Φ.comp w) x).re x := fun x hx =>
     hasDerivAt_re_ofReal (Φ.differentiableAt_comp w (subset_closure (hmem hx)))
   have hcont : ContinuousOn h I := fun x hx => (hderiv x hx).continuousAt.continuousWithinAt
-  have himage : h '' I = Icc (sInf (h '' I)) (sSup (h '' I)) := hcont.image_Icc zero_le_one
+  have himage := hcont.image_Icc zero_le_one
   set p := sInf (h '' I)
   set q := sSup (h '' I)
-  have h0 : h 0 ∈ Icc p q := himage ▸ mem_image_of_mem h (left_mem_Icc.2 zero_le_one)
-  have h1 : h 1 ∈ Icc p q := himage ▸ mem_image_of_mem h (right_mem_Icc.2 zero_le_one)
-  have hpq : p ≤ q := h0.1.trans h0.2
+  have h0 := himage ▸ mem_image_of_mem h (left_mem_Icc.2 zero_le_one)
+  have h1 := himage ▸ mem_image_of_mem h (right_mem_Icc.2 zero_le_one)
+  have hpq := h0.1.trans h0.2
   obtain ⟨a, ha, hpa⟩ : p ∈ h '' I := himage ▸ left_mem_Icc.2 hpq
   obtain ⟨b, hb, hqb⟩ : q ∈ h '' I := himage ▸ right_mem_Icc.2 hpq
   refine ⟨p, q, ?_, hpq, ?_, ?_, ?_, himage⟩
@@ -420,10 +418,10 @@ theorem exists_image_comp_eq_Icc (w : List (Fin N)) :
   · -- lower bound via the mean value theorem on `[0,1]`
     obtain ⟨c, hc, hslope⟩ := exists_hasDerivAt_eq_slope h (fun x => (deriv (Φ.comp w) x).re)
       zero_lt_one hcont (fun x hx => hderiv x (Ioo_subset_Icc_self hx))
-    have hcI : c ∈ I := Ioo_subset_Icc_self hc
-    have hnorm : |(deriv (Φ.comp w) c).re| = ‖deriv (Φ.comp w) c‖ :=
+    have hcI := Ioo_subset_Icc_self hc
+    have hnorm :=
       Complex.abs_re_eq_norm.2 (Φ.im_deriv_comp_ofReal w (hmem hcI))
-    have hlow : Φ.cmin ^ w.length ≤ |h 1 - h 0| := by
+    have hlow := by
       have := Φ.cmin_pow_le_norm_deriv_comp w (subset_closure (hmem hcI))
       rw [← hnorm, hslope] at this
       simpa using this
@@ -432,20 +430,19 @@ theorem exists_image_comp_eq_Icc (w : List (Fin N)) :
       constructor <;> linarith [h0.1, h0.2, h1.1, h1.2]
     linarith
   · -- upper bound via the complex mean value inequality
-    have hab : ‖Φ.comp w b - Φ.comp w a‖ ≤ Φ.cmax ^ w.length * ‖(b : ℂ) - a‖ :=
+    have hab :=
       Φ.norm_comp_sub_le w (hmem hb) (hmem ha)
     have hre : q - p ≤ ‖Φ.comp w b - Φ.comp w a‖ := by
       rw [← hpa, ← hqb]
       calc h b - h a ≤ |h b - h a| := le_abs_self _
         _ = |(Φ.comp w b - Φ.comp w a).re| := by simp [h_def]
         _ ≤ ‖Φ.comp w b - Φ.comp w a‖ := Complex.abs_re_le_norm _
-    have hba : ‖(b : ℂ) - a‖ ≤ 1 := by
-      rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs, abs_sub_le_iff]
-      constructor <;> linarith [ha.1, ha.2, hb.1, hb.2]
     calc q - p ≤ ‖Φ.comp w b - Φ.comp w a‖ := hre
       _ ≤ Φ.cmax ^ w.length * ‖(b : ℂ) - a‖ := hab
       _ ≤ Φ.cmax ^ w.length * 1 :=
-          mul_le_mul_of_nonneg_left hba (pow_nonneg Φ.cmax_nonneg _)
+          mul_le_mul_of_nonneg_left (by
+      rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs, abs_sub_le_iff]
+      constructor <;> linarith [ha.1, ha.2, hb.1, hb.2]) (pow_nonneg Φ.cmax_nonneg _)
       _ = Φ.cmax ^ w.length := mul_one _
 
 end IFS

@@ -34,7 +34,7 @@ noncomputable def koenigs (f : ℂ → ℂ) (p : ℂ) (z : ℂ) : ℂ :=
 /-! ## Auxiliary definitions -/
 
 /-- The system consisting of the single map `f`. -/
-private def koenigsIFS {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε) (hf : InClass ε f) : IFS 1 ε :=
+def koenigsIFS {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε) (hf : InClass ε f) : IFS 1 ε :=
   ⟨fun _ => f, hε, fun _ => hf⟩
 
 /-- The term `(f''/f')(f^k(z)) · (f^k)'(z)` of (5.1). -/
@@ -62,60 +62,59 @@ include hε hf
 
 /-! ## Iterates of a single map -/
 
-private theorem koenigsIFS_f (i : Fin 1) : (koenigsIFS hε hf).f i = f := rfl
+theorem koenigsIFS_f (i : Fin 1) : (koenigsIFS hε hf).f i = f := rfl
 
-private theorem koenigsIFS_comp (n : ℕ) : (koenigsIFS hε hf).comp (List.replicate n 0) = f^[n] := by
+theorem koenigsIFS_comp (n : ℕ) : (koenigsIFS hε hf).comp (List.replicate n 0) = f^[n] := by
   induction n with
   | zero => rfl
   | succ n ih =>
     rw [List.replicate_succ, IFS.comp_cons, ih, Function.iterate_succ', koenigsIFS_f]
 
-private theorem mapsTo_iterate (n : ℕ) : MapsTo (f^[n]) (nbhd ε) (nbhd ε) := by
+theorem mapsTo_iterate (n : ℕ) : MapsTo (f^[n]) (nbhd ε) (nbhd ε) := by
   rw [← koenigsIFS_comp hε hf]
   exact (koenigsIFS hε hf).mapsTo_comp _
 
-private theorem mapsTo_iterate_closure (n : ℕ) :
+theorem mapsTo_iterate_closure (n : ℕ) :
     MapsTo (f^[n]) (closure (nbhd ε)) (closure (nbhd ε)) := by
   rw [← koenigsIFS_comp hε hf]
   exact (koenigsIFS hε hf).mapsTo_comp_closure _
 
-private theorem differentiableAt_iterate (n : ℕ) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
+theorem differentiableAt_iterate (n : ℕ) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
     DifferentiableAt ℂ (f^[n]) z := by
   rw [← koenigsIFS_comp hε hf]
   exact (koenigsIFS hε hf).differentiableAt_comp _ hz
 
-private theorem differentiableOn_deriv_iterate (n : ℕ) :
+theorem differentiableOn_deriv_iterate (n : ℕ) :
     DifferentiableOn ℂ (deriv (f^[n])) (nbhd ε) := by
   obtain ⟨U, hUo, hU, hd⟩ := (koenigsIFS hε hf).exists_differentiableOn_comp (List.replicate n 0)
   rw [koenigsIFS_comp] at hd
   exact (hd.deriv hUo).mono (subset_closure.trans hU)
 
-private theorem deriv_iterate_succ (n : ℕ) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
+theorem deriv_iterate_succ (n : ℕ) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
     deriv (f^[n + 1]) z = deriv f (f^[n] z) * deriv (f^[n]) z := by
   have h := (koenigsIFS hε hf).deriv_comp_cons 0 (List.replicate n 0) hz
   rwa [← List.replicate_succ, koenigsIFS_comp, koenigsIFS_comp, koenigsIFS_f] at h
 
-private theorem norm_iterate_sub_le (n : ℕ) {z w : ℂ} (hz : z ∈ nbhd ε) (hw : w ∈ nbhd ε) :
+theorem norm_iterate_sub_le (n : ℕ) {z w : ℂ} (hz : z ∈ nbhd ε) (hw : w ∈ nbhd ε) :
     ‖f^[n] z - f^[n] w‖ ≤ (koenigsIFS hε hf).cmax ^ n * ‖z - w‖ := by
   have h := (koenigsIFS hε hf).norm_comp_sub_le (List.replicate n 0) hz hw
   rwa [koenigsIFS_comp, List.length_replicate] at h
 
-private theorem cmax_nonneg' : 0 ≤ (koenigsIFS hε hf).cmax := (koenigsIFS hε hf).cmax_nonneg
+theorem cmax_nonneg' : 0 ≤ (koenigsIFS hε hf).cmax := (koenigsIFS hε hf).cmax_nonneg
 
-private theorem cmax_lt_one' : (koenigsIFS hε hf).cmax < 1 := (koenigsIFS hε hf).cmax_lt_one
+theorem cmax_lt_one' : (koenigsIFS hε hf).cmax < 1 := (koenigsIFS hε hf).cmax_lt_one
 
 omit hε in
 /-- `f'` is holomorphic on `B_{2ε}`. -/
-private theorem differentiableAt_deriv {z : ℂ} (hz : z ∈ nbhd (2 * ε)) :
+theorem differentiableAt_deriv {z : ℂ} (hz : z ∈ nbhd (2 * ε)) :
     DifferentiableAt ℂ (deriv f) z :=
   (hf.differentiableOn.deriv (isOpen_nbhd _) z hz).differentiableAt ((isOpen_nbhd _).mem_nhds hz)
 
 omit hε in
 /-- A bound for `f''` on `B_ε`. -/
-private theorem exists_norm_deriv_deriv_le :
+theorem exists_norm_deriv_deriv_le :
     ∃ L, 0 ≤ L ∧ ∀ z ∈ nbhd ε, ‖deriv (deriv f) z‖ ≤ L := by
-  have hc : ContinuousOn (deriv (deriv f)) (nbhd (2 * ε)) :=
-    ((hf.differentiableOn.deriv (isOpen_nbhd _)).deriv (isOpen_nbhd _)).continuousOn
+  have hc := ((hf.differentiableOn.deriv (isOpen_nbhd _)).deriv (isOpen_nbhd _)).continuousOn
   obtain ⟨C, hC⟩ := (isCompact_closure_nbhd ε).exists_bound_of_continuousOn
     (hc.mono IFS.closure_nbhd_subset_two)
   exact ⟨max C 0, le_max_right _ _, fun z hz => (hC z (subset_closure hz)).trans (le_max_left _ _)⟩
@@ -125,17 +124,17 @@ private theorem exists_norm_deriv_deriv_le :
 private theorem dualTerm_koenigsIFS (k : ℕ) (z : ℂ) :
     (koenigsIFS hε hf).dualTerm (.inf fun _ => 0) k z = hatHTerm f k z := by
   rw [(koenigsIFS hε hf).dualTerm_of_get?_eq_some (Word.get?_inf _ k)]
-  simp only [Word.take_inf, List.ofFn_const, List.reverse_replicate, koenigsIFS_comp hε hf,
+  simp [Word.take_inf, List.ofFn_const, List.reverse_replicate, koenigsIFS_comp hε hf,
     IFS.nonlin, koenigsIFS_f, hatHTerm]
 
-private theorem hatH_eq_dualProj : hatH f = (koenigsIFS hε hf).dualProj (.inf fun _ => 0) := by
+theorem hatH_eq_dualProj : hatH f = (koenigsIFS hε hf).dualProj (.inf fun _ => 0) := by
   funext z
-  simp only [hatH, IFS.dualProj, dualTerm_koenigsIFS hε hf, hatHTerm]
+  simp [hatH, IFS.dualProj, dualTerm_koenigsIFS hε hf, hatHTerm]
 
 private theorem summable_hatHTerm {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
     Summable fun k => hatHTerm f k z := by
   have h := (koenigsIFS hε hf).summable_dualTerm (.inf fun _ => 0) hz
-  simpa only [dualTerm_koenigsIFS hε hf] using h
+  simpa [dualTerm_koenigsIFS hε hf] using h
 
 /-- `(f^n)'' = Ĥ_n (f^n)'`, with `Ĥ_n` the partial sum of (5.1). -/
 private theorem deriv_deriv_iterate (n : ℕ) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
@@ -145,7 +144,7 @@ private theorem deriv_deriv_iterate (n : ℕ) {z : ℂ} (hz : z ∈ closure (nbh
   | succ n ih =>
     have h := (koenigsIFS hε hf).deriv_deriv_comp_cons 0 (List.replicate n 0) hz
     rw [← List.replicate_succ, koenigsIFS_comp, koenigsIFS_comp, koenigsIFS_f] at h
-    have hne : deriv f (f^[n] z) ≠ 0 := hf.deriv_ne_zero _ (mapsTo_iterate_closure hε hf n hz)
+    have hne := hf.deriv_ne_zero _ (mapsTo_iterate_closure hε hf n hz)
     rw [h, deriv_iterate_succ hε hf n hz, Finset.sum_range_succ, ih, hatHTerm]
     field_simp
     ring
@@ -154,7 +153,7 @@ theorem differentiableOn_hatH : DifferentiableOn ℂ (hatH f) (nbhd ε) := by
   rw [hatH_eq_dualProj hε hf]
   exact (koenigsIFS hε hf).differentiableOn_dualProj _
 
-theorem im_hatH_ofReal {t : ℝ} (ht : (t : ℂ) ∈ nbhd ε) : (hatH f t).im = 0 := by
+theorem im_hatH_ofReal {t : ℝ} (ht : ↑t ∈ nbhd ε) : (hatH f t).im = 0 := by
   rw [hatH_eq_dualProj hε hf]
   exact (koenigsIFS hε hf).im_dualProj_ofReal _ ht
 
@@ -181,7 +180,7 @@ variable {q : ℂ} (hq : q ∈ nbhd ε) (hfq : f q = q)
 include hq hfq
 
 omit hε hfq in
-private theorem deriv_ne_zero_fixed : deriv f q ≠ 0 := hf.deriv_ne_zero q (subset_closure hq)
+theorem deriv_ne_zero_fixed : deriv f q ≠ 0 := hf.deriv_ne_zero q (subset_closure hq)
 
 omit hfq in
 private theorem PSeq_succ (n : ℕ) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
@@ -199,20 +198,19 @@ private theorem PSeq_eq_prod (n : ℕ) {z : ℂ} (hz : z ∈ closure (nbhd ε)) 
   | succ n ih => rw [PSeq_succ hε hf hq n hz, ih, Finset.prod_range_succ]
 
 /-- The factors of `P_n` satisfy `|f'(f^k(z))/f'(p) - 1| ≤ A c_max^k` on `B_ε`. -/
-private theorem exists_norm_ratio_sub_one_le : ∃ A, 0 ≤ A ∧ ∀ k, ∀ z ∈ nbhd ε,
+theorem exists_norm_ratio_sub_one_le : ∃ A, 0 ≤ A ∧ ∀ k, ∀ z ∈ nbhd ε,
     ‖deriv f (f^[k] z) / deriv f q - 1‖ ≤ A * (koenigsIFS hε hf).cmax ^ k := by
   obtain ⟨L, hL0, hL⟩ := exists_norm_deriv_deriv_le hf
   obtain ⟨R, hR⟩ := (isBounded_nbhd ε).exists_norm_le
   have hne := deriv_ne_zero_fixed hf hq
-  have hlam : 0 < ‖deriv f q‖ := norm_pos_iff.2 hne
-  have hR0 : 0 ≤ R := (norm_nonneg q).trans (hR q hq)
+  have hlam := norm_pos_iff.2 hne
+  have hR0 := (norm_nonneg q).trans (hR q hq)
   have hc0 := cmax_nonneg' hε hf
   set c := (koenigsIFS hε hf).cmax
   refine ⟨L * (R + R) / ‖deriv f q‖, by positivity, fun k z hz => ?_⟩
   have hw := mapsTo_iterate hε hf k hz
   -- the mean value inequality for `f'`
-  have h1 : ‖deriv f (f^[k] z) - deriv f q‖ ≤ L * ‖f^[k] z - q‖ :=
-    (convex_nbhd ε).norm_image_sub_le_of_norm_deriv_le
+  have h1 := (convex_nbhd ε).norm_image_sub_le_of_norm_deriv_le
       (fun w hw => differentiableAt_deriv hf (IFS.nbhd_subset_two hw)) hL hq hw
   have h2 : ‖f^[k] z - q‖ ≤ c ^ k * (R + R) := by
     have h := norm_iterate_sub_le hε hf k hz hq
@@ -232,11 +230,11 @@ private theorem exists_norm_PSeq_le : ∃ B, 0 ≤ B ∧ ∀ n, ∀ z ∈ nbhd �
   set c := (koenigsIFS hε hf).cmax
   refine ⟨Real.exp (A / (1 - c)), (Real.exp_pos _).le, fun n z hz => ?_⟩
   rw [PSeq_eq_prod hε hf hq n (subset_closure hz)]
-  set b : ℕ → ℂ := fun k => deriv f (f^[k] z) / deriv f q - 1 with hb
+  set b := fun k => deriv f (f^[k] z) / deriv f q - 1 with hb
   have hprod : ∏ k ∈ Finset.range n, deriv f (f^[k] z) / deriv f q =
       ∏ k ∈ Finset.range n, (1 + b k) :=
     Finset.prod_congr rfl fun k _ => by simp [hb]
-  have hsum : ∑ k ∈ Finset.range n, ‖b k‖ ≤ A / (1 - c) := by
+  have hsum := by
     calc ∑ k ∈ Finset.range n, ‖b k‖ ≤ ∑ k ∈ Finset.range n, A * c ^ k :=
           Finset.sum_le_sum fun k _ => hA k z hz
       _ = A * ∑ k ∈ Finset.Ico 0 n, c ^ k := by rw [Finset.mul_sum, Finset.range_eq_Ico]
@@ -259,12 +257,12 @@ omit hfq
 
 /-! ## Constructing the solution of the ODE by two integrations -/
 
-private theorem hasDerivAt_hatHPrimitive {z : ℂ} (hz : z ∈ nbhd ε) :
+theorem hasDerivAt_hatHPrimitive {z : ℂ} (hz : z ∈ nbhd ε) :
     HasDerivAt (segmentPrimitive (hatH f) q) (hatH f z) z :=
   hasDerivAt_segmentPrimitive (isOpen_nbhd ε) (convex_nbhd ε)
     (differentiableOn_hatH hε hf) hq hz
 
-private theorem hasDerivAt_koenigs' {z : ℂ} (hz : z ∈ nbhd ε) :
+theorem hasDerivAt_koenigs' {z : ℂ} (hz : z ∈ nbhd ε) :
     HasDerivAt (koenigs f q) (Complex.exp (segmentPrimitive (hatH f) q z)) z := by
   change HasDerivAt (segmentPrimitive (fun w => Complex.exp (segmentPrimitive (hatH f) q w)) q)
     (Complex.exp (segmentPrimitive (hatH f) q z)) z
@@ -272,31 +270,30 @@ private theorem hasDerivAt_koenigs' {z : ℂ} (hz : z ∈ nbhd ε) :
     (fun w hw => ((hasDerivAt_hatHPrimitive hε hf hq hw).cexp).differentiableAt.differentiableWithinAt)
     hq hz
 
-private theorem differentiableOn_koenigs' : DifferentiableOn ℂ (koenigs f q) (nbhd ε) :=
+theorem differentiableOn_koenigs' : DifferentiableOn ℂ (koenigs f q) (nbhd ε) :=
   fun _ hz => (hasDerivAt_koenigs' hε hf hq hz).differentiableAt.differentiableWithinAt
 
-private theorem continuousOn_koenigs' : ContinuousOn (koenigs f q) (closure (nbhd ε)) := by
-  have hH : ContinuousOn (hatH f) (closure (nbhd ε)) := by
-    rw [hatH_eq_dualProj hε hf]
-    exact (koenigsIFS hε hf).continuousOn_dualProj _
+theorem continuousOn_koenigs' : ContinuousOn (koenigs f q) (closure (nbhd ε)) := by
   exact continuousOn_segmentPrimitive (convex_nbhd ε).closure
-    ((continuousOn_segmentPrimitive (convex_nbhd ε).closure hH (subset_closure hq)).cexp)
+    ((continuousOn_segmentPrimitive (convex_nbhd ε).closure (by
+    rw [hatH_eq_dualProj hε hf]
+    exact (koenigsIFS hε hf).continuousOn_dualProj _) (subset_closure hq)).cexp)
     (subset_closure hq)
 
-private theorem deriv_koenigs_eq {z : ℂ} (hz : z ∈ nbhd ε) :
+theorem deriv_koenigs_eq {z : ℂ} (hz : z ∈ nbhd ε) :
     deriv (koenigs f q) z = Complex.exp (segmentPrimitive (hatH f) q z) :=
   (hasDerivAt_koenigs' hε hf hq hz).deriv
 
-private theorem deriv_deriv_koenigs' {z : ℂ} (hz : z ∈ nbhd ε) :
+theorem deriv_deriv_koenigs' {z : ℂ} (hz : z ∈ nbhd ε) :
     deriv (deriv (koenigs f q)) z = hatH f z * deriv (koenigs f q) z := by
-  have heq : deriv (koenigs f q) =ᶠ[𝓝 z] fun w => Complex.exp (segmentPrimitive (hatH f) q w) :=
+  have heq :=
     Filter.eventuallyEq_of_mem ((isOpen_nbhd ε).mem_nhds hz)
       (fun w hw => deriv_koenigs_eq hε hf hq hw)
   rw [heq.deriv_eq, ((hasDerivAt_hatHPrimitive hε hf hq hz).cexp).deriv,
     deriv_koenigs_eq hε hf hq hz]
   ring
 
-private theorem deriv_koenigs_self' : deriv (koenigs f q) q = 1 := by
+theorem deriv_koenigs_self' : deriv (koenigs f q) q = 1 := by
   rw [deriv_koenigs_eq hε hf hq hq, segmentPrimitive_self, Complex.exp_zero]
 
 end ODEConstruction
@@ -312,10 +309,9 @@ private theorem differentiableOn_partialH (n : ℕ) :
   apply DifferentiableOn.fun_sum
   intro k hk
   have h := (koenigsIFS hε hf).differentiableOn_dualTerm (.inf fun _ => 0) k
-  have heq : (koenigsIFS hε hf).dualTerm (.inf fun _ => 0) k = hatHTerm f k :=
+  have heq :=
     funext (dualTerm_koenigsIFS hε hf k)
-  rw [← heq]
-  exact h
+  rwa [← heq]
 
 /-- The exponential of the integrated finite logarithmic-derivative sum is the finite
 product `P_n = (f^n)'/λ^n`. This is the finite version of the displayed integral identity
@@ -383,23 +379,23 @@ private theorem tendsto_koenigs {z : ℂ} (hz : z ∈ nbhd ε) :
     have ht := segmentPrimitive_eq_sub (convex_nbhd ε) (g := gSeq f q n)
       (differentiableOn_PSeq hε hf (q := q) n).continuousOn
       (fun w hw => hasDerivAt_gSeq hε hf n (subset_closure hw)) hq hz
-    simpa only [gSeq_fixed hfq, sub_zero] using ht
+    simpa [gSeq_fixed hfq, sub_zero] using ht
   have heq' : segmentPrimitive (deriv (koenigs f q)) q z = koenigs f q z := by
     have ht := segmentPrimitive_eq_sub (convex_nbhd ε)
       ((differentiableOn_koenigs' hε hf hq).deriv (isOpen_nbhd ε)).continuousOn
       (fun w hw => ((differentiableOn_koenigs' hε hf hq).differentiableAt
         ((isOpen_nbhd ε).mem_nhds hw)).hasDerivAt) hq hz
-    simpa only [koenigs, segmentPrimitive_self, sub_zero] using ht
-  simpa only [heq, heq'] using hlim
+    simpa [koenigs, segmentPrimitive_self, sub_zero] using ht
+  simpa [heq, heq'] using hlim
 
-private theorem koenigs_comp' {z : ℂ} (hz : z ∈ nbhd ε) :
+theorem koenigs_comp' {z : ℂ} (hz : z ∈ nbhd ε) :
     koenigs f q (f z) = deriv f q * koenigs f q z := by
-  have hfz : f z ∈ nbhd ε := hf.mapsTo (subset_closure hz)
+  have hfz := hf.mapsTo (subset_closure hz)
   have hne := deriv_ne_zero_fixed hf hq
   have h := ((tendsto_koenigs hε hf hq hfq hz).comp (tendsto_add_atTop_nat 1)).const_mul
     (deriv f q)
   refine tendsto_nhds_unique (tendsto_koenigs hε hf hq hfq hfz) (h.congr fun n => ?_)
-  simp only [Function.comp, gSeq, Function.iterate_succ_apply]
+  simp [Function.comp, gSeq, Function.iterate_succ_apply]
   rw [pow_succ]
   field_simp
 
@@ -434,7 +430,7 @@ theorem deriv_deriv_koenigs {z : ℂ} (hz : z ∈ nbhd ε) :
     deriv (deriv (koenigs f p)) z = hatH f z * deriv (koenigs f p) z :=
   deriv_deriv_koenigs' hε hf (ofReal_mem_nbhd hε hp) hz
 
-theorem im_koenigs_ofReal {t : ℝ} (ht : (t : ℂ) ∈ nbhd ε) : (koenigs f p t).im = 0 := by
+theorem im_koenigs_ofReal {t : ℝ} (ht : ↑t ∈ nbhd ε) : (koenigs f p t).im = 0 := by
   have hp' := ofReal_mem_nbhd hε hp
   have hd : DifferentiableOn ℂ (segmentPrimitive (hatH f) p) (nbhd ε) :=
     fun z hz => (hasDerivAt_hatHPrimitive hε hf hp' hz).differentiableAt.differentiableWithinAt
@@ -442,7 +438,7 @@ theorem im_koenigs_ofReal {t : ℝ} (ht : (t : ℂ) ∈ nbhd ε) : (koenigs f p 
   intro x hx
   have him := im_segmentPrimitive_eq_zero (convex_nbhd ε)
     (differentiableOn_hatH hε hf).continuousOn (fun x hx => im_hatH_ofReal hε hf hx) hp' hx
-  simp only [Complex.exp_im, him, Real.sin_zero, mul_zero]
+  simp [Complex.exp_im, him, Real.sin_zero, mul_zero]
 
 /-- On `I`, the derivative of `ĝ` is real and positive. -/
 theorem deriv_koenigs_ofReal {x : ℝ} (hx : x ∈ I) :

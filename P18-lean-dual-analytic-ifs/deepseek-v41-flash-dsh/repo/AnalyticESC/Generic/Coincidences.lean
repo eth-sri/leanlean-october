@@ -43,13 +43,13 @@ theorem slope_pos : 0 < slope N := by unfold slope; positivity
 theorem slope_lt_one : slope N < 1 := by
   unfold slope
   rw [div_lt_one (by positivity)]
-  linarith [(Nat.cast_nonneg N : (0 : ℝ) ≤ N)]
+  linarith [(Nat.cast_nonneg N : 0 ≤ N)]
 
 /-- `b_i > 0`. -/
 theorem offset_pos (i : Fin N) : 0 < offset i := by unfold offset; positivity
 
 /-- `b_i + a = (2i + 3)/(2(N+2))`. -/
-private theorem offset_add_slope_eq (i : Fin N) :
+theorem offset_add_slope_eq (i : Fin N) :
     offset i + slope N = (2 * ((i : ℕ) : ℝ) + 3) / (2 * (N + 2)) := by
   unfold offset slope
   field_simp
@@ -63,7 +63,7 @@ theorem offset_add_slope_lt_one (i : Fin N) : offset i + slope N < 1 := by
 
 /-- The intervals `h_i(I) = [b_i, b_i + a]` are pairwise disjoint. -/
 theorem offset_add_slope_lt_offset {i j : Fin N} (hij : i < j) : offset i + slope N < offset j := by
-  have hij' : (i : ℕ) + 1 ≤ j := hij
+  have hij' := hij
   have hij'' : ((i : ℕ) : ℝ) + 1 ≤ (j : ℕ) := by exact_mod_cast hij'
   have hj : offset j = (2 * ((j : ℕ) : ℝ) + 2) / (2 * (N + 2)) := by
     unfold offset
@@ -98,7 +98,7 @@ theorem compT_cons (t : ℂ) (i : Fin N) (w : List (Fin N)) :
 theorem homotopy_one (i : Fin N) (z : ℂ) : homotopy Φ 1 i z = target i z := by simp [homotopy]
 
 /-- For real `t`, the map `f_i^t` is real at the real points of `B_{2ε}`. -/
-theorem im_homotopy_ofReal (t : ℝ) (i : Fin N) {x : ℝ} (hx : (x : ℂ) ∈ nbhd (2 * ε)) :
+theorem im_homotopy_ofReal (t : ℝ) (i : Fin N) {x : ℝ} (hx : ↑x ∈ nbhd (2 * ε)) :
     (homotopy Φ t i x).im = 0 := by
   simp [homotopy, target, Complex.mul_im, Φ.im_f_ofReal i hx]
 
@@ -163,9 +163,9 @@ theorem re_compT_one_cons_mem (i : Fin N) (w : List (Fin N)) {x : ℝ} (hx : x �
 /-- Compositions of the affine maps `h_i` along distinct finite words differ on `I`. -/
 theorem exists_compT_one_ne (u v : List (Fin N)) (huv : u ≠ v) :
     ∃ x ∈ I, compT Φ 1 u x ≠ compT Φ 1 v x := by
-  have h0 : (0 : ℝ) ∈ I := ⟨le_rfl, zero_le_one⟩
+  have h0 : 0 ∈ I := ⟨le_rfl, zero_le_one⟩
   -- a nonempty word sends `0` to a point with positive real part
-  have hpos : ∀ i w, 0 < (compT Φ 1 (i :: w) ((0 : ℝ) : ℂ)).re := fun i w =>
+  have hpos := fun i w =>
     (offset_pos i).trans_le (re_compT_one_cons_mem Φ i w h0).1
   induction u generalizing v with
   | nil =>
@@ -246,7 +246,7 @@ theorem inClass_homotopy {t : ℝ} (ht0 : 0 < t) (ht : t * (Φ.cmin + 1) < Φ.cm
     have h := norm_sub_le
       (((1 - t : ℝ) : ℂ) * deriv (Φ.f i) z + ((t * slope N : ℝ) : ℂ)) ((t * slope N : ℝ) : ℂ)
     rw [add_sub_cancel_right, ← hder z hz, h0, norm_zero, hn1, hn2] at h
-    nlinarith [mul_le_mul_of_nonneg_left hlow (by linarith : (0 : ℝ) ≤ 1 - t),
+    nlinarith [mul_le_mul_of_nonneg_left hlow (by linarith : 0 ≤ 1 - t),
       mul_lt_mul_of_pos_left ha1 ht0]
   · -- `|(f_i^t)'| ≤ (1 - t) |f_i'| + t a < 1`
     intro z hz
@@ -256,7 +256,7 @@ theorem inClass_homotopy {t : ℝ} (ht0 : 0 < t) (ht : t * (Φ.cmin + 1) < Φ.cm
           norm_add_le _ _
       _ = (1 - t) * ‖deriv (Φ.f i) z‖ + t * slope N := by rw [hn1, hn2]
       _ < 1 := by
-          nlinarith [mul_lt_mul_of_pos_left hup (by linarith : (0 : ℝ) < 1 - t),
+          nlinarith [mul_lt_mul_of_pos_left hup (by linarith : 0 < 1 - t),
             mul_lt_mul_of_pos_left ha1 ht0]
 
 /-! ## The distance to the perturbation -/
@@ -268,7 +268,7 @@ theorem exists_deriv_deriv_bound :
   have hIU : ((↑) : ℝ → ℂ) '' I ⊆ nbhd (2 * ε) := by
     rintro _ ⟨x, hx, rfl⟩
     exact ofReal_mem_nbhd (by linarith [Φ.ε_pos]) hx
-  have h : ∀ i, ∃ C, ∀ z ∈ ((↑) : ℝ → ℂ) '' I, ‖deriv (deriv (Φ.f i)) z‖ ≤ C := fun i =>
+  have h := fun i =>
     isCompact_image_I.exists_bound_of_continuousOn
       ((((Φ.differentiableOn_f i).deriv hO).deriv hO).continuousOn.mono hIU)
   choose C hC using h
@@ -282,58 +282,57 @@ theorem exists_deriv_deriv_bound :
 theorem d2Map_homotopy_le (i : Fin N) {K : ℝ} (hK : 0 ≤ K)
     (hK' : ∀ x ∈ I, ‖deriv (deriv (Φ.f i)) x‖ ≤ K) {t : ℝ} (ht : t ∈ I) :
     d2Map (Φ.f i) (homotopy Φ t i) ≤ t * (4 + K) := by
-  have hmem : ∀ x : I, ((x : ℝ) : ℂ) ∈ nbhd (2 * ε) := fun x =>
+  have hmem : ∀ x : I, ↑x ∈ nbhd (2 * ε) := fun x =>
     ofReal_mem_nbhd (by linarith [Φ.ε_pos]) x.2
-  have hcl : ∀ x : I, ((x : ℝ) : ℂ) ∈ closure (nbhd ε) := fun x =>
+  have hcl : ∀ x : I, ↑x ∈ closure (nbhd ε) := fun x =>
     subset_closure (ofReal_mem_nbhd Φ.ε_pos x.2)
   have ht0 := ht.1
   have hnt : ‖(t : ℂ)‖ = t := by rw [Complex.norm_real, Real.norm_of_nonneg ht0]
   -- the values differ by `t (f_i - h_i)`
-  have e0 : ∀ x : I, ‖Φ.f i ((x : ℝ) : ℂ) - homotopy Φ t i ((x : ℝ) : ℂ)‖ ≤ t * 2 := by
+  have e0 : ∀ x : I, ‖Φ.f i ↑x - homotopy Φ t i ↑x‖ ≤ t * 2 := by
     intro x
-    have hf : ‖Φ.f i ((x : ℝ) : ℂ)‖ ≤ 1 := by
+    have hf : ‖Φ.f i ↑x‖ ≤ 1 := by
       have hre := (Φ.inClass i).re_mem_I x x.2
       rw [← Complex.re_add_im (Φ.f i _), Φ.im_f_ofReal i (hmem x), Complex.ofReal_zero,
         zero_mul, add_zero, Complex.norm_real, Real.norm_eq_abs, abs_le]
       constructor <;> linarith [hre.1, hre.2]
-    have hh : ‖target i ((x : ℝ) : ℂ)‖ ≤ 1 := by
+    have hh : ‖target i ↑x‖ ≤ 1 := by
       have h3 : 0 ≤ slope N * x := mul_nonneg slope_pos.le x.2.1
       have h4 : slope N * x ≤ slope N := mul_le_of_le_one_right slope_pos.le x.2.2
       rw [target_ofReal, Complex.norm_real, Real.norm_eq_abs, abs_le]
       constructor <;> linarith [offset_pos i, offset_add_slope_lt_one i]
-    have e : Φ.f i ((x : ℝ) : ℂ) - homotopy Φ t i ((x : ℝ) : ℂ) =
-        t * (Φ.f i ((x : ℝ) : ℂ) - target i ((x : ℝ) : ℂ)) := by
+    have e : Φ.f i ↑x - homotopy Φ t i ↑x =
+        t * (Φ.f i ↑x - target i ↑x) := by
       unfold homotopy
       ring
     rw [e, norm_mul, hnt]
     exact mul_le_mul_of_nonneg_left ((norm_sub_le _ _).trans (by linarith)) ht0
   -- the first derivatives differ by `t (f_i' - a)`
   have e1 : ∀ x : I,
-      ‖deriv (Φ.f i) ((x : ℝ) : ℂ) - deriv (homotopy Φ t i) ((x : ℝ) : ℂ)‖ ≤ t * 2 := by
+      ‖deriv (Φ.f i) ↑x - deriv (homotopy Φ t i) ↑x‖ ≤ t * 2 := by
     intro x
     have h1 := (Φ.inClass i).norm_deriv_lt_one _ (hcl x)
     have h2 : ‖(slope N : ℂ)‖ ≤ 1 := by
       rw [Complex.norm_real, Real.norm_of_nonneg slope_pos.le]
       exact slope_lt_one.le
-    have e : deriv (Φ.f i) ((x : ℝ) : ℂ) - deriv (homotopy Φ t i) ((x : ℝ) : ℂ) =
-        t * (deriv (Φ.f i) ((x : ℝ) : ℂ) - slope N) := by
+    have e : deriv (Φ.f i) ↑x - deriv (homotopy Φ t i) ↑x =
+        t * (deriv (Φ.f i) ↑x - slope N) := by
       rw [deriv_homotopy Φ t i (hmem x)]
       ring
     rw [e, norm_mul, hnt]
     exact mul_le_mul_of_nonneg_left ((norm_sub_le _ _).trans (by linarith)) ht0
   -- the second derivatives differ by `t f_i''`
-  have e2 : ∀ x : I, ‖deriv (deriv (Φ.f i)) ((x : ℝ) : ℂ) -
-      deriv (deriv (homotopy Φ t i)) ((x : ℝ) : ℂ)‖ ≤ t * K := by
+  have e2 : ∀ x : I, ‖deriv (deriv (Φ.f i)) ↑x -
+      deriv (deriv (homotopy Φ t i)) ↑x‖ ≤ t * K := by
     intro x
-    have heq : deriv (homotopy Φ t i) =ᶠ[𝓝 ((x : ℝ) : ℂ)]
+    have heq : deriv (homotopy Φ t i) =ᶠ[𝓝 ↑x]
         fun z => (1 - t) * deriv (Φ.f i) z + t * slope N := by
       filter_upwards [(isOpen_nbhd _).mem_nhds (hmem x)] with z hz using deriv_homotopy Φ t i hz
-    have hd : DifferentiableAt ℂ (deriv (Φ.f i)) ((x : ℝ) : ℂ) :=
-      ((Φ.differentiableOn_f i).deriv (isOpen_nbhd _)).differentiableAt
+    have hd := ((Φ.differentiableOn_f i).deriv (isOpen_nbhd _)).differentiableAt
         ((isOpen_nbhd _).mem_nhds (hmem x))
     rw [heq.deriv_eq, deriv_add_const, deriv_const_mul _ hd]
-    have e : deriv (deriv (Φ.f i)) ((x : ℝ) : ℂ) - (1 - t) * deriv (deriv (Φ.f i)) ((x : ℝ) : ℂ) =
-        t * deriv (deriv (Φ.f i)) ((x : ℝ) : ℂ) := by ring
+    have e : deriv (deriv (Φ.f i)) ↑x - (1 - t) * deriv (deriv (Φ.f i)) ↑x =
+        t * deriv (deriv (Φ.f i)) ↑x := by ring
     rw [e, norm_mul, hnt]
     exact mul_le_mul_of_nonneg_left (hK' x x.2) ht0
   have s0 := Real.iSup_le e0 (by positivity)
@@ -363,8 +362,7 @@ theorem exists_differentiableOn_compT (w : List (Fin N)) {x : ℝ} (hx : x ∈ I
       rw [hyx]
       exact ofReal_mem_nbhd (by linarith [Φ.ε_pos]) hy
     · have hg := hd.mono (inter_subset_left (t := (fun t => compT Φ t w x) ⁻¹' nbhd (2 * ε)))
-      have hf : DifferentiableOn ℂ (fun t => Φ.f i (compT Φ t w x))
-          (O ∩ (fun t => compT Φ t w x) ⁻¹' nbhd (2 * ε)) :=
+      have hf :=
         (Φ.differentiableOn_f i).comp hg fun t ht => ht.2
       show DifferentiableOn ℂ
         (fun t => (1 - t) * Φ.f i (compT Φ t w x) + t * (slope N * compT Φ t w x + offset i)) _
@@ -378,8 +376,8 @@ theorem finite_compT_eq {u v : List (Fin N)} {x : ℝ} (hx : x ∈ I)
   obtain ⟨Ov, hOv, hIv, hdv⟩ := exists_differentiableOn_compT Φ v hx
   obtain ⟨ρ, hρ, hsub⟩ :=
     isCompact_image_I.exists_thickening_subset_open (hOu.inter hOv) (subset_inter hIu hIv)
-  have hsub' : nbhd ρ ⊆ Ou ∩ Ov := hsub
-  have hd : DifferentiableOn ℂ (fun t => compT Φ t u x - compT Φ t v x) (nbhd ρ) :=
+  have hsub' := hsub
+  have hd :=
     (hdu.mono (hsub'.trans inter_subset_left)).sub (hdv.mono (hsub'.trans inter_subset_right))
   refine (finite_zeros hρ hd ⟨1, ⟨zero_le_one, le_rfl⟩, ?_⟩).subset ?_
   · simpa [sub_eq_zero] using hne
@@ -407,13 +405,12 @@ theorem exists_noCoincidence_near (Φ : IFS N ε) {r : ℝ} (hr : 0 < r) :
       | nil => rfl
       | cons i _ => exact i.elim0
     refine ⟨Φ, ?_, fun i => i.elim0, fun u v huv => absurd (by rw [hw u, hw v]) huv⟩
-    rw [d2, Real.iSup_of_isEmpty]
-    exact hr
+    rwa [d2, Real.iSup_of_isEmpty]
   set c := Φ.cmin
-  have hc : 0 < c := Φ.cmin_pos hN
+  have hc := Φ.cmin_pos hN
   obtain ⟨K, hK, hK'⟩ := exists_deriv_deriv_bound Φ
   -- the parameters `t ∈ [0,1]` at which two compositions along distinct words coincide on `I`
-  set B : Set ℝ := ⋃ p : List (Fin N) × List (Fin N),
+  set B := ⋃ p : List (Fin N) × List (Fin N),
     {t | t ∈ I ∧ p.1 ≠ p.2 ∧ ∀ x ∈ I, compT Φ t p.1 x = compT Φ t p.2 x}
   have hB : B.Countable := by
     refine countable_iUnion fun p => Finite.countable ?_
@@ -424,15 +421,13 @@ theorem exists_noCoincidence_near (Φ : IFS N ε) {r : ℝ} (hr : 0 < r) :
   set t₀ := min (c / (c + 1)) (r / (4 + K))
   have ht₀ : 0 < t₀ := lt_min (by positivity) (by positivity)
   obtain ⟨t, htB, ht⟩ := (hB.dense_compl ℝ).exists_mem_open isOpen_Ioo (nonempty_Ioo.2 ht₀)
-  have ht1 : t * (c + 1) < c :=
-    (lt_div_iff₀ (by positivity)).1 (ht.2.trans_le (min_le_left _ _))
-  have ht2 : t * (4 + K) < r :=
-    (lt_div_iff₀ (by positivity)).1 (ht.2.trans_le (min_le_right _ _))
+  have ht1 := (lt_div_iff₀ (by positivity)).1 (ht.2.trans_le (min_le_left _ _))
+  have ht2 := (lt_div_iff₀ (by positivity)).1 (ht.2.trans_le (min_le_right _ _))
   have ht_lt : t < 1 := by nlinarith [ht.1]
   have htI : t ∈ I := ⟨ht.1.le, ht_lt.le⟩
   let Ψ : IFS N ε := ⟨homotopy Φ t, Φ.ε_pos, inClass_homotopy Φ ht.1 ht1⟩
   refine ⟨Ψ, ?_, fun i x hx => re_homotopy_mem_Ioo Φ ⟨ht.1, ht_lt⟩ i hx, ?_⟩
-  · have h : ∀ i, d2Map (Φ.f i) (Ψ.f i) ≤ t * (4 + K) := fun i =>
+  · have h := fun i =>
       d2Map_homotopy_le Φ i hK (hK' i) htI
     exact (Real.iSup_le h (mul_nonneg ht.1.le (by linarith))).trans_lt ht2
   · -- `t ∉ B`

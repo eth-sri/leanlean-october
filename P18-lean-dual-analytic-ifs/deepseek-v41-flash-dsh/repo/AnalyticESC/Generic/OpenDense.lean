@@ -28,9 +28,9 @@ namespace OpenDense
 containing `I`. -/
 theorem iSup_norm_sub_le_add {F G H : ℂ → ℂ} {U : Set ℂ} (hIU : ((↑) : ℝ → ℂ) '' I ⊆ U)
     (hF : ContinuousOn F U) (hG : ContinuousOn G U) (hH : ContinuousOn H U) :
-    (⨆ x : I, ‖F ((x : ℝ) : ℂ) - H ((x : ℝ) : ℂ)‖) ≤
-      (⨆ x : I, ‖F ((x : ℝ) : ℂ) - G ((x : ℝ) : ℂ)‖) +
-        ⨆ x : I, ‖G ((x : ℝ) : ℂ) - H ((x : ℝ) : ℂ)‖ := by
+    (⨆ x : I, ‖F ↑x - H ↑x‖) ≤
+      (⨆ x : I, ‖F ↑x - G ↑x‖) +
+        ⨆ x : I, ‖G ↑x - H ↑x‖ := by
   have hFG := IFS.Continuity.bddAbove_range_norm_sub hIU hF hG
   have hGH := IFS.Continuity.bddAbove_range_norm_sub hIU hG hH
   refine Real.iSup_le (fun x => ?_) (add_nonneg (Real.iSup_nonneg fun _ => norm_nonneg _)

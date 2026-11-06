@@ -19,17 +19,16 @@ open Set Metric Filter Topology
 
 /-- Taylor's theorem of order two with the Lagrange remainder, for a `𝒞²` map on an open set
 containing the segment between `x` and `y`. -/
-private theorem exists_taylor_two {f : ℝ → ℝ} {U : Set ℝ} (hU : IsOpen U)
+theorem exists_taylor_two {f : ℝ → ℝ} {U : Set ℝ} (hU : IsOpen U)
     (hf : ContDiffOn ℝ 2 f U) {x y : ℝ} (hxy : x ≠ y) (hsub : uIcc x y ⊆ U) :
     ∃ ξ ∈ uIoo x y, f y - f x - deriv f x * (y - x) = deriv (deriv f) ξ * (y - x) ^ 2 / 2 := by
   obtain ⟨ξ, hξ, h⟩ := taylor_mean_remainder_lagrange_iteratedDeriv (n := 1) hxy
     ((hf.mono hsub).of_le (by norm_num))
   refine ⟨ξ, hξ, ?_⟩
-  have hd : derivWithin f (uIcc x y) x = deriv f x := by
+  simp [(by
     have : DifferentiableAt ℝ f x :=
       (hf.contDiffAt (hU.mem_nhds (hsub left_mem_uIcc))).differentiableAt (by norm_num)
-    exact this.derivWithin (uniqueDiffOn_uIcc hxy x left_mem_uIcc)
-  simp [hd] at h
+    exact this.derivWithin (uniqueDiffOn_uIcc hxy x left_mem_uIcc))] at h
   rw [iteratedDeriv_succ, iteratedDeriv_one] at h
   rw [← h]
   ring
@@ -42,8 +41,8 @@ theorem abs_deriv_sub_le_of_abs_sub_le {f g : ℝ → ℝ} {a b η Q : ℝ} {U :
     (hgQ : ∀ x ∈ Icc a b, |deriv (deriv g) x| ≤ Q) (hfg : ∀ x ∈ Icc a b, |f x - g x| ≤ η) :
     ∀ x ∈ Icc a b, |deriv f x - deriv g x| ≤ (2 + Q) * Real.sqrt η := by
   intro x hx
-  have hs : 0 < Real.sqrt η := Real.sqrt_pos.2 hη
-  have hs2 : Real.sqrt η ^ 2 = η := Real.sq_sqrt hη.le
+  have hs := Real.sqrt_pos.2 hη
+  have hs2 := Real.sq_sqrt hη.le
   -- One of `x ± √η` lies in `[a, b]`.
   obtain ⟨y, hy, hyx⟩ : ∃ y ∈ Icc a b, |y - x| = Real.sqrt η := by
     by_cases h : x + Real.sqrt η ≤ b
@@ -54,7 +53,7 @@ theorem abs_deriv_sub_le_of_abs_sub_le {f g : ℝ → ℝ} {a b η Q : ℝ} {U :
     rintro rfl
     rw [sub_self, abs_zero] at hyx
     exact hs.ne hyx
-  have hsub : uIcc x y ⊆ Icc a b := uIcc_subset_Icc hx hy
+  have hsub := uIcc_subset_Icc hx hy
   obtain ⟨ξ₁, hξ₁, h₁⟩ := exists_taylor_two hU hf hxy (hsub.trans hab)
   obtain ⟨ξ₂, hξ₂, h₂⟩ := exists_taylor_two hU hg hxy (hsub.trans hab)
   have hξ₁' : ξ₁ ∈ Icc a b := hsub (Ioo_subset_Icc_self hξ₁)
@@ -66,7 +65,7 @@ theorem abs_deriv_sub_le_of_abs_sub_le {f g : ℝ → ℝ} {a b η Q : ℝ} {U :
   have hb : |deriv (deriv f) ξ₁ - deriv (deriv g) ξ₂| ≤ 2 * Q := by
     have := abs_sub (deriv (deriv f) ξ₁) (deriv (deriv g) ξ₂)
     linarith [hfQ ξ₁ hξ₁', hgQ ξ₂ hξ₂']
-  have hmain : |deriv f x - deriv g x| * Real.sqrt η ≤ (2 + Q) * Real.sqrt η * Real.sqrt η := by
+  exact le_of_mul_le_mul_right (by
     rw [← hyx, ← abs_mul, key, hd2, hyx, mul_assoc, ← sq, hs2]
     have e1 := abs_sub (f y - g y - (f x - g x))
       ((deriv (deriv f) ξ₁ - deriv (deriv g) ξ₂) * η / 2)
@@ -74,11 +73,10 @@ theorem abs_deriv_sub_le_of_abs_sub_le {f g : ℝ → ℝ} {a b η Q : ℝ} {U :
     have e3 : |(deriv (deriv f) ξ₁ - deriv (deriv g) ξ₂) * η / 2| ≤ Q * η := by
       rw [abs_div, abs_mul, abs_of_pos hη, abs_two]
       nlinarith
-    linarith [hfg x hx, hfg y hy]
-  exact le_of_mul_le_mul_right hmain hs
+    linarith [hfg x hx, hfg y hy]) hs
 
 /-- The `j`-th derivative of a `𝒞ⁿ` map on an open set is `𝒞^m` there whenever `j + m ≤ n`. -/
-private theorem contDiffOn_iteratedDeriv_of_isOpen {f : ℝ → ℝ} {U : Set ℝ} (hU : IsOpen U)
+theorem contDiffOn_iteratedDeriv_of_isOpen {f : ℝ → ℝ} {U : Set ℝ} (hU : IsOpen U)
     {n : ℕ} (hf : ContDiffOn ℝ n f U) {j m : ℕ} (hjm : j + m ≤ n) :
     ContDiffOn ℝ m (iteratedDeriv j f) U := by
   induction j generalizing m with
@@ -111,7 +109,7 @@ theorem abs_iteratedDeriv_sub_le {f g : ℝ → ℝ} {a b η Q : ℝ} {U : Set �
   induction j with
   | zero =>
     intro _ x hx
-    simp only [iteratedDeriv_zero, pow_zero, Real.rpow_one]
+    simp [iteratedDeriv_zero, pow_zero, Real.rpow_one]
     nlinarith [hfg x hx]
   | succ j ih =>
     intro hjk x hx
@@ -124,15 +122,14 @@ theorem abs_iteratedDeriv_sub_le {f g : ℝ → ℝ} {a b η Q : ℝ} {U : Set �
     have hexp : η ^ ((2 : ℝ)⁻¹ ^ (j + 1)) ≤ η ^ ((2 : ℝ)⁻¹ ^ k) :=
       Real.rpow_le_rpow_of_exponent_ge hη hη1
         (pow_le_pow_of_le_one (by norm_num) (by norm_num) hjk)
-    have hJ' : 2 * Real.sqrt ((2 + Q) ^ 2 * η ^ ((2 : ℝ)⁻¹ ^ j)) < b - a := by
-      rw [hsqrt]
-      nlinarith
     have hdd : ∀ φ : ℝ → ℝ, deriv (deriv (iteratedDeriv j φ)) = iteratedDeriv (j + 2) φ := by
       intro φ
       rw [iteratedDeriv_succ, iteratedDeriv_succ]
     have key := abs_deriv_sub_le_of_abs_sub_le hU hab
       (contDiffOn_iteratedDeriv_of_isOpen hU hf' (j := j) (m := 2) (by omega))
-      (contDiffOn_iteratedDeriv_of_isOpen hU hg' (j := j) (m := 2) (by omega)) hM hJ'
+      (contDiffOn_iteratedDeriv_of_isOpen hU hg' (j := j) (m := 2) (by omega)) hM (by
+      rw [hsqrt]
+      nlinarith)
       (fun y hy => by rw [hdd]; exact hfQ (j + 2) (by omega) y hy)
       (fun y hy => by rw [hdd]; exact hgQ (j + 2) (by omega) y hy)
       (ih (by omega)) x hx
@@ -143,16 +140,16 @@ theorem abs_iteratedDeriv_sub_le {f g : ℝ → ℝ} {a b η Q : ℝ} {U : Set �
 /-! ## The identity theorem on `B_ε` -/
 
 /-- The inclusion `ℝ → ℂ` maps punctured neighbourhoods into punctured neighbourhoods. -/
-private theorem tendsto_ofReal_nhdsNE (c : ℝ) :
-    Tendsto ((↑) : ℝ → ℂ) (𝓝[≠] c) (𝓝[≠] (c : ℂ)) := by
+theorem tendsto_ofReal_nhdsNE (c : ℝ) :
+    Tendsto ((↑) : ℝ → ℂ) (𝓝[≠] c) (𝓝[≠] ↑c) := by
   refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
     (Complex.continuous_ofReal.continuousAt.tendsto.mono_left nhdsWithin_le_nhds) ?_
   filter_upwards [self_mem_nhdsWithin] with x hx
   simpa using hx
 
 /-- The real points of a nondegenerate interval accumulate in `ℂ` at its midpoint. -/
-private theorem frequently_ofReal_mem_Icc {a b : ℝ} (hab : a < b) :
-    ∃ᶠ z : ℂ in 𝓝[≠] (((a + b) / 2 : ℝ) : ℂ), ∃ x ∈ Icc a b, z = (x : ℂ) := by
+theorem frequently_ofReal_mem_Icc {a b : ℝ} (hab : a < b) :
+    ∃ᶠ z : ℂ in 𝓝[≠] (((a + b) / 2 : ℝ) : ℂ), ∃ x ∈ Icc a b, z = ↑x := by
   have hc : Icc a b ∈ 𝓝 ((a + b) / 2) := Icc_mem_nhds (by linarith) (by linarith)
   have h1 : ∃ᶠ x in 𝓝[≠] ((a + b) / 2), x ∈ Icc a b :=
     (eventually_nhdsWithin_of_eventually_nhds hc).frequently
@@ -176,15 +173,14 @@ theorem eqOn_nbhd_of_iteratedDeriv_eq {ε : ℝ} (hε : 0 < ε) {g h : ℂ → �
     (hg : DifferentiableOn ℂ g (nbhd ε)) (hh : DifferentiableOn ℂ h (nbhd ε)) {x : ℝ} (hx : x ∈ I)
     (heq : ∀ k, iteratedDeriv k g x = iteratedDeriv k h x) : EqOn g h (nbhd ε) := by
   have hU := isOpen_nbhd ε
-  have hball : ball (x : ℂ) ε ⊆ nbhd ε := ball_subset_nbhd hx
+  have hball : ball ↑x ε ⊆ nbhd ε := ball_subset_nbhd hx
   -- Both maps equal their Taylor series at `x` on the disc of radius `ε`.
-  have hloc : g =ᶠ[𝓝 (x : ℂ)] h := by
+  exact (hg.analyticOnNhd hU).eqOn_of_preconnected_of_eventuallyEq (hh.analyticOnNhd hU)
+    (isPreconnected_nbhd ε) (ofReal_mem_nbhd hε hx) (by
     filter_upwards [ball_mem_nhds (x : ℂ) hε] with z hz
     rw [← Complex.taylorSeries_eq_on_ball' hz (hg.mono hball),
       ← Complex.taylorSeries_eq_on_ball' hz (hh.mono hball)]
-    simp_rw [heq]
-  exact (hg.analyticOnNhd hU).eqOn_of_preconnected_of_eventuallyEq (hh.analyticOnNhd hU)
-    (isPreconnected_nbhd ε) (ofReal_mem_nbhd hε hx) hloc
+    simp_rw [heq])
 
 /-- A map holomorphic on `B_ε`, not identically zero on `I`, has finitely many zeros in `I`. -/
 theorem finite_zeros {ε : ℝ} (hε : 0 < ε) {g : ℂ → ℂ} (hg : DifferentiableOn ℂ g (nbhd ε))
@@ -193,19 +189,18 @@ theorem finite_zeros {ε : ℝ} (hε : 0 < ε) {g : ℂ → ℂ} (hg : Different
   -- Infinitely many zeros in the compact `I` accumulate at some `c ∈ I`.
   obtain ⟨c, hcI, hacc⟩ :=
     Set.Infinite.exists_accPt_of_subset_isCompact hinf isCompact_Icc fun x hx => hx.1
-  have hfreq : ∃ᶠ z in 𝓝[≠] (c : ℂ), g z = 0 := by
-    rw [accPt_iff_frequently_nhdsNE] at hacc
-    exact (tendsto_ofReal_nhdsNE c).frequently (hacc.mono fun x hx => hx.2)
   have hzero :=
     (hg.analyticOnNhd (isOpen_nbhd ε)).eqOn_zero_of_preconnected_of_frequently_eq_zero
-      (isPreconnected_nbhd ε) (ofReal_mem_nbhd hε hcI) hfreq
+      (isPreconnected_nbhd ε) (ofReal_mem_nbhd hε hcI) (by
+    rw [accPt_iff_frequently_nhdsNE] at hacc
+    exact (tendsto_ofReal_nhdsNE c).frequently (hacc.mono fun x hx => hx.2))
   obtain ⟨x, hx, hgx⟩ := hne
   exact hgx (hzero (ofReal_mem_nbhd hε hx))
 
 /-! ## The bound (4.3) -/
 
 /-- The maximum of `|x|^p e^{-x²/σ}` over `x ∈ ℝ` is `(pσ/2)^{p/2} e^{-p/2}`. -/
-private theorem rpow_abs_mul_exp_le {p σ : ℝ} (hp : 0 < p) (hσ : 0 < σ) (x : ℝ) :
+theorem rpow_abs_mul_exp_le {p σ : ℝ} (hp : 0 < p) (hσ : 0 < σ) (x : ℝ) :
     |x| ^ p * Real.exp (-x ^ 2 / σ) ≤ (p / 2 * σ) ^ (p / 2) * Real.exp (-(p / 2)) := by
   have hA : 0 < p / 2 := by positivity
   have hAσ : 0 < p / 2 * σ := by positivity

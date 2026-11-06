@@ -39,7 +39,7 @@ noncomputable def divide (a b : ℝ) (_hb : b ≠ 0) : ℝ := a / b
 abbrev Scale := {r : ℝ // 0 < r ∧ r < 1}
 
 /-- Scales tending to zero from above. -/
-def scaleZero : Filter Scale := comap Subtype.val (𝓝[>] (0 : ℝ))
+def scaleZero : Filter Scale := comap Subtype.val (𝓝[>] 0)
 
 /-- The logarithmic ratio at a scale in `(0,1)`. -/
 noncomputable def logRatio (a : ℝ) (r : Scale) : ℝ :=
@@ -155,9 +155,9 @@ noncomputable def potential (s : ℝ) (ω : ℕ → Fin N) : ℝ :=
 end IFS
 
 /-- Restricting to scales in `(0,1)` does not change the filter at zero from above. -/
-theorem scaleZero_map : map (fun r : Scale => (r : ℝ)) scaleZero = 𝓝[>] (0 : ℝ) := by
+theorem scaleZero_map : map (fun r : Scale => (r : ℝ)) scaleZero = 𝓝[>] 0 := by
   apply map_comap_of_mem
-  filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < 1 from zero_lt_one)] with r hr
+  filter_upwards [Ioo_mem_nhdsGT (show 0 < 1 from zero_lt_one)] with r hr
   exact ⟨⟨r, hr⟩, rfl⟩
 
 theorem scale_tendsto_iff (g : ℝ → ℝ) (l : Filter ℝ) :
@@ -174,7 +174,7 @@ theorem positive_length_tendsto_iff (g : ℕ → ℝ) :
     Tendsto (fun n : ℕ => divide (g (n + 1)) ((n + 1 : ℕ) : ℝ)
       (Nat.cast_ne_zero.mpr (Nat.succ_ne_zero n))) atTop (𝓝 0) ↔
     Tendsto (fun n : ℕ => g n / n) atTop (𝓝 0) := by
-  simpa only [divide] using
+  simpa [divide] using
     (tendsto_add_atTop_iff_nat (f := fun n : ℕ => g n / (n : ℝ)) (l := 𝓝 0) 1)
 
 end AnalyticESC

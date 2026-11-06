@@ -23,7 +23,7 @@ open scoped UniformConvergence
 /-! ## Restrictions to `B_ε` -/
 
 /-- Restrictions agree as soon as the maps agree on `B_ε`. -/
-private theorem toNbhd_congr {ε : ℝ} {g h : ℂ → ℂ} (hgh : ∀ z ∈ nbhd ε, g z = h z) :
+theorem toNbhd_congr {ε : ℝ} {g h : ℂ → ℂ} (hgh : ∀ z ∈ nbhd ε, g z = h z) :
     toNbhd ε g = toNbhd ε h := by
   unfold toNbhd
   congr 1
@@ -41,7 +41,7 @@ private theorem toNbhd_extendNbhd {ε : ℝ} (u : nbhd ε →ᵤ ℂ) : toNbhd �
 
 /-- Convergence of functions on `B_ε` in the topology of uniform convergence, from pointwise
 bounds that are uniform on `B_ε` and tend to zero. -/
-private theorem tendsto_uniformFun_of_norm_le {ε : ℝ} {ι : Type*} {l : Filter ι}
+theorem tendsto_uniformFun_of_norm_le {ε : ℝ} {ι : Type*} {l : Filter ι}
     {F : ι → nbhd ε →ᵤ ℂ} {f : nbhd ε →ᵤ ℂ} {b : ι → ℝ} (hb : Tendsto b l (𝓝 0))
     (h : ∀ n z, ‖UniformFun.toFun (F n) z - UniformFun.toFun f z‖ ≤ b n) :
     Tendsto F l (𝓝 f) := by
@@ -52,23 +52,23 @@ private theorem tendsto_uniformFun_of_norm_le {ε : ℝ} {ι : Type*} {l : Filte
   exact (h n z).trans_lt hn
 
 /-- Words agreeing with `w` on the first `m` letters form a neighbourhood of `w`. -/
-private theorem eventually_forall_lt_eq {N : ℕ} (w : ℕ → Fin N) (m : ℕ) :
+theorem eventually_forall_lt_eq {N : ℕ} (w : ℕ → Fin N) (m : ℕ) :
     ∀ᶠ v in 𝓝 w, ∀ k < m, v k = w k := by
   have : ∀ k, ∀ᶠ v in 𝓝 w, v k = w k := fun k => by
     have h := (continuous_apply k).continuousAt (x := w)
     rw [ContinuousAt, nhds_discrete (Fin N)] at h
     exact tendsto_pure.1 h
-  simpa only [← Finset.mem_range, Filter.eventually_all_finset] using fun k _ => this k
+  simpa [← Finset.mem_range, Filter.eventually_all_finset] using fun k _ => this k
 
 /-- Infinite words agreeing on the first `m` letters share a prefix of length `m`. -/
-private theorem le_commonPrefixLength_of_forall_lt_eq {N : ℕ} {v w : ℕ → Fin N} {m : ℕ}
+theorem le_commonPrefixLength_of_forall_lt_eq {N : ℕ} {v w : ℕ → Fin N} {m : ℕ}
     (h : ∀ k < m, v k = w k) : (m : ℕ∞) ≤ (Word.inf v).commonPrefixLength (.inf w) := by
   rw [Word.le_commonPrefixLength_iff]
   intro k hk
   simp [h k hk]
 
 /-- `c_max^n K → 0`. -/
-private theorem tendsto_pow_mul_nhds_zero {c K : ℝ} (hc0 : 0 ≤ c) (hc1 : c < 1) :
+theorem tendsto_pow_mul_nhds_zero {c K : ℝ} (hc0 : 0 ≤ c) (hc1 : c < 1) :
     Tendsto (fun n : ℕ => c ^ n * K) atTop (𝓝 0) := by
   simpa using (tendsto_pow_atTop_nhds_zero_of_lt_one hc0 hc1).mul_const K
 
@@ -76,16 +76,16 @@ namespace Word
 
 variable {N : ℕ}
 
-private theorem prepend_inf (a : List (Fin N)) (w : ℕ → Fin N) :
+theorem prepend_inf (a : List (Fin N)) (w : ℕ → Fin N) :
     (inf w).prepend a = inf fun n => if h : n < a.length then a[n] else w (n - a.length) := rfl
 
-private theorem prepend_nil_eq (w : Word N) : w.prepend [] = w := by
+theorem prepend_nil_eq (w : Word N) : w.prepend [] = w := by
   cases w with
   | fin w => rfl
   | inf w => simp [prepend]
 
 /-- An infinite word is its prefix of length `n` followed by its `n`-fold shift. -/
-private theorem inf_eq_prepend_ofFn (w : ℕ → Fin N) (n : ℕ) :
+theorem inf_eq_prepend_ofFn (w : ℕ → Fin N) (n : ℕ) :
     inf w = (inf fun k => w (k + n)).prepend (List.ofFn fun k : Fin n => w k) := by
   rw [prepend_inf]
   congr 1
@@ -96,12 +96,12 @@ private theorem inf_eq_prepend_ofFn (w : ℕ → Fin N) (n : ℕ) :
   · congr 1
     omega
 
-private theorem inf_eq_prepend_singleton (w : ℕ → Fin N) :
+theorem inf_eq_prepend_singleton (w : ℕ → Fin N) :
     inf w = (inf fun k => w (k + 1)).prepend [w 0] := by
   rw [inf_eq_prepend_ofFn w 1]
   simp
 
-private theorem exists_prepend_singleton_inf (i : Fin N) (w : ℕ → Fin N) :
+theorem exists_prepend_singleton_inf (i : Fin N) (w : ℕ → Fin N) :
     ∃ v : ℕ → Fin N, (inf w).prepend [i] = inf v ∧ v 0 = i :=
   ⟨_, prepend_inf [i] w, by simp⟩
 
@@ -113,11 +113,11 @@ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 
 /-! ## Iterates of the dual operators on `ℂ → ℂ` -/
 
-private theorem comp_singleton_eq_f (i : Fin N) : Φ.comp [i] = Φ.f i := by
+theorem comp_singleton_eq_f (i : Fin N) : Φ.comp [i] = Φ.f i := by
   simp
 
 /-- `H_i = f_i''/f_i'` for a single letter `i`. -/
-private theorem dualProj_fin_singleton_eq_nonlin (i : Fin N) (z : ℂ) :
+theorem dualProj_fin_singleton_eq_nonlin (i : Fin N) (z : ℂ) :
     Φ.dualProj (.fin [i]) z = Φ.nonlin i z := by
   rw [dualProj, tsum_eq_single 0]
   · simp [dualTerm]
@@ -126,7 +126,7 @@ private theorem dualProj_fin_singleton_eq_nonlin (i : Fin N) (z : ℂ) :
     simp [dualTerm]
 
 /-- The cocycle identity for a single letter. -/
-private theorem dualProj_prepend_singleton (i : Fin N) (w : Word N) {z : ℂ}
+theorem dualProj_prepend_singleton (i : Fin N) (w : Word N) {z : ℂ}
     (hz : z ∈ closure (nbhd ε)) :
     Φ.dualProj (w.prepend [i]) z = deriv (Φ.f i) z * Φ.dualProj w (Φ.f i z) + Φ.nonlin i z := by
   rw [Φ.dualProj_prepend [i] w hz, List.reverse_singleton, comp_singleton_eq_f,
@@ -139,7 +139,7 @@ theorem dualComp_apply (w : List (Fin N)) (h : ℂ → ℂ) {z : ℂ} (hz : z �
   induction w generalizing z with
   | nil => simp [dualComp]
   | cons i w ih =>
-    have hcl : z ∈ closure (nbhd ε) := subset_closure hz
+    have hcl := subset_closure hz
     have h1 : Φ.dualComp (i :: w) h z = Φ.dualOp i (Φ.dualComp w h) z := rfl
     have h2 : (Word.fin w).prepend [i] = .fin (i :: w) := rfl
     rw [h1, dualOp, ih (Φ.mapsTo_f i hz), List.reverse_cons, Φ.deriv_comp_append _ _ hcl,
@@ -164,7 +164,7 @@ private theorem dualCompU_append (v w : List (Fin N)) (u : nbhd ε →ᵤ ℂ) :
   | nil => rfl
   | cons i v ih => simp [ih]
 
-private theorem dualOpU_toNbhd (i : Fin N) (h : ℂ → ℂ) :
+theorem dualOpU_toNbhd (i : Fin N) (h : ℂ → ℂ) :
     Φ.dualOpU i (toNbhd ε h) = toNbhd ε (Φ.dualOp i h) := rfl
 
 private theorem dualCompU_toNbhd (w : List (Fin N)) (h : ℂ → ℂ) :
@@ -173,12 +173,12 @@ private theorem dualCompU_toNbhd (w : List (Fin N)) (h : ℂ → ℂ) :
   | nil => rfl
   | cons i w ih => rw [dualCompU_cons, ih, dualOpU_toNbhd]; rfl
 
-private theorem toFun_dualOpU (i : Fin N) (u : nbhd ε →ᵤ ℂ) (z : nbhd ε) :
+theorem toFun_dualOpU (i : Fin N) (u : nbhd ε →ᵤ ℂ) (z : nbhd ε) :
     UniformFun.toFun (Φ.dualOpU i u) z =
       deriv (Φ.f i) z * UniformFun.toFun u ⟨Φ.f i z, Φ.mapsTo_f i z.2⟩ + Φ.nonlin i z := rfl
 
 /-- `F_i` contracts the supremum distance by `c_max`. -/
-private theorem norm_dualOpU_sub_le (i : Fin N) {u v : nbhd ε →ᵤ ℂ} {C : ℝ}
+theorem norm_dualOpU_sub_le (i : Fin N) {u v : nbhd ε →ᵤ ℂ} {C : ℝ}
     (h : ∀ z, ‖UniformFun.toFun u z - UniformFun.toFun v z‖ ≤ C) (z : nbhd ε) :
     ‖UniformFun.toFun (Φ.dualOpU i u) z - UniformFun.toFun (Φ.dualOpU i v) z‖ ≤ Φ.cmax * C := by
   rw [toFun_dualOpU, toFun_dualOpU, add_sub_add_right_eq_sub, ← mul_sub, norm_mul]
@@ -240,7 +240,7 @@ theorem continuous_toNbhd_dualProj :
 
 /-! ## Coding the Hutchinson attractor -/
 
-private theorem dualOpU_mem_of_isDualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)} (hΛ : Φ.IsDualAttractor Λ)
+theorem dualOpU_mem_of_isDualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)} (hΛ : Φ.IsDualAttractor Λ)
     (i : Fin N) {u : nbhd ε →ᵤ ℂ} (hu : u ∈ Λ) : Φ.dualOpU i u ∈ Λ := by
   rw [hΛ.2.2.2]
   exact mem_iUnion.2 ⟨i, mem_image_of_mem _ hu⟩
@@ -253,20 +253,19 @@ private theorem dualCompU_mem_of_isDualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)}
 
 /-- Every element of an attractor is bounded on `B_ε`: it is `F_i h` with `h` holomorphic on
 `B_ε`, and `f_i` maps the compact set `cl B_ε` into `B_ε`. -/
-private theorem exists_bound_of_mem_isDualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)}
+theorem exists_bound_of_mem_isDualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)}
     (hΛ : Φ.IsDualAttractor Λ) {u : nbhd ε →ᵤ ℂ} (hu : u ∈ Λ) :
     ∃ C, ∀ z, ‖UniformFun.toFun u z‖ ≤ C := by
   rw [hΛ.2.2.2] at hu
   obtain ⟨i, u', hu', rfl⟩ := mem_iUnion.1 hu
   obtain ⟨g, hg, -, -, rfl⟩ := hΛ.1 hu'
   obtain ⟨Mn, -, hMn⟩ := Φ.exists_nonlin_bound
-  have hK : IsCompact (Φ.f i '' closure (nbhd ε)) :=
-    (isCompact_closure_nbhd ε).image_of_continuousOn
+  have hK := (isCompact_closure_nbhd ε).image_of_continuousOn
       ((Φ.differentiableOn_f i).continuousOn.mono closure_nbhd_subset_two)
-  have hKs : Φ.f i '' closure (nbhd ε) ⊆ nbhd ε := (Φ.inClass i).mapsTo.image_subset
+  have hKs := (Φ.inClass i).mapsTo.image_subset
   obtain ⟨C, hC⟩ := hK.exists_bound_of_continuousOn (hg.continuousOn.mono hKs)
   refine ⟨Φ.cmax * C + Mn, fun z => ?_⟩
-  have hz : (z : ℂ) ∈ closure (nbhd ε) := subset_closure z.2
+  have hz := subset_closure z.2
   rw [toFun_dualOpU]
   refine (norm_add_le _ _).trans (add_le_add ?_ (hMn i z hz))
   rw [norm_mul]
@@ -274,7 +273,7 @@ private theorem exists_bound_of_mem_isDualAttractor {Λ : Set (nbhd ε →ᵤ �
     Φ.cmax_nonneg
 
 /-- An attractor is uniformly bounded on `B_ε`, being totally bounded. -/
-private theorem exists_bound_isDualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)} (hΛ : Φ.IsDualAttractor Λ) :
+theorem exists_bound_isDualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)} (hΛ : Φ.IsDualAttractor Λ) :
     ∃ B, ∀ u ∈ Λ, ∀ z, ‖UniformFun.toFun u z‖ ≤ B := by
   have hb : ∀ u, ∃ C, u ∈ Λ → ∀ z, ‖UniformFun.toFun u z‖ ≤ C := fun u => by
     by_cases hu : u ∈ Λ
@@ -288,13 +287,13 @@ private theorem exists_bound_isDualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)} (h�
   obtain ⟨B, hB⟩ := (ht.image C).bddAbove
   refine ⟨B + 1, fun u hu z => ?_⟩
   obtain ⟨y, hy, hyu⟩ := mem_iUnion₂.1 (hcover hu)
-  have h1 : ‖UniformFun.toFun y z‖ ≤ B := (hC y (htΛ hy) z).trans (hB (mem_image_of_mem C hy))
+  have h1 := (hC y (htΛ hy) z).trans (hB (mem_image_of_mem C hy))
   have h2 : dist (UniformFun.toFun u z) (UniformFun.toFun y z) < 1 := hyu z
   rw [dist_eq_norm] at h2
   linarith [norm_le_insert' (UniformFun.toFun u z) (UniformFun.toFun y z)]
 
 /-- Every attractor of the dual IFS is `{H_i : i ∈ Σ}`. -/
-private theorem eq_range_of_isDualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)} (hΛ : Φ.IsDualAttractor Λ) :
+theorem eq_range_of_isDualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)} (hΛ : Φ.IsDualAttractor Λ) :
     Λ = range fun w : ℕ → Fin N => toNbhd ε (Φ.dualProj (.inf w)) := by
   obtain ⟨B, hB⟩ := Φ.exists_bound_isDualAttractor hΛ
   obtain ⟨M, -, hM, -⟩ := Φ.exists_dualProj_bounds
@@ -359,18 +358,18 @@ theorem isDualAttractor_range (hN : 0 < N) :
 
 /-! ## Strong separation of the dual IFS -/
 
-private theorem toNbhd_dualProj_eq_iff (i j : ℕ → Fin N) :
+theorem toNbhd_dualProj_eq_iff (i j : ℕ → Fin N) :
     toNbhd ε (Φ.dualProj (.inf i)) = toNbhd ε (Φ.dualProj (.inf j)) ↔
       ∀ x ∈ I, Φ.dualProj (.inf i) x = Φ.dualProj (.inf j) x := by
   constructor
   · intro h x hx
-    exact congrArg (fun u => UniformFun.toFun u ⟨(x : ℂ), ofReal_mem_nbhd Φ.ε_pos hx⟩) h
+    exact congrArg (fun u => UniformFun.toFun u ⟨↑x, ofReal_mem_nbhd Φ.ε_pos hx⟩) h
   · intro h
     exact toNbhd_congr (eqOn_nbhd_of_eqOn_Icc Φ.ε_pos (Φ.differentiableOn_dualProj _)
       (Φ.differentiableOn_dualProj _) zero_lt_one subset_rfl h)
 
 /-- The dual IFS is strongly separated if and only if `H_i ≠ H_j` on `B_ε` whenever `i₁ ≠ j₁`. -/
-private theorem dualSSC_iff_toNbhd_ne (hN : 0 < N) :
+theorem dualSSC_iff_toNbhd_ne (hN : 0 < N) :
     Φ.DualSSC ↔ ∀ i j : ℕ → Fin N, i 0 ≠ j 0 →
       toNbhd ε (Φ.dualProj (.inf i)) ≠ toNbhd ε (Φ.dualProj (.inf j)) := by
   have hmem : ∀ w : ℕ → Fin N, toNbhd ε (Φ.dualProj (.inf w)) ∈
@@ -403,7 +402,7 @@ theorem dualSSC_iff_ne (hN : 0 < N) :
   rfl
 
 /-- Suprema of pointwise close bounded functions are close. -/
-private theorem abs_ciSup_sub_ciSup_le {ι : Type*} [Nonempty ι] {f g : ι → ℝ} {c : ℝ}
+theorem abs_ciSup_sub_ciSup_le {ι : Type*} [Nonempty ι] {f g : ι → ℝ} {c : ℝ}
     (hf : BddAbove (range f)) (hg : BddAbove (range g)) (h : ∀ x, |f x - g x| ≤ c) :
     |(⨆ x, f x) - ⨆ x, g x| ≤ c := by
   have h1 : ∀ x, f x ≤ c + ⨆ x, g x := fun x => by
@@ -420,15 +419,15 @@ private theorem abs_ciSup_sub_ciSup_le {ι : Type*} [Nonempty ι] {f g : ι → 
 /-- Compactness turns pointwise separation of first-letter branches into a uniform gap. -/
 theorem dualProj_ne_iff_exists_delta :
     (∀ i j : ℕ → Fin N, i 0 ≠ j 0 → ∃ x ∈ I, Φ.dualProj (.inf i) x ≠ Φ.dualProj (.inf j) x) ↔ ∃ δ > 0, ∀ i j : ℕ → Fin N, i 0 ≠ j 0 →
-      δ < ⨆ x : I, ‖Φ.dualProj (.inf i) ((x : ℝ) : ℂ) - Φ.dualProj (.inf j) ((x : ℝ) : ℂ)‖ := by
+      δ < ⨆ x : I, ‖Φ.dualProj (.inf i) ↑x - Φ.dualProj (.inf j) ↑x‖ := by
   obtain ⟨M, -, hM, hMd⟩ := Φ.exists_dualProj_bounds
   have : Nonempty I := ⟨⟨0, left_mem_Icc.2 zero_le_one⟩⟩
-  have hx : ∀ x : I, ((x : ℝ) : ℂ) ∈ closure (nbhd ε) := fun x =>
+  have hx : ∀ x : I, ↑x ∈ closure (nbhd ε) := fun x =>
     subset_closure (ofReal_mem_nbhd Φ.ε_pos x.2)
   let D : (ℕ → Fin N) × (ℕ → Fin N) → ℝ := fun p =>
-    ⨆ x : I, ‖Φ.dualProj (.inf p.1) ((x : ℝ) : ℂ) - Φ.dualProj (.inf p.2) ((x : ℝ) : ℂ)‖
+    ⨆ x : I, ‖Φ.dualProj (.inf p.1) ↑x - Φ.dualProj (.inf p.2) ↑x‖
   have hbdd : ∀ p : (ℕ → Fin N) × (ℕ → Fin N), BddAbove (range fun x : I =>
-      ‖Φ.dualProj (.inf p.1) ((x : ℝ) : ℂ) - Φ.dualProj (.inf p.2) ((x : ℝ) : ℂ)‖) := by
+      ‖Φ.dualProj (.inf p.1) ↑x - Φ.dualProj (.inf p.2) ↑x‖) := by
     intro p
     refine ⟨M + M, ?_⟩
     rintro _ ⟨x, rfl⟩
@@ -456,16 +455,15 @@ theorem dualProj_ne_iff_exists_delta :
       have e2 := hMd _ _ m (le_commonPrefixLength_of_forall_lt_eq hq2) _ (hx x)
       refine (abs_norm_sub_norm_le _ _).trans ?_
       have e3 := norm_sub_le
-        (Φ.dualProj (.inf q.1) ((x : ℝ) : ℂ) - Φ.dualProj (.inf p.1) ((x : ℝ) : ℂ))
-        (Φ.dualProj (.inf q.2) ((x : ℝ) : ℂ) - Φ.dualProj (.inf p.2) ((x : ℝ) : ℂ))
-      have e4 : Φ.dualProj (.inf q.1) ((x : ℝ) : ℂ) - Φ.dualProj (.inf q.2) ((x : ℝ) : ℂ) -
-          (Φ.dualProj (.inf p.1) ((x : ℝ) : ℂ) - Φ.dualProj (.inf p.2) ((x : ℝ) : ℂ)) =
-          Φ.dualProj (.inf q.1) ((x : ℝ) : ℂ) - Φ.dualProj (.inf p.1) ((x : ℝ) : ℂ) -
-          (Φ.dualProj (.inf q.2) ((x : ℝ) : ℂ) - Φ.dualProj (.inf p.2) ((x : ℝ) : ℂ)) := by ring
+        (Φ.dualProj (.inf q.1) ↑x - Φ.dualProj (.inf p.1) ↑x)
+        (Φ.dualProj (.inf q.2) ↑x - Φ.dualProj (.inf p.2) ↑x)
+      have e4 : Φ.dualProj (.inf q.1) ↑x - Φ.dualProj (.inf q.2) ↑x -
+          (Φ.dualProj (.inf p.1) ↑x - Φ.dualProj (.inf p.2) ↑x) =
+          Φ.dualProj (.inf q.1) ↑x - Φ.dualProj (.inf p.1) ↑x -
+          (Φ.dualProj (.inf q.2) ↑x - Φ.dualProj (.inf p.2) ↑x) := by ring
       rw [e4]
       linarith
-    have hS : IsCompact S :=
-      (IsClosed.preimage (f := fun p : (ℕ → Fin N) × (ℕ → Fin N) => (p.1 0, p.2 0))
+    have hS := (IsClosed.preimage (f := fun p : (ℕ → Fin N) × (ℕ → Fin N) => (p.1 0, p.2 0))
         (by fun_prop) (isClosed_discrete {q : Fin N × Fin N | q.1 ≠ q.2})).isCompact
     rcases S.eq_empty_or_nonempty with hE | hne
     · refine ⟨1, one_pos, fun i j hij => ?_⟩
@@ -480,16 +478,16 @@ theorem dualProj_ne_iff_exists_delta :
     by_contra hcon
     push Not at hcon
     have h0 : ∀ x : I,
-        ‖Φ.dualProj (.inf i) ((x : ℝ) : ℂ) - Φ.dualProj (.inf j) ((x : ℝ) : ℂ)‖ = 0 :=
+        ‖Φ.dualProj (.inf i) ↑x - Φ.dualProj (.inf j) ↑x‖ = 0 :=
       fun x => by rw [hcon x x.2, sub_self, norm_zero]
     have := h i j hij
-    simp only [h0, ciSup_const] at this
+    simp [h0, ciSup_const] at this
     linarith
 
 /-- Lemma 2.6, (a) ⇔ (c). -/
 theorem dualSSC_iff_exists_delta (hN : 0 < N) :
     Φ.DualSSC ↔ ∃ δ > 0, ∀ i j : ℕ → Fin N, i 0 ≠ j 0 →
-      δ < ⨆ x : I, ‖Φ.dualProj (.inf i) ((x : ℝ) : ℂ) - Φ.dualProj (.inf j) ((x : ℝ) : ℂ)‖ :=
+      δ < ⨆ x : I, ‖Φ.dualProj (.inf i) ↑x - Φ.dualProj (.inf j) ↑x‖ :=
   (Φ.dualSSC_iff_ne hN).trans Φ.dualProj_ne_iff_exists_delta
 
 /-- An exact coincidence `f_a = f_b` on `I`, for words of equal length with different last
@@ -498,8 +496,7 @@ theorem not_dualSSC_of_comp_eq {a b : List (Fin N)} (hlen : a.length = b.length)
     (hlast : a.getLast? ≠ b.getLast?) (h : ∀ x ∈ I, Φ.comp a x = Φ.comp b x) : ¬ Φ.DualSSC := by
   rintro ⟨Λ, hΛ, hdisj⟩
   -- `f_a = f_b` on `B_ε`, together with the first two derivatives
-  have hEq : EqOn (Φ.comp a) (Φ.comp b) (nbhd ε) :=
-    eqOn_nbhd_of_eqOn_Icc Φ.ε_pos (Φ.differentiableOn_comp a) (Φ.differentiableOn_comp b)
+  have hEq := eqOn_nbhd_of_eqOn_Icc Φ.ε_pos (Φ.differentiableOn_comp a) (Φ.differentiableOn_comp b)
       zero_lt_one subset_rfl h
   have hEv : ∀ z ∈ nbhd ε, Φ.comp a =ᶠ[𝓝 z] Φ.comp b := fun z hz =>
     Filter.eventuallyEq_of_mem ((isOpen_nbhd ε).mem_nhds hz) hEq
@@ -519,14 +516,13 @@ theorem not_dualSSC_of_comp_eq {a b : List (Fin N)} (hlen : a.length = b.length)
   · simp at hlen
   have hxy : x ≠ y := fun hxy => hlast (by rw [List.getLast?_concat, List.getLast?_concat, hxy])
   obtain ⟨u, hu⟩ := hΛ.2.1
-  have hA : Φ.dualCompU (a' ++ [x]).reverse u ∈ Φ.dualOpU x '' Λ := by
-    rw [List.reverse_concat, dualCompU_cons]
-    exact mem_image_of_mem _ (Φ.dualCompU_mem_of_isDualAttractor hΛ _ hu)
   have hB : Φ.dualCompU (b' ++ [y]).reverse u ∈ Φ.dualOpU y '' Λ := by
     rw [List.reverse_concat, dualCompU_cons]
     exact mem_image_of_mem _ (Φ.dualCompU_mem_of_isDualAttractor hΛ _ hu)
   rw [← hF u] at hB
-  exact Set.disjoint_left.1 (hdisj x y hxy) hA hB
+  exact Set.disjoint_left.1 (hdisj x y hxy) (by
+    rw [List.reverse_concat, dualCompU_cons]
+    exact mem_image_of_mem _ (Φ.dualCompU_mem_of_isDualAttractor hΛ _ hu)) hB
 
 end IFS
 

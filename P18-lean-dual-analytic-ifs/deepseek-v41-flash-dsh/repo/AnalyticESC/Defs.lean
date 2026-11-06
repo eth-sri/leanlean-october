@@ -11,7 +11,7 @@ The vocabulary of B. Bárány, I. Kolossváry and S. Troscheit, *On exponential 
 analytic self-conformal sets on the real line*.
 
 Maps are given by their holomorphic extension `f : ℂ → ℂ`. Statements about `[0,1]` evaluate at
-real points `(x : ℂ)`, `x ∈ I`; there `f`, `f'` and `f''` are real, and the complex derivatives
+real points `↑x`, `x ∈ I`; there `f`, `f'` and `f''` are real, and the complex derivatives
 agree with the derivatives of the real restriction. Finite words are lists, read from the left:
 `f_{i₁ ⋯ iₙ} = f_{i₁} ∘ ⋯ ∘ f_{iₙ}`.
 -/
@@ -32,7 +32,7 @@ def nbhd (δ : ℝ) : Set ℂ := thickening δ (((↑) : ℝ → ℂ) '' I)
 (B) `f(I) ⊆ I` and `f(cl B_ε) ⊆ B_ε`; (C) `0 < |f'(z)| < 1` for `z ∈ cl B_ε`. -/
 structure InClass (ε : ℝ) (f : ℂ → ℂ) : Prop where
   differentiableOn : DifferentiableOn ℂ f (nbhd (2 * ε))
-  im_eq_zero : ∀ x : ℝ, (x : ℂ) ∈ nbhd (2 * ε) → (f x).im = 0
+  im_eq_zero : ∀ x : ℝ, ↑x ∈ nbhd (2 * ε) → (f x).im = 0
   re_mem_I : ∀ x ∈ I, (f x).re ∈ I
   mapsTo : MapsTo f (closure (nbhd ε)) (nbhd ε)
   deriv_ne_zero : ∀ z ∈ closure (nbhd ε), deriv f z ≠ 0
@@ -90,7 +90,7 @@ def comp (w : List (Fin N)) : ℂ → ℂ := w.foldr (fun i g => Φ.f i ∘ g) i
 
 /-- `sup_{x ∈ [0,1]} |f_i(x) - f_j(x)|` for finite words `i` and `j`. -/
 noncomputable def supDist (i j : List (Fin N)) : ℝ :=
-  ⨆ x : I, ‖Φ.comp i ((x : ℝ) : ℂ) - Φ.comp j ((x : ℝ) : ℂ)‖
+  ⨆ x : I, ‖Φ.comp i ↑x - Φ.comp j ↑x‖
 
 /-- The exponential separation condition (ESC): there is `c > 0` with
 `sup_{x ∈ [0,1]} |f_i(x) - f_j(x)| ≥ c^n` for all distinct `i, j ∈ Σ_n`, for infinitely many
@@ -113,7 +113,7 @@ def attractor : Set ℝ := range Φ.natProj
 /-- Compositions along distinct finite words differ somewhere on `[0,1]`: `f_i ≢ f_j` on `[0,1]`
 for all distinct `i, j ∈ Σ_*` (the hypothesis of Lemma 4.1). -/
 def NoCoincidence : Prop :=
-  ∀ i j : List (Fin N), i ≠ j → ∃ x ∈ I, Φ.comp i (x : ℂ) ≠ Φ.comp j (x : ℂ)
+  ∀ i j : List (Fin N), i ≠ j → ∃ x ∈ I, Φ.comp i ↑x ≠ Φ.comp j ↑x
 
 /-- The constant `c_max` of (1.7): the supremum of `|f_i'|` over `cl B_ε` and `i`. -/
 noncomputable def cmax : ℝ := ⨆ (i : Fin N) (z : closure (nbhd ε)), ‖deriv (Φ.f i) z‖
@@ -181,7 +181,7 @@ def DualSSC : Prop :=
 
 /-- `conv((F_i k)(x), (F_i K)(x))` for a finite word `i` and constants `k`, `K`. -/
 noncomputable def dualCylAt (k K : ℝ) (i : List (Fin N)) (x : ℝ) : Set ℝ :=
-  uIcc (Φ.dualComp i (fun _ => (k : ℂ)) x).re (Φ.dualComp i (fun _ => (K : ℂ)) x).re
+  uIcc (Φ.dualComp i (fun _ => ↑k) x).re (Φ.dualComp i (fun _ => ↑K) x).re
 
 /-- The cylinders `F_i(k,K)` and `F_j(k,K)` are disjoint in the sense of (2.2). -/
 def DualCylDisjoint (k K : ℝ) (i j : List (Fin N)) : Prop :=
@@ -196,9 +196,9 @@ end IFS
 
 /-- The `𝒞²` distance on `I` between two maps (Section 1.1), with derivatives at real points. -/
 noncomputable def d2Map (f g : ℂ → ℂ) : ℝ :=
-  (⨆ x : I, ‖f ((x : ℝ) : ℂ) - g ((x : ℝ) : ℂ)‖) +
-    (⨆ x : I, ‖deriv f ((x : ℝ) : ℂ) - deriv g ((x : ℝ) : ℂ)‖) +
-    (⨆ x : I, ‖deriv (deriv f) ((x : ℝ) : ℂ) - deriv (deriv g) ((x : ℝ) : ℂ)‖)
+  (⨆ x : I, ‖f ↑x - g ↑x‖) +
+    (⨆ x : I, ‖deriv f ↑x - deriv g ↑x‖) +
+    (⨆ x : I, ‖deriv (deriv f) ↑x - deriv (deriv g) ↑x‖)
 
 /-- The `𝒞²` distance `d₂(Φ, Ψ) = max_i d₂(f_i, g_i)` between two families of maps. -/
 noncomputable def d2Sys {N : ℕ} (f g : Fin N → ℂ → ℂ) : ℝ := ⨆ i, d2Map (f i) (g i)

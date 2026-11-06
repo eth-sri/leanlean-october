@@ -29,20 +29,20 @@ variable {N : ℕ} {ε ε' : ℝ}
 /-! ## Dual compositions along an orbit -/
 
 /-- One step of `F_{i w}`: `F_{i w} h = f_i' · (F_w h ∘ f_i) + f_i''/f_i'`. -/
-private theorem dualComp_cons_apply (Φ : IFS N ε) (i : Fin N) (w : List (Fin N)) (h : ℂ → ℂ)
+theorem dualComp_cons_apply (Φ : IFS N ε) (i : Fin N) (w : List (Fin N)) (h : ℂ → ℂ)
     (z : ℂ) :
     Φ.dualComp (i :: w) h z = deriv (Φ.f i) z * Φ.dualComp w h (Φ.f i z) + Φ.nonlin i z :=
   rfl
 
 /-- The orbit of `z` along a prefix of `i w` passes through `f_i(z)`. -/
-private theorem comp_reverse_take_succ_cons (Φ : IFS N ε) (i : Fin N) (w : List (Fin N))
+theorem comp_reverse_take_succ_cons (Φ : IFS N ε) (i : Fin N) (w : List (Fin N))
     (m : ℕ) (z : ℂ) :
     Φ.comp ((i :: w).take (m + 1)).reverse z = Φ.comp (w.take m).reverse (Φ.f i z) := by
   rw [List.take_succ_cons, List.reverse_cons, Φ.comp_append]
   rfl
 
 /-- Shift the agreement hypothesis along `i w` to the orbit of `f_i(z)` along `w`. -/
-private theorem agreeAt_tail (Φ : IFS N ε) (Ψ : IFS N ε') {i : Fin N} {w : List (Fin N)}
+theorem agreeAt_tail (Φ : IFS N ε) (Ψ : IFS N ε') {i : Fin N} {w : List (Fin N)}
     {z : ℂ}
     (hag : ∀ m (hm : m < (i :: w).length),
       AgreeAt (Φ.f (i :: w)[m]) (Ψ.f (i :: w)[m]) (Φ.comp ((i :: w).take m).reverse z)) :
@@ -61,7 +61,7 @@ theorem dualComp_eq_of_agreeAt (Φ : IFS N ε) (Ψ : IFS N ε') {w : List (Fin N
   | nil => rfl
   | cons i w ih =>
     obtain ⟨h0, h1, h2⟩ := hag 0 (by simp)
-    simp only [List.getElem_cons_zero, List.take_zero, List.reverse_nil, comp_nil, id] at h0 h1 h2
+    simp [List.getElem_cons_zero, List.take_zero, List.reverse_nil, comp_nil, id] at h0 h1 h2
     rw [dualComp_cons_apply, dualComp_cons_apply, h0, ih (agreeAt_tail Φ Ψ hag), h1, nonlin,
       nonlin, h1, h2]
 
@@ -108,31 +108,28 @@ theorem mapsTo_dualOp_dualCylClosed_of_le (Ψ : IFS N ε') {c M K : ℝ}
     ⟨Complex.ext (by simp)
       (by simp [Ψ.im_f_ofReal i (nbhd_subset_two (ofReal_mem_nbhd Ψ.ε_pos hx))]),
       (Ψ.inClass i).re_mem_I x hx⟩
-  have him : ∀ x ∈ I, (Ψ.dualOp i h x).im = 0 := by
+  refine ⟨?_, Ψ.continuousOn_dualOp_closure i hd, (by
     intro x hx
     have hxn := ofReal_mem_nbhd Ψ.ε_pos hx
-    simp only [dualOp]
+    simp [dualOp]
     rw [(hfx x hx).1]
-    simp [Complex.mul_im, Ψ.im_deriv_f_ofReal i (nbhd_subset_two hxn), hre _ (hfx x hx).2,
-      Ψ.im_nonlin_ofReal i hxn]
-  refine ⟨?_, Ψ.continuousOn_dualOp_closure i hd, him, fun x hx => ?_⟩
+    simp [Ψ.im_deriv_f_ofReal i (nbhd_subset_two hxn), hre _ (hfx x hx).2,
+      Ψ.im_nonlin_ofReal i hxn]), fun x hx => ?_⟩
   · obtain ⟨U, -, hU, -, hnl⟩ := Ψ.exists_differentiableOn_nonlin i
-    have h1 : DifferentiableOn ℂ (deriv (Ψ.f i)) (nbhd ε') :=
-      ((Ψ.differentiableOn_f i).deriv (isOpen_nbhd _)).mono nbhd_subset_two
-    have h2 : DifferentiableOn ℂ (fun z => h (Ψ.f i z)) (nbhd ε') :=
+    have h1 := ((Ψ.differentiableOn_f i).deriv (isOpen_nbhd _)).mono nbhd_subset_two
+    have h2 :=
       hd.comp ((Ψ.differentiableOn_f i).mono nbhd_subset_two) (Ψ.mapsTo_f i)
     exact (h1.mul h2).add (hnl.mono (subset_closure.trans hU))
   · have hy := hfx x hx
-    have hhy : ‖h (Ψ.f i x)‖ ≤ K := by
-      rw [hy.1, ← Complex.abs_re_eq_norm.2 (hre _ hy.2)]
-      exact abs_le.2 (hb _ hy.2)
     -- `0 ≤ c`, from the bound at `x`
-    have hc0 : 0 ≤ c := (norm_nonneg _).trans (hc i x hx)
+    have hc0 := (norm_nonneg _).trans (hc i x hx)
     have hnorm : ‖Ψ.dualOp i h x‖ ≤ c * K + M := by
-      simp only [dualOp]
+      simp [dualOp]
       refine (norm_add_le _ _).trans (add_le_add ?_ (hM i x hx))
       rw [norm_mul]
-      exact mul_le_mul (hc i x hx) hhy (norm_nonneg _) hc0
+      exact mul_le_mul (hc i x hx) (by
+      rw [hy.1, ← Complex.abs_re_eq_norm.2 (hre _ hy.2)]
+      exact abs_le.2 (hb _ hy.2)) (norm_nonneg _) hc0
     exact abs_lt.1 ((Complex.abs_re_le_norm _).trans_lt (hnorm.trans_lt hK))
 
 end IFS
@@ -149,7 +146,7 @@ theorem disjoint_image_add_of_abs_sub_lt {A B : Set ℝ} {δ τ : ℝ}
   -- `a` and `a + τ` are both within `δ/3` of `x`, so `|τ| < 2δ/3`
   have h1 := hA a ha x hxA
   have h2 := hB (a + τ) hb x hxB
-  have h3 : |τ| ≤ |a + τ - x| + |a - x| := by
+  have h3 := by
     simpa using abs_sub (a + τ - x) (a - x)
   linarith
 

@@ -23,8 +23,8 @@ theorem comp_comm_of_conj {F G g : ℝ → ℝ} (hinj : InjOn g I) (hF : MapsTo 
     (hgG : ∀ x ∈ I, g (G x) = b * g x + t) {p : ℝ} (hp : p ∈ I) (hFp : F p = p) (hGp : G p = p) :
     ∀ x ∈ I, F (G x) = G (F x) := by
   intro x hx
-  have hs : g p = a * g p + s := by simpa only [hFp] using hgF p hp
-  have ht : g p = b * g p + t := by simpa only [hGp] using hgG p hp
+  have hs : g p = a * g p + s := by simpa [hFp] using hgF p hp
+  have ht : g p = b * g p + t := by simpa [hGp] using hgG p hp
   refine hinj (hF (hG hx)) (hG (hF hx)) ?_
   rw [hgF _ (hG hx), hgG _ (hF hx), hgG x hx, hgF x hx]
   linear_combination (1 - a) * ht - (1 - b) * hs

@@ -43,8 +43,8 @@ noncomputable def realMaps : Fin N → ℝ → ℝ := fun i x => (Φ.f i x).re
 the pair `(f_i, f_j)` is conjugated to a self-similar IFS. -/
 def SubConjSelfSimilar : Prop :=
   ∃ (m : ℕ) (i j : Fin m → Fin N), i ≠ j ∧
-    ConjSelfSimilar ![fun x : ℝ => (Φ.comp (List.ofFn i) x).re,
-      fun x : ℝ => (Φ.comp (List.ofFn j) x).re]
+    ConjSelfSimilar ![fun x => (Φ.comp (List.ofFn i) x).re,
+      fun x => (Φ.comp (List.ofFn j) x).re]
 
 end IFS
 

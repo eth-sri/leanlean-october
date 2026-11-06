@@ -29,8 +29,8 @@ theorem isCompact_realI : IsCompact (((↑) : ℝ → ℂ) '' I) :=
   isCompact_Icc.image Complex.continuous_ofReal
 
 theorem convex_realI : Convex ℝ (((↑) : ℝ → ℂ) '' I) := by
-  have := (convex_Icc (0 : ℝ) 1).linear_image Complex.ofRealCLM.toLinearMap
-  simpa using this
+  have := (convex_Icc 0 1).linear_image Complex.ofRealCLM.toLinearMap
+  exact this
 
 theorem image_I_subset_nbhd {δ : ℝ} (hδ : 0 < δ) : ((↑) : ℝ → ℂ) '' I ⊆ nbhd δ := by
   rintro _ ⟨y, hy, rfl⟩
@@ -41,13 +41,13 @@ theorem image_I_subset_closure {δ : ℝ} (hδ : 0 < δ) :
   (image_I_subset_nbhd hδ).trans subset_closure
 
 theorem ofReal_mem_closure {δ : ℝ} (hδ : 0 < δ) {x : ℝ} (hx : x ∈ I) :
-    (x : ℂ) ∈ closure (nbhd δ) :=
+    ↑x ∈ closure (nbhd δ) :=
   image_I_subset_closure hδ (mem_image_of_mem _ hx)
 
 /-- A map holomorphic on an open set containing `I` is Lipschitz on `I`. -/
 theorem exists_lipschitz_I {h : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
     (hIU : ((↑) : ℝ → ℂ) '' I ⊆ U) (hh : DifferentiableOn ℂ h U) :
-    ∃ L, 0 ≤ L ∧ ∀ a ∈ I, ∀ b ∈ I, ‖h (a : ℂ) - h (b : ℂ)‖ ≤ L * ‖(a : ℂ) - b‖ := by
+    ∃ L, 0 ≤ L ∧ ∀ a ∈ I, ∀ b ∈ I, ‖h ↑a - h ↑b‖ ≤ L * ‖(a : ℂ) - b‖ := by
   obtain ⟨L, hL⟩ := isCompact_realI.exists_bound_of_continuousOn
     ((hh.deriv hU).continuousOn.mono hIU)
   refine ⟨max L 0, le_max_right _ _, fun a ha b hb => ?_⟩
@@ -61,7 +61,7 @@ on `I`. -/
 theorem exists_lipschitz_I_fin {N : ℕ} {h : Fin N → ℂ → ℂ} (U : Fin N → Set ℂ)
     (hU : ∀ i, IsOpen (U i)) (hIU : ∀ i, ((↑) : ℝ → ℂ) '' I ⊆ U i)
     (hh : ∀ i, DifferentiableOn ℂ (h i) (U i)) :
-    ∃ L, 0 ≤ L ∧ ∀ i, ∀ a ∈ I, ∀ b ∈ I, ‖h i (a : ℂ) - h i (b : ℂ)‖ ≤ L * ‖(a : ℂ) - b‖ := by
+    ∃ L, 0 ≤ L ∧ ∀ i, ∀ a ∈ I, ∀ b ∈ I, ‖h i ↑a - h i ↑b‖ ≤ L * ‖(a : ℂ) - b‖ := by
   choose L hL0 hL using fun i => exists_lipschitz_I (hU i) (hIU i) (hh i)
   refine ⟨∑ i, L i, Finset.sum_nonneg fun i _ => hL0 i, fun i a ha b hb => ?_⟩
   exact (hL i a ha b hb).trans (mul_le_mul_of_nonneg_right
@@ -102,16 +102,14 @@ theorem norm_sub_le_d2 (Φ : IFS N ε) (Ψ : IFS N ε') (i : Fin N) {x : ℝ} (h
   have hg := (Ψ.inClass i).differentiableOn
   have hl := inter_subset_left (s := nbhd (2 * ε)) (t := nbhd (2 * ε'))
   have hr := inter_subset_right (s := nbhd (2 * ε)) (t := nbhd (2 * ε'))
-  have e0 : ‖Φ.f i x - Ψ.f i x‖ ≤ ⨆ y : I, ‖Φ.f i ((y : ℝ) : ℂ) - Ψ.f i ((y : ℝ) : ℂ)‖ :=
+  have e0 :=
     le_ciSup (f := fun y : I => ‖Φ.f i ((y : ℝ) : ℂ) - Ψ.f i ((y : ℝ) : ℂ)‖)
       (bddAbove_range_norm_sub hU (hf.continuousOn.mono hl) (hg.continuousOn.mono hr)) ⟨x, hx⟩
-  have e1 : ‖deriv (Φ.f i) x - deriv (Ψ.f i) x‖ ≤
-      ⨆ y : I, ‖deriv (Φ.f i) ((y : ℝ) : ℂ) - deriv (Ψ.f i) ((y : ℝ) : ℂ)‖ :=
+  have e1 :=
     le_ciSup (f := fun y : I => ‖deriv (Φ.f i) ((y : ℝ) : ℂ) - deriv (Ψ.f i) ((y : ℝ) : ℂ)‖)
       (bddAbove_range_norm_sub hU ((hf.deriv hO).continuousOn.mono hl)
         ((hg.deriv hO').continuousOn.mono hr)) ⟨x, hx⟩
-  have e2 : ‖deriv (deriv (Φ.f i)) x - deriv (deriv (Ψ.f i)) x‖ ≤
-      ⨆ y : I, ‖deriv (deriv (Φ.f i)) ((y : ℝ) : ℂ) - deriv (deriv (Ψ.f i)) ((y : ℝ) : ℂ)‖ :=
+  have e2 :=
     le_ciSup (f := fun y : I =>
         ‖deriv (deriv (Φ.f i)) ((y : ℝ) : ℂ) - deriv (deriv (Ψ.f i)) ((y : ℝ) : ℂ)‖)
       (bddAbove_range_norm_sub hU (((hf.deriv hO).deriv hO).continuousOn.mono hl)
@@ -134,14 +132,14 @@ theorem norm_comp_sub_comp_le (Φ : IFS N ε) (Ψ : IFS N ε') (v : List (Fin N)
   have hd := d2_nonneg Φ Ψ
   have hc1 : 0 < 1 - Φ.cmax := by linarith
   induction v with
-  | nil => simp only [comp_nil, id, sub_self, norm_zero]; positivity
+  | nil => simp [comp_nil, id, sub_self, norm_zero]; positivity
   | cons i u ih =>
-    obtain ⟨a, ha, hae⟩ : ∃ a ∈ I, Φ.comp u x = (a : ℂ) :=
+    obtain ⟨a, ha, hae⟩ : ∃ a ∈ I, Φ.comp u x = ↑a :=
       ⟨_, Φ.re_comp_mem_I u hx, Φ.comp_ofReal u hx⟩
-    obtain ⟨b, hb, hbe⟩ : ∃ b ∈ I, Ψ.comp u x = (b : ℂ) :=
+    obtain ⟨b, hb, hbe⟩ : ∃ b ∈ I, Ψ.comp u x = ↑b :=
       ⟨_, Ψ.re_comp_mem_I u hx, Ψ.comp_ofReal u hx⟩
     rw [hae, hbe] at ih
-    simp only [comp_cons, Function.comp_apply, hae, hbe]
+    simp [comp_cons, Function.comp_apply, hae, hbe]
     have h1 : ‖Φ.f i a - Φ.f i b‖ ≤ Φ.cmax * ‖(a : ℂ) - b‖ := by
       have := Φ.norm_comp_sub_le [i] (ofReal_mem_nbhd Φ.ε_pos ha) (ofReal_mem_nbhd Φ.ε_pos hb)
       simpa [comp_cons, comp_nil] using this
@@ -154,12 +152,12 @@ theorem norm_comp_sub_comp_le (Φ : IFS N ε) (Ψ : IFS N ε') (v : List (Fin N)
 
 /-- `|g_v'(x)| ≤ c'^{|v|}` on `I` if `|g_i'| ≤ c'` on `I` for all `i`. -/
 theorem norm_deriv_comp_le_pow (Ψ : IFS N ε) {c' : ℝ} (hc'0 : 0 ≤ c')
-    (hc' : ∀ i, ∀ y ∈ I, ‖deriv (Ψ.f i) (y : ℂ)‖ ≤ c') (v : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
+    (hc' : ∀ i, ∀ y ∈ I, ‖deriv (Ψ.f i) ↑y‖ ≤ c') (v : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
     ‖deriv (Ψ.comp v) x‖ ≤ c' ^ v.length := by
   induction v with
   | nil => simp [comp_nil]
   | cons i u ih =>
-    obtain ⟨b, hb, hbe⟩ : ∃ b ∈ I, Ψ.comp u x = (b : ℂ) :=
+    obtain ⟨b, hb, hbe⟩ : ∃ b ∈ I, Ψ.comp u x = ↑b :=
       ⟨_, Ψ.re_comp_mem_I u hx, Ψ.comp_ofReal u hx⟩
     rw [Ψ.deriv_comp_cons i u (ofReal_mem_closure Ψ.ε_pos hx), hbe, norm_mul, List.length_cons,
       pow_succ']
@@ -168,9 +166,9 @@ theorem norm_deriv_comp_le_pow (Ψ : IFS N ε) {c' : ℝ} (hc'0 : 0 ≤ c')
 /-- (2.5): `|f_v'(x) - g_v'(x)| ≤ |v| c'^{|v|} K d` on `I`, with
 `K = (L / (1 - c_max) + 1) / c'` and `L` a Lipschitz constant of the `f_i'` on `I`. -/
 theorem norm_deriv_comp_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L : ℝ} (hc'0 : 0 < c')
-    (hcc' : Φ.cmax ≤ c') (hc' : ∀ i, ∀ y ∈ I, ‖deriv (Ψ.f i) (y : ℂ)‖ ≤ c') (hL0 : 0 ≤ L)
+    (hcc' : Φ.cmax ≤ c') (hc' : ∀ i, ∀ y ∈ I, ‖deriv (Ψ.f i) ↑y‖ ≤ c') (hL0 : 0 ≤ L)
     (hL : ∀ i, ∀ a ∈ I, ∀ b ∈ I,
-      ‖deriv (Φ.f i) (a : ℂ) - deriv (Φ.f i) (b : ℂ)‖ ≤ L * ‖(a : ℂ) - b‖)
+      ‖deriv (Φ.f i) ↑a - deriv (Φ.f i) ↑b‖ ≤ L * ‖(a : ℂ) - b‖)
     (v : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
     ‖deriv (Φ.comp v) x - deriv (Ψ.comp v) x‖ ≤
       v.length * c' ^ v.length * ((L / (1 - Φ.cmax) + 1) / c') * d2 Φ Ψ := by
@@ -183,26 +181,24 @@ theorem norm_deriv_comp_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L : ℝ} (hc
   induction v with
   | nil => simp [comp_nil]
   | cons i u ih =>
-    obtain ⟨a, ha, hae⟩ : ∃ a ∈ I, Φ.comp u x = (a : ℂ) :=
+    obtain ⟨a, ha, hae⟩ : ∃ a ∈ I, Φ.comp u x = ↑a :=
       ⟨_, Φ.re_comp_mem_I u hx, Φ.comp_ofReal u hx⟩
-    obtain ⟨b, hb, hbe⟩ : ∃ b ∈ I, Ψ.comp u x = (b : ℂ) :=
+    obtain ⟨b, hb, hbe⟩ : ∃ b ∈ I, Ψ.comp u x = ↑b :=
       ⟨_, Ψ.re_comp_mem_I u hx, Ψ.comp_ofReal u hx⟩
-    have hab : ‖(a : ℂ) - b‖ ≤ d2 Φ Ψ / (1 - Φ.cmax) := by
-      rw [← hae, ← hbe]; exact norm_comp_sub_comp_le Φ Ψ u hx
     rw [Φ.deriv_comp_cons i u hxc, Ψ.deriv_comp_cons i u hxc', hae, hbe]
     set K := (L / (1 - Φ.cmax) + 1) / c' with hK
     set Df := deriv (Φ.comp u) x
     set Dg := deriv (Ψ.comp u) x
-    have hA : ‖deriv (Φ.f i) a‖ ≤ c' :=
-      (Φ.norm_deriv_le_cmax i (ofReal_mem_closure Φ.ε_pos ha)).trans hcc'
-    have hB : ‖deriv (Φ.f i) a - deriv (Ψ.f i) b‖ ≤ K * c' * d2 Φ Ψ := by
+    have hA := (Φ.norm_deriv_le_cmax i (ofReal_mem_closure Φ.ε_pos ha)).trans hcc'
+    have hB := by
       calc _ ≤ ‖deriv (Φ.f i) a - deriv (Φ.f i) b‖ + ‖deriv (Φ.f i) b - deriv (Ψ.f i) b‖ :=
             norm_sub_le_norm_sub_add_norm_sub _ _ _
         _ ≤ L * (d2 Φ Ψ / (1 - Φ.cmax)) + d2 Φ Ψ :=
-            add_le_add ((hL i a ha b hb).trans (mul_le_mul_of_nonneg_left hab hL0))
+            add_le_add ((hL i a ha b hb).trans (mul_le_mul_of_nonneg_left (by
+      rw [← hae, ← hbe]; exact norm_comp_sub_comp_le Φ Ψ u hx) hL0))
               (norm_sub_le_d2 Φ Ψ i hb).2.1
         _ = K * c' * d2 Φ Ψ := by rw [hK]; field_simp
-    have hDg : ‖Dg‖ ≤ c' ^ u.length := norm_deriv_comp_le_pow Ψ hc'0.le hc' u hx
+    have hDg := norm_deriv_comp_le_pow Ψ hc'0.le hc' u hx
     calc ‖deriv (Φ.f i) a * Df - deriv (Ψ.f i) b * Dg‖
         = ‖deriv (Φ.f i) a * (Df - Dg) + (deriv (Φ.f i) a - deriv (Ψ.f i) b) * Dg‖ := by
           congr 1; ring
@@ -212,47 +208,43 @@ theorem norm_deriv_comp_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L : ℝ} (hc
           add_le_add (mul_le_mul hA ih (norm_nonneg _) hc'0.le)
             (mul_le_mul hB hDg (norm_nonneg _) (by positivity))
       _ = (i :: u).length * c' ^ (i :: u).length * K * d2 Φ Ψ := by
-          simp only [List.length_cons]; push_cast; ring
+          simp [List.length_cons]; ring
 
 /-- (2.3): `|f_i''/f_i' - g_i''/g_i'| ≤ (1 + M) / m · d` on `I`, if `|g_i'| ≥ m > 0` on `I` and
 `M` bounds `f_i''/f_i'` on `I`. -/
 theorem norm_nonlin_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {m M : ℝ} (hm : 0 < m) (hM0 : 0 ≤ M)
-    (hgm : ∀ i, ∀ y ∈ I, m ≤ ‖deriv (Ψ.f i) (y : ℂ)‖)
-    (hM : ∀ i, ∀ y ∈ I, ‖Φ.nonlin i (y : ℂ)‖ ≤ M) (i : Fin N) {y : ℝ} (hy : y ∈ I) :
+    (hgm : ∀ i, ∀ y ∈ I, m ≤ ‖deriv (Ψ.f i) ↑y‖)
+    (hM : ∀ i, ∀ y ∈ I, ‖Φ.nonlin i ↑y‖ ≤ M) (i : Fin N) {y : ℝ} (hy : y ∈ I) :
     ‖Φ.nonlin i y - Ψ.nonlin i y‖ ≤ (1 + M) / m * d2 Φ Ψ := by
-  have hf : deriv (Φ.f i) y ≠ 0 :=
-    (Φ.inClass i).deriv_ne_zero _ (ofReal_mem_closure Φ.ε_pos hy)
-  have hg : deriv (Ψ.f i) y ≠ 0 :=
-    (Ψ.inClass i).deriv_ne_zero _ (ofReal_mem_closure Ψ.ε_pos hy)
+  have hf := (Φ.inClass i).deriv_ne_zero _ (ofReal_mem_closure Φ.ε_pos hy)
+  have hg := (Ψ.inClass i).deriv_ne_zero _ (ofReal_mem_closure Ψ.ε_pos hy)
   have key : Φ.nonlin i y - Ψ.nonlin i y =
       ((deriv (deriv (Φ.f i)) y - deriv (deriv (Ψ.f i)) y) +
         Φ.nonlin i y * (deriv (Ψ.f i) y - deriv (Φ.f i) y)) / deriv (Ψ.f i) y := by
-    simp only [nonlin]; field_simp; ring
+    simp [nonlin]; field_simp; ring
   obtain ⟨-, h1, h2⟩ := norm_sub_le_d2 Φ Ψ i hy
-  have hnum : ‖(deriv (deriv (Φ.f i)) y - deriv (deriv (Ψ.f i)) y) +
-      Φ.nonlin i y * (deriv (Ψ.f i) y - deriv (Φ.f i) y)‖ ≤ (1 + M) * d2 Φ Ψ := by
+  rw [key, norm_div]
+  calc _ ≤ (1 + M) * d2 Φ Ψ / m :=
+        div_le_div₀ (by have := d2_nonneg Φ Ψ; positivity) (by
     calc _ ≤ ‖deriv (deriv (Φ.f i)) y - deriv (deriv (Ψ.f i)) y‖ +
           ‖Φ.nonlin i y‖ * ‖deriv (Ψ.f i) y - deriv (Φ.f i) y‖ := by
           rw [← norm_mul]; exact norm_add_le _ _
       _ ≤ d2 Φ Ψ + M * d2 Φ Ψ :=
           add_le_add h2 (mul_le_mul (hM i y hy) (by rw [norm_sub_rev]; exact h1)
             (norm_nonneg _) hM0)
-      _ = (1 + M) * d2 Φ Ψ := by ring
-  rw [key, norm_div]
-  calc _ ≤ (1 + M) * d2 Φ Ψ / m :=
-        div_le_div₀ (by have := d2_nonneg Φ Ψ; positivity) hnum hm (hgm i y hy)
+      _ = (1 + M) * d2 Φ Ψ := by ring) hm (hgm i y hy)
     _ = (1 + M) / m * d2 Φ Ψ := by ring
 
 /-- The difference of the terms of the series (1.4) for `Φ` and `Ψ`: with `v` of length `n`,
 `|(f_i''/f_i')(f_v(x)) f_v'(x) - (g_i''/g_i')(g_v(x)) g_v'(x)| ≤ (M K n + B) c'^n d`. -/
 theorem norm_term_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L₁ L₂ m M : ℝ} (hc'0 : 0 < c')
-    (hcc' : Φ.cmax ≤ c') (hc' : ∀ i, ∀ y ∈ I, ‖deriv (Ψ.f i) (y : ℂ)‖ ≤ c')
-    (hm : 0 < m) (hgm : ∀ i, ∀ y ∈ I, m ≤ ‖deriv (Ψ.f i) (y : ℂ)‖)
-    (hM0 : 0 ≤ M) (hM : ∀ i, ∀ y ∈ I, ‖Φ.nonlin i (y : ℂ)‖ ≤ M)
+    (hcc' : Φ.cmax ≤ c') (hc' : ∀ i, ∀ y ∈ I, ‖deriv (Ψ.f i) ↑y‖ ≤ c')
+    (hm : 0 < m) (hgm : ∀ i, ∀ y ∈ I, m ≤ ‖deriv (Ψ.f i) ↑y‖)
+    (hM0 : 0 ≤ M) (hM : ∀ i, ∀ y ∈ I, ‖Φ.nonlin i ↑y‖ ≤ M)
     (hL₁0 : 0 ≤ L₁) (hL₁ : ∀ i, ∀ a ∈ I, ∀ b ∈ I,
-      ‖deriv (Φ.f i) (a : ℂ) - deriv (Φ.f i) (b : ℂ)‖ ≤ L₁ * ‖(a : ℂ) - b‖)
+      ‖deriv (Φ.f i) ↑a - deriv (Φ.f i) ↑b‖ ≤ L₁ * ‖(a : ℂ) - b‖)
     (hL₂0 : 0 ≤ L₂) (hL₂ : ∀ i, ∀ a ∈ I, ∀ b ∈ I,
-      ‖Φ.nonlin i (a : ℂ) - Φ.nonlin i (b : ℂ)‖ ≤ L₂ * ‖(a : ℂ) - b‖)
+      ‖Φ.nonlin i ↑a - Φ.nonlin i ↑b‖ ≤ L₂ * ‖(a : ℂ) - b‖)
     (i : Fin N) (v : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
     ‖Φ.nonlin i (Φ.comp v x) * deriv (Φ.comp v) x -
         Ψ.nonlin i (Ψ.comp v x) * deriv (Ψ.comp v) x‖ ≤
@@ -263,24 +255,22 @@ theorem norm_term_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L₁ L₂ m M : �
   have hc1 : 0 < 1 - Φ.cmax := by linarith
   set K := (L₁ / (1 - Φ.cmax) + 1) / c'
   have hK0 : 0 ≤ K := by positivity
-  obtain ⟨a, ha, hae⟩ : ∃ a ∈ I, Φ.comp v x = (a : ℂ) :=
+  obtain ⟨a, ha, hae⟩ : ∃ a ∈ I, Φ.comp v x = ↑a :=
     ⟨_, Φ.re_comp_mem_I v hx, Φ.comp_ofReal v hx⟩
-  obtain ⟨b, hb, hbe⟩ : ∃ b ∈ I, Ψ.comp v x = (b : ℂ) :=
+  obtain ⟨b, hb, hbe⟩ : ∃ b ∈ I, Ψ.comp v x = ↑b :=
     ⟨_, Ψ.re_comp_mem_I v hx, Ψ.comp_ofReal v hx⟩
-  have hab : ‖(a : ℂ) - b‖ ≤ d2 Φ Ψ / (1 - Φ.cmax) := by
-    rw [← hae, ← hbe]; exact norm_comp_sub_comp_le Φ Ψ v hx
   rw [hae, hbe]
   set Df := deriv (Φ.comp v) x
   set Dg := deriv (Ψ.comp v) x
-  have hDfg : ‖Df - Dg‖ ≤ v.length * c' ^ v.length * K * d2 Φ Ψ :=
-    norm_deriv_comp_sub_le Φ Ψ hc'0 hcc' hc' hL₁0 hL₁ v hx
-  have hDg : ‖Dg‖ ≤ c' ^ v.length := norm_deriv_comp_le_pow Ψ hc'0.le hc' v hx
-  have hA : ‖Φ.nonlin i a‖ ≤ M := hM i a ha
-  have hB : ‖Φ.nonlin i a - Ψ.nonlin i b‖ ≤ (L₂ / (1 - Φ.cmax) + (1 + M) / m) * d2 Φ Ψ := by
+  have hDfg := norm_deriv_comp_sub_le Φ Ψ hc'0 hcc' hc' hL₁0 hL₁ v hx
+  have hDg := norm_deriv_comp_le_pow Ψ hc'0.le hc' v hx
+  have hA := hM i a ha
+  have hB := by
     calc _ ≤ ‖Φ.nonlin i a - Φ.nonlin i b‖ + ‖Φ.nonlin i b - Ψ.nonlin i b‖ :=
           norm_sub_le_norm_sub_add_norm_sub _ _ _
       _ ≤ L₂ * (d2 Φ Ψ / (1 - Φ.cmax)) + (1 + M) / m * d2 Φ Ψ :=
-          add_le_add ((hL₂ i a ha b hb).trans (mul_le_mul_of_nonneg_left hab hL₂0))
+          add_le_add ((hL₂ i a ha b hb).trans (mul_le_mul_of_nonneg_left (by
+    rw [← hae, ← hbe]; exact norm_comp_sub_comp_le Φ Ψ v hx) hL₂0))
             (norm_nonlin_sub_le Φ Ψ hm hM0 hgm hM i hb)
       _ = (L₂ / (1 - Φ.cmax) + (1 + M) / m) * d2 Φ Ψ := by ring
   calc ‖Φ.nonlin i a * Df - Ψ.nonlin i b * Dg‖
@@ -294,25 +284,15 @@ theorem norm_term_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L₁ L₂ m M : �
           (mul_le_mul hB hDg (norm_nonneg _) (by positivity))
     _ = _ := by ring
 
-theorem length_take_of_get?_eq_some {w : Word N} {n : ℕ} {i : Fin N}
-    (h : w.get? n = some i) : (w.take n).length = n := by
-  cases w with
-  | fin l =>
-    simp only [Word.get?, Word.take] at h ⊢
-    rw [List.length_take]
-    have := (List.getElem?_eq_some_iff.1 h).1
-    omega
-  | inf l => simp [Word.take]
-
 /-- The termwise bound for the series (1.4). -/
 theorem norm_dualTerm_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L₁ L₂ m M : ℝ}
-    (hc'0 : 0 < c') (hcc' : Φ.cmax ≤ c') (hc' : ∀ i, ∀ y ∈ I, ‖deriv (Ψ.f i) (y : ℂ)‖ ≤ c')
-    (hm : 0 < m) (hgm : ∀ i, ∀ y ∈ I, m ≤ ‖deriv (Ψ.f i) (y : ℂ)‖)
-    (hM0 : 0 ≤ M) (hM : ∀ i, ∀ y ∈ I, ‖Φ.nonlin i (y : ℂ)‖ ≤ M)
+    (hc'0 : 0 < c') (hcc' : Φ.cmax ≤ c') (hc' : ∀ i, ∀ y ∈ I, ‖deriv (Ψ.f i) ↑y‖ ≤ c')
+    (hm : 0 < m) (hgm : ∀ i, ∀ y ∈ I, m ≤ ‖deriv (Ψ.f i) ↑y‖)
+    (hM0 : 0 ≤ M) (hM : ∀ i, ∀ y ∈ I, ‖Φ.nonlin i ↑y‖ ≤ M)
     (hL₁0 : 0 ≤ L₁) (hL₁ : ∀ i, ∀ a ∈ I, ∀ b ∈ I,
-      ‖deriv (Φ.f i) (a : ℂ) - deriv (Φ.f i) (b : ℂ)‖ ≤ L₁ * ‖(a : ℂ) - b‖)
+      ‖deriv (Φ.f i) ↑a - deriv (Φ.f i) ↑b‖ ≤ L₁ * ‖(a : ℂ) - b‖)
     (hL₂0 : 0 ≤ L₂) (hL₂ : ∀ i, ∀ a ∈ I, ∀ b ∈ I,
-      ‖Φ.nonlin i (a : ℂ) - Φ.nonlin i (b : ℂ)‖ ≤ L₂ * ‖(a : ℂ) - b‖)
+      ‖Φ.nonlin i ↑a - Φ.nonlin i ↑b‖ ≤ L₂ * ‖(a : ℂ) - b‖)
     (w : Word N) (n : ℕ) {x : ℝ} (hx : x ∈ I) :
     ‖Φ.dualTerm w n x - Ψ.dualTerm w n x‖ ≤
       (M * ((L₁ / (1 - Φ.cmax) + 1) / c') * n + (L₂ / (1 - Φ.cmax) + (1 + M) / m)) *
@@ -322,7 +302,7 @@ theorem norm_dualTerm_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L₁ L₂ m M 
   have hc1 : 0 < 1 - Φ.cmax := by linarith
   unfold dualTerm
   cases h : w.get? n with
-  | none => simp only [sub_self, norm_zero]; positivity
+  | none => simp [sub_self, norm_zero]; positivity
   | some i =>
     have hlen : (w.take n).reverse.length = n := by
       rw [List.length_reverse, length_take_of_get?_eq_some h]
@@ -356,7 +336,7 @@ theorem exists_dualProj_sub_le_d2 (Φ : IFS N ε) :
   have hm := Φ.cmin_pos hN
   have hε2 : 0 < 2 * ε := by linarith [Φ.ε_pos]
   obtain ⟨M, hM0, hM⟩ := Φ.exists_nonlin_bound
-  have hM' : ∀ i, ∀ y ∈ I, ‖Φ.nonlin i (y : ℂ)‖ ≤ M := fun i y hy =>
+  have hM' : ∀ i, ∀ y ∈ I, ‖Φ.nonlin i ↑y‖ ≤ M := fun i y hy =>
     hM i _ (Continuity.ofReal_mem_closure Φ.ε_pos hy)
   obtain ⟨L₁, hL₁0, hL₁⟩ := Continuity.exists_lipschitz_I_fin (h := fun i => deriv (Φ.f i))
     (fun _ => nbhd (2 * ε)) (fun _ => isOpen_nbhd _) (fun _ => Continuity.image_I_subset_nbhd hε2)
@@ -376,27 +356,26 @@ theorem exists_dualProj_sub_le_d2 (Φ : IFS N ε) :
   set K := (L₁ / (1 - c) + 1) / c'
   set B := L₂ / (1 - c) + (1 + M) / (m / 2)
   have hsum : Summable fun n : ℕ => (M * K * n + B) * c' ^ n := by
-    have h1 : Summable fun n : ℕ => (n : ℝ) ^ 1 * c' ^ n :=
+    have h1 :=
       summable_pow_mul_geometric_of_norm_lt_one 1
         (by rw [Real.norm_eq_abs, abs_of_pos hc'0]; exact hc'1)
-    have h2 : Summable fun n : ℕ => c' ^ n := summable_geometric_of_lt_one hc'0.le hc'1
+    have h2 := summable_geometric_of_lt_one hc'0.le hc'1
     convert (h1.mul_left (M * K)).add (h2.mul_left B) using 1
     ext n; ring
   refine ⟨∑' n : ℕ, (M * K * n + B) * c' ^ n, δ₀, hδ₀, fun {ε'} Ψ hΨ w x hx => ?_⟩
   have hd := Continuity.d2_nonneg Φ Ψ
-  have hP1 : ∀ i, ∀ y ∈ I, ‖deriv (Ψ.f i) (y : ℂ)‖ ≤ c' := fun i y hy => by
+  have hP1 : ∀ i, ∀ y ∈ I, ‖deriv (Ψ.f i) ↑y‖ ≤ c' := fun i y hy => by
     have h1 := (Continuity.norm_sub_le_d2 Φ Ψ i hy).2.1
     have h2 := Φ.norm_deriv_le_cmax i (Continuity.ofReal_mem_closure Φ.ε_pos hy)
     have h3 := norm_sub_norm_le (deriv (Ψ.f i) y) (deriv (Φ.f i) y)
     rw [norm_sub_rev] at h3
     linarith
-  have hP2 : ∀ i, ∀ y ∈ I, m / 2 ≤ ‖deriv (Ψ.f i) (y : ℂ)‖ := fun i y hy => by
+  have hP2 : ∀ i, ∀ y ∈ I, m / 2 ≤ ‖deriv (Ψ.f i) ↑y‖ := fun i y hy => by
     have h1 := (Continuity.norm_sub_le_d2 Φ Ψ i hy).2.1
     have h2 := Φ.cmin_le_norm_deriv i (Continuity.ofReal_mem_closure Φ.ε_pos hy)
     have h3 := norm_sub_norm_le (deriv (Φ.f i) y) (deriv (Ψ.f i) y)
     linarith
-  have hterm : ∀ n : ℕ, ‖Φ.dualTerm w n x - Ψ.dualTerm w n x‖ ≤
-      (M * K * n + B) * c' ^ n * d2 Φ Ψ := fun n =>
+  have hterm := fun n =>
     Continuity.norm_dualTerm_sub_le Φ Ψ hc'0 (by linarith) hP1 (by linarith) hP2 hM0 hM' hL₁0
       hL₁ hL₂0 hL₂ w n hx
   have hxc := Continuity.ofReal_mem_closure Φ.ε_pos hx
@@ -421,23 +400,21 @@ theorem lemma_2_7_union (Φ : IFS N ε) (h : Φ.DualSSC) :
   have hd := Continuity.d2_nonneg Φ Ψ
   have hΨδ₀ : d2 Φ Ψ < δ₀ := hΨ.trans_le (min_le_left _ _)
   have hsmall : C' * d2 Φ Ψ < δ / 3 := by
-    have h1 : d2 Φ Ψ < δ / (3 * (|C'| + 1)) := hΨ.trans_le (min_le_right _ _)
+    have h1 := hΨ.trans_le (min_le_right _ _)
     have h2 : C' * d2 Φ Ψ ≤ |C'| * d2 Φ Ψ := mul_le_mul_of_nonneg_right (le_abs_self _) hd
     rw [lt_div_iff₀ (by positivity)] at h1
     nlinarith [abs_nonneg C']
   obtain ⟨MΨ, -, hMΨ, -⟩ := Ψ.exists_dualProj_bounds
   refine (Ψ.dualSSC_iff_exists_delta hN).2 ⟨δ / 3, by positivity, fun i j hij => ?_⟩
   obtain ⟨⟨x, hx⟩, hxδ⟩ := exists_lt_of_lt_ciSup (hsep i j hij)
-  have hbdd : BddAbove (range fun y : I =>
-      ‖Ψ.dualProj (.inf i) ((y : ℝ) : ℂ) - Ψ.dualProj (.inf j) ((y : ℝ) : ℂ)‖) := by
+  refine lt_of_lt_of_le ?_ (le_ciSup (by
     refine ⟨2 * MΨ, ?_⟩
     rintro _ ⟨y, rfl⟩
     have hyc := Continuity.ofReal_mem_closure Ψ.ε_pos y.2
     calc _ ≤ ‖Ψ.dualProj (.inf i) ((y : ℝ) : ℂ)‖ + ‖Ψ.dualProj (.inf j) ((y : ℝ) : ℂ)‖ :=
           norm_sub_le _ _
       _ ≤ MΨ + MΨ := add_le_add (hMΨ _ _ hyc) (hMΨ _ _ hyc)
-      _ = 2 * MΨ := by ring
-  refine lt_of_lt_of_le ?_ (le_ciSup hbdd ⟨x, hx⟩)
+      _ = 2 * MΨ := by ring) ⟨x, hx⟩)
   have hi := hC' Ψ hΨδ₀ (.inf i) x hx
   have hj := hC' Ψ hΨδ₀ (.inf j) x hx
   have tri := norm_sub_le_norm_sub_add_norm_sub (Φ.dualProj (.inf i) x)
@@ -445,7 +422,7 @@ theorem lemma_2_7_union (Φ : IFS N ε) (h : Φ.DualSSC) :
   have tri' := norm_sub_le_norm_sub_add_norm_sub (Ψ.dualProj (.inf i) x)
     (Ψ.dualProj (.inf j) x) (Φ.dualProj (.inf j) x)
   rw [norm_sub_rev (Ψ.dualProj (.inf j) x)] at tri'
-  simp only at hxδ ⊢
+  simp at hxδ ⊢
   linarith
 
 end IFS

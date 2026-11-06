@@ -44,7 +44,7 @@ theorem existsUnique_compact_invariant {X A : Type*} [MetricSpace X] [CompleteSp
     apply hausdorffDist_le_of_mem_dist (by positivity) (hnear K L)
     intro x hx
     obtain ⟨y, hy, hxy⟩ := hnear L K x hx
-    exact ⟨y, hy, by simpa only [dist_comm] using hxy⟩⟩
+    exact ⟨y, hy, by simpa [dist_comm] using hxy⟩⟩
   refine ⟨hT.fixedPoint T, ?_, fun K hK => ?_⟩
   · exact congrArg (fun K : NonemptyCompacts X => (K : Set X)) hT.fixedPoint_isFixedPt.symm
   · exact hT.fixedPoint_unique (NonemptyCompacts.ext hK.symm)
@@ -66,11 +66,10 @@ noncomputable def extend (g : Ambient ε) (z : ℂ) : ℂ :=
   open Classical in if hz : z ∈ closure (nbhd ε) then g ⟨z, hz⟩ else 0
 
 @[simp] theorem extend_apply (g : Ambient ε) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
-    extend g z = g ⟨z, hz⟩ := by simp only [extend, dite_eq_left hz]
+    extend g z = g ⟨z, hz⟩ := by simp [extend, dite_eq_left hz]
 
 theorem continuousOn_extend (g : Ambient ε) : ContinuousOn (extend g) (closure (nbhd ε)) := by
   rw [continuousOn_iff_continuous_domRestrict]
-  change Continuous (fun z : closure (nbhd ε) => extend g z)
   convert g.continuous using 1
   ext z
   exact extend_apply g z.2
@@ -88,17 +87,17 @@ theorem isClosed_carrier (ε : ℝ) : IsClosed (carrier ε) := by
     filter_upwards [hlim.eventually (Metric.ball_mem_nhds h hδ)] with n hn z hz
     rw [extend_apply _ (subset_closure hz), extend_apply _ (subset_closure hz)]
     exact (ContinuousMap.dist_apply_le_dist (f := h) (g := g n) ⟨z, subset_closure hz⟩).trans_lt (by
-      simpa only [Metric.mem_ball, dist_comm] using hn)
+      simpa [Metric.mem_ball, dist_comm] using hn)
   refine ⟨hUnif.tendstoLocallyUniformlyOn.differentiableOn
     (Eventually.of_forall fun n => (hg n).1) (isOpen_nbhd ε), fun x hx => ?_⟩
-  by_cases hz : (x : ℂ) ∈ closure (nbhd ε)
+  by_cases hz : ↑x ∈ closure (nbhd ε)
   · have ht : Tendsto (fun n => (g n ⟨x, hz⟩).im) atTop (𝓝 (h ⟨x, hz⟩).im) := by
       exact (Complex.continuous_im.tendsto _).comp
-        ((continuous_eval_const (⟨(x : ℂ), hz⟩ : closure (nbhd ε))).tendsto h |>.comp hlim)
-    have he : ∀ n, (g n ⟨x, hz⟩).im = 0 := fun n => by
-      simpa only [extend_apply _ hz] using (hg n).2 x hx
+        ((continuous_eval_const (⟨↑x, hz⟩ : closure (nbhd ε))).tendsto h |>.comp hlim)
+    have he := fun n => by
+      simpa [extend_apply _ hz] using (hg n).2 x hx
     rw [extend_apply _ hz]
-    exact tendsto_nhds_unique ht (by simpa only [he] using tendsto_const_nhds)
+    exact tendsto_nhds_unique ht (by simpa [he] using tendsto_const_nhds)
   · simp [extend, hz]
 
 abbrev Space (ε : ℝ) := carrier ε
@@ -129,7 +128,7 @@ theorem continuous_restrict : Continuous (restrict : Space ε → nbhd ε →ᵤ
   change dist (extend g.1 z) (extend h.1 z) < δ
   rw [extend_apply _ (subset_closure z.2), extend_apply _ (subset_closure z.2)]
   exact (ContinuousMap.dist_apply_le_dist (f := g.1) (g := h.1) ⟨z, subset_closure z.2⟩).trans_lt (by
-    simpa only [Metric.mem_ball, Subtype.dist_eq, dist_comm] using hh)
+    simpa [Metric.mem_ball, Subtype.dist_eq, dist_comm] using hh)
 
 /-- A uniform distance bound on the open neighbourhood extends to its closure. -/
 theorem dist_le_of_restrict_le {g h : Space ε} {δ : ℝ} (hδ : 0 ≤ δ)
@@ -140,9 +139,9 @@ theorem dist_le_of_restrict_le {g h : Space ε} {δ : ℝ} (hδ : 0 ≤ δ)
   intro z
   have hc := le_on_closure (s := nbhd ε) (f := fun z => dist (extend g.1 z) (extend h.1 z))
     (g := fun _ => δ) (fun z hz => hb ⟨z, hz⟩)
-    (by simpa only [dist_eq_norm, Pi.sub_apply] using
+    (by simpa [dist_eq_norm, Pi.sub_apply] using
       ((continuousOn_extend g.1).sub (continuousOn_extend h.1)).norm) continuousOn_const z.2
-  simpa only [extend_apply _ z.2] using hc
+  simpa [extend_apply _ z.2] using hc
 
 theorem restrict_injective : Function.Injective (restrict : Space ε → nbhd ε →ᵤ ℂ) := by
   intro g h heq
@@ -156,7 +155,7 @@ theorem tendsto_of_restrict {ι : Type*} {l : Filter ι} {g : ι → Space ε} {
   intro δ hδ
   filter_upwards [hg (δ / 2) (half_pos hδ)] with n hn
   exact (dist_le_of_restrict_le (half_pos hδ).le (fun z => (by
-    simpa only [Function.comp_apply, dist_comm] using (hn z).le))).trans_lt (half_lt_self hδ)
+    simpa [Function.comp_apply, dist_comm] using (hn z).le))).trans_lt (half_lt_self hδ)
 
 theorem isEmbedding_restrict : Topology.IsEmbedding (restrict : Space ε → nbhd ε →ᵤ ℂ) := by
   refine ⟨Topology.isInducing_iff_nhds.2 fun g => le_antisymm
@@ -185,10 +184,10 @@ variable {N : ℕ} (Φ : IFS N ε)
 noncomputable def opAmbient (i : Fin N) (g : Ambient ε) : Ambient ε := by
   refine ⟨fun z => deriv (Φ.f i) z *
     g ⟨Φ.f i z, subset_closure ((Φ.inClass i).mapsTo z.2)⟩ + Φ.nonlin i z, ?_⟩
-  have hd : Continuous (fun z : closure (nbhd ε) => deriv (Φ.f i) z) :=
+  have hd :=
     continuousOn_iff_continuous_domRestrict.1
       ((Φ.continuousOn_deriv_f i).mono IFS.closure_nbhd_subset_two)
-  have hf : Continuous (fun z : closure (nbhd ε) => Φ.f i z) :=
+  have hf :=
     continuousOn_iff_continuous_domRestrict.1
       ((Φ.differentiableOn_f i).continuousOn.mono IFS.closure_nbhd_subset_two)
   obtain ⟨U, -, hU, -, hn⟩ := Φ.exists_differentiableOn_nonlin i
@@ -198,7 +197,7 @@ noncomputable def opAmbient (i : Fin N) (g : Ambient ε) : Ambient ε := by
 theorem extend_opAmbient (i : Fin N) (g : Ambient ε) {z : ℂ}
     (hz : z ∈ closure (nbhd ε)) :
     extend (opAmbient Φ i g) z = Φ.dualOp i (extend g) z := by
-  simp only [extend_apply _ hz, opAmbient, ContinuousMap.coe_mk, IFS.dualOp,
+  simp [extend_apply _ hz, opAmbient, ContinuousMap.coe_mk, IFS.dualOp,
     extend_apply _ (subset_closure ((Φ.inClass i).mapsTo hz))]
 
 /-- The dual operator preserves holomorphy and real values. -/
@@ -232,7 +231,7 @@ theorem lipschitz_op (i : Fin N) : LipschitzWith ⟨Φ.cmax, Φ.cmax_nonneg⟩ (
   rw [dist_eq_norm, add_sub_add_right_eq_sub, ← mul_sub, norm_mul]
   exact mul_le_mul (Φ.norm_deriv_le_cmax i z.2)
     (show ‖g.1 _ - h.1 _‖ ≤ dist g.1 h.1 from
-      by simpa only [dist_eq_norm] using
+      by simpa [dist_eq_norm] using
         (ContinuousMap.dist_apply_le_dist (f := g.1) (g := h.1)
           ⟨Φ.f i z, subset_closure ((Φ.inClass i).mapsTo z.2)⟩)) (norm_nonneg _) Φ.cmax_nonneg
 
@@ -250,7 +249,7 @@ namespace IFS
 
 variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 
-private theorem lift_dualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)} (hΛ : Φ.IsDualAttractor Λ) :
+theorem lift_dualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)} (hΛ : Φ.IsDualAttractor Λ) :
     ∃ K : NonemptyCompacts (ClosedAnalyticSpace.Space ε),
       ClosedAnalyticSpace.restrict '' (K : Set _) = Λ ∧
       (K : Set _) = ⋃ i, ClosedAnalyticSpace.op Φ i '' (K : Set _) := by
@@ -258,9 +257,8 @@ private theorem lift_dualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)} (hΛ : Φ.IsD
   have hrange : Λ ⊆ range R := by
     rw [ClosedAnalyticSpace.range_restrict Φ.ε_pos]
     exact hΛ.1
-  have himage : R '' (R ⁻¹' Λ) = Λ := image_preimage_eq_of_subset hrange
-  have hc : IsCompact (R ⁻¹' Λ) :=
-    ClosedAnalyticSpace.isEmbedding_restrict.isCompact_iff.2 (himage.symm ▸ hΛ.2.2.1)
+  have himage := image_preimage_eq_of_subset hrange
+  have hc := ClosedAnalyticSpace.isEmbedding_restrict.isCompact_iff.2 (himage.symm ▸ hΛ.2.2.1)
   have hne : (R ⁻¹' Λ).Nonempty := by
     obtain ⟨u, hu⟩ := hΛ.2.1
     obtain ⟨g, rfl⟩ := hrange hu
@@ -270,7 +268,7 @@ private theorem lift_dualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)} (hΛ : Φ.IsD
   ext g
   constructor
   · intro hg
-    have hg' : R g ∈ ⋃ i, Φ.dualOpU i '' Λ := hΛ.2.2.2 ▸ hg
+    have hg' := hΛ.2.2.2 ▸ hg
     obtain ⟨i, u, hu, hgu⟩ := mem_iUnion.1 hg'
     obtain ⟨h, rfl⟩ := hrange hu
     refine mem_iUnion.2 ⟨i, h, hu, ?_⟩

@@ -74,10 +74,10 @@ theorem exists_margin {ε : ℝ} (hε : 0 < ε) {f : ℂ → ℂ} (hf : InClass 
       m ≤ (f x).re ∧ (f x).re ≤ 1 - m ∧ m ≤ ‖deriv f x‖ ∧ ‖deriv f x‖ ≤ 1 - m := by
   have hmem : MapsTo ((↑) : ℝ → ℂ) I (nbhd (2 * ε)) := fun x hx =>
     ofReal_mem_nbhd (by positivity) hx
-  have hf0 : ContinuousOn (fun x : ℝ => (f x).re) I :=
+  have hf0 :=
     Complex.continuous_re.comp_continuousOn
       (hf.differentiableOn.continuousOn.comp Complex.continuous_ofReal.continuousOn hmem)
-  have hf1 : ContinuousOn (fun x : ℝ => ‖deriv f x‖) I :=
+  have hf1 :=
     ((hf.differentiableOn.deriv (isOpen_nbhd _)).continuousOn.comp
       Complex.continuous_ofReal.continuousOn hmem).norm
   set h : ℝ → ℝ := fun x =>
@@ -86,14 +86,14 @@ theorem exists_margin {ε : ℝ} (hε : 0 < ε) {f : ℂ → ℂ} (hf : InClass 
     (hf0.inf (continuousOn_const.sub hf0)).inf (hf1.inf (continuousOn_const.sub hf1))
   obtain ⟨x₀, hx₀, hmin⟩ := isCompact_Icc.exists_isMinOn ⟨0, by norm_num⟩ hcont
   have hpos : ∀ x ∈ I, 0 < h x := fun x hx => by
-    have hcl : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd hε hx)
+    have hcl := subset_closure (ofReal_mem_nbhd hε hx)
     have h1 := hI x hx
     have h2 := norm_pos_iff.2 (hf.deriv_ne_zero x hcl)
     have h3 := hf.norm_deriv_lt_one x hcl
     simp only [hh, lt_min_iff]
     exact ⟨⟨h1.1, by linarith [h1.2]⟩, h2, by linarith⟩
   refine ⟨h x₀, hpos x₀ hx₀, fun x hx => ?_⟩
-  have h1 : h x₀ ≤ h x := isMinOn_iff.1 hmin x hx
+  have h1 := isMinOn_iff.1 hmin x hx
   simp only [hh, le_min_iff] at h1 ⊢
   exact ⟨h1.1.1, by linarith [h1.1.2], h1.2.1, by linarith [h1.2.2]⟩
 
@@ -114,12 +114,12 @@ noncomputable def P2 (m : ℕ) (W : Finset ℝ) (z : ℂ) : ℂ :=
 
 /-- `P'_{m,W}` is the derivative of `P_{m,W}`. -/
 theorem hasDerivAt_P (m : ℕ) (W : Finset ℝ) (z : ℂ) : HasDerivAt (P m W) (P1 m W z) z := by
-  have h := HasDerivAt.fun_finsetProd (u := W) (f := fun w z => (z - (w : ℂ)) ^ (m + 2))
+  have h := HasDerivAt.fun_finsetProd (u := W) (f := fun w z => (z - ↑w) ^ (m + 2))
     (f' := fun w => ((m + 2 : ℕ) : ℂ) * (z - w) ^ (m + 1)) (x := z) fun w _ => by
-      simpa using ((hasDerivAt_id' z).sub_const (w : ℂ)).fun_pow (m + 2)
+      simpa using ((hasDerivAt_id' z).sub_const ↑w).fun_pow (m + 2)
   refine h.congr_deriv (Finset.sum_congr rfl fun i _ => ?_)
   rw [smul_eq_mul]
-  simp only [P]
+  simp [P]
   ring
 
 /-- `P''_{m,W}` is the derivative of `P'_{m,W}`. -/
@@ -130,7 +130,7 @@ theorem hasDerivAt_P1 (m : ℕ) (W : Finset ℝ) (z : ℂ) : HasDerivAt (P1 m W)
       ((m + 2 : ℕ) : ℂ) * (z - i) ^ (m + 1) * P1 m (W.erase i) z) (x := z) fun i _ => by
       have h1 : HasDerivAt (fun z : ℂ => (z - i) ^ (m + 1))
           (((m + 1 : ℕ) : ℂ) * (z - i) ^ m) z := by
-        simpa using ((hasDerivAt_id' z).sub_const (i : ℂ)).fun_pow (m + 1)
+        simpa using ((hasDerivAt_id' z).sub_const ↑i).fun_pow (m + 1)
       exact (h1.const_mul _).mul (hasDerivAt_P m (W.erase i) z)
   refine h.congr_deriv (Finset.sum_congr rfl fun i _ => ?_)
   ring
@@ -162,7 +162,7 @@ theorem P2_of_mem (m : ℕ) {W : Finset ℝ} {w : ℝ} (hw : w ∈ W) :
   rw [P2, Finset.sum_eq_single w]
   · simp
   · intro i _ hiw
-    have hw' : w ∈ W.erase i := Finset.mem_erase.2 ⟨Ne.symm hiw, hw⟩
+    have hw' := Finset.mem_erase.2 ⟨Ne.symm hiw, hw⟩
     rw [P_of_mem m hw', P1_of_mem m hw']
     ring
   · intro h
@@ -184,7 +184,7 @@ theorem norm_P_le_one (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) : ‖P m W z‖ ≤ 
 /-- `P_{m,W} = (z - l)^{m+2} P_{m,W∖{l}}` for `l ∈ W`. -/
 theorem P_eq_mul {l : ℝ} (hl : l ∈ W) (z : ℂ) :
     P m W z = (z - l) ^ (m + 2) * P m (W.erase l) z :=
-  (Finset.mul_prod_erase W (fun w : ℝ => (z - w) ^ (m + 2)) hl).symm
+  (Finset.mul_prod_erase W (fun w => (z - w) ^ (m + 2)) hl).symm
 
 /-- `|P_{m,W}(z)| ≤ |z - l|^{m+2}` for `l ∈ W`. -/
 theorem norm_P_le (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) {l : ℝ} (hl : l ∈ W) :
@@ -214,7 +214,7 @@ theorem norm_P1_le_of_mem (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) {l : ℝ} (hl : 
     ‖P1 m W z‖ ≤ (m + 2) * W.card * ‖z - l‖ ^ (m + 1) := by
   rw [P1]
   refine (norm_sum_le _ _).trans ?_
-  have hl1 : ‖z - l‖ ≤ 1 := hW l hl
+  have hl1 := hW l hl
   calc ∑ i ∈ W, ‖((m + 2 : ℕ) : ℂ) * (z - i) ^ (m + 1) * P m (W.erase i) z‖
       ≤ ∑ _i ∈ W, ((m : ℝ) + 2) * ‖z - l‖ ^ (m + 1) := Finset.sum_le_sum fun i hi => by
         rw [norm_mul, norm_mul, norm_pow, Complex.norm_natCast]
@@ -275,7 +275,7 @@ theorem norm_P2_sub_le (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) {l : ℝ} (hl : l �
   rw [P2, ← Finset.sum_sub_distrib]
   simp only [add_sub_cancel_left]
   refine (norm_sum_le _ _).trans ?_
-  have hl1 : ‖z - l‖ ≤ 1 := hW l hl
+  have hl1 := hW l hl
   calc ∑ i ∈ W, ‖((m + 2 : ℕ) : ℂ) * (z - i) ^ (m + 1) * P1 m (W.erase i) z‖
       ≤ ∑ _i ∈ W, ((m : ℝ) + 2) ^ 2 * W.card * ‖z - l‖ ^ (m + 1) :=
         Finset.sum_le_sum fun i hi => by
@@ -321,9 +321,9 @@ noncomputable def A2 (a : ℝ → ℝ) (Y : Finset ℝ) (η : ℝ) (z : ℂ) : �
 
 /-- The derivative of the Gaussian `e^{-(z - y)²/η}`. -/
 theorem hasDerivAt_gaussian (k η : ℝ) (z : ℂ) :
-    HasDerivAt (fun z : ℂ => Complex.exp (-(z - k) ^ 2 / η))
+    HasDerivAt (fun z => Complex.exp (-(z - k) ^ 2 / η))
       (-2 * (z - k) / η * Complex.exp (-(z - k) ^ 2 / η)) z := by
-  have h := ((((hasDerivAt_id' z).sub_const (k : ℂ)).fun_pow 2).neg.div_const (η : ℂ)).cexp
+  have h := ((((hasDerivAt_id' z).sub_const ↑k).fun_pow 2).neg.div_const ↑η).cexp
   refine h.congr_deriv ?_
   norm_num
   ring
@@ -343,7 +343,7 @@ theorem hasDerivAt_A1 (a : ℝ → ℝ) (Y : Finset ℝ) (η : ℝ) (z : ℂ) :
   have h := HasDerivAt.fun_sum (u := Y)
     (A := fun k z => (a k : ℂ) * (-2 * (z - k) / η) * Complex.exp (-(z - k) ^ 2 / η))
     (x := z) fun k _ =>
-      ((((hasDerivAt_id' z).sub_const (k : ℂ)).const_mul (-2 : ℂ)).div_const (η : ℂ)
+      ((((hasDerivAt_id' z).sub_const ↑k).const_mul (-2 : ℂ)).div_const ↑η
         |>.const_mul (a k : ℂ)).mul (hasDerivAt_gaussian k η z)
   refine h.congr_deriv (Finset.sum_congr rfl fun k _ => ?_)
   ring
@@ -370,7 +370,7 @@ theorem hasDerivAt_H (Y Z : Finset ℝ) (a : ℝ → ℝ) (η : ℝ) (z : ℂ) :
     HasDerivAt (H Y Z a η) (H1 Y Z a η z) z := by
   have h := ((hasDerivAt_P 0 Y z).fun_mul (hasDerivAt_P 2 Z z)).fun_mul (hasDerivAt_A a Y η z)
   refine h.congr_deriv ?_
-  simp only [H1]
+  simp [H1]
   ring
 
 /-- `h''` is the derivative of `h'`. -/
@@ -380,7 +380,7 @@ theorem hasDerivAt_H1 (Y Z : Finset ℝ) (a : ℝ → ℝ) (η : ℝ) (z : ℂ) 
   have h2 := ((hasDerivAt_P 0 Y z).fun_mul (hasDerivAt_P1 2 Z z)).fun_mul (hasDerivAt_A a Y η z)
   have h3 := ((hasDerivAt_P 0 Y z).fun_mul (hasDerivAt_P 2 Z z)).fun_mul (hasDerivAt_A1 a Y η z)
   refine ((h1.fun_add h2).fun_add h3).congr_deriv ?_
-  simp only [H2]
+  simp [H2]
   ring
 
 /-- `h` is entire. -/
@@ -410,8 +410,8 @@ theorem norm_ofReal_sub (x w : ℝ) : ‖(x : ℂ) - w‖ = |x - w| := by
 
 /-- `|e^{-(x - y)²/η}| = e^{-(x - y)²/η}` at real points. -/
 theorem norm_gaussian (x k η : ℝ) :
-    ‖Complex.exp (-((x : ℂ) - k) ^ 2 / η)‖ = Real.exp (-(x - k) ^ 2 / η) := by
-  rw [show -((x : ℂ) - k) ^ 2 / η = ((-(x - k) ^ 2 / η : ℝ) : ℂ) by push_cast; ring,
+    ‖Complex.exp (-(↑x - k) ^ 2 / η)‖ = Real.exp (-(x - k) ^ 2 / η) := by
+  rw [show -(↑x - k) ^ 2 / η = ((-(x - k) ^ 2 / η : ℝ) : ℂ) by push_cast; ring,
     Complex.norm_exp_ofReal]
 
 /-! ## The map `g = f e^{φ ψ A}` -/
@@ -444,8 +444,8 @@ theorem deriv_G {U : Set ℂ} (hU : IsOpen U) (hf : DifferentiableOn ℂ f U) {z
       fun w => (deriv f w + f w * H1 Y Z a η w) * Complex.exp (H Y Z a η w) :=
     Filter.eventually_of_mem (hU.mem_nhds hz) h1
   rw [heq.deriv_eq]
-  have hf1 : DifferentiableAt ℂ (deriv f) z := (hf.deriv hU).differentiableAt (hU.mem_nhds hz)
-  have hfz : DifferentiableAt ℂ f z := hf.differentiableAt (hU.mem_nhds hz)
+  have hf1 := (hf.deriv hU).differentiableAt (hU.mem_nhds hz)
+  have hfz := hf.differentiableAt (hU.mem_nhds hz)
   have h := (hf1.hasDerivAt.fun_add (hfz.hasDerivAt.fun_mul (hasDerivAt_H1 Y Z a η z))).fun_mul
     (hasDerivAt_H Y Z a η z).cexp
   rw [h.deriv]
@@ -512,8 +512,6 @@ theorem sq_mul_exp_neg_le_half {t : ℝ} (ht : 0 ≤ t) :
 theorem abs_mul_exp_neg_le {t : ℝ} (ht : 0 ≤ t) :
     |4 * t ^ 2 - 2 * t| * Real.exp (-t) ≤ 10 ∧
       |4 * t ^ 2 - 2 * t| * Real.exp (-t) ≤ 36 * Real.exp (-(t / 2)) := by
-  have habs : |4 * t ^ 2 - 2 * t| ≤ 4 * t ^ 2 + 2 * t := by
-    rw [abs_le]; constructor <;> nlinarith
   have he := (Real.exp_pos (-t)).le
   have h1 := mul_exp_neg_le_one t
   have h2 := sq_mul_exp_neg_le_two ht
@@ -522,7 +520,8 @@ theorem abs_mul_exp_neg_le {t : ℝ} (ht : 0 ≤ t) :
   have hb : |4 * t ^ 2 - 2 * t| * Real.exp (-t) ≤
       4 * (t ^ 2 * Real.exp (-t)) + 2 * (t * Real.exp (-t)) := by
     calc |4 * t ^ 2 - 2 * t| * Real.exp (-t) ≤ (4 * t ^ 2 + 2 * t) * Real.exp (-t) :=
-          mul_le_mul_of_nonneg_right habs he
+          mul_le_mul_of_nonneg_right (by
+    rw [abs_le]; constructor <;> nlinarith) he
       _ = _ := by ring
   constructor <;> linarith
 
@@ -543,7 +542,7 @@ theorem sum_le_near_far {Y : Finset ℝ} {x ρ B K b : ℝ} {w a F : ℝ → ℝ
     obtain ⟨hk'Y, hxk'⟩ := Finset.mem_filter.1 hk'
     by_contra hne
     have h1 := hsep k hkY k' hk'Y hne
-    have h2 : |k - k'| ≤ |k - x| + |x - k'| := abs_sub_le k x k'
+    have h2 := abs_sub_le k x k'
     rw [abs_sub_comm k x] at h2
     linarith
   have hnear : ∀ k ∈ Y.filter fun k => |x - k| < ρ, w k * F k ≤ K * B := fun k hk => by
@@ -576,15 +575,15 @@ theorem sum_le_near_far {Y : Finset ℝ} {x ρ B K b : ℝ} {w a F : ℝ → ℝ
 
 /-- `σ = ρ³` is eventually below any positive threshold as `ρ → 0+`. -/
 theorem eventually_pow_three_le {T : ℝ} (hT : 0 < T) :
-    ∀ᶠ ρ in 𝓝[>] (0 : ℝ), 0 < ρ ∧ ρ ^ 3 ≤ T := by
-  have h : ∀ᶠ ρ in 𝓝 (0 : ℝ), ρ ^ 3 < T :=
-    ((continuous_pow 3).tendsto (0 : ℝ)).eventually (gt_mem_nhds (by simpa using hT))
+    ∀ᶠ ρ in 𝓝[>] 0, 0 < ρ ∧ ρ ^ 3 ≤ T := by
+  have h : ∀ᶠ ρ in 𝓝 0, ρ ^ 3 < T :=
+    ((continuous_pow 3).tendsto 0).eventually (gt_mem_nhds (by simpa using hT))
   filter_upwards [self_mem_nhdsWithin, nhdsWithin_le_nhds h] with ρ hρ h3 using ⟨hρ, h3.le⟩
 
 /-- The bound (4.3) with `p = 1`, `q = 0`, as used for `(C1)` and `(C3)`: for small `ρ`,
 `c |u| e^{-u²/ρ³} ≤ ν` for every `u`. -/
 theorem eventually_gauss_one {c ν : ℝ} (hc : 0 < c) (hν : 0 < ν) :
-    ∀ᶠ ρ in 𝓝[>] (0 : ℝ), ∀ u : ℝ, c * |u| * Real.exp (-u ^ 2 / ρ ^ 3) ≤ ν := by
+    ∀ᶠ ρ in 𝓝[>] 0, ∀ u : ℝ, c * |u| * Real.exp (-u ^ 2 / ρ ^ 3) ≤ ν := by
   have hT : 0 < (2 * Real.exp 1 / 1) ^ ((1 : ℝ) / (2 * 0 + 1)) *
       (ν / c) ^ (1 / ((0 : ℝ) + 1 / 2)) := by positivity
   filter_upwards [eventually_pow_three_le hT] with ρ ⟨hρ, hle⟩ u
@@ -593,7 +592,7 @@ theorem eventually_gauss_one {c ν : ℝ} (hc : 0 < c) (hν : 0 < ν) :
 
 /-- The bound (4.3) with `p = 2`, `q = 0`, as used for `(C4)`. -/
 theorem eventually_gauss_two {c ν : ℝ} (hc : 0 < c) (hν : 0 < ν) :
-    ∀ᶠ ρ in 𝓝[>] (0 : ℝ), ∀ u : ℝ, c * |u| ^ 2 * Real.exp (-u ^ 2 / ρ ^ 3) ≤ ν := by
+    ∀ᶠ ρ in 𝓝[>] 0, ∀ u : ℝ, c * |u| ^ 2 * Real.exp (-u ^ 2 / ρ ^ 3) ≤ ν := by
   have hT : 0 < (2 * Real.exp 1 / 2) ^ ((2 : ℝ) / (2 * 0 + 2)) *
       (ν / c) ^ (1 / ((0 : ℝ) + 2 / 2)) := by positivity
   filter_upwards [eventually_pow_three_le hT] with ρ ⟨hρ, hle⟩ u
@@ -603,7 +602,7 @@ theorem eventually_gauss_two {c ν : ℝ} (hc : 0 < c) (hν : 0 < ν) :
 /-- The bound (4.3) with `p = 3`, `q = -1`, as used for `(C2)` and for the off-diagonal part of
 `φ' ψ A'`. -/
 theorem eventually_gauss_three {c ν : ℝ} (hc : 0 < c) (hν : 0 < ν) :
-    ∀ᶠ ρ in 𝓝[>] (0 : ℝ), ∀ u : ℝ, c * |u| ^ 3 / ρ ^ 3 * Real.exp (-u ^ 2 / ρ ^ 3) ≤ ν := by
+    ∀ᶠ ρ in 𝓝[>] 0, ∀ u : ℝ, c * |u| ^ 3 / ρ ^ 3 * Real.exp (-u ^ 2 / ρ ^ 3) ≤ ν := by
   have hT : 0 < (2 * Real.exp 1 / 3) ^ ((3 : ℝ) / (2 * -1 + 3)) *
       (ν / c) ^ (1 / ((-1 : ℝ) + 3 / 2)) := by positivity
   filter_upwards [eventually_pow_three_le hT] with ρ ⟨hρ, hle⟩ u
@@ -618,17 +617,16 @@ theorem eventually_gauss_three {c ν : ℝ} (hc : 0 < c) (hν : 0 < ν) :
 
 /-- The far terms: `K e^{-c/ρ} ≤ ν` for small `ρ`. -/
 theorem eventually_exp_neg_div_le (K : ℝ) {c ν : ℝ} (hc : 0 < c) (hν : 0 < ν) :
-    ∀ᶠ ρ in 𝓝[>] (0 : ℝ), K * Real.exp (-(c / ρ)) ≤ ν := by
-  have h1 : Tendsto (fun ρ : ℝ => c / ρ) (𝓝[>] 0) atTop := by
-    simpa [div_eq_mul_inv] using tendsto_inv_nhdsGT_zero.const_mul_atTop hc
-  have h2 : Tendsto (fun ρ : ℝ => K * Real.exp (-(c / ρ))) (𝓝[>] 0) (𝓝 (K * 0)) :=
-    (Real.tendsto_exp_neg_atTop_nhds_zero.comp h1).const_mul K
+    ∀ᶠ ρ in 𝓝[>] 0, K * Real.exp (-(c / ρ)) ≤ ν := by
+  have h2 :=
+    (Real.tendsto_exp_neg_atTop_nhds_zero.comp (by
+    simpa [div_eq_mul_inv] using tendsto_inv_nhdsGT_zero.const_mul_atTop hc)).const_mul K
   rw [mul_zero] at h2
   filter_upwards [h2.eventually (gt_mem_nhds hν)] with ρ hρ using hρ.le
 
 /-- Small radii separate the points of a finite set: `2ρ < |y - y'|` for `y ≠ y'`. -/
 theorem eventually_sep (Y : Finset ℝ) :
-    ∀ᶠ ρ in 𝓝[>] (0 : ℝ), ∀ k ∈ Y, ∀ k' ∈ Y, k ≠ k' → 2 * ρ < |k - k'| := by
+    ∀ᶠ ρ in 𝓝[>] 0, ∀ k ∈ Y, ∀ k' ∈ Y, k ≠ k' → 2 * ρ < |k - k'| := by
   refine (eventually_all_finset Y).2 fun k _ => (eventually_all_finset Y).2 fun k' _ => ?_
   by_cases hkk : k = k'
   · exact Eventually.of_forall fun _ h => absurd hkk h
@@ -640,13 +638,12 @@ theorem eventually_sep (Y : Finset ℝ) :
 
 /-- Near a point `y` with `F(y) ≠ 0`, `|F| ≤ 2 |F(y)|` for a continuous `F`. -/
 theorem eventually_near {F : ℂ → ℂ} (hF : Continuous F) {y : ℝ} (hy : F y ≠ 0) :
-    ∀ᶠ ρ in 𝓝[>] (0 : ℝ), ∀ x : ℝ, |x - y| < ρ → ‖F x‖ ≤ 2 * ‖F y‖ := by
+    ∀ᶠ ρ in 𝓝[>] 0, ∀ x : ℝ, |x - y| < ρ → ‖F x‖ ≤ 2 * ‖F y‖ := by
   obtain ⟨r, hr, h⟩ := Metric.continuousAt_iff.1 hF.continuousAt (‖F y‖) (norm_pos_iff.2 hy)
   filter_upwards [Ioo_mem_nhdsGT hr] with ρ hρ x hx
-  have hd : dist (x : ℂ) y < r := by
+  have h1 := h (by
     rw [dist_eq_norm, norm_ofReal_sub]
-    exact hx.trans hρ.2
-  have h1 := h hd
+    exact hx.trans hρ.2)
   rw [dist_eq_norm] at h1
   have h2 := norm_sub_norm_le (F x) (F y)
   linarith
@@ -689,8 +686,8 @@ theorem sum_norm_P_erase_le {W : Finset ℝ} {z : ℂ} (hW : ∀ w ∈ W, ‖z -
     (hk : k ∈ W) : ∑ i ∈ W.erase k, ‖P 0 (W.erase i) z‖ ≤ W.card * ‖z - k‖ ^ 2 := by
   calc ∑ i ∈ W.erase k, ‖P 0 (W.erase i) z‖ ≤ ∑ _i ∈ W.erase k, ‖z - k‖ ^ 2 :=
         Finset.sum_le_sum fun i hi => by
-          have hki : k ∈ W.erase i := Finset.mem_erase.2 ⟨(Finset.ne_of_mem_erase hi).symm, hk⟩
-          simpa using norm_P_le (m := 0) (fun w hw => hW w (Finset.mem_of_mem_erase hw)) hki
+          have hki := Finset.mem_erase.2 ⟨(Finset.ne_of_mem_erase hi).symm, hk⟩
+          exact norm_P_le (m := 0) (fun w hw => hW w (Finset.mem_of_mem_erase hw)) hki
     _ ≤ W.card * ‖z - k‖ ^ 2 := by
         rw [Finset.sum_const, nsmul_eq_mul]
         gcongr
@@ -710,7 +707,7 @@ theorem norm_mul_A_le {u : ℂ} {v : ℝ → ℝ} (ha : ∀ k ∈ Y, 0 ≤ a k) 
 /-- `|-2 (x - y)/η| = 2 |x - y|/η` at real points. -/
 theorem norm_A1_coeff (hη : 0 < η) (x k : ℝ) :
     ‖(-2 * ((x : ℂ) - k) / η)‖ = 2 * |x - k| / η := by
-  rw [show (-2 * ((x : ℂ) - k) / η) = ((-2 * (x - k) / η : ℝ) : ℂ) by push_cast; ring,
+  rw [show (-2 * (↑x - k) / η) = ((-2 * (x - k) / η : ℝ) : ℂ) by push_cast; ring,
     Complex.norm_real, Real.norm_eq_abs, abs_div, abs_mul, abs_of_pos hη]
   norm_num
 
@@ -764,8 +761,8 @@ theorem norm_P2_mul_A_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I)
     (h2 : ∀ k ∈ Y, a k * |x - k| ^ 2 * Real.exp (-(x - k) ^ 2 / η) ≤ ν) :
     ‖P2 0 Y x * P 2 Z x * A a Y η x‖ ≤ 4 * Y.card ^ 2 * (Y.card * ν) + 2 * Y.card * (Y.card * ν) +
       ∑ k ∈ Y, a k * ‖P 2 Z x * P 0 (Y.erase k) x‖ * (2 * Real.exp (-(x - k) ^ 2 / η)) := by
-  have hYx : ∀ w ∈ Y, ‖(x : ℂ) - w‖ ≤ 1 := fun w hw => norm_ofReal_sub_le_one hx (hY w hw)
-  have hZx : ∀ w ∈ Z, ‖(x : ℂ) - w‖ ≤ 1 := fun w hw => norm_ofReal_sub_le_one hx (hZ w hw)
+  have hYx := fun w hw => norm_ofReal_sub_le_one hx (hY w hw)
+  have hZx := fun w hw => norm_ofReal_sub_le_one hx (hZ w hw)
   have hψ : ‖P 2 Z x‖ ≤ 1 := norm_P_le_one hZx
   have hsplit : P2 0 Y x * P 2 Z x * A a Y η x =
       ((P2 0 Y x - 2 * ∑ i ∈ Y, P 0 (Y.erase i) x) * P 2 Z x) * A a Y η x +
@@ -782,7 +779,7 @@ theorem norm_P2_mul_A_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I)
       ∑ k ∈ Y, a k * Real.exp (-(x - k) ^ 2 / η) *
         (2 * ‖P 2 Z x * P 0 (Y.erase k) x‖ + 2 * Y.card * |x - k| ^ 2) := by
     refine norm_mul_A_le ha fun k hk => ?_
-    have e := (Finset.add_sum_erase Y (fun i => P 0 (Y.erase i) (x : ℂ)) hk).symm
+    have e := (Finset.add_sum_erase Y (fun i => P 0 (Y.erase i) ↑x) hk).symm
     rw [e, mul_add, mul_add]
     refine (norm_add_le _ _).trans (add_le_add (le_of_eq ?_) ?_)
     · rw [show P 2 Z x * (2 * P 0 (Y.erase k) x) = 2 * (P 2 Z x * P 0 (Y.erase k) x) by ring,
@@ -824,7 +821,7 @@ theorem norm_P_mul_A2_le (ha : ∀ k ∈ Y, 0 ≤ a k) :
   rw [P_eq_mul (m := 0) hk]
   calc _ = ‖(a k : ℂ) * (P 2 Z x * P 0 (Y.erase k) x) *
         ((4 * ((x - k) ^ 2 / η) ^ 2 - 2 * ((x - k) ^ 2 / η) : ℝ) : ℂ) *
-        Complex.exp (-((x : ℂ) - k) ^ 2 / η)‖ := by
+        Complex.exp (-(↑x - k) ^ 2 / η)‖ := by
         congr 1
         push_cast
         ring
@@ -841,25 +838,24 @@ theorem norm_P1_mul_A1_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I
     ‖P1 0 Y x * P 2 Z x * A1 a Y η x‖ ≤ 4 * Y.card * (Y.card * ν) +
       ∑ k ∈ Y, a k * ‖P 2 Z x * P 0 (Y.erase k) x‖ *
         (4 * ((x - k) ^ 2 / η) * Real.exp (-((x - k) ^ 2 / η))) := by
-  have hYx : ∀ w ∈ Y, ‖(x : ℂ) - w‖ ≤ 1 := fun w hw => norm_ofReal_sub_le_one hx (hY w hw)
-  have hZx : ∀ w ∈ Z, ‖(x : ℂ) - w‖ ≤ 1 := fun w hw => norm_ofReal_sub_le_one hx (hZ w hw)
+  have hYx := fun w hw => norm_ofReal_sub_le_one hx (hY w hw)
+  have hZx := fun w hw => norm_ofReal_sub_le_one hx (hZ w hw)
   have hψ : ‖P 2 Z x‖ ≤ 1 := norm_P_le_one hZx
   rw [A1, Finset.mul_sum]
   refine (norm_sum_le _ _).trans ?_
-  have hterm : ∀ k ∈ Y, ‖P1 0 Y x * P 2 Z x *
-      ((a k : ℂ) * (-2 * ((x : ℂ) - k) / η) * Complex.exp (-((x : ℂ) - k) ^ 2 / η))‖ ≤
-      a k * ‖P 2 Z x * P 0 (Y.erase k) x‖ *
-        (4 * ((x - k) ^ 2 / η) * Real.exp (-((x - k) ^ 2 / η))) + 4 * Y.card * ν := by
+  calc _ ≤ ∑ k ∈ Y, (a k * ‖P 2 Z x * P 0 (Y.erase k) x‖ *
+        (4 * ((x - k) ^ 2 / η) * Real.exp (-((x - k) ^ 2 / η))) + 4 * Y.card * ν) :=
+        Finset.sum_le_sum (by
     intro k hk
-    have e := (Finset.add_sum_erase Y (fun i => 2 * ((x : ℂ) - i) * P 0 (Y.erase i) x) hk).symm
+    have e := (Finset.add_sum_erase Y (fun i => 2 * (↑x - i) * P 0 (Y.erase i) x) hk).symm
     rw [P1_zero, e]
-    have hsplit : (2 * ((x : ℂ) - k) * P 0 (Y.erase k) x +
-        ∑ i ∈ Y.erase k, 2 * ((x : ℂ) - i) * P 0 (Y.erase i) x) * P 2 Z x *
-        ((a k : ℂ) * (-2 * ((x : ℂ) - k) / η) * Complex.exp (-((x : ℂ) - k) ^ 2 / η)) =
+    have hsplit : (2 * (↑x - k) * P 0 (Y.erase k) x +
+        ∑ i ∈ Y.erase k, 2 * (↑x - i) * P 0 (Y.erase i) x) * P 2 Z x *
+        ((a k : ℂ) * (-2 * (↑x - k) / η) * Complex.exp (-(↑x - k) ^ 2 / η)) =
         (a k : ℂ) * (P 2 Z x * P 0 (Y.erase k) x) * ((-4 * ((x - k) ^ 2 / η) : ℝ) : ℂ) *
-          Complex.exp (-((x : ℂ) - k) ^ 2 / η) +
-        ((a k : ℂ) * (-2 * ((x : ℂ) - k) / η) * Complex.exp (-((x : ℂ) - k) ^ 2 / η)) *
-          (P 2 Z x * ∑ i ∈ Y.erase k, 2 * ((x : ℂ) - i) * P 0 (Y.erase i) x) := by
+          Complex.exp (-(↑x - k) ^ 2 / η) +
+        ((a k : ℂ) * (-2 * (↑x - k) / η) * Complex.exp (-(↑x - k) ^ 2 / η)) *
+          (P 2 Z x * ∑ i ∈ Y.erase k, 2 * (↑x - i) * P 0 (Y.erase i) x) := by
       push_cast
       ring
     rw [hsplit]
@@ -869,7 +865,7 @@ theorem norm_P1_mul_A1_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I
         abs_of_nonpos (by have : 0 ≤ (x - k) ^ 2 / η := by positivity
                           linarith)]
       ring
-    · have hR : ‖P 2 Z x * ∑ i ∈ Y.erase k, 2 * ((x : ℂ) - i) * P 0 (Y.erase i) x‖ ≤
+    · have hR : ‖P 2 Z x * ∑ i ∈ Y.erase k, 2 * (↑x - i) * P 0 (Y.erase i) x‖ ≤
           2 * Y.card * |x - k| ^ 2 := by
         have h4 := sum_norm_P_erase_le hYx hk
         rw [norm_ofReal_sub] at h4
@@ -882,27 +878,24 @@ theorem norm_P1_mul_A1_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I
               exact hYx i (Finset.mem_of_mem_erase hi)
           _ = 2 * ∑ i ∈ Y.erase k, ‖P 0 (Y.erase i) x‖ := by
               rw [one_mul, Finset.mul_sum]
-              simp only [mul_one]
+              simp [mul_one]
           _ ≤ 2 * (Y.card * |x - k| ^ 2) := by gcongr
           _ = _ := by ring
       rw [norm_mul, norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (ha k hk),
         norm_gaussian, norm_A1_coeff hη]
       have hak := ha k hk
       calc a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η) *
-            ‖P 2 Z x * ∑ i ∈ Y.erase k, 2 * ((x : ℂ) - i) * P 0 (Y.erase i) x‖
+            ‖P 2 Z x * ∑ i ∈ Y.erase k, 2 * (↑x - i) * P 0 (Y.erase i) x‖
           ≤ a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η) * (2 * Y.card * |x - k| ^ 2) := by
             gcongr
         _ = 4 * Y.card * (a k * |x - k| ^ 3 / η * Real.exp (-(x - k) ^ 2 / η)) := by ring
-        _ ≤ 4 * Y.card * ν := by gcongr; exact h3 k hk
-  calc _ ≤ ∑ k ∈ Y, (a k * ‖P 2 Z x * P 0 (Y.erase k) x‖ *
-        (4 * ((x - k) ^ 2 / η) * Real.exp (-((x - k) ^ 2 / η))) + 4 * Y.card * ν) :=
-        Finset.sum_le_sum hterm
+        _ ≤ 4 * Y.card * ν := by gcongr; exact h3 k hk)
     _ = _ := by rw [Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul]; ring
 
 /-- Points at distance at least `ρ` from `y` have `t = (x - y)²/ρ³ ≥ 1/ρ`. -/
 theorem one_div_le_of_le_abs {ρ x k : ℝ} (hρ : 0 < ρ) (h : ρ ≤ |x - k|) :
     1 / ρ ≤ (x - k) ^ 2 / ρ ^ 3 := by
-  have h2 : ρ ^ 2 ≤ (x - k) ^ 2 := by
+  have h2 := by
     have := pow_le_pow_left₀ hρ.le h 2
     rwa [sq_abs] at this
   rw [div_le_div_iff₀ hρ (pow_pos hρ 3)]
@@ -923,7 +916,7 @@ theorem sum_near_far_le (hY : ∀ y ∈ Y, y ∈ I) (hx : x ∈ I) {ρ B : ℝ} 
       2 * ∑ k ∈ Y, a k * ‖P 2 Z x * P 0 (Y.erase k) x‖ *
         (4 * ((x - k) ^ 2 / ρ ^ 3) * Real.exp (-((x - k) ^ 2 / ρ ^ 3))) ≤
       20 * B + (∑ k ∈ Y, a k) * (2 * Real.exp (-(1 / ρ)) + 52 * Real.exp (-(1 / ρ / 2))) := by
-  have hYx : ∀ w ∈ Y, ‖(x : ℂ) - w‖ ≤ 1 := fun w hw => norm_ofReal_sub_le_one hx (hY w hw)
+  have hYx := fun w hw => norm_ofReal_sub_le_one hx (hY w hw)
   have hwa : ∀ k ∈ Y, a k * ‖P 2 Z x * P 0 (Y.erase k) x‖ ≤ a k := fun k hk => by
     have h := norm_P_le_one (m := 0) (W := Y.erase k) (z := x)
       fun w hw => hYx w (Finset.mem_of_mem_erase hw)
@@ -942,7 +935,6 @@ theorem sum_near_far_le (hY : ∀ y ∈ Y, y ∈ I) (hx : x ∈ I) {ρ B : ℝ} 
     · have : Real.exp (-(x - k) ^ 2 / ρ ^ 3) ≤ 1 := by
         rw [Real.exp_le_one_iff, neg_div]
         linarith [ht0 k]
-      show 2 * Real.exp (-(x - k) ^ 2 / ρ ^ 3) ≤ 2
       linarith
     · show 2 * Real.exp (-(x - k) ^ 2 / ρ ^ 3) ≤ 2 * Real.exp (-(1 / ρ))
       have := one_div_le_of_le_abs hρ hfar
@@ -990,8 +982,8 @@ noncomputable def coef (M Q : ℝ) : ℝ :=
 theorem trivial_bounds (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I) (hx : x ∈ I) :
     ‖P 2 Z x‖ ≤ 1 ∧ ‖P1 2 Z x‖ ≤ 4 * Z.card ∧ ‖P2 2 Z x‖ ≤ 16 * Z.card ^ 2 + 12 * Z.card ∧
       (∀ k ∈ Y, ‖P 0 Y x‖ ≤ |x - k| ^ 2) ∧ ∀ k ∈ Y, ‖P1 0 Y x‖ ≤ 2 * Y.card * |x - k| := by
-  have hYx : ∀ w ∈ Y, ‖(x : ℂ) - w‖ ≤ 1 := fun w hw => norm_ofReal_sub_le_one hx (hY w hw)
-  have hZx : ∀ w ∈ Z, ‖(x : ℂ) - w‖ ≤ 1 := fun w hw => norm_ofReal_sub_le_one hx (hZ w hw)
+  have hYx := fun w hw => norm_ofReal_sub_le_one hx (hY w hw)
+  have hZx := fun w hw => norm_ofReal_sub_le_one hx (hZ w hw)
   refine ⟨norm_P_le_one hZx, ?_, ?_, fun k hk => ?_, fun k hk => ?_⟩
   · have := norm_P1_le (m := 2) hZx
     norm_num at this
@@ -1019,16 +1011,16 @@ theorem norm_H_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I) (hZne 
       ‖H2 Y Z a (ρ ^ 3) x‖ ≤ coef Y.card Z.card * ν + 20 * B +
         (∑ k ∈ Y, a k) * (2 * Real.exp (-(1 / ρ)) + 52 * Real.exp (-(1 / ρ / 2))) := by
   obtain ⟨hψ0, hψ1, hψ2, hφ0, hφ1⟩ := trivial_bounds hY hZ hx
-  set M : ℝ := (Y.card : ℝ) with hM
-  set Q : ℝ := (Z.card : ℝ) with hQ
+  set M := (Y.card : ℝ) with hM
+  set Q := (Z.card : ℝ) with hQ
   have hη : 0 < ρ ^ 3 := pow_pos hρ 3
   have hM0 : 0 ≤ M := Nat.cast_nonneg _
   have hQ0 : 0 ≤ Q := Nat.cast_nonneg _
   have hQ1 : 1 ≤ Q := by
-    change (1 : ℝ) ≤ (Z.card : ℝ)
+    rw [hQ]
     exact_mod_cast Nat.succ_le_of_lt (Finset.card_pos.2 hZne)
-  have hQ2 : 0 ≤ Q ^ 2 := sq_nonneg Q
-  have hxk : ∀ k ∈ Y, |x - k| ≤ 1 := fun k hk => by
+  have hQ2 := sq_nonneg Q
+  have hxk := fun k hk => by
     simpa [norm_ofReal_sub] using norm_ofReal_sub_le_one hx (hY k hk)
   have hM1 : ∀ k ∈ Y, 1 ≤ M := fun k hk => by
     rw [hM]
@@ -1061,16 +1053,11 @@ theorem norm_H_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I) (hZne 
     exact h1 k hk
   have hL₀0 : 0 ≤ L₀ := by positivity
   -- the norms handled by `(C1)`
-  have g1 : ‖P 0 Y x * P 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ0' hψ0') h1'
-  have g2 : ‖P1 0 Y x * P 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ1 hψ0') h1'
-  have g3 : ‖P 0 Y x * P1 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ0' hψ1') h1'
-  have g4 : ‖P 0 Y x * P2 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ0' hψ2') h1'
-  have g5 : ‖P1 0 Y x * P1 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ1 hψ1') h1'
+  have g1 := norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ0' hψ0') h1'
+  have g2 := norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ1 hψ0') h1'
+  have g3 := norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ0' hψ1') h1'
+  have g4 := norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ0' hψ2') h1'
+  have g5 := norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ1 hψ1') h1'
   -- the norms handled by `(C2)`
   have g6 : ‖P 0 Y x * P 2 Z x * A1 a Y (ρ ^ 3) x‖ ≤ 2 * (4 * Q) * (M * ν) :=
     norm_mul_A1_le_of hη (by positivity) ha (hprod2 _ (by linarith)) h3
@@ -1085,7 +1072,7 @@ theorem norm_H_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I) (hZne 
   have hMν : 0 ≤ M * ν := mul_nonneg hM0 hν
   have hcoef : coef M Q * ν = 4 * M ^ 2 * (M * ν) + 2 * M * (M * ν) + L₀ * (M * ν) +
       2 * (L₀ * (M * ν)) + 2 * (4 * M * (M * ν)) + 2 * (2 * (4 * Q) * (M * ν)) := by
-    simp only [coef, hL₀, hPc]
+    simp [coef, hL₀, hPc]
     ring
   have p1 : 0 ≤ 4 * M ^ 2 * (M * ν) := by positivity
   have p2 : 0 ≤ 2 * M * (M * ν) := by positivity
@@ -1130,16 +1117,15 @@ theorem norm_sub_le_of_norm_H_le {f0 f1 f2 h h1 h2 : ℂ} {s B2 D : ℝ} (hs : s
       ‖(f1 + f0 * h1) * Complex.exp h - f1‖ ≤ 4 * s ∧
       ‖(f2 + 2 * f1 * h1 + f0 * h1 ^ 2 + f0 * h2) * Complex.exp h - f2‖ ≤
         2 * B2 * s + 8 * s + 2 * D := by
-  have hs0 : 0 ≤ s := (norm_nonneg _).trans hh
+  have hs0 := (norm_nonneg _).trans hh
   have he1 : ‖Complex.exp h - 1‖ ≤ 2 * s :=
     (Complex.norm_exp_sub_one_le (by linarith)).trans (by linarith)
   have he : ‖Complex.exp h‖ ≤ 2 := by
     have := norm_sub_norm_le (Complex.exp h) 1
     rw [norm_one] at this
     linarith
-  have hB2 : 0 ≤ B2 := (norm_nonneg _).trans hf2
-  have hn1 := norm_nonneg f0
-  have hn2 := norm_nonneg f1
+  have hB2 := (norm_nonneg _).trans hf2
+  have hn1 := norm_nonneg f1
   have hn3 := norm_nonneg h1
   refine ⟨?_, ?_, ?_⟩
   · rw [show f0 * Complex.exp h - f0 = f0 * (Complex.exp h - 1) by ring, norm_mul]
@@ -1150,24 +1136,21 @@ theorem norm_sub_le_of_norm_H_le {f0 f1 f2 h h1 h2 : ℂ} {s B2 D : ℝ} (hs : s
         f1 * (Complex.exp h - 1) + f0 * h1 * Complex.exp h by ring]
     refine (norm_add_le _ _).trans ?_
     rw [norm_mul, norm_mul, norm_mul]
-    have t1 : ‖f1‖ * ‖Complex.exp h - 1‖ ≤ 1 * (2 * s) :=
-      mul_le_mul hf1 he1 (norm_nonneg _) zero_le_one
-    have t2 : ‖f0‖ * ‖h1‖ * ‖Complex.exp h‖ ≤ 1 * s * 2 :=
-      mul_le_mul (mul_le_mul hf0 hh1 hn3 zero_le_one) he (norm_nonneg _) (by positivity)
+    have t1 := mul_le_mul hf1 he1 (norm_nonneg _) zero_le_one
+    have t2 := mul_le_mul (mul_le_mul hf0 hh1 hn3 zero_le_one) he (norm_nonneg _) (by positivity)
     linarith
   · rw [show (f2 + 2 * f1 * h1 + f0 * h1 ^ 2 + f0 * h2) * Complex.exp h - f2 =
         f2 * (Complex.exp h - 1) + (2 * f1 * h1 + f0 * h1 ^ 2 + f0 * h2) * Complex.exp h by ring]
     refine (norm_add_le _ _).trans ?_
     rw [norm_mul, norm_mul]
-    have t1 : ‖f2‖ * ‖Complex.exp h - 1‖ ≤ B2 * (2 * s) :=
-      mul_le_mul hf2 he1 (norm_nonneg _) hB2
+    have t1 := mul_le_mul hf2 he1 (norm_nonneg _) hB2
     have t2 : ‖2 * f1 * h1‖ ≤ 2 * s := by
       rw [norm_mul, norm_mul, Complex.norm_two]
       have := mul_le_mul hf1 hh1 hn3 zero_le_one
       linarith
     have t3 : ‖f0 * h1 ^ 2‖ ≤ s / 2 := by
       rw [norm_mul, norm_pow]
-      have h4 : ‖h1‖ ^ 2 ≤ s ^ 2 := pow_le_pow_left₀ hn3 hh1 2
+      have h4 := pow_le_pow_left₀ hn3 hh1 2
       have := mul_le_mul hf0 h4 (by positivity) zero_le_one
       nlinarith
     have t4 : ‖f0 * h2‖ ≤ D + s := by
@@ -1178,8 +1161,7 @@ theorem norm_sub_le_of_norm_H_le {f0 f1 f2 h h1 h2 : ℂ} {s B2 D : ℝ} (hs : s
       have a1 := norm_add_le (2 * f1 * h1 + f0 * h1 ^ 2) (f0 * h2)
       have a2 := norm_add_le (2 * f1 * h1) (f0 * h1 ^ 2)
       linarith
-    have t6 : ‖2 * f1 * h1 + f0 * h1 ^ 2 + f0 * h2‖ * ‖Complex.exp h‖ ≤
-        (2 * s + s / 2 + (D + s)) * 2 := mul_le_mul t5 he (norm_nonneg _) (by positivity)
+    have t6 := mul_le_mul t5 he (norm_nonneg _) (by positivity)
     linarith
 
 /-- `|A(y)| ≥ a_y` at `y ∈ 𝒴` for positive amplitudes. -/
@@ -1201,7 +1183,7 @@ There is `C > 0` such that for all finite disjoint `𝒴, 𝒵 ⊆ [0,1]`, `η >
 `|g'' - f''| < C δ + η` on `[0,1]`. The paper writes `ε` for `η`. Here `g = f e^{φ ψ A}` with the
 amplitudes (4.4) and all widths equal to `ρ³` for a small `ρ > 0`, and `C = 40/m` for a margin
 `m` with `m ≤ f ≤ 1 - m` on `[0,1]`. -/
-private theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ → ℂ} (hf : InClass ε f)
+theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ → ℂ} (hf : InClass ε f)
     (hI : ∀ x ∈ I, (f x).re ∈ Ioo 0 1) :
     ∃ C > 0, ∀ Y Z : Finset ℝ, (∀ y ∈ Y, y ∈ I) → (∀ z ∈ Z, z ∈ I) → Disjoint Y Z → Z.Nonempty →
       ∀ η > 0, ∀ δ > 0, ∃ g : ℂ → ℂ, (∃ ε' > 0, InClass ε' g) ∧
@@ -1213,15 +1195,15 @@ private theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ → 
   obtain ⟨m, hm, hmar⟩ := exists_margin hε hf hI
   have h2ε : 0 < 2 * ε := by positivity
   have hU : IsOpen (nbhd (2 * ε)) := isOpen_nbhd _
-  have hmem : ∀ x ∈ I, (x : ℂ) ∈ nbhd (2 * ε) := fun x hx => ofReal_mem_nbhd h2ε hx
+  have hmem : ∀ x ∈ I, ↑x ∈ nbhd (2 * ε) := fun x hx => ofReal_mem_nbhd h2ε hx
   have hfU := hf.differentiableOn
   -- a bound `B₂` for `f''` on `[0,1]`
   obtain ⟨B₂, hB₂⟩ : ∃ B₂, ∀ x ∈ I, ‖deriv (deriv f) x‖ ≤ B₂ := by
-    have hc : ContinuousOn (fun x : ℝ => deriv (deriv f) (x : ℂ)) I :=
+    have hc :=
       ((hfU.deriv hU).deriv hU).continuousOn.comp Complex.continuous_ofReal.continuousOn
         fun x hx => hmem x hx
     exact isCompact_Icc.exists_bound_of_continuousOn hc
-  have hB₂0 : 0 ≤ B₂ := (norm_nonneg _).trans (hB₂ 0 ⟨le_rfl, zero_le_one⟩)
+  have hB₂0 := (norm_nonneg _).trans (hB₂ 0 ⟨le_rfl, zero_le_one⟩)
   -- `f` and `f'` on `[0,1]`
   have hfreal : ∀ x ∈ I, f x = ((f x).re : ℂ) := fun x hx =>
     Complex.ext rfl (by simp [hf.im_eq_zero x (hmem x hx)])
@@ -1233,7 +1215,7 @@ private theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ → 
     obtain ⟨-, -, h1, h2⟩ := hmar x hx
     constructor <;> linarith
   refine ⟨40 / m, by positivity, fun Y Z hY hZ hYZ hZne η hη δ hδ => ?_⟩
-  have hWI : ∀ w ∈ Y ∪ Z, w ∈ I := fun w hw => (Finset.mem_union.1 hw).elim (hY w) (hZ w)
+  have hWI := fun w hw => (Finset.mem_union.1 hw).elim (hY w) (hZ w)
   -- the amplitudes (4.4)
   set N : ℝ → ℝ := fun k => ‖P 2 Z k * P 0 (Y.erase k) k‖ with hN_def
   have hN0 : ∀ k ∈ Y, P 2 Z k * P 0 (Y.erase k) k ≠ 0 := fun k hk =>
@@ -1241,20 +1223,20 @@ private theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ → 
       (P_ne_zero 0 (Finset.notMem_erase k Y))
   have hN : ∀ k ∈ Y, 0 < N k := fun k hk => norm_pos_iff.2 (hN0 k hk)
   set a : ℝ → ℝ := fun k => δ * ‖deriv f k‖ / (2 * ‖f k‖ * N k) with ha_def
-  have hfk : ∀ k ∈ Y, 0 < ‖f k‖ := fun k hk => hm.trans_le (hf0 k (hY k hk)).1
+  have hfk := fun k hk => hm.trans_le (hf0 k (hY k hk)).1
   have ha : ∀ k ∈ Y, 0 < a k := fun k hk => by
     have := hm.trans_le (hf1 k (hY k hk)).1
     have := hfk k hk
     have := hN k hk
-    simp only [ha_def]
+    simp [ha_def]
     positivity
   have haN : ∀ k ∈ Y, 2 * a k * N k * ‖f k‖ = δ * ‖deriv f k‖ := fun k hk => by
     have := hfk k hk
     have := hN k hk
-    simp only [ha_def]
+    simp [ha_def]
     field_simp
   -- the size `s` of `h`, `h'` and of `h''` up to `20 δ/m` on `[0,1]`; the paper's `ε`
-  set s := min (1 / 2) (min (η / (2 * B₂ + 9)) (m / 5)) with hs_def
+  set s := min (1 / 2) (min (η / (2 * B₂ + 9)) (m / 5)) 
   have hs : 0 < s := lt_min (by norm_num) (lt_min (by positivity) (by positivity))
   have hs1 : s ≤ 1 / 2 := min_le_left _ _
   have hsη : (2 * B₂ + 8) * s < η := by
@@ -1267,7 +1249,7 @@ private theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ → 
   have hsm : s ≤ m / 5 := (min_le_right _ _).trans (min_le_right _ _)
   set Λ := coef Y.card Z.card with hΛ
   have hΛ0 : 0 ≤ Λ := by
-    simp only [hΛ, coef]
+    simp [hΛ, coef]
     positivity
   set ν := s / (2 * (Λ + 1)) with hν_def
   have hν : 0 < ν := by positivity
@@ -1289,9 +1271,9 @@ private theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ → 
       (eventually_exp_neg_div_le ((∑ k ∈ Y, a k) * 52) (by norm_num : (0 : ℝ) < 1 / 2) hs4)).and
       self_mem_nhdsWithin).exists
   have hρ : 0 < ρ := hρ
-  set g := G f Y Z a (ρ ^ 3) with hg_def
+  set g := G f Y Z a (ρ ^ 3) 
   have hderiv := fun (x : ℝ) (hx : x ∈ I) => deriv_G (Y := Y) (Z := Z) (a := a) (η := ρ ^ 3) hU
-    hfU (z := (x : ℂ)) (hmem x hx)
+    hfU (z := ↑x) (hmem x hx)
   -- the estimates on `[0,1]`
   have hest : ∀ x ∈ I, ‖g x - f x‖ ≤ 2 * s ∧ ‖deriv g x - deriv f x‖ ≤ 4 * s ∧
       ‖deriv (deriv g) x - deriv (deriv f) x‖ ≤ 2 * B₂ * s + 8 * s + 2 * (20 * (δ / m)) := by
@@ -1341,7 +1323,6 @@ private theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ → 
     · obtain ⟨h1, h2, -, -⟩ := hmar x hx
       have h3 := (Complex.abs_re_le_norm (g x - f x)).trans (hest x hx).1
       rw [abs_le, Complex.sub_re] at h3
-      show (g x).re ∈ I
       constructor <;> linarith
     · obtain ⟨-, -, h1, -⟩ := hmar x hx
       have h2 := (hest x hx).2.1
@@ -1368,14 +1349,14 @@ private theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ → 
   · -- the lower bound in (iii)
     have hyI := hY y hy
     obtain ⟨h0, h1⟩ := H_of_mem_Y (Z := Z) (a := a) (η := ρ ^ 3) hy
-    have hne : deriv f y ≠ 0 := norm_pos_iff.1 (hm.trans_le (hf1 y hyI).1)
+    have hne := norm_pos_iff.1 (hm.trans_le (hf1 y hyI).1)
     rw [(hderiv y hyI).2, (hderiv y hyI).1, h0, h1, H2_of_mem_Y hy]
     have e : (deriv (deriv f) y + 2 * deriv f y * 0 + f y * 0 ^ 2 +
         f y * (2 * P 0 (Y.erase y) y * P 2 Z y * A a Y (ρ ^ 3) y)) * Complex.exp 0 /
         ((deriv f y + f y * 0) * Complex.exp 0) - deriv (deriv f) y / deriv f y =
         f y * (2 * (P 2 Z y * P 0 (Y.erase y) y)) * A a Y (ρ ^ 3) y / deriv f y := by
       rw [Complex.exp_zero]
-      simp only [mul_zero, add_zero, mul_one, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true,
+      simp [mul_zero, add_zero, mul_one, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true,
         zero_pow]
       rw [add_div, add_sub_cancel_left]
       ring
@@ -1383,8 +1364,7 @@ private theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ → 
       le_div_iff₀ (norm_pos_iff.2 hne)]
     have h2 := haN y hy
     have h3 := le_norm_A (η := ρ ^ 3) (fun k hk => (ha k hk).le) hy
-    have h4 := (hfk y hy).le
-    have h5 := (hN y hy).le
+    have h4 := (hN y hy).le
     calc δ * ‖deriv f y‖ = ‖f y‖ * (2 * N y) * a y := by linarith
       _ ≤ ‖f y‖ * (2 * N y) * ‖A a Y (ρ ^ 3) y‖ := by gcongr
   · have := mul_nonneg hB₂0 hs.le
@@ -1419,13 +1399,14 @@ theorem proposition_4_2 {ε : ℝ} (hε : 0 < ε) {f : ℂ → ℂ} (hf : InClas
   by_cases hZe : Z.Nonempty
   · exact h Y Z hY hZ hYZ hZe η hη δ hδ
   obtain ⟨z, hzI, hzY⟩ := (Set.Icc_infinite zero_lt_one).sdiff (Y.finite_toSet) |>.nonempty
-  have hZempty : Z = ∅ := Finset.not_nonempty_iff_eq_empty.1 hZe
+  have hZempty := Finset.not_nonempty_iff_eq_empty.1 hZe
   obtain ⟨g, hg, hagree, hsecond, hchange, h0, h1, h2⟩ :=
     h Y {z} hY (by simpa using hzI) (Finset.disjoint_singleton_right.2 hzY)
       (Finset.singleton_nonempty z) η hη δ hδ
   refine ⟨g, hg, fun y hy => hagree y ?_, ?_, hchange, h0, h1, h2⟩
-  · simpa only [hZempty, Finset.union_empty] using Finset.mem_union_left {z}
+  · simpa [hZempty, Finset.union_empty] using Finset.mem_union_left {z}
       (by simpa [hZempty] using hy : y ∈ Y)
   · simp [hZempty]
 
 end AnalyticESC
+-- touch

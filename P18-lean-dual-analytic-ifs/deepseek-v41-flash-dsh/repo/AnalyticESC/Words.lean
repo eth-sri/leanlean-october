@@ -44,7 +44,7 @@ theorem isSome_get?_iff (w : Word N) (n : ℕ) : (w.get? n).isSome ↔ (n : ℕ�
   | inf w => simp
 
 /-- The letters of a prefix. -/
-private theorem getElem?_take_word (w : Word N) (n k : ℕ) :
+theorem getElem?_take_word (w : Word N) (n k : ℕ) :
     (w.take n)[k]? = if k < n then w.get? k else none := by
   cases w with
   | fin w => simp [List.getElem?_take]
@@ -53,7 +53,7 @@ private theorem getElem?_take_word (w : Word N) (n k : ℕ) :
     split_ifs <;> rfl
 
 /-- Two prefixes of length `n` agree if and only if the first `n` letters agree. -/
-private theorem take_eq_take_iff {v w : Word N} {n : ℕ} :
+theorem take_eq_take_iff {v w : Word N} {n : ℕ} :
     v.take n = w.take n ↔ ∀ k < n, v.get? k = w.get? k := by
   constructor
   · intro h k hk
@@ -67,7 +67,7 @@ private theorem take_eq_take_iff {v w : Word N} {n : ℕ} :
     · rfl
 
 /-- A word is determined by its letters. -/
-private theorem ext_get? {v w : Word N} (h : ∀ n, v.get? n = w.get? n) : v = w := by
+theorem ext_get? {v w : Word N} (h : ∀ n, v.get? n = w.get? n) : v = w := by
   cases v with
   | fin v =>
     cases w with
@@ -78,23 +78,23 @@ private theorem ext_get? {v w : Word N} (h : ∀ n, v.get? n = w.get? n) : v = w
     | fin w => have := h w.length; simp at this
     | inf w => exact congrArg inf (funext fun n => Option.some_injective _ (h n))
 
-private theorem get?_succ_eq_none {w : Word N} {n : ℕ} (h : w.get? n = none) :
+theorem get?_succ_eq_none {w : Word N} {n : ℕ} (h : w.get? n = none) :
     w.get? (n + 1) = none := by
   cases w with
   | fin w =>
-    simp only [get?_fin, List.getElem?_eq_none_iff] at h ⊢
+    simp [get?_fin] at h ⊢
     omega
   | inf w => simp at h
 
-private theorem get?_prepend (a : List (Fin N)) (w : Word N) (n : ℕ) :
+theorem get?_prepend (a : List (Fin N)) (w : Word N) (n : ℕ) :
     (w.prepend a).get? n = if n < a.length then a[n]? else w.get? (n - a.length) := by
   cases w with
   | fin w => simp [prepend, List.getElem?_append]
   | inf w =>
-    simp only [prepend, get?_inf]
+    simp [prepend, get?_inf]
     split_ifs with hn <;> simp [hn]
 
-private theorem length_take_of_le {w : Word N} {n : ℕ} (h : (n : ℕ∞) ≤ w.length) :
+theorem length_take_of_le {w : Word N} {n : ℕ} (h : (n : ℕ∞) ≤ w.length) :
     (w.take n).length = n := by
   have := length_take w n
   rw [min_eq_left h] at this
@@ -103,7 +103,7 @@ private theorem length_take_of_le {w : Word N} {n : ℕ} (h : (n : ℕ∞) ≤ w
 theorem take_of_length_le {w : Word N} {n : ℕ} (h : w.length ≤ n) : w = fin (w.take n) := by
   cases w with
   | fin w =>
-    simp only [length_fin, Nat.cast_le] at h
+    simp [length_fin, Nat.cast_le] at h
     simp [List.take_of_length_le h]
   | inf w => simp at h
 
@@ -208,13 +208,13 @@ theorem eq_prepend_take {w : Word N} {n : ℕ} (h : (n : ℕ∞) ≤ w.length) :
 theorem exists_eq_prepend {i j : Word N} {n : ℕ} (h : (n : ℕ∞) ≤ i.commonPrefixLength j) :
     ∃ (a : List (Fin N)) (i' j' : Word N), a.length = n ∧ i = i'.prepend a ∧ j = j'.prepend a := by
   have hP := le_commonPrefixLength_iff.1 h
-  have hi : (n : ℕ∞) ≤ i.length := h.trans ((commonPrefixLength_le_length i j).trans
+  have hi := h.trans ((commonPrefixLength_le_length i j).trans
     (min_le_left _ _))
-  have hj : (n : ℕ∞) ≤ j.length := h.trans ((commonPrefixLength_le_length i j).trans
+  have hj := h.trans ((commonPrefixLength_le_length i j).trans
     (min_le_right _ _))
   obtain ⟨i', hi', hilen⟩ := eq_prepend_take hi
   obtain ⟨j', hj', -⟩ := eq_prepend_take hj
-  have htake : i.take n = j.take n := take_eq_take_iff.2 fun k hk => (hP k hk).2
+  have htake := take_eq_take_iff.2 fun k hk => (hP k hk).2
   exact ⟨i.take n, i', j', hilen, hi', htake ▸ hj'⟩
 
 /-! ## Convergence of words -/
@@ -224,7 +224,7 @@ def TendstoPrefix (w : ℕ → Word N) (w₀ : Word N) : Prop :=
   ∀ n, ∀ᶠ k in atTop, (w k).take n = w₀.take n
 
 /-- A sequence of letters which stays `none` once `none` is the sequence of letters of a word. -/
-private theorem exists_get?_eq (a : ℕ → Option (Fin N)) (ha : ∀ n, a n = none → a (n + 1) = none) :
+theorem exists_get?_eq (a : ℕ → Option (Fin N)) (ha : ∀ n, a n = none → a (n + 1) = none) :
     ∃ w : Word N, ∀ n, w.get? n = a n := by
   classical
   by_cases hex : ∃ n, a n = none
@@ -240,7 +240,7 @@ private theorem exists_get?_eq (a : ℕ → Option (Fin N)) (ha : ∀ n, a n = n
     split_ifs with hn
     · simp
     · exact (hnone n (not_lt.1 hn)).symm
-  · have hex' : ∀ n, a n ≠ none := fun n hn => hex ⟨n, hn⟩
+  · have hex' := fun n hn => hex ⟨n, hn⟩
     exact ⟨inf fun n => (a n).get (Option.isSome_iff_ne_none.2 (hex' n)), fun n => by simp⟩
 
 /-- `Σ_* ∪ Σ` is sequentially compact. -/
@@ -253,12 +253,11 @@ theorem exists_subseq_tendstoPrefix (w : ℕ → Word N) :
     intro n
     have := tendsto_pi_nhds.1 hlim n
     rwa [nhds_discrete, tendsto_pure] at this
-  have ha : ∀ n, a n = none → a (n + 1) = none := by
+  obtain ⟨w₀, hw₀⟩ := exists_get?_eq a (by
     intro n hn
     obtain ⟨k, hk1, hk2⟩ := ((hcoord n).and (hcoord (n + 1))).exists
     rw [← hk2]
-    exact get?_succ_eq_none (hk1.trans hn)
-  obtain ⟨w₀, hw₀⟩ := exists_get?_eq a ha
+    exact get?_succ_eq_none (hk1.trans hn))
   refine ⟨φ, hφ, w₀, fun n => ?_⟩
   have hall : ∀ᶠ k in atTop, ∀ m : Fin n, (w (φ k)).get? m = a m :=
     eventually_all.2 fun m => hcoord m
@@ -290,7 +289,7 @@ theorem TendstoPrefix.eventually_eq {w : ℕ → Word N} {w₀ : Word N} (h : Te
   rw [take_of_length_le hle, hk, take_fin, List.take_of_length_le (by omega)]
 
 /-- A limit of words which eventually have length `L` has length `L`. -/
-private theorem TendstoPrefix.length_eq_of_eventually {w : ℕ → Word N} {w₀ : Word N}
+theorem TendstoPrefix.length_eq_of_eventually {w : ℕ → Word N} {w₀ : Word N}
     (h : TendstoPrefix w w₀) {L : ℕ} (hL : ∀ᶠ k in atTop, (w k).length = L) : w₀.length = L := by
   obtain ⟨k, hk1, hk2⟩ := ((h (L + 1)).and hL).exists
   have h1 : min ((L + 1 : ℕ) : ℕ∞) w₀.length = L := by
@@ -325,7 +324,7 @@ theorem TendstoPrefix.eventually_le_commonPrefixLength {w : ℕ → Word N} {w�
   filter_upwards [h n] with k hk
   rw [le_commonPrefixLength_iff]
   intro m hm
-  have h1 : (w k).get? m = w₀.get? m := take_eq_take_iff.1 hk m hm
+  have h1 := take_eq_take_iff.1 hk m hm
   refine ⟨?_, h1⟩
   rw [h1, isSome_get?_iff, h₀]
   exact ENat.natCast_lt_top m
@@ -362,8 +361,7 @@ theorem List.exists_decomp_of_ne {N : ℕ} {i j : List (Fin N)} (hlen : i.length
       simp at hlen
     obtain ⟨j', y, rfl⟩ : ∃ j' y, j = j' ++ [y] :=
       ⟨j.dropLast, j.getLast hj, (_root_.List.dropLast_append_getLast hj).symm⟩
-    simp only [_root_.List.length_append, _root_.List.length_singleton,
-      Nat.add_right_cancel_iff] at hlen
+    simp [_root_.List.length_append, Nat.add_right_cancel_iff] at hlen
     by_cases hxy : x = y
     · subst hxy
       have hne' : i ≠ j' := fun h => hne (h ▸ rfl)
