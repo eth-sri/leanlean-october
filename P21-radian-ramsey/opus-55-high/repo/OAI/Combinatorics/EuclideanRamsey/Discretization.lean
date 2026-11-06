@@ -1,232 +1,187 @@
-/-
-From openai/math (https://github.com/openai/math), commit
-fd4aeeb2ee4fc729c18d98444fed42fd0529eeeb, lean/OAI/Combinatorics/EuclideanRamsey/Discretization.lean;
-licensed under the Apache License, Version 2.0 (see LICENSES/Apache-2.0.txt and NOTICE).
-Modified: ported to the Lean module system for Lean v4.35.0-rc2 / Mathlib v4.35.0-rc2 (this
-notice, a `module` header, `public import`, `@[expose] public section`). No other line was
-changed; see docs/PORT-LOG.md.
--/
 module
 
 public import OAI.Combinatorics.EuclideanRamsey.LatticeMoments
 
 @[expose] public section
 
-namespace OAI
-
-universe uDomain uIndex
-
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
+open MeasureTheory Filter Topology Pointwise ContDiff
 
-open MeasureTheory
-open scoped BigOperators
-namespace EuclideanRamsey
+set_option autoImplicit true
+namespace OAI.EuclideanRamsey
+set_option hygiene false
+notation "𝔡" => ∑ γ ∈ E, d γ
+local notation "𝔠" => ∑ γ ∈ E, AddMonoidAlgebra.single γ (q γ)
+local notation "𝔟" => (v γ)
+local notation "𝔞" => (∫ x, f x)
+notation "𝔫" => (n:ℝ)
+notation "𝔩" => (latticeSample n γ)
 
-lemma compact_taylor_bound {E : Type uDomain} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {f : E → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hfc : HasCompactSupport f) :
-    ∃ K : ℝ, 0 ≤ K ∧ ∀ x h : E,
-      |f (x+h)-f x-fderiv ℝ f x h-
-        (1/2:ℝ)*iteratedFDeriv ℝ 2 f x ![h,h]| ≤ K*‖h‖^3 := by
-  obtain ⟨K,hK⟩ := (hf.continuous_iteratedFDeriv (m := 3) (by norm_cast)).bounded_above_of_compact_support
+variable {k n : ℕ}
+
+lemma compact_taylor_bound [NormedAddCommGroup E] [NormedSpace ℝ E]
+    {f : E → ℝ} (hf : ContDiff ℝ ∞ f) (hfc : HasCompactSupport f) :
+    ∃ K, 0 ≤ K ∧ ∀ x h,
+      |f (x+h)-f x-fderiv ℝ f x h-(1/2:ℝ)*iteratedFDeriv ℝ 2 f x ![h,h]| ≤ K*‖h‖^3 := by
+  obtain ⟨K,hK⟩ := (hf.continuous_iteratedFDeriv (by norm_cast)).bounded_above_of_compact_support
     (hfc.iteratedFDeriv 3)
-  have hK0 : 0 ≤ K := (norm_nonneg _).trans (hK 0)
-  refine ⟨K,hK0,?_⟩
-  intro x h
-  have ht := map_add_eq_sum_add_integral_iteratedFDeriv (n := 2) (f := f) (x := x) (y := h)
+  refine ⟨K,((norm_nonneg _).trans (hK 0)),fun x h => ?_⟩
+  have ht := map_add_eq_sum_add_integral_iteratedFDeriv (n := 2) (x := x) (y := h)
     (fun t ht => (hf.of_le (by norm_cast)).contDiffAt)
-  have he : f (x+h)-f x-fderiv ℝ f x h-(1/2:ℝ)*iteratedFDeriv ℝ 2 f x ![h,h] =
-      (1/2:ℝ)*∫ t in (0:ℝ)..1, (1-t)^2 * iteratedFDeriv ℝ 3 f (x+t • h) (fun _ => h) := by
-    have hvec : (fun _ : Fin 2 => h) = ![h,h] := by ext i; fin_cases i <;> rfl
-    simp only [Finset.sum_range_succ,Finset.sum_range_zero,zero_add,Nat.factorial,
-      Nat.cast_one,Nat.cast_mul,inv_one,
-      iteratedFDeriv_zero_apply,iteratedFDeriv_one_apply,smul_eq_mul,hvec] at ht
-    linarith
-  rw [he,abs_mul,abs_of_nonneg (by norm_num : (0:ℝ) ≤ 1/2)]
-  have hi : |∫ t in (0:ℝ)..1, (1-t)^2 * iteratedFDeriv ℝ 3 f (x+t • h) (fun _ => h)| ≤
-      K*‖h‖^3 := by
-    have ht (t : ℝ) (ht : t ∈ Set.Icc (0:ℝ) 1) :
-        ‖(1-t)^2 * iteratedFDeriv ℝ 3 f (x+t • h) (fun _ => h)‖ ≤ K*‖h‖^3 := by
-      rw [norm_mul, Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
-      have hm := (iteratedFDeriv ℝ 3 f (x+t • h)).le_opNorm (fun _ => h)
-      simp only [Finset.prod_const,Finset.card_univ,Fintype.card_fin] at hm
-      have hd : ‖iteratedFDeriv ℝ 3 f (x+t • h) (fun _ => h)‖ ≤ K*‖h‖^3 :=
-        hm.trans (mul_le_mul_of_nonneg_right (hK _) (by positivity))
-      have ht2 : (1-t)^2 ≤ 1 := by nlinarith [ht.1,ht.2]
-      calc
-        _ ≤ 1 * (K*‖h‖^3) := mul_le_mul ht2 hd (norm_nonneg _) (by norm_num)
-        _ = _ := one_mul _
-    have hh := intervalIntegral.norm_integral_le_of_norm_le_const (a := (0:ℝ)) (b := 1)
-      (C := K*‖h‖^3) (fun t ht' => ht t ⟨(by simpa using ht'.1 : 0 < t).le,by simpa using ht'.2⟩)
-    simpa using hh
-  nlinarith [mul_nonneg hK0 (pow_nonneg (norm_nonneg h) 3)]
+  have hvec : (fun _ => h) = ![h,h] := by ext i
+                                          fin_cases i <;> rfl
+  simp [Finset.sum_range_succ, hvec] at ht
+  have := intervalIntegral.norm_integral_le_of_norm_le_const (a := (0:ℝ)) (b := 1)
+    (f := fun t => (1-t)^2 * iteratedFDeriv ℝ 3 f (x+t • h) (fun _ => h)) fun t ht => by
+    simp at ht
+    have := ((iteratedFDeriv ℝ 3 f (x+t•h)).le_opNorm fun _ => h).trans
+      (mul_le_mul_of_nonneg_right (hK _) (by positivity))
+    simp at this
+    rw [norm_mul]
+    exact (mul_le_of_le_one_left (norm_nonneg _) (by rw [norm_pow, Real.norm_eq_abs, sq_abs]; nlinarith)).trans this
+  simp [abs_le] at this
+  rw [ht, abs_le]
+  constructor <;> nlinarith
 
-end EuclideanRamsey
-
-open scoped BigOperators
-namespace EuclideanRamsey
-
-lemma linear_moment_contract {ι : Type uIndex} {k : ℕ}
-    (S : Finset ι) (q : ι → ℝ) (v : ι → (Fin k → ℝ))
-    (L : (Fin k → ℝ) →L[ℝ] ℝ) :
-    ∑ γ ∈ S,q γ*L (v γ) = ∑ j,(∑ γ ∈ S,q γ*v γ j)*L (Pi.single j 1) := by
-  have hv (γ : ι) : v γ = ∑ j, v γ j • Pi.single j (1:ℝ) := by
-    ext l
-    simp [Pi.single_apply]
-  conv_lhs => arg 2; intro γ; rw [hv γ]
-  simp only [map_sum,map_smul,smul_eq_mul,Finset.mul_sum,Finset.sum_mul]
+lemma linear_moment_contract S (q : ι → ℝ) (v : ι → 𝕍 k)
+    (h : ∀ j, ∑ γ ∈ S,q γ*v γ j = 0) (L : 𝕍 k →L[ℝ] ℝ) : ∑ γ ∈ S,q γ*L 𝔟 = 0 := by
+  conv_lhs => arg 2
+              intro γ
+              rw [pi_expand 𝔟]
+  simp [Finset.mul_sum]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro j hj
-  apply Finset.sum_congr rfl
-  intro γ hγ
-  ring
+  simp [← mul_assoc, ← Finset.sum_mul, h]
 
-lemma bilinear_moment_contract {ι : Type uIndex} {k : ℕ}
-    (S : Finset ι) (q : ι → ℝ) (v : ι → (Fin k → ℝ))
-    (L : (Fin k → ℝ) →L[ℝ] (Fin k → ℝ) →L[ℝ] ℝ) :
-    ∑ γ ∈ S,q γ*L (v γ) (v γ) =
+lemma bilinear_moment_contract S (q : ι → ℝ) (v : ι → 𝕍 k)
+    (L : 𝕍 k →L[ℝ] 𝕍 k →L[ℝ] ℝ) :
+    ∑ γ ∈ S,q γ*L 𝔟 𝔟 =
       ∑ j,∑ l,(∑ γ ∈ S,q γ*v γ j*v γ l)*L (Pi.single j 1) (Pi.single l 1) := by
-  have hv (γ : ι) : v γ = ∑ j, v γ j • Pi.single j (1:ℝ) := by
-    ext l
-    simp [Pi.single_apply]
-  have he (γ : ι) : q γ*L (v γ) (v γ) =
-      ∑ j,∑ l,q γ*v γ j*v γ l*L (Pi.single j 1) (Pi.single l 1) := by
-    have hfirst := congrArg (fun a => L a (v γ)) (hv γ)
-    rw [hfirst]
-    simp only [map_sum,map_smul,_root_.sum_apply,
-      _root_.smul_apply,smul_eq_mul,Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro j hj
-    have hsecond := congrArg (fun a => L (Pi.single j 1) a) (hv γ)
-    rw [hsecond]
-    simp only [map_sum,map_smul,smul_eq_mul,Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro l hl
-    ring
-  simp only [he,Finset.sum_mul]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro j hj
-  rw [Finset.sum_comm]
-
-end EuclideanRamsey
-
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-namespace EuclideanRamsey
+  conv_lhs => arg 2
+              intro γ
+              rw [pi_expand 𝔟]
+  simp [Finset.mul_sum, Finset.sum_mul, mul_assoc]
+  rw [Finset.sum_comm_cycle]
+  exact Finset.sum_congr rfl fun _ _ => Finset.sum_comm.trans (by grind)
 
 abbrev realLattice (k : ℕ) := Submodule.span ℤ (Set.range (Pi.basisFun ℝ (Fin k)))
-def latticeSample {k : ℕ} (n : ℕ) (γ : Fin k → ℤ) : Fin k → ℝ := fun j => (γ j : ℝ)/n
+def latticeSample (n : ℕ) (γ : Fin k → ℤ) : 𝕍 k := fun j => γ j/n
 
-lemma latticeSample_injective {k n : ℕ} (hn : n ≠ 0) :
-    Function.Injective (@latticeSample k n) := by
-  intro γ δ h
-  funext j
-  have he := congr_fun h j
-  dsimp [latticeSample] at he
-  exact_mod_cast (div_left_inj' (show (n:ℝ) ≠ 0 by exact_mod_cast hn)).mp he
+notation "𝔾" n:max => 𝔫⁻¹ • (realLattice k : Set (𝕍 k))
 
-lemma latticeSample_mem_grid {k n : ℕ} (hn : n ≠ 0) (γ : Fin k → ℤ) :
-    latticeSample n γ ∈ (n:ℝ)⁻¹ • (realLattice k : Set (Fin k → ℝ)) := by
-  let : NeZero n := ⟨hn⟩
-  rw [← Submodule.coe_pointwise_smul]
-  apply BoxIntegral.unitPartition.mem_smul_span_iff.mpr
-  intro j
-  refine ⟨γ j,?_⟩
-  change (γ j : ℝ) = (n:ℝ)*((γ j : ℝ)/n)
-  field_simp
+section
+variable (hn : n ≠ 0)
+include hn
 
-lemma grid_surjective {k n : ℕ} (hn : n ≠ 0) {x : Fin k → ℝ}
-    (hx : x ∈ (n:ℝ)⁻¹ • (realLattice k : Set (Fin k → ℝ))) : ∃ γ, latticeSample n γ = x := by
-  let : NeZero n := ⟨hn⟩
-  rw [← Submodule.coe_pointwise_smul] at hx
-  have h := BoxIntegral.unitPartition.mem_smul_span_iff.mp hx
-  choose γ hγ using h
-  refine ⟨γ,?_⟩
-  funext j
-  simp only [latticeSample]
-  have he : (γ j : ℝ) = (n:ℝ)*x j := hγ j
-  rw [he]
-  exact mul_div_cancel_left₀ (x j) (by exact_mod_cast hn)
+lemma latticeSample_injective : Function.Injective (@latticeSample k n) :=
+  fun γ δ h => funext fun j => by simpa [latticeSample, hn] using congr_fun h j
 
-lemma lattice_tsum_eq_grid {k n : ℕ} (hn : n ≠ 0) (s : Set (Fin k → ℝ))
-    (f : (Fin k → ℝ) → ℝ) (hf : Function.support f ⊆ s) :
-    (∑' γ : Fin k → ℤ, f (latticeSample n γ)) =
-      ∑' x : ↑(s ∩ (n:ℝ)⁻¹ • realLattice k), f x := by
-  let e : {γ : Fin k → ℤ // latticeSample n γ ∈ s} ≃
-      ↑(s ∩ (n:ℝ)⁻¹ • realLattice k) := Equiv.ofBijective
-    (fun γ => ⟨latticeSample n γ,γ.property,latticeSample_mem_grid hn γ.val⟩) (by
-      constructor
-      · intro x y h
-        apply Subtype.ext
-        exact latticeSample_injective hn (congr_arg Subtype.val h)
-      · intro x
-        obtain ⟨γ,hγ⟩ := grid_surjective hn x.property.2
-        exact ⟨⟨γ,by simpa [hγ] using x.property.1⟩,Subtype.ext hγ⟩)
-  rw [← tsum_subtype_eq_of_support_subset (s := {γ | latticeSample n γ ∈ s})
-    (f := fun γ => f (latticeSample n γ)) (fun γ hγ => hf hγ)]
-  exact e.tsum_eq (fun x => f x)
+lemma mem_grid x :
+    x ∈ 𝔾 n ↔ x ∈ Set.range (latticeSample n) := by
+  have : NeZero n := ⟨hn⟩
+  rw [← Submodule.coe_pointwise_smul, SetLike.mem_coe, BoxIntegral.unitPartition.mem_smul_span_iff]
+  simp [latticeSample, funext_iff, div_eq_iff (Nat.cast_ne_zero.2 hn : 𝔫 ≠ 0), Classical.skolem, mul_comm]
 
-theorem lattice_riemann {k : ℕ} {f : (Fin k → ℝ) → ℝ}
-    (hf : Continuous f) (hfc : HasCompactSupport f) :
-    Tendsto (fun n : ℕ => (∑' γ : Fin k → ℤ, f (latticeSample n γ))/(n:ℝ)^k)
-      atTop (𝓝 (∫ x, f x)) := by
-  obtain ⟨R,hR,hfR⟩ := hfc.exists_pos_le_norm
-  let s := Metric.closedBall (0 : Fin k → ℝ) R
-  have hs : Function.support f ⊆ s := by
-    intro x hx
-    rw [show s = Metric.closedBall 0 R from rfl, Metric.mem_closedBall,dist_zero_right]
-    exact le_of_lt (lt_of_not_ge (fun h => hx (hfR x h)))
-  have hfront : volume (frontier s) = 0 :=
-    measure_mono_null Metric.frontier_closedBall_subset_sphere
-      (volume.addHaar_sphere_of_ne_zero 0 hR.ne')
-  have h := tendsto_tsum_div_pow_atTop_integral s f hf Metric.isBounded_closedBall
-    measurableSet_closedBall hfront
-  have hi : (∫ x in s,f x) = ∫ x,f x := by
-    rw [← integral_indicator measurableSet_closedBall, Set.indicator_eq_self.mpr hs]
-  simp only [Fintype.card_fin,hi] at h
-  apply h.congr'
-  filter_upwards [eventually_ge_atTop 1] with n hn
-  rw [lattice_tsum_eq_grid (by omega) s f hs]
+lemma bounded_grid_finite
+    (hs : Bornology.IsBounded s) :
+    (s ∩ 𝔾 n).Finite := by
+  rw [← Submodule.coe_pointwise_smul, ZSpan.smul _ (inv_ne_zero (mod_cast hn))]
+  exact ZSpan.setFinite_inter _ hs
 
-lemma latticeSample_finite_support {k n : ℕ} (hn : n ≠ 0)
-    {f : (Fin k → ℝ) → ℝ} (hf : HasCompactSupport f) :
-    Function.HasFiniteSupport (fun γ : Fin k → ℤ => f (latticeSample n γ)) := by
-  let b := Pi.basisFun ℝ (Fin k)
-  have hb : Bornology.IsBounded ((n:ℝ) • tsupport f) :=
-    (hf.isCompact.image (show Continuous (fun x : Fin k → ℝ => (n:ℝ) • x) by fun_prop)).isBounded
-  have hfinite := ZSpan.setFinite_inter b hb
-  let cast : (Fin k → ℤ) → (Fin k → ℝ) := fun γ j => γ j
-  have hinj : Function.Injective cast := by
-    intro x y h
-    ext j
-    have he : (x j : ℝ) = (y j : ℝ) := congr_fun h j
-    exact_mod_cast he
-  apply ((hfinite.preimage hinj.injOn).subset ?_)
-  intro γ hγ
-  have hs : latticeSample n γ ∈ tsupport f := subset_closure hγ
-  constructor
-  · refine ⟨latticeSample n γ,hs,?_⟩
-    ext j
-    change (n:ℝ)*((γ j : ℝ)/n) = (γ j : ℝ)
-    field_simp
-  · change cast γ ∈ Submodule.span ℤ (Set.range b)
-    rw [b.mem_span_iff_repr_mem ℤ]
-    intro j
-    exact ⟨γ j,by simp [b,cast]⟩
+lemma lattice_tsum_eq_grid s
+    (f : 𝕍 k → ℝ) (hf : Function.support f ⊆ s) :
+    (∑' γ : Fin k → ℤ, f 𝔩) =
+      ∑' x : ↑(s ∩ 𝔾 n), f x := by
+  rw [tsum_subtype, ← (latticeSample_injective hn).tsum_eq fun x hx =>
+    (mem_grid hn x).1 (Set.mem_of_indicator_ne_zero hx).2]
+  congr with γ
+  by_cases h : f 𝔩 = 0
+  · rw [h, eq_comm, Set.indicator_apply_eq_zero]
+    exact fun _ => h
+  simp [hf h, mem_grid hn]
 
-end EuclideanRamsey
+lemma latticeSample_finite_support
+    {f : 𝕍 k → ℝ} (hf : HasCompactSupport f) :
+    Function.HasFiniteSupport (fun γ => f 𝔩) :=
+  ((bounded_grid_finite hn hf.isCompact.isBounded).preimage (latticeSample_injective hn).injOn).subset
+    fun γ h => ⟨subset_closure h, (mem_grid hn _).2 ⟨γ, rfl⟩⟩
 
 end
 
-end OAI
+theorem lattice_riemann_perturb f
+    (g : ℕ → 𝕍 k → ℝ) (hf : Continuous f) (hR : 0 < R)
+    (hfs : Function.support f ⊆ Metric.closedBall 0 R)
+    (hgs : ∀ n, Function.support (g n) ⊆ Metric.closedBall 0 R)
+    ε (hε : Tendsto ε atTop (𝓝 0))
+    (hbound : ∀ n, 1 ≤ n → ∀ x ∈ Metric.closedBall 0 R, |g n x-f x| ≤ ε n) :
+    Tendsto (fun n => (∑' γ : Fin k → ℤ, g n 𝔩)/𝔫^k)
+      atTop (𝓝 𝔞) := by
+  have hfront : volume (frontier (Metric.closedBall (0 : 𝕍 k) R)) = 0 :=
+    measure_mono_null Metric.frontier_closedBall_subset_sphere (volume.addHaar_sphere_of_ne_zero 0 hR.ne')
+  have h := tendsto_tsum_div_pow_atTop_integral _ f hf Metric.isBounded_closedBall
+    measurableSet_closedBall hfront
+  have hc := hε.mul (tendsto_card_div_pow_atTop_volume _ Metric.isBounded_closedBall
+    measurableSet_closedBall hfront)
+  rw [setIntegral_eq_integral_of_forall_compl_eq_zero fun x hx =>
+    Function.notMem_support.1 (mt (@hfs x) hx)] at h
+  rw [zero_mul] at hc
+  simp only [Fintype.card_fin] at h hc
+  rw [← add_zero 𝔞]
+  refine (h.add (squeeze_zero_norm' (f := fun n : ℕ => (∑' x : ↑(Metric.closedBall 0 R ∩ 𝔾 n), g n x)/𝔫^k - (∑' x : ↑(Metric.closedBall 0 R ∩ 𝔾 n), f x)/𝔫^k) ?_ hc)).congr' ?_ <;>
+    filter_upwards [eventually_ge_atTop 1] with n hn
+  · have := (bounded_grid_finite (by linarith) (Metric.isBounded_closedBall (x := (0 : 𝕍 k)) (r := R))).fintype
+    rw [tsum_fintype, tsum_fintype, ← sub_div, ← Finset.sum_sub_distrib, Real.norm_eq_abs, abs_div,
+      Nat.card_eq_fintype_card, mul_div_assoc', abs_of_nonneg (by positivity : (0:ℝ) ≤ n^k)]
+    gcongr
+    refine (Finset.abs_sum_le_sum_abs _ _).trans ((Finset.sum_le_card_nsmul _ _ _ fun x _ => hbound n hn x.1 x.2.1).trans_eq ?_)
+    simp [mul_comm]
+  · rw [lattice_tsum_eq_grid (by omega) _ _ (hgs n)]
+    ring
+
+theorem lattice_riemann (hf : Continuous f) (hfc : HasCompactSupport f) :
+    Tendsto (fun n => (∑' γ : Fin k → ℤ, f 𝔩)/𝔫^k) atTop (𝓝 𝔞) := by
+  obtain ⟨R,hR,hfR⟩ := hfc.exists_pos_le_norm
+  have hs : Function.support f ⊆ Metric.closedBall 0 R := fun x hx =>
+    mem_closedBall_zero_iff.2 (not_le.1 (hx ∘ hfR x)).le
+  exact lattice_riemann_perturb f (fun _ => f) hf hR hs (fun _ => hs) 0 tendsto_const_nhds (by simp)
+
+notation "𝒯" d:max δ:max => ∑ γ ∈ ν.coeff.support,(ν.coeff γ:ℝ)*ext d (δ-γ)
+notation "𝒩" d:max => ∑ δ ∈ ν.coeff.support + E, max (-(𝒯 d δ)) 0*w δ
+
+lemma rationalize_convolution ν (w : Lattice k → ℝ) η
+    (ha : Function.HasFiniteSupport a)
+    (hp : 0 < ∑' γ,a γ)
+    (hn : (∑' δ,max (-(∑ γ ∈ ν.coeff.support,(ν.coeff γ:ℝ)*a (δ-γ))) 0*w δ) <
+      η*∑' γ,a γ) :
+    ∃ b,
+      0 < (mass b : ℝ) ∧ (∑' δ,max (-((ν*b).coeff δ:ℝ)) 0*w δ) < η*mass b := by
+  let E := ha.toFinset
+  let ext (d : Lattice k → ℝ) γ := (if γ ∈ E then 1 else 0) * d γ
+  have hext : ext a = a := funext fun γ => by
+    by_cases h : γ ∈ E
+    · simp [ext, h]
+    simp [ext, Function.notMem_support.1 (mt ha.mem_toFinset.2 h)]
+  have hsum d : ∑' γ, ext d γ = 𝔡 :=
+    (tsum_eq_sum fun γ h => by grind).trans (Finset.sum_congr rfl fun γ h => by grind)
+  have hN d : (∑' δ,max (-(𝒯 d δ)) 0*w δ) =
+      𝒩 d :=
+    tsum_eq_sum fun δ hδ => by
+      rw [Finset.sum_eq_zero fun γ hγ => by
+        simp [ext]
+        exact fun h => (hδ (Finset.mem_add.mpr ⟨γ,hγ,δ-γ,h,by abel⟩)).elim]
+      simp
+  obtain ⟨q, hq0, hqN⟩ := (DenseRange.piMap fun _ => Rat.denseRange_cast).exists_mem_open
+    ((isOpen_lt continuous_const (by fun_prop : Continuous fun d => 𝔡)).inter
+    (isOpen_lt (by fun_prop : Continuous fun d => 𝒩 d) (by fun_prop :
+      Continuous fun d => η * 𝔡)))
+    ⟨a, by simpa [← hsum, hext] using hp, by simpa [← hN, ← hsum, hext] using hn⟩
+  have hb x : (((𝔠).coeff x : ℚ) : ℝ) = ext (fun i => q i) x := by
+    simp [ext, Finsupp.single_apply, apply_ite (Rat.cast : ℚ → ℝ)]
+  have hm : (mass (𝔠) : ℝ) = ∑ γ ∈ E, (q γ : ℝ) := by
+    simp [moments_linear]
+  refine ⟨_, by rw [hm]; exact hq0, ?_⟩
+  have hc δ : (((ν * 𝔠).coeff δ : ℚ) : ℝ) =
+      𝒯 (fun i => q i) δ := by
+    simp [AddMonoidAlgebra.coeff_mul_apply_left, Finsupp.sum, neg_add_eq_sub, ← hb]
+  simp only [hc, hN, hm]
+  exact hqN
