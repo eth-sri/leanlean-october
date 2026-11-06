@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Lang.TopProcedure
 public import ThreeSumApsp.Programs.Tasks
 
@@ -28,7 +30,7 @@ namespace Light.Sec3
 open ThreeSumApsp ThreeSumApsp.WordRam ThreeSumApsp.Spec
 
 /-- The instance that is read from the three lists is the instance. -/
-theorem triOf_rowMajor {n : ℕ} (T : TriangleInstance ℤ n) :
+theorem triOf_rowMajor {n} T :
     triOf n (rowMajor T.wAB) (rowMajor T.wBC) (rowMajor T.wAC) = T := by
   cases T with
   | mk wAB wBC wAC =>
@@ -36,15 +38,15 @@ theorem triOf_rowMajor {n : ℕ} (T : TriangleInstance ℤ n) :
     congr 1 <;> funext i j <;> exact getD_rowMajor _ i j
 
 /-- The input: the size and the three matrices, row by row. -/
-theorem input_exactTriangle (x : Bounded EndStatement.ExactTriangle) :
+theorem input_exactTriangle x :
     (ofEnd EndStatement.ExactTriangle).input x =
       (x.n : ℤ) :: (rowMajor x.x.1 ++ rowMajor x.x.2.1 ++ rowMajor x.x.2.2) := by
   simp only [EndStatement.ExactTriangle, rowByRow_eq]
 
 /-- The entries of the three matrices are within the bound. -/
-theorem abs_le_of_mem_exactTriangle (x : Bounded EndStatement.ExactTriangle) {a : ℤ}
+theorem abs_le_of_mem_exactTriangle (x : Bounded EndStatement.ExactTriangle) {a}
     (ha : a ∈ rowMajor x.x.1 ++ rowMajor x.x.2.1 ++ rowMajor x.x.2.2) : |a| ≤ (x.U : ℤ) :=
-  Bounded.abs_le (by simpa only [EndStatement.ExactTriangle, rowByRow_eq] using ha)
+  Bounded.abs_le (by ram_arith [EndStatement.ExactTriangle, rowByRow_eq])
 
 /-- The instance of the task: where the three matrices stand. -/
 def triangleInst (x : Bounded EndStatement.ExactTriangle) : etTask.Inst :=
@@ -52,36 +54,33 @@ def triangleInst (x : Bounded EndStatement.ExactTriangle) : etTask.Inst :=
     rowMajor x.x.2.2⟩
 
 /-- The input of the end statement meets the precondition of the task. -/
-theorem pre_exactTriangle (x : Bounded EndStatement.ExactTriangle) (hn : 1 ≤ x.n) (hU : 1 ≤ x.U) :
+theorem pre_exactTriangle x (hn : 1 ≤ x.n) (hU : 1 ≤ x.U) :
     etTask.Pre (triangleInst x) (memOf ((ofEnd EndStatement.ExactTriangle).input x))
       (1 + 3 * (x.n * x.n)) := by
   have hAB : (rowMajor x.x.1).length = x.n * x.n := length_rowMajor _
   have hBC : (rowMajor x.x.2.1).length = x.n * x.n := length_rowMajor _
   rw [input_exactTriangle]
-  exact triPre_of_arrays (base := 1) hn hU
+  exact triPre_of_arrays hn hU
     { len := hAB
       seg := by
-        have := seg_first (x.n : ℤ) (rowMajor x.x.1) (rowMajor x.x.2.1 ++ rowMajor x.x.2.2)
-        rwa [← List.append_assoc] at this
-      bound := fun a (ha : a ∈ rowMajor x.x.1) => abs_le_of_mem_exactTriangle x (by simp [ha]) }
+        aesop (add safe apply [seg_first])
+      bound := fun a ha => abs_le_of_mem_exactTriangle x (by simp [ha]) }
     { len := hBC
       seg := by
-        have := seg_memOf ((x.n : ℤ) :: rowMajor x.x.1) (rowMajor x.x.2.1) (rowMajor x.x.2.2)
-        rwa [List.length_cons, hAB, Nat.add_comm] at this
-      bound := fun a (ha : a ∈ rowMajor x.x.2.1) => abs_le_of_mem_exactTriangle x (by simp [ha]) }
+        grind [seg_memOf]
+      bound := fun a ha => abs_le_of_mem_exactTriangle x (by simp [ha]) }
     { len := length_rowMajor _
       seg := by
-        have := seg_second (x.n : ℤ) (rowMajor x.x.1 ++ rowMajor x.x.2.1) (rowMajor x.x.2.2)
-        rwa [List.length_append, hAB, hBC, ← Nat.two_mul] at this
-      bound := fun a (ha : a ∈ rowMajor x.x.2.2) => abs_le_of_mem_exactTriangle x (by simp [ha]) }
+        grind [seg_second]
+      bound := fun a ha => abs_le_of_mem_exactTriangle x (by simp [ha]) }
 
 /-- The result of a solver of the task is the right verdict of the end statement's Exact
 Triangle. -/
-theorem post_exactTriangle (x : Bounded EndStatement.ExactTriangle) (r : ℤ) (μ' : ℕ → ℤ)
+theorem post_exactTriangle x r μ'
     (h : etTask.Post (triangleInst x) (memOf ((ofEnd EndStatement.ExactTriangle).input x))
       (1 + 3 * (x.n * x.n)) r μ') :
     (ofEnd EndStatement.ExactTriangle).IsAnswer x (verdictOf true r) fun i =>
-      μ' (((ofEnd EndStatement.ExactTriangle).input x).length + i) := by
+      μ' ((ofEnd EndStatement.ExactTriangle).input x).length + i := by
   obtain ⟨rfl, -⟩ := h
   exact ⟨(verdictOf_flag _).trans (iff_of_eq (congrArg TriangleInstance.HasZeroTriangle
     (triOf_rowMajor ⟨x.x.1, x.x.2.1, x.x.2.2⟩))), trivial⟩
@@ -95,7 +94,7 @@ noncomputable def wrapTriangle : Wrap EndStatement.ExactTriangle etTask true whe
   bound_eq _ := rfl
   fr_pos x := by omega
   fr_le x := by omega
-  vals x σ hn hU hnn := by simp [etTask, triangleInst, hn, hU, hnn]
+  vals x σ hn hU hnn := by aesop
   safe x lim σ _ _ hnn hw := safe_fourAddresses (by omega) hnn hw
   zero x hn _ := ⟨⟨fun h => absurd h (by simp), fun ⟨a, _⟩ => absurd a.isLt (by omega)⟩, trivial⟩
   pre := pre_exactTriangle
@@ -103,7 +102,7 @@ noncomputable def wrapTriangle : Wrap EndStatement.ExactTriangle etTask true whe
 
 /-- **Exact Triangle**: if the task is solved in time T, then Exact Triangle is solved on the word
 RAM within a constant times T. -/
-theorem realized_exactTriangle (T : ℕ → ℝ → ℝ) (h : SolvedIn etTask T) :
+theorem realized_exactTriangle T (h : SolvedIn etTask T) :
     Realized EndStatement.ExactTriangle T :=
   wrapTriangle.realized h
 

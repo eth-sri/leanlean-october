@@ -1,2 +1,0 @@
-module
-public import ImprovedExponents.Optimum.GlobalLemmas

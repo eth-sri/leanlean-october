@@ -1,5 +1,8 @@
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
+public import ThreeSumApsp.Lang.Auto
 public import ImprovedExponents.AllEdges.Pairs.Bridge
 public import ThreeSumApsp.Programs.Sec3.Theorem21b.NegativeTriangle.Passes
 public import ThreeSumApsp.Lang.PolyBounded
@@ -32,114 +35,63 @@ open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
 
 /-! ## The text -/
 
-namespace PairsHost
 
-/-- The number n of vertices. -/
-abbrev Verts : ℕ := 0
-/-- The bound U on the entries. -/
-abbrev Bound : ℕ := 1
-/-- The address of X. -/
-abbrev MatX : ℕ := 2
-/-- The address of Y. -/
-abbrev MatY : ℕ := 3
-/-- The address of V. -/
-abbrev MatV : ℕ := 4
-/-- The address of the flags. -/
-abbrev Out : ℕ := 5
-/-- The free pointer, where the array q begins: the prefixes of X + U. -/
-abbrev PreX : ℕ := 6
-/-- n². -/
-abbrev Cells : ℕ := 7
-/-- 2^b. -/
-abbrev Power : ℕ := 8
-/-- The number b of levels. -/
-abbrev Levels : ℕ := 9
-/-- The number of the round. -/
-abbrev Round : ℕ := 10
-/-- The result of a call. -/
-abbrev Res : ℕ := 11
-/-- 3U. -/
-abbrev Bound3 : ℕ := 12
-/-- The prefixes of the transpose of Y plus U. -/
-abbrev PreY : ℕ := 13
-/-- The prefixes of V + 2U. -/
-abbrev PreV : ℕ := 14
-/-- The first part of the array r. -/
-abbrev RestX : ℕ := 15
-/-- The second part of the array r. -/
-abbrev RestY : ℕ := 16
-/-- The third part of the array r. -/
-abbrev RestV : ℕ := 17
-/-- The array for the third matrix of a question. -/
-abbrev Third : ℕ := 18
-/-- The array for the answer of a question. -/
-abbrev Flg : ℕ := 19
-/-- The free pointer for the solver. -/
-abbrev SolverFree : ℕ := 20
-/-- 3n². -/
-abbrev Cells3 : ℕ := 21
-/-- 9U. -/
-abbrev Bound9 : ℕ := 22
-
-end PairsHost
-
-open PairsHost
 
 /-- The beginning of pairsAE: sizes and addresses. -/
-def paInit : Stmt :=
-  .set Cells (v Verts *' v Verts) ;;
-  .set Bound3 (k 3 *' v Bound) ;;
-  .set Bound9 (k 9 *' v Bound) ;;
-  .set PreY (v PreX +' v Cells) ;;
-  .set PreV (v PreY +' v Cells) ;;
-  .set RestX (v PreV +' v Cells) ;;
-  .set RestY (v RestX +' v Cells) ;;
-  .set RestV (v RestY +' v Cells) ;;
-  .set Third (v RestV +' v Cells) ;;
-  .set Flg (v Third +' v Cells) ;;
-  .set SolverFree (v Flg +' v Cells) ;;
-  .set Cells3 (k 3 *' v Cells) ;;
-  .set Power (k 1) ;;
-  .set Levels (k 0)
+def paInit :=
+  .set 7 (v 0 *' v 0) ;;
+  .set 12 (k 3 *' v 1) ;;
+  .set 22 (k 9 *' v 1) ;;
+  .set 13 (v 6 +' v 7) ;;
+  .set 14 (v 13 +' v 7) ;;
+  .set 15 (v 14 +' v 7) ;;
+  .set 16 (v 15 +' v 7) ;;
+  .set 17 (v 16 +' v 7) ;;
+  .set 18 (v 17 +' v 7) ;;
+  .set 19 (v 18 +' v 7) ;;
+  .set 20 (v 19 +' v 7) ;;
+  .set 21 (k 3 *' v 7) ;;
+  .set 8 (k 1) ;;
+  .set 9 (k 0)
 
 /-- The number of levels b and the power 2^b, by doubling. -/
 def paPow : Stmt :=
-  .while (v Power ≤' v Bound3) (
-    .set Power (k 2 *' v Power) ;;
-    .set Levels (v Levels +' k 1))
+  .while (v 8 ≤' v 12) (
+    .set 8 (k 2 *' v 8) ;;
+    .set 9 (v 9 +' k 1))
 
 /-- The arrays r and q at the top level, and zeros in out. -/
-def paFill (pAff pTr : ℕ) : Stmt :=
-  .call pAff [v Cells, v MatX, k 1, v Bound, v RestX] Res ;;
-  .call pTr [v Verts, v MatY, v Bound, v RestY] Res ;;
-  .call pAff [v Cells, v MatV, k 1, k 2 *' v Bound, v RestV] Res ;;
-  .call pAff [v Cells3, v RestX, k 0, k 0, v PreX] Res ;;
-  .call pAff [v Cells, v MatX, k 0, k 0, v Out] Res
+def paFill pAff pTr :=
+  .call pAff [v 7, v 2, k 1, v 1, v 15] 11 ;;
+  .call pTr [v 0, v 3, v 1, v 16] 11 ;;
+  .call pAff [v 7, v 4, k 1, k 2 *' v 1, v 17] 11 ;;
+  .call pAff [v 21, v 15, k 0, k 0, v 6] 11 ;;
+  .call pAff [v 7, v 2, k 0, k 0, v 5] 11
 
 /-- One question to the solver of all-edges Exact Triangle: the third matrix for the value e, the
 call, and the disjunction of the answer into out. -/
-def paProbe (pAE pAff pOr e : ℕ) : Stmt :=
-  .call pAff [v Cells, v PreV, k 0 -' k 1, k e, v Third] Res ;;
-  .call pAE [v Verts, v Bound9, v Third, v PreY, v PreX, v Flg, v SolverFree] Res ;;
-  .call pOr [v Cells, v Flg, v Out] Res
+def paProbe pAE pAff pOr e :=
+  .call pAff [v 7, v 14, k 0 -' k 1, k e, v 18] 11 ;;
+  .call pAE [v 0, v 22, v 18, v 13, v 6, v 19, v 20] 11 ;;
+  .call pOr [v 7, v 19, v 5] 11
 
 /-- One round: the two questions at the level, then the next level. -/
-def paRound (pAE pAff pOr pDown : ℕ) : Stmt :=
+def paRound pAE pAff pOr pDown :=
   paProbe pAE pAff pOr 2 ;; paProbe pAE pAff pOr 3 ;;
-  .call pDown [v Cells3, v PreX, v RestX, v Power] Res
+  .call pDown [v 21, v 6, v 15, v 8] 11
 
 /-- pairsAE(n, U, x, y, v, out, fr). -/
-def paBody (pAE pAff pTr pOr pDown : ℕ) : Stmt :=
-  paInit ;; paPow ;; paFill pAff pTr ;; .for Round (v Levels) (paRound pAE pAff pOr pDown) ;;
+def paBody pAE pAff pTr pOr pDown :=
+  paInit ;; paPow ;; paFill pAff pTr ;; .for 10 (v 9) (paRound pAE pAff pOr pDown) ;;
   paProbe pAE pAff pOr 2 ;; paProbe pAE pAff pOr 3 ;; paProbe pAE pAff pOr 1 ;; .set 0 (k 0)
 
 /-- The time of pairsAE, if the solver of all-edges Exact Triangle takes T n U steps: `2b + 3`
 calls of the solver, each with O(n²) work around it, and O(n²) work at the start. -/
-def pairsTimeAE (T : ℕ → ℕ → ℕ) (n U : ℕ) : ℕ :=
+def pairsTimeAE (T : Light.SolverTime) n U :=
   (2 * aeLevels U + 3) * (T n (9 * U) + 108 * (n * n) + 60) + 200 * (n * n) + 150
 
 /-- The need of pairsAE, if the solver needs r n U. -/
-def pairsNeedAE (r : ℕ → ℕ → Need) (n U : ℕ) : Need where
+def pairsNeedAE (r : Light.NeedFn) (n U : ℕ) : Need where
   word := 24 * U + 8 + (r n (9 * U)).word
   cells := 8 * (n * n) + (r n (9 * U)).cells
   depth := (r n (9 * U)).depth + 1
@@ -150,15 +102,15 @@ namespace PairsHost
 
 /-- The locals of pairsAE after its beginning; the last four are those that change later. -/
 abbrev locals (x : PairsInst) (fr : ℕ) (pw lv rd res : ℤ) : List ℤ :=
-  [x.n, x.U, x.x, x.y, x.v, x.out, fr, (x.n * x.n : ℕ), pw, lv, rd, res, (3 * x.U : ℕ),
-    (fr + x.n * x.n : ℕ), (fr + 2 * (x.n * x.n) : ℕ), (fr + 3 * (x.n * x.n) : ℕ),
-    (fr + 4 * (x.n * x.n) : ℕ), (fr + 5 * (x.n * x.n) : ℕ), (fr + 6 * (x.n * x.n) : ℕ),
-    (fr + 7 * (x.n * x.n) : ℕ), (fr + 8 * (x.n * x.n) : ℕ), (3 * (x.n * x.n) : ℕ), (9 * x.U : ℕ)]
+  [x.n, x.U, x.x, x.y, x.v, x.out, fr, x.n * x.n, pw, lv, rd, res, 3 * x.U,
+    fr + x.n * x.n, fr + 2 * (x.n * x.n), fr + 3 * (x.n * x.n),
+    fr + 4 * (x.n * x.n), fr + 5 * (x.n * x.n), fr + 6 * (x.n * x.n),
+    fr + 7 * (x.n * x.n), fr + 8 * (x.n * x.n), 3 * (x.n * x.n), 9 * x.U]
 
 /-- The program has the solver and the four loops over arrays, the instance is as the task
 prescribes, and the limits allow for the need of pairsAE. -/
-structure Ctx (P₀ R' : Program) (p pAff pTr pOr pDown : ℕ) (T : ℕ → ℕ → ℕ) (r : ℕ → ℕ → Need)
-    (lim : Limits) (d : ℕ) (x : PairsInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop where
+structure Ctx (P₀ R' : Program) (p pAff pTr pOr pDown : ℕ) (T : Light.SolverTime) (r : Light.NeedFn)
+    (lim : Limits) (d : ℕ) (x : PairsInst) (μ : Light.Memory) (fr : ℕ) : Prop where
   solver : Solves aeTask P₀ p T r
   aff : (P₀ ++ R')[pAff]? = some affineBody
   tr : (P₀ ++ R')[pTr]? = some transposeBody
@@ -167,80 +119,71 @@ structure Ctx (P₀ R' : Program) (p pAff pTr pOr pDown : ℕ) (T : ℕ → ℕ 
   pre : x.Pre μ fr
   ok : (pairsNeedAE r x.n x.U).Ok lim fr d
 
-variable {P₀ R' : Program} {p pAff pTr pOr pDown : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ → Need}
-  {lim : Limits} {d : ℕ} {x : PairsInst} {μ : ℕ → ℤ} {fr : ℕ}
+variable {P₀ R' : Program} {p pAff pTr pOr pDown : ℕ} {T : Light.SolverTime} {r : Light.NeedFn}
+  {lim : Limits} {d : ℕ} {x : PairsInst} {μ : Light.Memory} {fr : ℕ}
 
 /-- The start list of the instance. -/
-abbrev Z (x : PairsInst) : List ℤ := pStart x.n x.U x.X x.Y x.V
+abbrev Z (x : PairsInst) := pStart x.n x.U x.X x.Y x.V
 
 /-- The flag of the instance `c` at the cell `q`. -/
-def hit (x : PairsInst) (c : ℕ × ℤ) (q : ℕ) : Prop :=
+def hit (x : PairsInst) (c : ℕ × ℤ) q :=
   (aeFlags x.n (instAB x.U x.V c.1 c.2) (instBC x.n x.U x.Y c.1) (instAC x.U x.X c.1)).getD q 0 = 1
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem21b/NegativeTriangle/Host.lean
+variable (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr)
+
+include C in
 /-- The arithmetic facts of the hypotheses as one conjunction. -/
-private theorem Ctx.places (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) :
-    ((lim.space : ℤ) ≤ lim.word ∧ 24 * (x.U : ℤ) + 8 + (r x.n (9 * x.U)).word ≤ lim.word ∧
+private theorem Ctx.places :
+    (lim.space ≤ lim.word ∧ 24 * x.U + 8 + (r x.n (9 * x.U)).word ≤ lim.word ∧
       fr + (8 * (x.n * x.n) + (r x.n (9 * x.U)).cells) ≤ lim.space ∧
-      d + ((r x.n (9 * x.U)).depth + 1) ≤ lim.depth) ∧ 1 ≤ x.n * x.n ∧ 1 ≤ x.U ∧
+      d + (r x.n (9 * x.U)).depth + 1 ≤ lim.depth) ∧ 1 ≤ x.n * x.n ∧ 1 ≤ x.U ∧
       (x.X.length = x.n * x.n ∧ x.Y.length = x.n * x.n ∧ x.V.length = x.n * x.n) ∧
       x.x + x.n * x.n ≤ fr ∧ x.y + x.n * x.n ≤ fr ∧ x.v + x.n * x.n ≤ fr ∧
       x.out + x.n * x.n ≤ fr ∧ (Z x).length = 3 * (x.n * x.n) ∧
       3 * x.U < 2 ^ aeLevels x.U ∧ 2 ^ aeLevels x.U ≤ 6 * x.U :=
-  ⟨⟨C.ok.space, by exact_mod_cast C.ok.word, C.ok.cells, C.ok.depth⟩,
+  ⟨⟨C.ok.space, mod_cast C.ok.word, C.ok.cells, C.ok.depth⟩,
     Nat.mul_pos C.pre.n_pos C.pre.n_pos, C.pre.U_pos, ⟨C.pre.lenX, C.pre.lenY, C.pre.lenV⟩,
     C.pre.belowX, C.pre.belowY, C.pre.belowV, C.pre.belowOut,
     length_pStart C.pre.lenX C.pre.lenV, lt_two_pow_aeLevels _,
     two_pow_aeLevels_le C.pre.U_pos⟩
 
+include C in
 /-- **affine** as a procedure, for a source and a destination that lie apart, below the free pointer
 of the solver. -/
-private theorem Ctx.affine_meets (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) {μ' : ℕ → ℤ}
-    {l : List ℤ} {src dst : ℕ} {m c : ℤ} (hl : Seg μ' src l)
+private theorem Ctx.affine_meets {μ'}
+    {l} {src dst} {m c} (hl : Seg μ' src l)
     (hplace : src + l.length ≤ fr + 8 * (x.n * x.n) ∧ dst + l.length ≤ fr + 8 * (x.n * x.n) ∧
       (src + l.length ≤ dst ∨ dst + l.length ≤ src))
     (hfits : ∀ w ∈ l, |m * w| ≤ lim.word ∧ |m * w + c| ≤ lim.word) :
     Meets lim (P₀ ++ R') pAff (d + 1) [l.length, src, m, c, dst] μ' (20 * l.length + 6)
       fun _ μ'' => Seg μ'' dst (affL m c l) ∧ SameOutside μ' μ'' dst l.length := by
-  have hplaces := C.places
+  have  := C.places
   exact Sec3.affine_meets C.aff hl C.ok.space (by omega) (by omega) hplace.2.2 hfits
 
 /-! ## The beginning -/
 
+include C in
 /-- **The beginning** sets the sizes and the addresses. -/
-private theorem init_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) :
+private theorem init_spec :
     Ends lim (P₀ ++ R') d paInit ⟨frame [x.n, x.U, x.x, x.y, x.v, x.out, fr], μ⟩ paInit.blockCost
       fun σ' => σ' = ⟨frame (locals x fr 1 0 0 0), μ⟩ := by
-  have hplaces := C.places
-  have hsquare : (0 : ℤ) ≤ (x.n : ℤ) * x.n := by positivity
-  unfold paInit
-  light_set (x.n * x.n : ℕ)
-  light_set (3 * x.U : ℕ)
-  light_set (9 * x.U : ℕ)
-  light_set (fr + x.n * x.n : ℕ)
-  light_set (fr + 2 * (x.n * x.n) : ℕ)
-  light_set (fr + 3 * (x.n * x.n) : ℕ)
-  light_set (fr + 4 * (x.n * x.n) : ℕ)
-  light_set (fr + 5 * (x.n * x.n) : ℕ)
-  light_set (fr + 6 * (x.n * x.n) : ℕ)
-  light_set (fr + 7 * (x.n * x.n) : ℕ)
-  light_set (fr + 8 * (x.n * x.n) : ℕ)
-  light_set (3 * (x.n * x.n) : ℕ)
-  light_set 1
-  light_set 0
-  rfl
+  have  := C.places
+
+  light_block [ImprovedExponents.AllEdges.PairsHost.locals, paInit]
 
 /-- The state of the loop that doubles after i rounds. -/
-def PowInv (x : PairsInst) (μ : ℕ → ℤ) (fr i : ℕ) (σ : State) : Prop :=
+def PowInv x μ (fr i : ℕ) (σ : State) :=
   σ = ⟨frame (locals x fr (2 ^ i : ℕ) i 0 0), μ⟩
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem21b/NegativeTriangle/Host.lean
+include C in
 /-- **The loop that doubles** computes the number b of levels and 2^b. -/
-private theorem pow_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) :
+private theorem pow_spec :
     Ends lim (P₀ ++ R') d paPow ⟨frame (locals x fr 1 0 0 0), μ⟩ (14 * aeLevels x.U + 6)
       fun σ' => σ' = ⟨frame (locals x fr (2 ^ aeLevels x.U : ℕ) (aeLevels x.U) 0 0), μ⟩ := by
   have hplaces := C.places
-  refine Ends.whileBlock (PowInv x μ fr) (aeLevels x.U) (by simp [PowInv]) ?round ?done
+  refine Ends.whileBlock (PowInv x μ fr) (aeLevels x.U) rfl ?round ?done
     (by simp; omega)
   case round =>
     rintro i _ hi rfl
@@ -259,43 +202,41 @@ private theorem pow_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr
 
 /-- The memory at the level ℓ with the asked set S: q holds the prefixes, r the rests, out the
 disjunction of the flags of the instances in S, and nothing else below the free pointer changed. -/
-def PMem (x : PairsInst) (μ : ℕ → ℤ) (fr ℓ : ℕ) (S : ℕ × ℤ → Prop) (μ' : ℕ → ℤ) : Prop :=
+def PMem x μ fr ℓ S μ' :=
   Seg μ' fr ((Z x).map (prefQ ℓ)) ∧
     Seg μ' (fr + 3 * (x.n * x.n)) ((Z x).map (prefR (aeLevels x.U) ℓ)) ∧
     Seg μ' x.out (orFlags (x.n * x.n) S (hit x)) ∧ KeptBut μ μ' fr x.out (x.n * x.n)
 
 /-- The numbers in the array r at the top level lie in `[0, 3U]`, below `2^b`. -/
 private theorem Z_range (hpre : x.Pre μ fr) :
-    ∀ z ∈ Z x, 0 ≤ z ∧ z ≤ 3 * (x.U : ℤ) ∧ z < 2 ^ aeLevels x.U := by
+    ∀ z ∈ Z x, 0 ≤ z ∧ z ≤ 3 * x.U ∧ z < 2 ^ aeLevels x.U := by
   intro z hz
   obtain ⟨h0, h1⟩ := pStart_range hpre.leX hpre.leY hpre.leV hpre.lenY z hz
-  have h2 : ((3 * x.U : ℕ) : ℤ) < ((2 ^ aeLevels x.U : ℕ) : ℤ) := by
-    exact_mod_cast lt_two_pow_aeLevels x.U
+  have h2 : ((3 * x.U : ℕ) : ℤ) < ((2 ^ aeLevels x.U : ℕ) : ℤ) := mod_cast lt_two_pow_aeLevels x.U
   push_cast at h2
   exact ⟨h0, h1, by omega⟩
 
 /-- The three parts of the array q. -/
-private theorem seg_parts (hpre : x.Pre μ fr) {μ' : ℕ → ℤ} {ℓ : ℕ}
-    (hq : Seg μ' fr ((Z x).map (prefQ ℓ))) :
-    Seg μ' fr (instAC x.U x.X ℓ) ∧ Seg μ' (fr + x.n * x.n) (instBC x.n x.U x.Y ℓ) ∧
-      Seg μ' (fr + 2 * (x.n * x.n)) ((affL 1 (2 * x.U) x.V).map (prefQ ℓ)) := by
+private def seg_parts (hpre : x.Pre μ fr) {μ'} {ℓ}
+    (hq : Seg μ' fr ((Z x).map (prefQ ℓ))) := by
   simp only [Z, pStart, List.map_append] at hq
   rw [seg_append, seg_append] at hq
   simp only [List.length_map, length_affL, length_transposeL, hpre.lenX] at hq
   rwa [show fr + x.n * x.n + x.n * x.n = fr + 2 * (x.n * x.n) by omega] at hq
 
+include C in
 /-- **The five calls** fill the arrays r and q for the top level and zero out. -/
-private theorem fill_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) (pw lv rd res : ℤ) :
+private theorem fill_spec pw lv rd res :
     Ends lim (P₀ ++ R') d (paFill pAff pTr) ⟨frame (locals x fr pw lv rd res), μ⟩
       (170 * (x.n * x.n) + 70) fun σ' => ∃ res' μ',
         σ' = ⟨frame (locals x fr pw lv rd res'), μ'⟩ ∧
           PMem x μ fr (aeLevels x.U) (fun _ => False) μ' := by
   have hpre := C.pre
-  have hplaces := C.places
+  have  := C.places
   have hZ := Z_range hpre
-  have hn : x.n ≤ x.n * x.n := Nat.le_mul_self x.n
-  have hapX := hpre.apartX
-  have hW : 24 * (x.U : ℤ) + 8 ≤ lim.word := by omega
+  have  := Nat.le_mul_self x.n
+  have  := hpre.apartX
+  have  : 24 * (x.U : ℤ) + 8 ≤ lim.word := by omega
   have hfit1 : ∀ c : ℤ, c = x.U ∨ c = 2 * x.U → ∀ w ∈ x.V ++ x.X, |1 * w| ≤ lim.word ∧
       |1 * w + c| ≤ lim.word := fun c hc w hw => by
     have := abs_le.1 ((List.mem_append.1 hw).elim (hpre.leV w) (hpre.leX w))
@@ -316,7 +257,7 @@ private theorem fill_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ f
   -- Res := pAff(Cells, MatV, 1, 2 * Bound, RestV)
   refine Ends.callToThen (C.affine_meets (m := 1) (c := 2 * x.U) (dst := fr + 5 * (x.n * x.n))
     hpre.segV.keep (by omega) fun w hw => hfit1 _ (Or.inr rfl) w (by simp [hw])) ?_
-    (ha := by light_side [hpre.lenV]) (hT := by simp [hpre.lenX, hpre.lenV]; omega)
+    (ha := by light_side [hpre.lenV]) (hT := by light_side)
   rintro r₃ μ₃ ⟨s₃, o₃⟩
   have sZ : Seg μ₃ (fr + 3 * (x.n * x.n)) (Z x) := by
     rw [Z, pStart, seg_append, seg_append]
@@ -338,8 +279,7 @@ private theorem fill_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ f
     exact s₄.keep
   · rw [map_prefR_start fun z hz => ⟨(hZ z hz).1, (hZ z hz).2.2⟩]
     exact sZ.keep
-  · rw [orFlags_false _ _ hpre.lenX]
-    exact s₅
+  · grind [orFlags_false]
   · light_keep
 
 /-! ## One question -/
@@ -350,13 +290,14 @@ def question (x : PairsInst) (fr ℓ : ℕ) (e : ℤ) : AeInst :=
   ⟨x.n, 9 * x.U, fr + 6 * (x.n * x.n), fr + x.n * x.n, fr, fr + 7 * (x.n * x.n),
     instAB x.U x.V ℓ e, instBC x.n x.U x.Y ℓ, instAC x.U x.X ℓ⟩
 
+include C in
 /-- The question is an instance as the task prescribes. -/
-private theorem question_pre (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) {μ' : ℕ → ℤ}
-    {ℓ : ℕ} {e : ℤ} (he : 1 ≤ e ∧ e ≤ 3) (hq : Seg μ' fr ((Z x).map (prefQ ℓ)))
+private theorem question_pre {μ'}
+    {ℓ} {e} (he : 1 ≤ e ∧ e ≤ 3) (hq : Seg μ' fr ((Z x).map (prefQ ℓ)))
     (hthird : Seg μ' (fr + 6 * (x.n * x.n)) (instAB x.U x.V ℓ e)) :
     (question x fr ℓ e).Pre μ' (fr + 8 * (x.n * x.n)) := by
   have hpre := C.pre
-  have hplaces := C.places
+  have  := C.places
   obtain ⟨hqX, hqY, -⟩ := seg_parts hpre hq
   obtain ⟨b1, b2, b3⟩ := absLe_inst hpre.leX hpre.leY hpre.leV hpre.lenY hpre.U_pos (ℓ := ℓ) he
   exact {
@@ -375,23 +316,20 @@ private theorem question_pre (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x �
     belowBC := by simp only [question]; omega
     belowAC := by simp only [question]; omega
     belowOut := by simp only [question]; omega
-    apartAB := by simp only [question]; omega
-    apartBC := by simp only [question]; omega
-    apartAC := by simp only [question]; omega }
+    }
 
 /-- The state between two steps: the locals, with some result of the last call, and the memory at
 the level ℓ with the asked set S. -/
-def St (x : PairsInst) (μ : ℕ → ℤ) (fr : ℕ) (rd : ℤ) (ℓ : ℕ) (S : ℕ × ℤ → Prop) (σ : State) :
-    Prop :=
-  ∃ (res : ℤ) (μ' : ℕ → ℤ),
-    σ = ⟨frame (locals x fr (2 ^ aeLevels x.U : ℕ) (aeLevels x.U) rd res), μ'⟩ ∧
+def St x μ fr rd ℓ S (σ : State) :=
+  ∃ (res : ℤ) (μ' : Light.Memory),
+    σ = ⟨frame (locals x fr (2 ^ aeLevels x.U) (aeLevels x.U) rd res), μ'⟩ ∧
       PMem x μ fr ℓ S μ'
 
 /-- The time of one question. -/
-abbrev probeTime (T : ℕ → ℕ → ℕ) (x : PairsInst) : ℕ := 51 * (x.n * x.n) + 35 + T x.n (9 * x.U)
+abbrev probeTime (T : Light.SolverTime) (x : PairsInst) := 51 * (x.n * x.n) + 35 + T x.n (9 * x.U)
 
 /-- The flags of the solver are 0 or 1. -/
-private theorem aeFlags_01 (n : ℕ) (AB BC AC : List ℤ) :
+private theorem aeFlags_01 n AB BC AC :
     ∀ f ∈ aeFlags n AB BC AC, f = 0 ∨ f = 1 := by
   intro f hf
   simp only [aeFlags, List.mem_map] at hf
@@ -399,43 +337,36 @@ private theorem aeFlags_01 (n : ℕ) (AB BC AC : List ℤ) :
   unfold flag
   split_ifs <;> simp
 
-/-- The flag of the instance `(ℓ, e)`, spelled out. -/
-private theorem hit_iff (x : PairsInst) (ℓ : ℕ) (e : ℤ) (q : ℕ) :
-    hit x (ℓ, e) q ↔
-      (aeFlags x.n (instAB x.U x.V ℓ e) (instBC x.n x.U x.Y ℓ) (instAC x.U x.X ℓ)).getD q 0 = 1 :=
-  Iff.rfl
-
+include C in
 /-- **One question** leaves the arrays as they are and adds the instance `(ℓ, e)` to the asked set.
 -/
-private theorem probe_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) {ℓ e : ℕ}
-    (he : 1 ≤ e ∧ e ≤ 3) {rd : ℤ} {S : ℕ × ℤ → Prop} {σ : State} (hσ : St x μ fr rd ℓ S σ) :
+private theorem probe_spec {ℓ e}
+    (he : 1 ≤ e ∧ e ≤ 3) {rd} {S} {σ} (hσ : St x μ fr rd ℓ S σ) :
     Ends lim (P₀ ++ R') d (paProbe p pAff pOr e) σ (probeTime T x)
-      (St x μ fr rd ℓ (fun c => S c ∨ c = (ℓ, (e : ℤ)))) := by
+      (St x μ fr rd ℓ fun c => S c ∨ c = (ℓ, (e : ℤ))) := by
   obtain ⟨res, μ₀, rfl, hq, hr, hout, hk⟩ := hσ
   have hpre := C.pre
-  have hplaces := C.places
-  have he' : 1 ≤ (e : ℤ) ∧ (e : ℤ) ≤ 3 := by omega
+  have  := C.places
+
   have hlenV : ((affL 1 (2 * x.U) x.V).map (prefQ ℓ)).length = x.n * x.n := by simp [hpre.lenV]
-  have hV3 := (absLe_pStart_parts hpre.leX hpre.leY hpre.leV hpre.lenY ℓ).2.2
+  have  := (absLe_pStart_parts hpre.leX hpre.leY hpre.leV hpre.lenY ℓ).2.2
   have h01 := aeFlags_01 x.n (instAB x.U x.V ℓ e) (instBC x.n x.U x.Y ℓ) (instAC x.U x.X ℓ)
   unfold paProbe
   -- Res := pAff(Cells, PreV, 0 - 1, e, Third)
   refine Ends.callToThen (C.affine_meets (m := -1) (c := e) (dst := fr + 6 * (x.n * x.n))
     (seg_parts hpre hq).2.2 (by omega) fun w hw => ?_) ?_
     (ha := by light_side [hlenV]) (hT := by simp [hlenV, probeTime]; omega)
-  · have := hV3 w hw
-    simp only [abs_le]
-    omega
+  · grind
   rintro r₁ μ₁ ⟨hthird, h₁⟩
   rw [hlenV] at h₁
-  have hq₁ : Seg μ₁ fr ((Z x).map (prefQ ℓ)) := hq.keep (by light_keep)
+  have hq₁ := hq.keep (by light_keep)
   -- Res := pAE(Verts, Bound9, Third, PreY, PreX, Flg, SolverFree)
   refine Ends.callToThen (C.solver.meets R' (question x fr ℓ e) (fr + 8 * (x.n * x.n))
-    (question_pre C he' hq₁ hthird)
-    { word := by simp only [aeTask, question]; omega
-      cells := by simp only [aeTask, question]; omega
+    (question_pre C (by omega) hq₁ hthird)
+    { word := by grind [aeTask, question]
+      cells := by grind [aeTask, question]
       space := C.ok.space
-      depth := by simp only [aeTask, question]; omega }) ?_ (by simp [aeTask, question])
+      depth := by grind [aeTask, question] }) ?_ (by simp [aeTask, question])
     (hT := by simp [aeTask, question, probeTime]; omega)
   rintro r₂ μ₂ ⟨hflg, h₂⟩
   simp only [question] at hflg h₂
@@ -446,57 +377,59 @@ private theorem probe_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ 
     ⟨C.ok.space, by omega, by omega⟩ h01 (orFlags_mem _ _ _) (by omega)) ?_
     (ha := by light_side) (hT := by simp [aeTask, question, probeTime]; omega)
   rintro r₃ μ₃ ⟨hout₃, h₃⟩
-  have hor := orL_orFlags (S := S) (c := (ℓ, (e : ℤ))) (length_aeFlags x.n _ _ _)
-    (fun q _ => hit_iff x ℓ e q) h01
+  have hor := orL_orFlags (hit := hit x) (S := S) (c := (ℓ, e)) (length_aeFlags x.n _ _ _)
+    (fun q _ => Iff.rfl) h01
   rw [hor] at hout₃
   exact ⟨r₃, μ₃, rfl, hq₁.keep (by light_keep), hr.keep (by light_keep), hout₃,
     fun c hc => by light_keep⟩
 
 /-! ## The rounds -/
 
+include C in
 /-- What prefDown needs holds at every level above 0. -/
-private theorem down_pre (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) {μ' : ℕ → ℤ} {ℓ : ℕ}
+private theorem down_pre {μ'} {ℓ}
     (hℓ : ℓ + 1 ≤ aeLevels x.U) (hq : Seg μ' fr ((Z x).map (prefQ (ℓ + 1))))
     (hr : Seg μ' (fr + 3 * (x.n * x.n)) ((Z x).map (prefR (aeLevels x.U) (ℓ + 1)))) :
     PrefPre lim μ' fr (fr + 3 * (x.n * x.n)) (2 ^ aeLevels x.U)
       ((Z x).map (prefQ (ℓ + 1))) ((Z x).map (prefR (aeLevels x.U) (ℓ + 1))) := by
-  have hplaces := C.places
+  have  := C.places
   have hZ := Z_range C.pre
   have hL : ((2 ^ aeLevels x.U : ℕ) : ℤ) ≤ ((6 * x.U : ℕ) : ℤ) := by
-    exact_mod_cast two_pow_aeLevels_le C.pre.U_pos
+    omega
   push_cast at hL
   refine ⟨hq, hr, by simp, C.ok.space, by simp; omega, by simp; omega, by simp; omega, by omega,
     fun y hy => ?_, fun y hy => ?_⟩
   · obtain ⟨z, hz, rfl⟩ := List.mem_map.1 hy
-    have h0 := prefQ_nonneg (hZ z hz).1 (ℓ + 1)
-    have h1 := (prefQ_le (hZ z hz).1 (ℓ + 1)).trans (hZ z hz).2.1
+    have  := prefQ_nonneg (hZ z hz).1 (ℓ + 1)
+    have  := (prefQ_le (hZ z hz).1 (ℓ + 1)).trans (hZ z hz).2.1
     simp only [abs_le]
     omega
   · obtain ⟨z, hz, rfl⟩ := List.mem_map.1 hy
-    have h0 := prefR_nonneg (aeLevels x.U) (ℓ + 1) z
-    have h1 := prefR_lt hℓ z
+    have  := prefR_nonneg (aeLevels x.U) (ℓ + 1) z
+    have  := prefR_lt hℓ z
     simp only [abs_le]
     omega
 
 /-- The time of one round. -/
-abbrev roundTime (T : ℕ → ℕ → ℕ) (x : PairsInst) : ℕ := 2 * probeTime T x + 114 * (x.n * x.n) + 12
+abbrev roundTime T x := 2 * probeTime T x + 114 * (x.n * x.n) + 12
 
+include C in
 /-- **One round** at the level ℓ + 1: the two questions, then the level ℓ. -/
-private theorem round_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) {ℓ : ℕ}
-    (hℓ : ℓ + 1 ≤ aeLevels x.U) {rd : ℤ} {σ : State}
+private theorem round_spec {ℓ}
+    (hℓ : ℓ + 1 ≤ aeLevels x.U) {rd} {σ}
     (hσ : St x μ fr rd (ℓ + 1) (Above (ℓ + 1) (aeLevels x.U)) σ) :
     Ends lim (P₀ ++ R') d (paRound p pAff pOr pDown) σ (roundTime T x)
       (St x μ fr rd ℓ (Above ℓ (aeLevels x.U))) := by
-  have hplaces := C.places
-  have hZl : (Z x).length = 3 * (x.n * x.n) := length_pStart C.pre.lenX C.pre.lenV
+  have  := C.places
+
   unfold paRound
   refine Ends.next _ ((probe_spec C (by norm_num) hσ).mono le_rfl fun σ₂ hσ₂ => ?_)
-    (by simp only [roundTime, probeTime]; omega)
+    (by grind)
   refine Ends.next _ ((probe_spec C (by norm_num) hσ₂).mono le_rfl fun σ₃ hσ₃ => ?_)
-    (by simp only [roundTime, probeTime]; omega)
+    (by grind)
   obtain ⟨res, μ₀, rfl, hq, hr, hout, hk⟩ := hσ₃
   -- Res := pDown(Cells3, PreX, RestX, Power)
-  refine Ends.callTo (prefDown_meets C.down (down_pre C hℓ hq hr)) ?_ (by simp [hZl])
+  refine Ends.callTo (prefDown_meets C.down (down_pre C hℓ hq hr)) ?_ (by simp [(length_pStart C.pre.lenX C.pre.lenV)])
     (hT := by simp [roundTime, probeTime]; omega)
   rintro r₁ μ₁ ⟨hq', hr', hrest⟩
   rw [zipWith_shiftQ hℓ] at hq'
@@ -514,23 +447,23 @@ private theorem round_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ 
     exact hrest a (Or.inl (by omega)) (Or.inl (by omega))
   · exact (hrest c (Or.inl (by omega)) (Or.inl (by omega))).trans (hk c hc)
 
+include C in
 /-- **The b rounds**: from the level b to the level 0. -/
-private theorem rounds_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) {res : ℤ}
-    {μ' : ℕ → ℤ} (hm : PMem x μ fr (aeLevels x.U) (fun _ => False) μ') :
-    Ends lim (P₀ ++ R') d (.for Round (v Levels) (paRound p pAff pOr pDown))
-      ⟨frame (locals x fr (2 ^ aeLevels x.U : ℕ) (aeLevels x.U) 0 res), μ'⟩
+private theorem rounds_spec {res}
+    {μ'} (hm : PMem x μ fr (aeLevels x.U) (fun _ => False) μ') :
+    Ends lim (P₀ ++ R') d (.for 10 (v 9) (paRound p pAff pOr pDown))
+      ⟨frame (locals x fr (2 ^ aeLevels x.U) (aeLevels x.U) 0 res), μ'⟩
       (aeLevels x.U * (roundTime T x + 8) + 6)
       (St x μ fr (aeLevels x.U) 0 (Above 0 (aeLevels x.U))) := by
-  have hplaces := C.places
-  have hL : aeLevels x.U ≤ 6 * x.U :=
-    (Nat.lt_two_pow_self (n := aeLevels x.U)).le.trans (two_pow_aeLevels_le C.pre.U_pos)
+  have  := C.places
+  have  :=
+    Nat.lt_two_pow_self (n := aeLevels x.U).le.trans (two_pow_aeLevels_le C.pre.U_pos)
   refine Ends.for (fun t σ => St x μ fr t (aeLevels x.U - t) (Above (aeLevels x.U - t)
     (aeLevels x.U)) σ) (aeLevels x.U) (roundTime T x) ?start ?round ?done ?bound (by omega)
     (by simp; ring_nf; omega)
   case start =>
     refine ⟨res, μ', ?_, ?_⟩
-    · rw [update_frame_setLocal]
-      rfl
+    · simp_all
     · simp only [Nat.sub_zero]
       have : orFlags (x.n * x.n) (Above (aeLevels x.U) (aeLevels x.U)) (hit x) =
           orFlags (x.n * x.n) (fun _ => False) (hit x) := by
@@ -548,22 +481,22 @@ private theorem rounds_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ
     obtain ⟨res', μ'', rfl, hm'⟩ := hσ'
     exact ⟨rfl, res', μ'', by rw [update_frame_setLocal]; rfl, hm'⟩
   case done =>
-    intro σ _ hσ
-    simpa using hσ
+    simp_all
   case bound =>
     rintro t _ - - ⟨res', μ'', rfl, -⟩
     exact ⟨trivial, rfl⟩
 
 /-! ## The procedure -/
 
+include C in
 /-- **pairsAE is correct**, in every program that begins with the solver's program and has the four
 loops over arrays. -/
-theorem pairsAE_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) :
+theorem pairsAE_spec :
     Ends lim (P₀ ++ R') d (paBody p pAff pTr pOr pDown)
       ⟨frame [x.n, x.U, x.x, x.y, x.v, x.out, fr], μ⟩ (pairsTimeAE T x.n x.U) fun σ' =>
         Seg σ'.mem x.out (pairFlags x.n x.X x.Y x.V) ∧ KeptBut μ σ'.mem fr x.out (x.n * x.n) := by
   have hpre := C.pre
-  have hplaces := C.places
+  have  := C.places
   have htime : pairsTimeAE T x.n x.U = aeLevels x.U * (roundTime T x + 8) + 6 +
       (3 * probeTime T x + 30 * aeLevels x.U + 371 * (x.n * x.n) + 219) := by
     simp only [pairsTimeAE, roundTime, probeTime]
@@ -603,7 +536,7 @@ theorem pairsAE_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) :
 end PairsHost
 
 /-- The need of pairsAE is polynomially bounded if the need of the solver is. -/
-theorem polyNeed_pairsNeedAE {r : ℕ → ℕ → Need} (h : PolyNeed r) : PolyNeed (pairsNeedAE r) := by
+theorem polyNeed_pairsNeedAE {r} (h : PolyNeed r) : PolyNeed (pairsNeedAE r) := by
   unfold pairsNeedAE
   poly_need [h.word, h.cells, h.depth]
 

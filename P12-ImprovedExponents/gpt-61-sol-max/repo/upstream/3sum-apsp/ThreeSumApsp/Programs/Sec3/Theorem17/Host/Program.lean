@@ -5,7 +5,11 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Correct
+public import ThreeSumApsp.Util.Types
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Arrays
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Need
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.PrimeStage
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Time
 
 /-!
 # The host of Theorem 17: the program, assembled
@@ -21,7 +25,7 @@ result: the host solves Exact Triangle (`et17_solves`).
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+
 
 /-- The numbers of the procedures of Strassen's algorithm, if the list of the procedures of the host
 starts at the number `o`. -/
@@ -57,7 +61,7 @@ def et17NumsAt (pS pD pG o : ℕ) : Et17Nums where
   pScanPairs := o + 25
   ch := chNumsAt o
 
-variable {P₀ : Program} {pS pD pG : ℕ} {Tn : List ℕ → ℕ} {need : List ℕ → Need}
+variable {P₀ : Program} {pS pD pG : ℕ} {Tn : Light.InputTime} {need : Light.InputNeed}
   {Dfun Gfun tD tG wD wG : ℕ → ℕ}
 
 end Light.Sec3

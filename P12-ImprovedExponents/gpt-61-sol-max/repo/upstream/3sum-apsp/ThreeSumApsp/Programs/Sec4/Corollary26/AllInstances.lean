@@ -5,8 +5,15 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import ThreeSumApsp.Util.Types
+public import Mathlib.Tactic
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Program
-public import ThreeSumApsp.Programs.Sec4.Corollary26.Regime
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Costs
+public import ThreeSumApsp.Sec4.ParameterSteps
+public import ThreeSumApsp.Sec4.Table2.LogBounds
+public import ThreeSumApsp.Util.Asymptotics.Dominated
+public import ThreeSumApsp.Util.Log
+public import ThreeSumApsp.Sec4.Corollary31.RationalParameters
 
 /-!
 # Corollary 26, the offline form, on all instances
@@ -35,7 +42,7 @@ offline routine offline32 if so and the brute force if not. The texts are `allIn
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+
 
 /-! ## Time and need -/
 
@@ -43,44 +50,44 @@ open ThreeSumApsp ThreeSumApsp.Spec
 
 /-! ## The limits -/
 
-section need
+section
 
 variable {lim : Limits} {N D₀ w U fr d : ℕ}
 
-end need
+end
 
 /-! ## The matrices of an instance -/
 
 /-- The first matrix of an instance. -/
-def thinMX (x : ThinInst) : Matrix (Fin x.N) (Fin x.D) ℤ := fun i j => x.X.getD (i * x.D + j) 0
+def thinMX (x : ThinInst) : ThreeSumApsp.IntMatrix x.N x.D := fun i j => x.X.getD (i * x.D + j) 0
 
 /-- The second matrix of an instance. -/
-def thinMY (x : ThinInst) : Matrix (Fin x.D) (Fin x.N) ℤ := fun i j => x.Y.getD (i * x.N + j) 0
+def thinMY (x : ThinInst) : ThreeSumApsp.IntMatrix x.D x.N := fun i j => x.Y.getD (i * x.N + j) 0
 
-theorem matAt_thinMX {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ fr) : MatAt μ x.x
+theorem matAt_thinMX {x} {μ} {fr} (h : x.Pre μ fr) : MatAt μ x.x
     (thinMX x) := by
   intro i j
-  have hlt : (i : ℕ) * x.D + j < x.X.length := by
+
+  rw [Nat.add_assoc, h.segX.getD (by
     rw [h.lenX]
     have := Nat.mul_add_le_mul i.isLt (le_refl x.D)
-    have := j.isLt
     omega
-  rw [Nat.add_assoc, h.segX.getD hlt 0]
+  ) 0]
   rfl
 
-theorem matAt_thinMY {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ fr) : MatAt μ x.y
+theorem matAt_thinMY {x} {μ} {fr} (h : x.Pre μ fr) : MatAt μ x.y
     (thinMY x) := by
   intro i j
-  have hlt : (i : ℕ) * x.N + j < x.Y.length := by
+
+  rw [Nat.add_assoc, h.segY.getD (by
     rw [h.lenY]
     have := Nat.mul_add_le_mul i.isLt (le_refl x.N)
-    have := j.isLt
     omega
-  rw [Nat.add_assoc, h.segY.getD hlt 0]
+  ) 0]
   rfl
 
 /-- The entry of the product of the two matrices is the entry that the task asks for. -/
-theorem entryN_thin (x : ThinInst) {I J : ℕ} (hI : I < x.N) (hJ : J < x.N) :
+theorem entryN_thin x {I J} (hI : I < x.N) (hJ : J < x.N) :
     entryN (thinMX x) (thinMY x) I J = thinEntry x.N x.D x.X x.Y I J := by
   rw [entryN, dif_pos ⟨hI, hJ⟩, Matrix.mul_apply, thinEntry, List.sum_map_range, Finset.sum_range]
   rfl
@@ -88,9 +95,7 @@ theorem entryN_thin (x : ThinInst) {I J : ℕ} (hI : I < x.N) (hJ : J < x.N) :
 /-! ## The routine -/
 
 /-- The answers of the offline routine are those that the task asks for. -/
-theorem map_entryN_thin {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ fr) :
-    (x.WI.zip x.WJ).map (fun q => entryN (thinMX x) (thinMY x) q.1 q.2)
-      = thinOut x.N x.D x.X x.Y x.WI x.WJ :=
+def map_entryN_thin {x : ThinInst} {μ} {fr} (h : x.Pre μ fr) :=
   List.map_congr_left fun _ hq =>
     entryN_thin x (h.ltWI _ (List.of_mem_zip hq).1) (h.ltWJ _ (List.of_mem_zip hq).2)
 
@@ -98,10 +103,10 @@ theorem map_entryN_thin {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre 
 
 /-! ## The need is polynomial in the parameters -/
 
-section summands
+section
 
 variable {N D U Q : ℕ}
 
-end summands
+end
 
 end Light.Sec4

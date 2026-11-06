@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Util.Asymptotics.PowLittleO
 
 /-!
@@ -32,18 +33,18 @@ open Filter Asymptotics
 namespace ThreeSumApsp
 
 /-- `f(n) = O(n^a)`, as an upper bound. -/
-def UpperBigOPow (f : ℕ → ℝ) (a : ℝ) : Prop :=
-  ∃ C : ℝ, ∀ᶠ n : ℕ in Filter.atTop, f n ≤ C * (n : ℝ) ^ a
+def UpperBigOPow (f : ℕ → ℝ) (a : ℝ) :=
+  ∃ C : ℝ, ∀ᶠ n : ℕ in Filter.atTop, f n ≤ C * n ^ a
 
 /-- `f(n) = O(n^a (log n)^{O(1)})`, as an upper bound. -/
-def UpperPowPolylog (f : ℕ → ℝ) (a : ℝ) : Prop :=
-  ∃ (C : ℝ) (e : ℕ), ∀ᶠ n : ℕ in Filter.atTop, f n ≤ C * ((n : ℝ) ^ a * Real.log n ^ e)
+def UpperPowPolylog (f : ℕ → ℝ) (a : ℝ) :=
+  ∃ (C : ℝ) (e : ℕ), ∀ᶠ n : ℕ in Filter.atTop, f n ≤ C * (n ^ a * Real.log n ^ e)
 
 /-- There is a sequence `ε(n) → 0` with `f(n) ≤ n^{a+ε(n)}` for all large `n`: a bound on `f` and
 not on `|f|` (that is `IsPowLittleO`). -/
-def UpperPowLittleO (f : ℕ → ℝ) (a : ℝ) : Prop :=
+def UpperPowLittleO (f : ℕ → ℝ) a :=
   ∃ ε : ℕ → ℝ, Filter.Tendsto ε Filter.atTop (nhds 0) ∧
-    ∀ᶠ n : ℕ in Filter.atTop, f n ≤ (n : ℝ) ^ (a + ε n)
+    ∀ᶠ n : ℕ in Filter.atTop, f n ≤ n ^ (a + ε n)
 
 variable {f f' g : ℕ → ℝ} {a b : ℝ}
 
@@ -53,8 +54,7 @@ variable {f f' g : ℕ → ℝ} {a b : ℝ}
 theorem IsBigOPow.upperBigOPow (hf : IsBigOPow f a) : UpperBigOPow f a := by
   obtain ⟨C, hC⟩ := IsBigO.bound hf
   refine ⟨C, hC.mono fun n hn => ?_⟩
-  rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg n.cast_nonneg a)] at hn
-  exact (le_abs_self _).trans hn
+  grind [Real.norm_eq_abs, abs_of_nonneg, Real.rpow_nonneg]
 
 namespace UpperBigOPow
 
@@ -72,41 +72,34 @@ theorem IsPowPolylog.upperPowPolylog (hf : IsPowPolylog f a) : UpperPowPolylog f
   obtain ⟨e, hf⟩ := hf
   obtain ⟨C, hC⟩ := hf.bound
   refine ⟨C, e, hC.mono fun n hn => ?_⟩
-  have hnonneg : 0 ≤ (n : ℝ) ^ a * Real.log n ^ e :=
+  have hnonneg :=
     mul_nonneg (Real.rpow_nonneg n.cast_nonneg a) (pow_nonneg (Real.log_natCast_nonneg n) e)
   rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg hnonneg] at hn
   exact (le_abs_self _).trans hn
 
 namespace UpperPowPolylog
 
+variable (h : UpperPowPolylog f a)
+
+include h in
 /-- The function may be replaced by one that is eventually at most as large. -/
-theorem mono_left (h : UpperPowPolylog f a) (hle : ∀ᶠ n in atTop, f' n ≤ f n) :
+theorem mono_left  (hle : ∀ᶠ n in atTop, f' n ≤ f n) :
     UpperPowPolylog f' a := by
   obtain ⟨C, e, hC⟩ := h
   exact ⟨C, e, (hle.and hC).mono fun n hn => hn.1.trans hn.2⟩
 
+include h in
 /-- An upper bound `Õ(n^a)` is a bound by a nonnegative function of the class `Õ(n^a)`. -/
-theorem exists_isPowPolylog (h : UpperPowPolylog f a) :
+theorem exists_isPowPolylog  :
     ∃ g : ℕ → ℝ, (∀ n, 0 ≤ g n) ∧ IsPowPolylog g a ∧ ∀ᶠ n in atTop, f n ≤ g n := by
   obtain ⟨C, e, hC⟩ := h
-  exact ⟨fun n => |C * ((n : ℝ) ^ a * Real.log n ^ e)|, fun n => abs_nonneg _,
+  exact ⟨_, fun n => abs_nonneg _,
     ((isPowPolylog_rpow_mul_log_pow a e).const_mul C).abs,
     hC.mono fun n hn => hn.trans (le_abs_self _)⟩
 
-/-- The exponent may be raised. -/
-protected theorem mono (h : UpperPowPolylog f a) (hab : a ≤ b) : UpperPowPolylog f b := by
-  obtain ⟨g, -, hg, hfg⟩ := h.exists_isPowPolylog
-  exact (hg.mono hab).upperPowPolylog.mono_left hfg
-
-/-- Nonnegative constant factors are absorbed. -/
-theorem const_mul (hf : UpperPowPolylog f a) {c : ℝ} (hc : 0 ≤ c) :
-    UpperPowPolylog (fun n => c * f n) a := by
-  obtain ⟨F, -, hF, hfF⟩ := hf.exists_isPowPolylog
-  exact (hF.const_mul c).upperPowPolylog.mono_left
-    (hfF.mono fun n hn => mul_le_mul_of_nonneg_left hn hc)
-
+include h in
 /-- Logarithms are absorbed: `Õ(n^a) ⊆ O(n^b)` for `a < b`, from above. -/
-theorem upperBigOPow (h : UpperPowPolylog f a) (hab : a < b) : UpperBigOPow f b := by
+theorem upperBigOPow  (hab : a < b) : UpperBigOPow f b := by
   obtain ⟨g, -, hg, hfg⟩ := h.exists_isPowPolylog
   exact (hg.isBigOPow hab).upperBigOPow.mono_left hfg
 
@@ -131,7 +124,7 @@ theorem mono_left (h : UpperPowLittleO f a) (hle : ∀ᶠ n in atTop, f' n ≤ f
 theorem exists_isPowLittleO (h : UpperPowLittleO f a) :
     ∃ g : ℕ → ℝ, (∀ n, 0 ≤ g n) ∧ IsPowLittleO g a ∧ ∀ᶠ n in atTop, f n ≤ g n := by
   obtain ⟨ε, hε, hf⟩ := h
-  exact ⟨fun n => (n : ℝ) ^ (a + ε n), fun n => Real.rpow_nonneg n.cast_nonneg _,
+  exact ⟨_, fun n => Real.rpow_nonneg n.cast_nonneg _,
     ⟨ε, hε, Eventually.of_forall fun n => (abs_of_nonneg (Real.rpow_nonneg n.cast_nonneg _)).le⟩,
     hf⟩
 

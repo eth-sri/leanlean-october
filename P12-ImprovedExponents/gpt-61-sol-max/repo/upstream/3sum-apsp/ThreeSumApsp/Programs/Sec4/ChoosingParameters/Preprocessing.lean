@@ -5,6 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Parameters
 
 /-!
@@ -26,23 +29,23 @@ the flag 1 (`preBuild31_ends`, `PreInput31.ready_large`).
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
-variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ}
-  {Y : Matrix (Fin D₀) (Fin N) ℤ} {aX aY fr : ℕ} {U : ℤ} {μ μ' : ℕ → ℤ}
+variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : ThreeSumApsp.IntMatrix N D₀}
+  {Y : ThreeSumApsp.IntMatrix D₀ N} {aX aY fr : ℕ} {U : ℤ} {μ μ' : Light.Memory}
 
 /-! ## What the routine is given, and what it leaves -/
 
 /-- What the preprocessing is given: besides what both routines are given, the matrices X and Y
 stand at aX and aY. -/
-structure PreInput31 (lim : Limits) (G : RatParams) {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ)
-    (Y : Matrix (Fin D₀) (Fin N) ℤ) (aX aY fr : ℕ) (U : ℤ) (μ : ℕ → ℤ) : Prop
+structure PreInput31 (lim : Limits) (G : RatParams) {N D₀ : ℕ} (X : ThreeSumApsp.IntMatrix N D₀)
+    (Y : ThreeSumApsp.IntMatrix D₀ N) (aX aY fr : ℕ) (U : ℤ) (μ : Light.Memory) : Prop
     extends Input31 lim G X Y aX aY fr U where
   matX : MatAt μ aX X
   matY : MatAt μ aY Y
 
 /-- **Y with zero rows**: a copy of Y followed by zeros is the padded matrix. -/
-theorem matAt_padInnerRows {F a : ℕ} (mY : MatAt μ aY Y)
+theorem matAt_padInnerRows {F a} (mY : MatAt μ aY Y)
     (hcopy : ∀ i < D₀ * N, μ' (a + i) = μ (aY + i))
     (hzero : ∀ i < (F - D₀) * N, μ' (a + D₀ * N + i) = 0) : MatAt μ' a (padInnerRows F Y) := by
   intro i j
@@ -51,16 +54,15 @@ theorem matAt_padInnerRows {F a : ℕ} (mY : MatAt μ aY Y)
   · rw [dif_pos hi, Nat.add_assoc, hcopy _ (Nat.mul_add_lt_mul hi j.isLt), ← Nat.add_assoc]
     exact mY ⟨i, hi⟩ j
   · have hrow : (i : ℕ) * N = D₀ * N + ((i : ℕ) - D₀) * N := by
-      rw [← Nat.add_mul, Nat.add_sub_cancel' (not_lt.mp hi)]
-    have hidx := Nat.mul_add_lt_mul (by have := i.isLt; omega : (i : ℕ) - D₀ < F - D₀) j.isLt
-    rw [dif_neg hi, hrow, ← Nat.add_assoc, Nat.add_assoc (a + D₀ * N), hzero _ hidx]
+      ram_safe
+
+    rw [dif_neg hi, hrow, ← Nat.add_assoc, Nat.add_assoc (a + D₀ * N), hzero _ (Nat.mul_add_lt_mul (by omega : (i : ℕ) - D₀ < F - D₀) j.isLt)]
 
 /-! ## From the threshold on -/
 
 /-- The areas from the free pointer on: fr, fr + 1, fr + 2 | X' | Y' | the block of Theorem 30 from
 b0 on. F = 4^m is the padded inner dimension, and R the number of cells in the zero rows of Y'. -/
 structure Areas31 (lim : Limits) (N D₀ fr F R : ℕ) : Prop where
-  F_eq : F = D (logFour D₀)
   R_eq : R = (F - D₀) * N
   base : blockAt N D₀ fr = fr + 3 + N * F + N * F
   base_lt : blockAt N D₀ fr < lim.space
@@ -70,28 +72,27 @@ structure Areas31 (lim : Limits) (N D₀ fr F R : ℕ) : Prop where
 
 theorem PreInput31.areas (h : PreInput31 lim G X Y aX aY fr U μ) (hm : G.m₀ ≤ logFour D₀) :
     Areas31 lim N D₀ fr (D (logFour D₀)) ((D (logFour D₀) - D₀) * N) where
-  F_eq := rfl
   R_eq := rfl
   base := rfl
   base_lt := (G.blockAt_lt_blockEnd N D₀ fr).trans_le (structEnd_large hm N fr ▸ h.lim.space)
   D_le := le_D_logFour D₀
-  rows := by rw [← Nat.add_mul, Nat.add_sub_cancel' (le_D_logFour D₀), Nat.mul_comm]
+  rows := by grind [Nat.add_sub_cancel', le_D_logFour]
   F_le := Nat.le_mul_of_pos_left _ h.one_le_N
 
 /-- The time of prePad31. -/
-def tPrePad31 (G : RatParams) (N D₀ : ℕ) : ℕ :=
+def tPrePad31 (G : RatParams) N D₀ :=
   tCeilMul G.a (logFour D₀) + tCeilMul G.p (logFour D₀) + tPadX N (D (logFour D₀)) + tCopy (D₀ * N)
     + tFill ((D (logFour D₀) - D₀) * N) + 60
 
 /-- The state after prePad31: the locals hold the parameters and the addresses, the padded matrices
 stand at their places, and only cells between fr and b0 have changed. -/
-def Padded31 (G : RatParams) {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ)
-    (Y : Matrix (Fin D₀) (Fin N) ℤ)
-    (aX aY fr : ℕ) (μ : ℕ → ℤ) (σ : State) : Prop :=
-  ∃ (r : ℤ) (μ' : ℕ → ℤ),
-    σ = ⟨frame [N, D₀, aX, aY, fr, logFour D₀, (D (logFour D₀) : ℕ), (G.L (logFour D₀) : ℕ),
-      (G.t (logFour D₀) : ℕ), (paddedXAt fr : ℕ), (paddedYAt N D₀ fr : ℕ), (blockAt N D₀ fr : ℕ), r,
-      (N * D (logFour D₀) : ℕ)], μ'⟩ ∧
+def Padded31 (G : RatParams) {N D₀} (X : ThreeSumApsp.IntMatrix N D₀)
+    (Y : ThreeSumApsp.IntMatrix D₀ N)
+    (aX aY fr : ℕ) (μ : Light.Memory) (σ : State) : Prop :=
+  ∃ (r : ℤ) (μ' : Light.Memory),
+    σ = ⟨frame [N, D₀, aX, aY, fr, logFour D₀, D (logFour D₀), G.L (logFour D₀),
+      G.t (logFour D₀), paddedXAt fr, paddedYAt N D₀ fr, blockAt N D₀ fr, r,
+      N * D (logFour D₀)], μ'⟩ ∧
     MatAt μ' (paddedXAt fr) (padInnerCols (D (logFour D₀)) X) ∧
     MatAt μ' (paddedYAt N D₀ fr) (padInnerRows (D (logFour D₀)) Y) ∧
     SameOutside μ μ' fr (blockAt N D₀ fr - fr)

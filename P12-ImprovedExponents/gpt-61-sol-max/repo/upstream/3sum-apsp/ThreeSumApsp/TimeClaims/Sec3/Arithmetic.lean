@@ -5,7 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Sec3.Corollary15_16
+public import ThreeSumApsp.Sec3.Chunks
+public import ThreeSumApsp.Sec3.Parameters
+public import Mathlib.Algebra.Order.Floor.Semifield
 public import ThreeSumApsp.TimeClaims.Sec3.Definitions
 
 /-!
@@ -25,10 +27,6 @@ public section
 namespace ThreeSumApsp
 
 /-! ## Two quantities that are at least 1 -/
-
-/-- `⌈n^{1/3}⌉ ≥ 1` for `n ≥ 1`. -/
-theorem one_le_cbrtCeil {n : ℕ} (hn : 1 ≤ n) : 1 ≤ cbrtCeil n :=
-  Nat.ceil_pos.2 (Real.rpow_pos_of_pos (Nat.cast_pos.2 hn) _)
 
 /-- `(log s + 1)^e ≥ 1`. -/
 theorem one_le_log_add_one_pow (s e : ℕ) : 1 ≤ (Real.log s + 1) ^ e :=

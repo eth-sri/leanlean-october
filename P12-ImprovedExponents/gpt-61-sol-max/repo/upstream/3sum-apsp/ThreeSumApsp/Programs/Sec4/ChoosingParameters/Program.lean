@@ -5,12 +5,17 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Ceiling
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.InnerProduct
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.OfflineStatement
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Costs
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Offline
+public import ThreeSumApsp.Lang.RowMajor
+public import ThreeSumApsp.Programs.Sec4.Theorem30.Offline
+public import ThreeSumApsp.Programs.Sec4.Theorem30.WordSize
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Pad
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Preprocessing
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Statement
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Parameters
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Program
 
 /-!
@@ -35,40 +40,27 @@ program is a data structure (`isDataStructure_of_costsWithin`) and solves the of
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.WordRam
+
 
 /-! ## Two procedures for Corollary 26
 
 The program carries them for all parameters G. What they do at the parameters of Corollary 26 is
 proved in `regimeTest26_meets` and `allInstances26_solves`. -/
 
-/-- regimeTest26(N, D) returns 1 if D^18 ≤ N and 0 if not. It changes no cell. -/
-def regimeTest26Body : Stmt := Sec2.regimePow ;; .set 0 (v 9)
-
-/-- allInstances26(N, D, w, U, x, y, wi, wj, out, fr). Locals 0 to 9 are the arguments, which are
-passed on as they are; local 10 is the result of the test. -/
-def allInstances26Body : Stmt :=
-  .call Proc.regimeTest26 [v 0, v 1] 10 ;;
-  .ite (k 0 <' v 10)
-    (.call Proc.offline32 [v 0, v 1, v 2, v 3, v 4, v 5, v 6, v 7, v 8, v 9] 0)
-    (.call Sec2.pThinBrute [v 0, v 1, v 2, v 3, v 4, v 5, v 6, v 7, v 8, v 9] 0)
-
 /-! ## The program -/
 
 /-- The bodies of the procedures number 58, 59, …, 73 (61 is not used). -/
-def procs31 (G : RatParams) : List Stmt :=
-  [copyBody, fillBody, log4Body, .skip, padXBody, ipAtBody, pre31Body G, query31Body,
-    preMain31Body, queryMain31Body, offline32Body, offlineMain32Body, allInstances26Body,
-    regimeTest26Body, ceilMulBody G.a G.b, ceilMulBody G.p G.q]
+def procs31 (G : RatParams) :=
+  [copyBody, fillBody, log4Body, .skip, padXBody, ipAtBody, .skip, query31Body] ++
+    List.replicate 6 .skip ++ [ceilMulBody G.a G.b, ceilMulBody G.p G.q]
 
 /-- The program for the parameters G. -/
-def program31 (G : RatParams) : Program := base58 ++ procs31 G
+def program31 G := base58 ++ procs31 G
 
 /-- The routines stand at their numbers. -/
-theorem program31_at (G : RatParams) (n : ℕ) {body : Stmt} (hn : 58 ≤ n := by norm_num)
+theorem program31_at G n {body} (hn : 58 ≤ n := by norm_num)
     (h : (procs31 G)[n - 58]? = some body := by rfl) : (program31 G)[n]? = some body := by
-  rw [program31, List.getElem?_append_right (by rw [length_base58]; exact hn), length_base58]
-  exact h
+  grind [program31, length_base58]
 
 /-! ## The program on the word RAM -/
 

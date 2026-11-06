@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.FromNumbers
 public import ThreeSumApsp.Util.Asymptotics.SoftOSqrtPow
 
@@ -34,47 +35,47 @@ namespace ThreeSumApsp
 
 namespace ChanHe
 
-open Finset
+
 
 /-! ## The parameters -/
 
 /-- The number of binary digits is a polylogarithm. -/
-theorem softO_Lam (κ : ℕ) : SoftOSqrtPow (fun n => Lam (2 * n ^ κ)) 0 := by
+theorem softO_Lam κ : SoftOSqrtPow (fun n => Lam (2 * n ^ κ)) 0 := by
   unfold Lam
   growth_sqrt []
 
 /-- The number of primes that we want to choose from is `√n` times a polylogarithm. -/
-theorem softO_wPar (κ : ℕ) : SoftOSqrtPow (fun n => wPar n (2 * n ^ κ) + 1) 1 := by
+theorem softO_wPar κ : SoftOSqrtPow (fun n => wPar n (2 * n ^ κ) + 1) 1 := by
   unfold wPar
   growth_sqrt [softO_Lam κ]
 
 /-- **The bound on the primes is `√n` times a polylogarithm.** -/
-theorem softO_mPar (κ : ℕ) : SoftOSqrtPow (fun n => mPar n (2 * n ^ κ)) 1 := by
+theorem softO_mPar κ : SoftOSqrtPow (fun n => mPar n (2 * n ^ κ)) 1 := by
   unfold mPar
   growth_sqrt [softO_wPar κ]
 
 /-- The instances are not empty arrays. -/
-theorem one_le_lenOf (κ n : ℕ) : 1 ≤ lenOf κ n :=
+theorem one_le_lenOf κ n : 1 ≤ lenOf κ n :=
   Nat.succ_le_of_lt (by unfold lenOf mPar; positivity)
 
 /-! ## Correctness, the number of instances, their entries, and the count for the searches -/
 
-section input
+section
 
 variable {κ n : ℕ} {x : Fin n → ℤ}
 
 /-- `Convolution3SUM` on the first `N` cells of an array `y : ℕ → ℤ` is the problem
 `ConvOne N y`. -/
-theorem convolution3SUM_iff_convOne (N : ℕ) (y : ℕ → ℤ) :
+theorem convolution3SUM_iff_convOne N y :
     Convolution3SUM (fun i : Fin N => y i) ↔ ConvOne N y :=
   ⟨fun ⟨i, j, h, e⟩ => ⟨i, j, h, e⟩, fun ⟨u, v, h, e⟩ => ⟨⟨u, by omega⟩, ⟨v, by omega⟩, h, e⟩⟩
 
-end input
+end
 
 /-! ## The three bounds in asymptotic form -/
 
 /-- The length of the instances is `n` times a polylogarithm. -/
-theorem isPowPolylog_lenOf (κ : ℕ) : IsPowPolylog (fun n => (lenOf κ n : ℝ)) 1 :=
+theorem isPowPolylog_lenOf κ : IsPowPolylog (fun n => lenOf κ n) 1 :=
   SoftOSqrtPow.isPowPolylog (i := 2) (by unfold lenOf; growth_sqrt [softO_mPar κ]) (by norm_num)
 
 end ChanHe

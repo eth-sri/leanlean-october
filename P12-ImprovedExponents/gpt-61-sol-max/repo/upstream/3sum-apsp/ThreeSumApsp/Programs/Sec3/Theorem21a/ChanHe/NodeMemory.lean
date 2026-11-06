@@ -5,6 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Contracts
 public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Recursion
 
@@ -33,9 +36,9 @@ open ThreeSumApsp ThreeSumApsp.ChanHe Finset
 
 /-! ## The memory -/
 
-section memory
+section
 
-variable {μ μ' : ℕ → ℤ} {fr V m np pr cnt s len : ℕ} {S : Finset ℤ} {e : Env} {X : Slot}
+variable {μ μ' : Light.Memory} {fr V m np pr cnt s len : ℕ} {S : Finset ℤ} {e : Env} {X : Slot}
   {a : NodeArgs}
 
 /-- A set below the free pointer is still there if no cell below the free pointer has changed. -/
@@ -50,33 +53,33 @@ theorem SetAt.card (h : SetAt μ s len S) : #S = len := by
   rw [← ht, List.toFinset_card_of_nodup hn, hL]
 
 /-- A set of length 0 is empty. -/
-theorem SetAt.eq_empty (h : SetAt μ s len S) (h0 : len = 0) : S = ∅ :=
+def SetAt.eq_empty (h : SetAt μ s len S) h0 :=
   Finset.card_eq_zero.1 (h.card.trans h0)
 
 /-- There are at most as many heavy elements as elements. -/
-theorem card_heavy_le (h : SetAt μ s len S) (M : ℕ) : #(ChanHe.heavy S M) ≤ len :=
+def card_heavy_le (h : SetAt μ s len S) M :=
   h.card ▸ Finset.card_le_card (heavy_subset S M)
 
 /-- The primes and the count table only depend on the cells below the free pointer. -/
-theorem Env.Ok.kept (h : e.Ok μ) (hk : Kept μ μ' e.fr) : e.Ok μ' :=
+def Env.Ok.kept (h : e.Ok μ) (hk : Kept μ μ' e.fr) :=
   { h with
     primes := ⟨h.primes.1, h.primes.2.congr fun i hi => hk _ (by
-      have hbelow := h.belowPr
-      have hnp := h.primes.1
-      simp only [List.length_map, Finset.length_sort] at hi
-      omega)⟩
+      ram_arith)⟩
     zero := fun r hr => (hk _ (by have := h.belowCnt; omega)).trans (h.zero r hr) }
 
 /-- A set of a node only depends on the cells below the free pointer. -/
-theorem Slot.Ok.kept (h : X.Ok μ e) (hk : Kept μ μ' e.fr) : X.Ok μ' e :=
+def Slot.Ok.kept (h : X.Ok μ e) (hk : Kept μ μ' e.fr) :=
   { h with set := h.set.kept h.below hk }
 
+variable (h : NodeMem μ a)
+
+include h in
 /-- What a node needs in the memory only depends on the cells below the free pointer. -/
-theorem NodeMem.kept (h : NodeMem μ a) (hk : Kept μ μ' a.fr) : NodeMem μ' a :=
+theorem NodeMem.kept (hk : Kept μ μ' a.fr) : NodeMem μ' a :=
   ⟨h.envOk.kept hk, h.set₁.kept hk, h.set₂.kept hk, h.set₃.kept hk⟩
 
 /-- A set of a node with the count table, as coll and heavy want them. -/
-theorem Slot.Ok.bucket (h : X.Ok μ e) (he : e.Ok μ) {M : ℕ} (hM : 1 ≤ M) (hMm : M ≤ e.m * e.m) :
+theorem Slot.Ok.bucket (h : X.Ok μ e) (he : e.Ok μ) {M} (hM : 1 ≤ M) (hMm : M ≤ e.m * e.m) :
     BucketMem μ e.fr e.V M X.addr X.len e.cnt (e.m * e.m) X.set :=
   ⟨hM, hMm, h.bdd, h.set, he.zero, h.below, he.belowCnt, h.apart⟩
 
@@ -86,22 +89,22 @@ A child has the heavy elements of one of the three sets in place of that set.  T
 the free pointer, which moves on by the length of the set. -/
 
 /-- What the routines share, after `len` cells from the free pointer have been taken. -/
-@[simp] def Env.push (e : Env) (len : ℕ) : Env := { e with fr := e.fr + len }
+@[simp] def Env.push (e : Env) len := { e with fr := e.fr + len }
 
 /-- The heavy elements of a set modulo `M`, at the address `fr`. -/
 @[simp] def Slot.heavy (X : Slot) (fr M : ℕ) : Slot :=
   ⟨fr, #(ChanHe.heavy X.set M), ChanHe.heavy X.set M⟩
 
 /-- A node, after `len` cells from the free pointer have been taken. -/
-@[simp] def NodeArgs.push (a : NodeArgs) (len : ℕ) : NodeArgs :=
+@[simp] def NodeArgs.push (a : NodeArgs) len :=
   { a with toEnv := a.toEnv.push len }
 
 /-- The three children of a node with the modulus `M`. -/
-@[simp] def NodeArgs.child₁ (a : NodeArgs) (M : ℕ) : NodeArgs :=
+@[simp] def NodeArgs.child₁ (a : NodeArgs) M :=
   { a with toEnv := a.toEnv.push a.X₁.len, X₁ := a.X₁.heavy a.fr M }
-@[inherit_doc NodeArgs.child₁, simp] def NodeArgs.child₂ (a : NodeArgs) (M : ℕ) : NodeArgs :=
+@[simp] def NodeArgs.child₂ (a : NodeArgs) M :=
   { a with toEnv := a.toEnv.push a.X₂.len, X₂ := a.X₂.heavy a.fr M }
-@[inherit_doc NodeArgs.child₁, simp] def NodeArgs.child₃ (a : NodeArgs) (M : ℕ) : NodeArgs :=
+@[simp] def NodeArgs.child₃ (a : NodeArgs) M :=
   { a with toEnv := a.toEnv.push a.X₃.len, X₃ := a.X₃.heavy a.fr M }
 
 /-- The primes and the count table are not touched when cells from the free pointer on are
@@ -116,13 +119,14 @@ theorem Slot.Ok.push (h : X.Ok μ e) (hk : KeptBut μ μ' (e.fr + len) e.fr len)
     X.Ok μ' (e.push len) :=
   { h.kept (hk.mono fun b hb => by omega) with below := h.below.trans (Nat.le_add_right _ _) }
 
+include h in
 /-- A node is not touched when cells from the free pointer on are written. -/
-theorem NodeMem.push (h : NodeMem μ a) (hk : KeptBut μ μ' (a.fr + len) a.fr len) :
+theorem NodeMem.push (hk : KeptBut μ μ' (a.fr + len) a.fr len) :
     NodeMem μ' (a.push len) :=
   ⟨h.envOk.push hk, h.set₁.push hk, h.set₂.push hk, h.set₃.push hk⟩
 
 /-- The heavy elements of a set of a node, written at the free pointer, are a set of the child. -/
-theorem Slot.Ok.heavy (h : X.Ok μ e) (he : e.Ok μ) {M : ℕ}
+theorem Slot.Ok.heavy (h : X.Ok μ e) (he : e.Ok μ) {M}
     (hs : SetAt μ' e.fr #(ChanHe.heavy X.set M) (ChanHe.heavy X.set M)) :
     (X.heavy e.fr M).Ok μ' (e.push X.len) where
   set := hs
@@ -131,56 +135,59 @@ theorem Slot.Ok.heavy (h : X.Ok μ e) (he : e.Ok μ) {M : ℕ}
   below := Nat.add_le_add_left (card_heavy_le h.set M) _
   apart := Or.inr he.belowCnt
 
+include h in
 /-- The first child: the heavy elements of the first set, written at the free pointer, in place of
 the first set. -/
-theorem NodeMem.child₁ (h : NodeMem μ a) {M : ℕ} (hk : KeptBut μ μ' (a.fr + a.X₁.len) a.fr a.X₁.len)
+theorem NodeMem.child₁ {M} (hk : KeptBut μ μ' (a.fr + a.X₁.len) a.fr a.X₁.len)
     (hs : SetAt μ' a.fr #(ChanHe.heavy a.X₁.set M) (ChanHe.heavy a.X₁.set M)) :
     NodeMem μ' (a.child₁ M) :=
   ⟨h.envOk.push hk, h.set₁.heavy h.envOk hs, h.set₂.push hk, h.set₃.push hk⟩
 
+include h in
 /-- The second child: the heavy elements of the second set in place of the second set. -/
-theorem NodeMem.child₂ (h : NodeMem μ a) {M : ℕ} (hk : KeptBut μ μ' (a.fr + a.X₂.len) a.fr a.X₂.len)
+theorem NodeMem.child₂ {M} (hk : KeptBut μ μ' (a.fr + a.X₂.len) a.fr a.X₂.len)
     (hs : SetAt μ' a.fr #(ChanHe.heavy a.X₂.set M) (ChanHe.heavy a.X₂.set M)) :
     NodeMem μ' (a.child₂ M) :=
   ⟨h.envOk.push hk, h.set₁.push hk, h.set₂.heavy h.envOk hs, h.set₃.push hk⟩
 
+include h in
 /-- The third child: the heavy elements of the third set in place of the third set. -/
-theorem NodeMem.child₃ (h : NodeMem μ a) {M : ℕ} (hk : KeptBut μ μ' (a.fr + a.X₃.len) a.fr a.X₃.len)
+theorem NodeMem.child₃ {M} (hk : KeptBut μ μ' (a.fr + a.X₃.len) a.fr a.X₃.len)
     (hs : SetAt μ' a.fr #(ChanHe.heavy a.X₃.set M) (ChanHe.heavy a.X₃.set M)) :
     NodeMem μ' (a.child₃ M) :=
   ⟨h.envOk.push hk, h.set₁.push hk, h.set₂.push hk, h.set₃.heavy h.envOk hs⟩
 
 /-- The block of parameters, below the free pointer, is still there if no cell below the free
 pointer has changed. -/
-theorem CtxAt.kept {cx Λ : ℕ} (h : CtxAt μ cx V m Λ np pr cnt) (hb : cx + 6 ≤ fr)
-    (hk : Kept μ μ' fr) : CtxAt μ' cx V m Λ np pr cnt :=
-  Seg.congr h fun i hi => hk _ (by simp only [List.length_cons, List.length_nil] at hi; omega)
+def CtxAt.kept {cx Λ} (h : CtxAt μ cx V m Λ np pr cnt) (hb : cx + 6 ≤ fr)
+    (hk : Kept μ μ' fr) :=
+  Seg.congr h fun i hi => hk _ (by simp_all <;> omega)
 
-end memory
+end
 
 
 /-! ## Words -/
 
 /-- A product of three factors that fits in the words of the routines below the tree. -/
-theorem mul_le_wordNeed {x y z n V M : ℕ} (hx : x ≤ (n + 1) ^ 2) (hy : y ≤ M + 1)
-    (hz : z ≤ 64 * (V + 1)) : x * y * z ≤ wordNeed n V M :=
+def mul_le_wordNeed {x y z n V M} hx hy
+     hz :=
   calc x * y * z ≤ (n + 1) ^ 2 * (M + 1) * (64 * (V + 1)) :=
         Nat.mul_le_mul (Nat.mul_le_mul hx hy) hz
     _ = wordNeed n V M := by unfold wordNeed; ring
 
 /-- The same for the limits: the product fits in a word. -/
-theorem mul_le_word {lim : Limits} {x y z n V M : ℕ} (h : ((wordNeed n V M : ℕ) : ℤ) ≤ lim.word)
+theorem mul_le_word {lim : Limits} {x y z n V M} (h : (wordNeed n V M : ℤ) ≤ lim.word)
     (hx : x ≤ (n + 1) ^ 2) (hy : y ≤ M + 1) (hz : z ≤ 64 * (V + 1)) :
     (x : ℤ) * y * z ≤ lim.word :=
-  le_trans (by exact_mod_cast mul_le_wordNeed hx hy hz) h
+  le_trans (mod_cast mul_le_wordNeed hx hy hz) h
 
 /-- A number up to M + 1 fits in a word. -/
-theorem le_word_of_le {lim : Limits} {y n V M : ℕ} (h : ((wordNeed n V M : ℕ) : ℤ) ≤ lim.word)
+theorem le_word_of_le {lim : Limits} {y n V M} (h : (wordNeed n V M : ℤ) ≤ lim.word)
     (hy : y ≤ M + 1) : (y : ℤ) ≤ lim.word := by
-  simpa using mul_le_word (x := 1) (z := 1) h (Nat.one_le_pow _ _ (by omega)) hy (by omega)
+  simpa using mul_le_word (z := 1) h (Nat.one_le_pow _ _ (by omega)) hy (by omega)
 
 /-- Larger sets and larger moduli need larger words. -/
-theorem wordNeed_mono {n n' V M M' : ℕ} (hn : n ≤ n') (hM : M ≤ M') :
+theorem wordNeed_mono {n n' V M M'} (hn : n ≤ n') (hM : M ≤ M') :
     wordNeed n V M ≤ wordNeed n' V M' := by
   unfold wordNeed
   gcongr

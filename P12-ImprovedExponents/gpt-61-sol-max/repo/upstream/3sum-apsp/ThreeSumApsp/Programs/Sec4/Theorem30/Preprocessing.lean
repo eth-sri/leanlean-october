@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import ThreeSumApsp.Util.Types
+public import Mathlib.Tactic
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Directory
 
 /-!
@@ -22,76 +24,41 @@ preCore_spec puts them behind the shared stage.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 /-! ## The program -/
 
-namespace PreCore
 
-/-- The local variables of preCore: the arguments L, m, t, N, D, aX, aY, b0; a local for results
-that are not used; the address of WD, the number nB, the addresses of CUR, BOX, FP, ROOTS, the
-number m - t, and the address of TR. -/
-abbrev Levels : ℕ := 0
-@[inherit_doc Levels] abbrev Inner : ℕ := 1
-@[inherit_doc Levels] abbrev Switch : ℕ := 2
-@[inherit_doc Levels] abbrev Size : ℕ := 3
-@[inherit_doc Levels] abbrev Width : ℕ := 4
-@[inherit_doc Levels] abbrev MatX : ℕ := 5
-@[inherit_doc Levels] abbrev MatY : ℕ := 6
-@[inherit_doc Levels] abbrev Base : ℕ := 7
-@[inherit_doc Levels] abbrev Void : ℕ := 8
-@[inherit_doc Levels] abbrev Digits : ℕ := 9
-@[inherit_doc Levels] abbrev Bands : ℕ := 10
-@[inherit_doc Levels] abbrev Cur : ℕ := 11
-@[inherit_doc Levels] abbrev Box : ℕ := 12
-@[inherit_doc Levels] abbrev Free : ℕ := 13
-@[inherit_doc Levels] abbrev Roots : ℕ := 14
-@[inherit_doc Levels] abbrev Last : ℕ := 15
-@[inherit_doc Levels] abbrev Tries : ℕ := 16
-
-end PreCore
-
-open PreCore in
 /-- The addresses of the areas of Section 4, which lie one behind the other from WD on. -/
-def preCoreAddr : Stmt :=
-  .set Digits (M (v Base +' k Dir.sharedEnd)) ;;
-  .set Bands (M (v Base +' k Dir.bands)) ;;
-  .set Cur (v Digits +' v Levels) ;;
-  .set Box (v Cur +' v Levels) ;;
-  .set Free (v Box +' v Levels +' v Inner) ;;
-  .set Roots (v Free +' k 1) ;;
-  .set Last (v Inner -' v Switch) ;;
-  .set Tries (v Roots +' v Bands *' v Bands)
+def preCoreAddr  :=
+  .set 9 (M (v 7 +' k 30)) ;;
+  .set 10 (M (v 7 +' k 9)) ;;
+  .set 11 (v 9 +' v 0) ;;
+  .set 12 (v 11 +' v 0) ;;
+  .set 13 (v 12 +' v 0 +' v 1) ;;
+  .set 14 (v 13 +' k 1) ;;
+  .set 15 (v 1 -' v 2) ;;
+  .set 16 (v 14 +' v 10 *' v 10)
 
-open PreCore in
 /-- The trie array starts as [0], of length 1; then the tries of all tiles. -/
-def preCoreFinish : Stmt :=
-  .store (v Tries) (k 0) ;;
-  .store (v Free) (k 1) ;;
-  .call Proc.allTiles [M (v Base +' k Dir.encA), M (v Base +' k Dir.encB), v Bands,
-    M (v Base +' k Dir.leaves), v Roots, v Tries, v Free, v Cur, v Box, v Levels, v Last] Void
-
-open PreCore in
-/-- preCore(L, m, t, N, D, aX, aY, b0) builds the data structure for the matrices at aX and aY in
-the block from b0 on. -/
-def preCoreBody : Stmt :=
-  .call Sec2.pShared [v Levels, v Inner, v Size, v Width, v MatX, v MatY, v Base] Void ;;
-  .store (v Base +' k Dir.switch) (v Switch) ;;
-  preCoreAddr ;;
-  preCoreFinish
+def preCoreFinish  :=
+  .store (v 16) (k 0) ;;
+  .store (v 13) (k 1) ;;
+  .call 51 [M (v 7 +' k 26), M (v 7 +' k 27), v 10,
+    M (v 7 +' k 10), v 14, v 16, v 13, v 11, v 12, v 0, v 15] 8
 
 /-- What the locals hold after the shared stage; r is its result. -/
 def preShared (p : Sec2.Par) (t aX aY b0 : ℕ) (r : ℤ) : List ℤ :=
   [p.L, p.m, t, p.N, p.D, aX, aY, b0, r]
 
 /-- What the locals hold after the addresses have been computed. -/
-def preLocals (p : Sec2.Par) (t aX aY b0 : ℕ) (r : ℤ) : List ℤ :=
+def preLocals p t aX aY b0 r :=
   preShared p t aX aY b0 r ++ [(aWD p b0 : ℤ), p.nB, aCUR p b0, aBOX p b0, aFP p b0, aROOTS p b0,
     (p.m - t : ℕ), aTR p b0]
 
 variable {lim : Limits} {P : Program} {d : ℕ} {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L}
-  {aX aY b0 : ℕ} {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ}
-  {U : ℤ} {μ : ℕ → ℤ}
+  {aX aY b0 : ℕ} {X : ThreeSumApsp.IntMatrix p.N (D p.m)} {Y : ThreeSumApsp.IntMatrix (D p.m) p.N}
+  {U : ℤ} {μ : Light.Memory}
 
 /-! ## The addresses -/
 
@@ -99,7 +66,7 @@ variable {lim : Limits} {P : Program} {d : ℕ} {p : Sec2.Par} {t : ℕ} {hmL : 
 
 /-- The arguments of the call of allTiles, and the data behind them. -/
 def allArgs (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (b0 : ℕ)
-    (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ) (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) :
+    (X : ThreeSumApsp.IntMatrix p.N (D p.m)) (Y : ThreeSumApsp.IntMatrix (D p.m) p.N) :
     AllTilesArgs where
   L := p.L
   m := p.m
@@ -117,14 +84,12 @@ def allArgs (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (b0 : ℕ)
   box := aBOX p b0
 
 /-- The trie area with the array [0], after the two stores. -/
-theorem trieMem_start (p : Sec2.Par) (t b0 : ℕ) (μ : ℕ → ℤ) :
+theorem trieMem_start p t b0 μ :
     TrieMem (Function.update (Function.update μ (aTR p b0) 0) (aFP p b0) 1) (aTR p b0)
       (trieCap p t) (aFP p b0) [0] := by
   obtain ⟨⟩ := areas p t b0
   refine ⟨fun i hi => ?_, Function.update_self .., by simp [trieCap], Or.inl (by omega)⟩
-  obtain rfl : i = 0 := by simpa using hi
-  rw [Nat.add_zero, Function.update_of_ne (by omega), Function.update_self]
-  rfl
+  grind
 
 /-! ## The routine -/
 

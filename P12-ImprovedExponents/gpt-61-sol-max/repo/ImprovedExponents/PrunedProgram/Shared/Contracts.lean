@@ -1,5 +1,7 @@
 module
 
+public import ThreeSumApsp.Util.Types
+public import Mathlib.Tactic
 public import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
 public import ImprovedExponents.PrunedProgram.SegOn
 public import ImprovedExponents.PrunedProgram.Work
@@ -24,19 +26,19 @@ Adapted from upstream `ThreeSumApsp/Programs/Sec2/Theorem5/Contracts.lean` and
 
 namespace Light.Sec2
 
-open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
+open ThreeSumApsp ImprovedExponents
 
 variable {p : Par} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
-  {X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ}
-  {Y : Matrix (Fin (ThreeSumApsp.D p.m)) (Fin p.N) ℤ} {μ μ' : ℕ → ℤ}
+  {X : ThreeSumApsp.IntMatrix p.N (ThreeSumApsp.D p.m)}
+  {Y : ThreeSumApsp.IntMatrix (ThreeSumApsp.D p.m) p.N} {μ μ' : Light.Memory}
 
 /-- What the pruned shared stage leaves behind: the tables, the directory, and the encodings of all
 bands at the leaves with at most `m` symbols `P₀`.  (Cell 31 of the directory is not used by
 it.) -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/Contracts.lean (SharedReady)
 structure SharedReadyP (p : Par) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ)
-    (X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ)
-    (Y : Matrix (Fin (ThreeSumApsp.D p.m)) (Fin p.N) ℤ) (μ : ℕ → ℤ) : Prop
+    (X : ThreeSumApsp.IntMatrix p.N (ThreeSumApsp.D p.m))
+    (Y : ThreeSumApsp.IntMatrix (ThreeSumApsp.D p.m) p.N) (μ : Light.Memory) : Prop
   extends SharedTables p b0 μ where
   dir : SegN μ (p.aDIR b0) (dirList p aX aY b0)
   encA : ∀ β < p.nB, SegOn p.m μ (p.aENCA b0 + β * p.T)
@@ -51,10 +53,10 @@ shared block, but for cell 31 of the directory, which the shared stage does not 
 theorem SharedReadyP.congr (h : SharedReadyP p hmL aX aY b0 X Y μ)
     (hag : ∀ a, b0 ≤ a → a < p.sharedEnd b0 → a ≠ b0 + 31 → μ' a = μ a) :
     SharedReadyP p hmL aX aY b0 X Y μ' := by
-  have hplaces := p.places b0
-  have tb : SharedTables p b0 μ' :=
+  have  := p.places b0
+  have tb :=
     h.toSharedTables.congr fun x hlo hx => hag x (by omega) (by omega) (by omega)
-  have henc : ∀ {a β i : ℕ}, p.aENCA b0 ≤ a → a + p.nB * p.T ≤ p.sharedEnd b0 → β < p.nB →
+  have henc : ∀ {a β i }, p.aENCA b0 ≤ a → a + p.nB * p.T ≤ p.sharedEnd b0 → β < p.nB →
       i < p.T → μ' (a + β * p.T + i) = μ (a + β * p.T + i) := fun ha hend hβ hi => by
     have := Nat.mul_add_lt_mul hβ hi
     exact hag _ (by omega) (by omega) (by omega)
@@ -71,29 +73,28 @@ theorem SharedReadyP.congr (h : SharedReadyP p hmL aX aY b0 X Y μ)
 
 /-- What the pruned shared stage leaves behind is kept by a memory that agrees on all cells below
 the end of the shared block, but for cell 31 of the directory. -/
-theorem SharedReadyP.of_agree (h : SharedReadyP p hmL aX aY b0 X Y μ)
-    (hag : ∀ a, a < p.sharedEnd b0 → a ≠ b0 + 31 → μ' a = μ a) :
-    SharedReadyP p hmL aX aY b0 X Y μ' :=
+def SharedReadyP.of_agree (h : SharedReadyP p hmL aX aY b0 X Y μ)
+    (hag : ∀ a, a < p.sharedEnd b0 → a ≠ b0 + 31 → μ' a = μ a) :=
   h.congr fun a _ => hag a
 
 /-- The shape of the running time of the pruned shared stage: upstream's `sharedShape` with the
 work `encWorkP L m` of the pruned encoder in place of the `10^L` cells of a full encoding. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/Contracts.lean (sharedShape)
-def sharedShapeP (p : Par) : ℕ :=
-  (p.L + 1) ^ 2 + (Nat.sqrt p.K + 1) + (p.KK + 1) * (p.L + 1) + (p.N + 1) * (p.Lo + 1)
+def sharedShapeP p :=
+  (p.L + 1) ^ 2 + Nat.sqrt p.K + 1 + (p.KK + 1) * (p.L + 1) + (p.N + 1) * (p.Lo + 1)
     + (p.D + 1) * (p.m + 1)
     + p.nB * (encWorkP p.L p.m + bandArrayShape p)
 
 /-- sharedP(L, m, N, D, aX, aY, b0): fills the shared block, with the encodings right at the leaves
 with at most `m` symbols `P₀`. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/Contracts.lean (SharedSpec)
-def SharedSpecP (lim : Limits) (P : Program) (c : ℕ) : Prop :=
-  ∀ (p : Par) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ) (μ : ℕ → ℤ)
-    (X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ)
-    (Y : Matrix (Fin (ThreeSumApsp.D p.m)) (Fin p.N) ℤ) (V : ℤ),
+def SharedSpecP lim P c :=
+  ∀ (p : Par) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ) (μ : Light.Memory)
+    (X : ThreeSumApsp.IntMatrix p.N (ThreeSumApsp.D p.m))
+    (Y : ThreeSumApsp.IntMatrix (ThreeSumApsp.D p.m) p.N) (V : ℤ),
     SharedPre lim p aX aY b0 X Y V μ →
-    ∀ d, d + (p.L + 3) ≤ lim.depth →
-    Meets lim P Proc.sharedP d [p.L, p.m, p.N, p.D, aX, aY, b0] μ (c * sharedShapeP p) fun _ μ' =>
+    ∀ d, d + p.L + 3 ≤ lim.depth →
+    Meets lim P 79 d [p.L, p.m, p.N, p.D, aX, aY, b0] μ (c * sharedShapeP p) fun _ μ' =>
       SharedReadyP p hmL aX aY b0 X Y μ' ∧ SameOutside μ μ' b0 (p.sharedEnd b0 - b0)
 
 end Light.Sec2

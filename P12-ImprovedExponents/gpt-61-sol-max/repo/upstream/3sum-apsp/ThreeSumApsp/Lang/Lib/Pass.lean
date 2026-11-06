@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
 public import ThreeSumApsp.Lang.Lib.Seg
 public import ThreeSumApsp.Lang.Rules
 
@@ -25,25 +27,25 @@ namespace Light
 variable {lim : Limits} {P : Program} {d : ℕ}
 
 /-- for c < len: dst[c] := e.  The local c is the counter. -/
-abbrev pass (c : ℕ) (len dst e : Expr) : Stmt := Stmt.for c len (.store (dst +' v c) e)
+abbrev pass c len dst e := Stmt.for c len (.store (dst +' v c) e)
 
-variable {μ : ℕ → ℤ} {dst j : ℕ} {f : ℕ → ℤ}
+variable {μ : Light.Memory} {dst j : ℕ} {f : Light.Memory}
 
 /-- After the pass the n cells hold the list of the values f 0, …, f (n - 1). -/
-theorem seg_wrote {n : ℕ} {l : List ℤ} (hl : l.length = n)
-    (h : ∀ i (hi : i < l.length), l[i] = f i) : Seg (wrote μ dst f n) dst l := fun i hi => by
+theorem seg_wrote {n} {l} (hl : l.length = n)
+    (h : ∀ i (hi ), l[i] = f i) : Seg (wrote μ dst f n) dst l := fun i hi => by
   rw [wrote_done (hl ▸ hi), h i hi]
 
 /-- A pass that writes g of the entries of a list leaves the list mapped by g. -/
-theorem seg_wrote_map (g : ℤ → ℤ) (L : List ℤ) :
+theorem seg_wrote_map g (L : List ℤ) :
     Seg (wrote μ dst (fun i => g (L.getD i 0)) L.length) dst (L.map g) :=
   seg_wrote (List.length_map g) fun i hi => by
-    rw [List.getElem_map, List.getD_eq_getElem _ _ (by simpa using hi)]
+    grind
 
 /-- **The rule for a pass.**  The locals x and y hold the length n and the address dst.  In round j
 the locals are the given ones with j in the counter, and the memory is `wrote μ dst f j`; there the
 expression e has to be safe and have the value f j. -/
-theorem Ends.pass {c x y n T : ℕ} {e : Expr} {loc : ℕ → ℤ} {Q : State → Prop} (f : ℕ → ℤ)
+theorem Ends.pass {c x y n T : ℕ} {e : Expr} {loc} {Q} f
     (round : ∀ j < n, e.Safe lim ⟨Function.update loc c j, wrote μ dst f j⟩ ∧
       e.val ⟨Function.update loc c j, wrote μ dst f j⟩ = f j)
     (done : Q ⟨Function.update loc c n, wrote μ dst f n⟩)
@@ -53,19 +55,17 @@ theorem Ends.pass {c x y n T : ℕ} {e : Expr} {loc : ℕ → ℤ} {Q : State �
     Ends lim P d (pass c (v x) (v y) e) ⟨loc, μ⟩ T Q := by
   refine Ends.forMem (fun j μ' => μ' = wrote μ dst f j) n _ wrote_zero.symm
     (fun j μ' hj hμ' => Ends.block ?round le_rfl)
-    (fun μ' h => by rw [h]; exact done)
+    fun μ' h => by rw [h]; exact done
     (fun j μ' _ _ => ⟨trivial, (Function.update_of_ne hx _ _).trans hlen⟩) (by omega)
-    (le_trans (le_of_eq (by simp only [Stmt.blockCost, Expr.cost]; ring)) hT)
+    (le_trans (le_of_eq (by light_side)) hT)
   -- Round j: dst[j] := e.
   subst hμ'
   obtain ⟨hs, hv⟩ := round j hj
-  have qc : Function.update loc c (j : ℤ) c = j := Function.update_self ..
-  have qy : Function.update loc c (j : ℤ) y = dst := by rw [Function.update_of_ne hy, haddr]
+
+  have  : Function.update loc c j y = dst := by simp_all
   refine ⟨⟨?_, hs, ?_⟩, rfl, ?_⟩
-  · simp only [Expr.Safe, Expr.val, Op.eval, qc, qy, true_and, abs_le]
-    omega
-  · simp only [Expr.val, Op.eval, qc, qy, Limits.Addr]
-    omega
-  · simp only [Stmt.after, Expr.val, Op.eval, qc, qy, hv, toNat_natCast_add_natCast, wrote_succ]
+  · light_side
+  · light_side
+  · aesop (add safe apply [wrote_succ])
 
 end Light

@@ -1,5 +1,8 @@
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
+public import ThreeSumApsp.Util.Types
 public import ImprovedExponents.HostMid.Correct
 
 @[expose] public section
@@ -15,12 +18,12 @@ Exact Triangle with the time `hostTime'` and the need `hostNeed'` (`et17_solves'
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3
 
 /-- The procedures of the variant host: procedure number `i` of this list gets the number `o + i`.
 The top procedure `et17Body'` has the number `o + 27`; everything else is as in upstream's
 `et17Procs`. -/
-def et17Procs' (pS pD pG o : ℕ) : Program :=
+def et17Procs' pS pD pG o :=
   let ν := et17NumsAt pS pD pG o
   [sqrtBody,                                                -- 0
     scanBody,                                               -- 1
@@ -52,19 +55,22 @@ def et17Procs' (pS pD pG o : ℕ) : Program :=
     et17Body' ν,                                            -- 27
     sieveBody]                                              -- 28
 
-variable {P₀ : Program} {pS pD pG : ℕ} {Tn : List ℕ → ℕ} {need : List ℕ → Need}
+variable {P₀ : Program} {pS pD pG : ℕ} {Tn : Light.InputTime} {need : Light.InputNeed}
   {Dfun Gfun tD tG wD wG : ℕ → ℕ}
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Host/Program.lean
+variable (hsol : SolvesN lopDetectTask P₀ pS Tn need)
+    (hD : ∀ R, ParamProc (P₀ ++ R) pD Dfun tD wD) (hG : ∀ R, ParamProc (P₀ ++ R) pG Gfun tG wG)
+    (hpos : ∀ n, 1 ≤ n → 1 ≤ Dfun n)
+
+include hsol hD hG hpos in
 /-- **The context of the top procedure**, in the assembled program of the variant with anything
 appended to it. -/
-theorem et17Ctx_assembled' (hsol : SolvesN lopDetectTask P₀ pS Tn need)
-    (hD : ∀ R, ParamProc (P₀ ++ R) pD Dfun tD wD) (hG : ∀ R, ParamProc (P₀ ++ R) pG Gfun tG wG)
-    (hpos : ∀ n, 1 ≤ n → 1 ≤ Dfun n) (R : Program) :
+theorem et17Ctx_assembled'  R :
     Et17Ctx P₀ (et17Procs' pS pD pG P₀.length ++ R) (et17NumsAt pS pD pG P₀.length) Tn need Dfun
       Gfun tD tG wD wG := by
   -- Procedure number `i` of the list.
-  have L : ∀ {i : ℕ} {body : Stmt}, (et17Procs' pS pD pG P₀.length)[i]? = some body →
+  have L : ∀ {i } {body }, (et17Procs' pS pD pG P₀.length)[i]? = some body →
       (P₀ ++ (et17Procs' pS pD pG P₀.length ++ R))[P₀.length + i]? = some body :=
     fun h => getElem?_append_append R h
   exact
@@ -90,19 +96,16 @@ theorem et17Ctx_assembled' (hsol : SolvesN lopDetectTask P₀ pS Tn need)
       gProc := hG _
       D_pos := hpos }
 
+include hsol hD hG hpos in
 /-- **The variant host of Theorem 17 as a solver of Exact Triangle**: from a solver of
 Lop-AE-SparseTri and two procedures that compute the parameters, in one program `P₀`, the appended
 procedures make a solver of Exact Triangle with the time `hostTime'` and the need `hostNeed'`.  The
 solver is called with the inner dimension `midSize D g`. -/
-theorem et17_solves' (hsol : SolvesN lopDetectTask P₀ pS Tn need)
-    (hD : ∀ R, ParamProc (P₀ ++ R) pD Dfun tD wD) (hG : ∀ R, ParamProc (P₀ ++ R) pG Gfun tG wG)
-    (hpos : ∀ n, 1 ≤ n → 1 ≤ Dfun n) :
+theorem et17_solves'  :
     Solves etTask (P₀ ++ et17Procs' pS pD pG P₀.length) (P₀.length + 27)
       (hostTime' Dfun Gfun tD tG Tn) (hostNeed' Dfun Gfun wD wG need) := by
   refine ⟨et17Body' (et17NumsAt pS pD pG P₀.length), ?_, fun R lim d x μ fr hpre hok => ?_⟩
-  · have htop := getElem?_append_append (P₀ := P₀) (B := et17Procs' pS pD pG P₀.length) []
-      (i := 27) rfl
-    rwa [List.append_nil] at htop
+  · ram_safe [ImprovedExponents.HostMid.et17Procs']
   · rw [List.append_assoc]
     exact et17_spec' (et17Ctx_assembled' hsol hD hG hpos R) x μ fr hpre hok
 

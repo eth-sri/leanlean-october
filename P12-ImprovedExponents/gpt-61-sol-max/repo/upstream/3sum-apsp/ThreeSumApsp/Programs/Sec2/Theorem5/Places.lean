@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Sec2.Tiling.Definitions
 public import Mathlib.Data.Nat.Choose.Bounds
 
@@ -35,84 +36,78 @@ open ThreeSumApsp
 `N × D` and `D × N` with `D = 4^m`. -/
 structure Par where
   /-- The number of levels of the recursion. -/
-  L : ℕ
-  /-- The number of inner levels. -/
-  m : ℕ
-  /-- The number of rows of `X` and of columns of `Y`. -/
-  N : ℕ
+  (L m N : ℕ)
 
 namespace Par
 
 /-- `D = 4^m`. -/
-def D (p : Par) : ℕ := ThreeSumApsp.D p.m
+def D (p : Par) := ThreeSumApsp.D p.m
 /-- The number `L - m` of outer levels. -/
-def Lo (p : Par) : ℕ := p.L - p.m
+def Lo (p : Par) := p.L - p.m
 /-- `N₀ = 3^{L-m}`. -/
-def N0 (p : Par) : ℕ := ThreeSumApsp.N0 p.L p.m
+def N0 (p : Par) := ThreeSumApsp.N0 p.L p.m
 /-- `K = binom(L, m)`. -/
-def K (p : Par) : ℕ := ThreeSumApsp.K p.L p.m
+def K (p : Par) := ThreeSumApsp.K p.L p.m
 /-- `K₀ = ⌊√K⌋`. -/
-def K0 (p : Par) : ℕ := ThreeSumApsp.K0 p.L p.m
+def K0 (p : Par) := ThreeSumApsp.K0 p.L p.m
 /-- The number `K₀²` of subsets in the table. -/
-def KK (p : Par) : ℕ := p.K0 * p.K0
+def KK (p : Par) := p.K0 * p.K0
 /-- The number of row bands, and of column bands. -/
-def nB (p : Par) : ℕ := numBands p.L p.m p.N
-/-- The number of tiles. -/
-def nT (p : Par) : ℕ := p.nB * p.nB
+def nB (p : Par) := numBands p.L p.m p.N
 /-- The number `10^L` of leaves: the length of an encoding. -/
-def T (p : Par) : ℕ := 10 ^ p.L
+def T (p : Par) := 10 ^ p.L
 /-- The number `7^L` of left strings: the length of an input array. -/
-def S7 (p : Par) : ℕ := 7 ^ p.L
+def S7 (p : Par) := 7 ^ p.L
 
 /-! ## The shared block, from its base address `b0` on -/
 
 /-- The directory: 32 cells, see `dirList`. -/
-def aDIR (_p : Par) (b0 : ℕ) : ℕ := b0
+def aDIR (_p : Par) (b0 : ℕ) := b0
 /-- Powers of 3: `L + 1` cells. -/
-def aP3 (_p : Par) (b0 : ℕ) : ℕ := b0 + 32
+def aP3 (_p : Par) b0 := b0 + 32
 /-- Powers of 4: `L + 1` cells. -/
-def aP4 (p : Par) (b0 : ℕ) : ℕ := p.aP3 b0 + (p.L + 1)
+def aP4 (p : Par) b0 := p.aP3 b0 + p.L + 1
 /-- Powers of 7: `L + 1` cells. -/
-def aP7 (p : Par) (b0 : ℕ) : ℕ := p.aP4 b0 + (p.L + 1)
+def aP7 (p : Par) b0 := p.aP4 b0 + p.L + 1
 /-- Powers of 10: `L + 1` cells. -/
-def aP10 (p : Par) (b0 : ℕ) : ℕ := p.aP7 b0 + (p.L + 1)
+def aP10 (p : Par) b0 := p.aP7 b0 + p.L + 1
 /-- Scratch for a row of Pascal's triangle: `L + 2` cells. -/
-def aPAS (p : Par) (b0 : ℕ) : ℕ := p.aP10 b0 + (p.L + 1)
+def aPAS (p : Par) b0 := p.aP10 b0 + p.L + 1
 /-- The coefficients `φ_λ(s)`: 70 cells, row `λ` at `7 λ`. -/
-def aPHI (p : Par) (b0 : ℕ) : ℕ := p.aPAS b0 + (p.L + 2)
+def aPHI (p : Par) b0 := p.aPAS b0 + p.L + 2
 /-- The coefficients `ψ_λ(t)`: 70 cells. -/
-def aPSI (p : Par) (b0 : ℕ) : ℕ := p.aPHI b0 + 70
+def aPSI (p : Par) b0 := p.aPHI b0 + 70
 /-- The table of subsets: `K₀²` rows of `L` bits, the subset of the block product `(g, h)` in row
 `g K₀ + h`. -/
-def aMASK (p : Par) (b0 : ℕ) : ℕ := p.aPSI b0 + 70
+def aMASK (p : Par) b0 := p.aPSI b0 + 70
 /-- The band of every row: `N` cells. -/
-def aBAND (p : Par) (b0 : ℕ) : ℕ := p.aMASK b0 + p.KK * p.L
+def aBAND (p : Par) b0 := p.aMASK b0 + p.KK * p.L
 /-- The block, within its band, of every row: `N` cells. -/
-def aBLOCK (p : Par) (b0 : ℕ) : ℕ := p.aBAND b0 + p.N
+def aBLOCK (p : Par) b0 := p.aBAND b0 + p.N
 /-- The base-3 digits of the offset of every row within its block: `N` rows of `L - m` cells, most
 significant digit first. -/
-def aDIG3 (p : Par) (b0 : ℕ) : ℕ := p.aBLOCK b0 + p.N
+def aDIG3 (p : Par) b0 := p.aBLOCK b0 + p.N
 /-- The base-4 digits of every column of `X`: `D` rows of `m` cells, most significant digit first.
 -/
-def aDIG4 (p : Par) (b0 : ℕ) : ℕ := p.aDIG3 b0 + p.N * p.Lo
+def aDIG4 (p : Par) b0 := p.aDIG3 b0 + p.N * p.Lo
 /-- The encodings of the row bands: band `β` at `β 10^L`. -/
-def aENCA (p : Par) (b0 : ℕ) : ℕ := p.aDIG4 b0 + p.D * p.m
+def aENCA (p : Par) b0 := p.aDIG4 b0 + p.D * p.m
 /-- The encodings of the column bands. -/
-def aENCB (p : Par) (b0 : ℕ) : ℕ := p.aENCA b0 + p.nB * p.T
+def aENCB (p : Par) b0 := p.aENCA b0 + p.nB * p.T
 /-- The input array of the band that is being encoded: `7^L` cells.  Dead after the shared stage.
 -/
-def aARR (p : Par) (b0 : ℕ) : ℕ := p.aENCB b0 + p.nB * p.T
+def aARR (p : Par) b0 := p.aENCB b0 + p.nB * p.T
 /-- Scratch of the recursive encoding: `7^L` cells (`7^{L-1} + … + 1` are used). Dead after the
 shared stage. -/
-def aZS (p : Par) (b0 : ℕ) : ℕ := p.aARR b0 + p.S7
+def aZS (p : Par) b0 := p.aARR b0 + p.S7
 /-- The first address after the shared block. -/
-def sharedEnd (p : Par) (b0 : ℕ) : ℕ := p.aZS b0 + p.S7
+def sharedEnd (p : Par) b0 := p.aZS b0 + p.S7
 
 end Par
 
 /-- The content of the first 31 cells of the directory (the shared stage does not use the last one);
 `aX` and `aY` are the addresses of `X` and `Y`. -/
-def dirList (p : Par) (aX aY b0 : ℕ) : List ℕ :=
+def dirList (p : Par) aX aY b0 :=
   [p.L, p.m, p.N, p.D, p.Lo, p.N0, p.K, p.K0, p.KK, p.nB, p.T, p.S7, aX, aY, p.aP3 b0, p.aP4 b0,
     p.aP7 b0, p.aP10 b0, p.aPAS b0, p.aPHI b0, p.aPSI b0, p.aMASK b0, p.aBAND b0, p.aBLOCK b0,
     p.aDIG3 b0, p.aDIG4 b0, p.aENCA b0, p.aENCB b0, p.aARR b0, p.aZS b0, p.sharedEnd b0]
@@ -126,24 +121,21 @@ and of the output, and as last argument the free pointer `fr`. All inputs and th
 cells: a routine clears what it needs cleared. The shared block starts at `fr`, the private block
 follows it. -/
 
-namespace Par
-
-end Par
 
 /-! ## The places and the sizes, as equations and inequalities -/
 
 /-- The places of the shared block: each area begins where the one before it ends. -/
-theorem Par.places (p : Par) (b0 : ℕ) :
-    p.aDIR b0 = b0 ∧ p.aP3 b0 = b0 + 32 ∧ p.aP4 b0 = p.aP3 b0 + (p.L + 1)
-      ∧ p.aP7 b0 = p.aP4 b0 + (p.L + 1)
-      ∧ p.aP10 b0 = p.aP7 b0 + (p.L + 1) ∧ p.aPAS b0 = p.aP10 b0 + (p.L + 1)
-      ∧ p.aPHI b0 = p.aPAS b0 + (p.L + 2) ∧ p.aPSI b0 = p.aPHI b0 + 70
+theorem Par.places (p : Par) b0 :
+    p.aDIR b0 = b0 ∧ p.aP3 b0 = b0 + 32 ∧ p.aP4 b0 = p.aP3 b0 + p.L + 1
+      ∧ p.aP7 b0 = p.aP4 b0 + p.L + 1
+      ∧ p.aP10 b0 = p.aP7 b0 + p.L + 1 ∧ p.aPAS b0 = p.aP10 b0 + p.L + 1
+      ∧ p.aPHI b0 = p.aPAS b0 + p.L + 2 ∧ p.aPSI b0 = p.aPHI b0 + 70
       ∧ p.aMASK b0 = p.aPSI b0 + 70 ∧ p.aBAND b0 = p.aMASK b0 + p.KK * p.L
       ∧ p.aBLOCK b0 = p.aBAND b0 + p.N ∧ p.aDIG3 b0 = p.aBLOCK b0 + p.N
       ∧ p.aDIG4 b0 = p.aDIG3 b0 + p.N * p.Lo ∧ p.aENCA b0 = p.aDIG4 b0 + p.D * p.m
       ∧ p.aENCB b0 = p.aENCA b0 + p.nB * p.T ∧ p.aARR b0 = p.aENCB b0 + p.nB * p.T
       ∧ p.aZS b0 = p.aARR b0 + p.S7 ∧ p.sharedEnd b0 = p.aZS b0 + p.S7 :=
-  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+  by (repeat' constructor)
 
 namespace Par
 variable (p : Par)

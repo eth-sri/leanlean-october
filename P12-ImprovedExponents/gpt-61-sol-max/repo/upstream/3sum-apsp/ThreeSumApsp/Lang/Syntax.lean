@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import ThreeSumApsp.Util.Types
+public import Mathlib.Tactic
 public import Mathlib.Algebra.Group.Int.Defs
 public import Mathlib.Algebra.GroupWithZero.Nat
 public import Mathlib.Algebra.Order.Group.Unbundled.Abs
@@ -72,16 +74,16 @@ inductive Stmt : Type
   deriving Repr
 
 /-- A program: the bodies of its procedures, numbered from 0. -/
-abbrev Program : Type := List Stmt
+abbrev Program := List Stmt
 
 /-- What a running procedure sees: its local variables and the memory. -/
-structure State : Type where
+structure State where
   loc : ℕ → ℤ
   mem : ℕ → ℤ
 
 /-- The limits on a run: largest absolute value of a word, number of memory cells, nesting depth of
 calls. -/
-structure Limits : Type where
+structure Limits where
   word : ℤ
   space : ℕ
   depth : ℕ
@@ -102,7 +104,7 @@ def Expr.cost : Expr → ℕ
   | .load a => a.cost + 1
 
 /-- An address within the limits. -/
-def Limits.Addr (lim : Limits) (a : ℤ) : Prop := 0 ≤ a ∧ a < lim.space
+def Limits.Addr (lim : Limits) (a : ℤ) := 0 ≤ a ∧ a < lim.space
 
 /-- The evaluation of an expression stays within the limits: every value that is formed fits in a
 word, and every address that is read is within the memory. -/
@@ -129,10 +131,10 @@ def Cond.Safe (lim : Limits) (s : State) : Cond → Prop
 
 /-- The local variables of a procedure that has just been called: the arguments in 0, 1, …, and 0 in
 all others. -/
-def frame (args : List ℤ) : ℕ → ℤ := fun i => args.getD i 0
+def frame (args : List ℤ) := fun i => args.getD i 0
 
 /-- The memory that holds the list ws in the cells 0, 1, 2, … and 0 elsewhere. -/
-def memOf (ws : List ℤ) : ℕ → ℤ := fun a => ws.getD a 0
+def memOf (ws : List ℤ) := fun a => ws.getD a 0
 
 /-- `Exec lim P d s σ σ' c`: within the limits lim, and at nesting depth d of calls, the statement
 s of the program P, started in the state σ, ends in the state σ' after exactly c steps. -/
@@ -158,7 +160,7 @@ inductive Exec (lim : Limits) (P : Program) : ℕ → Stmt → State → State �
         ((args.map Expr.cost).sum + 2 + k)
 
 /-- Everything held in a variable or in a cell fits in a word. -/
-def State.Bounded (lim : Limits) (σ : State) : Prop :=
+def State.Bounded (lim : Limits) (σ : State) :=
   (∀ x, |σ.loc x| ≤ lim.word) ∧ ∀ a, |σ.mem a| ≤ lim.word
 
 end Light

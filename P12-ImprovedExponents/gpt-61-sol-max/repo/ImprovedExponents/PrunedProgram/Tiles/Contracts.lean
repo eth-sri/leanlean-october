@@ -1,5 +1,7 @@
 module
 
+public import ThreeSumApsp.Util.Types
+public import Mathlib.Tactic
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 public import ImprovedExponents.PrunedProgram.SegOn
 
@@ -27,7 +29,7 @@ open ThreeSumApsp ThreeSumApsp.Spec
 /-- What `fillList` assumes on pruned encodings: upstream's `FillListPre`, with the two encodings
 right at the leaves with at most `m` symbols `P₀`. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Contracts.lean (FillListPre)
-structure FillListPreP (lim : Limits) (μ : ℕ → ℤ) (x : FillListArgs) : Prop where
+structure FillListPreP (lim : Limits) (μ : Light.Memory) (x : FillListArgs) : Prop where
   ctx : TileCtx lim x.L x.m x.t x.encA x.encB x.aA x.aB x.tr x.cap x.fp x.cur x.box
   stars_le : x.e ≤ x.m - x.t
   root_ne : x.root ≠ 0
@@ -40,17 +42,17 @@ structure FillListPreP (lim : Limits) (μ : ℕ → ℤ) (x : FillListArgs) : Pr
 /-- fillList(e, root, aA, aB, tr, fp, cur, box, L, mt) on pruned encodings: upstream's
 `FillListSpec` with `FillListPreP`. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Contracts.lean (FillListSpec)
-def FillListSpecP (lim : Limits) (P : Program) : Prop :=
-  ∀ (x : FillListArgs) (μ : ℕ → ℤ), FillListPreP lim μ x →
+def FillListSpecP lim P :=
+  ∀ (x : FillListArgs) (μ : Light.Memory), FillListPreP lim μ x →
     ∀ d, d + 2 ≤ lim.depth →
-    Meets lim P Proc.fillList d x.vals μ (tFillList x.L x.boxes.length) fun _ μ' =>
+    Meets lim P 49 d x.vals μ (tFillList x.L x.boxes.length) fun _ μ' =>
       TrieMem μ' x.tr x.cap x.fp (fillTrie (arrT x.encA) (arrT x.encB) x.root x.e x.boxes x.T) ∧
         SameOutsideTile μ μ' x.L x.tr x.cap x.fp x.cur x.box
 
 /-- What `tile` assumes on pruned encodings: upstream's `TilePre`, with the two encodings right at
 the leaves with at most `m` symbols `P₀`. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Contracts.lean (TilePre)
-structure TilePreP (lim : Limits) (μ : ℕ → ℤ) (x : TileArgs) : Prop where
+structure TilePreP (lim : Limits) (μ : Light.Memory) (x : TileArgs) : Prop where
   ctx : TileCtx lim x.L x.m x.t x.encA x.encB x.aA x.aB x.tr x.cap x.fp x.cur x.box
   rep : x.s.Holds x.L x.lo x.old
   trie : TrieMem μ x.tr x.cap x.fp x.s.cells
@@ -64,16 +66,16 @@ structure TilePreP (lim : Limits) (μ : ℕ → ℤ) (x : TileArgs) : Prop where
 /-- `tile` on pruned encodings: upstream's `TileSpec` with `TilePreP`. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Contracts.lean (TileSpec)
 def TileSpecP (lim : Limits) (P : Program) : Prop :=
-  ∀ (x : TileArgs) (μ : ℕ → ℤ), TilePreP lim μ x →
-    ∀ d, d + 3 ≤ lim.depth → Meets lim P Proc.tile d
-      [x.aA, x.aB, (x.aR + x.s.roots.length : ℕ), x.tr, x.fp, x.cur, x.box, x.L, (x.m - x.t : ℕ)] μ
+  ∀ (x : TileArgs) (μ : Light.Memory), TilePreP lim μ x →
+    ∀ d, d + 3 ≤ lim.depth → Meets lim P 50 d
+      [x.aA, x.aB, x.aR + x.s.roots.length, x.tr, x.fp, x.cur, x.box, x.L, (x.m - x.t : ℕ)] μ
       (tTile x.L x.m x.t) fun _ μ' =>
         TrieMem μ' x.tr x.cap x.fp x.tries.cells ∧ SegN μ' x.aR x.tries.roots ∧ SameOn x.Kept μ μ'
 
 /-- What `allTiles` assumes on pruned encodings: upstream's `AllTilesPre`, with the encoding of
 every band right at the leaves with at most `m` symbols `P₀`. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Contracts.lean (AllTilesPre)
-structure AllTilesPreP (lim : Limits) (μ : ℕ → ℤ) (x : AllTilesArgs) : Prop where
+structure AllTilesPreP (lim : Limits) (μ : Light.Memory) (x : AllTilesArgs) : Prop where
   std : Std lim
   t_le : x.t ≤ x.m
   m_le : x.m ≤ x.L
@@ -93,9 +95,9 @@ structure AllTilesPreP (lim : Limits) (μ : ℕ → ℤ) (x : AllTilesArgs) : Pr
 /-- `allTiles` on pruned encodings: upstream's `AllTilesSpec` with `AllTilesPreP`. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Contracts.lean (AllTilesSpec)
 def AllTilesSpecP (lim : Limits) (P : Program) : Prop :=
-  ∀ (x : AllTilesArgs) (μ : ℕ → ℤ), AllTilesPreP lim μ x →
+  ∀ (x : AllTilesArgs) (μ : Light.Memory), AllTilesPreP lim μ x →
     ∀ d, d + 4 ≤ lim.depth →
-    Meets lim P Proc.allTiles d [x.aENCA, x.aENCB, x.nB, (10 ^ x.L : ℕ), x.aR, x.tr, x.fp,
+    Meets lim P 51 d [x.aENCA, x.aENCB, x.nB, (10 ^ x.L : ℕ), x.aR, x.tr, x.fp,
       x.cur, x.box, x.L, (x.m - x.t : ℕ)] μ (tAllTiles x.L x.m x.t x.nB) fun _ μ' =>
         TrieMem μ' x.tr x.cap x.fp x.tries.cells ∧ SegN μ' x.aR x.tries.roots ∧ SameOn x.Kept μ μ'
 

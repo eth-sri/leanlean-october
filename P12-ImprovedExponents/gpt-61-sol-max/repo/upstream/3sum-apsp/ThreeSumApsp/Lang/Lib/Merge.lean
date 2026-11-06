@@ -5,6 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import ThreeSumApsp.Util.Types
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Lang.Lib.Seg
 public import ThreeSumApsp.Lang.Tactics
 
@@ -30,63 +33,48 @@ namespace Merge
 
 variable {l r : List ℤ} {i j : ℕ}
 
-theorem step_left (hi : i < l.length) (hj : j < r.length) (h : l[i] ≤ r[j]) :
+theorem step_left hi (hj : j < r.length) (h : l[i] ≤ r[j]) :
     (l.drop i).merge (r.drop j) = l[i] :: (l.drop (i + 1)).merge (r.drop j) := by
-  rw [List.drop_eq_getElem_cons hi, List.drop_eq_getElem_cons hj, List.cons_merge_cons]
-  simp [h]
+  grind [List.drop_eq_getElem_cons, List.cons_merge_cons]
 
-theorem step_right (hi : i < l.length) (hj : j < r.length) (h : r[j] < l[i]) :
+theorem step_right hi hj (h : r[j] < l[i]) :
     (l.drop i).merge (r.drop j) = r[j] :: (l.drop i).merge (r.drop (j + 1)) := by
-  rw [List.drop_eq_getElem_cons hi, List.drop_eq_getElem_cons hj, List.cons_merge_cons]
-  simp [not_le.2 h]
+  grind [List.drop_eq_getElem_cons, List.cons_merge_cons]
 
-theorem step_left_end (hi : i < l.length) (hj : r.length ≤ j) :
+theorem step_left_end hi (hj : r.length ≤ j) :
     (l.drop i).merge (r.drop j) = l[i] :: (l.drop (i + 1)).merge (r.drop j) := by
-  rw [List.drop_eq_nil_of_le hj, List.merge_right, List.merge_right, List.drop_eq_getElem_cons hi]
+  grind [List.drop_eq_nil_of_le, List.merge_right, List.drop_eq_getElem_cons]
 
-theorem step_right_end (hi : l.length ≤ i) (hj : j < r.length) :
+theorem step_right_end (hi : l.length ≤ i) hj :
     (l.drop i).merge (r.drop j) = r[j] :: (l.drop i).merge (r.drop (j + 1)) := by
-  rw [List.drop_eq_nil_of_le hi, List.nil_merge, List.nil_merge, List.drop_eq_getElem_cons hj]
+  grind [List.drop_eq_nil_of_le, List.nil_merge, List.drop_eq_getElem_cons]
 
 end Merge
 
 /-! ## The program -/
 
-namespace Merge
 
-/-- The local variables of merge: the arguments a, na, b, nb, dst, and the numbers i and j of cells
-already taken from the first and the second list. -/
-abbrev ListA : ℕ := 0
-@[inherit_doc ListA] abbrev LenA : ℕ := 1
-@[inherit_doc ListA] abbrev ListB : ℕ := 2
-@[inherit_doc ListA] abbrev LenB : ℕ := 3
-@[inherit_doc ListA] abbrev Dest : ℕ := 4
-@[inherit_doc ListA] abbrev DoneA : ℕ := 5
-@[inherit_doc ListA] abbrev DoneB : ℕ := 6
 
-end Merge
-
-open Merge in
 /-- The next output is the head of the first list: dst[i + j] := a[i]; i := i + 1. -/
-def mergeTakeLeft : Stmt :=
-  .store (v Dest +' v DoneA +' v DoneB) (M (v ListA +' v DoneA)) ;;
-  .set DoneA (v DoneA +' k 1)
+def mergeTakeLeft  :=
+  .store (v 4 +' v 5 +' v 6) (M (v 0 +' v 5)) ;;
+  .set 5 (v 5 +' k 1)
 
-open Merge in
+
 /-- The next output is the head of the second list: dst[i + j] := b[j]; j := j + 1. -/
-def mergeTakeRight : Stmt :=
-  .store (v Dest +' v DoneA +' v DoneB) (M (v ListB +' v DoneB)) ;;
-  .set DoneB (v DoneB +' k 1)
+def mergeTakeRight  :=
+  .store (v 4 +' v 5 +' v 6) (M (v 2 +' v 6)) ;;
+  .set 6 (v 6 +' k 1)
 
-open Merge in
+
 /-- merge(a, na, b, nb, dst). -/
-def mergeBody : Stmt :=
-  .set DoneA (k 0) ;;
-  .set DoneB (k 0) ;;
-  .while (v DoneA +' v DoneB <' v LenA +' v LenB) (
-    .ite (v DoneA <' v LenA)
-      (.ite (v DoneB <' v LenB)
-        (.ite (M (v ListB +' v DoneB) <' M (v ListA +' v DoneA)) mergeTakeRight mergeTakeLeft)
+def mergeBody  :=
+  .set 5 (k 0) ;;
+  .set 6 (k 0) ;;
+  .while (v 5 +' v 6 <' v 1 +' v 3) (
+    .ite (v 5 <' v 1)
+      (.ite (v 6 <' v 3)
+        (.ite (M (v 2 +' v 6) <' M (v 0 +' v 5)) mergeTakeRight mergeTakeLeft)
         mergeTakeLeft)
       mergeTakeRight)
 
@@ -94,7 +82,7 @@ namespace Merge
 
 /-- What merge assumes: the two lists lie in the memory, and the output region is within the memory
 and meets neither of them. -/
-structure Pre (lim : Limits) (μ : ℕ → ℤ) (a b dst : ℕ) (l r : List ℤ) : Prop where
+structure Pre (lim : Limits) (μ : Light.Memory) (a b dst : ℕ) (l r : List ℤ) : Prop where
   hw : (lim.space : ℤ) ≤ lim.word
   segL : Seg μ a l
   segR : Seg μ b r
@@ -106,48 +94,52 @@ structure Pre (lim : Limits) (μ : ℕ → ℤ) (a b dst : ℕ) (l r : List ℤ)
 
 /-- The state after i cells of the first list and j cells of the second have been taken: they stand,
 merged, in the first i + j cells of dst, and no cell outside dst has changed. -/
-def Inv (μ : ℕ → ℤ) (a b dst : ℕ) (l r : List ℤ) (i j : ℕ) (σ : State) : Prop :=
-  ∃ (μ' : ℕ → ℤ) (out : List ℤ), σ = ⟨frame [a, l.length, b, r.length, dst, i, j], μ'⟩ ∧
+def Inv μ (a b dst : ℕ) (l r : List ℤ) (i j : ℕ) (σ : State) :=
+  ∃ (μ' : Light.Memory) (out : List ℤ), σ = ⟨frame [a, l.length, b, r.length, dst, i, j], μ'⟩ ∧
     i ≤ l.length ∧ j ≤ r.length ∧ SameOutside μ μ' dst (l.length + r.length) ∧
     out.length = i + j ∧ Seg μ' dst out ∧ out ++ (l.drop i).merge (r.drop j) = l.merge r
 
 /-- The invariant of the loop: t cells have been taken. -/
-def Taken (μ : ℕ → ℤ) (a b dst : ℕ) (l r : List ℤ) (t : ℕ) (σ : State) : Prop :=
+def Taken μ a b dst l r t σ :=
   ∃ i j, i + j = t ∧ Inv μ a b dst l r i j σ
 
-variable {μ : ℕ → ℤ} {a b dst : ℕ} {l r : List ℤ} {i j : ℕ}
+variable {μ : Light.Memory} {a b dst : ℕ} {l r : List ℤ} {i j : ℕ}
 
+variable (C : Pre lim μ a b dst l r)
+
+include C in
 /-- dst[i + j] := a[i]; i := i + 1. -/
-theorem takeLeft (C : Pre lim μ a b dst l r) {σ : State} (h : Inv μ a b dst l r i j σ)
-    (hi : i < l.length)
+theorem takeLeft  {σ} (h : Inv μ a b dst l r i j σ)
+     hi
     (hm : (l.drop i).merge (r.drop j) = l[i] :: (l.drop (i + 1)).merge (r.drop j)) :
     mergeTakeLeft.Runs lim σ (Taken μ a b dst l r (i + j + 1)) := by
   obtain ⟨μ', out, rfl, -, hj, same, hlen, seg, hout⟩ := h
   light_facts C
-  have hread : μ' (a + i) = l[i] := (same _ (by omega)).trans (C.segL.get hi)
-  have haddr : ((dst : ℤ) + i + j).toNat = dst + out.length := by omega
+
+
   refine ⟨by light_side [mergeTakeLeft], i + 1, j, by omega,
     Function.update μ' (dst + out.length) l[i], out ++ [l[i]], ?_, hi, hj,
     same.update ⟨by omega, by omega⟩ _,
-    by simp only [List.length_append, List.length_singleton]; omega,
+    by light_side,
     seg.snoc _, by rw [← hout, hm]; simp⟩
-  simp [mergeTakeLeft, update_frame_setLocal, haddr, hread]
+  simp [mergeTakeLeft, update_frame_setLocal, (by omega : ((dst : ℤ) + i + j).toNat = dst + out.length), (same _ (by omega)).trans (C.segL.get hi)]
 
+include C in
 /-- dst[i + j] := b[j]; j := j + 1. -/
-theorem takeRight (C : Pre lim μ a b dst l r) {σ : State} (h : Inv μ a b dst l r i j σ)
-    (hj : j < r.length)
+theorem takeRight  {σ} (h : Inv μ a b dst l r i j σ)
+     hj
     (hm : (l.drop i).merge (r.drop j) = r[j] :: (l.drop i).merge (r.drop (j + 1))) :
     mergeTakeRight.Runs lim σ (Taken μ a b dst l r (i + j + 1)) := by
   obtain ⟨μ', out, rfl, hi, -, same, hlen, seg, hout⟩ := h
   light_facts C
-  have hread : μ' (b + j) = r[j] := (same _ (by omega)).trans (C.segR.get hj)
-  have haddr : ((dst : ℤ) + i + j).toNat = dst + out.length := by omega
-  refine ⟨by light_side [mergeTakeRight], i, j + 1, by omega,
+
+
+  refine ⟨by light_side [mergeTakeRight], i, j + 1, rfl,
     Function.update μ' (dst + out.length) r[j], out ++ [r[j]], ?_, hi, hj,
     same.update ⟨by omega, by omega⟩ _,
-    by simp only [List.length_append, List.length_singleton]; omega,
+    by light_side,
     seg.snoc _, by rw [← hout, hm]; simp⟩
-  simp [mergeTakeRight, update_frame_setLocal, haddr, hread]
+  simp [mergeTakeRight, update_frame_setLocal, (by omega : ((dst : ℤ) + i + j).toNat = dst + out.length), (same _ (by omega)).trans (C.segR.get hj)]
 
 /-- The time of merge, for n = na + nb numbers. -/
 @[simp] def _root_.Light.mergeTime (n : ℕ) : ℕ := 40 * n + 12
@@ -166,9 +158,9 @@ theorem _root_.Light.merge_meets {p : ℕ} (hp : P[p]? = some mergeBody)
   light_set (0 : ℕ)
   -- while i + j < na + nb
   refine Ends.whileBlock (Taken μ a b dst l r) (l.length + r.length) ?start ?round ?done
-    (by simp [mergeTakeLeft, mergeTakeRight]; omega)
+    (by ram_safe [mergeTakeLeft, mergeTakeRight])
   case start =>
-    exact ⟨0, 0, rfl, μ, [], rfl, Nat.zero_le _, Nat.zero_le _, .refl, rfl, Seg.nil, by simp⟩
+    exact ⟨0, 0, rfl, μ, [], rfl, Nat.zero_le _, Nat.zero_le _, .refl, rfl, Seg.nil, rfl⟩
   case done =>
     rintro _ ⟨i, j, hij, μ', out, rfl, hi, hj, same, hlen, seg, hout⟩
     rw [List.drop_eq_nil_of_le (by omega), List.drop_eq_nil_of_le (by omega)] at hout
@@ -183,13 +175,13 @@ theorem _root_.Light.merge_meets {p : ℕ} (hp : P[p]? = some mergeBody)
     by_cases c1 : i < l.length
     · refine .ite_pos ?_
       by_cases c2 : j < r.length
-      · have hreadL : μ' (a + i) = l[i] := (same _ (by omega)).trans (C.segL.get c1)
-        have hreadR : μ' (b + j) = r[j] := (same _ (by omega)).trans (C.segR.get c2)
+      · have  := (same _ (by omega)).trans (C.segL.get c1)
+        have  := (same _ (by omega)).trans (C.segR.get c2)
         refine .ite_pos ?_
         by_cases c3 : r[j] < l[i]
-        · exact .ite_pos (right c2 (step_right c1 c2 c3)) (by simpa [hreadL, hreadR] using c3)
+        · exact .ite_pos (right c2 (step_right c1 c2 c3)) (by simp_all)
         · exact .ite_neg (left c1 (step_left c1 c2 (not_lt.1 c3)))
-            (by simpa [hreadL, hreadR] using c3)
+            (by simp_all)
       · exact .ite_neg (left c1 (step_left_end c1 (by omega)))
     · exact .ite_neg (right (by omega) (step_right_end (by omega) (by omega)))
 

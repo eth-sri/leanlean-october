@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Sec4.ParameterSteps
 
 /-!
@@ -48,59 +50,56 @@ namespace ThreeSumApsp
 
 /-! ### Setting up -/
 
-/-- The hypotheses of Corollary 31 on its parameters: "Let c > 10 and 0 < θ < 0.9", and "ε <
-R_c(γ)". -/
-structure Admissible (c θ ε : ℝ) : Prop where
-  c_gt : 10 < c
-  θ_pos : 0 < θ
-  θ_lt : θ < 0.9
-  thin : ε < Rc c (gammaOf c θ)
-
 /-- With "L := ⌈cm⌉" (proof of Corollary 31) the hypothesis `L ≥ 10m` of Theorem 30 holds. -/
-theorem ten_mul_le_levelsOf {c : ℝ} (hc : 10 < c) (m : ℕ) : 10 * m ≤ levelsOf c m := by
-  have h : ((10 * m : ℕ) : ℝ) ≤ c * m := by
-    push_cast
-    exact mul_le_mul_of_nonneg_right hc.le (Nat.cast_nonneg m)
-  exact_mod_cast h.trans (Nat.le_ceil _)
+theorem ten_mul_le_levelsOf {c} (hc : 10 < c) m : 10 * m ≤ levelsOf c m := by
 
+  exact_mod_cast (by
+    ram_arith
+   : ((10 * m : ℕ) : ℝ) ≤ c * m).trans (Nat.le_ceil _)
+
+variable {c : ℝ} (hc : 10 < c)
+
+include c hc in
 /-- `L = ⌈cm⌉ ≤ (c + 1) m` for `m ≥ 1`. -/
-private lemma levelsOf_le {c : ℝ} (hc : 10 < c) {m : ℕ} (hm : 1 ≤ m) :
+private lemma levelsOf_le  {m : ℕ} (hm : 1 ≤ m) :
     (levelsOf c m : ℝ) ≤ (c + 1) * m := by
-  have hm' : (1 : ℝ) ≤ m := by exact_mod_cast hm
-  have hL : (levelsOf c m : ℝ) < c * m + 1 := Nat.ceil_lt_add_one (by positivity)
+  have  : (1 : ℝ) ≤ m := mod_cast hm
+  have  : (levelsOf c m : ℝ) < c * m + 1 := Nat.ceil_lt_add_one (by positivity)
   linarith
 
 /-- `m = O(log D)` for `D = 4^m`. -/
 private lemma dominated_cast_log_D :
-    Dominated (fun m : ℕ => 1 ≤ m) (fun m => (m : ℝ)) fun m => Real.log (D m) :=
+    Dominated (fun m : ℕ => 1 ≤ m) (fun m => m) fun m => Real.log (D m) :=
   .of_le fun m _ => cast_le_log_cast_D m
 
+include c hc in
 /-- `L = ⌈cm⌉ = O(log D)` for `D = 4^m`. -/
-private lemma dominated_levelsOf_log_D {c : ℝ} (hc : 10 < c) :
-    Dominated (fun m : ℕ => 1 ≤ m) (fun m => (levelsOf c m : ℝ)) fun m => Real.log (D m) :=
+private lemma dominated_levelsOf_log_D  :
+    Dominated (fun m : ℕ => 1 ≤ m) (fun m => levelsOf c m) fun m => Real.log (D m) :=
   (Dominated.of_le_const_mul (C := c + 1) (by linarith) fun _ hm => levelsOf_le hc hm).trans
     dominated_cast_log_D
 
 /-- Proof of Corollary 31: "After the padding, the assumption D ≤ N^ε now reads N ≥ 4^{(m-1)/ε}",
 because `4^{m-1} < D ≤ N^ε` for the original `D`. -/
-theorem Corollary31.hypothesis {m D₀ N : ℕ} {ε : ℝ} (hm : 1 ≤ m) (hε : 0 < ε)
+theorem Corollary31.hypothesis {m D₀ N : ℕ} {ε} (hm : 1 ≤ m) (hε : 0 < ε)
     (hgt : 4 ^ (m - 1) < D₀) (hthin : (D₀ : ℝ) ≤ (N : ℝ) ^ ε) :
     (4 : ℝ) ^ (((m : ℝ) - 1) / ε) ≤ (N : ℝ) := by
-  have hle : (4 : ℝ) ^ ((m : ℝ) - 1) ≤ (N : ℝ) ^ ε := by
-    rw [← Nat.cast_one, ← Nat.cast_sub hm, Real.rpow_natCast]
-    exact le_trans (by exact_mod_cast hgt.le) hthin
+
   calc (4 : ℝ) ^ (((m : ℝ) - 1) / ε) = ((4 : ℝ) ^ ((m : ℝ) - 1)) ^ (1 / ε) := by
-        rw [← Real.rpow_mul (by norm_num), mul_one_div]
-    _ ≤ ((N : ℝ) ^ ε) ^ (1 / ε) := Real.rpow_le_rpow (by positivity) hle (by positivity)
+        grind [Real.rpow_mul]
+    _ ≤ ((N : ℝ) ^ ε) ^ (1 / ε) := Real.rpow_le_rpow (by positivity) (by
+      rw [← Nat.cast_one, ← Nat.cast_sub hm, Real.rpow_natCast]
+      exact le_trans (mod_cast hgt.le) hthin
+    ) (by positivity)
     _ = (N : ℝ) := by
         rw [← Real.rpow_mul N.cast_nonneg, mul_one_div_cancel hε.ne', Real.rpow_one]
 
 /-! ### Boxes -/
 
 /-- Proof of Corollary 31: "ρ < ρ_c", where `ρ = 9m/(L-m+1)` and `L = ⌈cm⌉ ≥ cm`. -/
-theorem Corollary31.rho_lt {c : ℝ} (hc : 10 < c) (m : ℕ) : rho (levelsOf c m) m < rhoC c := by
-  have hL : c * m ≤ levelsOf c m := Nat.le_ceil _
-  have hm : (m : ℝ) ≤ c * m := le_mul_of_one_le_left (Nat.cast_nonneg m) (by linarith)
+theorem Corollary31.rho_lt {c} (hc : 10 < c) m : rho (levelsOf c m) m < rhoC c := by
+  have  : c * m ≤ levelsOf c m := Nat.le_ceil _
+  have  : (m : ℝ) ≤ c * m := le_mul_of_one_le_left (Nat.cast_nonneg m) (by linarith)
   unfold rho rhoC
   -- after clearing denominators: `9m (c - 1) < 9 (L - m + 1)`, from `cm ≤ L`
   rw [div_lt_div_iff₀ (by linarith) (by linarith)]
@@ -111,22 +110,21 @@ theorem Corollary31.rho_lt {c : ℝ} (hc : 10 < c) (m : ℕ) : rho (levelsOf c m
 /-- Proof of Corollary 31: "the same calculation with x := (1-θ)/θ in place of 8, where 9x > 1
 because θ < 0.9, gives ∑_{d≤t} α_d ≤ (9x)^t (1+1/x)^m = O(D^q)". The constant is `9x`, because
 `t = ⌈θm⌉ < θm + 1`. -/
-theorem Corollary31.sum_alpha {θ : ℝ} (hθ0 : 0 < θ) (hθ1 : θ < 0.9) :
-    Dominated (fun m : ℕ => 1 ≤ m) (fun m => ∑ d ∈ range (switchOf θ m + 1), (alpha m d : ℝ))
-      fun m => (D m : ℝ) ^ qOf θ := by
+theorem Corollary31.sum_alpha {θ} (hθ0 : 0 < θ) (hθ1 : θ < 0.9) :
+    Dominated (fun m  => 1 ≤ m) (fun m => ∑ d ∈ range (switchOf θ m + 1), alpha m d)
+      fun m => D m ^ qOf θ := by
   have hx : 0 < (1 - θ) / θ := div_pos (by linarith) hθ0
   have h9x : 1 < 9 * ((1 - θ) / θ) := by
-    rw [← mul_div_assoc, lt_div_iff₀ hθ0]
-    linarith
+    field_simp <;> nlinarith
   refine .of_le_const_mul (C := 9 * ((1 - θ) / θ)) (by positivity) fun m _ => ?_
-  have ht : ((switchOf θ m : ℕ) : ℝ) ≤ θ * m + 1 := (Nat.ceil_lt_add_one (by positivity)).le
+
   calc ∑ d ∈ range (switchOf θ m + 1), (alpha m d : ℝ)
       ≤ (9 * ((1 - θ) / θ)) ^ switchOf θ m * (1 + 1 / ((1 - θ) / θ)) ^ m :=
         sum_alpha_le hx h9x.le (switchOf_le (by linarith) m)
     _ ≤ (9 * ((1 - θ) / θ)) ^ (θ * (m : ℝ) + 1) * (1 + 1 / ((1 - θ) / θ)) ^ m := by
         gcongr
         rw [← Real.rpow_natCast]
-        exact Real.rpow_le_rpow_of_exponent_le h9x.le ht
+        exact Real.rpow_le_rpow_of_exponent_le h9x.le (Nat.ceil_lt_add_one (by positivity)).le
     _ = 9 * ((1 - θ) / θ) * (D m : ℝ) ^ qOf θ := by
         rw [← rpow_mul_pow_eq_D_rpow_qOf hθ0 (by linarith) m, Real.rpow_add (by positivity),
           Real.rpow_one]
@@ -134,10 +132,10 @@ theorem Corollary31.sum_alpha {θ : ℝ} (hθ0 : 0 < θ) (hθ1 : θ < 0.9) :
 
 /-- The query cost `L ∑_{d ≤ t} α_d` of Theorem 30 is `O(L D^q) = O(D^q log D)`, for `D = 4^m`. (In
 the proof of Corollary 26: "Hence a query takes O(L D^q) = O(m D^q) time".) -/
-theorem Corollary31.query_cost {c θ : ℝ} (hc : 10 < c) (hθ0 : 0 < θ) (hθ1 : θ < 0.9) :
-    Dominated (fun m : ℕ => 1 ≤ m) (fun m => costQuery (levelsOf c m) m (switchOf θ m))
-      fun m => (D m : ℝ) ^ qOf θ * Real.log (D m) :=
-  ((dominated_levelsOf_log_D hc).mul (Corollary31.sum_alpha hθ0 hθ1) (fun _ _ => by positivity)
+theorem Corollary31.query_cost {c θ} (hc : 10 < c) (hθ0 : 0 < θ) (hθ1 : θ < 0.9) :
+    Dominated (fun m  => 1 ≤ m) (fun m => costQuery (levelsOf c m) m (switchOf θ m))
+      fun m => D m ^ qOf θ * Real.log (D m) :=
+  ((dominated_levelsOf_log_D hc).mul (Corollary31.sum_alpha hθ0 hθ1) fun _ _ => by positivity
     fun _ _ => by positivity).congr (fun _ _ => rfl) fun m _ => by ring
 
 /-! ### Encodings

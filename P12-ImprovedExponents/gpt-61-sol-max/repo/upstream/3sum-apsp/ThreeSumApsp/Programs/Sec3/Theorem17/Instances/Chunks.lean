@@ -5,6 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Instances.Classes
 
 /-!
@@ -22,64 +25,42 @@ returns the number of chunks (`chunks_meets`).  The proof follows the program: o
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
-namespace Chunks
 
-/-- The locals of `chunks`.  The arguments: the address of the starts of the classes, the number `p`
-of classes, the largest size `cap` of a chunk, and the addresses of the three tables.  Then the
-residue, the start of the next chunk, the end of the class, the number of chunks so far, and the
-length of the chunk. -/
-abbrev Cls : ℕ := 0
-@[inherit_doc Cls] abbrev Num : ℕ := 1
-@[inherit_doc Cls] abbrev Cap : ℕ := 2
-@[inherit_doc Cls] abbrev TabR : ℕ := 3
-@[inherit_doc Cls] abbrev TabL : ℕ := 4
-@[inherit_doc Cls] abbrev TabW : ℕ := 5
-@[inherit_doc Cls] abbrev Rho : ℕ := 6
-@[inherit_doc Cls] abbrev Pos : ℕ := 7
-@[inherit_doc Cls] abbrev End : ℕ := 8
-@[inherit_doc Cls] abbrev Cnt : ℕ := 9
-@[inherit_doc Cls] abbrev Len : ℕ := 10
-
-end Chunks
-
-open Chunks in
 /-- One chunk: len := min(cap, end - pos); the three tables get (rho, pos, len) at place cnt;
 cnt := cnt + 1; pos := pos + len. -/
 def chunksRound : Stmt :=
-  .set Len (v End -' v Pos) ;;
-  .ite (v Cap <' v Len) (.set Len (v Cap)) .skip ;;
-  .store (v TabR +' v Cnt) (v Rho) ;;
-  .store (v TabL +' v Cnt) (v Pos) ;;
-  .store (v TabW +' v Cnt) (v Len) ;;
-  .set Cnt (v Cnt +' k 1) ;;
-  .set Pos (v Pos +' v Len)
+  .set 10 (v 8 -' v 7) ;;
+  .ite (v 2 <' v 10) (.set 10 (v 2)) .skip ;;
+  .store (v 3 +' v 9) (v 6) ;;
+  .store (v 4 +' v 9) (v 7) ;;
+  .store (v 5 +' v 9) (v 10) ;;
+  .set 9 (v 9 +' k 1) ;;
+  .set 7 (v 7 +' v 10)
 
-open Chunks in
 /-- The chunks of the class rho: pos := cls[rho]; end := cls[rho + 1]; while pos < end: one
 chunk. -/
 def chunksClass : Stmt :=
-  .set Pos (M (v Cls +' v Rho)) ;;
-  .set End (M (v Cls +' v Rho +' k 1)) ;;
-  .while (v Pos <' v End) chunksRound
+  .set 7 (M (v 0 +' v 6)) ;;
+  .set 8 (M (v 0 +' v 6 +' k 1)) ;;
+  .while (v 7 <' v 8) chunksRound
 
-open Chunks in
 /-- chunks(cls, p, cap, cr, cl, cw). -/
 def chunksBody : Stmt :=
-  .set Rho (k 0) ;;
-  .set Cnt (k 0) ;;
-  .while (v Rho <' v Num) (chunksClass ;; .set Rho (v Rho +' k 1)) ;;
-  .set 0 (v Cnt)
+  .set 6 (k 0) ;;
+  .set 9 (k 0) ;;
+  .while (v 6 <' v 1) (chunksClass ;; .set 6 (v 6 +' k 1)) ;;
+  .set 0 (v 9)
 
 /-- The time of chunks, for p classes and nCh chunks. -/
-def tChunks (p nCh : ℕ) : ℕ := 37 * nCh + 24 * p + 10
+def tChunks p nCh := 37 * nCh + 24 * p + 10
 
 /-- The arguments of chunks; the room `R` of each of the three tables; the list `C` of the starts of
 the classes, which stands at `cls`, and a bound `B` on them. -/
-structure ChunksArgs : Type where
+structure ChunksArgs where
   (cls p cap cr cl cw : ℕ)
   (R B : ℕ) (C : List ℕ)
 
@@ -91,22 +72,22 @@ abbrev ChunksArgs.locals (x : ChunksArgs) (rho pos hi cnt len : ℤ) : List ℤ 
   [x.cls, x.p, x.cap, x.cr, x.cl, x.cw, rho, pos, hi, cnt, len]
 
 /-- The table that chunks writes. -/
-abbrev ChunksArgs.table (x : ChunksArgs) : List Chunk := chunkTabOf x.p x.cap x.C
+abbrev ChunksArgs.table (x : ChunksArgs) := chunkTabOf x.p x.cap x.C
 
 /-- Only cells of the three tables have changed. -/
-abbrev ChunksArgs.Same (x : ChunksArgs) (μ μ' : ℕ → ℤ) : Prop :=
+abbrev ChunksArgs.Same (x : ChunksArgs) μ μ' :=
   SameOutside3 μ μ' x.cr x.R x.cl x.R x.cw x.R
 
 /-- What chunks assumes: the starts, at most B, at cls; room for R chunks in each of the three
 tables; the areas lie apart and inside the memory. -/
-structure ChunksPre (lim : Limits) (μ : ℕ → ℤ) (x : ChunksArgs) : Prop where
+structure ChunksPre (lim : Limits) (μ : Light.Memory) (x : ChunksArgs) : Prop where
   seg : SegN μ x.cls x.C
   len : x.C.length = x.p + 1
   le : ∀ s ∈ x.C, s ≤ x.B
   room : (chunkTabOf x.p x.cap x.C).length ≤ x.R
   hcap : 1 ≤ x.cap := by light_arith
   hB : x.B < lim.space := by light_arith
-  cls_le : x.cls + (x.p + 1) < lim.space := by light_arith
+  cls_le : x.cls + x.p + 1 < lim.space := by light_arith
   cr_le : x.cr + x.R < lim.space := by light_arith
   cl_le : x.cl + x.R < lim.space := by light_arith
   cw_le : x.cw + x.R < lim.space := by light_arith
@@ -119,54 +100,53 @@ structure ChunksPre (lim : Limits) (μ : ℕ → ℤ) (x : ChunksArgs) : Prop wh
 
 /-! ## The pure side -/
 
-section pure
+section
 
 /-- A class of `hi - lo` places has `⌈(hi - lo)/cap⌉` chunks. -/
-theorem length_chunksOf (cap lo hi rho : ℕ) :
+theorem length_chunksOf cap lo hi rho :
     (chunksOf cap lo hi rho).length = (hi - lo) ⌈/⌉ cap := by
   simp [chunksOf]
 
 /-- The chunks of the class number rho. -/
-def chunkRow (cap : ℕ) (C : List ℕ) (rho : ℕ) : List Chunk :=
+def chunkRow cap (C : List ℕ) rho :=
   chunksOf cap (C.getD rho 0) (C.getD (rho + 1) 0) rho
 
-theorem length_chunkRow (cap : ℕ) (C : List ℕ) (rho : ℕ) :
+theorem length_chunkRow cap C rho :
     (chunkRow cap C rho).length = (C.getD (rho + 1) 0 - C.getD rho 0) ⌈/⌉ cap :=
   length_chunksOf _ _ _ _
 
 /-- The table when the classes before rho and i chunks of the class rho have been handled. -/
-def tabAt (cap : ℕ) (C : List ℕ) (rho i : ℕ) : List Chunk :=
+def tabAt cap C rho i :=
   (List.range rho).flatMap (chunkRow cap C) ++ (chunkRow cap C rho).take i
 
 /-- At the start the table is empty. -/
-theorem tabAt_zero_zero (cap : ℕ) (C : List ℕ) : tabAt cap C 0 0 = [] := by simp [tabAt]
+theorem tabAt_zero_zero cap C : tabAt cap C 0 0 = [] := rfl
 
 /-- After all classes the table is complete. -/
-theorem tabAt_end (p cap : ℕ) (C : List ℕ) : tabAt cap C p 0 = chunkTabOf p cap C := by
+theorem tabAt_end p cap C : tabAt cap C p 0 = chunkTabOf p cap C := by
   rw [tabAt, List.take_zero, List.append_nil]
   rfl
 
 /-- After the last chunk of a class the next class begins. -/
-theorem tabAt_row (cap : ℕ) (C : List ℕ) (rho : ℕ) :
+theorem tabAt_row cap C rho :
     tabAt cap C rho ((C.getD (rho + 1) 0 - C.getD rho 0) ⌈/⌉ cap)
       = tabAt cap C (rho + 1) 0 := by
-  rw [tabAt, ← length_chunkRow, List.take_length, tabAt, List.range_succ, List.flatMap_append]
-  simp
+  ram_arith [tabAt, length_chunkRow, List.range_succ]
 
 /-- One more chunk of the class `rho`. -/
-theorem tabAt_succ (cap : ℕ) (C : List ℕ) (rho : ℕ) {i : ℕ}
+theorem tabAt_succ cap C rho {i}
     (hi : i < (C.getD (rho + 1) 0 - C.getD rho 0) ⌈/⌉ cap) :
     tabAt cap C rho (i + 1) = tabAt cap C rho i ++
       [⟨rho, C.getD rho 0 + i * cap, min cap (C.getD (rho + 1) 0 - C.getD rho 0 - i * cap)⟩] := by
-  have hrow : i < (chunkRow cap C rho).length := by rw [length_chunkRow]; exact hi
-  rw [tabAt, tabAt, ← List.take_append_getElem hrow, List.append_assoc]
+
+  rw [tabAt, tabAt, ← List.take_append_getElem (by rw [length_chunkRow]; exact hi), List.append_assoc]
   simp [chunkRow, chunksOf]
 
 /-- As long as a chunk is missing, the table is shorter than the complete one. -/
-theorem length_tabAt_lt {p cap : ℕ} (C : List ℕ) {rho i : ℕ} (hrho : rho < p)
+theorem length_tabAt_lt {p cap} C {rho i} (hrho : rho < p)
     (hi : i < (C.getD (rho + 1) 0 - C.getD rho 0) ⌈/⌉ cap) :
     (tabAt cap C rho i).length < (chunkTabOf p cap C).length := by
-  have hrow := length_chunkRow cap C rho
+  have  := length_chunkRow cap C rho
   have hrows :=
     List.sum_map_range_mono (fun r => (chunkRow cap C r).length) (show rho + 1 ≤ p by omega)
   rw [List.range_succ, List.map_append, List.sum_append] at hrows
@@ -179,7 +159,7 @@ theorem length_tabAt_lt {p cap : ℕ} (C : List ℕ) {rho i : ℕ} (hrho : rho <
   omega
 
 /-- The time of the rounds, added up: 37 steps for each chunk and 24 for each class. -/
-theorem sum_chunks_rounds (cap : ℕ) (C : List ℕ) (q : ℕ) :
+theorem sum_chunks_rounds cap C q :
     ∑ rho ∈ Finset.range q, (4 + (37 * ((C.getD (rho + 1) 0 - C.getD rho 0) ⌈/⌉ cap) + 20))
       = 37 * (tabAt cap C q 0).length + 24 * q := by
   induction q with
@@ -187,19 +167,18 @@ theorem sum_chunks_rounds (cap : ℕ) (C : List ℕ) (q : ℕ) :
   | succ q ih =>
     have hrow : (tabAt cap C (q + 1) 0).length
         = (tabAt cap C q 0).length + (C.getD (q + 1) 0 - C.getD q 0) ⌈/⌉ cap := by
-      rw [← tabAt_row cap C q]
-      simp [tabAt, length_chunkRow]
+      grind [tabAt_row, length_chunkRow, tabAt]
     rw [Finset.sum_range_succ, ih, hrow]
     omega
 
-end pure
+end
 
 /-! ## The tables in the memory -/
 
-variable {μ μ' : ℕ → ℤ} {x : ChunksArgs}
+variable {μ μ' : Light.Memory} {x : ChunksArgs}
 
 /-- The three tables hold the list T, and nothing else has changed. -/
-structure TabInv (μ μ' : ℕ → ℤ) (x : ChunksArgs) (T : List Chunk) : Prop where
+structure TabInv (μ μ' : Light.Memory) (x : ChunksArgs) (T : List Chunk) : Prop where
   sr : SegN μ' x.cr (T.map (·.residue))
   sl : SegN μ' x.cl (T.map (·.start))
   sw : SegN μ' x.cw (T.map (·.len))
@@ -207,8 +186,8 @@ structure TabInv (μ μ' : ℕ → ℤ) (x : ChunksArgs) (T : List Chunk) : Prop
 
 /-- One more chunk: each table gets one more entry, and the writes to the other two tables do not
 touch it. -/
-theorem TabInv.push {T : List Chunk} (h : TabInv μ μ' x T) (pre : ChunksPre lim μ x)
-    (hlen : T.length < x.R) (c : Chunk) :
+theorem TabInv.push {T} (h : TabInv μ μ' x T) (pre : ChunksPre lim μ x)
+    (hlen : T.length < x.R) c :
     TabInv μ (Function.update (Function.update (Function.update μ' (x.cr + T.length) c.residue)
       (x.cl + T.length) c.start) (x.cw + T.length) c.len) x (T ++ [c]) := by
   light_facts pre
@@ -216,7 +195,7 @@ theorem TabInv.push {T : List Chunk} (h : TabInv μ μ' x T) (pre : ChunksPre li
   have hl :=
     SegN.snoc (h.sl.update_out (b := x.cr + T.length) (by simp; omega) (c.residue : ℤ)) c.start
   have hw := SegN.snoc
-    ((h.sw.update_out (b := x.cr + T.length) (by simp; omega) (c.residue : ℤ)).update_out
+    ((h.sw.update_out (b := x.cr + T.length) (by simp; omega) c.residue).update_out
       (b := x.cl + T.length) (by simp; omega) (c.start : ℤ)) c.len
   simp only [List.length_map] at hr hl hw
   refine ⟨?_, ?_, ?_, fun b hb => ?_⟩
@@ -224,19 +203,18 @@ theorem TabInv.push {T : List Chunk} (h : TabInv μ μ' x T) (pre : ChunksPre li
     exact (hr.update_out (by simp; omega) _).update_out (by simp; omega) _
   · rw [List.map_append]
     exact hl.update_out (by simp; omega) _
-  · rw [List.map_append]
-    exact hw
+  · simp_all
   · rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega),
       Function.update_of_ne (by omega)]
     exact h.same b hb
 
 /-- A start of a class, read from a memory in which only the tables have changed. -/
-theorem ChunksPre.start (pre : ChunksPre lim μ x) (hsame : x.Same μ μ') {t : ℕ} (ht : t ≤ x.p) :
-    μ' (x.cls + t) = ((x.C.getD t 0 : ℕ) : ℤ) ∧ x.C.getD t 0 ≤ x.B := by
+theorem ChunksPre.start (pre : ChunksPre lim μ x) (hsame : x.Same μ μ') {t} (ht : t ≤ x.p) :
+    μ' (x.cls + t) = (x.C.getD t 0 : ℕ) ∧ x.C.getD t 0 ≤ x.B := by
   light_facts pre
-  have hlen : t < x.C.length := by omega
-  rw [hsame _ ⟨by omega, by omega, by omega⟩, pre.seg.read hlen]
-  exact ⟨rfl, by rw [List.getD_eq_getElem _ 0 hlen]; exact pre.le _ (List.getElem_mem hlen)⟩
+
+  rw [hsame _ ⟨by omega, by omega, by omega⟩, pre.seg.read (by omega)]
+  exact ⟨rfl, by simp_all⟩
 
 /-! ## The program -/
 
@@ -245,7 +223,7 @@ variable (hw : (lim.space : ℤ) ≤ lim.word)
 include hw
 
 /-- One chunk. -/
-theorem chunksRound_runs {rho pos hi cnt : ℕ} {len : ℤ} (hpos : pos < hi) (hhi : hi < lim.space)
+theorem chunksRound_runs {rho pos hi cnt : ℕ} {len} (hpos : pos < hi) (hhi : hi < lim.space)
     (hr : x.cr + cnt < lim.space) (hl : x.cl + cnt < lim.space) (hc : x.cw + cnt < lim.space) :
     chunksRound.Runs lim ⟨frame (x.locals rho pos hi cnt len), μ'⟩
       (· = ⟨frame (x.locals rho (pos + min x.cap (hi - pos) : ℕ) hi (cnt + 1 : ℕ)
@@ -257,24 +235,24 @@ theorem chunksRound_runs {rho pos hi cnt : ℕ} {len : ℤ} (hpos : pos < hi) (h
     rw [show min x.cap (hi - pos) = x.cap by omega]
     exact ⟨by light_side [chunksRound, update_frame_setLocal, htest],
       by simp [chunksRound, update_frame_setLocal, htest]⟩
-  · have htest : ¬ (x.cap : ℤ) < (hi : ℤ) - pos := by omega
+  · have htest : ¬ x.cap < (hi : ℤ) - pos := by omega
     rw [show min x.cap (hi - pos) = hi - pos by omega]
     exact ⟨by light_side [chunksRound, update_frame_setLocal, htest],
       by simp [chunksRound, update_frame_setLocal, htest, Nat.cast_sub hpos.le]⟩
 
 /-- The state of `chunks` when the residue is `rho` and the three tables hold the list `T`. -/
-def ChunksInv (μ : ℕ → ℤ) (x : ChunksArgs) (rho : ℕ) (T : List Chunk) (σ : State) : Prop :=
-  ∃ (pos hi len : ℤ) (μ' : ℕ → ℤ),
+def ChunksInv μ x (rho : ℕ) T (σ : State) :=
+  ∃ (pos hi len : ℤ) (μ' : Light.Memory),
     σ = ⟨frame (x.locals rho pos hi T.length len), μ'⟩ ∧ TabInv μ μ' x T
 
 /-- The chunks of one class. -/
-theorem chunksClass_ends {rho : ℕ} {σ : State} (pre : ChunksPre lim μ x) (hrho : rho < x.p)
+theorem chunksClass_ends {rho} {σ} (pre : ChunksPre lim μ x) (hrho : rho < x.p)
     (hσ : ChunksInv μ x rho (tabAt x.cap x.C rho 0) σ) :
     Ends lim P d chunksClass σ (37 * ((x.C.getD (rho + 1) 0 - x.C.getD rho 0) ⌈/⌉ x.cap) + 16)
       (ChunksInv μ x rho (tabAt x.cap x.C (rho + 1) 0)) := by
   obtain ⟨pos₀, end₀, len₀, μ', rfl, hT⟩ := hσ
   light_facts pre
-  have hroom : x.table.length ≤ x.R := pre.room
+  have  : x.table.length ≤ x.R := pre.room
   obtain ⟨hreadLo, hloB⟩ := pre.start hT.same (show rho ≤ x.p by omega)
   obtain ⟨hreadHi, hhiB⟩ := pre.start hT.same (show rho + 1 ≤ x.p by omega)
   have hsucc := fun i hlt => tabAt_succ x.cap x.C rho (i := i) hlt
@@ -291,7 +269,7 @@ theorem chunksClass_ends {rho : ℕ} {σ : State} (pre : ChunksPre lim μ x) (hr
   light_set lo using hreadLo
   light_set hi using haddr, hreadHi
   -- while pos < end.  Before round i, the first i chunks of the class are in the tables.
-  refine Ends.whileBlock (fun i σ => ∃ (len : ℤ) (μ₁ : ℕ → ℤ),
+  refine Ends.whileBlock (fun i σ => ∃ (len : ℤ) (μ₁ : Light.Memory),
     σ = ⟨frame (x.locals rho (lo + min (i * x.cap) (hi - lo) : ℕ) hi
       (tabAt x.cap x.C rho i).length len), μ₁⟩ ∧
     TabInv μ μ₁ x (tabAt x.cap x.C rho i)) rounds ?start ?round ?done
@@ -299,33 +277,34 @@ theorem chunksClass_ends {rho : ℕ} {σ : State} (pre : ChunksPre lim μ x) (hr
   case start => exact ⟨len₀, μ', by simp, hT⟩
   case round =>
     rintro i _ hround ⟨len, μ₁, rfl, hT₁⟩
-    have hlt : i * x.cap < hi - lo := (hiff i).1 hround
-    have hlen := hlenlt i hround
+    have hlt := (hiff i).1 hround
+    have  := hlenlt i hround
     have hpush := hT₁.push pre (by omega) ⟨rho, lo + i * x.cap, min x.cap (hi - lo - i * x.cap)⟩
     rw [← hsucc i hround] at hpush
     rw [show lo + min (i * x.cap) (hi - lo) = lo + i * x.cap by omega]
     refine ⟨by simp, by simp; omega, (chunksRound_runs hw (by omega) (by omega) (by omega)
       (by omega) (by omega)).mono ?_⟩
     rintro _ rfl
-    have hleft : hi - (lo + i * x.cap) = hi - lo - i * x.cap := by omega
+
     have hnext : lo + i * x.cap + min x.cap (hi - lo - i * x.cap) =
         lo + min ((i + 1) * x.cap) (hi - lo) := by
       rw [Nat.add_mul, Nat.one_mul]
       omega
-    have hlength : (tabAt x.cap x.C rho (i + 1)).length = (tabAt x.cap x.C rho i).length + 1 := by
-      rw [hsucc i hround, List.length_append, List.length_singleton]
-    exact ⟨(min x.cap (hi - lo - i * x.cap) : ℕ), _, by rw [hleft, hnext, hlength], hpush⟩
+
+    exact ⟨_, _, by rw [(by omega : hi - (lo + i * x.cap) = hi - lo - i * x.cap), hnext, (by
+      simp_all
+     : (tabAt x.cap x.C rho (i + 1)).length = (tabAt x.cap x.C rho i).length + 1)], hpush⟩
   case done =>
     rintro _ ⟨len, μ₁, rfl, hT₁⟩
-    have hge : ¬ rounds * x.cap < hi - lo := fun h => absurd ((hiff rounds).2 h) (lt_irrefl _)
+    have  : ¬ rounds * x.cap < hi - lo := fun h => absurd ((hiff rounds).2 h) (lt_irrefl _)
     exact ⟨by simp, by simp; omega, _, _, _, _, rfl, hT₁⟩
 
 omit hw in
 /-- **chunks** writes the table of the chunks and returns their number. -/
-theorem chunks_meets {pChunks : ℕ} (hP : P[pChunks]? = some chunksBody)
-    (hw : (lim.space : ℤ) ≤ lim.word) (x : ChunksArgs) (μ : ℕ → ℤ) (pre : ChunksPre lim μ x) :
+theorem chunks_meets {pChunks } (hP : P[pChunks]? = some chunksBody)
+    (hw : (lim.space : ℤ) ≤ lim.word) (x ) (μ ) (pre : ChunksPre lim μ x) :
     Meets lim P pChunks d x.vals μ (tChunks x.p x.table.length) fun r μ' =>
-      r = (x.table.length : ℕ) ∧ SegN μ' x.cr (x.table.map (·.residue)) ∧
+      r = x.table.length ∧ SegN μ' x.cr (x.table.map (·.residue)) ∧
         SegN μ' x.cl (x.table.map (·.start)) ∧ SegN μ' x.cw (x.table.map (·.len)) ∧
         x.Same μ μ' := by
   refine .of_body hP ?_
@@ -339,12 +318,12 @@ theorem chunks_meets {pChunks : ℕ} (hP : P[pChunks]? = some chunksBody)
   -- while rho < p
   refine Ends.next _ (Ends.while (fun rho σ => ChunksInv μ x rho (tabAt x.cap x.C rho 0) σ) x.p
     (fun rho => 37 * ((x.C.getD (rho + 1) 0 - x.C.getD rho 0) ⌈/⌉ x.cap) + 20) ?start ?round ?done)
-    (by simp only [Cond.cost, Expr.cost, Nat.reduceAdd]; omega)
+    (by simp_all)
   case start =>
     refine ⟨0, 0, 0, μ, ?_, by simp [tabAt_zero_zero, SegN], by simp [tabAt_zero_zero, SegN],
       by simp [tabAt_zero_zero, SegN], .refl⟩
     simpa [tabAt_zero_zero] using
-      (frame_append_zeros [(x.cls : ℤ), x.p, x.cap, x.cr, x.cl, x.cw, 0, 0, 0, 0] 1).symm
+      (frame_append_zeros [x.cls, x.p, x.cap, x.cr, x.cl, x.cw, 0, 0, 0, 0] 1).symm
   case round =>
     rintro rho σ hrho hσ
     have hclass := chunksClass_ends (P := P) (d := d) hw pre hrho hσ
@@ -353,13 +332,13 @@ theorem chunks_meets {pChunks : ℕ} (hP : P[pChunks]? = some chunksBody)
     refine ⟨by simp, by simp; omega, Ends.next _ (hclass.mono le_rfl ?_) (by omega)⟩
     rintro _ ⟨pos₁, hi₁, len₁, μ₁, rfl, hT⟩
     light_set (rho + 1 : ℕ)
-    exact ⟨pos₁, hi₁, len₁, μ₁, by simp, hT⟩
+    exact ⟨pos₁, hi₁, len₁, μ₁, rfl, hT⟩
   case done =>
     rintro _ ⟨pos, hi, len, μ', rfl, hT⟩
     rw [tabAt_end] at hT
     -- return cnt
-    exact ⟨by simp, by simp, Ends.setTo ((tabAt x.cap x.C x.p 0).length : ℕ)
+    exact ⟨by simp, by simp, Ends.setTo (tabAt x.cap x.C x.p 0).length
       ⟨by simp [tabAt_end], hT.sr, hT.sl, hT.sw, hT.same⟩ (by simp)
-      (by simp only [Cond.cost, Expr.cost, Nat.reduceAdd]; omega)⟩
+      (by simp_all)⟩
 
 end Light.Sec3

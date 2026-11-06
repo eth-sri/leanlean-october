@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import PaperStatements
 
 /-!
@@ -39,38 +41,38 @@ def convTemplate (t N s : ℕ) : TriangleTemplate t N where
     if h : (a.val + c.val) * t + s < N then some (true, ⟨(a.val + c.val) * t + s, h⟩) else none
 
 /-- The weight of the edge `(a, b)`. -/
-theorem convTemplate_AB {t N s : ℕ} {x : Fin N → ℤ} {fill : ℤ} (a b : Fin t) :
+theorem convTemplate_AB {t N s} {x} {fill} a b :
     templateWeight x fill ((convTemplate t N s).eAB a b)
-      = if h : a.val * t + b.val < N then x ⟨a.val * t + b.val, h⟩ else fill := by
+      = if h : a.val * t + b.val < N then x ⟨_, h⟩ else fill := by
   simp only [convTemplate]
   split <;> rfl
 
 /-- The weight of the edge `(b, c)`. -/
-theorem convTemplate_BC {t N s : ℕ} {x : Fin N → ℤ} {fill : ℤ} (b c : Fin t) :
+theorem convTemplate_BC {t N s} {x} {fill} b c :
     templateWeight x fill ((convTemplate t N s).eBC b c)
       = if h : b.val ≤ c.val * t + s ∧ c.val * t + s - b.val < N then
-          x ⟨c.val * t + s - b.val, h.2⟩ else fill := by
+          x ⟨_, h.2⟩ else fill := by
   simp only [convTemplate]
   split <;> rfl
 
 /-- The weight of the edge `(a, c)`. -/
-theorem convTemplate_AC {t N s : ℕ} {x : Fin N → ℤ} {fill : ℤ} (a c : Fin t) :
+theorem convTemplate_AC {t N s} {x} {fill} a c :
     templateWeight x fill ((convTemplate t N s).eAC a c)
-      = if h : (a.val + c.val) * t + s < N then -x ⟨(a.val + c.val) * t + s, h⟩ else fill := by
+      = if h : (a.val + c.val) * t + s < N then -x ⟨_, h⟩ else fill := by
   simp only [convTemplate]
   split <;> rfl
 
 /-- A solution `(i, j)` is the triangle `(⌊i/t⌋, i mod t, ⌊j/t⌋)` of the instance
 `s = (j mod t) + (i mod t)`. -/
-private theorem exists_hasZeroTriangle {t N : ℕ} {x : Fin N → ℤ} {fill : ℤ} (hNt : N < t * t)
-    {i j : Fin N} (hij : i.val + j.val < N) (h : x i + x j = x ⟨i.val + j.val, hij⟩) :
+private theorem exists_hasZeroTriangle {t N} {x} {fill} (hNt : N < t * t)
+    {i j} (hij : i.val + j.val < N) (h : x i + x j = x ⟨_, hij⟩) :
     ∃ s < 2 * t, ((convTemplate t N s).instantiate x fill).HasZeroTriangle := by
   have ht : 0 < t := Nat.pos_of_ne_zero (by rintro rfl; omega)
   have hit := Nat.mod_lt i.val ht
-  have hjt := Nat.mod_lt j.val ht
-  have hj := Nat.div_add_mod' j.val t
+  have  := Nat.mod_lt j.val ht
+  have  := Nat.div_add_mod' j.val t
   -- The three indices are `i`, `j` and `i + j`, so they are in range.
-  have hAB : i.val / t * t + i.val % t = i.val := Nat.div_add_mod' i.val t
+  have hAB := Nat.div_add_mod' i.val t
   have hBC : j.val / t * t + (j.val % t + i.val % t) - i.val % t = j.val := by omega
   have hAC : (i.val / t + j.val / t) * t + (j.val % t + i.val % t) = i.val + j.val := by
     rw [Nat.add_mul]
@@ -85,50 +87,39 @@ private theorem exists_hasZeroTriangle {t N : ℕ} {x : Fin N → ℤ} {fill : �
   ring
 
 /-- With the filler `2U + 1`, every weight is at least `-U`. -/
-private theorem neg_le_templateWeight {N : ℕ} {x : Fin N → ℤ} {U : ℤ} (hU : 0 ≤ U)
+private theorem neg_le_templateWeight {N} {x} {U} (hU : 0 ≤ U)
     (hx : ∀ i, |x i| ≤ U) (o : Option (Bool × Fin N)) : -U ≤ templateWeight x (2 * U + 1) o := by
-  rcases o with _ | ⟨_ | _, i⟩ <;> simp only [templateWeight]
-  · omega
-  · exact (abs_le.mp (hx i)).1
-  · exact neg_le_neg (abs_le.mp (hx i)).2
+  ram_grind [templateWeight]
 
 /-- A zero triangle of an instance with the filler `2U + 1` is a solution. -/
-private theorem convolution3SUM_of_isZeroTriangle {t N s : ℕ} {x : Fin N → ℤ} {U : ℤ} (hU : 0 ≤ U)
-    (hx : ∀ i, |x i| ≤ U) {a b c : Fin t}
+private theorem convolution3SUM_of_isZeroTriangle {t N s} {x} {U} (hU : 0 ≤ U)
+    (hx : ∀ i, |x i| ≤ U) {a b c}
     (h : ((convTemplate t N s).instantiate x (2 * U + 1)).IsZeroTriangle a b c) :
     Convolution3SUM x := by
   simp only [TriangleInstance.IsZeroTriangle, TriangleInstance.S, TriangleTemplate.instantiate] at h
-  have hgeAB := neg_le_templateWeight hU hx ((convTemplate t N s).eAB a b)
-  have hgeBC := neg_le_templateWeight hU hx ((convTemplate t N s).eBC b c)
-  have hgeAC := neg_le_templateWeight hU hx ((convTemplate t N s).eAC a c)
+  have  := neg_le_templateWeight hU hx ((convTemplate t N s).eAB a b)
+  have  := neg_le_templateWeight hU hx ((convTemplate t N s).eBC b c)
+  have  := neg_le_templateWeight hU hx ((convTemplate t N s).eAC a c)
   -- One filler `2U + 1` and two weights that are at least `-U` have a positive sum, so the three
   -- indices are in range.
   have hAB : a.val * t + b.val < N := by
-    by_contra hout
-    rw [convTemplate_AB, dif_neg hout] at h
-    omega
+    grind [convTemplate_AB]
   have hBC : b.val ≤ c.val * t + s ∧ c.val * t + s - b.val < N := by
-    by_contra hout
-    rw [convTemplate_BC, dif_neg hout] at h
-    omega
+    grind [convTemplate_BC]
   have hAC : (a.val + c.val) * t + s < N := by
-    by_contra hout
-    rw [convTemplate_AC, dif_neg hout] at h
-    omega
+    grind [convTemplate_AC]
   rw [convTemplate_AB, convTemplate_BC, convTemplate_AC, dif_pos hAB, dif_pos hBC, dif_pos hAC] at h
   -- The triangle stands for `i = at + b` and `j = ct + s - b`, and `i + j = (a + c)t + s`.
   have hsum : a.val * t + b.val + (c.val * t + s - b.val) = (a.val + c.val) * t + s := by
     rw [Nat.add_mul]
     omega
   refine ⟨⟨a.val * t + b.val, hAB⟩, ⟨c.val * t + s - b.val, hBC.2⟩, hsum ▸ hAC, ?_⟩
-  simp only [hsum]
-  -- `h` says `x_i + x_j - x_{i+j} = 0`.
-  linarith [h]
+  simp_all <;> omega
 
 /-- The reduction of [VW13, Theorem 4.3], for `N < t²` numbers of absolute value at most `U`: there
 are `i`, `j` with `x_i + x_j = x_{i+j}` if and only if one of the instances `s < 2t`, with the
 filler `2U + 1`, has a zero triangle. -/
-theorem convolution3SUM_iff {t N : ℕ} {x : Fin N → ℤ} {U : ℤ} (hN : 1 ≤ N) (hNt : N < t * t)
+theorem convolution3SUM_iff {t N} {x} {U} (hN : 1 ≤ N) (hNt : N < t * t)
     (hx : ∀ i, |x i| ≤ U) :
     Convolution3SUM x ↔
       ∃ s < 2 * t, ((convTemplate t N s).instantiate x (2 * U + 1)).HasZeroTriangle := by

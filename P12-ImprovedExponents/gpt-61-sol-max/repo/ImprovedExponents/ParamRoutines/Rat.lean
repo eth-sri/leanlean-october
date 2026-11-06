@@ -1,5 +1,6 @@
 module
 
+public import Mathlib.Tactic
 public import ImprovedExponents.ParamRoutines.Routines
 public import ImprovedExponents.ParamRoutines.Pack
 
@@ -32,17 +33,17 @@ For `c = 0` the parameter `g` is 1 (`paramGRat_zero`).
 
 namespace ImprovedExponents.ParamRoutines
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3
+open ThreeSumApsp Light Light.Sec3
 
 /-! ## The routines as parameter procedures -/
 
 /-- The four routines, placed behind a program of length `o`, at the numbers `o`, …, `o + 3`:
 powLt, rootCeil, dRat and gRat. -/
-def ratProcs (a b c d o : ℕ) : Program :=
+def ratProcs a b c d o :=
   [powLtBody, rootCeilBody o, dRatBody a b (o + 1), gRatBody c d (o + 1)]
 
 /-- `dRatBody a b` computes `⌊n^{a/b}⌋`. -/
-theorem paramProc_dRat {b : ℕ} (hb : b ≠ 0) (a c d : ℕ) (Q R : Program) :
+theorem paramProc_dRat {b} (hb : b ≠ 0) a c d Q R :
     ParamProc (Q ++ ratProcs a b c d Q.length ++ R) (Q.length + 2) (paramDRatNat a b)
       (tDRat a b) (wDRat a b) := by
   intro lim dep x μ _ _ hw hd
@@ -50,7 +51,7 @@ theorem paramProc_dRat {b : ℕ} (hb : b ≠ 0) (a c d : ℕ) (Q R : Program) :
     (getElem?_behind Q _ R (i := 0) rfl) hb hw (by omega)
 
 /-- `gRatBody c d` computes `⌈D^{c/d}⌉`. -/
-theorem paramProc_gRat {d : ℕ} (hd : d ≠ 0) (a b c : ℕ) (Q R : Program) :
+theorem paramProc_gRat {d} (hd : d ≠ 0) a b c Q R :
     ParamProc (Q ++ ratProcs a b c d Q.length ++ R) (Q.length + 3) (paramGRatNat c d)
       (tGRat c d) (wGRat c d) := by
   intro lim dep x μ hx _ hw hd'
@@ -60,22 +61,21 @@ theorem paramProc_gRat {d : ℕ} (hd : d ≠ 0) (a b c : ℕ) (Q R : Program) :
 /-! ## The parameters and the words are polynomially bounded -/
 
 /-- `⌊n^{a/b}⌋ ≤ n^a`. -/
-theorem polyBounded_paramDRatNat (a b : ℕ) : PolyBounded fun n _ => paramDRatNat a b n :=
+def polyBounded_paramDRatNat a b :=
   (by growth_poly [] : PolyBounded fun n _ => n ^ a).of_le fun n _ => paramDRatNat_le a b n
 
 /-- `⌈D^{c/d}⌉ ≤ D^c + 1`. -/
-theorem polyBounded_paramGRatNat (c d : ℕ) {D : ℕ → ℕ} (hD : PolyBounded fun n _ => D n) :
-    PolyBounded fun n _ => paramGRatNat c d (D n) :=
+def polyBounded_paramGRatNat c d {D : ℕ → ℕ} (hD : PolyBounded fun n _ => D n) :=
   (by growth_poly [hD] : PolyBounded fun n _ => D n ^ c + 1).of_le fun n _ =>
     paramGRatNat_le c d (D n)
 
 /-- The numbers of `dRatBody`. -/
-theorem polyBounded_wDRat (a b : ℕ) : PolyBounded fun n _ => wDRat a b n := by
+theorem polyBounded_wDRat a b : PolyBounded fun n _ => wDRat a b n := by
   unfold wDRat
   growth_poly [polyBounded_paramDRatNat a b]
 
 /-- The numbers of `gRatBody`. -/
-theorem polyBounded_wGRat (c d : ℕ) {D : ℕ → ℕ} (hD : PolyBounded fun n _ => D n) :
+theorem polyBounded_wGRat c d {D : ℕ → ℕ} (hD : PolyBounded fun n _ => D n) :
     PolyBounded fun n _ => wGRat c d (D n) := by
   unfold wGRat
   growth_poly [hD, polyBounded_paramGRatNat c d hD]
@@ -84,7 +84,7 @@ theorem polyBounded_wGRat (c d : ℕ) {D : ℕ → ℕ} (hD : PolyBounded fun n 
 
 /-- `dRatBody` takes a constant number of steps for each number up to `⌊n^{a/b}⌋ + 1`: `O(n^k)`
 steps if `a ≤ k b`. -/
-theorem steps_tDRat_pow {a b k : ℕ} (hb : b ≠ 0) (hab : a ≤ k * b) :
+theorem steps_tDRat_pow {a b k} (hb : b ≠ 0) (hab : a ≤ k * b) :
     StepsMon (fun θ => tDRat a b θ.n) k 0 0 := by
   have hD : StepsMon (fun θ => paramDRatNat a b θ.n) k 0 0 :=
     ((steps_n.pow k).mono fun i => by fin_cases i <;> simp).of_le fun _ hθ =>
@@ -92,19 +92,18 @@ theorem steps_tDRat_pow {a b k : ℕ} (hb : b ≠ 0) (hab : a ≤ k * b) :
   unfold tDRat
   apply Scale.SoftO.mono
   · growth_rules [hD]
-  · intro i
-    fin_cases i <;> simp
+  · simp_all
 
 /-- `dRatBody` takes `O(n²)` steps if `a ≤ 2 b`. -/
-theorem steps_tDRat {a b : ℕ} (hb : b ≠ 0) (hab : a ≤ 2 * b) :
+theorem steps_tDRat {a b} (hb : b ≠ 0) (hab : a ≤ 2 * b) :
     StepsMon (fun θ => tDRat a b θ.n) 2 2 0 :=
   (steps_tDRat_pow hb hab).mono (by decide)
 
 /-- `gRatBody` takes `O(n² D)` steps if `c ≤ 3 d`: it takes a constant number of steps for each
 number up to `⌈D^{c/d}⌉ ≤ D³`, and `D ≤ n`. -/
-theorem steps_tGRat {c d : ℕ} (hd : d ≠ 0) (hcd : c ≤ 3 * d) :
+theorem steps_tGRat {c d} (hd : d ≠ 0) (hcd : c ≤ 3 * d) :
     StepsMon (fun θ => tGRat c d θ.D) 2 2 0 := by
-  have hG : StepsMon (fun θ => paramGRatNat c d θ.D) 2 2 0 :=
+  have hG :=
     (by growth [steps_n, steps_D] : StepsMon (fun θ => θ.n ^ 2 * θ.D) 2 2 0).of_le fun θ hθ =>
       (paramGRatNat_le_pow hd hcd hθ.one_le_D_nat).trans (by
         rw [pow_succ]
@@ -116,7 +115,7 @@ theorem steps_tGRat {c d : ℕ} (hd : d ≠ 0) (hcd : c ≤ 3 * d) :
 
 /-- **The pack of the routines for `D = ⌊n^{a/b}⌋` and `g = ⌈D^{c/d}⌉`**, for `b ≥ 1`, `d ≥ 1`,
 `a ≤ 2 b` and `c ≤ 3 d`. -/
-def paramPackRat (a b c d : ℕ) (hb : 1 ≤ b) (hd : 1 ≤ d) (hab : a ≤ 2 * b) (hcd : c ≤ 3 * d) :
+def paramPackRat a b c d (hb : 1 ≤ b) (hd : 1 ≤ d) (hab : a ≤ 2 * b) (hcd : c ≤ 3 * d) :
     ParamPack (paramDRat a b) (paramGRatOf a b c d) where
   procs := ratProcs a b c d
   iD := 2

@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Time
 
 /-!
@@ -25,23 +26,16 @@ two bounds together.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec Finset
+open ThreeSumApsp
 
 /-! ## The shared stage, in natural numbers -/
 
 /-- `(L + 1)² ≤ 10^L`. -/
-theorem succ_sq_le_ten_pow (L : ℕ) : (L + 1) ^ 2 ≤ 10 ^ L := by
-  have hfour : (L + 1) ^ 2 ≤ 4 ^ L := by
-    induction L with
-    | zero => simp
-    | succ L ih =>
-      calc (L + 1 + 1) ^ 2 ≤ 4 * (L + 1) ^ 2 := by
-            rw [show (L + 1 + 1) ^ 2 = L * L + 4 * L + 4 by ring,
-              show 4 * (L + 1) ^ 2 = 4 * (L * L) + 8 * L + 4 by ring]
-            omega
-        _ ≤ 4 * 4 ^ L := Nat.mul_le_mul_left _ ih
-        _ = 4 ^ (L + 1) := by ring
-  exact hfour.trans (Nat.pow_le_pow_left (by norm_num) L)
+theorem succ_sq_le_ten_pow L : (L + 1) ^ 2 ≤ 10 ^ L := by
+
+  exact (by
+    induction L <;> grind
+   : (L + 1) ^ 2 ≤ 4 ^ L).trans (Nat.pow_le_pow_left (by norm_num) L)
 
 /-- The facts about the sizes that the two estimates below use; T is `10^L` and S7 is `7^L`. -/
 private structure SizeFacts (L m K KK N0 D S7 T : ℕ) : Prop where
@@ -54,20 +48,19 @@ private structure SizeFacts (L m K KK N0 D S7 T : ℕ) : Prop where
   K_pos : 1 ≤ K
   N0_pos : 1 ≤ N0
   D_pos : 1 ≤ D
-  L_pos : 1 ≤ L
   mL : m ≤ L
 
 private theorem sizeFacts (p : Sec2.Par) (hL1 : 1 ≤ p.L) (hmL : p.m ≤ p.L) :
     SizeFacts p.L p.m p.K p.KK p.N0 p.D p.S7 p.T :=
   ⟨succ_sq_le_ten_pow p.L, Theorem30.subsets p.L p.m, Theorem30.K_mul_N0_mul_D_le p.L p.m,
     Theorem30.form_array p.L, Nat.pow_le_pow_left (by norm_num) p.L, Nat.sqrt_le _,
-    Nat.choose_pos hmL, Nat.one_le_pow _ _ (by norm_num), Nat.one_le_pow _ _ (by norm_num), hL1,
+    Nat.choose_pos hmL, Nat.one_le_pow _ _ (by norm_num), Nat.one_le_pow _ _ (by norm_num),
     hmL⟩
 
 /-- The length of the shared block. -/
-theorem sharedEnd_sub_le (p : Sec2.Par) (b0 : ℕ) (hL1 : 1 ≤ p.L) (hmL : p.m ≤ p.L) :
+theorem sharedEnd_sub_le (p : Sec2.Par) b0 (hL1 : 1 ≤ p.L) (hmL : p.m ≤ p.L) :
     p.sharedEnd b0 - b0 ≤ 190 * 10 ^ p.L + 2 * (p.N * (p.L + 1)) + 2 * (p.nB * 10 ^ p.L) := by
-  obtain ⟨sq, KL, KND, LS, ST, KKle, K1, N1, D1, L1, mL⟩ := sizeFacts p hL1 hmL
+  obtain ⟨sq, KL, KND, LS, ST, KKle, K1, N1, D1, mL⟩ := sizeFacts p hL1 hmL
   have hLo : p.Lo ≤ p.L := Nat.sub_le _ _
   simp only [Sec2.Par.sharedEnd, Sec2.Par.aZS, Sec2.Par.aARR, Sec2.Par.aENCB, Sec2.Par.aENCA,
     Sec2.Par.aDIG4, Sec2.Par.aDIG3, Sec2.Par.aBLOCK, Sec2.Par.aBAND, Sec2.Par.aMASK, Sec2.Par.aPSI,
@@ -84,11 +77,11 @@ theorem sharedEnd_sub_le (p : Sec2.Par) (b0 : ℕ) (hL1 : 1 ≤ p.L) (hmL : p.m 
   generalize p.N = N at *
   generalize p.L = L at *
   generalize p.m = m at *
-  have hLT : L + 1 ≤ T := (Nat.le_self_pow (by norm_num) _).trans sq
-  have hDS : D ≤ S7 := le_trans (Nat.le_mul_of_pos_left _ (Nat.mul_pos K1 N1)) KND
-  have hmask : KK * L ≤ K * L := Nat.mul_le_mul_right _ KKle
-  have hdig3 : N * Lo ≤ N * L := Nat.mul_le_mul_left _ hLo
-  have hdig4 : D * m ≤ L * S7 := (Nat.mul_le_mul hDS mL).trans (le_of_eq (Nat.mul_comm _ _))
+  have  := (Nat.le_self_pow (by norm_num) _).trans sq
+
+  have  : KK * L ≤ K * L := Nat.mul_le_mul_right _ KKle
+  have  : N * Lo ≤ N * L := Nat.mul_le_mul_left _ hLo
+  have  := (Nat.mul_le_mul (le_trans (Nat.le_mul_of_pos_left _ (Nat.mul_pos K1 N1)) KND) mL).trans (le_of_eq (Nat.mul_comm _ _))
   rw [Nat.mul_add_one N L]
   omega
 
@@ -96,21 +89,21 @@ theorem sharedEnd_sub_le (p : Sec2.Par) (b0 : ℕ) (hL1 : 1 ≤ p.L) (hmL : p.m 
 
 /-- The length of the block, split into the shared block, the scratch strings, and the tries with
 their roots. -/
-theorem top_sub_eq (p : Sec2.Par) (t b0 : ℕ) :
-    top p t b0 - b0 = (p.sharedEnd b0 - b0) + (3 * p.L + p.m + 2)
+theorem top_sub_eq p t b0 :
+    top p t b0 - b0 = p.sharedEnd b0 - b0 + (3 * p.L + p.m + 2)
       + (1 + p.nB * p.nB * (11 * (1 + p.L * (boxes p.L p.m t).card)) + p.nB * p.nB) := by
   have := base_le_sharedEnd p b0
   simp only [top, aTR, aROOTS, aFP, aSS, aBOX, aCUR, aWD, trieCap]
   omega
 
 /-- **A query** takes `O(L ∑_{d ≤ t} α_d)` steps. -/
-theorem exists_tQueryAt_le : ∃ C : ℝ, 0 ≤ C ∧ ∀ (p : Sec2.Par) (t : ℕ), Hyp30 p t →
-    (tQueryAt p.L p.m t : ℝ) ≤ C * costQuery p.L p.m t := by
+theorem exists_tQueryAt_le : ∃ C : ℝ, 0 ≤ C ∧ ∀ (p ) (t ), Hyp30 p t →
+    tQueryAt p.L p.m t ≤ C * costQuery p.L p.m t := by
   obtain ⟨C, hC, hcore⟩ := exists_tQueryCore_le
   refine ⟨C + 510, by positivity, fun p t h => ?_⟩
   have hcore := hcore p.L p.m t h.L_pos h.m_le h.t_le
-  have hL := cast_L_le_costQuery p.L p.m t
-  have hL1 : (1 : ℝ) ≤ p.L := by exact_mod_cast h.L_pos
+  have  := cast_L_le_costQuery p.L p.m t
+  have  : (1 : ℝ) ≤ p.L := mod_cast h.L_pos
   -- tQueryAt = 70 L + 440 + tQueryCore
   unfold tQueryAt tOutDigits
   push_cast

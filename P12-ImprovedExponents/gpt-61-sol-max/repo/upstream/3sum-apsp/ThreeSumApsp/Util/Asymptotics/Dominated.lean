@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import Mathlib.Algebra.Order.BigOperators.Group.Finset
 public import Mathlib.Analysis.Asymptotics.Lemmas
 public import Mathlib.Analysis.Normed.Field.Basic
@@ -62,7 +64,7 @@ namespace ThreeSumApsp
 
 /-- `f = O(g)` on the domain `dom`: there is a constant `C ≥ 0` with `f x ≤ C * g x` whenever
 `dom x`. It is an upper bound on `f` and not on `|f|`. -/
-def Dominated {α : Type*} (dom : α → Prop) (f g : α → ℝ) : Prop :=
+def Dominated {α : Type*} (dom : α → Prop) (f g : α → ℝ) :=
   ∃ C : ℝ, 0 ≤ C ∧ ∀ x, dom x → f x ≤ C * g x
 
 namespace Dominated
@@ -72,16 +74,16 @@ variable {α β : Type*} {dom dom' : α → Prop} {f f' g g' h k f₁ f₂ g₁ 
 /-! ### Entering the calculus -/
 
 /-- A bound with an explicit nonnegative constant. -/
-theorem of_le_const_mul {C : ℝ} (hC : 0 ≤ C) (hfg : ∀ x, dom x → f x ≤ C * g x) :
+theorem of_le_const_mul {C} (hC : 0 ≤ C) (hfg : ∀ x, dom x → f x ≤ C * g x) :
     Dominated dom f g :=
   ⟨C, hC, hfg⟩
 
 /-- A bound with constant one. -/
 theorem of_le (hfg : ∀ x, dom x → f x ≤ g x) : Dominated dom f g :=
-  ⟨1, zero_le_one, fun x hx => by simpa only [one_mul] using hfg x hx⟩
+  ⟨1, zero_le_one, fun x hx => by simp_all⟩
 
 /-- Every function is bounded by itself. -/
-protected theorem refl (dom : α → Prop) (f : α → ℝ) : Dominated dom f f :=
+protected theorem refl dom (f : α → ℝ) : Dominated dom f f :=
   of_le fun _ _ => le_rfl
 
 /-- A bound with a constant of unknown sign, when `g` is nonnegative on the domain. -/
@@ -92,14 +94,17 @@ theorem of_exists_const (hfg : ∃ C : ℝ, ∀ x, dom x → f x ≤ C * g x) (h
     (hC x hx).trans (mul_le_mul_of_nonneg_right (le_abs_self C) (hg x hx))⟩
 
 /-- A constant is `O(g)` when `g ≥ 1` on the domain. -/
-protected theorem const (c : ℝ) (hg : ∀ x, dom x → 1 ≤ g x) : Dominated dom (fun _ => c) g :=
+protected theorem const c (hg : ∀ x, dom x → 1 ≤ g x) : Dominated dom (fun _ => c) g :=
   ⟨|c|, abs_nonneg c, fun x hx =>
     (le_abs_self c).trans (le_mul_of_one_le_right (abs_nonneg c) (hg x hx))⟩
 
 /-! ### Leaving the calculus -/
 
+variable (h₁ : Dominated dom f₁ g₁) (h₂ : Dominated dom f₂ g₂)
+
+include h₁ h₂ in
 /-- Two bounds, by nonnegative functions, hold with one constant. -/
-theorem exists_const_and (h₁ : Dominated dom f₁ g₁) (h₂ : Dominated dom f₂ g₂)
+theorem exists_const_and
     (hg₁ : ∀ x, dom x → 0 ≤ g₁ x) (hg₂ : ∀ x, dom x → 0 ≤ g₂ x) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ x, dom x → f₁ x ≤ C * g₁ x ∧ f₂ x ≤ C * g₂ x := by
   obtain ⟨C, hC, h₁⟩ := h₁
@@ -110,8 +115,11 @@ theorem exists_const_and (h₁ : Dominated dom f₁ g₁) (h₂ : Dominated dom 
 
 /-! ### Chaining, restricting, substituting -/
 
+variable (hfg : Dominated dom f g)
+
+include hfg in
 /-- `f = O(g)` and `g = O(h)` give `f = O(h)`. -/
-protected theorem trans (hfg : Dominated dom f g) (hgh : Dominated dom g h) :
+protected theorem trans  (hgh : Dominated dom g h) :
     Dominated dom f h := by
   obtain ⟨C, hC, hf⟩ := hfg
   obtain ⟨D, hD, hg⟩ := hgh
@@ -119,30 +127,32 @@ protected theorem trans (hfg : Dominated dom f g) (hgh : Dominated dom g h) :
   rw [mul_assoc]
   exact mul_le_mul_of_nonneg_left (hg x hx) hC
 
+variable (hfg : Dominated dom f g)
+
+include hfg in
 /-- A bound holds on every smaller domain. -/
-theorem mono_dom (hfg : Dominated dom f g) (hdom : ∀ x, dom' x → dom x) : Dominated dom' f g := by
-  obtain ⟨C, hC, hf⟩ := hfg
-  exact ⟨C, hC, fun x hx => hf x (hdom x hx)⟩
+theorem mono_dom (hdom : ∀ x, dom' x → dom x) : Dominated dom' f g := by
+  ram_aesop [ThreeSumApsp.Dominated]
 
 /-- The left side may be replaced by a smaller function. -/
-theorem mono_left (hfg : Dominated dom f g) (hle : ∀ x, dom x → f' x ≤ f x) : Dominated dom f' g :=
+def mono_left (hfg : Dominated dom f g) (hle : ∀ x, dom x → f' x ≤ f x) :=
   (of_le hle).trans hfg
 
 /-- The right side may be replaced by a larger function. -/
-theorem mono_right (hfg : Dominated dom f g) (hle : ∀ x, dom x → g x ≤ g' x) : Dominated dom f g' :=
+def mono_right (hfg : Dominated dom f g) (hle : ∀ x, dom x → g x ≤ g' x) :=
   hfg.trans (of_le hle)
 
 /-- Both sides may be replaced by functions that agree with them on the domain. -/
-protected theorem congr (hfg : Dominated dom f g) (hf : ∀ x, dom x → f x = f' x)
-    (hg : ∀ x, dom x → g x = g' x) : Dominated dom f' g' :=
+protected def congr (hfg : Dominated dom f g) (hf : ∀ x, dom x → f x = f' x)
+    (hg : ∀ x, dom x → g x = g' x) :=
   (hfg.mono_left fun x hx => (hf x hx).ge).mono_right fun x hx => (hg x hx).le
 
+include hfg in
 /-- Substituting the parameters: a bound in `x` gives a bound in `y` at `x = φ y`, on every domain
 that `φ` maps into `dom`. -/
-protected theorem comp (hfg : Dominated dom f g) (φ : β → α) {dom' : β → Prop}
+protected theorem comp  (φ : β → α) {dom'}
     (hφ : ∀ y, dom' y → dom (φ y)) : Dominated dom' (fun y => f (φ y)) fun y => g (φ y) := by
-  obtain ⟨C, hC, hf⟩ := hfg
-  exact ⟨C, hC, fun y hy => hf (φ y) (hφ y hy)⟩
+  ram_aesop [ThreeSumApsp.Dominated]
 
 /-! ### Sums and case distinctions -/
 
@@ -157,7 +167,7 @@ protected theorem add (hf : Dominated dom f h) (hg : Dominated dom g h) :
 
 /-- A case distinction: a bound on `f₁` where `p` holds and a bound on `f₂` where it does not, both
 by the same nonnegative `g`. -/
-protected theorem ite {p : α → Prop} [DecidablePred p]
+protected theorem ite {p} [DecidablePred p]
     (h₁ : Dominated (fun x => dom x ∧ p x) f₁ g) (h₂ : Dominated (fun x => dom x ∧ ¬p x) f₂ g)
     (hg : ∀ x, dom x → 0 ≤ g x) : Dominated dom (fun x => if p x then f₁ x else f₂ x) g := by
   obtain ⟨C, hC, h₁⟩ := h₁
@@ -172,40 +182,39 @@ protected theorem ite {p : α → Prop} [DecidablePred p]
 
 /-! ### Products and quotients -/
 
+include hfg in
 /-- A nonnegative constant factor on the left side is absorbed. -/
-theorem const_mul (hfg : Dominated dom f g) {c : ℝ} (hc : 0 ≤ c) :
+theorem const_mul {c} (hc : 0 ≤ c) :
     Dominated dom (fun x => c * f x) g := by
   obtain ⟨C, hC, hf⟩ := hfg
   refine ⟨c * C, mul_nonneg hc hC, fun x hx => ?_⟩
   rw [mul_assoc]
   exact mul_le_mul_of_nonneg_left (hf x hx) hc
 
-/-- A nonnegative constant factor on the left side is absorbed. -/
-theorem mul_const (hfg : Dominated dom f g) {c : ℝ} (hc : 0 ≤ c) :
-    Dominated dom (fun x => f x * c) g := by
-  simpa only [mul_comm] using hfg.const_mul hc
-
 /-- A constant factor of any sign in front of a function that is nonnegative on the domain is
 absorbed. -/
-theorem const_mul_of_nonneg (hfg : Dominated dom f g) (c : ℝ) (hf : ∀ x, dom x → 0 ≤ f x) :
-    Dominated dom (fun x => c * f x) g :=
+def const_mul_of_nonneg (hfg : Dominated dom f g) c hf :=
   (of_exists_const ⟨c, fun _ _ => le_rfl⟩ hf).trans hfg
 
+variable (hk : ∀ x, dom x → 0 ≤ k x)
+
+include hfg hk in
 /-- Both sides may be multiplied from the left by a function that is nonnegative on the domain. -/
-theorem mul_left (hfg : Dominated dom f g) (hk : ∀ x, dom x → 0 ≤ k x) :
+theorem mul_left  :
     Dominated dom (fun x => k x * f x) fun x => k x * g x := by
   obtain ⟨C, hC, hf⟩ := hfg
   refine ⟨C, hC, fun x hx => ?_⟩
-  rw [mul_left_comm]
-  exact mul_le_mul_of_nonneg_left (hf x hx) (hk x hx)
+  grind [mul_left_comm, mul_le_mul_of_nonneg_left]
 
+include hfg hk in
 /-- Both sides may be multiplied from the right by a function that is nonnegative on the domain. -/
-theorem mul_right (hfg : Dominated dom f g) (hk : ∀ x, dom x → 0 ≤ k x) :
+theorem mul_right  :
     Dominated dom (fun x => f x * k x) fun x => g x * k x := by
   simpa only [mul_comm] using hfg.mul_left hk
 
+include h₁ h₂ in
 /-- `O(g₁) · O(g₂) = O(g₁ g₂)` for nonnegative `f₁`, `f₂`. -/
-protected theorem mul (h₁ : Dominated dom f₁ g₁) (h₂ : Dominated dom f₂ g₂)
+protected theorem mul
     (hf₁ : ∀ x, dom x → 0 ≤ f₁ x) (hf₂ : ∀ x, dom x → 0 ≤ f₂ x) :
     Dominated dom (fun x => f₁ x * f₂ x) fun x => g₁ x * g₂ x := by
   obtain ⟨C, hC, h₁⟩ := h₁
@@ -214,8 +223,9 @@ protected theorem mul (h₁ : Dominated dom f₁ g₁) (h₂ : Dominated dom f�
   rw [mul_mul_mul_comm]
   exact mul_le_mul (h₁ x hx) (h₂ x hx) (hf₂ x hx) ((hf₁ x hx).trans (h₁ x hx))
 
+include hfg in
 /-- `O(g) ^ e = O(g ^ e)` for nonnegative `f`. -/
-protected theorem pow (hfg : Dominated dom f g) (hf : ∀ x, dom x → 0 ≤ f x) (e : ℕ) :
+protected theorem pow  (hf : ∀ x, dom x → 0 ≤ f x) e :
     Dominated dom (fun x => f x ^ e) fun x => g x ^ e := by
   obtain ⟨C, hC, hle⟩ := hfg
   refine ⟨C ^ e, pow_nonneg hC e, fun x hx => ?_⟩
@@ -226,13 +236,13 @@ protected theorem pow (hfg : Dominated dom f g) (hf : ∀ x, dom x → 0 ≤ f x
 
 /-- A bound that holds from some unknown point on. If `g` is positive from `n₀` on, the finitely
 many values in between cost only a larger constant. -/
-theorem of_eventually {f g : ℕ → ℝ} {C : ℝ} (hfg : ∀ᶠ n in atTop, f n ≤ C * g n) {n₀ : ℕ}
+theorem of_eventually {f g : ℕ → ℝ} {C} (hfg : ∀ᶠ n in atTop, f n ≤ C * g n) {n₀}
     (hg : ∀ n, n₀ ≤ n → 0 < g n) : Dominated (fun n => n₀ ≤ n) f g := by
   obtain ⟨N, hN⟩ := eventually_atTop.1 hfg
   have hterm : ∀ m, 0 ≤ |f m| / |g m| := fun m => div_nonneg (abs_nonneg _) (abs_nonneg _)
   have hsum : 0 ≤ ∑ m ∈ Finset.range N, |f m| / |g m| := Finset.sum_nonneg fun m _ => hterm m
   refine ⟨|C| + ∑ m ∈ Finset.range N, |f m| / |g m|, add_nonneg (abs_nonneg C) hsum, fun n hn => ?_⟩
-  have hgn : 0 < g n := hg n hn
+  have hgn := hg n hn
   rw [add_mul]
   obtain hlt | hge := lt_or_ge n N
   · calc f n ≤ |f n| / |g n| * g n := by
@@ -247,16 +257,16 @@ theorem of_eventually {f g : ℕ → ℝ} {C : ℝ} (hfg : ∀ᶠ n in atTop, f 
 
 /-- A bound by a nonnegative `g` that holds from some unknown point on gives a bound by `g + 1`
 everywhere. -/
-theorem of_eventually_add_one {f g : ℕ → ℝ} {C : ℝ} (hfg : ∀ᶠ n in atTop, f n ≤ C * g n)
+theorem of_eventually_add_one {f g : ℕ → ℝ} {C} (hfg : ∀ᶠ n in atTop, f n ≤ C * g n)
     (hg : ∀ n, 0 ≤ g n) : Dominated (fun _ => True) f fun n => g n + 1 := by
-  have hpos : ∀ n, 0 ≤ n → 0 < g n + 1 := fun n _ => add_pos_of_nonneg_of_pos (hg n) zero_lt_one
-  refine (of_eventually (C := |C|) (hfg.mono fun n hn => hn.trans ?_) hpos).mono_dom
+
+  refine (of_eventually (C := |C|) (hfg.mono fun n hn => hn.trans ?_) fun n _ => add_pos_of_nonneg_of_pos (hg n) zero_lt_one).mono_dom
     fun n _ => n.zero_le
   exact (mul_le_mul_of_nonneg_right (le_abs_self C) (hg n)).trans
     (mul_le_mul_of_nonneg_left (le_add_of_nonneg_right zero_le_one) (abs_nonneg C))
 
 /-- A bound on `|f|` from some point on is Mathlib's `f =O[atTop] g`. -/
-theorem isBigO {f g : ℕ → ℝ} {n₀ : ℕ} (hfg : Dominated (fun n => n₀ ≤ n) (fun n => |f n|) g) :
+theorem isBigO {f g : ℕ → ℝ} {n₀} (hfg : Dominated (fun n => n₀ ≤ n) (fun n => |f n|) g) :
     f =O[atTop] g := by
   obtain ⟨C, hC, hle⟩ := hfg
   refine IsBigO.of_bound C (eventually_atTop.2 ⟨n₀, fun n hn => ?_⟩)
@@ -273,7 +283,7 @@ theorem isBigO_comp_add_one {G g : ℕ → ℝ} (hG : G =O[atTop] g) (hg : ∀ s
   obtain ⟨C, hC⟩ := hG.bound
   have hall : Dominated (fun _ => True) (fun s => |G s|) fun s => g s + 1 :=
     .of_eventually_add_one (C := C) (hC.mono fun s hs => by
-      rwa [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg (hg s)] at hs) hg
+      grind [Real.norm_eq_abs, abs_of_nonneg]) hg
   exact Dominated.isBigO (n₀ := 0) (hall.comp size fun _ _ => trivial)
 
 end ThreeSumApsp

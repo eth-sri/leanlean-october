@@ -5,6 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Contracts
 
 /-!
@@ -22,59 +25,39 @@ specification.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec Finset
+open Finset
 
-namespace IpAt
 
-/-- The locals of ipAt. The first six are its arguments I, J, N, D, aX, aY; the answer replaces I.
-Then come the index s of the summand, the sum, the address of row I of X, and the address of Y[0,
-J]. -/
-abbrev Row : ℕ := 0
-@[inherit_doc Row] abbrev Col : ℕ := 1
-@[inherit_doc Row] abbrev Size : ℕ := 2
-@[inherit_doc Row] abbrev Dim : ℕ := 3
-@[inherit_doc Row] abbrev MatX : ℕ := 4
-@[inherit_doc Row] abbrev MatY : ℕ := 5
-@[inherit_doc Row] abbrev Pos : ℕ := 6
-@[inherit_doc Row] abbrev Sum : ℕ := 7
-@[inherit_doc Row] abbrev RowAt : ℕ := 8
-@[inherit_doc Row] abbrev ColAt : ℕ := 9
-
-end IpAt
-
-open IpAt in
 /-- ipAt(I, J, N, D, aX, aY): the inner product of row I of X and column J of Y. -/
-def ipAtBody : Stmt :=
-  .set Pos (k 0) ;; .set Sum (k 0) ;;
-  .set RowAt (v MatX +' v Row *' v Dim) ;; .set ColAt (v MatY +' v Col) ;;
-  .while (v Pos <' v Dim)
-    (.set Sum (v Sum +' M (v RowAt +' v Pos) *' M (v ColAt +' v Pos *' v Size)) ;;
-      .set Pos (v Pos +' k 1)) ;;
-  .set Row (v Sum)
+def ipAtBody  :=
+  .set 6 (k 0) ;; .set 7 (k 0) ;;
+  .set 8 (v 4 +' v 0 *' v 3) ;; .set 9 (v 5 +' v 1) ;;
+  .while (v 6 <' v 3)
+    (.set 7 (v 7 +' M (v 8 +' v 6) *' M (v 9 +' v 6 *' v 2)) ;;
+      .set 6 (v 6 +' k 1)) ;;
+  .set 0 (v 7)
 
 section
-variable {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ) (Y : Matrix (Fin D₀) (Fin N) ℤ) (I J : Fin N)
+variable {N D₀ : ℕ} (X : ThreeSumApsp.IntMatrix N D₀) (Y : ThreeSumApsp.IntMatrix D₀ N) (I J : Fin N)
 
 /-- The first s summands of the inner product. -/
-def ipPart (s : ℕ) : ℤ := ∑ i ∈ range s, if h : i < D₀ then X I ⟨i, h⟩ * Y ⟨i, h⟩ J else 0
+def ipPart s := ∑ i ∈ range s, if h : i < D₀ then X I ⟨i, h⟩ * Y ⟨i, h⟩ J else 0
 
 theorem ipPart_full : ipPart X Y I J D₀ = (X * Y) I J := by
-  rw [Matrix.mul_apply, ipPart, Finset.sum_range]
-  exact Finset.sum_congr rfl fun i _ => by simp
+  grind [Matrix.mul_apply, ipPart, Finset.sum_range]
 
-theorem ipPart_succ {s : ℕ} (hs : s < D₀) :
+theorem ipPart_succ {s} hs :
     ipPart X Y I J (s + 1) = ipPart X Y I J s + X I ⟨s, hs⟩ * Y ⟨s, hs⟩ J := by
-  rw [ipPart, Finset.sum_range_succ, dif_pos hs]
-  rfl
+  ram_arith [ipPart, Finset.sum_range_succ]
 
 variable {X Y}
 
-theorem abs_mul_entry_le {U : ℤ} (hX : ∀ i j, |X i j| ≤ U) (hY : ∀ i j, |Y i j| ≤ U) (s : Fin D₀) :
+theorem abs_mul_entry_le {U} (hX : ∀ i j, |X i j| ≤ U) (hY : ∀ i j, |Y i j| ≤ U) s :
     |X I s * Y s J| ≤ U * U := by
   rw [abs_mul]
   exact mul_le_mul (hX _ _) (hY _ _) (abs_nonneg _) (le_trans (abs_nonneg _) (hX I s))
 
-theorem abs_ipPart_le {U : ℤ} (hX : ∀ i j, |X i j| ≤ U) (hY : ∀ i j, |Y i j| ≤ U) :
+theorem abs_ipPart_le {U} (hX : ∀ i j, |X i j| ≤ U) (hY : ∀ i j, |Y i j| ≤ U) :
     ∀ s ≤ D₀, |ipPart X Y I J s| ≤ s * (U * U)
   | 0, _ => by simp [ipPart]
   | s + 1, hs => by
@@ -87,23 +70,18 @@ theorem abs_ipPart_le {U : ℤ} (hX : ∀ i j, |X i j| ≤ U) (hY : ∀ i j, |Y 
 
 end
 
-theorem ipAt_meets {lim : Limits} {P : Program} (hP : P[Proc.ipAt]? = some ipAtBody)
+theorem ipAt_meets {lim} {P} (hP : P[63]? = some ipAtBody)
     (hstd : Std lim) : IpAtSpec lim P := by
   intro N D₀ aX aY X Y U μ I J hD hmX hmY hX hY sX sY hU
   refine fun d _ => ⟨ipAtBody, hP, ?_⟩
-  have hw := hstd.space_le
-  have h100 := hstd.const_le
-  have hrow : (I : ℕ) * D₀ + D₀ ≤ N * D₀ := Nat.mul_add_le_mul I.isLt le_rfl
-  have hcol : (J : ℕ) < N := J.isLt
-  have hN : N ≤ D₀ * N := Nat.le_mul_of_pos_left _ hD
+
+
+  have  : (I : ℕ) * D₀ + D₀ ≤ N * D₀ := Nat.mul_add_le_mul I.isLt le_rfl
+
+  have  : N ≤ D₀ * N := Nat.le_mul_of_pos_left _ hD
   -- every partial sum and every product fits in a word
-  have hfits : ∀ s ≤ D₀, |ipPart X Y I J s| ≤ lim.word := fun s hs =>
-    (abs_ipPart_le I J hX hY s hs).trans (le_trans
-      (mul_le_mul_of_nonneg_right (by exact_mod_cast hs)
-        (le_trans (abs_nonneg _) (abs_mul_entry_le I J hX hY ⟨0, hD⟩))) hU)
-  have hprod : ∀ s : Fin D₀, |X I s * Y s J| ≤ lim.word := fun s =>
-    (abs_mul_entry_le I J hX hY s).trans (le_trans (le_mul_of_one_le_left
-      (le_trans (abs_nonneg _) (abs_mul_entry_le I J hX hY s)) (by exact_mod_cast hD)) hU)
+
+
   unfold ipAtBody tIpAt
   -- s := 0 ; sum := 0 ; row := aX + I * D ; col := aY + J
   light_set 0
@@ -111,24 +89,31 @@ theorem ipAt_meets {lim : Limits} {P : Program} (hP : P[Proc.ipAt]? = some ipAtB
   light_set (aX + (I : ℕ) * D₀ : ℕ)
   light_set (aY + (J : ℕ) : ℕ)
   -- while s < D: sum := sum + mem[row + s] * mem[col + s * N] ; s := s + 1
-  refine Ends.next _ (Ends.whileBlock (fun s σ => σ = ⟨frame [(I : ℕ), (J : ℕ), N, D₀, aX, aY, s,
-      ipPart X Y I J s, ((aX + (I : ℕ) * D₀ : ℕ) : ℤ), ((aY + (J : ℕ) : ℕ) : ℤ)], μ⟩) D₀
-    (by simp [ipPart]) ?round ?done (hT := le_rfl))
+  refine Ends.next _ (Ends.whileBlock (fun s σ => σ = ⟨frame [I, J, N, D₀, aX, aY, s,
+      ipPart X Y I J s, (aX + (I : ℕ) * D₀ : ℕ), (aY + (J : ℕ) : ℕ)], μ⟩) D₀
+    rfl ?round ?done (hT := le_rfl))
   case round =>
     rintro s _ hs rfl
-    have hcell : s * N + N ≤ D₀ * N := Nat.mul_add_le_mul hs le_rfl
-    have hx : μ (aX + (I : ℕ) * D₀ + s) = X I ⟨s, hs⟩ := hmX I ⟨s, hs⟩
-    have hy : μ (aY + (J : ℕ) + s * N) = Y ⟨s, hs⟩ J := by
+    have  : s * N + N ≤ D₀ * N := Nat.mul_add_le_mul hs le_rfl
+    have hx := hmX I ⟨s, hs⟩
+    have hy : μ (aY + J + s * N) = Y ⟨s, hs⟩ J := by
       rw [← hmY ⟨s, hs⟩ J]
       congr 1
       change aY + (J : ℕ) + s * N = aY + s * N + (J : ℕ)
       omega
     have haddrX : ((aX : ℤ) + (I : ℕ) * D₀ + s).toNat = aX + (I : ℕ) * D₀ + s := by
-      rw [← Int.toNat_natCast (aX + (I : ℕ) * D₀ + s)]; push_cast; rfl
+      omega
     have haddrY : ((aY : ℤ) + (J : ℕ) + s * N).toNat = aY + (J : ℕ) + s * N := by
-      rw [← Int.toNat_natCast (aY + (J : ℕ) + s * N)]; push_cast; rfl
-    have hsum := abs_le.1 (hfits (s + 1) hs)
-    have hxy := abs_le.1 (hprod ⟨s, hs⟩)
+      omega
+    have hsum := abs_le.1 ((fun s hs =>
+      (abs_ipPart_le I J hX hY s hs).trans (le_trans
+        (mul_le_mul_of_nonneg_right (mod_cast hs)
+          (le_trans (abs_nonneg _) (abs_mul_entry_le I J hX hY ⟨0, hD⟩))) hU)
+    ) (s + 1) hs)
+    have hxy := abs_le.1 ((fun s =>
+      (abs_mul_entry_le I J hX hY s).trans (le_trans (le_mul_of_one_le_left
+        (le_trans (abs_nonneg _) (abs_mul_entry_le I J hX hY s)) (mod_cast hD)) hU)
+    ) ⟨s, hs⟩)
     rw [ipPart_succ X Y I J hs] at hsum ⊢
     generalize ipPart X Y I J s = S at hsum ⊢
     generalize X I ⟨s, hs⟩ = x at hx hsum hxy ⊢

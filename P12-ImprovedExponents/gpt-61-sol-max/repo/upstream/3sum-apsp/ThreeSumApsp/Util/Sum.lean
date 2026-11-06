@@ -6,6 +6,7 @@ Modified in 2026 for ImprovedExponents (Jihoon Hyun): ported to Lean and Mathlib
 -/
 module
 
+public import Mathlib.Tactic
 public import Mathlib.Algebra.Field.GeomSum
 public import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 
@@ -31,26 +32,25 @@ namespace Finset
 variable {ι R : Type*}
 
 /-- If `|f i| ≤ A` for all `i ∈ s`, then `|∑ i ∈ s, f i| ≤ s.card * A`. -/
-theorem abs_sum_le_card_mul [Ring R] [LinearOrder R] [IsOrderedRing R] (s : Finset ι) {f : ι → R}
-    {A : R} (h : ∀ i ∈ s, |f i| ≤ A) : |∑ i ∈ s, f i| ≤ s.card * A :=
+def abs_sum_le_card_mul [Ring R] [LinearOrder R] [IsOrderedRing R] s {f : ι → R}
+    {A} h :=
   (abs_sum_le_sum_abs f s).trans ((sum_le_card_nsmul s _ A h).trans_eq (nsmul_eq_mul _ _))
 
 /-- If `|c i| ≤ 1` and `|a i| ≤ A` for all `i ∈ s`, then `|∑ i ∈ s, c i * a i| ≤ s.card * A`. -/
-theorem abs_sum_mul_le [Ring R] [LinearOrder R] [IsOrderedRing R] (s : Finset ι) {c a : ι → R}
-    {A : R} (hc : ∀ i ∈ s, |c i| ≤ 1) (ha : ∀ i ∈ s, |a i| ≤ A) :
-    |∑ i ∈ s, c i * a i| ≤ s.card * A :=
+def abs_sum_mul_le [Ring R] [LinearOrder R] [IsOrderedRing R] (s : Finset ι) {c a : ι → R}
+    {A} (hc : ∀ i ∈ s, |c i| ≤ 1) (ha : ∀ i ∈ s, |a i| ≤ A) :=
   abs_sum_le_card_mul s fun i hi =>
     (abs_mul (c i) (a i)).trans_le
       ((mul_le_of_le_one_left (abs_nonneg _) (hc i hi)).trans (ha i hi))
 
 /-- If `|f i| ≤ 1` for all `i ∈ s`, then `|∏ i ∈ s, f i| ≤ 1`. -/
-theorem abs_prod_le_one [CommRing R] [LinearOrder R] [IsStrictOrderedRing R] (s : Finset ι)
-    {f : ι → R} (h : ∀ i ∈ s, |f i| ≤ 1) : |∏ i ∈ s, f i| ≤ 1 :=
+def abs_prod_le_one [CommRing R] [LinearOrder R] [IsStrictOrderedRing R] s
+    {f : ι → R} h :=
   (abs_prod s f).trans_le (prod_le_one₀ (fun _ _ => abs_nonneg _) h)
 
 /-- A sum over the indices below `m * n`, row by row: the index `a * n + b` has row `a` and column
 `b`. -/
-theorem sum_range_mul {M : Type*} [AddCommMonoid M] (m n : ℕ) (F : ℕ → M) :
+theorem sum_range_mul {M} [AddCommMonoid M] m n (F : ℕ → M) :
     ∑ i ∈ range (m * n), F i = ∑ a ∈ range m, ∑ b ∈ range n, F (a * n + b) := by
   induction m with
   | zero => simp

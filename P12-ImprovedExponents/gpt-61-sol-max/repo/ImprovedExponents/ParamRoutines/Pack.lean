@@ -1,5 +1,6 @@
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.NeedPolynomial
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Program
 public import ThreeSumApsp.Programs.Sec3.Theorem17.TimeBound.Total
@@ -32,16 +33,15 @@ assembly once, for arbitrary routines.
 
 namespace ImprovedExponents.ParamRoutines
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3
+open Light Light.Sec3
 
 /-- The procedure number `i` of a list `L` that is placed behind a program `Q` stands at the place
 `Q.length + i` of every program that continues `Q ++ L`. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/ClaimAtParameters.lean
 -- (`paramProcs_get`, private there; here for an arbitrary list)
-theorem getElem?_behind (Q L R : Program) {i : ℕ} {body : Stmt} (h : L[i]? = some body) :
+theorem getElem?_behind (Q L R : Program) {i} {body} (h : L[i]? = some body) :
     (Q ++ L ++ R)[Q.length + i]? = some body := by
-  rw [List.append_assoc, List.getElem?_append_right (by omega), Nat.add_sub_cancel_left]
-  exact getElem?_append_of_eq_some h R
+  grind
 
 /-- **The routine-specific part of Theorem 17 for programs**: two parameter routines for the
 parameters `D n` and `g n` of the claim, with everything that a host of Theorem 17 needs to know
@@ -54,21 +54,11 @@ structure ParamPack (D g : ℕ → ℕ) where
   /-- The place of the routine for `g` in `procs`. -/
   iG : ℕ
   /-- What the routine for `D` computes from `n`. -/
-  Dfun : ℕ → ℕ
-  /-- What the routine for `g` computes from `D`. -/
-  Gfun : ℕ → ℕ
-  /-- The time of the routine for `D`, as a function of `n`. -/
-  tD : ℕ → ℕ
-  /-- The time of the routine for `g`, as a function of `D`. -/
-  tG : ℕ → ℕ
-  /-- A bound on the numbers that the routine for `D` forms, as a function of `n`. -/
-  wD : ℕ → ℕ
-  /-- A bound on the numbers that the routine for `g` forms, as a function of `D`. -/
-  wG : ℕ → ℕ
+  (Dfun Gfun tD tG wD wG : ℕ → ℕ)
   /-- The routine for `D` is a parameter procedure in every program that contains `procs`. -/
-  procD : ∀ Q R : Program, ParamProc (Q ++ procs Q.length ++ R) (Q.length + iD) Dfun tD wD
+  procD : ParamFamily procs iD Dfun tD wD
   /-- The routine for `g` is a parameter procedure in every program that contains `procs`. -/
-  procG : ∀ Q R : Program, ParamProc (Q ++ procs Q.length ++ R) (Q.length + iG) Gfun tG wG
+  procG : ParamFamily procs iG Gfun tG wG
   /-- `D ≥ 1`. -/
   D_pos : ∀ n, 1 ≤ n → 1 ≤ Dfun n
   /-- `D` is polynomially bounded. -/
@@ -94,10 +84,10 @@ namespace ParamPack
 variable {D g : ℕ → ℕ} (pk : ParamPack D g)
 
 /-- The routine for `D` runs within the bound of Theorem 17 (within the term `n² D g`). -/
-theorem stepsD_budget : Steps (fun θ => pk.tD θ.n) budget := pk.stepsD.withinBuild
+def stepsD_budget := pk.stepsD.withinBuild
 
 /-- The routine for `g` runs within the bound of Theorem 17 (within the term `n² D g`). -/
-theorem stepsG_budget : Steps (fun θ => pk.tG θ.D) budget := pk.stepsG.withinBuild
+def stepsG_budget := pk.stepsG.withinBuild
 
 end ParamPack
 

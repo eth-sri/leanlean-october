@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Lang.Lib.Copy
 public import ThreeSumApsp.Lang.Lib.Sqrt
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
@@ -28,7 +29,7 @@ variable {lim : Limits} {P : Program} {c : ℕ}
 
 /-- pow(b, n, dst): the arguments are put in the order of powTable(dst, n + 1, b), whose body
 follows.  Local 5 is a temporary. -/
-def powBody : Stmt :=
+def powBody :=
   .set 5 (v 0) ;;
   .set 0 (v 2) ;;
   .set 2 (v 5) ;;
@@ -40,17 +41,16 @@ def powBody : Stmt :=
 theorem pow_entry (std : Std lim) (hP : P[pPow]? = some powBody) (hc : 35 ≤ c) :
     PowSpec lim P c := by
   intro b n dst μ hdst1 hdst hb hpow d _
-  have hw := std.space_le
-  have h100 := std.const_le
+
   refine .mono_const (.of_body hP ?_) hc
   -- The arguments b, n, dst become dst, n + 1, b.
   light_set b
   light_set dst
   light_set b
   light_set (n + 1 : ℕ)
-  refine (powTable_ends (dst := dst) (L := n + 1) (b := b) 0 0 [b] hw hdst fun j hj => ?_).mono
+  refine (powTable_ends (dst := dst) (L := n + 1) (b := b) 0 0 [b] std.space_le hdst fun j hj => ?_).mono
     (by simp [powTableTime]; omega) fun _ h => h
-  exact le_trans (by exact_mod_cast Nat.pow_le_pow_right hb hj) hpow
+  exact le_trans (mod_cast Nat.pow_le_pow_right hb hj) hpow
 
 /-! ## Filling a segment -/
 

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib.Tactic
 public import ImprovedExponents.PrunedProgram.Shared.Stage
 public import ImprovedExponents.PrunedProgram.Pre.Preprocessing
 public import ImprovedExponents.PrunedProgram.Query.Query
@@ -30,120 +31,102 @@ Adapted from upstream (Apache-2.0).
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3 Light.Sec4
+open Light Light.Sec3 Light.Sec4
 
 /-- The bodies of the procedures number 77 to 83. -/
-def procsP (G : RatParams) : List Stmt :=
-  [Sec2.encodePBody Sec2.pEncStep Proc.encodeP, Sec2.encodeBandsPBody, Sec2.sharedPBody,
-    preCorePBody, pre31PBody G, offline32PBody, allBody Proc.testRS Proc.offline32P]
+def procsP G :=
+  [Sec2.encodePBody Sec2.pEncStep 77, Sec2.encodeBandsPBody, Sec2.sharedPBody,
+    preCorePBody, pre31PBody G, offline32PBody, allBody 75 82]
 
 /-- The pruned solver: `programRS G r s` followed by the seven new procedures. -/
-def programP (G : RatParams) (r s : ℕ) : Program := programRS G r s ++ procsP G
+def programP G r s := programRS G r s ++ procsP G
 
 /-- `programRS G r s` has 77 procedures. -/
-theorem length_programRS (G : RatParams) (r s : ℕ) : (programRS G r s).length = 77 := rfl
+theorem length_programRS G r s : (programRS G r s).length = 77 := rfl
 
 /-- The new procedures stand at their numbers. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Program.lean (program31_at)
-theorem programP_at (G : RatParams) (r s n : ℕ) {body : Stmt} (hn : 77 ≤ n := by norm_num)
+theorem programP_at G r s n {body} (hn : 77 ≤ n := by norm_num)
     (h : (procsP G)[n - 77]? = some body := by rfl) : (programP G r s)[n]? = some body := by
-  rw [programP, List.getElem?_append_right (by rw [length_programRS]; exact hn),
-    length_programRS]
-  exact h
+  grind [length_programRS, programP]
 
 /-- A procedure of `program31 G` is one of `programP G r s`, with the same number. -/
-theorem programP_at_low (G : RatParams) (r s : ℕ) {n : ℕ} {body : Stmt}
+theorem programP_at_low G r s {n : ℕ} {body}
     (h : (program31 G)[n]? = some body) : (programP G r s)[n]? = some body := by
-  rw [programP, programRS, List.append_assoc]
-  exact getElem?_append_of_eq_some h _
+  grind [programP, programRS]
 
 /-- The pruned solver begins with `base58`. -/
-theorem programP_eq_base58 (G : RatParams) (r s : ℕ) :
+theorem programP_eq_base58 G r s :
     programP G r s = base58 ++
-      (procs31 G ++ [powLtBody, testRSBody r s, allRSBody] ++ procsP G) := by
-  simp only [programP, programRS, program31, List.append_assoc]
-
-/-- The pruned solver begins with Section 2's `program5`. -/
-theorem programP_eq_program5 (G : RatParams) (r s : ℕ) :
-    programP G r s = Sec2.program5 ++
-      ([Sec2.regimeBody, Sec2.thinBruteBody, Sec2.thinBody] ++ List.replicate 11 .skip ++ procs40
-        ++ [preCoreBody, queryAtBody, wantedCoreBody, wantedMainBody] ++ procs31 G
-        ++ [powLtBody, testRSBody r s, allRSBody] ++ procsP G) := by
-  simp only [programP, programRS, program31, base58, Sec2.programThin, List.append_assoc]
+      procs31 G ++ [powLtBody, testRSBody r s, .skip] ++ procsP G := rfl
 
 /-! ## The entries -/
 
 /-- **The pruned shared stage**, in `programP G r s`, with upstream's constant. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Program.lean (shared_base58)
-theorem sharedP_programP (G : RatParams) (r s : ℕ) (lim : Limits) (std : Std lim) :
+theorem sharedP_programP G r s lim (std : Std lim) :
     Sec2.SharedSpecP lim (programP G r s) cShared30 := by
-  have e := programP_eq_program5 G r s
-  refine Sec2.sharedP_entry std (programP_at G r s Proc.sharedP)
-    (programP_at G r s Proc.encodeBandsP) ?_ ?_ (programP_at G r s Proc.encodeP)
-    (c := Sec2.cShared5) ?_ (by norm_num [Sec2.cShared5, Sec2.cBandArray, Sec2.cEncP]) le_rfl
-  · rw [e]; exact Sec2.at_prefix rfl _
-  · rw [e]; exact Sec2.at_prefix rfl _
-  · rw [e]; exact Sec2.sharedCallees_of_prefix _ lim std
+  have  := (by rfl : programP G r s = Sec2.program5 ++ [Stmt.skip, Sec2.thinBruteBody, Stmt.skip] ++ List.replicate 11 Stmt.skip ++ procs40 ++ [Stmt.skip, queryAtBody, Stmt.skip, Stmt.skip] ++ procs31 G ++ [powLtBody, testRSBody r s, Stmt.skip] ++ procsP G)
+  refine Sec2.sharedP_entry std (programP_at G r s 79)
+    (programP_at G r s 78) ?_ ?_ (programP_at G r s 77)
+    (c := Sec2.cShared5) ?_ (by decide) le_rfl
+  · aesop
+  · aesop
+  · grind [Sec2.sharedCallees_of_prefix]
 
 /-- **The pruned preprocessing of Theorem 30**, in `programP G r s`, for all limits. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Program.lean (preCore_base58)
-theorem preCoreP_programP (G : RatParams) (r s : ℕ) :
+theorem preCoreP_programP G r s :
     ∀ lim, PreCoreSpecP lim (programP G r s) cShared30 := by
   intro lim p t hmL aX aY b0 X Y U μ ht hlim
-  exact preCoreP_of_base58 (programP_eq_base58 G r s) (programP_at G r s Proc.preCoreP)
+  exact preCoreP_of_base58 (programP_eq_base58 G r s) (programP_at G r s 80)
     (sharedP_programP G r s lim hlim.std) p t hmL aX aY b0 X Y U μ ht hlim
-
-/-- **A query at a given place of the memory**, in `programP G r s`, for all limits. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Program.lean (queryAt_base58)
-theorem queryAtP_programP (G : RatParams) (r s : ℕ) : ∀ lim, QueryAtSpecP lim (programP G r s) :=
-  fun _ => queryAtP_of_base58 (programP_eq_base58 G r s)
 
 /-- **The pruned preprocessing with rational parameters**, in `programP G r s`, for all limits. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Program.lean
 -- (pre31_program31)
-theorem pre31P_programP (G : RatParams) (r s : ℕ) :
+theorem pre31P_programP G r s :
     ∀ lim, PreSpec31P lim (programP G r s) cShared30 G := by
   intro lim N D₀ aX aY fr X Y U μ hin
   have std := hin.lim.std
-  have hcopy : CopySpec lim (programP G r s) :=
-    copy_ok (programP_at_low G r s (program31_at G Proc.copy)) std
-  have hfill : FillSpec lim (programP G r s) :=
-    fill_ok (programP_at_low G r s (program31_at G Proc.fill)) std
-  have hlog : Log4Spec lim (programP G r s) :=
-    log4_meets (programP_at_low G r s (program31_at G Proc.log4)) std
-  have hlev : CeilMulSpec lim (programP G r s) Proc.levels31 G.a G.b :=
-    ceilMul_meets G.hb (programP_at_low G r s (program31_at G Proc.levels31))
-  have hswi : CeilMulSpec lim (programP G r s) Proc.switch31 G.p G.q :=
-    ceilMul_meets G.hq (programP_at_low G r s (program31_at G Proc.switch31))
-  have hpad : PadXSpec lim (programP G r s) :=
-    padX_meets (programP_at_low G r s (program31_at G Proc.padX)) hcopy hfill std
-  exact pre31P_meets G (programP_at G r s Proc.pre31P)
+  have hcopy :=
+    copy_ok (programP_at_low G r s (program31_at G 58)) std
+  have hfill :=
+    fill_ok (programP_at_low G r s (program31_at G 59)) std
+  have hlog :=
+    log4_meets (programP_at_low G r s (program31_at G 60)) std
+  have hlev : CeilMulSpec lim (programP G r s) 72 G.a G.b :=
+    ceilMul_meets G.hb (programP_at_low G r s (program31_at G 72))
+  have hswi : CeilMulSpec lim (programP G r s) 73 G.p G.q :=
+    ceilMul_meets G.hq (programP_at_low G r s (program31_at G 73))
+  have hpad :=
+    padX_meets (programP_at_low G r s (program31_at G 62)) hcopy hfill std
+  exact pre31P_meets G (programP_at G r s 81)
     ⟨hlog, hlev, hswi, hpad, hcopy, hfill, preCoreP_programP G r s lim⟩ N D₀ aX aY fr X Y U μ hin
 
 /-- **A query with rational parameters**, in `programP G r s`, for all limits. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Program.lean
 -- (query31_program31)
-theorem query31P_programP (G : RatParams) (r s : ℕ) :
+theorem query31P_programP G r s :
     ∀ lim, QuerySpec31P lim (programP G r s) G := by
   intro lim N D₀ aX aY fr X Y U μ I J hin
-  have hip : IpAtSpec lim (programP G r s) :=
-    ipAt_meets (programP_at_low G r s (program31_at G Proc.ipAt)) hin.lim.std
-  exact query31P_meets G (programP_at_low G r s (program31_at G Proc.query31))
-    (queryAtP_programP G r s lim) hip N D₀ aX aY fr X Y U μ I J hin
+  have hip :=
+    ipAt_meets (programP_at_low G r s (program31_at G 63)) hin.lim.std
+  exact query31P_meets G (programP_at_low G r s (program31_at G 65))
+    (queryAtP_of_base58 (programP_eq_base58 G r s) : QueryAtSpecP lim (programP G r s)) hip N D₀ aX aY fr X Y U μ I J hin
 
 /-- **The pruned offline routine**, in `programP G r s`, for all limits. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Program.lean
 -- (offline32_program31)
-theorem offline32P_programP (G : RatParams) (r s : ℕ) :
-    ∀ lim, OfflineSpec32P lim (programP G r s) cShared30 G :=
-  fun lim => offline32P_meets (programP_at G r s Proc.offline32P) (pre31P_programP G r s lim)
+def offline32P_programP G r s :=
+  fun lim => offline32P_meets (programP_at G r s 82) (pre31P_programP G r s lim)
     (query31P_programP G r s lim)
 
 /-- A program that begins with `programP G r s` holds offline32P with its specification at the
 parameters `G`, for all limits. -/
 -- adapted from ImprovedExponents/Pipeline/ThinClaim.lean (offlineSpec32_of_program31)
-theorem offlineSpec32P_of_programP {P : Program} {G : RatParams} {r s : ℕ}
-    (h : ∃ Q, P = programP G r s ++ Q) (lim : Limits) : OfflineSpec32P lim P cShared30 G := by
+theorem offlineSpec32P_of_programP {P} {G} {r s}
+    (h : ∃ Q, P = programP G r s ++ Q) lim : OfflineSpec32P lim P cShared30 G := by
   obtain ⟨Q, rfl⟩ := h
   exact (offline32P_programP G r s lim).append Q
 
@@ -157,7 +140,7 @@ numbers. -/
 -- adapted from ImprovedExponents/Pipeline/ThinClaim.lean (offline32Routine)
 def offline32PRoutine (G : RatParams) (r s : ℕ) : OfflineRoutine where
   Ok N D := G.m₀ ≤ logFour D → Hyp30 (parOf G N D) (switchOf31 G D)
-  proc := Proc.offline32P
+  proc := 82
   body := offline32PBody
   aux P := ∃ Q, P = programP G r s ++ Q
   aux_append _ Q := fun ⟨R, h⟩ => ⟨R ++ Q, by rw [h, List.append_assoc]⟩
@@ -170,11 +153,11 @@ def offline32PRoutine (G : RatParams) (r s : ℕ) : OfflineRoutine where
 
 /-- `programP G r s` holds offline32P, the procedures it calls, and the solver of all instances
 that calls it after the test `D^r ≤ N^s`. -/
-theorem offline32PRoutine_programP (G : RatParams) (r s : ℕ) :
-    (programP G r s)[Proc.offline32P]? = some offline32PBody ∧
+theorem offline32PRoutine_programP G r s :
+    (programP G r s)[82]? = some offline32PBody ∧
       (offline32PRoutine G r s).aux (programP G r s) ∧
-      (programP G r s)[Proc.allP]? = some (allBody Proc.testRS Proc.offline32P) :=
-  ⟨programP_at G r s Proc.offline32P, ⟨[], (List.append_nil _).symm⟩,
-    programP_at G r s Proc.allP⟩
+      (programP G r s)[83]? = some (allBody 75 82) :=
+  ⟨programP_at G r s 82, ⟨[], (List.append_nil _).symm⟩,
+    programP_at G r s 83⟩
 
 end ImprovedExponents

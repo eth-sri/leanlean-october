@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Lang.TopProcedure
 public import ThreeSumApsp.Programs.Tasks
 
@@ -27,30 +28,29 @@ namespace Light.Sec3
 open ThreeSumApsp ThreeSumApsp.WordRam ThreeSumApsp.Spec
 
 /-- The numbers of a list made from a function are the values of the function. -/
-theorem vecOf_ofFn {n : ℕ} (x : Fin n → ℤ) : vecOf n (List.ofFn x) = x := by
-  funext i
-  simp [vecOf, List.getD_eq_getElem?_getD]
+theorem vecOf_ofFn {n} x : vecOf n (List.ofFn x) = x := by
+  grind [vecOf]
 
 /-- The instance of the task: the numbers stand from cell 1 on. -/
 def threeSumInst (x : Bounded EndStatement.ThreeSum) : s3Task.Inst := ⟨x.n, x.U, 1, List.ofFn x.x⟩
 
 /-- The input of the end statement meets the precondition of the task. -/
-theorem pre_threeSum (x : Bounded EndStatement.ThreeSum) (hn : 1 ≤ x.n) (hU : 1 ≤ x.U) :
+theorem pre_threeSum x (hn : 1 ≤ x.n) (hU : 1 ≤ x.U) :
     s3Task.Pre (threeSumInst x) (memOf ((ofEnd EndStatement.ThreeSum).input x)) (x.n + 1) where
   N_pos := hn
   U_pos := hU
-  len := List.length_ofFn (f := x.x)
+  len := List.length_ofFn
   seg := by
-    simpa [EndStatement.ThreeSum, threeSumInst] using seg_memOf [(x.n : ℤ)] (List.ofFn x.x) []
+    simpa [EndStatement.ThreeSum, threeSumInst] using seg_memOf [x.n] (List.ofFn x.x) []
   le := fun _ ha => Bounded.abs_le ha
   below := (Nat.add_comm 1 x.n).le
 
 /-- The result of a solver of the task is the right verdict of the end statement's 3SUM. -/
-theorem post_threeSum (x : Bounded EndStatement.ThreeSum) (r : ℤ) (μ' : ℕ → ℤ)
+theorem post_threeSum x r μ'
     (h : s3Task.Post (threeSumInst x) (memOf ((ofEnd EndStatement.ThreeSum).input x)) (x.n + 1) r
       μ') :
     (ofEnd EndStatement.ThreeSum).IsAnswer x (verdictOf true r) fun i =>
-      μ' (((ofEnd EndStatement.ThreeSum).input x).length + i) := by
+      μ' ((ofEnd EndStatement.ThreeSum).input x).length + i := by
   obtain ⟨rfl, -⟩ := h
   exact ⟨(verdictOf_flag _).trans (iff_of_eq (congrArg ThreeSum (vecOf_ofFn x.x))), trivial⟩
 
@@ -63,11 +63,10 @@ noncomputable def wrap3Sum : Wrap EndStatement.ThreeSum s3Task true where
   bound_eq _ := rfl
   fr_pos x := by omega
   fr_le x := by
-    have := Nat.le_mul_self x.n
-    omega
-  vals x σ hn hU _ := by simp [s3Task, threeSumInst, hn, hU]
+    nlinarith
+  vals x σ hn hU _ := by aesop
   safe x lim σ hn _ _ hw := by
-    have hnn : (x.n : ℤ) ≤ (x.n : ℤ) * x.n := by exact_mod_cast Nat.le_mul_self x.n
+    have hnn : (x.n : ℤ) ≤ (x.n : ℤ) * x.n := by nlinarith
     push_cast at hw
     simp [hn, abs_le]
     omega
@@ -77,7 +76,7 @@ noncomputable def wrap3Sum : Wrap EndStatement.ThreeSum s3Task true where
 
 /-- **3SUM**: if the task is solved in time T, then 3SUM is solved on the word RAM within a constant
 times T. -/
-theorem realized_threeSum (T : ℕ → ℝ → ℝ) (h : SolvedIn s3Task T) :
+theorem realized_threeSum T (h : SolvedIn s3Task T) :
     Realized EndStatement.ThreeSum T :=
   wrap3Sum.realized h
 

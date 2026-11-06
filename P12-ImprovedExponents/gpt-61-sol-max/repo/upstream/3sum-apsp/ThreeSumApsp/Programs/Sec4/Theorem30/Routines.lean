@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Programs.Sec4.Theorem30.AllTiles
 public import ThreeSumApsp.Programs.Sec4.Theorem30.FillList
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Horner
@@ -37,13 +38,13 @@ preCoreSpec_of and preCoreSpec_all for the preprocessing, queryAtSpec_all for a 
 namespace Light.Sec4
 
 /-- The bodies of the procedures number 40, 41, …, 53. -/
-def procs40 : List Stmt :=
+def procs40 :=
   [nineFirstBody, nineNextBody, scatterBody, starFirstBody, hornerBody, lookupBody, insertBody,
     newRootBody, sumTenBody,
     fillListBody, tileBody, allTilesBody, outDigitsBody, queryCoreBody]
 
 /-- The program P holds the routines of Section 4 at their numbers. -/
-def Has40 (P : Program) : Prop := ∀ i < 14, P[40 + i]? = procs40[i]?
+def Has40 (P : Program) := ∀ i < 14, P[40 + i]? = procs40[i]?
 
 /-- The specifications of all the routines of Section 4. -/
 structure Specs40 (lim : Limits) (P : Program) : Prop where
@@ -56,40 +57,29 @@ structure Specs40 (lim : Limits) (P : Program) : Prop where
   insert : InsertSpec lim P
   newRoot : NewRootSpec lim P
   sumTen : SumTenSpec lim P
-  fillList : FillListSpec lim P
-  tile : TileSpec lim P
-  allTiles : AllTilesSpec lim P
   outDigits : OutDigitsSpec lim P
-  queryCore : QueryCoreSpec lim P
 
 /-- **Every program that holds the routines of Section 4 at their numbers meets all their
 specifications.** -/
-theorem specs40 {lim : Limits} {P : Program} (h : Has40 P) (hs : Std lim) : Specs40 lim P := by
-  have nineFirst : NineFirstSpec lim P := nineFirst_spec (h 0 (by omega)) hs
-  have nineNext : NineNextSpec lim P := nineNext_spec (h 1 (by omega)) hs
-  have scatter : ScatterSpec lim P := scatter_spec (h 2 (by omega)) hs
-  have starFirst : StarFirstSpec lim P := starFirst_spec (h 3 (by omega)) hs
-  have horner : HornerSpec lim P := horner_spec (h 4 (by omega)) hs
-  have lookup : LookupSpec lim P := lookup_spec (h 5 (by omega)) hs
-  have insert : InsertSpec lim P := insert_spec (h 6 (by omega)) hs
-  have newRoot : NewRootSpec lim P := newRoot_spec (h 7 (by omega)) hs
-  have sumTen : SumTenSpec lim P := sumTen_spec (h 8 (by omega)) lookup hs
-  have fillList : FillListSpec lim P := fillList_spec
-    (h 9 (by omega)) nineFirst nineNext starFirst horner insert sumTen
-  have tile : TileSpec lim P := tile_spec (h 10 (by omega)) newRoot fillList
-  have allTiles : AllTilesSpec lim P := allTiles_spec (h 11 (by omega)) tile
-  have outDigits : OutDigitsSpec lim P := outDigits_spec (h 12 (by omega))
-  have queryCore : QueryCoreSpec lim P :=
-    queryCore_spec (h 13 (by omega)) ⟨nineFirst, nineNext, scatter, horner, lookup⟩
-  exact ⟨nineFirst, nineNext, scatter, starFirst, horner, lookup, insert, newRoot, sumTen,
-    fillList, tile, allTiles,
-    outDigits, queryCore⟩
+theorem specs40 {lim} {P} (h : Has40 P) (hs : Std lim) : Specs40 lim P := by
+
+
+
+
+
+  have lookup := lookup_spec (h 5 (by omega)) hs
+
+
+
+
+  exact ⟨nineFirst_spec (h 0 (by omega)) hs, nineNext_spec (h 1 (by omega)) hs, scatter_spec (h 2 (by omega)) hs, starFirst_spec (h 3 (by omega)) hs, horner_spec (h 4 (by omega)) hs, lookup, insert_spec (h 6 (by omega)) hs, newRoot_spec (h 7 (by omega)) hs, sumTen_spec (h 8 (by omega)) lookup hs,
+    outDigits_spec (h 12 (by omega))⟩
 
 /-- A list that has forty procedures, then the routines of Section 4, then anything, holds them at
 their numbers. -/
-theorem has40_of_append {A B : List Stmt} (hA : A.length = 40) : Has40 (A ++ procs40 ++ B) := by
+theorem has40_of_append {A B} (hA : A.length = 40) : Has40 (A ++ procs40 ++ B) := by
   intro i hi
-  have hlen : procs40.length = 14 := rfl
+  have  : procs40.length = 14 := rfl
   rw [List.append_assoc, List.getElem?_append_right (by omega), hA, Nat.add_sub_cancel_left,
     List.getElem?_append_left (by omega)]
 

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib.Tactic
 public import ImprovedExponents.PrunedEncoding.Counts
 
 @[expose] public section
@@ -25,30 +26,30 @@ open Finset ThreeSumApsp
 
 /-- The work of the pruned encoder on one band: the number of entries of all the slices it forms,
 `∑_{k ≤ L} |P_k| 7^{L-k}`. -/
-def encWorkP (L m : ℕ) : ℕ := ∑ k ∈ range (L + 1), prefCount k m * 7 ^ (L - k)
+def encWorkP L m := ∑ k ∈ range (L + 1), prefCount k m * 7 ^ (L - k)
 
 /-- `∑_{d < n} (7/9)^d = (9/2)(1 - (7/9)^n)`. -/
-theorem geom_sum_seven_ninths_real (n : ℕ) :
+theorem geom_sum_seven_ninths_real n :
     ∑ d ∈ range n, ((7 : ℝ) / 9) ^ d = 9 / 2 * (1 - (7 / 9) ^ n) := by
   induction n with
   | zero => simp
   | succ n ih => rw [sum_range_succ, ih]; ring
 
 /-- The work of the pruned encoder is at most `(9/2) |P_L|`. -/
-theorem encWorkP_le (L m : ℕ) : (encWorkP L m : ℝ) ≤ 9 / 2 * prefCount L m := by
+theorem encWorkP_le L m : (encWorkP L m : ℝ) ≤ 9 / 2 * prefCount L m := by
   have hterm : ∀ k ∈ range (L + 1),
       ((prefCount k m * 7 ^ (L - k) : ℕ) : ℝ) ≤ prefCount L m * ((7 : ℝ) / 9) ^ (L - k) := by
     intro k hk
-    have hk' : k ≤ L := Nat.lt_succ_iff.mp (mem_range.mp hk)
+
     have h := pow_mul_prefCount_le k (L - k) m
-    rw [Nat.add_sub_cancel' hk'] at h
-    have h' : (9 : ℝ) ^ (L - k) * prefCount k m ≤ prefCount L m := by exact_mod_cast h
-    have h7 : (0 : ℝ) < 7 ^ (L - k) := by positivity
-    have h9 : (0 : ℝ) < 9 ^ (L - k) := by positivity
+    rw [Nat.add_sub_cancel' (Nat.lt_succ_iff.mp (mem_range.mp hk))] at h
+    have  : (9 : ℝ) ^ (L - k) * prefCount k m ≤ prefCount L m := mod_cast h
+    have  : (0 : ℝ) < 7 ^ (L - k) := by positivity
+
     push_cast
-    rw [div_pow, ← mul_div_assoc, le_div_iff₀ h9]
+    rw [div_pow, ← mul_div_assoc, le_div_iff₀ (by positivity)]
     nlinarith
-  have hsum : ∑ k ∈ range (L + 1), ((7 : ℝ) / 9) ^ (L - k) ≤ 9 / 2 := by
+  have  : ∑ k ∈ range (L + 1), ((7 : ℝ) / 9) ^ (L - k) ≤ 9 / 2 := by
     have hrefl : ∑ k ∈ range (L + 1), ((7 : ℝ) / 9) ^ (L - k)
         = ∑ d ∈ range (L + 1), ((7 : ℝ) / 9) ^ d := by
       rw [← sum_range_reflect (fun d => ((7 : ℝ) / 9) ^ d) (L + 1)]
@@ -58,27 +59,19 @@ theorem encWorkP_le (L m : ℕ) : (encWorkP L m : ℝ) ≤ 9 / 2 * prefCount L m
     have : (0 : ℝ) ≤ (7 / 9) ^ (L + 1) := by positivity
     linarith
   calc (encWorkP L m : ℝ) = ∑ k ∈ range (L + 1), ((prefCount k m * 7 ^ (L - k) : ℕ) : ℝ) := by
-        unfold encWorkP; push_cast; rfl
-    _ ≤ ∑ k ∈ range (L + 1), (prefCount L m : ℝ) * ((7 : ℝ) / 9) ^ (L - k) := sum_le_sum hterm
+        simp_all [encWorkP]
+    _ ≤ ∑ k ∈ range (L + 1), prefCount L m * ((7 : ℝ) / 9) ^ (L - k) := sum_le_sum hterm
     _ = prefCount L m * ∑ k ∈ range (L + 1), ((7 : ℝ) / 9) ^ (L - k) := by rw [mul_sum]
     _ ≤ prefCount L m * (9 / 2) := by gcongr
     _ = 9 / 2 * prefCount L m := by ring
 
 /-- The work of the pruned encoder is at most `(9/2) M/(1 - ρ)` for `10 m ≤ L`. -/
-theorem encWorkP_le_M_div {L m : ℕ} (h : 10 * m ≤ L) :
+theorem encWorkP_le_M_div {L m} (h : 10 * m ≤ L) :
     (encWorkP L m : ℝ) ≤ 9 / 2 * (M L m : ℝ) / (1 - rho L m) := by
-  have h1 := encWorkP_le L m
-  have h2 := prefCount_le_M_div h
-  rw [mul_div_assoc]
-  linarith
+  grind [encWorkP_le, prefCount_le_M_div]
 
 /-- `7^L ≤ encWorkP L m`: the slice at the root alone. -/
-theorem pow_seven_le_encWorkP (L m : ℕ) : 7 ^ L ≤ encWorkP L m := by
-  unfold encWorkP
-  calc 7 ^ L = prefCount 0 m * 7 ^ (L - 0) := by
-        simp [prefCount, sum_range_succ', Nat.choose_zero_succ]
-    _ ≤ ∑ k ∈ range (L + 1), prefCount k m * 7 ^ (L - k) :=
-      single_le_sum (f := fun k => prefCount k m * 7 ^ (L - k)) (fun _ _ => Nat.zero_le _)
-        (mem_range.mpr (Nat.succ_pos L))
+theorem pow_seven_le_encWorkP L m : 7 ^ L ≤ encWorkP L m := by
+  simp_all [encWorkP, prefCount, sum_range_succ']
 
 end ImprovedExponents

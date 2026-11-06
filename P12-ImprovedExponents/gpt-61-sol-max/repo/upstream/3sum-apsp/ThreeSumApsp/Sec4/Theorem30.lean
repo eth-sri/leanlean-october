@@ -5,10 +5,21 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Sec2.Tiling
 public import ThreeSumApsp.Sec4.Lemma27_28
 public import ThreeSumApsp.Sec4.Lemma29
-public import ThreeSumApsp.Util.Basic
+public import Mathlib.Algebra.Order.Field.Basic
+public import Mathlib.Algebra.Order.Ring.Abs
+public import Mathlib.Algebra.Order.Ring.Int
+public import Mathlib.Data.Int.Cast.Lemmas
+public import Mathlib.Data.Nat.Cast.Order.Ring
+public import Mathlib.Tactic.GCongr
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
 public import Mathlib.Algebra.Order.Field.GeomSum
 
 /-!
@@ -51,37 +62,34 @@ namespace ThreeSumApsp
 /-! ### The decay rate `ρ` and equation (7) -/
 
 /-- Section 4.3: `ρ = 9m/(L-m+1)` "is less than 1 since L ≥ 10m". -/
-theorem sec4_rho_lt_one (L m : ℕ) (hL : 10 * m ≤ L) : rho L m < 1 := by
-  have hL' : (10 : ℝ) * m ≤ L := by exact_mod_cast hL
-  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
+theorem sec4_rho_lt_one L m (hL : 10 * m ≤ L) : rho L m < 1 := by
+  have  : (10 : ℝ) * m ≤ L := mod_cast hL
   rw [rho, div_lt_one (by linarith)]
   linarith
 
 /-- The decay rate `ρ` is not negative when `L ≥ 10m`. -/
-theorem rho_nonneg {L m : ℕ} (hL : 10 * m ≤ L) : 0 ≤ rho L m := by
-  have hL' : (10 : ℝ) * m ≤ L := by exact_mod_cast hL
-  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
+theorem rho_nonneg {L m} (hL : 10 * m ≤ L) : 0 ≤ rho L m := by
+  have  : (10 : ℝ) * m ≤ L := mod_cast hL
   exact div_nonneg (by positivity) (by linarith)
 
 /-! ### Theorem 30, "Preprocessing": the count behind (8) -/
 
 /-- The number `√K N₀` of the hypothesis "N ≥ √K N₀" of Theorem 30 and of the last term of (8). -/
-noncomputable def sqrtKN0 (L m : ℕ) : ℝ := Real.sqrt (K L m : ℝ) * (N0 L m : ℝ)
+noncomputable def sqrtKN0 L m := Real.sqrt (K L m) * (N0 L m : ℝ)
 
 /-- `√K N₀` is positive when `m ≤ L`. -/
-theorem sqrtKN0_pos {L m : ℕ} (hmL : m ≤ L) : 0 < sqrtKN0 L m := by
-  have hK : (0 : ℝ) < (K L m : ℝ) := by exact_mod_cast Nat.choose_pos hmL
-  have hN0 : (0 : ℝ) < (N0 L m : ℝ) := by exact_mod_cast N0_pos L m
-  exact mul_pos (Real.sqrt_pos.mpr hK) hN0
+theorem sqrtKN0_pos {L m} (hmL : m ≤ L) : 0 < sqrtKN0 L m := by
+
+
+  exact mul_pos (Real.sqrt_pos.mpr (mod_cast Nat.choose_pos hmL)) (mod_cast N0_pos L m)
 
 /-- `(√K N₀)² = K N₀² = M`. -/
-theorem sqrtKN0_sq (L m : ℕ) : sqrtKN0 L m ^ 2 = (M L m : ℝ) := by
-  rw [sqrtKN0, mul_pow, Real.sq_sqrt (Nat.cast_nonneg _)]
-  simp [M]
+theorem sqrtKN0_sq L m : sqrtKN0 L m ^ 2 = (M L m : ℝ) := by
+  ram_arith [sqrtKN0, mul_pow, M]
 
 /-- Proof of Theorem 30, "Preprocessing": "we store the K₀² subsets, in O(KL) ≤ O(10^L) operations".
 Read as the inequality `K L ≤ 10^L` (constant 1). -/
-theorem Theorem30.subsets (L m : ℕ) : K L m * L ≤ 10 ^ L := by
+theorem Theorem30.subsets L m : K L m * L ≤ 10 ^ L := by
   calc K L m * L ≤ 2 ^ L * 2 ^ L :=
         Nat.mul_le_mul (Nat.choose_le_two_pow L m) Nat.lt_two_pow_self.le
     _ = 4 ^ L := by rw [← Nat.mul_pow]
@@ -93,56 +101,58 @@ private lemma le_choose_of_le_half (L : ℕ) : ∀ r, 1 ≤ r → r ≤ L / 2 �
   induction r, h1 using Nat.le_induction with
   | base => intro _; simp
   | succ r hr ih =>
-    intro h
-    exact (ih (by omega)).trans (Nat.choose_le_succ_of_lt_half_left (by omega))
+    grind [Nat.choose_le_succ_of_lt_half_left]
 
 /-- `K₀ ≥ 3` in the range of Theorem 30, because `K = binom(L, m) ≥ L ≥ 10`. -/
 private lemma three_le_K0 (L m : ℕ) (hm : 1 ≤ m) (hL : 10 * m ≤ L) : 3 ≤ K0 L m := by
-  have hK : L ≤ K L m := le_choose_of_le_half L m hm (by omega)
+  have  : L ≤ K L m := le_choose_of_le_half L m hm (by omega)
   exact Nat.le_sqrt.2 (by omega)
 
+variable {L m N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L)
+    (hN : sqrtKN0 L m ≤ N)
+
+include L m N hm hL hN in
 /-- The number `b` of row bands, `N/(K₀ N₀)` rounded up, satisfies `b √K N₀ ≤ 2N`. The two bounds of
 the paper's proof on the numbers of bands and of tiles rest on this. If `b ≤ 2` it is the hypothesis
 `N ≥ √K N₀`. If `b ≥ 3` then `(b - 1) K₀ N₀ < N`, `b ≤ 3(b - 1)/2`, and `√K ≤ K₀ + 1 ≤ 4K₀/3`. -/
-theorem Theorem30.numBands_mul_le {L m N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L)
-    (hN : sqrtKN0 L m ≤ N) :
+theorem Theorem30.numBands_mul_le  :
     (numBands L m N : ℝ) * sqrtKN0 L m ≤ 2 * (N : ℝ) := by
-  have hN0 : (0 : ℝ) < (N0 L m : ℝ) := by exact_mod_cast N0_pos L m
-  have hK0 : (3 : ℝ) ≤ (K0 L m : ℝ) := by exact_mod_cast three_le_K0 L m hm hL
-  have hsqrt : Real.sqrt (K L m : ℝ) ≤ (K0 L m : ℝ) + 1 :=
-    Real.sqrt_le_iff.2 ⟨by positivity, by exact_mod_cast (Nat.lt_succ_sqrt' (K L m)).le⟩
+  have hN0  := mod_cast N0_pos L m
+  have hK0 : (3 : ℝ) ≤ (K0 L m : ℝ) := mod_cast three_le_K0 L m hm hL
+  have hsqrt : Real.sqrt (K L m) ≤ (K0 L m : ℝ) + 1 :=
+    Real.sqrt_le_iff.2 ⟨by positivity, mod_cast (Nat.lt_succ_sqrt' (K L m)).le⟩
   have hband : 0 < (K0 L m : ℝ) * (N0 L m : ℝ) := by positivity
   -- `b` is `N/(K₀ N₀)` rounded up
   have hceil : (numBands L m N : ℝ) * ((K0 L m : ℝ) * (N0 L m : ℝ))
       ≤ (N : ℝ) + (K0 L m : ℝ) * (N0 L m : ℝ) := by
-    have h : numBands L m N * bandSize L m ≤ N + bandSize L m - 1 := Nat.div_mul_le_self _ _
-    have h' : numBands L m N * (K0 L m * N0 L m) ≤ N + K0 L m * N0 L m := by
-      unfold bandSize at h
-      omega
-    exact_mod_cast h'
+    have  : numBands L m N * bandSize L m ≤ N + bandSize L m - 1 := Nat.div_mul_le_self _ _
+
+    exact_mod_cast by
+      ram_arith [bandSize]
   rcases Nat.lt_or_ge (numBands L m N) 3 with hb | hb
-  · have hb' : (numBands L m N : ℝ) ≤ 2 := by exact_mod_cast Nat.le_of_lt_succ hb
+  · have hb' : (numBands L m N : ℝ) ≤ 2 := by ram_arith
     exact (mul_le_mul_of_nonneg_right hb' (sqrtKN0_pos (by omega)).le).trans
       (mul_le_mul_of_nonneg_left hN zero_le_two)
-  · have hb' : (3 : ℝ) ≤ (numBands L m N : ℝ) := by exact_mod_cast hb
-    have hwide : sqrtKN0 L m ≤ 4 / 3 * ((K0 L m : ℝ) * (N0 L m : ℝ)) := by
+  · have hb' : (3 : ℝ) ≤ (numBands L m N : ℝ) := mod_cast hb
+    have hwide : sqrtKN0 L m ≤ 4 / 3 * (K0 L m : ℝ) * (N0 L m : ℝ) := by
       unfold sqrtKN0
       nlinarith [hsqrt, hK0, hN0]
     -- `b √K N₀ ≤ (4b/3) K₀ N₀ ≤ 2 (b - 1) K₀ N₀ ≤ 2N`
     nlinarith [mul_le_mul_of_nonneg_left hwide (by linarith : (0 : ℝ) ≤ (numBands L m N : ℝ)),
       mul_nonneg (by linarith : (0 : ℝ) ≤ (numBands L m N : ℝ) - 3) hband.le, hceil]
 
+include L m N hm hL hN in
 /-- Proof of Theorem 30, "Preprocessing": "all row bands and column bands, at most 4N/(√K N₀) of
 them". There are `numBands L m N` row bands and as many column bands. Here `N` is the given size,
 not the padded one, and the bound comes from `Theorem30.numBands_mul_le`. -/
-theorem Theorem30.bands {L m N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) (hN : sqrtKN0 L m ≤ N) :
+theorem Theorem30.bands  :
     (2 * numBands L m N : ℝ) ≤ 4 * (N : ℝ) / sqrtKN0 L m := by
   rw [le_div_iff₀ (sqrtKN0_pos (by omega))]
   linarith [Theorem30.numBands_mul_le hm hL hN]
 
 /-- Proof of Theorem 30, "Preprocessing": "K N₀ D ≤ 7^L". This bounds the number of nonzero entries
 of the input array of a band, which is why forming it takes `O(L · 7^L)` operations. -/
-theorem Theorem30.K_mul_N0_mul_D_le (L m : ℕ) : K L m * N0 L m * D m ≤ 7 ^ L := by
+theorem Theorem30.K_mul_N0_mul_D_le L m : K L m * N0 L m * D m ≤ 7 ^ L := by
   -- one summand of the binomial expansion of `(4 + 3)^L`
   calc K L m * N0 L m * D m = L.choose m * 4 ^ m * 3 ^ (L - m) := by unfold K N0 D; ring
     _ ≤ 7 ^ L := Nat.choose_mul_pow_mul_pow_le 4 3 L m
@@ -151,23 +161,24 @@ theorem Theorem30.K_mul_N0_mul_D_le (L m : ℕ) : K L m * N0 L m * D m ≤ 7 ^ L
 operations", which is within the "O(10^L) operations" of its encoding ("This is the last term of
 (8)"). Read as the inequality `L · 7^L ≤ 2 · 10^L`; the constant 1 fails at `L = 3`. From `L = 3`
 on, one more level multiplies the left-hand side by `7(L+1)/L ≤ 10`. -/
-theorem Theorem30.form_array : ∀ L : ℕ, L * 7 ^ L ≤ 2 * 10 ^ L
+theorem Theorem30.form_array : ∀ L , L * 7 ^ L ≤ 2 * 10 ^ L
   | 0 => by norm_num
   | 1 => by norm_num
   | 2 => by norm_num
   | 3 => by norm_num
   | L + 4 =>
-    calc (L + 4) * 7 ^ (L + 4) = (7 * (L + 4)) * 7 ^ (L + 3) := by ring
-      _ ≤ (10 * (L + 3)) * 7 ^ (L + 3) := Nat.mul_le_mul_right _ (by omega)
+    calc (L + 4) * 7 ^ (L + 4) = 7 * (L + 4) * 7 ^ (L + 3) := by ring
+      _ ≤ 10 * (L + 3) * 7 ^ (L + 3) := Nat.mul_le_mul_right _ (by omega)
       _ = 10 * ((L + 3) * 7 ^ (L + 3)) := by ring
       _ ≤ 10 * (2 * 10 ^ (L + 3)) := Nat.mul_le_mul_left _ (Theorem30.form_array (L + 3))
       _ = 2 * 10 ^ (L + 4) := by ring
 
+include L m N hm hL hN in
 /-- Proof of Theorem 30, "Preprocessing": "the at most 4N²/M tiles, where M = K N₀² is the number of
 output entries of a tile". There are `(numBands L m N)²` tiles. Here `N` is the given size, and the
 bound comes from `Theorem30.numBands_mul_le`. -/
-theorem Theorem30.tiles {L m N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) (hN : sqrtKN0 L m ≤ N) :
-    ((numBands L m N : ℝ)) ^ 2 ≤ 4 * (N : ℝ) ^ 2 / (M L m : ℝ) := by
+theorem Theorem30.tiles  :
+    (numBands L m N : ℝ) ^ 2 ≤ 4 * (N : ℝ) ^ 2 / (M L m : ℝ) := by
   have hpos := sqrtKN0_pos (L := L) (m := m) (by omega)
   rw [← sqrtKN0_sq, le_div_iff₀ (pow_pos hpos 2)]
   calc (numBands L m N : ℝ) ^ 2 * sqrtKN0 L m ^ 2
@@ -184,8 +195,8 @@ the sum in Lemma 28 […]. By Section 2.4.4, the sum is (XY)[I, J]." Here `a` an
 arrays of the row band of `I` and of the column band of `J`, and `lay` is any choice of the indexing
 bijections and of the subsets of the block products; it carries `m ≤ L`. (The hypotheses `m ≥ 1`,
 `L ≥ 10m` and `N ≥ √K N₀` of Theorem 30 are not needed for correctness.) -/
-theorem Theorem30.query {L m N : ℕ} (t : ℕ) (ht : t ≤ m) (lay : Layout L m)
-    (X : Matrix (Fin N) (Fin (D m)) ℤ) (Y : Matrix (Fin (D m)) (Fin N) ℤ) (I J : Fin N) :
+theorem Theorem30.query {L m N} t (ht : t ≤ m) (lay : Layout L m)
+     X Y (I J : Fin N) :
     querySum m t (bandArrayL lay X (bandOf L m I)) (bandArrayR lay Y (bandOf L m J))
         (outStrOfPos lay I J)
       = (X * Y) I J := by
@@ -194,15 +205,14 @@ theorem Theorem30.query {L m N : ℕ} (t : ℕ) (ht : t ≤ m) (lay : Layout L m
 
 /-- Proof of Theorem 30, "Query": "for every V ⊆ Q with |V| = m - t and every box of 𝓑_V, we look up
 its value in the trie of the tile." It is there: it is a box. -/
-theorem Theorem30.lookup {L m t : ℕ} {η : OutStr L} {V : Finset (Fin L)} (hV : V ∈ Vsets m t η)
-    {π : Cube L} (hπ : π ∈ BV η V) : π ∈ boxes L m t :=
+theorem Theorem30.lookup {L m t} {η} {V} (hV : V ∈ Vsets m t η)
+    {π} (hπ : π ∈ BV η V) : π ∈ boxes L m t :=
   mem_boxes.2 (BV_isBox hV hπ)
 
 /-- What the dynamic program of Lemma 29 computes for a box, at the number of stars of the box, is
 the value of the box. -/
-theorem dpValue_card_starLevels {L m t : ℕ} (a : LeftStr L → ℤ) (b : RightStr L → ℤ) {π : Cube L}
-    (hπ : π ∈ boxes L m t) :
-    dpValue (encodingL a) (encodingR b) (Cube.starLevels π).card π = Cube.val a b π :=
+def dpValue_card_starLevels {L m t} a b {π}
+     hπ :=
   lemma_29_values L m t _ a b π
     (mem_boxesWithStars.2 ⟨mem_boxes.1 hπ, rfl⟩)
 
@@ -212,7 +222,7 @@ we look up its two numbers Φ_τ(a) and Ψ_τ(b) in the encodings of the tile an
 second part is the sum of the values of the boxes of w: for every V ⊆ Q with |V| = m - t and every
 box of 𝓑_V, we look up its value in the trie of the tile." The value stored for a box `π` with `e`
 stars is the one that the dynamic program computed, `dpValue encA encB e π`. -/
-def queryValue {L : ℕ} (m t : ℕ) (encA encB : Leaf L → ℤ) (η : OutStr L) : ℤ :=
+def queryValue {L} m t encA encB (η : OutStr L) :=
   ∑ τ ∈ lowLeaves m t η, encA τ * encB τ
     + ∑ V ∈ Vsets m t η, ∑ π ∈ BV η V, dpValue encA encB (Cube.starLevels π).card π
 
@@ -220,8 +230,8 @@ def queryValue {L : ℕ} (m t : ℕ) (encA encB : Leaf L → ℤ) (η : OutStr L
 the encodings of the bands and, from them, the values of the boxes of every tile by the dynamic
 program of Lemma 29; a query for `(I, J)` reads only the two encodings of its tile and the stored
 values of boxes, and returns `(XY)[I, J]`. -/
-theorem Theorem30.correct {L m N : ℕ} (t : ℕ) (ht : t ≤ m) (lay : Layout L m)
-    (X : Matrix (Fin N) (Fin (D m)) ℤ) (Y : Matrix (Fin (D m)) (Fin N) ℤ) (I J : Fin N) :
+theorem Theorem30.correct {L m N} t (ht : t ≤ m) (lay : Layout L m)
+     X Y (I J : Fin N) :
     queryValue m t (encodingL (bandArrayL lay X (bandOf L m I)))
         (encodingR (bandArrayR lay Y (bandOf L m J))) (outStrOfPos lay I J)
       = (X * Y) I J := by
@@ -237,10 +247,10 @@ theorem Theorem30.correct {L m N : ℕ} (t : ℕ) (ht : t ≤ m) (lay : Layout L
 
 /-- Proof of Theorem 30, "Word size": "Since N ≥ N₀ = 3^{L-m} and L ≥ 10m, we have 10^L ≤ N^{5/2}".
 Stated after squaring, to stay in the natural numbers. -/
-theorem Theorem30.ten_pow_le (L m N : ℕ) (hL : 10 * m ≤ L) (hN : N0 L m ≤ N) :
+theorem Theorem30.ten_pow_le L m N (hL : 10 * m ≤ L) (hN : N0 L m ≤ N) :
     (10 ^ L) ^ 2 ≤ N ^ 5 := by
   -- squared once more: `10^{4L} ≤ 3^{9L} ≤ 3^{10(L-m)}`
-  have hsq : ((10 ^ L) ^ 2) ^ 2 ≤ ((3 ^ (L - m)) ^ 5) ^ 2 :=
+  have hsq :=
     calc ((10 ^ L) ^ 2) ^ 2 = 10000 ^ L := by
           rw [← pow_mul, ← pow_mul, mul_comm L, pow_mul]; norm_num
       _ ≤ 19683 ^ L := Nat.pow_le_pow_left (by norm_num) L

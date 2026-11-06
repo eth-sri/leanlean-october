@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Spec.Sec4.Theorem30.NineStrings
 public import ThreeSumApsp.Util.List
 public import Mathlib.Data.List.GetD
@@ -36,7 +38,7 @@ namespace ThreeSumApsp.Spec
 
 /-- Whether the digit d can be raised when c nines come before it and at most hi nines are
 allowed. -/
-def canRaise (hi c d : ℕ) : Bool := decide (d < 8) || (decide (d = 8) && decide (c < hi))
+def canRaise (hi c d : ℕ) := decide (d < 8) || decide (d = 8) && decide (c < hi)
 
 /-- The last position of the string whose digit can be raised, with the number of nines before it;
 c nines come before the string. -/
@@ -49,40 +51,38 @@ private def raisePos (hi : ℕ) : ℕ → List ℕ → Option (ℕ × ℕ)
 
 /-- The string with the digit at position p raised by one and the least admissible filling behind
 it; c nines come before p. -/
-def raiseAt (lo p c : ℕ) (l : List ℕ) : List ℕ :=
+def raiseAt lo p c (l : List ℕ) :=
   l.take p ++ (l.getD p 0 + 1) ::
     nineFirst (l.length - p - 1) (lo - c - if l.getD p 0 = 8 then 1 else 0)
 
 /-- A digit that can be raised is at most 8. -/
-theorem le_of_canRaise {hi c d : ℕ} (h : canRaise hi c d = true) : d ≤ 8 := by
-  simp only [canRaise, Bool.or_eq_true, decide_eq_true_eq, Bool.and_eq_true] at h
-  omega
+theorem le_of_canRaise {hi c d} (h : canRaise hi c d = true) : d ≤ 8 := by
+  ram_arith [canRaise]
 
 /-- What `nineNext` does to the first digit when the rest of the string cannot be raised. -/
-private theorem raise_head (lo hi c d : ℕ) (l : List ℕ) :
+private theorem raise_head lo hi c d l :
     nineRaise (lo - c) (hi - c) l.length d
       = (if canRaise hi c d then some (0, c) else none).map
-          fun q : ℕ × ℕ => raiseAt lo q.1 q.2 (d :: l) := by
+          fun q  => raiseAt lo q.1 q.2 (d :: l) := by
   rw [nineRaise]
   by_cases h8 : d < 8
-  · simp [canRaise, h8, raiseAt, Nat.ne_of_lt h8]
+  · ram_safe [canRaise, raiseAt]
   · by_cases h : d = 8 ∧ c < hi
-    · simp [canRaise, h.1, h.2, raiseAt]
+    · ram_arith [canRaise, raiseAt]
     · have hcan : canRaise hi c d = false := by
-        simp only [canRaise, Bool.or_eq_false_iff, decide_eq_false_iff_not, Bool.and_eq_false_iff]
-        exact ⟨h8, by tauto⟩
+        simp_all [canRaise]
       rw [if_neg h8, if_neg fun h' => h ⟨h'.1, by omega⟩, hcan]
       rfl
 
 /-- `nineNext` raises the last position that can be raised. -/
-private theorem nineNext_eq_raise (lo hi c : ℕ) (l : List ℕ) :
+private theorem nineNext_eq_raise lo hi c l :
     nineNext (lo - c) (hi - c) l = (raisePos hi c l).map fun q => raiseAt lo q.1 q.2 l := by
   induction l generalizing c with
   | nil => rfl
   | cons d l ih =>
-    have hlo : (if d = 9 then lo - c - 1 else lo - c) = lo - (if d = 9 then c + 1 else c) := by
+    have hlo : (if d = 9 then lo - c - 1 else lo - c) = lo - if d = 9 then c + 1 else c := by
       split_ifs <;> omega
-    have hhi : (if d = 9 then hi - c - 1 else hi - c) = hi - (if d = 9 then c + 1 else c) := by
+    have hhi : (if d = 9 then hi - c - 1 else hi - c) = hi - if d = 9 then c + 1 else c := by
       split_ifs <;> omega
     rw [nineNext, raisePos, hlo, hhi, ih]
     rcases raisePos hi (if d = 9 then c + 1 else c) l with _ | ⟨p, c'⟩
@@ -94,10 +94,7 @@ private theorem nineNext_eq_raise (lo hi c : ℕ) (l : List ℕ) :
 /-- The state of the scan: 1 if a position that can be raised has been seen, the last such
 position, the number of nines before it, and the number of nines seen so far. -/
 structure NineScan where
-  found : ℕ
-  pos : ℕ
-  before : ℕ
-  nines : ℕ
+  (found pos before nines : ℕ)
 
 /-- One step of the scan: the cell number i holds the digit d. -/
 def nineScanStep (hi i d : ℕ) (s : NineScan) : NineScan :=
@@ -112,11 +109,11 @@ def nineScanFrom (hi : ℕ) : ℕ → List ℕ → NineScan → NineScan
   | i, d :: l, s => nineScanFrom hi (i + 1) l (nineScanStep hi i d s)
 
 /-- The state after the first j cells. -/
-def nineScan (hi : ℕ) (l : List ℕ) (j : ℕ) : NineScan := nineScanFrom hi 0 (l.take j) ⟨0, 0, 0, 0⟩
+def nineScan hi (l : List ℕ) j := nineScanFrom hi 0 (l.take j) ⟨0, 0, 0, 0⟩
 
 /-- The scan of two lists one after the other: the second list is scanned from the state after the
 first. -/
-private theorem nineScanFrom_append (hi i : ℕ) (l l' : List ℕ) (s : NineScan) :
+private theorem nineScanFrom_append hi i l l' s :
     nineScanFrom hi i (l ++ l') s = nineScanFrom hi (i + l.length) l' (nineScanFrom hi i l s) := by
   induction l generalizing i s with
   | nil => rfl
@@ -126,14 +123,14 @@ private theorem nineScanFrom_append (hi i : ℕ) (l l' : List ℕ) (s : NineScan
     omega
 
 /-- The state after one more cell is one step of the scan from the state before that cell. -/
-theorem nineScan_succ (hi : ℕ) (l : List ℕ) {j : ℕ} (hj : j < l.length) :
+theorem nineScan_succ hi l {j} (hj : j < l.length) :
     nineScan hi l (j + 1) = nineScanStep hi j (l.getD j 0) (nineScan hi l j) := by
   rw [nineScan, nineScan, List.take_succ_getD l hj 0, nineScanFrom_append, List.length_take,
     Nat.min_eq_left hj.le, Nat.zero_add]
   rfl
 
 /-- The scan finds the last position that can be raised. -/
-private theorem nineScanFrom_eq (hi i : ℕ) (l : List ℕ) (s : NineScan) :
+private theorem nineScanFrom_eq hi i l s :
     nineScanFrom hi i l s =
       match raisePos hi s.nines l with
       | some (p, c) => ⟨1, i + p, c, s.nines + l.count 9⟩
@@ -144,28 +141,23 @@ private theorem nineScanFrom_eq (hi i : ℕ) (l : List ℕ) (s : NineScan) :
     have hn : (nineScanStep hi i d s).nines = if d = 9 then s.nines + 1 else s.nines := rfl
     have hcount : (if d = 9 then s.nines + 1 else s.nines) + l.count 9
         = s.nines + (d :: l).count 9 := by
-      by_cases h : d = 9
-      · rw [h, if_pos rfl, List.count_cons_self]
-        omega
-      · rw [if_neg h, List.count_cons_of_ne h]
+      grind
     rw [nineScanFrom, ih, raisePos, hn, hcount]
     rcases raisePos hi (if d = 9 then s.nines + 1 else s.nines) l with _ | ⟨p, c⟩
     · by_cases hc : canRaise hi s.nines d <;> simp [nineScanStep, hc]
-    · simp only [NineScan.mk.injEq, true_and, and_true]
-      omega
+    · simp_all <;> omega
 
 /-- **The successor by two passes.**  After the scan of the whole string, either no position can be
 raised and the string is the last one, or the next string is obtained by raising the position
 found. -/
-theorem nineNext_eq_scan (lo hi : ℕ) (l : List ℕ) :
+theorem nineNext_eq_scan lo hi l :
     nineNext lo hi l =
       if (nineScan hi l l.length).found = 1 then
         some (raiseAt lo (nineScan hi l l.length).pos (nineScan hi l l.length).before l)
       else none := by
   have h := nineNext_eq_raise lo hi 0 l
   rw [Nat.sub_zero, Nat.sub_zero] at h
-  rw [h, nineScan, List.take_length, nineScanFrom_eq]
-  rcases raisePos hi 0 l with _ | ⟨p, c⟩ <;> simp
+  ram_safe [nineScan, nineScanFrom_eq]
 
 /-! ## What the scan has found -/
 
@@ -179,7 +171,7 @@ structure NineScanInv (hi : ℕ) (l : List ℕ) (j : ℕ) (s : NineScan) : Prop 
   canRaise : s.found = 1 → canRaise hi s.before (l.getD s.pos 0) = true
   before : s.found = 1 → s.before = (l.take s.pos).count 9
 
-theorem nineScan_inv (hi : ℕ) (l : List ℕ) {j : ℕ} (hj : j ≤ l.length) :
+theorem nineScan_inv hi l {j} (hj : j ≤ l.length) :
     NineScanInv hi l j (nineScan hi l j) := by
   induction j with
   | zero => exact ⟨rfl, Or.inl rfl, nofun, nofun, nofun⟩
@@ -189,32 +181,20 @@ theorem nineScan_inv (hi : ℕ) (l : List ℕ) {j : ℕ} (hj : j ≤ l.length) :
     refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> simp only [nineScanStep]
     · rw [List.count_take_succ_getD l 9 hj 0, ← ih.nines]
       split_ifs <;> rfl
-    · split_ifs
-      · exact Or.inr rfl
-      · exact ih.found
-    · split_ifs
-      · exact fun _ => Nat.lt_succ_self j
-      · exact fun hf => (ih.pos_lt hf).trans (Nat.lt_succ_self j)
-    · split_ifs with hc
-      · exact fun _ => hc
-      · exact ih.canRaise
-    · split_ifs
-      · exact fun _ => ih.nines
-      · exact ih.before
+    · ram_safe
+    · ram_safe
+    · ram_safe
+    · ram_safe
 
 /-! ## The filling fits -/
 
 /-- Behind a position that can be raised there is room for the nines that are still needed. -/
-theorem raise_fits {lo p : ℕ} {l : List ℕ} (hp : p < l.length) (h8 : l.getD p 0 ≤ 8)
+theorem raise_fits {lo p} {l : List ℕ} (hp : p < l.length) (h8 : l.getD p 0 ≤ 8)
     (hlo : lo ≤ l.count 9) : lo - (l.take p).count 9 ≤ l.length - p - 1 := by
-  have hsplit : l.count 9 = (l.take p).count 9 + (l.drop p).count 9 := by
+  have  : l.count 9 = (l.take p).count 9 + (l.drop p).count 9 := by
     rw [← List.count_append, List.take_append_drop]
-  have hdrop : (l.drop p).count 9 = (l.drop (p + 1)).count 9 := by
-    rw [List.drop_eq_getElem_cons hp, List.count_cons_of_ne]
-    rw [List.getD_eq_getElem _ _ hp] at h8
-    omega
-  have hle := List.count_le_length (a := 9) (l := l.drop (p + 1))
-  rw [List.length_drop] at hle
-  omega
+  have  : (l.drop p).count 9 = (l.drop (p + 1)).count 9 := by
+    grind [List.drop_eq_getElem_cons]
+  grind [List.length_drop]
 
 end ThreeSumApsp.Spec

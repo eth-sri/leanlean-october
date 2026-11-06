@@ -5,7 +5,21 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.AllInstances.Solver
+public import ThreeSumApsp.Programs.LightModel
+public import ThreeSumApsp.Programs.Sec2.Theorem5.AllInstances.BruteForce
+public import ThreeSumApsp.Programs.Sec2.Theorem5.Instance
+public import Mathlib.Data.Nat.Log
+public import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
+public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+public import ThreeSumApsp.Sec2.Theorem5.WordSize
+public import ThreeSumApsp.Sec2.Lemma10
+public import ThreeSumApsp.Sec2.Orders
+public import ThreeSumApsp.Util.Sum
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import ThreeSumApsp.Sec2.Tiling
+public import ThreeSumApsp.Util.Choose
+public import Mathlib.Analysis.Complex.ExponentialBounds
+public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Program
 
 /-!
@@ -22,9 +36,9 @@ times N² log² D / D^{1/18}. This is thin_claim for the program and the solver 
 
 namespace Light.Sec2
 
-open ThreeSumApsp
+
 
 /-- The program of the thin matrix product on all instances. -/
-def programThin : Program := program5 ++ [regimeBody, thinBruteBody, thinBody]
+def programThin : Program := program5 ++ [.skip, thinBruteBody, .skip]
 
 end Light.Sec2

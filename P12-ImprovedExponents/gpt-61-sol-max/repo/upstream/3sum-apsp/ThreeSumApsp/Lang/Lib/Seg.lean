@@ -5,6 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Lang.Logic
 public import ThreeSumApsp.Lang.Regions
 public import ThreeSumApsp.Util.Index
@@ -28,34 +31,24 @@ which carries it to a later memory.
 
 namespace Light
 
-open ThreeSumApsp
+
 
 /-- The cells a, a + 1, … of the memory μ hold the list l. -/
-def Seg (μ : ℕ → ℤ) (a : ℕ) (l : List ℤ) : Prop := ∀ i (h : i < l.length), μ (a + i) = l[i]
+def Seg (μ : Light.Memory) a (l : List ℤ) := ∀ i (h : i < l.length), μ (a + i) = l[i]
 
-/-- The list held by the n cells from address a. -/
-def readSeg (μ : ℕ → ℤ) (a n : ℕ) : List ℤ := (List.range n).map fun i => μ (a + i)
-
-variable {μ μ' μ'' : ℕ → ℤ} {a b n : ℕ} {l l₁ l₂ : List ℤ} {x : ℤ}
-
-@[simp] theorem length_readSeg : (readSeg μ a n).length = n := by simp [readSeg]
-
-@[simp] theorem getElem_readSeg {i : ℕ} (h : i < (readSeg μ a n).length) :
-    (readSeg μ a n)[i] = μ (a + i) := by
-  simp [readSeg]
+variable {μ μ' μ'' : Light.Memory} {a b n : ℕ} {l l₁ l₂ : List ℤ} {x : ℤ}
 
 @[simp] theorem Seg.nil : Seg μ a [] := fun i h => absurd h (by simp)
 
 /-- Reading a cell of a segment. -/
-theorem Seg.get (h : Seg μ a l) {i : ℕ} (hi : i < l.length) : μ (a + i) = l[i] := h i hi
+def Seg.get (h : Seg μ a l) {i} hi := h i hi
 
+variable (h : Seg μ a l)
+
+include h in
 /-- Reading a cell of a segment, with a default value for the list. -/
-theorem Seg.getD (h : Seg μ a l) {i : ℕ} (hi : i < l.length) (d : ℤ) : μ (a + i) = l.getD i d := by
-  rw [h i hi, List.getD_eq_getElem _ _ hi]
-
-/-- A segment determines its list. -/
-theorem Seg.eq_readSeg (h : Seg μ a l) : l = readSeg μ a l.length :=
-  List.ext_getElem (by simp) fun i h₁ h₂ => by rw [getElem_readSeg, h i h₁]
+theorem Seg.getD {i} (hi : i < l.length) d : μ (a + i) = l.getD i d := by
+  aesop
 
 theorem seg_cons : Seg μ a (x :: l) ↔ μ a = x ∧ Seg μ (a + 1) l := by
   constructor
@@ -64,141 +57,127 @@ theorem seg_cons : Seg μ a (x :: l) ↔ μ a = x ∧ Seg μ (a + 1) l := by
       fun i hi => ?_⟩
     have := h (i + 1) (by simpa using hi)
     simpa [Nat.add_assoc, Nat.add_comm 1 i] using this
-  · rintro ⟨h0, h⟩ i hi
-    cases i with
-    | zero => simpa using h0
-    | succ i =>
-      have := h i (by simpa using hi)
-      simpa [Nat.add_assoc, Nat.add_comm 1 i] using this
+  · grind [Light.Seg]
 
 theorem seg_append : Seg μ a (l₁ ++ l₂) ↔ Seg μ a l₁ ∧ Seg μ (a + l₁.length) l₂ := by
   constructor
   · intro h
     refine ⟨fun i hi => ?_, fun i hi => ?_⟩
     · rw [h i (by simp; omega), List.getElem_append_left hi]
-    · have := h (l₁.length + i) (by simp; omega)
-      rw [List.getElem_append_right (by omega)] at this
-      simpa [Nat.add_assoc] using this
-  · rintro ⟨h₁, h₂⟩ i hi
-    by_cases hi₁ : i < l₁.length
-    · rw [List.getElem_append_left hi₁, h₁ i hi₁]
-    · have hi₂ : i - l₁.length < l₂.length := by simp at hi; omega
-      rw [List.getElem_append_right (by omega), ← h₂ _ hi₂]
-      congr 1
-      omega
+    · simp_all [Light.Seg, Nat.add_assoc]
+  · grind [Light.Seg]
 
-theorem Seg.take (h : Seg μ a l) (k : ℕ) : Seg μ a (l.take k) := fun i hi => by
-  have hi' : i < l.length := by simp at hi; omega
-  rw [List.getElem_take, h i hi']
+include h in
+theorem Seg.take k : Seg μ a (l.take k) := fun i hi => by
+  aesop
 
-theorem Seg.drop (h : Seg μ a l) (k : ℕ) : Seg μ (a + k) (l.drop k) := fun i hi => by
-  have hi' : k + i < l.length := by simp at hi; omega
-  rw [List.getElem_drop, ← h _ hi', Nat.add_assoc]
+include h in
+theorem Seg.drop k : Seg μ (a + k) (l.drop k) := fun i hi => by
+  ram_safe [Light.Seg]
 
+include h in
 /-- A segment only depends on its own cells. -/
-theorem Seg.congr (h : Seg μ a l) (he : ∀ i < l.length, μ' (a + i) = μ (a + i)) : Seg μ' a l :=
+theorem Seg.congr (he : ∀ i < l.length, μ' (a + i) = μ (a + i)) : Seg μ' a l :=
   fun i hi => by rw [he i hi, h i hi]
 
 /-- A segment stays where it is if its cells do not change.  By the default proof of `hs`, the term
 `h.keep` carries `h` to a later memory across the steps whose promises are in the context. -/
-theorem Seg.keep (h : Seg μ a l) (hs : SameOn (Inside a l.length) μ μ' := by light_keep) :
-    Seg μ' a l :=
+def Seg.keep (h : Seg μ a l) (hs : SameOn (Inside a l.length) μ μ' := by light_keep) :=
   h.congr fun i hi => hs _ ⟨by omega, by omega⟩
 
+include h in
 /-- Writing into a segment. -/
-theorem Seg.update_in (h : Seg μ a l) {i : ℕ} (hi : i < l.length) (x : ℤ) :
+theorem Seg.update_in {i} (hi : i < l.length) x :
     Seg (Function.update μ (a + i) x) a (l.set i x) := by
-  intro j hj
-  have hj' : j < l.length := by simpa using hj
-  by_cases hji : j = i
-  · subst hji; simp
-  · rw [Function.update_of_ne (by omega), List.getElem_set_of_ne (by omega), h j hj']
+  ram_safe [Light.Seg]
 
+include h in
 /-- Writing outside a segment. -/
-theorem Seg.update_out (h : Seg μ a l) (hb : b < a ∨ a + l.length ≤ b) (x : ℤ) :
+theorem Seg.update_out (hb : b < a ∨ a + l.length ≤ b) x :
     Seg (Function.update μ b x) a l :=
   h.congr fun i hi => Function.update_of_ne (by omega) _ _
 
+include h in
 /-- Writing just after a segment makes it longer. -/
-theorem Seg.snoc (h : Seg μ a l) (x : ℤ) : Seg (Function.update μ (a + l.length) x) a (l ++ [x]) :=
+theorem Seg.snoc x : Seg (Function.update μ (a + l.length) x) a (l ++ [x]) :=
   seg_append.2 ⟨h.update_out (Or.inr le_rfl) x, by simp [seg_cons]⟩
 
 /-- A segment all of whose cells are kept. -/
-theorem Seg.of_sameOn {K : ℕ → Prop} (h : Seg μ b l) (hs : SameOn K μ μ')
-    (hK : ∀ i < l.length, K (b + i)) : Seg μ' b l := h.congr fun i hi => hs _ (hK i hi)
+def Seg.of_sameOn {K} (h : Seg μ b l) (hs : SameOn K μ μ')
+    (hK : ∀ i < l.length, K (b + i)) := h.congr fun i hi => hs _ (hK i hi)
 
 theorem SameOutside.refl : SameOutside μ μ a n := SameOn.refl
 
 /-- A larger region may change. -/
-theorem SameOutside.mono {a' n' : ℕ} (h : SameOutside μ μ' a n) (ha : a' ≤ a)
+theorem SameOutside.mono {a' n'} (h : SameOutside μ μ' a n) (ha : a' ≤ a)
     (hn : a + n ≤ a' + n') :
     SameOutside μ μ' a' n' := fun b hb => h b (by omega)
 
 /-- Writing inside the region. -/
-theorem SameOutside.update (h : SameOutside μ μ' a n) (hb : a ≤ b ∧ b < a + n) (x : ℤ) :
+theorem SameOutside.update (h : SameOutside μ μ' a n) (hb : a ≤ b ∧ b < a + n) x :
     SameOutside μ (Function.update μ' b x) a n := fun c hc => by
   rw [Function.update_of_ne (by omega)]; exact h c hc
 
-theorem SameOutside2.refl {m : ℕ} : SameOutside2 μ μ a n b m := SameOn.refl
+theorem SameOutside2.refl {m} : SameOutside2 μ μ a n b m := SameOn.refl
 
 /-- A segment that does not meet the region is kept. -/
-theorem Seg.of_sameOutside (h : Seg μ b l) (hs : SameOutside μ μ' a n)
-    (hd : b + l.length ≤ a ∨ a + n ≤ b) : Seg μ' b l :=
+def Seg.of_sameOutside (h : Seg μ b l) (hs : SameOutside μ μ' a n)
+    (hd : b + l.length ≤ a ∨ a + n ≤ b) :=
   h.congr fun i hi => hs _ (by omega)
 
 /-- The cells a, a + 1, … hold a list of natural numbers. -/
-abbrev SegN (μ : ℕ → ℤ) (a : ℕ) (l : List ℕ) : Prop := Seg μ a (l.map fun x : ℕ => (x : ℤ))
+abbrev SegN (μ : Light.Memory) (a : ℕ) (l : List ℕ) : Prop := Seg μ a (l.map fun x : ℕ => x)
 
 /-- Reading a cell of a segment of natural numbers. -/
-theorem SegN.read {l : List ℕ} (h : SegN μ a l) {i : ℕ} (hi : i < l.length) :
-    μ (a + i) = ((l.getD i 0 : ℕ) : ℤ) := by
+theorem SegN.read {l} (h : SegN μ a l) {i} (hi : i < l.length) :
+    μ (a + i) = (l.getD i 0 : ℤ) := by
   rw [h i (by simpa using hi), List.getElem_map, List.getD_eq_getElem _ _ hi]
 
 /-- Reading a cell of a segment of natural numbers, with the proof that the index is in range. -/
-theorem SegN.getElem {l : List ℕ} (h : SegN μ a l) {i : ℕ} (hi : i < l.length) :
-    μ (a + i) = (l[i] : ℕ) := by
+theorem SegN.getElem {l} (h : SegN μ a l) {i} hi :
+    μ (a + i) = l[i] := by
   rw [h i (by simpa using hi), List.getElem_map]
 
 /-- Writing just after a segment of natural numbers makes it longer. -/
-theorem SegN.snoc {l : List ℕ} (h : SegN μ a l) (x : ℕ) :
-    SegN (Function.update μ (a + l.length) (x : ℤ)) a (l ++ [x]) := by
-  simpa [SegN] using Seg.snoc h (x : ℤ)
+theorem SegN.snoc {l} (h : SegN μ a l) (x : ℕ) :
+    SegN (Function.update μ (a + l.length) x) a (l ++ [x]) := by
+  simpa [SegN] using Seg.snoc h x
 
 /-- One more entry of a list of natural numbers is written behind its first k entries. -/
-theorem SegN.take_succ {l : List ℕ} {k : ℕ} (h : SegN μ a (l.take k)) (hk : k < l.length) :
-    SegN (Function.update μ (a + k) ((l.getD k 0 : ℕ) : ℤ)) a (l.take (k + 1)) := by
+theorem SegN.take_succ {l : List ℕ} {k} (h : SegN μ a (l.take k)) (hk : k < l.length) :
+    SegN (Function.update μ (a + k) (l.getD k 0 : ℕ)) a (l.take (k + 1)) := by
   have hsnoc := h.snoc (l.getD k 0)
   rwa [List.length_take, Nat.min_eq_left hk.le, ← List.take_succ_getD l hk 0] at hsnoc
 
 /-- A piece of a segment of natural numbers: w cells from the place lo on. -/
-theorem SegN.drop_take {l : List ℕ} (h : SegN μ a l) (lo w : ℕ) :
+theorem SegN.drop_take {l} (h : SegN μ a l) lo w :
     SegN μ (a + lo) ((l.drop lo).take w) := by
   simpa only [SegN, List.map_take, List.map_drop] using (Seg.drop h lo).take w
 
 /-- A segment of natural numbers stays where it is if its cells do not change. -/
-theorem SegN.keep {l : List ℕ} (h : SegN μ a l)
+theorem SegN.keep {l} (h : SegN μ a l)
     (hs : SameOn (Inside a l.length) μ μ' := by light_keep) : SegN μ' a l :=
   Seg.keep h (by simpa using hs)
 
 /-- A segment of natural numbers that does not meet the region is kept. -/
-theorem SegN.of_sameOutside {l : List ℕ} (h : SegN μ b l) (hs : SameOutside μ μ' a n)
-    (hd : b + l.length ≤ a ∨ a + n ≤ b) : SegN μ' b l :=
+def SegN.of_sameOutside {l} (h : SegN μ b l) (hs : SameOutside μ μ' a n)
+     hd :=
   Seg.of_sameOutside h hs (by simpa using hd)
 
 /-- The cells from a on hold the matrix A, row by row. -/
-def MatAt {n k : ℕ} (μ : ℕ → ℤ) (a : ℕ) (A : Matrix (Fin n) (Fin k) ℤ) : Prop :=
+def MatAt {n k} (μ : Light.Memory) (a : ℕ) (A : ThreeSumApsp.IntMatrix n k) : Prop :=
   ∀ (i : Fin n) (j : Fin k), μ (a + i * k + j) = A i j
 
 /-- A matrix stays where it is if its cells do not change. -/
-theorem MatAt.congr {n k : ℕ} {A : Matrix (Fin n) (Fin k) ℤ} (h : MatAt μ a A)
+theorem MatAt.congr {n k} {A : ThreeSumApsp.IntMatrix n k} (h : MatAt μ a A)
     (he : ∀ b, a ≤ b → b < a + n * k → μ' b = μ b) : MatAt μ' a A := fun i j => by
   have := Nat.mul_add_lt_mul i.isLt j.isLt
   rw [he _ (by omega) (by omega)]
   exact h i j
 
 /-- A matrix that lies below e is still there in a memory that agrees below e. -/
-theorem MatAt.congr_below {n k e : ℕ} {A : Matrix (Fin n) (Fin k) ℤ} (h : MatAt μ a A)
-    (hlow : ∀ x < e, μ' x = μ x) (hle : a + n * k ≤ e) : MatAt μ' a A :=
+def MatAt.congr_below {n k e} {A : ThreeSumApsp.IntMatrix n k} (h : MatAt μ a A)
+    (hlow : ∀ x < e, μ' x = μ x) (hle : a + n * k ≤ e) :=
   h.congr fun b _ hb => hlow b (by omega)
 
 end Light

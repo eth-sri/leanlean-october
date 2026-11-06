@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Spec.Sec3.Problems
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Chunks
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Parameters
@@ -30,7 +31,7 @@ variable (n : ℕ) {p : ℕ} (AB BC AC : List ℤ)
 theorem length_classIdx_eq_card (hp : p ≠ 0) (ϱ : Fin p) :
     (classIdx n (residList p AB) ϱ).length = ((triOf n AB BC AC).residueClass p ϱ).card := by
   have hnodup : (classIdx n (residList p AB) ϱ).Nodup := List.nodup_range.filter _
-  have hmem : ∀ q : Fin n × Fin n,
+  have hmem : ∀ q ,
       pairIndex q ∈ (classIdx n (residList p AB) ϱ).toFinset ↔
         q ∈ (triOf n AB BC AC).residueClass p ϱ := fun q => by
     rw [List.mem_toFinset, mem_classIdx, getD_residList, TriangleInstance.residueClass,
@@ -46,7 +47,7 @@ theorem length_classIdx_eq_card (hp : p ≠ 0) (ϱ : Fin p) :
     exact ⟨(⟨a, ha⟩, ⟨b, hb⟩), (hmem _).1 hx, rfl⟩
 
 /-- The table has one entry for each chunk. -/
-theorem length_chunkTab_eq_totalChunks (hp : p ≠ 0) {D : ℕ} (hD : 1 ≤ D)
+theorem length_chunkTab_eq_totalChunks (hp : p ≠ 0) {D} (hD : 1 ≤ D)
     (hcap : 1 ≤ queryCapNat n D) :
     (chunkTab n p (queryCapNat n D) (residList p AB)).length =
       (triOf n AB BC AC).totalChunks D p := by

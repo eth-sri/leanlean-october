@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Sec4.Lemma27_28
 
 /-!
@@ -37,27 +38,31 @@ variable {L m t : ℕ} {η : OutStr L} {τ : Leaf L}
 of Q at which it chooses a term other than P₀, and replace its P₀ by a star at every lower level of
 Q (or at every level of Q, if t = 0)." With `Z` the set of the levels of `Q` at which `τ` chooses
 `P₀`, these lower levels are those of `F_Z`, which is all of `Q` if `Z = Q`. -/
-def starBelow (η : OutStr L) (τ : Leaf L) : Cube L :=
+def starBelow η (τ : Leaf L) :=
   Cube.starAt (FV (innerSetO η) (Zof (innerSetO η) τ)) τ
 
+variable (hτ : Leaf.Contributes τ η) (hord : order m τ = t)
+
+include hτ hord in
 /-- A leaf of order exactly `t` contributing to `η` chooses `P₀` at exactly `m - t` levels. -/
-private lemma card_Zof_eq (hτ : Leaf.Contributes τ η) (hord : order m τ = t) :
+private lemma card_Zof_eq  :
     (Zof (innerSetO η) τ).card = m - t := by
-  have := order_eq_sub_card_Zof m η τ hτ
-  omega
+  grind [order_eq_sub_card_Zof]
 
 /-- A set `Z` of `m - t` levels needs no padding: `V = Z`. -/
 private lemma Vof_eq_self (Q Z : Finset (Fin L)) (hZ : Z.card = m - t) : Vof m t Q Z = Z := by
   simp [Vof, lowest, hZ]
 
+include hτ hord in
 /-- For a leaf of order exactly `t` contributing to `η`, the cube of the second description is the
 box of the leaf. -/
-theorem boxOfLeaf_eq_starBelow (hτ : Leaf.Contributes τ η) (hord : order m τ = t) :
+theorem boxOfLeaf_eq_starBelow  :
     boxOfLeaf m t η τ = starBelow η τ := by
-  rw [boxOfLeaf, starBelow, Vof_eq_self _ _ (card_Zof_eq hτ hord)]
+  grind [Vof_eq_self, card_Zof_eq, boxOfLeaf, starBelow]
 
+include hτ hord in
 /-- Section 4.2: "The result is a box of w". -/
-theorem starBelow_mem (hτ : Leaf.Contributes τ η) (hord : order m τ = t) :
+theorem starBelow_mem  :
     starBelow η τ ∈ (Vsets m t η).biUnion (BV η) := by
   have hmem := boxOfLeaf_mem_BV m t hτ
   rw [boxOfLeaf_eq_starBelow hτ hord, Vof_eq_self _ _ (card_Zof_eq hτ hord)] at hmem

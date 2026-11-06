@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Definitions
 public import ThreeSumApsp.Util.Average
 public import ThreeSumApsp.Util.PrimeCounting
@@ -47,54 +48,51 @@ open Finset
 /-! ## Colliding pairs and heavy elements -/
 
 /-- Two integers are congruent modulo `M` iff they have the same remainder. -/
-theorem natCast_dvd_sub_iff_emod_eq (M : ℕ) (x y : ℤ) :
-    (M : ℤ) ∣ x - y ↔ x % (M : ℤ) = y % (M : ℤ) :=
+theorem natCast_dvd_sub_iff_emod_eq (M : ℕ) x y :
+    (M : ℤ) ∣ x - y ↔ x % M = y % M :=
   Int.modEq_iff_dvd.symm.trans eq_comm
 
 /-- Each heavy element is the first component of a colliding pair. -/
-theorem card_heavy_le_coll (S : Finset ℤ) (M : ℕ) : #(heavy S M) ≤ coll S M := by
+theorem card_heavy_le_coll S M : #(heavy S M) ≤ coll S M := by
   refine (card_le_card fun x hx => ?_).trans (card_image_le (f := Prod.fst))
   obtain ⟨hxS, y, hyS, hne, hd⟩ := mem_filter.mp hx
   exact mem_image.mpr ⟨(x, y), mem_filter.mpr ⟨mem_offDiag.mpr ⟨hxS, hyS, hne.symm⟩, hd⟩, rfl⟩
 
 /-- There are at most `|S|²` colliding ordered pairs. -/
-theorem coll_le_sq (S : Finset ℤ) (M : ℕ) : coll S M ≤ #S ^ 2 :=
+def coll_le_sq S M :=
   calc coll S M ≤ #S.offDiag := card_filter_le _ _
     _ = #S * #S - #S := offDiag_card S
     _ ≤ #S ^ 2 := by rw [sq]; omega
 
 /-- The collision count is determined by the sizes of the buckets: an element collides with the
 other members of its bucket. -/
-theorem coll_eq_sum (S : Finset ℤ) (M : ℕ) :
-    coll S M = ∑ x ∈ S, (#(bucket S M (x % (M : ℤ))) - 1) := by
+theorem coll_eq_sum S M :
+    coll S M = ∑ x ∈ S, (#(bucket S M (x % M)) - 1) := by
   have hfiber : ∀ x ∈ S,
-      #(bucket S M (x % (M : ℤ))) - 1 = #{y ∈ S | x ≠ y ∧ (M : ℤ) ∣ x - y} := by
+      #(bucket S M (x % M)) - 1 = #{y ∈ S | x ≠ y ∧ (M : ℤ) ∣ x - y} := by
     intro x hx
-    rw [← card_erase_of_mem (show x ∈ bucket S M (x % (M : ℤ)) from mem_filter.mpr ⟨hx, rfl⟩)]
+    rw [← card_erase_of_mem (show x ∈ bucket S M (x % M) from mem_filter.mpr ⟨hx, rfl⟩)]
     congr 1
     ext y
-    simp only [bucket, mem_filter, mem_erase, natCast_dvd_sub_iff_emod_eq, ne_comm (a := x),
-      eq_comm (a := x % _)]
-    tauto
+    grind [natCast_dvd_sub_iff_emod_eq, bucket]
   have hpairs : {p ∈ S.offDiag | (M : ℤ) ∣ p.1 - p.2} =
       {p ∈ S ×ˢ S | p.1 ≠ p.2 ∧ (M : ℤ) ∣ p.1 - p.2} := by
-    ext p
-    simp only [mem_filter, mem_offDiag, mem_product, and_assoc]
+    grind
   rw [sum_congr rfl hfiber, coll, hpairs, card_filter, sum_product]
   simp only [card_filter]
 
 /-- `Lam U` is at least 1. -/
-private theorem Lam_pos (U : ℕ) : 1 ≤ Lam U := Nat.succ_pos _
+private theorem Lam_pos U : 1 ≤ Lam U := Nat.succ_pos _
 
 /-- A nonzero integer of absolute value at most `2U` is divisible by at most `Lam U` primes,
 because their product divides it. -/
-private theorem card_prime_divisors_le {Q : Finset ℕ} (hP : ∀ p ∈ Q, p.Prime) {U : ℕ} {d : ℤ}
-    (hd : d ≠ 0) (hb : |d| ≤ 2 * (U : ℤ)) : #{p ∈ Q | ((p : ℕ) : ℤ) ∣ d} ≤ Lam U := by
+private def card_prime_divisors_le {Q : Finset ℕ} (hP : ∀ p ∈ Q, p.Prime) {U : ℕ} {d}
+     hd (hb : |d| ≤ 2 * (U : ℤ)) := by
   set T := {p ∈ Q | ((p : ℕ) : ℤ) ∣ d}
   have hprime : ∀ p ∈ T, p.Prime := fun p hp => hP p (mem_filter.mp hp).1
-  have hsub : T ⊆ d.natAbs.primeFactors := fun p hp => Nat.mem_primeFactors.mpr
+  have hsub := fun p hp => Nat.mem_primeFactors.mpr
     ⟨hprime p hp, Int.natCast_dvd.mp (mem_filter.mp hp).2, Int.natAbs_ne_zero.mpr hd⟩
-  have hpow : 2 ^ #T ≤ 2 * U :=
+  have hpow :=
     calc 2 ^ #T ≤ ∏ p ∈ T, p := pow_card_le_prod _ _ _ fun p hp => (hprime p hp).two_le
       _ ≤ d.natAbs := Nat.le_of_dvd (Int.natAbs_pos.mpr hd)
           ((prod_dvd_prod_of_subset _ _ _ hsub).trans (Nat.prod_primeFactors_dvd _))
@@ -105,16 +103,14 @@ private theorem card_prime_divisors_le {Q : Finset ℕ} (hP : ∀ p ∈ Q, p.Pri
 number at most `Lam U` times those that collide modulo `M₀`: such a pair collides modulo `M₀`, and
 `q` divides its difference.  Coprimality of `q` and `M₀` is not used, so the two primes of a modulus
 are allowed to coincide. -/
-theorem sum_coll_mul_le {Q : Finset ℕ} (hP : ∀ p ∈ Q, p.Prime) {U : ℕ} {S : Finset ℤ}
-    (hS : Bdd U S) (M₀ : ℕ) : ∑ q ∈ Q, coll S (M₀ * q) ≤ Lam U * coll S M₀ := by
+def sum_coll_mul_le {Q} hP {U} {S}
+    (hS : Bdd U S) (M₀ : ℕ) := by
   set C := {xy ∈ S.offDiag | (M₀ : ℤ) ∣ xy.1 - xy.2}
   calc ∑ q ∈ Q, coll S (M₀ * q)
       ≤ ∑ q ∈ Q, #{xy ∈ C | (q : ℤ) ∣ xy.1 - xy.2} := by
         refine sum_le_sum fun q _ => card_le_card fun xy h => ?_
-        obtain ⟨hxy, hd⟩ := mem_filter.mp h
-        rw [Nat.cast_mul] at hd
-        exact mem_filter.mpr
-          ⟨mem_filter.mpr ⟨hxy, dvd_of_mul_right_dvd hd⟩, dvd_of_mul_left_dvd hd⟩
+
+        grind [dvd_of_mul_right_dvd, dvd_of_mul_left_dvd]
     _ = ∑ xy ∈ C, #{q ∈ Q | ((q : ℕ) : ℤ) ∣ xy.1 - xy.2} :=
         sum_card_bipartiteAbove_eq_sum_card_bipartiteBelow _
     _ ≤ ∑ _xy ∈ C, Lam U := by
@@ -126,63 +122,65 @@ theorem sum_coll_mul_le {Q : Finset ℕ} (hP : ∀ p ∈ Q, p.Prime) {U : ℕ} {
 
 /-! ## The two searches succeed -/
 
-section searches
+section
 
 variable {Q : Finset ℕ} {U : ℕ} {S₁ S₂ S₃ : Finset ℤ}
 
 /-- On a nonempty set, `pick` returns a member. -/
-private theorem pick_mem {T : Finset ℕ} (h : T.Nonempty) : pick T ∈ T := by
+private theorem pick_mem {T} (h : T.Nonempty) : pick T ∈ T := by
   rw [pick, dif_pos h]
   exact T.min'_mem h
 
+variable (hQ : Q.Nonempty) (hP : ∀ p ∈ Q, p.Prime) (h₁ : Bdd U S₁)
+    (h₂ : Bdd U S₂) (h₃ : Bdd U S₃)
+
+include hQ hP h₁ h₂ h₃ in
 /-- Some candidate `q` is good for the three sets at once: in each of them at most the fraction
 `3Λ/|Q|` of the pairs that collide modulo `M₀` still collide modulo `M₀ q`. -/
-private theorem exists_prime_coll_le (hQ : Q.Nonempty) (hP : ∀ p ∈ Q, p.Prime) (h₁ : Bdd U S₁)
-    (h₂ : Bdd U S₂) (h₃ : Bdd U S₃) (M₀ : ℕ) :
+private theorem exists_prime_coll_le  M₀ :
     ∃ q ∈ Q, coll S₁ (M₀ * q) * #Q ≤ 3 * Lam U * coll S₁ M₀ ∧
       coll S₂ (M₀ * q) * #Q ≤ 3 * Lam U * coll S₂ M₀ ∧
       coll S₃ (M₀ * q) * #Q ≤ 3 * Lam U * coll S₃ M₀ := by
   obtain ⟨q, hq, hgood⟩ :=
     Finset.exists_forall_mul_card_le_mul_sum hQ 3 fun i q => coll (![S₁, S₂, S₃] i) (M₀ * q)
-  have havg : ∀ {S : Finset ℤ}, Bdd U S →
+  have havg : ∀ {S}, Bdd U S →
       3 * ∑ q' ∈ Q, coll S (M₀ * q') ≤ 3 * Lam U * coll S M₀ := fun hS => by
     rw [mul_assoc]
     exact Nat.mul_le_mul_left _ (sum_coll_mul_le hP hS M₀)
   exact ⟨q, hq, (hgood 0).trans (havg h₁), (hgood 1).trans (havg h₂), (hgood 2).trans (havg h₃)⟩
 
+include hQ hP h₁ h₂ h₃ in
 /-- The first search succeeds: `firstP` lies in `Q` and passes its three tests. -/
-theorem firstP_spec (hQ : Q.Nonempty) (hP : ∀ p ∈ Q, p.Prime) (h₁ : Bdd U S₁) (h₂ : Bdd U S₂)
-    (h₃ : Bdd U S₃) :
+theorem firstP_spec  :
     firstP Q (Lam U) S₁ S₂ S₃ ∈ {p ∈ Q | coll S₁ p * #Q ≤ 3 * Lam U * #S₁ ^ 2 ∧
       coll S₂ p * #Q ≤ 3 * Lam U * #S₂ ^ 2 ∧ coll S₃ p * #Q ≤ 3 * Lam U * #S₃ ^ 2} := by
   obtain ⟨p, hp, c₁, c₂, c₃⟩ := exists_prime_coll_le hQ hP h₁ h₂ h₃ 1
   rw [one_mul] at c₁ c₂ c₃
-  have hall : ∀ S : Finset ℤ, 3 * Lam U * coll S 1 ≤ 3 * Lam U * #S ^ 2 :=
+  have hall : ∀ S , 3 * Lam U * coll S 1 ≤ 3 * Lam U * #S ^ 2 :=
     fun S => Nat.mul_le_mul_left _ (coll_le_sq S 1)
   exact pick_mem
     ⟨p, mem_filter.mpr ⟨hp, c₁.trans (hall S₁), c₂.trans (hall S₂), c₃.trans (hall S₃)⟩⟩
 
+include hQ hP h₁ h₂ h₃ in
 /-- The second search succeeds, for any first factor `p`. -/
-theorem secondP_spec (hQ : Q.Nonempty) (hP : ∀ p ∈ Q, p.Prime) (h₁ : Bdd U S₁) (h₂ : Bdd U S₂)
-    (h₃ : Bdd U S₃) (p : ℕ) :
+theorem secondP_spec  p :
     secondP Q (Lam U) S₁ S₂ S₃ p ∈ {q ∈ Q | coll S₁ (p * q) * #Q ≤ 3 * Lam U * coll S₁ p ∧
       coll S₂ (p * q) * #Q ≤ 3 * Lam U * coll S₂ p ∧
       coll S₃ (p * q) * #Q ≤ 3 * Lam U * coll S₃ p} := by
   obtain ⟨q, hq, hc⟩ := exists_prime_coll_le hQ hP h₁ h₂ h₃ p
   exact pick_mem ⟨q, mem_filter.mpr ⟨hq, hc⟩⟩
 
+include hQ hP h₁ h₂ h₃ in
 /-- Both searches succeed, and the modulus leaves at most `9Λ²|S|²/|Q|²` colliding pairs in each of
 the three sets.  (A search that fails returns 1, which is not in `Q`.) -/
-theorem modulus_spec (hQ : Q.Nonempty) (hP : ∀ p ∈ Q, p.Prime) (h₁ : Bdd U S₁) (h₂ : Bdd U S₂)
-    (h₃ : Bdd U S₃) :
+theorem modulus_spec  :
     firstP Q (Lam U) S₁ S₂ S₃ ∈ Q ∧ secondP Q (Lam U) S₁ S₂ S₃ (firstP Q (Lam U) S₁ S₂ S₃) ∈ Q ∧
     ∀ S ∈ [S₁, S₂, S₃], coll S (modulus Q (Lam U) S₁ S₂ S₃) * #Q ^ 2 ≤ 9 * Lam U ^ 2 * #S ^ 2 := by
   obtain ⟨hp, p₁, p₂, p₃⟩ := mem_filter.mp (firstP_spec hQ hP h₁ h₂ h₃)
   obtain ⟨hq, q₁, q₂, q₃⟩ :=
     mem_filter.mp (secondP_spec hQ hP h₁ h₂ h₃ (firstP Q (Lam U) S₁ S₂ S₃))
   -- the two tests multiply: `c` counts collisions modulo `pq`, `c'` modulo `p`, and `s = |S|`
-  have hmul : ∀ {c c' s : ℕ}, c' * #Q ≤ 3 * Lam U * s ^ 2 → c * #Q ≤ 3 * Lam U * c' →
-      c * #Q ^ 2 ≤ 9 * Lam U ^ 2 * s ^ 2 := fun {c c' s} hfirst hsecond =>
+  have hmul := fun {c c' s} hfirst hsecond =>
     calc c * #Q ^ 2 = c * #Q * #Q := by ring
       _ ≤ 3 * Lam U * c' * #Q := Nat.mul_le_mul_right _ hsecond
       _ = 3 * Lam U * (c' * #Q) := by ring
@@ -196,7 +194,7 @@ theorem modulus_spec (hQ : Q.Nonempty) (hP : ∀ p ∈ Q, p.Prime) (h₁ : Bdd U
   · exact hmul p₃ q₃
 
 /-- The modulus lies between 1 and `m²` when all primes in `Q` are at most `m`. -/
-theorem modulus_bounds (hQ : Q.Nonempty) (hP : ∀ p ∈ Q, p.Prime) {m : ℕ} (hm : ∀ p ∈ Q, p ≤ m)
+theorem modulus_bounds (hQ : Q.Nonempty) (hP : ∀ p ∈ Q, p.Prime) {m} (hm : ∀ p ∈ Q, p ≤ m)
     (h₁ : Bdd U S₁) (h₂ : Bdd U S₂) (h₃ : Bdd U S₃) :
     1 ≤ modulus Q (Lam U) S₁ S₂ S₃ ∧ modulus Q (Lam U) S₁ S₂ S₃ ≤ m ^ 2 := by
   obtain ⟨hp, hq, -⟩ := modulus_spec hQ hP h₁ h₂ h₃
@@ -204,39 +202,38 @@ theorem modulus_bounds (hQ : Q.Nonempty) (hP : ∀ p ∈ Q, p.Prime) {m : ℕ} (
 
 /-- The hypothesis of `card_heavy_modulus_le` on the number of candidates implies that there is
 one. -/
-theorem nonempty_of_le_card_sq {n : ℕ} (hbig : 18 * Lam U ^ 2 * n ≤ #Q ^ 2) (hn : 1 ≤ n) :
-    Q.Nonempty := by
+def nonempty_of_le_card_sq {n} (hbig : 18 * Lam U ^ 2 * n ≤ #Q ^ 2) (hn : 1 ≤ n) := by
   have hpos : 0 < 18 * Lam U ^ 2 * n := by have := Lam_pos U; positivity
   exact card_pos.mp ((pow_pos_iff two_ne_zero).mp (hpos.trans_le hbig))
 
 /-- With at least `√(18n) Λ` primes to choose from, each of the three sets `S` has at most
 `|S|²/(2n)` heavy elements.  This is why the sizes of the sets fall doubly exponentially along the
 recursion. -/
-theorem card_heavy_modulus_le (hP : ∀ p ∈ Q, p.Prime) {n : ℕ}
+theorem card_heavy_modulus_le (hP : ∀ p ∈ Q, p.Prime) {n}
     (hbig : 18 * Lam U ^ 2 * n ≤ #Q ^ 2) (hn : 1 ≤ n) (h₁ : Bdd U S₁) (h₂ : Bdd U S₂)
     (h₃ : Bdd U S₃) :
     ∀ S ∈ [S₁, S₂, S₃], 2 * n * #(heavy S (modulus Q (Lam U) S₁ S₂ S₃)) ≤ #S ^ 2 := by
   intro S hS
   obtain ⟨-, -, hcoll⟩ := modulus_spec (nonempty_of_le_card_sq hbig hn) hP h₁ h₂ h₃
   set M := modulus Q (Lam U) S₁ S₂ S₃
-  have hΛ : 0 < 9 * Lam U ^ 2 := by have := Lam_pos U; positivity
-  refine Nat.le_of_mul_le_mul_left ?_ hΛ
+
+  refine Nat.le_of_mul_le_mul_left ?_ (by have := Lam_pos U; positivity : 0 < 9 * Lam U ^ 2)
   calc 9 * Lam U ^ 2 * (2 * n * #(heavy S M))
       ≤ 9 * Lam U ^ 2 * (2 * n * coll S M) := by gcongr; exact card_heavy_le_coll S M
     _ = coll S M * (18 * Lam U ^ 2 * n) := by ring
     _ ≤ coll S M * #Q ^ 2 := Nat.mul_le_mul_left _ hbig
     _ ≤ 9 * Lam U ^ 2 * #S ^ 2 := hcoll S hS
 
-end searches
+end
 
 /-! ## Enough primes -/
 
 /-- There are at least `wPar n U` primes up to `mPar n U`. -/
-theorem wPar_le_card_primesLE (n U : ℕ) : wPar n U ≤ #(Nat.primesLE (mPar n U)) :=
+theorem wPar_le_card_primesLE n U : wPar n U ≤ #(Nat.primesLE (mPar n U)) :=
   Nat.le_card_primesLE_mul_log _
 
 /-- The primes up to `mPar n U` are enough for `card_heavy_modulus_le`. -/
-theorem le_card_primesLE_mPar_sq (n U : ℕ) : 18 * Lam U ^ 2 * n ≤ #(Nat.primesLE (mPar n U)) ^ 2 :=
+def le_card_primesLE_mPar_sq n U :=
   calc 18 * Lam U ^ 2 * n ≤ 25 * Lam U ^ 2 * ((Nat.sqrt n + 1) * (Nat.sqrt n + 1)) :=
         Nat.mul_le_mul (Nat.mul_le_mul_right _ (by norm_num)) (Nat.lt_succ_sqrt n).le
     _ = wPar n U ^ 2 := by unfold wPar; ring

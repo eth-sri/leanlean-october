@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Lang.Compiler.Cells
 
 /-!
@@ -32,22 +33,18 @@ variable {W : ℕ} {F : ℕ}
 
 /-- Every expression uses at least one temporary. -/
 private theorem _root_.Light.Expr.height_pos (e : Expr) : 0 < e.height := by
-  induction e with
-  | const n => simp [Expr.height]
-  | var x => simp [Expr.height]
-  | op o a b iha _ => exact lt_of_lt_of_le iha (le_max_left _ _)
-  | load a ih => exact ih
+  induction e <;> simp_all [Expr.height]
 
 /-- The temporary that receives the value of an expression is one of those that its code may
 change. -/
-private theorem cT_mem_temps_of_height (e : Expr) {k : ℕ} (hT : k + e.height ≤ 2 * F + 1) :
+private theorem cT_mem_temps_of_height (e : Expr) {k} (hT : k + e.height ≤ 2 * F + 1) :
     cT k ∈ Temps k F := by
   have := e.height_pos
   cells
 
 /-! ## Constants -/
 
-private theorem straight_digitsCode (c : ℤ) : ∀ L : List ℕ, ∀ i ∈ digitsCode c L, Straight i
+private theorem straight_digitsCode c : ∀ L , ∀ i ∈ digitsCode c L, Straight i
   | [] => by simp [digitsCode, Straight]
   | d :: L => by
     have := straight_digitsCode c L
@@ -55,8 +52,8 @@ private theorem straight_digitsCode (c : ℤ) : ∀ L : List ℕ, ∀ i ∈ digi
 
 /-- The code for a constant: the cell c receives the number with the given binary digits, and
 nothing else changes. -/
-private theorem effects_digitsCode {c : ℤ} (hc : cONE ≠ c) (L : List ℕ) (hL : ∀ d ∈ L, d < 2)
-    (m : ℤ → BitVec W) (hone : m cONE = wd W 1) :
+private theorem effects_digitsCode {c} (hc : cONE ≠ c) L (hL : ∀ d ∈ L, d < 2)
+     m (hone : m cONE = wd W 1) :
     effects (digitsCode c L) m c = wd W (Nat.ofDigits 2 L : ℕ) ∧
       AgreeOutside {c} m (effects (digitsCode c L) m) := by
   induction L with
@@ -69,8 +66,8 @@ private theorem effects_digitsCode {c : ℤ} (hc : cONE ≠ c) (L : List ℕ) (h
     obtain ⟨val, A⟩ := ih fun x hx => hL x (by simp [hx])
     -- c := c + c
     rw [digitsCode, effects_append, effects_append, effects_cons, effects_nil, effect_add c val val]
-    have hd : d = 0 ∨ d = 1 := by have := hL d (by simp); omega
-    obtain rfl | rfl := hd
+
+    obtain rfl | rfl := (by have := hL d (by simp); omega : d = 0 ∨ d = 1)
     · refine ⟨?_, A.update (Set.mem_singleton c) _⟩
       rw [if_pos rfl, effects_nil, Function.update_self, Nat.ofDigits_cons]
       congr 1
@@ -80,18 +77,15 @@ private theorem effects_digitsCode {c : ℤ} (hc : cONE ≠ c) (L : List ℕ) (h
       rw [if_neg one_ne_zero, effects_cons, effects_nil, effect_add c (Function.update_self _ _ _)
         ((Function.update_of_ne hc _ _).trans (A.read hc hone))]
       refine ⟨?_, (A.update (Set.mem_singleton c) _).update (Set.mem_singleton c) _⟩
-      rw [Function.update_self, Nat.ofDigits_cons]
-      congr 1
-      push_cast
-      ring
+      grind [Nat.ofDigits_cons]
 
 /-! ## Expressions -/
 
-private theorem straight_instr (o : Op) (i j k : ℤ) : Straight (o.instr i j k) := by
+private theorem straight_instr (o : Op) i j k : Straight (o.instr i j k) := by
   cases o <;> trivial
 
 /-- The code of an expression only changes the memory. -/
-theorem straight_compileExpr : ∀ (e : Expr) (k : ℕ), ∀ i ∈ compileExpr e k, Straight i
+theorem straight_compileExpr : ∀ (e ) (k ), ∀ i ∈ compileExpr e k, Straight i
   | .const _, _ => straight_digitsCode _ _
   | .var _, _ => by simp [compileExpr, Straight]
   | .op o a b, k => List.forall_mem_append.2 ⟨List.forall_mem_append.2
@@ -99,7 +93,7 @@ theorem straight_compileExpr : ∀ (e : Expr) (k : ℕ), ∀ i ∈ compileExpr e
   | .load a, k => List.forall_mem_append.2 ⟨straight_compileExpr a k, by simp [Straight]⟩
 
 /-- The instruction of an operation, on cells that hold known numbers. -/
-private theorem effect_instr (o : Op) {m : ℤ → BitVec W} {j k a b : ℤ} (i : ℤ) (hj : m j = wd W a)
+private theorem effect_instr (o : Op) {m} {j k a b} i (hj : m j = wd W a)
     (hk : m k = wd W b) : effect (o.instr i j k) m = Function.update m i (wd W (o.eval a b)) := by
   cases o
   exacts [effect_add i hj hk, effect_sub i hj hk, effect_mul i hj hk]
@@ -108,7 +102,7 @@ variable {Z : Sizes W} {σ : State} {q : ℕ} {m : ℤ → BitVec W}
 
 /-- The code of an expression leaves its value in T_k and changes nothing but ADDR and the
 temporaries from T_k on. -/
-private theorem effects_compileExpr (I : Framed Z σ q m) (e : Expr) (k : ℕ) (hvars : e.vars ≤ Z.F)
+private theorem effects_compileExpr (I : Framed Z σ q m) e k (hvars : e.vars ≤ Z.F)
     (hs : e.Safe Z.lim σ) (hT : k + e.height ≤ 2 * Z.F + 1) :
     effects (compileExpr e k) m (cT k) = wd W (e.val σ) ∧
       AgreeOutside (Temps k Z.F) m (effects (compileExpr e k) m) := by
@@ -122,8 +116,8 @@ private theorem effects_compileExpr (I : Framed Z σ q m) (e : Expr) (k : ℕ) (
   | var x =>
     have hk := cT_mem_temps_of_height _ hT
     have hx : x < Z.F := hvars
-    have hN := Z.offsets_le
-    have hQ := I.high
+    have  := Z.offsets_le
+    have  := I.high
     -- ADDR := FP - 2 x; T_k := the cell at ADDR
     rw [compileExpr, effects_cons, effects_cons, effects_nil,
       effect_sub cADDR I.rel.fp (I.rel.pool (2 * x) (by omega)), cStack_sub,
@@ -132,8 +126,8 @@ private theorem effects_compileExpr (I : Framed Z σ q m) (e : Expr) (k : ℕ) (
     rw [Function.update_self, Function.update_of_ne (by cells), I.rel.loc x hx, Expr.val]
   | op o a b iha ihb =>
     have hk := cT_mem_temps_of_height _ hT
-    have hha : a.height ≤ (Expr.op o a b).height := le_max_left _ _
-    have hhb : b.height + 1 ≤ (Expr.op o a b).height := le_max_right _ _
+    have  : a.height ≤ (Expr.op o a b).height := le_max_left _ _
+    have  : b.height + 1 ≤ (Expr.op o a b).height := le_max_right _ _
     obtain ⟨hwa, hwb⟩ := Expr.vars_op_le_iff.1 hvars
     obtain ⟨hsa, hsb, -⟩ := hs
     obtain ⟨va, Aa⟩ := iha I k hwa hsa (by omega)
@@ -148,7 +142,7 @@ private theorem effects_compileExpr (I : Framed Z σ q m) (e : Expr) (k : ℕ) (
     obtain ⟨hsa, haddr⟩ := hs
     obtain ⟨va, Aa⟩ := ih I k hvars hsa hT
     -- the address is not negative, so it is neither ADDR nor a temporary
-    have hnonneg : 0 ≤ a.val σ := haddr.1
+    have  := haddr.1
     -- T_k := the cell at T_k
     rw [compileExpr, effects_append, effects_cons, effects_nil,
       effect_load (cT k) va (Z.inRange_addr haddr), Aa.cell (by cells), I.rel.read haddr]
@@ -156,10 +150,8 @@ private theorem effects_compileExpr (I : Framed Z σ q m) (e : Expr) (k : ℕ) (
 
 /-- The code of an expression of width at most F, when there are F temporaries from T_k on, leaves
 its value in T_k and changes nothing but ADDR and the temporaries from T_k on. -/
-theorem effects_compileExpr_of_width (I : Framed Z σ q m) (e : Expr) (k : ℕ) (hw : e.width ≤ Z.F)
-    (hs : e.Safe Z.lim σ) (hk : k ≤ Z.F + 1) :
-    effects (compileExpr e k) m (cT k) = wd W (e.val σ) ∧
-      AgreeOutside (Temps k Z.F) m (effects (compileExpr e k) m) :=
+def effects_compileExpr_of_width (I : Framed Z σ q m) e k hw
+     hs (hk : k ≤ Z.F + 1) :=
   effects_compileExpr I e k (Expr.width_le_iff.1 hw).1 hs
     (by have := (Expr.width_le_iff.1 hw).2; omega)
 

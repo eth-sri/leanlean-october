@@ -5,6 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.FrontFacts
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.GridContracts
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Nodes
@@ -31,68 +34,52 @@ calls of the recursive procedure.
 
 namespace Light.Sec3.ChanHe
 
-open ThreeSumApsp ThreeSumApsp.ChanHe ThreeSumApsp.Spec Finset
+open ThreeSumApsp.ChanHe
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
 namespace RoundLocals
 
-/-- The local variables of round: the arguments β, β', b, nd, val, bt, Λ, A, n, f, cx, fr; then
-1 - b, A + n, A + 2n, and the sizes of the three sets. -/
-abbrev BETA : ℕ := 0
-@[inherit_doc BETA] abbrev BETA' : ℕ := 1
-@[inherit_doc BETA] abbrev BIT : ℕ := 2
-@[inherit_doc BETA] abbrev NVALUES : ℕ := 3
-@[inherit_doc BETA] abbrev VAL : ℕ := 4
-@[inherit_doc BETA] abbrev BITS : ℕ := 5
-@[inherit_doc BETA] abbrev LAM : ℕ := 6
-@[inherit_doc BETA] abbrev OUT0 : ℕ := 7
-@[inherit_doc BETA] abbrev NMAX : ℕ := 8
-@[inherit_doc BETA] abbrev LEVELS : ℕ := 9
-@[inherit_doc BETA] abbrev CTX : ℕ := 10
-@[inherit_doc BETA] abbrev FREE : ℕ := 11
-@[inherit_doc BETA] abbrev NBIT : ℕ := 12
-@[inherit_doc BETA] abbrev OUT1 : ℕ := 13
-@[inherit_doc BETA] abbrev OUT2 : ℕ := 14
-@[inherit_doc BETA] abbrev SIZE0 : ℕ := 15
-@[inherit_doc BETA] abbrev SIZE1 : ℕ := 16
-@[inherit_doc BETA] abbrev SIZE2 : ℕ := 17
+abbrev BETA' := 1
 
 end RoundLocals
 
 open RoundLocals in
 /-- The three sets of the splitting are written to A, A + n and A + 2n. -/
-def roundSets (pPick : ℕ) : Stmt :=
-  .set NBIT (k 1 -' v BIT) ;;
-  .set OUT1 (v OUT0 +' v NMAX) ;;
-  .set OUT2 (v OUT1 +' v NMAX) ;;
-  .call pPick [v NVALUES, v VAL, v BITS, v LAM, v BETA, v BIT, v BETA', k 0, k 0, v OUT0] SIZE0 ;;
-  .call pPick [v NVALUES, v VAL, v BITS, v LAM, v BETA, v NBIT, v BETA', k 0, k 1, v OUT1] SIZE1 ;;
-  .call pPick [v NVALUES, v VAL, v BITS, v LAM, v BETA, v NBIT, v BETA', k 1, k 1, v OUT2] SIZE2
+def roundSets (pPick : ℕ)  :=
+  .set 12 (k 1 -' v 2) ;;
+  .set 13 (v 7 +' v 8) ;;
+  .set 14 (v 13 +' v 8) ;;
+  .call pPick [v 3, v 4, v 5, v 6, v 0, v 2, v BETA', k 0, k 0, v 7] 15 ;;
+  .call pPick [v 3, v 4, v 5, v 6, v 0, v 12, v BETA', k 0, k 1, v 13] 16 ;;
+  .call pPick [v 3, v 4, v 5, v 6, v 0, v 12, v BETA', k 1, k 1, v 14] 17
 
-open RoundLocals in
+
 /-- round(β, β', b, nd, val, bt, Λ, A, n, f, cx, fr), over the procedures number pPick and pNodes:
 the three sets are written, and the recursive procedure is called on them. -/
-def roundBody (pPick pNodes : ℕ) : Stmt :=
+def roundBody (pPick pNodes : ℕ)  :=
   roundSets pPick ;;
-  .call pNodes [v LEVELS, v OUT0, v SIZE0, v OUT1, v SIZE1, v OUT2, v SIZE2, v CTX, v FREE] 0
+  .call pNodes [v 9, v 7, v 15, v 13, v 16, v 14, v 17, v 10, v 11] 0
 
 /-- The recursive procedure makes at most `2 · 3^f` calls. -/
-theorem ChRound.treeCalls_le_pow (Q : Finset ℕ) (Λ f : ℕ) (S₁ S₂ S₃ : Finset ℤ) :
+theorem ChRound.treeCalls_le_pow Q Λ f S₁ S₂ S₃ :
     treeCalls Q Λ f S₁ S₂ S₃ ≤ 2 * 3 ^ f := by
-  have hcalls := treeCalls_le Q Λ f S₁ S₂ S₃
-  have hnodes := length_nodes_le Q Λ f S₁ S₂ S₃
+  have  := treeCalls_le Q Λ f S₁ S₂ S₃
+  have  := length_nodes_le Q Λ f S₁ S₂ S₃
   omega
 
-section front
+section
 
-variable {μ μ' : ℕ → ℤ} {a : FrontArgs}
+variable {μ μ' : Light.Memory} {a : FrontArgs}
 
+variable (h : FrontMem μ a)
+
+include h in
 /-- What the memory holds while the splittings are run through is kept if, below the free pointer,
 only the 3n cells from A change. -/
-theorem FrontMem.keptBut (h : FrontMem μ a)
+theorem FrontMem.keptBut
     (hk : KeptBut μ μ' a.fr a.A (3 * a.n)) : FrontMem μ' a := by
-  have keep : ∀ s len : ℕ, s + len ≤ a.fr → Apart a.A (3 * a.n) s len →
+  have keep : ∀ s len , s + len ≤ a.fr → Apart a.A (3 * a.n) s len →
       ∀ i < len, μ' (s + i) = μ (s + i) := fun s len hb hap i hi =>
     hk _ ⟨by omega, by omega⟩
   exact { h with
@@ -101,27 +88,28 @@ theorem FrontMem.keptBut (h : FrontMem μ a)
       (by rw [← h.lenD, ← length_bitTable a.V]; exact hi)
     ctx := Seg.congr h.ctx fun i hi => keep a.cx 6 h.belowCx h.apartCx i (by simpa using hi)
     primes := ⟨h.primes.1, h.primes.2.congr fun i hi =>
-      keep a.pr a.np h.belowPr h.apartPr i (by rw [h.primes.1]; simpa using hi)⟩
+      keep a.pr a.np h.belowPr h.apartPr i (by ram_arith)⟩
     zero := fun i hi => (keep a.cnt (a.m * a.m) h.belowCnt h.apartCnt i hi).trans (h.zero i hi) }
 
 /-- The same if only the 3n cells from A change at all. -/
-theorem FrontMem.of_sameOutside (h : FrontMem μ a)
-    (hs : SameOutside μ μ' a.A (3 * a.n)) : FrontMem μ' a :=
+def FrontMem.of_sameOutside (h : FrontMem μ a)
+    (hs : SameOutside μ μ' a.A (3 * a.n)) :=
   h.keptBut (SameOn.mono hs fun _ hb => hb.2)
 
+include h in
 /-- pick, called for the distinct values, with the output in one of the three parts of the 3n
 cells from A. -/
-theorem FrontMem.pick_meets (h : FrontMem μ a) {pPick : ℕ}
-    (hPick : PickSpec lim P pPick) {β β' o : ℕ} (hβ : β < a.Λ) (hβ' : β' < a.Λ) (x x' two : ℤ)
+theorem FrontMem.pick_meets  {pPick}
+    (hPick : PickSpec lim P pPick) {β β' o} (hβ : β < a.Λ) (hβ' : β' < a.Λ) x x' two
     (ho : o + a.n ≤ 3 * a.n) (hfr : a.fr ≤ lim.space) (hw : (lim.space : ℤ) ≤ lim.word)
     (hword : (8 : ℤ) ≤ lim.word) :
-    Meets lim P pPick d [a.nd, a.val, a.bt, a.Λ, β, x, β', x', two, (a.A + o : ℕ)] μ (tPick a.nd)
+    Meets lim P pPick d [a.nd, a.val, a.bt, a.Λ, β, x, β', x', two, a.A + o] μ (tPick a.nd)
       fun r μ' =>
-      r = ((pickList a.Λ β β' x x' two a.D (bitTable a.V a.Λ a.D)).length : ℤ) ∧
+      r = (pickList a.Λ β β' x x' two a.D (bitTable a.V a.Λ a.D)).length ∧
         Seg μ' (a.A + o) (pickList a.Λ β β' x x' two a.D (bitTable a.V a.Λ a.D)) ∧
         SameOutside μ μ' (a.A + o) a.nd := by
   light_facts h
-  have hrows : a.D.length * a.Λ = a.nd * a.Λ := by rw [h.lenD]
+  have  : a.D.length * a.Λ = a.nd * a.Λ := by rw [h.lenD]
   rw [← h.lenD]
   exact hPick d a.val a.bt (a.A + o) a.Λ β β' x x' two a.D _ μ {
     lenTable := length_bitTable a.V a.Λ a.D
@@ -137,10 +125,11 @@ theorem FrontMem.pick_meets (h : FrontMem μ a) {pPick : ℕ}
     space_le := hw
     word := hword }
 
+include h in
 /-- Three subsets of the distinct values in the three parts of the 3n cells from A, with the rest of
 the memory, are the memory of a node. -/
-theorem FrontMem.nodeMem (h : FrontMem μ a)
-    {k₁ k₂ k₃ : ℕ} {S₁ S₂ S₃ : Finset ℤ} (h₁ : SetAt μ a.A k₁ S₁) (h₂ : SetAt μ (a.A + a.n) k₂ S₂)
+theorem FrontMem.nodeMem
+    {k₁ k₂ k₃} {S₁ S₂ S₃} (h₁ : SetAt μ a.A k₁ S₁) (h₂ : SetAt μ (a.A + a.n) k₂ S₂)
     (h₃ : SetAt μ (a.A + a.n + a.n) k₃ S₃) (hk₁ : k₁ ≤ a.n) (hk₂ : k₂ ≤ a.n) (hk₃ : k₃ ≤ a.n)
     (hS₁ : S₁ ⊆ a.D.toFinset) (hS₂ : S₂ ⊆ a.D.toFinset) (hS₃ : S₃ ⊆ a.D.toFinset) :
     NodeMem μ ⟨a.toEnv, ⟨a.A, k₁, S₁⟩, ⟨a.A + a.n, k₂, S₂⟩, ⟨a.A + a.n + a.n, k₃, S₃⟩⟩ := by
@@ -153,22 +142,22 @@ theorem FrontMem.nodeMem (h : FrontMem μ a)
 
 /-- **The three sets of the splitting** are written, and with the rest of the memory they are the
 memory of a node. -/
-theorem roundSets_ends (hF : FrontMem μ a) {pPick : ℕ}
-    (hPick : PickSpec lim P pPick) {β β' f : ℕ} (hβ : β < a.Λ) (hβ' : β' < a.Λ) (v : Bool)
+theorem roundSets_ends (hF : FrontMem μ a) {pPick}
+    (hPick : PickSpec lim P pPick) {β β' f : ℕ} (hβ : β < a.Λ) (hβ' : β' < a.Λ) v
     (hfr : a.fr ≤ lim.space) (hw : (lim.space : ℤ) ≤ lim.word) (hword : (8 : ℤ) ≤ lim.word)
     (hd : d < lim.depth) :
     Ends lim P d (roundSets pPick)
       ⟨frame [β, β', if v then 1 else 0, a.nd, a.val, a.bt, a.Λ, a.A, a.n, f, a.cx, a.fr], μ⟩
         (48 + 3 * tPick a.nd)
-      fun σ' => ∃ (k₁ k₂ k₃ : ℕ) (μ' : ℕ → ℤ), SameOutside μ μ' a.A (3 * a.n) ∧
+      fun σ' => ∃ (k₁ k₂ k₃ : ℕ) (μ' : Light.Memory), SameOutside μ μ' a.A (3 * a.n) ∧
         NodeMem μ' ⟨a.toEnv, ⟨a.A, k₁, splitA a.V β v a.D.toFinset⟩,
           ⟨a.A + a.n, k₂, splitB a.V β β' v false a.D.toFinset⟩,
           ⟨a.A + a.n + a.n, k₃, splitB a.V β β' v true a.D.toFinset⟩⟩ ∧
         σ' = ⟨frame [β, β', if v then 1 else 0, a.nd, a.val, a.bt, a.Λ, a.A, a.n, f, a.cx, a.fr,
-          if !v then 1 else 0, (a.A + a.n : ℕ), (a.A + a.n + a.n : ℕ), k₁, k₂, k₃], μ'⟩ := by
-  have hA := hF.belowA
+          if !v then 1 else 0, a.A + a.n, a.A + a.n + a.n, k₁, k₂, k₃], μ'⟩ := by
+  have  := hF.belowA
   have hndn := hF.nd_le
-  have hlen : ∀ x x' two, (pickList a.Λ β β' x x' two a.D (bitTable a.V a.Λ a.D)).length ≤ a.n :=
+  have hlen :=
     fun x x' two => (length_pickList_le a.Λ β β' x x' two a.D (bitTable a.V a.Λ a.D)).trans
       (hF.lenD ▸ hndn)
   -- b' := 1 - b; A₁ := A + n; A₂ := A₁ + n
@@ -203,15 +192,15 @@ theorem roundSets_ends (hF : FrontMem μ a) {pPick : ℕ}
       ⟨_, rfl, Nat.add_assoc a.A a.n a.n ▸ seg₃, nodup₃, set₃⟩ hlen₁ hlen₂ (hlen _ _ _)
       (Finset.filter_subset _ _) (Finset.filter_subset _ _) (Finset.filter_subset _ _), rfl⟩
 
-end front
+end
 
 /-- The time of round covers three calls of pick and the recursion tree: 48 steps and the three
 calls for roundSets, 11 steps and the tree for the last call. -/
-theorem le_tRound (T : ℕ → ℕ → ℕ) {n nd : ℕ} (hnd : nd ≤ n) (V m np Λ f : ℕ)
-    (S₁ S₂ S₃ : Finset ℤ) :
+theorem le_tRound T {n nd} (hnd : nd ≤ n) V m np Λ f
+     S₁ S₂ S₃ :
     59 + 3 * tPick nd + tNodes T n V m np (treeCalls (Nat.primesLE m) Λ f S₁ S₂ S₃)
       ≤ tRound T n V m np f := by
-  have hpick : tPick nd ≤ tPick n := by simp only [tPick]; omega
+  have  : tPick nd ≤ tPick n := by simp only [tPick]; omega
   have htree := Nat.mul_le_mul_right (tNode T n V m np + 60)
     (ChRound.treeCalls_le_pow (Nat.primesLE m) Λ f S₁ S₂ S₃)
   simp only [tRound, tTree, tNodes] at htree ⊢
@@ -219,7 +208,7 @@ theorem le_tRound (T : ℕ → ℕ → ℕ) {n nd : ℕ} (hnd : nd ≤ n) (V m n
 
 /-- **round meets its specification**, in every program that holds its body and meets the
 specifications of the two routines that it calls. -/
-theorem round_spec {p pPick pNodes : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ → Need}
+theorem round_spec {p pPick pNodes} {T} {r}
     (hP : P[p]? = some (roundBody pPick pNodes)) (hPick : PickSpec lim P pPick)
     (hN : NodesSpec lim P pNodes T r) : RoundSpec lim P p T r := by
   intro a f β β' v μ hF hβ hβ' d H
@@ -230,24 +219,25 @@ theorem round_spec {p pPick pNodes : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ →
   have hdepth := H.ok.depth
   simp only [gridNeed] at hcells hword hdepth
   push_cast at hword
-  have htime := le_tRound T hF.nd_le a.V a.m a.np a.Λ f (splitA a.V β v a.D.toFinset)
+  have  := le_tRound T hF.nd_le a.V a.m a.np a.Λ f (splitA a.V β v a.D.toFinset)
     (splitB a.V β β' v false a.D.toFinset) (splitB a.V β β' v true a.D.toFinset)
   -- the three sets
   light_piece (roundSets_ends hF hPick hβ hβ' v (by omega) hw (by omega)
     (by omega)) with _ ⟨k₁, k₂, k₃, μ₁, out, hmem, rfl⟩
   -- return nodes(f, A, n₀, A₁, n₁, A₂, n₂, cx, fr)
   light_call (hN f _ a.Λ a.cx μ₁ (d + 1)
-    { mem := hmem
+    { H with
+      mem := hmem
       ctx := (hF.of_sameOutside out).ctx
       belowCtx := hF.belowCx
       apartCtx := hF.cntCx
-      V_pos := H.V_pos
-      m_pos := H.m_pos
-      lam := H.lam
-      primes := H.primes
+
+
+
+
       ok := { word := by dsimp only; omega, cells := hcells, space := hw,
               depth := by dsimp only; omega } })
     using NodeArgs.calls with _ μ₂ ⟨rfl, kept⟩
-  exact ⟨by simp [SplitYes, TreeYes], out.then kept fun b hb => ⟨hb.2, hb.1⟩⟩
+  exact ⟨rfl, out.then kept fun b hb => ⟨hb.2, hb.1⟩⟩
 
 end Light.Sec3.ChanHe

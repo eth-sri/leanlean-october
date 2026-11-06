@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import PaperStatements
 
 /-!
@@ -29,15 +31,13 @@ namespace ThreeSumApsp
 namespace Theorem21
 
 /-- The end of a walk that is followed by a second walk. -/
-private theorem walkEnd_append {n : ℕ} (i : Fin n) (p q : List (Fin n)) :
+private theorem walkEnd_append {n} i (p q : List (Fin n)) :
     walkEnd i (p ++ q) = walkEnd (walkEnd i p) q := by
-  induction p generalizing i with
-  | nil => rfl
-  | cons j p ih => exact ih j
+  induction p generalizing i <;> aesop
 
 /-- The weight of a walk that is followed by a second walk is the sum of the two weights. -/
-private theorem walkWeight_append {R : Type} [AddCommGroup R] {n : ℕ}
-    (w : Fin n → Fin n → WithTop R) (i : Fin n) (p q : List (Fin n)) :
+private theorem walkWeight_append {R} [AddCommGroup R] {n}
+    (w : Fin n → Fin n → WithTop R) i p q :
     walkWeight w i (p ++ q) = walkWeight w i p + walkWeight w (walkEnd i p) q := by
   induction p generalizing i with
   | nil => simp [walkWeight, walkEnd]
@@ -45,8 +45,8 @@ private theorem walkWeight_append {R : Type} [AddCommGroup R] {n : ℕ}
 
 /-- Every entry of the matrix after `t` squarings is the weight of a walk with at most `2^t` edges.
 -/
-theorem exists_walk_of_entry {R : Type} [AddCommGroup R] [LinearOrder R] {n : ℕ}
-    (w : Fin n → Fin n → WithTop R) (t : ℕ) (i j : Fin n) :
+theorem exists_walk_of_entry {R} [AddCommGroup R] [LinearOrder R] {n}
+    (w : Fin n → Fin n → WithTop R) t i j :
     ∃ rest : List (Fin n), walkEnd i rest = j ∧ rest.length ≤ 2 ^ t ∧
       walkWeight w i rest = minPlusSquares w t i j := by
   induction t generalizing i j with
@@ -61,15 +61,14 @@ theorem exists_walk_of_entry {R : Type} [AddCommGroup R] [LinearOrder R] {n : �
     obtain ⟨p, hpend, hplen, hpweight⟩ := ih i k
     obtain ⟨q, hqend, hqlen, hqweight⟩ := ih k j
     refine ⟨p ++ q, ?_, ?_, ?_⟩
-    · rw [walkEnd_append, hpend, hqend]
-    · rw [List.length_append, pow_succ]
-      omega
+    · grind [walkEnd_append]
+    · simp_all <;> omega
     · rw [walkWeight_append, hpend, hpweight, hqweight]
       exact hk.symm
 
 /-- A walk with at least `n` edges visits some vertex twice: it consists of a walk `p`, a closed
 walk `c` with at least one edge, and a walk `q`. -/
-private theorem exists_closed_piece {n : ℕ} (i : Fin n) (rest : List (Fin n))
+private theorem exists_closed_piece {n} i rest
     (h : n ≤ rest.length) :
     ∃ p c q : List (Fin n),
       rest = p ++ c ++ q ∧ c ≠ [] ∧ walkEnd (walkEnd i p) c = walkEnd i p := by
@@ -81,45 +80,38 @@ private theorem exists_closed_piece {n : ℕ} (i : Fin n) (rest : List (Fin n))
     rcases lt_or_gt_of_ne (Fin.val_ne_of_ne hne) with hlt | hlt
     · exact ⟨a, b, hlt, by omega, hrep⟩
     · exact ⟨b, a, hlt, by omega, hrep.symm⟩
-  have htake : rest.take b = rest.take a ++ (rest.drop a).take (b - a) := by
-    rw [← List.take_add, Nat.add_sub_cancel' hab.le]
-  refine ⟨rest.take a, (rest.drop a).take (b - a), rest.drop b, ?_, ?_, ?_⟩
-  · rw [← htake, List.take_append_drop]
-  · refine List.ne_nil_of_length_pos ?_
-    rw [List.length_take, List.length_drop]
-    omega
-  · rw [← walkEnd_append, ← htake, hrep]
+
+  grind [List.take_append_drop, walkEnd_append]
 
 /-- If no closed walk has negative weight, every walk can be replaced by a walk with the same ends,
 fewer than `n` edges, no more edges than before, and no larger weight: cut out closed pieces. -/
-theorem exists_short_walk {R : Type} [AddCommGroup R] [LinearOrder R] [IsOrderedAddMonoid R] {n : ℕ}
-    (w : Fin n → Fin n → WithTop R) (hw : NoNegativeCycle w) (i : Fin n) (rest : List (Fin n)) :
+theorem exists_short_walk {R} [AddCommGroup R] [LinearOrder R] [IsOrderedAddMonoid R] {n}
+    (w : Fin n → Fin n → WithTop R) (hw : NoNegativeCycle w) i rest :
     ∃ rest' : List (Fin n), walkEnd i rest' = walkEnd i rest ∧ rest'.length < n ∧
       rest'.length ≤ rest.length ∧ walkWeight w i rest' ≤ walkWeight w i rest := by
   induction hlen : rest.length using Nat.strong_induction_on generalizing rest with
   | _ len ih =>
     rcases lt_or_ge rest.length n with hshort | hlong
-    · exact ⟨rest, rfl, hshort, hlen.le, le_rfl⟩
+    · grind
     · -- The walk is `p`, then the closed walk `c`, then `q`; go on with `p`, then `q`.
       obtain ⟨p, c, q, rfl, hc, hclosed⟩ := exists_closed_piece i rest hlong
-      have hend : walkEnd i (p ++ q) = walkEnd i (p ++ c ++ q) := by
-        simp only [walkEnd_append, hclosed]
-      have hweight : walkWeight w i (p ++ q) ≤ walkWeight w i (p ++ c ++ q) := by
+      have  : walkEnd i (p ++ q) = walkEnd i (p ++ c ++ q) := by
+        grind [walkEnd_append]
+      have  : walkWeight w i (p ++ q) ≤ walkWeight w i (p ++ c ++ q) := by
         simp only [walkWeight_append, walkEnd_append, hclosed]
         gcongr
         exact le_add_of_nonneg_right (hw _ _ hclosed)
-      have hless : (p ++ q).length < len := by
+      have  : (p ++ q).length < len := by
         have := List.length_pos_iff.mpr hc
         simp only [List.length_append] at hlen ⊢
         omega
-      obtain ⟨rest', hend', hlt, hle, hweight'⟩ := ih _ hless (p ++ q) rfl
-      exact ⟨rest', hend'.trans hend, hlt, by omega, hweight'.trans hweight⟩
+      grind
 
 /-- If no closed walk has negative weight, the entry after `t` squarings is at most the weight of
 every walk with at most `2^t` edges. -/
-theorem entry_le_walkWeight {R : Type} [AddCommGroup R] [LinearOrder R] [IsOrderedAddMonoid R]
-    {n : ℕ} (w : Fin n → Fin n → WithTop R) (hw : NoNegativeCycle w) (t : ℕ) (i : Fin n)
-    (rest : List (Fin n)) (hlen : rest.length ≤ 2 ^ t) :
+theorem entry_le_walkWeight {R} [AddCommGroup R] [LinearOrder R] [IsOrderedAddMonoid R]
+    {n} (w : Fin n → Fin n → WithTop R) (hw : NoNegativeCycle w) t i
+     rest (hlen : rest.length ≤ 2 ^ t) :
     minPlusSquares w t i (walkEnd i rest) ≤ walkWeight w i rest := by
   induction t generalizing i rest with
   | zero =>
@@ -128,9 +120,7 @@ theorem entry_le_walkWeight {R : Type} [AddCommGroup R] [LinearOrder R] [IsOrder
     | [j], _ =>
       by_cases hij : i = j
       · -- The diagonal entry is 0, and a loop has weight at least 0.
-        subst hij
-        have h := hw i [i] rfl
-        simpa [walkEnd, minPlusSquares, weightMatrix] using h
+        ram_aesop [walkEnd, minPlusSquares, weightMatrix]
       · simp [walkWeight, walkEnd, minPlusSquares, weightMatrix, hij]
     | _ :: _ :: _, h => simp at h
   | succ t ih =>
@@ -152,13 +142,13 @@ theorem entry_le_walkWeight {R : Type} [AddCommGroup R] [LinearOrder R] [IsOrder
 
 /-- If the edge weights are at most `U` in absolute value, a walk of finite weight with `k` edges
 has weight at most `kU` in absolute value. -/
-theorem abs_walkWeight_le {R : Type} [AddCommGroup R] [LinearOrder R] [IsOrderedAddMonoid R] {n : ℕ}
-    (w : Fin n → Fin n → WithTop R) (U : R) (hwU : EdgeWeightsBoundedBy w U) (i : Fin n)
+theorem abs_walkWeight_le {R} [AddCommGroup R] [LinearOrder R] [IsOrderedAddMonoid R] {n}
+     w U (hwU : EdgeWeightsBoundedBy w U) i
     (rest : List (Fin n)) (x : R) (hx : walkWeight w i rest = (x : WithTop R)) :
     |x| ≤ rest.length • U := by
   induction rest generalizing i x with
   | nil =>
-    obtain rfl : x = 0 := (WithTop.coe_injective (hx : ((0 : R) : WithTop R) = x)).symm
+    obtain rfl : x = 0 := WithTop.coe_injective hx.symm
     simp
   | cons j rest ih =>
     obtain ⟨a, b, ha, hb, hab⟩ := WithTop.add_eq_coe.mp hx
@@ -171,8 +161,8 @@ end Theorem21
 the weight matrix `⌈log₂ n⌉` times in the (min,+)-product yields the distance matrix.
 (`Nat.clog 2 n` is `⌈log₂ n⌉`.)  Stated for weights in any linearly ordered commutative group, so
 that it covers integer and real weights. -/
-theorem theorem_21b_repeated_squaring {R : Type} [AddCommGroup R] [LinearOrder R]
-    [IsOrderedAddMonoid R] {n : ℕ} (w : Fin n → Fin n → WithTop R) (hw : NoNegativeCycle w) :
+theorem theorem_21b_repeated_squaring {R} [AddCommGroup R] [LinearOrder R]
+    [IsOrderedAddMonoid R] {n} (w : Fin n → Fin n → WithTop R) (hw : NoNegativeCycle w) :
     IsDistanceMatrix w (minPlusSquares w (Nat.clog 2 n)) := by
   intro i j
   constructor
@@ -181,9 +171,7 @@ theorem theorem_21b_repeated_squaring {R : Type} [AddCommGroup R] [LinearOrder R
   · rintro x ⟨rest, rfl, rfl⟩
     -- A shortest walk needs fewer than `n ≤ 2^⌈log₂ n⌉` edges.
     obtain ⟨rest', hend, hlt, -, hle⟩ := Theorem21.exists_short_walk w hw i rest
-    rw [← hend]
-    exact (Theorem21.entry_le_walkWeight w hw _ i rest'
-      (hlt.le.trans (Nat.le_pow_clog (by norm_num) n))).trans hle
+    grind [Theorem21.entry_le_walkWeight, Nat.le_pow_clog]
 
 /-- For **Theorem 21(b)**, repeated squaring: a bound on the entries.  If the edge weights have
 absolute value at most `U`, every finite entry of every matrix of the repeated squaring has absolute
@@ -192,9 +180,9 @@ value at most `nU`; with `U = n^ν` this is `n^{ν+1}`.
 NOTE.  A missing edge has the weight `⊤` here, while the (min,+)-product of Theorem 21(b) is on
 integer matrices with entries of absolute value at most `U` (`IsMinPlusProduct`).  Nothing is stated
 here about replacing `⊤` by a large number. -/
-theorem theorem_21b_entries_bounded {R : Type} [AddCommGroup R] [LinearOrder R]
-    [IsOrderedAddMonoid R] {n : ℕ} (w : Fin n → Fin n → WithTop R) (hw : NoNegativeCycle w) (U : R)
-    (hU : 0 ≤ U) (hwU : EdgeWeightsBoundedBy w U) (t : ℕ) (i j : Fin n) (x : R)
+theorem theorem_21b_entries_bounded {R} [AddCommGroup R] [LinearOrder R]
+    [IsOrderedAddMonoid R] {n} w (hw : NoNegativeCycle w) U
+    (hU : 0 ≤ U) (hwU : EdgeWeightsBoundedBy w U) t (i j : Fin n) (x : R)
     (hx : minPlusSquares w t i j = (x : WithTop R)) : |x| ≤ n • U := by
   -- The entry is the weight of a walk with at most `2^t` edges.  Cutting it short gives a walk with
   -- fewer than `n` edges, whose weight is no larger, and no smaller because the entry is a minimum.
@@ -202,7 +190,7 @@ theorem theorem_21b_entries_bounded {R : Type} [AddCommGroup R] [LinearOrder R]
   obtain ⟨rest', hend', hlt, hlen', hle⟩ := Theorem21.exists_short_walk w hw i rest
   have hge := Theorem21.entry_le_walkWeight w hw t i rest' (hlen'.trans hlen)
   rw [hend', hend, hx] at hge
-  have hshort : walkWeight w i rest' = (x : WithTop R) :=
+  have hshort :=
     le_antisymm (hle.trans (hweight.trans hx).le) hge
   exact (Theorem21.abs_walkWeight_le w U hwU i rest' x hshort).trans
     (nsmul_le_nsmul_left hU hlt.le)

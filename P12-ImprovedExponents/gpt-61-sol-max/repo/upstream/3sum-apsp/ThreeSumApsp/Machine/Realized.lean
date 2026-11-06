@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Machine.Solving
 
 /-!
@@ -17,7 +18,7 @@ problem is solved on the word RAM, in its input layout, within `c T + c` steps.
 
 @[expose] public section
 
-open EndStatement (Instr)
+open EndStatement
 
 namespace ThreeSumApsp.WordRam
 
@@ -25,8 +26,8 @@ namespace ThreeSumApsp.WordRam
 sizes, 0 included: for every exponent `κ` some program solves all instances whose numbers are
 bounded by `U = n^κ`, within `c max(T, 0) + c` steps. (A running time `T n U` says nothing at
 `n = 0`.) -/
-def Realized (Q : EndStatement.Problem) (T : ℕ → ℝ → ℝ) : Prop :=
+def Realized Q (T : ℕ → ℝ → ℝ) :=
   ∀ κ : ℕ, ∃ (P : List Instr) (b : ℕ) (c : ℝ), 0 ≤ c ∧
-    Solves (ofEnd Q) P b (fun x => x.U = x.n ^ κ) (fun x => c * max (T x.n x.U) 0 + c)
+    Solves (ofEnd Q) P b (fun x => x.U = x.n ^ κ) fun x => c * max (T x.n x.U) 0 + c
 
 end ThreeSumApsp.WordRam

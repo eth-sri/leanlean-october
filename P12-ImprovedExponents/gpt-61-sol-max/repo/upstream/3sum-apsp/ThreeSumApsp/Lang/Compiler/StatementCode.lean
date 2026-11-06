@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Lang.Syntax
 public import ThreeSumApsp.Machine.Steps
 public import Mathlib.Data.Nat.Digits.Defs
@@ -55,45 +57,45 @@ code (`length_compileExpr`, `length_compileCond`, `length_compileStmt`).
 
 namespace Light.Compiler
 
-open EndStatement (Instr)
+open EndStatement
 
 /-! ## Cells
 
 The names of the registers are written in capitals, as in the comments on the code. -/
 
 /-- The cell from which a whole program takes its first argument. -/
-def cARG1 : ℤ := -1
+def cARG1 := -1
 /-- The cell from which a whole program takes its second argument. -/
-def cARG2 : ℤ := -2
+def cARG2 := -2
 /-- The cell into which a whole program puts its result. -/
-def cRESULT : ℤ := -3
+def cRESULT := -3
 /-- The register that holds 1. -/
-def cONE : ℤ := -5
+def cONE := -5
 /-- The register that holds 0. -/
-def cZERO : ℤ := -7
+def cZERO := -7
 /-- The register that holds -1; an unconditional jump branches on it. -/
-def cNEG : ℤ := -9
+def cNEG := -9
 /-- The frame pointer FP: the address of local variable 0 of the running procedure. -/
-def cFP : ℤ := -11
+def cFP := -11
 /-- The register ADDR: the address for the next load or store of a local variable. -/
-def cADDR : ℤ := -13
+def cADDR := -13
 /-- The register RET: the result of the procedure that has just returned. -/
-def cRET : ℤ := -15
+def cRET := -15
 /-- The register RR: the position to return to, counted down by the dispatcher. -/
-def cRR : ℤ := -17
+def cRR := -17
 /-- The register NFP: the frame pointer of the procedure that is about to be called. -/
-def cNFP : ℤ := -19
+def cNFP := -19
 /-- The register D: the difference that a test branches on. -/
-def cD : ℤ := -21
+def cD := -21
 /-- The temporaries. -/
-def cT (k : ℕ) : ℤ := -(23 + 4 * (k : ℤ))
+def cT (k : ℕ) := -(23 + 4 * (k : ℤ))
 /-- The pool of numbers. -/
-def cPool (n : ℕ) : ℤ := -(25 + 4 * (n : ℤ))
+def cPool (n : ℕ) := -(25 + 4 * (n : ℤ))
 /-- The cell number j of the stack. -/
-def cStack (j : ℕ) : ℤ := -(2 * (j : ℤ))
+def cStack (j : ℕ) := -2 * (j : ℤ)
 /-- The frame of the outermost statement of a whole program: the first whose cells lie beyond the
 cells of the arguments and the result. -/
-def mainFrame : ℕ := 4
+def mainFrame := 4
 
 /-! ## Expressions and tests -/
 
@@ -107,12 +109,12 @@ def _root_.Light.Op.instr : Op → ℤ → ℤ → ℤ → Instr
 first: the number of the higher digits, doubled, plus the lowest digit. -/
 def digitsCode (c : ℤ) : List ℕ → List Instr
   | [] => [.sub c c c]
-  | d :: L => digitsCode c L ++ [.add c c c] ++ (if d = 0 then [] else [.add c c cONE])
+  | d :: L => digitsCode c L ++ [.add c c c] ++ if d = 0 then [] else [.add c c cONE]
 
 /-- The length of `digitsCode c L`. -/
-def digitsLen : List ℕ → ℕ
+def digitsLen
   | [] => 1
-  | d :: L => digitsLen L + 1 + (if d = 0 then 0 else 1)
+  | d :: L => digitsLen L + 1 + if d = 0 then 0 else 1
 
 /-- Code that leaves the value of the expression in the temporary T_k, using only T_k, T_{k+1}, …
 and ADDR.  A constant is built from its binary digits, in at most 2 log₂ n + 3 instructions. -/
@@ -148,7 +150,7 @@ def _root_.Light.Cond.size : Cond → ℕ
 /-! ## Statements -/
 
 /-- What the code of a statement needs to know about the whole program. -/
-structure CodeLayout : Type where
+structure CodeLayout where
   /-- The number of local variables of every frame. -/
   F : ℕ
   /-- The positions of the procedures. -/
@@ -173,16 +175,16 @@ def frameInit (F n : ℕ) : List Instr :=
 
 /-- The code of a call between the arguments and the jump to the procedure: the address of the new
 frame into NFP, its local variables, the position ret to return to, and FP := NFP. -/
-def newFrame (F n ret : ℕ) : List Instr :=
+def newFrame F n ret :=
   [.sub cNFP cFP (cPool (2 * (F + 1)))] ++ frameInit F n ++
     [.add cADDR cNFP (cPool 2), .store cADDR (cPool ret), .add cFP cNFP cZERO]
 
 /-- A call up to and including the jump to the procedure; ret is the position after the jump. -/
-def callCode (G : CodeLayout) (p : ℕ) (args : List Expr) (ret : ℕ) : List Instr :=
+def callCode (G : CodeLayout) p args ret :=
   argsCode args 0 ++ newFrame G.F args.length ret ++ [.bltz cNEG (G.entry.getD p 0)]
 
 /-- The length of a call up to and including the jump. -/
-def callSize (F : ℕ) (args : List Expr) : ℕ := argsSize args + 1 + 2 * F + 4
+def callSize F args := argsSize args + 1 + 2 * F + 4
 
 /-- The length of the code of a statement. -/
 def _root_.Light.Stmt.size (F : ℕ) : Stmt → ℕ
@@ -218,7 +220,7 @@ def epilogue (G : CodeLayout) : List Instr :=
     .add cFP cFP (cPool (2 * (G.F + 1))), .bltz cNEG G.disp]
 
 /-- The length of the return sequence. -/
-def epilogueSize : ℕ := 5
+def epilogueSize := 5
 
 /-- The dispatcher for the positions below n. -/
 def dispatcher (n : ℕ) : List Instr :=
@@ -226,15 +228,11 @@ def dispatcher (n : ℕ) : List Instr :=
 
 /-! ## Lengths -/
 
-private theorem length_digitsCode (c : ℤ) (L : List ℕ) : (digitsCode c L).length = digitsLen L := by
-  induction L with
-  | nil => rfl
-  | cons d L ih =>
-    simp only [digitsCode, digitsLen, List.length_append, ih, List.length_singleton]
-    split_ifs <;> rfl
+private theorem length_digitsCode c L : (digitsCode c L).length = digitsLen L := by
+  induction L <;> grind [digitsCode, digitsLen]
 
 /-- The code of an expression has the length defined on the text. -/
-theorem length_compileExpr (e : Expr) (k : ℕ) : (compileExpr e k).length = e.size := by
+theorem length_compileExpr e k : (compileExpr e k).length = e.size := by
   induction e generalizing k with
   | const n => exact length_digitsCode _ _
   | var x => rfl
@@ -242,41 +240,35 @@ theorem length_compileExpr (e : Expr) (k : ℕ) : (compileExpr e k).length = e.s
   | load a ih => simp [compileExpr, Expr.size, ih]
 
 /-- The code of a test has the length defined on the text. -/
-theorem length_compileCond (c : Cond) (l : ℕ) : (compileCond c l).length = c.size := by
+theorem length_compileCond c l : (compileCond c l).length = c.size := by
   cases c <;> simp +arith [compileCond, Cond.size, length_compileExpr]
 
 /-- The code for the arguments of a call has the length defined on the text. -/
-theorem length_argsCode (es : List Expr) (k : ℕ) : (argsCode es k).length = argsSize es := by
+theorem length_argsCode es k : (argsCode es k).length = argsSize es := by
   induction es generalizing k with
   | nil => rfl
   | cons e es ih => simp [argsCode, argsSize, length_compileExpr, ih]
 
 /-- Two instructions for each local variable of the new frame. -/
-private theorem length_frameInit (F n : ℕ) : (frameInit F n).length = 2 * F := by
+private theorem length_frameInit F n : (frameInit F n).length = 2 * F := by
   simp [frameInit, List.length_flatMap, Nat.mul_comm]
 
 /-- The code between the arguments and the jump has 2 F + 4 instructions. -/
-theorem length_newFrame (F n ret : ℕ) : (newFrame F n ret).length = 2 * F + 4 := by
-  simp +arith [newFrame, length_frameInit]
+theorem length_newFrame F n ret : (newFrame F n ret).length = 2 * F + 4 := by
+  grind [length_frameInit, newFrame]
 
 /-- A call up to its jump has the length defined on the text. -/
-private theorem length_callCode (G : CodeLayout) (p : ℕ) (args : List Expr) (ret : ℕ) :
+private theorem length_callCode G p args ret :
     (callCode G p args ret).length = callSize G.F args := by
-  simp +arith [callCode, callSize, length_argsCode, length_newFrame]
+  grind [length_argsCode, length_newFrame, callCode, callSize]
 
-theorem length_epilogue (G : CodeLayout) : (epilogue G).length = epilogueSize := rfl
+theorem length_epilogue G : (epilogue G).length = epilogueSize := rfl
 
 /-- The code of a statement has the length defined on the text. -/
-theorem length_compileStmt (G : CodeLayout) (s : Stmt) (pos : ℕ) :
+theorem length_compileStmt G s pos :
     (compileStmt G s pos).length = s.size G.F := by
-  induction s generalizing pos with
-  | skip => rfl
-  | set x e => simp [compileStmt, Stmt.size, length_compileExpr]
-  | store a e => simp +arith [compileStmt, Stmt.size, length_compileExpr]
-  | seq s t ihs iht => simp [compileStmt, Stmt.size, ihs, iht]
-  | ite c s t ihs iht => simp +arith [compileStmt, Stmt.size, ihs, iht, length_compileCond]
-  | «while» c s ih => simp +arith [compileStmt, Stmt.size, ih, length_compileCond]
-  | call p args x => simp [compileStmt, Stmt.size, length_callCode]
+  induction s generalizing pos <;>
+    simp_all +arith [compileStmt, Stmt.size, length_compileExpr, length_compileCond, length_callCode]
 
 end Compiler
 
@@ -303,7 +295,7 @@ def Expr.height : Expr → ℕ
   | .load a => a.height
 
 /-- The width of an expression: at least its variables and its temporaries. -/
-def Expr.width (e : Expr) : ℕ := max e.vars e.height
+def Expr.width (e : Expr) := max e.vars e.height
 
 /-- The width of a test: that of its two sides. -/
 def Cond.width : Cond → ℕ
@@ -311,7 +303,7 @@ def Cond.width : Cond → ℕ
   | .eq a b => max a.width b.width
 
 /-- The largest value of f on a list. -/
-def maxOf {α : Type} (f : α → ℕ) : List α → ℕ
+def maxOf {α : Type} (f : α → ℕ)
   | [] => 0
   | x :: l => max (f x) (maxOf f l)
 
@@ -326,11 +318,11 @@ def Stmt.width : Stmt → ℕ
   | .while c s => max c.width s.width
   | .call _ args x => max (x + 1) (max args.length (maxOf Expr.width args))
 
-section width
+section
 
 variable {F x p : ℕ} {o : Op} {a b e : Expr} {c : Cond} {s t : Stmt} {args : List Expr}
 
-theorem maxOf_le_iff {α : Type} {f : α → ℕ} {l : List α} : maxOf f l ≤ F ↔ ∀ y ∈ l, f y ≤ F := by
+theorem maxOf_le_iff {α} {f} {l : List α} : maxOf f l ≤ F ↔ ∀ y ∈ l, f y ≤ F := by
   induction l <;> simp [maxOf, *]
 
 theorem Expr.vars_op_le_iff : (Expr.op o a b).vars ≤ F ↔ a.vars ≤ F ∧ b.vars ≤ F := max_le_iff
@@ -359,6 +351,6 @@ theorem Stmt.width_call_le_iff :
     (Stmt.call p args x).width ≤ F ↔ x < F ∧ args.length ≤ F ∧ ∀ e ∈ args, e.width ≤ F := by
   simp only [Stmt.width, max_le_iff, maxOf_le_iff, Nat.succ_le_iff]
 
-end width
+end
 
 end Light

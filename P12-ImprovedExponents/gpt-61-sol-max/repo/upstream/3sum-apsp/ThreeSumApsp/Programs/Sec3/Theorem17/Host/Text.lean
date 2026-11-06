@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.ChoosePrime
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Loop
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Instances.Chunks
@@ -70,140 +72,57 @@ open ThreeSumApsp ThreeSumApsp.Spec
 calls: the two parameter procedures, sqrt, brute, scan, choosePrime, queryCapNat, ceilDiv, bitLen,
 dblTable, resid, residues, classes, chunks, hostLoop, the solver, writeX, writeY, scanPairs, and
 the procedures below choosePrime. -/
-structure Et17Nums : Type where
-  pD : ℕ
-  pG : ℕ
-  pSqrt : ℕ
-  pBrute : ℕ
-  pScan : ℕ
-  pChoose : ℕ
-  pCap : ℕ
-  pCeil : ℕ
-  pBitLen : ℕ
-  pDbl : ℕ
-  pResid : ℕ
-  pResidues : ℕ
-  pClasses : ℕ
-  pChunks : ℕ
-  pLoop : ℕ
-  pS : ℕ
-  pWriteX : ℕ
-  pWriteY : ℕ
-  pScanPairs : ℕ
+structure Et17Nums where
+  (pD pG pSqrt pBrute pScan pChoose pCap pCeil pBitLen pDbl pResid pResidues pClasses pChunks pLoop pS pWriteX pWriteY pScanPairs : ℕ)
   ch : ChNums
 
-namespace Et17
 
-/-- The locals of `et17`.  The arguments: `n`, `U`, the addresses of the three arrays of weights,
-and the free pointer (the table of doubles is there).  Then `D`, `g`, `s = ⌊√D⌋`, the prime `p`,
-`cap`, the number `q` of vertices of a piece, the number `h` of pieces, `len = bitLen U`, and `n²`.
-Then the addresses of the residues of `w(a,b)`, `w(b,c)`, `w(a,c)`, of the starts of the classes,
-the running places, the rows and the columns of the sorted pairs, the three components of the table
-of chunks, `X`, `Y`, the answers, and the solver's free pointer.  Then `n² + p`, the number of
-chunks, the number of instances, a flag (also the place for results that are not used), and `n D`.
--/
-abbrev Size : ℕ := 0
-@[inherit_doc Size] abbrev Bound : ℕ := 1
-@[inherit_doc Size] abbrev AdrAB : ℕ := 2
-@[inherit_doc Size] abbrev AdrBC : ℕ := 3
-@[inherit_doc Size] abbrev AdrAC : ℕ := 4
-@[inherit_doc Size] abbrev Free : ℕ := 5
-@[inherit_doc Size] abbrev ParD : ℕ := 6
-@[inherit_doc Size] abbrev ParG : ℕ := 7
-@[inherit_doc Size] abbrev RootD : ℕ := 8
-@[inherit_doc Size] abbrev ThePrime : ℕ := 9
-@[inherit_doc Size] abbrev Cap : ℕ := 10
-@[inherit_doc Size] abbrev PieceLen : ℕ := 11
-@[inherit_doc Size] abbrev NumPieces : ℕ := 12
-@[inherit_doc Size] abbrev Bits : ℕ := 13
-@[inherit_doc Size] abbrev SizeSq : ℕ := 14
-@[inherit_doc Size] abbrev ResAB : ℕ := 16
-@[inherit_doc Size] abbrev ResBC : ℕ := 17
-@[inherit_doc Size] abbrev ResAC : ℕ := 18
-@[inherit_doc Size] abbrev Cls : ℕ := 19
-@[inherit_doc Size] abbrev Cur : ℕ := 20
-@[inherit_doc Size] abbrev Rows : ℕ := 21
-@[inherit_doc Size] abbrev Cols : ℕ := 22
-@[inherit_doc Size] abbrev TabR : ℕ := 23
-@[inherit_doc Size] abbrev TabL : ℕ := 24
-@[inherit_doc Size] abbrev TabW : ℕ := 25
-@[inherit_doc Size] abbrev MatX : ℕ := 26
-@[inherit_doc Size] abbrev MatY : ℕ := 27
-@[inherit_doc Size] abbrev AdrOut : ℕ := 28
-@[inherit_doc Size] abbrev SolverFree : ℕ := 29
-@[inherit_doc Size] abbrev Room : ℕ := 30
-@[inherit_doc Size] abbrev NumChunks : ℕ := 31
-@[inherit_doc Size] abbrev NumInst : ℕ := 32
-@[inherit_doc Size] abbrev Small : ℕ := 33
-@[inherit_doc Size] abbrev Area : ℕ := 34
-
-end Et17
-
-open Et17 in
 /-- The first part of et17: `D`, `g`, `s`, and the flag that says whether `n` is small. -/
-def et17Params (ν : Et17Nums) : Stmt :=
-  .call ν.pD [v Size] ParD ;;
-  .call ν.pG [v ParD] ParG ;;
-  .call ν.pSqrt [v ParD] RootD ;;
-  .ite (v ParD <' k 16) (.set Small (k 1)) (.set Small (v Small)) ;;
-  .ite (v Size <' v ParD) (.set Small (k 1)) (.set Small (v Small)) ;;
-  .ite (v ParG <' k 1) (.set Small (k 1)) (.set Small (v Small)) ;;
-  .ite (v RootD <' v ParG) (.set Small (k 1)) (.set Small (v Small)) ;;
+def et17Params (ν : Et17Nums)  :=
+  .call ν.pD [v 0] 6 ;;
+  .call ν.pG [v 6] 7 ;;
+  .call ν.pSqrt [v 6] 8 ;;
+  .ite (v 6 <' k 16) (.set 33 (k 1)) (.set 33 (v 33)) ;;
+  .ite (v 0 <' v 6) (.set 33 (k 1)) (.set 33 (v 33)) ;;
+  .ite (v 7 <' k 1) (.set 33 (k 1)) (.set 33 (v 33)) ;;
+  .ite (v 8 <' v 7) (.set 33 (k 1)) (.set 33 (v 33)) ;;
   .skip
 
-open Et17 in
 /-- The end of the second part: the sizes n², nD, n² + p, and the addresses of the arrays. -/
-def et17Addr : Stmt :=
-  .set SizeSq (v Size *' v Size) ;;
-  .set Area (v Size *' v ParD) ;;
-  .set Room (v SizeSq +' v ThePrime) ;;
-  .set ResAB (v Free +' (v Bits +' k 1)) ;;
-  .set ResBC (v ResAB +' v SizeSq) ;;
-  .set ResAC (v ResBC +' v SizeSq) ;;
-  .set Cls (v ResAC +' v SizeSq) ;;
-  .set Cur (v Cls +' (v ThePrime +' k 1)) ;;
-  .set Rows (v Cur +' v ThePrime) ;;
-  .set Cols (v Rows +' v SizeSq) ;;
-  .set TabR (v Cols +' v SizeSq) ;;
-  .set TabL (v TabR +' v Room) ;;
-  .set TabW (v TabL +' v Room) ;;
-  .set MatX (v TabW +' v Room) ;;
-  .set MatY (v MatX +' v Area) ;;
-  .set AdrOut (v MatY +' v Area) ;;
-  .set SolverFree (v AdrOut +' v Cap) ;;
+def et17Addr  :=
+  .set 14 (v 0 *' v 0) ;;
+  .set 34 (v 0 *' v 6) ;;
+  .set 30 (v 14 +' v 9) ;;
+  .set 16 (v 5 +' (v 13 +' k 1)) ;;
+  .set 17 (v 16 +' v 14) ;;
+  .set 18 (v 17 +' v 14) ;;
+  .set 19 (v 18 +' v 14) ;;
+  .set 20 (v 19 +' (v 9 +' k 1)) ;;
+  .set 21 (v 20 +' v 9) ;;
+  .set 22 (v 21 +' v 14) ;;
+  .set 23 (v 22 +' v 14) ;;
+  .set 24 (v 23 +' v 30) ;;
+  .set 25 (v 24 +' v 30) ;;
+  .set 26 (v 25 +' v 30) ;;
+  .set 27 (v 26 +' v 34) ;;
+  .set 28 (v 27 +' v 34) ;;
+  .set 29 (v 28 +' v 10) ;;
   .skip
 
-open Et17 in
-/-- The second part: the prime, the sizes, and the addresses of the arrays. -/
-def et17Sizes (ν : Et17Nums) : Stmt :=
-  .call ν.pChoose [v Size, v Bound, v AdrAB, v AdrBC, v AdrAC, v ParD, v Free] ThePrime ;;
-  .call ν.pCap [v Size, v ParD] Cap ;;
-  .call ν.pCeil [v RootD, v ParG] PieceLen ;;
-  .call ν.pCeil [v Size, v PieceLen] NumPieces ;;
-  .call ν.pBitLen [v Bound] Bits ;;
-  et17Addr
-
-open Et17 in
 /-- The third part: the residues, the classes, the chunks, and the loop over the instances. -/
-def et17Tables (ν : Et17Nums) : Stmt :=
-  .call ν.pDbl [v Free, v ThePrime, v Bits] Small ;;
-  .call ν.pResidues [v AdrAB, v ResAB, v SizeSq, v Free, v Bits] Small ;;
-  .call ν.pResidues [v AdrBC, v ResBC, v SizeSq, v Free, v Bits] Small ;;
-  .call ν.pResidues [v AdrAC, v ResAC, v SizeSq, v Free, v Bits] Small ;;
-  .call ν.pClasses [v ResAB, v Size, v ThePrime, v Cls, v Cur, v Rows, v Cols] Small ;;
-  .call ν.pChunks [v Cls, v ThePrime, v Cap, v TabR, v TabL, v TabW] NumChunks ;;
-  .set NumInst (v NumPieces *' v NumChunks) ;;
-  .call ν.pLoop [v Size, v ParD, v ThePrime, v PieceLen, v NumChunks, v NumInst, v AdrAB, v AdrBC,
-    v AdrAC, v ResAC, v ResBC, v Rows, v Cols, v TabR, v TabL, v TabW, v MatX, v MatY, v AdrOut,
-    v SolverFree] 0
+def et17TablesWith (ν : Et17Nums) (pLoop : ℕ) (fr : Expr)  :=
+  .call ν.pDbl [v 5, v 9, v 13] 33 ;;
+  .call ν.pResidues [v 2, v 16, v 14, v 5, v 13] 33 ;;
+  .call ν.pResidues [v 3, v 17, v 14, v 5, v 13] 33 ;;
+  .call ν.pResidues [v 4, v 18, v 14, v 5, v 13] 33 ;;
+  .call ν.pClasses [v 16, v 0, v 9, v 19, v 20, v 21, v 22] 33 ;;
+  .call ν.pChunks [v 19, v 9, v 10, v 23, v 24, v 25] 31 ;;
+  .set 32 (v 12 *' v 31) ;;
+  .call pLoop [v 0, v 6, v 9, v 11, v 31, v 32, v 2, v 3,
+    v 4, v 18, v 17, v 21, v 22, v 23, v 24, v 25, v 26, v 27, v 28,
+    fr] 0
 
-open Et17 in
-/-- et17(n, U, ab, bc, ac, fr). -/
-def et17Body (ν : Et17Nums) : Stmt :=
-  et17Params ν ;;
-  .ite (v Small =' k 1)
-    (.call ν.pBrute [v Size, v Bound, v AdrAB, v AdrBC, v AdrAC, v Free] 0)
-    (et17Sizes ν ;; et17Tables ν)
+def et17Tables ν := et17TablesWith ν ν.pLoop (v 29)
 
 /-! ## Time and need
 
@@ -211,16 +130,16 @@ The additive constants in the time functions are upper bounds for the cost of ev
 of calls and of tests.  They are not meant to be tight. -/
 
 /-- n is small for the parameters D and g: the host runs the brute force. -/
-def SmallCase (n D g : ℕ) : Prop := D < 16 ∨ n < D ∨ g < 1 ∨ Nat.sqrt D < g
+def SmallCase n D g := D < 16 ∨ n < D ∨ g < 1 ∨ Nat.sqrt D < g
 
 instance (n D g : ℕ) : Decidable (SmallCase n D g) := by unfold SmallCase; infer_instance
 
 /-- The largest time of the solver on an instance with at most cap query pairs. -/
-def supTime (Tn : List ℕ → ℕ) (n D cap : ℕ) : ℕ :=
+def supTime (Tn : Light.InputTime) n D cap :=
   (Finset.range (cap + 1)).sup fun w => Tn [n, D, w]
 
 /-- The largest need of the solver on an instance with at most cap query pairs. -/
-def supNeed (need : List ℕ → Need) (n D cap : ℕ) : Need :=
+def supNeed (need : Light.InputNeed) (n D cap : ℕ) : Need :=
   ⟨(Finset.range (cap + 1)).sup fun w => (need [n, D, w]).word,
     (Finset.range (cap + 1)).sup fun w => (need [n, D, w]).cells,
     (Finset.range (cap + 1)).sup fun w => (need [n, D, w]).depth⟩
@@ -228,46 +147,46 @@ def supNeed (need : List ℕ → Need) (n D cap : ℕ) : Need :=
 /-- Proof of Theorem 17: "F(p) = O(n³ log(3n^ν)/√D) = O(ν n³ log n/√D)" for the selected prime.
 Here the second form, with the constant `Hashing.falsePositiveConst` and with κ = kappaOf n U =
 max(1, log U / log n), so that U ≤ n^κ. -/
-noncomputable def falsePositiveBound (n U D : ℕ) : ℕ :=
-  ⌊Hashing.falsePositiveConst * (kappaOf n U * (n : ℝ) ^ 3 * Real.log n / Real.sqrt D)⌋₊
+noncomputable def falsePositiveBound (n U D : ℕ) :=
+  ⌊Hashing.falsePositiveConst * (kappaOf n U * n ^ 3 * Real.log n / Real.sqrt D)⌋₊
 
 /-- The time of the parameter procedures, of the square root and of the tests. -/
-def hostSetup (tD tG : ℕ → ℕ) (n D : ℕ) : ℕ := tD n + tG D + (18 * Nat.sqrt D + 12) + 60
+def hostSetup (tD tG : ℕ → ℕ) n D := tD n + tG D + (18 * Nat.sqrt D + 12) + 60
 
 /-- A bound on the time of the loop over the instances: at most 4ng instances, with pieces of at
 most q vertices and at most cap query pairs, and at most falsePositiveBound + 1 scans. -/
-noncomputable def hostLoopBound (Tn : List ℕ → ℕ) (n U D g : ℕ) : ℕ :=
+noncomputable def hostLoopBound Tn n U D g :=
   4 * n * g *
       (tWrites n D (pieceSizeNat D g) + supTime Tn n D (queryCapNat n D)
         + tAnswers (queryCapNat n D))
     + tScanCall (pieceSizeNat D g) * (falsePositiveBound n U D + 1) + 14
 
 /-- The time of et17 after the tests, if n is not small. -/
-noncomputable def hostMain (Tn : List ℕ → ℕ) (n U D g : ℕ) : ℕ :=
+noncomputable def hostMain Tn n U D g :=
   chooseTime n U D + tQueryCapNat n D + tCeilDiv (Nat.sqrt D) g + tCeilDiv n (pieceSizeNat D g)
     + tBitLen U + tDblTable (bitLen U) + 3 * tResidues (n * n) (bitLen U) + tClasses n (Nat.sqrt D)
     + tChunks (Nat.sqrt D) (4 * n * g) + hostLoopBound Tn n U D g + 300
 
 /-- **A bound on the time of the host in the worst case**, for the parameter functions Dfun, Gfun
 with the times tD, tG, over a solver with the time Tn. -/
-noncomputable def hostTime (Dfun Gfun tD tG : ℕ → ℕ) (Tn : List ℕ → ℕ) (n U : ℕ) : ℕ :=
+noncomputable def hostTime (Dfun Gfun tD tG : ℕ → ℕ) Tn n U :=
   hostSetup tD tG n (Dfun n) +
     if SmallCase n (Dfun n) (Gfun (Dfun n)) then tBrute n + 20
     else hostMain Tn n U (Dfun n) (Gfun (Dfun n))
 
 /-- The cells of the arrays of et17, with s in place of the prime. -/
-def hostLayout (n U D : ℕ) : ℕ :=
-  (bitLen U + 1) + 3 * (n * n) + (Nat.sqrt D + 1) + Nat.sqrt D + 2 * (n * n)
+def hostLayout n U D :=
+  bitLen U + 1 + 3 * (n * n) + Nat.sqrt D + 1 + Nat.sqrt D + 2 * (n * n)
     + 3 * (n * n + Nat.sqrt D) + 2 * (n * D) + queryCapNat n D
 
 /-- The largest number that et17 and the procedures below it form, apart from the solver; a and b
 bound the numbers that the two parameter procedures form. -/
-def hostWord (a b n U D g : ℕ) : ℕ :=
+def hostWord a b n U D g :=
   a + b                                                     -- the two parameter procedures
-    + (4 * D + 4)                                           -- the square root, the primes up to √D
-    + (3 * U + 1)                                           -- a sum of three weights
-    + (2 * U + 2)                                           -- the number of binary digits of U
-    + (2 * n + 1)                                           -- the power of two above n
+    + 4 * D + 4                                           -- the square root, the primes up to √D
+    + 3 * U + 1                                           -- a sum of three weights
+    + 2 * U + 2                                           -- the number of binary digits of U
+    + 2 * n + 1                                           -- the power of two above n
     + Nat.sqrt D * 2 ^ (bitLen U + 1)                       -- the table of doubles
     + 4 * (16 ^ Nat.clog 2 n * Nat.sqrt D)                  -- the entries in Strassen's algorithm
     + n * n * (16 ^ Nat.clog 2 n * Nat.sqrt D)              -- the count for a prime
@@ -278,28 +197,32 @@ def hostWord (a b n U D g : ℕ) : ℕ :=
     + 100
 
 /-- The need of the host for given parameters D and g. -/
-def hostNeedAt (a b : ℕ) (need : List ℕ → Need) (n U D g : ℕ) : Need :=
+def hostNeedAt (a b : ℕ) (need : Light.InputNeed) (n U D g : ℕ) : Need :=
   ⟨hostWord a b n U D g + (supNeed need n D (queryCapNat n D)).word,
     chooseCells n U D + hostLayout n U D + (supNeed need n D (queryCapNat n D)).cells + 2,
     2 * Nat.clog 2 n + 8 + (supNeed need n D (queryCapNat n D)).depth⟩
 
 /-- **The need of the host**, over a solver with the need `need`; wD and wG bound the numbers that
 the parameter procedures form. -/
-def hostNeed (Dfun Gfun wD wG : ℕ → ℕ) (need : List ℕ → Need) (n U : ℕ) : Need :=
+def hostNeed (Dfun Gfun wD wG : ℕ → ℕ) need n U :=
   hostNeedAt (wD n) (wG (Dfun n)) need n U (Dfun n) (Gfun (Dfun n))
 
 /-! ## The context -/
 
 /-- A procedure that computes a function of one number and changes no cell; t is its time, w bounds
 the numbers it forms, and it nests calls at most three deep. -/
-def ParamProc (P : Program) (p : ℕ) (f t w : ℕ → ℕ) : Prop :=
-  ∀ (lim : Limits) (d x : ℕ) (μ : ℕ → ℤ), 1 ≤ x → (lim.space : ℤ) ≤ lim.word →
-    ((w x : ℕ) : ℤ) ≤ lim.word → d + 4 ≤ lim.depth →
-    Meets lim P p (d + 1) [(x : ℤ)] μ (t x) fun r μ' => r = (f x : ℕ) ∧ μ' = μ
+def ParamProc P p (f t w : ℕ → ℕ) :=
+  ∀ (lim : Limits) (d x : ℕ) (μ : Light.Memory), 1 ≤ x → (lim.space : ℤ) ≤ lim.word →
+    (w x : ℤ) ≤ lim.word → d + 4 ≤ lim.depth →
+    Meets lim P p (d + 1) [x] μ (t x) fun r μ' => r = f x ∧ μ' = μ
+
+/-- A parameter routine remains valid behind any prefix and before any suffix. -/
+abbrev ParamFamily (procs : ℕ → Program) (i : ℕ) (f t w : ℕ → ℕ) :=
+  ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + i) f t w
 
 /-- The context of et17: the solver and what hostLoop calls; the procedures of the host; the
 two parameter procedures. -/
-structure Et17Ctx (P₀ R : Program) (ν : Et17Nums) (Tn : List ℕ → ℕ) (need : List ℕ → Need)
+structure Et17Ctx (P₀ R : Program) (ν : Et17Nums) (Tn : Light.InputTime) (need : Light.InputNeed)
     (Dfun Gfun tD tG wD wG : ℕ → ℕ) : Prop where
   loop : HostCtx P₀ R ν.pS ν.pWriteX ν.pWriteY ν.pScanPairs ν.pScan Tn need
   hLoop : (P₀ ++ R)[ν.pLoop]? = some (hostLoopBody ν.pS ν.pWriteX ν.pWriteY ν.pScanPairs)
@@ -326,44 +249,44 @@ def hostData (x : TriInst) (D g : ℕ) : HostData :=
   ⟨x.n, D, chosenPrime x.n D x.AB x.BC x.AC, pieceSizeNat D g, queryCapNat x.n D, x.AB, x.BC, x.AC⟩
 
 /-- The address of the residues of `w(a,b)`; the table of doubles is at fr. -/
-def aRab (_X : HostData) (U fr : ℕ) : ℕ := fr + (bitLen U + 1)
+def aRab (_X : HostData) U fr := fr + bitLen U + 1
 /-- The address of the residues of `w(b,c)`. -/
-def aRbc (X : HostData) (U fr : ℕ) : ℕ := aRab X U fr + X.n * X.n
+def aRbc X U fr := aRab X U fr + X.n * X.n
 /-- The address of the residues of `w(a,c)`. -/
-def aRac (X : HostData) (U fr : ℕ) : ℕ := aRbc X U fr + X.n * X.n
+def aRac X U fr := aRbc X U fr + X.n * X.n
 /-- The address of the starts of the classes. -/
-def aCls (X : HostData) (U fr : ℕ) : ℕ := aRac X U fr + X.n * X.n
+def aCls X U fr := aRac X U fr + X.n * X.n
 /-- The address of the running places. -/
-def aCur (X : HostData) (U fr : ℕ) : ℕ := aCls X U fr + (X.p + 1)
+def aCur X U fr := aCls X U fr + X.p + 1
 /-- The address of the rows of the sorted pairs. -/
-def aQi (X : HostData) (U fr : ℕ) : ℕ := aCur X U fr + X.p
+def aQi X U fr := aCur X U fr + X.p
 /-- The address of the columns of the sorted pairs. -/
-def aQj (X : HostData) (U fr : ℕ) : ℕ := aQi X U fr + X.n * X.n
+def aQj X U fr := aQi X U fr + X.n * X.n
 /-- The address of the residues of the chunks. -/
-def aCr (X : HostData) (U fr : ℕ) : ℕ := aQj X U fr + X.n * X.n
+def aCr X U fr := aQj X U fr + X.n * X.n
 /-- The address of the starts of the chunks. -/
-def aCl (X : HostData) (U fr : ℕ) : ℕ := aCr X U fr + (X.n * X.n + X.p)
+def aCl X U fr := aCr X U fr + (X.n * X.n + X.p)
 /-- The address of the lengths of the chunks. -/
-def aCw (X : HostData) (U fr : ℕ) : ℕ := aCl X U fr + (X.n * X.n + X.p)
+def aCw X U fr := aCl X U fr + (X.n * X.n + X.p)
 /-- The address of the matrix `matX` of an instance. -/
-def aX (X : HostData) (U fr : ℕ) : ℕ := aCw X U fr + (X.n * X.n + X.p)
+def aX X U fr := aCw X U fr + (X.n * X.n + X.p)
 /-- The address of the matrix `matY` of an instance. -/
-def aY (X : HostData) (U fr : ℕ) : ℕ := aX X U fr + X.n * X.D
+def aY X U fr := aX X U fr + X.n * X.D
 /-- The address of the answers. -/
-def aOut (X : HostData) (U fr : ℕ) : ℕ := aY X U fr + X.n * X.D
+def aOut X U fr := aY X U fr + X.n * X.D
 /-- The free pointer that is handed to the solver. -/
-def aFr (X : HostData) (U fr : ℕ) : ℕ := aOut X U fr + X.cap
+def aFr X U fr := aOut X U fr + X.cap
 
 /-- The arrays of the host stand one after the other. -/
-theorem host_places (X : HostData) (U fr : ℕ) :
-    aRab X U fr = fr + (bitLen U + 1) ∧ aRbc X U fr = aRab X U fr + X.n * X.n ∧
+theorem host_places X U fr :
+    aRab X U fr = fr + bitLen U + 1 ∧ aRbc X U fr = aRab X U fr + X.n * X.n ∧
       aRac X U fr = aRbc X U fr + X.n * X.n ∧ aCls X U fr = aRac X U fr + X.n * X.n ∧
-      aCur X U fr = aCls X U fr + (X.p + 1) ∧ aQi X U fr = aCur X U fr + X.p ∧
+      aCur X U fr = aCls X U fr + X.p + 1 ∧ aQi X U fr = aCur X U fr + X.p ∧
       aQj X U fr = aQi X U fr + X.n * X.n ∧ aCr X U fr = aQj X U fr + X.n * X.n ∧
       aCl X U fr = aCr X U fr + (X.n * X.n + X.p) ∧ aCw X U fr = aCl X U fr + (X.n * X.n + X.p) ∧
       aX X U fr = aCw X U fr + (X.n * X.n + X.p) ∧ aY X U fr = aX X U fr + X.n * X.D ∧
       aOut X U fr = aY X U fr + X.n * X.D ∧ aFr X U fr = aOut X U fr + X.cap :=
-  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+  by (repeat' constructor)
 
 /-- The addresses that hostLoop gets. -/
 def hostAddr (x : TriInst) (X : HostData) (fr : ℕ) : HostAddr :=
@@ -371,35 +294,28 @@ def hostAddr (x : TriInst) (X : HostData) (fr : ℕ) : HostAddr :=
     aCl X x.U fr, aCw X x.U fr, aX X x.U fr, aY X x.U fr, aOut X x.U fr, aFr X x.U fr⟩
 
 /-- The locals at the start: the arguments, then zeros. -/
-def et17Loc0 (x : TriInst) (fr : ℕ) : List ℤ :=
-  [(x.n : ℤ), (x.U : ℤ), (x.ab : ℤ), (x.bc : ℤ), (x.ac : ℤ), (fr : ℤ), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+def et17Loc0 (x : TriInst) (fr : ℕ)  :=
+  [(x.n : ℤ), x.U, x.ab, x.bc, (x.ac : ℤ), (fr : ℤ)] ++ List.replicate 29 (0 : ℤ)
 
 /-- The locals after the first part. -/
 def et17LocA (x : TriInst) (fr D g : ℕ) : List ℤ :=
-  [(x.n : ℤ), (x.U : ℤ), (x.ab : ℤ), (x.bc : ℤ), (x.ac : ℤ), (fr : ℤ), (D : ℤ), (g : ℤ),
-    ((Nat.sqrt D : ℕ) : ℤ), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    (if SmallCase x.n D g then 1 else 0), 0]
+  [(x.n : ℤ), x.U, x.ab, x.bc, (x.ac : ℤ), (fr : ℤ), (D : ℤ), (g : ℤ), (Nat.sqrt D : ℤ)] ++ List.replicate 24 (0 : ℤ) ++ [if SmallCase x.n D g then 1 else 0, 0]
 
 /-- The locals of the third part, for the data X of the loop: those after the second part, with the
 number of chunks in NumChunks and the result of the last call in Small.  ParG and RootD are not
 read. -/
 abbrev Et17.locals (x : TriInst) (X : HostData) (fr : ℕ) (g s nch res : ℤ) : List ℤ :=
-  [(X.n : ℤ), (x.U : ℤ), (x.ab : ℤ), (x.bc : ℤ), (x.ac : ℤ), (fr : ℤ), (X.D : ℤ), g, s, (X.p : ℤ),
-    (X.cap : ℤ), (X.q : ℤ), (X.h : ℤ), ((bitLen x.U : ℕ) : ℤ), ((X.n * X.n : ℕ) : ℤ), 0,
-    ((aRab X x.U fr : ℕ) : ℤ), ((aRbc X x.U fr : ℕ) : ℤ), ((aRac X x.U fr : ℕ) : ℤ),
-    ((aCls X x.U fr : ℕ) : ℤ), ((aCur X x.U fr : ℕ) : ℤ), ((aQi X x.U fr : ℕ) : ℤ),
-    ((aQj X x.U fr : ℕ) : ℤ), ((aCr X x.U fr : ℕ) : ℤ), ((aCl X x.U fr : ℕ) : ℤ),
-    ((aCw X x.U fr : ℕ) : ℤ), ((aX X x.U fr : ℕ) : ℤ), ((aY X x.U fr : ℕ) : ℤ),
-    ((aOut X x.U fr : ℕ) : ℤ), ((aFr X x.U fr : ℕ) : ℤ), ((X.n * X.n + X.p : ℕ) : ℤ), nch, 0, res,
+  [X.n, x.U, x.ab, x.bc, (x.ac : ℤ), (fr : ℤ), (X.D : ℤ), g, s, (X.p : ℤ),
+    (X.cap : ℤ), (X.q : ℤ), (X.h : ℤ), (bitLen x.U : ℤ), ((X.n * X.n : ℕ) : ℤ), 0,
+    (aRab X x.U fr : ℤ), (aRbc X x.U fr : ℤ), (aRac X x.U fr : ℤ),
+    (aCls X x.U fr : ℤ), (aCur X x.U fr : ℤ), (aQi X x.U fr : ℤ),
+    (aQj X x.U fr : ℤ), (aCr X x.U fr : ℤ), (aCl X x.U fr : ℤ),
+    (aCw X x.U fr : ℤ), (aX X x.U fr : ℤ), (aY X x.U fr : ℤ),
+    (aOut X x.U fr : ℤ), (aFr X x.U fr : ℤ), ((X.n * X.n + X.p : ℕ) : ℤ), nch, 0, res,
     ((X.n * X.D : ℕ) : ℤ)]
 
-/-- The locals after the second part (n is not small, so the flag is 0). -/
-def et17LocB (x : TriInst) (fr D g : ℕ) : List ℤ :=
-  Et17.locals x (hostData x D g) fr g (Nat.sqrt D : ℕ) 0 0
-
 /-- The time of the third part in a run: it depends on the data. -/
-def hostRunTime (Tn : List ℕ → ℕ) (X : HostData) (U : ℕ) : ℕ :=
+def hostRunTime Tn X U :=
   tDblTable (bitLen U) + 3 * tResidues (X.n * X.n) (bitLen U) + tClasses X.n X.p
     + tChunks X.p X.chunkCount + tHostLoop Tn X + 80
 

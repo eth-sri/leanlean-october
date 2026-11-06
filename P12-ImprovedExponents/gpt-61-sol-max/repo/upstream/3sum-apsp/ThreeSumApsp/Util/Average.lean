@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import Mathlib.Algebra.BigOperators.Ring.Finset
 public import Mathlib.Algebra.Group.Action.Defs
 public import Mathlib.Algebra.Order.BigOperators.Group.Finset
@@ -30,22 +32,21 @@ namespace Finset
 
 /-- Markov's inequality: fewer than `|Q|/k` indices are more than `k` times as bad as the
 average. -/
-theorem mul_card_above_average_lt {ι : Type*} {Q : Finset ι} (hQ : Q.Nonempty) (k : ℕ)
+theorem mul_card_above_average_lt {ι} {Q} (hQ : Q.Nonempty) k
     (f : ι → ℕ) : k * #{p ∈ Q | k * ∑ p' ∈ Q, f p' < f p * #Q} < #Q := by
   set B := {p ∈ Q | k * ∑ p' ∈ Q, f p' < f p * #Q}
   rcases B.eq_empty_or_nonempty with he | hne
-  · rw [he, card_empty, mul_zero]
-    exact hQ.card_pos
+  · simp_all
   refine lt_of_mul_lt_mul_right (a := ∑ p ∈ Q, f p) ?_ (Nat.zero_le _)
   calc k * #B * ∑ p ∈ Q, f p = ∑ _p ∈ B, k * ∑ p' ∈ Q, f p' := by
-        rw [sum_const, smul_eq_mul]; ring
+        ram_arith
     _ < ∑ p ∈ B, f p * #Q := sum_lt_sum_of_nonempty hne fun p hp => (mem_filter.mp hp).2
     _ ≤ ∑ p ∈ Q, f p * #Q := sum_le_sum_of_subset (filter_subset _ _)
     _ = #Q * ∑ p ∈ Q, f p := by rw [← sum_mul, mul_comm]
 
 /-- The union bound: one index is good for `k` functions at once, in that each function is at most
 `k` times its average there. -/
-theorem exists_forall_mul_card_le_mul_sum {ι : Type*} {Q : Finset ι} (hQ : Q.Nonempty) (k : ℕ)
+theorem exists_forall_mul_card_le_mul_sum {ι} {Q} (hQ : Q.Nonempty) k
     (f : Fin k → ι → ℕ) : ∃ p ∈ Q, ∀ i, f i p * #Q ≤ k * ∑ p' ∈ Q, f i p' := by
   classical
   by_contra hcon
@@ -62,6 +63,6 @@ theorem exists_forall_mul_card_le_mul_sum {ι : Type*} {Q : Finset ι} (hQ : Q.N
     _ = ∑ i, k * #(B i) := mul_sum ..
     _ < ∑ _i : Fin k, #Q :=
         sum_lt_sum_of_nonempty ⟨i₀, mem_univ i₀⟩ fun i _ => mul_card_above_average_lt hQ k (f i)
-    _ = k * #Q := by rw [sum_const, card_univ, Fintype.card_fin, smul_eq_mul]
+    _ = k * #Q := by simp_all
 
 end Finset

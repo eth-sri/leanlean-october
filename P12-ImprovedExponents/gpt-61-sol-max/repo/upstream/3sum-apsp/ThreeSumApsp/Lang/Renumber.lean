@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Lang.Logic
 
 /-!
@@ -37,41 +39,30 @@ def Stmt.shift (n : ℕ) : Stmt → Stmt
   | .call p args x => .call (p + n) args x
 
 /-- The program P placed behind the program Q. -/
-def Program.behind (Q P : Program) : Program := Q ++ P.map (Stmt.shift Q.length)
+def Program.behind (Q P : Program) := Q ++ P.map (Stmt.shift Q.length)
 
 /-- Procedure p of P is procedure `p + Q.length` of P placed behind Q, with its calls
 shifted. -/
-theorem Program.getElem?_behind_right (Q : Program) {p : ℕ} {body : Stmt} (h : P[p]? = some body) :
+theorem Program.getElem?_behind_right Q {p} {body} (h : P[p]? = some body) :
     (Program.behind Q P)[p + Q.length]? = some (body.shift Q.length) := by
-  rw [Program.behind, List.getElem?_append_right (Nat.le_add_left _ _), Nat.add_sub_cancel,
-    List.getElem?_map, h]
-  rfl
+  ram_grind [Program.behind]
 
 /-- **Relocation.**  A run in P is a run, with the same states and the same number of steps, of
 the shifted statement in P placed behind Q. -/
-theorem Exec.shift {s : Stmt} {σ σ' : State} {c : ℕ} (h : Exec lim P d s σ σ' c) (Q : Program) :
+theorem Exec.shift {s} {σ σ'} {c} (h : Exec lim P d s σ σ' c) Q :
     Exec lim (Program.behind Q P) d (s.shift Q.length) σ σ' c := by
-  induction h with
-  | skip => exact .skip
-  | set h => exact .set h
-  | store h₁ h₂ h₃ => exact .store h₁ h₂ h₃
-  | seq _ _ ih₁ ih₂ => exact .seq ih₁ ih₂
-  | iteTrue h₁ h₂ _ ih => exact .iteTrue h₁ h₂ ih
-  | iteFalse h₁ h₂ _ ih => exact .iteFalse h₁ h₂ ih
-  | whileFalse h₁ h₂ => exact .whileFalse h₁ h₂
-  | whileTrue h₁ h₂ _ _ ih₁ ih₂ => exact .whileTrue h₁ h₂ ih₁ ih₂
-  | call h₁ h₂ h₃ _ ih => exact .call h₁ (Program.getElem?_behind_right Q h₂) h₃ ih
+  induction h <;> simp only [Stmt.shift] <;>
+    aesop (add unsafe constructors Exec) (add safe apply Program.getElem?_behind_right)
 
 /-- What is proved about a statement in P holds for the shifted statement in P placed behind
 Q. -/
-theorem Ends.shift {s σ T post} (h : Ends lim P d s σ T post) (Q : Program) :
+theorem Ends.shift {s σ T post} (h : Ends lim P d s σ T post) Q :
     Ends lim (Program.behind Q P) d (s.shift Q.length) σ T post := by
   obtain ⟨σ', c, he, hc, hq⟩ := h
   exact ⟨σ', c, he.shift Q, hc, hq⟩
 
 /-- The same with more procedures appended behind. -/
-theorem Ends.shift_append {s σ T post} (h : Ends lim P d s σ T post) (Q R : Program) :
-    Ends lim (Program.behind Q P ++ R) d (s.shift Q.length) σ T post :=
+def Ends.shift_append {s σ T post} (h : Ends lim P d s σ T post) Q R :=
   (h.shift Q).append R
 
 end Light

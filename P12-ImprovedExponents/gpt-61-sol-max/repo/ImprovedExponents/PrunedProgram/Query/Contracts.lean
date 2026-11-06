@@ -1,5 +1,7 @@
 module
 
+public import ThreeSumApsp.Util.Types
+public import Mathlib.Tactic
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 public import ImprovedExponents.PrunedProgram.SegOn
 
@@ -27,7 +29,7 @@ open ThreeSumApsp ThreeSumApsp.Spec
 /-- What `queryCore` assumes when the encodings are right at the leaves with at most `m` symbols
 `P₀` only: upstream's `QueryCorePre` with `SegOn x.m` in place of `Seg` for the two encodings. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Contracts.lean (QueryCorePre)
-structure QueryCorePreP (lim : Limits) (μ : ℕ → ℤ) (x : QueryCoreArgs) : Prop where
+structure QueryCorePreP (lim : Limits) (μ : Light.Memory) (x : QueryCoreArgs) : Prop where
   std : Std lim
   t_le : x.t ≤ x.m
   card : (innerSetO x.η).card = x.m
@@ -59,21 +61,21 @@ structure QueryCorePreP (lim : Limits) (μ : ℕ → ℤ) (x : QueryCoreArgs) : 
 two encodings are right at the leaves with at most `m` symbols `P₀` only; it changes only the two
 scratch strings.  Same procedure number and time as upstream. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Contracts.lean (QueryCoreSpec)
-def QueryCoreSpecP (lim : Limits) (P : Program) : Prop :=
-  ∀ (x : QueryCoreArgs) (μ : ℕ → ℤ), QueryCorePreP lim μ x →
+def QueryCoreSpecP lim P :=
+  ∀ (x : QueryCoreArgs) (μ : Light.Memory), QueryCorePreP lim μ x →
     ∀ d, d + 1 ≤ lim.depth →
-    Meets lim P Proc.queryCore d [x.aA, x.aB, x.tr, x.root, x.wd, x.ss, x.box, x.L, x.m, x.t] μ
+    Meets lim P 53 d [x.aA, x.aB, x.tr, x.root, x.wd, x.ss, x.box, x.L, x.m, x.t] μ
       (tQueryCore x.L x.m x.t) fun r μ' =>
         r = trieQuery x.m x.t (arrT x.encA) (arrT x.encB) x.T x.root (digitsO x.η) ∧
           SameOutside2 μ μ' x.ss x.m x.box x.L
 
-variable {lim : Limits} {μ μ₁ : ℕ → ℤ} {x : QueryCoreArgs}
+variable {lim : Limits} {μ μ₁ : Light.Memory} {x : QueryCoreArgs}
 
 /-- A pruned encoding that meets neither scratch string is kept. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean (Query.seg_of_same)
-theorem segOn_of_same {ss m box L a k L' : ℕ} {enc : Leaf L' → ℤ}
+def segOn_of_same {ss m box L a k L'} {enc : Leaf L' → ℤ}
     (h : SameOutside2 μ μ₁ ss m box L) (hl : SegOn k μ a enc)
-    (h1 : Apart ss m a (10 ^ L')) (h2 : Apart box L a (10 ^ L')) : SegOn k μ₁ a enc :=
+    (h1 : Apart ss m a (10 ^ L')) (h2 : Apart box L a (10 ^ L')) :=
   hl.congr fun i hi => h _ ⟨by omega, by omega⟩
 
 end Light.Sec4

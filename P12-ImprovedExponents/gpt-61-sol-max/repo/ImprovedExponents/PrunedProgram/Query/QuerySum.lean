@@ -1,5 +1,8 @@
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Programs.Sec4.Theorem30.QuerySum
 public import ImprovedExponents.PrunedProgram.Query.Contracts
 
@@ -35,7 +38,7 @@ namespace QueryP
 
 open Query
 
-variable {lim : Limits} {P : Program} {d : ℕ} {μ : ℕ → ℤ} {x : QueryCoreArgs} {i : ℕ}
+variable {lim : Limits} {P : Program} {d : ℕ} {μ : Light.Memory} {x : QueryCoreArgs} {i : ℕ}
 
 /-! ## The pure side: the terms of the sum -/
 
@@ -58,16 +61,17 @@ theorem low_termP (C : QueryCorePreP lim μ x) (hi : i < lowCount x) :
   · -- the leaf contributes to η, which has m inner levels
     simp only [lowLeaves, Finset.mem_filter, Finset.mem_univ, true_and] at hlow
     rw [← C.card]
-    exact card_P0Levels_le_of_contributes hlow.1
+    exact (Finset.card_le_card (P0Levels_subset_innerSetO hlow.left) : (P0Levels τ).card ≤ (innerSetO x.η).card)
   have hlen : i < (lowList x.m x.t (digitsO x.η)).length := by simpa [lowList] using hi
-  have hmember : (lowList x.m x.t (digitsO x.η))[i] = digitsT τ := by
-    rw [hτ]
-    refine Option.some.inj ((List.getElem?_eq_getElem hlen).symm.trans ?_)
-    rw [lowList, List.getElem?_map, List.getElem?_eq_getElem hi, getElem_nineStrs hi]
-    rfl
+
   rw [List.sum_take_succ_getD, QueryCoreArgs.terms, queryTerms,
     List.getD_append _ _ _ _ (by rwa [List.length_map]),
-    List.getD_eq_getElem _ _ (by rwa [List.length_map]), List.getElem_map, hmember,
+    List.getD_eq_getElem _ _ (by rwa [List.length_map]), List.getElem_map, (by
+      rw [hτ]
+      refine Option.some.inj ((List.getElem?_eq_getElem hlen).symm.trans ?_)
+      rw [lowList, List.getElem?_map, List.getElem?_eq_getElem hi, getElem_nineStrs hi]
+      rfl
+     : (lowList x.m x.t (digitsO x.η))[i] = digitsT τ),
     leafProduct_digitsT]
 
 /-! ## The memory and the invariant -/
@@ -76,57 +80,64 @@ variable {σ : State}
 
 /-- The digits of the output string are kept. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean (Query.segDigits)
-theorem segDigitsP (C : QueryCorePreP lim μ x) {μ' : ℕ → ℤ}
+theorem segDigitsP (C : QueryCorePreP lim μ x) {μ'}
     (same : SameOutside2 μ μ' x.ss x.m x.box x.L) :
     SegN μ' x.wd (digitsO x.η) :=
-  seg_of_same same C.segDigits (by simpa [length_digits] using C.ss_wd)
-    (by simpa [length_digits] using C.box_wd)
+  seg_of_same same C.segDigits (by ram_arith [length_digits])
+    (by ram_arith [length_digits])
 
 /-! ## The two calls that both rounds make -/
 
-section Calls
+section
 
-variable {lo hi : ℕ} {μ₀ : ℕ → ℤ}
+variable {lo hi : ℕ} {μ₀ : Light.Memory}
 
+variable (K : Callees lim P) (C : QueryCorePreP lim μ x)
+
+include K C in
 /-- scatter(wd, ss, box, L, star) writes the leaf or the box of string number i at box; the string
 at ss is kept. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean (Query.scatter_meets)
-theorem scatter_meetsP (K : Callees lim P) (C : QueryCorePreP lim μ x) (star : Bool)
+theorem scatter_meetsP  star
     (hstr : i < (nineStrs x.m lo hi).length) (hss : SegN μ₀ x.ss (nineStr x.m lo hi i))
     (same : SameOutside2 μ μ₀ x.ss x.m x.box x.L) (hd : d ≤ lim.depth) :
-    Meets lim P Proc.scatter d [x.wd, x.ss, x.box, x.L, if star then 1 else 0] μ₀ (tScatter x.L)
+    Meets lim P 42 d [x.wd, x.ss, x.box, x.L, if star then 1 else 0] μ₀ (tScatter x.L)
       fun _ μ₁ => SegN μ₁ x.box (scatter (digitsO x.η) (starRunIf star (nineStr x.m lo hi i))) ∧
         SegN μ₁ x.ss (nineStr x.m lo hi i) ∧ SameOutside2 μ μ₁ x.ss x.m x.box x.L := by
   obtain ⟨hlen, -⟩ := (mem_nineStrs _).mp (nineStr_mem hstr)
-  have hapart := C.ss_box
-  refine (K.scatter x.wd x.ss x.box x.L star (digitsO x.η) _ μ₀ (segDigitsP C same) hss
+  have  := C.ss_box
+  refine (K.scatter x.wd x.ss x.box x.L star _ _ μ₀ (segDigitsP C same) hss
     (length_digits x) (by rw [hlen, count_digitsP C]) C.box_wd
     (by omega) C.wd_lt (by rw [hlen]; exact C.ss_lt) C.box_lt _
-      (by omega)).mono le_rfl fun _ μ₁ ⟨hbox, same₁⟩ => ⟨hbox, ?_, same_of_box same same₁⟩
+      hd).mono le_rfl fun _ μ₁ ⟨hbox, same₁⟩ => ⟨hbox, ?_, (SameOn.then same same₁ fun x_1 hb => ⟨hb, hb.right⟩ : SameOn (fun x_1 => Outside x.ss x.m x_1 ∧ Outside x.box x.L x_1) μ μ₁)⟩
   exact hss.of_sameOutside same₁ (by omega)
 
+include K C in
 /-- nineNext(ss, m, lo, hi) goes on to string number i + 1 and says whether there is one. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean (Query.next_meets)
-theorem next_meetsP (K : Callees lim P) (C : QueryCorePreP lim μ x)
+theorem next_meetsP
     (hstr : i < (nineStrs x.m lo hi).length) (hss : SegN μ₀ x.ss (nineStr x.m lo hi i))
     (same : SameOutside2 μ μ₀ x.ss x.m x.box x.L) (hd : d ≤ lim.depth) :
-    Meets lim P Proc.nineNext d [x.ss, x.m, lo, hi] μ₀ (tNineNext x.m) fun r μ₁ =>
+    Meets lim P 41 d [x.ss, x.m, lo, hi] μ₀ (tNineNext x.m) fun r μ₁ =>
       r = (if i + 1 < (nineStrs x.m lo hi).length then 1 else 0) ∧
         SegN μ₁ x.ss (nineStr x.m lo hi (i + 1)) ∧ SameOutside2 μ μ₁ x.ss x.m x.box x.L := by
-  refine (K.nineNext x.ss x.m lo hi _ μ₀ hss (nineStr_mem hstr) C.ss_lt _ (by omega)).mono le_rfl
+  refine (K.nineNext x.ss x.m lo hi _ μ₀ hss (nineStr_mem hstr) C.ss_lt _ hd).mono le_rfl
     fun r μ₁ ⟨hss₁, hr, same₁⟩ => ⟨?_, nineStr_succ .. ▸ hss₁, same_of_ss same same₁⟩
   rw [hr, isSome_nineNext_nineStr hstr]
   simp
 
-end Calls
+end
 
 /-! ## The two rounds -/
 
+variable (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 ≤ lim.depth)
+
+include K C hd in
 /-- One round of the first loop adds the term of the leaf number i.  The one change to upstream's
 proof: the two cells read are those of a leaf with at most m symbols `P₀`, which the pruned
 encodings hold (`SegOn.get`). -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean (Query.lowRound)
-theorem lowRoundP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 ≤ lim.depth)
+theorem lowRoundP
     (hi : i < lowCount x) (h : Inv μ x (x.m - x.t + 1) x.m 0 i σ) :
     Ends lim P d queryLowRound σ (tScatter x.L + tHorner x.L + tNineNext x.m + 31)
       (Inv μ x (x.m - x.t + 1) x.m 0 (i + 1)) := by
@@ -134,31 +145,32 @@ theorem lowRoundP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 �
   light_facts C C.std
   obtain ⟨τ, hτ, hfew, hsum⟩ := low_termP C hi
   -- code := scatter(wd, ss, box, L, 0): the leaf
-  light_call (scatter_meetsP K C false hi hss same (by omega)) with _ μ₁ ⟨hbox, hss₁, same₁⟩
+  light_call (scatter_meetsP K C false hi hss same hd) with _ μ₁ ⟨hbox, hss₁, same₁⟩
   replace hbox : SegN μ₁ x.box (digitsT τ) := hτ ▸ hbox
   -- code := horner(box, L)
-  light_call (K.horner x.box x.L (digitsT τ) μ₁ hbox (length_digitsT τ) (digitsT_lt τ)
-    C.box_lt C.pow _ (by omega)) with _ μ' ⟨rfl, hμ'⟩
+  light_call (K.horner x.box x.L _ μ₁ hbox (length_digitsT τ) (digitsT_lt τ)
+    C.box_lt C.pow _ hd) with _ μ' ⟨rfl, hμ'⟩
   obtain rfl : μ₁ = μ' := hμ'.symm
   rw [ofDigitList_digitsT]
   -- sum := sum + aA[code] * aB[code]: the leaf has few symbols P₀, so its cells are right
-  have hcode : codeT τ < 10 ^ x.L := codeT_lt τ
+  have  := codeT_lt τ
   light_facts C
-  have hreadA : μ₁ (x.aA + codeT τ) = x.encA τ :=
+  have hreadA :=
     (segOn_of_same same₁ C.segA C.ss_aA C.box_aA).get hfew
-  have hreadB : μ₁ (x.aB + codeT τ) = x.encB τ :=
+  have hreadB :=
     (segOn_of_same same₁ C.segB C.ss_aB C.box_aB).get hfew
-  have hprod := abs_le.1 (C.prod τ)
+  have  := abs_le.1 (C.prod τ)
   have hfits := abs_le.1 (C.sums (i + 1))
   rw [hsum] at hfits
   light_set ((x.terms.take i).sum + x.encA τ * x.encB τ) using hreadA, hreadB
   -- more := nineNext(ss, m, m - t + 1, m)
-  light_call (next_meetsP K C hi hss₁ same₁ (by omega)) with _ μ₂ ⟨rfl, hss₂, same₂⟩
+  light_call (next_meetsP K C hi hss₁ same₁ hd) with _ μ₂ ⟨rfl, hss₂, same₂⟩
   exact ⟨codeT τ, value, μ₂, by simp [hsum], hss₂, same₂⟩
 
+include K C hd in
 /-- One round of the second loop adds the value of the box number i. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean (Query.boxRound)
-theorem boxRoundP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 ≤ lim.depth)
+theorem boxRoundP
     (hi : i < boxCount x) (h : Inv μ x (x.m - x.t) (x.m - x.t) (lowCount x) i σ) :
     Ends lim P d queryBoxRound σ (tScatter x.L + tLookup x.L + tNineNext x.m + 31)
       (Inv μ x (x.m - x.t) (x.m - x.t) (lowCount x) (i + 1)) := by
@@ -169,11 +181,11 @@ theorem boxRoundP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 �
   obtain ⟨π, -, hπ⟩ := exists_of_mem_boxesOf C.t_le C.card _ hbox
   have hlen : (boxAt x i).length = x.L := by rw [boxAt, length_scatter, length_digits]
   -- code := scatter(wd, ss, box, L, 1): the box
-  light_call (scatter_meetsP K C true hi hss same (by omega)) with void μ₁ ⟨hbox₁, hss₁, same₁⟩
+  light_call (scatter_meetsP K C true hi hss same hd) with void μ₁ ⟨hbox₁, hss₁, same₁⟩
   -- value := lookup(tr, root, box, L)
   light_call (K.lookup x.tr x.root x.box x.L x.T (boxAt x i) μ₁
     (seg_of_same same₁ C.segT C.ss_tr C.box_tr) hbox₁ hlen (hπ ▸ digitsC_lt π) (C.walk _ hbox)
-    C.tr_lt C.box_lt _ (by omega)) with _ μ' ⟨rfl, hμ'⟩
+    C.tr_lt C.box_lt _ hd) with _ μ' ⟨rfl, hμ'⟩
   obtain rfl : μ₁ = μ' := hμ'.symm
   -- sum := sum + value
   have hfits := abs_le.1 (C.sums (lowCount x + (i + 1)))
@@ -181,24 +193,24 @@ theorem boxRoundP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 �
   generalize trieLookup x.T x.root (boxAt x i) = val at *
   light_set ((x.terms.take (lowCount x + i)).sum + val)
   -- more := nineNext(ss, m, m - t, m - t)
-  light_call (next_meetsP K C hi hss₁ same₁ (by omega)) with _ μ₂ ⟨rfl, hss₂, same₂⟩
+  light_call (next_meetsP K C hi hss₁ same₁ hd) with _ μ₂ ⟨rfl, hss₂, same₂⟩
   exact ⟨void, val, μ₂, by simp [hsum], hss₂, same₂⟩
 
 /-! ## The two loops -/
 
 /-- Either loop: as long as there is a further string, one round. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean (Query.loop)
-theorem loopP (C : QueryCorePreP lim μ x) {round : Stmt} {lo hi base b : ℕ}
+theorem loopP (C : QueryCorePreP lim μ x) {round} {lo hi base b}
     (hround : ∀ i σ, i < (nineStrs x.m lo hi).length → Inv μ x lo hi base i σ →
       Ends lim P d round σ (b + 31) (Inv μ x lo hi base (i + 1)))
     (h : Inv μ x lo hi base 0 σ) :
-    Ends lim P d (.while (v More =' k 1) round) σ ((nineStrs x.m lo hi).length * (b + 90) + 4)
+    Ends lim P d (.while (v 11 =' k 1) round) σ ((nineStrs x.m lo hi).length * (b + 90) + 4)
       (Inv μ x lo hi base (nineStrs x.m lo hi).length) := by
-  have hc := C.std.const_le
-  have htime := Nat.mul_le_mul_left (nineStrs x.m lo hi).length
-    (show 1 + 1 + 1 + 1 + (b + 31) ≤ b + 90 by omega)
+  have  := C.std.const_le
+  have  := Nat.mul_le_mul_left (nineStrs x.m lo hi).length
+    (show 1 + 1 + 1 + 1 + b + 31 ≤ b + 90 by omega)
   refine Ends.whileConst (Inv μ x lo hi base) (nineStrs x.m lo hi).length (b + 31) h ?round ?done
-    (by simp only [Cond.cost, Expr.cost]; omega)
+    (by light_side)
   case round =>
     rintro i σ hi hI
     have hends := hround i σ hi hI
@@ -210,20 +222,20 @@ theorem loopP (C : QueryCorePreP lim μ x) {round : Stmt} {lo hi base b : ℕ}
     obtain ⟨code, value, μ', rfl, -⟩ := hI'
     exact ⟨by simp; omega, by simp, hI⟩
 
+include K C hd in
 /-- The leaves of order below t. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean (Query.low_spec)
-theorem low_specP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 ≤ lim.depth)
+theorem low_specP
     (ht : 1 ≤ x.t) (h : Mid μ x 0 σ) :
     Ends lim P d queryLow σ
       (tNineFirst x.m + lowCount x * (tScatter x.L + tHorner x.L + tNineNext x.m + 90) + 16)
       (Mid μ x (lowCount x)) := by
   obtain ⟨more, code, value, μ₀, rfl, same⟩ := h
-  have htm := C.t_le
   light_facts C C.std
   have hpos : 0 < lowCount x := length_nineStrs_pos (by omega) (by omega)
   -- nineFirst(ss, m, m - t + 1); more := 1
   light_call (K.nineFirst x.ss x.m (x.m - x.t + 1) μ₀ (by omega) C.ss_lt _
-    (by omega)) with _ μ₁ ⟨hss, same₁⟩
+    hd) with _ μ₁ ⟨hss, same₁⟩
   light_set 1
   -- the loop
   refine (loopP C (b := tScatter x.L + tHorner x.L + tNineNext x.m)
@@ -232,9 +244,10 @@ theorem low_specP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 �
     fun σ' hI => ?_
   simpa using hI.mid
 
+include K C hd in
 /-- The boxes. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean (Query.boxes_spec)
-theorem boxes_specP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 ≤ lim.depth)
+theorem boxes_specP
     (h : Mid μ x (lowCount x) σ) :
     Ends lim P d queryBoxes σ
       (tNineFirst x.m + boxCount x * (tScatter x.L + tLookup x.L + tNineNext x.m + 90) + 16)
@@ -243,7 +256,7 @@ theorem boxes_specP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1
   light_facts C.std
   have hpos : 0 < boxCount x := length_nineStrs_pos (by omega) le_rfl
   -- nineFirst(ss, m, m - t); more := 1
-  light_call (K.nineFirst x.ss x.m (x.m - x.t) μ₀ (by omega) C.ss_lt _ (by omega))
+  light_call (K.nineFirst x.ss x.m (x.m - x.t) μ₀ (by omega) C.ss_lt _ hd)
     with _ μ₁ ⟨hss, same₁⟩
   light_set 1
   -- the loop
@@ -252,22 +265,24 @@ theorem boxes_specP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1
     ⟨code, value, μ₁, by simp [hpos], hss, same_of_ss same same₁⟩).mono (by simp [boxCount]; omega)
     fun σ' hI => hI.mid
 
+include K C hd in
 /-- The boxes, and the result. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean (Query.tail_spec)
-theorem tail_specP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 ≤ lim.depth)
+theorem tail_specP
     (h : Mid μ x (lowCount x) σ) :
-    Ends lim P d (queryBoxes ;; .set EncA (v Sum)) σ
+    Ends lim P d (queryBoxes ;; .set 0 (v 10)) σ
       (tNineFirst x.m + boxCount x * (tScatter x.L + tLookup x.L + tNineNext x.m + 90) + 18)
       fun σ' =>
       σ'.loc 0 = trieQuery x.m x.t (arrT x.encA) (arrT x.encB) x.T x.root (digitsO x.η) ∧
         SameOutside2 μ σ'.mem x.ss x.m x.box x.L := by
   -- the boxes
   light_piece (boxes_specP K C hd h) with _ ⟨more, code, value, μ', rfl, same⟩
-  have hlen : x.terms.length = lowCount x + boxCount x := by
-    simp [QueryCoreArgs.terms, queryTerms, lowList, boxesOf]
+
   have hall : (x.terms.take (lowCount x + boxCount x)).sum
       = trieQuery x.m x.t (arrT x.encA) (arrT x.encB) x.T x.root (digitsO x.η) := by
-    rw [← hlen, List.take_length, QueryCoreArgs.terms, trieQuery]
+    rw [← (by
+      simp [QueryCoreArgs.terms, queryTerms, lowList, boxesOf]
+     : x.terms.length = lowCount x + boxCount x), List.take_length, QueryCoreArgs.terms, trieQuery]
   rw [hall]
   generalize trieQuery x.m x.t (arrT x.encA) (arrT x.encB) x.T x.root (digitsO x.η) = result
   -- return sum
@@ -281,19 +296,18 @@ open Query QueryP in
 assumption that the two encodings are right at the leaves with at most `m` symbols `P₀` only. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean (queryCore_spec)
 theorem queryCoreP_spec {lim : Limits} {P : Program}
-    (hP : P[Proc.queryCore]? = some queryCoreBody) (K : Callees lim P) : QueryCoreSpecP lim P := by
+    (hP : P[53]? = some queryCoreBody) (K : Callees lim P) : QueryCoreSpecP lim P := by
   intro x μ C
   refine fun d hd => ⟨queryCoreBody, hP, ?_⟩
-  have htm := C.t_le
   light_facts C C.std
-  have hlows : (lowList x.m x.t ([] : List ℕ)).length = lowCount x := by simp [lowList]
-  have hboxes : (boxesOf x.m x.t ([] : List ℕ)).length = boxCount x := by simp [boxesOf]
+
+
   unfold tQueryCore
-  rw [hlows, hboxes]
+  rw [(by simp [lowList] : (lowList x.m x.t []).length = lowCount x), (by simp [boxesOf] : (boxesOf x.m x.t []).length = boxCount x)]
   -- nines := m - t
   light_set (x.m - x.t : ℕ)
-  have hstart : Mid μ x 0 ⟨frame (setLocal [(x.aA : ℤ), x.aB, x.tr, x.root, x.wd, x.ss, x.box, x.L,
-      x.m, x.t] Nines (x.m - x.t : ℕ)), μ⟩ := ⟨0, 0, 0, μ, by simp, .refl⟩
+  have hstart : Mid μ x 0 ⟨frame (setLocal [x.aA, x.aB, x.tr, x.root, x.wd, x.ss, x.box, x.L,
+      x.m, x.t] Nines (x.m - x.t : ℕ)), μ⟩ := ⟨0, 0, 0, μ, rfl, .refl⟩
   -- if t = 0 there are no leaves of order below t
   light_if ht0 ht1 : x.t = 0
   · have hnone : lowCount x = 0 := by

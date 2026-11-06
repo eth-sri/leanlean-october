@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Areas
 
 /-!
@@ -21,22 +23,22 @@ establishes all of them (`SharedReady.dirCells`).
 
 namespace Light.Sec4
 
-open ThreeSumApsp
+
 
 /-- What the cells of the directory that the routines of Section 4 read hold. -/
-structure DirCells (p : Sec2.Par) (b0 : ℕ) (μ : ℕ → ℤ) : Prop where
-  levels : μ b0 = (p.L : ℕ)
-  inner : μ (b0 + 1) = (p.m : ℕ)
-  outer : μ ((b0 : ℤ) + 4).toNat = (p.Lo : ℕ)
-  blocks : μ ((b0 : ℤ) + 7).toNat = (p.K0 : ℕ)
-  bands : μ ((b0 : ℤ) + 9).toNat = (p.nB : ℕ)
-  leaves : μ ((b0 : ℤ) + 10).toNat = (p.T : ℕ)
-  mask : μ ((b0 : ℤ) + 21).toNat = (p.aMASK b0 : ℕ)
-  band : μ ((b0 : ℤ) + 22).toNat = (p.aBAND b0 : ℕ)
-  block : μ ((b0 : ℤ) + 23).toNat = (p.aBLOCK b0 : ℕ)
-  digits : μ ((b0 : ℤ) + 24).toNat = (p.aDIG3 b0 : ℕ)
-  encA : μ ((b0 : ℤ) + 26).toNat = (p.aENCA b0 : ℕ)
-  encB : μ ((b0 : ℤ) + 27).toNat = (p.aENCB b0 : ℕ)
-  sharedEnd : μ ((b0 : ℤ) + 30).toNat = (aWD p b0 : ℕ)
+structure DirCells (p : Sec2.Par) (b0 : ℕ) (μ : Light.Memory) : Prop where
+  levels : μ b0 = p.L
+  inner : μ (b0 + 1) = p.m
+  outer : μ ((b0 : ℤ) + 4).toNat = p.Lo
+  blocks : μ ((b0 : ℤ) + 7).toNat = p.K0
+  bands : μ ((b0 : ℤ) + 9).toNat = p.nB
+  leaves : μ ((b0 : ℤ) + 10).toNat = p.T
+  mask : μ ((b0 : ℤ) + 21).toNat = p.aMASK b0
+  band : μ ((b0 : ℤ) + 22).toNat = p.aBAND b0
+  block : μ ((b0 : ℤ) + 23).toNat = p.aBLOCK b0
+  digits : μ ((b0 : ℤ) + 24).toNat = p.aDIG3 b0
+  encA : μ ((b0 : ℤ) + 26).toNat = p.aENCA b0
+  encB : μ ((b0 : ℤ) + 27).toNat = p.aENCB b0
+  sharedEnd : μ ((b0 : ℤ) + 30).toNat = aWD p b0
 
 end Light.Sec4

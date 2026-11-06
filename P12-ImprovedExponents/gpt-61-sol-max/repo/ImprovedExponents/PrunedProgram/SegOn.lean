@@ -1,5 +1,8 @@
 module
 
+public import ThreeSumApsp.Util.Types
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 
 @[expose] public section
@@ -23,16 +26,15 @@ namespace Light
 
 open ThreeSumApsp ThreeSumApsp.Spec Finset
 
-variable {L m m' : ℕ} {μ μ' : ℕ → ℤ} {a : ℕ} {enc : Leaf L → ℤ}
+variable {L m m' : ℕ} {μ μ' : Light.Memory} {a : ℕ} {enc : Leaf L → ℤ}
 
 /-- The cells from `a` on hold the encoding `enc` at every leaf with at most `m` symbols `P₀`: the
 cell `a + codeT τ` holds `enc τ`.  Nothing is said about the other cells. -/
-def SegOn (m : ℕ) (μ : ℕ → ℤ) (a : ℕ) (enc : Leaf L → ℤ) : Prop :=
+def SegOn m (μ : Light.Memory) a (enc : Leaf L → ℤ) :=
   ∀ τ : Leaf L, (P0Levels τ).card ≤ m → μ (a + codeT τ) = enc τ
 
 /-- Reading the cell of a leaf with at most `m` symbols `P₀`. -/
-theorem SegOn.get (h : SegOn m μ a enc) {τ : Leaf L} (hτ : (P0Levels τ).card ≤ m) :
-    μ (a + codeT τ) = enc τ := h τ hτ
+def SegOn.get (h : SegOn m μ a enc) {τ} hτ := h τ hτ
 
 /-- The predicate only depends on the `10^L` cells of the array. -/
 theorem SegOn.congr (h : SegOn m μ a enc) (he : ∀ i < 10 ^ L, μ' (a + i) = μ (a + i)) :
@@ -41,30 +43,23 @@ theorem SegOn.congr (h : SegOn m μ a enc) (he : ∀ i < 10 ^ L, μ' (a + i) = �
 /-- The predicate is kept if the cells of the array do not change.  By the default proof of `hs`,
 the term `h.keep` carries `h` to a later memory across the steps whose promises are in the
 context. -/
-theorem SegOn.keep (h : SegOn m μ a enc) (hs : SameOn (Inside a (10 ^ L)) μ μ' := by light_keep) :
-    SegOn m μ' a enc :=
+def SegOn.keep (h : SegOn m μ a enc) (hs : SameOn (Inside a (10 ^ L)) μ μ' := by light_keep) :=
   h.congr fun i hi => hs _ ⟨by omega, by omega⟩
 
 /-- A leaf that contributes to an output string has the term `P₀` only at the inner levels of the
 string, since only `P_ij` contributes to `z_ij` (`Term.contributes_iff`). -/
-theorem P0Levels_subset_innerSetO {η : OutStr L} {τ : Leaf L} (h : τ.Contributes η) :
+theorem P0Levels_subset_innerSetO {η} {τ : Leaf L} (h : τ.Contributes η) :
     P0Levels τ ⊆ innerSetO η := by
   intro ℓ hℓ
   rw [P0Levels, mem_filter] at hℓ
   rw [innerSetO, mem_filter]
   refine ⟨mem_univ _, ?_⟩
-  have hc := (Term.contributes_iff _ _).1 (h ℓ)
-  rcases hc with hin | hpriv
+
+  rcases (Term.contributes_iff _ _).1 (h ℓ) with hin | hpriv
   · exact hin
   · rw [hℓ.2] at hpriv
     cases hz : η ℓ with
-    | z i j => rw [hz] at hpriv; exact absurd hpriv (by simp [OutVar.privateTerm])
+    | z i j => ram_arith [OutVar.privateTerm]
     | z0 => trivial
-
-/-- A leaf that contributes to an output string with `m` inner levels has at most `m` symbols
-`P₀`. -/
-theorem card_P0Levels_le_of_contributes {η : OutStr L} {τ : Leaf L} (h : τ.Contributes η) :
-    (P0Levels τ).card ≤ (innerSetO η).card :=
-  card_le_card (P0Levels_subset_innerSetO h)
 
 end Light

@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import ThreeSumApsp.Util.Types
+public import Mathlib.Tactic
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Parameters
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Areas
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Offline
@@ -33,59 +35,32 @@ of Theorem 30 uses too, and the routine meets its specification `OfflineSpec32` 
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
 
-variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ}
-  {Y : Matrix (Fin D₀) (Fin N) ℤ} {aX aY fr : ℕ} {U : ℤ} {μ μ' : ℕ → ℤ}
+
+variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : ThreeSumApsp.IntMatrix N D₀}
+  {Y : ThreeSumApsp.IntMatrix D₀ N} {aX aY fr : ℕ} {U : ℤ} {μ μ' : Light.Memory}
 
 /-! ## The text -/
 
 /-- The entry (XY)[I, J] for natural numbers I, J (0 outside the matrix). -/
-def entryN {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ) (Y : Matrix (Fin D₀) (Fin N) ℤ) (I J : ℕ) :
+def entryN {N D₀} (X : ThreeSumApsp.IntMatrix N D₀) (Y : ThreeSumApsp.IntMatrix D₀ N) (I J : ℕ) :
     ℤ :=
   if h : I < N ∧ J < N then (X * Y) ⟨I, h.1⟩ ⟨J, h.2⟩ else 0
 
-namespace Offline32
 
-/-- The locals of offline32. The first ten are its arguments: N, D, the number of positions, a bound
-that is not used, the addresses of X, of Y, of the rows and of the columns of the wanted positions
-and of the output, and the free pointer. Then come the number of the current position and the result
-of a call. -/
-abbrev Size : ℕ := 0
-@[inherit_doc Size] abbrev Dim : ℕ := 1
-@[inherit_doc Size] abbrev Count : ℕ := 2
-@[inherit_doc Size] abbrev MatX : ℕ := 4
-@[inherit_doc Size] abbrev MatY : ℕ := 5
-@[inherit_doc Size] abbrev Rows : ℕ := 6
-@[inherit_doc Size] abbrev Cols : ℕ := 7
-@[inherit_doc Size] abbrev Out : ℕ := 8
-@[inherit_doc Size] abbrev Free : ℕ := 9
-@[inherit_doc Size] abbrev Pos : ℕ := 10
-@[inherit_doc Size] abbrev Res : ℕ := 11
-
-end Offline32
-
-open Offline32 in
 /-- One round of offline32: ask the query for the current position and store its answer. -/
-def offlineAsk32 : Stmt :=
-  .call Proc.query31 [M (v Rows +' v Pos), M (v Cols +' v Pos), v Size, v Dim, v MatX, v MatY,
-    v Free] Res ;;
-  .store (v Out +' v Pos) (v Res)
-
-open Offline32 in
-/-- offline32(N, D, w, U, x, y, wi, wj, out, fr): preprocess, then ask one query for each wanted
-position and store its answer. -/
-def offline32Body : Stmt :=
-  .call Proc.pre31 [v Size, v Dim, v MatX, v MatY, v Free] Res ;;
-  .for Pos (v Count) offlineAsk32
+def offlineAsk32  :=
+  .call 65 [M (v 6 +' v 10), M (v 7 +' v 10), v 0, v 1, v 4, v 5,
+    v 9] 11 ;;
+  .store (v 8 +' v 10) (v 11)
 
 /-! ## What it does -/
 
 /-- **Where the input of offline32 stands**, beyond what `Input31` says: the matrices at aX and aY;
 the two lists of indices, which are below N, and the output, all below the free pointer; and the
 output meets neither the matrices nor the lists. -/
-structure OfflineInput32 {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ) (Y : Matrix (Fin D₀) (Fin N) ℤ)
-    (aX aY aI aJ out fr : ℕ) (WI WJ : List ℕ) (μ : ℕ → ℤ) : Prop where
+structure OfflineInput32 {N D₀ : ℕ} (X : ThreeSumApsp.IntMatrix N D₀) (Y : ThreeSumApsp.IntMatrix D₀ N)
+    (aX aY aI aJ out fr : ℕ) (WI WJ : List ℕ) (μ : Light.Memory) : Prop where
   matX : MatAt μ aX X
   matY : MatAt μ aY Y
   rows : SegN μ aI WI

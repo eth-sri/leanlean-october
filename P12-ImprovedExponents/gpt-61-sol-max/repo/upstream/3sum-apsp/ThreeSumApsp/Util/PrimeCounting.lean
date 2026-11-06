@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import Mathlib.NumberTheory.Chebyshev
 
 /-!
@@ -28,12 +29,12 @@ namespace Nat
 open Finset
 
 /-- There are at most `m` primes up to `m`. -/
-theorem card_primesLE_le (m : ℕ) : #(Nat.primesLE m) ≤ m := by
+theorem card_primesLE_le m : #(Nat.primesLE m) ≤ m := by
   rw [Nat.primesLE_eq_filter_Icc_one]
   exact (card_filter_le _ _).trans_eq (by simp)
 
 /-- A lower bound of Chebyshev's type in natural numbers: `m ≤ (⌊log₂ m⌋ + 1)(π(m) + 1)`. -/
-theorem le_log_mul_card_primesLE (m : ℕ) : m ≤ (Nat.log 2 m + 1) * (#(Nat.primesLE m) + 1) := by
+theorem le_log_mul_card_primesLE m : m ≤ (Nat.log 2 m + 1) * (#(Nat.primesLE m) + 1) := by
   rcases Nat.eq_zero_or_pos m with rfl | hm
   · simp
   set l := Nat.log 2 m
@@ -43,22 +44,21 @@ theorem le_log_mul_card_primesLE (m : ℕ) : m ≤ (Nat.log 2 m + 1) * (#(Nat.pr
     _ = (m + 1) * ∏ p ∈ Nat.primesLE m, p ^ p.log m := by rw [Nat.lcmUpto_eq_prod_pow_log]
     _ ≤ 2 ^ (l + 1) * (2 ^ (l + 1)) ^ #(Nat.primesLE m) := Nat.mul_le_mul hlt
         (prod_le_pow_card _ _ _ fun p _ => (Nat.pow_log_le_self p hm.ne').trans hlt.le)
-    _ = 2 ^ ((l + 1) * (#(Nat.primesLE m) + 1)) := by rw [← pow_succ', ← pow_mul]
+    _ = 2 ^ ((l + 1) * (#(Nat.primesLE m) + 1)) := by ring
 
 /-- There are at least `w` primes up to `(w + 1)(2⌊log₂(w + 1)⌋ + 4)`. -/
-theorem le_card_primesLE_mul_log (w : ℕ) :
+theorem le_card_primesLE_mul_log w :
     w ≤ #(Nat.primesLE ((w + 1) * (2 * Nat.log 2 (w + 1) + 4))) := by
   set a := Nat.log 2 (w + 1)
   set m := (w + 1) * (2 * a + 4) with hm
-  have hw : w + 1 < 2 ^ (a + 1) := Nat.lt_pow_succ_log_self (by norm_num) _
-  have ha : 2 * a + 4 ≤ 2 ^ (a + 2) := by
-    have := Nat.lt_two_pow_self (n := a + 1)
-    rw [pow_succ]
-    omega
-  have hlog : Nat.log 2 m < 2 * a + 3 := Nat.log_lt_of_lt_pow (by positivity) <|
-    calc m < 2 ^ (a + 1) * 2 ^ (a + 2) := Nat.mul_lt_mul_of_lt_of_le hw ha (by positivity)
-      _ = 2 ^ (2 * a + 3) := by rw [← pow_add]; congr 1; omega
-  have hlt : (2 * a + 3) * (w + 1) < (2 * a + 3) * (#(Nat.primesLE m) + 1) :=
+
+
+  have hlog := Nat.log_lt_of_lt_pow (by positivity) <|
+    calc m < 2 ^ (a + 1) * 2 ^ (a + 2) := Nat.mul_lt_mul_of_lt_of_le (Nat.lt_pow_succ_log_self (by norm_num) _) (by
+      grind [Nat.lt_two_pow_self]
+     : 2 * a + 4 ≤ 2 ^ (a + 2)) (by positivity)
+      _ = 2 ^ (2 * a + 3) := by ring
+  have hlt :=
     calc (2 * a + 3) * (w + 1) < (2 * a + 4) * (w + 1) :=
           Nat.mul_lt_mul_of_pos_right (by omega) (by omega)
       _ = m := mul_comm _ _

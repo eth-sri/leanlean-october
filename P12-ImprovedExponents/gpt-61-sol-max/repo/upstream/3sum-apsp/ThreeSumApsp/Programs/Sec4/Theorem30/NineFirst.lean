@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
@@ -25,84 +27,67 @@ Each of the two loops writes one digit again and again while a test holds (`fill
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
-namespace Nine
-
-/-- The local variables that nineFirst and nineNext share: the address of the string, its length,
-the least number of nines, the current position, and the number of nines that are still to be
-written.  Local 0 also takes the result. -/
-abbrev Str : ℕ := 0
-@[inherit_doc Str] abbrev Result : ℕ := 0
-@[inherit_doc Str] abbrev Len : ℕ := 1
-@[inherit_doc Str] abbrev MinNines : ℕ := 2
-@[inherit_doc Str] abbrev Pos : ℕ := 4
-@[inherit_doc Str] abbrev Need : ℕ := 10
-
-end Nine
-
-open Nine
 
 /-! ## One digit again and again -/
 
 /-- While the test holds: mem[str + pos] := c; pos := pos + 1. -/
 def fillRun (test : Cond) (c : ℕ) : Stmt :=
   .while test (
-    .store (v Str +' v Pos) (k c) ;;
-    .set Pos (v Pos +' k 1))
+    .store (v 0 +' v 4) (k c) ;;
+    .set 4 (v 4 +' k 1))
 
 /-- The cells that have been written hold the digit. -/
-private theorem segN_wrote_const (μ : ℕ → ℤ) (dst c n : ℕ) :
-    SegN (wrote μ dst (fun _ => (c : ℤ)) n) dst (List.replicate n c) := fun i hi => by
+private theorem segN_wrote_const μ (dst c n : ℕ) :
+    SegN (wrote μ dst (fun _ => c) n) dst (List.replicate n c) := fun i hi => by
   rw [wrote_done (by simpa using hi)]
   simp
 
 /-- **The rule for fillRun.**  The test is safe and holds in the first cnt rounds and no longer; it
 may depend on the position, not on the memory.  Then the digit c is written into cnt cells.  (A
 constant up to 100 fits in a word.) -/
-theorem Ends.fillRun (hs : Std lim) {test : Cond} {c a i₀ cnt T : ℕ} {loc μ : ℕ → ℤ}
-    {Q : State → Prop} (hc : c ≤ 100) (ha : a + (i₀ + cnt) < lim.space) (hstr : loc Str = a)
-    (hpos : loc Pos = i₀)
-    (htest : ∀ j ≤ cnt, ∀ μ', test.Safe lim ⟨Function.update loc Pos ((i₀ + j : ℕ) : ℤ), μ'⟩ ∧
-      (test.Holds ⟨Function.update loc Pos ((i₀ + j : ℕ) : ℤ), μ'⟩ ↔ j < cnt))
-    (done : Q ⟨Function.update loc Pos ((i₀ + cnt : ℕ) : ℤ),
-      wrote μ (a + i₀) (fun _ => (c : ℤ)) cnt⟩)
-    (hT : cnt * (test.cost + 1 + 9) + (test.cost + 1) ≤ T := by light_time) :
+theorem Ends.fillRun (hs : Std lim) {test} {c a i₀ cnt T} {loc μ : Light.Memory}
+    {Q} (hc : c ≤ 100) (ha : a + (i₀ + cnt) < lim.space) (hstr : loc 0 = a)
+    (hpos : loc 4 = i₀)
+    (htest : ∀ j ≤ cnt, ∀ μ', test.Safe lim ⟨Function.update loc 4 (i₀ + j : ℕ), μ'⟩ ∧
+      (test.Holds ⟨Function.update loc 4 (i₀ + j : ℕ), μ'⟩ ↔ j < cnt))
+    (done : Q ⟨Function.update loc 4 (i₀ + cnt : ℕ),
+      wrote μ (a + i₀) (fun _ => c) cnt⟩)
+    (hT : cnt * (test.cost + 1 + 9) + test.cost + 1 ≤ T := by light_time) :
     Ends lim P d (fillRun test c) ⟨loc, μ⟩ T Q := by
   light_facts hs
-  refine Ends.whileBlock (fun j σ => σ = ⟨Function.update loc Pos ((i₀ + j : ℕ) : ℤ),
-    wrote μ (a + i₀) (fun _ => (c : ℤ)) j⟩) cnt ?start ?round ?done hT
+  refine Ends.whileBlock (fun j σ => σ = ⟨Function.update loc 4 (i₀ + j : ℕ),
+    wrote μ (a + i₀) (fun _ => c) j⟩) cnt ?start ?round ?done hT
   case start => rw [wrote_zero, Nat.add_zero, ← hpos, Function.update_eq_self]
   case round =>
     rintro j _ hj rfl
-    have haddr : ((a : ℤ) + ((i₀ : ℤ) + j)).toNat = a + i₀ + j := by omega
+
     refine ⟨(htest j hj.le _).1, (htest j hj.le _).2.mpr hj,
       by light_side [hstr], ?_⟩
     rw [← wrote_succ]
-    simp [hstr, haddr, add_assoc]
+    simp [hstr, (by omega : ((a : ℤ) + ((i₀ : ℤ) + j)).toNat = a + i₀ + j), add_assoc]
   case done =>
-    rintro _ rfl
-    exact ⟨(htest cnt le_rfl _).1, fun h => absurd ((htest cnt le_rfl _).2.mp h) (lt_irrefl _),
-      done⟩
+    simp_all
 
 /-! ## Zeros and then nines up to the end of the string -/
 
 /-- Writes zeros from the current position on as long as more than need cells remain, and nines into
 the remaining cells. -/
-def fillTail : Stmt :=
-  fillRun (v Pos +' v Need <' v Len) 0 ;;
-  fillRun (v Pos <' v Len) 9
+def fillTail :=
+  fillRun (v 4 +' v 10 <' v 1) 0 ;;
+  fillRun (v 4 <' v 1) 9
 
 /-- fillTail writes the least string with need nines into the cells from the position i₀ on. -/
-theorem fillTail_spec (hs : Std lim) {μ : ℕ → ℤ} {a n i₀ need : ℕ} (ha : a + n < lim.space)
-    (hfit : i₀ + need ≤ n) (loc : ℕ → ℤ) (hstr : loc Str = a) (hlen : loc Len = n)
-    (hpos : loc Pos = i₀) (hneed : loc Need = need) :
+theorem fillTail_spec (hs : Std lim) {μ} {a n i₀ need} (ha : a + n < lim.space)
+    (hfit : i₀ + need ≤ n) (loc : Light.Memory) (hstr : loc 0 = a) (hlen : loc 1 = n)
+    (hpos : loc 4 = i₀) (hneed : loc 10 = need) :
     Ends lim P d fillTail ⟨loc, μ⟩ (15 * (n - i₀) + 10) fun σ' =>
-      σ'.loc = Function.update loc Pos n ∧ SegN σ'.mem (a + i₀) (nineFirst (n - i₀) need) ∧
+      σ'.loc = Function.update loc 4 n ∧ SegN σ'.mem (a + i₀) (nineFirst (n - i₀) need) ∧
         SameOutside μ σ'.mem (a + i₀) (n - i₀) := by
-  have hw := hs.space_le
+
   have hmid : i₀ + (n - i₀ - need) = n - need := by omega
   -- zeros while pos + need < len
   refine Ends.next _ (Ends.fillRun hs (a := a) (i₀ := i₀) (cnt := n - i₀ - need) (by norm_num)
@@ -114,12 +99,12 @@ theorem fillTail_spec (hs : Std lim) {μ : ℕ → ℤ} {a n i₀ need : ℕ} (h
     (by simp; omega)
   -- the zeros are kept by the second loop, and both loops stay within the n - i₀ cells
   have hzeros := segN_wrote_const μ (a + i₀) 0 (n - i₀ - need)
-  have hsame₀ : SameOutside μ (wrote μ (a + i₀) (fun _ => ((0 : ℕ) : ℤ)) (n - i₀ - need)) (a + i₀)
+  have hsame₀ : SameOutside μ (wrote μ (a + i₀) (fun _ => (0 : ℕ)) (n - i₀ - need)) (a + i₀)
       (n - i₀ - need) := sameOutside_wrote le_rfl
-  generalize wrote μ (a + i₀) (fun _ => ((0 : ℕ) : ℤ)) (n - i₀ - need) = μ₀ at hzeros hsame₀ ⊢
-  have hsame₉ : SameOutside μ₀ (wrote μ₀ (a + (n - need)) (fun _ => ((9 : ℕ) : ℤ)) need)
+  generalize wrote μ (a + i₀) (fun _ => (0 : ℕ)) (n - i₀ - need) = μ₀ at hzeros hsame₀ ⊢
+  have hsame₉ : SameOutside μ₀ (wrote μ₀ (a + (n - need)) (fun _ => (9 : ℕ)) need)
       (a + (n - need)) need := sameOutside_wrote le_rfl
-  refine ⟨by simp [Nat.sub_add_cancel (show need ≤ n by omega)], ?_,
+  refine ⟨by grind, ?_,
     (hsame₀.mono le_rfl (by omega)).trans (hsame₉.mono (by omega) (by omega))⟩
   have hdst : a + i₀ + (List.map (fun x : ℕ => (x : ℤ)) (List.replicate (n - i₀ - need) 0)).length
       = a + (n - need) := by simp; omega
@@ -129,17 +114,16 @@ theorem fillTail_spec (hs : Std lim) {μ : ℕ → ℤ} {a n i₀ need : ℕ} (h
 /-! ## The least string -/
 
 /-- nineFirst(str, len, minNines): the least string from the position 0 on. -/
-def nineFirstBody : Stmt :=
-  .set Pos (k 0) ;;
-  .set Need (v MinNines) ;;
+def nineFirstBody :=
+  .set 4 (k 0) ;;
+  .set 10 (v 2) ;;
   fillTail
 
 /-- **nineFirst** writes the least string of n digits with lo nines. -/
-theorem nineFirst_spec (hP : P[Proc.nineFirst]? = some nineFirstBody) (hs : Std lim) :
+theorem nineFirst_spec (hP : P[40]? = some nineFirstBody) (hs : Std lim) :
     NineFirstSpec lim P := by
   intro a n lo μ hlo ha
   refine fun d _ => ⟨nineFirstBody, hP, ?_⟩
-  have hword := hs.const_le
   unfold tNineFirst
   -- pos := 0; need := minNines
   light_set (0 : ℕ)

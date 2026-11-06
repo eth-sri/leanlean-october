@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Sec2.Lemma7_8
 
 /-!
@@ -35,7 +36,7 @@ are proved for any two arrays in place of the two encodings.
 
 @[expose] public section
 
-open Finset
+
 
 namespace ThreeSumApsp
 
@@ -46,40 +47,29 @@ without step (4): […] the left number at the leaf τ is Φ_τ(a), and the leaf
 of `Full` is step (2) for `a`, the recursive calls of step (3), and at depth `L` the number that has
 been reached. "The encoding of b […] is computed in the same way", so the procedure is written once,
 for the coefficients `c` of any family of linear forms: `c = φ` for `a`, and `c = ψ` for `b`. -/
-def computeEncoding {α : Type} [Fintype α] (c : Term → α → ℤ) :
+def computeEncoding {α} [Fintype α] (c : Term → α → ℤ) :
     (L : ℕ) → ((Fin L → α) → ℤ) → Leaf L → ℤ
   | 0, a, _ => a Fin.elim0
   | L + 1, a, τ => computeEncoding c L (fun u' => ∑ s, c (τ 0) s * sliceAt a s u') (Fin.tail τ)
 
 /-- At the leaf `τ` the procedure of Section 2.4.1 stores `∑_u a[u] ∏_ℓ c_{τ_ℓ}(u_ℓ)`. -/
-theorem computeEncoding_eq_encodeWith {α : Type} [Fintype α] (c : Term → α → ℤ) {L : ℕ}
-    (a : (Fin L → α) → ℤ) (τ : Leaf L) : computeEncoding c L a τ = encodeWith c τ a := by
+theorem computeEncoding_eq_encodeWith {α} [Fintype α] c {L}
+    (a : (Fin L → α) → ℤ) τ : computeEncoding c L a τ = encodeWith c τ a := by
   induction L with
   | zero => rw [computeEncoding, encodeWith_zero]
   | succ n ih => rw [computeEncoding, ih, ← encodeWith_cons, Fin.cons_self_tail]
 
 /-- The procedure of Section 2.4.1 computes the encoding of `a`. -/
-theorem computeEncoding_phi {L : ℕ} (a : LeftStr L → ℤ) : computeEncoding phi L a = encodingL a :=
+theorem computeEncoding_phi {L} a : computeEncoding phi L a = encodingL a :=
   funext (computeEncoding_eq_encodeWith phi a)
 
 /-- The procedure of Section 2.4.1 computes the encoding of `b`. -/
-theorem computeEncoding_psi {L : ℕ} (b : RightStr L → ℤ) : computeEncoding psi L b = encodingR b :=
+theorem computeEncoding_psi {L} b : computeEncoding psi L b = encodingR b :=
   funext (computeEncoding_eq_encodeWith psi b)
 
 /-! ### Section 2.4.2: the sets `S_λ` of step (2) -/
 
-/-- Membership in a slice of a set of output strings. -/
-@[simp]
-theorem mem_sliceSet {n : ℕ} (S : Finset (OutStr (n + 1))) (z : OutVar) (w' : OutStr n) :
-    w' ∈ sliceSet S z ↔ (Fin.cons z w' : OutStr (n + 1)) ∈ S := by
-  simp [sliceSet]
-
 /-! ### Lemma 10, first claim: the values -/
-
-/-- An array restricted to the empty set is the zero array. -/
-@[simp]
-theorem restrictTo_empty {n : ℕ} (c : OutStr n → ℤ) : restrictTo ∅ c = 0 :=
-  rfl
 
 /-! ### Lemma 10, second claim: the calls that are made and the sets passed to them -/
 

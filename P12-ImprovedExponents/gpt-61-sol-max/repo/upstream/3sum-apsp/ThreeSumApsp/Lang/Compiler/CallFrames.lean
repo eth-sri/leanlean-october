@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Lang.Compiler.Conditions
 
 /-!
@@ -29,20 +30,23 @@ variable {W : ℕ} {Z : Sizes W} {σ : State} {q : ℕ} {m : ℤ → BitVec W}
 /-! ## The arguments -/
 
 /-- The code of the arguments only changes the memory. -/
-theorem straight_argsCode : ∀ (es : List Expr) (k : ℕ), ∀ i ∈ argsCode es k, Straight i
+theorem straight_argsCode : ∀ (es ) (k ), ∀ i ∈ argsCode es k, Straight i
   | [], _ => by simp [argsCode]
   | e :: es, k => List.forall_mem_append.2 ⟨straight_compileExpr e k, straight_argsCode es (k + 1)⟩
 
+variable (I : Framed Z σ q m)
+
+include I in
 /-- The code of the arguments leaves their values in T_k, T_{k+1}, … and changes nothing but ADDR
 and the temporaries from T_k on. -/
-theorem effects_argsCode (I : Framed Z σ q m) (es : List Expr) (k : ℕ)
+theorem effects_argsCode  es k
     (hw : ∀ e ∈ es, e.width ≤ Z.F) (hs : ∀ e ∈ es, e.Safe Z.lim σ)
     (hk : k + es.length ≤ Z.F + 1) :
     (∀ i < es.length,
         effects (argsCode es k) m (cT (k + i)) = wd W (frame (es.map (·.val σ)) i)) ∧
       AgreeOutside (Temps k Z.F) m (effects (argsCode es k) m) := by
   induction es generalizing k m with
-  | nil => exact ⟨fun i h => absurd h (by simp), AgreeOutside.refl _ m⟩
+  | nil => aesop (add safe apply [AgreeOutside.refl])
   | cons e es ih =>
     obtain ⟨hwe, hwes⟩ := List.forall_mem_cons.1 hw
     obtain ⟨hse, hses⟩ := List.forall_mem_cons.1 hs
@@ -60,11 +64,11 @@ theorem effects_argsCode (I : Framed Z σ q m) (es : List Expr) (k : ℕ)
 /-! ## The new frame -/
 
 /-- The code for one more local variable. -/
-private theorem frameInit_succ (F' n : ℕ) : frameInit (F' + 1) n = frameInit F' n ++
+private theorem frameInit_succ F' n : frameInit (F' + 1) n = frameInit F' n ++
     [.sub cADDR cNFP (cPool (2 * F')), .store cADDR (if F' < n then cT F' else cZERO)] := by
   simp [frameInit, List.range_succ, List.flatMap_append]
 
-private theorem straight_frameInit (n : ℕ) : ∀ F' : ℕ, ∀ i ∈ frameInit F' n, Straight i
+private theorem straight_frameInit n : ∀ F' , ∀ i ∈ frameInit F' n, Straight i
   | 0 => by simp [frameInit]
   | F' + 1 => by
     rw [frameInit_succ]
@@ -72,14 +76,14 @@ private theorem straight_frameInit (n : ℕ) : ∀ F' : ℕ, ∀ i ∈ frameInit
 
 /-- The code that fills the first F' local variables of the new frame at q': the first n from the
 temporaries, the others with 0.  It changes nothing but ADDR and stack cells from q' on. -/
-private theorem effects_frameInit (Z : Sizes W) (n q' F' : ℕ) (m : ℤ → BitVec W)
+private theorem effects_frameInit (Z : Sizes W) n q' F' m
     (hNFP : m cNFP = wd W (cStack q'))
-    (hpool : ∀ i < F', m (cPool (2 * i)) = wd W ((2 * i : ℕ) : ℤ)) (hQ : q' + F' ≤ Z.Q) :
+    (hpool : ∀ i < F', m (cPool (2 * i)) = wd W (2 * i : ℕ)) (hQ : q' + F' ≤ Z.Q) :
     (∀ i < F',
         effects (frameInit F' n) m (cStack (q' + i)) = if i < n then m (cT i) else m cZERO) ∧
       AgreeOutside (insert cADDR (Stack q' Z.Q)) m (effects (frameInit F' n) m) := by
   induction F' with
-  | zero => exact ⟨fun i h => absurd h (by omega), AgreeOutside.refl _ m⟩
+  | zero => aesop (add safe apply [AgreeOutside.refl])
   | succ F' ih =>
     obtain ⟨val, A⟩ := ih (fun i hi => hpool i (by omega)) (by omega)
     -- ADDR := NFP - 2 F'; the cell at ADDR := T_{F'} or 0
@@ -93,16 +97,17 @@ private theorem effects_frameInit (Z : Sizes W) (n q' F' : ℕ) (m : ℤ → Bit
     · cell_read using val i (by omega)
 
 /-- The code of the new frame only changes the memory. -/
-theorem straight_newFrame (F n ret : ℕ) : ∀ i ∈ newFrame F n ret, Straight i :=
+theorem straight_newFrame F n ret : ∀ i ∈ newFrame F n ret, Straight i :=
   List.forall_mem_append.2 ⟨List.forall_mem_append.2 ⟨by simp [Straight], straight_frameInit n F⟩,
     by simp [Straight]⟩
 
+include I in
 /-- The new frame.  If T₀, T₁, … hold the values of the arguments, then afterwards the memory
 represents the state in which the procedure starts, in the frame q + F + 1, and the stack cell
 before that frame holds the position to return to.  Of the stack, only cells from q + F on have
 changed. -/
-theorem effects_newFrame (I : Framed Z σ q m) (hQ : q + Z.F + 1 + Z.F ≤ Z.Q) (args : List Expr)
-    (hargs : ∀ i < args.length, m (cT i) = wd W (frame (args.map (·.val σ)) i)) {ret : ℕ}
+theorem effects_newFrame  (hQ : q + Z.F + 1 + Z.F ≤ Z.Q) (args : List Expr)
+    (hargs : ∀ i < args.length, m (cT i) = wd W (frame (args.map (·.val σ)) i)) {ret}
     (hret : ret ≤ Z.disp) :
     Rel Z ⟨frame (args.map (·.val σ)), σ.mem⟩ (q + Z.F + 1)
         (effects (newFrame Z.F args.length ret) m) ∧
@@ -118,10 +123,10 @@ theorem effects_newFrame (I : Framed Z σ q m) (hQ : q + Z.F + 1 + Z.F ≤ Z.Q) 
   have A₁ := (AgreeOutside.refl (Scratch Z.F ∪ Stack (q + Z.F) Z.Q) m).update (a := cNFP) (by cells)
     (wd W (cStack (q + Z.F + 1)))
   -- the local variables of the new frame
-  obtain ⟨val, A⟩ := effects_frameInit Z args.length (q + Z.F + 1) Z.F _
+  obtain ⟨val, A⟩ := effects_frameInit Z args.length _ Z.F _
     (Function.update_self cNFP _ m) (fun i hi => (R.beyond hq A₁).pool _ (by omega)) hQ
   generalize effects (frameInit Z.F args.length) _ = m₂ at val A ⊢
-  have hNFP : m₂ cNFP = wd W (cStack (q + Z.F + 1)) :=
+  have hNFP :=
     A.read (by cells) (Function.update_self _ _ _)
   have A₂ := A₁.trans (A.mono (by cells))
   -- ADDR := NFP + 2

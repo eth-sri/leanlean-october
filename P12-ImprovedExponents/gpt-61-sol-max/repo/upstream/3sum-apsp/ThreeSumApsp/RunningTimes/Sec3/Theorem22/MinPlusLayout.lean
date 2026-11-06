@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Lang.TopProcedure
 public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Spec.Sec3.Theorem21b.RepeatedSquaring
@@ -27,32 +29,30 @@ attained, and it is a lower bound (`post_minPlusProduct`).
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.WordRam ThreeSumApsp.Spec
+open ThreeSumApsp.WordRam ThreeSumApsp.Spec
 
 /-- The input: the size and the two matrices, row by row. -/
-theorem input_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) :
+theorem input_minPlusProduct x :
     (ofEnd EndStatement.MinPlusProduct).input x =
       (x.n : ℤ) :: (rowMajor x.x.1 ++ rowMajor x.x.2) := by
   simp only [EndStatement.MinPlusProduct, rowByRow_eq]
 
 /-- The input takes 1 + 2n² cells. -/
-theorem length_input_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) :
+theorem length_input_minPlusProduct x :
     ((ofEnd EndStatement.MinPlusProduct).input x).length = 1 + 2 * (x.n * x.n) := by
-  rw [input_minPlusProduct, List.length_cons, List.length_append, length_rowMajor,
-    length_rowMajor]
-  omega
+  grind [input_minPlusProduct, length_rowMajor]
 
 /-- The entries of the two matrices are within the bound. -/
-theorem abs_le_of_mem_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) {a : ℤ}
+theorem abs_le_of_mem_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) {a}
     (ha : a ∈ rowMajor x.x.1 ++ rowMajor x.x.2) : |a| ≤ (x.U : ℤ) :=
-  Bounded.abs_le (by simpa only [EndStatement.MinPlusProduct, rowByRow_eq] using ha)
+  Bounded.abs_le (by ram_arith [EndStatement.MinPlusProduct, rowByRow_eq])
 
 /-- The instance of the task: where the two matrices and the product stand. -/
 def minPlusInst (x : Bounded EndStatement.MinPlusProduct) : mpTask.Inst :=
   ⟨x.n, x.U, 1, 1 + x.n * x.n, 1 + 2 * (x.n * x.n), rowMajor x.x.1, rowMajor x.x.2⟩
 
 /-- The input of the end statement meets the precondition of the task. -/
-theorem pre_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) (hn : 1 ≤ x.n)
+theorem pre_minPlusProduct x (hn : 1 ≤ x.n)
     (hU : 1 ≤ x.U) :
     mpTask.Pre (minPlusInst x) (memOf ((ofEnd EndStatement.MinPlusProduct).input x))
       (1 + 3 * (x.n * x.n)) := by
@@ -77,7 +77,7 @@ theorem pre_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) (hn : 1 ≤
 
 /-- What the task leaves in the output cells is the (min,+)-product as the end statement asks for
 it. -/
-theorem post_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) (r : ℤ) (μ' : ℕ → ℤ)
+theorem post_minPlusProduct x r μ'
     (hn : 1 ≤ x.n)
     (h : mpTask.Post (minPlusInst x) (memOf ((ofEnd EndStatement.MinPlusProduct).input x))
       (1 + 3 * (x.n * x.n)) r μ') :
@@ -88,14 +88,14 @@ theorem post_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) (r : ℤ) 
   refine ⟨by simp [verdictOf, EndStatement.MinPlusProduct], fun i j => ?_⟩
   -- the output cell of the pair (i, j) holds the entry of the list
   have hcell : μ' (((ofEnd EndStatement.MinPlusProduct).input x).length +
-      ((i : ℕ) * x.n + (j : ℕ))) = minPlusEntry x.n (rowMajor x.x.1) (rowMajor x.x.2) i j := by
+      (i * x.n + j)) = minPlusEntry x.n (rowMajor x.x.1) (rowMajor x.x.2) i j := by
     rw [length_input_minPlusProduct,
       hseg.getD (by rw [length_minPlusList]; exact Nat.mul_add_lt_mul i.isLt j.isLt) 0]
     exact entry_minPlusList _ _ i.isLt j.isLt
   obtain ⟨l, hl, hmin⟩ := exists_minPlusEntry_eq hn (rowMajor x.x.1) (rowMajor x.x.2) i j
   refine ⟨⟨⟨l, hl⟩, hcell.trans ?_⟩, fun l' => hcell.le.trans ?_⟩
   · -- the entry is attained
-    rw [hmin, entry, entry, getD_rowMajor x.x.1 i ⟨l, hl⟩, getD_rowMajor x.x.2 ⟨l, hl⟩ j]
+    grind [getD_rowMajor]
   · -- the entry is a lower bound
     have := minPlusEntry_le x.n (rowMajor x.x.1) (rowMajor x.x.2) i j l'.isLt
     rwa [entry, entry, getD_rowMajor x.x.1 i l', getD_rowMajor x.x.2 l' j] at this
@@ -110,7 +110,7 @@ def wrapMinPlus : Wrap EndStatement.MinPlusProduct mpTask false where
   bound_eq _ := rfl
   fr_pos x := by omega
   fr_le x := by omega
-  vals x σ hn hU hnn := by simp [mpTask, minPlusInst, hn, hU, hnn]
+  vals x σ hn hU hnn := by aesop
   safe x lim σ _ _ hnn hw := safe_fourAddresses (by omega) hnn hw
   zero x hn _ := ⟨⟨fun _ => trivial, fun _ => rfl⟩, fun i => absurd i.isLt (by omega)⟩
   pre := pre_minPlusProduct
@@ -118,7 +118,7 @@ def wrapMinPlus : Wrap EndStatement.MinPlusProduct mpTask false where
 
 /-- **The (min,+)-product**: if the task is solved in time T, then the product is computed on the
 word RAM within a constant times T. -/
-theorem realized_minPlusProduct (T : ℕ → ℝ → ℝ) (h : SolvedIn mpTask T) :
+theorem realized_minPlusProduct T (h : SolvedIn mpTask T) :
     Realized EndStatement.MinPlusProduct T :=
   wrapMinPlus.realized h
 

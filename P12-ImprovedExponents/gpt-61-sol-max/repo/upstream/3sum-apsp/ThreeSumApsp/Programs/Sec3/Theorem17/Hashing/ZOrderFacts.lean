@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Lang.Lib.Seg
 public import ThreeSumApsp.Spec.Sec3.Theorem17.ZOrder
 public import Mathlib.Tactic.Common
@@ -25,10 +26,10 @@ public section
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-- The number whose digits in base 4 are the binary digits of i is at most i². -/
-theorem spread_le_sq (i : ℕ) : spread i ≤ i * i := by
+theorem spread_le_sq i : spread i ≤ i * i := by
   induction i using Nat.strong_induction_on with
   | _ i ih =>
     rcases Nat.eq_zero_or_pos i with rfl | hi
@@ -41,15 +42,14 @@ theorem spread_le_sq (i : ℕ) : spread i ≤ i * i := by
       rw [show (2 * q + b) % 2 = b by omega]
       nlinarith
 
-theorem spreadList_succ (i : ℕ) : spreadList (i + 1) = spreadList i ++ [((spread i : ℕ) : ℤ)] := by
+theorem spreadList_succ i : spreadList (i + 1) = spreadList i ++ [(spread i : ℤ)] := by
   simp [spreadList, List.range_succ]
 
-theorem length_spreadList (i : ℕ) : (spreadList i).length = i := by simp [spreadList]
+theorem length_spreadList i : (spreadList i).length = i := by simp [spreadList]
 
 /-- A cell of the table. -/
-theorem seg_spreadList_get {μ : ℕ → ℤ} {a n i : ℕ} (h : Seg μ a (spreadList n)) (hi : i < n) :
-    μ (a + i) = (spread i : ℕ) := by
-  have := h i (by rw [length_spreadList]; exact hi)
+def seg_spreadList_get {μ} {a n i} (h : Seg μ a (spreadList n)) (hi : i < n) := by
+  have := h i (by grind [length_spreadList])
   simpa [spreadList] using this
 
 end Light.Sec3

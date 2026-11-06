@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Sec3.Theorem17.Instances
 public import Mathlib.Combinatorics.Enumerative.DoubleCounting
 
@@ -49,7 +50,7 @@ variable {T : TriangleInstance ℤ n}
 
 variable (T) (D g)
 
-variable (p) (ans : InstanceIndex p → Fin n × Fin n → Bool)
+variable (p)
 
 variable {T D g p ans}
 
@@ -59,7 +60,7 @@ variable {T D g p ans}
 failed scans", for any finite family `s` of scans and any notion "the scan `x` contains the triple
 `t`".  The scans of the accepted pairs (`card_failedScans_le`) and the scans of the program
 (`HostData.sum_fails_le`) are two such families. -/
-theorem card_le_F_of_distinct_scans (T : TriangleInstance ℤ n) {σ : Type*} (s : Finset σ)
+theorem card_le_F_of_distinct_scans (T : TriangleInstance ℤ n) {σ} (s : Finset σ)
     (contains : σ → Fin n × Fin n × Fin n → Prop)
     (hfalse : ∀ x ∈ s, ∃ t, contains x t ∧ T.IsFalsePositive p t)
     (hdistinct : ∀ t, ∀ x ∈ s, ∀ y ∈ s, contains x t → contains y t → x = y) :

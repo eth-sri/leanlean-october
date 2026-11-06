@@ -1,7 +1,11 @@
 module
 
+public import ThreeSumApsp.Util.Types
+public import Mathlib.Tactic
 public import ImprovedExponents.HostMid.Total
-import all ThreeSumApsp.Programs.Sec3.Theorem17.ClaimAtParameters
+import all ThreeSumApsp.Programs.Sec3.Theorem17.Host.NeedPolynomial
+import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Program
+import ThreeSumApsp.Programs.Sec3.Theorem17.TimeBound.Total
 
 @[expose] public section
 
@@ -20,7 +24,7 @@ feed to `host_of_paramProcs`, `hostNeed_poly` and `obeysBound17_hostTime`.
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3 ThreeSumApsp
 
 /-! ## The host with parameter routines -/
 
@@ -28,12 +32,12 @@ open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
 /-- The variant host over two parameter routines, at the places `i` and `j` of a list `procs o` of
 routines that stands behind a program of length `o`, turns a solver of Lop-AE-SparseTri into a
 solver of Exact Triangle and keeps the need polynomial. -/
-theorem host_of_paramProcs' {procs : ℕ → Program} {Dfun Gfun tD tG wD wG : ℕ → ℕ} {i j : ℕ}
-    (hD : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + i) Dfun tD wD)
-    (hG : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + j) Gfun tG wG)
+theorem host_of_paramProcs' {procs : ℕ → Program} {Dfun Gfun tD tG wD wG} {i j}
+    (hD : ParamFamily procs i Dfun tD wD)
+    (hG : ParamFamily procs j Gfun tG wG)
     (hpos : ∀ n, 1 ≤ n → 1 ≤ Dfun n)
     (hpoly : ∀ r, PolyNeedN r → PolyNeed (hostNeed' Dfun Gfun wD wG r)) :
-    ∀ (Q : Program) (pS : ℕ) (Tn : List ℕ → ℕ) (r : List ℕ → Need), PolyNeedN r →
+    ∀ (Q ) (pS ) (Tn ) (r ), PolyNeedN r →
       SolvesN lopDetectTask Q pS Tn r →
       ∃ (R : Program) (p' : ℕ), Solves etTask (Q ++ R) p' (hostTime' Dfun Gfun tD tG Tn)
         (hostNeed' Dfun Gfun wD wG r) ∧ PolyNeed (hostNeed' Dfun Gfun wD wG r) := by
@@ -48,10 +52,10 @@ program of length `o`; its routines number `i` and `j` compute `Dfun n` from `n`
 words are polynomially bounded, the routines agree with the parameters `D` and `g` of the claim, and
 their times are within the budget of Theorem 17, then the variant host proves `Claim17Mid` for `D`
 and `g`. -/
-theorem claim17Mid_of_paramProcs (D g : ℕ → ℕ) {procs : ℕ → Program}
-    {Dfun Gfun tD tG wD wG : ℕ → ℕ} {i j : ℕ}
-    (hD : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + i) Dfun tD wD)
-    (hG : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + j) Gfun tG wG)
+theorem claim17Mid_of_paramProcs D g {procs : ℕ → Program}
+    {Dfun Gfun tD tG wD wG} {i j}
+    (hD : ParamFamily procs i Dfun tD wD)
+    (hG : ParamFamily procs j Gfun tG wG)
     (hpos : ∀ n, 1 ≤ n → 1 ≤ Dfun n)
     (hpolyD : PolyBounded fun n _ => Dfun n) (hpolyG : PolyBounded fun n _ => Gfun (Dfun n))
     (hpolyWD : PolyBounded fun n _ => wD n) (hpolyWG : PolyBounded fun n _ => wG (Dfun n))

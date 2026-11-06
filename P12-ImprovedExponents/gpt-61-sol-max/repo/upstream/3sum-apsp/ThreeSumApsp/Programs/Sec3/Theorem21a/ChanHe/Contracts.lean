@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
 public import ThreeSumApsp.Lang.Tasks
 public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Definitions
 public import ThreeSumApsp.Util.Flag
@@ -43,45 +45,45 @@ open ThreeSumApsp ThreeSumApsp.ChanHe Finset
 /-! ## Vocabulary -/
 
 /-- The `len` cells from `a` hold the elements of the set `S`, each once, in some order. -/
-def SetAt (μ : ℕ → ℤ) (a len : ℕ) (S : Finset ℤ) : Prop :=
+def SetAt μ a len S :=
   ∃ L : List ℤ, L.length = len ∧ Seg μ a L ∧ L.Nodup ∧ L.toFinset = S
 
 /-- The `cap` cells from `cnt` hold zeros. -/
-def ZeroAt (μ : ℕ → ℤ) (cnt cap : ℕ) : Prop := ∀ r < cap, μ (cnt + r) = 0
+def ZeroAt (μ : Light.Memory) cnt cap := ∀ r < cap, μ (cnt + r) = 0
 
 /-! ## Time functions and needs -/
 
 /-- The time of a remainder of a number of absolute value at most `V`. -/
-def tEmod (V : ℕ) : ℕ := 60 * (Nat.log 2 (V + 1) + 1) + 40
+def tEmod V := 60 * (Nat.log 2 (V + 1) + 1) + 40
 /-- What a remainder needs: words for doubled multiples of the modulus, and a cell for each of
 them. -/
 def emodNeed (V M : ℕ) : Need := ⟨4 * V + 4 * M + 16, Nat.log 2 (V + 1) + 2, 0⟩
 
 /-- The remainders of `len` numbers. -/
-def tResid (len V : ℕ) : ℕ := len * (tEmod V + 30) + 20
+def tResid len V := len * (tEmod V + 30) + 20
 /-- One pass over `len` remainders that changes their counts. -/
-def tTally (len : ℕ) : ℕ := 30 * len + 20
+def tTally len := 30 * len + 20
 /-- The colliding pairs of a set of `len` numbers: remainders, counting, a pass that adds up, and
 removing the counts. -/
-def tColl (len V : ℕ) : ℕ := tResid len V + 2 * tTally len + 30 * len + 60
+def tColl len V := tResid len V + 2 * tTally len + 30 * len + 60
 /-- The heavy elements of a set of `len` numbers: remainders, counting, a pass that copies, and
 removing the counts. -/
-def tHeavy (len V : ℕ) : ℕ := tResid len V + 2 * tTally len + 40 * len + 60
+def tHeavy len V := tResid len V + 2 * tTally len + 40 * len + 60
 /-- One search: every candidate prime costs three collision counts. -/
-def tSearch (np l₁ l₂ l₃ V : ℕ) : ℕ := np * (tColl l₁ V + tColl l₂ V + tColl l₃ V + 120) + 40
+def tSearch np l₁ l₂ l₃ V := np * (tColl l₁ V + tColl l₂ V + tColl l₃ V + 120) + 40
 /-- The modulus of a node: two searches, and the collision counts modulo the first prime. -/
-def tModulus (np l₁ l₂ l₃ V : ℕ) : ℕ := 2 * tSearch np l₁ l₂ l₃ V + tColl l₁ V + tColl l₂ V +
+def tModulus np l₁ l₂ l₃ V := 2 * tSearch np l₁ l₂ l₃ V + tColl l₁ V + tColl l₂ V +
   tColl l₃ V + 160
 /-- The array of a node: the padding pattern, and for each of the three sets remainders, counting, a
 pass that writes, and removing the counts. -/
-def tNodeArray (m l₁ l₂ l₃ V : ℕ) : ℕ :=
+def tNodeArray m l₁ l₂ l₃ V :=
   80 * (2 * m ^ 2) + (tResid l₁ V + tResid l₂ V + tResid l₃ V) +
     2 * (tTally l₁ + tTally l₂ + tTally l₃) + 60 * (l₁ + l₂ + l₃) + 200
 
 /-- The words that the routines below the tree need, for sets of at most `n` numbers of absolute
 value at most `V` and moduli up to `M`: products of a collision count and a number of primes,
 thresholds of the searches, entries and indices of the arrays. -/
-def wordNeed (n V M : ℕ) : ℕ := 64 * (n + 1) ^ 2 * (M + 1) * (V + 1)
+def wordNeed n V M := 64 * (n + 1) ^ 2 * (M + 1) * (V + 1)
 
 /-- The needs.  A caller's need covers its callees': the remainders of a set take `len` cells, a
 long division `log₂ (V + 1) + 2`; the depth is the number of levels of calls below the routine. -/
@@ -99,40 +101,40 @@ The logarithms, the remainder, the sieve and sorting of the general library meet
 specifications (`EmodSpec` is below). -/
 
 /-- The time of log2. -/
-def tLog2 (x : ℕ) : ℕ := 30 * (Nat.log 2 x + 1) + 20
+def tLog2 x := 30 * (Nat.log 2 x + 1) + 20
 
 /-- log2(x) returns `⌊log₂ x⌋` (0 for `x = 0`); it touches no cell. -/
-def Log2Spec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d x : ℕ) (μ : ℕ → ℤ), (4 * x + 4 : ℤ) ≤ lim.word →
-    Meets lim P p d [x] μ (tLog2 x) fun r μ' => r = (Nat.log 2 x : ℤ) ∧ μ' = μ
+def Log2Spec lim P p :=
+  ∀ (d x : ℕ) (μ : Light.Memory), (4 * x + 4 : ℤ) ≤ lim.word →
+    Meets lim P p d [x] μ (tLog2 x) fun r μ' => r = Nat.log 2 x ∧ μ' = μ
 
 /-- clog2(x) returns `⌈log₂ x⌉` (0 for `x ≤ 1`); it touches no cell. -/
-def Clog2Spec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d x : ℕ) (μ : ℕ → ℤ), (4 * x + 4 : ℤ) ≤ lim.word →
-    Meets lim P p d [x] μ (tLog2 x + 30) fun r μ' => r = (Nat.clog 2 x : ℤ) ∧ μ' = μ
+def Clog2Spec lim P p :=
+  ∀ (d x : ℕ) (μ : Light.Memory), (4 * x + 4 : ℤ) ≤ lim.word →
+    Meets lim P p d [x] μ (tLog2 x + 30) fun r μ' => r = Nat.clog 2 x ∧ μ' = μ
 
 /-- The time of the sieve. -/
-def tPrimes (m : ℕ) : ℕ := 60 * m * (Nat.log 2 m + 2) + 60
+def tPrimes m := 60 * m * (Nat.log 2 m + 2) + 60
 /-- The need of the sieve: a table of `m + 1` cells. -/
 def primesNeed (m : ℕ) : Need := ⟨4 * m + 16, m + 1, 0⟩
 
 /-- primes(m, out, fr) writes the primes up to `m` in ascending order to `out` (room for `m` cells)
 and returns their number. -/
-def PrimesSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d fr m out : ℕ) (μ : ℕ → ℤ), out + m ≤ fr → (primesNeed m).Ok lim fr d →
+def PrimesSpec lim P p :=
+  ∀ (d fr m out : ℕ) (μ : Light.Memory), out + m ≤ fr → (primesNeed m).Ok lim fr d →
     Meets lim P p d [m, out, fr] μ (tPrimes m) fun r μ' =>
-      r = (#(Nat.primesLE m) : ℤ) ∧
-        Seg μ' out (((Nat.primesLE m).sort (· ≤ ·)).map fun q : ℕ => (q : ℤ)) ∧
+      r = #(Nat.primesLE m) ∧
+        Seg μ' out (((Nat.primesLE m).sort (· ≤ ·)).map fun q : ℕ => q) ∧
         KeptBut μ μ' fr out m
 
 /-- The time of sorting. -/
-def tSort (n : ℕ) : ℕ := 80 * n * (Nat.log 2 n + 2) + 60
+def tSort n := 80 * n * (Nat.log 2 n + 2) + 60
 /-- The need of sorting: `n` cells, and a level of calls for each halving. -/
 def sortNeed (n V : ℕ) : Need := ⟨2 * V + 4 * n + 16, n, Nat.log 2 n + 2⟩
 
 /-- sort(n, a, fr) sorts the `n` cells from `a` in place, in ascending order. -/
-def SortSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d fr a V : ℕ) (L : List ℤ) (μ : ℕ → ℤ), Seg μ a L → AbsLe L V → a + L.length ≤ fr →
+def SortSpec lim P p :=
+  ∀ (d fr a V : ℕ) (L : List ℤ) (μ : Light.Memory), Seg μ a L → AbsLe L V → a + L.length ≤ fr →
     (sortNeed L.length V).Ok lim fr d →
     Meets lim P p d [L.length, a, fr] μ (tSort L.length) fun _ μ' =>
       (∃ L' : List ℤ, Seg μ' a L' ∧ L'.Perm L ∧ L'.Pairwise (· ≤ ·)) ∧ KeptBut μ μ' fr a L.length
@@ -140,34 +142,34 @@ def SortSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
 /-! ## Remainders, counts, collisions, heavy elements -/
 
 /-- emod(x, M, fr) returns `x % M`, for `M ≥ 1`. -/
-def EmodSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d fr V M : ℕ) (x : ℤ) (μ : ℕ → ℤ), 1 ≤ M → |x| ≤ (V : ℤ) → (emodNeed V M).Ok lim fr d →
-    Meets lim P p d [x, M, fr] μ (tEmod V) fun r μ' => r = x % (M : ℤ) ∧ Kept μ μ' fr
+def EmodSpec lim P p :=
+  ∀ (d fr V M : ℕ) (x : ℤ) (μ : Light.Memory), 1 ≤ M → |x| ≤ (V : ℤ) → (emodNeed V M).Ok lim fr d →
+    Meets lim P p d [x, M, fr] μ (tEmod V) fun r μ' => r = x % M ∧ Kept μ μ' fr
 
 /-- resid(len, s, sg, M, key, fr) writes the remainders of `sg · x` modulo `M`, for the `len`
 numbers `x` from `s`, to `key`.  `sg` is 1 or -1. -/
-def ResidSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d fr V M s key : ℕ) (sg : ℤ) (L : List ℤ) (μ : ℕ → ℤ), 1 ≤ M → (sg = 1 ∨ sg = -1) → AbsLe L V →
+def ResidSpec lim P p :=
+  ∀ (d fr V M s key : ℕ) (sg : ℤ) (L : List ℤ) (μ : Light.Memory), 1 ≤ M → sg = 1 ∨ sg = -1 → AbsLe L V →
     Seg μ s L →
     s + L.length ≤ fr → key + L.length ≤ fr → Apart s L.length key L.length →
     (residNeed L.length V M).Ok lim fr d →
     Meets lim P p d [L.length, s, sg, M, key, fr] μ (tResid L.length V) fun _ μ' =>
-      Seg μ' key (L.map fun x => (sg * x) % (M : ℤ)) ∧ KeptBut μ μ' fr key L.length
+      Seg μ' key (L.map fun x => sg * x % M) ∧ KeptBut μ μ' fr key L.length
 
 /-- tally(len, key, cnt, δ) adds `δ` to the cell `cnt + k` for each of the `len` numbers `k` from
 `key`. -/
-def TallySpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d key cnt cap : ℕ) (δ : ℤ) (K : List ℕ) (μ : ℕ → ℤ), (∀ k ∈ K, k < cap) → (δ = 1 ∨ δ = -1) →
-    Seg μ key (K.map fun k : ℕ => (k : ℤ)) → Apart key K.length cnt cap →
+def TallySpec lim P p :=
+  ∀ (d key cnt cap : ℕ) (δ : ℤ) (K : List ℕ) (μ : Light.Memory), (∀ k ∈ K, k < cap) → δ = 1 ∨ δ = -1 →
+    Seg μ key (K.map fun k : ℕ => k) → Apart key K.length cnt cap →
     (∀ r < cap, |μ (cnt + r)| ≤ (K.length : ℤ)) →
     key + K.length ≤ lim.space → cnt + cap ≤ lim.space → (lim.space : ℤ) ≤ lim.word →
     (2 * K.length + 2 : ℤ) ≤ lim.word →
     Meets lim P p d [K.length, key, cnt, δ] μ (tTally K.length) fun _ μ' =>
-      (∀ r < cap, μ' (cnt + r) = μ (cnt + r) + δ * (K.count r : ℤ)) ∧ SameOutside μ μ' cnt cap
+      (∀ r < cap, μ' (cnt + r) = μ (cnt + r) + δ * K.count r) ∧ SameOutside μ μ' cnt cap
 
 /-- A set of `len` numbers of absolute value at most `V` at `s`, and a table of zeros at `cnt` with
 a cell for each remainder modulo `M`; both below the free pointer, and apart. -/
-structure BucketMem (μ : ℕ → ℤ) (fr V M s len cnt cap : ℕ) (S : Finset ℤ) : Prop where
+structure BucketMem (μ : Light.Memory) (fr V M s len cnt cap : ℕ) (S : Finset ℤ) : Prop where
   modulus_pos : 1 ≤ M
   modulus_le : M ≤ cap
   bdd : Bdd V S
@@ -179,11 +181,11 @@ structure BucketMem (μ : ℕ → ℤ) (fr V M s len cnt cap : ℕ) (S : Finset 
 
 /-- coll(len, s, M, cnt, fr) returns the number of colliding ordered pairs of the set at `s` modulo
 `M`. -/
-def CollSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d fr V M s len cnt cap : ℕ) (S : Finset ℤ) (μ : ℕ → ℤ), BucketMem μ fr V M s len cnt cap S →
+def CollSpec lim P p :=
+  ∀ (d fr V M s len cnt cap : ℕ) (S : Finset ℤ) (μ : Light.Memory), BucketMem μ fr V M s len cnt cap S →
     (collNeed len V M).Ok lim fr d →
     Meets lim P p d [len, s, M, cnt, fr] μ (tColl len V) fun r μ' =>
-      r = (coll S M : ℤ) ∧ Kept μ μ' fr
+      r = coll S M ∧ Kept μ μ' fr
 
 /-- Where the output of heavy stands: below the free pointer, apart from the set and the table. -/
 structure HeavyOut (fr s cnt cap out len : ℕ) : Prop where
@@ -193,32 +195,32 @@ structure HeavyOut (fr s cnt cap out len : ℕ) : Prop where
 
 /-- heavy(len, s, M, out, cnt, fr) writes the heavy elements of the set at `s` modulo `M` to `out`
 (room for `len` cells) and returns their number. -/
-def HeavySpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d fr V M s len out cnt cap : ℕ) (S : Finset ℤ) (μ : ℕ → ℤ),
+def HeavySpec lim P p :=
+  ∀ (d fr V M s len out cnt cap : ℕ) (S : Finset ℤ) (μ : Light.Memory),
     BucketMem μ fr V M s len cnt cap S → HeavyOut fr s cnt cap out len →
     (collNeed len V M).Ok lim fr d →
     Meets lim P p d [len, s, M, out, cnt, fr] μ (tHeavy len V) fun r μ' =>
-      r = (#(heavy S M) : ℤ) ∧ SetAt μ' out #(heavy S M) (heavy S M) ∧ KeptBut μ μ' fr out len
+      r = #(heavy S M) ∧ SetAt μ' out #(heavy S M) (heavy S M) ∧ KeptBut μ μ' fr out len
 
 /-! ## The modulus of a node -/
 
 /-- The primes up to `m`, in ascending order, lie in the `np` cells from `pr`. -/
-def PrimesAt (μ : ℕ → ℤ) (pr np m : ℕ) : Prop :=
-  np = #(Nat.primesLE m) ∧ Seg μ pr (((Nat.primesLE m).sort (· ≤ ·)).map fun q : ℕ => (q : ℤ))
+def PrimesAt μ pr np m :=
+  np = #(Nat.primesLE m) ∧ Seg μ pr (((Nat.primesLE m).sort (· ≤ ·)).map fun q : ℕ => q)
 
 /-- A set in the memory: the address and the length of its list, and the set. -/
-structure Slot : Type where
+structure Slot where
   (addr len : ℕ)
   set : Finset ℤ
 
 /-- What the routines below the recursion tree share: the free pointer `fr`; the bounds `n` on the
 sizes of the sets and `V` on their elements; the bound `m` on the primes, their number `np` and the
 address `pr` of their list; the address `cnt` of the count table of `m²` cells. -/
-structure Env : Type where
+structure Env where
   (fr n V m np pr cnt : ℕ)
 
 /-- The primes up to `m` and the count table are in the memory, below the free pointer and apart. -/
-structure Env.Ok (μ : ℕ → ℤ) (e : Env) : Prop where
+structure Env.Ok (μ : Light.Memory) (e : Env) : Prop where
   primes : PrimesAt μ e.pr e.np e.m
   zero : ZeroAt μ e.cnt (e.m * e.m)
   belowPr : e.pr + e.np ≤ e.fr
@@ -227,7 +229,7 @@ structure Env.Ok (μ : ℕ → ℤ) (e : Env) : Prop where
 
 /-- A set of at most `n` numbers of absolute value at most `V` is in the memory, below the free
 pointer and apart from the count table. -/
-structure Slot.Ok (μ : ℕ → ℤ) (e : Env) (X : Slot) : Prop where
+structure Slot.Ok (μ : Light.Memory) (e : Env) (X : Slot) : Prop where
   set : SetAt μ X.addr X.len X.set
   le : X.len ≤ e.n
   bdd : Bdd e.V X.set
@@ -243,7 +245,7 @@ structure NodeArgs : Type extends Env where
   [a.X₁.addr, a.X₁.len, a.X₂.addr, a.X₂.len, a.X₃.addr, a.X₃.len]
 
 /-- The three sets of a node, the primes and the count table are in the memory. -/
-structure NodeMem (μ : ℕ → ℤ) (a : NodeArgs) : Prop where
+structure NodeMem (μ : Light.Memory) (a : NodeArgs) : Prop where
   envOk : a.toEnv.Ok μ
   set₁ : a.X₁.Ok μ a.toEnv
   set₂ : a.X₂.Ok μ a.toEnv
@@ -254,12 +256,12 @@ structure SearchArgs : Type extends NodeArgs where
   (mult b₁ b₂ b₃ : ℕ)
 
 /-- The values of the arguments of search. -/
-@[simp] abbrev SearchArgs.vals (x : SearchArgs) : List ℤ :=
+@[simp] abbrev SearchArgs.vals (x : SearchArgs) :=
   (x.mult : ℤ) :: x.sets ++ [(x.b₁ : ℤ), x.b₂, x.b₃, x.np, x.pr, x.cnt, x.fr]
 
 /-- A candidate `q` is good: each of the three sets has at most `bᵢ / np` colliding pairs modulo
 `mult · q`. -/
-def SearchArgs.Good (x : SearchArgs) (q : ℕ) : Prop :=
+def SearchArgs.Good (x : SearchArgs) q :=
   coll x.X₁.set (x.mult * q) * x.np ≤ x.b₁ ∧ coll x.X₂.set (x.mult * q) * x.np ≤ x.b₂ ∧
     coll x.X₃.set (x.mult * q) * x.np ≤ x.b₃
 
@@ -272,23 +274,23 @@ def searchNeed (n V m : ℕ) : Need := ⟨wordNeed n V (m * m), n + Nat.log 2 (V
 
 /-- search(mult, s₁, l₁, s₂, l₂, s₃, l₃, b₁, b₂, b₃, np, pr, cnt, fr) returns the least good prime
 up to `m`, and 1 if there is none. -/
-def SearchSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (x : SearchArgs) (μ : ℕ → ℤ), NodeMem μ x.toNodeArgs → 1 ≤ x.mult → x.mult ≤ x.m →
+def SearchSpec lim P p :=
+  ∀ (x : SearchArgs) (μ : Light.Memory), NodeMem μ x.toNodeArgs → 1 ≤ x.mult → x.mult ≤ x.m →
     ∀ d, (searchNeed x.n x.V x.m).Ok lim x.fr d →
     Meets lim P p d x.vals μ (tSearch x.np x.X₁.len x.X₂.len x.X₃.len x.V) fun r μ' =>
-      r = (pick {q ∈ Nat.primesLE x.m | x.Good q} : ℤ) ∧ Kept μ μ' x.fr
+      r = pick {q ∈ Nat.primesLE x.m | x.Good q} ∧ Kept μ μ' x.fr
 
 /-- The values of the arguments of modulus. -/
-@[simp] abbrev NodeArgs.modulusVals (a : NodeArgs) (Λ : ℕ) : List ℤ :=
+@[simp] abbrev NodeArgs.modulusVals (a : NodeArgs) (Λ : ℕ) :=
   a.sets ++ [(Λ : ℤ), a.np, a.pr, a.cnt, a.fr]
 
 /-- modulus(s₁, l₁, s₂, l₂, s₃, l₃, Λ, np, pr, cnt, fr) returns the modulus of the node. -/
-def ModulusSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (a : NodeArgs) (Λ : ℕ) (μ : ℕ → ℤ), NodeMem μ a → Λ ≤ a.V + 2 →
+def ModulusSpec lim P p :=
+  ∀ (a : NodeArgs) (Λ : ℕ) (μ : Light.Memory), NodeMem μ a → Λ ≤ a.V + 2 →
     ∀ d, (modulusNeed a.n a.V a.m).Ok lim a.fr d →
     Meets lim P p d (a.modulusVals Λ) μ
       (tModulus a.np a.X₁.len a.X₂.len a.X₃.len a.V) fun r μ' =>
-      r = (modulus (Nat.primesLE a.m) Λ a.X₁.set a.X₂.set a.X₃.set : ℤ) ∧ Kept μ μ' a.fr
+      r = modulus (Nat.primesLE a.m) Λ a.X₁.set a.X₂.set a.X₃.set ∧ Kept μ μ' a.fr
 
 /-! ## The array of a node -/
 
@@ -303,8 +305,8 @@ structure NodeArrayOut (a : NodeArgs) (y : ℕ) : Prop where
 
 /-- nodeArray(M, s₁, l₁, s₂, l₂, s₃, l₃, V, m, y, cnt, fr) writes the first `8 m²` cells of the
 one-array instance of the node to `y`. -/
-def NodeArraySpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (a : NodeArgs) (M y : ℕ) (μ : ℕ → ℤ), NodeMem μ a → 1 ≤ M → M ≤ a.m * a.m →
+def NodeArraySpec lim P p :=
+  ∀ (a : NodeArgs) (M y : ℕ) (μ : Light.Memory), NodeMem μ a → 1 ≤ M → M ≤ a.m * a.m →
     NodeArrayOut a y →
     ∀ d, (nodeArrayNeed a.n a.V a.m).Ok lim a.fr d →
     Meets lim P p d ((M : ℤ) :: a.sets ++ [(a.V : ℤ), a.m, y, a.cnt, a.fr]) μ
@@ -317,7 +319,7 @@ def NodeArraySpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
 
 /-- The number of calls of the recursive procedure: one for the triple, and those of the three
 children if the triple is a node. -/
-def treeCalls (Q : Finset ℕ) (Λ : ℕ) : ℕ → Finset ℤ → Finset ℤ → Finset ℤ → ℕ
+def treeCalls Q Λ
   | 0, _, _, _ => 1
   | f + 1, S₁, S₂, S₃ =>
     if S₁ = ∅ ∨ S₂ = ∅ ∨ S₃ = ∅ then 1 else
@@ -327,26 +329,26 @@ def treeCalls (Q : Finset ℕ) (Λ : ℕ) : ℕ → Finset ℤ → Finset ℤ �
 
 /-- The cost of one node, when a Convolution-3SUM solver takes `T N B` steps: the modulus, the
 array, the call, and the three sets of heavy elements. -/
-def tNode (T : ℕ → ℕ → ℕ) (n V m np : ℕ) : ℕ :=
+def tNode (T : Light.SolverTime) n V m np :=
   tModulus np n n n V + tNodeArray m n n n V + T (8 * m ^ 2) (60 * V + 40) + 3 * tHeavy n V + 300
 
 /-- The time of the recursive procedure. -/
-def tNodes (T : ℕ → ℕ → ℕ) (n V m np calls : ℕ) : ℕ := calls * (tNode T n V m np + 60)
+def tNodes T n V m np calls := calls * (tNode T n V m np + 60)
 
 /-- What the recursive procedure needs with `f` levels to go: a set of heavy elements for each
 level, one array, and what the solver needs. -/
-def nodesNeed (r : ℕ → ℕ → Need) (n V m f : ℕ) : Need :=
+def nodesNeed (r : Light.NeedFn) (n V m f : ℕ) : Need :=
   ⟨max (modulusNeed n V m).word (r (8 * m ^ 2) (60 * V + 40)).word,
     f * n + 8 * m ^ 2 + max (modulusNeed n V m).cells (r (8 * m ^ 2) (60 * V + 40)).cells,
     f + 1 + max (modulusNeed n V m).depth (r (8 * m ^ 2) (60 * V + 40)).depth⟩
 
 /-- The block of parameters that the recursive procedure gets by its address `cx`: `V`, `m`, `Λ`,
 `np`, `pr`, `cnt`. -/
-def CtxAt (μ : ℕ → ℤ) (cx V m Λ np pr cnt : ℕ) : Prop := Seg μ cx [(V : ℤ), m, Λ, np, pr, cnt]
+def CtxAt μ (cx V m Λ np pr cnt : ℕ) := Seg μ cx [V, m, Λ, np, pr, cnt]
 
 /-- What the recursive procedure assumes with `f` levels to go: the memory of a node, the block of
 parameters at `cx`, below the free pointer and apart from the count table, and the limits. -/
-structure NodesPre (lim : Limits) (r : ℕ → ℕ → Need) (μ : ℕ → ℤ) (a : NodeArgs) (Λ cx f d : ℕ) :
+structure NodesPre (lim : Limits) (r : Light.NeedFn) (μ : Light.Memory) (a : NodeArgs) (Λ cx f d : ℕ) :
     Prop where
   mem : NodeMem μ a
   ctx : CtxAt μ cx a.V a.m Λ a.np a.pr a.cnt
@@ -359,22 +361,21 @@ structure NodesPre (lim : Limits) (r : ℕ → ℕ → Need) (μ : ℕ → ℤ) 
   ok : (nodesNeed r a.n a.V a.m f).Ok lim a.fr d
 
 /-- The number of calls of the procedure for the tree with `f` levels below a node. -/
-abbrev NodeArgs.calls (a : NodeArgs) (Λ f : ℕ) : ℕ :=
+abbrev NodeArgs.calls (a : NodeArgs) Λ f :=
   treeCalls (Nat.primesLE a.m) Λ f a.X₁.set a.X₂.set a.X₃.set
 
 /-- Some node of the tree of a three-set input gives a yes-instance. -/
-def TreeYes (m Λ f V : ℕ) (S₁ S₂ S₃ : Finset ℤ) : Prop :=
+def TreeYes m Λ f V S₁ S₂ S₃ :=
   ∃ ν ∈ nodes (Nat.primesLE m) Λ f S₁ S₂ S₃, ConvOne (8 * m ^ 2) (ν.oneArray V)
 
 /-- The one-array instance of some node of the tree with `f` levels below a node in the memory is a
 yes-instance. -/
-abbrev NodeArgs.Yes (a : NodeArgs) (Λ f : ℕ) : Prop :=
+abbrev NodeArgs.Yes (a : NodeArgs) Λ f :=
   TreeYes a.m Λ f a.V a.X₁.set a.X₂.set a.X₃.set
 
 /-- The specification of nodes for trees with `f` levels: see `NodesSpec`. -/
-def NodesSpecAt (lim : Limits) (P : Program) (p : ℕ) (T : ℕ → ℕ → ℕ) (r : ℕ → ℕ → Need) (f : ℕ) :
-    Prop :=
-  ∀ (a : NodeArgs) (Λ cx : ℕ) (μ : ℕ → ℤ) (d : ℕ), NodesPre lim r μ a Λ cx f d →
+def NodesSpecAt lim P p T r f :=
+  ∀ (a : NodeArgs) (Λ cx : ℕ) (μ : Light.Memory) (d : ℕ), NodesPre lim r μ a Λ cx f d →
     Meets lim P p d ((f : ℤ) :: a.sets ++ [(cx : ℤ), a.fr]) μ
       (tNodes T a.n a.V a.m a.np (a.calls Λ f)) fun res μ' =>
         res = ThreeSumApsp.flag (a.Yes Λ f) ∧ Kept μ μ' a.fr
@@ -382,25 +383,25 @@ def NodesSpecAt (lim : Limits) (P : Program) (p : ℕ) (T : ℕ → ℕ → ℕ)
 /-- nodes(f, s₁, l₁, s₂, l₂, s₃, l₃, cx, fr) returns 1 if the one-array instance of some node of the
 tree with `f` levels is a yes-instance at length `8 m²`, and 0 if not.  `T` and `r` are the time and
 the need of the Convolution-3SUM solver that it calls. -/
-def NodesSpec (lim : Limits) (P : Program) (p : ℕ) (T : ℕ → ℕ → ℕ) (r : ℕ → ℕ → Need) : Prop :=
+def NodesSpec lim P p T r :=
   ∀ f, NodesSpecAt lim P p T r f
 
 /-! ## The front: distinct values, multiplicities, binary digits, the splittings -/
 
 /-- The time of distinct. -/
-def tDistinct (n : ℕ) : ℕ := 60 * n + 40
+def tDistinct n := 60 * n + 40
 /-- The time of twice. -/
-def tTwice (n : ℕ) : ℕ := 60 * n + 40
+def tTwice n := 60 * n + 40
 /-- The time of zeroThree. -/
-def tZeroThree (n : ℕ) : ℕ := 40 * n + 40
+def tZeroThree n := 40 * n + 40
 /-- The time of bits. -/
-def tBits (len Λ : ℕ) : ℕ := len * (60 * Λ + 40) + 40 * Λ + 60
+def tBits len Λ := len * (60 * Λ + 40) + 40 * Λ + 60
 /-- The time of pick. -/
-def tPick (len : ℕ) : ℕ := 90 * len + 40
+def tPick len := 90 * len + 40
 
 /-- What distinct assumes: the sorted list stands at `a`; the three regions lie in the memory and do
 not meet; addresses and counts fit in a word. -/
-structure Distinct.Ctx (lim : Limits) (μ : ℕ → ℤ) (a val mul : ℕ) (L : List ℤ) : Prop where
+structure Distinct.Ctx (lim : Limits) (μ : Light.Memory) (a val mul : ℕ) (L : List ℤ) : Prop where
   sorted : L.Pairwise (· ≤ ·)
   seg : Seg μ a L
   apartVal : Apart a L.length val L.length
@@ -415,21 +416,21 @@ structure Distinct.Ctx (lim : Limits) (μ : ℕ → ℤ) (a val mul : ℕ) (L : 
 /-- distinct(n, a, val, mul): the `n` cells from `a` hold a sorted list.  Writes its distinct values
 to `val` and how often each occurs to `mul` (room for `n` cells each), and returns the number of
 distinct values. -/
-def DistinctSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d a val mul : ℕ) (L : List ℤ) (μ : ℕ → ℤ), Distinct.Ctx lim μ a val mul L →
+def DistinctSpec lim P p :=
+  ∀ (d a val mul : ℕ) (L : List ℤ) (μ : Light.Memory), Distinct.Ctx lim μ a val mul L →
     Meets lim P p d [L.length, a, val, mul] μ (tDistinct L.length) fun r μ' =>
-      (∃ D : List ℤ, r = (D.length : ℤ) ∧ D.Nodup ∧ D.toFinset = L.toFinset ∧ Seg μ' val D ∧
-        Seg μ' mul (D.map fun x => (L.count x : ℤ))) ∧
+      (∃ D : List ℤ, r = D.length ∧ D.Nodup ∧ D.toFinset = L.toFinset ∧ Seg μ' val D ∧
+        Seg μ' mul (D.map fun x => L.count x)) ∧
       SameOutside2 μ μ' val L.length mul L.length
 
 /-- The doubles of the values that are not 0 and occur at least twice. -/
-def twiceList (D C : List ℤ) : List ℤ :=
+def twiceList (D C : List ℤ) :=
   ((D.zip C).filter fun q => decide (q.1 ≠ 0 ∧ 2 ≤ q.2)).map fun q => 2 * q.1
 
 /-- What twice assumes: the values, of absolute value at most `V`, stand at `val` and as many
 multiplicities at `mul`; the three regions lie in the memory, and the output meets neither of the
 others; addresses and doubled values fit in a word. -/
-structure Twice.Ctx (lim : Limits) (μ : ℕ → ℤ) (val mul out V : ℕ) (D C : List ℤ) : Prop where
+structure Twice.Ctx (lim : Limits) (μ : Light.Memory) (val mul out V : ℕ) (D C : List ℤ) : Prop where
   len : C.length = D.length
   bounded : AbsLe D V
   segVal : Seg μ val D
@@ -444,15 +445,15 @@ structure Twice.Ctx (lim : Limits) (μ : ℕ → ℤ) (val mul out V : ℕ) (D C
 
 /-- twice(nd, val, mul, out) writes the doubles of the values that are not 0 and occur at least
 twice to `out` (room for `nd` cells), and returns their number. -/
-def TwiceSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d val mul out V : ℕ) (D C : List ℤ) (μ : ℕ → ℤ), Twice.Ctx lim μ val mul out V D C →
+def TwiceSpec lim P p :=
+  ∀ (d val mul out V : ℕ) (D C : List ℤ) (μ : Light.Memory), Twice.Ctx lim μ val mul out V D C →
     Meets lim P p d [D.length, val, mul, out] μ (tTwice D.length) fun r μ' =>
-      r = ((twiceList D C).length : ℤ) ∧ Seg μ' out (twiceList D C) ∧ SameOutside μ μ' out D.length
+      r = (twiceList D C).length ∧ Seg μ' out (twiceList D C) ∧ SameOutside μ μ' out D.length
 
 /-- zeroThree(nd, val, mul) returns 1 if the value 0 occurs at least three times, and 0 if not; it
 writes no cell. -/
-def ZeroThreeSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d val mul : ℕ) (D C : List ℤ) (μ : ℕ → ℤ), C.length = D.length → Seg μ val D → Seg μ mul C →
+def ZeroThreeSpec lim P p :=
+  ∀ (d val mul : ℕ) (D C : List ℤ) (μ : Light.Memory), C.length = D.length → Seg μ val D → Seg μ mul C →
     val + D.length ≤ lim.space → mul + D.length ≤ lim.space → (lim.space : ℤ) ≤ lim.word →
     (2 * D.length + 8 : ℤ) ≤ lim.word →
     Meets lim P p d [D.length, val, mul] μ (tZeroThree D.length) fun r μ' =>
@@ -466,7 +467,7 @@ def bitTable (V Λ : ℕ) (L : List ℤ) : List ℤ :=
 /-- What bits assumes: the list of numbers of absolute value at most `V` stands at `s`; the labels
 have `Λ` binary digits, and `2^Λ` is not much larger than they are; the list and the table lie in
 the memory and do not meet; addresses and doubled labels fit in a word. -/
-structure Bits.Ctx (lim : Limits) (μ : ℕ → ℤ) (s V Λ bt : ℕ) (L : List ℤ) : Prop where
+structure Bits.Ctx (lim : Limits) (μ : Light.Memory) (s V Λ bt : ℕ) (L : List ℤ) : Prop where
   bounded : AbsLe L V
   lt_pow : 2 * V < 2 ^ Λ
   pow_le : 2 ^ Λ ≤ 4 * V + 4
@@ -479,13 +480,13 @@ structure Bits.Ctx (lim : Limits) (μ : ℕ → ℤ) (s V Λ bt : ℕ) (L : List
 
 /-- bits(len, s, V, Λ, bt, fr) writes the table of the binary digits of the labels `x + V` of the
 `len` numbers from `s` to `bt` (`len Λ` cells).  It does not use the free pointer. -/
-def BitsSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d fr s bt V Λ : ℕ) (L : List ℤ) (μ : ℕ → ℤ), Bits.Ctx lim μ s V Λ bt L →
+def BitsSpec lim P p :=
+  ∀ (d fr s bt V Λ : ℕ) (L : List ℤ) (μ : Light.Memory), Bits.Ctx lim μ s V Λ bt L →
     Meets lim P p d [L.length, s, V, Λ, bt, fr] μ (tBits L.length Λ) fun _ μ' =>
       Seg μ' bt (bitTable V Λ L) ∧ SameOutside μ μ' bt (L.length * Λ)
 
 /-- The elements whose digit `β` is `x` and, unless `two = 0`, whose digit `β'` is `x'`. -/
-def pickList (Λ β β' : ℕ) (x x' two : ℤ) (L BT : List ℤ) : List ℤ :=
+def pickList Λ β β' (x x' two : ℤ) (L BT : List ℤ) :=
   ((List.range L.length).filter fun i =>
     decide (BT.getD (i * Λ + β) 0 = x ∧ (two = 0 ∨ BT.getD (i * Λ + β') 0 = x'))).map
     fun i => L.getD i 0
@@ -493,7 +494,7 @@ def pickList (Λ β β' : ℕ) (x x' two : ℤ) (L BT : List ℤ) : List ℤ :=
 /-- What pick assumes: the list stands at `s` and the table of its digits at `bt`, `Λ` cells for
 each element; the two positions are below `Λ`; the three regions lie in the memory, and the output
 meets neither of the others; addresses fit in a word. -/
-structure Pick.Ctx (lim : Limits) (μ : ℕ → ℤ) (s bt out Λ β β' : ℕ) (L BT : List ℤ) : Prop where
+structure Pick.Ctx (lim : Limits) (μ : Light.Memory) (s bt out Λ β β' : ℕ) (L BT : List ℤ) : Prop where
   lenTable : BT.length = L.length * Λ
   posA : β < Λ
   posB : β' < Λ
@@ -509,11 +510,11 @@ structure Pick.Ctx (lim : Limits) (μ : ℕ → ℤ) (s bt out Λ β β' : ℕ) 
 
 /-- pick(len, s, bt, Λ, β, x, β', x', two, out) writes the elements selected by one binary digit
 (`two = 0`) or by two to `out` (room for `len` cells) and returns their number. -/
-def PickSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
-  ∀ (d s bt out Λ β β' : ℕ) (x x' two : ℤ) (L BT : List ℤ) (μ : ℕ → ℤ),
+def PickSpec lim P p :=
+  ∀ (d s bt out Λ β β' : ℕ) (x x' two : ℤ) (L BT : List ℤ) (μ : Light.Memory),
     Pick.Ctx lim μ s bt out Λ β β' L BT →
     Meets lim P p d [L.length, s, bt, Λ, β, x, β', x', two, out] μ (tPick L.length) fun r μ' =>
-      r = ((pickList Λ β β' x x' two L BT).length : ℤ) ∧
+      r = (pickList Λ β β' x x' two L BT).length ∧
         Seg μ' out (pickList Λ β β' x x' two L BT) ∧ SameOutside μ μ' out L.length
 
 end Light.Sec3.ChanHe

@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
 public import ThreeSumApsp.Lang.PolyBounded
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Text
 
@@ -37,24 +39,24 @@ namespace HostPoly
 /-! ## The quantities -/
 
 /-- `⌊n²/√D⌋ ≤ n²`. -/
-private theorem queryCapNat_le_sq (n D : ℕ) : queryCapNat n D ≤ n ^ 2 := by
+private theorem queryCapNat_le_sq n D : queryCapNat n D ≤ n ^ 2 := by
   unfold queryCapNat
   calc Nat.sqrt (n ^ 4 / D) ≤ Nat.sqrt (n ^ 4) := Nat.sqrt_le_sqrt (Nat.div_le_self _ _)
     _ = Nat.sqrt (n ^ 2 * n ^ 2) := by rw [← pow_add]
     _ = n ^ 2 := Nat.sqrt_eq _
 
 /-- `2^{len + 1} ≤ 4(U + 1)` for the number `len` of binary digits of `U`. -/
-private theorem two_pow_bitLen_le (U : ℕ) : 2 ^ (bitLen U + 1) ≤ 4 * (U + 1) := by
+private theorem two_pow_bitLen_le U : 2 ^ (bitLen U + 1) ≤ 4 * (U + 1) := by
   rcases Nat.eq_zero_or_pos U with rfl | hU
   · simp [bitLen]
-  · have hlen : 0 < bitLen U := Nat.size_pos.2 hU
+  · have  : 0 < bitLen U := Nat.size_pos.2 hU
     obtain ⟨b, hb⟩ : ∃ b, bitLen U = b + 1 := ⟨bitLen U - 1, by omega⟩
-    have hpow : 2 ^ b ≤ U := Nat.lt_size.1 (by unfold bitLen at hb; omega)
+    have  : 2 ^ b ≤ U := Nat.lt_size.1 (by unfold bitLen at hb; omega)
     rw [hb, pow_succ, pow_succ]
     omega
 
 /-- `2^⌈log₂ n⌉ ≤ 2(n + 1)`. -/
-private theorem two_pow_clog_le (n : ℕ) : 2 ^ Nat.clog 2 n ≤ 2 * (n + 1) := by
+private theorem two_pow_clog_le n : 2 ^ Nat.clog 2 n ≤ 2 * (n + 1) := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · simp
   · have := Nat.pow_clog_le_mul Nat.one_lt_two hn
@@ -73,11 +75,11 @@ private theorem polyBounded_two_pow_clog : PolyBounded fun n _ => 2 ^ Nat.clog 2
   growth_poly [Scale.SoftO.of_forall_le two_pow_clog_le]
 
 /-- The depth of Strassen's recursion. -/
-private theorem polyBounded_clog : PolyBounded fun n _ => Nat.clog 2 n :=
+private def polyBounded_clog :=
   polyBounded_two_pow_clog.of_le fun _ _ => Nat.lt_two_pow_self.le
 
 /-- `(2^c)^⌈log₂ n⌉ = (2^⌈log₂ n⌉)^c`. -/
-private theorem polyBounded_pow_clog (c : ℕ) : PolyBounded fun n _ => (2 ^ c) ^ Nat.clog 2 n :=
+private theorem polyBounded_pow_clog c : PolyBounded fun n _ => (2 ^ c) ^ Nat.clog 2 n :=
   (by growth_poly [polyBounded_two_pow_clog] :
     PolyBounded fun n _ => (2 ^ Nat.clog 2 n) ^ c).of_le fun n _ => by
       rw [← pow_mul, ← pow_mul, mul_comm]
@@ -90,7 +92,7 @@ private theorem polyBounded_queryCapNat : PolyBounded fun n _ => queryCapNat n (
 
 /-! ## The numbers, the cells, and the solver -/
 
-section parts
+section
 
 variable (hD : PolyBounded fun n _ => D n)
 include hD
@@ -118,24 +120,24 @@ private theorem polyBounded_chooseCells : PolyBounded fun n U => chooseCells n U
 
 /-- A polynomially bounded function of the parameters `n`, `D`, `w` of an instance, at its largest
 over the instances of the host, which have at most `⌊n²/√D⌋` query pairs. -/
-private theorem polyBounded_sup {f : List ℕ → ℕ} {s k : ℕ} (hf : ∀ ps, f ps ≤ polyBound s k ps) :
+private theorem polyBounded_sup {f : Light.InputTime} {s k} (hf : ∀ ps, f ps ≤ polyBound s k ps) :
     PolyBounded fun n _ => (Finset.range (queryCapNat n (D n) + 1)).sup fun w => f [n, D n, w] := by
   have hbound :
       PolyBounded fun n _ => 2 ^ s * ((n + 1) * ((D n + 1) * (queryCapNat n (D n) + 1))) ^ k := by
     growth_poly [hD, polyBounded_queryCapNat]
   refine hbound.of_le fun n _ => Finset.sup_le fun w hw => (hf _).trans ?_
-  have hw' : w ≤ queryCapNat n (D n) := Nat.lt_succ_iff.1 (Finset.mem_range.1 hw)
+  have  := Nat.lt_succ_iff.1 (Finset.mem_range.1 hw)
   simp only [polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
   gcongr
 
-end parts
+end
 
 end HostPoly
 
 open HostPoly in
 /-- **The need of the host stays polynomial**, if the parameters, the numbers that the parameter
 procedures form, and the need of the solver are polynomially bounded. -/
-theorem hostNeed_poly {Dfun Gfun wD wG : ℕ → ℕ} {need : List ℕ → Need}
+theorem hostNeed_poly {Dfun Gfun wD wG } {need }
     (hD : PolyBounded fun n _ => Dfun n) (hG : PolyBounded fun n _ => Gfun (Dfun n))
     (hwD : PolyBounded fun n _ => wD n) (hwG : PolyBounded fun n _ => wG (Dfun n))
     (h : PolyNeedN need) :

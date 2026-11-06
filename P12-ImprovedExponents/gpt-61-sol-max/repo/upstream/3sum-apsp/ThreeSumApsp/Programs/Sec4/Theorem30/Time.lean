@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Memory
 
 /-!
@@ -39,11 +41,11 @@ structure Hyp30 (p : Sec2.Par) (t : ℕ) : Prop where
   t_le : t ≤ p.m
   N_ge : sqrtKN0 p.L p.m ≤ (p.N : ℝ)
 
-theorem Hyp30.m_le {p : Sec2.Par} {t : ℕ} (h : Hyp30 p t) : p.m ≤ p.L := by
+theorem Hyp30.m_le {p} {t} (h : Hyp30 p t) : p.m ≤ p.L := by
   have := h.L_ge
   omega
 
-theorem Hyp30.L_pos {p : Sec2.Par} {t : ℕ} (h : Hyp30 p t) : 1 ≤ p.L := by
+theorem Hyp30.L_pos {p} {t} (h : Hyp30 p t) : 1 ≤ p.L := by
   have := h.L_ge
   have := h.m_pos
   omega
@@ -57,25 +59,23 @@ end Within8
 /-! ## The tiles -/
 
 /-- For every e ≤ m - t with e ≤ L there is a box with e stars. -/
-theorem one_le_length_starBoxes {L m t e : ℕ} (he : e ≤ m - t) (hL : e ≤ L) :
+theorem one_le_length_starBoxes {L m t e} (he : e ≤ m - t) (hL : e ≤ L) :
     1 ≤ (starBoxes L m t e).length := by
-  have hhead := head?_nineStrs (n := L) (lo := e) (hi := m - t) hL he
+  have  := head?_nineStrs (n := L) (lo := e) (hi := m - t) hL he
   rw [starBoxes, List.length_map]
   cases hl : nineStrs L e (m - t) with
-  | nil => rw [hl] at hhead; simp at hhead
+  | nil => simp_all
   | cons a l => simp
 
 /-- There are at least m - t + 1 boxes: one for each number of stars. -/
-theorem succ_le_card_boxes {L m t : ℕ} (hL : m ≤ L) : m - t + 1 ≤ (boxes L m t).card := by
+theorem succ_le_card_boxes {L m t} (hL : m ≤ L) : m - t + 1 ≤ (boxes L m t).card := by
   have hsum := List.length_le_sum_of_one_le
     ((List.range (m - t + 1)).map fun e => (starBoxes L m t e).length) fun n hn => by
-      obtain ⟨e, he, rfl⟩ := List.mem_map.1 hn
-      have := List.mem_range.1 he
-      exact one_le_length_starBoxes (by omega) (by omega)
+      grind [one_le_length_starBoxes]
   rwa [sum_length_starBoxes, List.length_map, List.length_range] at hsum
 
 /-- The time for a tile, in closed form. -/
-theorem tTile_eq (L m t : ℕ) : tTile L m t
+theorem tTile_eq L m t : tTile L m t
     = tNewRoot + (m - t + 1) * (tNineFirst L + 120) + (boxes L m t).card * tFillStep L + 60 := by
   have hrounds : ∀ k, ((List.range k).map fun e => tFillList L (starBoxes L m t e).length + 60).sum
       = k * (tNineFirst L + 120)
@@ -84,9 +84,7 @@ theorem tTile_eq (L m t : ℕ) : tTile L m t
     induction k with
     | zero => simp
     | succ k ih =>
-      rw [List.range_succ, List.map_append, List.sum_append, ih, List.map_append, List.sum_append]
-      simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, tFillList]
-      ring
+      ram_grind [List.range_succ, tFillList]
   rw [tTile, hrounds, sum_length_starBoxes]
   ring
 
@@ -94,51 +92,34 @@ theorem tTile_eq (L m t : ℕ) : tTile L m t
 29). The enumeration of the boxes with e stars is started once for each e ≤ m - t, in O(L) steps
 each time; these m - t + 1 starts are paid for by the boxes, of which there are at least m - t + 1
 (succ_le_card_boxes). -/
-private theorem exists_tTile_le : ∃ c : ℕ, ∀ L m t : ℕ, 1 ≤ L → m ≤ L →
+private theorem exists_tTile_le : ∃ c : ℕ, ∀ L m t , 1 ≤ L → m ≤ L →
     tTile L m t + 120 ≤ c * (L * (boxes L m t).card) := by
   refine ⟨2000, fun L m t hL1 hmL => ?_⟩
-  have hcard := succ_le_card_boxes (t := t) hmL
-  have hstarts : (m - t + 1) * (tNineFirst L + 120) ≤ (boxes L m t).card * (tNineFirst L + 120) :=
-    Nat.mul_le_mul_right _ hcard
-  rw [tTile_eq]
-  simp only [tFillStep, tFillRound, tStarFirst, tHorner, tSumTen, tLookup, tInsert, tNineNext,
-    tNewRoot, tNineFirst] at hstarts ⊢
-  generalize (boxes L m t).card = b at *
-  have hb : b ≤ L * b := Nat.le_mul_of_pos_left _ hL1
-  rw [show b * (30 * L + 30 + 120) = 30 * (L * b) + 150 * b by ring] at hstarts
-  rw [show b * (50 * L + 30 + (20 * L + 10) + (10 * (20 * L + 12 + 40) + 30) + (220 * L + 20)
-    + (90 * L + 60) + 120) = 580 * (L * b) + 790 * b by ring]
-  omega
+  have  := succ_le_card_boxes (t := t) hmL
+  simp_all [tTile_eq, tFillStep, tFillRound, tStarFirst, tHorner, tSumTen, tLookup, tInsert, tNineNext, tNewRoot, tNineFirst] <;> nlinarith
 
 /-! ## A query -/
 
 /-- The query cost of Theorem 30 is at least L. -/
 theorem cast_L_le_costQuery (L m t : ℕ) : (L : ℝ) ≤ costQuery L m t := by
-  have hsum : (1 : ℝ) ≤ ∑ d ∈ range (t + 1), (alpha m d : ℝ) := by
+
+  exact le_mul_of_one_le_right (Nat.cast_nonneg L) (by
     rw [show (1 : ℝ) = (alpha m 0 : ℝ) by simp [alpha]]
-    exact single_le_sum (f := fun d => (alpha m d : ℝ)) (fun _ _ => by positivity) (by simp)
-  exact le_mul_of_one_le_right (Nat.cast_nonneg L) hsum
+    exact single_le_sum (f := fun d => (alpha m d : ℝ)) fun _ _ => by positivity (by simp)
+  )
 
 /-- **A query**, once the digits of its output string are known, takes O(L) steps for each number
 that it reads. -/
-theorem exists_tQueryCore_le : ∃ C : ℝ, 0 ≤ C ∧ ∀ L m t : ℕ, 1 ≤ L → m ≤ L → t ≤ m →
-    (tQueryCore L m t : ℝ) ≤ C * costQuery L m t := by
+theorem exists_tQueryCore_le : ∃ C : ℝ, 0 ≤ C ∧ ∀ L m t , 1 ≤ L → m ≤ L → t ≤ m →
+    tQueryCore L m t ≤ C * costQuery L m t := by
   refine ⟨900, by norm_num, fun L m t hL1 hmL ht => ?_⟩
-  have hnat : tQueryCore L m t ≤ 900 * (L * ∑ d ∈ range (t + 1), alpha m d) := by
-    have hpos : 1 ≤ alpha m t := Nat.mul_pos (Nat.choose_pos ht) (by positivity)
+
+  unfold costQuery
+  exact_mod_cast by
+    have  : 1 ≤ alpha m t := Nat.mul_pos (Nat.choose_pos ht) (by positivity)
     rw [tQueryCore, length_lowList ht [], length_boxesOf ht [], sum_range_succ]
     simp only [tScatter, tHorner, tLookup, tNineNext, tNineFirst]
     generalize ∑ d ∈ range t, alpha m d = low
-    generalize alpha m t = a at *
-    have hlow : low * (60 * L + 30 + (20 * L + 10) + (90 * m + 60) + 90) ≤ low * (360 * L) :=
-      Nat.mul_le_mul_left _ (by omega)
-    have hboxes : a * (60 * L + 30 + (20 * L + 12) + (90 * m + 60) + 90) ≤ a * (362 * L) :=
-      Nat.mul_le_mul_left _ (by omega)
-    have hL : L ≤ a * L := Nat.le_mul_of_pos_left _ hpos
-    rw [show 900 * (L * (low + a))
-      = low * (360 * L) + a * (362 * L) + 540 * (low * L) + 538 * (a * L) by ring]
-    omega
-  unfold costQuery
-  exact_mod_cast hnat
+    nlinarith
 
 end Light.Sec4

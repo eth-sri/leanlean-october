@@ -1,5 +1,6 @@
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Offline
 public import ImprovedExponents.PrunedProgram.Pre.Defs
 
@@ -23,7 +24,7 @@ open ThreeSumApsp
 
 /-- The time of the pruned preprocessing `pre31P`; c is the constant of the pruned shared stage. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Parameters.lean (tPre31)
-def tPre31P (c : ℕ) (G : RatParams) (N D₀ : ℕ) : ℕ :=
+def tPre31P c G N D₀ :=
   tLog4 (logFour D₀) + 30 +
     if logFour D₀ < G.m₀ then 0 else
       tCeilMul G.a (logFour D₀) + tCeilMul G.p (logFour D₀) + tPadX N (D (logFour D₀))
@@ -33,7 +34,7 @@ def tPre31P (c : ℕ) (G : RatParams) (N D₀ : ℕ) : ℕ :=
 /-- The time of the pruned offline routine `offline32P` on an instance with `w` wanted positions.
 -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Offline.lean (tOffline32)
-def tOffline32P (c : ℕ) (G : RatParams) (N D₀ w : ℕ) : ℕ :=
+def tOffline32P c G N D₀ w :=
   tPre31P c G N D₀ + w * (tQuery31 G D₀ + 30) + 20
 
 end Light.Sec4

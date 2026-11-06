@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.RamArith
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.Strassen
 
 /-!
@@ -20,21 +22,16 @@ public section
 namespace Light.Sec3
 
 /-- The scratch space, exactly. -/
-theorem strScr_add (p j : ℕ) : strScr p j + p = 4 ^ j * p := by
-  induction j with
-  | zero => simp [strScr]
-  | succ j ih =>
-    rw [strScr, pow_succ]
-    have : 4 ^ j * 4 * p = 4 * (4 ^ j * p) := by ring
-    omega
+theorem strScr_add p j : strScr p j + p = 4 ^ j * p := by
+  induction j <;> grind [strScr]
 
 /-- The scratch space is at most the size of an operand. -/
-theorem strScr_le (p j : ℕ) : strScr p j ≤ 4 ^ j * p := by
+theorem strScr_le p j : strScr p j ≤ 4 ^ j * p := by
   have := strScr_add p j
   omega
 
 /-- The scratch space grows with p. -/
-theorem strScr_mono {p q : ℕ} (h : p ≤ q) (j : ℕ) : strScr p j ≤ strScr q j := by
+theorem strScr_mono {p q} (h : p ≤ q) j : strScr p j ≤ strScr q j := by
   induction j with
   | zero => simp [strScr]
   | succ j ih =>
@@ -43,14 +40,10 @@ theorem strScr_mono {p q : ℕ} (h : p ≤ q) (j : ℕ) : strScr p j ≤ strScr 
     omega
 
 /-- The number of steps grows with p. -/
-theorem strSteps_mono {p q : ℕ} (h : p ≤ q) (j : ℕ) : strSteps p j ≤ strSteps q j := by
+theorem strSteps_mono {p q} (h : p ≤ q) j : strSteps p j ≤ strSteps q j := by
   induction j with
   | zero =>
-    rw [strSteps, strSteps]
-    have h2 : p * p ≤ q * q := Nat.mul_le_mul h h
-    have e1 : 32 * p * p = 32 * (p * p) := by ring
-    have e2 : 32 * q * q = 32 * (q * q) := by ring
-    omega
+    ram_arith [strSteps]
   | succ j ih =>
     rw [strSteps, strSteps]
     have := Nat.mul_le_mul_left (4 ^ j) h

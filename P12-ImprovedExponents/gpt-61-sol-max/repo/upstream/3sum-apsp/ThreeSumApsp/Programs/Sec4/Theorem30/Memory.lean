@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import ThreeSumApsp.Util.Types
+public import Mathlib.Tactic
 public import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 
@@ -47,25 +49,25 @@ open ThreeSumApsp ThreeSumApsp.Spec
 /-! ## The map -/
 
 /-- The digits of the output string of a query: L cells. -/
-def aWD (p : Sec2.Par) (b0 : ℕ) : ℕ := p.sharedEnd b0
+def aWD (p : Sec2.Par) b0 := p.sharedEnd b0
 /-- Scratch of the preprocessing, the current leaf: L cells. -/
-def aCUR (p : Sec2.Par) (b0 : ℕ) : ℕ := aWD p b0 + p.L
+def aCUR p b0 := aWD p b0 + p.L
 /-- Scratch, the current box: L cells. -/
-def aBOX (p : Sec2.Par) (b0 : ℕ) : ℕ := aCUR p b0 + p.L
+def aBOX p b0 := aCUR p b0 + p.L
 /-- Scratch of a query, the current string on the levels of Q: m cells. -/
-def aSS (p : Sec2.Par) (b0 : ℕ) : ℕ := aBOX p b0 + p.L
+def aSS p b0 := aBOX p b0 + p.L
 /-- The cell that holds the length of the trie array. -/
-def aFP (p : Sec2.Par) (b0 : ℕ) : ℕ := aSS p b0 + p.m
+def aFP p b0 := aSS p b0 + p.m
 /-- The roots of the tries: one cell for each tile. -/
-def aROOTS (p : Sec2.Par) (b0 : ℕ) : ℕ := aFP p b0 + 1
+def aROOTS p b0 := aFP p b0 + 1
 /-- The trie area. -/
-def aTR (p : Sec2.Par) (b0 : ℕ) : ℕ := aROOTS p b0 + p.nB * p.nB
+def aTR p b0 := aROOTS p b0 + p.nB * p.nB
 /-- The capacity of the trie area (`Spec.length_allTries_le`). -/
-def trieCap (p : Sec2.Par) (t : ℕ) : ℕ :=
+def trieCap (p : Sec2.Par) t :=
   1 + p.nB * p.nB * (11 * (1 + p.L * (boxes p.L p.m t).card))
 /-- The first address behind the block (one cell is left unused, so that every address of the block
 is strictly below it). -/
-def top (p : Sec2.Par) (t b0 : ℕ) : ℕ := aTR p b0 + trieCap p t + 1
+def top p t b0 := aTR p b0 + trieCap p t + 1
 
 /-! ## Where the areas lie -/
 
@@ -88,99 +90,66 @@ structure Areas (p : Sec2.Par) (t b0 : ℕ) : Prop where
   top : top p t b0 = aTR p b0 + trieCap p t + 1
 
 /-- The tables and the areas lie as Areas says. -/
-theorem areas (p : Sec2.Par) (t b0 : ℕ) : Areas p t b0 := by
-  have hplaces := p.places b0
-  have hWD : aWD p b0 = p.sharedEnd b0 := rfl
-  have hCUR : aCUR p b0 = aWD p b0 + p.L := rfl
-  have hBOX : aBOX p b0 = aCUR p b0 + p.L := rfl
-  have hSS : aSS p b0 = aBOX p b0 + p.L := rfl
-  have hFP : aFP p b0 = aSS p b0 + p.m := rfl
-  have hROOTS : aROOTS p b0 = aFP p b0 + 1 := rfl
-  have hTR : aTR p b0 = aROOTS p b0 + p.nB * p.nB := rfl
-  have hTOP : top p t b0 = aTR p b0 + trieCap p t + 1 := rfl
+theorem areas p t b0 : Areas p t b0 := by
+  have  := p.places b0
+  have  : aWD p b0 = p.sharedEnd b0 := rfl
+  have  : aCUR p b0 = aWD p b0 + p.L := rfl
+  have  : aBOX p b0 = aCUR p b0 + p.L := rfl
+  have  : aSS p b0 = aBOX p b0 + p.L := rfl
+  have  : aFP p b0 = aSS p b0 + p.m := rfl
+  have  : aROOTS p b0 = aFP p b0 + 1 := rfl
+  have  : aTR p b0 = aROOTS p b0 + p.nB * p.nB := rfl
+  have  : top p t b0 = aTR p b0 + trieCap p t + 1 := rfl
   constructor <;> omega
 
 /-- The directory lies before the areas of Section 4. -/
-theorem wd_ge (p : Sec2.Par) (b0 : ℕ) : b0 + 32 ≤ aWD p b0 := by
+theorem wd_ge p b0 : b0 + 32 ≤ aWD p b0 := by
   obtain ⟨⟩ := areas p 0 b0
   omega
 
 /-- The shared block ends behind its base address. -/
-theorem base_le_sharedEnd (p : Sec2.Par) (b0 : ℕ) : b0 ≤ p.sharedEnd b0 :=
+theorem base_le_sharedEnd (p : Sec2.Par) b0 : b0 ≤ p.sharedEnd b0 :=
   (Nat.le_add_right b0 32).trans (wd_ge p b0)
 
 /-- The block holds more than its directory. -/
-theorem base_add_lt_top (p : Sec2.Par) (t b0 : ℕ) : b0 + 32 < top p t b0 := by
+theorem base_add_lt_top p t b0 : b0 + 32 < top p t b0 := by
   obtain ⟨⟩ := areas p t b0
   omega
 
 /-- The block is not empty. -/
-theorem base_lt_top (p : Sec2.Par) (t b0 : ℕ) : b0 < top p t b0 :=
+def base_lt_top p t b0 :=
   (Nat.le_add_right b0 32).trans_lt (base_add_lt_top p t b0)
 
 /-- The scratch strings of a query lie in the block. -/
-theorem scratch_in_block (p : Sec2.Par) (t b0 : ℕ) :
+theorem scratch_in_block p t b0 :
     b0 ≤ aWD p b0 ∧ aWD p b0 + (3 * p.L + p.m) ≤ top p t b0 := by
   obtain ⟨⟩ := areas p t b0
   omega
 
 /-! ## The directory -/
 
-namespace Dir
-
-/-- The cells of the directory, the first 32 cells of the block, that the routines of Section 4 use.
-They hold L, m, L - m, K₀, nB, 10^L, the addresses of the tables MASK, BAND, BLOCK, DIG3 and of the
-encodings ENCA, ENCB, the end of the shared block (which is the address of WD), and t. All but the
-last are written by the shared stage. -/
-abbrev levels : ℕ := 0
-@[inherit_doc levels] abbrev inner : ℕ := 1
-@[inherit_doc levels] abbrev outer : ℕ := 4
-@[inherit_doc levels] abbrev blocks : ℕ := 7
-@[inherit_doc levels] abbrev bands : ℕ := 9
-@[inherit_doc levels] abbrev leaves : ℕ := 10
-@[inherit_doc levels] abbrev mask : ℕ := 21
-@[inherit_doc levels] abbrev band : ℕ := 22
-@[inherit_doc levels] abbrev block : ℕ := 23
-@[inherit_doc levels] abbrev digits : ℕ := 24
-@[inherit_doc levels] abbrev encA : ℕ := 26
-@[inherit_doc levels] abbrev encB : ℕ := 27
-@[inherit_doc levels] abbrev sharedEnd : ℕ := 30
-@[inherit_doc levels] abbrev switch : ℕ := 31
-
-end Dir
 
 /-! ## The invariant -/
 
 /-- The encoding of the row band β. -/
-def encRow (p : Sec2.Par) (hmL : p.m ≤ p.L) (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)
-    (β : ℕ) : Leaf p.L → ℤ :=
+def encRow (p : Sec2.Par) (hmL : p.m ≤ p.L) (X : ThreeSumApsp.IntMatrix p.N (D p.m))
+     β :=
   encodingL (bandArrayL (stdLayout hmL) X β)
 
 /-- The encoding of the column band β. -/
-def encCol (p : Sec2.Par) (hmL : p.m ≤ p.L) (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ)
-    (β : ℕ) : Leaf p.L → ℤ :=
+def encCol (p : Sec2.Par) (hmL : p.m ≤ p.L) (Y : ThreeSumApsp.IntMatrix (D p.m) p.N)
+     β :=
   encodingR (bandArrayR (stdLayout hmL) Y β)
 
 /-- The tries of all tiles, and their roots. -/
-def dsTries (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)
-    (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) :
-    TrieStore :=
+def dsTries p t hmL X
+     Y :=
   allTries p.L p.m t (tileList p.nB (encRow p hmL X) (encCol p hmL Y))
-
-/-- **The block from b0 on holds the data structure for X and Y.** The preprocessing establishes
-this, and every query needs it and keeps it. -/
-structure DSReady (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ)
-    (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)
-    (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) (μ : ℕ → ℤ) : Prop where
-  shared : Sec2.SharedReady p hmL aX aY b0 X Y μ
-  cellT : μ (b0 + 31) = t
-  roots : SegN μ (aROOTS p b0) (dsTries p t hmL X Y).roots
-  trie : Seg μ (aTR p b0) (dsTries p t hmL X Y).cells
 
 section
 
 variable {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
-  {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ} {μ μ' : ℕ → ℤ}
+  {X : ThreeSumApsp.IntMatrix p.N (D p.m)} {Y : ThreeSumApsp.IntMatrix (D p.m) p.N} {μ μ' : Light.Memory}
 
 end
 
@@ -189,7 +158,7 @@ structure Lim30 (lim : Limits) (p : Sec2.Par) (t b0 : ℕ) (U : ℤ) : Prop wher
   std : Std lim
   space : top p t b0 ≤ lim.space
   /-- Every value and every partial sum fits in a word. -/
-  value : 10 ^ p.m * ((7 ^ p.L * U) * (7 ^ p.L * U)) ≤ lim.word
+  value : 10 ^ p.m * (7 ^ p.L * U * (7 ^ p.L * U)) ≤ lim.word
   /-- The shared stage can compute the encodings. -/
   enc : 7 ^ (p.L + 1) * U ≤ lim.word
   /-- The shared stage can compute the table of the powers of 10. -/
@@ -197,15 +166,13 @@ structure Lim30 (lim : Limits) (p : Sec2.Par) (t b0 : ℕ) (U : ℤ) : Prop wher
 
 /-! ## The two routines that know the map -/
 
-/-- The numbers of the two routines. -/
-abbrev Proc.preCore : ℕ := 54
-@[inherit_doc Proc.preCore] abbrev Proc.queryAt : ℕ := 55
+abbrev Proc.queryAt := 55
 
 /-- The time of `queryAt`. -/
-def tQueryAt (L m t : ℕ) : ℕ := tOutDigits L + tQueryCore L m t + 400
+def tQueryAt L m t := tOutDigits L + tQueryCore L m t + 400
 
 /-- The time of `preCore`; c is the constant of the shared stage (`Sec2.SharedSpec`). -/
-def tPreCore (c : ℕ) (p : Sec2.Par) (t : ℕ) : ℕ :=
+def tPreCore c p t :=
   c * Sec2.sharedShape p + tAllTiles p.L p.m t p.nB + 300
 
 end Light.Sec4

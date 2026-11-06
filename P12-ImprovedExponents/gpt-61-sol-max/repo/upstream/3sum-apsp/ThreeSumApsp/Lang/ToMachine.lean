@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
 public import ThreeSumApsp.Lang.Calls
 public import ThreeSumApsp.Lang.Compiler.WholeProgram
 public import ThreeSumApsp.Lang.WordSize
@@ -72,8 +74,8 @@ structure ProgramSolvesAt (prob : Problem) (P : Program) (p0 : ℕ) (dec : Bool)
 input of the problem, ends within T x steps and within limits that are polynomial in the
 parameters; its result gives the verdict (if dec: accept exactly if the result is positive;
 otherwise accept), and the cells after the input hold the output. -/
-def ProgramSolves (prob : Problem) (P : Program) (p0 : ℕ) (dec : Bool) (s k : ℕ)
-    (dom : prob.Inst → Prop) (T : prob.Inst → ℝ) : Prop :=
+def ProgramSolves (prob : Problem) P p0 dec s k
+    (dom : prob.Inst → Prop) (T : prob.Inst → ℝ) :=
   ∀ x, dom x → ∃ (lim : Limits) (σ' : State) (c : ℕ),
     ProgramSolvesAt prob P p0 dec s k x (T x) lim σ' c
 
@@ -81,89 +83,78 @@ def ProgramSolves (prob : Problem) (P : Program) (p0 : ℕ) (dec : Bool) (s k : 
 
 /-- A number that depends on the compiled program only: times the polynomial bound on the limits,
 it exceeds all four numbers that have to fit in a word (`Fits`). -/
-def textBound (P : Program) (dec : Bool) : ℕ := 32 + 8 * (frameSize P + 1) + 2 * dispPos P dec
+def textBound P dec := 32 + 8 * (frameSize P + 1) + 2 * dispPos P dec
 
 /-- The number of binary digits of that number. -/
-def textBoundBits (P : Program) (dec : Bool) : ℕ := Nat.size (textBound P dec)
+def textBoundBits P dec := Nat.size (textBound P dec)
 
 /-- The slope of the word size for a compiled program: the exponents s and k of the bound
 2^s ((p₁ + 1) ⋯ (p_r + 1))^k on the limits, and the bits for the numbers that the compiled code
 itself forms (offsets in a frame, positions in the code). -/
-def slopeOf (P : Program) (dec : Bool) (s k r : ℕ) : ℕ := textBoundBits P dec + s + k * r + k
+def slopeOf P dec s k r := textBoundBits P dec + s + k * r + k
 
 /-- The word size fits the limits if the limits, the largest number N of the pool and the number Q
 of cells of the stack, with the factors of `Fits`, are below a number B ≤ 2^W. -/
-private theorem fits_of_lt {W : ℕ} {lim : Limits} {N Q B : ℕ} (hB : B ≤ 2 ^ W)
+private theorem fits_of_lt {W} {lim} {N Q B : ℕ} (hB : B ≤ 2 ^ W)
     (hword : 2 * (2 * lim.word + 2) < (B : ℤ)) (hspace : 2 * lim.space < B) (hstack : 4 * Q < B)
     (hpool : 2 * N < B) : Fits W lim N Q := by
-  have hB' : (B : ℤ) ≤ (2 : ℤ) ^ W := by exact_mod_cast hB
+  have  : (B : ℤ) ≤ (2 : ℤ) ^ W := mod_cast hB
   constructor <;> omega
 
 /-- Limits that are polynomial in the parameters fit every admissible word size. -/
-theorem fits_of_small {W s k r b : ℕ} {params : List ℕ} {lim : Limits} (P : Program) (dec : Bool)
+theorem fits_of_small {W s k r b} {params} {lim} P dec
     (h : Small s k params lim) (hadm : Admissible b params W) (hr : params.length ≤ r)
     (hb : slopeOf P dec s k r ≤ b) : Fits W lim (dispPos P dec) (stackCells P lim) := by
-  have hword := h.word
-  have hspace := h.space
-  have hdepth := h.depth
+  have  := h.word
+  have  := h.space
+  have  := h.depth
   set pb := polyBound s k params with hpb
-  have hpb_pos : 1 ≤ pb := one_le_polyBound s k params
+  have hpb_pos := one_le_polyBound s k params
   -- the text's constant times the polynomial is below 2^W
-  have hB : 2 ^ textBoundBits P dec * pb ≤ 2 ^ W := by
+  have  : 2 ^ textBoundBits P dec * pb ≤ 2 ^ W := by
     rw [hpb, polyBound_mul]
-    exact polyBound_le hadm hr (by unfold slopeOf at hb; omega)
-  have hlt : textBound P dec * pb < 2 ^ textBoundBits P dec * pb :=
+    exact polyBound_le hadm hr hb
+  have  : textBound P dec * pb < 2 ^ textBoundBits P dec * pb :=
     Nat.mul_lt_mul_of_pos_right (Nat.lt_size_self _) hpb_pos
-  have htext : textBound P dec * pb
-      = 32 * pb + 8 * ((frameSize P + 1) * pb) + 2 * (dispPos P dec * pb) := by
+  have  : textBound P dec * pb
+      = 32 * pb + 8 * (frameSize P + 1) * pb + 2 * dispPos P dec * pb := by
     unfold textBound; ring
   -- and each of the four numbers is below the text's constant times the polynomial
-  have hstack : (frameSize P + 1) * (lim.depth + 1) ≤ 2 * ((frameSize P + 1) * pb) :=
+  have  : (frameSize P + 1) * (lim.depth + 1) ≤ 2 * (frameSize P + 1) * pb :=
     (Nat.mul_le_mul_left _ (by omega : lim.depth + 1 ≤ 2 * pb)).trans_eq (by ring)
-  have hpool : dispPos P dec ≤ dispPos P dec * pb := Nat.le_mul_of_pos_right _ hpb_pos
-  refine fits_of_lt hB ?_ ?_ ?_ ?_
-  · -- 2 (2 word + 2) ≤ 4 pb + 4 ≤ 8 pb
-    have : ((8 * pb : ℕ) : ℤ) < ((2 ^ textBoundBits P dec * pb : ℕ) : ℤ) := by
-      exact_mod_cast (by omega : 8 * pb < 2 ^ textBoundBits P dec * pb)
-    omega
-  · -- 2 space ≤ 2 pb
-    omega
-  · -- 4 (4 + (F + 1) (depth + 1)) ≤ 16 pb + 8 (F + 1) pb
-    unfold stackCells mainFrame
-    omega
-  · -- 2 N ≤ 2 N pb
-    omega
+  have  : dispPos P dec ≤ dispPos P dec * pb := Nat.le_mul_of_pos_right _ hpb_pos
+  grind [fits_of_lt, stackCells, mainFrame]
 
 /-! ## Time and space -/
 
 /-- The constant of the time and space bounds of a compiled program: the two constants of the time,
 and the extent of the negative cells that are in use before any call. -/
-def timeConst (P : Program) (dec : Bool) : ℕ :=
+def timeConst P dec :=
   startCost P dec + stepsPerStep (dispPos P dec) + lowCell P dec ⟨0, 0, 0⟩
 
 /-- The time of a compiled program. -/
-theorem ramSteps_le (P : Program) (dec : Bool) (c : ℕ) :
+theorem ramSteps_le P dec c :
     (ramSteps P dec c : ℝ) ≤ (timeConst P dec : ℝ) * (c : ℝ) + timeConst P dec := by
-  have hstart : startCost P dec ≤ timeConst P dec := by unfold timeConst; omega
-  have hsim : stepsPerStep (dispPos P dec) ≤ timeConst P dec := by unfold timeConst; omega
-  have : ramSteps P dec c ≤ timeConst P dec * c + timeConst P dec :=
-    (Nat.add_comm _ _).trans_le (Nat.add_le_add (Nat.mul_le_mul_right c hsim) hstart)
+
+
+  have :=
+    (Nat.add_comm _ _).trans_le (Nat.add_le_add (Nat.mul_le_mul_right c (by unfold timeConst; omega : stepsPerStep (dispPos P dec) ≤ timeConst P dec)) (by unfold timeConst; omega : startCost P dec ≤ timeConst P dec))
   exact_mod_cast this
 
-private theorem ramSteps_le_of_le (P : Program) (dec : Bool) {c : ℕ} {T : ℝ} (h : (c : ℝ) ≤ T) :
+private theorem ramSteps_le_of_le P dec {c : ℕ} {T} (h : (c : ℝ) ≤ T) :
     (ramSteps P dec c : ℝ) ≤ (timeConst P dec : ℝ) * T + timeConst P dec :=
   (ramSteps_le P dec c).trans (by gcongr)
 
 /-! ## Runs from the initial memory -/
 
-section run
+section
 
-variable {W : ℕ} {lim : Limits} {μ : ℕ → ℤ}
+variable {W : ℕ} {lim : Limits} {μ : Light.Memory}
 
 /-- The initial memory holds the input, and zeros in the cells of the two arguments. -/
-theorem input_loadWords (W : ℕ) {ws : List ℤ} (h0 : 0 ≤ lim.word) (h : ∀ v ∈ ws, |v| ≤ lim.word) :
+theorem input_loadWords W {ws} (h0 : 0 ≤ lim.word) (h : ∀ v ∈ ws, |v| ≤ lim.word) :
     Input lim (memOf ws) 0 0 (loadWords W ws) where
-  rep := loadWords_mem_nat W ws
+  rep := (by aesop : ∀ (a : ℕ), loadWords W ws ↑a = wd W (ws.getD a 0))
   bounded := AbsLe.abs_getD_le h0 h
   arg1 := loadWords_mem_neg W ws (by decide)
   arg2 := loadWords_mem_neg W ws (by decide)
@@ -171,22 +162,22 @@ theorem input_loadWords (W : ℕ) {ws : List ℤ} (h0 : 0 ≤ lim.word) (h : ∀
   arg2_le := by simpa using h0
 
 /-- Reading the output: a cell of a memory that holds μ, as a signed word. -/
-theorem Compiler.Holds.output {c : ℤ → BitVec W} (h : Holds W lim μ c) {N Q : ℕ}
-    (hfit : Fits W lim N Q) (off i : ℕ) : WordRam.output c off i = μ (off + i) := by
+theorem Compiler.Holds.output {c} (h : Holds W lim μ c) {N Q}
+    (hfit : Fits W lim N Q) off i : WordRam.output c off i = μ (off + i) := by
   rw [WordRam.output, ← Nat.cast_add, h.rep]
   exact toInt_wd (hfit.inRange (h.bounded _))
 
-end run
+end
 
 /-! ## Solvers -/
 
 /-- **The compiled program solves the problem on the word RAM**, within C · T + C steps, C depending
 on the compiled program only. -/
-theorem solves_of_programSolves {prob : Problem} {P : Program} {p0 : ℕ} {dec : Bool} {s k r : ℕ}
-    {dom : prob.Inst → Prop} {T : prob.Inst → ℝ} (h : ProgramSolves prob P p0 dec s k dom T)
+theorem solves_of_programSolves {prob} {P} {p0} {dec} {s k r}
+    {dom} {T} (h : ProgramSolves prob P p0 dec s k dom T)
     (hr : ∀ x, (prob.params x).length ≤ r) :
     Solves prob (compileProgram P p0 dec) (slopeOf P dec s k r) dom
-      fun x => (timeConst P dec : ℝ) * T x + timeConst P dec := by
+      fun x => timeConst P dec * T x + timeConst P dec := by
   intro x hx W hadm
   obtain ⟨lim, σ', c, h⟩ := h x hx
   have hfit := fits_of_small P dec h.small hadm (hr x) le_rfl
@@ -194,40 +185,10 @@ theorem solves_of_programSolves {prob : Problem} {P : Program} {p0 : ℕ} {dec :
     compileProgram_correct h.run hfit (input_loadWords W h.small.nonneg h.input_fits)
   refine ⟨_, _, cfg, ramSteps_le_of_le P dec h.time, hrun, ?_⟩
   rw [show output cfg (prob.input x).length = fun i => σ'.mem ((prob.input x).length + i) from
-    funext (out.holds.output hfit _)]
+    funext (out.output hfit _)]
   exact h.answer
 
 /-! ## The two-stage data structure -/
-
-/-- From every memory with the property DS, procedure pQ, called on I and J, returns the entry
-(I, J) of the product within T steps and leaves a memory with the property DS. -/
-def AnswersQueries (lim : Limits) (P : Program) (pQ : ℕ) (x : ThinPair) (T : ℝ)
-    (DS : (ℕ → ℤ) → Prop) : Prop :=
-  ∀ μ, DS μ → ∀ I J : Fin x.N, ∃ (σ' : State) (c : ℕ),
-    Exec lim P 0 (mainStmt pQ) ⟨frame [0, (I : ℕ), (J : ℕ)], μ⟩ σ' c ∧ (c : ℝ) ≤ T ∧
-    σ'.loc 0 = (x.X * x.Y) I J ∧ DS σ'.mem
-
-/-- What is asked of the two procedures on the instance x, with the limits lim and the property DS
-of memories, "holds the data structure for X and Y". -/
-structure ProgramIsDataStructureAt (P : Program) (pPre pQ : ℕ) (s k : ℕ) (extra : List ℤ)
-    (x : ThinPair) (Tp Sp Tq : ℝ) (lim : Limits) (DS : (ℕ → ℤ) → Prop) : Prop where
-  /-- The limits are polynomial in N and D. -/
-  small : Small s k [x.N, x.D] lim
-  /-- The indices of rows and columns fit in a word. -/
-  index_fits : (x.N : ℤ) ≤ lim.word
-  /-- The numbers of the input fit in a word. -/
-  input_fits : ∀ v ∈ x.input extra, |v| ≤ lim.word
-  time_nonneg : 0 ≤ Tq
-  /-- The space bounds the addresses after the input. -/
-  space : (lim.space : ℝ) ≤ (x.input extra).length + Sp
-  /-- The space bounds the nesting of calls. -/
-  depth : (lim.depth : ℝ) ≤ Sp
-  /-- The preprocessing, on the memory that holds the input, establishes DS. -/
-  pre : ∃ (σ' : State) (c : ℕ),
-    Exec lim P 0 (mainStmt pPre) ⟨frame [0, 0, 0], memOf (x.input extra)⟩ σ' c ∧
-    (c : ℝ) ≤ Tp ∧ DS σ'.mem
-  /-- Every query needs and keeps DS. -/
-  query : AnswersQueries lim P pQ x Tq DS
 
 /-! ## Absorbing the additive constant -/
 

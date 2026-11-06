@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
+public import ThreeSumApsp.Util.Types
 public import ThreeSumApsp.Programs.LightModel
 
 /-!
@@ -29,18 +31,23 @@ namespace Light.Sec3
 open ThreeSumApsp
 
 /-- The right-hand side of `Claim.Theorem_17`. -/
-noncomputable def bound17 (MM : ℕ → ℝ) (D g : ℕ → ℕ) (C : ℝ) (T : ℕ → ℕ → ℕ → ℝ) (n : ℕ)
-    (κ : ℝ) : ℝ :=
+noncomputable def bound17 MM (D g : ℕ → ℕ) C (T : ℕ → ℕ → ℕ → ℝ) (n : ℕ)
+     κ :=
   4 * (n : ℝ) * (g n : ℝ) * (T n (D n) (queryCap n (D n)) + C * ((n : ℝ) ^ 2 / Real.sqrt (D n))) +
     C * (termScans n (g n) κ + termPrime MM n (D n) + termBuild n (D n) (g n))
 
 /-- The time of a host, as a function `time` of the time of the solver, obeys the bound of
 Theorem 17 with some constant: whenever `T` bounds the time `Tn` of the solver, `bound17` with `T`
 bounds `time Tn`, under the hypotheses of the theorem. -/
-def ObeysBound17 (MM : ℕ → ℝ) (D g : ℕ → ℕ) (time : (List ℕ → ℕ) → ℕ → ℕ → ℕ) : Prop :=
-  ∃ C : ℝ, 0 ≤ C ∧ ∀ (Tn : List ℕ → ℕ) (T : ℕ → ℕ → ℕ → ℝ),
-    (∀ m d w w' : ℕ, 1 ≤ m → 1 ≤ d → w ≤ w' → (Tn [m, d, w] : ℝ) ≤ T m d w') →
-    ∀ (n U : ℕ) (κ : ℝ), 16 ≤ D n → D n ≤ n → 1 ≤ g n → (g n : ℝ) ≤ Real.sqrt (D n) → 1 ≤ κ →
-      (U : ℝ) ≤ (n : ℝ) ^ κ → (time Tn n U : ℝ) ≤ bound17 MM D g C T n κ
+def ObeysBound17With (D g : ℕ → ℕ)
+    (bound : ℝ → (ℕ → ℕ → ℕ → ℝ) → ℕ → ℝ → ℝ)
+    (time : Light.InputTime → Light.SolverTime) : Prop :=
+  ∃ C : ℝ, 0 ≤ C ∧ ∀ (Tn : Light.InputTime) (T : ℕ → ℕ → ℕ → ℝ),
+    (∀ m d w w' : ℕ, 1 ≤ m → 1 ≤ d → w ≤ w' → Tn [m, d, w] ≤ T m d w') →
+    ∀ (n U : ℕ) (κ : ℝ), 16 ≤ D n → D n ≤ n → 1 ≤ g n → g n ≤ Real.sqrt (D n) → 1 ≤ κ →
+      U ≤ (n : ℝ) ^ κ → time Tn n U ≤ bound C T n κ
+
+/-- The original host's instance of the common time-bound contract. -/
+def ObeysBound17 MM D g time := ObeysBound17With D g (bound17 MM D g) time
 
 end Light.Sec3

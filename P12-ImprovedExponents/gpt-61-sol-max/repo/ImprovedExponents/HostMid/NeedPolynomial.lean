@@ -1,5 +1,6 @@
 module
 
+public import Mathlib.Tactic
 public import ImprovedExponents.HostMid.Program
 
 @[expose] public section
@@ -14,15 +15,14 @@ bounded because `midSize D g ≤ D` (`polyNeedN_midArgs`).  So upstream's `hostN
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3
 
 /-- **The need of the variant host stays polynomial**, if the parameters, the numbers that the
 parameter procedures form, and the need of the solver are polynomially bounded. -/
-theorem hostNeed_poly' {Dfun Gfun wD wG : ℕ → ℕ} {need : List ℕ → Need}
-    (hD : PolyBounded fun n _ => Dfun n) (hG : PolyBounded fun n _ => Gfun (Dfun n))
+def hostNeed_poly' {Dfun Gfun wD wG : ℕ → ℕ} {need}
+     hD (hG : PolyBounded fun n _ => Gfun (Dfun n))
     (hwD : PolyBounded fun n _ => wD n) (hwG : PolyBounded fun n _ => wG (Dfun n))
-    (h : PolyNeedN need) :
-    PolyNeed (hostNeed' Dfun Gfun wD wG need) :=
+    (h : PolyNeedN need) :=
   hostNeed_poly hD hG hwD hwG (polyNeedN_midArgs Gfun h)
 
 end ImprovedExponents.HostMid

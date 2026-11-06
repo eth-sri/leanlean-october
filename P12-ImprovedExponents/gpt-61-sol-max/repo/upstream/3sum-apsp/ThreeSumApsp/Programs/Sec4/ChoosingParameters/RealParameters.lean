@@ -5,8 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Costs
-public import ThreeSumApsp.Sec4.Corollary31.Limit
+public import ThreeSumApsp.Sec4.Corollary31
 public import ThreeSumApsp.Sec4.Corollary31.RationalParameters
 
 /-!
@@ -29,22 +30,22 @@ be absorbed.
 
 @[expose] public section
 
-open ThreeSumApsp
+
 
 namespace Light.Sec4
 
-open ThreeSumApsp.Spec
+
 
 /-- The bound on the preprocessing, N² (log D + 1)²/D^γ. -/
-noncomputable def preBound31 (γ : ℝ) (N D₀ : ℕ) : ℝ :=
+noncomputable def preBound31 (γ : ℝ) (N D₀ : ℕ) :=
   (N : ℝ) ^ 2 * (Real.log D₀ + 1) ^ 2 / (D₀ : ℝ) ^ γ
 /-- The bound on a query, D^q (log D + 1); the summand 1 makes it at least 1 at D = 1. -/
-noncomputable def queryBound31 (q : ℝ) (D₀ : ℕ) : ℝ := (D₀ : ℝ) ^ q * (Real.log D₀ + 1)
+noncomputable def queryBound31 (q : ℝ) (D₀ : ℕ) := (D₀ : ℝ) ^ q * (Real.log D₀ + 1)
 
-section bounds
+section
 
 variable {N D₀ : ℕ}
 
-end bounds
+end
 
 end Light.Sec4

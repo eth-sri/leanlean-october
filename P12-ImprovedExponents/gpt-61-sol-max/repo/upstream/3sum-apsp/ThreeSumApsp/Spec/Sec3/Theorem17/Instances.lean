@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import Mathlib.Tactic
 public import Mathlib.Data.Int.Notation
 public import Mathlib.Data.Nat.Notation
 
@@ -42,13 +43,13 @@ def yList (n D p c0 len : ℕ) (RBC : List ℕ) : List ℤ :=
     else 0
 
 /-- "scan the piece C_k of its instance for a c with S(a,b,c) = 0". -/
-def scanHit (n : ℕ) (AB BC AC : List ℤ) (a b c0 len : ℕ) : Bool :=
+def scanHit n (AB BC AC : List ℤ) a b c0 len :=
   (List.range len).any fun c =>
     AB.getD (a * n + b) 0 + BC.getD (b * n + c0 + c) 0 + AC.getD (a * n + c0 + c) 0 = 0
 
 /-- Whether there is a zero triangle, by trying all triples (proof of Theorem 19: "smaller instances
 are solved by brute force"). -/
-def hasZero (n : ℕ) (AB BC AC : List ℤ) : Bool :=
+def hasZero n AB BC AC :=
   (List.range n).any fun a => (List.range n).any fun b => scanHit n AB BC AC a b 0 n
 
 end ThreeSumApsp.Spec
