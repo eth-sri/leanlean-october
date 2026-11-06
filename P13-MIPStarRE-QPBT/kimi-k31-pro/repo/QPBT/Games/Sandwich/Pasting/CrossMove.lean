@@ -35,7 +35,7 @@ theorem abs_cross_move_gap_le_sqrt_distinct_families {R₁ Γ₂ ι : Type*}
     [Fintype R₁] [DecidableEq R₁] [Fintype Γ₂] [DecidableEq Γ₂]
     [Fintype ι] [DecidableEq ι]
     (P : Measurement R₁ ι) (G opposite : Measurement Γ₂ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (hψ : ‖ψ‖ = 1) :
+    (ψ : BipartiteSpace ι ι) (hψ : ‖ψ‖ = 1) :
     |(∑ a : R₁, ∑ g : Γ₂, stateQForm ψ (heteroKron 1
           (G.effect g * P.effect a * G.effect g * P.effect a))) -
         ∑ g : Γ₂, stateQForm ψ (heteroKron (opposite.effect g)
@@ -66,10 +66,10 @@ theorem abs_cross_move_gap_le_sqrt_distinct_families {R₁ Γ₂ ι : Type*}
     intro M N
     unfold heteroKron
     exact Matrix.conjTranspose_kronecker M N
-  set u : R₁ × Γ₂ → EuclideanSpace ℂ (ι × ι) := fun p =>
+  set u : R₁ × Γ₂ → BipartiteSpace ι ι := fun p =>
     applyOperatorToState (heteroKron 1 (P.effect p.1) *
       (heteroKron 1 (G.effect p.2) - heteroKron (opposite.effect p.2) 1)) ψ with hu
-  set v : R₁ × Γ₂ → EuclideanSpace ℂ (ι × ι) := fun p =>
+  set v : R₁ × Γ₂ → BipartiteSpace ι ι := fun p =>
     applyOperatorToState (heteroKron 1 (G.effect p.2 * P.effect p.1)) ψ with hv
   -- the pointwise gap is the overlap of the moved vector with the cross vector
   have hpt : ∀ (a : R₁) (g : Γ₂),
@@ -191,7 +191,7 @@ theorem commutator_mass_eq_expansion {R₁ Γ₂ ι : Type*}
     [Fintype R₁] [DecidableEq R₁] [Fintype Γ₂] [DecidableEq Γ₂]
     [Fintype ι] [DecidableEq ι]
     (P : Measurement R₁ ι) (G : Measurement Γ₂ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι))
+    (ψ : BipartiteSpace ι ι)
     (hG : MIPStarRE.QPBT.Measurement.IsProjective G) :
     (∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState (heteroKron 1
         (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2) =
@@ -329,7 +329,7 @@ theorem sum_norm_ordered_product_le_one {R₁ Γ₂ ι : Type*}
     [Fintype R₁] [DecidableEq R₁] [Fintype Γ₂] [DecidableEq Γ₂]
     [Fintype ι] [DecidableEq ι]
     (P : Measurement R₁ ι) (G : Measurement Γ₂ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (hψ : ‖ψ‖ = 1) :
+    (ψ : BipartiteSpace ι ι) (hψ : ‖ψ‖ = 1) :
     (∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState
       (heteroKron 1 (P.effect a * G.effect g)) ψ‖ ^ 2) ≤ 1 := by
   classical

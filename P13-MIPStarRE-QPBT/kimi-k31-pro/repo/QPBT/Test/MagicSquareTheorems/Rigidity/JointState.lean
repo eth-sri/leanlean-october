@@ -88,12 +88,12 @@ twice the cost.  This is the normalization step of the conclusion of
 `thm:ms-rigidity`, whose auxiliary state is required to be a unit vector. -/
 theorem exists_unit_residual {V : Type} [Fintype V] [DecidableEq V] [Nonempty V]
     (u : EuclideanSpace ℂ ((V × ιA) × (V × ιB))) (hu : ‖u‖ = 1)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1) (c : ℝ)
-    (r0 : EuclideanSpace ℂ (ιA × ιB))
+    (ψ : BipartiteSpace ιA ιB) (hψ : ‖ψ‖ = 1) (c : ℝ)
+    (r0 : BipartiteSpace ιA ιB)
     (h : ‖u - reindexState prodShuffle (vecTensor (eprState V) r0)‖ ≤ c) :
-    ∃ r : EuclideanSpace ℂ (ιA × ιB), ‖r‖ = 1 ∧
+    ∃ r : BipartiteSpace ιA ιB, ‖r‖ = 1 ∧
       ‖u - reindexState prodShuffle (vecTensor (eprState V) r)‖ ≤ 2 * c := by
-  have htarget : ∀ r : EuclideanSpace ℂ (ιA × ιB),
+  have htarget : ∀ r : BipartiteSpace ιA ιB,
       ‖reindexState prodShuffle (vecTensor (eprState V) r)‖ = ‖r‖ :=
     fun r => norm_reindexState_prodShuffle_vecTensor_eprState r
   have hgap : |1 - ‖r0‖| ≤ c := by

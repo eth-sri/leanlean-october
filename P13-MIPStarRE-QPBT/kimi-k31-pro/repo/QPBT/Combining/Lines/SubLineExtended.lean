@@ -72,7 +72,7 @@ theorem projZ_smul {K : Type*} [Monoid K] {m : ℕ} (t : K)
 scalar coordinates.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
 def extendedPointBlockEquiv (P : AdmissibleParams) :
-    (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) ≃
+    (DirectPoint P.extendedDirectLd) ≃
       ((Fin P.m → DirectScalarQ P.extendedDirectLd) ×
           (Fin P.m → DirectScalarQ P.extendedDirectLd)) ×
         (Fin 2 → DirectScalarQ P.extendedDirectLd) :=
@@ -83,14 +83,14 @@ def extendedPointBlockEquiv (P : AdmissibleParams) :
 
 /-- The first block of the decomposition is the `X` block. -/
 theorem extendedPointBlockEquiv_projX (P : AdmissibleParams)
-    (u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) :
+    (u : DirectPoint P.extendedDirectLd) :
     (extendedPointBlockEquiv P u).1.1 = projX u := by
   funext i
   rfl
 
 /-- The second block of the decomposition is the `Z` block. -/
 theorem extendedPointBlockEquiv_projZ (P : AdmissibleParams)
-    (u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) :
+    (u : DirectPoint P.extendedDirectLd) :
     (extendedPointBlockEquiv P u).1.2 = projZ u := by
   funext i
   rfl
@@ -100,7 +100,7 @@ the uniform law.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 theorem uniformDistribution_map_extendedPointBlockEquiv (P : AdmissibleParams) :
     (uniformDistribution
-          (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)).map
+          (DirectPoint P.extendedDirectLd)).map
         (extendedPointBlockEquiv P) =
       uniformDistribution
         (((Fin P.m → DirectScalarQ P.extendedDirectLd) ×
@@ -113,13 +113,13 @@ independent and uniform.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 theorem uniformDistribution_map_projX_projZ (P : AdmissibleParams) :
     (uniformDistribution
-          (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)).map
+          (DirectPoint P.extendedDirectLd)).map
         (fun u => (projX u, projZ u)) =
       Distribution.prod
         (uniformDistribution (Fin P.m → DirectScalarQ P.extendedDirectLd))
         (uniformDistribution (Fin P.m → DirectScalarQ P.extendedDirectLd)) := by
   have hfun :
-      (fun u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd =>
+      (fun u : DirectPoint P.extendedDirectLd =>
           (projX u, projZ u)) =
         fun u => (extendedPointBlockEquiv P u).1 := by
     funext u

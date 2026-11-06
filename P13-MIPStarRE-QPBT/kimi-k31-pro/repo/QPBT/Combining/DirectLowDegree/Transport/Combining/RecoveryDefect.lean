@@ -67,7 +67,7 @@ private theorem diagonalRight_pair_sum {β Γ ιA ιB : Type*}
     [Fintype β] [DecidableEq β] [Fintype Γ] [DecidableEq Γ]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : Measurement β ιA) (B : Measurement Γ ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (f : Γ → β) :
+    (ψ : BipartiteSpace ιA ιB) (f : Γ → β) :
     (∑ b : β, stateQForm ψ
       (heteroKron (A.effect b) ((B.postprocess f).effect b))) =
       ∑ b : β, ∑ g : Γ, if f g = b then
@@ -83,7 +83,7 @@ private theorem diagonalLeft_pair_sum {β Γ ιA ιB : Type*}
     [Fintype β] [DecidableEq β] [Fintype Γ] [DecidableEq Γ]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : Measurement β ιB) (B : Measurement Γ ιA)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (f : Γ → β) :
+    (ψ : BipartiteSpace ιA ιB) (f : Γ → β) :
     (∑ b : β, stateQForm ψ
       (heteroKron ((B.postprocess f).effect b) (A.effect b))) =
       ∑ b : β, ∑ g : Γ, if f g = b then
@@ -100,7 +100,7 @@ private theorem diagonalPair_pair_sum {β Γ R ιA ιB : Type*}
     [Fintype R] [DecidableEq R]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : Measurement β ιA) (B : Measurement Γ ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (e : β → R) (f : Γ → R) :
+    (ψ : BipartiteSpace ιA ιB) (e : β → R) (f : Γ → R) :
     (∑ r : R, stateQForm ψ
       (heteroKron ((A.postprocess e).effect r) ((B.postprocess f).effect r))) =
       ∑ b : β, ∑ g : Γ, if e b = f g then
@@ -140,7 +140,7 @@ private theorem diagonalPairLeft_pair_sum {β Γ R ιA ιB : Type*}
     [Fintype R] [DecidableEq R]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : Measurement β ιB) (B : Measurement Γ ιA)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (e : β → R) (f : Γ → R) :
+    (ψ : BipartiteSpace ιA ιB) (e : β → R) (f : Γ → R) :
     (∑ r : R, stateQForm ψ
       (heteroKron ((B.postprocess f).effect r) ((A.postprocess e).effect r))) =
       ∑ b : β, ∑ g : Γ, if e b = f g then
@@ -311,7 +311,7 @@ theorem consistencyDefect_le_of_recoveryBound
     [Fintype R] [DecidableEq R]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : X → Measurement β ιA) (B : Measurement Γ ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1)
+    (ψ : BipartiteSpace ιA ιB) (hψ : ‖ψ‖ = 1)
     (f : X → Γ → β) (e₁ : X → Y → β → R) (f₁ : X → Y → Γ → R)
     (F : X → Γ → ℝ) (η : ℝ)
     (hFbound : ∀ x b g, avgOver (uniformDistribution Y)
@@ -416,7 +416,7 @@ theorem consistencyDefect_le_of_recoveryBound_right
     [Fintype R] [DecidableEq R]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : X → Measurement β ιB) (B : Measurement Γ ιA)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1)
+    (ψ : BipartiteSpace ιA ιB) (hψ : ‖ψ‖ = 1)
     (f : X → Γ → β) (e₁ : X → Y → β → R) (f₁ : X → Y → Γ → R)
     (F : X → Γ → ℝ) (η : ℝ)
     (hFbound : ∀ x b g, avgOver (uniformDistribution Y)

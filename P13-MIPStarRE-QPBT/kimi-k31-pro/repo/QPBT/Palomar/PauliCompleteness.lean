@@ -56,8 +56,7 @@ theorem exists_spcc_value_one (P : PauliParams) :
       S.toStrategy.value (pauliSymmetricGame Q).toGame =
           T'.toStrategy.value
             (SymmetricGame.ofSymmetricGame
-              (MIPStarRE.QPBT.pauliBasisTestSymm Q)).toGame := by
-        exact Strategy.value_relabel
+              (MIPStarRE.QPBT.pauliBasisTestSymm Q)).toGame := Strategy.value_relabel
           (SymmetricGame.ofSymmetricGame
             (MIPStarRE.QPBT.pauliBasisTestSymm Q)).toGame
           T'.toStrategy (pauliQuestionEquiv Q).symm

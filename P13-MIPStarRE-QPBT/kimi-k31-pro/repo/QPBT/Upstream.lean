@@ -52,54 +52,8 @@ theorem postprocess_comp {γ : Type*} [Fintype γ]
   classical
   apply ext
   intro c
-  calc
-    ((M.postprocess f).postprocess g).effect c =
-        ∑ b : β, if g b = c then
-          ∑ a : α, if f a = b then M.effect a else 0
-        else 0 := by
-          change (∑ b ∈ Finset.univ.filter (fun b : β => g b = c),
-            ∑ a ∈ Finset.univ.filter (fun a : α => f a = b), M.effect a) = _
-          rw [Finset.sum_filter]
-          apply Finset.sum_congr rfl
-          intro b _
-          by_cases hgb : g b = c
-          · simp only [hgb, ite_true]
-            rw [Finset.sum_filter]
-          · simp [hgb]
-    _ = ∑ b : β, ∑ a : α,
-        if g b = c ∧ f a = b then M.effect a else 0 := by
-          apply Finset.sum_congr rfl
-          intro b _
-          by_cases hgc : g b = c <;> simp [hgc]
-    _ = ∑ a : α, ∑ b : β,
-        if g b = c ∧ f a = b then M.effect a else 0 := by
-          rw [Finset.sum_comm]
-    _ = ∑ a : α,
-        if g (f a) = c then M.effect a else 0 := by
-          apply Finset.sum_congr rfl
-          intro a _
-          by_cases hgc : g (f a) = c
-          · rw [Finset.sum_eq_single (f a)]
-            · simp [hgc]
-            · intro b _ hba
-              by_cases hfa : f a = b
-              · exact (hba hfa.symm).elim
-              · simp [hfa]
-            · simp
-          · have hzero :
-                (∑ b : β,
-                  if g b = c ∧ f a = b then M.effect a else 0) = 0 := by
-              apply Finset.sum_eq_zero
-              intro b _
-              by_cases hfa : f a = b
-              · subst b
-                simp [hgc]
-              · simp [hfa]
-            simp [hgc, hzero]
-    _ = (M.postprocess (fun a => g (f a))).effect c := by
-          change _ = ∑ a ∈ Finset.univ.filter
-            (fun a : α => g (f a) = c), M.effect a
-          rw [Finset.sum_filter]
+  simp [Measurement.postprocess, Submeasurement.postprocess,
+    Finset.sum_filter, Finset.sum_comm, eq_comm]
 
 end MIPStarRE.Quantum.Measurement
 
@@ -355,16 +309,11 @@ lemma matrix_eq_zero_of_rank_eq_zero {m n : Type*}
     A = 0 := by
   let _ : Fintype m := Fintype.ofFinite m
   classical
-  have hrange : A.mulVecLin.range = ⊥ := by
-    rw [Matrix.rank] at hA
-    exact Submodule.finrank_eq_zero.mp hA
+  rw [Matrix.rank, Submodule.finrank_eq_zero, LinearMap.range_eq_bot] at hA
   ext i j
-  have hv : A.mulVecLin (Pi.single j 1) ∈ A.mulVecLin.range := ⟨Pi.single j 1, rfl⟩
-  have hv0 : A.mulVecLin (Pi.single j 1) = 0 := by
-    simpa [hrange] using hv
-  have hentry := congrArg (fun w => w i) hv0
   simpa [Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct, Finset.sum_ite_eq,
-    Pi.single_apply] using hentry
+    Pi.single_apply] using
+    congrArg (fun L : (n → ℂ) →ₗ[ℂ] (m → ℂ) => L (Pi.single j 1) i) hA
 
 end
 end MIPStarRE.LDT.MakingMeasurementsProjective

@@ -39,7 +39,7 @@ def retainedPointOverlap {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (p1 p2 : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (W : PauliKind) : ℝ :=
-  avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun x =>
+  avgOver (pauliPointDist P) (fun x =>
     ∑ pair : PolyPair P, stateQForm S.psiHat
       (S.place p1 (R.effect (directCombinedEmbedding P pair)) *
         S.place p2 ((S.pointMeasExp p2.side W x).effect (evalAt W x pair))))
@@ -83,7 +83,7 @@ theorem retainedPointMismatch_eq {P : AdmissibleParams} {ε : ℝ}
     (hR : Measurement.IsProjective R) (W : PauliKind) :
     retainedPointMismatch S p1 p2 R W =
       1 - separatedPolynomialMass S p1 R - retainedPointOverlap S p1 p2 R W := by
-  have hpoint (x : Fin P.m → PauliScalar P) (pair : PolyPair P) :
+  have hpoint (x : PauliPoint P) (pair : PolyPair P) :
       ‖applyOperatorToState
         (1 - S.place p2 ((S.pointMeasExp p2.side W x).effect (evalAt W x pair)))
         (applyOperatorToState (S.place p1 (R.effect (directCombinedEmbedding P pair)))
@@ -119,7 +119,7 @@ theorem directPairMeasurement_consistency_le {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) (pair₀ : PolyPair P) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
       (fun x a => S.place p1 (((directPairMeasurement R pair₀).postprocess
         (evalAt W x)).effect a))
       (fun x a => S.place p2 ((S.pointMeasExp p2.side W x).effect a)) S.psiHat ≤
@@ -127,7 +127,7 @@ theorem directPairMeasurement_consistency_le {P : AdmissibleParams} {ε : ℝ}
   classical
   let C := directPairMeasurement R pair₀
   let B := fun x => S.pointMeasExp p2.side W x
-  have hdiag (x : Fin P.m → PauliScalar P) :
+  have hdiag (x : PauliPoint P) :
       (∑ a : PauliScalar P, stateQForm S.psiHat
         (S.place p1 ((C.postprocess (evalAt W x)).effect a) * S.place p2 ((B x).effect a))) =
       ∑ pair : PolyPair P, stateQForm S.psiHat
@@ -144,7 +144,7 @@ theorem directPairMeasurement_consistency_le {P : AdmissibleParams} {ε : ℝ}
         intro pair hp
         rw [(Finset.mem_filter.mp hp).2]
       _ = _ := Finset.sum_fiberwise Finset.univ (evalAt W x) _
-  have hretained (x : Fin P.m → PauliScalar P) :
+  have hretained (x : PauliPoint P) :
       (∑ pair : PolyPair P, stateQForm S.psiHat
         (S.place p1 (R.effect (directCombinedEmbedding P pair)) *
           S.place p2 ((B x).effect (evalAt W x pair)))) ≤
@@ -169,18 +169,18 @@ theorem directPairMeasurement_consistency_le {P : AdmissibleParams} {ε : ℝ}
       · exact le_rfl
     · exact S.place_nonneg p2 ((B x).pos _)
     · exact S.place_comm p1 p2 hopposite _ _
-  have hbound : consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+  have hbound : consistencyDefect (pauliPointDist P)
       (fun x a => S.place p1 ((C.postprocess (evalAt W x)).effect a))
       (fun x a => S.place p2 ((B x).effect a)) S.psiHat ≤
       1 - retainedPointOverlap S p1 p2 R W := by
     unfold consistencyDefect
     simp_rw [consistency_term_eq_stateQForm]
-    have heq (x : Fin P.m → PauliScalar P) := point_defect_eq
+    have heq (x : PauliPoint P) := point_defect_eq
       (S.placedMeasurement p1 (C.postprocess (evalAt W x)))
       (S.placedMeasurement p2 (B x)) S.psiHat
     simp only [ProjectiveSetting.placedMeasurement_effect, S.psiHat_norm, one_pow] at heq
     simp_rw [heq, hdiag]
-    have h := avgOver_mono (uniformDistribution (Fin P.m → PauliScalar P)) _ _
+    have h := avgOver_mono (pauliPointDist P) _ _
       (fun x => sub_le_sub_left (hretained x) 1)
     simpa only [avgOver_sub, avgOver_uniform_const, retainedPointOverlap, B] using h
   rw [retainedPointMismatch_eq S p1 p2 hopposite R hR W]
@@ -193,7 +193,7 @@ theorem directPairMeasurement_consistency_le_ordered_error
     (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) (pair₀ : PolyPair P) (reverse : Bool) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
       (fun x a => S.place p1 (((directPairMeasurement R pair₀).postprocess
         (evalAt (if reverse then .Z else .X) x)).effect a))
       (fun x a => S.place p2

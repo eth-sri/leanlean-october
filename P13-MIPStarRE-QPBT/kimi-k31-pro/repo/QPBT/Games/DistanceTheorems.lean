@@ -157,8 +157,7 @@ theorem avg_closeness {X ι : Type*}
     Finset.sum_nonneg fun x _ => mul_nonneg (μ.nonnegative x) (sq_nonneg _)
   have havg_norm :
       |avgOver μ (fun x => ‖v x‖)| ≤
-        Real.sqrt (avgOver μ (fun x => ‖v x‖ ^ 2)) := by
-    exact MIPStarRE.LDT.Preliminaries.avgOver_abs_le_sqrt_of_pointwise μ
+        Real.sqrt (avgOver μ (fun x => ‖v x‖ ^ 2)) := MIPStarRE.LDT.Preliminaries.avgOver_abs_le_sqrt_of_pointwise μ
       (fun x => ‖v x‖) (fun x => ‖v x‖ ^ 2)
       (fun x => by rw [abs_norm, Real.sqrt_sq_eq_abs, abs_norm])
       (fun x => sq_nonneg ‖v x‖) (by rw [hμ.weight_sum_eq_one])
@@ -253,8 +252,7 @@ theorem povm_to_obs_of_measurements {X α ι : Type*}
     opDistSq μ (fun x => ∑ a, c a • (A x).effect a)
         (fun x => ∑ a, c a • (B x).effect a) ψ ≤
       Fintype.card α * opFamilyDistSq μ
-        (fun x a => (A x).effect a) (fun x a => (B x).effect a) ψ := by
-  exact povm_to_obs μ (fun x a => (A x).effect a)
+        (fun x a => (A x).effect a) (fun x a => (B x).effect a) ψ := povm_to_obs μ (fun x a => (A x).effect a)
     (fun x a => (B x).effect a) c hc ψ
 
 end MIPStarRE.QPBT

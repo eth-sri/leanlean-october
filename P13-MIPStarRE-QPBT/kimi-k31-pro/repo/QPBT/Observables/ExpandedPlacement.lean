@@ -283,7 +283,6 @@ theorem reindexOp_aaBaBipartition_left (S : ProjectiveSetting P ε)
     Matrix.kroneckerMap_apply, Matrix.one_apply, LocalSpace, Prod.ext_iff]
   split_ifs
   all_goals simp_all
-  all_goals rfl
 
 /-- Under the `AA' | BA''(B'B'')` bipartition, a `BA''` placement is the
 ordinary right tensor placement, with identity on the unused EPR pair. -/
@@ -298,7 +297,6 @@ theorem reindexOp_aaBaBipartition_right (S : ProjectiveSetting P ε)
     Matrix.kroneckerMap_apply, Matrix.one_apply, LocalSpace, Prod.ext_iff]
   split_ifs
   all_goals simp_all
-  all_goals rfl
 
 /-- Under the `AB'' | BB'(A'A'')` bipartition, an `AB''` placement is the
 ordinary left tensor placement. -/
@@ -314,7 +312,6 @@ theorem reindexOp_abBbBipartition_left (S : ProjectiveSetting P ε)
     Matrix.kroneckerMap_apply, Matrix.one_apply, LocalSpace, Prod.ext_iff]
   split_ifs
   all_goals simp_all
-  all_goals rfl
 
 /-- Under the `AB'' | BB'(A'A'')` bipartition, a `BB'` placement is the
 ordinary right tensor placement, with identity on the unused EPR pair. -/
@@ -329,7 +326,6 @@ theorem reindexOp_abBbBipartition_right (S : ProjectiveSetting P ε)
     Matrix.kroneckerMap_apply, Matrix.one_apply, LocalSpace, Prod.ext_iff]
   split_ifs
   all_goals simp_all
-  all_goals rfl
 
 /-! ## The four placements -/
 

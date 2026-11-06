@@ -185,7 +185,7 @@ theorem directCombined_measuredQuestion_of_pointVar (D : DirectLdParams)
       simp only [directLdMap, directCombinedMeasuredQuestion, hindex,
         directCombinedIndexSplit_combinedPointVar,
         directCombinedSampleProjection]
-      exact congrArg (fun x : Fin D.m → DirectScalarQ D =>
+      exact congrArg (fun x : DirectPoint D =>
         ((LdType.aline, ⟨x, j, 0⟩) : DirectLdQuestion D)) hbase
   | dline =>
       have hbase := lineRepMap_directCombinedPointPart_lineRepMap D
@@ -197,7 +197,7 @@ theorem directCombined_measuredQuestion_of_pointVar (D : DirectLdParams)
         directCombinedSampleProjection,
         directCombinedPointPart_directPrefixProjection_pointVar,
         directPrefixProjection_idem]
-      exact congrArg (fun x : Fin D.m → DirectScalarQ D =>
+      exact congrArg (fun x : DirectPoint D =>
         ((LdType.dline, ⟨x, j,
           directPrefixProjection j
             (directCombinedPointPart D sample.direction)⟩) :
@@ -221,7 +221,7 @@ theorem directCombined_measuredQuestion_of_coefficientVar (D : DirectLdParams)
         (directCombinedPointPart_coordinateDirection_coefficientVar D r)
       simp only [directLdMap, directCombinedMeasuredQuestion, hindex,
         directCombinedIndexSplit_combinedCoefficientVar]
-      exact congrArg (fun x : Fin D.m → DirectScalarQ D =>
+      exact congrArg (fun x : DirectPoint D =>
         directLdPointQuestionOf D x) hbase
   | dline =>
       have hbase := directCombinedPointPart_lineRepMap_of_pointPart_eq_zero D
@@ -231,7 +231,7 @@ theorem directCombined_measuredQuestion_of_coefficientVar (D : DirectLdParams)
           sample.direction)
       simp only [directLdMap, directCombinedMeasuredQuestion, hindex,
         directCombinedIndexSplit_combinedCoefficientVar]
-      exact congrArg (fun x : Fin D.m → DirectScalarQ D =>
+      exact congrArg (fun x : DirectPoint D =>
         directLdPointQuestionOf D x) hbase
 
 /-! ## The law of the projected sample -/
@@ -255,7 +255,7 @@ the other. -/
 private def directCombinedSpaceIndexEquiv (D : DirectLdParams) :
     DirectLdSpace D.combined ≃
       ((Fin D.combined.m ×
-          ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D))) ×
+          ((DirectPoint D) × (DirectPoint D))) ×
         ((Fin D.k → DirectScalarQ D) × (Fin D.k → DirectScalarQ D))) where
   toFun sample :=
     ((sample.index,
@@ -301,7 +301,7 @@ theorem directCombinedSample_indexPointParts_uniform (D : DirectLdParams) :
             directCombinedPointPart D sample.direction))) =
       uniformDistribution
         (Fin D.combined.m ×
-          ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D))) :=
+          ((DirectPoint D) × (DirectPoint D))) :=
   uniformDistribution_map_fst_of_equiv (e := directCombinedSpaceIndexEquiv D) _
     fun _ => rfl
 

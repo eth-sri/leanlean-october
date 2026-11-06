@@ -119,7 +119,7 @@ theorem place_isProj (S : ProjectiveSetting P ε) (p : Placement)
 /-- Every effect of the completed expanded point measurement is a projection,
 the `none` effect being zero. -/
 theorem pointMeasExpOption_isProj (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (o : Option (PauliScalar P)) :
     IsProj ((S.pointMeasExpOption side W u).effect o) := by
   cases o with
@@ -165,7 +165,7 @@ theorem sum_norm_place_completedPair_sub_sq (S : ProjectiveSetting P ε)
 and restricts to the ordered product on evaluated pairs. -/
 theorem completedPair_norm_sq_sum_ZX (S : ProjectiveSetting P ε) {δ : ℝ}
     (points : CombinedPointsWitness S δ) (p : Placement)
-    (x z : Fin P.m → PauliScalar P) :
+    (x z : PauliPoint P) :
     (∑ o : Option (PauliScalar P) × Option (PauliScalar P),
         ‖applyOperatorToState
           (S.place p (((points.Q p.side x z).postprocess (fun ab =>
@@ -327,8 +327,8 @@ theorem one_sub_overlap_le_of_consistencyDefect {X α ι : Type*}
 /-- A pair of line-point pairs of the source space: the sample type of the
 consistency display of `lem:qld-xz-lines`. -/
 abbrev LinePointPairSample (P : AdmissibleParams) :=
-  (LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
-    (LineDesc P.toLdParams × (Fin P.m → PauliScalar P))
+  (LineDesc P.toLdParams × (PauliPoint P)) ×
+    (LineDesc P.toLdParams × (PauliPoint P))
 
 section Placed
 
@@ -469,7 +469,7 @@ theorem restrictedLinePointDist_isProbability (P : AdmissibleParams)
 theorem restrictedLinePointDist_map_snd (P : AdmissibleParams) (kind : LineKind)
     (i : Fin P.m) :
     (restrictedLinePointDist P kind i).map Prod.snd =
-      uniformDistribution (Fin P.m → PauliScalar P) := by
+      pauliPointDist P := by
   rw [restrictedLinePointDist_eq_map_prod, Distribution.map_map]
   exact Distribution.prod_map_fst _ _ (Distribution.prod_isProbability _ _
     (subLineSeedDist_isProbability P i) (uniformDistribution_isProbability _))
@@ -481,11 +481,11 @@ theorem prod_restrictedLinePointDist_map_points (P : AdmissibleParams)
     (Distribution.prod (restrictedLinePointDist P kindX i)
         (restrictedLinePointDist P kindZ j)).map (fun s => (s.1.2, s.2.2)) =
       uniformDistribution
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) := by
+        ((PauliPoint P) × (PauliPoint P)) := by
   have h : Distribution.prod ((restrictedLinePointDist P kindX i).map Prod.snd)
       ((restrictedLinePointDist P kindZ j).map Prod.snd) =
       uniformDistribution
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) := by
+        ((PauliPoint P) × (PauliPoint P)) := by
     rw [restrictedLinePointDist_map_snd, restrictedLinePointDist_map_snd,
       uniformDistribution_prod]
   rw [← h, Distribution.prod_map_left, Distribution.prod_map_right,
@@ -497,7 +497,7 @@ distance averaged over a uniform pair of points. -/
 theorem opFamilyDistSq_prod_restricted_points {α ι : Type*} [Fintype α]
     [Fintype ι] [DecidableEq ι] (P : AdmissibleParams) (kindX kindZ : LineKind)
     (i j : Fin P.m)
-    (F G : (Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P) → α → Op ι)
+    (F G : (PauliPoint P) × (PauliPoint P) → α → Op ι)
     (ψ : EuclideanSpace ℂ ι) :
     opFamilyDistSq
         (Distribution.prod (restrictedLinePointDist P kindX i)
@@ -505,7 +505,7 @@ theorem opFamilyDistSq_prod_restricted_points {α ι : Type*} [Fintype α]
         (fun s a => F (s.1.2, s.2.2) a) (fun s a => G (s.1.2, s.2.2) a) ψ =
       opFamilyDistSq
         (uniformDistribution
-          ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P))) F G ψ := by
+          ((PauliPoint P) × (PauliPoint P))) F G ψ := by
   unfold opFamilyDistSq
   rw [← prod_restrictedLinePointDist_map_points P kindX kindZ i j,
     Distribution.avgOver_map]
@@ -549,7 +549,7 @@ theorem CombinedLinesWitness.one_sub_Z_overlap_restricted_le_at
   · calc
       _ = opFamilyDistSq
             (uniformDistribution
-              ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+              ((PauliPoint P) × (PauliPoint P)))
             (fun xz o => S.place second
               (((points.Q second.side xz.1 xz.2).postprocess fun ab =>
                 (some ab.1, some ab.2)).effect o))
@@ -560,7 +560,7 @@ theorem CombinedLinesWitness.one_sub_Z_overlap_restricted_le_at
         opFamilyDistSq_prod_restricted_points P kindX kindZ i j _ _ _
       _ = opFamilyDistSq
             (uniformDistribution
-              ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
+              ((PauliPoint P) × (PauliPoint P)))
             (fun xz ab => S.place second ((points.Q second.side xz.1 xz.2).effect ab))
             (fun xz ab => S.place second
               ((S.pointMeasExp second.side .Z xz.2).effect ab.2 *

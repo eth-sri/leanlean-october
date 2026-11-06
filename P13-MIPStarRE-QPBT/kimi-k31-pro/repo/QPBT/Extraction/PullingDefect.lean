@@ -35,12 +35,12 @@ error, with no decoder correction or non-encoding mass term. -/
 theorem pullingMeas_eval_point_consistent_alice {P : AdmissibleParams}
     {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
       (fun u a => S.placeSide .alice
         (((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)).effect a))
       (fun u a => S.placePlayer .bob ((S.pointMeas .bob W u).effect a)) S.psiHat ≤
         deltaG := by
-  let mu := uniformDistribution (Fin P.m → PauliScalar P)
+  let mu := pauliPointDist P
   let pulled := fun u => S.blockMeasurement .alice
     ((pullingMeas w .alice W).postprocess (fun g => evalPoly g u))
   let point := fun u => S.placedMeasurement .BB' (leftPlacedMeasurement (S.pointMeas .bob W u))
@@ -79,12 +79,12 @@ estimate of the supplied witness and its `BB'`--`AB''` placements. -/
 theorem pullingMeas_eval_point_consistent_bob {P : AdmissibleParams}
     {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
       (fun u a => S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
       (fun u a => S.placeSide .bob
         (((pullingMeas w .bob W).postprocess (fun g => evalPoly g u)).effect a)) S.psiHat ≤
         deltaG := by
-  let mu := uniformDistribution (Fin P.m → PauliScalar P)
+  let mu := pauliPointDist P
   let pulled := fun u => S.blockMeasurement .bob
     ((pullingMeas w .bob W).postprocess (fun g => evalPoly g u))
   let point := fun u => S.placedMeasurement .AA' (leftPlacedMeasurement (S.pointMeas .alice W u))
@@ -123,14 +123,14 @@ the point-measurement consistency defect. This is the six-register form of
 the point self-consistency used at `eq:qld-pulling-3`. -/
 theorem point_consistencyDefect_psiHat {P : AdmissibleParams} {epsilon : ℝ}
     (S : ProjectiveSetting P epsilon) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
         (fun u a => S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
         (fun u a => S.placePlayer .bob ((S.pointMeas .bob W u).effect a)) S.psiHat =
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a)) S.toStrategy.ψ := by
   exact S.consistencyDefect_placePlayers
-    (uniformDistribution (Fin P.m → PauliScalar P))
+    (pauliPointDist P)
     (fun u => S.pointMeas .alice W u) (fun u => S.pointMeas .bob W u)
 
 /-- The evaluated difference-polynomial measurements are self-consistent.
@@ -141,13 +141,13 @@ the collision step `eq:qld-pulling-12`. -/
 theorem pullingMeas_eval_consistencyDefect_le {P : AdmissibleParams}
     {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
         (fun u a => S.placeSide .alice
           (((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)).effect a))
         (fun u a => S.placeSide .bob
           (((pullingMeas w .bob W).postprocess (fun g => evalPoly g u)).effect a))
         S.psiHat ≤ 12 * deltaG + 8 * (Fintype.card PauliEdge : ℝ) * epsilon := by
-  let mu := uniformDistribution (Fin P.m → PauliScalar P)
+  let mu := pauliPointDist P
   let A := fun u => S.blockMeasurement .alice
     ((pullingMeas w .alice W).postprocess (fun g => evalPoly g u))
   let B := fun u => S.blockMeasurement .bob
@@ -174,7 +174,7 @@ theorem pullingMeas_eval_consistencyDefect_le {P : AdmissibleParams}
   rw [opFamilyDistSq_symm] at hP
   have hAP := opFamilyDistSq_le_of_le_of_le mu _ _ _ S.psiHat _ _ hA hP
   have hAB := opFamilyDistSq_le_of_le_of_le mu _ _ _ S.psiHat _ _ hAP hB
-  have hproj (side : PlayerSide) (u : Fin P.m → PauliScalar P) :
+  have hproj (side : PlayerSide) (u : PauliPoint P) :
       Measurement.IsProjective (S.blockMeasurement side
         ((pullingMeas w side W).postprocess (fun g => evalPoly g u))) :=
     S.blockMeasurement_isProjective side _

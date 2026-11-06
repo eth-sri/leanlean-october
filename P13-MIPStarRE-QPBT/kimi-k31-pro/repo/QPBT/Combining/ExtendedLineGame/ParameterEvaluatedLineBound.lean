@@ -287,7 +287,7 @@ private theorem axis_parameter_evaluation_defect_le_completed
     axisParameterEvaluationDefect lines ≤
       axisSameLineEvaluationDefect lines + axisAliceNoneMass lines + axisBobNoneMass lines := by
   let F : DirectLineDesc P.extendedDirectLd ×
-      (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) → ℝ := fun sample =>
+      (DirectPoint P.extendedDirectLd) → ℝ := fun sample =>
     outcomeEventWeight (strategy lines) (axisQuestion sample.1) (axisQuestion sample.1)
         (fun answerA answerB => directEvalOpt sample.1 sample.2 (axisCoefficients answerA) ≠
           directEvalOpt sample.1 sample.2 (axisCoefficients answerB)) +
@@ -331,7 +331,7 @@ private theorem diagonal_parameter_evaluation_defect_le_completed
       diagonalSameLineEvaluationDefect lines + diagonalAliceNoneMass lines +
         diagonalBobNoneMass lines := by
   let F : DirectLineDesc P.extendedDirectLd ×
-      (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) → ℝ := fun sample =>
+      (DirectPoint P.extendedDirectLd) → ℝ := fun sample =>
     outcomeEventWeight (strategy lines) (diagonalQuestion sample.1) (diagonalQuestion sample.1)
         (fun answerA answerB => directEvalOpt sample.1 sample.2 (diagonalCoefficients answerA) ≠
           directEvalOpt sample.1 sample.2 (diagonalCoefficients answerB)) +

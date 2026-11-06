@@ -37,9 +37,9 @@ noncomputable section
 formalization-only averaging step in `eq:pasting-q1`, paper
 `14_analysis_of_the_pauli_basis_test.tex:936-941`, using `lem:alnf` and `lem:dlnf`. -/
 theorem avgOver_linePointDist_point (L : LdParams)
-    (value : (Fin L.m → ScalarQ L) → ℝ) :
+    (value : (LdPoint L) → ℝ) :
     avgOver (linePointDist L) (fun sample => value sample.2) =
-      avgOver (uniformDistribution (Fin L.m → ScalarQ L)) value := by
+      avgOver (uniformDistribution (LdPoint L)) value := by
   rw [linePointDist, avgOver_mix]
   rw [← Distribution.avgOver_map (aLinePointDist L) Prod.snd value,
     ← Distribution.avgOver_map (dLinePointDist L) Prod.snd value,
@@ -51,11 +51,11 @@ theorem avgOver_linePointDist_point (L : LdParams)
 This formalization-only identity transports the point estimates in
 `eq:pasting-q1`, paper `14_analysis_of_the_pauli_basis_test.tex:936-941`. -/
 theorem avgOver_prod_linePointDist_points (L : LdParams)
-    (value : (Fin L.m → ScalarQ L) × (Fin L.m → ScalarQ L) → ℝ) :
+    (value : (LdPoint L) × (LdPoint L) → ℝ) :
     avgOver (Distribution.prod (linePointDist L) (linePointDist L))
       (fun sample => value (sample.1.2, sample.2.2)) =
       avgOver (uniformDistribution
-        ((Fin L.m → ScalarQ L) × (Fin L.m → ScalarQ L))) value := by
+        ((LdPoint L) × (LdPoint L))) value := by
   rw [uniformDistribution_prod, SandwichProduct.avgOver_distribution_prod,
     SandwichProduct.avgOver_distribution_prod]
   conv_lhs =>
@@ -71,7 +71,7 @@ This is the definition preceding `eq:qld-qxz-close-to-point`, paper
 theorem CombinedPointsWitness.postprocess_fst_effect
     {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
     (points : CombinedPointsWitness S δQ) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+    (x z : PauliPoint P) (a : PauliScalar P) :
     ((points.Q side x z).postprocess Prod.fst).effect a =
       ∑ b, (points.Q side x z).effect (a, b) := by
   classical
@@ -87,7 +87,7 @@ Source: `eq:qld-qxz-close-to-point-2`, paper
 theorem CombinedPointsWitness.postprocess_snd_effect
     {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
     (points : CombinedPointsWitness S δQ) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) (b : PauliScalar P) :
+    (x z : PauliPoint P) (b : PauliScalar P) :
     ((points.Q side x z).postprocess Prod.snd).effect b =
       ∑ a, (points.Q side x z).effect (a, b) := by
   classical
@@ -308,7 +308,7 @@ identity for `eq:pasting-q1`; it is not an extra marginal hypothesis. -/
 theorem CombinedPointsWitness.completed_fst_effect
     {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
     (points : CombinedPointsWitness S δQ) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) (answer : Option (PauliScalar P)) :
+    (x z : PauliPoint P) (answer : Option (PauliScalar P)) :
     (((points.Q side x z).postprocess (fun pair => (some pair.1, some pair.2))).postprocess
       Prod.fst).effect answer =
       (((points.Q side x z).postprocess Prod.fst).postprocess some).effect answer := by
@@ -324,7 +324,7 @@ completed evaluation convention. -/
 theorem CombinedPointsWitness.completed_snd_effect
     {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
     (points : CombinedPointsWitness S δQ) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) (answer : Option (PauliScalar P)) :
+    (x z : PauliPoint P) (answer : Option (PauliScalar P)) :
     (((points.Q side x z).postprocess (fun pair => (some pair.1, some pair.2))).postprocess
       Prod.snd).effect answer =
       (((points.Q side x z).postprocess Prod.snd).postprocess some).effect answer := by
@@ -362,9 +362,9 @@ theorem combined_points_line_marginal_defect_le_explicit
   classical
   simp_rw [points.completed_fst_effect, points.completed_snd_effect]
   have hcompare (coordinate : PauliScalar P × PauliScalar P → PauliScalar P)
-      (sampleLine : (LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
-        (LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) →
-        LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) (W : PauliKind) :=
+      (sampleLine : (LineDesc P.toLdParams × (PauliPoint P)) ×
+        (LineDesc P.toLdParams × (PauliPoint P)) →
+        LineDesc P.toLdParams × (PauliPoint P)) (W : PauliKind) :=
     consistencyDefect_le_opFamilyDistSq_of_projective
       (Distribution.prod (linePointDist P.toLdParams) (linePointDist P.toLdParams))
       (fun sample => S.placedMeasurement p1

@@ -107,13 +107,13 @@ theorem directLineRepParameter_add_smul
 /-! ## The leading index of a direction -/
 
 /-- The coordinates at which a direct direction vector is nonzero. -/
-def directionSupport (D : DirectLdParams) (v : Fin D.m → DirectScalarQ D) :
+def directionSupport (D : DirectLdParams) (v : DirectPoint D) :
     Finset (Fin D.m) :=
   open Classical in
   Finset.univ.filter fun j => v j ≠ 0
 
 theorem mem_directionSupport (D : DirectLdParams)
-    (v : Fin D.m → DirectScalarQ D) (j : Fin D.m) :
+    (v : DirectPoint D) (j : Fin D.m) :
     j ∈ directionSupport D v ↔ v j ≠ 0 := by
   simp [directionSupport]
 
@@ -124,7 +124,7 @@ itself at its leading index, and the pair (leading index, direction) is a
 canonical direct diagonal sample.  It is the direct index of the sample
 whenever the sampled direction is nonzero at the sampled index. -/
 noncomputable def directDiagonalIndexOf (D : DirectLdParams)
-    (v : Fin D.m → DirectScalarQ D) : Fin D.m :=
+    (v : DirectPoint D) : Fin D.m :=
   open Classical in
   if h : (directionSupport D v).Nonempty then (directionSupport D v).min' h
   else Fin.rev D.firstIndex
@@ -132,7 +132,7 @@ noncomputable def directDiagonalIndexOf (D : DirectLdParams)
 /-- A direction vanishing before `i` and nonzero at `i` has leading index
 `i`. -/
 theorem directDiagonalIndexOf_eq (D : DirectLdParams)
-    {v : Fin D.m → DirectScalarQ D} {i : Fin D.m}
+    {v : DirectPoint D} {i : Fin D.m}
     (hzero : ∀ j : Fin D.m, j.val < i.val → v j = 0) (hi : v i ≠ 0) :
     directDiagonalIndexOf D v = i := by
   classical
@@ -153,7 +153,7 @@ whenever the direction is nonzero there.  This is the generic direct
 diagonal sample: the sampled index is recovered from the projected direction
 alone. -/
 theorem directDiagonalIndexOf_prefixProjection (D : DirectLdParams)
-    (i : Fin D.m) (v : Fin D.m → DirectScalarQ D) (hi : v i ≠ 0) :
+    (i : Fin D.m) (v : DirectPoint D) (hi : v i ≠ 0) :
     directDiagonalIndexOf D (directPrefixProjection i v) = i := by
   apply directDiagonalIndexOf_eq
   · intro j hj
@@ -165,7 +165,7 @@ theorem directDiagonalIndexOf_prefixProjection (D : DirectLdParams)
 /-- Decode an LDT point into the fixed direct scalar field, reversing the
 coordinate order. -/
 abbrev ldtPointToDirect (D : DirectLdParams) :
-    Point D.toLDTParameters → Fin D.m → DirectScalarQ D :=
+    Point D.toLDTParameters → DirectPoint D :=
   (directPointEquiv D).symm
 
 /-- The direct canonical axis question represented by an LDT axis line.
@@ -175,7 +175,7 @@ noncomputable def directAxisQuestionOf (D : DirectLdParams)
     (line : AxisParallelLine D.toLDTParameters) : DirectLdQuestion D :=
   let u := ldtPointToDirect D line.base
   let i : Fin D.m := Fin.rev line.direction
-  let v : Fin D.m → DirectScalarQ D := coordinateDirection i
+  let v : DirectPoint D := coordinateDirection i
   (.aline, ⟨lineRepMap v u, i, 0⟩)
 
 /-- The direct canonical diagonal question represented by an LDT diagonal

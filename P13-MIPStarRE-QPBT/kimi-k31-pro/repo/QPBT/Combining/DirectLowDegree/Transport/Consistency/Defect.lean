@@ -40,7 +40,7 @@ theorem directPointPolynomial_consistencyDefect_eq
     letI := D.toLDTFieldModel
     ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιB),
       consistencyDefect
-          (uniformDistribution (Fin D.m → DirectScalarQ D))
+          (uniformDistribution (DirectPoint D))
           (fun u a => heteroKron
             ((directPointCoordinateMeasurementA D S r u).effect a) 1)
           (fun u a => heteroKron 1
@@ -52,13 +52,13 @@ theorem directPointPolynomial_consistencyDefect_eq
   intro G
   calc
     consistencyDefect
-        (uniformDistribution (Fin D.m → DirectScalarQ D))
+        (uniformDistribution (DirectPoint D))
         (fun u a => heteroKron
           ((directPointCoordinateMeasurementA D S r u).effect a) 1)
         (fun u a => heteroKron 1
           ((directPolynomialEvaluationMeasurement D G u).effect a)) S.ψ =
       consistencyDefect
-        (uniformDistribution (Fin D.m → DirectScalarQ D))
+        (uniformDistribution (DirectPoint D))
         (fun u a => ldtPointAPlaced D S hS r
           (directPointEquiv D u) (directScalarEquiv D a))
         (fun u a => ldtPolynomialEvaluationRight D G
@@ -96,7 +96,7 @@ theorem directPointPolynomial_consistencyDefect_le
             (directCoordinateProjStrat D S hS r).pointMeasurementA)
           (polynomialEvaluationFamily D.toLDTParameters G.toSubMeas) delta →
         consistencyDefect
-          (uniformDistribution (Fin D.m → DirectScalarQ D))
+          (uniformDistribution (DirectPoint D))
           (fun u a => heteroKron
             ((directPointCoordinateMeasurementA D S r u).effect a) 1)
           (fun u a => heteroKron 1
@@ -125,7 +125,7 @@ theorem directPolynomialPoint_consistencyDefect_eq
     letI := D.toLDTFieldModel
     ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιA),
       consistencyDefect
-          (uniformDistribution (Fin D.m → DirectScalarQ D))
+          (uniformDistribution (DirectPoint D))
           (fun u a => heteroKron
             ((directPolynomialEvaluationMeasurement D G u).effect a) 1)
           (fun u a => heteroKron 1
@@ -137,13 +137,13 @@ theorem directPolynomialPoint_consistencyDefect_eq
   intro G
   calc
     consistencyDefect
-        (uniformDistribution (Fin D.m → DirectScalarQ D))
+        (uniformDistribution (DirectPoint D))
         (fun u a => heteroKron
           ((directPolynomialEvaluationMeasurement D G u).effect a) 1)
         (fun u a => heteroKron 1
           ((directPointCoordinateMeasurementB D S r u).effect a)) S.ψ =
       consistencyDefect
-        (uniformDistribution (Fin D.m → DirectScalarQ D))
+        (uniformDistribution (DirectPoint D))
         (fun u a => ldtPolynomialEvaluationLeft D G
           (directPointEquiv D u) (directScalarEquiv D a))
         (fun u a => ldtPointBPlaced D S hS r
@@ -181,7 +181,7 @@ theorem directPolynomialPoint_consistencyDefect_le
           (IdxProjMeas.toIdxSubMeas
             (directCoordinateProjStrat D S hS r).pointMeasurementB) delta →
         consistencyDefect
-          (uniformDistribution (Fin D.m → DirectScalarQ D))
+          (uniformDistribution (DirectPoint D))
           (fun u a => heteroKron
             ((directPolynomialEvaluationMeasurement D G u).effect a) 1)
           (fun u a => heteroKron 1

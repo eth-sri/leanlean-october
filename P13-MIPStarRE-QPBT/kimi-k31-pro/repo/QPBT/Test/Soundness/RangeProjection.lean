@@ -114,7 +114,7 @@ theorem sum_norm_leftTensor_conjIsometry_sub_sq_le {α ιA ιB κA κB : Type}
     (T : α → Op (κA × κB))
     (hintertwine : ∀ a : α,
       N.effect a * isometryMatrix phiA = isometryMatrix phiA * M a)
-    (psi : EuclideanSpace ℂ (ιA × ιB)) (delta : EuclideanSpace ℂ (κA × κB)) :
+    (psi : BipartiteSpace ιA ιB) (delta : EuclideanSpace ℂ (κA × κB)) :
     ∑ a : α, ‖applyOperatorToState
         (heteroKron (conjIsometry phiA (M a)) 1 - T a) delta‖ ^ 2 ≤
       2 * (∑ a : α, ‖applyOperatorToState (heteroKron (N.effect a) 1 - T a) delta‖ ^ 2) +
@@ -157,7 +157,7 @@ theorem sum_norm_rightTensor_conjIsometry_sub_sq_le {α ιA ιB κA κB : Type}
     (T : α → Op (κA × κB))
     (hintertwine : ∀ a : α,
       N.effect a * isometryMatrix phiB = isometryMatrix phiB * M a)
-    (psi : EuclideanSpace ℂ (ιA × ιB)) (delta : EuclideanSpace ℂ (κA × κB)) :
+    (psi : BipartiteSpace ιA ιB) (delta : EuclideanSpace ℂ (κA × κB)) :
     ∑ a : α, ‖applyOperatorToState
         (heteroKron 1 (conjIsometry phiB (M a)) - T a) delta‖ ^ 2 ≤
       2 * (∑ a : α, ‖applyOperatorToState (heteroKron 1 (N.effect a) - T a) delta‖ ^ 2) +

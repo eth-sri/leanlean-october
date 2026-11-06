@@ -64,8 +64,7 @@ theorem pauli_soundness :
             (∀ W : PauliKind,
               rawPauliOperatorDistanceA P S w W ≤ deltaQld a b ε P.m P.d P.q) ∧
             (∀ W : PauliKind,
-              rawPauliOperatorDistanceB P S w W ≤ deltaQld a b ε P.m P.d P.q) := by
-  exact exists_arbitrary_strategy_raw_isometry_bounds
+              rawPauliOperatorDistanceB P S w W ≤ deltaQld a b ε P.m P.d P.q) := exists_arbitrary_strategy_raw_isometry_bounds
 
 end
 

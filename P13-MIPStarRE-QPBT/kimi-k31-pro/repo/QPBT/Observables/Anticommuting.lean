@@ -29,8 +29,8 @@ Pauli-test parameter tuple. This is the tuple space of
 blueprint `def:anticommuting-tuple`, paper
 `14_analysis_of_the_pauli_basis_test.tex:64-68`. -/
 abbrev PauliTuple (P : AdmissibleParams) :=
-  (Fin P.m → PauliScalar P) ×
-    (Fin P.m → PauliScalar P) × PauliScalar P × PauliScalar P
+  (PauliPoint P) ×
+    (PauliPoint P) × PauliScalar P × PauliScalar P
 
 /-- A Pauli tuple is anticommuting when its phase bit is nonzero. This is
 blueprint `def:anticommuting-tuple`, paper
@@ -92,7 +92,7 @@ of the coordinate sums `1 + u_{X,i} + u_{Z,i}`. This is the closed form of
 `γ(ω)` derived in the proof of blueprint
 `fact:omega-anticomm-prob`. -/
 private theorem gammaValue_eq_trace_prod (P : AdmissibleParams)
-    (uX uZ : Fin P.m → PauliScalar P) (rX rZ : PauliScalar P) :
+    (uX uZ : PauliPoint P) (rX rZ : PauliScalar P) :
     gammaValue P uX uZ rX rZ =
       fixedBinTrace P.model (rZ * (rX * ∏ i : Fin P.m, (1 + uX i + uZ i))) := by
   haveI := pauliScalar_charTwo P
@@ -225,11 +225,11 @@ private theorem two_mul_card_anticommuting (P : AdmissibleParams) :
       rw [Finset.sum_congr rfl (fun x _ => hcong x), Finset.sum_ite]
       simp [hnzcard]
   -- the sum over the second point block
-  have hDcard : ∀ uX : Fin P.m → PauliScalar P,
-      (Finset.univ.filter (fun uZ : Fin P.m → PauliScalar P =>
+  have hDcard : ∀ uX : PauliPoint P,
+      (Finset.univ.filter (fun uZ : PauliPoint P =>
         ¬ ((∏ i : Fin P.m, (1 + uX i + uZ i)) = 0))).card = (P.q - 1) ^ P.m := by
     intro uX
-    have hset : (Finset.univ.filter (fun uZ : Fin P.m → PauliScalar P =>
+    have hset : (Finset.univ.filter (fun uZ : PauliPoint P =>
         ¬ ((∏ i : Fin P.m, (1 + uX i + uZ i)) = 0)))
         = Fintype.piFinset (fun i : Fin P.m => Finset.univ.erase (1 + uX i)) := by
       ext uZ
@@ -247,14 +247,14 @@ private theorem two_mul_card_anticommuting (P : AdmissibleParams) :
         exact h i (by linear_combination hi - (1 + uX i) * h2)
     rw [hset, Fintype.card_piFinset]
     simp [Finset.card_erase_of_mem, Finset.card_univ, hK]
-  have houter : ∀ uX : Fin P.m → PauliScalar P,
-      (∑ uZ : Fin P.m → PauliScalar P,
+  have houter : ∀ uX : PauliPoint P,
+      (∑ uZ : PauliPoint P,
           if (∏ i : Fin P.m, (1 + uX i + uZ i)) = 0 then (0 : ℕ) else (P.q - 1) * N)
         = (P.q - 1) ^ P.m * ((P.q - 1) * N) := by
     intro uX
     rw [Finset.sum_ite]
     simp [hDcard uX]
-  have step1 : ∀ (uX uZ : Fin P.m → PauliScalar P) (rX : PauliScalar P),
+  have step1 : ∀ (uX uZ : PauliPoint P) (rX : PauliScalar P),
       (∑ rZ : PauliScalar P,
           if IsAnticommuting ((uX, uZ, rX, rZ) : PauliTuple P) then (1 : ℕ) else 0)
         = if rX * ∏ i : Fin P.m, (1 + uX i + uZ i) = 0 then 0 else N := by
@@ -278,10 +278,10 @@ private theorem two_mul_card_anticommuting (P : AdmissibleParams) :
       = P.q ^ P.m * ((P.q - 1) ^ P.m * ((P.q - 1) * N)) := by
     rw [Finset.card_filter]
     simp only [Fintype.sum_prod_type]
-    calc (∑ uX : Fin P.m → PauliScalar P, ∑ uZ : Fin P.m → PauliScalar P,
+    calc (∑ uX : PauliPoint P, ∑ uZ : PauliPoint P,
             ∑ rX : PauliScalar P, ∑ rZ : PauliScalar P,
               (if IsAnticommuting ((uX, uZ, rX, rZ) : PauliTuple P) then (1 : ℕ) else 0))
-        = ∑ _uX : Fin P.m → PauliScalar P, (P.q - 1) ^ P.m * ((P.q - 1) * N) := by
+        = ∑ _uX : PauliPoint P, (P.q - 1) ^ P.m * ((P.q - 1) * N) := by
           refine Finset.sum_congr rfl fun uX _ => ?_
           rw [← houter uX]
           refine Finset.sum_congr rfl fun uZ _ => ?_

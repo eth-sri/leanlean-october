@@ -45,7 +45,7 @@ theorem coarse_commutator_bound_explicit :
         (eval₁ : Γ₁ → Y₁ → R₁) (eval₂ : Γ₂ → Y₂ → R₂)
         (G₁ : X → Measurement Γ₁ ι) (G₂ : X → Measurement Γ₂ ι)
         (A : ((X × Y₁) × Y₂) → Measurement (R₁ × R₂) ι)
-        (ψ : EuclideanSpace ℂ (ι × ι)) (δ : ℝ),
+        (ψ : BipartiteSpace ι ι) (δ : ℝ),
         (∀ q, MIPStarRE.QPBT.Measurement.IsProjective (A q)) →
         consistencyDefect D
           (fun q a₁ => heteroKron (((A q).postprocess Prod.fst).effect a₁) 1)
@@ -262,7 +262,7 @@ theorem consistencyDefect_codeword_fine_le_coarse_add_distinct_families
     [Fintype Y₂] [DecidableEq Y₂] [Fintype R₂] [DecidableEq R₂]
     [Fintype Γ₂] [DecidableEq Γ₂] [Fintype ι] [DecidableEq ι]
     (D : Distribution ((X × Y₁) × Y₂)) (eval₂ : Γ₂ → Y₂ → R₂)
-    (G₂ opposite : X → Measurement Γ₂ ι) (ψ : EuclideanSpace ℂ (ι × ι)) (η : ℝ)
+    (G₂ opposite : X → Measurement Γ₂ ι) (ψ : BipartiteSpace ι ι) (η : ℝ)
     (hD : D.IsProbability) (hψ : ‖ψ‖ = 1) (hη : 0 ≤ η)
     (hcoll : ∀ x y₁, 0 < (D.map Prod.fst).weight (x, y₁) →
       ∀ g g' : Γ₂, g ≠ g' →
@@ -391,7 +391,7 @@ theorem avgOver_pinched_collision_le_distinct_families
     [Fintype ι] [DecidableEq ι]
     (D : Distribution ((X × Y₁) × Y₂)) (eval₂ : Γ₂ → Y₂ → R₂)
     (G₂ opposite : X → Measurement Γ₂ ι) (P : (X × Y₁) → Measurement R₁ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (η : ℝ)
+    (ψ : BipartiteSpace ι ι) (η : ℝ)
     (hD : D.IsProbability) (hψ : ‖ψ‖ = 1) (hη : 0 ≤ η)
     (hcoll : ∀ x y₁, 0 < (D.map Prod.fst).weight (x, y₁) →
       ∀ g g' : Γ₂, g ≠ g' →
@@ -514,7 +514,7 @@ theorem consistencyDefect_schmidtMirror_le {Q α ι : Type*}
     [Fintype Q] [DecidableEq Q] [Fintype α] [DecidableEq α]
     [Fintype ι] [DecidableEq ι]
     (D : Distribution Q) (A B : Q → Measurement α ι)
-    (ψ : EuclideanSpace ℂ (ι × ι))
+    (ψ : BipartiteSpace ι ι)
     (hB : ∀ question, MIPStarRE.QPBT.Measurement.IsProjective (B question)) :
     consistencyDefect D
       (fun question answer => heteroKron

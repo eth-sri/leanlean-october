@@ -64,7 +64,7 @@ def swappedPauliMeas (w : GlobalPairWitness S deltaG) (side : PlayerSide)
 
 /-- Coarse-graining commutes with extending and conjugating the Pauli POVM. -/
 theorem swappedPauliMeas_eval_effect (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (a : PauliScalar P) :
     ((S.swappedPauliMeas w side W).postprocess
       (fun h => evalPoly (encodingPoly h) u)).effect a =
@@ -122,7 +122,7 @@ theorem placeSide_conjBy (side : PlayerSide)
   cases side <;>
     simp only [placeSide, conjBy, ← reindexOp_conjTranspose,
       ← WinImplications.reindexOp_mul, MagicSquareRigidity.heteroKron_conjTranspose,
-      heteroKron_mul, Matrix.conjTranspose_one, Matrix.mul_one] <;> rfl
+      heteroKron_mul, Matrix.conjTranspose_one, Matrix.mul_one]
 
 /-- Conjugated total-Pauli effects in block coordinates give exactly the
 six-register operators required by the extraction witness. -/
@@ -137,7 +137,7 @@ theorem placeSide_swappedPauliMeas (w : GlobalPairWitness S deltaG)
 /-- The evaluated canonical block measurement is the swap-conjugated
 pulled-apart measurement, by `eq:qld-unitary-6`. -/
 theorem canonical_eval_eq_conj_tildeM (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (a : PauliScalar P) :
     ((rightPlacedMeasurement (ιA := S.ExpandedLocalSpace side)
       (pauliRegisterMeas (params := P) W)).postprocess
@@ -191,7 +191,7 @@ set_option maxHeartbeats 800000 in
 /-- Alice's evaluated swapped total-Pauli overlap with Bob's canonical
 measurement is exactly one minus the evaluated-Pauli/tilde consistency defect. -/
 theorem swapped_pauli_overlap_alice (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+    avgOver (pauliPointDist P) (fun u =>
       ∑ a : PauliScalar P, stateQForm
         (reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
           (S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat))
@@ -200,7 +200,7 @@ theorem swapped_pauli_overlap_alice (w : GlobalPairWitness S deltaG) (W : PauliK
           (((rightPlacedMeasurement (ιA := S.ExpandedLocalSpace .bob)
             (pauliRegisterMeas (params := P) W)).postprocess
             (fun h => evalPoly (encodingPoly h) u)).effect a))) =
-      1 - consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      1 - consistencyDefect (pauliPointDist P)
         (fun u a => S.placePlayer .alice ((S.pauliEvalMeas .alice W u).effect a))
         (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat := by
   simp only [S.swappedPauliMeas_eval_effect]
@@ -210,7 +210,7 @@ theorem swapped_pauli_overlap_alice (w : GlobalPairWitness S deltaG) (W : PauliK
     (fun u => Measurement.ofSumEqOne (tildeM w .bob W (indicatorVec u))
       (fun a => (tildeM_isProj w .bob W (indicatorVec u) a).nonneg)
       (sum_tildeM_eq_one w .bob W (indicatorVec u)))
-  have hplace (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :=
+  have hplace (u : PauliPoint P) (a : PauliScalar P) :=
     S.placeSide_onPlayer .alice ((S.pauliEvalMeas .alice W u).effect a)
   convert
     (h.trans (congrArg (fun f => 1 - consistencyDefect _ f _ S.psiHat)
@@ -220,7 +220,7 @@ set_option maxHeartbeats 800000 in
 /-- Bob's evaluated swapped total-Pauli overlap with Alice's canonical
 measurement satisfies the same exact transport, without strategy symmetry. -/
 theorem swapped_pauli_overlap_bob (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+    avgOver (pauliPointDist P) (fun u =>
       ∑ a : PauliScalar P, stateQForm
         (reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
           (S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat))
@@ -229,7 +229,7 @@ theorem swapped_pauli_overlap_bob (w : GlobalPairWitness S deltaG) (W : PauliKin
             (fun h => evalPoly (encodingPoly h) u)).effect a)
           (((S.swappedPauliMeas w .bob W).postprocess
             (fun h => evalPoly (encodingPoly h) u)).effect a))) =
-      1 - consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      1 - consistencyDefect (pauliPointDist P)
         (fun u a => S.placeSide .alice (tildeM w .alice W (indicatorVec u) a))
         (fun u a => S.placePlayer .bob ((S.pauliEvalMeas .bob W u).effect a)) S.psiHat := by
   simp only [S.swappedPauliMeas_eval_effect]
@@ -239,7 +239,7 @@ theorem swapped_pauli_overlap_bob (w : GlobalPairWitness S deltaG) (W : PauliKin
       (fun a => (tildeM_isProj w .alice W (indicatorVec u) a).nonneg)
       (sum_tildeM_eq_one w .alice W (indicatorVec u)))
     (fun u => leftPlacedMeasurement (leftPlacedMeasurement (S.pauliEvalMeas .bob W u)))
-  have hplace (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :=
+  have hplace (u : PauliPoint P) (a : PauliScalar P) :=
     S.placeSide_onPlayer .bob ((S.pauliEvalMeas .bob W u).effect a)
   convert
     (h.trans (congrArg (fun f => 1 - consistencyDefect _ _ f S.psiHat)

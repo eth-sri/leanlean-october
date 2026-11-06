@@ -54,7 +54,6 @@ private theorem directCombinedAux_cast (D : DirectLdParams) :
     (directLdAuxParameter D.combined : ℝ) =
       2560000 * (((D.m + D.k : ℕ) : ℝ) ^ (3 : ℕ)) * (D.d : ℝ) := by
   unfold directLdAuxParameter
-  simp only [DirectLdParams.combined_m, DirectLdParams.combined_d]
   push_cast
   ring
 
@@ -198,7 +197,6 @@ private theorem directCombinedRecoveryLoss_le (D : DirectLdParams) {ε : ℝ} (h
   have hq1 : (1 : ℝ) ≤ (D.q : ℝ) := by exact_mod_cast hqn
   have hqpos : (0 : ℝ) < (D.q : ℝ) := by linarith
   have hcast : ((D.combined.m * D.d : ℕ) : ℝ) = ((D.m + D.k : ℕ) : ℝ) * (D.d : ℝ) := by
-    simp only [DirectLdParams.combined_m]
     push_cast
     ring
   have hqb : Real.rpow (D.q : ℝ) (1 / 80000) ≤ (D.q : ℝ) := by

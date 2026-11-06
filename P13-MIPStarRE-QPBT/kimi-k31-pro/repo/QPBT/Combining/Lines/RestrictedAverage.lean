@@ -36,7 +36,7 @@ index inflates it by at most `2 m`.  This is the pointwise form of item 1 of
 blueprint `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1052-1056`. -/
 theorem avgOver_restrictedLinePointDist_le {P : AdmissibleParams}
-    (f : (LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) → ℝ)
+    (f : (LineDesc P.toLdParams × (PauliPoint P)) → ℝ)
     (hf : ∀ sample, 0 ≤ f sample) (kind : LineKind) (i : Fin P.m) :
     avgOver (restrictedLinePointDist P kind i) f ≤
       2 * (P.m : ℝ) * avgOver (linePointDist P.toLdParams) f := by
@@ -69,8 +69,8 @@ theorem avgOver_restrictedLinePointDist_le {P : AdmissibleParams}
     exact le_add_of_nonneg_left hAnonneg
   -- The coordinate index contributes a further factor `m`.
   have hcomponent : ∀ (ν : Fin P.m → Distribution (LineDesc P.toLdParams ×
-      (Fin P.m → PauliScalar P))) (μ : Distribution (LineDesc P.toLdParams ×
-      (Fin P.m → PauliScalar P))),
+      (PauliPoint P))) (μ : Distribution (LineDesc P.toLdParams ×
+      (PauliPoint P))),
       μ = Distribution.bind (uniformDistribution (Fin P.m)) ν →
       avgOver μ f ≤ 2 * avgOver (linePointDist P.toLdParams) f →
       avgOver (ν i) f ≤ 2 * (P.m : ℝ) * avgOver (linePointDist P.toLdParams) f := by
@@ -99,8 +99,8 @@ to one kind and coordinate index in each factor inflates it by at most
 blueprint `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1056-1058`. -/
 theorem avgOver_prod_restrictedLinePointDist_le {P : AdmissibleParams}
-    (f : ((LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
-      (LineDesc P.toLdParams × (Fin P.m → PauliScalar P))) → ℝ)
+    (f : ((LineDesc P.toLdParams × (PauliPoint P)) ×
+      (LineDesc P.toLdParams × (PauliPoint P))) → ℝ)
     (hf : ∀ sample, 0 ≤ f sample) (kindX kindZ : LineKind) (i j : Fin P.m) :
     avgOver (Distribution.prod (restrictedLinePointDist P kindX i)
         (restrictedLinePointDist P kindZ j)) f ≤
@@ -109,7 +109,7 @@ theorem avgOver_prod_restrictedLinePointDist_le {P : AdmissibleParams}
   classical
   have hfactor : (0 : ℝ) ≤ 2 * (P.m : ℝ) := by positivity
   rw [SandwichProduct.avgOver_distribution_prod, SandwichProduct.avgOver_distribution_prod]
-  have hinner : ∀ s1 : LineDesc P.toLdParams × (Fin P.m → PauliScalar P),
+  have hinner : ∀ s1 : LineDesc P.toLdParams × (PauliPoint P),
       avgOver (restrictedLinePointDist P kindZ j) (fun s2 => f (s1, s2)) ≤
         2 * (P.m : ℝ) *
           avgOver (linePointDist P.toLdParams) (fun s2 => f (s1, s2)) :=

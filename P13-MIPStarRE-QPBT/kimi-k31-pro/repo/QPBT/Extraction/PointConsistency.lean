@@ -72,7 +72,7 @@ theorem placeSide_bob_finset_sum (S : ProjectiveSetting P epsilon)
 /-- The convolution formula with its second outcome solved for. This is the
 third line of the overlap calculation in paper lines 1483--1492. -/
 theorem pointMeasExp_effect_eq_sum_sub (S : ProjectiveSetting P epsilon)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (a : PauliScalar P) :
     (S.pointMeasExp side W u).effect a =
       ∑ b : PauliScalar P, heteroKron ((S.pointMeas side W u).effect b)
@@ -96,7 +96,7 @@ paper lines 1483--1492; it holds for every polynomial outcome. -/
 theorem sum_pointMeas_mul_tildeM_eq_decoded_overlap
     {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
+    (u : PauliPoint P) :
     (∑ a : PauliScalar P, S.placePlayer .alice ((S.pointMeas .alice W u).effect a) *
       S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) =
       ∑ g : Poly P, S.place .BB' ((w.marginalPoly .bob W).effect g) *
@@ -117,18 +117,18 @@ calculation, still without imposing an encoding restriction. -/
 theorem tildeM_consistencyDefect_eq_one_sub_decoded_overlap
     {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
       (fun u a => S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
       (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat =
-      1 - avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+      1 - avgOver (pauliPointDist P) (fun u =>
         ∑ g : Poly P, stateQForm S.psiHat
           (S.place .BB' ((w.marginalPoly .bob W).effect g) *
             S.place .AB'' ((S.pointMeasExp .alice W u).effect
               (dotProduct (decodeFq g) (indicatorVec u))))) := by
   classical
-  let point := fun u : Fin P.m → PauliScalar P =>
+  let point := fun u : PauliPoint P =>
     S.placedMeasurement .AA' (leftPlacedMeasurement (S.pointMeas .alice W u))
-  let pulled : (Fin P.m → PauliScalar P) → Measurement (PauliScalar P)
+  let pulled : (PauliPoint P) → Measurement (PauliScalar P)
       (SixReg P S.toStrategy.ιA S.toStrategy.ιB) := fun u =>
     Measurement.ofSumEqOne
       (fun a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a))
@@ -145,7 +145,7 @@ theorem tildeM_consistencyDefect_eq_one_sub_decoded_overlap
         ext row col
         simp [reindexOp, Matrix.one_apply])
   have h := consistencyDefect_eq_one_sub_overlap
-    (uniformDistribution (Fin P.m → PauliScalar P)) point pulled S.psiHat
+    (pauliPointDist P) point pulled S.psiHat
     (uniformDistribution_isProbability _) S.psiHat_norm
   change consistencyDefect _ _ _ S.psiHat = 1 - avgOver _ (fun u =>
     ∑ a : PauliScalar P, stateQForm S.psiHat
@@ -165,7 +165,7 @@ for the fourth line of paper lines 1483--1492. No mass estimate is assumed. -/
 theorem marginal_eval_overlap_le_decoded_add_nonencoding
     {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
+    (u : PauliPoint P) :
     (∑ g : Poly P, stateQForm S.psiHat
       (S.place .BB' ((w.marginalPoly .bob W).effect g) *
         S.place .AB'' ((S.pointMeasExp .alice W u).effect (MvPolynomial.eval u g.1)))) ≤

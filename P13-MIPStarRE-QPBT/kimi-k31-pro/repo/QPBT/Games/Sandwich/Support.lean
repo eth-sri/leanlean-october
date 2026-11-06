@@ -63,7 +63,7 @@ theorem diagonal_postprocess_stateQForm_eq_pair_sum
     [Fintype β] [DecidableEq β]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : Measurement α ιA) (B : Measurement α ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (f : α → β) :
+    (ψ : BipartiteSpace ιA ιB) (f : α → β) :
     (∑ b : β, stateQForm ψ
       (heteroKron ((A.postprocess f).effect b) ((B.postprocess f).effect b))) =
       ∑ a : α, ∑ a' : α, if f a = f a' then
@@ -111,7 +111,7 @@ theorem consistencyDefect_placed_eq_avg_point
     [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A : X → Measurement α ιA)
-    (B : X → Measurement α ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (B : X → Measurement α ιB) (ψ : BipartiteSpace ιA ιB) :
     consistencyDefect μ
         (fun x a => heteroKron ((A x).effect a) 1)
         (fun x a => heteroKron 1 ((B x).effect a)) ψ =
@@ -142,7 +142,7 @@ theorem avg_diagonal_postprocess_stateQForm_le
     [Fintype Γ] [DecidableEq Γ] [Fintype R] [DecidableEq R]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : Measurement Γ ιA) (B : Measurement Γ ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (eval : Γ → Y → R) (ε : ℝ)
+    (ψ : BipartiteSpace ιA ιB) (eval : Γ → Y → R) (ε : ℝ)
     (hψ : ‖ψ‖ = 1) (hε : 0 ≤ ε)
     (hcollision : ∀ g g' : Γ, g ≠ g' →
       avgOver (uniformDistribution Y)
@@ -270,7 +270,7 @@ theorem point_codeword_defect_le_avg_evaluated_add
     [Fintype Γ] [DecidableEq Γ] [Fintype R] [DecidableEq R]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (A : Measurement Γ ιA) (B : Measurement Γ ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (eval : Γ → Y → R) (ε : ℝ)
+    (ψ : BipartiteSpace ιA ιB) (eval : Γ → Y → R) (ε : ℝ)
     (hψ : ‖ψ‖ = 1) (hε : 0 ≤ ε)
     (hcollision : ∀ g g' : Γ, g ≠ g' →
       avgOver (uniformDistribution Y)
@@ -331,7 +331,7 @@ theorem consistencyDefect_codewords_le_evaluated_add
     [Fintype Γ] [DecidableEq Γ] [Fintype R] [DecidableEq R]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A : X → Measurement Γ ιA)
-    (B : X → Measurement Γ ιB) (ψ : EuclideanSpace ℂ (ιA × ιB))
+    (B : X → Measurement Γ ιB) (ψ : BipartiteSpace ιA ιB)
     (eval : Γ → Y → R) (ε : ℝ)
     (hμ : μ.IsProbability) (hψ : ‖ψ‖ = 1) (hε : 0 ≤ ε)
     (hcollision : ∀ g g' : Γ, g ≠ g' →

@@ -138,7 +138,7 @@ private theorem point_read_defect_on_direct_samples_eq_rejection
       · rw [point_read_effect lines .alice]
       · rw [point_read_effect lines .bob]
     _ = consistencyDefect (uniformDistribution
-          (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd))
+          (DirectPoint P.extendedDirectLd))
         (fun point answer => heteroKron
           (((points.Q .alice
             (projX (directPointToPauli P point))
@@ -154,9 +154,9 @@ private theorem point_read_defect_on_direct_samples_eq_rejection
         (pairState setting) := by
       exact consistencyDefect_uniform_equiv_fst
         (Gamma := DirectLdSpace P.extendedDirectLd)
-        (X := Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
+        (X := DirectPoint P.extendedDirectLd)
         (Y := Fin P.extendedDirectLd.m ×
-          (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd))
+          (DirectPoint P.extendedDirectLd))
         (Alpha := Option (PauliScalar P))
         (I := setting.ExpandedLocalSpace .alice × setting.ExpandedLocalSpace .bob)
         (directLdSpacePointEquiv P.extendedDirectLd)

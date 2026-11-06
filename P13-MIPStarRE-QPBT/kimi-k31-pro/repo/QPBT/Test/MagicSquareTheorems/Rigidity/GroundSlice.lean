@@ -329,7 +329,7 @@ theorem isometryTensor_eq_toEuclideanLin {ιA ιB κA κB : Type}
     [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
     (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
     (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (ψ : BipartiteSpace ιA ιB) :
     isometryTensor φA φB ψ =
       Matrix.toEuclideanLin
         (Matrix.kronecker (isometryMatrix φA) (isometryMatrix φB)) ψ := by
@@ -356,7 +356,7 @@ theorem norm_isometryTensor {ιA ιB κA κB : Type}
     [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
     (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
     (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (ψ : BipartiteSpace ιA ιB) :
     ‖isometryTensor φA φB ψ‖ = ‖ψ‖ := by
   rw [isometryTensor_eq_toEuclideanLin]
   exact norm_toEuclideanLin_of_conjTranspose_mul_eq_one
@@ -369,7 +369,7 @@ theorem applyOperatorToState_leftTensor_conjIsometry {ιA ιB κA κB : Type}
     [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
     (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
     (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (X : Op ιA) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (X : Op ιA) (ψ : BipartiteSpace ιA ιB) :
     applyOperatorToState (heteroKron (conjIsometry φA X) 1) (isometryTensor φA φB ψ) =
       isometryTensor φA φB (applyOperatorToState (heteroKron X 1) ψ) := by
   rw [isometryTensor_eq_toEuclideanLin, isometryTensor_eq_toEuclideanLin]
@@ -388,7 +388,7 @@ theorem applyOperatorToState_rightTensor_conjIsometry {ιA ιB κA κB : Type}
     [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
     (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
     (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (Y : Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (Y : Op ιB) (ψ : BipartiteSpace ιA ιB) :
     applyOperatorToState (heteroKron 1 (conjIsometry φB Y)) (isometryTensor φA φB ψ) =
       isometryTensor φA φB (applyOperatorToState (heteroKron 1 Y) ψ) := by
   rw [isometryTensor_eq_toEuclideanLin, isometryTensor_eq_toEuclideanLin]
@@ -459,7 +459,7 @@ theorem naimarkCompression_finset_sum {ι α β : Type} [Fintype ι] [DecidableE
 /-- The dilated state lies in the ground slice on Alice's side. -/
 theorem applyOperatorToState_leftTensor_groundProjection (α : Type) [Fintype α]
     [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    [DecidableEq ιB] (ψ : BipartiteSpace ιA ιB) :
     applyOperatorToState (heteroKron (groundProjection ιA α) 1) (naimarkDilatedState α ψ) =
       naimarkDilatedState α ψ := by
   have hfull : applyOperatorToState
@@ -475,7 +475,7 @@ theorem applyOperatorToState_leftTensor_groundProjection (α : Type) [Fintype α
 /-- The dilated state lies in the ground slice on Bob's side. -/
 theorem applyOperatorToState_rightTensor_groundProjection (α : Type) [Fintype α]
     [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    [DecidableEq ιB] (ψ : BipartiteSpace ιA ιB) :
     applyOperatorToState (heteroKron 1 (groundProjection ιB α)) (naimarkDilatedState α ψ) =
       naimarkDilatedState α ψ := by
   have hfull : applyOperatorToState
@@ -492,7 +492,7 @@ theorem applyOperatorToState_rightTensor_groundProjection (α : Type) [Fintype �
 side. -/
 theorem applyOperatorToState_leftTensor_one_sub_groundProjection (α : Type) [Fintype α]
     [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    [DecidableEq ιB] (ψ : BipartiteSpace ιA ιB) :
     applyOperatorToState (heteroKron (1 - groundProjection ιA α) 1)
       (naimarkDilatedState α ψ) = 0 := by
   have h : heteroKron (1 - groundProjection ιA α) (1 : Op (ιB × Option α)) =
@@ -511,7 +511,7 @@ theorem applyOperatorToState_leftTensor_one_sub_groundProjection (α : Type) [Fi
 side. -/
 theorem applyOperatorToState_rightTensor_one_sub_groundProjection (α : Type) [Fintype α]
     [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    [DecidableEq ιB] (ψ : BipartiteSpace ιA ιB) :
     applyOperatorToState (heteroKron 1 (1 - groundProjection ιB α))
       (naimarkDilatedState α ψ) = 0 := by
   have h : heteroKron (1 : Op (ιA × Option α)) (1 - groundProjection ιB α) =
@@ -535,7 +535,7 @@ This is the estimate replacing the `≈_δ` preservation that Naimark dilation
 lacks (`references/ldt-paper/orthonormalization.tex:82-101`). -/
 theorem norm_leftTensor_one_sub_groundProjection_mul_le (α : Type) [Fintype α]
     [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB))
+    [DecidableEq ιB] (ψ : BipartiteSpace ιA ιB)
     (P : Op (ιA × Option α)) (Q : Op (ιB × Option α)) :
     ‖applyOperatorToState (heteroKron ((1 - groundProjection ιA α) * P) 1)
         (naimarkDilatedState α ψ)‖ ≤
@@ -573,7 +573,7 @@ dilated state is at most its intertwining defect against any left-placed
 operator. -/
 theorem norm_rightTensor_one_sub_groundProjection_mul_le (α : Type) [Fintype α]
     [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB))
+    [DecidableEq ιB] (ψ : BipartiteSpace ιA ιB)
     (P : Op (ιA × Option α)) (Q : Op (ιB × Option α)) :
     ‖applyOperatorToState (heteroKron 1 ((1 - groundProjection ιB α) * Q))
         (naimarkDilatedState α ψ)‖ ≤

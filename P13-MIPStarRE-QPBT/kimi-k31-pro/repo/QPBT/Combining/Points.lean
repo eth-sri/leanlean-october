@@ -307,10 +307,10 @@ theorem extendedQ_spec {P : AdmissibleParams} {ε δ : ℝ}
   · intro side x z alpha beta
     exact SandwichProduct.postprocess_isProjective _ (points.projective side x z) _
   · intro p1 p2 hopposite
-    let A : ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) →
+    let A : ((PauliPoint P) × (PauliPoint P)) →
         (PauliScalar P × PauliScalar P) → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
       fun xz ab => S.place p1 ((points.Q p1.side xz.1 xz.2).effect ab)
-    let B : ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) →
+    let B : ((PauliPoint P) × (PauliPoint P)) →
         (PauliScalar P × PauliScalar P) → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
       fun xz ab => S.place p2 ((points.Q p2.side xz.1 xz.2).effect ab)
     refine le_trans ?_ (points.self_consistent p1 p2 hopposite)
@@ -319,10 +319,10 @@ theorem extendedQ_spec {P : AdmissibleParams} {ε δ : ℝ}
         Measurement.postprocess_effect, place_finset_sum] using h
     · rw [sum_placed_measurement_eq_one, sum_placed_measurement_eq_one]
   · intro p1 p2 hopposite
-    let A : ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) →
+    let A : ((PauliPoint P) × (PauliPoint P)) →
         (PauliScalar P × PauliScalar P) → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
       fun xz ab => S.place p1 ((points.Q p1.side xz.1 xz.2).effect ab)
-    let B : ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) →
+    let B : ((PauliPoint P) × (PauliPoint P)) →
         (PauliScalar P × PauliScalar P) → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
       fun xz ab => S.place p2
         ((S.pointMeasExp p2.side .X xz.1).effect ab.1 *
@@ -333,10 +333,10 @@ theorem extendedQ_spec {P : AdmissibleParams} {ε δ : ℝ}
         Measurement.postprocess_effect, place_finset_sum] using h
     · rw [sum_placed_measurement_eq_one, sum_placed_measurement_products_eq_one]
   · intro p1 p2 hopposite
-    let A : ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) →
+    let A : ((PauliPoint P) × (PauliPoint P)) →
         (PauliScalar P × PauliScalar P) → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
       fun xz ab => S.place p1 ((points.Q p1.side xz.1 xz.2).effect ab)
-    let B : ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) →
+    let B : ((PauliPoint P) × (PauliPoint P)) →
         (PauliScalar P × PauliScalar P) → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
       fun xz ab => S.place p2
         ((S.pointMeasExp p2.side .Z xz.2).effect ab.2 *

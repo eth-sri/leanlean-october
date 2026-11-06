@@ -71,7 +71,7 @@ theorem consistencyDefect_pasted_le_marginal_add_pinched
     (eval₁ : Γ₁ → Y₁ → R₁) (eval₂ : Γ₂ → Y₂ → R₂)
     (G₁ : X → Measurement Γ₁ ι) (G₂ : X → Measurement Γ₂ ι)
     (A : ((X × Y₁) × Y₂) → Measurement (R₁ × R₂) ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (hψ : ‖ψ‖ = 1)
+    (ψ : BipartiteSpace ι ι) (hψ : ‖ψ‖ = 1)
     (hG₂ : ∀ x, MIPStarRE.QPBT.Measurement.IsProjective (G₂ x)) :
     consistencyDefect D (fun q a => heteroKron ((A q).effect a) 1)
         (fun q a => heteroKron 1 (∑ g₁ : Γ₁, ∑ g₂ : Γ₂,
@@ -313,7 +313,7 @@ private theorem abs_pinch_overlap_gap_le_sqrt {R₁ Γ₂ ι : Type*}
     [Fintype R₁] [DecidableEq R₁] [Fintype Γ₂] [DecidableEq Γ₂]
     [Fintype ι] [DecidableEq ι]
     (A P : Measurement R₁ ι) (G : Measurement Γ₂ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (hψ : ‖ψ‖ = 1)
+    (ψ : BipartiteSpace ι ι) (hψ : ‖ψ‖ = 1)
     (hA : MIPStarRE.QPBT.Measurement.IsProjective A)
     (hG : MIPStarRE.QPBT.Measurement.IsProjective G) :
     |∑ a : R₁, (stateQForm ψ (heteroKron (A.effect a) (P.effect a)) -
@@ -324,7 +324,7 @@ private theorem abs_pinch_overlap_gap_le_sqrt {R₁ Γ₂ ι : Type*}
           (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2) := by
   classical
   -- the two inlined identities of the distance calculus; see issue Dengnifer/MIPStarRE-QPBT-bak#204
-  have happ : ∀ (M N : Op (ι × ι)) (v : EuclideanSpace ℂ (ι × ι)),
+  have happ : ∀ (M N : Op (ι × ι)) (v : BipartiteSpace ι ι),
       applyOperatorToState (M * N) v =
         applyOperatorToState M (applyOperatorToState N v) := by
     intro M N v
@@ -452,10 +452,10 @@ private theorem abs_pinch_overlap_gap_le_sqrt {R₁ Γ₂ ι : Type*}
     refine Finset.sum_congr rfl fun a _ => ?_
     rw [← hqsub, ← heteroKron_sub_right, hterm a, heteroKron_finset_sum_right,
       stateQForm_finset_sum]
-  set u : R₁ × Γ₂ → EuclideanSpace ℂ (ι × ι) := fun p =>
+  set u : R₁ × Γ₂ → BipartiteSpace ι ι := fun p =>
     applyOperatorToState (heteroKron (A.effect p.1)
       (P.effect p.1 * G.effect p.2 - G.effect p.2 * P.effect p.1)) ψ with hu
-  set v : R₁ × Γ₂ → EuclideanSpace ℂ (ι × ι) := fun p =>
+  set v : R₁ × Γ₂ → BipartiteSpace ι ι := fun p =>
     applyOperatorToState (heteroKron (A.effect p.1) (G.effect p.2)) ψ with hv
   have hpoint : ∀ p : R₁ × Γ₂,
       |stateQForm ψ (heteroKron (A.effect p.1)
@@ -509,7 +509,7 @@ theorem consistencyDefect_pinched_le_marginal_add_sqrt
     [Fintype Γ₂] [DecidableEq Γ₂] [Fintype ι] [DecidableEq ι]
     (D : Distribution ((X × Y₁) × Y₂)) (G₂ : X → Measurement Γ₂ ι)
     (P A : ((X × Y₁) × Y₂) → Measurement R₁ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (K : ℝ)
+    (ψ : BipartiteSpace ι ι) (K : ℝ)
     (hD : D.IsProbability) (hψ : ‖ψ‖ = 1)
     (hA : ∀ q, MIPStarRE.QPBT.Measurement.IsProjective (A q))
     (hG₂ : ∀ x, MIPStarRE.QPBT.Measurement.IsProjective (G₂ x))

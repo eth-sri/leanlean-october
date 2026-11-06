@@ -56,7 +56,7 @@ theorem conjIsometry_id {ι : Type} [Fintype ι] [DecidableEq ι] (M : Op ι) :
 Formalization-only support for `thm:ms-rigidity`, blueprint
 `ch13_qpbt_test.tex:266-288`. -/
 theorem isometryTensor_id {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    [Fintype ιB] [DecidableEq ιB] (ψ : BipartiteSpace ιA ιB) :
     isometryTensor (LinearIsometry.id (R := ℂ) (E := EuclideanSpace ℂ ιA))
       (LinearIsometry.id (R := ℂ) (E := EuclideanSpace ℂ ιB)) ψ = ψ := by
   ext p
@@ -82,7 +82,7 @@ for `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:266-288`. -/
 theorem applyOperatorToState_heteroKron_one_naimarkInflation
     (α : Type) [Fintype α] [DecidableEq α]
     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (N : Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (N : Op ιB) (ψ : BipartiteSpace ιA ιB) :
     applyOperatorToState
         (heteroKron (1 : Op (ιA × Option α))
           (MagicSquareRigidity.naimarkInflation (α := α) N))
@@ -110,7 +110,7 @@ original state. Formalization-only support for `thm:ms-rigidity`, blueprint
 theorem norm_heteroKron_one_naimarkInflation
     (α : Type) [Fintype α] [DecidableEq α]
     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (N : Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (N : Op ιB) (ψ : BipartiteSpace ιA ιB) :
     ‖applyOperatorToState
         (heteroKron (1 : Op (ιA × Option α))
           (MagicSquareRigidity.naimarkInflation (α := α) N))
@@ -223,7 +223,7 @@ for `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:266-288`. -/
 theorem applyOperatorToState_heteroKron_naimarkInflation_one
     (α : Type) [Fintype α] [DecidableEq α]
     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (M : Op ιA) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (M : Op ιA) (ψ : BipartiteSpace ιA ιB) :
     applyOperatorToState
         (heteroKron (MagicSquareRigidity.naimarkInflation (α := α) M)
           (1 : Op (ιB × Option α)))
@@ -251,7 +251,7 @@ original state. Formalization-only support for `thm:ms-rigidity`, blueprint
 theorem norm_heteroKron_naimarkInflation_one
     (α : Type) [Fintype α] [DecidableEq α]
     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (M : Op ιA) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (M : Op ιA) (ψ : BipartiteSpace ιA ιB) :
     ‖applyOperatorToState
         (heteroKron (MagicSquareRigidity.naimarkInflation (α := α) M)
           (1 : Op (ιB × Option α)))
@@ -419,7 +419,7 @@ the triangle inequality; `fact:add-a-proj` itself is blueprint
 `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:352-362`. -/
 theorem norm_product_transfer_le {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA]
     [Fintype ιB] [DecidableEq ιB] (A C : Op ιA) (B D : Op ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB))
+    (ψ : BipartiteSpace ιA ιB)
     (hA : (heteroKron A (1 : Op ιB))ᴴ * heteroKron A 1 = 1)
     (hD : (heteroKron (1 : Op ιA) D)ᴴ * heteroKron 1 D = 1) :
     ‖applyOperatorToState

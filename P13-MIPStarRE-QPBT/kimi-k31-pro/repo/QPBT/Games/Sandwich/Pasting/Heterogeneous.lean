@@ -76,7 +76,7 @@ coordinate is first and Bob's original coordinate is last. This is the
 common-carrier realization used for the heterogeneous pasting estimate;
 blueprint `def:pasting-product-state`. -/
 noncomputable def productPaddedState (a₀ : ιA) (b₀ : ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (ψ : BipartiteSpace ιA ιB) :
     EuclideanSpace ℂ ((ιA × ιB) × (ιA × ιB)) :=
   WithLp.toLp 2 (fun p => if p.1.2 = b₀ then
     if p.2.1 = a₀ then ψ (p.1.1, p.2.2) else 0 else 0)
@@ -84,7 +84,7 @@ noncomputable def productPaddedState (a₀ : ιA) (b₀ : ιB)
 /-- Adjoining unit basis vectors preserves the state norm. Formalization-only
 auxiliary, blueprint `lem:pasting-product-state-preservation`. -/
 theorem productPaddedState_norm (a₀ : ιA) (b₀ : ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (ψ : BipartiteSpace ιA ιB) :
     ‖productPaddedState a₀ b₀ ψ‖ = ‖ψ‖ := by
   rw [← sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)]
   simp [EuclideanSpace.norm_sq_eq, productPaddedState, Fintype.sum_prod_type, apply_ite]
@@ -93,7 +93,7 @@ theorem productPaddedState_norm (a₀ : ιA) (b₀ : ιB)
 identity is independent of positivity and of normalization of the state.
 Formalization-only auxiliary, blueprint `lem:pasting-product-state-preservation`. -/
 theorem stateQForm_productPaddedState (a₀ : ιA) (b₀ : ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (A : Op ιA) (B : Op ιB) :
+    (ψ : BipartiteSpace ιA ιB) (A : Op ιA) (B : Op ιB) :
     stateQForm (productPaddedState a₀ b₀ ψ)
         (heteroKron (heteroKron A (1 : Op ιB)) (heteroKron (1 : Op ιA) B)) =
       stateQForm ψ (heteroKron A B) := by
@@ -110,7 +110,7 @@ Formalization-only auxiliary, blueprint `lem:pasting-product-state-preservation`
 theorem consistencyDefect_productPaddedState {X α : Type*}
     [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     (D : Distribution X) (A : X → α → Op ιA) (B : X → α → Op ιB)
-    (a₀ : ιA) (b₀ : ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (a₀ : ιA) (b₀ : ιB) (ψ : BipartiteSpace ιA ιB) :
     consistencyDefect D
         (fun x a => heteroKron (heteroKron (A x a) (1 : Op ιB)) (1 : Op (ιA × ιB)))
         (fun x a => heteroKron (1 : Op (ιA × ιB)) (heteroKron (1 : Op ιA) (B x a)))
@@ -144,7 +144,7 @@ theorem pasting_error_of_marginal_consistency_explicit :
         (eval₁ : Γ₁ → Y₁ → R₁) (eval₂ : Γ₂ → Y₂ → R₂)
         (G₁ : X → Measurement Γ₁ ι) (G₂ : X → Measurement Γ₂ ι)
         (A : ((X × Y₁) × Y₂) → Measurement (R₁ × R₂) ι)
-        (ψ : EuclideanSpace ℂ (ι × ι)) (η δ : ℝ),
+        (ψ : BipartiteSpace ι ι) (η δ : ℝ),
         D.IsProbability → ‖ψ‖ = 1 → 0 ≤ η → 0 ≤ δ →
         (∀ x, MIPStarRE.QPBT.Measurement.IsProjective (G₂ x)) →
         (∀ q, MIPStarRE.QPBT.Measurement.IsProjective (A q)) →
@@ -246,7 +246,7 @@ theorem pasting_error_heterogeneous_explicit :
         (eval₁ : Γ₁ → Y₁ → R₁) (eval₂ : Γ₂ → Y₂ → R₂)
         (G₁ : X → Measurement Γ₁ ιB) (G₂ : X → Measurement Γ₂ ιB)
         (A : ((X × Y₁) × Y₂) → Measurement (R₁ × R₂) ιA)
-        (ψ : EuclideanSpace ℂ (ιA × ιB)) (η δ : ℝ),
+        (ψ : BipartiteSpace ιA ιB) (η δ : ℝ),
         D.IsProbability → ‖ψ‖ = 1 → 0 ≤ η → 0 ≤ δ →
         (∀ x, MIPStarRE.QPBT.Measurement.IsProjective (G₂ x)) →
         (∀ q, MIPStarRE.QPBT.Measurement.IsProjective (A q)) →

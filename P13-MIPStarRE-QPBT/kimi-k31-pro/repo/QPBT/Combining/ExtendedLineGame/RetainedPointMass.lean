@@ -33,7 +33,7 @@ def retainedPointMismatch {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (p1 p2 : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (W : PauliKind) : ℝ :=
-  avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun x =>
+  avgOver (pauliPointDist P) (fun x =>
     ∑ pair : PolyPair P, ‖applyOperatorToState
       (1 - S.place p2 ((S.pointMeasExp p2.side W x).effect (evalAt W x pair)))
       (applyOperatorToState (S.place p1 (R.effect (directCombinedEmbedding P pair)))
@@ -51,11 +51,11 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
       2 * extendedPolynomialOrderedError S p1 p2 R reverse + 4 / P.q := by
   classical
   let ψ := fun g => applyOperatorToState (S.place p1 (R.effect g)) S.psiHat
-  let X := fun x : Fin P.m → PauliScalar P => S.placedMeasurement p2
+  let X := fun x : PauliPoint P => S.placedMeasurement p2
     (S.pointMeasExp p2.side (if reverse then .Z else .X) x)
-  let Z := fun z : Fin P.m → PauliScalar P => S.placedMeasurement p2
+  let Z := fun z : PauliPoint P => S.placedMeasurement p2
     (S.pointMeasExp p2.side (if reverse then .X else .Z) z)
-  let A := fun (z x : Fin P.m → PauliScalar P) (v : Fin 2 → PauliScalar P) g =>
+  let A := fun (z x : PauliPoint P) (v : Fin 2 → PauliScalar P) g =>
     applyOperatorToState (orderedIndicator (X x) (Z z) (v 0) (v 1)
       (extendedPolynomialRead P (fiberQuestionEquiv P reverse ((z, x), v)) g)) (ψ g)
   have hmass : ∑ g, ‖ψ g‖ ^ 2 = 1 := by
@@ -67,7 +67,7 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
       (directCombinedEmbedding P).injective h)]
     exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (by
       intros; exact sq_nonneg _)
-  have hread (z x : Fin P.m → PauliScalar P) (v : Fin 2 → PauliScalar P)
+  have hread (z x : PauliPoint P) (v : Fin 2 → PauliScalar P)
       (pair : PolyPair P) :
       extendedPolynomialRead P (fiberQuestionEquiv P reverse ((z, x), v))
         (directCombinedEmbedding P pair) =
@@ -75,7 +75,7 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
         v 1 * evalAt (if reverse then .X else .Z) z pair := by
     rw [directCombinedEmbedding_read]
     cases reverse <;> simp [fiberQuestionEquiv, finTwoArrowEquiv, add_comm]
-  have hpoint (z x : Fin P.m → PauliScalar P) :
+  have hpoint (z x : PauliPoint P) :
       (∑ pair : PolyPair P, ‖applyOperatorToState
         (1 - (X x).effect (evalAt (if reverse then .Z else .X) x pair))
           (ψ (directCombinedEmbedding P pair))‖ ^ 2) ≤
@@ -113,8 +113,8 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
     rw [div_eq_mul_inv]
     linarith
   have hfull :
-      avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun z =>
-        avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun x =>
+      avgOver (pauliPointDist P) (fun z =>
+        avgOver (pauliPointDist P) (fun x =>
           avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
             ∑ g, ‖ψ g - A z x v g‖ ^ 2))) =
         extendedPolynomialOrderedError S p1 p2 R reverse := by
@@ -122,7 +122,7 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
       avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
         ∑ g, ‖ψ g - A z x v g‖ ^ 2))]
     rw [← avgOver_uniform_prod
-      (fun zx : (Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P) =>
+      (fun zx : (PauliPoint P) × (PauliPoint P) =>
         fun v => ∑ g, ‖ψ g - A zx.1 zx.2 v g‖ ^ 2)]
     unfold extendedPolynomialOrderedError
     rw [avgOver_uniform_equiv (fiberQuestionEquiv P reverse).symm]
@@ -135,8 +135,8 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
     dsimp only [ψ]
     rw [placed_residual S p1 p2 hopposite]
     rfl
-  have h := avgOver_mono (uniformDistribution (Fin P.m → PauliScalar P)) _ _ fun z =>
-    avgOver_mono (uniformDistribution (Fin P.m → PauliScalar P)) _ _ (hpoint z)
+  have h := avgOver_mono (pauliPointDist P) _ _ fun z =>
+    avgOver_mono (pauliPointDist P) _ _ (hpoint z)
   simp only [avgOver_uniform_const, avgOver_add, avgOver_const_mul, hfull] at h
   exact h
 

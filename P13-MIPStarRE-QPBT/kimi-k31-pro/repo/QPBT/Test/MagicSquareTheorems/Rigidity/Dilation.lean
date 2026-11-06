@@ -377,7 +377,7 @@ state of the dilated strategy supporting blueprint
 `thm:ms-rigidity`. -/
 noncomputable def naimarkDilatedState (α : Type) [Fintype α] [DecidableEq α]
     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (ψ : BipartiteSpace ιA ιB) :
     EuclideanSpace ℂ ((ιA × Option α) × (ιB × Option α)) :=
   isometryTensor (naimarkEmbedding ιA α) (naimarkEmbedding ιB α) ψ
 
@@ -386,7 +386,7 @@ ground slice, where both auxiliary registers carry the adjoined basis vector,
 and all remaining coordinates vanish. -/
 theorem naimarkDilatedState_apply (α : Type) [Fintype α] [DecidableEq α]
     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (p : (ιA × Option α) × (ιB × Option α)) :
+    (ψ : BipartiteSpace ιA ιB) (p : (ιA × Option α) × (ιB × Option α)) :
     naimarkDilatedState α ψ p =
       if p.1.2 = none ∧ p.2.2 = none then ψ (p.1.1, p.2.1) else 0 := by
   classical
@@ -412,7 +412,7 @@ theorem inner_applyOperatorToState {ι : Type} [Fintype ι] [DecidableEq ι]
 times the two indicator amplitudes of the auxiliary registers. -/
 theorem naimarkDilatedState_apply_mul (α : Type) [Fintype α] [DecidableEq α]
     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (i : ιA) (oa : Option α) (j : ιB) (ob : Option α) :
+    (ψ : BipartiteSpace ιA ιB) (i : ιA) (oa : Option α) (j : ιB) (ob : Option α) :
     naimarkDilatedState α ψ ((i, oa), (j, ob)) =
       (if oa = none then (1 : ℂ) else 0) *
         ((if ob = none then (1 : ℂ) else 0) * ψ (i, j)) := by
@@ -425,7 +425,7 @@ is the identity that makes the dilation invisible to every observable quantity o
 the strategy. -/
 theorem inner_heteroKron_naimarkDilatedState (α : Type) [Fintype α] [DecidableEq α]
     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB))
+    (ψ : BipartiteSpace ιA ιB)
     (M : Op (ιA × Option α)) (N : Op (ιB × Option α)) :
     inner ℂ (naimarkDilatedState α ψ)
         (applyOperatorToState (heteroKron M N) (naimarkDilatedState α ψ)) =
@@ -440,7 +440,7 @@ theorem inner_heteroKron_naimarkDilatedState (α : Type) [Fintype α] [Decidable
 vector when the original one is. -/
 theorem naimarkDilatedState_norm (α : Type) [Fintype α] [DecidableEq α]
     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (ψ : BipartiteSpace ιA ιB) :
     ‖naimarkDilatedState α ψ‖ = ‖ψ‖ := by
   classical
   rw [EuclideanSpace.norm_eq, EuclideanSpace.norm_eq]
@@ -649,7 +649,7 @@ theorem isometryTensor_apply_eq {ιA ιB κA κB : Type}
     [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
     (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
     (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (p : κA × κB) :
+    (ψ : BipartiteSpace ιA ιB) (p : κA × κB) :
     isometryTensor φA φB ψ p =
       ∑ q : ιA × ιB,
         Matrix.kronecker (isometryMatrix φA) (isometryMatrix φB) p q * ψ q := by
@@ -668,7 +668,7 @@ theorem isometryTensor_comp {ιA ιB κA κB νA νB : Type}
     (φB : EuclideanSpace ℂ κB →ₗᵢ[ℂ] EuclideanSpace ℂ νB)
     (EA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
     (EB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (ψ : BipartiteSpace ιA ιB) :
     isometryTensor (φA.comp EA) (φB.comp EB) ψ =
       isometryTensor φA φB (isometryTensor EA EB ψ) := by
   ext p
@@ -732,7 +732,7 @@ columns. -/
 theorem applyOperatorToState_naimarkDilatedState (α : Type) [Fintype α] [DecidableEq α]
     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (K : Op ((ιA × Option α) × (ιB × Option α)))
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (p : (ιA × Option α) × (ιB × Option α)) :
+    (ψ : BipartiteSpace ιA ιB) (p : (ιA × Option α) × (ιB × Option α)) :
     applyOperatorToState K (naimarkDilatedState α ψ) p =
       ∑ k : ιA, ∑ l : ιB, K p ((k, none), (l, none)) * ψ (k, l) := by
   classical
@@ -745,7 +745,7 @@ state-dependent effect bounds back to the undilated strategy. -/
 theorem applyOperatorToState_heteroKron_naimarkInflation
     (α : Type) [Fintype α] [DecidableEq α]
     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (M : Op ιA) (N : Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (M : Op ιA) (N : Op ιB) (ψ : BipartiteSpace ιA ιB) :
     applyOperatorToState
         (heteroKron (naimarkInflation (α := α) M) (naimarkInflation (α := α) N))
         (naimarkDilatedState α ψ) =

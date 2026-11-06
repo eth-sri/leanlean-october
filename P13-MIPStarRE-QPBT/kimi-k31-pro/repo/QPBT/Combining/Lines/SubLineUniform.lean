@@ -292,7 +292,7 @@ a coordinatewise field isomorphism.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 theorem directPointToPauli_mem_linePoints (P : AdmissibleParams)
-    {b d x : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd}
+    {b d x : DirectPoint P.extendedDirectLd}
     (hx : x ∈ linePoints b d) :
     directPointToPauli P x ∈
       linePoints (directPointToPauli P b) (directPointToPauli P d) := by
@@ -373,14 +373,14 @@ of the extended line is a point of the source line.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 theorem projX_mem_pointSet (P : AdmissibleParams)
-    (base dir : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
+    (base dir : DirectPoint P.extendedDirectLd)
     (lineX : LineDesc P.toLdParams)
     (hbase : lineX.base =
       lineRepMap lineX.direction (projX (directPointToPauli P base)))
     (hdir : projX (directPointToPauli P dir) ∈
       Submodule.span (PauliScalar P)
         ({lineX.direction} : Set (Fin P.m → PauliScalar P)))
-    {u : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd}
+    {u : DirectPoint P.extendedDirectLd}
     (hu : u ∈ linePoints base dir) :
     projX (directPointToPauli P u) ∈ lineX.pointSet := by
   rw [LineDesc.pointSet, hbase]
@@ -394,14 +394,14 @@ of the extended line is a point of the source line.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 theorem projZ_mem_pointSet (P : AdmissibleParams)
-    (base dir : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
+    (base dir : DirectPoint P.extendedDirectLd)
     (lineZ : LineDesc P.toLdParams)
     (hbase : lineZ.base =
       lineRepMap lineZ.direction (projZ (directPointToPauli P base)))
     (hdir : projZ (directPointToPauli P dir) ∈
       Submodule.span (PauliScalar P)
         ({lineZ.direction} : Set (Fin P.m → PauliScalar P)))
-    {u : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd}
+    {u : DirectPoint P.extendedDirectLd}
     (hu : u ∈ linePoints base dir) :
     projZ (directPointToPauli P u) ∈ lineZ.pointSet := by
   rw [LineDesc.pointSet, hbase]

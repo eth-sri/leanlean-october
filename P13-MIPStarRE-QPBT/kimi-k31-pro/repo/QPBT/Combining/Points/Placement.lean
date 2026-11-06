@@ -139,7 +139,6 @@ theorem opFamilyDistSq_place_AB''_eq_AA' {X α : Type*} [Fintype α]
   unfold opFamilyDistSq
   refine avgOver_congr _ _ _ fun x => Finset.sum_congr rfl fun a _ => ?_
   rw [← place_sub, ← place_sub, norm_place_AB''_eq_norm_place_AA']
-  all_goals rfl
 
 /-- Transfer of a same-side state-dependent distance between the `BA''` and
 `BB'` placements. -/
@@ -153,7 +152,6 @@ theorem opFamilyDistSq_place_BB'_eq_BA'' {X α : Type*} [Fintype α]
   unfold opFamilyDistSq
   refine avgOver_congr _ _ _ fun x => Finset.sum_congr rfl fun a _ => ?_
   rw [← place_sub, ← place_sub, norm_place_BB'_eq_norm_place_BA'']
-  all_goals rfl
 
 end ProjectiveSetting
 

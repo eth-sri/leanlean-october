@@ -39,7 +39,7 @@ local instance linePointFintypeCanonical (P : AdmissibleParams) :
 
 /-- Coordinates outside one low-degree register in the Pauli seed. -/
 abbrev PauliLdRemainder (P : AdmissibleParams) :=
-  (Fin P.m → PauliScalar P) × PauliScalar P × PauliScalar P
+  (PauliPoint P) × PauliScalar P × PauliScalar P
 
 /-- Split a Pauli seed into a basis-selected low-degree seed and unused coordinates. -/
 private def pauliLdSplit (P : AdmissibleParams) (W : PauliKind) :
@@ -74,7 +74,7 @@ private def pauliLdSplit (P : AdmissibleParams) (W : PauliKind) :
 
 /-- Coordinates discarded by the shared Pair and Magic Square projection. -/
 abbrev PauliSharedRemainder (P : AdmissibleParams) :=
-  PauliScalar P × (Fin P.m → PauliScalar P)
+  PauliScalar P × (PauliPoint P)
 
 /-- Split a Pauli seed into its shared tuple and discarded scalar/direction blocks. -/
 def pauliSharedSplit (P : AdmissibleParams) :
@@ -99,7 +99,7 @@ def pauliSharedSplit (P : AdmissibleParams) :
 
 /-- Split a low-degree seed into its point and unused scalar/direction blocks. -/
 private def ldPointSplit (L : LdParams) :
-    LdSpace L ≃ (Fin L.m → ScalarQ L) × (ScalarQ L × (Fin L.m → ScalarQ L)) where
+    LdSpace L ≃ (LdPoint L) × (ScalarQ L × (LdPoint L)) where
   toFun z := (z.point, z.seed, z.direction)
   invFun zr := fun i =>
     match i with
@@ -130,9 +130,9 @@ theorem avgOver_pauliTuple_uniform (P : AdmissibleParams)
 
 /-- The point block of a uniform low-degree seed is uniform. -/
 theorem avgOver_ldPoint_uniform (L : LdParams)
-    (f : (Fin L.m → ScalarQ L) → ℝ) :
+    (f : (LdPoint L) → ℝ) :
     avgOver (uniformDistribution (LdSpace L)) (fun z => f z.point) =
-      avgOver (uniformDistribution (Fin L.m → ScalarQ L)) f := by
+      avgOver (uniformDistribution (LdPoint L)) f := by
   exact avgOver_uniform_equiv_fst (ldPointSplit L) f
 
 /-- The point conditioning map produces the typed point content. -/
@@ -154,7 +154,7 @@ theorem pauliCL_shared_eq (P : AdmissibleParams) (t : PauliType)
 
 /-- Reading a typed point content recovers its point block. -/
 theorem pauliPointBlock_contentOfPoint (P : AdmissibleParams)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+    (W : PauliKind) (u : PauliPoint P) :
     pauliPointBlock W (ProjectiveSetting.contentOfPoint P W u) = u := by
   funext j
   cases W <;> rfl
@@ -184,7 +184,7 @@ theorem pauliDirectionBlock_contentOfLine (P : AdmissibleParams)
 
 /-- Prefix projection is idempotent at a fixed cutoff. -/
 theorem prefixProjection_idem (L : LdParams) (i : Fin L.m)
-    (v : Fin L.m → ScalarQ L) :
+    (v : LdPoint L) :
     prefixProjection i (prefixProjection i v) = prefixProjection i v := by
   funext j
   by_cases h : j.val < i.val <;> simp [prefixProjection, h]
@@ -219,7 +219,7 @@ theorem evalCoefficient_padTo {L : LdParams} {c c' : ℕ} (h : c ≤ c')
 
 /-- A uniquely determined line evaluation is returned by `evalOpt`. -/
 theorem evalOpt_eq_some_of_evaluatesTo {L : LdParams} {c : ℕ}
-    (line : LineDesc L) (f : DegPoly L c) (u : Fin L.m → ScalarQ L)
+    (line : LineDesc L) (f : DegPoly L c) (u : LdPoint L)
     (a : ScalarQ L) (h : EvaluatesTo line f u a) :
     evalOpt line u f = some a := by
   unfold evalOpt
@@ -495,7 +495,7 @@ theorem dlineMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
 /-- Source-answer mismatch mass for the completed line and point readouts. -/
 noncomputable def lowDegreeMismatchMass {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (W : PauliKind)
-    (sample : LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) : ℝ :=
+    (sample : LineDesc P.toLdParams × (PauliPoint P)) : ℝ :=
   outcomeEventWeight S.toStrategy
     (ProjectiveSetting.lineQuestion P W sample.1)
     (ProjectiveSetting.pointQuestion P W sample.2)
@@ -571,7 +571,7 @@ theorem lowDegreeConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
             evalOpt sample.1 sample.2
                 (ProjectiveSetting.lineAnswerOrZero P sample.1 A) ≠
               some (ProjectiveSetting.pointAnswerOrZero B))) := by
-  let X := LineDesc P.toLdParams × (Fin P.m → PauliScalar P)
+  let X := LineDesc P.toLdParams × (PauliPoint P)
   let qA : X → PauliQuestion P := fun sample =>
     ProjectiveSetting.lineQuestion P W sample.1
   let qB : X → PauliQuestion P := fun sample =>
@@ -704,7 +704,7 @@ theorem pauliBasisMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
 /-- The uniform point mismatch average is the sampled point/Pauli branch average. -/
 theorem avg_pauliBasisMismatch_eq_source {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (W : PauliKind) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+    avgOver (pauliPointDist P) (fun u =>
         outcomeEventWeight S.toStrategy
           (ProjectiveSetting.pointQuestion P W u) (pauliQuestion P W)
           (fun A B => ProjectiveSetting.pointAnswerOrZero A ≠
@@ -715,7 +715,7 @@ theorem avg_pauliBasisMismatch_eq_source {P : AdmissibleParams} {ε : ℝ}
           (pauliQuestion P W)
           (fun A B => ProjectiveSetting.pointAnswerOrZero A ≠
             lowDegreeEnc (pauliAnswerOrZero B) (pauliToLd P W z).point)) := by
-  let f : (Fin P.m → PauliScalar P) → ℝ := fun u =>
+  let f : (PauliPoint P) → ℝ := fun u =>
     outcomeEventWeight S.toStrategy
       (ProjectiveSetting.pointQuestion P W u) (pauliQuestion P W)
       (fun A B => ProjectiveSetting.pointAnswerOrZero A ≠
@@ -728,16 +728,16 @@ theorem avg_pauliBasisMismatch_eq_source {P : AdmissibleParams} {ε : ℝ}
 /-- Pauli-basis consistency is the mismatch probability of the source answers. -/
 theorem pauliBasisConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pauliEvalMeas .bob W u).effect a))
         S.toStrategy.ψ =
-      avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+      avgOver (pauliPointDist P) (fun u =>
         outcomeEventWeight S.toStrategy
           (ProjectiveSetting.pointQuestion P W u) (pauliQuestion P W)
           (fun A B => ProjectiveSetting.pointAnswerOrZero A ≠
             lowDegreeEnc (pauliAnswerOrZero B) u)) := by
-  let X := Fin P.m → PauliScalar P
+  let X := PauliPoint P
   let qA : X → PauliQuestion P := fun u => ProjectiveSetting.pointQuestion P W u
   let qB : X → PauliQuestion P := fun _ => pauliQuestion P W
   let fA : X → PauliAnswer P → PauliScalar P := fun _ =>
@@ -782,7 +782,7 @@ low-degree encodings of Pauli answers. This is item 3 of
 theorem win_pauli_basis_cons_explicit :
     ∀ (P : AdmissibleParams) (ε : ℝ) (S : ProjectiveSetting P ε),
       0 ≤ ε → ∀ W : PauliKind,
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pauliEvalMeas .bob W u).effect a))
         S.toStrategy.ψ ≤ 86 * ε := by

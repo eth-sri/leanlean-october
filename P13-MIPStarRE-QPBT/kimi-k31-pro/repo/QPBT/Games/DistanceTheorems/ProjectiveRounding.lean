@@ -284,8 +284,7 @@ private lemma round_projective_ldt {ιA ιB α : Type*}
     letI := hsigma
     obtain ⟨_xHat, _hxHat_coisometry, _hxHat_mixed, data, hq, _hx, _hxHat, hQP⟩ :=
       pQApprox_ofRankReductionSigmaRangePositiveGram φ A δ hRank hφ hδ hδ_small
-    have hRankData : RankReductionWitness φ A δ data.qLayer := by
-      exact hq.symm ▸ hRank.toSigmaRangeQLayer
+    have hRankData : RankReductionWitness φ A δ data.qLayer := hq.symm ▸ hRank.toSigmaRangeQLayer
     have hAQ :
         SDDOpRel φ (uniformDistribution Unit)
           (constOpFamily (A.toSubMeas : OpFamily α ιA))
@@ -321,15 +320,13 @@ private lemma round_projective_ldt {ιA ιB α : Type*}
     have hq_nonneg : 0 ≤ qMass := by
       dsimp [qMass]
       exact ev_nonneg_of_psd φ _ hqtotal_nonneg
-    have hp_nonneg : 0 ≤ pMass := by
-      exact ev_nonneg_of_psd φ P.toSubMeas.total P.toSubMeas.total_nonneg
+    have hp_nonneg : 0 ≤ pMass := ev_nonneg_of_psd φ P.toSubMeas.total P.toSubMeas.total_nonneg
     have hp_le_one : pMass ≤ 1 := by
       calc
         pMass ≤ ev φ (1 : Op ιA) :=
           ev_mono φ _ _ P.toSubMeas.total_le_one
         _ = 1 := ev_one_of_isNormalized φ hφ
-    have hsqrt_nonneg : 0 ≤ sqrtMass := by
-      exact ev_nonneg_of_psd φ _ (CFC.sqrt_nonneg (QTotal data.qLayer))
+    have hsqrt_nonneg : 0 ≤ sqrtMass := ev_nonneg_of_psd φ _ (CFC.sqrt_nonneg (QTotal data.qLayer))
     have hsqrt_complete : sqrtMass ≥ 1 - 12 * t := by
       simpa [sqrtMass, t] using
         sqrtQCompleteness φ A δ data.qLayer hφ hδ hδ_small hRankData

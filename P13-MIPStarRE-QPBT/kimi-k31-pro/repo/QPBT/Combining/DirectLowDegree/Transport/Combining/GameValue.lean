@@ -51,7 +51,7 @@ def directLdIndexedBranchRejectionProbability
     (D : DirectLdParams) (S : Strategy (directLdGame D))
     (types : LdType × LdType) (i : Fin D.m) : ℝ :=
   avgOver (uniformDistribution
-      ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
+      ((DirectPoint D) × (DirectPoint D)))
     fun pd => directRejectedMass D S
       (types.1, directLdMap D types.1 ⟨pd.1, i, pd.2⟩)
       (types.2, directLdMap D types.2 ⟨pd.1, i, pd.2⟩)
@@ -79,17 +79,17 @@ the average over the sampled point alone, for every stored coordinate index. -/
 theorem directLdIndexedBranchRejectionProbability_point_point
     (D : DirectLdParams) (S : Strategy (directLdGame D)) (i : Fin D.m) :
     directLdIndexedBranchRejectionProbability D S (.point, .point) i =
-      avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) fun u =>
+      avgOver (uniformDistribution (DirectPoint D)) fun u =>
         directRejectedMass D S (directLdPointQuestionOf D u)
           (directLdPointQuestionOf D u) := by
   have hsplit : directLdIndexedBranchRejectionProbability D S (.point, .point) i =
       avgOver (uniformDistribution
-          ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
-        (fun pd => (fun (u _ : Fin D.m → DirectScalarQ D) =>
+          ((DirectPoint D) × (DirectPoint D)))
+        (fun pd => (fun (u _ : DirectPoint D) =>
           directRejectedMass D S (directLdPointQuestionOf D u)
             (directLdPointQuestionOf D u)) pd.1 pd.2) := rfl
   rw [hsplit,
-    avgOver_uniform_prod (f := fun (u _ : Fin D.m → DirectScalarQ D) =>
+    avgOver_uniform_prod (f := fun (u _ : DirectPoint D) =>
       directRejectedMass D S (directLdPointQuestionOf D u)
         (directLdPointQuestionOf D u))]
   apply avgOver_congr
@@ -103,12 +103,12 @@ reduce, by `directCombined_measuredQuestion_of_coefficientVar`. -/
 theorem directLdBranchRejectionProbability_point_point_eq
     (D : DirectLdParams) (S : Strategy (directLdGame D)) :
     directLdBranchRejectionProbability D S (.point, .point) =
-      avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) fun u =>
+      avgOver (uniformDistribution (DirectPoint D)) fun u =>
         directRejectedMass D S (directLdPointQuestionOf D u)
           (directLdPointQuestionOf D u) := by
   rw [directLdBranchRejectionProbability_eq_avgOver_index,
     show directLdIndexedBranchRejectionProbability D S (.point, .point) =
-      fun _ => avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) fun u =>
+      fun _ => avgOver (uniformDistribution (DirectPoint D)) fun u =>
         directRejectedMass D S (directLdPointQuestionOf D u)
           (directLdPointQuestionOf D u) from
       funext (directLdIndexedBranchRejectionProbability_point_point D S)]

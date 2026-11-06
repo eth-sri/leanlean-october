@@ -181,12 +181,12 @@ variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 /-- The coefficient matrix of a bipartite vector in the fixed computational
 bases. This is a representation adapter, not a change of state. -/
-def schmidtCoefficientMatrix (ψ : EuclideanSpace ℂ (ι × ι)) : Op ι :=
+def schmidtCoefficientMatrix (ψ : BipartiteSpace ι ι) : Op ι :=
   Matrix.of fun row col => ψ (row, col)
 
 /-- Schmidt coordinates chosen from the proved square-matrix decomposition.
 The choice is made once for the state and is independent of all measurements. -/
-noncomputable def schmidtCoordinates (ψ : EuclideanSpace ℂ (ι × ι)) :
+noncomputable def schmidtCoordinates (ψ : BipartiteSpace ι ι) :
     Matrix.unitaryGroup ι ℂ × Matrix.unitaryGroup ι ℂ × (ι → ℝ) :=
   let existence := exists_schmidt_coordinates (schmidtCoefficientMatrix ψ)
   ⟨Classical.choose existence, Classical.choose (Classical.choose_spec existence),
@@ -194,7 +194,7 @@ noncomputable def schmidtCoordinates (ψ : EuclideanSpace ℂ (ι × ι)) :
 
 /-- The chosen coordinates reconstruct the coefficient matrix with nonnegative
 Schmidt coefficients. In particular, this includes nonfaithful reduced states. -/
-theorem schmidtCoordinates_spec (ψ : EuclideanSpace ℂ (ι × ι)) :
+theorem schmidtCoordinates_spec (ψ : BipartiteSpace ι ι) :
     (∀ index, 0 ≤ (schmidtCoordinates ψ).2.2 index) ∧
       schmidtCoefficientMatrix ψ = ((schmidtCoordinates ψ).1 : Op ι) *
         Matrix.diagonal (fun index => ((schmidtCoordinates ψ).2.2 index : ℂ)) *
@@ -204,13 +204,13 @@ theorem schmidtCoordinates_spec (ψ : EuclideanSpace ℂ (ι × ι)) :
 
 /-- The unitary identifying the transposed Bob coordinates with the Alice
 Schmidt coordinates. Zero Schmidt directions use the orthonormal completion. -/
-noncomputable def schmidtMirrorUnitary (ψ : EuclideanSpace ℂ (ι × ι)) :
+noncomputable def schmidtMirrorUnitary (ψ : BipartiteSpace ι ι) :
     Matrix.unitaryGroup ι ℂ :=
   (schmidtCoordinates ψ).1 * star (schmidtCoordinates ψ).2.1
 
 /-- The state-dependent opposite-register mirror, a linear map on Bob
 operators. It reverses multiplication because it includes a transpose. -/
-noncomputable def schmidtMirror (ψ : EuclideanSpace ℂ (ι × ι)) : Op ι →ₗ[ℂ] Op ι where
+noncomputable def schmidtMirror (ψ : BipartiteSpace ι ι) : Op ι →ₗ[ℂ] Op ι where
   toFun bob := (schmidtMirrorUnitary ψ : Op ι) * bobᵀ * (schmidtMirrorUnitary ψ : Op ι)ᴴ
   map_add' first second := by simp [Matrix.transpose_add, Matrix.mul_add, Matrix.add_mul]
   map_smul' scalar bob := by
@@ -218,7 +218,7 @@ noncomputable def schmidtMirror (ψ : EuclideanSpace ℂ (ι × ι)) : Op ι →
 
 /-- Vectorizing a left/right operator difference gives its coefficient-matrix
 intertwining error, with the Hilbert norm rather than the function supremum norm. -/
-theorem schmidt_action_norm_sq (ψ : EuclideanSpace ℂ (ι × ι)) (alice bob : Op ι) :
+theorem schmidt_action_norm_sq (ψ : BipartiteSpace ι ι) (alice bob : Op ι) :
     ‖applyOperatorToState (heteroKron alice 1) ψ -
       applyOperatorToState (heteroKron 1 bob) ψ‖ ^ 2 =
       ∑ row, ∑ col, Complex.normSq
@@ -236,7 +236,7 @@ theorem schmidt_action_norm_sq (ψ : EuclideanSpace ℂ (ι × ι)) (alice bob :
     Matrix.one_apply, ite_mul, mul_ite, mul_comm]
 
 /-- Mirrors preserve the identity and therefore completeness of a measurement. -/
-theorem schmidtMirror_one (ψ : EuclideanSpace ℂ (ι × ι)) :
+theorem schmidtMirror_one (ψ : BipartiteSpace ι ι) :
     schmidtMirror ψ 1 = 1 := by
   change (schmidtMirrorUnitary ψ : Op ι) * (1 : Op ι)ᵀ *
     (schmidtMirrorUnitary ψ : Op ι)ᴴ = 1
@@ -244,7 +244,7 @@ theorem schmidtMirror_one (ψ : EuclideanSpace ℂ (ι × ι)) :
   exact Unitary.coe_mul_star_self _
 
 /-- Multiplication is reversed by the Schmidt mirror. -/
-theorem schmidtMirror_mul (ψ : EuclideanSpace ℂ (ι × ι)) (first second : Op ι) :
+theorem schmidtMirror_mul (ψ : BipartiteSpace ι ι) (first second : Op ι) :
     schmidtMirror ψ (first * second) = schmidtMirror ψ second * schmidtMirror ψ first := by
   have hunitary : (schmidtMirrorUnitary ψ : Op ι)ᴴ *
       (schmidtMirrorUnitary ψ : Op ι) = 1 := Unitary.coe_star_mul_self _
@@ -254,14 +254,14 @@ theorem schmidtMirror_mul (ψ : EuclideanSpace ℂ (ι × ι)) (first second : O
     (schmidtMirrorUnitary ψ : Op ι), hunitary, Matrix.one_mul]
 
 /-- The mirror preserves adjoints, in addition to reversing products. -/
-theorem schmidtMirror_adjoint (ψ : EuclideanSpace ℂ (ι × ι)) (bob : Op ι) :
+theorem schmidtMirror_adjoint (ψ : BipartiteSpace ι ι) (bob : Op ι) :
     schmidtMirror ψ bobᴴ = (schmidtMirror ψ bob)ᴴ := by
   change _ * bobᴴᵀ * _ = (_ * bobᵀ * _)ᴴ
   simp only [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose, Matrix.mul_assoc]
   rfl
 
 /-- The transpose and unitary conjugation preserve positivity of effects. -/
-theorem schmidtMirror_posSemidef (ψ : EuclideanSpace ℂ (ι × ι)) (bob : Op ι)
+theorem schmidtMirror_posSemidef (ψ : BipartiteSpace ι ι) (bob : Op ι)
     (hbob : bob.PosSemidef) : (schmidtMirror ψ bob).PosSemidef := by
   have hpositive := hbob.transpose.conjTranspose_mul_mul_same (schmidtMirrorUnitary ψ : Op ι)ᴴ
   simpa only [schmidtMirror, LinearMap.coe_mk, AddHom.coe_mk,
@@ -272,7 +272,7 @@ opposite-register prediction error, in squared Hilbert norm. This is the
 dimension-independent estimate of the one-sided pasting argument in issue
 Dengnifer/MIPStarRE-QPBT-bak#201.
 Neither the state nor its reduced density operator is assumed faithful. -/
-theorem schmidtMirror_norm_sq_le (ψ : EuclideanSpace ℂ (ι × ι))
+theorem schmidtMirror_norm_sq_le (ψ : BipartiteSpace ι ι)
     (alice bob : Op ι) (halice : alice.IsHermitian) (hbob : bob.IsHermitian) :
     ‖applyOperatorToState (heteroKron (schmidtMirror ψ bob) 1) ψ -
       applyOperatorToState (heteroKron 1 bob) ψ‖ ^ 2 ≤
@@ -323,7 +323,7 @@ theorem schmidtMirror_norm_sq_le (ψ : EuclideanSpace ℂ (ι × ι))
 /-- Applying the fixed Schmidt mirror to every effect produces an actual
 measurement; no normalization or completion of its effects is required. -/
 noncomputable def schmidtMirrorMeasurement {α : Type*} [Fintype α]
-    (ψ : EuclideanSpace ℂ (ι × ι)) (measurement : Measurement α ι) : Measurement α ι :=
+    (ψ : BipartiteSpace ι ι) (measurement : Measurement α ι) : Measurement α ι :=
   Measurement.ofSumEqOne (fun answer => schmidtMirror ψ (measurement.effect answer))
     (fun answer => Matrix.nonneg_iff_posSemidef.mpr
       (schmidtMirror_posSemidef ψ _ (Matrix.nonneg_iff_posSemidef.mp (measurement.pos answer))))
@@ -331,7 +331,7 @@ noncomputable def schmidtMirrorMeasurement {α : Type*} [Fintype α]
 
 /-- Mirroring commutes with coarse-graining along any evaluation map. -/
 theorem schmidtMirrorMeasurement_postprocess {α β : Type*} [Fintype α] [DecidableEq α]
-    [Fintype β] [DecidableEq β] (ψ : EuclideanSpace ℂ (ι × ι))
+    [Fintype β] [DecidableEq β] (ψ : BipartiteSpace ι ι)
     (measurement : Measurement α ι) (evaluation : α → β) (answer : β) :
     ((schmidtMirrorMeasurement ψ measurement).postprocess evaluation).effect answer =
       schmidtMirror ψ ((measurement.postprocess evaluation).effect answer) := by
@@ -343,7 +343,7 @@ theorem schmidtMirrorMeasurement_postprocess {α β : Type*} [Fintype α] [Decid
 
 /-- A projective measurement has a projective Schmidt mirror. -/
 theorem schmidtMirrorMeasurement_isProjective {α : Type*} [Fintype α]
-    (ψ : EuclideanSpace ℂ (ι × ι)) (measurement : Measurement α ι)
+    (ψ : BipartiteSpace ι ι) (measurement : Measurement α ι)
     (hprojective : MIPStarRE.QPBT.Measurement.IsProjective measurement) :
     MIPStarRE.QPBT.Measurement.IsProjective (schmidtMirrorMeasurement ψ measurement) := by
   intro answer

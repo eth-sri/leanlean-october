@@ -98,7 +98,7 @@ open scoped Classical in
 of a tuple of scalars, written with the combining vector as the left factor. -/
 private theorem directCombinedRestrictCollision_avg_le (D : DirectLdParams)
     (p : PolyIndex D.combined.m (DirectScalarQ D) D.d)
-    (u : Fin D.m → DirectScalarQ D) (b : Fin D.k → DirectScalarQ D)
+    (u : DirectPoint D) (b : Fin D.k → DirectScalarQ D)
     (hu : ∀ c : Fin D.k → DirectScalarQ D,
       combinedRestrict p.1 u ≠ combiningLinearForm c) :
     avgOver (uniformDistribution (Fin D.k → DirectScalarQ D))
@@ -121,7 +121,7 @@ together with the collision probability `k d / q` of two polynomials of total
 degree at most `k d` in the combining variables. -/
 def directCombinedRecoveryLocalBound (D : DirectLdParams)
     (p : PolyIndex D.combined.m (DirectScalarQ D) D.d)
-    (u : Fin D.m → DirectScalarQ D) : Error :=
+    (u : DirectPoint D) : Error :=
   if IsDirectCombined D p then (1 : Error) / D.q
   else
     (if ∃ c : Fin D.k → DirectScalarQ D,
@@ -139,7 +139,7 @@ combination `∑_r α_r b_r`, is at most the bound at the point.  The bound does
 not depend on the tuple `b`. -/
 theorem directCombinedRecoveryEvent_avg_le (D : DirectLdParams)
     (p : PolyIndex D.combined.m (DirectScalarQ D) D.d)
-    (u : Fin D.m → DirectScalarQ D) (b : Fin D.k → DirectScalarQ D) :
+    (u : DirectPoint D) (b : Fin D.k → DirectScalarQ D) :
     avgOver (uniformDistribution (Fin D.k → DirectScalarQ D)) (fun α =>
         if evalDirectPolyTupleAt u (directTupleOfCombined D p) ≠ b ∧
             MvPolynomial.eval (combinedPoint u α) p.1 =
@@ -214,7 +214,7 @@ restriction is a linear form averages to at most `m d / q` by
 `lem:ld-combining-exact-linearity`. -/
 theorem directCombinedRecoveryLocalBound_avg_le (D : DirectLdParams)
     (p : PolyIndex D.combined.m (DirectScalarQ D) D.d) :
-    avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
+    avgOver (uniformDistribution (DirectPoint D))
         (directCombinedRecoveryLocalBound D p) ≤
       ((D.combined.m * D.d : ℕ) : Error) / D.q := by
   classical
@@ -222,12 +222,12 @@ theorem directCombinedRecoveryLocalBound_avg_le (D : DirectLdParams)
   have hsplit : ((D.combined.m * D.d : ℕ) : Error) / D.q =
       ((D.m * D.d : ℕ) : Error) / D.q + ((D.k * D.d : ℕ) : Error) / D.q := by
     have hn : (D.combined.m * D.d : ℕ) = D.m * D.d + D.k * D.d := by
-      simp [DirectLdParams.combined_m, Nat.add_mul]
+      simp [Nat.add_mul]
     rw [hn]
     push_cast
     ring
   by_cases hc : IsDirectCombined D p
-  · have hconst : ∀ u : Fin D.m → DirectScalarQ D,
+  · have hconst : ∀ u : DirectPoint D,
         directCombinedRecoveryLocalBound D p u = (1 : Error) / D.q := by
       intro u
       rw [directCombinedRecoveryLocalBound, if_pos hc]
@@ -238,7 +238,7 @@ theorem directCombinedRecoveryLocalBound_avg_le (D : DirectLdParams)
       exact_mod_cast hle
     exact div_le_div_of_nonneg_right h1 hq.le
   · have hlin := directCombinedExactLinearity_avg_le D p hc
-    have heq : ∀ u : Fin D.m → DirectScalarQ D,
+    have heq : ∀ u : DirectPoint D,
         directCombinedRecoveryLocalBound D p u =
           (if ∃ c : Fin D.k → DirectScalarQ D,
               combinedRestrict p.1 u = combiningLinearForm c then (1 : Error)

@@ -74,7 +74,7 @@ theorem exists_direct_ld_soundness :
           ∃ GA : DirectPolyMeasTuple D S.ιA,
             ∃ GB : DirectPolyMeasTuple D S.ιB,
               consistencyDefect
-                  (uniformDistribution (Fin D.m → DirectScalarQ D))
+                  (uniformDistribution (DirectPoint D))
                   (fun u outcome =>
                     heteroKron
                       (((S.A (directLdPointQuestionOf D u)).postprocess
@@ -84,7 +84,7 @@ theorem exists_direct_ld_soundness :
                       ((GB.postprocess (evalDirectPolyTupleAt u)).effect outcome))
                   S.ψ ≤ deltaLd a b ε D.q D.m D.d D.k ∧
               consistencyDefect
-                  (uniformDistribution (Fin D.m → DirectScalarQ D))
+                  (uniformDistribution (DirectPoint D))
                   (fun u outcome =>
                     heteroKron
                       ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
@@ -252,7 +252,7 @@ theorem direct_ld_soundness_of_k_eq_one_explicit :
           ∃ GA : DirectPolyMeasTuple D S.ιA,
             ∃ GB : DirectPolyMeasTuple D S.ιB,
               consistencyDefect
-                  (uniformDistribution (Fin D.m → DirectScalarQ D))
+                  (uniformDistribution (DirectPoint D))
                   (fun u outcome =>
                     heteroKron
                       (((S.A (directLdPointQuestionOf D u)).postprocess
@@ -263,7 +263,7 @@ theorem direct_ld_soundness_of_k_eq_one_explicit :
                   S.ψ ≤ deltaLd pauliBaselineLowDegreeConstant
                     pauliBaselineLowDegreePower ε D.q D.m D.d D.k ∧
               consistencyDefect
-                  (uniformDistribution (Fin D.m → DirectScalarQ D))
+                  (uniformDistribution (DirectPoint D))
                   (fun u outcome =>
                     heteroKron
                       ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
@@ -308,7 +308,7 @@ theorem direct_ld_soundness_of_k_eq_one_explicit :
     exact le_sqrt_of_le_of_le_one (by linarith) hT
   refine ⟨GA, GB, ?_, ?_, ?_⟩
   · refine consistencyDefect_le_deltaLd_of_transportBound ha hb le_rfl habs D ε hε
-      (uniformDistribution (Fin D.m → DirectScalarQ D))
+      (uniformDistribution (DirectPoint D))
       (uniformDistribution_isProbability _)
       (fun u => (S.A (directLdPointQuestionOf D u)).postprocess
         (directLdPointValuesOrZero D))
@@ -317,7 +317,7 @@ theorem direct_ld_soundness_of_k_eq_one_explicit :
     rw [one_mul]
     exact le_trans h1 (hmature hT)
   · refine consistencyDefect_le_deltaLd_of_transportBound ha hb le_rfl habs D ε hε
-      (uniformDistribution (Fin D.m → DirectScalarQ D))
+      (uniformDistribution (DirectPoint D))
       (uniformDistribution_isProbability _)
       (fun u => GA.postprocess (evalDirectPolyTupleAt u))
       (fun u => (S.B (directLdPointQuestionOf D u)).postprocess

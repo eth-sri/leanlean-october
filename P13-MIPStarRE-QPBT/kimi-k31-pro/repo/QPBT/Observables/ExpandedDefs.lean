@@ -148,7 +148,7 @@ noncomputable def place (S : ProjectiveSetting P ε) (p : Placement)
 Equation `eq:lc-23`, paper `14_analysis_of_the_pauli_basis_test.tex:374-382`,
 blueprint `eq:lc-23`. -/
 noncomputable def expObs (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+    (W : PauliKind) (r : PauliScalar P) (u : PauliPoint P) :
     Op (S.ExpandedLocalSpace side) :=
   heteroKron (S.pointObs side W r u)
     (tauObservable W (fun h => r * indicatorVec u h))
@@ -158,7 +158,7 @@ display of `def:expanded-point-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:384-418`, blueprint
 `def:expanded-point-measurement`. -/
 noncomputable def expPointOp (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+    (W : PauliKind) (u : PauliPoint P) (a : PauliScalar P) :
     Op (S.ExpandedLocalSpace side) :=
   averageOperatorOverDistribution (uniformDistribution (PauliScalar P)) fun r =>
     phaseSign (fixedBinTrace P.model (a * r)) • S.expObs side W r u
@@ -168,7 +168,7 @@ value `a` at `u`. This is Equation `eq:qld-point-obs-def`, paper
 `14_analysis_of_the_pauli_basis_test.tex:389-394`, blueprint
 `eq:qld-point-obs-def`. -/
 noncomputable def tauPointProj (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a : PauliScalar P) : Op (PauliRegister P) :=
+    (u : PauliPoint P) (a : PauliScalar P) : Op (PauliRegister P) :=
   ∑ h ∈ Finset.univ.filter (fun h : PauliRegister P =>
       dotProduct h (indicatorVec u) = a),
     pauliProj W h
@@ -178,7 +178,7 @@ This is the EPR-transport identity used for the perfect ancilla consistency in
 item 1 of `lem:qld-comm-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
 theorem tauPointProj_transpose (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+    (u : PauliPoint P) (a : PauliScalar P) :
     (tauPointProj W u a)ᵀ = tauPointProj W u a := by
   classical
   simp only [tauPointProj, Matrix.transpose_sum, pauliProj_transpose]
@@ -188,7 +188,7 @@ each projector is idempotent. This is the ancillary product calculation in
 item 1 of `lem:qld-comm-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
 theorem tauPointProj_mul_tauPointProj (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a b : PauliScalar P) :
+    (u : PauliPoint P) (a b : PauliScalar P) :
     tauPointProj W u a * tauPointProj W u b =
       if a = b then tauPointProj W u a else 0 := by
   classical
@@ -296,7 +296,7 @@ private theorem average_three_phaseSign_fixedBinTrace_smul
 
 /-- A scalar in the indicator vector factors out of the dot product. -/
 private theorem dot_smul_indicator (r : PauliScalar P)
-    (u : Fin P.m → PauliScalar P) (e : PauliRegister P) :
+    (u : PauliPoint P) (e : PauliRegister P) :
     dotProduct (fun h => r * indicatorVec u h) e =
       dotProduct e (indicatorVec u) * r := by
   change dotProduct (r • indicatorVec u) e = _
@@ -323,7 +323,7 @@ measurement and the Pauli-register point projection. This is the final display
 of `def:expanded-point-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:395-418`. -/
 theorem expPointOp_eq_convolution (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (a : PauliScalar P) :
     S.expPointOp side W u a =
       ∑ p ∈ Finset.univ.filter (fun p : PauliScalar P × PauliScalar P =>
@@ -410,7 +410,7 @@ theorem expPointOp_eq_convolution (S : ProjectiveSetting P ε)
 
 /-- Each point fiber is a sum of positive Pauli projectors. -/
 private theorem tauPointProj_nonneg (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+    (u : PauliPoint P) (a : PauliScalar P) :
     0 ≤ tauPointProj W u a := by
   classical
   unfold tauPointProj
@@ -419,7 +419,7 @@ private theorem tauPointProj_nonneg (W : PauliKind)
 
 /-- The point fibers partition the complete family of Pauli eigenspace projectors. -/
 private theorem sum_tauPointProj_eq_one (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
+    (u : PauliPoint P) :
     ∑ a, tauPointProj W u a = 1 := by
   classical
   rw [show (∑ a, tauPointProj W u a) =
@@ -437,7 +437,7 @@ This is the ancillary measurement used in item 1 of `lem:qld-comm-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:385-411`,
 blueprint `def:ancillary-point-measurement`. -/
 noncomputable def tauPointMeas (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
+    (u : PauliPoint P) :
     Measurement (PauliScalar P) (PauliRegister P) :=
   Measurement.ofSumEqOne (tauPointProj W u) (by
     exact tauPointProj_nonneg W u) (by
@@ -445,7 +445,7 @@ noncomputable def tauPointMeas (W : PauliKind)
 
 /-- The effects of the Pauli point measurement are the point projectors. -/
 @[simp] theorem tauPointMeas_effect (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+    (u : PauliPoint P) (a : PauliScalar P) :
     (tauPointMeas W u).effect a = tauPointProj W u a := rfl
 
 /-- The fine product measurement underlying the convolution definition of an
@@ -454,7 +454,7 @@ values separately. Paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:390-411`,
 blueprint `def:point-tau-measurement`. -/
 noncomputable def pointTauMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+    (W : PauliKind) (u : PauliPoint P) :
     Measurement (PauliScalar P × PauliScalar P) (S.ExpandedLocalSpace side) :=
   Measurement.ofSumEqOne
     (fun p => heteroKron ((S.pointMeas side W u).effect p.1)
@@ -478,7 +478,7 @@ noncomputable def pointTauMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
 /-- Effects of the fine product measurement are the corresponding Kronecker
 products of strategy and Pauli point effects. -/
 @[simp] theorem pointTauMeas_effect (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (p : PauliScalar P × PauliScalar P) :
     (S.pointTauMeas side W u).effect p =
       heteroKron ((S.pointMeas side W u).effect p.1)
@@ -488,7 +488,7 @@ products of strategy and Pauli point effects. -/
 obligation in `def:expanded-point-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:384-418`. -/
 theorem expPointOp_nonneg (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+    (W : PauliKind) (u : PauliPoint P) (a : PauliScalar P) :
     0 ≤ S.expPointOp side W u a := by
   rw [expPointOp_eq_convolution]
   exact Finset.sum_nonneg fun p hp => Quantum.kronecker_nonneg
@@ -498,7 +498,7 @@ theorem expPointOp_nonneg (S : ProjectiveSetting P ε) (side : PlayerSide)
 obligation in `def:expanded-point-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:384-418`. -/
 theorem expPointOp_sum_eq_one (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+    (W : PauliKind) (u : PauliPoint P) :
     ∑ a, S.expPointOp side W u a = 1 := by
   simp_rw [expPointOp_eq_convolution]
   calc
@@ -532,7 +532,7 @@ register. Its effects are those of `def:expanded-point-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:384-418`, blueprint
 `def:expanded-point-measurement`. -/
 noncomputable def pointMeasExp (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+    (W : PauliKind) (u : PauliPoint P) :
     Measurement (PauliScalar P) (S.ExpandedLocalSpace side) :=
   Measurement.ofSumEqOne (S.expPointOp side W u)
     (S.expPointOp_nonneg side W u) (S.expPointOp_sum_eq_one side W u)
@@ -544,7 +544,7 @@ used in item 1 of `lem:qld-comm-cons`, paper
 blueprint `lem:expanded-point-measurement-properties`. -/
 theorem pointMeasExp_effect_eq_pointTauMeas_postprocess
     (S : ProjectiveSetting P ε) (side : PlayerSide) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+    (u : PauliPoint P) (a : PauliScalar P) :
     (S.pointMeasExp side W u).effect a =
       ((S.pointTauMeas side W u).postprocess (fun p => p.1 + p.2)).effect a := by
   change S.expPointOp side W u a = _
@@ -554,7 +554,7 @@ theorem pointMeasExp_effect_eq_pointTauMeas_postprocess
 /-- Expanded observables inherit the additive representation law. -/
 private theorem expObs_mul (S : ProjectiveSetting P ε) (side : PlayerSide)
     (W : PauliKind) (r s : PauliScalar P)
-    (u : Fin P.m → PauliScalar P) :
+    (u : PauliPoint P) :
     S.expObs side W r u * S.expObs side W s u =
       S.expObs side W (r + s) u := by
   calc
@@ -581,7 +581,7 @@ private theorem expObs_mul (S : ProjectiveSetting P ε) (side : PlayerSide)
 in `def:expanded-point-measurement`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:384-418`. -/
 private theorem expPointOp_mul_self (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (a : PauliScalar P) :
     S.expPointOp side W u a * S.expPointOp side W u a =
       S.expPointOp side W u a := by
@@ -626,7 +626,7 @@ private theorem expPointOp_mul_self (S : ProjectiveSetting P ε)
 
 /-- A Fourier coefficient of the expanded representation is a projection. -/
 private theorem expPointOp_isProj (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (a : PauliScalar P) : IsProj (S.expPointOp side W u a) := by
   refine isStarProjection_iff'.2 ⟨expPointOp_mul_self S side W u a, ?_⟩
   rw [Matrix.star_eq_conjTranspose]
@@ -636,7 +636,7 @@ private theorem expPointOp_isProj (S : ProjectiveSetting P ε)
 convolution formula in `def:expanded-point-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:395-418`. -/
 theorem pointMeasExp_isProjective (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P) :
     MIPStarRE.QPBT.Measurement.IsProjective (S.pointMeasExp side W u) := by
   intro a
   change IsProj (S.expPointOp side W u a)

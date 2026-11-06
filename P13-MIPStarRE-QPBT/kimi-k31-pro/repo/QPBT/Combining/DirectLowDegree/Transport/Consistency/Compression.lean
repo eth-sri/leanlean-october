@@ -32,7 +32,7 @@ noncomputable section
 /-- Reconstructing a seed-indexed point question in any residue block gives
 the original point question. -/
 @[simp] theorem seededLdQuestion_directLdPointQuestionOf
-    (L : LdParams) (u : Fin L.m → ScalarQ L)
+    (L : LdParams) (u : LdPoint L)
     (residue : Fin (L.q / L.m)) :
     seededLdQuestion L
         (directLdPointQuestionOf L.toDirectLdParams u) residue =
@@ -51,7 +51,7 @@ private theorem seedFiberPointMeasurement
     (L : LdParams) {iota : Type*} [Fintype iota] [DecidableEq iota]
     (M : LdQuestion L →
       MIPStarRE.Quantum.Measurement (LdAnswer L) iota)
-    (u : Fin L.m → ScalarQ L) :
+    (u : LdPoint L) :
     (blockDiagonalMeasurement fun residue =>
         matrixMeasurementTransport (ldDirectAnswerEquiv L)
           (M (seededLdQuestion L
@@ -72,7 +72,7 @@ private theorem seedFiberPointMeasurement
 block-diagonal amplification of Alice's original seed-indexed point POVM. -/
 theorem ldStrategyToDirect_pointMeasurementA
     (L : LdParams) (S : Strategy (ldGame L))
-    (u : Fin L.m → ScalarQ L) :
+    (u : LdPoint L) :
     (((ldStrategyToDirect L S).A
         (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
       (directLdPointValuesOrZero L.toDirectLdParams)) =
@@ -89,7 +89,7 @@ theorem ldStrategyToDirect_pointMeasurementA
 block-diagonal amplification of Bob's original seed-indexed point POVM. -/
 theorem ldStrategyToDirect_pointMeasurementB
     (L : LdParams) (S : Strategy (ldGame L))
-    (u : Fin L.m → ScalarQ L) :
+    (u : LdPoint L) :
     (((ldStrategyToDirect L S).B
         (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
       (directLdPointValuesOrZero L.toDirectLdParams)) =
@@ -327,7 +327,7 @@ theorem ldStrategyToDirect_pointPolynomial_compression
     (L : LdParams) (S : Strategy (ldGame L))
     (GB : DirectPolyMeasTuple L.toDirectLdParams
       (S.ιB × Fin (L.q / L.m))) :
-    consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+    consistencyDefect (uniformDistribution (LdPoint L))
         (fun u outcome =>
           heteroKron
             ((((ldStrategyToDirect L S).A
@@ -336,7 +336,7 @@ theorem ldStrategyToDirect_pointPolynomial_compression
         (fun u outcome => heteroKron 1
           ((GB.postprocess (evalDirectPolyTupleAt u)).effect outcome))
         (ldStrategyToDirect L S).ψ =
-      consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+      consistencyDefect (uniformDistribution (LdPoint L))
         (fun u outcome => heteroKron
           (((S.A (ldPointQuestionOf L u)).postprocess
             (ldPointValuesOrZero L)).effect outcome) 1)
@@ -347,8 +347,8 @@ theorem ldStrategyToDirect_pointPolynomial_compression
   simp only [seedFiberCompressPolyMeasTuple_evaluation,
     seedFiberCompressMeasurement_effect]
   convert consistencyDefect_seedFiber_compress_right S L
-    (X := Fin L.m → ScalarQ L) (alpha := Fin L.k → ScalarQ L)
-    (uniformDistribution (Fin L.m → ScalarQ L))
+    (X := LdPoint L) (alpha := Fin L.k → ScalarQ L)
+    (uniformDistribution (LdPoint L))
     (fun u outcome =>
       ((S.A (ldPointQuestionOf L u)).postprocess
         (ldPointValuesOrZero L)).effect outcome)
@@ -368,7 +368,7 @@ theorem ldStrategyToDirect_polynomialPoint_compression
     (L : LdParams) (S : Strategy (ldGame L))
     (GA : DirectPolyMeasTuple L.toDirectLdParams
       (S.ιA × Fin (L.q / L.m))) :
-    consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+    consistencyDefect (uniformDistribution (LdPoint L))
         (fun u outcome => heteroKron
           ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
         (fun u outcome =>
@@ -377,7 +377,7 @@ theorem ldStrategyToDirect_polynomialPoint_compression
               (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
                 (directLdPointValuesOrZero L.toDirectLdParams)).effect outcome))
         (ldStrategyToDirect L S).ψ =
-      consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+      consistencyDefect (uniformDistribution (LdPoint L))
         (fun u outcome => heteroKron
           (((seedFiberCompressPolyMeasTuple L GA).postprocess
             (evalPolyTupleAt u)).effect outcome) 1)
@@ -388,8 +388,8 @@ theorem ldStrategyToDirect_polynomialPoint_compression
   simp only [seedFiberCompressPolyMeasTuple_evaluation,
     seedFiberCompressMeasurement_effect]
   convert consistencyDefect_seedFiber_compress_left S L
-    (X := Fin L.m → ScalarQ L) (alpha := Fin L.k → ScalarQ L)
-    (uniformDistribution (Fin L.m → ScalarQ L))
+    (X := LdPoint L) (alpha := Fin L.k → ScalarQ L)
+    (uniformDistribution (LdPoint L))
     (fun u outcome =>
       (GA.postprocess (evalDirectPolyTupleAt u)).effect outcome)
     (fun u outcome =>

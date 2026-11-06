@@ -39,17 +39,17 @@ used in item 1 of `lem:qld-comm-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
 theorem pointConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
         S.toStrategy.ψ =
-      avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+      avgOver (pauliPointDist P) (fun u =>
         outcomeEventWeight S.toStrategy
           (ProjectiveSetting.pointQuestion P W u)
           (ProjectiveSetting.pointQuestion P W u)
           (fun A B => ProjectiveSetting.pointAnswerOrZero A ≠
             ProjectiveSetting.pointAnswerOrZero B)) := by
-  let X := Fin P.m → PauliScalar P
+  let X := PauliPoint P
   let q : X → PauliQuestion P := fun u => ProjectiveSetting.pointQuestion P W u
   let f : X → PauliAnswer P → PauliScalar P := fun _ =>
     ProjectiveSetting.pointAnswerOrZero
@@ -87,13 +87,13 @@ the point, with the rejection bound of the point self-loop. This is the input
 used at paper `14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
 theorem point_self_consistency_le {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
         S.toStrategy.ψ ≤ (Fintype.card PauliEdge : ℝ) * ε := by
   rw [pointConsistency_eq_mismatch]
   have hsource :
-      avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+      avgOver (pauliPointDist P) (fun u =>
           outcomeEventWeight S.toStrategy
             (ProjectiveSetting.pointQuestion P W u)
             (ProjectiveSetting.pointQuestion P W u)
@@ -105,7 +105,7 @@ theorem point_self_consistency_le {P : AdmissibleParams} {ε : ℝ}
             (ProjectiveSetting.pointQuestion P W (pauliToLd P W z).point)
             (fun A B => ProjectiveSetting.pointAnswerOrZero A ≠
               ProjectiveSetting.pointAnswerOrZero B)) := by
-    let g : (Fin P.m → PauliScalar P) → ℝ := fun u =>
+    let g : (PauliPoint P) → ℝ := fun u =>
       outcomeEventWeight S.toStrategy
         (ProjectiveSetting.pointQuestion P W u)
         (ProjectiveSetting.pointQuestion P W u)
@@ -160,7 +160,7 @@ Pauli point measurement does not change their consistency defect on the
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
 theorem pointTauConsistency_aaBa_eq {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
         (fun u p => heteroKron ((S.pointTauMeas .alice W u).effect p)
           (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×
             (PauliRegister P × PauliRegister P))))
@@ -169,11 +169,11 @@ theorem pointTauConsistency_aaBa_eq {P : AdmissibleParams} {ε : ℝ}
             (1 : Op (PauliRegister P × PauliRegister P))))
         (reindexState (aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
           S.psiHat) =
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
         S.toStrategy.ψ := by
-  let X := Fin P.m → PauliScalar P
+  let X := PauliPoint P
   let R := PauliRegister P
   let μ := uniformDistribution X
   let e := aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB
@@ -260,7 +260,6 @@ theorem pointTauConsistency_aaBa_eq {P : AdmissibleParams} {ε : ℝ}
       (Matrix.nonneg_iff_posSemidef.mp
         ((tauPointMeas W u).pos p.2)).isHermitian using 1
     all_goals simp [OA, OB]
-    all_goals rfl
   simp_rw [hterm]
   rw [Fintype.sum_prod_type]
   calc
@@ -294,7 +293,7 @@ in item 1 of `lem:qld-comm-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
 theorem pointTauConsistency_abBb_eq {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
         (fun u p => heteroKron ((S.pointTauMeas .alice W u).effect p)
           (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×
             (PauliRegister P × PauliRegister P))))
@@ -303,11 +302,11 @@ theorem pointTauConsistency_abBb_eq {P : AdmissibleParams} {ε : ℝ}
             (1 : Op (PauliRegister P × PauliRegister P))))
         (reindexState (abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB)
           S.psiHat) =
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
         S.toStrategy.ψ := by
-  let X := Fin P.m → PauliScalar P
+  let X := PauliPoint P
   let R := PauliRegister P
   let μ := uniformDistribution X
   let e := abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB
@@ -394,7 +393,6 @@ theorem pointTauConsistency_abBb_eq {P : AdmissibleParams} {ε : ℝ}
       (Matrix.nonneg_iff_posSemidef.mp
         ((tauPointMeas W u).pos p.2)).isHermitian using 1
     all_goals simp [OA, OB]
-    all_goals rfl
   simp_rw [hterm]
   rw [Fintype.sum_prod_type]
   calc
@@ -430,11 +428,11 @@ This is the explicit data-processing estimate for item 1 of
 blueprint `ch14_qpbt_observables.tex:1155-1163`. -/
 theorem expPointDist_aaBa_le {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (W : PauliKind) :
-    opFamilyDistSq (uniformDistribution (Fin P.m → PauliScalar P))
+    opFamilyDistSq (pauliPointDist P)
         (fun u a => S.place .AA' ((S.pointMeasExp .alice W u).effect a))
         (fun u a => S.place .BA'' ((S.pointMeasExp .bob W u).effect a))
         S.psiHat ≤ 2 * ((Fintype.card PauliEdge : ℝ) * ε) := by
-  let X := Fin P.m → PauliScalar P
+  let X := PauliPoint P
   let R := PauliRegister P
   let μ := uniformDistribution X
   let e := aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB
@@ -478,7 +476,7 @@ theorem expPointDist_aaBa_le {P : AdmissibleParams} {ε : ℝ}
         (S.pointMeasExp .alice W u).effect a := by
     convert
       (S.pointMeasExp_effect_eq_pointTauMeas_postprocess .alice W u a).symm
-        using 1 <;> rfl
+        using 1
   have hBeff (u : X) (a : PauliScalar P) :
       ((fineB u).postprocess add).effect a =
         heteroKron ((S.pointMeasExp .bob W u).effect a) (1 : Op (R × R)) := by
@@ -487,7 +485,7 @@ theorem expPointDist_aaBa_le {P : AdmissibleParams} {ε : ℝ}
           (((S.pointTauMeas .bob W u).postprocess add).effect a)
           (1 : Op (R × R)) := by
         convert leftPlacedMeasurement_postprocess_effect
-          (S.pointTauMeas .bob W u) add a using 1 <;> rfl
+          (S.pointTauMeas .bob W u) add a using 1
       _ = _ := by
         rw [← S.pointMeasExp_effect_eq_pointTauMeas_postprocess .bob W u a]
   have hnorm (u : X) (a : PauliScalar P) :
@@ -544,11 +542,11 @@ paper `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:468-489`,
 blueprint `ch14_qpbt_observables.tex:1155-1163`. -/
 theorem expPointDist_abBb_le {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (W : PauliKind) :
-    opFamilyDistSq (uniformDistribution (Fin P.m → PauliScalar P))
+    opFamilyDistSq (pauliPointDist P)
         (fun u a => S.place .AB'' ((S.pointMeasExp .alice W u).effect a))
         (fun u a => S.place .BB' ((S.pointMeasExp .bob W u).effect a))
         S.psiHat ≤ 2 * ((Fintype.card PauliEdge : ℝ) * ε) := by
-  let X := Fin P.m → PauliScalar P
+  let X := PauliPoint P
   let R := PauliRegister P
   let μ := uniformDistribution X
   let e := abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB
@@ -592,7 +590,7 @@ theorem expPointDist_abBb_le {P : AdmissibleParams} {ε : ℝ}
         (S.pointMeasExp .alice W u).effect a := by
     convert
       (S.pointMeasExp_effect_eq_pointTauMeas_postprocess .alice W u a).symm
-        using 1 <;> rfl
+        using 1
   have hBeff (u : X) (a : PauliScalar P) :
       ((fineB u).postprocess add).effect a =
         heteroKron ((S.pointMeasExp .bob W u).effect a) (1 : Op (R × R)) := by
@@ -601,7 +599,7 @@ theorem expPointDist_abBb_le {P : AdmissibleParams} {ε : ℝ}
           (((S.pointTauMeas .bob W u).postprocess add).effect a)
           (1 : Op (R × R)) := by
         convert leftPlacedMeasurement_postprocess_effect
-          (S.pointTauMeas .bob W u) add a using 1 <;> rfl
+          (S.pointTauMeas .bob W u) add a using 1
       _ = _ := by
         rw [← S.pointMeasExp_effect_eq_pointTauMeas_postprocess .bob W u a]
   have hnorm (u : X) (a : PauliScalar P) :
@@ -673,7 +671,7 @@ theorem exp_point_self_cons_explicit :
     ∀ (P : AdmissibleParams) (ε : ℝ) (S : ProjectiveSetting P ε)
       (p₁ p₂ : Placement), p₁.IsOpposite p₂ →
       ∀ W : PauliKind,
-        opFamilyDistSq (uniformDistribution (Fin P.m → PauliScalar P))
+        opFamilyDistSq (pauliPointDist P)
           (fun u a => S.place p₁
             ((S.pointMeasExp p₁.side W u).effect a))
           (fun u a => S.place p₂
@@ -682,15 +680,15 @@ theorem exp_point_self_cons_explicit :
   intro P ε S p₁ p₂ hopp W
   cases p₁ <;> cases p₂ <;> simp only [Placement.IsOpposite] at hopp
   · convert ProjectiveSetting.expPointDist_aaBa_le S W using 1 <;>
-      simp only [Placement.side, pauli_edge_card, Nat.cast_ofNat] <;> ring
+      simp only [pauli_edge_card, Nat.cast_ofNat] <;> ring
   · rw [DistanceCalculus.opFamilyDistSq_symm]
     convert ProjectiveSetting.expPointDist_aaBa_le S W using 1 <;>
-      simp only [Placement.side, pauli_edge_card, Nat.cast_ofNat] <;> ring
+      simp only [pauli_edge_card, Nat.cast_ofNat] <;> ring
   · rw [DistanceCalculus.opFamilyDistSq_symm]
     convert ProjectiveSetting.expPointDist_abBb_le S W using 1 <;>
-      simp only [Placement.side, pauli_edge_card, Nat.cast_ofNat] <;> ring
+      simp only [pauli_edge_card, Nat.cast_ofNat] <;> ring
   · convert ProjectiveSetting.expPointDist_abBb_le S W using 1 <;>
-      simp only [Placement.side, pauli_edge_card, Nat.cast_ofNat] <;> ring
+      simp only [pauli_edge_card, Nat.cast_ofNat] <;> ring
 
 end
 

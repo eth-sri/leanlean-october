@@ -53,7 +53,7 @@ def scalarWrongVariableMass {P : AdmissibleParams} {ε : ℝ}
 This also transports the retained-overlap calculation in `lem:qld-4-7`. -/
 theorem placed_fiber_orderedIndicator {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (p : Placement) (reverse : Bool)
-    (x z : Fin P.m → PauliScalar P) (v : Fin 2 → PauliScalar P) (a : PauliScalar P) :
+    (x z : PauliPoint P) (v : Fin 2 → PauliScalar P) (a : PauliScalar P) :
     orderedIndicator
       (S.placedMeasurement p (S.pointMeasExp p.side (if reverse then .Z else .X) x))
       (S.placedMeasurement p (S.pointMeasExp p.side (if reverse then .X else .Z) z))
@@ -98,11 +98,11 @@ theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : �
     ¬ ∃ r, blockCoefficientPolynomial P g
       (Finsupp.single (if reverse then 0 else 1) 1) reverse = MvPolynomial.C r)
   let ψ := fun g => applyOperatorToState (S.place p1 (R.effect g)) S.psiHat
-  let X := fun x : Fin P.m → PauliScalar P => S.placedMeasurement p2
+  let X := fun x : PauliPoint P => S.placedMeasurement p2
     (S.pointMeasExp p2.side (if reverse then .Z else .X) x)
-  let Z := fun z : Fin P.m → PauliScalar P => S.placedMeasurement p2
+  let Z := fun z : PauliPoint P => S.placedMeasurement p2
     (S.pointMeasExp p2.side (if reverse then .X else .Z) z)
-  let A := fun (z x : Fin P.m → PauliScalar P) (v : Fin 2 → PauliScalar P) g =>
+  let A := fun (z x : PauliPoint P) (v : Fin 2 → PauliScalar P) g =>
     applyOperatorToState (orderedIndicator (X x) (Z z) (v 0) (v 1)
       (extendedPolynomialRead P (fiberQuestionEquiv P reverse ((z, x), v)) g)) (ψ g)
   let B : ℝ := ((P.m * P.d + P.m * P.d + 2 : ℕ) : ℝ) / P.q
@@ -111,8 +111,8 @@ theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : �
       sum_projective_state_norm_sq (S.placedMeasurement p1 R)
         (S.placedMeasurement_isProjective p1 R hR) S.psiHat
   have hnorm (g) (hg : g ∈ s) :
-      avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun z =>
-        avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun x =>
+      avgOver (pauliPointDist P) (fun z =>
+        avgOver (pauliPointDist P) (fun x =>
           avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
             ‖A z x v g‖ ^ 2))) ≤ B * ‖ψ g‖ ^ 2 := by
     obtain ⟨hlin, hnon⟩ := (Finset.mem_filter.mp hg).2
@@ -130,8 +130,8 @@ theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : �
       @FieldModel.card P.q P.model.toFieldModel
     simpa only [A, scalarPolynomial_linear_read_fiber P g hlin, hcard, B] using h
   have hnormsum :
-      avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun z =>
-        avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun x =>
+      avgOver (pauliPointDist P) (fun z =>
+        avgOver (pauliPointDist P) (fun x =>
           avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
             ∑ g ∈ s, ‖A z x v g‖ ^ 2))) ≤ B := by
     simp_rw [avgOver_finset_sum]
@@ -142,8 +142,8 @@ theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : �
           intros; dsimp [B]; positivity)
       _ = B := by rw [← Finset.mul_sum, hmass, mul_one]
   have hfull :
-      avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun z =>
-        avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun x =>
+      avgOver (pauliPointDist P) (fun z =>
+        avgOver (pauliPointDist P) (fun x =>
           avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
             ∑ g, ‖ψ g - A z x v g‖ ^ 2))) =
         extendedPolynomialOrderedError S p1 p2 R reverse := by
@@ -151,7 +151,7 @@ theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : �
       avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
         ∑ g, ‖ψ g - A z x v g‖ ^ 2))]
     rw [← avgOver_uniform_prod
-      (fun zx : (Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P) =>
+      (fun zx : (PauliPoint P) × (PauliPoint P) =>
         fun v => ∑ g, ‖ψ g - A zx.1 zx.2 v g‖ ^ 2)]
     unfold extendedPolynomialOrderedError
     rw [avgOver_uniform_equiv (fiberQuestionEquiv P reverse).symm]
@@ -165,8 +165,8 @@ theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : �
     rw [placed_residual S p1 p2 hopposite]
     rfl
   have herror :
-      avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun z =>
-        avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun x =>
+      avgOver (pauliPointDist P) (fun z =>
+        avgOver (pauliPointDist P) (fun x =>
           avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
             ∑ g ∈ s, ‖ψ g - A z x v g‖ ^ 2))) ≤
         extendedPolynomialOrderedError S p1 p2 R reverse := by
@@ -179,8 +179,8 @@ theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : �
     intro v
     exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (by
       intros; exact sq_nonneg _)
-  have h := avgOver_mono (uniformDistribution (Fin P.m → PauliScalar P)) _ _ fun z =>
-    avgOver_mono (uniformDistribution (Fin P.m → PauliScalar P)) _ _ fun x =>
+  have h := avgOver_mono (pauliPointDist P) _ _ fun z =>
+    avgOver_mono (pauliPointDist P) _ _ fun x =>
       avgOver_mono (uniformDistribution (Fin 2 → PauliScalar P)) _ _ fun v =>
         sum_mass_le_residual_add_image s ψ (A z x v)
   simp only [avgOver_uniform_const, avgOver_add, avgOver_const_mul] at h

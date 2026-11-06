@@ -123,7 +123,7 @@ theorem place_BB'_zero (S : ProjectiveSetting P ε) :
 /-- The completed expanded point measurement agrees with the expanded point
 measurement on proper values. -/
 theorem pointMeasExpOption_effect_some (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (b : PauliScalar P) :
     (S.pointMeasExpOption side W u).effect (some b) =
       (S.pointMeasExp side W u).effect b := by
@@ -133,7 +133,7 @@ theorem pointMeasExpOption_effect_some (S : ProjectiveSetting P ε)
 
 /-- The completed expanded point measurement assigns zero to `none`. -/
 theorem pointMeasExpOption_effect_none (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P) :
     (S.pointMeasExpOption side W u).effect none = 0 := by
   unfold pointMeasExpOption
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
@@ -147,7 +147,7 @@ identifies the two presentations of item 2 and item 3 of
 `lem:qld-comm-line-cons`, blueprint `eq:qld-comm-line-pt-cons`, `eq:qld-comm-line-pt-cons2`. -/
 theorem pointMeasExpOption_effect_evalOpt (S : ProjectiveSetting P ε)
     (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (f : DegPoly P.toLdParams (P.m * P.d)) :
+    (u : PauliPoint P) (f : DegPoly P.toLdParams (P.m * P.d)) :
     (S.pointMeasExpOption side W u).effect (evalOpt line u f) =
       S.expPointEffectAtLineAnswer side W line u f := by
   unfold expPointEffectAtLineAnswer
@@ -159,7 +159,7 @@ theorem pointMeasExpOption_effect_evalOpt (S : ProjectiveSetting P ε)
 convolution form of the expanded point measurement. -/
 theorem expPointEffectAtLineAnswer_eq_elim (S : ProjectiveSetting P ε)
     (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (f : DegPoly P.toLdParams (P.m * P.d)) :
+    (u : PauliPoint P) (f : DegPoly P.toLdParams (P.m * P.d)) :
     S.expPointEffectAtLineAnswer side W line u f =
       (evalOpt line u f).elim 0 (fun a =>
         ∑ q ∈ Finset.univ.filter
@@ -175,7 +175,7 @@ theorem expPointEffectAtLineAnswer_eq_elim (S : ProjectiveSetting P ε)
 line effects. -/
 theorem lineEvalMeasExp_effect (S : ProjectiveSetting P ε) (side : PlayerSide)
     (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (o : Option (PauliScalar P)) :
+    (u : PauliPoint P) (o : Option (PauliScalar P)) :
     (S.lineEvalMeasExp side W line u).effect o =
       ∑ f ∈ Finset.univ.filter
         (fun f : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f = o),
@@ -550,7 +550,7 @@ private theorem lineMeas_effect_isHermitian (S : ProjectiveSetting P ε)
 
 /-- A strategy point effect is Hermitian, being positive semidefinite. -/
 private theorem pointMeas_effect_isHermitian (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (b : PauliScalar P) :
     ((S.pointMeas side W u).effect b).IsHermitian :=
   (Matrix.nonneg_iff_posSemidef.mp ((S.pointMeas side W u).pos b)).isHermitian
@@ -563,7 +563,7 @@ private theorem tauLineProj_isHermitian (W : PauliKind)
 
 /-- A Pauli point projector is Hermitian, being positive semidefinite. -/
 private theorem tauPointProj_isHermitian (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (b : PauliScalar P) :
+    (u : PauliPoint P) (b : PauliScalar P) :
     (tauPointProj W u b).IsHermitian :=
   (Matrix.nonneg_iff_posSemidef.mp ((tauPointMeas W u).pos b)).isHermitian
 
@@ -575,7 +575,7 @@ computation `eq:qld-mhat-line-1`--`eq:qld-comm-line-pt-cons-eps` of
 `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:560-596`. -/
 theorem overlap_AA'_BA''_eq (S : ProjectiveSetting P ε) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P) :
+    (line : LineDesc P.toLdParams) (u : PauliPoint P) :
     ∑ f : DegPoly P.toLdParams (P.m * P.d),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .AA' (S.expLineOp .alice W line f) *
@@ -660,7 +660,7 @@ point measurement with Bob's evaluation classes. This is the interchanged
 form of the computation in items 2 and 3 of `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:560-596`. -/
 theorem overlap_BA''_AA'_eq (S : ProjectiveSetting P ε) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P) :
+    (line : LineDesc P.toLdParams) (u : PauliPoint P) :
     ∑ f : DegPoly P.toLdParams (P.m * P.d),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .BA'' (S.expLineOp .bob W line f) *
@@ -746,7 +746,7 @@ set_option synthInstance.maxSize 400 in
 selected point effects on `BB'`, on the second bipartition. Paper
 `14_analysis_of_the_pauli_basis_test.tex:560-596`. -/
 theorem overlap_AB''_BB'_eq (S : ProjectiveSetting P ε) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P) :
+    (line : LineDesc P.toLdParams) (u : PauliPoint P) :
     ∑ f : DegPoly P.toLdParams (P.m * P.d),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .AB'' (S.expLineOp .alice W line f) *
@@ -829,7 +829,7 @@ set_option synthInstance.maxSize 400 in
 selected point effects on `AB''`, on the second bipartition. Paper
 `14_analysis_of_the_pauli_basis_test.tex:560-596`. -/
 theorem overlap_BB'_AB''_eq (S : ProjectiveSetting P ε) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P) :
+    (line : LineDesc P.toLdParams) (u : PauliPoint P) :
     ∑ f : DegPoly P.toLdParams (P.m * P.d),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .BB' (S.expLineOp .bob W line f) *

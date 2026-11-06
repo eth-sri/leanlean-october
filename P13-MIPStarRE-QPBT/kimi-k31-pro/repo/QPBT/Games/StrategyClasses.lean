@@ -69,7 +69,7 @@ structure SymmetricStrategy (G : SymmetricGame) where
   ι : Type
   [ιFintype : Fintype ι]
   [ιDecidableEq : DecidableEq ι]
-  ψ : EuclideanSpace ℂ (ι × ι)
+  ψ : BipartiteSpace ι ι
   ψ_norm : ‖ψ‖ = 1
   ψ_swap : reindexState (Equiv.prodComm ι ι) ψ = ψ
   M : G.Question → MIPStarRE.Quantum.Measurement G.Answer ι
@@ -104,7 +104,7 @@ def IsCommutingOn {X Y α β ι : Type*}
 def Measurement.IsConsistentOn {α ι : Type*}
     [Fintype α] [DecidableEq α] [Fintype ι] [DecidableEq ι]
     (M : MIPStarRE.Quantum.Measurement α ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) : Prop :=
+    (ψ : BipartiteSpace ι ι) : Prop :=
   ∀ a, (heteroKron (M.effect a) 1).mulVec ψ =
     (heteroKron 1 (M.effect a)).mulVec ψ
 

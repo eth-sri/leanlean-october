@@ -55,7 +55,7 @@ noncomputable section
 simultaneous point readouts.  This is the tuple-valued form of
 `directPointAnswerReadout_eq_of_win`. -/
 private theorem directLdPointValuesOrZero_eq_of_win (D : DirectLdParams)
-    (p : Fin D.m → DirectScalarQ D) (a b : DirectLdAnswer D)
+    (p : DirectPoint D) (a b : DirectLdAnswer D)
     (hwin : directLdWinPredicate D (directLdPointQuestionOf D p)
       (directLdPointQuestionOf D p) a b = true) :
     directLdPointValuesOrZero D a = directLdPointValuesOrZero D b := by
@@ -100,16 +100,16 @@ private theorem projMeas_postprocess_outcome_eq
 is the point-agreement branch rejection probability. -/
 private theorem avgOver_directRejectedMass_point_eq (D : DirectLdParams)
     (S : Strategy (directLdGame D)) :
-    avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
+    avgOver (uniformDistribution (DirectPoint D))
         (fun u => directRejectedMass D S (directLdPointQuestionOf D u)
           (directLdPointQuestionOf D u)) =
       directLdBranchRejectionProbability D S (.point, .point) := by
   rw [directLdBranchRejectionProbability_eq_avgOver]
-  let f : (Fin D.m → DirectScalarQ D) → ℝ := fun p =>
+  let f : (DirectPoint D) → ℝ := fun p =>
     directRejectedMass D S (directLdPointQuestionOf D p)
       (directLdPointQuestionOf D p)
-  calc avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) f
-      = avgOver (uniformDistribution ((Fin D.m → DirectScalarQ D) × Fin D.m))
+  calc avgOver (uniformDistribution (DirectPoint D)) f
+      = avgOver (uniformDistribution ((DirectPoint D) × Fin D.m))
           (fun pi => f pi.1) := (avgOver_uniform_fst f).symm
     _ = avgOver (uniformDistribution (DirectLdSpace D))
           (fun sample => f ((directLdSpaceSplitEquiv D sample).1).1) :=
@@ -160,7 +160,7 @@ ordered type branches carry equal weight.  Blueprint
 theorem directLdPointPair_consistencyDefect_le
     (D : DirectLdParams) (S : Strategy (directLdGame D)) (hS : S.IsProjective)
     (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
-    consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+    consistencyDefect (uniformDistribution (DirectPoint D))
         (fun u a => heteroKron
           (((S.A (directLdPointQuestionOf D u)).postprocess
             (directLdPointValuesOrZero D)).effect a) 1)
@@ -168,19 +168,19 @@ theorem directLdPointPair_consistencyDefect_le
           (((S.B (directLdPointQuestionOf D u)).postprocess
             (directLdPointValuesOrZero D)).effect a)) S.ψ ≤ 9 * ε := by
   classical
-  let PA : (Fin D.m → DirectScalarQ D) →
+  let PA : (DirectPoint D) →
       ProjMeas (Fin D.k → DirectScalarQ D) S.ιA := fun u =>
     ProjMeas.postprocess
       (matrixMeasurementToLDTProjMeas (S.A (directLdPointQuestionOf D u))
         (hS.1 (directLdPointQuestionOf D u)))
       (directLdPointValuesOrZero D)
-  let PB : (Fin D.m → DirectScalarQ D) →
+  let PB : (DirectPoint D) →
       ProjMeas (Fin D.k → DirectScalarQ D) S.ιB := fun u =>
     ProjMeas.postprocess
       (matrixMeasurementToLDTProjMeas (S.B (directLdPointQuestionOf D u))
         (hS.2 (directLdPointQuestionOf D u)))
       (directLdPointValuesOrZero D)
-  have hpoint : ∀ u : Fin D.m → DirectScalarQ D,
+  have hpoint : ∀ u : DirectPoint D,
       qBipartiteConsDefect (strategyQuantumState S)
           (PA u).toSubMeas (PB u).toSubMeas ≤
         directRejectedMass D S (directLdPointQuestionOf D u)
@@ -191,14 +191,14 @@ theorem directLdPointPair_consistencyDefect_le
       (directLdPointValuesOrZero D) (directLdPointValuesOrZero D)
       (fun a b hab => directLdPointValuesOrZero_eq_of_win D u a b hab)
   have hconsrel : ConsRel (strategyQuantumState S)
-      (uniformDistribution (Fin D.m → DirectScalarQ D))
+      (uniformDistribution (DirectPoint D))
       (fun u => (PA u).toSubMeas) (fun u => (PB u).toSubMeas) (9 * ε) := by
     refine ⟨?_⟩
     unfold bipartiteConsError
-    calc avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
+    calc avgOver (uniformDistribution (DirectPoint D))
           (fun u => qBipartiteConsDefect (strategyQuantumState S)
             (PA u).toSubMeas (PB u).toSubMeas)
-        ≤ avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
+        ≤ avgOver (uniformDistribution (DirectPoint D))
             (fun u => directRejectedMass D S (directLdPointQuestionOf D u)
               (directLdPointQuestionOf D u)) := avgOver_mono _ _ _ hpoint
       _ = directLdBranchRejectionProbability D S (.point, .point) :=
@@ -206,7 +206,7 @@ theorem directLdPointPair_consistencyDefect_le
       _ ≤ 9 * ε :=
           directLdBranchRejectionProbability_le_nine_mul D S _ ε hwin
   have hfinal := strategyConsRel_consistencyDefect_le S
-    (uniformDistribution (Fin D.m → DirectScalarQ D))
+    (uniformDistribution (DirectPoint D))
     (uniformDistribution_isProbability _) PA PB (9 * ε) hconsrel
   refine le_trans (le_of_eq ?_) hfinal
   refine consistencyDefect_congr _ _ _ _ _ S.ψ (fun u a => ?_) (fun u a => ?_)
@@ -242,7 +242,7 @@ one of the two correlated ancillas leaves the other one's amplification to be
 averaged back to itself. -/
 theorem ldStrategyToDirect_pointPair_compression
     (L : LdParams) (S : Strategy (ldGame L)) :
-    consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+    consistencyDefect (uniformDistribution (LdPoint L))
         (fun u a => heteroKron
           ((((ldStrategyToDirect L S).A
             (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
@@ -252,7 +252,7 @@ theorem ldStrategyToDirect_pointPair_compression
             (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
               (directLdPointValuesOrZero L.toDirectLdParams)).effect a))
         (ldStrategyToDirect L S).ψ =
-      consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+      consistencyDefect (uniformDistribution (LdPoint L))
         (fun u a => heteroKron
           (((S.A (ldPointQuestionOf L u)).postprocess
             (ldPointValuesOrZero L)).effect a) 1)
@@ -262,7 +262,7 @@ theorem ldStrategyToDirect_pointPair_compression
   classical
   letI : Nonempty (Fin (L.q / L.m)) :=
     Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
-  have hA : ∀ (u : Fin L.m → ScalarQ L) (a : Fin L.k → ScalarQ L),
+  have hA : ∀ (u : LdPoint L) (a : Fin L.k → ScalarQ L),
       (((ldStrategyToDirect L S).A
         (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
           (directLdPointValuesOrZero L.toDirectLdParams)).effect a =
@@ -271,7 +271,7 @@ theorem ldStrategyToDirect_pointPair_compression
             (ldPointValuesOrZero L)).effect a := by
     intro u a
     rw [ldStrategyToDirect_pointMeasurementA, blockDiagonalMeasurement_effect]
-  have hB : ∀ (u : Fin L.m → ScalarQ L) (a : Fin L.k → ScalarQ L),
+  have hB : ∀ (u : LdPoint L) (a : Fin L.k → ScalarQ L),
       (((ldStrategyToDirect L S).B
         (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
           (directLdPointValuesOrZero L.toDirectLdParams)).effect a =
@@ -280,7 +280,7 @@ theorem ldStrategyToDirect_pointPair_compression
             (ldPointValuesOrZero L)).effect a := by
     intro u a
     rw [ldStrategyToDirect_pointMeasurementB, blockDiagonalMeasurement_effect]
-  calc consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+  calc consistencyDefect (uniformDistribution (LdPoint L))
         (fun u a => heteroKron
           ((((ldStrategyToDirect L S).A
             (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
@@ -290,7 +290,7 @@ theorem ldStrategyToDirect_pointPair_compression
             (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
               (directLdPointValuesOrZero L.toDirectLdParams)).effect a))
         (ldStrategyToDirect L S).ψ
-      = consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+      = consistencyDefect (uniformDistribution (LdPoint L))
           (fun u a => heteroKron
             (Matrix.blockDiagonal fun _ : Fin (L.q / L.m) =>
               ((S.A (ldPointQuestionOf L u)).postprocess
@@ -302,7 +302,7 @@ theorem ldStrategyToDirect_pointPair_compression
           (seedFiberLiftedState S L) :=
         consistencyDefect_congr _ _ _ _ _ (seedFiberLiftedState S L)
           (fun u a => by rw [hA u a]; rfl) (fun u a => by rw [hB u a]; rfl)
-    _ = consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+    _ = consistencyDefect (uniformDistribution (LdPoint L))
           (fun u a => heteroKron
             (((S.A (ldPointQuestionOf L u)).postprocess
               (ldPointValuesOrZero L)).effect a) 1)
@@ -327,7 +327,7 @@ the estimate transports back verbatim.  Blueprint
 theorem ldPointPair_consistencyDefect_le
     (L : LdParams) (S : Strategy (ldGame L)) (hS : S.IsProjective)
     (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
-    consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+    consistencyDefect (uniformDistribution (LdPoint L))
         (fun u a => heteroKron
           (((S.A (ldPointQuestionOf L u)).postprocess
             (ldPointValuesOrZero L)).effect a) 1)

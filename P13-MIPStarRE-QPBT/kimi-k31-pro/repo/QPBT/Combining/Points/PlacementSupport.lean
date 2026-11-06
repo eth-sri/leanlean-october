@@ -110,24 +110,20 @@ theorem place_mul (S : ProjectiveSetting P ε) :
       classical
       rw [place_AA'_eq, place_AA'_eq, place_AA'_eq,
         ← WinImplications.reindexOp_mul, heteroKron_mul, mul_one]
-      all_goals rfl
   | .BA'', A, B => by
       classical
       rw [place_BA''_eq, place_BA''_eq, place_BA''_eq,
         ← WinImplications.reindexOp_mul, heteroKron_mul, heteroKron_mul,
         mul_one, mul_one]
-      all_goals rfl
   | .BB', A, B => by
       classical
       rw [place_BB'_eq, place_BB'_eq, place_BB'_eq,
         ← WinImplications.reindexOp_mul, heteroKron_mul, heteroKron_mul,
         mul_one, mul_one]
-      all_goals rfl
   | .AB'', A, B => by
       classical
       rw [place_AB''_eq, place_AB''_eq, place_AB''_eq,
         ← WinImplications.reindexOp_mul, heteroKron_mul, mul_one]
-      all_goals rfl
 
 /-- A placement sends the local identity to the identity of the six-register
 space. -/
@@ -153,23 +149,19 @@ theorem place_conjTranspose (S : ProjectiveSetting P ε) :
   | .AA', A => by
       rw [place_AA'_eq, place_AA'_eq, ← reindexOp_conjTranspose,
         WinImplications.heteroKron_conjTranspose, Matrix.conjTranspose_one]
-      all_goals rfl
   | .BA'', A => by
       rw [place_BA''_eq, place_BA''_eq, ← reindexOp_conjTranspose,
         WinImplications.heteroKron_conjTranspose,
         WinImplications.heteroKron_conjTranspose, Matrix.conjTranspose_one,
         Matrix.conjTranspose_one]
-      all_goals rfl
   | .BB', A => by
       rw [place_BB'_eq, place_BB'_eq, ← reindexOp_conjTranspose,
         WinImplications.heteroKron_conjTranspose,
         WinImplications.heteroKron_conjTranspose, Matrix.conjTranspose_one,
         Matrix.conjTranspose_one]
-      all_goals rfl
   | .AB'', A => by
       rw [place_AB''_eq, place_AB''_eq, ← reindexOp_conjTranspose,
         WinImplications.heteroKron_conjTranspose, Matrix.conjTranspose_one]
-      all_goals rfl
 
 set_option synthInstance.maxSize 400 in
 /-- A placement preserves positivity. -/

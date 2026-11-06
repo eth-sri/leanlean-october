@@ -39,11 +39,11 @@ new input. Formalization-only support for `eq:pasting-q1`, paper lines 936--963.
 theorem consistencyDefect_nondegenerateLinePastingDist_le {P : AdmissibleParams} {ε : ℝ}
     {Outcome : Type*} [Fintype Outcome] [DecidableEq Outcome]
     (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopp : p1.IsOpposite p2)
-    (first : ((LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
-      (LineDesc P.toLdParams × (Fin P.m → PauliScalar P))) →
+    (first : ((LineDesc P.toLdParams × (PauliPoint P)) ×
+      (LineDesc P.toLdParams × (PauliPoint P))) →
       MIPStarRE.Quantum.Measurement Outcome (S.ExpandedLocalSpace p1.side))
-    (second : ((LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
-      (LineDesc P.toLdParams × (Fin P.m → PauliScalar P))) →
+    (second : ((LineDesc P.toLdParams × (PauliPoint P)) ×
+      (LineDesc P.toLdParams × (PauliPoint P))) →
       MIPStarRE.Quantum.Measurement Outcome (S.ExpandedLocalSpace p2.side)) :
     consistencyDefect (nondegenerateLinePastingDist P.toLdParams)
       (fun question answer => S.place p1 ((first (question.2, question.1.2)).effect answer))
@@ -88,7 +88,7 @@ theorem combined_points_conditioned_line_marginal_defect_le_explicit
           S.psiHat ≤ (8 * δQ + 2080 * (ε + deltaLine ε)) /
             nondegenerateLinePastingMass P.toLdParams := by
   classical
-  have hswap (side : PlayerSide) (pointX pointZ : Fin P.m → PauliScalar P)
+  have hswap (side : PlayerSide) (pointX pointZ : PauliPoint P)
       (answer : Option (PauliScalar P)) :
       (((points.Q side pointX pointZ).postprocess
         (fun pair => (some pair.2, some pair.1))).postprocess Prod.fst).effect answer =
@@ -133,11 +133,11 @@ theorem consistencyDefect_le_nondegenerateLinePastingDist_add_mass
     {P : AdmissibleParams} {ε : ℝ}
     {Outcome : Type*} [Fintype Outcome] [DecidableEq Outcome]
     (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopp : p1.IsOpposite p2)
-    (first : ((LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
-      (LineDesc P.toLdParams × (Fin P.m → PauliScalar P))) →
+    (first : ((LineDesc P.toLdParams × (PauliPoint P)) ×
+      (LineDesc P.toLdParams × (PauliPoint P))) →
       MIPStarRE.Quantum.Measurement Outcome (S.ExpandedLocalSpace p1.side))
-    (second : ((LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
-      (LineDesc P.toLdParams × (Fin P.m → PauliScalar P))) →
+    (second : ((LineDesc P.toLdParams × (PauliPoint P)) ×
+      (LineDesc P.toLdParams × (PauliPoint P))) →
       MIPStarRE.Quantum.Measurement Outcome (S.ExpandedLocalSpace p2.side)) :
     consistencyDefect (Distribution.prod (linePointDist P.toLdParams)
       (linePointDist P.toLdParams))

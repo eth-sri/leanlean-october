@@ -675,14 +675,13 @@ theorem exists_global_pair_error_bound (pointError : ℝ → ℝ)
   obtain ⟨pointConstant, pointPower, hpointConstant, hpointPower, hpointBound⟩ := hpoint
   obtain ⟨lineConstant, errorPower, ratioPower, hlineConstant,
     herrorPower, hratioPower, hlineBound⟩ := hcombined
-  obtain ⟨hA, hB, hBOne, hbound⟩ := global_pair_error_bound_explicit pointError
-    pointConstant pointPower hpointConstant hpointPower hpointBound combinedError
-    lineConstant errorPower ratioPower hlineConstant herrorPower hratioPower hlineBound
-    combineConstant soundnessConstant soundnessPower finalScale hcombineConstant
-    hsoundnessConstant hsoundnessPower hsoundnessPowerOne hfinalScale
   exact ⟨globalPairBoundConstant pointConstant lineConstant combineConstant
       soundnessConstant soundnessPower ratioPower finalScale,
     globalPairBoundPower pointPower errorPower ratioPower soundnessPower,
-    hA, hB, hBOne, hbound⟩
+    global_pair_error_bound_explicit pointError
+      pointConstant pointPower hpointConstant hpointPower hpointBound combinedError
+      lineConstant errorPower ratioPower hlineConstant herrorPower hratioPower hlineBound
+      combineConstant soundnessConstant soundnessPower finalScale hcombineConstant
+      hsoundnessConstant hsoundnessPower hsoundnessPowerOne hfinalScale⟩
 
 end MIPStarRE.QPBT

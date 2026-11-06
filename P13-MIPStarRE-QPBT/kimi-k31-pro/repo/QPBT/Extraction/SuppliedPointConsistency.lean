@@ -38,16 +38,16 @@ the need for that separate estimate is explained in
 theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding
     {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
       (fun u a => S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
       (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat ≤
       deltaG + nonencodingMarginalMass w .bob W := by
   classical
-  let mu := uniformDistribution (Fin P.m → PauliScalar P)
-  let evaluated := fun u : Fin P.m → PauliScalar P =>
+  let mu := pauliPointDist P
+  let evaluated := fun u : PauliPoint P =>
     S.placedMeasurement .BB' ((w.marginalPoly .bob W).postprocess
       (fun g => MvPolynomial.eval u g.1))
-  let expanded := fun u : Fin P.m → PauliScalar P =>
+  let expanded := fun u : PauliPoint P =>
     S.placedMeasurement .AB'' (S.pointMeasExp .alice W u)
   have hdefect := consistencyDefect_eq_one_sub_overlap mu evaluated expanded S.psiHat
     (uniformDistribution_isProbability _) S.psiHat_norm
@@ -55,7 +55,7 @@ theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding
   change consistencyDefect mu (fun u a => (evaluated u).effect a)
     (fun u a => (expanded u).effect a) S.psiHat ≤ deltaG at hw
   rw [hdefect] at hw
-  have hregroup (u : Fin P.m → PauliScalar P) :
+  have hregroup (u : PauliPoint P) :
       (∑ a : PauliScalar P, stateQForm S.psiHat
         ((evaluated u).effect a * (expanded u).effect a)) =
       ∑ g : Poly P, stateQForm S.psiHat
@@ -113,7 +113,7 @@ theorem tilde_m_consistent_point_meas_of_global_pair_witness_explicit :
           ∀ (S : ProjectiveSetting P epsilon)
             (w : GlobalPairWitness S deltaG) (W : PauliKind),
             consistencyDefect
-              (uniformDistribution (Fin P.m → PauliScalar P))
+              (pauliPointDist P)
               (fun u a =>
                 S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
               (fun u a => S.placeSide .bob
@@ -156,16 +156,16 @@ paper `14_analysis_of_the_pauli_basis_test.tex:1483-1492`, supporting blueprint
 theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding'
     {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
       (fun u a => S.placeSide .alice (tildeM w .alice W (indicatorVec u) a))
       (fun u a => S.placePlayer .bob ((S.pointMeas .bob W u).effect a)) S.psiHat ≤
       deltaG + nonencodingMarginalMass w .alice W := by
   classical
-  let mu := uniformDistribution (Fin P.m → PauliScalar P)
-  let evaluated := fun u : Fin P.m → PauliScalar P =>
+  let mu := pauliPointDist P
+  let evaluated := fun u : PauliPoint P =>
     S.placedMeasurement .AA' ((w.marginalPoly .alice W).postprocess
       (fun g => MvPolynomial.eval u g.1))
-  let expanded := fun u : Fin P.m → PauliScalar P =>
+  let expanded := fun u : PauliPoint P =>
     S.placedMeasurement .BA'' (S.pointMeasExp .bob W u)
   have hdefect := consistencyDefect_eq_one_sub_overlap mu evaluated expanded S.psiHat
     (uniformDistribution_isProbability _) S.psiHat_norm
@@ -173,7 +173,7 @@ theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding'
   change consistencyDefect mu (fun u a => (evaluated u).effect a)
     (fun u a => (expanded u).effect a) S.psiHat ≤ deltaG at hw
   rw [hdefect] at hw
-  have hregroup (u : Fin P.m → PauliScalar P) :
+  have hregroup (u : PauliPoint P) :
       (∑ a : PauliScalar P, stateQForm S.psiHat
         ((evaluated u).effect a * (expanded u).effect a)) =
       ∑ g : Poly P, stateQForm S.psiHat
@@ -231,7 +231,7 @@ theorem tilde_m_consistent_point_meas'_of_global_pair_witness_explicit :
           ∀ (S : ProjectiveSetting P epsilon)
             (w : GlobalPairWitness S deltaG) (W : PauliKind),
             consistencyDefect
-              (uniformDistribution (Fin P.m → PauliScalar P))
+              (pauliPointDist P)
               (fun u a => S.placeSide .alice
                 (tildeM w .alice W (indicatorVec u) a))
               (fun u a =>

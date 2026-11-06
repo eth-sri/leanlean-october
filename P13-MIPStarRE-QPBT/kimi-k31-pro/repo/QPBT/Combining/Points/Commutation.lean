@@ -56,7 +56,7 @@ noncomputable section
 is the question pair `(x, z)` of `lem:qld-4-10`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:689-709`. -/
 abbrev PointPair (P : AdmissibleParams) :=
-  (Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)
+  (PauliPoint P) × (PauliPoint P)
 
 /-! ## Parseval's identity for an orthogonal system of coefficients -/
 
@@ -242,7 +242,7 @@ sum of the expanded observables.  This is the first display of
 `def:expanded-point-measurement`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:384-418`. -/
 theorem expPointOp_eq_inv_card_smul_sum (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (a : PauliScalar P) :
     S.expPointOp side W u a =
       (Fintype.card (PauliScalar P) : ℂ)⁻¹ •
@@ -275,7 +275,7 @@ theorem smul_sum_mul_smul_sum_swap {ι K : Type*} [Fintype K] [Fintype ι]
 /-- The commutator of two field-valued point effects is the Fourier transform
 of the commutators of the expanded observables. -/
 theorem expPointOp_commutator_eq (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) (a b : PauliScalar P) :
+    (x z : PauliPoint P) (a b : PauliScalar P) :
     S.expPointOp side .X x a * S.expPointOp side .Z z b -
         S.expPointOp side .Z z b * S.expPointOp side .X x a =
       ((Fintype.card (PauliScalar P) : ℂ)⁻¹ *
@@ -297,7 +297,7 @@ the placed commutators of the field-valued point effects equal the average over
 `(r, s)` of the squared norms of the placed commutators of the expanded
 observables. -/
 theorem sum_norm_place_expPointOp_commutator_sq (S : ProjectiveSetting P ε)
-    (p : Placement) (x z : Fin P.m → PauliScalar P) :
+    (p : Placement) (x z : PauliPoint P) :
     ∑ ab : PauliScalar P × PauliScalar P,
         ‖applyOperatorToState (S.place p
           (S.expPointOp p.side .X x ab.1 * S.expPointOp p.side .Z z ab.2 -
@@ -383,7 +383,7 @@ theorem exp_point_comm_explicit :
     have hv := WinImplications.strategy_value_le_one S.toStrategy
     have hw := S.win
     linarith
-  have hnorm : ∀ (x z : Fin P.m → PauliScalar P)
+  have hnorm : ∀ (x z : PauliPoint P)
       (rs : PauliScalar P × PauliScalar P),
       ‖applyOperatorToState (S.place p
           (S.expObs p.side .X rs.1 x * S.expObs p.side .Z rs.2 z -
@@ -441,8 +441,8 @@ theorem exp_point_comm_explicit :
             ‖applyOperatorToState
               (S.placeStrategySide p.side (S.twistedCommutator p.side ω))
               S.toStrategy.ψ‖ ^ 2) := by
-          rw [avgOver_uniform_equiv (Equiv.prodAssoc (Fin P.m → PauliScalar P)
-            (Fin P.m → PauliScalar P) (PauliScalar P × PauliScalar P))]
+          rw [avgOver_uniform_equiv (Equiv.prodAssoc (PauliPoint P)
+            (PauliPoint P) (PauliScalar P × PauliScalar P))]
           rfl
   rw [hfamily]
   have h := twisted_commutator_avg_le_explicit P ε S p.side hε

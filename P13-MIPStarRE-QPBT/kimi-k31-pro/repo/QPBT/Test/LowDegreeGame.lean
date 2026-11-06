@@ -72,6 +72,9 @@ Blueprint `def:ld-game`, paper origin
 -/
 abbrev ScalarQ (P : LdParams) := (P.model).K
 
+/-- Point coordinates in the low-degree scalar field. -/
+abbrev LdPoint (P : LdParams) := Fin P.m → ScalarQ P
+
 /-- The three low-degree question types of blueprint
 `def:ld-game`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.

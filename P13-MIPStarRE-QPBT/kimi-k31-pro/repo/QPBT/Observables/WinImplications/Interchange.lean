@@ -99,7 +99,7 @@ theorem opFamilyDistSq_placed_le_two_mul_consistencyDefect
     {X α ιA ιB : Type*} [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A : X → Measurement α ιA) (B : X → Measurement α ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    (ψ : BipartiteSpace ιA ιB) :
     opFamilyDistSq μ (fun x a => heteroKron ((A x).effect a) 1)
         (fun x a => heteroKron 1 ((B x).effect a)) ψ ≤
       2 * consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
@@ -118,7 +118,7 @@ theorem opFamilyDistSq_placed_le_of_consistencyDefect_le
     {X α ιA ιB : Type*} [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A : X → Measurement α ιA) (B : X → Measurement α ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) {c : ℝ}
+    (ψ : BipartiteSpace ιA ιB) {c : ℝ}
     (h : consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
       (fun x a => heteroKron 1 ((B x).effect a)) ψ ≤ c) :
     opFamilyDistSq μ (fun x a => heteroKron ((A x).effect a) 1)

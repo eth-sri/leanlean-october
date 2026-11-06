@@ -183,7 +183,7 @@ value at parameter zero. -/
 /-- On the point-agreement branch, an accepted pair of point answers has
 equal readouts in every simultaneous coordinate. -/
 theorem directPointAnswerReadout_eq_of_win (D : DirectLdParams) (r : Fin D.k)
-    (p : Fin D.m → DirectScalarQ D) (a b : DirectLdAnswer D)
+    (p : DirectPoint D) (a b : DirectLdAnswer D)
     (hwin : directLdWinPredicate D (directLdPointQuestionOf D p)
       (directLdPointQuestionOf D p) a b = true) :
     letI := D.toLDTFieldModel
@@ -252,7 +252,7 @@ private theorem diagonal_readout_of_condition (D : DirectLdParams) (r : Fin D.k)
   letI := D.toLDTFieldModel
   by_cases hdir : ldtPointToDirect D line.direction = 0
   · have hbase : ldtPointToDirect D line.base =
-        lineRepMap (0 : Fin D.m → DirectScalarQ D) (ldtPointToDirect D line.base) := by
+        lineRepMap (0 : DirectPoint D) (ldtPointToDirect D line.base) := by
       have hspec := directLineRepParameter_spec
         (ldtPointToDirect D line.direction) (ldtPointToDirect D line.base)
       rwa [hdir, smul_zero, add_zero] at hspec
@@ -260,8 +260,8 @@ private theorem diagonal_readout_of_condition (D : DirectLdParams) (r : Fin D.k)
     have heval : evalCoefficient (f r) 0 = c r := by
       refine hcond 0 ?_ r
       change ldtPointToDirect D line.base =
-        lineRepMap (0 : Fin D.m → DirectScalarQ D) (ldtPointToDirect D line.base) +
-          (0 : DirectScalarQ D) • (0 : Fin D.m → DirectScalarQ D)
+        lineRepMap (0 : DirectPoint D) (ldtPointToDirect D line.base) +
+          (0 : DirectScalarQ D) • (0 : DirectPoint D)
       rw [smul_zero, add_zero]
       exact hbase
     simp only [directDiagonalAnswerReadout, hdir, if_true]
@@ -421,7 +421,7 @@ theorem directPointAnswerReadout_eq_diagonal_zeroCoord_of_win (D : DirectLdParam
 Formalization-only reindexing of the direct sample space. -/
 def directLdSpaceSplitEquiv (D : DirectLdParams) :
     DirectLdSpace D ≃
-      ((Fin D.m → DirectScalarQ D) × Fin D.m) × (Fin D.m → DirectScalarQ D) where
+      ((DirectPoint D) × Fin D.m) × (DirectPoint D) where
   toFun s := ((s.point, s.index), s.direction)
   invFun x := ⟨x.1.1, x.1.2, x.2⟩
   left_inv s := by cases s; rfl
@@ -462,14 +462,14 @@ theorem directCoordinate_point_agreement_le :
   refine le_trans (avgOver_mono _ _ _ fun u => point_defect_le D S hS r u)
     (le_of_eq ?_)
   rw [directLdBranchRejectionProbability_eq_avgOver]
-  let f : (Fin D.m → DirectScalarQ D) → ℝ := fun p =>
+  let f : (DirectPoint D) → ℝ := fun p =>
     directRejectedMass D S (directLdPointQuestionOf D p) (directLdPointQuestionOf D p)
   calc
     avgOver (uniformDistribution (Point D.toLDTParameters))
         (fun u => f (ldtPointToDirect D u)) =
-        avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) f :=
+        avgOver (uniformDistribution (DirectPoint D)) f :=
       (avgOver_uniform_equiv (directPointEquiv D) f).symm
-    _ = avgOver (uniformDistribution ((Fin D.m → DirectScalarQ D) × Fin D.m))
+    _ = avgOver (uniformDistribution ((DirectPoint D) × Fin D.m))
         (fun pi => f pi.1) :=
       (avgOver_uniform_fst f).symm
     _ = avgOver (uniformDistribution (DirectLdSpace D))
@@ -554,7 +554,7 @@ private theorem axis_point_line_defect_le
 space; the averaged function depends only on the decoded point and the
 reversed coordinate index. -/
 private theorem avgOver_axis_sample_eq
-    (f : (Fin D.m → DirectScalarQ D) × Fin D.m → ℝ) :
+    (f : (DirectPoint D) × Fin D.m → ℝ) :
     avgOver (uniformDistribution (AxisParallelTestSample D.toLDTParameters))
         (fun s => f (ldtPointToDirect D s.1, Fin.rev s.2)) =
       avgOver (uniformDistribution (DirectLdSpace D))
@@ -562,7 +562,7 @@ private theorem avgOver_axis_sample_eq
   calc
     avgOver (uniformDistribution (AxisParallelTestSample D.toLDTParameters))
         (fun s => f (ldtPointToDirect D s.1, Fin.rev s.2)) =
-        avgOver (uniformDistribution ((Fin D.m → DirectScalarQ D) × Fin D.m)) f := by
+        avgOver (uniformDistribution ((DirectPoint D) × Fin D.m)) f := by
       rw [avgOver_uniform_equiv ((directPointEquiv D).prodCongr Fin.revPerm) f]
       apply avgOver_congr
       intro s

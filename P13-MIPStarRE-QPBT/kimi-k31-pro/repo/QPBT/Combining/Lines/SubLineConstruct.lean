@@ -46,8 +46,8 @@ noncomputable section
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 abbrev SubLinePointDir (P : AdmissibleParams) :=
-  (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) ×
-    (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
+  (DirectPoint P.extendedDirectLd) ×
+    (DirectPoint P.extendedDirectLd)
 
 /-- The auxiliary randomness of one branch of the sampling procedure: an
 extended point, an extended direction, and the two scalar seeds of the two
@@ -120,8 +120,8 @@ from a point block, a scalar seed and a direction block.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 noncomputable def subLineSourceLine (P : AdmissibleParams) (kind : LineKind)
-    (b : Fin P.m → PauliScalar P) (s : ScalarQ P.toLdParams)
-    (d : Fin P.m → PauliScalar P) : LineDesc P.toLdParams :=
+    (b : PauliPoint P) (s : ScalarQ P.toLdParams)
+    (d : PauliPoint P) : LineDesc P.toLdParams :=
   match kind with
   | .axis => aLineDescOfBlock P.toLdParams (b, (s, d))
   | .diagonal => dLineDescOfBlock P.toLdParams (b, (s, d))
@@ -180,16 +180,16 @@ theorem subLineExtLine_base (P : AdmissibleParams) (kind : LineKind)
 
 /-- A source line of a branch has the kind of that branch. -/
 theorem subLineSourceLine_kind (P : AdmissibleParams) (kind : LineKind)
-    (b : Fin P.m → PauliScalar P) (s : ScalarQ P.toLdParams)
-    (d : Fin P.m → PauliScalar P) :
+    (b : PauliPoint P) (s : ScalarQ P.toLdParams)
+    (d : PauliPoint P) :
     (subLineSourceLine P kind b s d).kind = kind := by
   cases kind <;> rfl
 
 /-- The direction of a source line of a branch is the branch source direction
 at the coordinate index named by its seed. -/
 theorem subLineSourceLine_direction (P : AdmissibleParams) (kind : LineKind)
-    (b : Fin P.m → PauliScalar P) (s : ScalarQ P.toLdParams)
-    (d : Fin P.m → PauliScalar P) :
+    (b : PauliPoint P) (s : ScalarQ P.toLdParams)
+    (d : PauliPoint P) :
     (subLineSourceLine P kind b s d).direction =
       subLineSourceDirection P kind (chiIndex P.toLdParams s) d := by
   cases kind <;> rfl
@@ -197,8 +197,8 @@ theorem subLineSourceLine_direction (P : AdmissibleParams) (kind : LineKind)
 /-- The base of a source line of a branch is the canonical representative of
 its point block in its own direction. -/
 theorem subLineSourceLine_base (P : AdmissibleParams) (kind : LineKind)
-    (b : Fin P.m → PauliScalar P) (s : ScalarQ P.toLdParams)
-    (d : Fin P.m → PauliScalar P) :
+    (b : PauliPoint P) (s : ScalarQ P.toLdParams)
+    (d : PauliPoint P) :
     (subLineSourceLine P kind b s d).base =
       lineRepMap (subLineSourceDirection P kind (chiIndex P.toLdParams s) d)
         b := by
@@ -282,7 +282,7 @@ theorem subLineTripleOf_xSpan (P : AdmissibleParams) (kind : LineKind)
     projX (directPointToPauli P (subLineTripleOf P kind k w).1.direction) ∈
       Submodule.span (PauliScalar P)
         ({(subLineTripleOf P kind k w).2.1.direction} :
-          Set (Fin P.m → PauliScalar P)) := by
+          Set (PauliPoint P)) := by
   have hext : (subLineTripleOf P kind k w).1.direction =
       subLineExtDirection P kind k w.1.2 := subLineExtLine_direction P kind k w
   rw [subLineTripleOf_xDirection P kind k w hx, hext]
@@ -296,7 +296,7 @@ theorem subLineTripleOf_zSpan (P : AdmissibleParams) (kind : LineKind)
     projZ (directPointToPauli P (subLineTripleOf P kind k w).1.direction) ∈
       Submodule.span (PauliScalar P)
         ({(subLineTripleOf P kind k w).2.2.direction} :
-          Set (Fin P.m → PauliScalar P)) := by
+          Set (PauliPoint P)) := by
   have hext : (subLineTripleOf P kind k w).1.direction =
       subLineExtDirection P kind k w.1.2 := subLineExtLine_direction P kind k w
   rw [subLineTripleOf_zDirection P kind k w hz, hext]
@@ -371,7 +371,7 @@ theorem subLineTripleOf_incidence (P : AdmissibleParams) (kind : LineKind)
     (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P)
     (hx : chiIndex P.toLdParams w.2.1 = subLineXIndex P k)
     (hz : chiIndex P.toLdParams w.2.2 = subLineZIndex P k)
-    {u : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd}
+    {u : DirectPoint P.extendedDirectLd}
     (hu : u ∈ (subLineTripleOf P kind k w).1.pointSet) :
     projX (directPointToPauli P u) ∈
         (subLineTripleOf P kind k w).2.1.pointSet ∧

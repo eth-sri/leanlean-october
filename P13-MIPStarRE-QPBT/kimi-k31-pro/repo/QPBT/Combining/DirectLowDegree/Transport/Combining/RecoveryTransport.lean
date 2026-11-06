@@ -61,7 +61,7 @@ noncomputable section
 /-- The identification of a point of the combined space with the pair formed by
 its point part and its combining part. -/
 def directCombinedPointEquiv (D : DirectLdParams) :
-    ((Fin D.m → DirectScalarQ D) × (Fin D.k → DirectScalarQ D)) ≃
+    ((DirectPoint D) × (Fin D.k → DirectScalarQ D)) ≃
       (Fin D.combined.m → DirectScalarQ D) where
   toFun z := combinedPoint z.1 z.2
   invFun z := (directCombinedPointPart D z, directCombinedCoefficientPart D z)
@@ -84,7 +84,7 @@ def directCombinedPointEquiv (D : DirectLdParams) :
       rw [← hi, Equiv.apply_symm_apply]
 
 @[simp] theorem directCombinedPointEquiv_apply (D : DirectLdParams)
-    (z : (Fin D.m → DirectScalarQ D) × (Fin D.k → DirectScalarQ D)) :
+    (z : (DirectPoint D) × (Fin D.k → DirectScalarQ D)) :
     directCombinedPointEquiv D z = combinedPoint z.1 z.2 := rfl
 
 /-! ## The point measurement of the combined strategy -/
@@ -92,7 +92,7 @@ def directCombinedPointEquiv (D : DirectLdParams) :
 /-- On a point question of the combined game the combined strategy measures the
 point question of the original game at the point part. -/
 private theorem directCombinedMeasuredQuestion_point (D : DirectLdParams)
-    (u : Fin D.m → DirectScalarQ D) (α : Fin D.k → DirectScalarQ D) :
+    (u : DirectPoint D) (α : Fin D.k → DirectScalarQ D) :
     directCombinedMeasuredQuestion D
         (directLdPointQuestionOf D.combined (combinedPoint u α)) =
       directLdPointQuestionOf D u := by
@@ -104,7 +104,7 @@ private theorem directCombinedMeasuredQuestion_point (D : DirectLdParams)
 one-component tuple of scalars, is the combination of the measured point answer
 with the combining part of the sampled point. -/
 private theorem directCombinedPointAnswerMap_comp (D : DirectLdParams)
-    (u : Fin D.m → DirectScalarQ D) (α : Fin D.k → DirectScalarQ D) :
+    (u : DirectPoint D) (α : Fin D.k → DirectScalarQ D) :
     (fun a : DirectLdAnswer D => directLdPointValuesOrZero D.combined
         (directCombinedAnswerMap D
           (directLdPointQuestionOf D.combined (combinedPoint u α)) a)) =
@@ -149,7 +149,7 @@ combined game, the probability over the combining vector that the recovered
 tuple of values differs from the point answer while the outcome read at the
 combined point agrees with the combination is at most the local bound. -/
 private theorem directCombinedRecoveryEvent_transport (D : DirectLdParams)
-    (u : Fin D.m → DirectScalarQ D) (b : Fin D.k → DirectScalarQ D)
+    (u : DirectPoint D) (b : Fin D.k → DirectScalarQ D)
     (p : DirectPolyTuple D.combined) :
     avgOver (uniformDistribution (Fin D.k → DirectScalarQ D)) (fun α =>
         if evalDirectPolyTupleAt u (directTupleOfCombinedTuple D p) ≠ b ∧
@@ -173,7 +173,7 @@ the combined strategy plus `(m + k) d / q`. -/
 theorem directCombinedRecovery_relation_one (D : DirectLdParams)
     (S : Strategy (directLdGame D))
     (GB : DirectPolyMeasTuple D.combined S.ιB) :
-    consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+    consistencyDefect (uniformDistribution (DirectPoint D))
         (fun u outcome => heteroKron
           (((S.A (directLdPointQuestionOf D u)).postprocess
             (directLdPointValuesOrZero D)).effect outcome) 1)
@@ -194,7 +194,7 @@ theorem directCombinedRecovery_relation_one (D : DirectLdParams)
         ((D.combined.m * D.d : ℕ) : ℝ) / D.q := by
   classical
   have hkey := consistencyDefect_le_of_recoveryBound
-    (X := Fin D.m → DirectScalarQ D) (Y := Fin D.k → DirectScalarQ D)
+    (X := DirectPoint D) (Y := Fin D.k → DirectScalarQ D)
     (fun u => (S.A (directLdPointQuestionOf D u)).postprocess
       (directLdPointValuesOrZero D))
     GB S.ψ S.ψ_norm
@@ -205,7 +205,7 @@ theorem directCombinedRecovery_relation_one (D : DirectLdParams)
     (((D.combined.m * D.d : ℕ) : ℝ) / D.q)
     (fun u b p => directCombinedRecoveryEvent_transport D u b p)
     (fun p => directCombinedRecoveryLocalBound_avg_le D (p default))
-  have hmeas : ∀ (u : Fin D.m → DirectScalarQ D)
+  have hmeas : ∀ (u : DirectPoint D)
       (α : Fin D.k → DirectScalarQ D),
       ((directCombinedStrategy D S).A
           (directLdPointQuestionOf D.combined (combinedPoint u α))).postprocess
@@ -227,14 +227,14 @@ theorem directCombinedRecovery_relation_one (D : DirectLdParams)
     exact congrArg (fun h => (S.A (directLdPointQuestionOf D u)).postprocess h)
       (directCombinedPointAnswerMap_comp D u α)
   have hgoalEq : consistencyDefect
-      (uniformDistribution (Fin D.m → DirectScalarQ D))
+      (uniformDistribution (DirectPoint D))
       (fun u outcome => heteroKron
         (((S.A (directLdPointQuestionOf D u)).postprocess
           (directLdPointValuesOrZero D)).effect outcome) 1)
       (fun u outcome => heteroKron 1
         (((GB.postprocess (directTupleOfCombinedTuple D)).postprocess
           (evalDirectPolyTupleAt u)).effect outcome)) S.ψ =
-      consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+      consistencyDefect (uniformDistribution (DirectPoint D))
         (fun u outcome => heteroKron
           (((S.A (directLdPointQuestionOf D u)).postprocess
             (directLdPointValuesOrZero D)).effect outcome) 1)
@@ -266,7 +266,7 @@ original strategy on the second tensor factor. -/
 theorem directCombinedRecovery_relation_two (D : DirectLdParams)
     (S : Strategy (directLdGame D))
     (GA : DirectPolyMeasTuple D.combined S.ιA) :
-    consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+    consistencyDefect (uniformDistribution (DirectPoint D))
         (fun u outcome => heteroKron
           (((GA.postprocess (directTupleOfCombinedTuple D)).postprocess
             (evalDirectPolyTupleAt u)).effect outcome) 1)
@@ -287,7 +287,7 @@ theorem directCombinedRecovery_relation_two (D : DirectLdParams)
         ((D.combined.m * D.d : ℕ) : ℝ) / D.q := by
   classical
   have hkey := consistencyDefect_le_of_recoveryBound_right
-    (X := Fin D.m → DirectScalarQ D) (Y := Fin D.k → DirectScalarQ D)
+    (X := DirectPoint D) (Y := Fin D.k → DirectScalarQ D)
     (fun u => (S.B (directLdPointQuestionOf D u)).postprocess
       (directLdPointValuesOrZero D))
     GA S.ψ S.ψ_norm
@@ -298,7 +298,7 @@ theorem directCombinedRecovery_relation_two (D : DirectLdParams)
     (((D.combined.m * D.d : ℕ) : ℝ) / D.q)
     (fun u b p => directCombinedRecoveryEvent_transport D u b p)
     (fun p => directCombinedRecoveryLocalBound_avg_le D (p default))
-  have hmeas : ∀ (u : Fin D.m → DirectScalarQ D)
+  have hmeas : ∀ (u : DirectPoint D)
       (α : Fin D.k → DirectScalarQ D),
       ((directCombinedStrategy D S).B
           (directLdPointQuestionOf D.combined (combinedPoint u α))).postprocess
@@ -320,14 +320,14 @@ theorem directCombinedRecovery_relation_two (D : DirectLdParams)
     exact congrArg (fun h => (S.B (directLdPointQuestionOf D u)).postprocess h)
       (directCombinedPointAnswerMap_comp D u α)
   have hgoalEq : consistencyDefect
-      (uniformDistribution (Fin D.m → DirectScalarQ D))
+      (uniformDistribution (DirectPoint D))
       (fun u outcome => heteroKron
         (((GA.postprocess (directTupleOfCombinedTuple D)).postprocess
           (evalDirectPolyTupleAt u)).effect outcome) 1)
       (fun u outcome => heteroKron 1
         (((S.B (directLdPointQuestionOf D u)).postprocess
           (directLdPointValuesOrZero D)).effect outcome)) S.ψ =
-      consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+      consistencyDefect (uniformDistribution (DirectPoint D))
         (fun u outcome => heteroKron
           ((GA.postprocess (fun p =>
             evalDirectPolyTupleAt u (directTupleOfCombinedTuple D p))).effect

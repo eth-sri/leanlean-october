@@ -49,14 +49,14 @@ variable {P : AdmissibleParams} {ε : ℝ}
 
 /-- An expanded point effect is self-adjoint. -/
 theorem pointMeasExp_effect_conjTranspose (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (a : PauliScalar P) :
     ((S.pointMeasExp side W u).effect a)ᴴ = (S.pointMeasExp side W u).effect a :=
   (S.pointMeasExp_isProjective side W u a).isSelfAdjoint.isHermitian.eq
 
 /-- An expanded point effect is idempotent. -/
 theorem pointMeasExp_effect_mul_self (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (a : PauliScalar P) :
     (S.pointMeasExp side W u).effect a * (S.pointMeasExp side W u).effect a =
       (S.pointMeasExp side W u).effect a :=
@@ -64,7 +64,7 @@ theorem pointMeasExp_effect_mul_self (S : ProjectiveSetting P ε)
 
 /-- The sandwich `M^Z_b M^X_a M^Z_b` is `(M^X_a M^Z_b)ᴴ (M^X_a M^Z_b)`. -/
 theorem sandwich_eq_conjTranspose_mul_self (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (x z : Fin P.m → PauliScalar P) (a b : PauliScalar P) :
+    (side : PlayerSide) (x z : PauliPoint P) (a b : PauliScalar P) :
     (S.pointMeasExp side .Z z).effect b * (S.pointMeasExp side .X x).effect a *
         (S.pointMeasExp side .Z z).effect b =
       ((S.pointMeasExp side .X x).effect a * (S.pointMeasExp side .Z z).effect b)ᴴ *
@@ -78,7 +78,7 @@ theorem sandwich_eq_conjTranspose_mul_self (S : ProjectiveSetting P ε)
 
 /-- The sandwich effects resolve the identity. -/
 theorem sum_sandwich_eq_one (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) :
+    (x z : PauliPoint P) :
     ∑ ab : PauliScalar P × PauliScalar P,
         (S.pointMeasExp side .Z z).effect ab.2 *
           (S.pointMeasExp side .X x).effect ab.1 *
@@ -104,7 +104,7 @@ first step of the proof of `lem:qld-4-10`, paper
 formed directly with field-valued outcomes rather than from the binary
 refinements; see `docs/paper-gaps/qpbt_combined-points-field-valued.tex`. -/
 def sandwichPoint (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) :
+    (x z : PauliPoint P) :
     Measurement (PauliScalar P × PauliScalar P) (S.ExpandedLocalSpace side) :=
   Measurement.ofSumEqOne
     (fun ab => (S.pointMeasExp side .Z z).effect ab.2 *
@@ -118,7 +118,7 @@ def sandwichPoint (S : ProjectiveSetting P ε) (side : PlayerSide)
 
 /-- The effects of the sandwich POVM. -/
 @[simp] theorem sandwichPoint_effect (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (x z : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (x z : PauliPoint P)
     (ab : PauliScalar P × PauliScalar P) :
     (S.sandwichPoint side x z).effect ab =
       (S.pointMeasExp side .Z z).effect ab.2 *
@@ -130,7 +130,7 @@ def sandwichPoint (S : ProjectiveSetting P ε) (side : PlayerSide)
 `eq:qld-r-2`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:737-742`. -/
 theorem sandwichPoint_effect_sub_ordered (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (x z : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (x z : PauliPoint P)
     (ab : PauliScalar P × PauliScalar P) :
     (S.sandwichPoint side x z).effect ab -
         (S.pointMeasExp side .Z z).effect ab.2 *
@@ -202,7 +202,7 @@ theorem ordered_cross_dist_le_explicit :
         S.place p₂ ((S.pointMeasExp p₂.side .X xz.1).effect ab.1))
       S.psiHat ≤ 172 * ε := by
     refine le_trans ?_ (le_of_eq_of_le (avgOver_uniform_fst
-      (β := Fin P.m → PauliScalar P)
+      (β := PauliPoint P)
       (fun x => ∑ a : PauliScalar P, ‖applyOperatorToState
         (S.place p₁ ((S.pointMeasExp p₁.side .X x).effect a) -
           S.place p₂ ((S.pointMeasExp p₂.side .X x).effect a)) S.psiHat‖ ^ 2)) hX)
@@ -236,7 +236,7 @@ theorem ordered_cross_dist_le_explicit :
           (S.pointMeasExp p₂.side .Z xz.2).effect ab.2))
       S.psiHat ≤ 172 * ε := by
     refine le_trans ?_ (le_of_eq_of_le (avgOver_uniform_snd
-      (α := Fin P.m → PauliScalar P)
+      (α := PauliPoint P)
       (fun z => ∑ b : PauliScalar P, ‖applyOperatorToState
         (S.place p₁ ((S.pointMeasExp p₁.side .Z z).effect b) -
           S.place p₂ ((S.pointMeasExp p₂.side .Z z).effect b)) S.psiHat‖ ^ 2)) hZ)

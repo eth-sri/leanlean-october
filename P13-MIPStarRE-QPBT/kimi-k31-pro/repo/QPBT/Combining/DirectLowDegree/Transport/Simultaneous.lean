@@ -81,7 +81,7 @@ hypothesis of blueprint `lem:ld-sandwich`
 (paper `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:465-501`). -/
 theorem directPolynomialAgreement_avg_le_mdq (D : DirectLdParams)
     (g g' : PolyIndex D.m (DirectScalarQ D) D.d) (hneq : g ≠ g') :
-    avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
+    avgOver (uniformDistribution (DirectPoint D))
         (fun u => if MvPolynomial.eval u g.1 = MvPolynomial.eval u g'.1 then
           (1 : Error) else 0) ≤
       (D.m * D.d : Error) / D.q := by
@@ -92,10 +92,10 @@ theorem directPolynomialAgreement_avg_le_mdq (D : DirectLdParams)
     intro heq
     exact hneq ((directPolyEquivPolynomial D).injective heq)
   calc
-    avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
+    avgOver (uniformDistribution (DirectPoint D))
         (fun u => if MvPolynomial.eval u g.1 = MvPolynomial.eval u g'.1 then
           (1 : Error) else 0) =
-      avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
+      avgOver (uniformDistribution (DirectPoint D))
         (fun u => if gLdt (directPointEquiv D u) =
           g'Ldt (directPointEquiv D u) then (1 : Error) else 0) := by
             apply avgOver_congr
@@ -108,7 +108,7 @@ theorem directPolynomialAgreement_avg_le_mdq (D : DirectLdParams)
           if gLdt u = g'Ldt u then (1 : Error) else 0) := by
       simpa using
         (avgOver_uniform_equiv (directPointEquiv D)
-          (fun u : Fin D.m → DirectScalarQ D =>
+          (fun u : DirectPoint D =>
             if gLdt (directPointEquiv D u) =
               g'Ldt (directPointEquiv D u) then (1 : Error) else 0))
     _ ≤ (D.m * D.d : Error) / D.q :=
@@ -221,7 +221,7 @@ private theorem direct_coordinate_measurements_to_tuple_of_k_eq_one
     ∃ GA : DirectPolyMeasTuple D S.ιA,
       ∃ GB : DirectPolyMeasTuple D S.ιB,
         consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
+            (uniformDistribution (DirectPoint D))
             (fun u outcome =>
               heteroKron
                 (((S.A (directLdPointQuestionOf D u)).postprocess
@@ -231,7 +231,7 @@ private theorem direct_coordinate_measurements_to_tuple_of_k_eq_one
                 ((GB.postprocess (evalDirectPolyTupleAt u)).effect outcome))
             S.ψ ≤ bound ∧
         consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
+            (uniformDistribution (DirectPoint D))
             (fun u outcome =>
               heteroKron
                 ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
@@ -317,7 +317,7 @@ theorem exists_directSimultaneousPolynomialMeasurements_of_k_eq_one
     ∃ GA : DirectPolyMeasTuple D S.ιA,
       ∃ GB : DirectPolyMeasTuple D S.ιB,
         consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
+            (uniformDistribution (DirectPoint D))
             (fun u outcome =>
               heteroKron
                 (((S.A (directLdPointQuestionOf D u)).postprocess
@@ -328,7 +328,7 @@ theorem exists_directSimultaneousPolynomialMeasurements_of_k_eq_one
             S.ψ ≤
           Test.mainFormalError D.toLDTParameters (directLdAuxParameter D) (3 * ε) ∧
         consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
+            (uniformDistribution (DirectPoint D))
             (fun u outcome =>
               heteroKron
                 ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)

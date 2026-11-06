@@ -60,10 +60,10 @@ Both cases carry the assertion that their base is fixed by the
 appropriate `lineRepMap`. Coordinates are numbered from zero; coordinate `j`
 corresponds to the paper's coordinate `j + 1`. -/
 inductive LineDesc (L : LdParams) where
-  | axis (base : Fin L.m → ScalarQ L) (seed : ScalarQ L)
+  | axis (base : LdPoint L) (seed : ScalarQ L)
       (baseFixed : lineRepMap (coordinateDirection (chiIndex L seed)) base = base)
-  | diagonal (base : Fin L.m → ScalarQ L) (seed : ScalarQ L)
-      (direction : Fin L.m → ScalarQ L)
+  | diagonal (base : LdPoint L) (seed : ScalarQ L)
+      (direction : LdPoint L)
       (baseFixed : lineRepMap direction base = base)
       (prefixZero : ∀ j : Fin L.m, j.val < (chiIndex L seed).val → direction j = 0)
   deriving DecidableEq
@@ -79,7 +79,7 @@ def LineDesc.seed {L : LdParams} : LineDesc L → ScalarQ L
   | .diagonal _ seed _ _ _ => seed
 
 /-- The canonical base stored by a line description. -/
-def LineDesc.base {L : LdParams} : LineDesc L → Fin L.m → ScalarQ L
+def LineDesc.base {L : LdParams} : LineDesc L → LdPoint L
   | .axis base _ _ => base
   | .diagonal base _ _ _ _ => base
 
@@ -87,14 +87,14 @@ def LineDesc.base {L : LdParams} : LineDesc L → Fin L.m → ScalarQ L
 Diagonal descriptions already store the projected data, so this map does
 not apply a second projection. -/
 def LineDesc.direction {L : LdParams} (line : LineDesc L) :
-    Fin L.m → ScalarQ L :=
+    LdPoint L :=
   match line with
   | .axis _ seed _ => coordinateDirection (chiIndex L seed)
   | .diagonal _ _ direction _ _ => direction
 
 /-- The point set represented by a seed-bearing line description. -/
 noncomputable def LineDesc.pointSet {L : LdParams} (line : LineDesc L) :
-    Set (Fin L.m → ScalarQ L) :=
+    Set (LdPoint L) :=
   linePoints line.base line.direction
 
 /-- Coefficient-list representation of a univariate polynomial of degree at
@@ -111,7 +111,7 @@ def DegPoly.padTo {L : LdParams} {c c' : ℕ} (_h : c ≤ c')
 and every such parameter gives the same value.  The universal clause handles
 the zero-direction presentation without choosing a sentinel parameter. -/
 def EvaluatesTo {L : LdParams} {c : ℕ} (line : LineDesc L)
-    (f : DegPoly L c) (u : Fin L.m → ScalarQ L) (a : ScalarQ L) : Prop :=
+    (f : DegPoly L c) (u : LdPoint L) (a : ScalarQ L) : Prop :=
   (∃ t : ScalarQ L, u = line.base + t • line.direction) ∧
     ∀ t : ScalarQ L, u = line.base + t • line.direction → evalCoefficient f t = a
 
@@ -120,7 +120,7 @@ when the point does not determine an evaluation. This formalization-only
 completion is used in blueprint chapter 14; the displayed family at paper
 `14_analysis_of_the_pauli_basis_test.tex:197-206` has no bottom outcome. -/
 noncomputable def evalOpt {L : LdParams} {c : ℕ} (line : LineDesc L)
-    (u : Fin L.m → ScalarQ L) (f : DegPoly L c) : Option (ScalarQ L) := by
+    (u : LdPoint L) (f : DegPoly L c) : Option (ScalarQ L) := by
   classical
   exact if h : ∃ a : ScalarQ L, EvaluatesTo line f u a then
     some (Classical.choose h)
@@ -147,14 +147,14 @@ def dLineDescOf (L : LdParams) (line : LdSpace L) : LineDesc L :=
 /-- The axis-line/point component of the low-degree line-point sampler; paper
 `08_classical_and_quantum_low_degree_tests.tex:243-257,274-287`. -/
 noncomputable def aLinePointDist (L : LdParams) :
-    Distribution (LineDesc L × (Fin L.m → ScalarQ L)) :=
+    Distribution (LineDesc L × (LdPoint L)) :=
   (clDistribution (ldALineCL L) (ldPointCL L)).map fun sample =>
     (aLineDescOf L sample.1, LdSpace.point sample.2)
 
 /-- The diagonal-line/point component of the low-degree line-point sampler; paper
 `08_classical_and_quantum_low_degree_tests.tex:261-287`. -/
 noncomputable def dLinePointDist (L : LdParams) :
-    Distribution (LineDesc L × (Fin L.m → ScalarQ L)) :=
+    Distribution (LineDesc L × (LdPoint L)) :=
   (clDistribution (ldDLineCL L) (ldPointCL L)).map fun sample =>
     (dLineDescOf L sample.1, LdSpace.point sample.2)
 
@@ -162,7 +162,7 @@ noncomputable def dLinePointDist (L : LdParams) :
 `def:line-point-dist`; paper
 `08_classical_and_quantum_low_degree_tests.tex:274-287`. -/
 noncomputable def linePointDist (L : LdParams) :
-    Distribution (LineDesc L × (Fin L.m → ScalarQ L)) :=
+    Distribution (LineDesc L × (LdPoint L)) :=
   Distribution.mix (1 / 2) (by norm_num) (by norm_num)
     (aLinePointDist L) (dLinePointDist L)
 

@@ -40,7 +40,7 @@ variable {ιA ιB κA κB : Type*}
 /-- Joint expectations factor after regrouping an independent pair of bipartite
 states by player. The shuffle sends `((i, j), (k, l))` to `((i, k), (j, l))`. -/
 theorem inner_prodShuffle_vecTensor_heteroKron
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (φ : EuclideanSpace ℂ (κA × κB))
+    (ψ : BipartiteSpace ιA ιB) (φ : EuclideanSpace ℂ (κA × κB))
     (A : Op ιA) (B : Op ιB) (R : Op κA) (T : Op κB) :
     inner ℂ (reindexState prodShuffle (vecTensor ψ φ))
         (applyOperatorToState (heteroKron (heteroKron A R) (heteroKron B T))
@@ -69,7 +69,7 @@ theorem inner_prodShuffle_vecTensor_heteroKron
 /-- For positive ancillary effects, the real joint expectation factors on the
 shuffled tensor state. No normalization or positivity of `A` and `B` is needed. -/
 theorem stateQForm_prodShuffle_vecTensor_heteroKron
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (φ : EuclideanSpace ℂ (κA × κB))
+    (ψ : BipartiteSpace ιA ιB) (φ : EuclideanSpace ℂ (κA × κB))
     (A : Op ιA) (B : Op ιB) {R : Op κA} {T : Op κB}
     (hR : 0 ≤ R) (hT : 0 ≤ T) :
     stateQForm (reindexState prodShuffle (vecTensor ψ φ))
@@ -163,7 +163,7 @@ theorem consistencyDefect_convolution_eq_of_perfect
     [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
     (μ : Distribution X) (A : X → Measurement G ιA) (B : X → Measurement G ιB)
     (R : X → Measurement G κA) (T : X → Measurement G κB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (φ : EuclideanSpace ℂ (κA × κB))
+    (ψ : BipartiteSpace ιA ιB) (φ : EuclideanSpace ℂ (κA × κB))
     (hφ : ‖φ‖ = 1)
     (hperfect : ∀ x, (∑ c : G, ∑ d : G, if c = d then 0 else
       stateQForm φ (heteroKron ((R x).effect c) ((T x).effect d))) = 0) :

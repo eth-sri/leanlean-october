@@ -37,7 +37,7 @@ coordinates collides. This formalization auxiliary for `lem:ld-soundness`
 therefore has the same Schwartz--Zippel bound for every simultaneity parameter. -/
 theorem polyTupleAgreement_avg_le_mdq (L : LdParams)
     (g g' : PolyTuple L) (hne : g ≠ g') :
-    avgOver (uniformDistribution (Fin L.m → ScalarQ L))
+    avgOver (uniformDistribution (LdPoint L))
         (fun u => if evalPolyTupleAt u g = evalPolyTupleAt u g' then
           (1 : ℝ) else 0) ≤
       ((L.m : ℝ) * (L.d : ℝ)) / (L.q : ℝ) := by
@@ -90,7 +90,7 @@ theorem exists_ld_soundness :
       ∀ (L : LdParams) (ε : ℝ), 0 < ε →
         ∀ S : Strategy (ldGame L), S.IsProjective → 1 - ε ≤ S.value →
           ∃ GA : PolyMeasTuple L S.ιA, ∃ GB : PolyMeasTuple L S.ιB,
-            consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+            consistencyDefect (uniformDistribution (LdPoint L))
                 (fun u outcome =>
                   heteroKron
                     (((S.A (ldPointQuestionOf L u)).postprocess
@@ -99,7 +99,7 @@ theorem exists_ld_soundness :
                   heteroKron 1
                     ((GB.postprocess (evalPolyTupleAt u)).effect outcome))
                 S.ψ ≤ deltaLd a b ε L.q L.m L.d L.k ∧
-            consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+            consistencyDefect (uniformDistribution (LdPoint L))
                 (fun u outcome =>
                   heteroKron
                     ((GA.postprocess (evalPolyTupleAt u)).effect outcome) 1)
@@ -124,7 +124,7 @@ theorem exists_ld_soundness :
     (by simpa only [ldStrategyToDirect_value_eq] using hwin)
   let GA : PolyMeasTuple L S.ιA := seedFiberCompressPolyMeasTuple L GA₀
   let GB : PolyMeasTuple L S.ιB := seedFiberCompressPolyMeasTuple L GB₀
-  have c1 : consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+  have c1 : consistencyDefect (uniformDistribution (LdPoint L))
       (fun u outcome => heteroKron
         (((S.A (ldPointQuestionOf L u)).postprocess
           (ldPointValuesOrZero L)).effect outcome) 1)
@@ -133,7 +133,7 @@ theorem exists_ld_soundness :
     rw [show GB = seedFiberCompressPolyMeasTuple L GB₀ from rfl,
       ← ldStrategyToDirect_pointPolynomial_compression L S GB₀]
     exact h1
-  have c2 : consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+  have c2 : consistencyDefect (uniformDistribution (LdPoint L))
       (fun u outcome => heteroKron
         ((GA.postprocess (evalPolyTupleAt u)).effect outcome) 1)
       (fun u outcome => heteroKron 1
@@ -143,13 +143,13 @@ theorem exists_ld_soundness :
       ← ldStrategyToDirect_polynomialPoint_compression L S GA₀]
     exact h2
   have c3 := ldPointPair_consistencyDefect_le L S hS ε hwin
-  have ctrans : consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+  have ctrans : consistencyDefect (uniformDistribution (LdPoint L))
       (fun u outcome => heteroKron
         ((GA.postprocess (evalPolyTupleAt u)).effect outcome) 1)
       (fun u outcome => heteroKron 1
         ((GB.postprocess (evalPolyTupleAt u)).effect outcome)) S.ψ ≤
       E + 2 * Real.sqrt (9 * ε + E) :=
-    consistencyDefect_trans_le (uniformDistribution (Fin L.m → ScalarQ L))
+    consistencyDefect_trans_le (uniformDistribution (LdPoint L))
       (fun u => DistanceCalculus.leftPlacedMeasurement
         (GA.postprocess (evalPolyTupleAt u)))
       (fun u => DistanceCalculus.rightPlacedMeasurement
@@ -168,12 +168,12 @@ theorem exists_ld_soundness :
       (fun g u => evalPolyTupleAt u g) ((L.m : ℝ) * L.d / L.q)
       (uniformDistribution_isProbability _) S.ψ_norm (by positivity)
       (fun g g' hne => polyTupleAgreement_avg_le_mdq L g g' hne)
-    have hprod : ∀ (A B : Unit × (Fin L.m → ScalarQ L) →
+    have hprod : ∀ (A B : Unit × (LdPoint L) →
         (Fin L.k → ScalarQ L) → Op (S.ιA × S.ιB)),
         consistencyDefect
           (Distribution.prod (uniformDistribution Unit)
-            (uniformDistribution (Fin L.m → ScalarQ L))) A B S.ψ =
-        consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
+            (uniformDistribution (LdPoint L))) A B S.ψ =
+        consistencyDefect (uniformDistribution (LdPoint L))
           (fun u => A ((), u)) (fun u => B ((), u)) S.ψ := by
       intro A B
       unfold consistencyDefect

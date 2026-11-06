@@ -44,8 +44,8 @@ representative in the direction of that line.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 theorem subLineSourceLine_congr (P : AdmissibleParams) (kind : LineKind)
-    (b b' : Fin P.m → PauliScalar P) (s : ScalarQ P.toLdParams)
-    (d : Fin P.m → PauliScalar P)
+    (b b' : PauliPoint P) (s : ScalarQ P.toLdParams)
+    (d : PauliPoint P)
     (h : lineRepMap
         (subLineSourceDirection P kind (chiIndex P.toLdParams s) d) b =
       lineRepMap
@@ -62,7 +62,7 @@ the source `X` line of the branch.  Blueprint
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 theorem lineRepMap_projX_subLineExtLine_point (P : AdmissibleParams)
     (kind : LineKind) (k : Fin (2 * P.m + 2))
-    (x e : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)
+    (x e : DirectPoint P.extendedDirectLd)
     (t : DirectScalarQ P.extendedDirectLd) :
     lineRepMap
         (subLineSourceDirection P kind (subLineXIndex P k)
@@ -100,7 +100,7 @@ the source `Z` line of the branch.  Blueprint
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 theorem lineRepMap_projZ_subLineExtLine_point (P : AdmissibleParams)
     (kind : LineKind) (k : Fin (2 * P.m + 2))
-    (x e : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)
+    (x e : DirectPoint P.extendedDirectLd)
     (t : DirectScalarQ P.extendedDirectLd) :
     lineRepMap
         (subLineSourceDirection P kind (subLineZIndex P k)
@@ -142,9 +142,9 @@ together with that same point block.  Blueprint
 theorem restrictedLinePointDist_eq_map_prod (P : AdmissibleParams)
     (kind : LineKind) (i : Fin P.m) :
     restrictedLinePointDist P kind i =
-      (Distribution.prod (uniformDistribution (Fin P.m → PauliScalar P))
+      (Distribution.prod (pauliPointDist P)
           (Distribution.prod (subLineSeedDist P i)
-            (uniformDistribution (Fin P.m → PauliScalar P)))).map
+            (pauliPointDist P))).map
         (fun w => (subLineSourceLine P kind w.1 w.2.1 w.2.2, w.1)) := by
   cases kind
   · show restrictedALineDist P.toLdParams i = _
@@ -162,12 +162,12 @@ theorem subLineXComponentDist_eq_map_prod (P : AdmissibleParams)
     (kind : LineKind) (i j : Fin P.m) :
     subLineXComponentDist P (kind, (i, j)) =
       (Distribution.prod
-          (Distribution.prod (uniformDistribution (Fin P.m → PauliScalar P))
+          (Distribution.prod (pauliPointDist P)
             (Distribution.prod (subLineSeedDist P i)
-              (uniformDistribution (Fin P.m → PauliScalar P))))
-          (Distribution.prod (uniformDistribution (Fin P.m → PauliScalar P))
+              (pauliPointDist P)))
+          (Distribution.prod (pauliPointDist P)
             (Distribution.prod (subLineSeedDist P j)
-              (uniformDistribution (Fin P.m → PauliScalar P))))).map
+              (pauliPointDist P)))).map
         (fun w => ((subLineSourceLine P kind w.1.1 w.1.2.1 w.1.2.2,
           subLineSourceLine P kind w.2.1 w.2.2.1 w.2.2.2), w.1.1)) := by
   simp only [subLineXComponentDist, restrictedLinePointDist_eq_map_prod,
@@ -183,12 +183,12 @@ theorem subLineZComponentDist_eq_map_prod (P : AdmissibleParams)
     (kind : LineKind) (i j : Fin P.m) :
     subLineZComponentDist P (kind, (i, j)) =
       (Distribution.prod
-          (Distribution.prod (uniformDistribution (Fin P.m → PauliScalar P))
+          (Distribution.prod (pauliPointDist P)
             (Distribution.prod (subLineSeedDist P i)
-              (uniformDistribution (Fin P.m → PauliScalar P))))
-          (Distribution.prod (uniformDistribution (Fin P.m → PauliScalar P))
+              (pauliPointDist P)))
+          (Distribution.prod (pauliPointDist P)
             (Distribution.prod (subLineSeedDist P j)
-              (uniformDistribution (Fin P.m → PauliScalar P))))).map
+              (pauliPointDist P)))).map
         (fun w => ((subLineSourceLine P kind w.1.1 w.1.2.1 w.1.2.2,
           subLineSourceLine P kind w.2.1 w.2.2.1 w.2.2.2), w.2.1)) := by
   simp only [subLineZComponentDist, restrictedLinePointDist_eq_map_prod,
@@ -219,12 +219,12 @@ theorem subLineBranchSamplingData_map_joint (P : AdmissibleParams) (kind : LineK
             ((subLineTripleOf P kind k p.1).1.base +
               p.2 • (subLineTripleOf P kind k p.1).1.direction))))) =
       (Distribution.prod
-          (Distribution.prod (uniformDistribution (Fin P.m → PauliScalar P))
+          (Distribution.prod (pauliPointDist P)
             (Distribution.prod (subLineSeedDist P (subLineXIndex P k))
-              (uniformDistribution (Fin P.m → PauliScalar P))))
-          (Distribution.prod (uniformDistribution (Fin P.m → PauliScalar P))
+              (pauliPointDist P)))
+          (Distribution.prod (pauliPointDist P)
             (Distribution.prod (subLineSeedDist P (subLineZIndex P k))
-              (uniformDistribution (Fin P.m → PauliScalar P))))).map
+              (pauliPointDist P)))).map
         (fun w => ((subLineSourceLine P kind w.1.1 w.1.2.1 w.1.2.2,
           subLineSourceLine P kind w.2.1 w.2.2.1 w.2.2.2),
           (w.1.1, w.2.1))) := by
@@ -232,9 +232,9 @@ theorem subLineBranchSamplingData_map_joint (P : AdmissibleParams) (kind : LineK
   have hU : uniformDistribution (SubLinePointDir P) =
       Distribution.prod
         (uniformDistribution
-          (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd))
+          (DirectPoint P.extendedDirectLd))
         (uniformDistribution
-          (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)) :=
+          (DirectPoint P.extendedDirectLd)) :=
     uniformDistribution_prod _ _
   have hshuffle :
       Distribution.prod
@@ -245,42 +245,29 @@ theorem subLineBranchSamplingData_map_joint (P : AdmissibleParams) (kind : LineK
       (Distribution.prod
           (Distribution.prod
             (uniformDistribution
-              (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd))
+              (DirectPoint P.extendedDirectLd))
             (Distribution.prod (subLineSeedDist P (subLineXIndex P k))
               (subLineSeedDist P (subLineZIndex P k))))
           (Distribution.prod
             (uniformDistribution
-              (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd))
+              (DirectPoint P.extendedDirectLd))
             (uniformDistribution
               (DirectScalarQ P.extendedDirectLd)))).map
         (fun w => (((w.2.1, w.1.1), w.1.2), w.2.2)) := by
     rw [hU]
     refine (Distribution.map_bijective_eq _ _
-      (fun w : (((Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) ×
+      (fun w : (((DirectPoint P.extendedDirectLd) ×
         (ScalarQ P.toLdParams × ScalarQ P.toLdParams)) ×
-      ((Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) ×
+      ((DirectPoint P.extendedDirectLd) ×
         DirectScalarQ P.extendedDirectLd)) => (((w.2.1, w.1.1), w.1.2), w.2.2))
-      (fun u : ((((Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) ×
-        (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)) ×
+      (fun u : ((((DirectPoint P.extendedDirectLd) ×
+        (DirectPoint P.extendedDirectLd)) ×
         (ScalarQ P.toLdParams × ScalarQ P.toLdParams)) ×
       DirectScalarQ P.extendedDirectLd) => ((u.1.1.2, u.1.2), (u.1.1.1, u.2)))
       (fun _ => rfl) (fun _ => rfl) ?_ ?_).symm
     · intro a
-      constructor
-      · intro ha
-        obtain ⟨h1, h2⟩ := Finset.mem_product.mp ha
-        obtain ⟨h11, h12⟩ := Finset.mem_product.mp h1
-        obtain ⟨h21, h22⟩ := Finset.mem_product.mp h2
-        exact Finset.mem_product.mpr
-          ⟨Finset.mem_product.mpr
-            ⟨Finset.mem_product.mpr ⟨h21, h11⟩, h12⟩, h22⟩
-      · intro ha
-        obtain ⟨h1, h2⟩ := Finset.mem_product.mp ha
-        obtain ⟨h11, h12⟩ := Finset.mem_product.mp h1
-        obtain ⟨h111, h112⟩ := Finset.mem_product.mp h11
-        exact Finset.mem_product.mpr
-          ⟨Finset.mem_product.mpr ⟨h112, h12⟩,
-            Finset.mem_product.mpr ⟨h111, h2⟩⟩
+      simp only [Distribution.prod_support, Finset.mem_product]
+      tauto
     · intro a
       show _ * (_ * _) * (_ * _) = _ * _ * (_ * _) * _
       ring
@@ -288,11 +275,11 @@ theorem subLineBranchSamplingData_map_joint (P : AdmissibleParams) (kind : LineK
       (Distribution.prod
           (Distribution.prod
             (uniformDistribution
-              (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd))
+              (DirectPoint P.extendedDirectLd))
             (Distribution.prod (subLineSeedDist P (subLineXIndex P k))
               (subLineSeedDist P (subLineZIndex P k))))
           (uniformDistribution
-            (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd))).map
+            (DirectPoint P.extendedDirectLd))).map
         (fun w => ((subLineSourceLine P kind
               (projX (directPointToPauli P w.2)) w.1.2.1
               (projX (directPointToPauli P w.1.1)),
@@ -304,62 +291,62 @@ theorem subLineBranchSamplingData_map_joint (P : AdmissibleParams) (kind : LineK
       (Distribution.prod
           (Distribution.prod
             (Distribution.prod
-              (uniformDistribution (Fin P.m → PauliScalar P))
-              (uniformDistribution (Fin P.m → PauliScalar P)))
+              (pauliPointDist P)
+              (pauliPointDist P))
             (Distribution.prod (subLineSeedDist P (subLineXIndex P k))
               (subLineSeedDist P (subLineZIndex P k))))
           (Distribution.prod
-            (uniformDistribution (Fin P.m → PauliScalar P))
-            (uniformDistribution (Fin P.m → PauliScalar P)))).map
+            (pauliPointDist P)
+            (pauliPointDist P))).map
         (fun w => ((subLineSourceLine P kind w.2.1 w.1.2.1 w.1.1.1,
             subLineSourceLine P kind w.2.2 w.1.2.2 w.1.1.2),
           (w.2.1, w.2.2))) := by
     rw [← uniformDistribution_map_projX_projZ_pauli,
       Distribution.prod_map_left
         (uniformDistribution
-          (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd))
+          (DirectPoint P.extendedDirectLd))
         (Distribution.prod (subLineSeedDist P (subLineXIndex P k))
           (subLineSeedDist P (subLineZIndex P k)))
         (fun u => (projX (directPointToPauli P u),
           projZ (directPointToPauli P u))),
       Distribution.prod_map_right _
         (uniformDistribution
-          (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd))
+          (DirectPoint P.extendedDirectLd))
         (fun u => (projX (directPointToPauli P u),
           projZ (directPointToPauli P u))),
       Distribution.prod_map_left _
         (uniformDistribution
-          (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)) _,
+          (DirectPoint P.extendedDirectLd)) _,
       Distribution.map_map, Distribution.map_map]
   have hfinal :
       (Distribution.prod
           (Distribution.prod
             (Distribution.prod
-              (uniformDistribution (Fin P.m → PauliScalar P))
-              (uniformDistribution (Fin P.m → PauliScalar P)))
+              (pauliPointDist P)
+              (pauliPointDist P))
             (Distribution.prod (subLineSeedDist P (subLineXIndex P k))
               (subLineSeedDist P (subLineZIndex P k))))
           (Distribution.prod
-            (uniformDistribution (Fin P.m → PauliScalar P))
-            (uniformDistribution (Fin P.m → PauliScalar P)))).map
+            (pauliPointDist P)
+            (pauliPointDist P))).map
         (fun w => ((w.2.1, (w.1.2.1, w.1.1.1)),
           (w.2.2, (w.1.2.2, w.1.1.2)))) =
       Distribution.prod
-        (Distribution.prod (uniformDistribution (Fin P.m → PauliScalar P))
+        (Distribution.prod (pauliPointDist P)
           (Distribution.prod (subLineSeedDist P (subLineXIndex P k))
-            (uniformDistribution (Fin P.m → PauliScalar P))))
-        (Distribution.prod (uniformDistribution (Fin P.m → PauliScalar P))
+            (pauliPointDist P)))
+        (Distribution.prod (pauliPointDist P)
           (Distribution.prod (subLineSeedDist P (subLineZIndex P k))
-            (uniformDistribution (Fin P.m → PauliScalar P)))) := by
+            (pauliPointDist P))) := by
     refine Distribution.map_bijective_eq _ _
-      (fun w : ((((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) ×
+      (fun w : ((((PauliPoint P) × (PauliPoint P)) ×
         (ScalarQ P.toLdParams × ScalarQ P.toLdParams)) ×
-      ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P))) =>
+      ((PauliPoint P) × (PauliPoint P))) =>
         ((w.2.1, (w.1.2.1, w.1.1.1)), (w.2.2, (w.1.2.2, w.1.1.2))))
-      (fun u : (((Fin P.m → PauliScalar P) ×
-        (ScalarQ P.toLdParams × (Fin P.m → PauliScalar P))) ×
-      ((Fin P.m → PauliScalar P) ×
-        (ScalarQ P.toLdParams × (Fin P.m → PauliScalar P)))) =>
+      (fun u : (((PauliPoint P) ×
+        (ScalarQ P.toLdParams × (PauliPoint P))) ×
+      ((PauliPoint P) ×
+        (ScalarQ P.toLdParams × (PauliPoint P)))) =>
         (((u.1.2.2, u.2.2.2), (u.1.2.1, u.2.2.1)), (u.1.1, u.2.1)))
       (fun _ => rfl) (fun _ => rfl) ?_ ?_
     · intro a
@@ -373,7 +360,7 @@ theorem subLineBranchSamplingData_map_joint (P : AdmissibleParams) (kind : LineK
   refine Eq.trans (Distribution.prod_map_eq_bind _ _ _) ?_
   refine Eq.trans (Distribution.bind_congr_support _ _
     (fun r => (uniformDistribution
-        (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)).map
+        (DirectPoint P.extendedDirectLd)).map
       (fun y => ((subLineSourceLine P kind (projX (directPointToPauli P y))
             r.2.1 (projX (directPointToPauli P r.1)),
           subLineSourceLine P kind (projZ (directPointToPauli P y))
@@ -389,7 +376,7 @@ theorem subLineBranchSamplingData_map_joint (P : AdmissibleParams) (kind : LineK
       (Finset.mem_filter.mp hsz).2
     show (Distribution.prod
         (uniformDistribution
-          (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd))
+          (DirectPoint P.extendedDirectLd))
         (uniformDistribution (DirectScalarQ P.extendedDirectLd))).map
         (fun p => ((subLineTripleOf P kind k ((p.1, r.1), r.2)).2,
           (projX (directPointToPauli P
@@ -401,7 +388,7 @@ theorem subLineBranchSamplingData_map_joint (P : AdmissibleParams) (kind : LineK
                   (subLineTripleOf P kind k ((p.1, r.1), r.2)).1.direction)))))
       = _
     have hfun :
-        (fun p : (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) ×
+        (fun p : (DirectPoint P.extendedDirectLd) ×
             DirectScalarQ P.extendedDirectLd =>
           ((subLineTripleOf P kind k ((p.1, r.1), r.2)).2,
             (projX (directPointToPauli P
@@ -471,11 +458,11 @@ theorem subLineBranchSamplingData_map_joint (P : AdmissibleParams) (kind : LineK
   · refine Eq.trans (Distribution.prod_map_eq_bind
       (Distribution.prod
         (uniformDistribution
-          (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd))
+          (DirectPoint P.extendedDirectLd))
         (Distribution.prod (subLineSeedDist P (subLineXIndex P k))
           (subLineSeedDist P (subLineZIndex P k))))
       (uniformDistribution
-        (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd))
+        (DirectPoint P.extendedDirectLd))
       (fun w => ((subLineSourceLine P kind
             (projX (directPointToPauli P w.2)) w.1.2.1
             (projX (directPointToPauli P w.1.1)),
@@ -487,9 +474,9 @@ theorem subLineBranchSamplingData_map_joint (P : AdmissibleParams) (kind : LineK
     refine Eq.trans hpp2 ?_
     rw [← hfinal]
     exact (Distribution.map_map _
-      (fun w : ((((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) ×
+      (fun w : ((((PauliPoint P) × (PauliPoint P)) ×
             (ScalarQ P.toLdParams × ScalarQ P.toLdParams)) ×
-          ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P))) =>
+          ((PauliPoint P) × (PauliPoint P))) =>
         ((w.2.1, (w.1.2.1, w.1.1.1)), (w.2.2, (w.1.2.2, w.1.1.2))))
       (fun w => ((subLineSourceLine P kind w.1.1 w.1.2.1 w.1.2.2,
           subLineSourceLine P kind w.2.1 w.2.2.1 w.2.2.2),
@@ -518,7 +505,7 @@ theorem subLineBranchSamplingData_map_projX (P : AdmissibleParams) (kind : LineK
   classical
   have h := congrArg
     (fun D : Distribution ((LineDesc P.toLdParams × LineDesc P.toLdParams) ×
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P))) =>
+        ((PauliPoint P) × (PauliPoint P))) =>
       Distribution.map D (fun z => (z.1, z.2.1)))
     (subLineBranchSamplingData_map_joint P kind k)
   simp only [Distribution.map_map] at h
@@ -547,7 +534,7 @@ theorem subLineBranchSamplingData_map_projZ (P : AdmissibleParams) (kind : LineK
   classical
   have h := congrArg
     (fun D : Distribution ((LineDesc P.toLdParams × LineDesc P.toLdParams) ×
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P))) =>
+        ((PauliPoint P) × (PauliPoint P))) =>
       Distribution.map D (fun z => (z.1, z.2.2)))
     (subLineBranchSamplingData_map_joint P kind k)
   simp only [Distribution.map_map] at h

@@ -181,7 +181,7 @@ theorem strategyConsRel_consistencyDefect_le
   exact hconverted
 
 @[simp] theorem directPointQuestionOf_directPointEquiv
-    (D : DirectLdParams) (u : Fin D.m → DirectScalarQ D) :
+    (D : DirectLdParams) (u : DirectPoint D) :
     directPointQuestionOf D (directPointEquiv D u) =
       directLdPointQuestionOf D u := by
   unfold directPointQuestionOf ldtPointToDirect
@@ -208,7 +208,7 @@ the effect of the direct point measurement followed by coordinate projection. -/
 theorem directCoordinatePointMeasurement_effect_transport
     (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k)
-    (u : Fin D.m → DirectScalarQ D) (a : DirectScalarQ D) :
+    (u : DirectPoint D) (a : DirectScalarQ D) :
     letI := D.toLDTFieldModel
     (((directCoordinateProjStrat D S hS r).pointMeasurementA
       (directPointEquiv D u)).outcome (directScalarEquiv D a)) =
@@ -233,7 +233,7 @@ theorem directCoordinatePointMeasurement_effect_transport
 theorem directCoordinatePointMeasurementB_effect_transport
     (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k)
-    (u : Fin D.m → DirectScalarQ D) (a : DirectScalarQ D) :
+    (u : DirectPoint D) (a : DirectScalarQ D) :
     letI := D.toLDTFieldModel
     (((directCoordinateProjStrat D S hS r).pointMeasurementB
       (directPointEquiv D u)).outcome (directScalarEquiv D a)) =
@@ -258,7 +258,7 @@ theorem directCoordinatePointMeasurementB_effect_transport
 `r`. -/
 noncomputable def directPointCoordinateMeasurementA
     (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (r : Fin D.k) (u : Fin D.m → DirectScalarQ D) :
+    (r : Fin D.k) (u : DirectPoint D) :
     MIPStarRE.Quantum.Measurement (DirectScalarQ D) S.ιA :=
   (S.A (directLdPointQuestionOf D u)).postprocess
     (fun answer => directLdPointValuesOrZero D answer r)
@@ -267,7 +267,7 @@ noncomputable def directPointCoordinateMeasurementA
 `r`. -/
 noncomputable def directPointCoordinateMeasurementB
     (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (r : Fin D.k) (u : Fin D.m → DirectScalarQ D) :
+    (r : Fin D.k) (u : DirectPoint D) :
     MIPStarRE.Quantum.Measurement (DirectScalarQ D) S.ιB :=
   (S.B (directLdPointQuestionOf D u)).postprocess
     (fun answer => directLdPointValuesOrZero D answer r)
@@ -278,7 +278,7 @@ noncomputable def directPolynomialEvaluationMeasurement
     letI := D.toLDTFieldModel
     {iota : Type*} → [Fintype iota] → [DecidableEq iota] →
       ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) iota →
-        (Fin D.m → DirectScalarQ D) →
+        (DirectPoint D) →
           MIPStarRE.Quantum.Measurement (DirectScalarQ D) iota := by
   letI := D.toLDTFieldModel
   intro iota _ _ G u
@@ -382,63 +382,6 @@ noncomputable def ldtPolynomialRightPlaced
   letI := D.toLDTFieldModel
   intro G g
   exact heteroKron 1 (G.outcome g)
-
-/-! ## Deprecated names
-
-The names below were used before the constructions above were named after the
-low individual degree test they belong to.  They are retained only because the
-stacked branch `issue-134-simultaneous-polynomial-measurements` refers to them.
--/
-
-/-- Former name of `ldtCoordinatePointMeasurementA`, kept for the stacked
-branch of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias matureCoordinatePointMeasurementA := ldtCoordinatePointMeasurementA
-
-/-- Former name of `ldtCoordinatePointMeasurementB`, kept for the stacked
-branch of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias matureCoordinatePointMeasurementB := ldtCoordinatePointMeasurementB
-
-/-- Former name of `ldtPolynomialEvaluationMeasurement`, kept for the stacked
-branch of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialEvaluationMeasurement := ldtPolynomialEvaluationMeasurement
-
-/-- Former name of `ldtPointAPlaced`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePointAPlaced := ldtPointAPlaced
-
-/-- Former name of `ldtPointBPlaced`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePointBPlaced := ldtPointBPlaced
-
-/-- Former name of `ldtPolynomialEvaluationLeft`, kept for the stacked branch
-of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialEvaluationLeft := ldtPolynomialEvaluationLeft
-
-/-- Former name of `ldtPolynomialEvaluationRight`, kept for the stacked branch
-of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialEvaluationRight := ldtPolynomialEvaluationRight
-
-/-- Former name of `ldtPolynomialLeftPlaced`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialLeftPlaced := ldtPolynomialLeftPlaced
-
-/-- Former name of `ldtPolynomialRightPlaced`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialRightPlaced := ldtPolynomialRightPlaced
-
-/-- Former name of `directLdtPointNonempty`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias directMaturePointNonempty := directLdtPointNonempty
 
 end
 

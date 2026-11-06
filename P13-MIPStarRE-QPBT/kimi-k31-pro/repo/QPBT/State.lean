@@ -20,6 +20,9 @@ namespace MIPStarRE.QPBT
 
 open MIPStarRE.Quantum
 
+/-- The Euclidean state space on a pair of registers. -/
+abbrev BipartiteSpace (ιA ιB : Type*) := EuclideanSpace ℂ (ιA × ιB)
+
 /-- Conjugation by the local isometries in `thm:ms-rigidity` and
 `lem:pauli-binary`; blueprint `thm:ms-rigidity` and
 `lem:pauli-binary`, paper

@@ -46,7 +46,7 @@ identity behind `eq:qld-comm-line-pt-cons2`, paper
 `14_analysis_of_the_pauli_basis_test.tex:540-545`. -/
 theorem sum_stateQForm_evalClass_AA'_BA''_eq (S : ProjectiveSetting P ε)
     (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) :
+    (u : PauliPoint P) :
     ∑ o : Option (PauliScalar P),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .AA' ((S.lineEvalMeasExp .alice W line u).effect o) *
@@ -85,7 +85,7 @@ of `eq:qld-comm-line-pt-cons2` on the reversed directed pair, paper
 `14_analysis_of_the_pauli_basis_test.tex:540-548`. -/
 theorem sum_stateQForm_evalClass_BA''_AA'_eq (S : ProjectiveSetting P ε)
     (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) :
+    (u : PauliPoint P) :
     ∑ o : Option (PauliScalar P),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .AA' ((S.pointMeasExpOption .alice W u).effect o) *
@@ -124,7 +124,7 @@ classes on `AB''` with Bob's completed expanded point measurement on `BB'`
 equals the corresponding strategy overlap. -/
 theorem sum_stateQForm_evalClass_AB''_BB'_eq (S : ProjectiveSetting P ε)
     (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) :
+    (u : PauliPoint P) :
     ∑ o : Option (PauliScalar P),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .AB'' ((S.lineEvalMeasExp .alice W line u).effect o) *
@@ -161,7 +161,7 @@ placements exchanged, so that the completed point measurement is carried by
 `AB''` and the evaluation classes by `BB'`. -/
 theorem sum_stateQForm_evalClass_BB'_AB''_eq (S : ProjectiveSetting P ε)
     (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) :
+    (u : PauliPoint P) :
     ∑ o : Option (PauliScalar P),
         DistanceCalculus.stateQForm S.psiHat
           (S.place .AB'' ((S.pointMeasExpOption .alice W u).effect o) *
@@ -249,7 +249,7 @@ theorem evalClassDist_aaBa_le (S : ProjectiveSetting P ε) (W : PauliKind) :
         (fun sample a => heteroKron 1
           ((S.pointMeasOption .bob W sample.2).effect a))
         S.toStrategy.ψ := by
-  let X := LineDesc P.toLdParams × (Fin P.m → PauliScalar P)
+  let X := LineDesc P.toLdParams × (PauliPoint P)
   let R := PauliRegister P
   let μ := linePointDist P.toLdParams
   let e := aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB
@@ -358,7 +358,7 @@ theorem evalClassDist_baAa_le (S : ProjectiveSetting P ε) (W : PauliKind) :
         (fun sample a => heteroKron 1
           ((S.lineEvalMeas .bob W sample.1 sample.2).effect a))
         S.toStrategy.ψ := by
-  let X := LineDesc P.toLdParams × (Fin P.m → PauliScalar P)
+  let X := LineDesc P.toLdParams × (PauliPoint P)
   let R := PauliRegister P
   let μ := linePointDist P.toLdParams
   let e := aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB
@@ -465,7 +465,7 @@ theorem evalClassDist_abBb_le (S : ProjectiveSetting P ε) (W : PauliKind) :
         (fun sample a => heteroKron 1
           ((S.pointMeasOption .bob W sample.2).effect a))
         S.toStrategy.ψ := by
-  let X := LineDesc P.toLdParams × (Fin P.m → PauliScalar P)
+  let X := LineDesc P.toLdParams × (PauliPoint P)
   let R := PauliRegister P
   let μ := linePointDist P.toLdParams
   let e := abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB
@@ -573,7 +573,7 @@ theorem evalClassDist_bbAb_le (S : ProjectiveSetting P ε) (W : PauliKind) :
         (fun sample a => heteroKron 1
           ((S.lineEvalMeas .bob W sample.1 sample.2).effect a))
         S.toStrategy.ψ := by
-  let X := LineDesc P.toLdParams × (Fin P.m → PauliScalar P)
+  let X := LineDesc P.toLdParams × (PauliPoint P)
   let R := PauliRegister P
   let μ := linePointDist P.toLdParams
   let e := abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB

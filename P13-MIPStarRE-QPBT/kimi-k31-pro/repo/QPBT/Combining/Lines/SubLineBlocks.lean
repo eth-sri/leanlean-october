@@ -41,7 +41,7 @@ seed-direction block.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`. -/
 def ldSpaceBlockEquiv (L : LdParams) :
     LdSpace L ≃
-      (Fin L.m → ScalarQ L) × (ScalarQ L × (Fin L.m → ScalarQ L)) where
+      (LdPoint L) × (ScalarQ L × (LdPoint L)) where
   toFun z := (LdSpace.point z, LdSpace.seed z, LdSpace.direction z)
   invFun w := fun i =>
     match i with
@@ -58,7 +58,7 @@ seed-direction block of an ambient low-degree vector.  Blueprint
 `def:ith-restricted-line`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1038-1048`. -/
 def ldSeedDirEvent (L : LdParams) (i : Fin L.m)
-    (sw : ScalarQ L × (Fin L.m → ScalarQ L)) : Prop :=
+    (sw : ScalarQ L × (LdPoint L)) : Prop :=
   chiIndex L sw.1 = i
 
 /-- Decidability of the coordinate-index event on the seed-direction block. -/
@@ -75,24 +75,24 @@ instance ldSeedDirEvent_decidablePred (L : LdParams) (i : Fin L.m) :
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1049-1051`. -/
 theorem ldSeedDirEvent_mass (L : LdParams) (i : Fin L.m) :
     ∑ sw ∈ (uniformDistribution
-          (ScalarQ L × (Fin L.m → ScalarQ L))).support.filter
+          (ScalarQ L × (LdPoint L))).support.filter
         (ldSeedDirEvent L i),
         (uniformDistribution
-          (ScalarQ L × (Fin L.m → ScalarQ L))).weight sw =
+          (ScalarQ L × (LdPoint L))).weight sw =
       1 / (L.m : ℝ) := by
   classical
   have hmap : (uniformDistribution
-        (ScalarQ L × (Fin L.m → ScalarQ L))).map
+        (ScalarQ L × (LdPoint L))).map
         (fun sw => chiIndex L sw.1) = uniformDistribution (Fin L.m) := by
     rw [← Distribution.map_map _ Prod.fst (chiIndex L),
       uniformDistribution_map_fst, uniformDistribution_map_chiIndex]
   rw [Distribution.sum_filter_weight_eq_avgOver,
-    show (fun sw : ScalarQ L × (Fin L.m → ScalarQ L) =>
+    show (fun sw : ScalarQ L × (LdPoint L) =>
         if ldSeedDirEvent L i sw then (1 : ℝ) else 0) =
       fun sw => (fun j : Fin L.m => if j = i then (1 : ℝ) else 0)
         (chiIndex L sw.1) from rfl,
     ← Distribution.avgOver_map
-      (uniformDistribution (ScalarQ L × (Fin L.m → ScalarQ L)))
+      (uniformDistribution (ScalarQ L × (LdPoint L)))
       (fun sw => chiIndex L sw.1)
       (fun j : Fin L.m => if j = i then (1 : ℝ) else 0), hmap]
   unfold avgOver
@@ -103,10 +103,10 @@ mass.  Blueprint `def:ith-restricted-line`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1038-1048`. -/
 theorem ldSeedDirEvent_positive (L : LdParams) (i : Fin L.m) :
     0 < ∑ sw ∈ (uniformDistribution
-          (ScalarQ L × (Fin L.m → ScalarQ L))).support.filter
+          (ScalarQ L × (LdPoint L))).support.filter
         (ldSeedDirEvent L i),
       (uniformDistribution
-        (ScalarQ L × (Fin L.m → ScalarQ L))).weight sw := by
+        (ScalarQ L × (LdPoint L))).weight sw := by
   rw [ldSeedDirEvent_mass]
   have hm : (0 : ℝ) < (L.m : ℝ) := by
     exact_mod_cast lt_of_lt_of_le Nat.zero_lt_one L.hm
@@ -120,9 +120,9 @@ whole space.  This is the auxiliary randomness of the sampling procedure of
 blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 noncomputable def freshDiagonalPairDist (L : LdParams) (i : Fin L.m) :
-    Distribution (ScalarQ L × (Fin L.m → ScalarQ L)) :=
+    Distribution (ScalarQ L × (LdPoint L)) :=
   Distribution.restrict
-    (uniformDistribution (ScalarQ L × (Fin L.m → ScalarQ L)))
+    (uniformDistribution (ScalarQ L × (LdPoint L)))
     (ldSeedDirEvent L i) (ldSeedDirEvent_positive L i)
 
 /-! ## Independence of the point block under the coordinate-index event -/
@@ -135,15 +135,15 @@ diagonal direction pair carried by the seed-direction block.  Blueprint
 theorem restrict_uniform_ldSeedEvent_map_block (L : LdParams) (i : Fin L.m) :
     (Distribution.restrict (uniformDistribution (LdSpace L)) (ldSeedEvent L i)
         (ldSeedEvent_positive L i)).map (ldSpaceBlockEquiv L) =
-      Distribution.prod (uniformDistribution (Fin L.m → ScalarQ L))
+      Distribution.prod (uniformDistribution (LdPoint L))
         (freshDiagonalPairDist L i) := by
   classical
   have hequiv := uniformDistribution_map_equiv (ldSpaceBlockEquiv L)
-  have hprod : 0 < ∑ w ∈ (uniformDistribution ((Fin L.m → ScalarQ L) ×
-          (ScalarQ L × (Fin L.m → ScalarQ L)))).support.filter
+  have hprod : 0 < ∑ w ∈ (uniformDistribution ((LdPoint L) ×
+          (ScalarQ L × (LdPoint L)))).support.filter
         (fun w => ldSeedDirEvent L i w.2),
-      (uniformDistribution ((Fin L.m → ScalarQ L) ×
-        (ScalarQ L × (Fin L.m → ScalarQ L)))).weight w := by
+      (uniformDistribution ((LdPoint L) ×
+        (ScalarQ L × (LdPoint L)))).weight w := by
     rw [uniformDistribution_snd_event_mass]
     exact ldSeedDirEvent_positive L i
   have hposA : 0 < ∑ w ∈ ((uniformDistribution (LdSpace L)).map
@@ -166,13 +166,13 @@ theorem restrict_uniform_ldSeedEvent_map_block (L : LdParams) (i : Fin L.m) :
 
 /-- The axis-line decoder read on the block decomposition. -/
 def aLineDescOfBlock (L : LdParams)
-    (w : (Fin L.m → ScalarQ L) × (ScalarQ L × (Fin L.m → ScalarQ L))) :
+    (w : (LdPoint L) × (ScalarQ L × (LdPoint L))) :
     LineDesc L :=
   aLineDescOf L ((ldSpaceBlockEquiv L).symm w)
 
 /-- The diagonal-line decoder read on the block decomposition. -/
 def dLineDescOfBlock (L : LdParams)
-    (w : (Fin L.m → ScalarQ L) × (ScalarQ L × (Fin L.m → ScalarQ L)))  :
+    (w : (LdPoint L) × (ScalarQ L × (LdPoint L)))  :
     LineDesc L :=
   dLineDescOf L ((ldSpaceBlockEquiv L).symm w)
 
@@ -183,7 +183,7 @@ with that same point.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 theorem restrictedALineDist_eq_map_prod (L : LdParams) (i : Fin L.m) :
     restrictedALineDist L i =
-      (Distribution.prod (uniformDistribution (Fin L.m → ScalarQ L))
+      (Distribution.prod (uniformDistribution (LdPoint L))
           (freshDiagonalPairDist L i)).map
         (fun w => (aLineDescOfBlock L w, w.1)) := by
   classical
@@ -207,7 +207,7 @@ that same point.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 theorem restrictedDLineDist_eq_map_prod (L : LdParams) (i : Fin L.m) :
     restrictedDLineDist L i =
-      (Distribution.prod (uniformDistribution (Fin L.m → ScalarQ L))
+      (Distribution.prod (uniformDistribution (LdPoint L))
           (freshDiagonalPairDist L i)).map
         (fun w => (dLineDescOfBlock L w, w.1)) := by
   classical

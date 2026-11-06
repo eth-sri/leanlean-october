@@ -103,7 +103,7 @@ private theorem directLdNaimarkStrategy_compress_soundness
     (GA : DirectPolyMeasTuple D (directLdNaimarkStrategy D S).ιA)
     (GB : DirectPolyMeasTuple D (directLdNaimarkStrategy D S).ιB)
     (h1 : consistencyDefect
-      (uniformDistribution (Fin D.m → DirectScalarQ D))
+      (uniformDistribution (DirectPoint D))
       (fun u outcome => heteroKron
         ((((directLdNaimarkStrategy D S).A
           (directLdPointQuestionOf D u)).postprocess
@@ -112,7 +112,7 @@ private theorem directLdNaimarkStrategy_compress_soundness
         ((GB.postprocess (evalDirectPolyTupleAt u)).effect outcome))
       (directLdNaimarkStrategy D S).ψ ≤ bound)
     (h2 : consistencyDefect
-      (uniformDistribution (Fin D.m → DirectScalarQ D))
+      (uniformDistribution (DirectPoint D))
       (fun u outcome => heteroKron
         ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
       (fun u outcome => heteroKron 1
@@ -127,7 +127,7 @@ private theorem directLdNaimarkStrategy_compress_soundness
     ∃ GA0 : DirectPolyMeasTuple D S.ιA,
       ∃ GB0 : DirectPolyMeasTuple D S.ιB,
         consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
+            (uniformDistribution (DirectPoint D))
             (fun u outcome => heteroKron
               (((S.A (directLdPointQuestionOf D u)).postprocess
                 (directLdPointValuesOrZero D)).effect outcome) 1)
@@ -135,7 +135,7 @@ private theorem directLdNaimarkStrategy_compress_soundness
               ((GB0.postprocess (evalDirectPolyTupleAt u)).effect outcome))
             S.ψ ≤ bound ∧
         consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
+            (uniformDistribution (DirectPoint D))
             (fun u outcome => heteroKron
               ((GA0.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
             (fun u outcome => heteroKron 1
@@ -151,7 +151,7 @@ private theorem directLdNaimarkStrategy_compress_soundness
     GB.compressAt (none : Option (directLdGame D).AnswerB)
   refine ⟨GA0, GB0, ?_, ?_, ?_⟩
   · have htransport :
-        consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+        consistencyDefect (uniformDistribution (DirectPoint D))
             (fun u outcome => heteroKron
               ((((directLdNaimarkStrategy D S).A
                 (directLdPointQuestionOf D u)).postprocess
@@ -159,7 +159,7 @@ private theorem directLdNaimarkStrategy_compress_soundness
             (fun u outcome => heteroKron 1
               ((GB.postprocess (evalDirectPolyTupleAt u)).effect outcome))
             (directLdNaimarkStrategy D S).ψ =
-          consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+          consistencyDefect (uniformDistribution (DirectPoint D))
             (fun u outcome => heteroKron
               (((((directLdNaimarkStrategy D S).A
                 (directLdPointQuestionOf D u)).postprocess
@@ -167,7 +167,7 @@ private theorem directLdNaimarkStrategy_compress_soundness
             (fun u outcome => heteroKron 1
               (((GB.postprocess (evalDirectPolyTupleAt u)).compressAt none).effect outcome))
             S.ψ := by
-      change consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+      change consistencyDefect (uniformDistribution (DirectPoint D))
           (fun u outcome => heteroKron
             ((((directLdNaimarkStrategy D S).A
               (directLdPointQuestionOf D u)).postprocess
@@ -177,13 +177,13 @@ private theorem directLdNaimarkStrategy_compress_soundness
           (padState none none S.ψ) = _
       exact consistencyDefect_padState_compressAt _ _ _ none none S.ψ
     calc
-      consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+      consistencyDefect (uniformDistribution (DirectPoint D))
           (fun u outcome => heteroKron
             (((S.A (directLdPointQuestionOf D u)).postprocess
               (directLdPointValuesOrZero D)).effect outcome) 1)
           (fun u outcome => heteroKron 1
             ((GB0.postprocess (evalDirectPolyTupleAt u)).effect outcome)) S.ψ =
-        consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+        consistencyDefect (uniformDistribution (DirectPoint D))
           (fun u outcome => heteroKron
             (((((directLdNaimarkStrategy D S).A
               (directLdPointQuestionOf D u)).postprocess
@@ -197,7 +197,7 @@ private theorem directLdNaimarkStrategy_compress_soundness
             · intro u outcome
               dsimp only [GB0]
               rw [MIPStarRE.Quantum.Measurement.compressAt_postprocess]
-      _ = consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+      _ = consistencyDefect (uniformDistribution (DirectPoint D))
           (fun u outcome => heteroKron
             ((((directLdNaimarkStrategy D S).A
               (directLdPointQuestionOf D u)).postprocess
@@ -207,7 +207,7 @@ private theorem directLdNaimarkStrategy_compress_soundness
           (directLdNaimarkStrategy D S).ψ := htransport.symm
       _ ≤ bound := h1
   · have htransport :
-        consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+        consistencyDefect (uniformDistribution (DirectPoint D))
             (fun u outcome => heteroKron
               ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
             (fun u outcome => heteroKron 1
@@ -215,7 +215,7 @@ private theorem directLdNaimarkStrategy_compress_soundness
                 (directLdPointQuestionOf D u)).postprocess
                   (directLdPointValuesOrZero D)).effect outcome))
             (directLdNaimarkStrategy D S).ψ =
-          consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+          consistencyDefect (uniformDistribution (DirectPoint D))
             (fun u outcome => heteroKron
               (((GA.postprocess (evalDirectPolyTupleAt u)).compressAt none).effect outcome) 1)
             (fun u outcome => heteroKron 1
@@ -223,7 +223,7 @@ private theorem directLdNaimarkStrategy_compress_soundness
                 (directLdPointQuestionOf D u)).postprocess
                   (directLdPointValuesOrZero D)).compressAt none).effect outcome))
             S.ψ := by
-      change consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+      change consistencyDefect (uniformDistribution (DirectPoint D))
           (fun u outcome => heteroKron
             ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
           (fun u outcome => heteroKron 1
@@ -233,13 +233,13 @@ private theorem directLdNaimarkStrategy_compress_soundness
           (padState none none S.ψ) = _
       exact consistencyDefect_padState_compressAt _ _ _ none none S.ψ
     calc
-      consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+      consistencyDefect (uniformDistribution (DirectPoint D))
           (fun u outcome => heteroKron
             ((GA0.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
           (fun u outcome => heteroKron 1
             (((S.B (directLdPointQuestionOf D u)).postprocess
               (directLdPointValuesOrZero D)).effect outcome)) S.ψ =
-        consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+        consistencyDefect (uniformDistribution (DirectPoint D))
           (fun u outcome => heteroKron
             (((GA.postprocess (evalDirectPolyTupleAt u)).compressAt none).effect outcome) 1)
           (fun u outcome => heteroKron 1
@@ -253,7 +253,7 @@ private theorem directLdNaimarkStrategy_compress_soundness
               rw [MIPStarRE.Quantum.Measurement.compressAt_postprocess]
             · intro u outcome
               rw [directLdNaimarkStrategy_pointB_compress]
-      _ = consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
+      _ = consistencyDefect (uniformDistribution (DirectPoint D))
           (fun u outcome => heteroKron
             ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
           (fun u outcome => heteroKron 1
@@ -312,7 +312,7 @@ theorem direct_ld_soundness_of_k_eq_one_any_strategy_explicit :
           ∃ GA : DirectPolyMeasTuple D S.ιA,
             ∃ GB : DirectPolyMeasTuple D S.ιB,
               consistencyDefect
-                  (uniformDistribution (Fin D.m → DirectScalarQ D))
+                  (uniformDistribution (DirectPoint D))
                   (fun u outcome =>
                     heteroKron
                       (((S.A (directLdPointQuestionOf D u)).postprocess
@@ -323,7 +323,7 @@ theorem direct_ld_soundness_of_k_eq_one_any_strategy_explicit :
                   S.ψ ≤ deltaLd pauliBaselineLowDegreeConstant
                     pauliBaselineLowDegreePower ε D.q D.m D.d D.k ∧
               consistencyDefect
-                  (uniformDistribution (Fin D.m → DirectScalarQ D))
+                  (uniformDistribution (DirectPoint D))
                   (fun u outcome =>
                     heteroKron
                       ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)

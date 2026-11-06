@@ -120,10 +120,10 @@ private theorem axis_point_win_iff_read_eq
         DirectLineDesc.direction] using hparameter)
 
 private theorem axisGameRead_axisAnswer_eq_of_effect_ne_zero
-    (lines : ExtendedLinesWitness setting points deltaL)
+    (lines : ExtendedLinesWitness setting points deltaL) (side : PlayerSide)
     (sample : DirectLdSpace P.extendedDirectLd)
     (coeffs : DirectDegPoly P.extendedDirectLd (P.m * P.d + 1))
-    (heffect : (lines.Qline .alice
+    (heffect : (lines.Qline side
       (directALineDescOf P.extendedDirectLd sample)).effect coeffs ≠ 0) :
     axisGameRead sample (axisAnswer P coeffs) =
       (directEvalOpt (directALineDescOf P.extendedDirectLd sample) sample.point coeffs).map
@@ -132,7 +132,7 @@ private theorem axisGameRead_axisAnswer_eq_of_effect_ne_zero
       (axisRead P coeffs)).map (extendedDirectScalarEquiv P) = _
   have heval (parameter : DirectScalarQ P.extendedDirectLd) :
       evalCoefficient (axisRead P coeffs) parameter = evalCoefficient coeffs parameter :=
-    axisRead_eval_of_effect_ne_zero lines .alice _ rfl coeffs heffect parameter
+    axisRead_eval_of_effect_ne_zero lines side _ rfl coeffs heffect parameter
   apply congrArg (Option.map (extendedDirectScalarEquiv P))
   cases hfull : directEvalOpt (directALineDescOf P.extendedDirectLd sample)
       sample.point coeffs with
@@ -177,7 +177,7 @@ private theorem axis_read_effect
   by_cases heffect : (lines.Qline .alice
       (directALineDescOf P.extendedDirectLd sample)).effect coeffs = 0
   · simp [heffect]
-  · rw [axisGameRead_axisAnswer_eq_of_effect_ne_zero lines sample coeffs heffect]
+  · rw [axisGameRead_axisAnswer_eq_of_effect_ne_zero lines .alice sample coeffs heffect]
 
 private theorem point_read_effect
     (lines : ExtendedLinesWitness setting points deltaL)
@@ -674,60 +674,11 @@ private theorem point_axis_win_iff_read_eq
         (.aline, directLdMap P.extendedDirectLd .aline sample)
         (.pointVals values) (.alinePolys coeffs) = true ↔
       pointGameRead (.pointVals values) = axisGameRead sample (.alinePolys coeffs) := by
-  have hpredicate :
-      directLdWinPredicate P.extendedDirectLd
-          (.point, directLdMap P.extendedDirectLd .point sample)
-          (.aline, directLdMap P.extendedDirectLd .aline sample)
-          (.pointVals values) (.alinePolys coeffs) =
-        directLdWinPredicate P.extendedDirectLd
-          (.aline, directLdMap P.extendedDirectLd .aline sample)
-          (.point, directLdMap P.extendedDirectLd .point sample)
-          (.alinePolys coeffs) (.pointVals values) := by
-    rfl
-  rw [hpredicate]
+  rw [directLdWinPredicate_symm]
   constructor
   · exact fun h => ((axis_point_win_iff_read_eq (P := P) sample coeffs values).1 h).symm
   · exact fun h =>
       (axis_point_win_iff_read_eq (P := P) sample coeffs values).2 h.symm
-
-private theorem axisGameRead_axisAnswer_eq_of_effect_ne_zero_bob
-    (lines : ExtendedLinesWitness setting points deltaL)
-    (sample : DirectLdSpace P.extendedDirectLd)
-    (coeffs : DirectDegPoly P.extendedDirectLd (P.m * P.d + 1))
-    (heffect : (lines.Qline .bob
-      (directALineDescOf P.extendedDirectLd sample)).effect coeffs ≠ 0) :
-    axisGameRead sample (axisAnswer P coeffs) =
-      (directEvalOpt (directALineDescOf P.extendedDirectLd sample) sample.point coeffs).map
-        (extendedDirectScalarEquiv P) := by
-  change (directEvalOpt (directALineDescOf P.extendedDirectLd sample) sample.point
-      (axisRead P coeffs)).map (extendedDirectScalarEquiv P) = _
-  have heval (parameter : DirectScalarQ P.extendedDirectLd) :
-      evalCoefficient (axisRead P coeffs) parameter = evalCoefficient coeffs parameter :=
-    axisRead_eval_of_effect_ne_zero lines .bob _ rfl coeffs heffect parameter
-  apply congrArg (Option.map (extendedDirectScalarEquiv P))
-  cases hfull : directEvalOpt (directALineDescOf P.extendedDirectLd sample)
-      sample.point coeffs with
-  | none =>
-      cases haxis : directEvalOpt (directALineDescOf P.extendedDirectLd sample)
-          sample.point (axisRead P coeffs) with
-      | none => rfl
-      | some answer =>
-          have hspec := (directEvalOpt_eq_some_iff _ _ _ _).1 haxis
-          have hfull' : directEvalOpt (directALineDescOf P.extendedDirectLd sample)
-              sample.point coeffs = some answer := by
-            apply (directEvalOpt_eq_some_iff _ _ _ _).2
-            exact ⟨hspec.1, fun parameter hparameter =>
-              (heval parameter).symm.trans (hspec.2 parameter hparameter)⟩
-          rw [hfull] at hfull'
-          contradiction
-  | some answer =>
-      have hspec := (directEvalOpt_eq_some_iff _ _ _ _).1 hfull
-      have haxis : directEvalOpt (directALineDescOf P.extendedDirectLd sample)
-          sample.point (axisRead P coeffs) = some answer := by
-        apply (directEvalOpt_eq_some_iff _ _ _ _).2
-        exact ⟨hspec.1, fun parameter hparameter =>
-          (heval parameter).trans (hspec.2 parameter hparameter)⟩
-      rw [haxis]
 
 private theorem axis_read_effect_bob
     (lines : ExtendedLinesWitness setting points deltaL)
@@ -748,7 +699,7 @@ private theorem axis_read_effect_bob
   by_cases heffect : (lines.Qline .bob
       (directALineDescOf P.extendedDirectLd sample)).effect coeffs = 0
   · simp [heffect]
-  · rw [axisGameRead_axisAnswer_eq_of_effect_ne_zero_bob lines sample coeffs heffect]
+  · rw [axisGameRead_axisAnswer_eq_of_effect_ne_zero lines .bob sample coeffs heffect]
 
 /-- Alice's point readout is the corresponding postprocessed joint point effect.
 Support for `lem:qld-4-7`, paper `14_analysis_of_the_pauli_basis_test.tex:1279-1288`. -/

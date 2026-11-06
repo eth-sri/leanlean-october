@@ -95,6 +95,13 @@ blueprint
 -/
 abbrev PauliScalar (P : AdmissibleParams) := P.model.K
 
+/-- A point-sized block of Pauli coefficients. -/
+abbrev PauliPoint (P : AdmissibleParams) := Fin P.m → PauliScalar P
+
+/-- The uniform distribution on point-sized coefficient blocks. -/
+noncomputable abbrev pauliPointDist (P : AdmissibleParams) : Distribution (PauliPoint P) :=
+  uniformDistribution (PauliPoint P)
+
 /-- The six families of Pauli-test questions.  This is part of
 blueprint `def:pauli-question-distribution`,
 paper origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:964-1120`.

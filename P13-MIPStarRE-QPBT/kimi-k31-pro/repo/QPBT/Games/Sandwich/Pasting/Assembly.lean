@@ -116,7 +116,7 @@ theorem mass_ordered_product_ge {X R₁ R₂ ι : Type*}
     [Fintype X] [DecidableEq X] [Fintype R₁] [DecidableEq R₁]
     [Fintype R₂] [DecidableEq R₂] [Fintype ι] [DecidableEq ι]
     (D : Distribution X) (Ac P : X → Measurement R₁ ι) (Q : X → Measurement R₂ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (d K : ℝ)
+    (ψ : BipartiteSpace ι ι) (d K : ℝ)
     (hD : D.IsProbability) (hψ : ‖ψ‖ = 1)
     (hAc : ∀ q, MIPStarRE.QPBT.Measurement.IsProjective (Ac q))
     (hQ : ∀ q, MIPStarRE.QPBT.Measurement.IsProjective (Q q))
@@ -290,7 +290,7 @@ theorem pinched_coarse_sub_fine_eq_distinct_families {R₁ R₂ Γ₂ ι : Type*
     [Fintype R₁] [DecidableEq R₁] [Fintype R₂] [DecidableEq R₂]
     [Fintype Γ₂] [DecidableEq Γ₂] [Fintype ι] [DecidableEq ι]
     (P : Measurement R₁ ι) (G opposite : Measurement Γ₂ ι) (eval : Γ₂ → R₂)
-    (ψ : EuclideanSpace ℂ (ι × ι)) :
+    (ψ : BipartiteSpace ι ι) :
     (∑ b : R₂, stateQForm ψ (heteroKron ((opposite.postprocess eval).effect b)
         (∑ a : R₁, P.effect a * (G.postprocess eval).effect b * P.effect a))) -
       (∑ g : Γ₂, stateQForm ψ (heteroKron (opposite.effect g)
@@ -392,7 +392,7 @@ theorem commutator_mass_fine_le_distinct_families {X Y₁ Y₂ R₁ R₂ Γ₂ �
     [Fintype ι] [DecidableEq ι]
     (D : Distribution ((X × Y₁) × Y₂)) (eval₂ : Γ₂ → Y₂ → R₂)
     (G₂ opposite : X → Measurement Γ₂ ι) (P : (X × Y₁) → Measurement R₁ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (η K₀ m εc εf : ℝ)
+    (ψ : BipartiteSpace ι ι) (η K₀ m εc εf : ℝ)
     (hD : D.IsProbability) (hψ : ‖ψ‖ = 1) (hη : 0 ≤ η)
     (hG₂ : ∀ x, MIPStarRE.QPBT.Measurement.IsProjective (G₂ x))
     (hcoll : ∀ x y₁, 0 < (D.map Prod.fst).weight (x, y₁) →
@@ -541,7 +541,7 @@ theorem consistencyDefect_pasted_le_sqrt_one_sided {X Y₁ Y₂ R₁ R₂ Γ₁ 
     (eval₁ : Γ₁ → Y₁ → R₁) (eval₂ : Γ₂ → Y₂ → R₂)
     (G₁ : X → Measurement Γ₁ ι) (G₂ : X → Measurement Γ₂ ι)
     (A : ((X × Y₁) × Y₂) → Measurement (R₁ × R₂) ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (η δ C : ℝ)
+    (ψ : BipartiteSpace ι ι) (η δ C : ℝ)
     (hD : D.IsProbability) (hψ : ‖ψ‖ = 1) (hη : 0 ≤ η)
     (hG₂ : ∀ x, MIPStarRE.QPBT.Measurement.IsProjective (G₂ x))
     (hA : ∀ q, MIPStarRE.QPBT.Measurement.IsProjective (A q))
@@ -764,22 +764,22 @@ theorem pasting_error_sqrt_le_rpow (C δ η : ℝ) (hC : 1 ≤ C) (hδ0 : 0 ≤ 
       2 * Real.sqrt (2 * ((δ + 2 * Real.sqrt (2 * δ)) + η)) +
       2 * Real.sqrt (2 * (δ + 2 * Real.sqrt (2 * δ)))) ≤
       (3 * C + 19) * (η ^ (1/4 : ℝ) + δ ^ (1/8 : ℝ)) := by
-  have hu0' : 0 ≤ δ ^ (1/8 : ℝ) := Real.rpow_nonneg hδ0 _
-  have hv0' : 0 ≤ η ^ (1/4 : ℝ) := Real.rpow_nonneg hη0 _
-  have hu1' : δ ^ (1/8 : ℝ) ≤ 1 := Real.rpow_le_one hδ0 hδ1 (by norm_num)
-  have hv1' : η ^ (1/4 : ℝ) ≤ 1 := Real.rpow_le_one hη0 hη1 (by norm_num)
-  have hδu' : δ = (δ ^ (1/8 : ℝ)) ^ 8 := by
-    rw [← Real.rpow_natCast (δ ^ (1/8 : ℝ)) 8, ← Real.rpow_mul hδ0]
+  let u := δ ^ (1/8 : ℝ)
+  let v := η ^ (1/4 : ℝ)
+  have hu0 : 0 ≤ u := Real.rpow_nonneg hδ0 _
+  have hv0 : 0 ≤ v := Real.rpow_nonneg hη0 _
+  have hu1 : u ≤ 1 := Real.rpow_le_one hδ0 hδ1 (by norm_num)
+  have hv1 : v ≤ 1 := Real.rpow_le_one hη0 hη1 (by norm_num)
+  have hδu : δ = u ^ 8 := by
+    dsimp [u]
+    rw [← Real.rpow_natCast _ 8, ← Real.rpow_mul hδ0]
     norm_num
-  have hηv' : η = (η ^ (1/4 : ℝ)) ^ 4 := by
-    rw [← Real.rpow_natCast (η ^ (1/4 : ℝ)) 4, ← Real.rpow_mul hη0]
+  have hηv : η = v ^ 4 := by
+    dsimp [v]
+    rw [← Real.rpow_natCast _ 4, ← Real.rpow_mul hη0]
     norm_num
-  obtain ⟨u, hu0, hu1, hδu, hue⟩ :
-      ∃ u : ℝ, 0 ≤ u ∧ u ≤ 1 ∧ δ = u ^ 8 ∧ δ ^ (1/8 : ℝ) = u :=
-    ⟨δ ^ (1/8 : ℝ), hu0', hu1', hδu', rfl⟩
-  obtain ⟨v, hv0, hv1, hηv, hve⟩ :
-      ∃ v : ℝ, 0 ≤ v ∧ v ≤ 1 ∧ η = v ^ 4 ∧ η ^ (1/4 : ℝ) = v :=
-    ⟨η ^ (1/4 : ℝ), hv0', hv1', hηv', rfl⟩
+  have hue : δ ^ (1/8 : ℝ) = u := rfl
+  have hve : η ^ (1/4 : ℝ) = v := rfl
   rw [hue, hve, hδu, hηv]
   exact pasting_error_numeric_aux C u v hC hu0 hu1 hv0 hv1
 

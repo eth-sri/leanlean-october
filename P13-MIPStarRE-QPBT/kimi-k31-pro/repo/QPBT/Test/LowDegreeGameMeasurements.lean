@@ -43,7 +43,7 @@ noncomputable section
 /-- Formalization-only auxiliary equivalence splitting an ambient low-degree
 vector into its point, seed, and direction blocks. -/
 def ldSpaceSplit (L : LdParams) :
-    LdSpace L ≃ ((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L) where
+    LdSpace L ≃ ((LdPoint L) × ScalarQ L) × (LdPoint L) where
   toFun z := ((LdSpace.point z, LdSpace.seed z), LdSpace.direction z)
   invFun p := fun i =>
     match i with
@@ -65,9 +65,9 @@ def ldSpaceSplit (L : LdParams) :
 ambient vector is uniform. -/
 private theorem map_uniformDistribution_point (L : LdParams) :
     (uniformDistribution (LdSpace L)).map LdSpace.point =
-      uniformDistribution (Fin L.m → ScalarQ L) := by
+      uniformDistribution (LdPoint L) := by
   have hsplit : (uniformDistribution (LdSpace L)).map (ldSpaceSplit L) =
-      uniformDistribution (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L)) :=
+      uniformDistribution (((LdPoint L) × ScalarQ L) × (LdPoint L)) :=
     uniformDistribution_map_equiv (ldSpaceSplit L)
   calc
     (uniformDistribution (LdSpace L)).map LdSpace.point
@@ -76,11 +76,11 @@ private theorem map_uniformDistribution_point (L : LdParams) :
           rw [Distribution.map_map, Distribution.map_map]
           rfl
     _ = ((uniformDistribution
-          (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L))).map
+          (((LdPoint L) × ScalarQ L) × (LdPoint L))).map
             Prod.fst).map Prod.fst := by rw [hsplit]
-    _ = (uniformDistribution ((Fin L.m → ScalarQ L) × ScalarQ L)).map Prod.fst := by
+    _ = (uniformDistribution ((LdPoint L) × ScalarQ L)).map Prod.fst := by
           rw [uniformDistribution_map_fst]
-    _ = uniformDistribution (Fin L.m → ScalarQ L) := uniformDistribution_map_fst
+    _ = uniformDistribution (LdPoint L) := uniformDistribution_map_fst
 
 /-- Formalization-only auxiliary lemma: the shared scalar coordinate of a
 uniformly random ambient vector is uniform. This is the seed marginal used in
@@ -91,7 +91,7 @@ theorem uniformDistribution_map_ldSeed (L : LdParams) :
     (uniformDistribution (LdSpace L)).map LdSpace.seed =
       uniformDistribution (ScalarQ L) := by
   have hsplit : (uniformDistribution (LdSpace L)).map (ldSpaceSplit L) =
-      uniformDistribution (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L)) :=
+      uniformDistribution (((LdPoint L) × ScalarQ L) × (LdPoint L)) :=
     uniformDistribution_map_equiv (ldSpaceSplit L)
   calc
     (uniformDistribution (LdSpace L)).map LdSpace.seed
@@ -100,9 +100,9 @@ theorem uniformDistribution_map_ldSeed (L : LdParams) :
           rw [Distribution.map_map, Distribution.map_map]
           rfl
     _ = ((uniformDistribution
-          (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L))).map
+          (((LdPoint L) × ScalarQ L) × (LdPoint L))).map
             Prod.fst).map Prod.snd := by rw [hsplit]
-    _ = (uniformDistribution ((Fin L.m → ScalarQ L) × ScalarQ L)).map Prod.snd := by
+    _ = (uniformDistribution ((LdPoint L) × ScalarQ L)).map Prod.snd := by
           rw [uniformDistribution_map_fst]
     _ = uniformDistribution (ScalarQ L) := uniformDistribution_map_snd
 
@@ -124,7 +124,7 @@ distribution are uniform. Blueprint `lem:alnf`, paper
 `08_classical_and_quantum_low_degree_tests.tex:243-257`. -/
 theorem aLinePointDist_point_marginal_uniform (L : LdParams) :
     (aLinePointDist L).map Prod.snd =
-        uniformDistribution (Fin L.m → ScalarQ L) ∧
+        uniformDistribution (LdPoint L) ∧
       (aLinePointDist L).map (fun sample => chiIndex L sample.1.seed) =
         uniformDistribution (Fin L.m) := by
   constructor
@@ -151,7 +151,7 @@ line-point distribution are uniform. Blueprint `lem:dlnf`,
 paper `08_classical_and_quantum_low_degree_tests.tex:261-272`. -/
 theorem dLinePointDist_point_marginal_uniform (L : LdParams) :
     (dLinePointDist L).map Prod.snd =
-        uniformDistribution (Fin L.m → ScalarQ L) ∧
+        uniformDistribution (LdPoint L) ∧
       (dLinePointDist L).map (fun sample => chiIndex L sample.1.seed) =
         uniformDistribution (Fin L.m) := by
   constructor
@@ -213,20 +213,20 @@ noncomputable abbrev PolyMeasTuple (L : LdParams) (ι : Type*)
   PolyMeasFamily L.k (fun _ => ScalarQ L) (fun _ => L.m) (fun _ => L.d) ι
 
 /-- Evaluate every component of a polynomial tuple at a point. -/
-def evalPolyTupleAt {L : LdParams} (u : Fin L.m → ScalarQ L)
+def evalPolyTupleAt {L : LdParams} (u : LdPoint L)
     (g : PolyTuple L) : Fin L.k → ScalarQ L :=
   fun j => MvPolynomial.eval u (g j).1
 
 /-- Embed a geometric point into the ambient coefficient space used by a
 point question. -/
-def pointSpaceOf (L : LdParams) (u : Fin L.m → ScalarQ L) : LdSpace L :=
+def pointSpaceOf (L : LdParams) (u : LdPoint L) : LdSpace L :=
   fun i => match i with
   | .inl (.inl j) => u j
   | .inl (.inr _) => 0
   | .inr _ => 0
 
 /-- The typed low-degree point question associated with `u`. -/
-def ldPointQuestionOf (L : LdParams) (u : Fin L.m → ScalarQ L) : LdQuestion L :=
+def ldPointQuestionOf (L : LdParams) (u : LdPoint L) : LdQuestion L :=
   (.point, pointSpaceOf L u)
 
 /-- Read the point component of a low-degree answer, sending answers of the

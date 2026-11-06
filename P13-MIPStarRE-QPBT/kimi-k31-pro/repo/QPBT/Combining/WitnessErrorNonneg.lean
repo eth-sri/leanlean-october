@@ -61,11 +61,11 @@ theorem completedLinePointDefect_aaBa_nonneg
     (lines : ExtendedLinesWitness setting points deltaL)
     (mu : Distribution
       (DirectLineDesc P.extendedDirectLd ×
-        (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd))) :
+        (DirectPoint P.extendedDirectLd))) :
     0 ≤ completedLinePointDefect lines .AA' .BA'' mu := by
   let lineMeasurement :
       (DirectLineDesc P.extendedDirectLd ×
-        (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)) →
+        (DirectPoint P.extendedDirectLd)) →
         Measurement (Option (PauliScalar P)) (setting.ExpandedLocalSpace .alice) :=
     fun sample =>
       (lines.Qline .alice sample.1).postprocess
@@ -73,7 +73,7 @@ theorem completedLinePointDefect_aaBa_nonneg
           (extendedDirectScalarEquiv P))
   let pointMeasurement :
       (DirectLineDesc P.extendedDirectLd ×
-        (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)) →
+        (DirectPoint P.extendedDirectLd)) →
         Measurement (Option (PauliScalar P)) (setting.ExpandedLocalSpace .bob) :=
     fun sample =>
       (points.Q .bob

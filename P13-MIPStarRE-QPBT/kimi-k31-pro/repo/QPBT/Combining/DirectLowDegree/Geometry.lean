@@ -55,6 +55,9 @@ structure DirectLdParams where
 /-- The scalar field of a directly indexed low-degree game. -/
 abbrev DirectScalarQ (D : DirectLdParams) := D.model.K
 
+/-- A point in the directly indexed coordinate space. -/
+abbrev DirectPoint (D : DirectLdParams) := Fin D.m → DirectScalarQ D
+
 /-- The first coordinate, available because directly indexed dimensions are
 positive. -/
 def DirectLdParams.firstIndex (D : DirectLdParams) : Fin D.m :=

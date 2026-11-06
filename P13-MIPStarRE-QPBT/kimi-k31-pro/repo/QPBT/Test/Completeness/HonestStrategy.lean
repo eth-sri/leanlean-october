@@ -145,7 +145,7 @@ the Pauli register in basis `W` and reports the binary trace
 measurement on the Pauli label `h`.  Paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1277-1286`. -/
 noncomputable def pauliTraceBit (P : AdmissibleParams)
-    (u : Fin P.m → PauliScalar P) (r : PauliScalar P) (h : PauliRegister P) : ZMod 2 :=
+    (u : PauliPoint P) (r : PauliScalar P) (h : PauliRegister P) : ZMod 2 :=
   fixedBinTrace P.model (lowDegreeEnc h u * r)
 
 /-- The honest Pair/W measurement `τ^W_{[tr(g_·(u) r) = β]}` of the proof of
@@ -154,7 +154,7 @@ by the trace bit.  Paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1277-1286`,
 blueprint `lem:pauli-completeness`. -/
 noncomputable def pauliTraceMeasurement (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (r : PauliScalar P) :
+    (u : PauliPoint P) (r : PauliScalar P) :
     Measurement (ZMod 2) (PauliRegister P) :=
   (pauliBasisMeasurement W).postprocess (pauliTraceBit P u r)
 
@@ -162,7 +162,7 @@ noncomputable def pauliTraceMeasurement (P : AdmissibleParams) (W : PauliKind)
 the generalized Pauli projectors over the labels whose trace bit equals `β`,
 which is the coarse-grained projector `τ^W_{[tr(g_·(u) r) = β]}` of the paper. -/
 theorem pauliTraceMeasurement_effect (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (r : PauliScalar P) (b : ZMod 2) :
+    (u : PauliPoint P) (r : PauliScalar P) (b : ZMod 2) :
     (pauliTraceMeasurement P W u r).effect b =
       ∑ h ∈ Finset.univ.filter (fun h : PauliRegister P => pauliTraceBit P u r h = b),
         pauliProj W h := rfl
@@ -172,7 +172,7 @@ Pair/W measurement is the generalized Pauli observable at the label
 `ind_m(u) r`.  Paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1300-1315`. -/
 theorem obsOf_pauliTraceMeasurement (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (r : PauliScalar P) :
+    (u : PauliPoint P) (r : PauliScalar P) :
     obsOf (pauliTraceMeasurement P W u r) =
       tauObservable W (r • indicatorVec u) := by
   classical
@@ -228,7 +228,7 @@ its observable, so the measurement is projective; part of the projectivity
 assertion of the honest strategy in the proof of `lem:pauli-completeness`,
 paper `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1364-1370`. -/
 theorem pauliTraceMeasurement_effect_eq_reflectionEffect (P : AdmissibleParams)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) (r : PauliScalar P) (b : ZMod 2) :
+    (W : PauliKind) (u : PauliPoint P) (r : PauliScalar P) (b : ZMod 2) :
     (pauliTraceMeasurement P W u r).effect b =
       reflectionEffect (tauObservable W (r • indicatorVec u)) b := by
   rw [← obsOf_pauliTraceMeasurement, reflectionEffect_obsOf_measurement]
@@ -237,7 +237,7 @@ theorem pauliTraceMeasurement_effect_eq_reflectionEffect (P : AdmissibleParams)
 strategy in the proof of `lem:pauli-completeness`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1364-1370`. -/
 theorem pauliTraceMeasurement_projective (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (r : PauliScalar P) :
+    (u : PauliPoint P) (r : PauliScalar P) :
     MIPStarRE.QPBT.Measurement.IsProjective (pauliTraceMeasurement P W u r) := by
   intro b
   rw [pauliTraceMeasurement_effect_eq_reflectionEffect]
@@ -246,7 +246,7 @@ theorem pauliTraceMeasurement_projective (P : AdmissibleParams) (W : PauliKind)
 
 /-- The effects of the honest Pair/W measurement are symmetric matrices. -/
 theorem pauliTraceMeasurement_effect_transpose (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (r : PauliScalar P) (b : ZMod 2) :
+    (u : PauliPoint P) (r : PauliScalar P) (b : ZMod 2) :
     ((pauliTraceMeasurement P W u r).effect b)ᵀ =
       (pauliTraceMeasurement P W u r).effect b := by
   rw [pauliTraceMeasurement_effect_eq_reflectionEffect]
@@ -265,12 +265,12 @@ coarse-grained by the value `g_h(u)` of the low-degree encoding at the point
 `u`.  Paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1248-1261`. -/
 noncomputable def pauliPointMeasurement (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) : Measurement (PauliScalar P) (PauliRegister P) :=
+    (u : PauliPoint P) : Measurement (PauliScalar P) (PauliRegister P) :=
   (pauliBasisMeasurement W).postprocess (fun h => lowDegreeEnc h u)
 
 /-- The honest Point/W measurement is projective. -/
 theorem pauliPointMeasurement_projective (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
+    (u : PauliPoint P) :
     MIPStarRE.QPBT.Measurement.IsProjective (pauliPointMeasurement P W u) :=
   pauliBasisMeasurement_postprocess_projective W _
 

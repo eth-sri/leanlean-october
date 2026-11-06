@@ -30,7 +30,7 @@ noncomputable section
 the joint axis line-point law. This is the axis case of the conditional
 sampling used at paper line 955. -/
 theorem avgOver_aLinePointDist_resample_parameter (L : LdParams)
-    (value : (LineDesc L × (Fin L.m → ScalarQ L)) → ℝ) :
+    (value : (LineDesc L × (LdPoint L)) → ℝ) :
     avgOver (aLinePointDist L) value =
     avgOver (aLinePointDist L) (fun sample =>
       avgOver (uniformDistribution (ScalarQ L)) (fun param =>
@@ -43,15 +43,15 @@ theorem avgOver_aLinePointDist_resample_parameter (L : LdParams)
   simp only [Distribution.avgOver_map]
   rw [uniformDistribution_prod]
   simp only [SandwichProduct.avgOver_distribution_prod]
-  rw [avgOver_comm, avgOver_comm (uniformDistribution (Fin L.m → ScalarQ L))]
+  rw [avgOver_comm, avgOver_comm (uniformDistribution (LdPoint L))]
   apply congrArg
   funext block
-  let direction : Fin L.m → ScalarQ L :=
+  let direction : LdPoint L :=
     coordinateDirection (chiIndex L block.1)
-  change avgOver (uniformDistribution (Fin L.m → ScalarQ L)) (fun point =>
+  change avgOver (uniformDistribution (LdPoint L)) (fun point =>
       value (LineDesc.axis (lineRepMap direction point) block.1
         (lineRepMap_apply_self direction point), point)) =
-    avgOver (uniformDistribution (Fin L.m → ScalarQ L)) (fun point =>
+    avgOver (uniformDistribution (LdPoint L)) (fun point =>
       avgOver (uniformDistribution (ScalarQ L)) (fun param =>
         value (LineDesc.axis (lineRepMap direction point) block.1
           (lineRepMap_apply_self direction point),

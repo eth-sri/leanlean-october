@@ -60,14 +60,14 @@ source scalar field, are independent and uniformly random.  Blueprint
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
 theorem uniformDistribution_map_projX_projZ_pauli (P : AdmissibleParams) :
     (uniformDistribution
-          (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)).map
+          (DirectPoint P.extendedDirectLd)).map
         (fun u => (projX (directPointToPauli P u),
           projZ (directPointToPauli P u))) =
       Distribution.prod (uniformDistribution (Fin P.m → PauliScalar P))
         (uniformDistribution (Fin P.m → PauliScalar P)) := by
   classical
   have hfun :
-      (fun u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd =>
+      (fun u : DirectPoint P.extendedDirectLd =>
           (projX (directPointToPauli P u), projZ (directPointToPauli P u))) =
         fun u => (Equiv.prodCongr (directBlockToPauliEquiv P)
           (directBlockToPauliEquiv P)) (projX u, projZ u) := rfl

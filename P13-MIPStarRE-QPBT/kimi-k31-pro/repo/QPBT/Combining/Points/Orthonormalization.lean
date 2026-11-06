@@ -119,7 +119,6 @@ theorem reindexOp_baAaBipartition_left (S : ProjectiveSetting P ε)
     Matrix.kronecker, Matrix.kroneckerMap_apply, Matrix.one_apply, Prod.mk.injEq]
   split_ifs
   all_goals simp_all
-  all_goals rfl
 
 /-- Under the `BA'' | AA'(B'B'')` bipartition, an `AA'` placement is the
 ordinary right tensor placement, with identity on the unused EPR pair. -/
@@ -137,7 +136,6 @@ theorem reindexOp_baAaBipartition_right (S : ProjectiveSetting P ε)
     Matrix.kronecker, Matrix.kroneckerMap_apply, Matrix.one_apply, Prod.mk.injEq]
   split_ifs
   all_goals simp_all
-  all_goals rfl
 
 /-! ## Transport along a bipartition -/
 

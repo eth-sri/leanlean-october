@@ -67,7 +67,7 @@ theorem mass_outside_encoding_le_evaluated_defect {P : AdmissibleParams}
     (hsupport : ∀ g, ¬ IsEncoding g → reference.effect g = 0) :
     (∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
       stateQForm psi (heteroKron (meas.effect g) 1)) ≤
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((meas.postprocess (fun g => evalPoly g u)).effect a) 1)
         (fun u a => heteroKron 1 ((reference.postprocess
           (fun g => evalPoly g u)).effect a)) psi + (P.m * P.d : ℝ) / P.q := by
@@ -87,16 +87,16 @@ namespace ProjectiveSetting
 two-player expanded state, in the point--Pauli orientation. -/
 theorem point_encodingPauli_consistency_eq {P : AdmissibleParams} {epsilon : ℝ}
     (S : ProjectiveSetting P epsilon) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((S.pointMeasExp .alice W u).effect a) 1)
         (fun u a => heteroKron 1 (((S.encodingPauliMeas .bob W).postprocess
           (fun g => evalPoly g u)).effect a)) (ExtendedLineGame.pairState S) =
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pauliEvalMeas .bob W u).effect a))
         S.toStrategy.ψ := by
   have h := consistencyDefect_convolution_eq_of_perfect
-    (uniformDistribution (Fin P.m → PauliScalar P))
+    (pauliPointDist P)
     (S.pointMeas .alice W) (S.pauliEvalMeas .bob W)
     (tauPointMeas W) (tauPointMeas W) S.toStrategy.ψ
     (eprState (PauliRegister P)) (eprState_norm _)
@@ -108,17 +108,17 @@ theorem point_encodingPauli_consistency_eq {P : AdmissibleParams} {epsilon : ℝ
 /-- The same exact preservation holds in the Pauli--point orientation. -/
 theorem encodingPauli_point_consistency_eq {P : AdmissibleParams} {epsilon : ℝ}
     (S : ProjectiveSetting P epsilon) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron (((S.encodingPauliMeas .alice W).postprocess
           (fun g => evalPoly g u)).effect a) 1)
         (fun u a => heteroKron 1 ((S.pointMeasExp .bob W u).effect a))
         (ExtendedLineGame.pairState S) =
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((S.pauliEvalMeas .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
         S.toStrategy.ψ := by
   have h := consistencyDefect_convolution_eq_of_perfect
-    (uniformDistribution (Fin P.m → PauliScalar P))
+    (pauliPointDist P)
     (S.pauliEvalMeas .alice W) (S.pointMeas .bob W)
     (tauPointMeas W) (tauPointMeas W) S.toStrategy.ψ
     (eprState (PauliRegister P)) (eprState_norm _)
@@ -131,16 +131,16 @@ theorem encodingPauli_point_consistency_eq {P : AdmissibleParams} {epsilon : ℝ
 self-consistency exactly. -/
 theorem expanded_point_consistency_eq {P : AdmissibleParams} {epsilon : ℝ}
     (S : ProjectiveSetting P epsilon) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+    consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((S.pointMeasExp .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pointMeasExp .bob W u).effect a))
         (ExtendedLineGame.pairState S) =
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
         S.toStrategy.ψ := by
   have h := consistencyDefect_convolution_eq_of_perfect
-    (uniformDistribution (Fin P.m → PauliScalar P))
+    (pauliPointDist P)
     (S.pointMeas .alice W) (S.pointMeas .bob W)
     (tauPointMeas W) (tauPointMeas W) S.toStrategy.ψ
     (eprState (PauliRegister P)) (eprState_norm _)
@@ -159,7 +159,7 @@ theorem right_mass_outside_encoding_le_evaluated_defect {P : AdmissibleParams}
     (hsupport : ∀ g, ¬ IsEncoding g → reference.effect g = 0) :
     (∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
       stateQForm psi (heteroKron 1 (meas.effect g))) ≤
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (pauliPointDist P)
         (fun u a => heteroKron ((reference.postprocess
           (fun g => evalPoly g u)).effect a) 1)
         (fun u a => heteroKron 1 ((meas.postprocess (fun g => evalPoly g u)).effect a))
@@ -180,20 +180,20 @@ theorem global_marginal_encoding_consistency_explicit :
     ∀ (P : AdmissibleParams) (epsilon deltaG : ℝ),
       0 ≤ epsilon → ∀ (S : ProjectiveSetting P epsilon)
         (w : GlobalPairWitness S deltaG) (W : PauliKind),
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (pauliPointDist P)
           (fun u a => heteroKron (((w.marginalPoly .alice W).postprocess
             (fun g => evalPoly g u)).effect a) 1)
           (fun u a => heteroKron 1 (((S.encodingPauliMeas .bob W).postprocess
             (fun g => evalPoly g u)).effect a)) (ExtendedLineGame.pairState S) ≤
         deltaG + (1 + 2 * Real.sqrt 172) * Real.sqrt epsilon ∧
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (pauliPointDist P)
           (fun u a => heteroKron (((S.encodingPauliMeas .alice W).postprocess
             (fun g => evalPoly g u)).effect a) 1)
           (fun u a => heteroKron 1 (((w.marginalPoly .bob W).postprocess
             (fun g => evalPoly g u)).effect a)) (ExtendedLineGame.pairState S) ≤
         deltaG + (1 + 2 * Real.sqrt 172) * Real.sqrt epsilon := by
   intro P epsilon deltaG hepsilon S w W
-  let mu := uniformDistribution (Fin P.m → PauliScalar P)
+  let mu := pauliPointDist P
   let psi := ExtendedLineGame.pairState S
   let pointA := fun u => leftPlacedMeasurement (ιB := S.ExpandedLocalSpace .bob)
     (S.pointMeasExp .alice W u)
@@ -207,7 +207,7 @@ theorem global_marginal_encoding_consistency_explicit :
     ((w.marginalPoly .alice W).postprocess (fun g => evalPoly g u))
   let margB := fun u => rightPlacedMeasurement (ιA := S.ExpandedLocalSpace .alice)
     ((w.marginalPoly .bob W).postprocess (fun g => evalPoly g u))
-  have hpost (side : PlayerSide) (u : Fin P.m → PauliScalar P) :
+  have hpost (side : PlayerSide) (u : PauliPoint P) :
       (w.marginalPoly side W).postprocess (fun g => evalPoly g u) =
         (w.Smeas side).postprocess (evalAt W u) := by
     rw [GlobalPairWitness.marginalPoly, Measurement.postprocess_comp]

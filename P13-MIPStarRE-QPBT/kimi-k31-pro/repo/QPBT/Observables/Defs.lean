@@ -95,7 +95,7 @@ point-question content from `def:pauli-question-distribution`, paper
 `08_classical_and_quantum_low_degree_tests.tex:997-1008`, blueprint
 `def:pauli-question-distribution`. -/
 def contentOfPoint (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) : PauliSpace P :=
+    (u : PauliPoint P) : PauliSpace P :=
   embedLd P W fun i =>
     match i with
     | .inl (.inl j) => u j
@@ -124,7 +124,7 @@ Square questions. This is the type-4 content of
 `08_classical_and_quantum_low_degree_tests.tex:1030-1120`, blueprint
 `def:pauli-question-distribution`. -/
 def contentOfTuple (P : AdmissibleParams)
-    (uX uZ : Fin P.m → PauliScalar P) (rX rZ : PauliScalar P) : PauliSpace P :=
+    (uX uZ : PauliPoint P) (rX rZ : PauliScalar P) : PauliSpace P :=
   fun i =>
     match i with
     | .inl (.inl (.inl (.inl (.inl j)))) => uX j
@@ -138,7 +138,7 @@ def contentOfTuple (P : AdmissibleParams)
 `14_analysis_of_the_pauli_basis_test.tex:174-190` and
 blueprint `def:pauli-question-distribution`. -/
 def pointQuestion (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) : PauliQuestion P :=
+    (u : PauliPoint P) : PauliQuestion P :=
   (.point W, contentOfPoint P W u)
 
 /-- The typed axis or diagonal line question represented by a canonical
@@ -154,21 +154,21 @@ def lineQuestion (P : AdmissibleParams) (W : PauliKind)
 `14_analysis_of_the_pauli_basis_test.tex:210-249`; blueprint
 `lem:qld-win-implications`. -/
 def pairQuestion (P : AdmissibleParams)
-    (uX uZ : Fin P.m → PauliScalar P) (rX rZ : PauliScalar P) : PauliQuestion P :=
+    (uX uZ : PauliPoint P) (rX rZ : PauliScalar P) : PauliQuestion P :=
   (.pair, contentOfTuple P uX uZ rX rZ)
 
 /-- The typed Pair/W question for a tuple `(u_X,u_Z,r_X,r_Z)`. Paper
 `14_analysis_of_the_pauli_basis_test.tex:210-249`; blueprint
 `lem:qld-win-implications`. -/
 def pairWQuestion (P : AdmissibleParams) (W : PauliKind)
-    (uX uZ : Fin P.m → PauliScalar P) (rX rZ : PauliScalar P) : PauliQuestion P :=
+    (uX uZ : PauliPoint P) (rX rZ : PauliScalar P) : PauliQuestion P :=
   (.pairW W, contentOfTuple P uX uZ rX rZ)
 
 /-- The typed Magic Square question for a tuple `(u_X,u_Z,r_X,r_Z)`. Paper
 `14_analysis_of_the_pauli_basis_test.tex:213-258`; blueprint
 `lem:qld-win-implications`. -/
 def msQuestion (P : AdmissibleParams) (t : MsType)
-    (uX uZ : Fin P.m → PauliScalar P) (rX rZ : PauliScalar P) : PauliQuestion P :=
+    (uX uZ : PauliPoint P) (rX rZ : PauliScalar P) : PauliQuestion P :=
   (.ms t, contentOfTuple P uX uZ rX rZ)
 
 -- The support rewrites below elaborate the `Fintype` instance of
@@ -237,7 +237,7 @@ corresponding strategy measurement postprocessed by `pointAnswerOrZero`; paper
 `14_analysis_of_the_pauli_basis_test.tex:174-190`, blueprint
 `def:strategy-observables`. -/
 noncomputable def pointMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+    (W : PauliKind) (u : PauliPoint P) :
     Measurement (PauliScalar P) (S.LocalSpace side) :=
   (S.strategyMeasurement side (pointQuestion P W u)).postprocess pointAnswerOrZero
 
@@ -258,7 +258,7 @@ non-evaluating class of `def:ideg-deg-polynomials`, paper
 `def:ideg-deg-polynomials`. -/
 noncomputable def lineEvalMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
     (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) :
+    (u : PauliPoint P) :
     Measurement (Option (PauliScalar P)) (S.LocalSpace side) :=
   (S.lineMeas side W line).postprocess (evalOpt line u)
 
@@ -266,7 +266,7 @@ noncomputable def lineEvalMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
 `14_analysis_of_the_pauli_basis_test.tex:210-249`; blueprint
 `lem:qld-win-implications`. -/
 noncomputable def pairMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (uX uZ : Fin P.m → PauliScalar P) (rX rZ : PauliScalar P) :
+    (uX uZ : PauliPoint P) (rX rZ : PauliScalar P) :
     Measurement (ZMod 2 × ZMod 2) (S.LocalSpace side) :=
   (S.strategyMeasurement side (pairQuestion P uX uZ rX rZ)).postprocess pairAnswerOrZero
 
@@ -274,7 +274,7 @@ noncomputable def pairMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
 `14_analysis_of_the_pauli_basis_test.tex:210-263`; blueprint
 `lem:qld-win-implications`. -/
 noncomputable def pairWMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (uX uZ : Fin P.m → PauliScalar P)
+    (W : PauliKind) (uX uZ : PauliPoint P)
     (rX rZ : PauliScalar P) : Measurement (ZMod 2) (S.LocalSpace side) :=
   (S.strategyMeasurement side (pairWQuestion P W uX uZ rX rZ)).postprocess
     pairWAnswerOrZero
@@ -291,7 +291,7 @@ alphabet is exactly `MsAnswer`; these families therefore define a Magic Square
 strategy. Paper `14_analysis_of_the_pauli_basis_test.tex:213-258`;
 blueprint `lem:qld-win-implications`. -/
 noncomputable def msMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (t : MsType) (uX uZ : Fin P.m → PauliScalar P)
+    (t : MsType) (uX uZ : PauliPoint P)
     (rX rZ : PauliScalar P) : Measurement MsAnswer (S.LocalSpace side) :=
   (S.strategyMeasurement side (msQuestion P t uX uZ rX rZ)).postprocess
     (msAnswerOrZero t)
@@ -313,7 +313,7 @@ character `phaseSign` and the fixed trace of `P.model`. This is
 `14_analysis_of_the_pauli_basis_test.tex:174-190`, blueprint
 `def:strategy-observables`. -/
 noncomputable def pointObs (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+    (W : PauliKind) (r : PauliScalar P) (u : PauliPoint P) :
     Op (S.LocalSpace side) :=
   ∑ a : PauliScalar P,
     phaseSign (fixedBinTrace P.model (a * r)) • (S.pointMeas side W u).effect a
@@ -328,7 +328,7 @@ private theorem strategyMeasurement_isProjective
 
 /-- The typed point measurement remains projective after answer folding. -/
 theorem pointMeas_isProjective (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P) :
     Measurement.IsProjective (S.pointMeas side W u) := by
   apply SandwichProduct.postprocess_isProjective
   exact strategyMeasurement_isProjective S side _
@@ -338,7 +338,7 @@ theorem pointMeas_isProjective (S : ProjectiveSetting P ε)
 This multiplication law is a formalization-only consequence of that definition. -/
 theorem pointObs_mul (S : ProjectiveSetting P ε) (side : PlayerSide)
     (W : PauliKind) (r s : PauliScalar P)
-    (u : Fin P.m → PauliScalar P) :
+    (u : PauliPoint P) :
     S.pointObs side W r u * S.pointObs side W s u =
       S.pointObs side W (r + s) u := by
   classical
@@ -379,7 +379,7 @@ theorem pointObs_mul (S : ProjectiveSetting P ε) (side : PlayerSide)
 
 /-- The zero-label point observable is the identity by measurement completeness. -/
 theorem pointObs_zero (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+    (W : PauliKind) (u : PauliPoint P) :
     S.pointObs side W 0 u = 1 := by
   classical
   simpa [pointObs, fixedBinTrace, phaseSign] using (S.pointMeas side W u).sum_eq_one
@@ -389,7 +389,7 @@ the operator in `def:strategy-observables` has eigenvalues in `{+1,-1}`;
 paper `14_analysis_of_the_pauli_basis_test.tex:174-190`, blueprint
 `def:strategy-observables`. -/
 theorem pointObs_sq_eq_one (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+    (W : PauliKind) (r : PauliScalar P) (u : PauliPoint P) :
     S.pointObs side W r u * S.pointObs side W r u = 1 := by
   haveI : CharP (PauliScalar P) 2 :=
     (Algebra.charP_iff (ZMod 2) (PauliScalar P) 2).mp (ZMod.charP 2)
@@ -400,7 +400,7 @@ observable assertion following `eq:qld-strat-obs`, paper
 `14_analysis_of_the_pauli_basis_test.tex:174-190`, blueprint
 `def:strategy-observables`. -/
 theorem pointObs_isHermitian (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+    (W : PauliKind) (r : PauliScalar P) (u : PauliPoint P) :
     (S.pointObs side W r u).IsHermitian := by
   classical
   rw [pointObs, Matrix.IsHermitian]
