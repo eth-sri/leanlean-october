@@ -7,11 +7,11 @@
   "status": "verified",
   "verified": true,
   "failure_label": null,
-  "verification_note": "Fresh verification passed.",
+  "verification_note": "Fresh verification passed. This rerun fixes duplicate usage accounting that ended the original attempt early.",
   "baseline_tokens": 175441,
-  "final_tokens": 67130,
-  "compression_percent": 61.73642421098831,
-  "credited_compression_percent": 61.73642421098831,
-  "cost": 82.58501980000001,
-  "elapsed_seconds": 34396.593275493
+  "final_tokens": 61554,
+  "compression_percent": 64.91470066860084,
+  "credited_compression_percent": 64.91470066860084,
+  "cost": 101.4124418,
+  "elapsed_seconds": 31178.981110361
 }

@@ -65,7 +65,7 @@ Credited compression in percent (token reduction against the baseline, zero for 
 | [P14-ccdn-dimension-growth](P14-ccdn-dimension-growth) | 552,362 | 19.2 | 24.2 | 25.9 | 2.3 | 2.3 |
 | [P15-gs_Lean_formalization](P15-gs_Lean_formalization) | 303,700 | 68.2 | 65.3 | 56.2 | 23.6 | 22.7 |
 | [P16-compact-albert-recognition](P16-compact-albert-recognition) | 300,239 | 64.6 | 30.2 | 43.7 | 5.8 | 4.0 |
-| [P17-lean4-adr11](P17-lean4-adr11) | 175,441 | 85.0 | 59.7 | 61.7 | 7.5 | 13.9 |
+| [P17-lean4-adr11](P17-lean4-adr11) | 175,441 | 85.0 | 59.7 | 64.9 | 7.5 | 13.9 |
 | [P18-lean-dual-analytic-ifs](P18-lean-dual-analytic-ifs) | 146,557 | 66.6 | 44.8 | 46.3 | 3.5 | 6.0 |
 | [P19-omega_le_nine_quarters_all_rings](P19-omega_le_nine_quarters_all_rings) | 145,127 | 77.0 | 69.6 | 52.3 | 10.1 | 1.2 |
 | [P20-palomar-p046-critical-window-shape-law](P20-palomar-p046-critical-window-shape-law) | 101,498 | 59.9 | 48.9 | 33.0 | 3.0 | 5.1 |
@@ -81,7 +81,7 @@ Credited compression in percent (token reduction against the baseline, zero for 
 | [P30-alcs](P30-alcs) | 15,133 | 80.2 | 79.9 | 60.5 | 25.7 | 16.5 |
 | [P31-kkp-connected-spectral-counterexamples](P31-kkp-connected-spectral-counterexamples) | 14,983 | 86.0 | 87.2 | 84.2 | 46.7 | 47.7 |
 | [P32-galvin-dinitz](P32-galvin-dinitz) | 10,465 | 85.4 | 83.0 | 69.6 | 30.1 | 18.8 |
-| **Mean** | | **50.5** | **47.3** | **39.1** | **11.9** | **9.8** |
+| **Mean** | | **50.5** | **47.3** | **39.2** | **11.9** | **9.8** |
 
 ## Licenses
 

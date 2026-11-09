@@ -1,7 +1,6 @@
 module
 
 public import ADR11.Rootings.Proofs
-public import ADR11.Trees.Classify
 
 @[expose] public section
 
@@ -9,465 +8,283 @@ namespace ADR11
 
 open Finset Real
 
-variable {X : Type*} [Fintype X] [DecidableEq X]
+abbrev Same5 (τ : SpeciesTree (Fin 5)) : Prop :=
+  ∀ τ' : SpeciesTree (Fin 5), τ'.clusters = τ.clusters →
+    τ.unrootedDist id = τ'.unrootedDist id → τ.SameRootedMetricTree τ'
 
-private theorem exp_bds {τ : SpeciesTree (Fin 5)} {H : Finset (Finset (Fin 5))}
-    (h : τ.clusters = H) (A : Finset (Fin 5))
-    (hA : A ∈ H ∧ A ≠ univ := by decide) :
-    0 < exp (-τ.length A) ∧ exp (-τ.length A) < 1 :=
-  ⟨exp_pos _, Real.exp_lt_one_iff.2 (neg_lt_zero.2 (τ.length_pos A (h ▸ hA.1) hA.2))⟩
+noncomputable def tag0 (τ : SpeciesTree (Fin 5)) : Finset (Finset (Fin 5)) :=
+  h5 (if u τ 1 < u τ 13 then [30]
+      else if u τ 1 < u τ 4 then [29]
+      else if u τ 2 < u τ 1 then [27]
+      else if u τ 1 < u τ 2 then [23]
+      else if u τ 1 < u τ 3 then [15]
+      else [])
 
-private theorem five_length_eq {x y : ℝ} (A B : ℝ) (n : ℕ) (hn : n ≠ 0) (hA : A ≠ 0)
-    (h : A * exp (-x) ^ n + B = A * exp (-y) ^ n + B) : x = y := by
-  have h1 : exp (-x) ^ n = exp (-y) ^ n := mul_left_cancel₀ hA (by linarith)
-  have h2 := Real.exp_injective ((pow_left_inj₀ (exp_pos _).le (exp_pos _).le hn).1 h1)
-  linarith
+noncomputable def tag1 (τ : SpeciesTree (Fin 5)) : Finset (Finset (Fin 5)) :=
+  h5 (if u τ 5 < u τ 4 then
+        if u τ 4 < u τ 13 then [28, 30]
+        else if u τ 13 < u τ 4 then [28, 29]
+        else if linVal τ [(6, 4), (9, 5)] ^ 3 < linVal τ [(15, 5)] then [3, 28]
+        else [28]
+      else
+        if u τ 4 < u τ 5 then [3, 23]
+        else if u τ 2 < u τ 1 then [3, 27]
+        else if u τ 1 < u τ 3 then [3, 15]
+        else [3])
 
-private theorem five_same_of_lengths {τ τ' : SpeciesTree (Fin 5)} {C : Finset (Finset (Fin 5))}
-    (h : τ.clusters = hierarchyOf C) (h' : τ'.clusters = hierarchyOf C)
-    (hl : ∀ A ∈ C, τ.length A = τ'.length A) : τ.SameRootedMetricTree τ' := by
-  refine ⟨h.trans h'.symm, fun A hA h2 hu => hl A ?_⟩
-  rw [h] at hA
-  rcases mem_insert.1 hA with rfl | hA
-  · exact absurd rfl hu
-  rcases mem_union.1 hA with hA | hA
-  · exact hA
-  · obtain ⟨x, -, rfl⟩ := mem_image.1 hA; simp at h2
+noncomputable def tag2 (τ : SpeciesTree (Fin 5)) : Finset (Finset (Fin 5)) :=
+  h5 (if u τ 7 < u τ 5 then
+        if u τ 5 < u τ 6 then [3, 7, 15]
+        else if u τ 6 < u τ 5 then [3, 7, 23]
+        else if linVal τ [(3, 2), (3, 5), (9, 7)] ^ 2 * linVal τ [(6, 5), (9, 7)] <
+            linVal τ [(15, 7)] then [24, 3, 7]
+        else [3, 7]
+      else if u τ 5 < u τ 7 then
+        if u τ 7 < u τ 14 then [24, 28, 30]
+        else if u τ 14 < u τ 7 then [24, 28, 29]
+        else if linVal τ [(3, 4), (3, 7), (9, 5)] ^ 2 * linVal τ [(6, 7), (9, 5)] <
+            linVal τ [(15, 5)] then [3, 24, 28]
+        else [24, 28]
+      else
+        if u τ 5 < u τ 8 then [3, 24, 27]
+        else [3, 24])
 
-private theorem ulen_mem {τ : SpeciesTree (Fin 5)} {H : Finset (Finset (Fin 5))}
-    (h : τ.clusters = H) (S A : Finset (Fin 5))
-    (hA : H.filter (fun C => C ≠ univ ∧ (C = S ∨ C = Sᶜ)) = {A} := by decide) :
-    τ.unrootedLength S = τ.length A := by
-  unfold SpeciesTree.unrootedLength; rw [h, hA, sum_singleton]
+variable {τ : SpeciesTree (Fin 5)}
 
-private theorem ulen_one {τ : SpeciesTree (Fin 5)} {H : Finset (Finset (Fin 5))}
-    (h : τ.clusters = H) (S : Finset (Fin 5)) (a : ℕ)
-    (ha : H.filter (fun C => C ≠ univ ∧ (C = S ∨ C = Sᶜ)) = {decC 5 a} := by decide +kernel) :
-    exp (-τ.unrootedLength S) = exp (-τ.length (decC 5 a)) ∧
-      exp (-τ.unrootedLength S) = monoVal τ.length [(a, 1)] := by
-  have e := ulen_mem h S (decC 5 a) ha
-  exact ⟨by rw [e], by simp [e, monoVal_cons, monoVal_nil]⟩
+theorem same_one (a d : ℕ) {L : List (ℚ × ℕ)}
+    {reqs : List (List (ℚ × ℕ) × List (ℚ × List (ℕ × ℕ)))}
+    (hτ : τ.clusters = h5 [a])
+    (hc : root_fullCertB [a] ((L, [(1, [(a, d)])]) :: reqs) = true := by decide +kernel)
+    (hd : d ≠ 0 := by decide) :
+    (decC 5 a ∈ τ.clusters ∧ decC 5 a ≠ univ) ∧
+      (linVal τ L = evalPoly τ.length [(1, [(a, d)])] ∧
+        reqs.Forall (fun r => linVal τ r.1 = evalPoly τ.length r.2)) ∧ Same5 τ := by
+  obtain ⟨hm, hall⟩ := fullCert_all τ hτ hc
+  have h1 := (List.forall_cons ..).1 hall
+  refine ⟨hm a List.mem_cons_self, h1, fun τ' hτ' hd' => ?_⟩
+  have h1' := (List.forall_cons ..).1 (fullCert_all τ' (hτ'.trans hτ) hc).2
+  exact sameRooted_of_cs hτ hτ' (length_eq_of_single (monoVal_eq_of_lin hd' h1.1 h1'.1) hd)
 
-private theorem ulen_both {τ : SpeciesTree (Fin 5)} {H : Finset (Finset (Fin 5))}
-    (h : τ.clusters = H) (S A B : Finset (Fin 5))
-    (hST : A ≠ B ∧ H.filter (fun C => C ≠ univ ∧ (C = S ∨ C = Sᶜ)) = {A, B} := by decide) :
-    τ.unrootedLength S = τ.length A + τ.length B ∧
-      exp (-τ.unrootedLength S) = exp (-τ.length A) * exp (-τ.length B) := by
-  have e : τ.unrootedLength S = τ.length A + τ.length B := by
-    unfold SpeciesTree.unrootedLength; rw [h, hST.2, sum_pair hST.1]
-  exact ⟨e, by rw [e, neg_add, exp_add]⟩
+theorem same_two (a c e d : ℕ) {L₁ L₂ : List (ℚ × ℕ)}
+    {reqs : List (List (ℚ × ℕ) × List (ℚ × List (ℕ × ℕ)))}
+    (hτ : τ.clusters = h5 [a, c])
+    (hc : root_fullCertB [a, c]
+      ((L₁, [(1, [(a, 1)])]) :: (L₂, [(1, normKey [(a, e), (c, d)])]) :: reqs) = true := by decide +kernel)
+    (hd : d ≠ 0 := by decide) :
+    ((decC 5 a ∈ τ.clusters ∧ decC 5 a ≠ univ) ∧ (decC 5 c ∈ τ.clusters ∧ decC 5 c ≠ univ)) ∧
+      reqs.Forall (fun r => linVal τ r.1 = evalPoly τ.length r.2) ∧ Same5 τ := by
+  obtain ⟨hm, h1, h2⟩ := fullCert_all τ hτ hc
+  have h2 := (List.forall_cons ..).1 h2
+  refine ⟨⟨hm a (by simp), hm c (by simp)⟩, h2.2, fun τ' hτ' hd' => ?_⟩
+  obtain ⟨_, h1', h2'⟩ := fullCert_all τ' (hτ'.trans hτ) hc
+  have l1 := length_eq_of_single (monoVal_eq_of_lin hd' h1 h1')
+  have m2 := monoVal_eq_of_lin hd' h2.1 ((List.forall_cons ..).1 h2').1
+  rw [monoVal_normKey, monoVal_normKey] at m2
+  exact sameRooted_of_cs hτ hτ' ⟨l1, length_eq_of_pair l1 m2 hd⟩
 
-private abbrev IsNR (H : Finset (Finset (Fin 5))) (A : Finset (Fin 5)) : Prop :=
-  A ∈ H ∧ A ≠ univ ∧ 2 ≤ #A ∧ 2 ≤ #Aᶜ ∧
-    H.filter (fun C => C ≠ univ ∧ (C = A ∨ C = Aᶜ)) = {A}
+theorem same_cube2 (a b i₅ i₇ : ℕ) {reqs : List (List (ℚ × ℕ) × List (ℚ × List (ℕ × ℕ)))}
+    (hτ : τ.clusters = h5 [a, b])
+    (hc : root_fullCertB [a, b]
+      (([(6, i₅), (9, i₇)], [(1, [(a, 1), (b, 1)])]) ::
+       ([(15, i₇)], [(1, [(a, 1), (b, 3)])]) ::
+       ([(1, i₅), (-1, i₇)], diffPoly (1 / 6) [(a, 1)] b 1 2) :: reqs) = true := by decide +kernel) :
+    (decC 5 a ∈ τ.clusters ∧ decC 5 a ≠ univ) ∧
+      u τ i₇ < u τ i₅ ∧
+      linVal τ [(6, i₅), (9, i₇)] = monoVal τ.length [(a, 1), (b, 1)] ∧
+      linVal τ [(15, i₇)] = monoVal τ.length [(a, 1), (b, 3)] ∧
+      reqs.Forall (fun r => linVal τ r.1 = evalPoly τ.length r.2) ∧ Same5 τ := by
+  obtain ⟨hm, h1, h2, h3⟩ := fullCert_all τ hτ hc
+  have h3 := (List.forall_cons ..).1 h3
+  refine ⟨hm a (by simp), u_lt_of_lin (hm b (by simp)) h3.1,
+    linVal_eq_monoVal h1, linVal_eq_monoVal h2, h3.2, fun τ' hτ' hd' => ?_⟩
+  obtain ⟨_, h1', h2', _⟩ := fullCert_all τ' (hτ'.trans hτ) hc
+  have m1 := monoVal_eq_of_lin hd' h1 h1'
+  have lb := length_eq_of_cube (p := [(a, 1)]) m1 (monoVal_eq_of_lin hd' h2 h2')
+  exact sameRooted_of_cs hτ hτ' ⟨length_eq_of_pair_left lb m1, lb⟩
 
-private theorem len_nr {τ τ' : SpeciesTree (Fin 5)} {H : Finset (Finset (Fin 5))}
-    (hτ : τ.clusters = H) (hτ' : τ'.clusters = H) (hU : τ.SameUnrootedMetricTree τ')
-    {A : Finset (Fin 5)} (hA : IsNR H A := by decide) :
-    τ.length A = τ'.length A := by
-  rw [← ulen_mem hτ A A hA.2.2.2.2, ← ulen_mem hτ' A A hA.2.2.2.2]
-  exact hU.2 A (mem_unroot.2 (Or.inl ⟨hτ ▸ hA.1, hA.2.1⟩))
-    hA.2.2.1 hA.2.2.2.1
+theorem p3_spec (a k i o₁ o₂ o₃ : ℕ) (hτ : τ.clusters = h5 [a])
+    (hc : root_fullCertB [a] [
+      ([(30, k), (-15, i)], [(1, [(a, 6)])]),
+      ([(1, i), (-1, k)], diffPoly (1 / 18) [] a 0 6),
+      ([(1, o₁), (-1, k)], []),
+      ([(1, o₂), (-1, k)], []),
+      ([(1, o₃), (-1, k)], [])] = true := by decide +kernel) :
+    (u τ k < u τ i ∧ u τ o₁ = u τ k ∧ u τ o₂ = u τ k ∧ u τ o₃ = u τ k) ∧ Same5 τ := by
+  obtain ⟨ha, ⟨_, h1, h2, h3, h4⟩, hs⟩ := same_one a 6 hτ hc
+  exact ⟨⟨u_lt_of_lin ha h1, u_eq_of_lin h2, u_eq_of_lin h3, u_eq_of_lin h4⟩, hs⟩
 
-private theorem monoVal_eq_of_nr {τ τ' : SpeciesTree (Fin 5)} {H : Finset (Finset (Fin 5))}
-    (hτ : τ.clusters = H) (hτ' : τ'.clusters = H) (hU : τ.SameUnrootedMetricTree τ')
-    (m : List (ℕ × ℕ)) (hm : ∀ p ∈ m, IsNR H (decC 5 p.1) := by decide +kernel) :
-    monoVal τ.length m = monoVal τ'.length m := by
-  unfold monoVal
-  congr 1
-  exact List.map_congr_left fun p hp => by rw [len_nr hτ hτ' hU (hm p hp)]
+theorem p9_spec (c k i : ℕ) (hτ : τ.clusters = h5 [28, c])
+    (hc : root_fullCertB [28, c] [
+      ([(3, 4), (9, 5), (3, 13)], [(1, [(28, 1)])]),
+      ([(15, k), (15, 5), (-15, i)], [(1, normKey [(28, 3), (c, 6)])]),
+      ([(1, k), (-1, 5)], diffPoly (1 / 6) [] 28 1 2),
+      ([(1, i), (-1, k)], diffPoly (1 / 18) [(28, 3)] c 0 6)] = true := by decide +kernel) :
+    (u τ 5 < u τ k ∧ u τ k < u τ i) ∧ Same5 τ := by
+  obtain ⟨⟨h28, hc'⟩, ⟨h1, h2⟩, hs⟩ := same_two 28 c 3 6 hτ hc
+  exact ⟨⟨u_lt_of_lin h28 h1, u_lt_of_lin hc' h2⟩, hs⟩
 
-private theorem five_u_congr {τ τ' : SpeciesTree (Fin 5)}
-    (h : τ.unrootedDist id = τ'.unrootedDist id) (i : ℕ) : u τ i = u τ' i := by
-  unfold u; rw [h]
+theorem cat_spec (a b c i₂ i₅ i₆ i₇ : ℕ) (hτ : τ.clusters = h5 [a, b, c])
+    (hc : root_fullCertB [a, b, c] [
+      ([(1, i₅), (-1, i₇)], diffPoly (1 / 6) [(a, 1)] b 1 2),
+      ([(1, i₆), (-1, i₅)], diffPoly (1 / 18) [(a, 1), (b, 3)] c 0 6),
+      ([(3, i₂), (3, i₆), (9, i₇)], [(1, [(b, 1)])]),
+      ([(3, i₅), (3, i₆), (9, i₇)], [(1, [(a, 1), (b, 1)])]),
+      ([(15, i₅), (-15, i₆), (15, i₇)], [(1, [(a, 1), (b, 3), (c, 6)])])] = true := by decide +kernel) :
+    (u τ i₇ < u τ i₅ ∧ u τ i₅ < u τ i₆) ∧ Same5 τ := by
+  obtain ⟨hm, h1, h2, h3, h4, h5⟩ := fullCert_all τ hτ hc
+  refine ⟨⟨u_lt_of_lin (hm b (by simp)) h1, u_lt_of_lin (hm c (by simp)) h2⟩, fun τ' hτ' hd => ?_⟩
+  obtain ⟨_, _, _, h3', h4', h5'⟩ := fullCert_all τ' (hτ'.trans hτ) hc
+  have lb := length_eq_of_single (monoVal_eq_of_lin hd h3 h3')
+  have la := length_eq_of_pair_left lb (monoVal_eq_of_lin hd h4 h4')
+  exact sameRooted_of_cs hτ hτ' ⟨la, lb, length_eq_of_triple la lb (monoVal_eq_of_lin hd h5 h5')⟩
 
-private theorem eval_lo_hi_bds {τ : SpeciesTree (Fin 5)} {H : Finset (Finset (Fin 5))}
-    (h : τ.clusters = H) (m : List (ℕ × ℕ)) (c : ℕ)
-    (hc : decC 5 c ∈ H ∧ decC 5 c ≠ univ := by decide +kernel) :
-    evalPoly τ.length (loP m c) < 1 / 15 * monoVal τ.length m ∧
-      1 / 15 * monoVal τ.length m < evalPoly τ.length (hiP m c) := by
-  simp only [loP, hiP, evalPoly_cons, evalPoly_nil, monoVal_append, monoVal_cons, monoVal_nil]
-  push_cast
-  obtain ⟨h0, h1⟩ := exp_bds h (decC 5 c) hc
-  have : 0 < monoVal τ.length m * (1 - exp (-τ.length (decC 5 c)) ^ 6) :=
-    mul_pos (monoVal_pos _ _) (sub_pos.2 (pow_lt_one₀ h0.le h1 (by norm_num)))
-  exact ⟨by linarith, by linarith⟩
+theorem bal_spec (c a b i₂ i₅ i₆ i₇ : ℕ) (hτ : τ.clusters = h5 [c, a, b])
+    (hc : root_fullCertB [c, a, b] [
+      ([(1, i₅), (-1, i₆)], []),
+      ([(1, i₅), (-1, i₇)], diffPoly (1 / 6) [(c, 1), (a, 1)] b 1 2),
+      ([(3, i₂), (3, i₅), (9, i₇)], [(1, [(c, 1), (b, 1)])]),
+      ([(6, i₅), (9, i₇)], [(1, [(c, 1), (a, 1), (b, 1)])]),
+      ([(15, i₇)], [(1, [(c, 1), (a, 1), (b, 3)])])] = true := by decide +kernel) :
+    (u τ i₅ = u τ i₆ ∧ u τ i₇ < u τ i₅ ∧
+      linVal τ [(3, i₂), (3, i₅), (9, i₇)] ^ 2 * linVal τ [(6, i₅), (9, i₇)] <
+        linVal τ [(15, i₇)]) ∧ Same5 τ := by
+  obtain ⟨hm, h1, h2, h3, h4, h5⟩ := fullCert_all τ hτ hc
+  have hc_mem := hm c List.mem_cons_self
+  have hlt : linVal τ [(3, i₂), (3, i₅), (9, i₇)] ^ 2 * linVal τ [(6, i₅), (9, i₇)] <
+      linVal τ [(15, i₇)] := by
+    rw [linVal_eq_monoVal h3, linVal_eq_monoVal h4, linVal_eq_monoVal h5,
+      show monoVal τ.length [(c, 1), (b, 1)] ^ 2 * monoVal τ.length [(c, 1), (a, 1), (b, 1)] =
+        monoVal τ.length [(c, 2)] * monoVal τ.length [(c, 1), (a, 1), (b, 3)] by
+        simp only [monoVal_cons, monoVal_nil]; ring]
+    exact mul_lt_of_lt_one_left (monoVal_pos _ _) (monoVal_single_lt_one τ hc_mem.1 hc_mem.2)
+  refine ⟨⟨u_eq_of_lin h1, u_lt_of_lin (hm b (by simp)) h2, hlt⟩, fun τ' hτ' hd => ?_⟩
+  obtain ⟨_, _, _, h3', h4', h5'⟩ := fullCert_all τ' (hτ'.trans hτ) hc
+  have m4 := monoVal_eq_of_lin hd h4 h4'
+  have lb := length_eq_of_cube (p := [(c, 1), (a, 1)]) m4 (monoVal_eq_of_lin hd h5 h5')
+  have lc := length_eq_of_pair_left lb (monoVal_eq_of_lin hd h3 h3')
+  exact sameRooted_of_cs hτ hτ' ⟨lc, length_eq_of_pair_left lb (monoVal_cons_cancel lc m4), lb⟩
 
-private theorem solve_loP {τ τ' : SpeciesTree (Fin 5)} {H : Finset (Finset (Fin 5))}
-    (h : τ.clusters = H) (h' : τ'.clusters = H) (hU : τ.SameUnrootedMetricTree τ')
-    (i : ℕ) (m : List (ℕ × ℕ)) (c : ℕ)
-    {C : Finset (Fin 5)} (hui : u τ i = u τ' i)
-    (hm : ∀ p ∈ m, IsNR H (decC 5 p.1) := by decide +kernel)
-    (hi : decF 5 (root_T5code i) = T5 i := by decide +kernel)
-    (hc : decC 5 c = C := by decide +kernel)
-    (hwf : wfCsB 5 H (c :: m.map Prod.fst) = true := by decide +kernel)
-    (hcert : root_certsB 5 (unrootedL 5 (c :: m.map Prod.fst))
-      [(root_T5code i, loP m c)] = true := by decide +kernel) :
-    τ.length C = τ'.length C := by
-  have f : u τ i = _ := (root_unrootedDist_eq_evalPoly τ h _ hwf hcert List.mem_cons_self hi).trans
-    (eval_loP τ.length m c)
-  have f' : u τ' i = _ := (root_unrootedDist_eq_evalPoly τ' h' _ hwf hcert List.mem_cons_self hi).trans
-    (eval_loP τ'.length m c)
-  have hm' := monoVal_eq_of_nr h h' hU m hm
-  rw [← hc]
-  exact five_length_eq (1 / 90 * monoVal τ'.length m) (1 / 18 * monoVal τ'.length m) 6
-    (by norm_num) (by have := monoVal_pos τ'.length m; positivity)
-    (by rw [← hm', ← f, hui, f', hm'])
+theorem p6_spec (a b i₂ i₅ i₆ i₇ : ℕ) (hτ : τ.clusters = h5 [a, b])
+    (hc : root_fullCertB [a, b] [
+      ([(6, i₅), (9, i₇)], [(1, [(a, 1), (b, 1)])]),
+      ([(15, i₇)], [(1, [(a, 1), (b, 3)])]),
+      ([(1, i₅), (-1, i₇)], diffPoly (1 / 6) [(a, 1)] b 1 2),
+      ([(1, i₅), (-1, i₆)], []),
+      ([(3, i₂), (3, i₅), (9, i₇)], [(1, [(b, 1)])])] = true := by decide +kernel) :
+    (u τ i₅ = u τ i₆ ∧ u τ i₇ < u τ i₅ ∧
+      linVal τ [(3, i₂), (3, i₅), (9, i₇)] ^ 2 * linVal τ [(6, i₅), (9, i₇)] =
+        linVal τ [(15, i₇)]) ∧ Same5 τ := by
+  obtain ⟨_, hlt, m1, m2, ⟨h1, h3⟩, hs⟩ := same_cube2 a b i₅ i₇ hτ hc
+  refine ⟨⟨u_eq_of_lin h1, hlt, ?_⟩, hs⟩
+  rw [linVal_eq_monoVal h3, m1, m2]
+  simp only [monoVal_cons, monoVal_nil]; ring
 
-private theorem solve_bal {τ τ' : SpeciesTree (Fin 5)} {H : Finset (Finset (Fin 5))}
-    (h : τ.clusters = H) (h' : τ'.clusters = H) (hU : τ.SameUnrootedMetricTree τ')
-    (j : ℕ) (m : List (ℕ × ℕ))
-    (z b : ℕ) {A B : Finset (Fin 5)} (huj : u τ j = u τ' j)
-    (hz : decC 5 z = A := by decide +kernel) (hb : decC 5 b = B := by decide +kernel)
-    (hAB : (A ≠ B ∧ H.filter (fun C => C ≠ univ ∧ (C = A ∨ C = Aᶜ)) = {A, B}) ∧
-      A ∈ H ∧ A ≠ univ ∧ 2 ≤ #A ∧ 2 ≤ #Aᶜ := by decide)
-    (hm : ∀ p ∈ m, IsNR H (decC 5 p.1) := by decide +kernel)
-    (hj : decF 5 (root_T5code j) = T5 j := by decide +kernel)
-    (hwf : wfCsB 5 H (z :: b :: m.map Prod.fst) = true := by decide +kernel)
-    (hcert : root_certsB 5 (unrootedL 5 (z :: b :: m.map Prod.fst))
-      [(root_T5code j, constP ([(z, 1)] ++ m ++ [(b, 3)]))] = true := by decide +kernel) :
-    τ.length A = τ'.length A ∧ τ.length B = τ'.length B := by
-  have e1 := ulen_both h A A B hAB.1
-  have e1' := ulen_both h' A A B hAB.1
-  have hUA : τ.unrootedLength A = τ'.unrootedLength A :=
-    hU.2 A (mem_unroot.2 (Or.inl ⟨h ▸ hAB.2.1, hAB.2.2.1⟩)) hAB.2.2.2.1 hAB.2.2.2.2
-  have hm' := monoVal_eq_of_nr h h' hU m hm
-  have f : u τ j = _ := (root_unrootedDist_eq_evalPoly τ h _ hwf hcert List.mem_cons_self hj).trans
-    (eval_constP τ.length _)
-  have f' : u τ' j = _ := (root_unrootedDist_eq_evalPoly τ' h' _ hwf hcert List.mem_cons_self hj).trans
-    (eval_constP τ'.length _)
-  simp only [monoVal_append, monoVal_cons, monoVal_nil, pow_one, mul_one, hz, hb] at f f'
-  have hW : 0 < monoVal τ'.length m := monoVal_pos _ _
-  have hy : τ.length B = τ'.length B :=
-    five_length_eq (1 / 15 * monoVal τ'.length m * exp (-τ'.unrootedLength A)) 0 2
-      (by norm_num) (by positivity)
-      (by
-        have k1 : u τ j = 1 / 15 * monoVal τ'.length m * exp (-τ'.unrootedLength A) *
-            exp (-τ.length B) ^ 2 + 0 := by rw [f, hm', ← hUA, e1.2]; ring
-        have k2 : u τ' j = 1 / 15 * monoVal τ'.length m * exp (-τ'.unrootedLength A) *
-            exp (-τ'.length B) ^ 2 + 0 := by rw [f', e1'.2]; ring
-        linarith)
-  exact ⟨by linarith [e1.1, e1'.1], hy⟩
-
-noncomputable def branch2 (u₅ u₇ U₁ U₂ : ℝ) (H₁ H₂ H₃ H₄ : Finset (Finset (Fin 5))) :
-    Finset (Finset (Fin 5)) :=
-  if 1 / 15 * U₁ * U₂ ^ 3 < u₇ then H₁
-  else if u₇ = 1 / 15 * U₁ * U₂ ^ 3 then H₂
-  else if u₅ - u₇ = 1 / 6 * U₁ * U₂ - 1 / 6 * U₁ * U₂ ^ 3 then H₃
-  else H₄
-
-private theorem b2_bal {τ : SpeciesTree (Fin 5)} {H : Finset (Finset (Fin 5))}
-    (h : τ.clusters = H) (i j : ℕ) (m : List (ℕ × ℕ)) (z b : ℕ) (S : Finset (Fin 5)) {U₁ : ℝ}
-    (hU₁ : U₁ = monoVal τ.length m)
-    (hS : decC 5 z ≠ decC 5 b ∧
-      H.filter (fun C => C ≠ univ ∧ (C = S ∨ C = Sᶜ)) = {decC 5 z, decC 5 b} := by decide +kernel)
-    (hi : decF 5 (root_T5code i) = T5 i := by decide +kernel)
-    (hj : decF 5 (root_T5code j) = T5 j := by decide +kernel)
-    (hz : decC 5 z ∈ H ∧ decC 5 z ≠ univ := by decide +kernel)
-    (hb : decC 5 b ∈ H ∧ decC 5 b ≠ univ := by decide +kernel)
-    (hwf : wfCsB 5 H (z :: b :: m.map Prod.fst) = true := by decide +kernel)
-    (hc : root_certsB 5 (unrootedL 5 (z :: b :: m.map Prod.fst))
-      [(root_T5code i, p6Hi ([(z, 1)] ++ m) b),
-       (root_T5code j, constP ([(z, 1)] ++ m ++ [(b, 3)]))] = true := by decide +kernel)
-    {H₁ H₂ H₃ H₄ : Finset (Finset (Fin 5))} :
-    u τ j < u τ i ∧
-      branch2 (u τ i) (u τ j) U₁ (exp (-τ.unrootedLength S)) H₁ H₂ H₃ H₄ = H₁ := by
-  obtain ⟨hi', hj'⟩ := root_u5_pair τ h _ i j _ _ hi hj hwf hc
-  obtain ⟨z0, z1⟩ := exp_bds h (decC 5 z) hz
-  obtain ⟨y0, y1⟩ := exp_bds h (decC 5 b) hb
-  have hX := monoVal_pos τ.length m
-  have hY2 : exp (-τ.length (decC 5 b)) ^ 2 < 1 := pow_lt_one₀ y0.le y1 (by norm_num)
-  have hZ2 : exp (-τ.length (decC 5 z)) ^ 2 < 1 := pow_lt_one₀ z0.le z1 (by norm_num)
-  have k1 : 0 < monoVal τ.length m * exp (-τ.length (decC 5 z)) * exp (-τ.length (decC 5 b)) *
-      (1 - exp (-τ.length (decC 5 b)) ^ 2) :=
-    mul_pos (mul_pos (mul_pos hX z0) y0) (by linarith)
-  have k2 : 0 < monoVal τ.length m * exp (-τ.length (decC 5 z)) * exp (-τ.length (decC 5 b)) ^ 3 *
-      (1 - exp (-τ.length (decC 5 z)) ^ 2) :=
-    mul_pos (mul_pos (mul_pos hX z0) (pow_pos y0 3)) (by linarith)
-  have hU₂' : exp (-τ.unrootedLength S) ^ 3 =
-      exp (-τ.length (decC 5 b)) ^ 3 * exp (-τ.length (decC 5 z)) ^ 3 := by
-    rw [(ulen_both h S (decC 5 z) (decC 5 b) hS).2]; ring
-  simp only [p6Hi, constP, evalPoly_cons, evalPoly_nil, monoVal_append, monoVal_cons,
-    monoVal_nil] at hi' hj'
-  push_cast at hi' hj'
-  exact ⟨by linarith, by unfold branch2; rw [ite_eq_left (by rw [hU₁, hU₂', hj']; linarith)]⟩
-
-private theorem b2_p6 {τ : SpeciesTree (Fin 5)} {H : Finset (Finset (Fin 5))}
-    (h : τ.clusters = H) (i j : ℕ) (m : List (ℕ × ℕ)) (b : ℕ) (S : Finset (Fin 5)) {U₁ : ℝ}
-    (hU₁ : U₁ = monoVal τ.length m)
-    (hS : H.filter (fun C => C ≠ univ ∧ (C = S ∨ C = Sᶜ)) = {decC 5 b} := by decide +kernel)
-    (hi : decF 5 (root_T5code i) = T5 i := by decide +kernel)
-    (hj : decF 5 (root_T5code j) = T5 j := by decide +kernel)
-    (hb : decC 5 b ∈ H ∧ decC 5 b ≠ univ := by decide +kernel)
-    (hwf : wfCsB 5 H (b :: m.map Prod.fst) = true := by decide +kernel)
-    (hc : root_certsB 5 (unrootedL 5 (b :: m.map Prod.fst))
-      [(root_T5code i, p6Hi m b),
-       (root_T5code j, constP (m ++ [(b, 3)]))] = true := by decide +kernel)
-    {H₁ H₂ H₃ H₄ : Finset (Finset (Fin 5))} :
-    u τ j < u τ i ∧
-      branch2 (u τ i) (u τ j) U₁ (exp (-τ.unrootedLength S)) H₁ H₂ H₃ H₄ = H₂ := by
-  obtain ⟨hi', hj'⟩ := root_u5_pair τ h _ i j _ _ hi hj hwf hc
-  obtain ⟨y0, y1⟩ := exp_bds h (decC 5 b) hb
-  have hY2 : exp (-τ.length (decC 5 b)) ^ 2 < 1 := pow_lt_one₀ y0.le y1 (by norm_num)
-  have k1 : 0 < monoVal τ.length m * exp (-τ.length (decC 5 b)) *
-      (1 - exp (-τ.length (decC 5 b)) ^ 2) :=
-    mul_pos (mul_pos (monoVal_pos _ _) y0) (by linarith)
-  simp only [p6Hi, constP, evalPoly_cons, evalPoly_nil, monoVal_append, monoVal_cons,
-    monoVal_nil] at hi' hj'
-  push_cast at hi' hj'
-  have heq : u τ j = 1 / 15 * U₁ * exp (-τ.unrootedLength S) ^ 3 := by
-    rw [hU₁, (ulen_one h S b hS).1, hj']; ring
-  exact ⟨by linarith, by unfold branch2; rw [ite_eq_right (by linarith), ite_eq_left heq]⟩
-
-private theorem b2_cat (cat1 : Bool) {τ : SpeciesTree (Fin 5)} {H : Finset (Finset (Fin 5))}
-    (h : τ.clusters = H) (i j : ℕ) (m : List (ℕ × ℕ)) (b c : ℕ) (S : Finset (Fin 5)) {U₁ : ℝ}
-    (hU₁ : U₁ = monoVal τ.length m)
-    (hS : H.filter (fun C => C ≠ univ ∧ (C = S ∨ C = Sᶜ)) = {decC 5 b} := by decide +kernel)
-    (hi : decF 5 (root_T5code i) = T5 i := by decide +kernel)
-    (hj : decF 5 (root_T5code j) = T5 j := by decide +kernel)
-    (hb : decC 5 b ∈ H ∧ decC 5 b ≠ univ := by decide +kernel)
-    (hc : decC 5 c ∈ H ∧ decC 5 c ≠ univ := by decide +kernel)
-    (hwf : wfCsB 5 H (b :: c :: m.map Prod.fst) = true := by decide +kernel)
-    (hcert : root_certsB 5 (unrootedL 5 (b :: c :: m.map Prod.fst))
-      [(root_T5code i, if cat1 then cat1Hi m b c else cat0Hi m b c),
-       (root_T5code j, loP (m ++ [(b, 3)]) c)] = true := by decide +kernel)
-    {H₁ H₂ H₃ H₄ : Finset (Finset (Fin 5))} :
-    u τ j < u τ i ∧
-      branch2 (u τ i) (u τ j) U₁ (exp (-τ.unrootedLength S)) H₁ H₂ H₃ H₄ =
-        if cat1 then H₄ else H₃ := by
-  obtain ⟨hi', hj'⟩ := root_u5_pair τ h _ i j _ _ hi hj hwf hcert
-  obtain ⟨y0, y1⟩ := exp_bds h (decC 5 b) hb
-  obtain ⟨z0, z1⟩ := exp_bds h (decC 5 c) hc
-  have hU₂ := (ulen_one h S b hS).1
-  have hY2 : exp (-τ.length (decC 5 b)) ^ 2 < 1 := pow_lt_one₀ y0.le y1 (by norm_num)
-  have hZ6 : exp (-τ.length (decC 5 c)) ^ 6 < 1 := pow_lt_one₀ z0.le z1 (by norm_num)
-  have k1 : 0 < monoVal τ.length m * exp (-τ.length (decC 5 b)) *
-      (1 - exp (-τ.length (decC 5 b)) ^ 2) :=
-    mul_pos (mul_pos (monoVal_pos _ _) y0) (by linarith)
-  have k2 : 0 < monoVal τ.length m * exp (-τ.length (decC 5 b)) ^ 3 *
-      (1 - exp (-τ.length (decC 5 c)) ^ 6) :=
-    mul_pos (mul_pos (monoVal_pos _ _) (pow_pos y0 3)) (by linarith)
-  simp only [loP, evalPoly_cons, evalPoly_nil, monoVal_append, monoVal_cons, monoVal_nil,
-    mul_one, add_zero] at hj'
-  push_cast at hj'
-  have hlt : u τ j < 1 / 15 * U₁ * exp (-τ.unrootedLength S) ^ 3 := by
-    rw [hU₁, hU₂, hj']; linarith
-  unfold branch2
-  rw [ite_eq_right (by linarith), ite_eq_right (by linarith)]
-  cases cat1 <;>
-    (simp only [Bool.false_eq_true, ↓reduceIte, cat0Hi, cat1Hi, evalPoly_cons, evalPoly_nil,
-       monoVal_append, monoVal_cons, monoVal_nil, pow_one, mul_one, add_zero] at hi'
-     push_cast at hi')
-  · exact ⟨by linarith, ite_eq_left (by rw [hU₁, hU₂, hi', hj']; ring)⟩
-  · exact ⟨by linarith, ite_eq_right (by rw [hU₁, hU₂] at *; linarith)⟩
-
-/-! ### `U5 0` -/
-
-noncomputable def cls0 (τ : SpeciesTree (Fin 5)) : Finset (Finset (Fin 5)) :=
-  if u τ 5 = 1 / 15 then hierarchyOf ∅
-  else if 1 / 15 < u τ 5 then hierarchyOf {{0, 1, 2, 4}}
-  else if 1 / 15 < u τ 6 then hierarchyOf {{0, 1, 2, 3}}
-  else if 1 / 15 < u τ 4 then hierarchyOf {{0, 2, 3, 4}}
-  else if 1 / 15 < u τ 1 then hierarchyOf {{0, 1, 3, 4}}
-  else hierarchyOf {{1, 2, 3, 4}}
-
-private theorem cls0_eq (τ : SpeciesTree (Fin 5)) (hk : unroot τ.clusters = U5 0) :
-    cls0 τ = τ.clusters := by
+theorem rootings_zero_main (hk : unroot τ.clusters = U5 0) :
+    tag0 τ = τ.clusters ∧ Same5 τ := by
   have hR := classify_mem_rootings5 τ 0 (by decide) hk
   simp only [rootings5, mem_insert, mem_singleton] at hR
-  unfold cls0
   rcases hR with h | h | h | h | h | h
-  · obtain ⟨h5, _⟩ := root_u5_pair τ h [] 5 6 (constP []) (constP [])
-    rw [h, h5, eval_constP, monoVal_nil, mul_one, ite_eq_left rfl]
-  · obtain ⟨h1, h4, h5, h6⟩ := root_u5_1456 τ h [30]
-      (loP [] 30) (loP [] 30) (loP [] 30) (loP [] 30)
-    have hlt := (eval_lo_hi_bds h [] 30).1; simp only [monoVal_nil, mul_one] at hlt
-    rw [h, h1, h4, h5, h6, ite_eq_right (by linarith), ite_eq_right (by linarith),
-      ite_eq_right (by linarith), ite_eq_right (by linarith), ite_eq_right (by linarith)]
-  · obtain ⟨h1, h4, h5, h6⟩ := root_u5_1456 τ h [29]
-      (loP [] 29) (hiP [] 29) (loP [] 29) (loP [] 29)
-    obtain ⟨hlt, hgt⟩ := eval_lo_hi_bds h [] 29
-    simp only [monoVal_nil, mul_one] at hlt hgt
-    rw [h, h1, h4, h5, h6, ite_eq_right (by linarith), ite_eq_right (by linarith),
-      ite_eq_right (by linarith), ite_eq_left (by linarith)]
-  · obtain ⟨h1, h4, h5, h6⟩ := root_u5_1456 τ h [27]
-      (hiP [] 27) (loP [] 27) (loP [] 27) (loP [] 27)
-    obtain ⟨hlt, hgt⟩ := eval_lo_hi_bds h [] 27
-    simp only [monoVal_nil, mul_one] at hlt hgt
-    rw [h, h1, h4, h5, h6, ite_eq_right (by linarith), ite_eq_right (by linarith),
-      ite_eq_right (by linarith), ite_eq_right (by linarith), ite_eq_left (by linarith)]
-  · obtain ⟨h5, _⟩ := root_u5_pair τ h [23] 5 6 (hiP [] 23) (loP [] 23)
-    have hgt := (eval_lo_hi_bds h [] 23).2; simp only [monoVal_nil, mul_one] at hgt
-    rw [h, h5, ite_eq_right (by linarith), ite_eq_left (by linarith)]
-  · obtain ⟨h5, h6⟩ := root_u5_pair τ h [15] 5 6 (loP [] 15) (hiP [] 15)
-    obtain ⟨hlt, hgt⟩ := eval_lo_hi_bds h [] 15
-    simp only [monoVal_nil, mul_one] at hlt hgt
-    rw [h, h5, h6, ite_eq_right (by linarith), ite_eq_right (by linarith),
-      ite_eq_left (by linarith)]
+  · obtain ⟨_, h1, h2, h3, h4⟩ := fullCert_all τ h (reqs := [
+      ([(1, 13), (-1, 1)], []), ([(1, 4), (-1, 1)], []),
+      ([(1, 2), (-1, 1)], []), ([(1, 3), (-1, 1)], [])]) (by decide +kernel)
+    exact ⟨by simp [tag0, u_eq_of_lin h1, u_eq_of_lin h2, u_eq_of_lin h3, u_eq_of_lin h4, h],
+      fun τ' h' _ => sameRooted_of_cs h h' trivial⟩
+  · obtain ⟨⟨h1, _, _, _⟩, hs⟩ := p3_spec 30 1 13 2 3 4 h
+    exact ⟨by simp [tag0, h1, h], hs⟩
+  · obtain ⟨⟨h1, h2, _, _⟩, hs⟩ := p3_spec 29 1 4 13 2 3 h
+    exact ⟨by simp [tag0, h2, h1, h], hs⟩
+  · obtain ⟨⟨h1, h2, h3, _⟩, hs⟩ := p3_spec 27 2 1 13 4 3 h
+    exact ⟨by simp [tag0, h2, h3, h1, not_lt_of_gt h1, h], hs⟩
+  · obtain ⟨⟨h1, h2, h3, _⟩, hs⟩ := p3_spec 23 1 2 13 4 3 h
+    exact ⟨by simp [tag0, h2, h3, h1, not_lt_of_gt h1, h], hs⟩
+  · obtain ⟨⟨h1, h2, h3, h4⟩, hs⟩ := p3_spec 15 1 3 13 4 2 h
+    exact ⟨by simp [tag0, h2, h3, h4, h1, h], hs⟩
 
-/-! ### `U5 1` -/
+theorem p10_spec (c m i j o₁ k₁ o₂ k₂ : ℕ) (hτ : τ.clusters = h5 [3, c])
+    (hc : root_fullCertB [3, c] [
+      ([(12, 4), (3, m)], [(1, [(3, 1)])]),
+      ([(30, 4), (-15, m)], [(1, normKey [(3, 1), (c, 6)])]),
+      ([(1, j), (-1, i)], diffPoly (1 / 18) [(3, 1)] c 0 6),
+      ([(1, o₁), (-1, k₁)], []),
+      ([(1, o₂), (-1, k₂)], [])] = true := by decide +kernel) :
+    (u τ i < u τ j ∧ u τ o₁ = u τ k₁ ∧ u τ o₂ = u τ k₂) ∧ Same5 τ := by
+  obtain ⟨⟨_, hc'⟩, ⟨h1, h2, h3⟩, hs⟩ := same_two 3 c 1 6 hτ hc
+  exact ⟨⟨u_lt_of_lin hc' h1, u_eq_of_lin h2, u_eq_of_lin h3⟩, hs⟩
 
-noncomputable def cls1 (τ : SpeciesTree (Fin 5)) : Finset (Finset (Fin 5)) :=
-  let U := exp (-τ.unrootedLength {0, 1})
-  if u τ 5 < u τ 4 then
-    branch2 (u τ 4) (u τ 5) 1 U
-      (hierarchyOf {{0, 1}, {2, 3, 4}})
-      (hierarchyOf {{2, 3, 4}})
-      (hierarchyOf {{2, 3, 4}, {1, 2, 3, 4}})
-      (hierarchyOf {{2, 3, 4}, {0, 2, 3, 4}})
-  else if u τ 4 < u τ 5 then hierarchyOf {{0, 1}, {0, 1, 2, 4}}
-  else if u τ 5 = 1 / 15 * U then hierarchyOf {{0, 1}}
-  else if u τ 5 < u τ 6 then hierarchyOf {{0, 1}, {0, 1, 2, 3}}
-  else hierarchyOf {{0, 1}, {0, 1, 3, 4}}
-
-private theorem cls1_eq (τ : SpeciesTree (Fin 5)) (hk : unroot τ.clusters = U5 1) :
-    cls1 τ = τ.clusters := by
+theorem rootings_one_main (hk : unroot τ.clusters = U5 1) :
+    tag1 τ = τ.clusters ∧ Same5 τ := by
   have hR := classify_mem_rootings5 τ 1 (by decide) hk
   simp only [rootings5, mem_insert, mem_singleton] at hR
-  unfold cls1
   rcases hR with h | h | h | h | h | h | h | h
-  · obtain ⟨h4, h5⟩ := root_u5_pair τ h [3] 4 5 (constP [(3, 1)]) (constP [(3, 1)])
-    rw [h, (ulen_one h {0, 1} 3).2, h4, h5, eval_constP,
-      ite_eq_right (by linarith), ite_eq_right (by linarith), ite_eq_left rfl]
-  · obtain ⟨hlt, hb⟩ := b2_p6 h 4 5 [] 28 {0, 1} (monoVal_nil _).symm
-    rw [h, ite_eq_left hlt, hb]
-  · obtain ⟨hlt, hb⟩ := b2_bal h 4 5 [] 3 28 {0, 1} (monoVal_nil _).symm
-    rw [h, ite_eq_left hlt, hb]
-  · obtain ⟨hlt, hb⟩ := b2_cat false h 4 5 [] 28 30 {0, 1} (monoVal_nil _).symm
-    rw [h, ite_eq_left hlt, hb]; rfl
-  · obtain ⟨hlt, hb⟩ := b2_cat true h 4 5 [] 28 29 {0, 1} (monoVal_nil _).symm
-    rw [h, ite_eq_left hlt, hb]; rfl
-  · obtain ⟨h4, h5⟩ := root_u5_pair τ h [3, 27] 4 5 (loP [(3, 1)] 27) (loP [(3, 1)] 27)
-    obtain ⟨_, h6⟩ := root_u5_pair τ h [3, 27] 5 6 (loP [(3, 1)] 27) (loP [(3, 1)] 27)
-    have hlo := (eval_lo_hi_bds h [(3, 1)] 27).1
-    rw [h, (ulen_one h {0, 1} 3).2, h4, h5, h6, ite_eq_right (by linarith),
-      ite_eq_right (by linarith), ite_eq_right (by linarith), ite_eq_right (by linarith)]
-  · obtain ⟨h4, h5⟩ := root_u5_pair τ h [3, 23] 4 5 (loP [(3, 1)] 23) (hiP [(3, 1)] 23)
-    obtain ⟨hlo, hhi⟩ := eval_lo_hi_bds h [(3, 1)] 23
-    rw [h, h4, h5, ite_eq_right (by linarith), ite_eq_left (by linarith)]
-  · obtain ⟨h4, h5⟩ := root_u5_pair τ h [3, 15] 4 5 (loP [(3, 1)] 15) (loP [(3, 1)] 15)
-    obtain ⟨_, h6⟩ := root_u5_pair τ h [3, 15] 5 6 (loP [(3, 1)] 15) (hiP [(3, 1)] 15)
-    obtain ⟨hlo, hhi⟩ := eval_lo_hi_bds h [(3, 1)] 15
-    rw [h, (ulen_one h {0, 1} 3).2, h4, h5, h6, ite_eq_right (by linarith),
-      ite_eq_right (by linarith), ite_eq_right (by linarith), ite_eq_left (by linarith)]
-
-/-! ### `U5 2` -/
-
-noncomputable def cls2 (τ : SpeciesTree (Fin 5)) : Finset (Finset (Fin 5)) :=
-  let U₁ := exp (-τ.unrootedLength {0, 1})
-  let U₂ := exp (-τ.unrootedLength {0, 1, 2})
-  if u τ 7 < u τ 5 then
-    branch2 (u τ 5) (u τ 7) U₁ U₂
-      (hierarchyOf {{0, 1}, {3, 4}, {0, 1, 2}})
-      (hierarchyOf {{0, 1}, {0, 1, 2}})
-      (hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 3}})
-      (hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 4}})
-  else if u τ 5 < u τ 7 then
-    branch2 (u τ 7) (u τ 5) U₂ U₁
-      (hierarchyOf {{3, 4}, {0, 1}, {2, 3, 4}})
-      (hierarchyOf {{3, 4}, {2, 3, 4}})
-      (hierarchyOf {{3, 4}, {2, 3, 4}, {1, 2, 3, 4}})
-      (hierarchyOf {{3, 4}, {2, 3, 4}, {0, 2, 3, 4}})
-  else if u τ 7 = 1 / 15 * U₁ * U₂ then hierarchyOf {{0, 1}, {3, 4}}
-  else hierarchyOf {{0, 1}, {3, 4}, {0, 1, 3, 4}}
-
-private theorem cls2_eq (τ : SpeciesTree (Fin 5)) (hk : unroot τ.clusters = U5 2) :
-    cls2 τ = τ.clusters := by
-  have hR := classify_mem_rootings5 τ 2 (by decide) hk
-  simp only [rootings5, mem_insert, mem_singleton] at hR
-  unfold cls2
-  rcases hR with h | h | h | h | h | h | h | h | h | h
-  · obtain ⟨hlt, hb⟩ := b2_cat false h 5 7 [(3, 1)] 7 15 {0, 1, 2} (ulen_one h {0, 1} 3).2
-    rw [h, ite_eq_left hlt, hb]; rfl
-  · obtain ⟨hlt, hb⟩ := b2_cat true h 5 7 [(3, 1)] 7 23 {0, 1, 2} (ulen_one h {0, 1} 3).2
-    rw [h, ite_eq_left hlt, hb]; rfl
-  · obtain ⟨hlt, hb⟩ := b2_cat false h 7 5 [(24, 1)] 28 30 {0, 1} (ulen_one h {0, 1, 2} 24).2
-    rw [h, ite_eq_right (by linarith), ite_eq_left hlt, hb]; rfl
-  · obtain ⟨hlt, hb⟩ := b2_cat true h 7 5 [(24, 1)] 28 29 {0, 1} (ulen_one h {0, 1, 2} 24).2
-    rw [h, ite_eq_right (by linarith), ite_eq_left hlt, hb]; rfl
-  · obtain ⟨h5, h7⟩ := root_u5_pair τ h [3, 24, 27] 5 7
-      (loP [(3, 1), (24, 1)] 27) (loP [(3, 1), (24, 1)] 27)
-    have hlo := (eval_lo_hi_bds h [(3, 1), (24, 1)] 27).1
-    simp only [monoVal_cons, monoVal_nil, pow_one, mul_one] at hlo
-    rw [h, h5, h7, (ulen_one h {0, 1} 3).1, (ulen_one h {0, 1, 2} 24).1,
-      ite_eq_right (by linarith), ite_eq_right (by linarith), ite_eq_right (by linarith)]
-  · obtain ⟨hlt, hb⟩ := b2_bal h 5 7 [(3, 1)] 24 7 {0, 1, 2} (ulen_one h {0, 1} 3).2
-    rw [h, ite_eq_left hlt, hb]
-  · obtain ⟨hlt, hb⟩ := b2_bal h 7 5 [(24, 1)] 3 28 {0, 1} (ulen_one h {0, 1, 2} 24).2
-    rw [h, ite_eq_right (by linarith), ite_eq_left hlt, hb]
-  · obtain ⟨h5, h7⟩ := root_u5_pair τ h [3, 24] 5 7
-      (constP [(3, 1), (24, 1)]) (constP [(3, 1), (24, 1)])
-    rw [h, h5, h7, (ulen_one h {0, 1} 3).1, (ulen_one h {0, 1, 2} 24).1,
-      ite_eq_right (by linarith), ite_eq_right (by linarith),
-      ite_eq_left (by simp [eval_constP, monoVal_cons, monoVal_nil, mul_assoc])]
-  · obtain ⟨hlt, hb⟩ := b2_p6 h 5 7 [(3, 1)] 7 {0, 1, 2} (ulen_one h {0, 1} 3).2
-    rw [h, ite_eq_left hlt, hb]
-  · obtain ⟨hlt, hb⟩ := b2_p6 h 7 5 [(24, 1)] 28 {0, 1} (ulen_one h {0, 1, 2} 24).2
-    rw [h, ite_eq_right (by linarith), ite_eq_left hlt, hb]
+  · obtain ⟨_, ⟨_, h1, h2, h3⟩, hs⟩ := same_one 3 1 (L := [(15, 4)])
+      (reqs := [([(1, 5), (-1, 4)], []), ([(1, 2), (-1, 1)], []), ([(1, 3), (-1, 1)], [])]) h
+    exact ⟨by simp [tag1, u_eq_of_lin h1, u_eq_of_lin h2, u_eq_of_lin h3, h], hs⟩
+  · obtain ⟨h28, ⟨h4, h1, h2, h3⟩, hs⟩ := same_one 28 3 (L := [(15, 5)])
+      (reqs := [([(1, 4), (-1, 5)], diffPoly (1 / 6) [] 28 1 2),
+        ([(1, 13), (-1, 4)], []), ([(6, 4), (9, 5)], [(1, [(28, 1)])])]) h
+    have lt1 := u_lt_of_lin h28 h1
+    have eq2 : linVal τ [(6, 4), (9, 5)] ^ 3 = linVal τ [(15, 5)] := by
+      rw [linVal_eq_monoVal h3, linVal_eq_monoVal h4]; simp only [monoVal_cons, monoVal_nil]; ring
+    exact ⟨by simp [tag1, lt1, u_eq_of_lin h2, eq2, h], hs⟩
+  · obtain ⟨h3, lt1, m1, m2, h2, hs⟩ := same_cube2 3 28 4 5
+      (reqs := [([(1, 13), (-1, 4)], [])]) h
+    have lt2 : linVal τ [(6, 4), (9, 5)] ^ 3 < linVal τ [(15, 5)] := by
+      rw [m1, m2, show monoVal τ.length [(3, 1), (28, 1)] ^ 3 =
+        monoVal τ.length [(3, 2)] * monoVal τ.length [(3, 1), (28, 3)] by
+        simp only [monoVal_cons, monoVal_nil]; ring]
+      exact mul_lt_of_lt_one_left (monoVal_pos _ _) (monoVal_single_lt_one τ h3.1 h3.2)
+    exact ⟨by simp [tag1, lt1, u_eq_of_lin h2, lt2, h], hs⟩
+  · obtain ⟨⟨h1, h2⟩, hs⟩ := p9_spec 30 4 13 h
+    exact ⟨by simp [tag1, h1, h2, h], hs⟩
+  · obtain ⟨⟨h1, h2⟩, hs⟩ := p9_spec 29 13 4 h
+    exact ⟨by simp [tag1, lt_trans h1 h2, not_lt_of_gt h2, h2, h], hs⟩
+  · obtain ⟨⟨h1, h2, _⟩, hs⟩ := p10_spec 27 8 2 1 5 4 4 4 h
+    exact ⟨by simp [tag1, h2, h1, h], hs⟩
+  · obtain ⟨⟨h1, _, _⟩, hs⟩ := p10_spec 23 5 4 5 4 4 4 4 h
+    exact ⟨by simp [tag1, not_lt_of_gt h1, h1, h], hs⟩
+  · obtain ⟨⟨h1, h2, h3⟩, hs⟩ := p10_spec 15 6 1 3 5 4 2 1 h
+    exact ⟨by simp [tag1, h2, h3, h1, h], hs⟩
 
 set_option maxHeartbeats 400000 in
-private theorem u5_all (k : ℕ) (hk : k ∈ ({0, 1, 2} : Finset ℕ)) (τ τ' : SpeciesTree (Fin 5))
-    (he : unroot τ.clusters = U5 k) (he' : unroot τ'.clusters = U5 k)
-    (hd : τ.unrootedDist id = τ'.unrootedDist id) (hU' : τ.SameUnrootedMetricTree τ') :
-    τ.SameRootedMetricTree τ' := by
-  have hu := five_u_congr hd
-  simp only [Finset.mem_insert, Finset.mem_singleton] at hk
-  rcases hk with rfl | rfl | rfl <;>
-    (have hR := classify_mem_rootings5 τ _ (by decide) he
-     simp only [rootings5, mem_insert, mem_singleton] at hR)
-  · have hcl : τ.clusters = τ'.clusters := by
-      rw [← cls0_eq τ he, ← cls0_eq τ' he']; simp only [cls0, hu 1, hu 4, hu 5, hu 6]
-    rcases hR with h | h | h | h | h | h <;> (have h' := hcl.symm.trans h)
-    · exact five_same_of_lengths h h' (by simp)
-    all_goals refine five_same_of_lengths h h' ?_; simp only [mem_singleton, forall_eq]
-    · exact solve_loP h h' hU' 5 [] 30 (hu 5)
-    · exact solve_loP h h' hU' 5 [] 29 (hu 5)
-    · exact solve_loP h h' hU' 5 [] 27 (hu 5)
-    · exact solve_loP h h' hU' 6 [] 23 (hu 6)
-    · exact solve_loP h h' hU' 5 [] 15 (hu 5)
-  · have hU1 : τ.unrootedLength {0, 1} = τ'.unrootedLength {0, 1} :=
-      hU'.2 {0, 1} (he ▸ by decide) (by decide) (by decide)
-    have hcl : τ.clusters = τ'.clusters := by
-      rw [← cls1_eq τ he, ← cls1_eq τ' he']; simp only [cls1, hU1, hu 4, hu 5, hu 6]
-    rcases hR with h | h | h | h | h | h | h | h <;> (have h' := hcl.symm.trans h) <;>
-      refine five_same_of_lengths h h' ?_ <;>
-      simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
-    · exact len_nr h h' hU'
-    · exact len_nr h h' hU'
-    · exact solve_bal h h' hU' 5 [] 3 28 (hu 5)
-    · exact ⟨len_nr h h' hU', solve_loP h h' hU' 5 [(28, 3)] 30 (hu 5)⟩
-    · exact ⟨len_nr h h' hU', solve_loP h h' hU' 5 [(28, 3)] 29 (hu 5)⟩
-    · exact ⟨len_nr h h' hU', solve_loP h h' hU' 5 [(3, 1)] 27 (hu 5)⟩
-    · exact ⟨len_nr h h' hU', solve_loP h h' hU' 6 [(3, 1)] 23 (hu 6)⟩
-    · exact ⟨len_nr h h' hU', solve_loP h h' hU' 5 [(3, 1)] 15 (hu 5)⟩
-  · have hU1 : τ.unrootedLength {0, 1} = τ'.unrootedLength {0, 1} :=
-      hU'.2 {0, 1} (he ▸ by decide) (by decide) (by decide)
-    have hU2 : τ.unrootedLength {0, 1, 2} = τ'.unrootedLength {0, 1, 2} :=
-      hU'.2 {0, 1, 2} (he ▸ by decide) (by decide) (by decide)
-    have hcl : τ.clusters = τ'.clusters := by
-      rw [← cls2_eq τ he, ← cls2_eq τ' he']; simp only [cls2, hU1, hU2, hu 5, hu 7]
-    rcases hR with h | h | h | h | h | h | h | h | h | h <;> (have h' := hcl.symm.trans h) <;>
-      refine five_same_of_lengths h h' ?_ <;>
-      simp only [mem_insert, mem_singleton, forall_eq_or_imp, forall_eq]
-    · exact ⟨len_nr h h' hU', len_nr h h' hU', solve_loP h h' hU' 7 [(3, 1), (7, 3)] 15 (hu 7)⟩
-    · exact ⟨len_nr h h' hU', len_nr h h' hU', solve_loP h h' hU' 7 [(3, 1), (7, 3)] 23 (hu 7)⟩
-    · exact ⟨len_nr h h' hU', len_nr h h' hU', solve_loP h h' hU' 5 [(24, 1), (28, 3)] 30 (hu 5)⟩
-    · exact ⟨len_nr h h' hU', len_nr h h' hU', solve_loP h h' hU' 5 [(24, 1), (28, 3)] 29 (hu 5)⟩
-    · exact ⟨len_nr h h' hU', len_nr h h' hU', solve_loP h h' hU' 7 [(3, 1), (24, 1)] 27 (hu 7)⟩
-    · exact ⟨len_nr h h' hU', solve_bal h h' hU' 7 [(3, 1)] 24 7 (hu 7)⟩
-    · exact ⟨len_nr h h' hU', solve_bal h h' hU' 5 [(24, 1)] 3 28 (hu 5)⟩
-    · exact ⟨len_nr h h' hU', len_nr h h' hU'⟩
-    · exact ⟨len_nr h h' hU', len_nr h h' hU'⟩
-    · exact ⟨len_nr h h' hU', len_nr h h' hU'⟩
-
-theorem appC_sameRootedMetricTree (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X)
-    (h : σ.unrootedDist id = σ'.unrootedDist id) (hU : σ.SameUnrootedMetricTree σ') :
-    σ.SameRootedMetricTree σ' := by
-  obtain ⟨e, k, hk, he⟩ := exists_equiv_unroot_eq_U5 hX σ
-  rw [← SpeciesTree.sameRootedMetricTree_relabel_iff σ σ' e.symm]
-  refine u5_all k hk _ _ he ?_ ((SpeciesTree.unrootedDist_relabel_eq_iff σ σ' e.symm).2 h)
-    ((SpeciesTree.sameUnrootedMetricTree_relabel_iff σ σ' e.symm).2 hU)
-  rw [SpeciesTree.relabel_clusters, unroot_relabelFamily, ← hU.1, ← unroot_relabelFamily]
-  exact he
+theorem rootings_two_main (hk : unroot τ.clusters = U5 2) :
+    tag2 τ = τ.clusters ∧ Same5 τ := by
+  have hR := classify_mem_rootings5 τ 2 (by decide) hk
+  simp only [rootings5, mem_insert, mem_singleton] at hR
+  rcases hR with h | h | h | h | h | h | h | h | h | h
+  · obtain ⟨⟨h1, h2⟩, hs⟩ := cat_spec 3 7 15 2 5 6 7 h
+    exact ⟨by simp [tag2, h1, h2, h], hs⟩
+  · obtain ⟨⟨h1, h2⟩, hs⟩ := cat_spec 3 7 23 3 6 5 7 h
+    exact ⟨by simp [tag2, lt_trans h1 h2, not_lt_of_gt h2, h2, h], hs⟩
+  · obtain ⟨⟨h1, h2⟩, hs⟩ := cat_spec 24 28 30 4 7 14 5 h
+    exact ⟨by simp [tag2, not_lt_of_gt h1, h1, h2, h], hs⟩
+  · obtain ⟨⟨h1, h2⟩, hs⟩ := cat_spec 24 28 29 13 14 7 5 h
+    have h57 := lt_trans h1 h2
+    exact ⟨by simp [tag2, not_lt_of_gt h57, h57, not_lt_of_gt h2, h2, h], hs⟩
+  · have hc : root_fullCertB [3, 24, 27] [
+      ([(1, 7), (-1, 5)], []),
+      ([(1, 8), (-1, 5)], diffPoly (1 / 18) [(3, 1), (24, 1)] 27 0 6),
+      ([(3, 4), (9, 5), (3, 8)], [(1, [(3, 1)])]),
+      ([(3, 2), (9, 5), (3, 8)], [(1, [(24, 1)])]),
+      ([(30, 5), (-15, 8)], [(1, [(3, 1), (24, 1), (27, 6)])])] = true := by decide +kernel
+    obtain ⟨hm, h1, h2, h3, h4, h5⟩ := fullCert_all τ h hc
+    have lt1 := u_lt_of_lin (hm 27 (by simp)) h2
+    refine ⟨by simp [tag2, u_eq_of_lin h1, lt1, h], fun τ' h' hd => ?_⟩
+    obtain ⟨_, _, _, h3', h4', h5'⟩ := fullCert_all τ' (h'.trans h) hc
+    have l3 := length_eq_of_single (monoVal_eq_of_lin hd h3 h3')
+    have l24 := length_eq_of_single (monoVal_eq_of_lin hd h4 h4')
+    exact sameRooted_of_cs h h' ⟨l3, l24, length_eq_of_triple l3 l24
+      (monoVal_eq_of_lin hd h5 h5')⟩
+  · obtain ⟨⟨h1, h2, h3⟩, hs⟩ := bal_spec 24 3 7 2 5 6 7 h
+    exact ⟨by simp [tag2, h2, ← h1, h3, h], hs⟩
+  · obtain ⟨⟨h1, h2, h3⟩, hs⟩ := bal_spec 3 24 28 4 7 14 5 h
+    exact ⟨by simp [tag2, not_lt_of_gt h2, h2, ← h1, h3, h], hs⟩
+  · obtain ⟨_, ⟨h1, h2⟩, hs⟩ := same_two 3 24 0 1
+      (L₁ := [(3, 4), (12, 5)]) (L₂ := [(3, 2), (12, 5)])
+      (reqs := [([(1, 7), (-1, 5)], []), ([(1, 8), (-1, 5)], [])]) h
+    exact ⟨by simp [tag2, u_eq_of_lin h1, u_eq_of_lin h2, h], hs⟩
+  · obtain ⟨⟨h1, h2, h3⟩, hs⟩ := p6_spec 3 7 2 5 6 7 h
+    exact ⟨by simp [tag2, h2, ← h1, h3, h], hs⟩
+  · obtain ⟨⟨h1, h2, h3⟩, hs⟩ := p6_spec 24 28 4 7 14 5 h
+    exact ⟨by simp [tag2, not_lt_of_gt h2, h2, ← h1, h3, h], hs⟩
 
 end ADR11
