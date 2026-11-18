@@ -13,8 +13,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 open Set MeasureTheory
 namespace SevenEighths.CenteredMomentOneReflectionScaleEnergy
-open HeckeFamily HeckeDyadic CenteredMomentSectorLocalization
-open CenteredMomentReflectedUniformPair CenteredMomentReflectedNormalization
+open HeckeFamily HeckeDyadic CenteredMomentSectorLocalization CenteredMomentReflectedUniformPair CenteredMomentReflectedNormalization
 open CenteredMomentScaleSupremum (scaleTest)
 
 lemma annulus_complex_support :

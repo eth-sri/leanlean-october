@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.WholePriorityMass
+public import OAI.NumberTheory.DirichletL.Descent.WholePriorityBranches
 
 @[expose] public section
 
@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InverseSecondPrincipalCaller InversePrincipalEnergy InversePrioritySecondSource
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InverseSecondPrincipalCaller InversePrincipalEnergy InversePrioritySecondSource
 local notation "O"=>ActualEisensteinCubic.O
 
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]

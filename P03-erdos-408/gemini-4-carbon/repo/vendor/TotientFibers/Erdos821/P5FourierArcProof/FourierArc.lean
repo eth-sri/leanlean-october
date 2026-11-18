@@ -15,8 +15,7 @@ open MeasureTheory
 
 namespace Erdos821.P5FourierArcProof
 
-open Erdos821.P5Core
-open Blueprint.Analytic
+open Erdos821.P5Core Blueprint.Analytic
 
 lemma integral_e_int (q : ℤ) :
     (∫ θ in (0 : ℝ)..1, e (θ * (q : ℝ))) = if q = 0 then 1 else 0 := by

@@ -1,7 +1,15 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Descent.ActualDepthBudget
-public import OAI.NumberTheory.DirichletL.Descent.FirstTwoPassLowerRank
+public import OAI.NumberTheory.DirichletL.Descent.CanonicalChildSupport
+public import OAI.NumberTheory.DirichletL.Descent.FirstLabelCellStep
+public import OAI.NumberTheory.DirichletL.Descent.FirstTwoPassParentEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicFullEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicOriginalBranches
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveParents
+public import OAI.NumberTheory.DirichletL.Descent.FirstLiveCountBudget
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveAggregate
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
 @[expose] public section
 

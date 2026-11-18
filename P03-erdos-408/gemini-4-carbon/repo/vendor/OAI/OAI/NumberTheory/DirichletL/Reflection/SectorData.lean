@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.SourceSectors
+public import OAI.NumberTheory.DirichletL.Reflection.SourceFamily
 
 @[expose] public section
 

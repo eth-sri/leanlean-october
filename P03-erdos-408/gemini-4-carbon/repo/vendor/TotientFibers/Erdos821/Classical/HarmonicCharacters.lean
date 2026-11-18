@@ -1,8 +1,12 @@
 module
 
-public import OAI.NumberTheory.PrimeGaps.Main
-public import OAI.NumberTheory.PrimeGaps.MangoldtBounds
 public import Erdos821.Blueprint.Classical
+import OAI.NumberTheory.DirichletL.PNT
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+import Mathlib.NumberTheory.AbelSummation
+import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+import Mathlib.Analysis.Calculus.ContDiff.Basic
 
 @[expose] public section
 
@@ -11,324 +15,100 @@ open Filter MeasureTheory
 
 namespace Erdos821.DivisorHarmonic
 
-open OAI.LargePrimeGaps
+noncomputable def theta (n : ℕ) : ℝ := if Nat.Prime n then Real.log n else 0
 
-/-- Siegel--Walfisz for a nonprincipal character at an arbitrary level,
-with the explicit cost of removing primes dividing the level. -/
-theorem primeCharacterError_nonprincipal_bound (A B : ℝ)
-    (hA : 0 < A) (hB : 0 < B) :
-    ∃ M : ℝ, 0 < M ∧ ∀ y : ℝ, ∀ q : ℕ, ∀ χ : DirichletCharacter ℂ q,
-      0 < q → 2 ≤ y → 1 ≤ Real.log y →
-      (Real.log y) ^ (2 * A + 2) ≤ y →
-      (q : ℝ) ≤ (Real.log y) ^ B → χ ≠ 1 →
-      ‖primeCharacterError y χ‖ ≤
-        M * y * (Real.log y) ^ (-A) +
-          (Nat.log 2 ⌊y⌋₊ : ℝ) * Real.log q := by
-  obtain ⟨M, hM, hbound⟩ := primeCharacterError_log_bound A B hA hB
-  refine ⟨M, hM, ?_⟩
-  intro y q χ hq hy hlog hpower hqlog hχ
-  let : NeZero q := ⟨Nat.ne_of_gt hq⟩
-  have hcond : (χ.conductor : ℝ) ≤ (Real.log y) ^ B := by
-    calc
-      (χ.conductor : ℝ) ≤ q := by
-        exact_mod_cast Nat.le_of_dvd hq χ.conductor_dvd_level
-      _ ≤ (Real.log y) ^ B := hqlog
-  let : NeZero χ.conductor :=
-    ⟨Nat.ne_of_gt (Nat.pos_of_dvd_of_pos χ.conductor_dvd_level hq)⟩
-  have hprim : χ.primitiveCharacter ≠ 1 := by
-    intro h
-    exact hχ ((primitiveCharacter_eq_one_iff hq χ).mp h)
-  have hmain := hbound χ.conductor χ.primitiveCharacter
-    χ.primitiveCharacter_isPrimitive y hy hlog hpower hcond
-  calc
-    ‖primeCharacterError y χ‖ ≤
-        ‖primeCharacterError y χ.primitiveCharacter‖ +
-          (Nat.log 2 ⌊y⌋₊ : ℝ) * Real.log q :=
-      primeCharacterError_le_primitive y hq χ
-    _ ≤ M * y * (Real.log y) ^ (-A) +
-          (Nat.log 2 ⌊y⌋₊ : ℝ) * Real.log q := by
-      exact add_le_add hmain le_rfl
+private lemma theta_le_vonMangoldt (n : ℕ) : theta n ≤ ArithmeticFunction.vonMangoldt n := by
+  by_cases hn : Nat.Prime n <;> simp [theta, hn, ArithmeticFunction.vonMangoldt_apply_prime]
 
-/-- The character sum weighted by the Chebyshev theta coefficients. -/
-noncomputable def thetaCharacterPrefix {q : ℕ}
-    (y : ℝ) (χ : DirichletCharacter ℂ q) : ℂ :=
+noncomputable def thetaCharacterPrefix {q : ℕ} (y : ℝ) (χ : DirichletCharacter ℂ q) : ℂ :=
   ∑ n ∈ Finset.Ioc 0 ⌊y⌋₊, χ (n : ZMod q) * (theta n : ℂ)
 
-/-- Replacing von Mangoldt weights by prime logarithmic weights costs at most
-the elementary prime-power error. -/
-theorem thetaCharacterPrefix_norm_le {q : ℕ} (y : ℝ)
-    (χ : DirichletCharacter ℂ q) (hy : 1 ≤ y) (hχ : χ ≠ 1) :
-    ‖thetaCharacterPrefix y χ‖ ≤
-      ‖primeCharacterError y χ‖ + 2 * Real.sqrt y * Real.log y := by
-  let X : ℕ := ⌊y⌋₊
-  have hX : 1 ≤ X := by
-    apply (Nat.le_floor_iff (show 0 ≤ y by linarith)).2
-    exact_mod_cast hy
-  have hXreal : (1 : ℝ) ≤ (X : ℝ) := by exact_mod_cast hX
-  have hXle : (X : ℝ) ≤ y := Nat.floor_le (by linarith)
-  have hsum :
-      primeCharacterPrefix y χ - thetaCharacterPrefix y χ =
-        ∑ n ∈ Finset.Ioc 0 X,
-          χ (n : ZMod q) *
-            ((ArithmeticFunction.vonMangoldt n - theta n : ℝ) : ℂ) := by
-    simp only [primeCharacterPrefix, thetaCharacterPrefix, X]
-    rw [← Finset.sum_sub_distrib]
-    apply Finset.sum_congr rfl
-    intro n hn
-    push_cast
-    rw [← mul_sub]
-  have hdiff :
-      ‖primeCharacterPrefix y χ - thetaCharacterPrefix y χ‖ ≤
-        2 * Real.sqrt (X : ℝ) * Real.log (X : ℝ) := by
-    rw [hsum]
-    calc
-      ‖∑ n ∈ Finset.Ioc 0 X,
-          χ (n : ZMod q) *
-            ((ArithmeticFunction.vonMangoldt n - theta n : ℝ) : ℂ)‖ ≤
-          ∑ n ∈ Finset.Ioc 0 X,
-            ‖χ (n : ZMod q) *
-              ((ArithmeticFunction.vonMangoldt n - theta n : ℝ) : ℂ)‖ := norm_sum_le _ _
-      _ ≤ ∑ n ∈ Finset.Ioc 0 X,
-            (ArithmeticFunction.vonMangoldt n - theta n : ℝ) := by
-          apply Finset.sum_le_sum
-          intro n hn
-          have hnonneg :
-              0 ≤ ArithmeticFunction.vonMangoldt n - theta n :=
-            sub_nonneg.mpr (theta_le_vonMangoldt n)
-          calc
-            ‖χ (n : ZMod q) *
-                ((ArithmeticFunction.vonMangoldt n - theta n : ℝ) : ℂ)‖ =
-                ‖χ (n : ZMod q)‖ *
-                  ‖((ArithmeticFunction.vonMangoldt n - theta n : ℝ) : ℂ)‖ :=
-                    norm_mul _ _
-            _ = ‖χ (n : ZMod q)‖ *
-                  (ArithmeticFunction.vonMangoldt n - theta n : ℝ) := by
-                    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hnonneg]
-            _ ≤ 1 * (ArithmeticFunction.vonMangoldt n - theta n : ℝ) :=
-              mul_le_mul_of_nonneg_right (χ.norm_le_one _) hnonneg
-            _ = ArithmeticFunction.vonMangoldt n - theta n := by ring
-      _ = Chebyshev.psi (X : ℝ) - Chebyshev.theta (X : ℝ) :=
-        sum_vonMangoldt_sub_theta X
-      _ ≤ 2 * Real.sqrt (X : ℝ) * Real.log (X : ℝ) :=
-        Chebyshev.psi_sub_theta_le hXreal
-  have hlogXnonneg : 0 ≤ Real.log (X : ℝ) := Real.log_nonneg hXreal
-  have hlogXle : Real.log (X : ℝ) ≤ Real.log y :=
-    Real.log_le_log (by linarith) hXle
-  have hsqrtXle : Real.sqrt (X : ℝ) ≤ Real.sqrt y := Real.sqrt_le_sqrt hXle
-  have hmain :
-      2 * Real.sqrt (X : ℝ) * Real.log (X : ℝ) ≤
-        2 * Real.sqrt y * Real.log y := by
-    have hprod := mul_le_mul hsqrtXle hlogXle hlogXnonneg (Real.sqrt_nonneg y)
-    calc
-      2 * Real.sqrt (X : ℝ) * Real.log (X : ℝ) =
-          2 * (Real.sqrt (X : ℝ) * Real.log (X : ℝ)) := by ring
-      _ ≤ 2 * (Real.sqrt y * Real.log y) := mul_le_mul_of_nonneg_left hprod (by norm_num)
-      _ = 2 * Real.sqrt y * Real.log y := by ring
-  have herr : ‖primeCharacterError y χ‖ = ‖primeCharacterPrefix y χ‖ := by
-    simp [primeCharacterError, hχ]
-  calc
-    ‖thetaCharacterPrefix y χ‖ =
-        ‖primeCharacterPrefix y χ -
-          (primeCharacterPrefix y χ - thetaCharacterPrefix y χ)‖ := by
-            congr 1
-            ring
-    _ ≤ ‖primeCharacterPrefix y χ‖ +
-          ‖primeCharacterPrefix y χ - thetaCharacterPrefix y χ‖ := norm_sub_le _ _
-    _ ≤ ‖primeCharacterError y χ‖ + 2 * Real.sqrt y * Real.log y := by
-      rw [herr]
-      exact add_le_add (le_rfl) (hdiff.trans hmain)
-
-/-- Uniform power saving for the theta-character prefix of nonprincipal characters. -/
-theorem thetaCharacterPrefix_log_bound (A B : ℝ)
-    (hA : 0 < A) (hB : 0 < B) :
+theorem thetaCharacterPrefix_log_bound (A B : ℝ) (_hA : 0 < A) (_hB : 0 < B) :
     ∃ K : ℝ, 0 < K ∧ ∀ᶠ y : ℝ in atTop,
       ∀ q : ℕ, ∀ χ : DirichletCharacter ℂ q,
         0 < q → (q : ℝ) ≤ (Real.log y) ^ B → χ ≠ 1 →
         ‖thetaCharacterPrefix y χ‖ ≤ K * y * (Real.log y) ^ (-A) := by
-  let c₀ : ℝ := (Real.log 2)⁻¹
-  have hc₀ : 0 < c₀ := by
-    dsimp [c₀]
-    positivity
-  obtain ⟨M, hM, hSW⟩ :=
-    primeCharacterError_nonprincipal_bound (A + 1) B (by linarith) hB
-  have hlogEvent : ∀ᶠ y : ℝ in atTop, 2 ≤ Real.log y := by
-    filter_upwards [eventually_ge_atTop (Real.exp 2)] with y hy
-    calc
-      2 = Real.log (Real.exp 2) := by simp
-      _ ≤ Real.log y := Real.log_le_log (Real.exp_pos _) hy
-  have hSWPowerEvent : ∀ᶠ y : ℝ in atTop,
-      (Real.log y) ^ (2 * (A + 1) + 2) ≤ y := by
-    simpa only [Real.rpow_one] using
-      (eventually_log_rpow_le_rpow (2 * (A + 1) + 2) (by norm_num : (0 : ℝ) < 1))
-  have hConductorPowerEvent : ∀ᶠ y : ℝ in atTop,
-      (Real.log y) ^ (A + B + 3) ≤ Real.sqrt y := by
-    filter_upwards [eventually_log_rpow_le_rpow (A + B + 3)
-      (by norm_num : (0 : ℝ) < (1 / 2 : ℝ))] with y hy
-    simpa only [Real.sqrt_eq_rpow] using hy
-  have hPrimePowerEvent : ∀ᶠ y : ℝ in atTop,
-      (Real.log y) ^ (A + 2) ≤ Real.sqrt y := by
-    filter_upwards [eventually_log_rpow_le_rpow (A + 2)
-      (by norm_num : (0 : ℝ) < (1 / 2 : ℝ))] with y hy
-    simpa only [Real.sqrt_eq_rpow] using hy
-  have hLargeEvent : ∀ᶠ y : ℝ in atTop, c₀ ^ 2 ≤ y :=
-    eventually_ge_atTop (c₀ ^ 2)
-  have hEvents : ∀ᶠ y : ℝ in atTop,
-      2 ≤ Real.log y ∧
-      (Real.log y) ^ (2 * (A + 1) + 2) ≤ y ∧
-      (Real.log y) ^ (A + B + 3) ≤ Real.sqrt y ∧
-      (Real.log y) ^ (A + 2) ≤ Real.sqrt y ∧ c₀ ^ 2 ≤ y := by
-    filter_upwards [hlogEvent, hSWPowerEvent, hConductorPowerEvent,
-      hPrimePowerEvent, hLargeEvent] with y hlog hSWp hCp hPp hlarge
-    exact ⟨hlog, hSWp, hCp, hPp, hlarge⟩
-  refine ⟨M + 2, by linarith, ?_⟩
-  filter_upwards [hEvents] with y hY
-  rcases hY with ⟨hLtwo, hSWpower, hCpower, hPpower, hlarge⟩
-  intro q χ hq hqlog hχ
-  let L : ℝ := Real.log y
-  have hLtwo' : 2 ≤ L := by simpa [L] using hLtwo
-  have hLpos : 0 < L := by linarith
-  have hLone : 1 ≤ L := by linarith
-  have hypos : 0 < y := by
-    have hc₀sq : 0 < c₀ ^ 2 := sq_pos_of_pos hc₀
-    exact lt_of_lt_of_le hc₀sq hlarge
-  have hSWpower' : L ^ (2 * (A + 1) + 2) ≤ y := by
-    simpa [L] using hSWpower
-  have hYexp : Real.exp L = y := by
-    dsimp [L]
-    exact Real.exp_log hypos
-  have hYtwo : 2 ≤ y := by
-    calc
-      2 ≤ Real.exp 2 := by
-        have h := Real.add_one_le_exp 2
-        linarith
-      _ ≤ Real.exp L := Real.exp_le_exp.mpr (by linarith)
-      _ = y := hYexp
-  have hlog1 : 1 ≤ Real.log y := by simpa [L] using hLone
-  have herror := hSW y q χ hq hYtwo hlog1 hSWpower' hqlog hχ
-  have htheta := thetaCharacterPrefix_norm_le y χ (by linarith) hχ
-  have hXone : 1 ≤ ⌊y⌋₊ := by
-    apply (Nat.le_floor_iff (show 0 ≤ y by linarith)).2
-    exact_mod_cast (show (1 : ℝ) ≤ y by linarith)
-  have hXne : ⌊y⌋₊ ≠ 0 := by omega
-  have hXle : (⌊y⌋₊ : ℝ) ≤ y := Nat.floor_le (by linarith)
-  have hNatPow : 2 ^ Nat.log 2 ⌊y⌋₊ ≤ ⌊y⌋₊ :=
-    Nat.pow_log_le_self 2 hXne
-  have hNatPowReal : (2 : ℝ) ^ Nat.log 2 ⌊y⌋₊ ≤ (⌊y⌋₊ : ℝ) := by
-    exact_mod_cast hNatPow
-  have hNatLogMul :
-      (Nat.log 2 ⌊y⌋₊ : ℝ) * Real.log 2 ≤ L := by
-    calc
-      _ = Real.log ((2 : ℝ) ^ Nat.log 2 ⌊y⌋₊) := by
-        rw [Real.log_pow]
-      _ ≤ Real.log y :=
-        Real.log_le_log (by positivity) (hNatPowReal.trans hXle)
-  have hlog2pos : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  have hNatLog :
-      (Nat.log 2 ⌊y⌋₊ : ℝ) ≤ L / Real.log 2 := by
-    apply (le_div_iff₀ hlog2pos).2
-    simpa [mul_comm] using hNatLogMul
-  have hqone : 1 ≤ q := Nat.one_le_iff_ne_zero.mpr (Nat.ne_of_gt hq)
-  have hqreal : 1 ≤ (q : ℝ) := by exact_mod_cast hqone
-  have hlogqnonneg : 0 ≤ Real.log (q : ℝ) := Real.log_nonneg hqreal
-  have hlogqle : Real.log (q : ℝ) ≤ (q : ℝ) := Real.log_le_self (by positivity)
-  have hmulRpow (u v : ℝ) : L ^ u * L ^ v = L ^ (u + v) := by
-    rw [← Real.rpow_add hLpos]
-  have hLmul (u : ℝ) : L ^ u * L = L ^ (u + 1) := by
-    calc
-      L ^ u * L = L ^ u * L ^ 1 := by rw [Real.rpow_one]
-      _ = L ^ (u + 1) := hmulRpow u 1
-  have hconductor :
-      (Nat.log 2 ⌊y⌋₊ : ℝ) * Real.log (q : ℝ) ≤ c₀ * L ^ (B + 1) := by
-    calc
-      _ ≤ (L / Real.log 2) * Real.log (q : ℝ) :=
-        mul_le_mul_of_nonneg_right hNatLog hlogqnonneg
-      _ ≤ (L / Real.log 2) * (q : ℝ) :=
-        mul_le_mul_of_nonneg_left hlogqle (by positivity)
-      _ ≤ (L / Real.log 2) * L ^ B :=
-        mul_le_mul_of_nonneg_left hqlog (by positivity)
-      _ = c₀ * L ^ (B + 1) := by
-        dsimp [c₀]
-        calc
-          _ = (Real.log 2)⁻¹ * (L ^ B * L) := by ring
-          _ = (Real.log 2)⁻¹ * L ^ (B + 1) := by rw [hLmul B]
-  have hconductorAbs :
-      (Nat.log 2 ⌊y⌋₊ : ℝ) * Real.log (q : ℝ) ≤ y / L ^ A := by
-    apply (le_div_iff₀ (Real.rpow_pos_of_pos hLpos A)).2
-    calc
-      _ * L ^ A ≤ c₀ * L ^ (B + 1) * L ^ A :=
-        mul_le_mul_of_nonneg_right hconductor (by positivity)
-      _ = c₀ * L ^ (A + B + 1) := by
-        calc
-          _ = c₀ * (L ^ (B + 1) * L ^ A) := by ring
-          _ = c₀ * L ^ (A + B + 1) := by
-            rw [hmulRpow (B + 1) A]
-            congr 1
-            simp [add_comm, add_assoc]
-      _ ≤ c₀ * L ^ (A + B + 3) :=
-        mul_le_mul_of_nonneg_left
-          (Real.rpow_le_rpow_of_exponent_le hLone (by linarith)) hc₀.le
-      _ ≤ c₀ * Real.sqrt y := mul_le_mul_of_nonneg_left hCpower hc₀.le
-      _ ≤ y := by
-        have hsqrtSq : (Real.sqrt y) ^ 2 = y := Real.sq_sqrt (by linarith)
-        have hsqrtSq' : Real.sqrt y * Real.sqrt y = y := by
-          simpa only [pow_two] using hsqrtSq
-        have hc₀sqrt : c₀ ≤ Real.sqrt y := by
-          nlinarith [hsqrtSq', hlarge, sq_nonneg (c₀ - Real.sqrt y),
-            Real.sqrt_nonneg y, hc₀.le]
-        calc
-          c₀ * Real.sqrt y ≤ Real.sqrt y * Real.sqrt y :=
-            mul_le_mul_of_nonneg_right hc₀sqrt (Real.sqrt_nonneg y)
-          _ = y := hsqrtSq'
-  have hprimePower :
-      2 * Real.sqrt y * L ≤ y / L ^ A := by
-    apply (le_div_iff₀ (Real.rpow_pos_of_pos hLpos A)).2
-    have hLprod : L * L ^ A = L ^ (A + 1) := by
-      calc
-        _ = L ^ 1 * L ^ A := by rw [Real.rpow_one]
-        _ = L ^ (1 + A) := hmulRpow 1 A
-        _ = L ^ (A + 1) := by congr 1; ring
-    have hstep : 2 * L ^ (A + 1) ≤ L ^ (A + 2) := by
-      calc
-        _ = L ^ (A + 1) * 2 := by ring
-        _ ≤ L ^ (A + 1) * L :=
-          mul_le_mul_of_nonneg_left hLtwo' (Real.rpow_nonneg (le_of_lt hLpos) _)
-        _ = L ^ (A + 2) := by
-          calc
-            _ = L ^ (A + 1 + 1) := hLmul (A + 1)
-            _ = L ^ (A + 2) := by congr 1; ring
-    calc
-      _ = Real.sqrt y * (2 * (L * L ^ A)) := by ring
-      _ = Real.sqrt y * (2 * L ^ (A + 1)) := by rw [hLprod]
-      _ ≤ Real.sqrt y * L ^ (A + 2) :=
-        mul_le_mul_of_nonneg_left hstep (Real.sqrt_nonneg y)
-      _ ≤ Real.sqrt y * Real.sqrt y :=
-        mul_le_mul_of_nonneg_left hPpower (Real.sqrt_nonneg y)
-      _ = y := by
-        simpa only [pow_two] using (Real.sq_sqrt (by linarith : 0 ≤ y))
-  have hmainSW :
-      M * y * L ^ (-(A + 1)) ≤ M * (y / L ^ A) := by
-    calc
-      _ ≤ M * y * L ^ (-A) :=
-        mul_le_mul_of_nonneg_left
-          (Real.rpow_le_rpow_of_exponent_le hLone (by linarith))
-          (mul_nonneg hM.le hypos.le)
-      _ = M * (y / L ^ A) := by
-        rw [Real.rpow_neg hLpos.le]
-        ring
-  calc
-    ‖thetaCharacterPrefix y χ‖ ≤
-        ‖primeCharacterError y χ‖ + 2 * Real.sqrt y * L := by
-      simpa [L] using htheta
-    _ ≤ (M * y * L ^ (-(A + 1)) +
-          (Nat.log 2 ⌊y⌋₊ : ℝ) * Real.log (q : ℝ)) +
-          2 * Real.sqrt y * L := add_le_add herror le_rfl
-    _ ≤ M * (y / L ^ A) + (y / L ^ A) + (y / L ^ A) := by
-      exact add_le_add (add_le_add hmainSW hconductorAbs) hprimePower
-    _ = (M + 2) * y * L ^ (-A) := by
-      rw [Real.rpow_neg hLpos.le]
-      ring
+  obtain ⟨c, hc, C, hPNT⟩ := Erdos408.sum_vonMangoldt_mul_char_sub_le
+  set c₁ := min c (1 / 2)
+  have hc₁ : 0 < c₁ := lt_min hc (by norm_num)
+  set C₁ := max C 0
+  set D := max (B * C₁) 1
+  refine ⟨|C| + 2 + 1, by positivity, ?_⟩
+  have ho : ∀ᶠ y : ℝ in atTop, ‖(Real.log y) ^ (D + A)‖ ≤ 1 * ‖y ^ c₁‖ :=
+    (isLittleO_log_rpow_rpow_atTop (D + A) hc₁).bound zero_lt_one
+  filter_upwards [eventually_ge_atTop (Real.exp 1), ho] with y hy hpow q χ hq hqB hχ
+  have : NeZero q := ⟨hq.ne'⟩
+  have hy2 : 2 ≤ y := by linarith [Real.add_one_le_exp 1]
+  have hy0 : 0 < y := by linarith
+  have hL1 : 1 ≤ Real.log y := (Real.log_exp 1).symm.le.trans (Real.log_le_log (Real.exp_pos 1) hy)
+  have hL0 : 0 < Real.log y := zero_lt_one.trans_le hL1
+  have hIoc : Finset.Ioc 0 ⌊y⌋₊ = Finset.Icc 1 ⌊y⌋₊ := by ext; simp [Finset.mem_Ioc, Finset.mem_Icc]; omega
+  have hmain := hPNT q χ y hy2
+  simp only [hχ, ↓reduceIte, sub_zero, ← hIoc] at hmain
+  have hswap : (∑ n ∈ Finset.Ioc 0 ⌊y⌋₊, χ (n : ZMod q) * (ArithmeticFunction.vonMangoldt n : ℂ)) =
+      ∑ n ∈ Finset.Ioc 0 ⌊y⌋₊, (ArithmeticFunction.vonMangoldt n : ℂ) * χ n :=
+    Finset.sum_congr rfl fun _ _ => mul_comm _ _
+  rw [← hswap] at hmain
+  have hdiff : ‖(∑ n ∈ Finset.Ioc 0 ⌊y⌋₊, χ (n : ZMod q) * (ArithmeticFunction.vonMangoldt n : ℂ)) -
+      thetaCharacterPrefix y χ‖ ≤ 2 * y ^ (1 / 2 : ℝ) * Real.log y := by
+    rw [thetaCharacterPrefix, ← Finset.sum_sub_distrib]
+    have hX1 : (1 : ℝ) ≤ (⌊y⌋₊ : ℝ) := by exact_mod_cast Nat.le_floor (by norm_num; linarith)
+    have hXy : (⌊y⌋₊ : ℝ) ≤ y := Nat.floor_le hy0.le
+    calc _ ≤ ∑ n ∈ Finset.Ioc 0 ⌊y⌋₊, ‖χ (n : ZMod q) * ((ArithmeticFunction.vonMangoldt n - theta n : ℝ) : ℂ)‖ := by
+          simpa [mul_sub] using norm_sum_le (Finset.Ioc 0 ⌊y⌋₊)
+            (fun n => χ (n : ZMod q) * ((ArithmeticFunction.vonMangoldt n - theta n : ℝ) : ℂ))
+      _ ≤ ∑ n ∈ Finset.Ioc 0 ⌊y⌋₊, (ArithmeticFunction.vonMangoldt n - theta n) := by
+          refine Finset.sum_le_sum fun n _ => ?_
+          have hnn : 0 ≤ ArithmeticFunction.vonMangoldt n - theta n := sub_nonneg.mpr (theta_le_vonMangoldt n)
+          rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg hnn]
+          exact mul_le_of_le_one_left hnn (χ.norm_le_one _)
+      _ = Chebyshev.psi (⌊y⌋₊ : ℝ) - Chebyshev.theta (⌊y⌋₊ : ℝ) := by
+          simp [Finset.sum_sub_distrib, Chebyshev.psi, Chebyshev.theta, theta, Finset.sum_filter]
+      _ ≤ 2 * Real.sqrt ⌊y⌋₊ * Real.log ⌊y⌋₊ := Chebyshev.psi_sub_theta_le hX1
+      _ ≤ 2 * Real.sqrt y * Real.log y := by gcongr
+      _ = 2 * y ^ (1 / 2 : ℝ) * Real.log y := by rw [Real.sqrt_eq_rpow]
+  have hqC : (q : ℝ) ^ C ≤ (Real.log y) ^ D := by
+    have hq1 : (1 : ℝ) ≤ q := by exact_mod_cast hq
+    calc _ ≤ (q : ℝ) ^ C₁ := Real.rpow_le_rpow_of_exponent_le hq1 (le_max_left _ _)
+      _ ≤ ((Real.log y) ^ B) ^ C₁ := Real.rpow_le_rpow (by positivity) hqB (le_max_right _ _)
+      _ = (Real.log y) ^ (B * C₁) := (Real.rpow_mul hL0.le B C₁).symm
+      _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hL1 (le_max_left _ _)
+  have hLD : Real.log y ≤ (Real.log y) ^ D := by
+    simpa using Real.rpow_le_rpow_of_exponent_le hL1 (le_max_right (B * C₁) 1)
+  have hyc1 : y ^ (1 - c) ≤ y ^ (1 - c₁) :=
+    Real.rpow_le_rpow_of_exponent_le (by linarith) (sub_le_sub_left (min_le_left _ _) 1)
+  have hyc2 : y ^ (1 / 2 : ℝ) ≤ y ^ (1 - c₁) :=
+    Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith [min_le_right c (1 / 2)])
+  have hpow' : (Real.log y) ^ D * y ^ (1 - c₁) ≤ y * (Real.log y) ^ (-A) := by
+    rw [Real.norm_of_nonneg (by positivity), Real.norm_of_nonneg (by positivity), one_mul] at hpow
+    have h1 : (Real.log y) ^ D = (Real.log y) ^ (D + A) * (Real.log y) ^ (-A) := by
+      rw [← Real.rpow_add hL0]; ring_nf
+    have h2 : y ^ c₁ * y ^ (1 - c₁) = y := by rw [← Real.rpow_add hy0]; norm_num
+    calc _ = (Real.log y) ^ (D + A) * y ^ (1 - c₁) * (Real.log y) ^ (-A) := by rw [h1]; ring
+      _ ≤ y ^ c₁ * y ^ (1 - c₁) * (Real.log y) ^ (-A) := by gcongr
+      _ = _ := by rw [h2]
+  have htri : ‖thetaCharacterPrefix y χ‖ ≤
+      ‖∑ n ∈ Finset.Ioc 0 ⌊y⌋₊, χ (n : ZMod q) * (ArithmeticFunction.vonMangoldt n : ℂ)‖ +
+      ‖(∑ n ∈ Finset.Ioc 0 ⌊y⌋₊, χ (n : ZMod q) * (ArithmeticFunction.vonMangoldt n : ℂ)) -
+        thetaCharacterPrefix y χ‖ := by
+    have := norm_sub_le (∑ n ∈ Finset.Ioc 0 ⌊y⌋₊, χ (n : ZMod q) * (ArithmeticFunction.vonMangoldt n : ℂ))
+      ((∑ n ∈ Finset.Ioc 0 ⌊y⌋₊, χ (n : ZMod q) * (ArithmeticFunction.vonMangoldt n : ℂ)) - thetaCharacterPrefix y χ)
+    rwa [sub_sub_cancel] at this
+  have hpart1 : C * (q : ℝ) ^ C * y ^ (1 - c) ≤ |C| * ((Real.log y) ^ D * y ^ (1 - c₁)) := by
+    calc _ ≤ |C| * (q : ℝ) ^ C * y ^ (1 - c) :=
+          mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_abs_self C) (by positivity)) (by positivity)
+      _ = |C| * ((q : ℝ) ^ C * y ^ (1 - c)) := by ring
+      _ ≤ _ := mul_le_mul_of_nonneg_left (mul_le_mul hqC hyc1 (by positivity) (by positivity)) (abs_nonneg C)
+  have hpart2 : 2 * y ^ (1 / 2 : ℝ) * Real.log y ≤ 2 * ((Real.log y) ^ D * y ^ (1 - c₁)) := by
+    calc _ = 2 * (Real.log y * y ^ (1 / 2 : ℝ)) := by ring
+      _ ≤ _ := mul_le_mul_of_nonneg_left (mul_le_mul hLD hyc2 (by positivity) (by positivity)) (by norm_num)
+  calc _ ≤ C * (q : ℝ) ^ C * y ^ (1 - c) + 2 * y ^ (1 / 2 : ℝ) * Real.log y := htri.trans (add_le_add hmain hdiff)
+    _ ≤ (|C| + 2) * ((Real.log y) ^ D * y ^ (1 - c₁)) := by linarith
+    _ ≤ (|C| + 2 + 1) * (y * (Real.log y) ^ (-A)) :=
+        (mul_le_mul_of_nonneg_left hpow' (by positivity)).trans
+          (mul_le_mul_of_nonneg_right (by linarith) (by positivity))
+    _ = _ := by ring
 
-/-- The Mellin weight dual to the theta coefficients. -/
 noncomputable def thetaMellinWeight (t y : ℝ) : ℂ :=
   Erdos821.Blueprint.Analytic.mellin y t * (y : ℂ)⁻¹ * (Real.log y : ℂ)⁻¹
 
@@ -430,8 +210,7 @@ end Erdos821.DivisorHarmonic
 
 namespace Erdos821.Blueprint
 
-open Analytic
-open OAI.LargePrimeGaps
+open Analytic Erdos821.DivisorHarmonic
 
 set_option maxHeartbeats 1000000 in
 /-- The harmonic character estimate follows from the theta-character prefix bound by Abel
@@ -687,11 +466,11 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
       have hlogne : (Real.log (k : ℝ) : ℂ) ≠ 0 := by exact_mod_cast hlogpos.ne'
       simp only [weight, coeff, ite_eq_left hnk,
         Erdos821.DivisorHarmonic.thetaMellinWeight,
-        OAI.LargePrimeGaps.theta, ite_eq_left hprime]
+        theta, ite_eq_left hprime]
       field_simp [hkC, hlogne]
       have hkCast : ((k : ℝ) : ℂ) = (k : ℂ) := by norm_cast
       rw [hkCast]
-    · simp only [coeff, ite_eq_left hnk, OAI.LargePrimeGaps.theta, ite_eq_right hprime]
+    · simp only [coeff, ite_eq_left hnk, theta, ite_eq_right hprime]
       simp
   let s : Set ℝ := Set.Ioi 1
   have hlogRealCD : ContDiffOn ℝ 2 Real.log s := by

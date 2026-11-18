@@ -1,7 +1,10 @@
 module
 
 public import Erdos821.Blueprint.Analytic
-public import OAI.NumberTheory.PrimeGaps.MultiplicativeSieve
+public import Erdos821.P4Frame.Frame
+public import Mathlib.NumberTheory.DirichletCharacter.Orthogonality
+public import Mathlib.Analysis.Fourier.ZMod
+import Mathlib.Algebra.Order.Chebyshev
 
 @[expose] public section
 
@@ -9,6 +12,49 @@ set_option autoImplicit false
 set_option maxHeartbeats 1000000
 
 open scoped BigOperators Classical ComplexConjugate
+
+namespace OAI.LargePrimeGaps
+noncomputable def characterUnitVector {q : ℕ} [NeZero q] (u : (ZMod q)ˣ) :
+    EuclideanSpace ℂ (DirichletCharacter ℂ q) := WithLp.toLp 2 (fun χ => χ u)
+
+theorem conj_character_unit {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) (u : (ZMod q)ˣ) :
+    conj (χ u)=χ (u.val⁻¹) := by
+  change star (χ (u:ZMod q))=_
+  rw [MulChar.star_apply',MulChar.inv_apply,Ring.inverse_unit,ZMod.inv_coe_unit]
+
+theorem inner_characterUnitVector {q : ℕ} [NeZero q] (u v : (ZMod q)ˣ) :
+    inner ℂ (characterUnitVector u) (characterUnitVector v)=if u=v then (q.totient:ℂ) else 0 := by
+  classical
+  simp only [PiLp.inner_apply,RCLike.inner_apply,characterUnitVector]
+  simp_rw [conj_character_unit]
+  have he : (∑ χ : DirichletCharacter ℂ q,χ v*χ (u.val⁻¹))=
+      ∑ χ : DirichletCharacter ℂ q,χ (u.val⁻¹)*χ v := by
+    apply Finset.sum_congr rfl
+    intro χ _
+    rw [mul_comm]
+  rw [he,DirichletCharacter.sum_char_inv_mul_char_eq ℂ u.isUnit]
+  simp only [Units.val_inj]
+
+theorem character_transform_bound {q : ℕ} [NeZero q] (f : (ZMod q)ˣ→ℂ) :
+    (∑ χ : DirichletCharacter ℂ q,‖∑ u : (ZMod q)ˣ, f u*χ u‖^2)≤
+      (q.totient:ℝ)*(∑ u : (ZMod q)ˣ,‖f u‖^2) := by
+  classical
+  have hv : ∀ u : (ZMod q)ˣ,(∑ v : (ZMod q)ˣ,
+      ‖inner ℂ (characterUnitVector u) (characterUnitVector v)‖)=(q.totient:ℝ) := by
+    intro u
+    simp only [inner_characterUnitVector]
+    simp_rw [apply_ite norm]
+    simp
+  have h := norm_sum_smul_sq_le_gram Finset.univ (fun u : (ZMod q)ˣ => characterUnitVector u) f
+  simp_rw [hv] at h
+  rw [←Finset.sum_mul,mul_comm] at h
+  rw [EuclideanSpace.norm_sq_eq] at h
+  simpa only [WithLp.ofLp_sum,WithLp.ofLp_smul,characterUnitVector,Finset.sum_apply,Pi.smul_apply,
+    smul_eq_mul] using h
+
+
+end OAI.LargePrimeGaps
+
 
 namespace Erdos821.P4Rat
 

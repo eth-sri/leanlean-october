@@ -10,81 +10,20 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
-namespace SecondPassArithmetic
 
-end SecondPassArithmetic
-
-open scoped BigOperators Classical
 namespace CanonicalUnitEuler
-open ActualEisensteinCubic
 open CompletedGauss (actualSextic)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -142,8 +81,6 @@ end CanonicalUnitEuler
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff
 
 lemma kernel_mass_le_weighted_mass_add_core
     (K : Set KernelQuotient) (hK : MeasurableSet K) (C : ℝ)
@@ -202,7 +139,7 @@ lemma kernel_barrier_coercivity_of_ground_state
 
 end
 
-open scoped Topology ComplexConjugate
+open scoped ComplexConjugate
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
@@ -240,8 +177,7 @@ theorem ground_state_fderiv_inequality (f : E → ℂ) (u : E → ℝ) (x v : E)
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold
+open scoped Manifold
 namespace CubicEisenstein
 
 section
@@ -326,8 +262,7 @@ theorem kernelTruncatedPotential_memLp (χ φ V : KernelQuotient → ℝ)
   have hz : χ q = 0 := image_eq_zero_of_notMem_tsupport hh
   exact hq (by simp [hz])
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ComplexConjugate
+open scoped ComplexConjugate
 
 theorem ground_state_ofReal_fderiv {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (u : E → ℝ) (x v : E) (hu : DifferentiableAt ℝ u x) :
@@ -463,8 +398,6 @@ theorem kernel_ground_state_inequality (φ V : KernelQuotient → ℝ)
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold
 
 theorem kernel_actual_barrier_ground_state (f : kernelSmoothTests) :
     (∫q,kernelBarrierPotential 2 3 q*‖f.1 q‖^2∂integralQuotientVolume globalKubotaKernel)≤
@@ -484,9 +417,6 @@ theorem kernel_global_exterior_coercivity :
 
 end CubicEisenstein
 
-namespace SecondPassArithmetic
-
-end SecondPassArithmetic
 
 end
 

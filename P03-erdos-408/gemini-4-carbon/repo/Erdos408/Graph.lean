@@ -4,7 +4,8 @@ public import Erdos408.Graph.Assembly
 public import Erdos408.Graph.Family
 public import Erdos821.P3Final.Transference
 public import Erdos821.P3Rare.Proof
-public import Erdos821.S34.IdealInputs
+public import Erdos821.S34.IdealFiniteAssembly
+public import Erdos821.P4Cancel.Proof
 
 /-!
 # The graph transference input

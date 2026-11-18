@@ -1,6 +1,9 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.AllocatedDetectorCapped
+public import OAI.NumberTheory.DirichletL.Moments.AllocatedCenteredCapped
+public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
+public import OAI.NumberTheory.DirichletL.Moments.HeckeSlots
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalCappedAmplitude
 public import OAI.NumberTheory.DirichletL.Moments.EligibleEnergy
 
 @[expose] public section
@@ -11,10 +14,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAllocatedDetectorAmplitude
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentDivisorRawEnergy CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction
-open CenteredMomentAllocatedDetectorCapped CenteredMomentDetectorDictionary
-open ConcretePrimeRowBridge CenteredMomentDivisorRows
+open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction CenteredMomentDetectorDictionary ConcretePrimeRowBridge CenteredMomentDivisorRows
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 

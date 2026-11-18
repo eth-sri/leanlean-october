@@ -1,8 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalParents
-public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsLive
-public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsPhysical
+public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsCells
 
 @[expose] public section
 
@@ -12,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseFirstGlobalCaps
-open InverseMoment InverseFirstGlobalParents InverseFirstPriorityParents
-open InverseMomentWholePriorityParents InverseMomentFirstChildWindows
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
+open InverseMoment InverseFirstGlobalParents InverseFirstPriorityParents InverseMomentWholePriorityParents InverseMomentFirstChildWindows ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
 open InverseSecondSourceBlocks (dyadIndex dyadScale dyadScale_pos dyadIndex_bounds)
 open ConcreteTraceCRT (eisEmbedding)
 open InverseInitialArithmetic (sourceIdeal)

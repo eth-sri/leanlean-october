@@ -1,7 +1,9 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Descent.WholeRetainedSource
-public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingMass
+public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedPhysicalRecursive
+public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
+public import OAI.NumberTheory.DirichletL.Descent.SecondOriginalMass
 
 @[expose] public section
 
@@ -10,8 +12,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseSecondSourceBlocks
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMoment
-open InverseSecondFibers InversePrioritySecondSource
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMoment InverseSecondFibers InversePrioritySecondSource
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]

@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeTwist
-open CenteredMomentHeckeCancellation CenteredMomentLattice
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeCancellation CenteredMomentLattice
 local notation "O" => HeckeFamily.O
 
 theorem rectangle_source_unit (a b ε B : ℝ)

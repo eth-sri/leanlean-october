@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 namespace PrimeFamily
 variable {ι κ : Type*}

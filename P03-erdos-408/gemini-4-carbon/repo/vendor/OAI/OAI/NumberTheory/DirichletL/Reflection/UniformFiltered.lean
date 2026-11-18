@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Reflection.UniformSieve
-public import OAI.NumberTheory.DirichletL.Reflection.FilteredMeasure
+public import OAI.NumberTheory.DirichletL.Reflection.Surviving
 
 @[expose] public section
 

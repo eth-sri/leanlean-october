@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstSectorTransform
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve HeckeFamily CenteredMomentSourceRow CenteredMomentHeckeExpansion
-open CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentCompleteCommon
-open CenteredMomentFirstCanonicalFamily CenteredMomentSupportedCorrelation IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve HeckeFamily CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily CenteredMomentSupportedCorrelation IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 
 theorem residualPool_supported (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))

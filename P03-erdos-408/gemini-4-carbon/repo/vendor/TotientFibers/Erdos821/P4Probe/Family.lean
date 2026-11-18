@@ -36,8 +36,6 @@ instance (P : PrimeGroups) (m : ℕ) (block : P.BigGroup → Bool) :
   inferInstanceAs (Fintype {c : P.BigGroup → Finset (Fin m) //
     ∀ side : Bool, ∃ g : P.BigGroup, block g = side ∧ (c g).Nonempty})
 
-instance (P : PrimeGroups) (m : ℕ) (block : P.BigGroup → Bool) :
-    DecidableEq (ProbeChoice P m block) := Classical.decEq _
 
 def liftChoice (hj : m ≤ J) (c : P.BigGroup → Finset (Fin m))
     (g : P.Group) : Finset (Fin J) :=

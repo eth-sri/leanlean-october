@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingMass
+public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedPhysicalRecursive
+public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
+public import OAI.NumberTheory.DirichletL.Descent.SecondOriginalMass
 public import OAI.NumberTheory.DirichletL.Descent.PhysicalExponents
 
 @[expose] public section

@@ -11,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentGaussNormalization
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentOriginalChildEnergy
-open CenteredMomentDivisorRawEnergy CenteredMomentSourceRow
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentOriginalChildEnergy CenteredMomentDivisorRawEnergy CenteredMomentSourceRow
 local notation "O" => ActualEisensteinCubic.O
 
 theorem gaussPolynomial_const_mul {α : Type*} (S : Finset α) (a : α → O)

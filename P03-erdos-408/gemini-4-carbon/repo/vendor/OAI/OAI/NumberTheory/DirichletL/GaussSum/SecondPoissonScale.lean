@@ -1,5 +1,4 @@
 module
-
 public import OAI.NumberTheory.DirichletL.PrimeRows.NormFiberExtraction
 
 @[expose] public section
@@ -21,7 +20,7 @@ open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
+open ActualEisensteinCubic ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
 open scoped Topology
@@ -251,18 +250,6 @@ theorem mem_prime_product_iff
 
 end ActualEisensteinCubic
 
-namespace ConcretePrimeRowBridge
-
-section
-
-open ActualEisensteinCubic ShortDraftHeckeBridge
-open scoped BigOperators Classical
-
-end
-
-open ActualEisensteinCubic
-
-end ConcretePrimeRowBridge
 
 namespace EisensteinSchwartzPoisson
 open MeasureTheory Filter LineDeriv

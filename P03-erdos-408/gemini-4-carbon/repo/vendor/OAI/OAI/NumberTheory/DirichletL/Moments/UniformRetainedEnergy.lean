@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionChoices
-public import OAI.NumberTheory.DirichletL.Moments.RetainedComparisonEnergy
+public import OAI.NumberTheory.DirichletL.Moments.RetainedWeightedSource
+public import OAI.NumberTheory.DirichletL.Moments.ReflectedChoiceEnergy
 public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionApproximation
 
 @[expose] public section
@@ -11,12 +12,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformRetainedEnergy
-open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson CenteredMomentScaleSupremum
-open CenteredMomentUniformReflectionChoices CenteredMomentRetainedWeightedSource
-open CenteredMomentReflectionWeightedEnergy CenteredMomentReflectedTruncation
-open CenteredMomentOriginalReflectionApproximation CenteredMomentSectorLocalization
-open CenteredMomentUniformReflectionApproximation CenteredMomentReflectedUniformPair
-open CenteredMomentReflectedNormalization
+open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson CenteredMomentScaleSupremum CenteredMomentUniformReflectionChoices CenteredMomentRetainedWeightedSource CenteredMomentReflectionWeightedEnergy CenteredMomentReflectedTruncation CenteredMomentOriginalReflectionApproximation CenteredMomentSectorLocalization CenteredMomentUniformReflectionApproximation CenteredMomentReflectedUniformPair CenteredMomentReflectedNormalization
 
 lemma twisted_zero (W:ℝ→ℂ) : CompletedHeight.normTwistedSource W 0=W := by
   funext x

@@ -19,8 +19,6 @@ open Erdos821.Blueprint.Graph
 local instance (priority := 11000) boolEqDecidable (b c : Bool) : Decidable (b = c) :=
   instDecidableEqBool b c
 
-local instance smallLabelsDecidableEq (P : PrimeGroups) (M : ℕ) :
-    DecidableEq (SmallLabels P M) := Classical.decEq _
 
 theorem conditioning_pi_normSq_bound {I : Type*} [Fintype I] [DecidableEq I]
     {α β : I → Type*} [∀ i, Fintype (β i)]

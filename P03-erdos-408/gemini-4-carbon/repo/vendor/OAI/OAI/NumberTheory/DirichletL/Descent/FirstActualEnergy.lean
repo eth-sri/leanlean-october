@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.FirstEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstModeColumns
+public import OAI.NumberTheory.DirichletL.Descent.FirstPass
 
 @[expose] public section
 

@@ -9,81 +9,23 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
-open ConcretePrimeRowBridge
+open CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma prime_dvd_iff_factor_count_pos (P A:Ideal Eis) (hP:Prime P) (hA:A≠0) :
@@ -141,8 +83,7 @@ theorem goodMaskMovingIdeal_primeSupport (I F:Ideal Eis) (hI:I≠0) (hF:F≠0)
 
 end
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
-open ConcretePrimeRowBridge CanonicalUnitEuler
+open CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge CanonicalUnitEuler
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CanonicalRowCompletion
@@ -150,9 +91,9 @@ end CanonicalRowCompletion
 namespace CubicEisenstein
 
 section
-open scoped Classical BigOperators MatrixGroups Matrix
+open scoped MatrixGroups Matrix
 
-open CubicKubota EisensteinCuspModThree ConcreteTraceCRT CompletedGauss CompletedDyadic
+open CubicKubota EisensteinCuspModThree CompletedGauss CompletedDyadic
 local notation "Eis" => ActualEisensteinCubic.O
 namespace FixedCuspShape
 variable {H:SL(2,Eis)} (s:FixedCuspShape H)
@@ -224,9 +165,9 @@ lemma datum_common_row_factor (g:levelTwo) (c:Eis) (hc:c≠0)
 end FixedCuspShape
 end
 
-open scoped Classical BigOperators ContDiff MatrixGroups Matrix
+open scoped MatrixGroups Matrix
 
-open CubicKubota EisensteinCuspModThree ConcreteTraceCRT CompletedGauss CompletedDyadic
+open CubicKubota EisensteinCuspModThree CompletedGauss CompletedDyadic
 local notation "Eis" => ActualEisensteinCubic.O
 namespace FixedCuspShape
 variable {H:SL(2,Eis)} (s:FixedCuspShape H)
@@ -301,12 +242,11 @@ theorem sum_smoothedKernel_integral_phase {ι:Type*} [Fintype ι]
 end FixedCuspShape
 end CubicEisenstein
 
-open scoped BigOperators Classical ContDiff
 
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
+open CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
 local notation "Eis" => ActualEisensteinCubic.O
 
 def fixedCuspArrayWithPhase (cusp:Fin 3) (u:Eisˣ)
@@ -320,18 +260,9 @@ lemma fixedCuspArrayWithPhase_norm_le_one (cusp:Fin 3) (u:Eisˣ)
   exact (mul_le_of_le_one_left (norm_nonneg _)
     (hphase m n b)).trans (fixedConjugateCuspArray_norm_le_one cusp u m n b)
 
-namespace ReflectedBranchData
-
-end ReflectedBranchData
-end
-section
-
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
-
 end
 
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve LocalReflectionBrackets
+open CubicEisenstein CanonicalQuadraticSieve LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss

@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondCanonicalLedger
-public import OAI.NumberTheory.DirichletL.Moments.HeckeExceptionalEnergy
+public import OAI.NumberTheory.DirichletL.Moments.HeckeExpansion
+public import OAI.NumberTheory.DirichletL.Moments.Forcing
 public import OAI.NumberTheory.DirichletL.Moments.SecondHeightFamily
 
 @[expose] public section
@@ -12,11 +13,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSecondExceptionalCount
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentForcing CenteredMomentChildRows
-open CenteredMomentSecondHeightFamily CenteredMomentSupport UniqueFactorizationMonoid
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentForcing CenteredMomentChildRows CenteredMomentSecondHeightFamily CenteredMomentSupport UniqueFactorizationMonoid CenteredMomentSourceRow CenteredMomentHeckeColumnWindow
 local notation "O" => ActualEisensteinCubic.O
 
 lemma common_prime_dvd_left (C D:Ideal O) (P:CommonIndex C D) : P.val∣C :=

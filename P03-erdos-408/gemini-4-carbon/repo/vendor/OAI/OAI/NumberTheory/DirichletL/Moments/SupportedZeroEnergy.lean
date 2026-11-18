@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSupportedZeroEnergy
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion IdealMobiusDivisorSum
-open CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentZeroMode
-open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentFirstLocalization
-open CenteredMomentZeroMeanBridge EisensteinSchwartzPoisson HeckeFamily
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion IdealMobiusDivisorSum CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentZeroMode CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentFirstLocalization CenteredMomentZeroMeanBridge EisensteinSchwartzPoisson HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 
 theorem idealZeroEnergy_filter (S : Finset (Ideal O)) (hS : ∀ I∈S,Supported I)

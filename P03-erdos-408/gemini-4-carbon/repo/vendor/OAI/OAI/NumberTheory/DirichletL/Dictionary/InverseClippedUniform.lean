@@ -14,9 +14,7 @@ open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseUniform HeckeInverseAmplification
-open InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier
-open ActualEisensteinCubic CompletedGauss
+open DetectorDictionaryInverseUniform HeckeInverseAmplification InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier ActualEisensteinCubic CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 theorem source_support (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) :
@@ -155,13 +153,6 @@ theorem familyDensity_moment (J : ℕ) :
   dsimp [C]
   exact mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
-section Rows
-variable {ι ρ : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-
-end Rows
 
 end SevenEighths.DetectorDictionaryInverseClippedUniform
 

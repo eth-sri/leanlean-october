@@ -1,5 +1,4 @@
 module
-
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerSupport
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerOpposite
 

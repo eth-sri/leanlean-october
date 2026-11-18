@@ -11,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceBlockWindows
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorColumns
-open CenteredMomentCanonicalFirst CenteredMomentSectorLocalization
-open CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorColumns CenteredMomentCanonicalFirst CenteredMomentSectorLocalization CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
 local notation "O" => ActualEisensteinCubic.O
 
  theorem physicalBlock_column_witnesses (η:Character) (t:ℝ)

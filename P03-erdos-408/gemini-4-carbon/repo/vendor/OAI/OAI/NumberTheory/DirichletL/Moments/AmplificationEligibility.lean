@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationEnergy
-public import OAI.NumberTheory.DirichletL.Moments.AmplificationMask
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationRectangle
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationMask
 
 @[expose] public section
@@ -12,8 +12,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentAmplificationEligibility
-open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEnergy
-open CanonicalQuadraticSieve
+open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEnergy CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
 def exclusionIdeal (R s : Ideal O) (h : O) : Ideal O := R*s*Ideal.span {h}

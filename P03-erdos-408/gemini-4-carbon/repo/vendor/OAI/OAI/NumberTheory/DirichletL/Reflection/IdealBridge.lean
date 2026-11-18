@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.Branch
+public import OAI.NumberTheory.DirichletL.Reflection.Brackets
 
 @[expose] public section
 
@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets
-open CanonicalQuadraticSieve CanonicalRowCompletion
+open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets CanonicalQuadraticSieve CanonicalRowCompletion
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda

@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentEnergyBands
-open HeckeFamily CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open CenteredMomentPrimeSlot QuadraticInitialBound
+open HeckeFamily CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentPrimeSlot QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 def length (Z X:ℝ):ℝ:=Real.logb Z (max 1 X)

@@ -1,5 +1,4 @@
 module
-
 public import OAI.NumberTheory.DirichletL.Descent.WholePriorityParentBounds
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrioritySource
 

@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.PrimeCounting.Progressions
+public import PrimeNumberTheoremAnd.Wiener
 
 @[expose] public section
 

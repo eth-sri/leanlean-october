@@ -8,28 +8,13 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinIdeals
 namespace OAI
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 noncomputable section
 
-namespace ShortDraftCusp
 
-variable {R : Type*} [CommRing R]
-
-def U (t : R) : Matrix (Fin 2) (Fin 2) R := !![1,t;0,1]
-def L (t : R) : Matrix (Fin 2) (Fin 2) R := !![1,0;t,1]
-def E : Matrix (Fin 2) (Fin 2) R := !![0,-1;1,0]
-
-end ShortDraftCusp
-
-namespace ShortDraftConcretePhase
-open ShortDraftTrace
-
-end ShortDraftConcretePhase
 
 namespace ShortDraftGauss
 
@@ -70,14 +55,6 @@ theorem norm_normalized_gaussSum (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
 
 end ShortDraftGauss
 
-namespace EisensteinRayPhase
-
-abbrev SquareClass := ZMod 2 × ZMod 2
-
-def R (a b : SquareClass) : ℤ :=
-  (-1) ^ (a.1.val * b.2.val + a.2.val * b.1.val + a.2.val * b.2.val)
-
-end EisensteinRayPhase
 
 namespace ShortDraftSextic
 open scoped Classical
@@ -94,12 +71,6 @@ theorem sextic_power_is_unit_mask (χ : MulChar R ℂ)
 
 end ShortDraftSextic
 
-namespace ShortDraftGaussJacobi
-open Finset
-
-variable {F : Type*} [Field F] [Fintype F]
-
-end ShortDraftGaussJacobi
 
 namespace ShortDraftQuadraticGauss
 open Finset
@@ -135,15 +106,10 @@ theorem quadratic_gauss_as_square_phase (ψ : AddChar F ℂ)
 
 end ShortDraftQuadraticGauss
 
-namespace ShortDraftQuotientPhase
-variable {A B : Type*} [CommGroup A] [CommGroup B]
-
-end ShortDraftQuotientPhase
 
 namespace EisensteinEPrimaryPhase
 
 abbrev Coord := ZMod 4 × ZMod 4
-abbrev Bit := ZMod 2
 
 def mul (x y : Coord) : Coord :=
   (x.1 * y.1 - x.2 * y.2,
@@ -154,29 +120,11 @@ def odd (x : Coord) : Prop := x.1.val % 2 = 1 ∨ x.2.val % 2 = 1
 instance : DecidablePred odd := fun x =>
   inferInstanceAs (Decidable (x.1.val % 2 = 1 ∨ x.2.val % 2 = 1))
 
-def rep (e f : Bit) : Coord :=
-  if f = 0 then (if e = 0 then (1, 0) else (-1, 0))
-  else (if e = 0 then (1, 2) else (-1, -2))
-
-def norm (x : Coord) : ZMod 4 :=
-  x.1 * x.1 - x.1 * x.2 + x.2 * x.2
-
-def ePrimary (x : Coord) : Prop :=
-  let cube := mul (mul x x) x
-  cube.1 - 2 * cube.2 = 1
-
-instance : DecidablePred ePrimary := fun x =>
-  inferInstanceAs (Decidable ((mul (mul x x) x).1 -
-    2 * (mul (mul x x) x).2 = 1))
-
 theorem odd_mul (x y : Coord) (hx : odd x) (hy : odd y) : odd (mul x y) := by
   decide +revert
 
 end EisensteinEPrimaryPhase
 
-namespace ShortDraftGaussianPhaseTable
-
-end ShortDraftGaussianPhaseTable
 
 namespace ActualEisensteinCoordinates
 abbrev K := CyclotomicField 3 ℚ

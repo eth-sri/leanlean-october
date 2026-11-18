@@ -1,6 +1,11 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.SecondSourceSize
+public import OAI.NumberTheory.DirichletL.Descent.FirstSourceSize
+public import OAI.NumberTheory.DirichletL.Descent.SecondMarkedTail
+public import OAI.NumberTheory.DirichletL.Inversion.SecondPrincipalCaller
+public import OAI.NumberTheory.DirichletL.Descent.SecondParentInput
+public import OAI.NumberTheory.DirichletL.Descent.SecondCorrelatedCutoff
+public import OAI.NumberTheory.DirichletL.Descent.PhysicalExponents
 
 @[expose] public section
 

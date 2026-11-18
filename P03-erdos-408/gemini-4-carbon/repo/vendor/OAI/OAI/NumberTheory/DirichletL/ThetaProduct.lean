@@ -94,20 +94,6 @@ def rescale (P : WeakFEPair ℂ)
   hf_top := rapid_rescale P.f P.f₀ P.hf_top hu
   hg_top := rapid_rescale P.g P.g₀ P.hg_top (inv_pos.mpr hu)
 
-def shiftedPair (a b : UnitAddCircle) : WeakFEPair ℂ :=
-  product (HurwitzZeta.hurwitzEvenFEPair a) (HurwitzZeta.hurwitzEvenFEPair b)
-    (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_evenKernel a))
-    (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_cosKernel a))
-    (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_evenKernel b))
-    (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_cosKernel b))
-
-@[simp] theorem shiftedPair_k (a b : UnitAddCircle) : (shiftedPair a b).k = 1 := by
-  norm_num [shiftedPair, product, HurwitzZeta.hurwitzEvenFEPair]
-
-@[simp] theorem shiftedPair_f (a b : UnitAddCircle) (t : ℝ) :
-    (shiftedPair a b).f t =
-      (HurwitzZeta.evenKernel a t : ℂ) * (HurwitzZeta.evenKernel b t : ℂ) := rfl
-
 def scaledEvenPair (a : UnitAddCircle) (u : ℝ) (hu : 0 < u) : WeakFEPair ℂ :=
   rescale (HurwitzZeta.hurwitzEvenFEPair a)
     (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_evenKernel a))

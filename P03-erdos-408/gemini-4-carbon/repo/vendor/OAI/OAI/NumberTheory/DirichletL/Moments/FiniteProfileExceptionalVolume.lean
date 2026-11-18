@@ -11,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentLattice CenteredMomentHeckeVolume
-open CenteredMomentHeckeCancellation CenteredMomentHeckeHeight
-open CenteredMomentMask
-open QuadraticInitialBound EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentLattice CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentHeckeHeight CenteredMomentMask QuadraticInitialBound EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 
 theorem volumeControl_source_control (a b ε B : ℝ)

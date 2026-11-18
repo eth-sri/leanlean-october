@@ -34,9 +34,7 @@ theorem fullModulusCorrelation_swap (u v h : A)
   · simp only [hc, (not_congr he).mp hc, ite_false, star_zero]
 end Domain
 
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve
-open CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentLocal
-open CenteredMomentProductCRT
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentLocal CenteredMomentProductCRT
 open ConcretePrimeRowBridge hiding O
 local notation "O" => ActualEisensteinCubic.O
 

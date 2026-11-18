@@ -11,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeZeroSupremum QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
-open CenteredMomentPrimeSlot CenteredMomentInductionEnergy
+open HeckeFamily HeckeZeroSupremum QuadraticInitialBound CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily CenteredMomentPrimeSlot CenteredMomentInductionEnergy
 local notation "O" => HeckeFamily.O
 
 variable (M : Ideal O) [NeZero M]

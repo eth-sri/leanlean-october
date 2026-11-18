@@ -12,14 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondCapacitySourceShift
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondNonexceptionalScalar CenteredMomentSecondPhysicalLedger
-open CenteredMomentSectorLocalization CenteredMomentSourceBlockWindows
-open CenteredMomentSecondPhysicalCost CenteredMomentSecondRadicalBudget
-open CenteredMomentSupport CenteredMomentSecondWholeKernel ConcretePrimeRowBridge CenteredMomentSourceRow
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondNonexceptionalScalar CenteredMomentSecondPhysicalLedger CenteredMomentSectorLocalization CenteredMomentSourceBlockWindows CenteredMomentSecondPhysicalCost CenteredMomentSecondRadicalBudget CenteredMomentSupport CenteredMomentSecondWholeKernel ConcretePrimeRowBridge CenteredMomentSourceRow
 local notation "O"=>HeckeFamily.O
 
 theorem effective_upper (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
@@ -65,9 +58,6 @@ lemma scalar_capacity_shift (Z F q U V H K a c d k h x y:ℝ)
   simp (disch := positivity) only [Real.logb_mul,Real.logb_div,Real.logb_pow] at hl hr hs hrow ⊢
   linarith
 
-def adjustedEnvelope (η:Character)(C D:Ideal O)(U:Finset (CommonIndex C D))(n:Fin 4→ℤ):ℝ:=
-  childEnvelope η C D U n*
-    max 1 (1/(dyadicScale (n 0)*dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3))))
 
 def adjustedEnvelopeRef (qref:ℝ)(C D:Ideal O)(U:Finset (CommonIndex C D))(n:Fin 4→ℤ):ℝ:=
   (fixedFactor:ℝ)*qref*(∏P∈U,P.val).absNorm*

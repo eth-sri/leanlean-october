@@ -3,7 +3,6 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.SecondCellParameters
 public import OAI.NumberTheory.DirichletL.Descent.SecondSharpPuncture
 public import OAI.NumberTheory.DirichletL.Descent.PrioritySourceBudget
-public import OAI.NumberTheory.DirichletL.Descent.SourceDepth
 
 @[expose] public section
 

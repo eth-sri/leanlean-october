@@ -2,7 +2,7 @@ module
 
 public import Erdos821.P4Cancel.Symmetrize
 public import Erdos821.P4Probe.RowBridge
-public import Erdos821.P4Probe.ProbeContraction
+public import Erdos821.P4Probe.ProjectionSelector
 public import Erdos821.P4Probe.RawTailPairing
 public import Erdos821.P4Probe.PairingSums
 

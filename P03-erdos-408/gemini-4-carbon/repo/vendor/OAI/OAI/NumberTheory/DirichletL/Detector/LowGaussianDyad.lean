@@ -1,5 +1,4 @@
 module
-
 public import OAI.NumberTheory.DirichletL.Detector.LowCentralTuple
 public import OAI.NumberTheory.DirichletL.Detector.LowRemoteMass
 public import OAI.NumberTheory.DirichletL.Detector.GaussianCommon

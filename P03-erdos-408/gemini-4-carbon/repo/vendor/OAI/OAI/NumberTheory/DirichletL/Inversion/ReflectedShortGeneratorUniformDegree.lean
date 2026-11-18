@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseShortCanonicalNormalization
-open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion
-open InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
+open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
 local notation "Eis" => ActualEisensteinCubic.O
 universe u v
 

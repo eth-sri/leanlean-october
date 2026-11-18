@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.MarkedContinuation
-public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedHolomorphic
+public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedAnalytic
 
 @[expose] public section
 

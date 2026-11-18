@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceSupport
-public import OAI.NumberTheory.DirichletL.Moments.FirstActiveRadicalBudget
+public import OAI.NumberTheory.DirichletL.Moments.FirstInactiveRadicalMass
 
 @[expose] public section
 
@@ -11,13 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstNonexceptionalPrefactor
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalSourceSupport
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstActiveRadicalBudget CenteredMomentRankinRadical
-open CenteredMomentExceptionalAmplitudePair
-open CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentRankinRadical CenteredMomentExceptionalAmplitudePair CenteredMomentSupportedCorrelation
 local notation "O"=>ActualEisensteinCubic.O
 
 lemma pair_conductor_root (q₁ q₂ B:ℝ)(_h₁:0≤q₁)(h₂:0≤q₂)

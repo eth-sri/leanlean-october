@@ -1,5 +1,4 @@
 module
-
 public import OAI.NumberTheory.DirichletL.CubicSieve.ArithmeticBins
 
 @[expose] public section
@@ -21,7 +20,7 @@ open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
+open ActualEisensteinCubic ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
 open scoped Topology
@@ -489,15 +488,6 @@ theorem hyperbolicVolume_invariant (g : SL(2,ℂ)) :
 end CubicEisenstein
 
 open scoped BigOperators Classical
-namespace SecondPassArithmetic
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct primeProductNorm)
-open ConcreteTraceCRT (eisEmbedding)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-
-end SecondPassArithmetic
 
 end
 

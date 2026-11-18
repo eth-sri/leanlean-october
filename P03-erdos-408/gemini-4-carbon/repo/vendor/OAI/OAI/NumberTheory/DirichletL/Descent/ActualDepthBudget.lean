@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateDepth
+public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateSupport
 public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateTriples
 
 @[expose] public section

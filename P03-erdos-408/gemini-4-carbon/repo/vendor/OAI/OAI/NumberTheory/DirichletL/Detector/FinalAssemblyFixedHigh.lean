@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff
 open Filter
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters PrincipalSignalComparison
-open HeckeInverseAmplification HeckeDetectorPhysicalSelection HeckeDetectorFiberPartition
-open ProbeMellinBoundary
+open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters PrincipalSignalComparison HeckeInverseAmplification HeckeDetectorPhysicalSelection HeckeDetectorFiberPartition ProbeMellinBoundary
 
 theorem fixed_high_bound (hβ : (7/8:ℝ)<HeckeZeroSupremum.beta)
     (D : HighData (HeckeZeroSupremum.beta-7/8)) (F : SourceData D)

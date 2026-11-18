@@ -1,6 +1,7 @@
 module
 
 public import Erdos408.Extraction.Allocation.Groups
+public import Mathlib.Analysis.PSeries
 public import Mathlib.NumberTheory.EulerProduct.Basic
 public import Mathlib.NumberTheory.SmoothNumbers
 

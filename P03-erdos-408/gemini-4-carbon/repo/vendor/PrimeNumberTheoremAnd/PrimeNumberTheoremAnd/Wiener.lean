@@ -22,9 +22,7 @@ public import Mathlib.Analysis.Asymptotics.SpecificAsymptotics
 open Real BigOperators ArithmeticFunction MeasureTheory Filter Set FourierTransform LSeries
   Asymptotics SchwartzMap
 open Complex hiding log
-open scoped Topology
-open scoped ContDiff
-open scoped ComplexConjugate
+open scoped Topology ContDiff ComplexConjugate
 
 variable {n : ℕ} {A a b c d u x y t σ' : ℝ} {ψ Ψ : ℝ → ℂ} {F G : ℂ → ℂ} {f : ℕ → ℂ} {𝕜 : Type}
   [RCLike 𝕜]
@@ -122,8 +120,6 @@ theorem first_fourier (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ'))
         rw [norm_term_eq_nterm_re]
         simp
 
-@[continuity]
-theorem continuous_multiplicative_ofAdd : Continuous (⇑Multiplicative.ofAdd : ℝ → ℝ) := ⟨fun _ ↦ id⟩
 
 attribute [fun_prop] measurable_coe_nnreal_ennreal
 
@@ -1581,11 +1577,9 @@ theorem wiener_ikehara_smooth' (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nter
     Tendsto (fun x : ℝ ↦ (∑' n, f n * Ψ (n / x)) / x) atTop (nhds (A * ∫ y in Set.Ioi 0, Ψ y)) :=
   tendsto_sub_nhds_zero_iff.mp <| wiener_ikehara_smooth hf hcheby hG hG' hsmooth hsupp hplus
 
-local instance {E : Type*} : Coe (E → ℝ) (E → ℂ) := ⟨fun f n => f n⟩
 
-@[norm_cast]
-theorem set_integral_ofReal {f : ℝ → ℝ} {s : Set ℝ} : ∫ x in s, (f x : ℂ) = ∫ x in s, f x :=
-  integral_ofReal
+
+local instance {E : Type*} : Coe (E → ℝ) (E → ℂ) := ⟨fun f n => f n⟩
 
 theorem wiener_ikehara_smooth_real {f : ℕ → ℝ} {Ψ : ℝ → ℝ}
     (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ'))

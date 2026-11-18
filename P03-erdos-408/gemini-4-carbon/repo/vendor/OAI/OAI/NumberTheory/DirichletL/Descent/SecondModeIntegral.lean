@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.SecondModeEnergy
+public import OAI.NumberTheory.DirichletL.Descent.SecondModeCanonical
+public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRows
 
 @[expose] public section
 
@@ -8,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory SchwartzMap
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]

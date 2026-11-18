@@ -21,7 +21,7 @@ open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
+open ActualEisensteinCubic ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
 open scoped Topology

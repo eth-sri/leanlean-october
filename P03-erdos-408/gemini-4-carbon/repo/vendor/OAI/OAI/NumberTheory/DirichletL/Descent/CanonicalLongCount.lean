@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongBins
+public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongNormalization
 
 @[expose] public section
 

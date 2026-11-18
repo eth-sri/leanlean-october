@@ -9,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open CompletedGauss ConcretePrimeRowBridge ShortDraftHeckeBridge QuadraticInitialBound
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss ConcretePrimeRowBridge ShortDraftHeckeBridge QuadraticInitialBound
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 

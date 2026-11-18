@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.ExceptionalSourceShell
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
 public import OAI.NumberTheory.DirichletL.Moments.WholeDivisorShell
 
 @[expose] public section
@@ -12,11 +12,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentExceptionalWholeSource
-open HeckeFamily UniqueFactorizationMonoid CenteredMomentWholeDivisorShell
-open CenteredMomentEligibleEnergy CenteredMomentActiveDivisorShell
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalSourceShell
-open CenteredMomentSectorLocalization
+open HeckeFamily UniqueFactorizationMonoid CenteredMomentWholeDivisorShell CenteredMomentEligibleEnergy CenteredMomentActiveDivisorShell CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalAllocationShell CenteredMomentSectorLocalization
 local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]

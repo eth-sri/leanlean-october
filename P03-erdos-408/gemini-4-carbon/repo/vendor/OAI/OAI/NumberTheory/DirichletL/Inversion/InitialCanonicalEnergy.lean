@@ -10,8 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialCanonicalEnergy
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalQuadraticSieve
-open InverseMoment InverseInitialClippedColumns SecondPassArithmetic CanonicalCoefficientClass
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalQuadraticSieve InverseMoment InverseInitialClippedColumns SecondPassArithmetic CanonicalCoefficientClass
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
   (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]

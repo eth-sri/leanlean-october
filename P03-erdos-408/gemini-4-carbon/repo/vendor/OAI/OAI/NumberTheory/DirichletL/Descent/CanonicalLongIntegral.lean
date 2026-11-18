@@ -1,6 +1,12 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongFull
+public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicPriorityBudget
+public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicOriginalBranches
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveParents
+public import OAI.NumberTheory.DirichletL.Descent.FirstLiveCountBudget
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveAggregate
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
+public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongCoefficient
 
 @[expose] public section
 
@@ -9,9 +15,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-open CanonicalCubeSeparation JointLogSeparation
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels CanonicalCubeSeparation JointLogSeparation
 local notation "O" => ActualEisensteinCubic.O
 
 theorem actual_long_bin_normalized_energy

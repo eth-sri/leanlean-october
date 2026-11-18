@@ -1,6 +1,6 @@
 module
-
-public import OAI.NumberTheory.DirichletL.Detector.GaussianLow
+public import OAI.NumberTheory.DirichletL.Detector.GaussianDecomposition
+public import OAI.NumberTheory.DirichletL.Detector.LowCompletion
 public import Mathlib.Analysis.Complex.Liouville
 public import Mathlib.Analysis.Complex.RealDeriv
 public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic

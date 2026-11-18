@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceCoefficients
+public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPadding
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
 
 @[expose] public section
@@ -11,8 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily IdealMobiusDivisorSum UniqueFactorizationMonoid
-open InverseInitialConjugateEnergy InverseInitialPoissonBridge
+open HeckeFamily IdealMobiusDivisorSum UniqueFactorizationMonoid InverseInitialConjugateEnergy InverseInitialPoissonBridge
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 

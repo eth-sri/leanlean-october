@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.CommonMeasure
+public import OAI.NumberTheory.DirichletL.Reflection.WeightedMeasurable
 public import OAI.NumberTheory.DirichletL.Inversion.TerminalWidths
 public import OAI.NumberTheory.DirichletL.Inversion.KernelSourceUniform
 

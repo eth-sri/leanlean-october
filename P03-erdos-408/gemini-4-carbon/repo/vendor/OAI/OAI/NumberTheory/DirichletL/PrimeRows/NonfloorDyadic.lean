@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorNormalized
+public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorArithmetic
+public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFloorDyadic
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeBinPartition
 

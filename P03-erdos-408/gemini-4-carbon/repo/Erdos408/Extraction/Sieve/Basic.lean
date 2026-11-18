@@ -191,26 +191,11 @@ lemma two_pow_neg_compositeCutoff_le {Cj x : ℝ} (hT : 0 < logLog x) :
 
 /-! ### Mertens' theorems -/
 
-/-- Sums over `primesIoc 1 y` are sums over the primes of `(0, y]`. -/
-lemma sum_primesIoc_one_eq (f : ℕ → ℝ) (y : ℝ) :
-    ∑ p ∈ primesIoc 1 y, f p = ∑ p ∈ Ioc 0 ⌊y⌋₊ with p.Prime, f p := by
-  congr 1
-  ext p
-  simp only [primesIoc, Nat.floor_one, mem_filter, mem_Ioc]
-  constructor
-  · rintro ⟨⟨-, h⟩, hp⟩
-    exact ⟨⟨hp.pos, h⟩, hp⟩
-  · rintro ⟨⟨-, h⟩, hp⟩
-    exact ⟨⟨hp.one_lt, h⟩, hp⟩
-
 /-- Mertens' second theorem with the constant absorbed: for `y ≥ 2`,
 `|∑_{p ≤ y} 1 / p - log log y| ≤ E`. -/
 lemma abs_sum_inv_primes_sub_le : ∃ E : ℝ, 0 ≤ E ∧ ∀ y : ℝ, 2 ≤ y →
-    |∑ p ∈ primesIoc 1 y, (1 : ℝ) / p - Real.log (Real.log y)| ≤ E := by
-  obtain ⟨C, hC⟩ := Mertens.sum_prime_div_eq_log_log
-  refine ⟨max C 0, le_max_right _ _, fun y hy => ?_⟩
-  rw [sum_primesIoc_one_eq]
-  exact (hC y hy).trans (le_max_left _ _)
+    |∑ p ∈ primesIoc 1 y, (1 : ℝ) / p - Real.log (Real.log y)| ≤ E :=
+  Erdos408.abs_sum_inv_primes_sub_le
 
 /-- Mertens' product bound: `∏_{p ≤ y} (1 - 1 / p) ≤ C / log y` for `y ≥ 2`. -/
 lemma prod_one_sub_inv_primes_le : ∃ C : ℝ, 0 < C ∧ ∀ y : ℝ, 2 ≤ y →

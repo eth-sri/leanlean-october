@@ -35,7 +35,7 @@ theorem comparison_kernel_proof : Erdos821.Blueprint.Analytic.comparison_kernel_
   have hhExp : 0 < hExp := by dsimp [hExp, comparisonPowerH]; linarith
   have hξExp : 0 < ξExp := by dsimp [ξExp, comparisonPowerXi]; linarith
   have hDExp : 0 < DExp := by dsimp [DExp, comparisonPowerD]; linarith
-  obtain ⟨K, hK, hCharacter⟩ := characterCellTask_proof Blueprint.classical_inputs.harmonic P m q DExp hq hDExp
+  obtain ⟨K, hK, hCharacter⟩ := characterCellTask_proof Blueprint.HarmonicCharacters_proof P m q DExp hq hDExp
   let threshold := 3 + 60 * integerBilinearConstant + 3 * K + 2 * (1 + 64 * Real.pi)
   have hL : Tendsto L atTop atTop := Real.tendsto_log_atTop
   refine ⟨q, hExp, ξExp, hq, hhExp, hξExp, ?_⟩

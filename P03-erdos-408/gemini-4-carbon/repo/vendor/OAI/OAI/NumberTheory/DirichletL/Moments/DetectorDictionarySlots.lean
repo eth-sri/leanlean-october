@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeDyadic HeckeRowClosure CanonicalRowCompletion
-open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
-open HeckeDetectorRelativePrime
+open HeckeFamily HeckeDyadic HeckeRowClosure CanonicalRowCompletion CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot HeckeDetectorRelativePrime
 local notation "O" => HeckeFamily.O
 
 def physicalSlotCoefficient (η : Character) (W : ℝ→ℂ) (D : ℝ) (z : ℂ) (P : Ideal O) : ℂ :=

@@ -21,7 +21,7 @@ open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
+open ActualEisensteinCubic ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
 open scoped Topology
@@ -277,7 +277,6 @@ open MeasureTheory
 open scoped BigOperators Classical SchwartzMap FourierTransform
 namespace SecondPassIntegration
 open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
-open SecondPassFiber (OldTuple newLabel newRow Valid)
 local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 variable {ι : Type*} [DecidableEq ι]

@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawRadial
-public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawFiberSource
+public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalSlots
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawFiber
 public import OAI.NumberTheory.DirichletL.Descent.Basic
 
 @[expose] public section
@@ -11,10 +12,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.DetectorDictionaryInverseMarkedPadding
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer InverseInitialPhysicalSlots
-open InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialConjugateEnergy
-open HeckeDetectorPhysicalSelection ConcreteTraceCRT CanonicalQuadraticSieve ActualEisensteinCubic
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorCoefficientTransfer InverseInitialPhysicalSlots InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialConjugateEnergy HeckeDetectorPhysicalSelection ConcreteTraceCRT CanonicalQuadraticSieve ActualEisensteinCubic
 local notation "O" => HeckeFamily.O
 
 def radialMajorant : 𝓢(ℝ,ℂ) :=

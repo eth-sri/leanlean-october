@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.PhysicalBranchMeasure
+public import OAI.NumberTheory.DirichletL.Reflection.PhysicalIntegral
+public import OAI.NumberTheory.DirichletL.Reflection.WeightedMeasurable
 
 @[expose] public section
 
@@ -8,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
+open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 universe u v w

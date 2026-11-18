@@ -130,10 +130,6 @@ def lineWeight (q : ℝ) (ℓ : ℕ → ℕ) (s : (freeRootModel d Y d₀ u v r)
       ℝ) : ℂ)
   else 0
 
-/-- The inclusion keeps the position and the lists. -/
-theorem toFree_val (ℓ : ℕ → ℕ) (s : (rootModel d Y d₀ u v r ℓ).State x d) :
-    (toFree ℓ s).1 = s.1 :=
-  rfl
 
 /-- The determinant of the line-free model. -/
 theorem freeRootModel_det (z z' : (freeRootModel d Y d₀ u v r).Pos) :
@@ -167,7 +163,7 @@ theorem rowOp_toFree {q : ℝ} (hq : 0 < q) (A₀ : ℝ) (ℓ : ℕ → ℕ)
         Matrix.diagonal (lineWeight q ℓ) : Matrix _ _ ℂ) (toFree ℓ s) (toFree ℓ s') := by
   classical
   rw [Matrix.mul_diagonal, Matrix.diagonal_mul, PosModel.rowOp_eq_damp _ hq]
-  simp only [lineWeight, rootValid_toFree, ite_true, toFree_val]
+  simp only [lineWeight, rootValid_toFree, ite_true]
   congr 2
   simp only [PosModel.rowOp, one_rpow]
   rfl

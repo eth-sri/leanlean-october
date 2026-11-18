@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.OriginalRetained
+public import OAI.NumberTheory.DirichletL.Reflection.OriginalBranchSum
+public import OAI.NumberTheory.DirichletL.Reflection.LiteralNormalized
+public import OAI.NumberTheory.DirichletL.Reflection.InactiveEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalSectorUniformDegree
 
 @[expose] public section

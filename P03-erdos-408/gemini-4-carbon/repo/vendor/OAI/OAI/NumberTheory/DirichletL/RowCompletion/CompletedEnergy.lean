@@ -9,107 +9,22 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open CanonicalCoefficientClass (IsBaseRayTwist)
 
-def HasCanonicalThetaModels (S : Finset (Ideal ActualEisensteinCubic.O)) (base : ActualEisensteinCubic.O→*ℂ)
-    (ρ q levelBound : ℝ) : Prop :=
-  ∀(A : ℝ),0≤A → ∀(W : ℝ→ℂ),
-    Function.support W⊆Set.Icc (Real.exp (-A)) (Real.exp A) → ContDiff ℝ ∞ W →
-    ∀κ : ℝ,0<κ → ∃C : ℝ,0≤C ∧
-    ∀(Z K X F θ : ℝ),1≤Z → 1≤K → 0<X → 1≤F → F≤Z^((1:ℝ)/1000) →
-    ∀(Ψ : ActualEisensteinCubic.O→*ℂ),IsBaseRayTwist base Ψ → ∀m : ActualEisensteinCubic.O,m≠0 →
-    let G : Ideal ActualEisensteinCubic.O:=Ideal.span {m*excludedGenerator S}
-    (2*K)*(Ideal.absNorm G:ℝ)≤X*F*Z^(-((1:ℝ)/40)) →
-    ∃(rays : ℕ) (lengthScale : ℂ),(rays:ℝ)^2*‖lengthScale‖^2≤C*Z^κ ∧
-      ∀u : ActualEisensteinCubic.Oˣ,∀f : idealRange F,∀H∈shortCubeRange (Z^((1:ℝ)/1000)),
-        HasExactCompletedDyadicModels rays
-          (((firstFrequencyDisk (2*K)).erase 0).image (fun z=>Ideal.span {z})) (2*K)
-          (X/(Ideal.absNorm H:ℝ)^3) ρ q levelBound f.val (G*f.val)
-          (CompletedHeight.normTwistedSource W θ)
-          (CompletedUnitRows.unitRowFamily Ψ (m*excludedGenerator S) u f) lengthScale
-
-end CanonicalRowCompletion
-
-open scoped BigOperators Classical
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 
 lemma embedding_lambda_ne_zero : eisEmbedding lambda≠0 :=
@@ -121,13 +36,8 @@ lemma embedding_lambda_ne_zero : eisEmbedding lambda≠0 :=
 
 end
 
-section
-open ActualEisensteinCubic CompletedDyadic LocalReflectionBrackets
-open ConcreteTraceCRT (eisEmbedding)
 
-end
-
-open ActualEisensteinCubic LocalReflectionBrackets
+open LocalReflectionBrackets
 open ConcreteTraceCRT (eisEmbedding)
 
 def paperLambda : ActualEisensteinCubic.O := 1+2*omega
@@ -153,36 +63,10 @@ lemma paperLambda_eq : paperLambda=paperLambdaUnit.val*lambda := by
 
 end CompletedGauss
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CanonicalCubeSeparation
 
-end CanonicalCubeSeparation
 
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open ConcreteTraceCRT (eisEmbedding)
 
-end CanonicalRowCompletion
-
-namespace CanonicalCubeSeparation
-
-def radiusIter (A : ℝ) : ℕ→ℝ
-  | 0=>A
-  | n+1=>radiusIter (2*A+11) n
-
-@[simp] theorem radiusIter_zero (A : ℝ) : radiusIter A 0=A:=rfl
-@[simp] theorem radiusIter_succ (A : ℝ) (n : ℕ) :
-    radiusIter A (n+1)=radiusIter (2*A+11) n:=rfl
-
-end CanonicalCubeSeparation
-
-open scoped BigOperators Classical
 namespace QuadraticAllOddCRT
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisTraceModChar finite_quotient_span)
 open FiniteGaussPhase hiding O
 

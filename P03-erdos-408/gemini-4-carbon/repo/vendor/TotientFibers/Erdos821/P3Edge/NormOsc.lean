@@ -10,8 +10,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 lemma norm_imaginaryPower (n : ℕ) (ζ : ℝ) : ‖imaginaryPower n ζ‖ = 1 := by
   unfold imaginaryPower

@@ -11,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerMass
-open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry
-open InverseInitialEnergyCallerAssigned
+open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialEnergyCallerAssigned
 local notation "Eis"=>ActualEisensteinCubic.O
 
 theorem assigned_quotient_subset {ι σ:Type*}[DecidableEq ι][DecidableEq σ]

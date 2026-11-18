@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.SecondModeEnergy
+public import OAI.NumberTheory.DirichletL.Descent.SecondModeCanonical
+public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRows
 public import OAI.NumberTheory.DirichletL.Inversion.InitialClippedColumns
 
 @[expose] public section
@@ -9,8 +10,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open JointLogSeparation IdealMobiusDivisorSum InverseInitialClippedColumns
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss JointLogSeparation IdealMobiusDivisorSum InverseInitialClippedColumns
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 

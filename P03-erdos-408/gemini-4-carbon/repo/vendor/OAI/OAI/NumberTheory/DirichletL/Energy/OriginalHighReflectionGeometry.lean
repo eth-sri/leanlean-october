@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDeletedGeometry
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowWindow
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceDivisors
 
 @[expose] public section
 
@@ -10,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionGeometry
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-open CenteredMomentEnergyReferenceLowBranchGeometry
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceLowBranchGeometry
 local notation "O"=>HeckeFamily.O
 
 lemma original_long_positive (Z M X₁ X₂ ell κ:ℝ)(hZ:1<Z)(hM:0<M)

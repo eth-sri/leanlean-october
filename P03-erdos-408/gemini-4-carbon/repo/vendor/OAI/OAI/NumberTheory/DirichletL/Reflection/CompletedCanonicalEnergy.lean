@@ -1,8 +1,11 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.CanonicalFrozenEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.SourcePhysical
+public import OAI.NumberTheory.DirichletL.Reflection.SourceBudget
 public import OAI.NumberTheory.DirichletL.Reflection.CompletedFiberSource
-public import OAI.NumberTheory.DirichletL.Reflection.CanonicalCellArithmetic
+public import OAI.NumberTheory.DirichletL.Reflection.CellArithmetic
+public import OAI.NumberTheory.DirichletL.Reflection.PuncturedMarks
+public import OAI.NumberTheory.DirichletL.Reflection.MarkedLevel
 
 @[expose] public section
 

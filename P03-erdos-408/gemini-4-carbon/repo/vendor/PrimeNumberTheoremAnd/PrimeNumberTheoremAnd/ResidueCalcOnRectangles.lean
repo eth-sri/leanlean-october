@@ -1,5 +1,4 @@
 module
-
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.Analysis.Complex.Convex
 public import Mathlib.Analysis.Complex.RemovableSingularity
@@ -23,8 +22,6 @@ noncomputable def HIntegral (f : ℂ → E) (x₁ x₂ y : ℝ) : E :=
 noncomputable def VIntegral (f : ℂ → E) (x y₁ y₂ : ℝ) : E :=
     I • ∫ y in y₁..y₂, f (x + y * I)
 
-noncomputable def HIntegral' (f : ℂ → E) (x₁ x₂ y : ℝ) : E :=
-    (1 / (2 * π * I)) • HIntegral f x₁ x₂ y
 
 /-- A `RectangleIntegral` of a function `f` is one over a rectangle
   determined by `z` and `w` in `ℂ`. -/
@@ -447,22 +444,6 @@ lemma ResidueTheoremOnRectangleWithSimplePole {f g : ℂ → ℂ} {z w p A : ℂ
 The simple-pole `residue`, `sumResiduesIn`, the `HasSimplePolesOn` scaffold, and the rectangle
 residue theorem `RectangleIntegral'_eq_sumResiduesIn`. Extracted from `CH2.lean` as general,
 reusable contour-integration lemmas (see issue #1537). -/
-
-/-- Every pole of `f` in `s` is at most simple: the meromorphic order is `≥ -1` everywhere on `s`
-(no poles of order `≤ -2`).
-
-**Temporary scaffold.** The placeholder `residue` below (and Mathlib's current residue-theorem API)
-is only correct for simple poles, so this hypothesis is added to Lemma 5.1 / Proposition 5.2 and
-their sub-lemmas to make them provable with the present API. It holds in the intended applications
-(e.g. `ζ'/ζ`, whose poles are all simple) and is to be removed once Mathlib gains general
-higher-order residue support. -/
-def HasSimplePolesOn (f : ℂ → ℂ) (s : Set ℂ) : Prop :=
-  ∀ z ∈ s, (-1 : ℤ) ≤ meromorphicOrderAt f z
-
-lemma HasSimplePolesOn.mono {f : ℂ → ℂ} {s t : Set ℂ}
-    (h : HasSimplePolesOn f t) (hst : s ⊆ t) : HasSimplePolesOn f s := by
-  intro z hz
-  exact h z (hst hz)
 
 -- If two functions `f g : ℂ → ℂ` agree on a `codiscreteWithin R` full set, and `φ : ℝ → ℂ` is
 -- an analytic non-constant path mapping `[a,b]` into `R`, then `∫ f(φ x) dx = ∫ g(φ x) dx`.

@@ -1,6 +1,9 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.WholePriorityPrincipal
+public import OAI.NumberTheory.DirichletL.Inversion.SecondPrincipalCaller
+public import OAI.NumberTheory.DirichletL.Descent.FirstRetainedFamily
+public import OAI.NumberTheory.DirichletL.Descent.FirstWholeCubePriority
+public import OAI.NumberTheory.DirichletL.Descent.FirstWholeMarkedColumns
 
 @[expose] public section
 

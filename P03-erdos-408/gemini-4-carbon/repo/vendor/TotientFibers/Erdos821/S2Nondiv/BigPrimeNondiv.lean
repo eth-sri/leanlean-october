@@ -7,13 +7,11 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 noncomputable section
 
-open Filter
-open Asymptotics
+open Filter Asymptotics
 
 namespace Erdos821.S2Nondiv
 
-open Erdos821.S2
-open Erdos821.S2Core
+open Erdos821.S2 Erdos821.S2Core
 
 /-- A fixed logarithmic power is eventually smaller than an exponential of a
 positive power of the logarithm. -/

@@ -10,16 +10,12 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonMaskExpansion
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open UniqueFactorizationMonoid
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
 def naturalSlot (χ : Character) (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) : ℂ :=
   (Real.sqrt P:ℂ)⁻¹ * ∑ I∈pool,idealCoeff χ I*β I
 
-def profileSlot (χ : Character) (pool : Finset (Ideal O))
-    (ν : Ideal O→ℂ) (W : ℝ→ℂ) (P : ℝ) : ℂ :=
-  naturalSlot χ pool (fun I=>ν I*W ((I.absNorm:ℝ)/P)) P
 
 lemma outside_prime (R : Finset (Ideal O)) (hR : ∀ I∈R,Prime I)
     (I : Ideal O) (hI : Prime I) : outside R I ↔ I∉R := by

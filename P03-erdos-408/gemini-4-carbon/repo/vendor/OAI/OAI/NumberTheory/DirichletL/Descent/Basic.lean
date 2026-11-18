@@ -11,8 +11,6 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 
-def MarkedMargins (m r z c : ℝ) : Prop :=
-  r + 2 * z ≤ m - c ∧ 2 * r + 8 * z ≤ 3 * m - c
 
 def CanonicalMargins (F M Q z c : ℝ) : Prop :=
   c ≤ F - M - Q - z ∧ c ≤ 4 * F - 3 * M - 6 * z

@@ -1,5 +1,4 @@
 module
-
 public import OAI.NumberTheory.DirichletL.Detector.GaussianPhysicalTuple
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalNorms
 

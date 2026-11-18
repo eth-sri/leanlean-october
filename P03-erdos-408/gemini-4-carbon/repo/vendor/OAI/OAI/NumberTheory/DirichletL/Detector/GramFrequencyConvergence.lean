@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT
-open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 lemma actual_correlation_radial_summable (I J : SupportedIdeal) (C : O) (hC : C≠0)

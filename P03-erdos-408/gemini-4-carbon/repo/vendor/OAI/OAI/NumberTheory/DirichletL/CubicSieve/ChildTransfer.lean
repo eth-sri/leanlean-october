@@ -23,7 +23,7 @@ open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
+open ActualEisensteinCubic ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
 open scoped Topology
@@ -82,7 +82,6 @@ open scoped BigOperators Classical
 
 section
 open ActualEisensteinCubic
-open SecondPassFiber (OldTuple newLabel newRow Valid)
 local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 variable {ι : Type*} [DecidableEq ι]

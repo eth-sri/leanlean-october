@@ -9,37 +9,20 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
 open ActualEisensteinCubic
 
-open Filter
 
-namespace RationalQuant
 
-end RationalQuant
+open ShortDraftLatticeCount
 
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 
-namespace RationalPrimeExtraction
 
-end RationalPrimeExtraction
-
-open ActualEisensteinCubic ShortDraftLatticeCount
-
-namespace RationalPrimeExtraction
-
-open ActualEisensteinCubic ShortDraftLatticeCount
-
-end RationalPrimeExtraction
 
 namespace OscSpecial
 
@@ -90,8 +73,6 @@ end OscSpecial
 
 namespace GaussianMoment
 
-open scoped Topology
-open Filter
 
 theorem scaled_moment_vanishes_const (K : ℝ) (hK : 0 < K) :
     Tendsto
@@ -119,7 +100,7 @@ end GaussianMoment
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 private theorem breveE_period_div_lam_O (z : O) :
     ShortDraftTrace.breveE (eisEmbedding z / eisLam) = 1 := by
@@ -203,8 +184,6 @@ end ActualEisensteinCubic
 
 namespace OscSpecial
 
-open scoped Topology
-open Filter
 
 noncomputable def dualScale (η a b : ℝ) : ℝ :=
   η * q a b / (4 * r η a b)

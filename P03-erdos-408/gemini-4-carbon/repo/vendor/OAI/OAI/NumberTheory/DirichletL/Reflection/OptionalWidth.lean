@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.CanonicalWidth
+public import OAI.NumberTheory.DirichletL.Reflection.CanonicalPool
 public import OAI.NumberTheory.DirichletL.Reflection.PoolArithmetic
 
 @[expose] public section

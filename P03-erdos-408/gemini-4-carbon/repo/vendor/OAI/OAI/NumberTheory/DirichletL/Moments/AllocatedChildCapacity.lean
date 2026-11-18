@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalSource
-public import OAI.NumberTheory.DirichletL.Moments.CommonMaskChildCapacity
+public import OAI.NumberTheory.DirichletL.Moments.ReflectionLength
+public import OAI.NumberTheory.DirichletL.Moments.CommonMaskEnergy
 public import OAI.NumberTheory.DirichletL.Moments.CommonRawScale
 public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
 
@@ -13,10 +14,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAllocatedChildCapacity
-open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
-open CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentEligibleEnergy
-open CenteredMomentCommonRadialData
+open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentEligibleEnergy CenteredMomentCommonRadialData
 local notation "O" => HeckeFamily.O
 
 def clippingLoss (Z U₁ U₂ : ℝ) : ℝ :=

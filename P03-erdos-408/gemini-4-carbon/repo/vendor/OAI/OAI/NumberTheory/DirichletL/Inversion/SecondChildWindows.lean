@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingMass
+public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedPhysicalRecursive
+public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
+public import OAI.NumberTheory.DirichletL.Descent.SecondOriginalMass
 public import OAI.NumberTheory.DirichletL.Descent.FreshWindows
 
 @[expose] public section
@@ -11,8 +13,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseSecondChildWindows
-open InverseMoment InverseSecondProfileUniform
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
+open InverseMoment InverseSecondProfileUniform ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
 local notation "O" => ActualEisensteinCubic.O
 
 theorem positive_cutoff (a b : ℝ) (ha : 0<a) (_hab : a≤b) :

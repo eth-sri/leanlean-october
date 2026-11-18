@@ -11,8 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialExcludedPeriod
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open CanonicalCoefficientClass HeckeFamily InverseInitialRayAttachment
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CanonicalCoefficientClass HeckeFamily InverseInitialRayAttachment
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem elementCharacter_eq_elementHom (χ:Character)(hproper:χ.modulus≠⊤):

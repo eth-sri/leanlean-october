@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorCollected
+public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorDyadic
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyNormalized
 
 @[expose] public section
@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeFinalAssembly
-open ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
+open ProbeHighRowFamily HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

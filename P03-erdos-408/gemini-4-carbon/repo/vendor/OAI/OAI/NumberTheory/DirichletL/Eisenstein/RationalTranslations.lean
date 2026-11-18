@@ -11,78 +11,22 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
-open scoped BigOperators Classical MatrixGroups
+open scoped MatrixGroups
 
-open CubicKubota ActualEisensteinCubic ConcreteTraceCRT
+open CubicKubota
 local notation "O" => ActualEisensteinCubic.O
 
 def rationalComplex : SL(2,ℤ) →* SL(2,ℂ) := integralComplexMatrix.comp rationalEmbedding
@@ -156,8 +100,7 @@ end
 
 section
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace MatrixGroups
+open scoped InnerProductSpace MatrixGroups
 open CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -262,9 +205,8 @@ end
 
 section
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix
-open CubicKubota ConcreteTraceCRT
+open scoped MatrixGroups Matrix
+open CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 def oppositeSource:levelTwo:=rationalLift ModularGroup.S
@@ -326,9 +268,6 @@ lemma translatedCuspFamily_opposite_initial (h:Eis) (s:ℂ)
     opposite_cusp_fourier_average s (by linarith),
     show (9:Eis)*(3*h)=27*h by ring,unramifiedCubicGaussSeries_twentySeven]
 
-def continuedUnramifiedGauss (h:Eis) (s:ℂ):ℂ:=
-  translatedCuspFamily (3*h) oppositeSource 2 3 (by norm_num) (by norm_num) s/
-    cuspWhittakerHeightFactor s (3*h)
 
 def unramifiedGaussResidue (h:Eis):ℂ:=
   translatedCuspFourier (3*h) oppositeSource cubicEisensteinResidue/
@@ -338,8 +277,7 @@ end
 
 section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma gaussRep_mk_congr (c d : Eis) :
@@ -507,10 +445,8 @@ theorem cubicUnitGaussSum_coprime_product (h a b:Eis) (ha:a≠0) (hb:b≠0)
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 local notation "Eis" => ActualEisensteinCubic.O
 

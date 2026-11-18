@@ -1,6 +1,7 @@
 module
 
-public import Erdos821.S2.Births
+public import Erdos821.S2.Definitions
+public import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 
 /-! Distinctness on performed addresses as a signed permutation sum. -/
 

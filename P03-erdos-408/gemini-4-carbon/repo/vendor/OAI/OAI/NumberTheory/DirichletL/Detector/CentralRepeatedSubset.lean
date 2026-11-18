@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralRepeatedSubset
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-open CanonicalQuadraticSieve ProbeCentralRepeatedProduct ProbeCentralRepeatedSum
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CanonicalQuadraticSieve ProbeCentralRepeatedProduct ProbeCentralRepeatedSum
 local notation "O" => HeckeFamily.O
 
 theorem actual_repeated_subset (N : ℕ) (e eps c d B : ℝ)

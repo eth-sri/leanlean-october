@@ -12,10 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondSourceEnergy
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentLiveDomain
-open CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow
-open CenteredMomentFirstSectors CenteredMomentCommonSectors IdealMobiusDivisorSum
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentLiveDomain CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentCommonSectors IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 
 def secondSourceKernel (I J : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=

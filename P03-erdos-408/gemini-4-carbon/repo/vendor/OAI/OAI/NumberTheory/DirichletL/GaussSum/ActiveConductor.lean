@@ -10,61 +10,16 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped ContDiff
 
 namespace ActualEisensteinCubic
 
@@ -79,7 +34,7 @@ section
   simp only [activeSupport, Finset.union_eq_empty, Finset.sdiff_eq_empty_iff_subset] at he
   exact ⟨fun hi => he.1 hi, fun hi => he.2 hi⟩
 
-open ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
  theorem finiteSexticRow_of_isEmpty {ι : Type*} [Fintype ι] [IsEmpty ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -121,21 +76,6 @@ open ConcreteTraceCRT EisensteinSchwartzPoisson
   rw [canonicalNormalizedGauss, canonicalGaussSum_of_isEmpty,
     finitePrimeModulus_norm_of_isEmpty, Complex.ofReal_one, div_one]
 
-noncomputable def squarefreePairPoissonZeroMode
-    {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hinj : Function.Injective P) (hgood : ∀ i, lambda ∉ P i)
-    (S T : Finset ι) (W : 𝓢(ℝ, ℂ)) (scale : ℝ) : ℂ :=
-  let Q := activePrimes P S T
-  let hQ := activePrimes_pairwise_isCoprime P hinj S T
-  let row := finiteSexticRow Q (fun i => hgood i.val) (activeExponent S T)
-  let c := finitePrimeModulus Q
-  ((scale : ℂ) * canonicalNormalizedGauss Q hQ (fun i => hgood i.val)
-      (activeExponent S T) / (‖eisEmbedding c‖ : ℂ)) *
-    ∑ E ∈ (S ∩ T).powerset,
-      let d := primeSubsetGenerator P E
-      ((UniqueFactorizationMonoid.moebius (∏ i ∈ E, P i) : ℂ) * row d /
-        (‖eisEmbedding d‖ ^ 2 : ℝ)) *
-        (star (row 0) * paperRadialFourier W 0)
 
 end
 
@@ -172,29 +112,10 @@ theorem primeDensity_nonneg_le_one
 
 end ActualEisensteinCubic
 
-namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge EisensteinSchwartzPoisson
 
-noncomputable def idealPairPoissonZeroMode
-    (F : Finset (Ideal O)) (hFpos : ∀ I ∈ F, I ≠ ⊥)
-    (hFgood : ∀ I ∈ F,
-      ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ P)
-    (I J : Ideal O) (W : 𝓢(ℝ, ℂ)) (scale : ℝ) : ℂ := by
-  letI : ∀ i : primePool F, (i.1).IsMaximal := primePool_maximal F hFpos
-  exact squarefreePairPoissonZeroMode (fun i : primePool F => i.1)
-    Subtype.val_injective (primePool_good F hFgood)
-    (idealSupport F I) (idealSupport F J) W scale
-
-end ConcretePrimeRowBridge
-
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace ActualEisensteinCubic
-open ConcreteTraceCRT EisensteinSchwartzPoisson
-
-end ActualEisensteinCubic
 
 namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge ConcreteTraceCRT EisensteinSchwartzPoisson
+open ShortDraftHeckeBridge EisensteinSchwartzPoisson
 
 noncomputable def idealPrimeDensity (F : Finset (Ideal O)) (I : Ideal O) : ℝ :=
   ∏ i ∈ idealSupport F I, (1 - (1 : ℝ) / Ideal.absNorm i.val)
@@ -207,18 +128,11 @@ theorem idealPrimeDensity_mem_Icc
 
 end ConcretePrimeRowBridge
 
-namespace ShortDraftHeckeBridge
-
-end ShortDraftHeckeBridge
 
 namespace ConcretePrimeRowBridge
 
-section
-open ActualEisensteinCubic ShortDraftHeckeBridge EisensteinSchwartzPoisson
 
-end
-
-open ActualEisensteinCubic ShortDraftHeckeBridge
+open ShortDraftHeckeBridge
 
 theorem idealSupport_image_eq_factors
     (F : Finset (Ideal O)) {I : Ideal O} (hI : I ∈ F) :
@@ -280,10 +194,6 @@ theorem activePrimeModulus_norm_sq
 
 end ActualEisensteinCubic
 
-namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge
-
-end ConcretePrimeRowBridge
 
 end
 

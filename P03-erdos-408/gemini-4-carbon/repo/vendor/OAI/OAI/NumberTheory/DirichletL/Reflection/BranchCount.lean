@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.NormalizedPhysical
+public import OAI.NumberTheory.DirichletL.Reflection.UpperThreshold
 public import OAI.NumberTheory.DirichletL.Descent.MarkBounds
 
 @[expose] public section

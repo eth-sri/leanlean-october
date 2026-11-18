@@ -1,6 +1,10 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorPhysicalBins
+public import OAI.NumberTheory.DirichletL.Hecke.PrimeNonprincipal
+public import OAI.NumberTheory.DirichletL.Hecke.PrimeScale
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorZeros
+public import OAI.NumberTheory.DirichletL.Hecke.Conjugation
+public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeActual
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRelativePrime
 
 @[expose] public section

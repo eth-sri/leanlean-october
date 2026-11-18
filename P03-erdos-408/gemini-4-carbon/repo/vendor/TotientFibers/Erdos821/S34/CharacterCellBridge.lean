@@ -1,7 +1,7 @@
 module
 
 public import Erdos821.P4Cell.CharacterCellTask
-public import Erdos821.P1.ClassicalInputs
+public import Erdos821.Classical.HarmonicCharacters
 public import Erdos821.S34.EventualFrame
 
 @[expose] public section
@@ -24,7 +24,7 @@ theorem cell_operator_norm_eventual (P : Geometry) (m : ℕ) (qexp ξexp : ℝ)
       ∀ f : Tuple G k → ℂ,
         tupleNorm G k (cellApply G k Q h (L x ^ (-ξexp)) f) ≤ 2 * tupleNorm G k f ∧
         tupleNorm G k (cellTransposeApply G k Q h (L x ^ (-ξexp)) f) ≤ 2 * tupleNorm G k f :=
-  eventually_cell_operator_norm characterCellTask_proof Blueprint.classical_inputs.harmonic
+  eventually_cell_operator_norm characterCellTask_proof Blueprint.HarmonicCharacters_proof
     P m qexp ξexp hq hξexp
 
 end Erdos821.S34Core

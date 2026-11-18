@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileCellEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfilePhysical
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileAssembly
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileWindows
 public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalCaps
 
 @[expose] public section

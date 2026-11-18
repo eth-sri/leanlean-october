@@ -1,6 +1,10 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.CubeCompletedEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.CompletedCanonicalEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.CompletedAggregation
+public import OAI.NumberTheory.DirichletL.Reflection.CanonicalCaps
+public import OAI.NumberTheory.DirichletL.Reflection.PunctureLists
+public import OAI.NumberTheory.DirichletL.Reflection.CubeSlotEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalCompletedEnergyUniformDegree
 
 @[expose] public section

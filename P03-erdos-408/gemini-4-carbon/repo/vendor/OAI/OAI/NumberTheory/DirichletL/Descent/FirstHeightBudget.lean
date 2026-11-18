@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalRetainedEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalPhysicalEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstActualSecondEnergy
 
 @[expose] public section
 

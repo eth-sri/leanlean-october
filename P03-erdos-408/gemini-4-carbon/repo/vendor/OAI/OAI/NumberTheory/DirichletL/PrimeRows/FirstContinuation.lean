@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.Continuation
-public import OAI.NumberTheory.DirichletL.PrimeRows.FirstAnalytic
+public import OAI.NumberTheory.DirichletL.PrimeRows.FirstProduct
+public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstHolomorphic
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstRamified
 
 @[expose] public section
@@ -11,8 +12,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 theorem ramifiedCorrection_first_analytic_x (η : Character) (u : FreeRow) (P : PrimeIdeal)

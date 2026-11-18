@@ -13,6 +13,7 @@ open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBracket
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
 noncomputable local instance sectorIndependentFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 theorem frozenCore_transport {ι κ : Type*} [Fintype ι] [Fintype κ]

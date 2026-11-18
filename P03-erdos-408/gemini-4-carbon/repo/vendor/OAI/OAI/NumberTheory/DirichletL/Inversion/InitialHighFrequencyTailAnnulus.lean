@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailGeometry
+public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailKernel
 
 @[expose] public section
 

@@ -9,11 +9,7 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical SchwartzMap
-open MeasureTheory JointLogSeparation
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open SevenEighths.InverseMoment SevenEighths.InverseInitialProfile
-open SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialPhysicalMeasure
-open SevenEighths.InverseInitialEnergyCallerModes
+open MeasureTheory JointLogSeparation ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic SevenEighths.InverseMoment SevenEighths.InverseInitialProfile SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialPhysicalMeasure SevenEighths.InverseInitialEnergyCallerModes
 namespace SevenEighths.InverseInitialEnergyCallerSource
 variable {ι : Type*} [DecidableEq ι]
 

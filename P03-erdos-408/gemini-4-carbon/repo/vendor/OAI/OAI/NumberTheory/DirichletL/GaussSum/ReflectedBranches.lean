@@ -9,76 +9,22 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic LocalReflectionBrackets
+open LocalReflectionBrackets
 
 def reflectedLocalPiece (P : Ideal O) [P.IsMaximal] (hg : lambda∉P)
     (j : ℕ) (e : Fin 3) (n b : O) : ℂ :=
@@ -227,8 +173,6 @@ theorem reflectedBranch_divisibility {ι : Type*} [Fintype ι]
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff Topology
-open MeasureTheory Filter
 
 theorem Vstar_contDiff (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hsupp : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W) :
@@ -266,14 +210,9 @@ def vstarSchwartz (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
 
 end CompletedGauss
 
-namespace InitialMeanSquare
-open SecondPassArithmetic
-
-end InitialMeanSquare
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups Matrix InnerProductSpace
+open scoped Manifold ENNReal MatrixGroups Matrix InnerProductSpace
 
 def hyperbolicEuclideanCoordinates (w : HyperbolicSpace) : EuclideanSpatial :=
   WithLp.toLp 2 (hyperbolicSpatialCoordinates w)
@@ -457,8 +396,7 @@ theorem hyperbolicDifferentialIsometry (g : SL(2,ℂ)) : HyperbolicDifferentialI
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups
+open scoped Manifold ENNReal MatrixGroups
 
 namespace CubicEisenstein
 
@@ -508,8 +446,6 @@ lemma euclideanScalarDirichletDensity_invariant (g : SL(2,ℂ)) (F : EuclideanSp
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups
 
 namespace CubicEisenstein
 

@@ -1,12 +1,107 @@
 module
 
-public import OAI.NumberTheory.PrimeGaps.AdditiveSieve
+public import Mathlib.Analysis.CStarAlgebra.Module.Constructions
+public import Mathlib.Analysis.InnerProductSpace.PiL2
 
 @[expose] public section
 
 set_option autoImplicit false
 
 open scoped BigOperators Classical ComplexConjugate
+
+namespace OAI.LargePrimeGaps
+theorem symmetric_kernel_quadratic_le {ι : Type*} (s : Finset ι) (a : ι→ℝ)
+    (w : ι→ι→ℝ) (hw : ∀ i∈s,∀ j∈s,0≤w i j)
+    (hs : ∀ i∈s,∀ j∈s,w i j=w j i) :
+    (∑ i∈s,∑ j∈s,a i*a j*w i j)≤∑ i∈s,a i^2*(∑ j∈s,w i j) := by
+  have hh : (∑ i∈s,∑ j∈s,a i*a j*w i j)≤
+      ∑ i∈s,∑ j∈s,(a i^2*w i j+a j^2*w i j)/2 := by
+    apply Finset.sum_le_sum
+    intro i hi
+    apply Finset.sum_le_sum
+    intro j hj
+    have h := mul_nonneg (sq_nonneg (a i-a j)) (hw i hi j hj)
+    nlinarith
+  have hswap : (∑ i∈s,∑ j∈s,a j^2*w i j)=(∑ i∈s,∑ j∈s,a i^2*w i j) := by
+    rw [Finset.sum_comm]
+    apply Finset.sum_congr rfl
+    intro i hi
+    apply Finset.sum_congr rfl
+    intro j hj
+    rw [hs j hj i hi]
+  calc
+    _ ≤ _ := hh
+    _ = _ := by
+      simp_rw [←Finset.sum_div,Finset.sum_add_distrib]
+      rw [hswap]
+      simp only [Finset.mul_sum]
+      ring
+
+theorem norm_sum_smul_sq_le_gram {ι E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
+    (s : Finset ι) (v : ι→E) (c : ι→ℂ) :
+    ‖∑ i∈s,c i • v i‖^2≤∑ i∈s,‖c i‖^2*(∑ j∈s,‖inner ℂ (v i) (v j)‖) := by
+  calc
+    _ = ∑ i∈s,∑ j∈s,(conj (c i)*(c j*inner ℂ (v i) (v j))).re := by
+      rw [InnerProductSpace.norm_sq_eq_re_inner (𝕜:=ℂ)]
+      simp only [sum_inner,inner_sum,inner_smul_left,inner_smul_right,Finset.mul_sum,map_sum]
+      rw [Finset.sum_comm]
+      apply Finset.sum_congr rfl
+      intro i _
+      apply Finset.sum_congr rfl
+      intro j _
+      change (c j * (conj (c i) * inner ℂ (v i) (v j))).re = _
+      congr 1
+      ring
+    _ ≤ ∑ i∈s,∑ j∈s,‖c i‖*‖c j‖*‖inner ℂ (v i) (v j)‖ := by
+      apply Finset.sum_le_sum
+      intro i _
+      apply Finset.sum_le_sum
+      intro j _
+      simpa only [norm_mul,Complex.norm_conj,mul_assoc] using
+        Complex.re_le_norm (conj (c i)*(c j*inner ℂ (v i) (v j)))
+    _ ≤ _ := symmetric_kernel_quadratic_le s (fun i => ‖c i‖)
+      (fun i j => ‖inner ℂ (v i) (v j)‖) (fun _ _ _ _ => norm_nonneg _)
+      (fun i _ j _ => by rw [←inner_conj_symm,Complex.norm_conj])
+
+theorem gram_large_sieve {ι E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
+    (s : Finset ι) (v : ι→E) {B : ℝ} (hB : 0≤B)
+    (hrows : ∀ i∈s,(∑ j∈s,‖inner ℂ (v i) (v j)‖)≤B) (x : E) :
+    (∑ i∈s,‖inner ℂ (v i) x‖^2)≤B*‖x‖^2 := by
+  let c : ι→ℂ := fun i => inner ℂ (v i) x
+  let y : E := ∑ i∈s,c i • v i
+  let A : ℝ := ∑ i∈s,‖c i‖^2
+  have hA : 0≤A := Finset.sum_nonneg (fun _ _ => sq_nonneg _)
+  have hy : ‖y‖^2≤B*A := by
+    apply (norm_sum_smul_sq_le_gram s v c).trans
+    calc
+      _ ≤ ∑ i∈s,‖c i‖^2*B := Finset.sum_le_sum
+        (fun i hi => mul_le_mul_of_nonneg_left (hrows i hi) (sq_nonneg _))
+      _ = B*A := by rw [←Finset.sum_mul,mul_comm]
+  have hxy : inner ℂ x y=(A:ℂ) := by
+    simp only [y,inner_sum,inner_smul_right,A,Complex.ofReal_sum]
+    apply Finset.sum_congr rfl
+    intro i _
+    change inner ℂ (v i) x * inner ℂ x (v i)=_
+    rw [←inner_conj_symm x (v i)]
+    simpa only [Complex.normSq_eq_norm_sq,c] using Complex.mul_conj (inner ℂ (v i) x)
+  have hn := norm_inner_le_norm (𝕜:=ℂ) x y
+  rw [hxy,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg hA] at hn
+  have hn2 : A^2≤‖x‖^2*‖y‖^2 := by
+    nlinarith [norm_nonneg x,norm_nonneg y]
+  have hprod := mul_le_mul_of_nonneg_left hy (sq_nonneg ‖x‖)
+  change A≤B*‖x‖^2
+  by_cases hA0 : A=0
+  · rw [hA0]
+    exact mul_nonneg hB (sq_nonneg _)
+  · apply le_of_mul_le_mul_right (a := A) ?_ (lt_of_le_of_ne hA (Ne.symm hA0))
+    calc
+      A*A = A^2 := by ring
+      _ ≤ _ := hn2.trans hprod
+      _ = (B*‖x‖^2)*A := by ring
+
+
+end OAI.LargePrimeGaps
+
 
 namespace Erdos821.P4Frame
 

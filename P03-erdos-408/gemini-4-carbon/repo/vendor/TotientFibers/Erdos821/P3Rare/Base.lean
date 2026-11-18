@@ -4,7 +4,14 @@ public import Erdos821.S2.EdgeTasks
 public import Erdos821.S2.CountableSchur
 public import Erdos821.S2.MemoryIndices
 public import Erdos821.S2.PhysicalCompatibility
-public import Erdos821.Leaves
+public import Erdos821.Leaves.Arith
+public import Erdos821.Blueprint.Graph
+public import Erdos821.Blueprint.Analytic
+public import Erdos821.Leaves.Counting
+public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+public import Erdos821.Leaves.OrphanExp
+public import Erdos821.Leaves.Damped
+public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Erdos821.P3Edge.RowBound
 public import Erdos821.P3Edge.ColumnBound
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
@@ -20,8 +27,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Rare
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 

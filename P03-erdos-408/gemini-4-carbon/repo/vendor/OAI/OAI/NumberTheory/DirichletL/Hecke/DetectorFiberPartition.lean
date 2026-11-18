@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawFiber
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorDynamicSelection
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorWitnessRows
 
 @[expose] public section
 
@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorFiberPartition
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber
-open HeckeDetectorSupportedWitness HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorSupportedWitness HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection
 
 abbrev BinLabel {Slot : Type*} (slots : Finset Slot) (cap mesh : ℝ) :=
   slots → ↥(HeckePrimeAmplitudeBins.labels cap mesh)

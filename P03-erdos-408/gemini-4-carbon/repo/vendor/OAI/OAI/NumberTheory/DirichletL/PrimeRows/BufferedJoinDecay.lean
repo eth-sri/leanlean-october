@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedHeightGrowth
-public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedSlices
+public import OAI.NumberTheory.DirichletL.PrimeRows.SliceIntegral
 
 @[expose] public section
 

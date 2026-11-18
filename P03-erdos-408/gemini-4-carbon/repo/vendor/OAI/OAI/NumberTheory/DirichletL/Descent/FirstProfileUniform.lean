@@ -8,10 +8,7 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson
-open SevenEighths.InverseMoment
-open SevenEighths.InverseInitialProfile
-open SevenEighths.InverseAmbientProfileTower
+open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson SevenEighths.InverseMoment SevenEighths.InverseInitialProfile SevenEighths.InverseAmbientProfileTower
 namespace SevenEighths.InverseMomentFirstProfileUniform
 
 def rooted (g : 𝓢(ℝ, ℂ)) (M a : ℝ)

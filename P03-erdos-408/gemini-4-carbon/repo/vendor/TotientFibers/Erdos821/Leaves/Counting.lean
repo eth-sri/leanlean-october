@@ -14,13 +14,7 @@ open Filter
 
 attribute [local instance] Classical.propDecidable
 
-namespace Erdos821.GraphLemmas
 
-end Erdos821.GraphLemmas
-
-namespace Erdos821.Blueprint.Analytic
-
-end Erdos821.Blueprint.Analytic
 
 namespace Erdos821.Blueprint.Graph
 

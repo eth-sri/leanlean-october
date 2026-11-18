@@ -15,9 +15,7 @@ noncomputable section
 open scoped Classical BigOperators Topology ComplexConjugate
 open Set Complex
 namespace SevenEighths.ProbeRowReflectedAllocation
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open HeckeFiniteDeletion HeckeReciprocalGrowth HeckeDeletionBounds
-open ProbeRowRadicalConductor
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily HeckeFiniteDeletion HeckeReciprocalGrowth HeckeDeletionBounds ProbeRowRadicalConductor
 local notation "O" => HeckeFamily.O
 
 lemma prod_rpow_nonneg {ι : Type*} (T : Finset ι) (q : ι → ℝ)

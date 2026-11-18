@@ -1,6 +1,6 @@
 module
 
-public import Erdos408.Analytic.Core
+public import OAI.NumberTheory.DirichletL.PNT
 public import Erdos408.Hypotheses
 public import Mathlib.Analysis.SpecialFunctions.JapaneseBracket
 public import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt

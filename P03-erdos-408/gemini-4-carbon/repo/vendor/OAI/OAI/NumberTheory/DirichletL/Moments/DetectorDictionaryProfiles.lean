@@ -11,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ContDiff ComplexConjugate
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeInverseAmplification HeckeDetectorCoefficientTransfer
-open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
+open HeckeFamily HeckeInverseAmplification HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
 
 lemma logTest_eq_iterate (W : ℝ→ℂ) (n : ℕ) : logTest W n=(logProfile^[n]) W := by
   induction n with

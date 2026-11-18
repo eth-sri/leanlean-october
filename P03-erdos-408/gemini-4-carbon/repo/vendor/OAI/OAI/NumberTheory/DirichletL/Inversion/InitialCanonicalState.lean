@@ -12,13 +12,8 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialCanonicalState
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
-open InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
-open InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerGeometry
-open InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
 local notation "O"=>ActualEisensteinCubic.O
-local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 
 def fullPunctureWidth (Z:ℝ)(t:Ideal O)(j:O):ℝ :=
   Real.logb Z (Ideal.absNorm (Ideal.span {j*primaryGenerator t}):ℝ)

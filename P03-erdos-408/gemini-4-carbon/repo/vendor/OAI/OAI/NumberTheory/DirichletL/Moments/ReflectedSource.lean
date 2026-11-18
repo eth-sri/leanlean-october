@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalSource
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAsymmetricSource
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalMass
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalGates
 public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalReflection
 public import OAI.NumberTheory.DirichletL.Hecke.UnitRows
@@ -14,12 +16,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentReflectedSource
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CanonicalUnitEuler
-open CenteredMomentHeckeColumnWindow CenteredMomentRowNorm
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonLinearSource CenteredMomentCommonPairedSource
-open CenteredMomentFirstSectors CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSecondHeightFamily CenteredMomentSourceRow
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CanonicalUnitEuler CenteredMomentHeckeColumnWindow CenteredMomentRowNorm CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonLinearSource CenteredMomentCommonPairedSource CenteredMomentFirstSectors CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSecondHeightFamily CenteredMomentSourceRow
 local notation "O" => HeckeFamily.O
 local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 

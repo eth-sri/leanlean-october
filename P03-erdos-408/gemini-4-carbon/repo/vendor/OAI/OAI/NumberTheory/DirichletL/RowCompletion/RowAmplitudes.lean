@@ -1,5 +1,4 @@
 module
-
 public import OAI.NumberTheory.DirichletL.GaussSum.ResidualEquivalence
 
 @[expose] public section
@@ -21,7 +20,7 @@ open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
+open ActualEisensteinCubic ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
 open scoped Topology
@@ -81,30 +80,6 @@ open scoped BigOperators Classical
 
 namespace CanonicalRowCompletion
 
-section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
-namespace GoodMaskRowData
-variable {m f z:Eis} (D:GoodMaskRowData m f z)
-variable (Q:Ideal Eis) (c:Eis) (hc:c≠0) [Fintype (Eis⧸Ideal.span {c})]
-    (hcQ:(Ideal.span {c}:Ideal Eis)=Ideal.span {(9:Eis)}*(Q*Ideal.span {(72:Eis)}))
-    (h:Eis⧸Ideal.span {c}) (G:FixedFourierGeometry c h)
-    (A:Finset (FreePrimeIndex D.movingIdeal (Q*Ideal.span {(72:Eis)})))
-
-abbrev activeStratum :=
-  freePrimaryControlledStratum D.movingIdeal (Q*Ideal.span {(72:Eis)}) D.movingSupported c hcQ h G A
-
-end GoodMaskRowData
-end
-section
-
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
-namespace GoodMaskRowData
-variable {m f z:Eis} (D:GoodMaskRowData m f z)
-
-end GoodMaskRowData
-end
 
 variable {α β γ:Type*} [Fintype α] [Fintype β] [Fintype γ]
 
@@ -183,21 +158,7 @@ end CanonicalRowCompletion
 
 open scoped BigOperators Classical ContDiff
 
-namespace CompletedGauss
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
 
-end CompletedGauss
-
-namespace CubicEisenstein
-open ActualEisensteinCubic CompletedGauss CompletedDyadic CanonicalQuadraticSieve
-local notation "Eis" => ActualEisensteinCubic.O
-namespace FixedFourierGeometry
-variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
-variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N:Eis}
-
-end FixedFourierGeometry
-end CubicEisenstein
 
 open scoped Classical BigOperators ContDiff
 
@@ -220,16 +181,6 @@ end CanonicalRowCompletion
 
 open scoped Classical BigOperators
 
-namespace CompletedGauss.ReflectedBranchData
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
-variable {levelBound K:ℝ} {I F Q:Ideal Eis}
-variable (d:ReflectedBranchData levelBound K I F Q)
-variable (η:ℕ→Ideal Eis→Ideal Eis→ℂ)
-variable (σ τ:ℕ→idealRange (completedResidualScale K I Q)→ℂ)
-variable (W:ℝ→ℂ) (X ρ q:ℝ) (k:idealRange (completedResidualScale K I Q))
-
-end CompletedGauss.ReflectedBranchData
 
 open scoped BigOperators Classical
 
@@ -278,8 +229,6 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 def maskElement (q:ℕ) (m:Eis) : Eis := m*excludedGenerator (reflectionExcludedPrimes q)
 def maskIdeal (q:ℕ) (m:Eis) (F:Ideal Eis) : Ideal Eis := Ideal.span {maskElement q m}*F
-abbrev RowIndex (q:ℕ) (m:Eis) (rows:Finset (Ideal Eis)) (R F:Ideal Eis) :=
-  representativeRowFiber rows R (maskIdeal q m F)
 
 lemma maskElement_ne_zero (q:ℕ) (m:Eis) (hm:m≠0) : maskElement q m≠0 :=
   mul_ne_zero hm (reflectionExcludedGenerator_ne_zero q)
@@ -292,10 +241,6 @@ variable (q:ℕ) (hq:q≠0) (m:Eis) (hm:m≠0)
     (rows:Finset (Ideal Eis)) (R F:Ideal Eis) (hR:R≠0) (hF:Squarefree F)
     (hrows:∀I∈rows,I≠0) (v:Eisˣ)
 
-noncomputable def data (J:RowIndex q m rows R F) :
-    GoodMaskRowData (maskElement q m) (ConcretePrimeRowBridge.idealGenerator F)
-      (v.val*ConcretePrimeRowBridge.idealGenerator J.val) :=
-  fiberGoodMaskRowData rows R F (maskElement q m) (maskElement_ne_zero q m hm) hF.ne_zero hrows v J
 
 variable [Fintype (Eis⧸Ideal.span {reflectionConductor q})]
 

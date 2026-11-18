@@ -12,10 +12,7 @@ public import Erdos821.P3Edge.Absolute
 noncomputable section
 
 open Filter
-open Erdos821.Blueprint.Graph hiding absoluteMemoryEdgeKernel absoluteMemoryGhostKernel
-  absoluteScaledMemoryGhostKernel deleteMemoryIndices ghostBirthCount ghostChoiceValid
-  ghostChoiceWeight ghostReversalFactor memoryEntry memoryGhostKernel residueExpression
-  zeroBirthBatch zeroMemoryIndices
+open Erdos821.Blueprint.Graph
 
 namespace Erdos821.S2Ltrans
 

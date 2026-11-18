@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.Common
+public import OAI.NumberTheory.DirichletL.Reflection.SectorIndependence
 
 @[expose] public section
 

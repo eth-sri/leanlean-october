@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.PhysicalBranchMeasure
+public import OAI.NumberTheory.DirichletL.Reflection.PhysicalIntegral
+public import OAI.NumberTheory.DirichletL.Reflection.WeightedMeasurable
 
 @[expose] public section
 

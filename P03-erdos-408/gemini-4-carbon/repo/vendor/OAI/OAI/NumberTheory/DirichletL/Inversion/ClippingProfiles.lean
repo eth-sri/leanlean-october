@@ -63,8 +63,6 @@ def rootSchwartz (v : 𝓢(ℝ, ℂ)) (M B L ρ a H : ℝ)
     (hv : Function.support v ⊆ Set.Icc (-M) M) :
     rootSchwartz v M B L ρ a H hL hρ hv y = rootedWindow v L ρ a H y := rfl
 
-def rootDerivativeBound (v : 𝓢(ℝ, ℂ)) (a : ℝ) (n : ℕ) : ℝ :=
-  ∑ i ∈ Finset.range (n+1), (2:ℝ)^i * (1+|a|)^i * derivativeSeminormSum v 0 i
 
 def momentOrder (J : ℕ) : ℕ := J + (volume : Measure ℝ).integrablePower
 

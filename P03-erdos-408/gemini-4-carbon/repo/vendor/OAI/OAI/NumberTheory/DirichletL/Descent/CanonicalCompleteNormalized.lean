@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongNormalization
-public import OAI.NumberTheory.DirichletL.Descent.CanonicalPunctureMaskEnergy
+public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateSupport
+public import OAI.NumberTheory.DirichletL.Inversion.InitialClippedColumns
 public import OAI.NumberTheory.DirichletL.Descent.CompletedReopening
 
 @[expose] public section
@@ -12,8 +13,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseInitialClippedColumns
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseInitialClippedColumns
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem normalizedColumnEnergy_eq_generator_sum {ι σ:Type*}[DecidableEq ι][DecidableEq σ]

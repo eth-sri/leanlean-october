@@ -8,8 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss
-open CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
+open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 def sexticPair (p q : O) : ℂ :=

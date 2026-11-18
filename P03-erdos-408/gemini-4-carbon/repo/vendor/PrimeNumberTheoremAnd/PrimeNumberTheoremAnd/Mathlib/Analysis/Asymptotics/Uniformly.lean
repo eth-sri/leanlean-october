@@ -25,9 +25,8 @@ and deriving their consequences.
 
 @[expose] public section
 
-open Filter
+open Filter Topology
 
-open Topology
 
 namespace Asymptotics
 

@@ -1,8 +1,13 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredRays
+public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
+public import OAI.NumberTheory.DirichletL.Descent.SecondCellPhysical
+public import OAI.NumberTheory.DirichletL.Descent.SecondCellParameters
+public import OAI.NumberTheory.DirichletL.Descent.PrioritySourceBudget
+public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesGeometry
+public import OAI.NumberTheory.DirichletL.Descent.GlobalPrioritySource
+public import OAI.NumberTheory.DirichletL.Inversion.WholePriorityRetainedSource
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredEnergyUniform
-public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredEnergy
 
 @[expose] public section
 
@@ -12,11 +17,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
 local notation "Eis"=>ActualEisensteinCubic.O
 theorem global_priority_filtered_all_rays_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)

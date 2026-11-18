@@ -10,74 +10,21 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 
 namespace CubicRamified
-open ActualEisensteinCubic CubicJacobiGlobal CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 
 def cubicExp (n : ℤ) : O := omega ^ (n % 3).toNat
 
@@ -252,7 +199,7 @@ theorem symbol_traceLambda_congr_mod_nine (x y : O)
 end CubicRamified
 
 namespace CubicJacobiGlobal
-open ActualEisensteinCubic CompletedGauss CubicRamified
+open CompletedGauss CubicRamified
 
 theorem primary_ne_zero (a : O) (ha : lambda ^ 2 ∣ a-1) : a ≠ 0 := by
   obtain ⟨A,B,rfl⟩ := exists_primaryCoord a ha
@@ -375,7 +322,7 @@ theorem symbol_denominator_congr (x a b : O)
 end CubicJacobiGlobal
 
 namespace PrimaryIdealUnitReindex
-open ActualEisensteinCubic ActualEisensteinCoordinates ShortDraftLatticeCount
+open ActualEisensteinCoordinates
 
 def unitCoordinates : Finset (ℤ × ℤ) :=
   {(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1)}
@@ -431,11 +378,8 @@ theorem card_units_eq_six : Nat.card Oˣ = 6 := by
 
 end PrimaryIdealUnitReindex
 
-open scoped BigOperators Classical SchwartzMap
 namespace QuadraticUnitInvariance
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
-open GaussGeneratorTransport QuadraticGaussRay EisensteinSchwartzPoisson
-open PrimaryIdealUnitReindex CompletedGauss
+open FiniteGaussPhase ActualEisensteinCoordinates GaussGeneratorTransport QuadraticGaussRay EisensteinSchwartzPoisson PrimaryIdealUnitReindex CompletedGauss
 
 theorem rowCoprimeMask_unit_mul {α : Type*} (R : α → Ideal O)
     (S : Finset α) (u : Oˣ) (z : O) :
@@ -450,7 +394,7 @@ theorem rowCoprimeMask_norm_le_one {α : Type*} (R : α → Ideal O)
 end QuadraticUnitInvariance
 
 namespace GaussGeneratorTransport
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FiniteGaussPhase
+open EisensteinSchwartzPoisson FiniteGaussPhase
 
 theorem canonical_masked_radial_poisson_product
     {α ι : Type*} [DecidableEq α] [Fintype ι]
@@ -496,9 +440,7 @@ theorem canonical_masked_radial_poisson_product
 end GaussGeneratorTransport
 
 namespace QuadraticUnitInvariance
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
-open QuadraticGaussRay MixedCrossSeparation QuadraticInitialBound
-open GaussGeneratorTransport EisensteinSchwartzPoisson
+open FiniteGaussPhase ActualEisensteinCoordinates QuadraticGaussRay MixedCrossSeparation QuadraticInitialBound GaussGeneratorTransport EisensteinSchwartzPoisson
 
 theorem odd_of_quadraticRayValue_norm_eq_one (r : EisensteinEPrimaryPhase.Coord)
     (hr : ‖quadraticRayValue r‖ = 1) : EisensteinEPrimaryPhase.odd r := by
@@ -565,11 +507,6 @@ theorem same_ray_quadratic_pair_poisson
 
 end QuadraticUnitInvariance
 
-open scoped BigOperators Classical SchwartzMap
-namespace EisensteinSchwartzPoisson
-open ActualEisensteinCubic ConcreteTraceCRT
-
-end EisensteinSchwartzPoisson
 
 end
 

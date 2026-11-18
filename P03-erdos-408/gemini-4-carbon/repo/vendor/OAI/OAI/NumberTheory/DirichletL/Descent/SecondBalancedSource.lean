@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.SecondDensityAssembly
+public import OAI.NumberTheory.DirichletL.Descent.SecondFreshAssembly
+public import OAI.NumberTheory.DirichletL.Descent.DensityAssembly
 public import OAI.NumberTheory.DirichletL.Inversion.SecondProfileUniform
 
 @[expose] public section

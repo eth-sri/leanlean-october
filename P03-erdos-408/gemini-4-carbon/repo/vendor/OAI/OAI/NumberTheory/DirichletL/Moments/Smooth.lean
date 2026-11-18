@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.Initial
+public import OAI.NumberTheory.DirichletL.Moments.FirstPoisson
+public import OAI.NumberTheory.DirichletL.Moments.Primitive
 public import OAI.NumberTheory.DirichletL.Moments.Extraction
 
 @[expose] public section

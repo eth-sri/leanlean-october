@@ -1,6 +1,7 @@
 module
 
 public import Erdos408.OneSided.Major.Energy.Mean
+import Mathlib.NumberTheory.DirichletCharacter.Bounds
 public import Erdos408.TwoSided.Endpoint.Tuple.Asymp
 public import Erdos408.TwoSided.Endpoint.Tuple.Exceptional
 public import Erdos408.TwoSided.Endpoint.Tuple.Gram

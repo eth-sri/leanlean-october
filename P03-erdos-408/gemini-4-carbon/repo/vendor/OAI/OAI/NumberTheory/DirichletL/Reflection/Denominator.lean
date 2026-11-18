@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.NormalizedEnergy
+public import OAI.NumberTheory.DirichletL.Inversion.ReflectedNormalization
 
 @[expose] public section
 

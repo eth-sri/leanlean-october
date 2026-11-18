@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Detector.GaussianSummation
+public import OAI.NumberTheory.DirichletL.Detector.GaussianSeminorm
 
 @[expose] public section
 

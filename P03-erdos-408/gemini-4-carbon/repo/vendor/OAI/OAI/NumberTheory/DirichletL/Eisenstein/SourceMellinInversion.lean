@@ -9,79 +9,22 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
+open CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma source_period_of_three_supported
@@ -123,8 +66,6 @@ end CubicEisenstein
 namespace CompletedGauss
 
 section
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology FourierTransform SchwartzMap ContDiff
 
 lemma compactMellin_vertical_integrable (V : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hsupp : Function.support V⊆Set.Icc a b) (hV : ContDiff ℝ ∞ V) (σ : ℝ) :
@@ -156,8 +97,6 @@ theorem compactMellin_inversion (V : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
 
 end
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
 
 lemma positive_cpow_vertical_norm (r σ t : ℝ) (hr : 0<r) :
     ‖(r:ℂ)^((σ:ℂ)+t*Complex.I)‖=r^σ := by
@@ -249,13 +188,10 @@ theorem weightedMellin_inversion {α : Type*} [Countable α]
 
 end CompletedGauss
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology
 
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 lemma angularFactor_norm_le_one (a : ActualEisensteinCubic.O) : ‖FiniteGaussPhase.angularFactor a‖≤1 := by
@@ -332,11 +268,9 @@ lemma cubeWeight_norm_le_one (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀a,�
 
 end
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
 
 section
-open ActualEisensteinCubic CubicEisenstein
+open CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev CompletedMellinIndex := NonzeroIdeal×NonzeroIdeal
@@ -456,13 +390,7 @@ theorem completedT_initial_mellin (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : �
 
 end
 
-section
-open ActualEisensteinCubic CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
-end
-
-open ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
 
 lemma weighted_vertical_series_continuous {α : Type*}
@@ -515,8 +443,6 @@ theorem completedT_initial_mellin_integrable (Ψ : ActualEisensteinCubic.O→*�
 
 end CompletedGauss
 
-open scoped BigOperators Classical
-open Finset AddChar MulChar EisensteinEmbedding
 
 namespace CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O

@@ -11,16 +11,13 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthSourceControlled
-open HeckeFamily QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional
-open CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroGrowthHighBound
+open HeckeFamily QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroGrowthHighBound
 open CenteredMomentEnergyZeroReferencePhysical (balancedInput)
-open CenteredMomentFirstSourceReduction CenteredMomentEnergyBandMonotonicity
-open CenteredMomentSecondHeightFamily
+open CenteredMomentFirstSourceReduction CenteredMomentEnergyBandMonotonicity CenteredMomentSecondHeightFamily
 local notation "O"=>HeckeFamily.O
-local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 
 open CenteredMomentEnergyZeroGrowthSource (PhysicalGrowthAt)
+local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 
 theorem actual_growth_from_physical
     (a b bΦ rho ε Mcap Bmask B L εdiag ξ saving:ℝ)

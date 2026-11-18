@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.FirstActualPriorityEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstActualSecondEnergy
 
 @[expose] public section
 

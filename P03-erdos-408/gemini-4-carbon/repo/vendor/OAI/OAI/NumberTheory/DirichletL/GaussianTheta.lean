@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.TraceConductor
+public import OAI.NumberTheory.DirichletL.TraceCharacter
+public import OAI.NumberTheory.DirichletL.ConductorPresentation
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 
 @[expose] public section

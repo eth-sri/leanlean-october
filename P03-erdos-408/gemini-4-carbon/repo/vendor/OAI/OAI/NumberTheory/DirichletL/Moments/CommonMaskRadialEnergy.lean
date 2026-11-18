@@ -10,10 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentCommonMaskRadialEnergy
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
-open CenteredMomentUniformReflectionProfile
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy CenteredMomentUniformReflectionProfile
 local notation "O" => HeckeFamily.O
 
 lemma naturalSlot_bounded (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) :

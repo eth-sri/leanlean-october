@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.PrimeRows.CentralExpansion
+public import OAI.NumberTheory.DirichletL.PrimeRows.CentralProduct
 
 @[expose] public section
 

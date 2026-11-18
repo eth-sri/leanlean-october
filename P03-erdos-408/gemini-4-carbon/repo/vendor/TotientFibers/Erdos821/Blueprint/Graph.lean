@@ -19,7 +19,6 @@ namespace Erdos821.Blueprint.Graph
 /-- §1 logarithmic scales. -/
 def L (x : ℝ) : ℝ := Real.log x
 def T (x : ℝ) : ℝ := Real.log (L x)
-def W (x : ℝ) : ℝ := Real.exp (Real.sqrt (L x))
 def phase (t : ℝ) : ℂ := Complex.exp (2 * Real.pi * t * Complex.I)
 def imaginaryPower (n : ℕ) (ζ : ℝ) : ℂ := Complex.exp (ζ * Real.log n * Complex.I)
 

@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentHeckeTwist
-open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation
-open CenteredMomentLattice CenteredMomentCounting CenteredMomentTwist
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentLattice CenteredMomentCounting CenteredMomentTwist EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 def twistedIdealSum (χ : Character) (W : ℝ → ℂ) (t X : ℝ) : ℂ :=

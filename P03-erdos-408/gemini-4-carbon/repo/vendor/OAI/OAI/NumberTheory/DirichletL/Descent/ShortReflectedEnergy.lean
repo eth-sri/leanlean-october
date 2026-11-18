@@ -1,7 +1,11 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Descent.ShortCompletionEnergy
-public import OAI.NumberTheory.DirichletL.Reflection.CubeCompletedEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.CompletedCanonicalEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.CompletedAggregation
+public import OAI.NumberTheory.DirichletL.Reflection.CanonicalCaps
+public import OAI.NumberTheory.DirichletL.Reflection.PunctureLists
+public import OAI.NumberTheory.DirichletL.Reflection.CubeSlotEnergy
 
 @[expose] public section
 
@@ -11,8 +15,7 @@ noncomputable section
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open InverseTerminalWidths InverseReflectedPhase CompletedHeight
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve InverseTerminalWidths InverseReflectedPhase CompletedHeight
 local notation "Eis"=>ActualEisensteinCubic.O
 universe v
 

@@ -9,76 +9,22 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 
 namespace CubicEisenstein
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 
 private def predicateFiberEquiv {R S : Type*} (f : R → S) (P : S → Prop) :
     {x : R // P (f x)} ≃ Σ y : {y : S // P y}, {x : R // f x=y.1} where
@@ -154,7 +100,6 @@ theorem card_admissible_cube_product (n : ℕ) (a : O) (ha : a ≠ 0)
   ring
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors sum_moebius_divisors)
 
 lemma isUnit_quotient_iff_sup (I : Ideal O) (x : O) :
@@ -264,7 +209,7 @@ theorem idealTotient_moebius (I : Ideal O) (hI : I ≠ 0) :
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid CompletedGauss
+open CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 
 def unramifiedNormWeight (s : ℂ) : Ideal O →*₀ ℂ where
@@ -341,7 +286,7 @@ def unramifiedMobiusSeries (s : ℂ) : ℂ :=
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid CompletedGauss
+open CompletedGauss
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors sum_moebius_divisors)
 
 theorem unramifiedMobiusSeries_mul_zeta (s : ℂ) (hs : 1<s.re) :
@@ -511,11 +456,10 @@ theorem unramifiedTotientSeries_summable_norm (s : ℂ) (hs : 2<s.re) :
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss QuadraticSquarefreeKernel
+open CompletedGauss QuadraticSquarefreeKernel
 
 theorem originalPairLow_squarefree_tsum
     (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
@@ -583,7 +527,7 @@ theorem originalPairLow_squarefree_tsum
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
+open ConcretePrimeRowBridge CompletedGauss
 
 theorem idealZeroMask_span_eq (D : Ideal O) (x y : O) (hxy : Ideal.span {x} = Ideal.span {y}) :
     idealZeroMask D x = idealZeroMask D y := by

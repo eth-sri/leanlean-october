@@ -13,13 +13,21 @@ open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
+
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
+
 local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
+
 local instance : MeasurableSpace O := ⊤
+
 local instance : MeasurableSingletonClass O := ⟨fun _=>trivial⟩
+
 local instance : MeasurableSpace (Ideal O) := ⊤
+
 local instance : MeasurableSingletonClass (Ideal O) := ⟨fun _=>trivial⟩
+
 local instance (S : Finset (Ideal O)) : MeasurableSpace (SourceRawIndex S) := ⊤
+
 local instance (S : Finset (Ideal O)) : MeasurableSingletonClass (SourceRawIndex S) := ⟨fun _=>trivial⟩
 
 def rawPhysicalTotalIntegral (η : HeckeFamily.Character) (S : Finset (Ideal O))

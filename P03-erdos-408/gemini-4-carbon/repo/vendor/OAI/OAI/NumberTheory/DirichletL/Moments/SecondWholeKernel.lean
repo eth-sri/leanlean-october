@@ -12,9 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondWholeKernel
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentScale CenteredMomentSmooth
-open CenteredMomentFirstWholeKernel CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentScale CenteredMomentSmooth CenteredMomentFirstWholeKernel CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 def secondEffectiveScale (C D : Ideal O) (A : O) (K : ℝ) : ℝ :=

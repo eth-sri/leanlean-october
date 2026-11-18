@@ -1,7 +1,11 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondRapidTail
-public import OAI.NumberTheory.DirichletL.Descent.SecondCanonicalTail
+public import OAI.NumberTheory.DirichletL.Descent.SecondMarkedTail
+public import OAI.NumberTheory.DirichletL.Inversion.SecondPrincipalCaller
+public import OAI.NumberTheory.DirichletL.Descent.SecondParentInput
+public import OAI.NumberTheory.DirichletL.Descent.SecondCorrelatedCutoff
+public import OAI.NumberTheory.DirichletL.Descent.PhysicalExponents
 public import OAI.NumberTheory.DirichletL.Descent.PrincipalSelectorMass
 
 @[expose] public section
@@ -12,8 +16,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseWholePriorityRapidTail
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InverseMoment InversePrincipalEnergy InverseSecondPrincipalCaller
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InverseMoment InversePrincipalEnergy InverseSecondPrincipalCaller
 local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_rapid_tail (Lcap tau saving : ℝ) (hLcap : 0≤Lcap) (htau : 0<tau) :

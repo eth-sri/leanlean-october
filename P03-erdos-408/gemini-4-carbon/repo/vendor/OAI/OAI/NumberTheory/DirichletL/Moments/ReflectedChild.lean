@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentReflectedChild
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentCauchy
-open CenteredMomentSmooth CenteredMomentChildEnergy
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentCauchy CenteredMomentSmooth CenteredMomentChildEnergy
 local notation "O" => ActualEisensteinCubic.O
 
 theorem finite_reflected_energy_le_gaussEnergy {α : Type*} (S : Finset α) (a : α → O)

@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentUniformDivisorShell
-open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation
-open CenteredMomentDivisorRaw CenteredMomentSlotRatios
+open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentSlotRatios
 local notation "O" => ActualEisensteinCubic.O
 
 theorem subset_allowance {ι:Type*} [Fintype ι] [DecidableEq ι]

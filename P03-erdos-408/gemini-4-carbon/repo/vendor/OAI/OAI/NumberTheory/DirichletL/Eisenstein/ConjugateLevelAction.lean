@@ -1,5 +1,4 @@
 module
-
 public import OAI.NumberTheory.DirichletL.RowCompletion.ThetaNonvanishing
 public import OAI.NumberTheory.DirichletL.Eisenstein.CuspResidues
 
@@ -22,7 +21,7 @@ open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
+open ActualEisensteinCubic ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
 open scoped Topology

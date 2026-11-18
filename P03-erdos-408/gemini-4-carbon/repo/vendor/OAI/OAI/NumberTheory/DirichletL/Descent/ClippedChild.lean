@@ -13,8 +13,7 @@ open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.InverseMoment
-open InverseInitialClippedColumns JointLogSeparation InverseAmbientProfileTower
-open InverseSecondSourceBlocks
+open InverseInitialClippedColumns JointLogSeparation InverseAmbientProfileTower InverseSecondSourceBlocks
 local notation "O"=>ActualEisensteinCubic.O
 
 def secondChildHeight (right:Bool)(t:Ambient (Fin 6)):ℝ :=

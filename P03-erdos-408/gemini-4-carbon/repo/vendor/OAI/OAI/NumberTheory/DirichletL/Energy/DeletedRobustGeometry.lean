@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Energy.LiveClippingDefect
-public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDeletedGeometry
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowWindow
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceDivisors
 
 @[expose] public section
 
@@ -11,9 +12,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyDeletedRobustGeometry
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-open CenteredMomentEnergyLiveClippingDefect
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyLiveClippingDefect
 local notation "O" => HeckeFamily.O
 
 theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)

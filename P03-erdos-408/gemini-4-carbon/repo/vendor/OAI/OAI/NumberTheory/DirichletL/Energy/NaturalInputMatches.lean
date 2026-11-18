@@ -11,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyNaturalInputMatches
-open HeckeFamily HeckePrimeAnnular CenteredMomentPrimeSlot
-open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-open CenteredMomentCommonRadialData CenteredMomentNaturalFixedRaySource
-open CenteredMomentInductionEnergy CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
+open HeckeFamily HeckePrimeAnnular CenteredMomentPrimeSlot CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional CenteredMomentCommonRadialData CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
 local notation "O" => HeckeFamily.O
 
 def profile (W : ℝ → ℂ) (σ freq y : ℝ) : ℂ :=

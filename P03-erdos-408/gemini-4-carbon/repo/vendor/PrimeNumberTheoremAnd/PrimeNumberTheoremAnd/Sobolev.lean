@@ -14,7 +14,7 @@ public import Mathlib.Analysis.CStarAlgebra.Classes
 
 @[expose] public section
 
-open Real Complex MeasureTheory Filter Topology BoundedContinuousFunction SchwartzMap  BigOperators
+open Real Complex MeasureTheory Filter Topology BoundedContinuousFunction SchwartzMap BigOperators
 open scoped ContDiff
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {n : ℕ}

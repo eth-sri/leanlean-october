@@ -1,6 +1,8 @@
 module
 
-public import Erdos821.P4Probe.GraphSharedPairing
+public import Erdos821.P4Probe.ProductMarginals
+public import Erdos821.P4Probe.PatternMasses
+public import Erdos821.P4Probe.BigAveraging
 
 @[expose] public section
 
@@ -15,8 +17,6 @@ noncomputable section
 
 variable {P : PrimeGroups} {J ell m : ℕ}
 
-local instance sharedProductSiteDecidableEq (P : PrimeGroups) (M : ℕ) :
-    DecidableEq (BigSite P M) := Classical.decEq _
 
 lemma shared_slot_iff (ν : Pattern P J ell m) (g : P.Group) (i : Fin J) :
     ν.shared g (ν.slot i) ↔ i ∉ ν.changed g := by

@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Detector.LowGramHeight
+public import OAI.NumberTheory.DirichletL.Detector.LowGramProfile
 public import OAI.NumberTheory.DirichletL.Detector.GramResidue
 
 @[expose] public section

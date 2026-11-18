@@ -1,7 +1,10 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthConclusion
-public import OAI.NumberTheory.DirichletL.Energy.BackwardSourceRanges
+public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowth
+public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthReserve
+public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthOriginal
+public import OAI.NumberTheory.DirichletL.Energy.WidthRanges
+public import OAI.NumberTheory.DirichletL.Energy.StageReserveBounded
 
 @[expose] public section
 
@@ -12,9 +15,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthContourBounded
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyZeroGrowth CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalRowSource QuadraticInitialBound
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth CenteredMomentFiniteProfileExceptional CenteredMomentNaturalRowSource QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 private lemma ledger_loss_mono (Z d ell A B P w:ℝ)(hZ:1≤Z)(hd:0≤d)(hell:0≤ell)

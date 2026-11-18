@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Detector.DetectorMomentData
-public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawFiberSource
+public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalSlots
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawFiber
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorBatch
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedElement
 
@@ -14,9 +15,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open CanonicalCoefficientClass InverseInitialExcludedPeriod CanonicalQuadraticSieve
-open InverseInitialRayAttachment CanonicalRowCompletion
+open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource CanonicalCoefficientClass InverseInitialExcludedPeriod CanonicalQuadraticSieve InverseInitialRayAttachment CanonicalRowCompletion
 local notation "O"=>HeckeFamily.O
 variable (M:Ideal O)[NeZero M]
 local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

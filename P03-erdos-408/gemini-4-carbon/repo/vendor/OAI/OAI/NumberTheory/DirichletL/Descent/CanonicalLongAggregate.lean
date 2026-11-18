@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongCaller
+public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongWeight
+public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongCount
+public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongIntegral
 
 @[expose] public section
 
@@ -10,8 +12,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_large_bins_aggregate

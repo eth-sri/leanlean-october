@@ -4,7 +4,9 @@ public import OAI.NumberTheory.DirichletL.Reflection.LowFrozenEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.CompletedCanonicalEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.PunctureAbsorption
 public import OAI.NumberTheory.DirichletL.Reflection.CompletedFiberSource
-public import OAI.NumberTheory.DirichletL.Reflection.CanonicalCellArithmetic
+public import OAI.NumberTheory.DirichletL.Reflection.CellArithmetic
+public import OAI.NumberTheory.DirichletL.Reflection.PuncturedMarks
+public import OAI.NumberTheory.DirichletL.Reflection.MarkedLevel
 
 @[expose] public section
 

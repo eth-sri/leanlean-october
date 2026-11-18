@@ -7,11 +7,9 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 namespace OAI
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 
 noncomputable section

@@ -1,10 +1,10 @@
 module
 
 public import Erdos408.Analytic.IntegerKernel
-public import Erdos408.Analytic.PNT
+public import OAI.NumberTheory.DirichletL.PNT
 public import Erdos408.Analytic.PrimeTwist
 public import Erdos408.Extraction.Defs
-public import PrimeNumberTheoremAnd.IEANTN.Mertens
+public import Erdos408.Mertens
 public import Mathlib.Data.Int.CardIntervalMod
 public import Mathlib.NumberTheory.AbelSummation
 public import Mathlib.NumberTheory.EulerProduct.Basic
@@ -916,17 +916,15 @@ private theorem exp_le_dampedDensity (x : ℝ) {j : ℕ} (hj : 1 ≤ j) :
 /-- Mertens' bound `∑_{p ≤ Y} 1/p ≤ log log Y + C`. -/
 private theorem exists_sum_primesIcc_inv_le : ∃ C : ℝ, ∀ Y : ℝ, 2 ≤ Y →
     ∑ p ∈ primesIcc 2 Y, (1 : ℝ) / p ≤ Real.log (Real.log Y) + C := by
-  obtain ⟨C, hC⟩ := Mertens.sum_prime_div_eq_log_log
+  obtain ⟨C, -, hC⟩ := abs_sum_inv_primes_sub_le
   refine ⟨C, fun Y hY ↦ ?_⟩
   have h := (abs_le.mp (hC Y hY)).2
-  have hset : primesIcc 2 Y = (Ioc 0 ⌊Y⌋₊).filter Nat.Prime := by
+  have hset : primesIcc 2 Y = primesIoc 1 Y := by
     ext p
-    simp only [primesIcc, mem_filter, mem_Icc, mem_Ioc]
-    constructor
-    · rintro ⟨⟨-, h2⟩, hp⟩
-      exact ⟨⟨hp.pos, h2⟩, hp⟩
-    · rintro ⟨⟨-, h2⟩, hp⟩
-      exact ⟨⟨by simpa using hp.two_le, h2⟩, hp⟩
+    simp only [primesIcc, mem_filter, mem_Icc, mem_primesIoc, show ⌈(2 : ℝ)⌉₊ = 2 by norm_num]
+    exact ⟨fun ⟨⟨_, hp⟩, hpr⟩ => ⟨hpr, by exact_mod_cast hpr.one_lt,
+      (Nat.le_floor_iff (by linarith)).mp hp⟩,
+      fun ⟨hpr, _, hp⟩ => ⟨⟨hpr.two_le, Nat.le_floor hp⟩, hpr⟩⟩
   rw [hset]
   linarith
 

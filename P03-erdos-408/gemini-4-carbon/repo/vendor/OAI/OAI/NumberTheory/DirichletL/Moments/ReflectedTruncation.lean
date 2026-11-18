@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentReflectedTruncation
-open HeckeFamily CenteredMomentSectorLocalization CenteredMomentReflectedAnnuli
-open CenteredMomentComparisonReflection CenteredMomentReflectionDeletion
-open CenteredMomentReflectedSeries EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentSectorLocalization CenteredMomentReflectedAnnuli CenteredMomentComparisonReflection CenteredMomentReflectionDeletion CenteredMomentReflectedSeries EisensteinSchwartzPoisson
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 theorem normalized_subseries (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)

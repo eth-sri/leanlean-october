@@ -1,8 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingMass
+public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedPhysicalRecursive
 public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingEnergyUniform
-public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondOriginalMass
 public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
 
@@ -12,12 +11,12 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
-local instance inverseSecondDeletedMovingMassUnitsUniform : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 open InverseSecondProfileUniform InverseAmbientProfileTower
+local instance inverseSecondDeletedMovingMassUnitsUniform : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+
 theorem actual_second_deleted_moving_mass_recursive_uniform_types
     (U₀ : Fin 6 → 𝓢(ℝ,ℂ)) (g₁ g₂ Φ : 𝓢(ℝ,ℂ))
     (M₀ B₀ : Fin 6 → ℝ) (m₁ m₂ bcap : ℝ)

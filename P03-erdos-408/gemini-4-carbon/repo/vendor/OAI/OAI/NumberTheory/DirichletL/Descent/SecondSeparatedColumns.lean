@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.ActualSecondUniform
+public import OAI.NumberTheory.DirichletL.Descent.ActualSecondMeasure
 public import OAI.NumberTheory.DirichletL.Descent.FreshWindows
 
 @[expose] public section

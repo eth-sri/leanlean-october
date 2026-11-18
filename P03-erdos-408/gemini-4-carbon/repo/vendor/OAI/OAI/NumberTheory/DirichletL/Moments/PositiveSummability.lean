@@ -11,11 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentPositiveSummability
-open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceMass
-open CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile CenteredMomentDivisorRetained
-open CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction CenteredMomentDivisorAllocation
-open ConcreteTraceCRT
+open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceMass CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentRetainedProfile CenteredMomentDivisorRetained CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction CenteredMomentDivisorAllocation ConcreteTraceCRT
 local notation "O" => HeckeFamily.O
 
 lemma plain_finite_norm (η:Character) (m A z:O) (t:ℝ) (W:ℝ→ℂ) (b X:ℝ)

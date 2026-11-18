@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.CompletedRowsEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.CompletedCanonicalEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.CompletedAggregation
+public import OAI.NumberTheory.DirichletL.Reflection.CanonicalCaps
 public import OAI.NumberTheory.DirichletL.Reflection.CompletedCanonicalEnergyUniformDegree
 
 @[expose] public section

@@ -1,7 +1,10 @@
 module
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstNeighborhood
-public import OAI.NumberTheory.DirichletL.PrimeRows.Origin
+public import OAI.NumberTheory.DirichletL.PrimeRows.Agreement
+public import OAI.NumberTheory.DirichletL.Hecke.Reciprocal
+public import OAI.NumberTheory.DirichletL.PrimeRows.FirstContinuation
+public import OAI.NumberTheory.DirichletL.Hecke.Origin
 
 @[expose] public section
 

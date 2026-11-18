@@ -1,6 +1,9 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.ActualLiveSlotRemoval
+public import OAI.NumberTheory.DirichletL.Moments.PrimeSlotShift
+public import OAI.NumberTheory.DirichletL.Moments.PrimeSlot
+public import OAI.NumberTheory.DirichletL.Moments.PrimeHeight
+public import OAI.NumberTheory.DirichletL.Moments.SlotNormalization
 
 @[expose] public section
 

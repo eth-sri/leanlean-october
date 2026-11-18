@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSourceRectangleMask
-open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentSourceRectangle
-open CenteredMomentDivisorRowEnergy CenteredMomentRectangle CenteredMomentExtraction
+open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentSourceRectangle CenteredMomentDivisorRowEnergy CenteredMomentRectangle CenteredMomentExtraction
 local notation "O" => ActualEisensteinCubic.O
 
 theorem rowWeight_ideal_mask (η : Character) (m A z : O) (t : ℝ)

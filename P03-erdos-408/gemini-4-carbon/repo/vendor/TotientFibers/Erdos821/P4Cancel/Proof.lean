@@ -15,8 +15,6 @@ open Blueprint.Graph P4Probe
 
 noncomputable section
 
-local instance (priority := high) rowSiteDecEq'' (s M : ℕ) : DecidableEq (RowSite s M) :=
-  Classical.decEq _
 
 variable {P : PrimeGroups}
 
@@ -74,8 +72,6 @@ open Blueprint.Graph Erdos821.P4Cancel
 
 noncomputable section
 
-local instance (priority := high) rowSiteDecEqFinal (s M : ℕ) : DecidableEq (RowSite s M) :=
-  Classical.decEq _
 
 theorem FiniteProbeCancellationTask_proof : FiniteProbeCancellationTask := by
   intro hSFC Fd P J m hj block Q h ξ θ ζ ε hV hm hcond hε hLC

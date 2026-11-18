@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.SumMeasure
+public import OAI.NumberTheory.DirichletL.Reflection.WeightedMeasurable
 
 @[expose] public section
 

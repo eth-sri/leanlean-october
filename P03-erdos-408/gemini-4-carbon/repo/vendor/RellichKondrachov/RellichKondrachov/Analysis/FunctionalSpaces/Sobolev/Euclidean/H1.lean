@@ -236,16 +236,6 @@ noncomputable def graph : ↥(C1c (E := E)) →ₗ[ℝ] H1Target (μ := μ) :=
 noncomputable def h1 : Submodule ℝ (H1Target (μ := μ)) :=
   (LinearMap.range (graph (μ := μ) (E := E))).topologicalClosure
 
-/-- The Euclidean `H¹` submodule is closed by construction. -/
-theorem isClosed_h1 : IsClosed (h1 (μ := μ) (E := E) : Set (H1Target (μ := μ))) := by
-  delta h1
-  exact Submodule.isClosed_topologicalClosure (LinearMap.range (graph (μ := μ) (E := E)))
-
-/-- `H¹` is complete (a Hilbert space once the ambient `L²` spaces are). -/
-instance instCompleteSpaceh1 : CompleteSpace (↥(h1 (μ := μ) (E := E))) := by
-  classical
-  exact (isClosed_h1 (μ := μ) (E := E)).isComplete.completeSpace_coe
-
 /-- The continuous embedding `H¹ → L²`. -/
 noncomputable def h1ToL2 : (↥(h1 (μ := μ) (E := E))) →L[ℝ] L2ℝ (μ := μ) :=
   (ContinuousLinearMap.fst ℝ (L2ℝ (μ := μ)) (L2E (μ := μ))).comp

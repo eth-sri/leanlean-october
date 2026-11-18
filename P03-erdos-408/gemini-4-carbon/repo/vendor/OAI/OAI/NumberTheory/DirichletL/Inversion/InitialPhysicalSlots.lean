@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialPhysicalSlots
-open HeckeFamily HeckeDyadic HeckeInverseAmplification
-open InverseInitialRawDictionary InverseInitialDetectorSource InverseInitialMarkedDictionary
-open InverseInitialConjugateEnergy
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialRawDictionary InverseInitialDetectorSource InverseInitialMarkedDictionary InverseInitialConjugateEnergy
 local notation "O" => HeckeFamily.O
 
 variable (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)

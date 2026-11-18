@@ -9,8 +9,7 @@ open scoped BigOperators
 
 namespace Erdos821.S2High
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 theorem tiltedMu_power_sum_bound (F : FixedData) (P : PrimeGroups) (x : ℝ)
     (n : ℕ) (hP : P.Admissible F x)

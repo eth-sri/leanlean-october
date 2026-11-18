@@ -2,7 +2,8 @@ module
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedTransport
 public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedJoins
-public import OAI.NumberTheory.DirichletL.PrimeRows.OriginalHeightTail
+public import OAI.NumberTheory.DirichletL.PrimeRows.TailIntegral
+public import OAI.NumberTheory.DirichletL.PrimeRows.FirstTransport
 
 @[expose] public section
 

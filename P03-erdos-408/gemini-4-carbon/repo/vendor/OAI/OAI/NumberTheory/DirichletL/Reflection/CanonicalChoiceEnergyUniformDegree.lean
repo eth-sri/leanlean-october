@@ -1,6 +1,18 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.CanonicalChoiceEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.OriginalBranchSum
+public import OAI.NumberTheory.DirichletL.Reflection.LiteralNormalized
+public import OAI.NumberTheory.DirichletL.Reflection.InactiveEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.CountBudget
+public import OAI.NumberTheory.DirichletL.Reflection.FullEnergyBasic
+public import OAI.NumberTheory.DirichletL.Reflection.ActualSizeCaps
+public import OAI.NumberTheory.DirichletL.Reflection.GlobalEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.TupleMembers
+public import OAI.NumberTheory.DirichletL.Reflection.CanonicalParameters
+public import OAI.NumberTheory.DirichletL.Reflection.OriginalCellBounds
+public import OAI.NumberTheory.DirichletL.Reflection.DyadCompletionEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.DyadBudget
+public import OAI.NumberTheory.DirichletL.Reflection.MemberChoiceTransport
 public import OAI.NumberTheory.DirichletL.Reflection.CanonicalDyadsUniformDegree
 
 @[expose] public section

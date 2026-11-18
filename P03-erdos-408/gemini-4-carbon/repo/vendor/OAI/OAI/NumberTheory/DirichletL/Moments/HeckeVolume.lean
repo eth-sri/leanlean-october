@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.MaskedVolume
+public import OAI.NumberTheory.DirichletL.Moments.Primary
+public import OAI.NumberTheory.DirichletL.Moments.Mask
 public import OAI.NumberTheory.DirichletL.CenteredExceptionalProfile
 public import OAI.NumberTheory.DirichletL.Hecke.Euler
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalPair
@@ -13,9 +14,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentHeckeVolume
-open HeckeFamily CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentPrimary CanonicalQuadraticSieve QuadraticInitialBound
-open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMask
+open HeckeFamily CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentPrimary CanonicalQuadraticSieve QuadraticInitialBound IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMask
 open PrimaryIdealUnitReindex (GoodIdeal)
 open CubicEisenstein (PrimaryLower primaryLowerIdealEquiv)
 local notation "O" => ActualEisensteinCubic.O

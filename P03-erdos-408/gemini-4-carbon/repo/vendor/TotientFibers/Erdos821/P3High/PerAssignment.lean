@@ -17,14 +17,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
 
-open Erdos821.Blueprint.Graph hiding BirthAddress EdgeChoice GhostChoice MemoryHistory
-  TransferChoice TransferMode absoluteMemoryEdgeKernel absoluteMemoryGhostKernel
-  absoluteScaledMemoryGhostKernel deleteMemoryIndices distinctMemoryExpression
-  edgeChoiceCoefficient edgeChoiceValid edgeDelta edgeForward edgeSymmetryFactor freshBigFactor
-  ghostBirthCount ghostChoiceValid ghostChoiceWeight ghostReversalFactor memoryEdgeKernel
-  memoryEntry memoryGhostKernel permuteActive rawEdgeValid rawEdgeWeight retrievedIndices
-  smallDamping smallOmega smallTargetFactor storedMemory transferModeAccept translateMemory
-  translateParticle translateSmallResidues zeroBirthBatch zeroMemoryIndices
+open Erdos821.Blueprint.Graph hiding permuteActive
 open Erdos821.S2Core Erdos821.P3Lowrank Erdos821.S2High
 
 attribute [local instance] bmsFintype ghostChoiceFintype edgeChoiceFintype

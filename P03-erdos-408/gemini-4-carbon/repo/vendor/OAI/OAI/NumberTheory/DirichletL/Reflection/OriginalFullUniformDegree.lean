@@ -1,6 +1,10 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.OriginalFull
+public import OAI.NumberTheory.DirichletL.Reflection.OriginalBranchSum
+public import OAI.NumberTheory.DirichletL.Reflection.LiteralNormalized
+public import OAI.NumberTheory.DirichletL.Reflection.InactiveEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.CountBudget
+public import OAI.NumberTheory.DirichletL.Reflection.FullEnergyBasic
 public import OAI.NumberTheory.DirichletL.Reflection.RetainedBudgetUniformDegree
 public import OAI.NumberTheory.DirichletL.Reflection.WholeTailUniformDegree
 

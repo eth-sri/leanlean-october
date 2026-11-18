@@ -55,8 +55,7 @@ end Erdos821.P3Restore
 
 namespace Erdos821.S2Core
 
-open Erdos821.Blueprint.Graph
-open Erdos821.P3Restore
+open Erdos821.Blueprint.Graph Erdos821.P3Restore
 
 theorem RestoredMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
     RestoredMemoryNormTask F r := by

@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSourceZeroEnergy
-open ActualEisensteinCubic HeckeFamily CenteredMomentRectangle
-open CenteredMomentAddedZeroUniform CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass CenteredMomentSupportedZeroEnergy
-open CenteredMomentFirstLocalization CenteredMomentSourceRow
-open EisensteinSchwartzPoisson
+open ActualEisensteinCubic HeckeFamily CenteredMomentRectangle CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSupportedZeroEnergy CenteredMomentFirstLocalization CenteredMomentSourceRow EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 theorem profileCoefficient_norm_le {ι : Type*} [Fintype ι]

@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstLocalization
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization CenteredMomentFirstScale
-open CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentFirstTailAggregate
-open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentFirstEnergy
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentFirstTailAggregate CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentFirstEnergy
 local notation "O" => ActualEisensteinCubic.O
 
 theorem weighted_fourier_summable (W : 𝓢(ℝ,ℂ)) (k : ℝ) (hk : 0<k)
@@ -98,20 +94,11 @@ def canonicalZeroTerm (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
         (supported_element_ne_zero _ (residualGenerator_supported J I hJ)) (finitePrimeModulus_ne_zero _)
         (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) 0*paperRadialFourier W 0))
 
-def canonicalRetainedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
-  ∑ E∈inactiveSubsets I J,canonicalRetainedTerm I J hI hJ E W K Tsec Z ξ
 
 def canonicalZeroPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
   ∑ E∈inactiveSubsets I J,canonicalZeroTerm I J hI hJ E W K
 
-def retainedEnergy (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
-  ∑ I : supportedColumns S,∑ J : supportedColumns S,
-    ((c I*rowWeight η m A 1 t I)*star (c J*rowWeight η m A 1 t J))*
-      canonicalRetainedPair I J (Finset.mem_filter.mp I.property).2
-        (Finset.mem_filter.mp J.property).2 W K Tsec Z ξ
 
 def zeroEnergy (η : Character) (m A : O) (t : ℝ)
     (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=

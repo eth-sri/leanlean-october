@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorSimultaneous
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicGeometry
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicLengths
 
 @[expose] public section
 

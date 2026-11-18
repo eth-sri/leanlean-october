@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Inversion.ClippingProfiles
-public import OAI.NumberTheory.DirichletL.Descent.SecondFreshMeasure
+public import OAI.NumberTheory.DirichletL.Descent.SecondKernelMeasure
 public import OAI.NumberTheory.DirichletL.Descent.ProfileIntegral
 
 @[expose] public section
@@ -10,8 +10,7 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson
-open SevenEighths.InverseMoment
+open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson SevenEighths.InverseMoment
 
 namespace SevenEighths.InverseInitialProfile
 
@@ -60,7 +59,6 @@ theorem clipped_log_source (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     clippedSource, Real.log_exp, Real.exp_add, Real.exp_log hc]
   rw [mul_comm (Real.exp y) c]
 
-def rootExponent (y : Fin 6 → ℝ) : ℝ := -y 1-y 2-(y 4+y 5)/2
 
 def normalizedProfile (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
     (V : Fin 6 → ℝ → ℂ) (R L : ℝ) (y : Fin 6 → ℝ) : ℂ :=

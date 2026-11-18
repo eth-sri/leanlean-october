@@ -11,7 +11,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Adj
 
-open Erdos821.Blueprint.Graph hiding GhostChoice absoluteMemoryGhostKernel absoluteScaledMemoryGhostKernel deleteMemoryIndices ghostBirthCount ghostChoiceValid ghostChoiceWeight ghostReversalFactor memoryEntry memoryGhostKernel zeroBirthBatch zeroMemoryIndices
+open Erdos821.Blueprint.Graph
 open Erdos821.S2Core
 
 variable {P : PrimeGroups} {g : P.BigGroup} {b : ℕ} (m : P.Memory g.val)

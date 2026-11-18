@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.CommonPrimeSlots
+public import OAI.NumberTheory.DirichletL.Moments.CommonAllocationSum
 public import OAI.NumberTheory.DirichletL.Moments.SourceProfileMass
 
 @[expose] public section
@@ -11,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonProfile
-open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonPrimeSlots CenteredMomentCommonAllocationBox
+open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationBox
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 

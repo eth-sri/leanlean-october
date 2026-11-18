@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourcePrimeBound
+public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceFreeExceptional
+public import OAI.NumberTheory.DirichletL.Moments.PrimeHeight
 
 @[expose] public section
 
@@ -11,10 +12,7 @@ open scoped Classical BigOperators ContDiff Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeRowClosure HeckePrimeRay HeckeZeroSupremum
-open CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource
-open CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
-open CenteredMomentFixedRayInducingTransport CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
+open HeckeFamily HeckeRowClosure HeckePrimeRay HeckeZeroSupremum CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentFixedRayInducingTransport CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

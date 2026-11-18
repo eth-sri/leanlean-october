@@ -12,8 +12,6 @@ attribute [local instance] Classical.propDecidable
 namespace Erdos821.S2Root
 
 open Erdos821.Blueprint.Graph
-  hiding MemoryHistory ResiduePath TransferMode absoluteMemoryEdgeKernel
-    absoluteScaledMemoryGhostKernel
 open Erdos821.S2Core
 
 private theorem memoryHistory_norm_le_doubledWeight

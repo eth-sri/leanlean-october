@@ -1,5 +1,4 @@
 module
-
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildInput
 public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
 

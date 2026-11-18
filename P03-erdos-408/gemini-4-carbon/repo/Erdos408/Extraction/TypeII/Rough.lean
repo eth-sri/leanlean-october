@@ -1,6 +1,6 @@
 module
 
-public import PrimeNumberTheoremAnd.IEANTN.Mertens
+public import Erdos408.Mertens
 
 /-!
 # Counting rough numbers
@@ -47,7 +47,7 @@ theorem roughCount_le_one {Y : ℝ} {n : ℕ} (h : (n : ℝ) < Y) : roughCount Y
 theorem sum_log_div_le (n : ℕ) : ∑ b ∈ Icc 1 n, Real.log ((n : ℝ) / b) ≤ 2 * n := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · simp
-  have hge := Mertens.sum_log_ge (x := (n : ℝ)) (by exact_mod_cast hn)
+  have hge := Erdos408.sum_log_ge (x := (n : ℝ)) (by exact_mod_cast hn)
   rw [Nat.floor_natCast] at hge
   have hIcc : Icc 1 n = Ioc 0 n := by
     ext b; simp only [mem_Icc, mem_Ioc]; omega
@@ -176,8 +176,8 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
   -- Mertens: `∑_{Y < d ≤ n} Λ(d) / d ≤ log n - log Y + 2E`
   have hmert : ∑ d ∈ (Icc 1 n).filter (fun d : ℕ => Y < d), Λ d / d ≤
       Real.log n - Real.log Y + 2 * E := by
-    have hn := Mertens.sum_mangoldt_div_eq_log (x := (n : ℝ)) hn1
-    have hy := Mertens.sum_mangoldt_div_eq_log (x := Y) (by linarith)
+    have hn := Erdos408.sum_mangoldt_div_sub_log_le (x := (n : ℝ)) hn1
+    have hy := Erdos408.sum_mangoldt_div_sub_log_le (x := Y) (by linarith)
     rw [Nat.floor_natCast] at hn
     have hfl : ⌊Y⌋₊ ≤ n := Nat.floor_le_of_le hnY
     have hsplit : ∑ d ∈ Ioc 0 n, Λ d / d =

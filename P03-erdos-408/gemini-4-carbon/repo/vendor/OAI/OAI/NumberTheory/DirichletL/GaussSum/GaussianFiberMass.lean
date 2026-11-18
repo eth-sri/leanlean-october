@@ -9,20 +9,16 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem breveE_real_trace_div (r : ℝ) (u v : ℤ) :
     ShortDraftTrace.breveE
@@ -53,7 +49,6 @@ theorem breveE_real_trace_of_O (r : ℝ) (z : O) :
 
 end ActualEisensteinCubic
 namespace SqrtBranch
-open Complex
 
 private theorem arg_ne_pi_of_re_pos {a : ℂ} (ha : 0 < a.re) : a.arg ≠ Real.pi := by
   intro h
@@ -88,13 +83,10 @@ theorem prefactor_product {a : ℂ} {r : ℝ} (ha : 0 < a.re) (hr : 0 < r) :
 
 end SqrtBranch
 
-namespace PowerExtraction
-
-end PowerExtraction
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem actual_fiber_gaussian_eq_shifted
     (a b x y m n : ℤ)
@@ -137,8 +129,6 @@ end ActualEisensteinCubic
 
 namespace EisensteinAbelFiber
 
-open scoped Topology
-open Filter
 
 theorem shifted_gaussian_mass (x y : ℝ) :
     Tendsto (fun t : ℝ => (t : ℂ) *
@@ -210,8 +200,7 @@ namespace ActualEisensteinCubic
 
 section
 
-open scoped Topology
-open Filter EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem actual_fiber_gaussian_mass (a b x y : ℤ)
     (hc : ActualEisensteinCoordinates.eval a b ≠ 0) :
@@ -242,7 +231,7 @@ end
 
 section
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 def latticeCoordEquiv : O ≃ ℤ × ℤ where
   toFun := ActualEisensteinCoordinates.coords
@@ -346,8 +335,7 @@ end GaussianPhasePointwise
 
 namespace ActualEisensteinCubic
 
-open scoped Topology
-open Filter EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem actual_O_fiber_gaussian_mass (c r : O) (hc : c ≠ 0) :
     let a := (ActualEisensteinCoordinates.coords c).1

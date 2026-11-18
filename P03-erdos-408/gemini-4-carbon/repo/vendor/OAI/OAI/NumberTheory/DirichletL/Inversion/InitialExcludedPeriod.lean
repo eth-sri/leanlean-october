@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedGeometry
+public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
 public import OAI.NumberTheory.DirichletL.Hecke.RowClosure
 
 @[expose] public section
@@ -11,9 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialExcludedPeriod
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open CanonicalCoefficientClass ConcretePrimeRowBridge IdealMobiusDivisorSum
-open UniqueFactorizationMonoid HeckeFamily
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CanonicalCoefficientClass ConcretePrimeRowBridge IdealMobiusDivisorSum UniqueFactorizationMonoid HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 
 def deletedPeriod (q:ℕ):ℕ := 2592*q^2

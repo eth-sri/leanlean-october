@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Reflection.DyadicBox
-public import OAI.NumberTheory.DirichletL.Reflection.HeightTail
+public import OAI.NumberTheory.DirichletL.Reflection.DyadicTail
+public import OAI.NumberTheory.DirichletL.Inversion.KernelSourceUniform
 
 @[expose] public section
 

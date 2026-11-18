@@ -1,6 +1,7 @@
 module
 
 public import Erdos408.OneSided.Major.Characters
+public import Mathlib.Analysis.SpecialFunctions.Complex.CircleAddChar
 public import Erdos408.OneSided.Major.Energy
 public import Erdos408.OneSided.Major.Mellin
 

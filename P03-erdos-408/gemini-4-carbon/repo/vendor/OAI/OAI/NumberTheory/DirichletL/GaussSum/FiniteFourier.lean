@@ -10,16 +10,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 
 namespace ShortDraftFiniteGaussFourier
 open scoped Classical
-open AddChar MulChar
 variable {F : Type*} [Field F] [Fintype F]
 
 theorem gauss_transform (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
@@ -56,17 +53,7 @@ theorem product_gauss_transform
 
 end ShortDraftFiniteGaussFourier
 
-namespace PoissonChildCRT
-open scoped Classical
 
-variable (n : ℕ) (χ : MulChar (ZMod n) ℂ)
-
-end PoissonChildCRT
-
-namespace PoissonFirstLocal
-open scoped Classical
-
-end PoissonFirstLocal
 
 open Finset Complex
 

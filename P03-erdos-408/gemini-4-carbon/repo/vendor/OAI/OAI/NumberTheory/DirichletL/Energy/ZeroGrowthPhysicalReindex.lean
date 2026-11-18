@@ -1,7 +1,11 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Energy.ZeroBalancedAdmission
-public import OAI.NumberTheory.DirichletL.Energy.SourceInputReindexGates
+public import OAI.NumberTheory.DirichletL.Moments.SourceInputReindex
+public import OAI.NumberTheory.DirichletL.Moments.AllocatedRayDictionary
+public import OAI.NumberTheory.DirichletL.Moments.FirstSecondInputGates
+public import OAI.NumberTheory.DirichletL.Moments.FirstAnnularActiveInput
+public import OAI.NumberTheory.DirichletL.Moments.FirstChildProfileControl
 
 @[expose] public section
 
@@ -11,10 +15,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthPhysicalReindex
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentSourceInputReindex
-open CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction
-open CenteredMomentFirstRetainedNorm CenteredMomentAmplificationChildInput
-open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentSourceInputReindex CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction CenteredMomentFirstRetainedNorm CenteredMomentAmplificationChildInput CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 variable {α β:Type*}[Fintype α][Fintype β]
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _

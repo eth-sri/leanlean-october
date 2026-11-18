@@ -1,5 +1,4 @@
 module
-
 public import OAI.NumberTheory.DirichletL.ConductorBounds
 public import OAI.NumberTheory.DirichletL.CharacterTransport
 

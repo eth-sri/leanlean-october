@@ -1,5 +1,4 @@
 module
-
 public import OAI.NumberTheory.DirichletL.GaussSum.BranchScaling
 
 @[expose] public section
@@ -21,7 +20,7 @@ open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
+open ActualEisensteinCubic ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
 open scoped Topology
@@ -336,82 +335,6 @@ lemma kernelEuclideanProjection_volume_integral_le (S : Set EuclideanSpatial)
 end CubicEisenstein
 
 open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CompletedGauss
-
-section
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
-
-end
-
-open ActualEisensteinCubic CanonicalQuadraticSieve
-
-structure ReflectedBranchData (levelBound K : ℝ) (I F Q : Ideal O) where
-  levelScale : ℝ
-  levelScale_pos : 0<levelScale
-  levelScale_le : levelScale≤levelBound
-  primes : Finset (Ideal O)
-  maximal : ∀p : primes,p.val.IsMaximal
-  good : ∀p : primes,lambda∉p.val
-  coprime : Pairwise (fun p r : primes => IsCoprime p.val r.val)
-  divides : ∀p : primes,p.val∣I*Q
-  nonresidual : ∀p : primes,¬p.val∣rowResidualPart I Q
-  label : primes→Fin 3
-  nColumns : (ℕ×ℕ×ℕ)→Finset (Ideal O)
-  bColumns : (ℕ×ℕ×ℕ)→Finset (Ideal O)
-  nBounds : ∀i,∀J∈nColumns i,J≠0 ∧ (2:ℝ)^i.2.2/2≤(Ideal.absNorm J:ℝ) ∧ (Ideal.absNorm J:ℝ)≤(2:ℝ)^i.2.2
-  bBounds : ∀i,∀J∈bColumns i,J≠0 ∧ (2:ℝ)^i.2.1/2≤(Ideal.absNorm J:ℝ) ∧ (Ideal.absNorm J:ℝ)≤(2:ℝ)^i.2.1
-  amplitude : (ℕ×ℕ×ℕ)→Ideal O→Ideal O→ℂ
-  amplitude_bound : ∀i,∀n∈nColumns i,∀b∈bColumns i,‖amplitude i n b‖≤1
-  rowPhase : (ℕ×ℕ×ℕ)→idealRange (completedResidualScale K I Q)→ℂ
-  rowPhase_bound : ∀i k,‖rowPhase i k‖≤1
-
-namespace ReflectedBranchData
-
-def value {levelBound K : ℝ} {I F Q : Ideal O} (d : ReflectedBranchData levelBound K I F Q)
-    (W : ℝ→ℂ) (X ρ q : ℝ) (k : idealRange (completedResidualScale K I Q)) : ℂ := by
-  letI : ∀p : d.primes,p.val.IsMaximal := d.maximal
-  exact ∑'i : ℕ×ℕ×ℕ,reflectedBranchBlock (fun p : d.primes => p.val) d.good
-    (fun p => completedLocalExponent I F p.val) d.label W
-    (completedResidualScale K I Q) (completedBranchScale K (X/d.levelScale) I F Q (fun p : d.primes => p.val) d.label)
-    ρ q d.nColumns d.bColumns d.amplitude d.rowPhase i k
-
-end ReflectedBranchData
-
-structure ReflectedFiberData (rays : ℕ) (levelBound K : ℝ) (I F Q : Ideal O) where
-  pool : Finset (Ideal O)
-  maximal : ∀p : pool,p.val.IsMaximal
-  divides : ∀p : pool,p.val∣I*Q
-  branch : (Fin rays×(pool→Fin 6))→ReflectedBranchData levelBound K I F Q
-  weight : (Fin rays×(pool→Fin 6))→ℂ
-  weight_bound : ∀b,‖weight b‖≤1
-
-namespace ReflectedFiberData
-
-def value {rays : ℕ} {levelBound K : ℝ} {I F Q : Ideal O} (d : ReflectedFiberData rays levelBound K I F Q)
-    (W : ℝ→ℂ) (X ρ q : ℝ) (k : idealRange (completedResidualScale K I Q)) : ℂ :=
-  ∑b,d.weight b*(d.branch b).value W X ρ q k
-
-end ReflectedFiberData
-
-open ActualEisensteinCubic CanonicalQuadraticSieve
-
-namespace ReflectedFiberData
-
-def idealValue {rays : ℕ} {levelBound K : ℝ} {I F Q : Ideal O} (d : ReflectedFiberData rays levelBound K I F Q)
-    (W : ℝ→ℂ) (X ρ q : ℝ) (J : Ideal O) : ℂ :=
-  if h : J∈idealRange (completedResidualScale K I Q) then d.value W X ρ q ⟨J,h⟩ else 0
-
-end ReflectedFiberData
-
-def HasExactCompletedModels (rays : ℕ) (rows : Finset (Ideal O))
-    (K X ρ q levelBound : ℝ) (F Q : Ideal O) (W : ℝ→ℂ) (Ψ : Ideal O→O→*ℂ) (lengthScale : ℂ) : Prop :=
-  ∀A∈rows.image rowPowerfulPart,∀T∈rows.image (fun I => rowMaskPart I Q),
-    (completedRowFiber rows Q A T).Nonempty →
-    ∃I∈completedRowFiber rows Q A T,∃d : ReflectedFiberData rays levelBound K I F Q,
-      ∀J∈completedRowFiber rows Q A T,
-        completedT (Ψ J) W X=lengthScale*d.idealValue W X ρ q (rowResidualPart J Q)
-
-end CompletedGauss
 
 end
 

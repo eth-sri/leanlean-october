@@ -9,8 +9,7 @@ public import Mathlib.Algebra.Order.Star.Real
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
-open scoped Topology
+open scoped BigOperators Topology
 open Filter
 attribute [local instance] Classical.propDecidable
 

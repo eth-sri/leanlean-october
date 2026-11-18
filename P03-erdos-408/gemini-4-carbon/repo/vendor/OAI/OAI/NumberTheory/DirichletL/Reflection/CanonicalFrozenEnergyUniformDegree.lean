@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.CanonicalFrozenEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.SourcePhysical
+public import OAI.NumberTheory.DirichletL.Reflection.SourceBudget
 public import OAI.NumberTheory.DirichletL.Reflection.CanonicalInactiveEnergyUniformDegree
 
 @[expose] public section

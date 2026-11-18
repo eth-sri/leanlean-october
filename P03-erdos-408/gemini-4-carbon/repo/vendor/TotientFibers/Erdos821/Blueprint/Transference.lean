@@ -1,8 +1,9 @@
 module
 
 public import Erdos821.Blueprint.Graph
-public import Erdos821.Blueprint.MemoryHistory
-public import Erdos821.Blueprint.Sieve
+public import Erdos821.Blueprint.MemoryEdge
+public import Erdos821.Blueprint.Classical
+public import Mathlib.Data.Nat.Squarefree
 
 /-! P3 boundary on the literal finite row kernels of Graph.lean. -/
 

@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.FirstChildProfile
+public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
 public import OAI.NumberTheory.DirichletL.Moments.SecondScaled
 
 @[expose] public section
@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondChildProfile
-open HeckeFamily HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeExpansion
-open CenteredMomentHeckeColumnWindow CenteredMomentSourceRow CenteredMomentChildAssembly
-open CenteredMomentSecondScaled CanonicalRowCompletion CanonicalQuadraticSieve RayFourExpansion
-open ConcretePrimeRowBridge CenteredMomentCommonSupport
+open HeckeFamily HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentSourceRow CenteredMomentChildAssembly CenteredMomentSecondScaled CanonicalRowCompletion CanonicalQuadraticSieve RayFourExpansion ConcretePrimeRowBridge CenteredMomentCommonSupport
 local notation "O" => ActualEisensteinCubic.O
 
 theorem child_ideal_primary (η : Character) (χ : RayCharacter)

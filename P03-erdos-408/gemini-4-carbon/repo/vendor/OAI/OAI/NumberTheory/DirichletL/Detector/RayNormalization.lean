@@ -67,9 +67,10 @@ theorem principalScalar_inverse_of_slot_bounds {ι : Type*} (J : Finset ι)
   simpa only [Real.rpow_neg hZ0.le,inv_inv] using hi
 
 variable (M : Id) [NeZero M]
-local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 include hH
+
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 
 theorem ray_slot_subpower_lower (S : Finset Id) (W : ℝ→ℝ)
     (a b : ℝ) (ha : 0<a) (hab : a≤b) (hsupp : Function.support W⊆Set.Ioo a b)

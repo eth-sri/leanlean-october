@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.DetectorDictionaryInverseRawCompact
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment FourierBridge HeckePrimeAnnular
-open CenteredMomentOriginalReflectionErrorMass CenteredMomentCounting
-open ActualEisensteinCubic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment FourierBridge HeckePrimeAnnular CenteredMomentOriginalReflectionErrorMass CenteredMomentCounting ActualEisensteinCubic ConcreteTraceCRT
 
 local notation "O" => HeckeFamily.O
 

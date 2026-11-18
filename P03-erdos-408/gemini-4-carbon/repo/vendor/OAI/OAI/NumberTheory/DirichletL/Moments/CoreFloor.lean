@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.BottomStage
+public import OAI.NumberTheory.DirichletL.Moments.EligibleEnergy
+public import OAI.NumberTheory.DirichletL.Moments.RadialEligibleEnergy
+public import OAI.NumberTheory.DirichletL.Moments.InductionEnergy
 
 @[expose] public section
 
@@ -10,9 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentCoreFloor
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentRetainedEnergy CenteredMomentInductionEnergy
-open CenteredMomentPositiveSummability
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentInductionEnergy CenteredMomentPositiveSummability
 open CenteredMomentRadialEligibleEnergy (Radial)
 open QuadraticInitialBound ConcreteTraceCRT
 local notation "O" => HeckeFamily.O

@@ -9,16 +9,12 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
 open ActualEisensteinCubic
 
 namespace OscSpecial
@@ -103,7 +99,7 @@ namespace ActualEisensteinCubic
 
 section
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem dual_quadratic_trace_coeff (a b k l : ℤ) :
     (ActualEisensteinCoordinates.coords
@@ -157,8 +153,7 @@ end
 
 section
 
-open scoped Topology
-open Filter EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem original_abel_gamma_limit (c : O) (hc : c ≠ 0) :
     letI : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
@@ -203,7 +198,7 @@ theorem original_abel_gamma_limit (c : O) (hc : c ≠ 0) :
 
 end
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem actual_oscillatory_binary_coordinate
     (a b m n : ℤ) (hc : ActualEisensteinCoordinates.eval a b ≠ 0)
@@ -309,8 +304,6 @@ end ActualEisensteinCubic
 
 namespace GaussianMoment
 
-open scoped Topology
-open Filter
 
 noncomputable def realGauss (t : ℝ) (z : ℤ × ℤ) : ℝ :=
   Real.exp (-Real.pi * t * RankTwoPoisson.eisQ z)
@@ -371,7 +364,7 @@ end GaussianMoment
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem dual_gaussian_is_actual_trace_phase
     (a b k l : ℤ)
@@ -490,8 +483,6 @@ theorem prefactor_eq_real_sqrt {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b) :
   push_cast
   field_simp [hqS, hrS]
 
-open scoped Topology
-open Filter
 
 theorem prefactor_tendsto {a b : ℝ} (hq : 0 < q a b) :
     Tendsto (fun η : ℝ => 1 / ((R η a b : ℂ) ^ (1 / 2 : ℂ)))
@@ -525,8 +516,6 @@ end OscSpecial
 
 namespace GaussianMoment
 
-open scoped Topology
-open Filter
 
 private theorem eisQ_nonneg (z : ℤ × ℤ) : 0 ≤ RankTwoPoisson.eisQ z := by
   have h := RankTwoPoisson.eisQ_lower z

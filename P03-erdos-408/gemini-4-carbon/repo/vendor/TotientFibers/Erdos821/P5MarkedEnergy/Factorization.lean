@@ -1,9 +1,13 @@
 module
 
-public import Erdos821.P5MarkedEnergy.MarkRemoval
-public import Erdos821.S56.GroupParts
-public import Erdos821.P5.EndpointInvariance
-public import Erdos821.P5.EndpointBounds
+public import Erdos821.Blueprint.Classical
+public import Mathlib.Data.Nat.Squarefree
+public import Erdos821.Blueprint.Ideal
+public import Erdos821.Blueprint.Analytic
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Algebra.Order.Ring.Star
+public import Erdos821.P5.Basic
+public import Mathlib.NumberTheory.DirichletCharacter.Bounds
 public import Mathlib.Analysis.Complex.Polynomial.Basic
 public import Mathlib.RingTheory.RootsOfUnity.AlgebraicallyClosed
 

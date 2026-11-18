@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.Matrices
+public import OAI.NumberTheory.DirichletL.Reflection.Sector
 
 @[expose] public section
 

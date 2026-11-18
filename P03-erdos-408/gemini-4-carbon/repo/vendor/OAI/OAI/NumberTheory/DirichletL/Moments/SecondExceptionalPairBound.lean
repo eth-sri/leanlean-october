@@ -1,8 +1,12 @@
 module
-
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPairDictionary
-public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalWindow
-public import OAI.NumberTheory.DirichletL.Moments.ExceptionalWindowHeight
+public import OAI.NumberTheory.DirichletL.Moments.CommonWindowColumn
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAsymmetricSource
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalMass
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalGates
+public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
+public import OAI.NumberTheory.DirichletL.Moments.HeckeWindowEnergy
+public import OAI.NumberTheory.DirichletL.Moments.LogDyadic
 
 @[expose] public section
 
@@ -20,9 +24,8 @@ open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNor
 open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
 open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
-open CenteredMomentCommonExceptionalWindow
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
-open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
+open CenteredMomentSecondHeightFamily
 open CenteredMomentSecondExceptionalPairDictionary
 local notation "O" => HeckeFamily.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _

@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondParentRadial
-public import OAI.NumberTheory.DirichletL.Descent.SecondCenterSector
+public import OAI.NumberTheory.DirichletL.Descent.SecondVariableCutoff
 
 @[expose] public section
 

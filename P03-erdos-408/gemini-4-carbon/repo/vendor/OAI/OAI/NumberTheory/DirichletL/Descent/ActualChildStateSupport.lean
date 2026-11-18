@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Descent.ActualChildState
-public import OAI.NumberTheory.DirichletL.Descent.SecondCutoffScale
+public import OAI.NumberTheory.DirichletL.Descent.SecondCorrelatedCutoff
+public import OAI.NumberTheory.DirichletL.Descent.PhysicalExponents
 public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRows
 
 @[expose] public section
@@ -11,8 +12,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
-open InverseSecondFibers CompletedGauss
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)

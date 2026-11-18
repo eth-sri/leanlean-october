@@ -1,5 +1,4 @@
 module
-
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedActiveSets
 
 @[expose] public section

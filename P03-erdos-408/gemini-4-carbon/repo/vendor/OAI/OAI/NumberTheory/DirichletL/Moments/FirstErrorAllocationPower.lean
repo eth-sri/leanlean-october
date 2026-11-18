@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstErrorAllocationPower
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentAmplificationChildInput CenteredMomentFirstChildProfileControl
-open CenteredMomentAmplificationAllocationCost CenteredMomentCommonProfile
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentAmplificationChildInput CenteredMomentFirstChildProfileControl CenteredMomentAmplificationAllocationCost CenteredMomentCommonProfile
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _

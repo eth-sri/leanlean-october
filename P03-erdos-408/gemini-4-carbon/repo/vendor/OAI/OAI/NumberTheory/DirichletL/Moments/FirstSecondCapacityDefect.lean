@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.FirstSecondCapacityShift
+public import OAI.NumberTheory.DirichletL.Moments.FirstSecondCapacityLedger
+public import OAI.NumberTheory.DirichletL.Moments.FirstAmplificationChoice
 
 @[expose] public section
 
@@ -10,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstSecondCapacityLedger
-open CenteredMomentAllocatedChildCapacity CenteredMomentDivisorRaw
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRetained
-open CenteredMomentEligibleEnergy CenteredMomentLiveCapacity
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+open CenteredMomentAllocatedChildCapacity CenteredMomentDivisorRaw CenteredMomentDivisorAllocation CenteredMomentDivisorRetained CenteredMomentEligibleEnergy CenteredMomentLiveCapacity CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 

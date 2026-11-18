@@ -11,8 +11,7 @@ namespace OAI
 
 namespace SevenEighths.PNT.AnnularPrimeMass
 
-open ActualEisensteinCubic ArithmeticFunction Filter MeasureTheory
-open SevenEighths.IdealMangoldt SevenEighths.PNT.IdealPrimeMass
+open ActualEisensteinCubic ArithmeticFunction Filter MeasureTheory SevenEighths.IdealMangoldt SevenEighths.PNT.IdealPrimeMass
 open scoped BigOperators Classical Topology ContDiff
 
 noncomputable section

@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourcePhysical
+public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceCharacters
+public import OAI.NumberTheory.DirichletL.Moments.SlotNormalization
 public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionarySource
 
 @[expose] public section
@@ -11,12 +12,7 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily
-open CenteredMomentDetectorDictionary CenteredMomentRetainedEnergy CenteredMomentHeckeSlots
-open CenteredMomentHeckeHeight CenteredMomentPrimeSlot HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open ProbeHighRowFamily ConcretePrimeRowBridge
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredMomentDetectorDictionary CenteredMomentRetainedEnergy CenteredMomentHeckeSlots CenteredMomentHeckeHeight CenteredMomentPrimeSlot HeckeDetectorRawFiber HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles ProbeHighRowFamily ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 lemma rowMaskElement_eq_fixed : rowMaskElement=fixedBadMask := by

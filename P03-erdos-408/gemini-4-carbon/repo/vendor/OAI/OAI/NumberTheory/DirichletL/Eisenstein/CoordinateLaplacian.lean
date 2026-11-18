@@ -10,79 +10,22 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap LineDeriv
+open scoped LineDeriv
 
 def kernelCoordinateLaplacian (f : kernelSmoothTests) (p : EuclideanSpatial) : ℂ :=
   -(p 2:ℂ)^2*(∑j : Fin 3,
@@ -119,8 +62,6 @@ lemma kernelDirichletForm_sum_right {ι : Type*} (f : kernelSmoothTests)
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff
 
 lemma kernelL2_inner_toLp_smooth (A : KernelQuotient→ℂ)
     (hA : MemLp A 2 (integralQuotientVolume globalKubotaKernel)) (g : kernelSmoothTests) :
@@ -138,45 +79,12 @@ lemma kernelL2_inner_toLp_smooth (A : KernelQuotient→ℂ)
 
 end CubicEisenstein
 
-section
 
-open scoped BigOperators Classical
-open MeasureTheory
-namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic ConcreteTraceCRT
-
-variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
-
-end SecondPassIntegration
-
-namespace SecondPassArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels ConcreteTraceCRT
-
-variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-
-end SecondPassArithmetic
-end
-
-open scoped BigOperators Classical
-namespace SecondPassArithmetic
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct jLabel)
-
-variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
-
-end SecondPassArithmetic
 
 namespace CanonicalRowCompletion
 
-open MeasureTheory
-open scoped BigOperators Classical
-open ActualEisensteinCubic
 open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
+open ConcretePrimeRowBridge hiding O
 open CanonicalQuadraticSieve hiding O
 
 theorem finite_integral_energy_polynomial {κ : Type*} [Fintype κ]
@@ -230,13 +138,10 @@ theorem norm_add_sum_sq_le {κ : Type*} (s : Finset κ) (a : ℂ) (b : κ → �
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
 namespace CanonicalCoefficientClass
 
 section
-open ActualEisensteinCubic
-open SecondPassArithmetic (rayMonoid conjugateRayMonoid rayMonoid_apply conjugateRayMonoid_apply
-  FirstCoreIndex firstCoreTwist sideRayMonoid SecondRayIndex secondRayMinus secondRayPlus)
+open SecondPassArithmetic (rayMonoid rayMonoid_apply conjugateRayMonoid conjugateRayMonoid_apply FirstCoreIndex firstCoreTwist sideRayMonoid SecondRayIndex secondRayMinus secondRayPlus)
 open RayFourExpansion (RayCharacter)
 
 def IsBaseRayTwist (base Ψ : ActualEisensteinCubic.O→*ℂ) : Prop :=
@@ -306,7 +211,6 @@ def FactorsModulo (Q : Ideal ActualEisensteinCubic.O) (Ψ : ActualEisensteinCubi
 
 end
 
-open ActualEisensteinCubic
 open ActualEisensteinCoordinates (eval coords eval_coords)
 open ShortDraftLatticeCount (qNat qO_nonneg coords_eval)
 

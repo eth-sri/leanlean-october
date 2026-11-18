@@ -1,6 +1,10 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRecursive
+public import OAI.NumberTheory.DirichletL.Descent.SecondModeIntegral
+public import OAI.NumberTheory.DirichletL.Descent.SecondWholeMass
+public import OAI.NumberTheory.DirichletL.Descent.SecondSectorAssembly
+public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
+public import OAI.NumberTheory.DirichletL.Descent.SecondNormalizedEnergy
 
 @[expose] public section
 

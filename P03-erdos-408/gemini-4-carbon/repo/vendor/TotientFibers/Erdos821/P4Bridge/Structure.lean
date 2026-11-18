@@ -1,7 +1,14 @@
 module
 
 public import Erdos821.P4Bridge.Sites
-public import Erdos821.P4Bridge.Support
+public import Erdos821.P4Probe.ProductMarginals
+public import Erdos821.P4Probe.PatternMasses
+public import Erdos821.P4Probe.BigAveraging
+public import Erdos821.P4Probe.SharedProducts
+public import Erdos821.P4Probe.PhaseProducts
+public import Erdos821.P4Probe.ConditionalBounds
+public import Erdos821.P4Marg.PatternAveraging
+public import Erdos821.P4Independent.DisjointMarginal
 
 @[expose] public section
 

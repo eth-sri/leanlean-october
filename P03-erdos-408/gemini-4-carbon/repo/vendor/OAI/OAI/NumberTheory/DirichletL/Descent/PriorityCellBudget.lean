@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondCellParameters
-public import OAI.NumberTheory.DirichletL.Descent.PriorityCellEnergy
+public import OAI.NumberTheory.DirichletL.Descent.SecondCellPhysical
 
 @[expose] public section
 

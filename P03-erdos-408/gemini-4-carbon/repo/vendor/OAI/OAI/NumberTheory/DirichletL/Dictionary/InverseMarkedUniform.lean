@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawUniform
-public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawFiberSource
+public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalSlots
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawFiber
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPadding
 
 @[expose] public section
@@ -13,10 +14,7 @@ open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 
 namespace SevenEighths.DetectorDictionaryInverseMarkedUniform
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseRawFourier InverseInitialClippedColumns
-open InverseInitialOverlapFourier FourierBridge HeckeDetectorRawFiber
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform DetectorDictionaryInverseRawFourier InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge HeckeDetectorRawFiber
 
 private theorem clipped_one_zero (W : ℝ→ℂ) : clippedTest W 1 0=W := by
   funext x

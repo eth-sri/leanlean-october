@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCaller
+public import OAI.NumberTheory.DirichletL.Inversion.InitialQuotientGeometry
+public import OAI.NumberTheory.DirichletL.Inversion.InitialClippedColumns
 
 @[expose] public section
 
@@ -9,9 +10,7 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
-open SevenEighths.InverseInitialQuotientGeometry SevenEighths.InverseInitialClippedColumns
+open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialQuotientGeometry SevenEighths.InverseInitialClippedColumns
 namespace SevenEighths.InverseInitialEnergyCallerCanonical
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]

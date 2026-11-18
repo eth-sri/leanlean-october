@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.FirstMarkedZero
+public import OAI.NumberTheory.DirichletL.Descent.FirstMarkedColumns
 
 @[expose] public section
 

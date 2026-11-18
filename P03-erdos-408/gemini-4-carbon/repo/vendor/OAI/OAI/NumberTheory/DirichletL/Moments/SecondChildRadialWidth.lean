@@ -2,7 +2,7 @@ module
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamily
 public import OAI.NumberTheory.DirichletL.Moments.SecondDyadicRowSupport
-public import OAI.NumberTheory.DirichletL.Moments.SecondWidthDrop
+public import OAI.NumberTheory.DirichletL.Moments.SecondActualWidth
 
 @[expose] public section
 
@@ -13,12 +13,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondChildRadialWidth
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock
-open CenteredMomentSecondDyadicRowSupport CenteredMomentSectorLocalization
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRadicalBudget
-open CenteredMomentSecondActualWidth CenteredMomentSecondWidthDrop
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock CenteredMomentSecondDyadicRowSupport CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily CenteredMomentSecondRadicalBudget CenteredMomentSecondActualWidth
 local notation "O" => HeckeFamily.O
 
 theorem physicalBlock_live_dyadic_witness (η:Character)(t:ℝ)

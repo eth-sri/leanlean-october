@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondNonexceptional
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay
-open CenteredMomentRowNorm CenteredMomentSmooth RayFourExpansion
-open CenteredMomentSecondDescent CenteredMomentSecondScaled CenteredMomentRestrictedEnergy
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay CenteredMomentRowNorm CenteredMomentSmooth RayFourExpansion CenteredMomentSecondDescent CenteredMomentSecondScaled CenteredMomentRestrictedEnergy
 local notation "O" => ActualEisensteinCubic.O
 
 theorem whole_kernel_nonexceptional_second_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)

@@ -12,8 +12,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentHeckeColumnWindow
-open FourierBridge HeckeFamily CenteredMomentSmooth CenteredMomentGaussEnergy
-open CenteredMomentTwist
+open FourierBridge HeckeFamily CenteredMomentSmooth CenteredMomentGaussEnergy CenteredMomentTwist
 local notation "O" => ActualEisensteinCubic.O
 
 def heightCoeff (τ : Character) (t : ℝ) (I : Ideal O) : ℂ :=

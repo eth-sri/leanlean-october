@@ -1,7 +1,14 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.RadialSourceDictionary
-public import OAI.NumberTheory.DirichletL.Moments.ActiveCanonicalSource
+public import OAI.NumberTheory.DirichletL.Moments.SourceRectangleEnergy
+public import OAI.NumberTheory.DirichletL.Moments.ActiveAllocation
+public import OAI.NumberTheory.DirichletL.Moments.PositiveSummability
+public import OAI.NumberTheory.DirichletL.Moments.CanonicalRetainedSource
+public import OAI.NumberTheory.DirichletL.Moments.SecondLiveEnergy
+public import OAI.NumberTheory.DirichletL.Moments.RestrictedSourceNormalization
+public import OAI.NumberTheory.DirichletL.Moments.SourceRectangle
+public import OAI.NumberTheory.DirichletL.Moments.CommonRawScale
 
 @[expose] public section
 
@@ -11,12 +18,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonRadialData
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationLiveMask CenteredMomentAddedZeroUniform CenteredMomentCommonRawScale
-open CenteredMomentRestrictedSource CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
-open CenteredMomentFirstSectors ConcretePrimeRowBridge CanonicalQuadraticSieve
+open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationLiveMask CenteredMomentAddedZeroUniform CenteredMomentCommonRawScale CenteredMomentRestrictedSource CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors ConcretePrimeRowBridge CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 

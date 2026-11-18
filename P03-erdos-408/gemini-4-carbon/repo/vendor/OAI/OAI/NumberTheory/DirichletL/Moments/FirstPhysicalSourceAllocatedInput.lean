@@ -2,7 +2,9 @@ module
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceFixedEnergy
 public import OAI.NumberTheory.DirichletL.Moments.FirstAllocationGaussEnergy
-public import OAI.NumberTheory.DirichletL.Moments.FirstMaskedInput
+public import OAI.NumberTheory.DirichletL.Moments.FirstMaskedFamily
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildInput
+public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
 
 @[expose] public section
 
@@ -12,12 +14,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow ConcretePrimeRowBridge
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentCommonAllocationSum
-open CenteredMomentSourceLiveColumn CenteredMomentOriginalChildEnergy
-open CenteredMomentSmoothedWindowEnergy CenteredMomentGaussEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentAddedZeroUniform
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow ConcretePrimeRowBridge CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentOriginalChildEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow CenteredMomentAddedZeroUniform
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 local instance firstAllocatedInputDecidableEq {κ : Type*} : DecidableEq κ := Classical.decEq _

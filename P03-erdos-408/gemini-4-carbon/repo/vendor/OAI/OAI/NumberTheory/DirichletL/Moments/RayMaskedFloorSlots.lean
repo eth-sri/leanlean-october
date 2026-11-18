@@ -11,11 +11,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeZeroSupremum CenteredMomentNaturalFixedRaySource
-open CenteredMomentNaturalRowSource CenteredMomentCommonMaskExpansion
-open CenteredMomentCommonMaskEnergy CenteredMomentWholeSlotDeletion
-open CenteredMomentHeckeSlots CenteredMomentPrimeSlot CenteredExceptionalProfile
-open CenteredMomentSecondHeightFamily
+open HeckeFamily HeckeZeroSupremum CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentWholeSlotDeletion CenteredMomentHeckeSlots CenteredMomentPrimeSlot CenteredExceptionalProfile CenteredMomentSecondHeightFamily
 local notation "O" => HeckeFamily.O
 
 lemma natural_slot_eq {η : Character} {z : O} (F : NaturalRow η z)

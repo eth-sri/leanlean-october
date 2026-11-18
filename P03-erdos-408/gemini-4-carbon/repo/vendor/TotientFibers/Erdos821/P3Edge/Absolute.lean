@@ -1,6 +1,6 @@
 module
 
-public import Erdos821.P3Edge.CoeffBound
+public import Erdos821.S2.MemoryEdge
 public import Erdos821.P3Edge.NormOsc
 public import Erdos821.P3Edge.LargeX
 
@@ -12,8 +12,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 

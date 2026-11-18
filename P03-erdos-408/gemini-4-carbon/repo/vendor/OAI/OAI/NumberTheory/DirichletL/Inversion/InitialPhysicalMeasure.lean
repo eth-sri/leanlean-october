@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 
 namespace SevenEighths.InverseInitialPhysicalMeasure
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialRayAttachment
-open InverseInitialKernelBridge InverseInitialProfile InverseInitialClippedColumns
-open MeasureTheory FourierBridge JointLogSeparation
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialRayAttachment InverseInitialKernelBridge InverseInitialProfile InverseInitialClippedColumns MeasureTheory FourierBridge JointLogSeparation
 local notation "O" => ActualEisensteinCubic.O
 
 @[ext] structure Point (ι : Type*) where

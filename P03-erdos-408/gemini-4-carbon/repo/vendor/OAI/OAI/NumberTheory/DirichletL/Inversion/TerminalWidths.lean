@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseTerminalWidths
-open ActualEisensteinCubic CompletedGauss UniqueFactorizationMonoid
-open InverseMoment CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss UniqueFactorizationMonoid InverseMoment CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
 lemma norm_one_le (I : Ideal O) (hI : I ≠ 0) : (1 : ℝ) ≤ Ideal.absNorm I := by
@@ -56,8 +55,6 @@ theorem constant_log_error (C η : ℝ) (_hC : 0 < C) (hη : 0 < η) :
   have hh := (div_le_iff₀ hη).mp hl
   nlinarith
 
-def activeCharge (j : ℕ) (e : Fin 3) : ℤ :=
-  if j = 4 then (if e = 2 then -2 else 1) else if j = 0 then 1 else 2
 
 def normWidth (Z : ℝ) (I : Ideal O) : ℝ := Real.logb Z (Ideal.absNorm I : ℝ)
 

@@ -9,71 +9,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
@@ -146,7 +93,7 @@ theorem canonical_divisor_block_bound {m n p : Type*}
 end
 
 section
-open ConcretePrimeRowBridge ActualEisensteinCubic
+open ConcretePrimeRowBridge
 
 theorem quadraticRow_norm_le_one (I : Ideal O) (z : O) : ‖quadraticRow I z‖ ≤ 1 := by
   by_cases hI : Admissible I
@@ -290,14 +237,9 @@ theorem canonical_original_divisor_block_bound {m n p : Type*}
 
 end CanonicalQuadraticSieve
 
-namespace FiniteSieveRestriction
-open FiniteSieveOperator
-
-end FiniteSieveRestriction
 
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss
-open QuadraticSquarefreeKernel FiniteSieveOperator
+open ConcretePrimeRowBridge CompletedGauss QuadraticSquarefreeKernel FiniteSieveOperator
 
 def Supported (I : Ideal O) : Prop :=
   I ≠ 0 ∧ ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I,
@@ -340,8 +282,6 @@ theorem highKernelNorm_nonneg (M N K : ℝ) : 0 ≤ highKernelNorm M N K := sq_n
 
 end CanonicalQuadraticSieve
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap
 namespace QuadraticKernelTransfer
 open FourierBridge EisensteinSchwartzPoisson
 
@@ -451,18 +391,12 @@ theorem radial_matrix_kernel_transfer (W : 𝓢(ℝ, ℂ))
 end QuadraticKernelTransfer
 
 namespace CanonicalQuadraticSieve
-open FourierBridge EisensteinSchwartzPoisson QuadraticKernelTransfer
-open IdealCoprimeSieveOperator DivisorBlockCauchy IdealDivisorBilinearBlocks
+open FourierBridge EisensteinSchwartzPoisson QuadraticKernelTransfer IdealCoprimeSieveOperator DivisorBlockCauchy IdealDivisorBilinearBlocks
 
 section
 variable {m n p : Type*} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
 
-def quotientTerm (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (D E : Ideal O) (i : m) (j : n) (k : p) : ℂ :=
-  if IsCoprime (left j) (right k) then
-    star (quotientMatrix D rows left i j * (if D ∣ left j then a j else 0)) *
-      (quotientMatrix E rows right i k * (if E ∣ right k then b k else 0)) else 0
 
 def divisorBlockCost (ε : ℝ) (hε : 0 < ε) (D₁ D₂ M N : ℝ) (a : n → ℂ) (b : p → ℂ) : ℝ :=
   256 ^ 2 * D₁ * D₂ * sieveNorm M (N / D₁) * sieveNorm M (N / D₂) *
@@ -473,11 +407,8 @@ end
 
 end CanonicalQuadraticSieve
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
-open FourierBridge EisensteinSchwartzPoisson QuadraticKernelTransfer
-open IdealCoprimeSieveOperator DivisorBlockCauchy IdealDivisorBilinearBlocks
+open FourierBridge EisensteinSchwartzPoisson QuadraticKernelTransfer IdealCoprimeSieveOperator DivisorBlockCauchy IdealDivisorBilinearBlocks
 
 section
 variable {m n p : Type*} [Fintype m] [Fintype n] [Fintype p]

@@ -1,6 +1,7 @@
 module
 
 public import Erdos408.Extraction.TypeII.Bands
+public import Mathlib.Analysis.PSeries
 public import Erdos408.OneSided.Setup
 
 /-!

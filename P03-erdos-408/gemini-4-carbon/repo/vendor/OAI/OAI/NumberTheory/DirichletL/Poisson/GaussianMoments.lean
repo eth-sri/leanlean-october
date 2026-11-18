@@ -9,16 +9,12 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
 
 namespace GaussianMoment
 
@@ -153,12 +149,6 @@ end ActualEisensteinCubic
 
 open ActualEisensteinCubic
 
-namespace RationalPrimeExtraction
-
-noncomputable def selected (Y : ℝ) : Finset ℕ :=
-  (Finset.Ioc ⌊Y / 3⌋₊ ⌊Y⌋₊).filter Nat.Prime
-
-end RationalPrimeExtraction
 
 namespace OscSpecial
 

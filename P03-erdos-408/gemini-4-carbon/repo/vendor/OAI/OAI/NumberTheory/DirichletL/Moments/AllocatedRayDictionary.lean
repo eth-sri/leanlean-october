@@ -2,7 +2,9 @@ module
 
 public import OAI.NumberTheory.DirichletL.Energy.SlotHeight
 public import OAI.NumberTheory.DirichletL.Energy.Reindex
-public import OAI.NumberTheory.DirichletL.Moments.SlotClassTransport
+public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
+public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalSource
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationFamilyEnergy
 
 @[expose] public section
 
@@ -11,12 +13,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentAllocatedRayDictionary
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation
-open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot HeckePrimeAnnular
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentHeckeTwist CenteredMomentHeckeCancellation
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot HeckePrimeAnnular CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile CenteredMomentHeckeTwist CenteredMomentHeckeCancellation
 local notation "O" => HeckeFamily.O
 
 variable {α : Type*} [Fintype α] [DecidableEq α]

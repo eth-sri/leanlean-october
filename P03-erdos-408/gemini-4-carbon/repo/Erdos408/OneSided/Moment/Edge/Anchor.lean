@@ -2,6 +2,8 @@ module
 
 public import Erdos408.OneSided.Bands
 public import Erdos408.OneSided.Moment.PathExpansion.Hermitian
+import Mathlib.Algebra.Field.ZMod
+import Mathlib.Data.Nat.Prime.Int
 
 /-!
 # The anchor congruence

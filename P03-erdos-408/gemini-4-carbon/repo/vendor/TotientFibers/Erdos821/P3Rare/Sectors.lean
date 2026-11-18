@@ -22,8 +22,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Rare
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 
 /-- Projected sparse-row context Schur bound; the zero-support hypothesis is

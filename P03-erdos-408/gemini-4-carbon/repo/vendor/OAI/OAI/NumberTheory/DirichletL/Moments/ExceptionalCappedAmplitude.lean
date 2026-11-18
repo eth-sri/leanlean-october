@@ -1,7 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceDegree
-public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalEnergy
+public import OAI.NumberTheory.DirichletL.Moments.HeckeSlots
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCount
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAllocationShell
 
 @[expose] public section
@@ -12,13 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentExceptionalCappedAmplitude
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentCounting CenteredMomentHeckeTwist CenteredMomentTwist CenteredMomentHeight CenteredMomentLattice
-open CenteredMomentNaturalFixedRaySource CenteredMomentSecondExceptionalCount
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalFrequency CenteredMomentForcing CenteredMomentChildRows
-open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentCounting CenteredMomentHeckeTwist CenteredMomentTwist CenteredMomentHeight CenteredMomentLattice CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalFrequency CenteredMomentForcing CenteredMomentChildRows CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge UniqueFactorizationMonoid CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
 local notation "O" => HeckeFamily.O
 
 theorem rowTwistedSum_absolute (η : Character) (m A z : O) (W : ℝ→ℂ)

@@ -11,14 +11,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace EisensteinEmbedding
@@ -29,7 +26,6 @@ abbrev O := NumberField.RingOfIntegers K
 private instance : IsCyclotomicExtension {3} ℚ K :=
   CyclotomicField.isCyclotomicExtension 3 ℚ
 
-noncomputable def ζ : K := IsCyclotomicExtension.zeta 3 ℚ K
 noncomputable def pb : PowerBasis ℤ O :=
   (IsCyclotomicExtension.zeta_spec 3 ℚ K).integralPowerBasis
 
@@ -346,9 +342,7 @@ theorem cubicGauss_normalized_cube_eis (P : Ideal O) [P.IsMaximal]
   rw [div_pow, hg, hq]
   field_simp
 
-open AddChar MulChar
 
-open AddChar MulChar
 
 noncomputable def canonicalSextic (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) : MulChar (O ⧸ P) ℂ :=
@@ -453,7 +447,6 @@ end ActualEisensteinCubic
 
 namespace PrimitiveTrace
 
-open Complex
 open scoped ComplexConjugate
 open EisensteinEmbedding ConcreteTraceCRT
 

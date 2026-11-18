@@ -12,8 +12,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentWholeDivisorShell
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
-open CenteredMomentMobiusRegroup CenteredMomentDyadicCount CenteredMomentSectorLocalization
+open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMobiusRegroup CenteredMomentDyadicCount CenteredMomentSectorLocalization
 local notation "O" => ActualEisensteinCubic.O
 
 lemma moebius_norm_le_one (D : Ideal O) : ‖(moebius D:ℂ)‖≤1 := by
