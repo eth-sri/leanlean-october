@@ -1,0 +1,3 @@
+module
+public import InfinitaryLogic.Methods.EM.FragmentAdapter
+public import InfinitaryLogic.Methods.TailIndiscernible

@@ -1,0 +1,4 @@
+module
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonQuadraticKernel
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationaryTails

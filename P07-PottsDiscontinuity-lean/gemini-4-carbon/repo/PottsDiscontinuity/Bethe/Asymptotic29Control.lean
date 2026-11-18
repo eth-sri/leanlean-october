@@ -1,0 +1,3 @@
+module
+public import PottsDiscontinuity.Bethe.AsymptoticSpatial
+public import PottsDiscontinuity.Bethe.AsymptoticUniformOffset

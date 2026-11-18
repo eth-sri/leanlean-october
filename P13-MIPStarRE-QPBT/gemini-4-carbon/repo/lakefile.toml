@@ -1,0 +1,31 @@
+name = "QPBT"
+version = "0.1.0"
+keywords = ["math"]
+defaultTargets = ["QPBT", "Solution"]
+
+[leanOptions]
+pp.unicode.fun = true
+relaxedAutoImplicit = false
+weak.linter.mathlibStandardSet = true
+maxSynthPendingDepth = 3
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.35.0-rc2"
+
+[[require]]
+name = "MIPStarRE"
+git = "https://github.com/LionSR/MIPStarRE"
+rev = "5fc363bc8b77b1a6bbdaaeea634f1b0f3ff0ad79"
+
+[[lean_lib]]
+name = "QPBT"
+globs = ["QPBT.+"]
+
+[[lean_lib]]
+name = "Challenge"
+globs = ["Challenge"]
+
+[[lean_lib]]
+name = "Solution"

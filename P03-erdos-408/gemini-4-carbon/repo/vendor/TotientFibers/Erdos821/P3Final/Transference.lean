@@ -1,0 +1,40 @@
+module
+
+public import Erdos821.S2.ConcreteTransference
+public import Erdos821.S2Empty.Final
+public import Erdos821.P3High.Final
+public import Erdos821.S2Full.FullMemoryNorm
+public import Erdos821.S2Hist.HistoryReconstruction
+public import Erdos821.S2Resid.ResidueFactorization
+public import Erdos821.P3Phys.PhysicalPathExpansion
+public import Erdos821.S2Root.AbsoluteClosedRootProof
+public import Erdos821.P3.ResidueReplacement
+public import Erdos821.S2Packet.AbsolutePhysicalPacket
+public import Erdos821.S2Ltrans.TransferenceAssembly
+
+/-! P3 assembled from all accepted task proofs; only the rare-edge task remains an input. -/
+
+@[expose] public section
+
+set_option autoImplicit false
+
+namespace Erdos821.P3Final
+
+open Erdos821.S2Core
+open Erdos821.Blueprint.Graph
+
+/-- Every completed P3 input, leaving only `MemoryRareTask`. -/
+theorem remaining_of_rare
+    (hrare : ∀ (F : FixedData) (r : MemoryParameters F), MemoryRareTask F r) :
+    RemainingP3Proofs where
+  boundary := Erdos821.S2Empty.EmptyBoundaryMassTask_proof
+  rare := hrare
+  high := Erdos821.S2Core.HighRankMemoryTask_proof
+  fullNorm := Erdos821.S2Full.FullMemoryNormTask_proof
+  reconstruction := Erdos821.S2Hist.HistoryReconstructionTask_proof
+  residues := Erdos821.S2Resid.residueFactorizationTask_proof
+  physicalPaths := Erdos821.S2Core.PhysicalPathExpansionTask_proof
+  absoluteRoot := Erdos821.S2Root.AbsoluteClosedRootTask_proof
+  crt := @Erdos821.P3Core.uniform_residue_replacement_proof
+
+end Erdos821.P3Final

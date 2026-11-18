@@ -1,0 +1,2 @@
+module
+public import VaughtConjecture.AmalgamationPlan.ConvexGeometry
