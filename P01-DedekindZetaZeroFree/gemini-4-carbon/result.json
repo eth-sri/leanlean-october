@@ -1,0 +1,17 @@
+{
+  "problem_idx": 1,
+  "key": "PALOMAR-2026-10-13-000010-v2",
+  "model_name": "Gemini 4 Carbon (high)",
+  "model_id": "gemini-4-carbon",
+  "harness": "Antigravity 1.5.5",
+  "status": "failed",
+  "verified": false,
+  "failure_label": "No passing checkpoint found",
+  "verification_note": "The original pilot reached the time limit with only the baseline checkpoint. It scored 0%.",
+  "baseline_tokens": 10053215,
+  "final_tokens": 10053215,
+  "compression_percent": 0.0,
+  "credited_compression_percent": 0.0,
+  "cost": 1.3496651000000002,
+  "elapsed_seconds": 43201.960581404
+}
