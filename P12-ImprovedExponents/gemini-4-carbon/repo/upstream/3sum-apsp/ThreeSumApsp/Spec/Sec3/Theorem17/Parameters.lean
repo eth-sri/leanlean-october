@@ -45,7 +45,7 @@ def rootCeil (e t : ℕ) : ℕ := Nat.findGreatest (fun g => g ^ e < t) t + 1
 
 /-- The power of `rootFloor e t` does not exceed `t`. -/
 theorem rootFloor_pow_le {e : ℕ} (he : e ≠ 0) (t : ℕ) : rootFloor e t ^ e ≤ t :=
-  Nat.findGreatest_spec (P := fun x => x ^ e ≤ t) (Nat.zero_le t) (by simp [he])
+  Nat.findGreatest_spec (P := fun x => x ^ e ≤ t) (Nat.zero_le t) (by simp_all)
 
 /-- `rootFloor e t` is the greatest `x` with `x^e ≤ t`. -/
 theorem le_rootFloor {e : ℕ} (he : e ≠ 0) {t x : ℕ} (h : x ^ e ≤ t) : x ≤ rootFloor e t :=
@@ -63,7 +63,6 @@ theorem floor_rpow_inv {e : ℕ} (he : e ≠ 0) (t : ℕ) :
 
 /-- The power of `rootCeil e t` reaches `t`. -/
 theorem le_rootCeil_pow {e : ℕ} (he : e ≠ 0) (t : ℕ) : t ≤ rootCeil e t ^ e := by
-  unfold rootCeil
   set G := Nat.findGreatest (fun g => g ^ e < t) t
   rcases Nat.lt_or_ge t (G + 1) with h | h
   · exact h.le.trans (Nat.le_self_pow he _)

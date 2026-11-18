@@ -65,7 +65,7 @@ private def bertrandPrimes (n : ℕ) : Finset ℕ := (Ioc n (2 * n)).filter Nat.
 /-- Membership in `bertrandPrimes`, spelled out. -/
 private theorem mem_bertrandPrimes {n p : ℕ} :
     p ∈ bertrandPrimes n ↔ (n < p ∧ p ≤ 2 * n) ∧ p.Prime := by
-  simp only [bertrandPrimes, mem_filter, mem_Ioc]
+  simp  [bertrandPrimes]
 
 /-! ## 1. Erdős's upper bound for the central binomial coefficient -/
 
@@ -94,8 +94,7 @@ private theorem prod_middle_le {n : ℕ} (hn : 2 < n) (s : Finset ℕ)
     _ ≤ primorial (2 * n / 3) := by
         refine prod_le_prod_of_subset_of_one_le' (fun p hp => ?_)
           fun p hp _ => (mem_filter.1 hp).2.one_lt.le
-        obtain ⟨hps, hp3⟩ := mem_filter.1 hp
-        exact mem_filter.2 ⟨mem_range.2 (by omega), (hs p hps).1⟩
+        grind
     _ ≤ 4 ^ (2 * n / 3) := primorial_le_four_pow _
 
 /-- Erdős's bound, keeping the primes of `(n, 2n]`:
@@ -120,20 +119,20 @@ private theorem centralBinom_le (n : ℕ) (hn : 2 < n) :
   · -- There are at most `√(2n)` primes up to `√(2n)`.
     have hsub : (T.filter (· ≤ n)).filter (· ≤ Nat.sqrt (2 * n)) ⊆ Icc 1 (Nat.sqrt (2 * n)) := by
       intro p hp
-      simp only [hT, mem_filter, mem_range] at hp
+      simp  [hT] at hp
       obtain ⟨⟨⟨-, hprime⟩, -⟩, hsqrt⟩ := hp
       exact mem_Icc.mpr ⟨hprime.one_lt.le, hsqrt⟩
     exact (prod_pow_factorization_le (by omega) _).trans (pow_right_mono₀ (by omega)
-      ((card_le_card hsub).trans_eq (by rw [Nat.card_Icc, Nat.add_sub_cancel])))
+      ((card_le_card hsub).trans_eq (by simp)))
   · -- The primes in `(√(2n), n]`.
     refine prod_middle_le hn _ fun p hp => ?_
-    simp only [hT, mem_filter, mem_range, not_le] at hp
+    simp  [hT] at hp
     obtain ⟨⟨⟨-, hprime⟩, hpn⟩, hsqrt⟩ := hp
     exact ⟨hprime, hsqrt, hpn⟩
   · -- The primes above `n` are those of `(n, 2n]`.
     refine (prod_pow_factorization_le (by omega) _).trans
       (pow_right_mono₀ (by omega) (card_le_card fun p hp => ?_))
-    simp only [hT, mem_filter, mem_range] at hp
+    simp  [hT] at hp
     obtain ⟨⟨hp2n, hprime⟩, hnp⟩ := hp
     exact mem_bertrandPrimes.2 ⟨⟨by omega, by omega⟩, hprime⟩
 
@@ -153,9 +152,7 @@ private theorem concaveOn_log_add_sqrt_mul_log_sub (a : ℝ) (ha : 0 ≤ a) :
         ((2 : ℝ) • (LinearMap.id : ℝ →ₗ[ℝ] ℝ))
       have hset : (⇑((2 : ℝ) • (LinearMap.id : ℝ →ₗ[ℝ] ℝ))) ⁻¹' Set.Ioi 1 = Set.Ioi (1 / 2) := by
         ext x
-        simp only [Set.mem_Ioi, Set.mem_preimage, LinearMap.smul_apply, LinearMap.id_coe, id_eq,
-          smul_eq_mul]
-        constructor <;> intro h <;> linarith
+        simp; grind
       rw [hset] at h
       exact h
   · exact ConvexOn.smul ha (convexOn_id (convex_Ioi _))
@@ -189,12 +186,12 @@ private theorem log_add_sqrt_mul_log_le {x : ℝ} (hx : 16562 ≤ x) :
     rw [show (2 * 16562 : ℝ) = 182 * 182 by norm_num, Real.sqrt_mul_self (by norm_num), hlogx,
       hlog2x]
     -- `366 log 91 ≤ 366 · (85/13) log 2 < (16562/6 - 365) log 2`
-    linarith only [hlog91, hlog2]
+    linarith 
   have hconcave := concaveOn_log_add_sqrt_mul_log_sub (Real.log 2 / 6) (by positivity)
   have hatx := hconcave.right_le_of_le_left''
-    (x := 2) (y := 16562) (z := x) (by norm_num [Set.mem_Ioi]) (by rw [Set.mem_Ioi]; linarith)
+    (x := 2) (y := 16562) (z := x) (by norm_num ) (by grind)
     (by norm_num) hx (hat16562.trans hat2)
-  linarith only [hatx, hat16562]
+  linarith 
 
 /-- The same estimate for natural numbers, without logarithms. -/
 private theorem pow_mul_pow_sqrt_le_two_pow {n : ℕ} (hn : 16562 ≤ n) :
@@ -204,14 +201,13 @@ private theorem pow_mul_pow_sqrt_le_two_pow {n : ℕ} (hn : 16562 ≤ n) :
   have hsqrt : (Nat.sqrt (2 * n) : ℝ) ≤ √(2 * n) := by
     exact_mod_cast Real.nat_sqrt_le_real_sqrt (a := 2 * n)
   have hlog : 0 ≤ Real.log (2 * n) := Real.log_nonneg (by linarith)
-  have hpos : (0 : ℝ) < n := by linarith
   rw [← Nat.cast_le (α := ℝ)]
   push_cast
   rw [← Real.log_le_log_iff (by positivity) (by positivity),
     Real.log_mul (by positivity) (by positivity), Real.log_pow, Real.log_pow, Real.log_pow]
   push_cast
   -- `6 log n + 6 ⌊√(2n)⌋ log(2n) ≤ 6 (log n + √(2n) log(2n)) ≤ n log 2`
-  linarith [hreal, mul_le_mul_of_nonneg_right hsqrt hlog]
+  linarith [mul_le_mul_of_nonneg_right hsqrt hlog]
 
 /-! ## 3. The count for `n ≥ 16562` -/
 
@@ -246,8 +242,7 @@ private theorem mul_log_two_le_card_bertrandPrimes_mul_log {n : ℕ} (hn : 16562
   have hpow : (2 : ℝ) ^ n ≤ (2 * (n : ℝ)) ^ (2 * (bertrandPrimes n).card) := by
     exact_mod_cast two_pow_le_of_large hn
   have hlog := Real.log_le_log (by positivity) hpow
-  rw [Real.log_pow, Real.log_pow] at hlog
-  exact_mod_cast hlog
+  simp_all
 
 /-! ## 4. Half-open windows `[x/2, x)` with real endpoints -/
 
@@ -273,16 +268,13 @@ theorem exists_prime_half_le_and_lt (x : ℝ) (hx : 4 ≤ x) :
     ∃ p : ℕ, p.Prime ∧ x / 2 ≤ (p : ℝ) ∧ (p : ℝ) < x := by
   obtain ⟨n, hn1, -, -, hwindow⟩ := exists_nat_window hx
   obtain ⟨p, hprime, hnp, hp2n⟩ := Nat.exists_prime_lt_and_le_two_mul n (by omega)
-  exact ⟨p, hprime, hwindow p hnp hp2n⟩
+  grind
 
 /-- If `(n, 2n]` lies in the window and `n ≥ x/4` is large, the window has at least `x / (12 log x)`
 primes: `(x/4) log 2 ≤ n log 2 ≤ 2 k log (2n) ≤ 2 k log x`, and `log 2 ≥ 2/3`. -/
 private theorem div_log_le_card_of_large {x : ℝ} {n : ℕ} {S : Finset ℕ} (hx : 4 ≤ x)
     (hn : 16562 ≤ n) (hn4 : x / 4 ≤ (n : ℝ)) (h2n : 2 * (n : ℝ) < x) (hsub : bertrandPrimes n ⊆ S) :
     x / (12 * Real.log x) ≤ (S.card : ℝ) := by
-  have hcard : ((bertrandPrimes n).card : ℝ) ≤ S.card := by exact_mod_cast card_le_card hsub
-  have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast (by omega : 1 ≤ n)
-  have hlog : Real.log (2 * n) ≤ Real.log x := Real.log_le_log (by linarith) h2n.le
   have hlog0 : 0 ≤ Real.log (2 * n) := Real.log_nonneg (by linarith)
   have hlog2 : 2 / 3 ≤ Real.log 2 := by linarith [Real.log_two_gt_d9]
   rw [div_le_iff₀ (mul_pos (by norm_num) (Real.log_pos (by linarith)))]
@@ -332,7 +324,7 @@ theorem exists_forall_mul_sqrt_div_log_le_card_primes :
       c * (√D / Real.log D) ≤ (S.card : ℝ) := by
   obtain ⟨c, hc, hcount⟩ := exists_forall_mul_div_log_le_card_primes
   refine ⟨c, hc, fun D hD S hS => ?_⟩
-  have hlog : 0 < Real.log D := Real.log_pos (by exact_mod_cast (by omega : 1 < D))
+  have hlog : 0 < Real.log D := Real.log_pos (by simp; omega)
   calc c * (√D / Real.log D) ≤ c * (√D / (Real.log D / 2)) := by
         gcongr
         linarith

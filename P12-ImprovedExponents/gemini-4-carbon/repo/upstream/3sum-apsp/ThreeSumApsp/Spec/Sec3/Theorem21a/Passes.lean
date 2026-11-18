@@ -37,8 +37,7 @@ variable {α β : Type}
 def passList (p : α → Bool) (f : α → β) (Z : List α) (i : ℕ) : List β := ((Z.take i).filter p).map f
 
 /-- At the start nothing is written. -/
-@[simp] theorem passList_zero (p : α → Bool) (f : α → β) (Z : List α) : passList p f Z 0 = [] := by
-  simp [passList]
+@[simp] theorem passList_zero (p : α → Bool) (f : α → β) (Z : List α) : passList p f Z 0 = [] := rfl
 
 /-- At the end all the selected elements are written. -/
 theorem passList_length (p : α → Bool) (f : α → β) (Z : List α) :
@@ -50,20 +49,20 @@ theorem passList_succ_of {p : α → Bool} (f : α → β) {Z : List α} {i : �
     (h : p Z[i] = true) : passList p f Z (i + 1) = passList p f Z i ++ [f Z[i]] := by
   unfold passList
   rw [List.take_add_one, List.getElem?_eq_getElem hi, List.filter_append, List.map_append]
-  simp [h]
+  grind
 
 /-- An element that is not selected changes nothing. -/
 theorem passList_succ_of_not {p : α → Bool} (f : α → β) {Z : List α} {i : ℕ} (hi : i < Z.length)
     (h : p Z[i] = false) : passList p f Z (i + 1) = passList p f Z i := by
   unfold passList
   rw [List.take_add_one, List.getElem?_eq_getElem hi, List.filter_append, List.map_append]
-  simp [h]
+  grind
 
 /-- After `i` elements at most `i` are written. -/
 theorem length_passList_le (p : α → Bool) (f : α → β) (Z : List α) (i : ℕ) :
     (passList p f Z i).length ≤ i := by
   rw [passList, List.length_map]
-  exact (List.length_filter_le _ _).trans (List.length_take_le i Z)
+  grind
 
 end Filter
 
@@ -78,7 +77,7 @@ theorem countTo_succ (L : List ℤ) {i : ℕ} (hi : i < L.length) (x : ℤ) :
   rw [countTo, countTo, List.count_take_succ_getD L x hi 0, Nat.cast_add, Nat.cast_ite,
     Nat.cast_one,
     Nat.cast_zero]
-  exact congrArg _ (if_congr eq_comm rfl rfl)
+  omega
 
 /-- A count is not negative. -/
 theorem countTo_nonneg (L : List ℤ) (i : ℕ) (x : ℤ) : 0 ≤ countTo L i x := Int.natCast_nonneg _
@@ -125,13 +124,9 @@ theorem DistSt.opens {L D : List ℤ} {i : ℕ} (h : DistSt L D i) (hs : L.Pairw
 elements are those among the first `i`. -/
 theorem DistSt.bumps {L D : List ℤ} {i : ℕ} (h : DistSt L D i) (hi : i < L.length)
     (hpos : 0 < D.length) (he : L.getD i 0 = D.getD (D.length - 1) 0) : DistSt L D (i + 1) := by
-  refine ⟨h.nodup, fun x => ?_, h.le.trans (Nat.le_succ i), fun _ => ⟨hpos, by simpa using he.symm⟩⟩
+  refine ⟨h.nodup, fun x => ?_, h.le.trans (Nat.le_succ i), fun _ => ⟨hpos, by grind⟩⟩
   rw [List.take_succ_getD L hi 0, List.mem_append, ← h.mem, List.mem_singleton]
-  refine ⟨Or.inl, ?_⟩
-  rintro (hx | rfl)
-  · exact hx
-  · rw [he, List.getD_eq_getElem _ _ (by omega)]
-    exact List.getElem_mem _
+  grind
 
 /-- The multiplicities after a new value: the old ones, and a 1 at the end. -/
 theorem map_countTo_opens {L D : List ℤ} {i : ℕ} (h : DistSt L D i) (hi : i < L.length)

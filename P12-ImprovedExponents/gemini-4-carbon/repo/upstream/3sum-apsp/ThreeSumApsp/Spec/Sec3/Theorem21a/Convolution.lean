@@ -5,7 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Sec3.Theorem21
+public import ThreeSumApsp.Util.Asymptotics.PowLittleO
+public import Mathlib.Analysis.Complex.ExponentialBounds
 public import ThreeSumApsp.Sec3.Theorem21a.Convolution
 public import ThreeSumApsp.Spec.Sec3.Problems
 
@@ -90,21 +91,21 @@ theorem triOf_conv (t N s : ℕ) (F : ℤ) (X : List ℤ) :
     rw [convAB, List.getD_map_range _ (Nat.mul_add_lt_mul a.isLt b.isLt), Theorem21.convTemplate_AB]
     split_ifs with h
     · exact cellOr_of_lt rfl h
-    · exact cellOr_of_not fun h' => h (by exact_mod_cast h'.2)
+    · exact cellOr_of_not fun h' => h (by omega)
   · funext b c
     rw [convBC, List.getD_map_range _ (Nat.mul_add_lt_mul b.isLt c.isLt),
       Nat.mul_add_div_of_lt c.isLt,
       Nat.mul_add_mod_of_lt c.isLt, Theorem21.convTemplate_BC]
     split_ifs with h
-    · exact cellOr_of_lt (by push_cast [h.1]; ring) h.2
+    · exact cellOr_of_lt (by grind) h.2
     · exact cellOr_of_not fun h' => h (by omega)
   · funext a c
     rw [convAC, List.getD_map_range _ (Nat.mul_add_lt_mul a.isLt c.isLt),
       Nat.mul_add_div_of_lt c.isLt,
       Nat.mul_add_mod_of_lt c.isLt, Theorem21.convTemplate_AC]
     split_ifs with h
-    · exact congrArg Neg.neg (cellOr_of_lt (by push_cast; ring) h)
-    · rw [cellOr_of_not fun h' => h (by exact_mod_cast h'.2), neg_neg]
+    · exact congrArg Neg.neg (cellOr_of_lt rfl h)
+    · rw [cellOr_of_not fun h' => h (by grind), neg_neg]
 
 section Bounds
 
@@ -120,7 +121,7 @@ theorem abs_convBC_le (hX : AbsLe X V) (hF : |F| ≤ V) : AbsLe (convBC t N s F 
 
 /-- The weights `w(a,c)` are bounded by a bound for the numbers and the filler. -/
 theorem abs_convAC_le (hX : AbsLe X V) (hF : |F| ≤ V) : AbsLe (convAC t N s F X) V :=
-  List.forall_mem_map.2 fun _ _ => (abs_neg _).trans_le (abs_cellOr_le hX (by rwa [abs_neg]) _)
+  List.forall_mem_map.2 fun _ _ => (abs_neg _).trans_le (abs_cellOr_le hX (by grind) _)
 
 end Bounds
 
@@ -132,7 +133,7 @@ theorem convolution3SUM_vecOf_iff {t N : ℕ} (hN : 1 ≤ N) (hNt : N < t * t) {
     Convolution3SUM (vecOf N X) ↔
       ∃ s < 2 * t, (triOf t (convAB t N (2 * U + 1) X) (convBC t N s (2 * U + 1) X)
         (convAC t N s (2 * U + 1) X)).HasZeroTriangle := by
-  simp only [triOf_conv]
+  simp  [triOf_conv]
   exact Theorem21.convolution3SUM_iff hN hNt fun i => AbsLe.abs_getD_le hU hX _
 
 end ThreeSumApsp.Spec

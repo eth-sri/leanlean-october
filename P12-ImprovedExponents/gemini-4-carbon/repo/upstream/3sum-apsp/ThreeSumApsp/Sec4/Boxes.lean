@@ -49,7 +49,7 @@ variable {L : ℕ}
 @[simp]
 theorem Cube.mem_leaves {π : Cube L} {τ : Leaf L} :
     τ ∈ Cube.leaves π ↔ ∀ ℓ, π ℓ = CubeSymbol.star ∨ π ℓ = CubeSymbol.term (τ ℓ) := by
-  simp only [Cube.leaves, mem_filter, mem_univ, true_and]
+  simp  [Cube.leaves]
   rfl
 
 /-- Where a cube has a term, its leaves have that term. -/
@@ -73,10 +73,7 @@ theorem Cube.mem_P0Levels {π : Cube L} {ℓ : Fin L} :
 theorem Cube.disjoint_starLevels_P0Levels (π : Cube L) :
     Disjoint (Cube.starLevels π) (Cube.P0Levels π) := by
   rw [disjoint_left]
-  intro ℓ hstar hP0
-  rw [Cube.mem_starLevels] at hstar
-  rw [Cube.mem_P0Levels, hstar] at hP0
-  cases hP0
+  simp_all
 
 /-- The terms that a leaf of a cube may have at a level with the given symbol. -/
 private def symbolTerms : CubeSymbol → Finset Term
@@ -135,14 +132,7 @@ theorem Cube.mem_leaves_replace {π : Cube L} {ℓ : Fin L} (hℓ : π ℓ = Cub
     τ ∈ Cube.leaves (Cube.replace π ℓ lam) ↔ τ ∈ Cube.leaves π ∧ τ ℓ = lam := by
   rw [Cube.mem_leaves, Cube.mem_leaves, Cube.replace,
     Function.forall_update_iff π fun k s => s = CubeSymbol.star ∨ s = CubeSymbol.term (τ k)]
-  constructor
-  · rintro ⟨hlam, h⟩
-    refine ⟨fun k => ?_, by simpa [eq_comm] using hlam⟩
-    by_cases hk : k = ℓ
-    · exact Or.inl (hk ▸ hℓ)
-    · exact h k hk
-  · rintro ⟨h, rfl⟩
-    exact ⟨Or.inr rfl, fun k _ => h k⟩
+  grind
 
 /-- Replacing a star by a term removes its level from the star levels. -/
 theorem Cube.starLevels_replace (π : Cube L) (ℓ : Fin L) (lam : Term) :
@@ -208,14 +198,13 @@ theorem Cube.starAt_starLevels_starsToP0 (π : Cube L) :
     Cube.starAt (Cube.starLevels π) (Cube.starsToP0 π) = π := by
   funext ℓ
   unfold Cube.starAt Cube.starsToP0
-  cases h : π ℓ <;> simp [h]
+  aesop
 
 /-- Section 4.2: "a cube without stars is a single leaf", namely the leaf `Cube.starsToP0 π`. -/
 theorem Cube.eq_ofLeaf_of_starLevels_eq_empty (π : Cube L) (hπ : Cube.starLevels π = ∅) :
     π = Cube.ofLeaf (Cube.starsToP0 π) := by
   conv_lhs => rw [← Cube.starAt_starLevels_starsToP0 π, hπ]
-  funext ℓ
-  simp [Cube.starAt, Cube.ofLeaf]
+  rfl
 
 /-- The leaf obtained by replacing the stars of a cube with `P₀` chooses `P₀` where the cube has a
 star or `P₀`. -/
@@ -224,7 +213,7 @@ theorem P0Levels_starsToP0 (π : Cube L) :
   ext ℓ
   rw [mem_P0Levels, mem_union, Cube.mem_starLevels, Cube.mem_P0Levels]
   unfold Cube.starsToP0
-  cases h : π ℓ <;> simp
+  grind
 
 /-- Proof of Lemma 29: the leaf obtained by replacing the stars of a cube with `P₀` chooses `P₀` at
 as many levels as the cube has symbols `P₀` or stars. -/
@@ -320,9 +309,7 @@ theorem card_lowest (k : ℕ) (S : Finset (Fin L)) : (lowest k S).card = min k S
   -- The map from a level to the number of levels of `S` below it is injective on `S`, its image is
   -- `{0, …, |S| - 1}`, and by definition `lowest k S` is the preimage of the numbers below `k`.
   have hinj := (card_below_strictMonoOn S).injOn.mono (coe_subset.2 (lowest_subset k S))
-  have hrange : ((range S.card).filter fun n => n < k) = range (min k S.card) := by
-    ext n
-    simp only [mem_filter, mem_range, lt_min_iff, and_comm]
+  have hrange : ((range S.card).filter fun n => n < k) = range (min k S.card) := by grind
   rw [← card_image_of_injOn hinj, ← card_range (min k S.card), ← hrange, ← image_card_below,
     filter_image]
   rfl

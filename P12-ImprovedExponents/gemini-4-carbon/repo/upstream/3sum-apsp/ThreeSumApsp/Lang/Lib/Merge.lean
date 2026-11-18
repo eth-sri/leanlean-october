@@ -33,12 +33,12 @@ variable {l r : List ℤ} {i j : ℕ}
 theorem step_left (hi : i < l.length) (hj : j < r.length) (h : l[i] ≤ r[j]) :
     (l.drop i).merge (r.drop j) = l[i] :: (l.drop (i + 1)).merge (r.drop j) := by
   rw [List.drop_eq_getElem_cons hi, List.drop_eq_getElem_cons hj, List.cons_merge_cons]
-  simp [h]
+  grind
 
 theorem step_right (hi : i < l.length) (hj : j < r.length) (h : r[j] < l[i]) :
     (l.drop i).merge (r.drop j) = r[j] :: (l.drop i).merge (r.drop (j + 1)) := by
   rw [List.drop_eq_getElem_cons hi, List.drop_eq_getElem_cons hj, List.cons_merge_cons]
-  simp [not_le.2 h]
+  grind
 
 theorem step_left_end (hi : i < l.length) (hj : r.length ≤ j) :
     (l.drop i).merge (r.drop j) = l[i] :: (l.drop (i + 1)).merge (r.drop j) := by
@@ -129,8 +129,8 @@ theorem takeLeft (C : Pre lim μ a b dst l r) {σ : State} (h : Inv μ a b dst l
   refine ⟨by light_side [mergeTakeLeft], i + 1, j, by omega,
     Function.update μ' (dst + out.length) l[i], out ++ [l[i]], ?_, hi, hj,
     same.update ⟨by omega, by omega⟩ _,
-    by simp only [List.length_append, List.length_singleton]; omega,
-    seg.snoc _, by rw [← hout, hm]; simp⟩
+    by grind,
+    seg.snoc _, by grind⟩
   simp [mergeTakeLeft, update_frame_setLocal, haddr, hread]
 
 /-- dst[i + j] := b[j]; j := j + 1. -/
@@ -145,8 +145,8 @@ theorem takeRight (C : Pre lim μ a b dst l r) {σ : State} (h : Inv μ a b dst 
   refine ⟨by light_side [mergeTakeRight], i, j + 1, by omega,
     Function.update μ' (dst + out.length) r[j], out ++ [r[j]], ?_, hi, hj,
     same.update ⟨by omega, by omega⟩ _,
-    by simp only [List.length_append, List.length_singleton]; omega,
-    seg.snoc _, by rw [← hout, hm]; simp⟩
+    by grind,
+    seg.snoc _, by grind⟩
   simp [mergeTakeRight, update_frame_setLocal, haddr, hread]
 
 /-- The time of merge, for n = na + nb numbers. -/
@@ -160,8 +160,6 @@ theorem _root_.Light.merge_meets {p : ℕ} (hp : P[p]? = some mergeBody)
       Seg μ' dst (l.merge r) ∧ SameOutside μ μ' dst (l.length + r.length) := by
   light_facts C
   refine .of_body hp ?_
-  unfold mergeTime
-  -- i := 0; j := 0
   light_set (0 : ℕ)
   light_set (0 : ℕ)
   -- while i + j < na + nb

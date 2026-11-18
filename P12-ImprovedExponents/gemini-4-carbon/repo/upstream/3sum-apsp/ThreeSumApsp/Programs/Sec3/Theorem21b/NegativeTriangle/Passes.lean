@@ -100,13 +100,12 @@ theorem affine_meets {p : ℕ} (hp : P[p]? = some affineBody) {μ : ℕ → ℤ}
     Meets lim P p d [l.length, src, m, c, dst] μ (20 * l.length + 6) fun _ μ' =>
       Seg μ' dst (affL m c l) ∧ SameOutside μ μ' dst l.length := by
   refine .of_body hp ?_
-  simp only [affineBody, Aff.Len, Aff.Src, Aff.Factor, Aff.Shift, Aff.Dst, Aff.Idx]
+  simp  [affineBody, Aff.Src, Aff.Factor, Aff.Shift, Aff.Idx]
   refine Ends.pass (fun i => m * l.getD i 0 + c) (fun j hj => ?_) ?_ hw hdst rfl rfl
   · -- round j reads src[j], which lies outside the cells that are written
     have hread : wrote μ dst (fun i => m * l.getD i 0 + c) j (src + j) = l[j] :=
       (wrote_rest (by omega)).trans (hl j hj)
     obtain ⟨hfits, haddr⟩ := Limits.addr_of_lt hw (x := src + j) (by omega)
-    push_cast at hfits haddr
     obtain ⟨hprod, hsum⟩ := hb _ (List.getElem_mem hj)
     have hsrcLoc : frame [(l.length : ℤ), src, m, c, dst] 1 = src := rfl
     have hfactor : frame [(l.length : ℤ), src, m, c, dst] 2 = m := rfl
@@ -179,7 +178,6 @@ private theorem prefDownRound_spec {μ : ℕ → ℤ} {q r : ℕ} {Pw : ℤ} {Q 
   have hq := C.inQ
   have hr := C.inR
   have hsep := C.apart
-  have h2 := C.two_le
   have hreadQ : prefMem μ q r Pw Q R j (q + j) = Q.getD j 0 :=
     (prefMem_rest (by omega) (by omega)).trans (C.segQ.getD hj 0)
   have hreadR : prefMem μ q r Pw Q R j (r + j) = R.getD j 0 :=

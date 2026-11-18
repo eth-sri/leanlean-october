@@ -69,7 +69,7 @@ them as `(len + 1) + i`. -/
 theorem output_cons {W : ℕ} (c : ℤ → BitVec W) (n : ℤ) (l : List ℤ) :
     (fun i : ℕ => (c ((1 + l.length + i : ℕ) : ℤ)).toInt) = output c (n :: l).length := by
   funext i
-  simp only [output, List.length_cons, Nat.add_comm 1]
+  simp only [Nat.add_comm 1]
   rfl
 
 /-- `SolvesWithin` is `Solves` for the problem `ofEnd Q`, on the instances with `U = n^κ`. -/
@@ -90,7 +90,7 @@ theorem solvedInTimeAt_iff {Q : EndStatement.Problem} {κ : ℕ} {a : ℝ} {e : 
     SolvedInTimeAt Q κ a e ↔ ∃ (P : List Instr) (b : ℕ) (C : ℝ),
       Solves (ofEnd Q) P b (fun x => x.U = x.n ^ κ)
         fun x => C * ((x.n : ℝ) ^ a * Real.log x.n ^ e + 1) := by
-  simp only [SolvedInTimeAt, solvesWithin_iff]
+  simp  [SolvedInTimeAt, solvesWithin_iff]
 
 /-! ## Monotonicity -/
 
@@ -101,7 +101,7 @@ theorem Solves.mono {prob : Problem} {P : List Instr} {b b' : ℕ} {dom dom' : p
   intro x hx bits hadm
   obtain ⟨t, verdict, c, ht, he, ha⟩ :=
     h x (hdom x hx) bits (le_trans (Nat.mul_le_mul_right _ hb) hadm)
-  exact ⟨t, verdict, c, ht.trans (hT x hx), he, ha⟩
+  grind
 
 /-! ## Bounds up to a constant -/
 
@@ -137,6 +137,6 @@ theorem SolvedInPolylogTime.solvedInTime {Q : EndStatement.Problem} {a a' : ℝ}
     (h : SolvedInPolylogTime Q a) (ha : a < a') : SolvedInTime Q a' 0 := fun κ =>
   let ⟨e, he⟩ := h κ
   he.of_eventually_le (C := 1) <| by
-    simpa only [one_mul, pow_zero, mul_one] using eventually_mul_rpow_mul_log_pow_le 1 ha e
+    simpa  using eventually_mul_rpow_mul_log_pow_le 1 ha e
 
 end ThreeSumApsp.WordRam

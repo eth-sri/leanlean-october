@@ -37,8 +37,7 @@ theorem seg_wrote {n : ℕ} {l : List ℤ} (hl : l.length = n)
 /-- A pass that writes g of the entries of a list leaves the list mapped by g. -/
 theorem seg_wrote_map (g : ℤ → ℤ) (L : List ℤ) :
     Seg (wrote μ dst (fun i => g (L.getD i 0)) L.length) dst (L.map g) :=
-  seg_wrote (List.length_map g) fun i hi => by
-    rw [List.getElem_map, List.getD_eq_getElem _ _ (by simpa using hi)]
+  seg_wrote (List.length_map g) fun i hi => by grind
 
 /-- **The rule for a pass.**  The locals x and y hold the length n and the address dst.  In round j
 the locals are the given ones with j in the counter, and the memory is `wrote μ dst f j`; there the
@@ -53,19 +52,19 @@ theorem Ends.pass {c x y n T : ℕ} {e : Expr} {loc : ℕ → ℤ} {Q : State �
     Ends lim P d (pass c (v x) (v y) e) ⟨loc, μ⟩ T Q := by
   refine Ends.forMem (fun j μ' => μ' = wrote μ dst f j) n _ wrote_zero.symm
     (fun j μ' hj hμ' => Ends.block ?round le_rfl)
-    (fun μ' h => by rw [h]; exact done)
+    (fun μ' h => by grind)
     (fun j μ' _ _ => ⟨trivial, (Function.update_of_ne hx _ _).trans hlen⟩) (by omega)
-    (le_trans (le_of_eq (by simp only [Stmt.blockCost, Expr.cost]; ring)) hT)
+    (le_trans (le_of_eq (by light_side)) hT)
   -- Round j: dst[j] := e.
   subst hμ'
   obtain ⟨hs, hv⟩ := round j hj
   have qc : Function.update loc c (j : ℤ) c = j := Function.update_self ..
-  have qy : Function.update loc c (j : ℤ) y = dst := by rw [Function.update_of_ne hy, haddr]
+  have qy : Function.update loc c (j : ℤ) y = dst := by grind
   refine ⟨⟨?_, hs, ?_⟩, rfl, ?_⟩
-  · simp only [Expr.Safe, Expr.val, Op.eval, qc, qy, true_and, abs_le]
+  · simp  [abs_le]
     omega
-  · simp only [Expr.val, Op.eval, qc, qy, Limits.Addr]
+  · simp  [Limits.Addr]
     omega
-  · simp only [Stmt.after, Expr.val, Op.eval, qc, qy, hv, toNat_natCast_add_natCast, wrote_succ]
+  · simp  [Stmt.after, qy, hv, wrote_succ]
 
 end Light

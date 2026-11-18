@@ -114,10 +114,10 @@ theorem ofFn_glue {L m : ℕ} (Q : Finset (Fin L)) (hQ : Q.card = m) (inner : Fi
     List.ofFn (glue Q hQ inner outer)
       = weaveList (maskOf Q) (List.ofFn outer) (List.ofFn inner) := by
   refine List.ext_getElem (by simp [length_maskOf]) fun n hn hweave => ?_
-  replace hn : n < L := by simpa using hn
+  replace hn : n < L := by grind
   obtain ⟨htrue, hfalse⟩ := count_take_maskOf Q n
   rw [List.getElem_ofFn, ← List.getD_eq_getElem _ 0 hweave, getD_weaveList,
-    if_pos (by rwa [length_maskOf]), htrue, hfalse, getD_maskOf Q hn]
+    if_pos (by simp_all), htrue, hfalse, getD_maskOf Q hn]
   by_cases hmem : (⟨n, hn⟩ : Fin L) ∈ Q
   · -- Level `n` is the `k`-th level of `Q`, and `k` levels of `Q` lie below it.
     obtain ⟨k, hk⟩ := exists_innerLevel Q hQ hmem
@@ -161,7 +161,7 @@ theorem getD_outDigits_of_true (hm : mask.count true = m) (hℓ : ℓ < mask.len
     (hb : mask.getD ℓ false = true) : (outDigits m mask rI rJ).getD ℓ 0 = 9 := by
   have hlt := List.count_take_lt hℓ false hb
   rw [outDigits, getD_weaveList, if_pos hℓ, if_pos hb,
-    List.getD_eq_getElem _ _ (by rw [List.length_replicate]; omega), List.getElem_replicate]
+    List.getD_eq_getElem _ _ (by grind), List.getElem_replicate]
 
 /-- The digit at a level outside the inner set is `3 x + y` for the next digits `x` of the row and
 `y` of the column. -/
@@ -184,8 +184,7 @@ theorem lt_of_mem_outDigits (hI : ∀ x ∈ rI, x < 3) (hJ : ∀ y ∈ rJ, y < 3
     have hy := hJ _ (List.getElem_mem hi.2)
     rw [List.getElem_zipWith]
     omega
-  · rw [List.eq_of_mem_replicate hd]
-    norm_num
+  grind
 
 end outDigits
 
@@ -197,7 +196,7 @@ theorem codeO_outStrOf {L m : ℕ} (Q : Finset (Fin L)) (hQ : Q.card = m) (r c :
   rw [outStrOf, codeO, codeStr,
     map_glue Q hQ (fun z => ((outEquiv z : Fin 10) : ℕ)), code_glue, outDigits,
     ← List.ofFn_const]
-  simp only [outEquiv_apply, outIdx_z, outIdx_z0]
+  simp  [outEquiv, outIdx]
   congr 2
   exact List.ext_getElem (by simp) fun n _ _ => by simp
 
@@ -224,7 +223,7 @@ theorem digitList_outCodeOfPos (L m I J : ℕ) :
   have hdigits := digitList_ofDigitList (outDigitsOfPos L m I J)
     (lt_of_mem_outDigits (fun _ => lt_of_mem_digitList (by norm_num))
       fun _ => lt_of_mem_digitList (by norm_num))
-  rwa [length_outDigitsOfPos] at hdigits
+  aesop
 
 /-- `outCodeOfPos` computes the code of the output string of a position, for the computable layout.
 -/
@@ -252,9 +251,7 @@ theorem lt_of_mem_gluedDigits {mask : List Bool} {o i : List ℕ} (ho : ∀ x �
     (hi : ∀ x ∈ i, x < 4) : ∀ d ∈ gluedDigits mask o i, d < 7 := by
   refine lt_of_mem_weaveList (by norm_num) (fun d hd => (ho d hd).trans (by norm_num))
     fun d hd => ?_
-  obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hd
-  have hlt := hi x hx
-  omega
+  grind
 
 /-- The code of the left string, and of the right string, with inner set given by `mask`, outer part
 with code `r` and inner part with code `k`. -/
@@ -267,7 +264,7 @@ theorem gluedCode_lt {L : ℕ} (m : ℕ) {mask : List Bool} (hmask : mask.length
   have hlt := ofDigitList_lt (gluedDigits mask (digitList 3 (L - m) r) (digitList 4 m k))
     (lt_of_mem_gluedDigits (fun _ => lt_of_mem_digitList (by norm_num))
       fun _ => lt_of_mem_digitList (by norm_num))
-  rwa [length_gluedDigits, hmask] at hlt
+  aesop
 
 /-- Left and right strings at once: over an alphabet of seven letters in which the outer letter
 number `i` has the digit `i` and the inner letter of the pair `p` the digit 3 plus the digit of `p`,
@@ -281,7 +278,7 @@ private theorem codeStr_glue {α : Type} (e : α ≃ Fin 7) {inner : Fin 2 × Fi
       = gluedCode L m (maskOf Q) (codeOuter r) (codeInner π) := by
   rw [gluedCode, gluedDigits, codeOuter, codeInner, digitList_codeStr, digitList_codeStr,
     List.map_ofFn, codeStr, map_glue Q hQ (fun s => ((e s : Fin 7) : ℕ)), code_glue]
-  simp only [hinner, houter, pairEquiv_apply, Equiv.refl_apply, Function.comp_def]
+  simp  [hinner, houter, pairEquiv, Function.comp_def]
 
 /-- The code of the left string with inner set `Q`, outer part `r` and inner part `π`. -/
 theorem codeL_leftStrOf {L m : ℕ} (Q : Finset (Fin L)) (hQ : Q.card = m) (r : OuterStr L m)

@@ -69,7 +69,7 @@ theorem exists_false_positive (hv : X.Valid) {t i : ℕ} (ht : t < X.m) (hi : i 
   obtain ⟨c, hc, hdvd⟩ := (acc_iff hv ht hi).1 hacc
   refine ⟨c, hc, hdvd, fun hzero => ?_⟩
   rw [(hit_iff hi).2 ⟨c, hc, hzero⟩] at hhit
-  exact absurd hhit (by decide)
+  grind
 
 /-- A vertex of the piece of an instance determines the number of the piece. -/
 theorem c0_add_div {t c : ℕ} (hc : c < X.len t) : (X.c0 t + c) / X.q = t / X.chunkCount := by
@@ -77,9 +77,7 @@ theorem c0_add_div {t c : ℕ} (hc : c < X.len t) : (X.c0 t + c) / X.q = t / X.c
 
 /-- The length of a filtered range, as the size of a set. -/
 private theorem length_filter_range (k : ℕ) (f : ℕ → Bool) :
-    ((List.range k).filter f).length = #{i ∈ range k | f i = true} := by
-  rw [← List.toFinset_card_of_nodup (List.nodup_range.filter _), List.toFinset_filter,
-    List.toFinset_range]
+    ((List.range k).filter f).length = #{i ∈ range k | f i = true} := rfl
 
 /-- Proof of Theorem 17: "distinct scans contain distinct false positives, so there are at most F(p)
 failed scans". -/
@@ -92,9 +90,7 @@ theorem sum_fails_le (hv : X.Valid) :
     rw [hfailed, Finset.card_sigma]
     exact Finset.sum_congr rfl fun t _ => length_filter_range _ _
   have hmem : ∀ z ∈ failed,
-      z.1 < X.m ∧ z.2 < X.w z.1 ∧ X.acc z.1 z.2 = true ∧ X.hit z.1 z.2 = false := by
-    intro z hz
-    simpa [hfailed, and_assoc] using hz
+      z.1 < X.m ∧ z.2 < X.w z.1 ∧ X.acc z.1 z.2 = true ∧ X.hit z.1 z.2 = false := by grind
   rw [hcard]
   -- The scan `z` contains the triples of its query pair and a vertex of its piece.
   refine TriangleInstance.card_le_F_of_distinct_scans _ failed

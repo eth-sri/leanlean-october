@@ -122,11 +122,10 @@ theorem GridPre.down {r : ℕ → ℕ → Need} {a : FrontArgs} {d f e : ℕ}
   have hword := H.ok.word
   have hdepth := H.ok.depth
   have hlog := Nat.log_lt_self 2 (x := 2 * a.V) (by omega)
-  simp only [gridNeed] at hword hdepth
-  push_cast at hword
+  simp  [gridNeed] at hword hdepth
   have hlam : a.Λ ≤ 2 * a.V := by rw [H.lam, Lam]; omega
   exact ⟨by omega, by omega, H.V_pos, H.m_pos, H.lam, H.primes,
-    H.ok.mono (by simp [gridNeed]) (by simp [gridNeed]) (by simp only [gridNeed]; omega)⟩
+    H.ok.mono (by simp [gridNeed]) (by simp [gridNeed]) (by simp  [gridNeed]; omega)⟩
 
 /-! ## row -/
 
@@ -144,9 +143,8 @@ theorem RowSum.succ {S : ℕ → Bool → Prop} {i : ℕ} {acc : ℤ} (h : RowSu
   have hhigh := h.le
   have hfalse := flag_mem (S i false)
   have htrue := flag_mem (S i true)
-  have hsplit : (∃ β' < i + 1, ∃ v, S β' v) ↔ (∃ β' < i, ∃ v, S β' v) ∨ S i false ∨ S i true := by
-    rw [Nat.exists_lt_succ_right, Bool.exists_bool]
-  refine ⟨by omega, by push_cast; omega, ?_⟩
+  have hsplit : (∃ β' < i + 1, ∃ v, S β' v) ↔ (∃ β' < i, ∃ v, S β' v) ∨ S i false ∨ S i true := by simp; grind
+  refine ⟨by omega, by omega, ?_⟩
   rw [hsplit, ← h.pos_iff]
   by_cases hf : S i false <;> by_cases ht : S i true <;>
     simp [flag_of, flag_of_not, hf, ht] <;> omega

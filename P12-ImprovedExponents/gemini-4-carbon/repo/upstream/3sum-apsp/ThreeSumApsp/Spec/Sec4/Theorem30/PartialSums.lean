@@ -59,7 +59,6 @@ theorem abs_dpValue_le (e : ℕ) (π : Cube L) : |dpValue encA encB e π| ≤ 10
         _ ≤ ∑ _lam : Term, 10 ^ e * (A * B) := Finset.sum_le_sum fun lam _ => ih _
         _ = 10 ^ (e + 1) * (A * B) := by
             rw [Finset.sum_const, Finset.card_univ, card_term, nsmul_eq_mul]
-            push_cast
             ring
     · rw [abs_zero]
       positivity
@@ -87,9 +86,7 @@ theorem abs_dp_partial_sum_le (e : ℕ) (π : Cube L) (ℓ : Fin L) (k : ℕ) :
       exact congrArg _ (congrArg Fin.val (termEquiv.apply_symm_apply ⟨d, hd'⟩).symm)
     rw [hcube]
     exact abs_dpValueD_le hA hB e _
-  · rw [List.length_range]
-    push_cast
-    ring
+  grind
 
 /-! ## A query -/
 
@@ -109,13 +106,12 @@ theorem abs_query_partial_sum_le {m t : ℕ} (ht : t ≤ m) {η : OutStr L}
         + ∑ π ∈ (Vsets m t η).biUnion (BV η), ((Cube.leaves π).card : ℤ) * (A * B) := by
         refine add_le_add (Finset.sum_le_sum fun τ _ => ?_) (Finset.sum_le_sum fun π _ => ?_)
         · -- a leaf stands for itself
-          simp only [Function.comp]
+          simp 
           rw [leafProduct_digitsT]
           exact abs_mul_le hA hB τ
         · -- a box with e stars stands for its 10^e leaves
-          simp only [Function.comp, storedD]
+          simp 
           rw [Cube.card_leaves, card_starLevels]
-          push_cast
           exact abs_dpValueD_le hA hB _ π
     _ = 10 ^ m * (A * B) := by
         rw [Finset.sum_const, nsmul_eq_mul, ← Finset.sum_mul, ← add_mul, hcount]

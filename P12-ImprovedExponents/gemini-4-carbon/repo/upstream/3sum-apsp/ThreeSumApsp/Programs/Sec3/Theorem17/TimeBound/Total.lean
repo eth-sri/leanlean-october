@@ -51,7 +51,7 @@ private theorem steps_tScanCall :
       exact_mod_cast Nat.ceilDiv_mul_lt (a := Nat.sqrt θ.D) hθ.hg
     rw [← mul_div_assoc, le_div_iff₀ hθ.g_pos]
     -- `⌈s/g⌉ g < s + g ≤ √D + √D`.
-    linarith [hlt, Real.nat_sqrt_le_real_sqrt (a := θ.D), hθ.hgD]
+    linarith [Real.nat_sqrt_le_real_sqrt (a := θ.D), hθ.hgD]
   exact (hpiece.const_mul.add (.const hone)).add (.const hone)
 
 /-- The exponent that the host's bound on the false positives uses is at most `κ`. -/
@@ -89,7 +89,6 @@ private theorem steps_scans :
   refine (steps_tScanCall.mul steps_falsePositiveBound).mono_right fun θ hθ =>
     le_trans (le_of_eq ?_) (termScans_le_budget θ)
   have hr : 0 < Real.sqrt θ.D := hθ.sqrt_pos
-  have hg : (0 : ℝ) < θ.g := hθ.g_pos
   unfold termScans
   field_simp
 
@@ -111,7 +110,7 @@ private theorem steps_instances_mul_tWrites :
     Steps (fun θ => 4 * θ.n * θ.g * tWrites θ.n θ.D (pieceSizeNat θ.D θ.g)) budget :=
   (steps_instances.mul (steps_of_softO steps_tWrites)).mono_right fun θ hθ =>
     le_trans (le_of_eq (by
-      simp only [termBuild, mon_eq, pow_zero, mul_one, pow_one, Real.sq_sqrt θ.D.cast_nonneg]
+      simp  [termBuild, mon_eq]
       ring)) (termBuild_le_budget hθ)
 
 /-- Reading the answers of one instance takes `O(n²/√D)` steps, a constant number for each query
@@ -208,7 +207,7 @@ private theorem cast_supTime_le {Tn : List ℕ → ℕ} {T : ℕ → ℕ → ℕ
       (Finset.range (cap + 1)).sup (fun w => Tn [n, D, w]) = Tn [n, D, w] :=
     Finset.exists_mem_eq_sup _ ⟨0, Finset.mem_range.2 (Nat.succ_pos _)⟩ _
   rw [supTime, hsup]
-  exact hT n D w cap hn hD (Nat.lt_succ_iff.1 (Finset.mem_range.1 hw))
+  grind
 
 /-- **The bound of Theorem 17 for the host.**  The parameter routines compute `Dfun n` from `n` and
 `Gfun D` from `D`.  These agree with the parameters `D n` and `g n` of the claim, which are defined
@@ -238,6 +237,6 @@ theorem obeysBound17_hostTime (D g : ℕ → ℕ) {Dfun Gfun tD tG : ℕ → ℕ
         gcongr
     _ ≤ bound17 strassen D g C T n κ := by
         unfold bound17 budget
-        linarith [hquery]
+        linarith 
 
 end Light.Sec3

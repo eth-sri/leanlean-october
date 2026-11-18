@@ -47,7 +47,7 @@ theorem codeUpTo_succ (hl : l < bs.length) :
     codeUpTo bs o i (l + 1) = codeUpTo bs o i l * 7 +
       if bs.getD l false then (i.map (3 + ·)).getD ((bs.take l).count true) 0
       else o.getD ((bs.take l).count false) 0 := by
-  rw [codeUpTo, ThreeSumApsp.ofDigitList_take_succ 7 _ (by rwa [Spec.length_gluedDigits]),
+  rw [codeUpTo, ThreeSumApsp.ofDigitList_take_succ 7 _ (by simp_all),
     Spec.gluedDigits, ThreeSumApsp.getD_weaveList, if_pos hl]
   rfl
 
@@ -56,7 +56,7 @@ theorem codeUpTo_lt (ho : ∀ x ∈ o, x < 3) (hi : ∀ x ∈ i, x < 4) (hl : l 
     codeUpTo bs o i l < 7 ^ l := by
   have hlt := ThreeSumApsp.ofDigitList_lt ((Spec.gluedDigits bs o i).take l) fun d hd =>
     Spec.lt_of_mem_gluedDigits ho hi d (List.mem_of_mem_take hd)
-  rwa [List.length_take, Spec.length_gluedDigits, Nat.min_eq_left hl] at hlt
+  aesop
 
 end code
 
@@ -66,7 +66,7 @@ theorem codeUpTo_unrank (L m s r k : ℕ) :
     codeUpTo (Spec.unrank L m s) (ThreeSumApsp.digitList 3 (L - m) r) (ThreeSumApsp.digitList 4 m k)
         L
       = Spec.gluedCode L m (Spec.unrank L m s) r k := by
-  rw [codeUpTo, List.take_of_length_le (by simp [Spec.length_unrank]), Spec.gluedCode]
+  rw [codeUpTo, List.take_of_length_le (by simp), Spec.gluedCode]
 
 /-! ## Sizes -/
 
@@ -131,7 +131,7 @@ theorem rowNo_lt {g h r : ℕ} (hβ : A.β < A.p.nB) (hg : g < A.p.K0) (hh : h <
     A.rowNo g h r < A.p.N + A.p.S7 ∧ A.blockNo g h * A.p.N0 < A.p.N + A.p.S7 ∧
       A.blockNo g h < A.p.N + A.p.S7 ∧ A.β * A.p.K0 < A.p.N + A.p.S7 := by
   -- row < nB K₀ N₀ ≤ N + K₀ N₀ - 1 < N + 7^L, and the other three numbers are at most the row.
-  have hposition : (if A.side = 0 then g else h) < A.p.K0 := by split <;> assumption
+  have hposition : (if A.side = 0 then g else h) < A.p.K0 := by grind
   have hblock : A.β * A.p.K0 + A.p.K0 ≤ A.p.nB * A.p.K0 := Nat.mul_add_le_mul hβ le_rfl
   have hrow : A.blockNo g h * A.p.N0 + A.p.N0 ≤ A.p.nB * A.p.K0 * A.p.N0 :=
     Nat.mul_add_le_mul (show A.blockNo g h < A.p.nB * A.p.K0 by unfold blockNo; omega) le_rfl
@@ -141,8 +141,6 @@ theorem rowNo_lt {g h r : ℕ} (hβ : A.β < A.p.nB) (hg : g < A.p.K0) (hh : h <
   have hpad : numBands A.p.L A.p.m A.p.N * bandSize A.p.L A.p.m
       ≤ A.p.N + bandSize A.p.L A.p.m - 1 := Nat.div_mul_le_self _ _
   have hsize := bandSize_le A.p.L A.p.m
-  have hsize_pos : 0 < bandSize A.p.L A.p.m :=
-    Nat.mul_pos (by change 0 < A.p.K0; omega) (N0_pos _ _)
   have hle : A.blockNo g h ≤ A.blockNo g h * A.p.N0 := Nat.le_mul_of_pos_right _ (by omega)
   have hS7 : A.p.S7 = 7 ^ A.p.L := rfl
   have hfirst : A.β * A.p.K0 ≤ A.blockNo g h := Nat.le_add_right ..
@@ -192,15 +190,13 @@ theorem OverwrittenWith.trans (h₁ : OverwrittenWith T arr n μ μ')
   refine ⟨h₁.1.trans h₂.1, fun c hc => ?_⟩
   rcases h₂.2 c hc with h | h
   · exact (h₁.2 c hc).imp h.trans h.trans
-  · exact Or.inr h
+  omega
 
 /-- One write of an entry of the target. -/
 theorem OverwrittenWith.write {c : ℕ} (hc : c < n) :
     OverwrittenWith T arr n μ (Function.update μ (arr + c) (T.getD c 0)) := by
   refine ⟨SameOutside.refl.update ⟨by omega, by omega⟩ _, fun x _ => ?_⟩
-  by_cases hx : x = c
-  · exact Or.inr (hx ▸ Function.update_self ..)
-  · exact Or.inl (Function.update_of_ne (by omega) _ _)
+  grind
 
 /-- A cell that is right stays right. -/
 theorem OverwrittenWith.keep (h : OverwrittenWith T arr n μ μ') {c : ℕ} (hc : c < n)

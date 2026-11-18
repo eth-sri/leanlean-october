@@ -31,11 +31,11 @@ variable {W : ℕ} {code : List Instr} {disp n : ℕ}
 /-- The dispatcher for one more position. -/
 private theorem dispatcher_succ (n : ℕ) :
     dispatcher (n + 1) = dispatcher n ++ [.sub cRR cRR cONE, .bltz cRR n] := by
-  simp [dispatcher, List.range_succ, List.flatMap_append]
+  simp [dispatcher, List.range_succ]
 
 /-- Two instructions for each position. -/
 theorem length_dispatcher (n : ℕ) : (dispatcher n).length = 2 * n := by
-  simp [dispatcher, List.length_flatMap, Nat.mul_comm]
+  simp [dispatcher, Nat.mul_comm]
 
 /-- A shorter dispatcher is the beginning of a longer one. -/
 private theorem dispatcher_prefix {j n : ℕ} (h : j ≤ n) : dispatcher j <+: dispatcher n := by
@@ -59,7 +59,7 @@ private theorem steps_dispatcher_pair {j : ℕ} (hcode : CodeAt code disp (dispa
   have pairCode := codeAt_dispatcher hcode hj
   -- RR := RR - 1
   have run₁ := steps_sub pairCode (Function.update_self cRR (wd W v) m)
-    (by cell_read using hone)
+    (by trivial)
   rw [Function.update_idem] at run₁
   -- if RR < 0 go to j
   exact run₁.trans (steps_bltz pairCode.tail (Function.update_self _ _ _) hv)

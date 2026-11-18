@@ -5,7 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Sec3.Theorem21
+public import ThreeSumApsp.Util.Asymptotics.PowLittleO
+public import Mathlib.Analysis.Complex.ExponentialBounds
 public import ThreeSumApsp.Sec3.Theorem21b.RepeatedSquaring
 public import ThreeSumApsp.Spec.Sec3.Problems
 
@@ -56,7 +57,7 @@ private theorem two_mul_le_untopD_add_untopD {B : ℤ} (hB : 0 ≤ B) {d d' : Wi
   have hlow' := neg_le_untopD hB hd'
   rcases WithTop.add_eq_top.1 h with rfl | rfl
   · rw [WithTop.untopD_top]; omega
-  · rw [WithTop.untopD_top]; omega
+  simp; omega
 
 /-- If a sum of two entries is a number, then the two codes add up to this number. -/
 private theorem untopD_add_untopD_of_coe {INF y : ℤ} {d d' : WithTop ℤ}
@@ -91,7 +92,7 @@ theorem encodes_weightList (n : ℕ) (INF : ℤ) (ADJ W : List ℤ) :
   rw [entry, weightList, List.getD_map_range _ (Nat.mul_add_lt_mul i.isLt j.isLt),
     Nat.mul_add_div_of_lt j.isLt,
     Nat.mul_add_mod_of_lt j.isLt]
-  simp only [weightMatrix, Matrix.of_apply, graphOf, Fin.ext_iff]
+  simp  [weightMatrix, graphOf, Fin.ext_iff]
   split_ifs <;> rfl
 
 /-- **One round.**  If a list holds a matrix `D` whose finite entries are bounded by `B`, with `3B`
@@ -149,7 +150,7 @@ theorem edgeWeightsBoundedBy_graphOf {n : ℕ} {ADJ W : List ℤ} {U : ℤ} (hU 
   split_ifs at hx
   · obtain rfl := WithTop.coe_injective hx
     exact AbsLe.abs_getD_le hU hW _
-  · exact absurd hx WithTop.top_ne_coe
+  simp_all
 
 variable {n U : ℕ} {ADJ W : List ℤ}
 
@@ -183,7 +184,7 @@ theorem abs_squareList_le (hn : 1 ≤ n) (hU : 1 ≤ U) (hW : AbsLe W U)
   cases hd : minPlusSquares (graphOf n ADJ W) t ⟨a, ha⟩ ⟨b, hb⟩ with
   | top =>
     rw [WithTop.untopD_top, abs_of_nonneg (by positivity)]
-    exact le_of_eq (by push_cast; rfl)
+    exact le_of_eq rfl
   | coe y =>
     have hy := abs_minPlusSquares_le hW hc t _ _ y hd
     rw [WithTop.untopD_coe]

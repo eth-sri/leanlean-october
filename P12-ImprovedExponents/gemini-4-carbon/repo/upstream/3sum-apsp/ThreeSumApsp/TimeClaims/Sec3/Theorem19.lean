@@ -5,7 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Sec3.Theorem19
+public import ThreeSumApsp.Sec3.Theorem17.Witnesses
+public import ThreeSumApsp.Sec3.Parameters
+public import Mathlib.Algebra.Order.Floor.Semifield
 public import ThreeSumApsp.TimeClaims.Sec3.Arithmetic
 public import ThreeSumApsp.Util.Asymptotics.LogU
 

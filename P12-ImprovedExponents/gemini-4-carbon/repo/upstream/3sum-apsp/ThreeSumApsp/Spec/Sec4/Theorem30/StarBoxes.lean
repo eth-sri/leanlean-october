@@ -84,7 +84,7 @@ theorem mem_starBoxes {L : ℕ} (m t e : ℕ) (π : Cube L) :
 theorem exists_of_mem_starBoxes {L m t e : ℕ} (l : List ℕ) (h : l ∈ starBoxes L m t e) :
     ∃ π : Cube L, digitsC π = l := by
   obtain ⟨τ, -, -, hτ⟩ := exists_leaf_of_mem_starBoxes h
-  exact ⟨_, hτ⟩
+  grind
 
 /-- The number of stars can be read off a member of the list: the star is a symbol of its own, the
 digit 10.  So boxes with different numbers of stars are different strings. -/
@@ -165,12 +165,10 @@ theorem sum_length_starBoxes (L m t : ℕ) :
       ((boxes L m t).filter fun π => (Cube.starLevels π).card = e).card := by
     refine Finset.card_eq_sum_card_fiberwise fun π hπ => ?_
     have := (mem_boxes.1 (Finset.mem_coe.1 hπ)).1
-    simp only [Finset.coe_range, Set.mem_Iio]
-    omega
+    grind
   rw [List.sum_map_range, hfibres]
   refine Finset.sum_congr rfl fun e _ => ?_
   rw [length_starBoxes]
-  refine congrArg Finset.card (Finset.ext fun π => ?_)
-  rw [mem_boxesWithStars, Finset.mem_filter, mem_boxes]
+  rfl
 
 end ThreeSumApsp.Spec

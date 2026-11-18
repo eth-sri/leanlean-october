@@ -86,8 +86,6 @@ theorem spreadStep_spec (hw : (lim.space : ℤ) ≤ lim.word) (h4 : (4 : ℤ) �
   have hle : spread i ≤ N₂ * N₂ := (spread_le_sq i).trans (Nat.mul_le_mul hi.le hi.le)
   have heven : i % 2 = 0 → (i + 1) / 2 = i / 2 ∧ (i + 1) % 2 = 1 := by omega
   have hodd : i % 2 ≠ 0 → (i + 1) / 2 = i / 2 + 1 ∧ (i + 1) % 2 = 0 := by omega
-  have hj : i / 2 < i := by omega
-  have hb : i % 2 < 2 := by omega
   generalize i / 2 = j at *
   generalize i % 2 = b at *
   -- dst[i] := 4 dst[j] + parity
@@ -234,7 +232,7 @@ open Classical in
 theorem getD_markList {len : ℕ} (idx : ℕ → ℕ) (t : ℕ) {i : ℕ} (hi : i < len) :
     (markList len idx t).getD i 0 = if ∃ s < t, idx s = i then 1 else 0 := by
   induction t with
-  | zero => simp [markList, List.getD_eq_getElem?_getD, hi]
+  | zero => simp [markList]
   | succ t ih =>
     rw [markList, List.getD_eq_getElem?_getD, List.getElem?_set]
     by_cases h : idx t = i
@@ -248,12 +246,10 @@ theorem getD_markList {len : ℕ} (idx : ℕ → ℕ) (t : ℕ) {i : ℕ} (hi : 
       · exact absurd (h' ▸ e) h
 
 theorem getD_vunit {p k s : ℕ} (hs : s < p) : (vunit p k).getD s 0 = if s = k then 1 else 0 := by
-  rw [vunit, List.getD_eq_getElem _ _ (by simpa using hs)]
+  rw [vunit, List.getD_eq_getElem _ _ (by grind)]
   simp
 
-theorem getD_zeros (p s : ℕ) : (zeros p).getD s 0 = 0 := by
-  rw [zeros, List.getD_eq_getElem?_getD, List.getElem?_replicate]
-  split_ifs <;> rfl
+theorem getD_zeros (p s : ℕ) : (zeros p).getD s 0 = 0 := by simp
 
 /-- A unit vector and the zero vector have p entries. -/
 theorem length_unitOrZero (c : Prop) [Decidable c] (p k : ℕ) :
@@ -272,12 +268,9 @@ theorem markList_eq_zList {n K p m : ℕ} (R : List ℕ) (ρ κ : ℕ → ℕ) (
     fun _ _ => length_unitOrZero _ _ _
   refine List.ext_getElem (by rw [length_markList, length_zList _ _ hlenM]) fun i hi₁ hi₂ => ?_
   have hi : i < 4 ^ K * p := by rwa [length_markList] at hi₁
-  have hp : 0 < p := by
-    rcases Nat.eq_zero_or_pos p with h | h
-    · rw [h] at hi; omega
-    · exact h
+  have hp : 0 < p := by grind
   rw [← List.getD_eq_getElem _ 0 hi₁, ← List.getD_eq_getElem _ 0 hi₂, getD_markList _ _ hi]
-  have hz : i / p < 4 ^ K := Nat.div_lt_of_lt_mul (by rwa [Nat.mul_comm] at hi)
+  have hz : i / p < 4 ^ K := Nat.div_lt_of_lt_mul (by grind)
   have hs : i % p < p := Nat.mod_lt _ hp
   have hsplit : i = i / p * p + i % p := (Nat.div_add_mod' i p).symm
   have hget :
@@ -317,7 +310,7 @@ theorem markList_eq_matPList {n K p : ℕ} (R : List ℕ) (hR : ∀ t < n * n, R
     (fun t ht => ⟨Nat.div_lt_of_lt_mul' ht, Nat.mod_lt_of_lt_mul ht, Nat.div_add_mod' _ _⟩)
       fun a ha c hc =>
       ⟨Nat.mul_add_lt_mul ha hc, Nat.mul_add_div_of_lt hc, Nat.mul_add_mod_of_lt hc⟩
-  simpa only [zIdx, Nat.one_mul, matPList] using h
+  aesop
 
 /-- The second matrix of the proof of Theorem 17, Q, by marking. -/
 theorem markList_eq_matQList {n K p : ℕ} (R : List ℕ) (hR : ∀ t < n * n, R.getD t 0 < p) :
@@ -327,7 +320,7 @@ theorem markList_eq_matQList {n K p : ℕ} (R : List ℕ) (hR : ∀ t < n * n, R
     (fun c b => b * n + c) hR
     (fun t ht => ⟨Nat.mod_lt_of_lt_mul ht, Nat.div_lt_of_lt_mul' ht, Nat.div_add_mod' _ _⟩)
     fun c hc b hb => ⟨Nat.mul_add_lt_mul hb hc, Nat.mul_add_mod_of_lt hc, Nat.mul_add_div_of_lt hc⟩
-  simpa only [zIdx, Nat.one_mul, Nat.add_comm (spread (_ / n)), matQList] using h
+  simpa  [zIdx, Nat.add_comm (spread (_ / n)), matQList] using h
 
 /-! ### The program -/
 
@@ -408,12 +401,9 @@ theorem buildZMark_spec (pre : BuildZPre lim μ dst r mort n K p R)
   generalize spread x = sx at *
   generalize spread y = sy at *
   have hidxZ : ((mx : ℤ) * sx + my * sy) * p + rho < (4 ^ K * p : ℕ) := by exact_mod_cast hidx
-  have hzZ : (mx : ℤ) * sx + my * sy < (4 ^ K : ℕ) := by exact_mod_cast hz
-  have hx0 : (0 : ℤ) ≤ (mx : ℤ) * sx := by positivity
-  have hy0 : (0 : ℤ) ≤ (my : ℤ) * sy := by positivity
   have hp0 : (0 : ℤ) ≤ ((mx : ℤ) * sx + my * sy) * p := by positivity
   exact Ends.storeTo (dst + ((mx * sx + my * sy) * p + rho)) 1 rfl
-    (by light_side [hreadX, hreadY, hreadR])
+    (by light_side [hreadX, hreadY])
 
 open BuildZ in
 /-- **buildZ**, for any two multipliers that keep the places inside the matrix. -/
@@ -456,7 +446,7 @@ theorem buildZ_spec (pre : BuildZPre lim μ dst r mort n K p R)
     exact ⟨hseg, hr⟩
   case round =>
     rintro t _ ht - ⟨μ', rfl, hseg, hr⟩
-    have hn : 0 < n := Nat.pos_of_ne_zero fun e => by simp [e] at ht
+    have hn : 0 < n := Nat.pos_of_ne_zero fun e => by grind
     have hidx :=
       Nat.mul_add_lt_mul (hplace _ (Nat.div_lt_of_lt_mul' ht) _ (Nat.mod_lt_of_lt_mul ht))
       (pre.res.getD_lt ht)
@@ -475,7 +465,7 @@ theorem buildZ_P_spec (pre : BuildZPre lim μ dst r mort n K p R) :
       Seg σ'.mem dst (matPList n p K R) ∧ SameOutside μ σ'.mem dst (4 ^ K * p) := by
   have h := buildZ_spec (P := P) (d := d) (mx := 2) (my := 1) pre fun x hx y hy => by
     have := zIdx_lt (K := K) (lt_of_lt_of_le hx pre.n_le) (lt_of_lt_of_le hy pre.n_le)
-    simpa [zIdx] using this
+    aesop
   rwa [markList_eq_matPList R fun t ht => pre.res.getD_lt ht] at h
 
 /-- **buildZ with (mx, my) = (1, 2)**: the matrix Q of the proof of Theorem 17. -/
@@ -485,7 +475,7 @@ theorem buildZ_Q_spec (pre : BuildZPre lim μ dst r mort n K p R) :
       Seg σ'.mem dst (matQList n p K R) ∧ SameOutside μ σ'.mem dst (4 ^ K * p) := by
   have h := buildZ_spec (P := P) (d := d) (mx := 1) (my := 2) pre fun x hx y hy => by
     have := zIdx_lt (K := K) (lt_of_lt_of_le hy pre.n_le) (lt_of_lt_of_le hx pre.n_le)
-    simp only [zIdx] at this
+    simp  [zIdx] at this
     omega
   rwa [markList_eq_matQList R fun t ht => pre.res.getD_lt ht] at h
 
@@ -522,15 +512,14 @@ theorem absLe_unitOrZero (c : Prop) [Decidable c] (p k : ℕ) :
   split_ifs at hx
   · obtain ⟨i, -, rfl⟩ := List.mem_map.1 hx
     split_ifs <;> simp
-  · rw [zeros, List.mem_replicate] at hx
-    simp [hx.2]
+  grind
 
 /-- The entries of a matrix of unit vectors and zero vectors are 0 or 1. -/
 theorem absLe_zList_unit (K : ℕ) (M : ℕ → ℕ → List ℤ) (hM : ∀ a c, AbsLe (M a c) 1) :
     AbsLe (zList K M) 1 := by
   intro x hx
   obtain ⟨z, -, hz⟩ := List.mem_flatMap.1 hx
-  exact hM _ _ x hz
+  aesop
 
 /-- The entries of P are 0 or 1. -/
 theorem absLe_matPList (n p K : ℕ) (R : List ℕ) : AbsLe (matPList n p K R) 1 :=

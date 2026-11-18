@@ -64,10 +64,10 @@ theorem tripleZeroUpTo_length {D C : List ℤ} (hlen : C.length = D.length) :
   refine flag_congr ⟨?_, ?_⟩
   · rintro ⟨j, hj, hp⟩
     rw [List.getD_eq_getElem _ _ hj, List.getD_eq_getElem _ _ (hlen ▸ hj)] at hp
-    exact ⟨(D[j], C[j]), List.mem_iff_getElem.2 ⟨j, by simp [hlen, hj], by simp⟩, hp⟩
+    exact ⟨(D[j], C[j]), List.mem_iff_getElem.2 ⟨j, by grind, by simp⟩, hp⟩
   · rintro ⟨q, hq, hp⟩
     obtain ⟨j, hj, rfl⟩ := List.mem_iff_getElem.1 hq
-    have hj' : j < D.length := by simp at hj; omega
+    have hj' : j < D.length := by grind
     refine ⟨j, hj', ?_⟩
     rw [List.getD_eq_getElem _ _ hj', List.getD_eq_getElem _ _ (hlen ▸ hj')]
     simpa using hp
@@ -139,16 +139,16 @@ theorem twicePart_succ {D C : List ℤ} (hlen : C.length = D.length) {i : ℕ} (
     twicePart D C (i + 1) =
       if D.getD i 0 ≠ 0 ∧ 1 < C.getD i 0 then twicePart D C i ++ [2 * D.getD i 0]
       else twicePart D C i := by
-  have hi' : i < (D.zip C).length := by simp [hlen, hi]
+  have hi' : i < (D.zip C).length := by grind
   rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _ _ (hlen ▸ hi)]
   split_ifs with h
-  · exact (passList_succ_of _ hi' (by simpa using ⟨h.1, h.2⟩)).trans (by simp [twicePart])
-  · exact passList_succ_of_not _ hi' (by simpa [Int.add_one_le_iff] using h)
+  · exact (passList_succ_of _ hi' (by grind)).trans (by simp [twicePart])
+  · exact passList_succ_of_not _ hi' (by simpa  using h)
 
 /-- At the end all the doubles are written. -/
 theorem twicePart_length {D C : List ℤ} (hlen : C.length = D.length) :
     twicePart D C D.length = twiceList D C := by
-  have hzip : (D.zip C).length = D.length := by simp [hlen]
+  have hzip : (D.zip C).length = D.length := by grind
   rw [twicePart, ← hzip, passList_length]
   rfl
 
@@ -212,7 +212,7 @@ theorem twiceRound_runs {μ : ℕ → ℤ} {val mul out V i : ℕ} {D C : List �
   rw [← hreadVal, ← hreadMul] at hstep
   by_cases h0 : μ' (val + i) = 0
   · -- the value is 0: Idx := Idx + 1
-    rw [if_neg (by simp [h0])] at hstep
+    rw [if_neg (by omega)] at hstep
     exact ⟨by simp [twiceRound, h0, Limits.Addr, abs_le]; omega, μ',
       by simp [twiceRound, update_frame_setLocal, h0, hstep], hstep ▸ hseg, hsame⟩
   by_cases h1 : 1 < μ' (mul + i)
@@ -239,7 +239,7 @@ theorem twice_spec {p : ℕ} (hP : P[p]? = some twiceBody) : TwiceSpec lim P p :
   -- while Idx < Len
   refine Ends.next _ (Ends.whileBlock (TwiceInv μ val mul out D C) D.length ?start ?round ?done
     (hT := le_rfl)) (by simp [twiceRound]; omega)
-  case start => exact ⟨μ, by simp [twicePart], by simp [twicePart], .refl⟩
+  case start => exact ⟨μ, rfl, by simp [twicePart], .refl⟩
   case round =>
     intro i σ hi hI
     obtain ⟨μ', rfl, -⟩ := id hI

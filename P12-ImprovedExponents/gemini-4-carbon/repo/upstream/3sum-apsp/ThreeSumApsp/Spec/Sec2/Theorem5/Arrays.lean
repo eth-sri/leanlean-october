@@ -77,9 +77,6 @@ theorem length_arrL {n : ℕ} (a : LeftStr n → ℤ) : (arrL a).length = 7 ^ n 
 theorem length_arrR {n : ℕ} (b : RightStr n → ℤ) : (arrR b).length = 7 ^ n :=
   length_arrStr rightEquiv b
 
-/-- The list of an array on the leaves has `10^n` entries. -/
-theorem length_arrT {n : ℕ} (enc : Leaf n → ℤ) : (arrT enc).length = 10 ^ n :=
-  length_arrStr termEquiv enc
 
 /-- The entry at a left string is the entry of the list at its code. -/
 theorem getD_arrL {n : ℕ} (a : LeftStr n → ℤ) (u : LeftStr n) : (arrL a).getD (codeL u) 0 = a u :=

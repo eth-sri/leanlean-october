@@ -61,8 +61,7 @@ theorem card_bucket {M : ℕ} (hM : 1 ≤ M) {L : List ℤ} (hL : L.Nodup) (r : 
   congr 1
   refine List.filter_congr fun x _ => ?_
   have hcast := Int.natCast_toNat_emod hM x
-  change decide (x % (M : ℤ) = (r : ℤ)) = decide ((x % (M : ℤ)).toNat = r)
-  exact decide_eq_decide.2 (by omega)
+  grind
 
 /-- A cell whose remainder occurs once holds the number with that remainder. -/
 theorem arr_of_count_eq_one {M : ℕ} (hM : 1 ≤ M) {L : List ℤ} (hL : L.Nodup) (pd : ℤ) {j : ℕ}
@@ -74,8 +73,7 @@ theorem arr_of_count_eq_one {M : ℕ} (hM : 1 ≤ M) {L : List ℤ} (hL : L.Nodu
   have hmem : L[j] ∈ bucket L.toFinset M ((L[j] % (M : ℤ)).toNat : ℕ) := by
     rw [bucket, mem_filter, List.mem_toFinset]
     exact ⟨List.getElem_mem hj, (Int.natCast_toNat_emod hM _).symm⟩
-  rw [ha] at hmem ⊢
-  rw [sum_singleton, mem_singleton.1 hmem]
+  grind
 
 /-- A cell whose remainder does not occur exactly once holds the padding value. -/
 theorem arr_of_count_ne_one {M : ℕ} (hM : 1 ≤ M) {L : List ℤ} (hL : L.Nodup) (pd : ℤ) {r : ℕ}
@@ -88,7 +86,7 @@ theorem arr_of_le {M : ℕ} (hM : 1 ≤ M) (S : Finset ℤ) (pd : ℤ) {i : ℕ}
   have hempty : bucket S M i = ∅ := by
     rw [bucket, filter_eq_empty_iff]
     intro x _ hx
-    have hlt : x % (M : ℤ) < M := Int.emod_lt_of_pos _ (by exact_mod_cast hM)
+    have hlt : x % (M : ℤ) < M := Int.emod_lt_of_pos _ (by omega)
     omega
   rw [arr, hempty, if_neg (by simp)]
 

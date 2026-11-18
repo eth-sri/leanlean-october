@@ -99,8 +99,8 @@ theorem bestOf_succ (f : ℕ → ℕ) (L : List ℕ) {i : ℕ} (hi : 1 ≤ i) (h
     bestOf f L (i + 1) = if f L[i] < f (bestOf f L i) then L[i] else bestOf f L i := by
   rw [bestOf, bestOf, List.take_succ_eq_append_getElem hiL, List.argmin_concat]
   cases h : (L.take i).argmin f with
-  | none => exact absurd (List.argmin_eq_none.1 h) (List.ne_nil_of_length_pos (by simp; omega))
-  | some c => simp only [Option.getD_some]; split_ifs <;> rfl
+  | none => exact absurd (List.argmin_eq_none.1 h) (List.ne_nil_of_length_pos (by grind))
+  | some c => simp ; split_ifs <;> rfl
 
 /-- The best of all the elements is what `List.argmin` returns. -/
 theorem bestOf_length (f : ℕ → ℕ) (L : List ℕ) : (L.argmin f).getD 0 = bestOf f L L.length := by
@@ -117,16 +117,16 @@ theorem one_le_kappaOf (n U : ℕ) : 1 ≤ kappaOf n U := le_max_left _ _
 /-- `U ≤ n^κ` for this exponent. -/
 theorem le_rpow_kappaOf {n U : ℕ} (hn : 2 ≤ n) (hU : 1 ≤ U) :
     (U : ℝ) ≤ (n : ℝ) ^ kappaOf n U := by
-  have hn1 : (1 : ℝ) < (n : ℝ) := by exact_mod_cast hn
-  have hU0 : (0 : ℝ) < (U : ℝ) := by exact_mod_cast hU
+  have hn1 : (1 : ℝ) < (n : ℝ) := by aesop
+  have hU0 : (0 : ℝ) < (U : ℝ) := by positivity
   calc (U : ℝ) = (n : ℝ) ^ Real.logb n U := (Real.rpow_logb (by linarith) hn1.ne' hU0).symm
     _ ≤ (n : ℝ) ^ kappaOf n U := Real.rpow_le_rpow_of_exponent_le hn1.le (le_max_right _ _)
 
 /-- It is the least such exponent. -/
 theorem kappaOf_le {n U : ℕ} (hn : 2 ≤ n) (hU : 1 ≤ U) {κ' : ℝ} (h1 : 1 ≤ κ')
     (h : (U : ℝ) ≤ (n : ℝ) ^ κ') : kappaOf n U ≤ κ' := by
-  have hn1 : (1 : ℝ) < (n : ℝ) := by exact_mod_cast hn
-  have hU0 : (0 : ℝ) < (U : ℝ) := by exact_mod_cast hU
+  have hn1 : (1 : ℝ) < (n : ℝ) := by aesop
+  have hU0 : (0 : ℝ) < (U : ℝ) := by positivity
   refine max_le h1 ?_
   rw [div_le_iff₀ (Real.log_pos hn1), ← Real.log_rpow (by linarith)]
   exact Real.log_le_log hU0 h

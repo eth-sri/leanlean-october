@@ -39,9 +39,7 @@ namespace LopHosts
 /-- One more parameter with the value 1 costs a factor `2^e`. -/
 theorem polyBound_snoc_one (s e : ℕ) (ps : List ℕ) :
     polyBound s e (ps ++ [1]) = polyBound (s + e) e ps := by
-  simp only [polyBound, List.map_append, List.map_cons, List.map_nil, List.prod_append,
-    List.prod_cons, List.prod_nil, mul_one,
-    mul_pow, pow_add]
+  simp  [polyBound]
   norm_num
   ring
 
@@ -62,10 +60,10 @@ theorem solvesN_count_of_thin {P : Program} {p : ℕ} {Tn : List ℕ → ℕ} {n
   refine ⟨body, hp, fun R lim d x μ fr hpre hok => ?_⟩
   obtain ⟨h1, -, h3⟩ := hpre
   have hpars : thinTask.pars x = lopCountTask.pars x ++ [1] := by
-    simp only [thinTask, lopCountTask, List.cons_append, List.nil_append]
+    simp  [thinTask, lopCountTask]
     rw [h3]
   have hrun := hb R lim d x μ fr h1 (hpars ▸ hok)
-  rwa [hpars] at hrun
+  aesop
 
 /-- A polynomially bounded need stays so when a parameter is fixed to 1. -/
 theorem polyNeedN_snoc_one {need : List ℕ → Need} (h : PolyNeedN need) :
@@ -85,8 +83,7 @@ theorem claim_lopCountFromThinProduct : Claim.LopCountFromThinProduct lightModel
   obtain ⟨P, p, Tn, need, hneed, hsol, htime⟩ := hT
   refine ⟨P, p, _, _, polyNeedN_snoc_one hneed, solvesN_count_of_thin hsol,
     fun n D w w' hn hD hw => ?_⟩
-  have := htime n D w w' 1 1 hn hD le_rfl hw (by norm_num)
-  simpa using this
+  simp_all
 
 /-! ## Detecting with counting -/
 
@@ -183,7 +180,7 @@ theorem polyNeedN_detect {need : List ℕ → Need} (h : PolyNeedN need) :
   refine ⟨1 + s, e, fun ps => ?_⟩
   have h1 := polyBound_le_succ s e ps
   obtain ⟨a, b, c⟩ := h ps
-  simp only [lopDetectNeed]
+  simp  [lopDetectNeed]
   omega
 
 end LopHosts
@@ -200,8 +197,8 @@ theorem claim_lopDetectFromCount : Claim.LopDetectFromCount lightModel := by
     rw [List.append_assoc]
     exact detect_spec hsol hpre hok
   · have h1 := htime n D w w' hn hD hw
-    have h2 : (w : ℝ) ≤ w' := by exact_mod_cast hw
-    simp only [lopDetectTime, List.getD_cons_succ, List.getD_cons_zero]
+    have h2 : (w : ℝ) ≤ w' := by simp_all
+    simp  [lopDetectTime]
     push_cast
     linarith
 

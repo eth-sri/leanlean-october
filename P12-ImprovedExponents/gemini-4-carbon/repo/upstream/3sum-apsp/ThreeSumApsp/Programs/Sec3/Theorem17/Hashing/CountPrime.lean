@@ -187,7 +187,7 @@ theorem cp_places (w len n K p : ℕ) :
       cpScr w len n K p = cpRm w len n K p + 4 ^ K * p ∧
       w + countCells n p len K = cpScr w len n K p + strScr p K + (8 * (4 ^ K * p) + 1) := by
   refine ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, ?_⟩
-  simp only [cpScr, cpRm, cpQm, cpPm, cpSzt, cpMort, cpRac, cpRbc, cpRab, countCells]
+  simp  [cpScr, cpRm, cpQm, cpPm, cpSzt, cpMort, cpRac, cpRbc, cpRab, countCells]
   omega
 
 /-- The local variables of countPrime after its first part. -/
@@ -255,13 +255,13 @@ theorem CountPrimePre.four_le_word (pre : CountPrimePre lim d μ x p len K w) :
     (4 : ℤ) ≤ lim.word := by
   refine le_trans ?_ pre.wordStr
   have : 1 ≤ 16 ^ K * p := Nat.mul_pos (by positivity) pre.p_pos
-  exact_mod_cast (by omega : 4 ≤ 4 * (16 ^ K * p))
+  omega
 
 /-- The size of a matrix fits in a word. -/
 theorem CountPrimePre.size_le_word (pre : CountPrimePre lim d μ x p len K w) :
     ((4 ^ K * p : ℕ) : ℤ) ≤ lim.word := by
   have hle : 4 ^ K * p ≤ 16 ^ K * p := Nat.mul_le_mul_right _ (Nat.pow_le_pow_left (by norm_num) K)
-  exact le_trans (by exact_mod_cast (by omega : 4 ^ K * p ≤ 4 * (16 ^ K * p))) pre.wordStr
+  exact le_trans (by omega) pre.wordStr
 
 /-- The number of entries of a matrix fits in a word. -/
 theorem CountPrimePre.sq_le_word (pre : CountPrimePre lim d μ x p len K w) :
@@ -320,7 +320,6 @@ variable {ν : CpNums} {μ₀ μ μ' : ℕ → ℤ} {x : TriInst} {p len K w : �
 theorem CpTabs.keep (tabs : CpTabs μ x p len K w) (pre : CountPrimePre lim d μ₀ x p len K w)
     (hs : Kept μ μ' (cpPm w len x.n K) := by light_keep) : CpTabs μ' x p len K w := by
   have hplaces := cp_places w len x.n K p
-  have hrows := Nat.one_le_two_pow (n := K)
   have lenM := length_spreadList (2 ^ K)
   light_facts pre.inst
   exact ⟨tabs.dbl.keep, tabs.rab.keep, tabs.rbc.keep, tabs.rac.keep, tabs.mort.keep,
@@ -333,7 +332,6 @@ theorem CountPrimePre.residuesPre (pre : CountPrimePre lim d μ₀ x p len K w)
     (hlen : l.length = x.n * x.n) (hle : AbsLe l x.U) (hsrc : src + x.n * x.n ≤ w)
     (hdst : w + (len + 1) ≤ dst) (hend : dst + x.n * x.n ≤ lim.space) :
     ResiduesPre lim μ src dst (x.n * x.n) w p len x.U l := by
-  have cells := pre.cells
   exact ⟨pre.space_le, pre.p_pos, segDbl, segSrc, hlen, hle, pre.hU, by omega, by omega, hend,
     by omega, Or.inr (by omega), Or.inr (by omega), pre.wordDbl⟩
 

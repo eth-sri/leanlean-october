@@ -243,7 +243,7 @@ theorem succ_one (h : PlaceInv μ μ' y off δ Mo K val j) (hj : j < K.length) (
       rw [if_pos ⟨hone, (mem_take_succ hj _).2 (Or.inr rfl)⟩]
       rcases he with rfl | rfl <;> simp [Function.update_apply]
     · rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega), h.cells r hr e he]
-      simp only [mem_take_succ hj, hrK, or_false]
+      simp  [mem_take_succ hj, hrK]
   · rw [Function.update_of_ne fun hEq => hb ⟨_, hlt, Or.inr hEq⟩,
       Function.update_of_ne fun hEq => hb ⟨_, hlt, Or.inl hEq⟩, h.rest b hb]
 
@@ -255,16 +255,14 @@ theorem succ_many (h : PlaceInv μ μ' y off δ Mo K val j) (hj : j < K.length)
   by_cases hrK : r = K[j]
   · subst hrK
     simp [hmany]
-  · simp only [mem_take_succ hj, hrK, or_false]
+  · simp  [mem_take_succ hj, hrK]
 
 /-- After the last element. -/
 theorem done (h : PlaceInv μ μ' y off δ Mo K val K.length) {r : ℕ} (hr : r < Mo) {e : ℕ}
     (he : e = 0 ∨ e = δ) : μ' (y + 4 * r + off + e) =
       if K.count r = 1 then val r else μ (y + 4 * r + off + e) := by
   rw [h.cells r hr e he, List.take_length]
-  by_cases hone : K.count r = 1
-  · rw [if_pos ⟨hone, List.count_pos_iff.1 (by omega)⟩, if_pos hone]
-  · rw [if_neg fun h => hone h.1, if_neg hone]
+  grind
 
 end PlaceInv
 
@@ -312,7 +310,7 @@ theorem placeRound_ends (H : PassPre lim μ₀ d a sg g s off δ cap ylen L)
         PlaceInv μ μ'' a.y off δ a.Mo K val (j + 1) := by
   light_facts H H.bucket H.bucket.ok
   have hcells := H.bucket.ok.cells
-  simp only [collNeed] at hcells
+  simp  [collNeed] at hcells
   have hjK : j < K.length := hlen ▸ hj
   have hkey_lt := hlt _ (List.getElem_mem hjK)
   -- The three cells that the round reads lie outside the array, so they have not changed.
@@ -326,7 +324,6 @@ theorem placeRound_ends (H : PassPre lim μ₀ d a sg g s off δ cap ylen L)
   have hV : |sg * L[j]| ≤ (a.V : ℤ) := by
     rcases H.sign with rfl | rfl <;> simpa using H.bucket.bounded.getElem hj
   have hprod := abs_le.1 hV
-  have habs := abs_mul sg L[j]
   have hg' := abs_le.1 (le_refl |g|)
   -- key := mem[fr + j]
   light_set K[j] using hkey
@@ -380,12 +377,10 @@ theorem place_ends {pResid pTally : ℕ} (hR : ResidSpec lim P pResid) (hT : Tal
   simp only [tPlace]
   have hlen : (keys a.Mo (L.map (sg * ·))).length = L.length := by simp
   have hlt := keys_lt C.modulus_pos (L.map (sg * ·))
-  have hword := sq_add_le_word C.ok.word
-  have hsq : (0 : ℤ) ≤ (L.length : ℤ) * L.length := by positivity
   light_facts H C C.ok
   have hcells := C.ok.cells
   have hdepth := C.ok.depth
-  simp only [collNeed] at hcells hdepth
+  simp  [collNeed] at hcells hdepth
   -- fr' := fr + len
   light_set (a.fr + L.length : ℕ)
   -- resid(len, s, sg, M, fr, fr')
@@ -403,8 +398,7 @@ theorem place_ends {pResid pTally : ℕ} (hR : ResidSpec lim P pResid) (hT : Tal
   light_call (C.uncount_meets hT hlen hlt (counted.of_sameOutside same₃ H.belowArr H.apartTable))
     with res' μ₄ ⟨zero₄, same₄⟩
   refine ⟨{ x₃ with res := res' }, μ₄, rfl, fun r hr e he => ?_, ?_⟩
-  · have hcell := H.placeCell_lt (b := a.y + 4 * r + off + e) ⟨r, hr, by omega⟩
-    rw [← hlen] at inv
+  · rw [← hlen] at inv
     rw [same₄ _ (by omega), inv.done hr he, kept₂ _ (by omega)]
   · exact sameOn_of_zeroAt ((kept₂.then inv.rest fun b hb => ⟨⟨hb.1.1, hb.2⟩, hb.1.2⟩).then same₄
       fun b hb => ⟨hb, hb.2⟩) C.zero zero₄
@@ -427,7 +421,7 @@ theorem place_arr {pResid pTally : ℕ} (hR : ResidSpec lim P pResid) (hT : Tall
   refine (place_ends hR hT H (val := fun r => arr (L.map (sg * ·)).toFinset a.Mo pd r + g)
     (fun j hj hone => ?_) x).mono le_rfl ?_
   · have h := arr_of_count_eq_one hM hnd' pd (j := j) (by simpa using hj)
-    simp only [List.getElem_map] at h
+    simp  at h
     rw [h hone]
   · rintro _ ⟨x', μ', rfl, hcells, hrest⟩
     refine ⟨x', μ', rfl, fun r hr e he => ?_, hrest⟩
@@ -453,7 +447,7 @@ theorem KeptCol.cell {μ μ' : ℕ → ℤ} {fr y c t : ℕ} (h : KeptCol μ μ'
 /-- The cells outside the array have not changed either. -/
 theorem KeptCol.keptBut {μ μ' μ'' : ℕ → ℤ} {fr y c t : ℕ} (h : KeptCol μ' μ'' fr y c t)
     (hk : KeptBut μ μ' fr y (4 * c)) (ht : t < 4 := by omega) : KeptBut μ μ'' fr y (4 * c) :=
-  hk.then h fun b hb => ⟨hb, hb.1, fun i hi => by have := hb.2; omega⟩
+  hk.then h fun b hb => ⟨hb, hb.1, fun i hi => by omega⟩
 
 section column
 
@@ -629,7 +623,7 @@ theorem ArrPre.pass (h : ArrPre lim μ d n a) (hS : ArrSet μ n a s L) {sg g : �
           belowList := hS.below
           belowTable := h.belowTable
           apart := hS.apartTable
-          ok := h.ok.mono (wordNeed_mono hle hM) (by simp only [collNeed, nodeArrayNeed]; omega)
+          ok := h.ok.mono (wordNeed_mono hle hM) (by simp  [collNeed, nodeArrayNeed]; omega)
             le_rfl }
       sign := hsg
       belowArr := h.belowArr
@@ -647,12 +641,6 @@ theorem arrConsts_ends (h : ArrPre lim μ d n a) :
       fun σ' => σ' = ⟨frame (arrLocals a ⟨0, 0, 0, 0, 0, 0⟩ 0 0 0 0 0 0), μ⟩ := by
   have hword := h.word_le
   light_facts h h.ok
-  have hnonneg : (0 : ℤ) ≤ (a.m : ℤ) * a.m := by positivity
-  have habs : |6 * (a.V : ℤ) + 4| = 6 * a.V + 4 := abs_of_nonneg (by positivity)
-  have hgroups : 8 * ((a.m : ℤ) * a.m) ≤ lim.space := by
-    have : 8 * (a.m * a.m) ≤ lim.space := by omega
-    exact_mod_cast this
-  -- W := 2 V + 1; G := 3 W + 1; groups := 2 (m m)
   light_set (2 * a.V + 1)
   light_set (6 * a.V + 4)
   light_set (2 * (a.m * a.m) : ℕ)
@@ -700,8 +688,6 @@ theorem arrPass₂_ends (hR : ResidSpec lim P pResid) (hT : TallySpec lim P pTal
           arr L.toFinset a.Mo (2 * a.V + 1) i + 3 * (6 * a.V + 4)) ∧
         KeptCol μ μ' a.fr a.y (2 * (a.m * a.m)) 2 := by
   have hword := h.word_le
-  have habs : |6 * (a.V : ℤ) + 4| = 6 * a.V + 4 := abs_of_nonneg (by positivity)
-  -- g := 3 G; s := s₂; len := l₂; off := 2
   light_set (3 * (6 * a.V + 4))
   light_set a.s₂
   light_set L.length using hl
@@ -721,7 +707,6 @@ theorem arrPass₃_ends (hR : ResidSpec lim P pResid) (hT : TallySpec lim P pTal
         arrZ L.toFinset a.Mo a.V i + 4 * (6 * a.V + 4)) ∧
       KeptCol μ σ'.mem a.fr a.y (2 * (a.m * a.m)) 3 := by
   have hword := h.word_le
-  have habs : |6 * (a.V : ℤ) + 4| = 6 * a.V + 4 := abs_of_nonneg (by positivity)
   light_facts h h.ok
   -- sg := -1; g := 4 G; s := s₃; len := l₃; off := 3; δ := 4 M
   light_set (-1)
@@ -804,7 +789,6 @@ theorem nodeArray_spec {p pResid pTally : ℕ} (hp : P[p]? = some (nodeArrayBody
   obtain ⟨L₂, rfl, seg₂, nodup₂, rfl⟩ : SetAt μ s₂ l₂ S₂ := h₂.set
   obtain ⟨L₃, rfl, seg₃, nodup₃, rfl⟩ : SetAt μ s₃ l₃ S₃ := h₃.set
   have hsq : 8 * m ^ 2 = 4 * (2 * (m * m)) := by ring
-  dsimp only at hy ay₁ ay₂ ay₃ ayc hM hMm hok ⊢
   rw [hsq] at hy ay₁ ay₂ ay₃ ayc ⊢
   refine .of_body hp ((nodeArrayBody_ends (n := n)
     (a := ⟨Mo, s₁, L₁.length, s₂, L₂.length, s₃, L₃.length, V, m, y, cnt, fr⟩) hR hT
@@ -813,7 +797,7 @@ theorem nodeArray_spec {p pResid pTally : ℕ} (hp : P[p]? = some (nodeArrayBody
     ⟨seg₂, nodup₂, fun x hx => h₂.bdd x (List.mem_toFinset.2 hx), h₂.le, h₂.below, h₂.apart, ay₂⟩
     ⟨seg₃, nodup₃, fun x hx => h₃.bdd x (List.mem_toFinset.2 hx), h₃.le, h₃.below, h₃.apart, ay₃⟩
     rfl rfl rfl).mono ?_ fun _ h => h)
-  simp only [tNodeArray, tPlace, sq]
+  simp  [tNodeArray, tPlace]
   omega
 
 end Light.Sec3.ChanHe

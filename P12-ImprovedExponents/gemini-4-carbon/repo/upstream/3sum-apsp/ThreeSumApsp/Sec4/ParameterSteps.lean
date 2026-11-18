@@ -65,8 +65,8 @@ theorem Corollary26.padding {N D₀ : ℕ} (D' : ℕ) (hD : D₀ ≤ D') (X : Ma
   refine (Fintype.sum_of_injective (Fin.castLE hD) (Fin.castLE_injective hD) _ _
     (fun k hk => ?_) fun k => ?_).symm
   · have hk' : ¬ (k : ℕ) < D₀ := fun h => hk ⟨⟨k, h⟩, rfl⟩
-    simp only [padInnerCols, dif_neg hk', zero_mul]
-  · simp only [padInnerCols, padInnerRows, Fin.val_castLE, k.isLt, dite_true, Fin.eta]
+    simp  [padInnerCols, dif_neg hk']
+  · simp  [padInnerCols, padInnerRows]
 
 /-- The numbers in which the bounds of Section 4.4 are stated. -/
 structure Sizes where
@@ -156,7 +156,7 @@ theorem sum_alpha_le {x : ℝ} (hx : 0 < x) (h9x : 1 ≤ 9 * x) {m t : ℕ} (htm
       (alpha m d : ℝ) ≤ (9 * x) ^ t * ((1 / x) ^ d * 1 ^ (m - d) * (m.choose d : ℝ)) := by
     intro d hd
     have hpow : (9 * x) ^ d ≤ (9 * x) ^ t :=
-      pow_le_pow_right₀ h9x (by rw [mem_range] at hd; omega)
+      pow_le_pow_right₀ h9x (by grind)
     calc (alpha m d : ℝ) = (9 * x) ^ d * ((1 / x) ^ d * 1 ^ (m - d) * (m.choose d : ℝ)) := by
           rw [alpha, one_pow, mul_one, ← mul_assoc, ← mul_pow,
             show 9 * x * (1 / x) = 9 by field_simp]

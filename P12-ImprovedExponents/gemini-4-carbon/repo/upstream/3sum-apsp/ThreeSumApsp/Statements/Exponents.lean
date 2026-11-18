@@ -28,7 +28,6 @@ theorem rpow_pow_den {r : ℚ} (hr0 : 0 ≤ r) (n : ℕ) :
     ((n : ℝ) ^ (r : ℝ)) ^ r.den = (n : ℝ) ^ r.num.toNat := by
   have hnum : ((r.num.toNat : ℕ) : ℝ) = (r.num : ℝ) := by
     exact_mod_cast congrArg (Int.cast : ℤ → ℝ) (Int.toNat_of_nonneg (Rat.num_nonneg.2 hr0))
-  have hden : (r.den : ℝ) ≠ 0 := by exact_mod_cast r.den_nz
   have hmul : (r : ℝ) * (r.den : ℝ) = ((r.num.toNat : ℕ) : ℝ) := by
     rw [Rat.cast_def, hnum]
     field_simp
@@ -56,13 +55,13 @@ noncomputable def stepBound (C a : ℝ) (n : ℕ) : ℕ := ⌈C * ((n : ℝ) ^ a
 theorem bigO_stepBound (C : ℝ) {r : ℚ} (hr0 : 0 ≤ r) : EndStatement.BigO (stepBound C r) r := by
   refine bigO_of_le_rpow (C := 2 * |C| + 1) hr0 fun n hn => ?_
   have hone : (1 : ℝ) ≤ (n : ℝ) ^ (r : ℝ) :=
-    Real.one_le_rpow (by exact_mod_cast (by omega : 1 ≤ n)) (by exact_mod_cast hr0)
+    Real.one_le_rpow (by simp; omega) (by exact_mod_cast hr0)
   have habs : C * ((n : ℝ) ^ (r : ℝ) + 1) ≤ |C| * ((n : ℝ) ^ (r : ℝ) + 1) :=
     mul_le_mul_of_nonneg_right (le_abs_self C) (by positivity)
   have hceil : (stepBound C r n : ℝ) < |C| * ((n : ℝ) ^ (r : ℝ) + 1) + 1 :=
     (Nat.cast_le.2 (Nat.ceil_le_ceil habs)).trans_lt (Nat.ceil_lt_add_one (by positivity))
   -- `|C| (X + 1) + 1 ≤ (2 |C| + 1) X` for `X ≥ 1`
-  nlinarith [mul_nonneg (abs_nonneg C) (sub_nonneg.2 hone)]
+  nlinarith 
 
 /-- **A bound `O(n^a)` of an item statement, with `a` the rational `r`, is the bound `O(n^r)` of the
 end statement**, with the same program and the same slope. -/
@@ -74,7 +73,7 @@ theorem SolvedInTime.endStatement {Q : EndStatement.Problem} {a : ℝ} (h : Solv
   refine ⟨P, b, stepBound C r, bigO_stepBound C hr0, fun n x hx W hW => ?_⟩
   obtain ⟨t, ht, verdict, c, hrun, hanswer⟩ := hsolves n x hx W hW
   have ht' : t ≤ stepBound C r n := by
-    simp only [pow_zero, mul_one] at ht
+    simp  at ht
     exact_mod_cast ht.trans (Nat.le_ceil _)
   exact ⟨verdict, c, WordRam.exec_mono (c := ⟨0, _⟩) hrun ht', hanswer⟩
 

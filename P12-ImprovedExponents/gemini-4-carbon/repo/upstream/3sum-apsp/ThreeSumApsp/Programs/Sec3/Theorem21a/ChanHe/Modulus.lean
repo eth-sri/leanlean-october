@@ -76,9 +76,8 @@ theorem pick_filter (Q : Finset ℕ) (h0 : ∀ q ∈ Q, q ≠ 0) :
     simp [pick, hempty]
   | some x =>
     obtain ⟨hx, as, bs, hl, has⟩ := List.find?_eq_some_iff_append.1 h
-    have hxQ : x ∈ Q := (Finset.mem_sort (· ≤ ·)).1 (by rw [hl]; simp)
-    have hgood : good x := by simpa using hx
-    have hmem : x ∈ ({q ∈ Q | good q} : Finset ℕ) := by simp [hxQ, hgood]
+    have hxQ : x ∈ Q := (Finset.mem_sort (· ≤ ·)).1 (by grind)
+    have hmem : x ∈ ({q ∈ Q | good q} : Finset ℕ) := by grind
     have hne : ({q ∈ Q | good q} : Finset ℕ).Nonempty := ⟨x, hmem⟩
     have hsorted := Finset.pairwise_sort Q (· ≤ ·)
     rw [hl, List.pairwise_append] at hsorted
@@ -104,7 +103,7 @@ theorem pick_bounds {m : ℕ} (hm : 1 ≤ m) {T : Finset ℕ} (hT : T ⊆ Nat.pr
   split_ifs with h
   · have := Nat.mem_primesLE.1 (hT (Finset.min'_mem T h))
     exact ⟨this.2.one_le, this.1⟩
-  · exact ⟨le_rfl, hm⟩
+  omega
 
 end FirstGood
 
@@ -167,7 +166,6 @@ theorem check_ends {pColl : ℕ} (hColl : CollSpec lim P pColl)
   have hcoll : (coll S Mo : ℤ) * np ≤ lim.word := by
     have hsq : coll S Mo ≤ len ^ 2 := hB.set.card ▸ coll_le_sq S Mo
     exact le_trans (mul_le_mul_of_nonneg_right (by exact_mod_cast hsq) (by positivity)) hprod
-  have hnonneg : (0 : ℤ) ≤ (coll S Mo : ℤ) * np := by positivity
   simp only [checkStmt, Search.Modulus, Search.Count, Search.Free, Search.Pairs, Search.NumPrimes,
     Search.Passed]
   -- pairs := coll(len, s, modulus, cnt, fr)
@@ -180,7 +178,6 @@ theorem check_ends {pColl : ℕ} (hColl : CollSpec lim P pColl)
     have hlarge' : ¬ coll S Mo * np ≤ b := fun h => by
       have hlt : (b : ℤ) < (coll S Mo : ℤ) * np := by simpa [hxb, eb, enp] using hlarge
       have hle : ((coll S Mo * np : ℕ) : ℤ) ≤ b := by exact_mod_cast h
-      push_cast at hle
       omega
     exact Ends.setLast ⟨μ', kept, by simp [if_neg hlarge']⟩ (by simp; omega)
   · have hsmall' : coll S Mo * np ≤ b := by
@@ -231,14 +228,13 @@ variable {d pColl : ℕ} {x : SearchArgs} {μ : ℕ → ℤ}
 for, with M = m².) -/
 theorem Env.Ok.np_le {e : Env} (h : e.Ok μ) : e.np ≤ e.m * e.m + 1 := by
   have hcard := h.primes.1 ▸ Nat.card_primesLE_le e.m
-  have hsq := Nat.le_mul_self e.m
-  omega
+  nlinarith
 
 /-- What is allowed for search covers what coll needs one level of calls further down. -/
 theorem collNeed_ok_of_search {fr n V m l Mo : ℕ} (hok : (searchNeed n V m).Ok lim fr d)
     (hl : l ≤ n) (hMo : Mo ≤ m * m) : (collNeed l V Mo).Ok lim fr (d + 1) :=
-  hok.mono (wordNeed_mono hl hMo) (by simp only [collNeed, searchNeed]; omega)
-    (by simp only [collNeed, searchNeed]; omega)
+  hok.mono (wordNeed_mono hl hMo) (by simp  [collNeed, searchNeed]; omega)
+    (by rfl)
 
 /-- The time of the three tests of a candidate. -/
 def tChecks (x : SearchArgs) : ℕ :=
@@ -293,16 +289,16 @@ theorem searchRecord_ends {g : Prop} [Decidable g] {t found q : ℕ} {y c : ℤ}
         ((if found = 0 then (if g then q else 0) else found : ℕ) : ℤ), y, c,
         if g then 1 else 0]), μ⟩ := by
   by_cases hg : g
-  · simp only [if_pos hg]
+  · simp  [if_pos hg]
     -- if passed = 1
     refine Ends.iteLast (fun _ => ?_) (fun h => absurd h (by simp))
     -- if found = 0 then found := mem[pr + t]
     refine Ends.iteLast (fun hfirst => ?_) (fun hlater => ?_)
     · have hzero : found = 0 := by simpa using hfirst
-      exact Ends.setTo (q : ℤ) (by simp [hzero]) (by light_side [hread])
+      exact Ends.setTo (q : ℤ) (by simp [hzero]) (by light_side )
     · have hpos : ¬ found = 0 := by simpa using hlater
       exact Ends.skip (by simp [hpos])
-  · simp only [if_neg hg]
+  · simp  [if_neg hg]
     refine Ends.iteLast (fun h => absurd h (by simp)) (fun _ => Ends.skip ?_)
     by_cases hzero : found = 0 <;> simp [hzero]
 
@@ -330,8 +326,6 @@ theorem searchRound_ends (hColl : CollSpec lim P pColl) (hN : NodeMem μ x.toNod
   have hMo : x.mult * ps[t] ≤ x.m * x.m := Nat.mul_le_mul hmult_le hqm
   have hMw : (x.mult : ℤ) * ps[t] ≤ lim.word := by
     exact_mod_cast le_word_of_le (y := x.mult * ps[t]) hok.word (by omega)
-  have hMpos : (1 : ℤ) ≤ (x.mult : ℤ) * ps[t] := by
-    exact_mod_cast Nat.mul_pos hmult_pos hqp.one_le
   have hw := hok.space
   have hcells := hok.cells
   have hpr := hN.envOk.belowPr
@@ -466,7 +460,7 @@ theorem search_meets_firstP (hSearch : SearchSpec lim P pSearch) (hN : NodeMem �
   rintro _ μ' ⟨rfl, kept⟩
   refine ⟨?_, kept⟩
   unfold firstP SearchArgs.Good
-  simp only [NodeArgs.firstSearch, one_mul, ← hN.envOk.primes.1, hN.set₁.set.card, hN.set₂.set.card,
+  simp  [← hN.envOk.primes.1, hN.set₁.set.card, hN.set₂.set.card,
     hN.set₃.set.card, sq, mul_assoc]
 
 /-- The second search returns the second prime of the node. -/
@@ -480,7 +474,7 @@ theorem search_meets_secondP (hSearch : SearchSpec lim P pSearch) (hN : NodeMem 
   rintro _ μ' ⟨rfl, kept⟩
   refine ⟨?_, kept⟩
   unfold secondP SearchArgs.Good
-  simp only [NodeArgs.secondSearch, ← hN.envOk.primes.1]
+  simp  [← hN.envOk.primes.1]
   rfl
 
 section words
@@ -491,8 +485,7 @@ variable {n V m : ℕ}
 theorem three_lam_mul_le (hword : ((wordNeed n V (m * m) : ℕ) : ℤ) ≤ lim.word) (hΛ : Λ ≤ V + 2)
     {x : ℕ} (hx : x ≤ (n + 1) ^ 2) : 0 ≤ 3 * (Λ : ℤ) * x ∧ 3 * (Λ : ℤ) * x ≤ lim.word := by
   have h := mul_le_word (y := 1) (z := 3 * Λ) hword hx (by omega) (by omega)
-  push_cast at h
-  exact ⟨by positivity, by linarith⟩
+  grind
 
 /-- The same for a length and its square. -/
 theorem three_lam_sq_le (hword : ((wordNeed n V (m * m) : ℕ) : ℤ) ≤ lim.word) (hΛ : Λ ≤ V + 2)
@@ -530,9 +523,9 @@ theorem modulusColls_ends (hColl : CollSpec lim P pColl) (hN : NodeMem μ a)
       ∃ μ', Kept μ μ' a.fr ∧ σ' = ⟨frame (a.modulusVals Λ ++
         [(p₁ : ℤ), 0, coll a.X₁.set p₁, coll a.X₂.set p₁, coll a.X₃.set p₁]), μ'⟩ := by
   have hdepth := hok.depth
-  simp only [modulusNeed] at hdepth
+  simp  [modulusNeed] at hdepth
   have hokC : ∀ {l : ℕ}, l ≤ a.n → (collNeed l a.V p₁).Ok lim a.fr (d + 1) := fun hl =>
-    hok.mono (wordNeed_mono hl hp₁_le_sq) (by simp only [collNeed, modulusNeed]; omega)
+    hok.mono (wordNeed_mono hl hp₁_le_sq) (by simp  [collNeed, modulusNeed]; omega)
       (by simp only [collNeed, modulusNeed]; omega)
   -- c₁ := coll(l₁, s₁, p₁, cnt, fr)
   light_call (hN.set₁.coll_meets hN.envOk hColl hp₁_pos hp₁_le_sq (hokC hN.set₁.le))
@@ -556,7 +549,7 @@ theorem modulusMain_ends (hSearch : SearchSpec lim P pSearch) (hColl : CollSpec 
       σ'.loc Modulus.Result = (modulus (Nat.primesLE a.m) Λ a.X₁.set a.X₂.set a.X₃.set : ℤ) ∧
         Kept μ σ'.mem a.fr := by
   have hdepth := hok.depth
-  simp only [modulusNeed] at hdepth
+  simp  [modulusNeed] at hdepth
   have hokS : (searchNeed a.n a.V a.m).Ok lim a.fr (d + 1) :=
     hok.mono le_rfl le_rfl (by simp only [searchNeed, modulusNeed]; omega)
   obtain ⟨p₁, hfirst⟩ : ∃ p₁, p₁ = firstP (Nat.primesLE a.m) Λ a.X₁.set a.X₂.set a.X₃.set :=
@@ -582,7 +575,7 @@ theorem modulusMain_ends (hSearch : SearchSpec lim P pSearch) (hColl : CollSpec 
   have hprod : 0 ≤ (p₁ : ℤ) * p₂ ∧ (p₁ : ℤ) * p₂ ≤ lim.word := ⟨by positivity, by
     exact_mod_cast le_word_of_le (y := p₁ * p₂) hok.word
       ((Nat.mul_le_mul hp₁_le hp₂_le).trans (by omega))⟩
-  simp only [tModulus]
+  simp  [tModulus]
   -- p₁ := search(1, s₁, l₁, s₂, l₂, s₃, l₃, 3 Λ l₁², 3 Λ l₂², 3 Λ l₃², np, pr, cnt, fr)
   light_call (search_meets_firstP (Λ := Λ) hSearch hN hm hokS) with _ μ₁ ⟨rfl, kept₁⟩
   rw [← hfirst]
@@ -608,9 +601,7 @@ theorem modulus_spec {p : ℕ} (hP : P[p]? = some (modulusBody pSearch pColl))
   -- if np = 0
   refine Ends.iteLast (fun hnone => ?_) (fun hsome => ?_) (hT := by simp [tModulus])
   · -- return 1
-    have hempty : Nat.primesLE a.m = ∅ := Finset.card_eq_zero.1 (by
-      have hnp : a.np = 0 := by simpa using hnone
-      omega)
+    have hempty : Nat.primesLE a.m = ∅ := Finset.card_eq_zero.1 (by simp_all)
     exact Ends.setTo 1 ⟨by simp [modulus, firstP, secondP, pick, hempty], .refl⟩
       (hT := by simp [tModulus])
   · have hm : 1 ≤ a.m := by

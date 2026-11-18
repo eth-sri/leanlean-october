@@ -94,7 +94,7 @@ private theorem mod_pow_div_mod (b c : ℕ) {j len : ℕ} (hj : j < len) :
 private theorem getElem_digitList {b len x q : ℕ} (hq : q < len)
     (h : q < (ThreeSumApsp.digitList b len (x % b ^ len)).length) :
     (ThreeSumApsp.digitList b len (x % b ^ len))[q] = placeDigit b (len - 1 - q) x := by
-  simp [ThreeSumApsp.digitList, ThreeSumApsp.digit, placeDigit,
+  simp [ThreeSumApsp.digit, placeDigit,
     mod_pow_div_mod b x (show len - 1 - q < len by omega)]
 
 /-! ## The program -/
@@ -175,7 +175,7 @@ theorem Placed.step {μ μ' : ℕ → ℤ} {b len cur y r : ℕ} (h : Placed μ 
   rcases Nat.lt_succ_iff_lt_or_eq.1 hj with hj | rfl
   · rw [Function.update_of_ne (by omega)]
     exact h.1 j hj
-  · exact Function.update_self ..
+  simp
 
 /-- The state after r places: the place is len - r, and the carry is the carry into place r. -/
 def Inv (μ : ℕ → ℤ) (n b len dst row cur prev y r : ℕ) (σ : State) : Prop :=
@@ -193,7 +193,6 @@ theorem digitsPlace_spec (std : Std lim) (hb : 2 ≤ b) (hbw : (b : ℤ) ≤ lim
     Ends lim P d digitsPlace σ digitsPlace.blockCost
       (Inv μ n b len dst row cur prev y (r + 1)) := by
   obtain ⟨x, μ', rfl, hI⟩ := h
-  light_facts std
   have hdigit := placeDigit_lt (show 0 < b by omega) r y
   have hcarry := carryInto_le_one b r y
   have hnew := placeDigit_succ (show 0 < b by omega) r y
@@ -233,8 +232,6 @@ theorem digitsInner_spec (std : Std lim) (hb : 2 ≤ b) (hbw : (b : ℤ) ≤ lim
       SameOutside μ μ' cur len → Q ⟨frame [n, b, len, dst, row, cur, prev, 0, c, x], μ'⟩)
     (hT : 26 * len + 4 ≤ T) :
     Ends lim P d digitsInner ⟨frame [n, b, len, dst, row, cur, prev, len, 1, x₀], μ⟩ T Q := by
-  have h100 := std.const_le
-  -- while 0 < Place
   refine Ends.whileConst (Inv μ n b len dst row cur prev y) len digitsPlace.blockCost ?start ?round
     ?done
     (by simp [digitsPlace]; omega)
@@ -271,7 +268,6 @@ theorem digitsRow_spec (std : Std lim) (hb : 2 ≤ b) (hbw : (b : ℤ) ≤ lim.w
     {σ : State} (h : RowsDone μ n b len dst i σ) :
     Ends lim P d digitsRow σ (tRow len) (RowsDone μ n b len dst (i + 1)) := by
   obtain ⟨p, c, x, μ', rfl, hrows, same⟩ := h
-  light_facts std
   have hroom : (i + 1) * len + len ≤ n * len := Nat.mul_add_le_mul hi le_rfl
   have hsucc : (i + 1) * len = i * len + len := Nat.succ_mul i len
   unfold digitsRow tRow
@@ -300,8 +296,6 @@ theorem digitsZero_spec (std : Std lim) (hsp : dst + len ≤ lim.space)
     (done : Q ⟨frame [n, b, len, dst, 0, 0, 0, len], wrote μ dst (fun _ => 0) len⟩)
     (hT : 13 * len + 4 ≤ T) :
     Ends lim P d digitsZero ⟨frame [n, b, len, dst], μ⟩ T Q := by
-  light_facts std
-  -- while Place < len
   refine Ends.whileBlock (fun q σ => σ =
     ⟨frame [n, b, len, dst, 0, 0, 0, q], wrote μ dst (fun _ => 0) q⟩) len ?start ?round ?done
   case start =>
@@ -327,8 +321,6 @@ theorem digits_spec (std : Std lim) (hsp : dst + n * len ≤ lim.space) (hb : 2 
     Ends lim P d digitsBody ⟨frame [n, b, len, dst], μ⟩ (60 * ((n + 1) * (len + 1))) fun σ' =>
       (∀ x < n, SegN σ'.mem (dst + x * len) (ThreeSumApsp.digitList b len (x % b ^ len))) ∧
         SameOutside μ σ'.mem dst (n * len) := by
-  light_facts std
-  -- if 0 < n
   refine Ends.iteLast (fun hpos => ?_) fun hzero => Ends.skip
     ⟨fun x hx => absurd hx (by simp at hzero; omega), .refl⟩
   obtain ⟨t, rfl⟩ : ∃ t, n = t + 1 := ⟨n - 1, by simp at hpos; omega⟩
@@ -359,7 +351,7 @@ theorem digits_spec (std : Std lim) (hsp : dst + n * len ≤ lim.space) (hb : 2 
   case done =>
     rintro _ ⟨p, c, x, μ', rfl, hrows, same⟩
     refine ⟨by light_side, by light_side, fun y hy q hq => ?_, same⟩
-    have hq' : q < len := by simpa [ThreeSumApsp.digitList] using hq
+    have hq' : q < len := by simpa  using hq
     rw [List.getElem_map, getElem_digitList hq']
     exact hrows y hy q hq'
 

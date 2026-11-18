@@ -81,15 +81,7 @@ private theorem cons_mem_nineStrs {n lo hi d : ℕ} {l : List ℕ} :
     d :: l ∈ nineStrs (n + 1) lo hi ↔
       (d < 9 ∧ l ∈ nineStrs n lo hi) ∨ (d = 9 ∧ hi ≠ 0 ∧ l ∈ nineStrs n (lo - 1) (hi - 1)) := by
   rw [nineStrs, List.mem_append, List.mem_flatMap]
-  refine or_congr ?_ ?_
-  · simp only [List.mem_range, List.mem_map, List.cons.injEq]
-    exact ⟨fun ⟨a, ha, l', hl', had, hll⟩ => ⟨had ▸ ha, hll ▸ hl'⟩,
-      fun ⟨hd, hl⟩ => ⟨d, hd, l, hl, rfl, rfl⟩⟩
-  · by_cases hhi : hi = 0
-    · simp [hhi]
-    · simp only [if_neg hhi, List.mem_map, List.cons.injEq]
-      exact ⟨fun ⟨l', hl', hd, hll⟩ => ⟨hd.symm, hhi, hll ▸ hl'⟩,
-        fun ⟨hd, _, hl⟩ => ⟨l, hl, hd.symm, rfl⟩⟩
+  grind
 
 theorem mem_nineStrs {n lo hi : ℕ} (l : List ℕ) :
     l ∈ nineStrs n lo hi ↔
@@ -123,8 +115,7 @@ private theorem nineStrs_eq_nil {n lo hi : ℕ} (h : n < lo ∨ hi < lo) : nineS
   rw [List.eq_nil_iff_forall_not_mem]
   intro l hl
   obtain ⟨hlen, -, hlo, hhi⟩ := (mem_nineStrs l).1 hl
-  have hcount := List.count_le_length (a := 9) (l := l)
-  omega
+  grind
 
 /-- The list is strictly increasing in the lexicographic order. -/
 theorem pairwise_lt_nineStrs (n lo hi : ℕ) : (nineStrs n lo hi).Pairwise (· < ·) := by
@@ -163,14 +154,11 @@ private theorem length_nineStrs_succ (n lo hi : ℕ) :
     (nineStrs (n + 1) lo hi).length = 9 * (nineStrs n lo hi).length
       + if hi = 0 then 0 else (nineStrs n (lo - 1) (hi - 1)).length := by
   rw [nineStrs, List.length_append, List.length_flatMap]
-  congr 1
-  · simp only [List.length_map, List.map_const', List.length_range, List.sum_replicate_nat]
-  · split_ifs <;> simp
+  simp; grind
 
 /-- Strings without a nine: one more digit, nine times as many. -/
 private theorem nineTerm_zero (n : ℕ) :
-    (n + 1).choose 0 * 9 ^ (n + 1 - 0) = 9 * (n.choose 0 * 9 ^ (n - 0)) := by
-  simp [pow_succ, mul_comm]
+    (n + 1).choose 0 * 9 ^ (n + 1 - 0) = 9 * (n.choose 0 * 9 ^ (n - 0)) := by grind
 
 /-- Strings with g + 1 nines: the first digit is a nine or one of the nine other digits. -/
 private theorem nineTerm_succ (n g : ℕ) :
@@ -203,8 +191,7 @@ theorem length_nineStrs (n lo hi : ℕ) :
     rw [nineStrs]
     split_ifs with h
     · subst h
-      rw [Finset.sum_eq_single_of_mem 0 (by simp) fun b _ hb => by
-        rw [Nat.choose_eq_zero_of_lt (Nat.pos_of_ne_zero hb), zero_mul]]
+      rw [Finset.sum_eq_single_of_mem 0 (by simp) fun b _ hb => by grind]
       rfl
     · refine (Finset.sum_eq_zero fun f hf => ?_).symm
       have := (Finset.mem_Icc.1 hf).1
@@ -234,8 +221,7 @@ theorem length_nineStrs (n lo hi : ℕ) :
 private theorem le_of_mem_nineStrs {n lo hi : ℕ} {l : List ℕ} (hl : l ∈ nineStrs n lo hi) :
     lo ≤ n ∧ lo ≤ hi := by
   obtain ⟨hlen, -, hlo, hhi⟩ := (mem_nineStrs l).1 hl
-  have hcount := List.count_le_length (a := 9) (l := l)
-  omega
+  grind
 
 /-- The least string begins with 0 if not all digits have to be nines. -/
 private theorem nineFirst_succ {n lo : ℕ} (h : lo ≤ n) :
@@ -296,7 +282,7 @@ private theorem NextTo.getElem {α : Type} {f : α → Option α} {A : List α} 
     | zero => rw [List.getElem_cons_zero, h.1, List.getElem?_cons_succ, List.head?_eq_getElem?]
     | succ i =>
       rw [List.getElem_cons_succ, List.getElem?_cons_succ]
-      exact ih h.2 i (by simpa using hi)
+      exact ih h.2 i (by grind)
 
 /-- The block of the strings with the first digit d. -/
 private theorem nextTo_map_cons (lo hi n d : ℕ) (S : List (List ℕ)) (hS : ∀ l ∈ S, l.length = n)
@@ -305,10 +291,10 @@ private theorem nextTo_map_cons (lo hi n d : ℕ) (S : List (List ℕ)) (hS : �
   induction S with
   | nil => trivial
   | cons x r ih =>
-    refine ⟨?_, ih (fun l hl => hS l (by simp [hl])) h.2⟩
+    refine ⟨?_, ih (fun l hl => hS l (by grind)) h.2⟩
     rw [nineNext, h.1, Option.or_none]
     rcases r with _ | ⟨y, r⟩
-    · simp only [List.head?_nil, List.map_nil, Option.none_or, hS x (by simp)]
+    · simp  [hS x (by simp)]
     · rfl
 
 /-- The blocks of the strings with the first digits a, a + 1, …, a + k - 1, followed by the block
@@ -417,7 +403,7 @@ theorem nineStr_mem (h : i < (nineStrs n lo hi).length) : nineStr n lo hi i ∈ 
 theorem isSome_nineNext_nineStr (h : i < (nineStrs n lo hi).length) :
     (nineNext lo hi (nineStr n lo hi i)).isSome = decide (i + 1 < (nineStrs n lo hi).length) := by
   rw [← getElem_nineStrs h, nineNext_getElem]
-  by_cases h' : i + 1 < (nineStrs n lo hi).length <;> simp [h']
+  grind
 
 /-- If the bounds are consistent, there is a string. -/
 theorem length_nineStrs_pos (hn : lo ≤ n) (hh : lo ≤ hi) : 0 < (nineStrs n lo hi).length :=

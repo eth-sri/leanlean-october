@@ -52,8 +52,6 @@ theorem sqrt_meets {p K : ℕ} (hp : P[p]? = some sqrtBody) (μ : ℕ → ℤ)
   have hlt : K < (Nat.sqrt K + 1) * (Nat.sqrt K + 1) := Nat.lt_succ_sqrt K
   have hself : Nat.sqrt K ≤ K := Nat.sqrt_le_self K
   refine .of_body hp ?_
-  unfold sqrtBody sqrtTime
-  -- k := 0; sq := 1
   light_set 0
   light_set 1
   -- while sq ≤ K.  Before round i, k = i and sq = (i + 1)².

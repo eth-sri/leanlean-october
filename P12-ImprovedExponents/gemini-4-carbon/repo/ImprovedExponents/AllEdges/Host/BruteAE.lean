@@ -1,6 +1,7 @@
 module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Witnesses.BruteForce
+public import ThreeSumApsp.Lang.Lib.Copy
 public import ImprovedExponents.AllEdges.Task
 
 @[expose] public section
@@ -56,7 +57,6 @@ theorem bruteAEMem_succ (ha : a < n) {b : ℕ} (hb : b < n) :
 theorem weights_bruteAEMem (C : Weights lim μ ab bc ac n U AB BC AC) (hfr : ab + n * n ≤ fr)
     (hfr' : bc + n * n ≤ fr) (hfr'' : ac + n * n ≤ fr) (q : ℕ) :
     Weights lim (bruteAEMem μ fr n AB BC AC q) ab bc ac n U AB BC AC := by
-  light_facts C C.arrAB C.arrBC C.arrAC
   exact
     { C with
       arrAB := C.arrAB.keep fun y hy => wrote_rest (by omega)
@@ -111,7 +111,7 @@ theorem bruteAEInner_spec {b₀ r₀ : ℤ} (hP : P[pScan]? = some scanBody)
     exact ⟨by simp, r', by simp [update_frame_setLocal, Nat.add_assoc]⟩
   case done =>
     rintro _ - ⟨r, rfl⟩
-    exact ⟨r, by rw [Nat.add_mul, Nat.one_mul]⟩
+    exact ⟨r, by grind⟩
 
 end
 
@@ -144,14 +144,12 @@ theorem bruteAE_spec {pScan : ℕ} (hP : P[pScan]? = some scanBody) (x : TriInst
   have hfr := hpre.belowAB
   have hfr' := hpre.belowBC
   have hfr'' := hpre.belowAC
-  unfold bruteAEBody
-  -- for a < n
   refine Ends.next _ (Ends.for (fun a σ => ∃ b r, σ = ⟨frame [x.n, x.U, x.ab, x.bc, x.ac, fr, a, b,
     0, r], bruteAEMem μ fr x.n x.AB x.BC x.AC (a * x.n)⟩) x.n (x.n * (24 * x.n + 67) + 6)
     ?start ?round ?done ?bound (hT := le_rfl)) (by simp; omega)
   case start =>
     refine ⟨0, 0, ?_⟩
-    simp only [bruteAEMem, Nat.zero_mul, wrote_zero]
+    simp  [bruteAEMem, wrote_zero]
     simpa [update_frame_setLocal] using
       (frame_append_zeros [(x.n : ℤ), x.U, x.ab, x.bc, x.ac, fr, 0] 3).symm
   case bound =>
@@ -172,7 +170,7 @@ theorem bruteAE_spec {pScan : ℕ} (hP : P[pScan]? = some scanBody) (x : TriInst
       rw [bruteAEMem, wrote_done hq, List.getD_eq_getElem]
     · intro y hy
       change bruteAEMem μ fr x.n x.AB x.BC x.AC (x.n * x.n) y = μ y
-      exact wrote_rest (by simp only [Outside]; omega)
+      exact wrote_rest (by omega)
 
 /-- The specification of `bruteAE`, for its callers: the flags stand at `fr`, nothing below `fr`
 changes, and the result is `fr`. -/
@@ -182,5 +180,36 @@ theorem bruteAE_meets {p pScan : ℕ} (hB : P[p]? = some (bruteAEBody pScan))
     Meets lim P p d [x.n, x.U, x.ab, x.bc, x.ac, fr] μ (tBruteAE x.n) fun r μ' =>
       r = fr ∧ Seg μ' fr (aeFlags x.n x.AB x.BC x.AC) ∧ Kept μ μ' fr :=
   Meets.of_body hB (bruteAE_spec hP x μ fr hpre hok hlim)
+
+def bruteAETop : Stmt :=
+  .call 1 [v 0, v 1, v 2, v 3, v 4, v 6] 7 ;;
+  .call 2 [v 7, v 5, v 0 *' v 0] 7
+
+theorem bruteAE_solves :
+    Solves aeTask [scanBody, bruteAEBody 0, copyBody, bruteAETop] 3
+      (fun n _ => tBruteAE n + copyTime (n * n) + 40)
+      (fun n U => ⟨3 * U + 1 + n * n, n * n, 2⟩) := by
+  refine ⟨bruteAETop, rfl, fun R lim d (x : AeInst) μ fr (hpre : x.Pre μ fr)
+    (hok : (⟨3 * x.U + 1 + x.n * x.n, x.n * x.n, 2⟩ : Need).Ok lim fr d) => ?_⟩
+  have hw := hok.space
+  have hcells : fr + x.n * x.n ≤ lim.space := hok.cells
+  have hdepth : d + 2 ≤ lim.depth := hok.depth
+  have hout := hpre.belowOut
+  have hbok : (bruteNeed x.n x.U).Ok lim fr (d + 1) :=
+    hok.mono (by simp [bruteNeed]) (by simp [bruteNeed]) (by simp [bruteNeed])
+  change Ends lim ([scanBody, bruteAEBody 0, copyBody, bruteAETop] ++ R) d bruteAETop
+    ⟨frame [x.n, x.U, x.ab, x.bc, x.ac, x.out, fr], μ⟩ (tBruteAE x.n + copyTime (x.n * x.n) + 40) _
+  refine Ends.callToThen (bruteAE_meets (p := 1) (pScan := 0)
+    (getElem?_append_of_eq_some rfl R) (getElem?_append_of_eq_some rfl R)
+    x.tri μ fr hpre.tri hbok hcells) ?_ (ha := by light_side [AeInst.tri]) (hd := by omega)
+    (hT := by simp [AeInst.tri]; omega)
+  rintro _ μ₁ ⟨rfl, hseg, hkept⟩
+  refine Ends.callTo (copy_meets (p := 2) (src := fr) (dst := x.out) (n := x.n * x.n)
+    (getElem?_append_of_eq_some rfl R) hw hcells (by omega) (Or.inr (by omega))) ?_
+    (ha := by light_side ) (hd := by omega) (hT := by simp [AeInst.tri]; omega)
+  rintro _ μ₂ ⟨hcopy, hsame⟩
+  refine ⟨fun i hi => ?_, fun c hc => (hsame c hc.2).trans (hkept c hc.1)⟩
+  rw [length_aeFlags] at hi
+  exact (hcopy i hi).trans (hseg i (by rw [length_aeFlags]; exact hi))
 
 end ImprovedExponents.AllEdges

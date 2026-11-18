@@ -71,14 +71,6 @@ def preCoreFinish : Stmt :=
   .call Proc.allTiles [M (v Base +' k Dir.encA), M (v Base +' k Dir.encB), v Bands,
     M (v Base +' k Dir.leaves), v Roots, v Tries, v Free, v Cur, v Box, v Levels, v Last] Void
 
-open PreCore in
-/-- preCore(L, m, t, N, D, aX, aY, b0) builds the data structure for the matrices at aX and aY in
-the block from b0 on. -/
-def preCoreBody : Stmt :=
-  .call Sec2.pShared [v Levels, v Inner, v Size, v Width, v MatX, v MatY, v Base] Void ;;
-  .store (v Base +' k Dir.switch) (v Switch) ;;
-  preCoreAddr ;;
-  preCoreFinish
 
 /-- What the locals hold after the shared stage; r is its result. -/
 def preShared (p : Sec2.Par) (t aX aY b0 : ℕ) (r : ℤ) : List ℤ :=
@@ -122,9 +114,7 @@ theorem trieMem_start (p : Sec2.Par) (t b0 : ℕ) (μ : ℕ → ℤ) :
       (trieCap p t) (aFP p b0) [0] := by
   obtain ⟨⟩ := areas p t b0
   refine ⟨fun i hi => ?_, Function.update_self .., by simp [trieCap], Or.inl (by omega)⟩
-  obtain rfl : i = 0 := by simpa using hi
-  rw [Nat.add_zero, Function.update_of_ne (by omega), Function.update_self]
-  rfl
+  grind
 
 /-! ## The routine -/
 

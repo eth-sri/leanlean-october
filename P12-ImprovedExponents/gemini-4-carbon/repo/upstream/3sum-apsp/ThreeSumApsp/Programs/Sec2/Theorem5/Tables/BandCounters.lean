@@ -105,8 +105,6 @@ theorem countersRound_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK
     (h : Inv μ N K0 N0 dst i σ) :
     Ends lim P d countersRound σ countersRound.blockCost (Inv μ N K0 N0 dst (i + 1)) := by
   obtain ⟨μ', rfl, hI⟩ := h
-  light_facts std
-  push_cast at hw
   have hnext := Spec.ctrAt_succ hK hN0 i
   have hstep := hI.step hi
   have hband : (Spec.ctrAt K0 N0 i).band ≤ i := Nat.div_le_self _ _
@@ -143,8 +141,6 @@ theorem counters_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK : 0 
     Ends lim P d countersBody ⟨frame [N, K0, N0, dst], μ⟩ (44 * (N + 1)) fun σ' =>
       (∀ I < N, σ'.mem (dst + I) = (I / (K0 * N0) : ℕ) ∧
         σ'.mem (dst + N + I) = (I / N0 % K0 : ℕ)) ∧ SameOutside μ σ'.mem dst (2 * N) := by
-  have hspace := std.space_le
-  -- while Row < N; a round takes at most 40 steps
   refine Ends.whileConst (Inv μ N K0 N0 dst) N countersRound.blockCost ?start ?round ?done
     (by simp [countersRound]; omega)
   case start =>

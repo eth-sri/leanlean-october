@@ -1,7 +1,6 @@
 module
 
 public import ImprovedExponents.AllEdges.Host.HostAE
-public import ImprovedExponents.HostMid.NeedPolynomial
 
 @[expose] public section
 
@@ -38,11 +37,11 @@ theorem aeSmall_spec
         Seg σ'.mem flg (aeFlags x.n x.AB x.BC x.AC) ∧ Kept μ σ'.mem fr := by
   have hok' := hostNeedAt'_ok hok
   have hbrute : (bruteNeed x.n x.U).Ok lim fr (d + 1) :=
-    hok'.mono (by simp only [bruteNeed, hostNeedAt', hostWord]; omega)
-      (by simp only [bruteNeed]; omega) (by simp only [bruteNeed, hostNeedAt']; omega)
+    hok'.mono (by simp  [bruteNeed, hostNeedAt', hostWord]; omega)
+      (by simp only [bruteNeed]; omega) (by simp  [bruteNeed, hostNeedAt']; omega)
   have hdepth := hok.depth
   have hcells := hok.cells
-  simp only [hostNeedCoreAt, hostNeedAt'] at hdepth hcells
+  simp  [hostNeedCoreAt, hostNeedAt'] at hdepth hcells
   refine Ends.callTo (bruteAE_meets C.bruteAE C.base.loop.scan x μ fr hpre hbrute (by omega)) ?_
     (by simp [et17LocA])
   rintro _ _ ⟨rfl, hseg, hkept⟩
@@ -110,10 +109,9 @@ theorem aeTop_spec {pCore pCopy : ℕ}
   have hdepth := hok.depth
   have hcells := hok.cells
   have hw := hok.space
-  simp only [hostNeedAE, hostNeedCore, hostNeedCoreAt, hostNeedAt'] at hdepth hcells
+  simp  [hostNeedAE, hostNeedCore, hostNeedCoreAt, hostNeedAt'] at hdepth hcells
   have hok₁ : (hostNeedCore Dfun Gfun wD wG need x.n x.U).Ok lim fr (d + 1) :=
-    hok.mono le_rfl le_rfl (by simp only [hostNeedAE]; omega)
-  have hlay : 3 * (x.n * x.n) ≤ hostLayout x.n x.U (Dfun x.n) := by unfold hostLayout; omega
+    hok.mono le_rfl le_rfl (by simp  [hostNeedAE]; omega)
   have hout := hpre.belowOut
   unfold aeTopBody hostTimeAE
   -- flg := aeCore(n, U, ab, bc, ac, fr)
@@ -126,16 +124,15 @@ theorem aeTop_spec {pCore pCopy : ℕ}
       r = flg ∧ Seg μ' flg (aeFlags x.n x.AB x.BC x.AC) ∧ Kept μ μ' fr) hCore hcore)
     with r μ₁ ⟨flg, hfr, hsp, rfl, hseg, hkept⟩
   -- flg := copy(flg, out, n * n)
-  have hn : ((x.n * x.n : ℕ) : ℤ) = (x.n : ℤ) * (x.n : ℤ) := by push_cast; rfl
   have hsep : Apart flg (x.n * x.n) x.out (x.n * x.n) := Or.inr (by omega)
   refine Ends.callTo (copy_meets hCopy hw hsp (by omega) hsep)
-    ?_ (by light_side [hn])
+    ?_ (by light_side )
   rintro _ μ₂ ⟨hcopy, hsame⟩
   refine ⟨fun i hi => ?_, fun c hc => ?_⟩
   · rw [length_aeFlags] at hi
     change μ₂ (x.out + i) = _
     rw [hcopy i hi]
-    exact hseg i (by rw [length_aeFlags]; exact hi)
+    exact hseg i (by omega)
   · exact (hsame c hc.2).trans (hkept c hc.1)
 
 /-! ## The program -/
@@ -203,22 +200,11 @@ theorem hostNeedAE_poly (hD : PolyBounded fun n _ => Dfun n)
     (hG : PolyBounded fun n _ => Gfun (Dfun n)) (hwD : PolyBounded fun n _ => wD n)
     (hwG : PolyBounded fun n _ => wG (Dfun n)) (h : PolyNeedN need) :
     PolyNeed (hostNeedAE Dfun Gfun wD wG need) := by
-  obtain ⟨s, k, hle⟩ := hostNeed_poly' hD hG hwD hwG h
-  refine ⟨1 + (s + 0), k + 2, fun n U => ?_⟩
-  obtain ⟨hw, hc, hd⟩ := hle n U
-  have hsq : n * n ≤ polyBound 0 2 [n, U] := by
-    simp only [polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one,
-      pow_zero, one_mul]
-    calc n * n ≤ (n + 1) * (n + 1) := Nat.mul_le_mul (Nat.le_succ n) (Nat.le_succ n)
-      _ ≤ ((n + 1) * (U + 1)) * ((n + 1) * (U + 1)) := Nat.mul_le_mul
-          (Nat.le_mul_of_pos_right _ (Nat.succ_pos U)) (Nat.le_mul_of_pos_right _ (Nat.succ_pos U))
-      _ = ((n + 1) * (U + 1)) ^ 2 := (sq _).symm
-  have hone : 1 ≤ polyBound 0 2 [n, U] := one_le_polyBound 0 2 [n, U]
-  have hmono := polyBound_mono (Nat.le_add_right s 0 |>.trans (Nat.le_add_left _ 1))
-    (Nat.le_add_right k 2) [n, U]
-  refine ⟨hw.trans hmono, ?_, ?_⟩
-  · exact add_le_polyBound hc hsq
-  · exact (Nat.add_le_add hd hone).trans (add_le_polyBound le_rfl le_rfl)
+  have h' := hostNeed_poly' hD hG hwD hwG h
+  change PolyNeed fun n U => ⟨(hostNeed' Dfun Gfun wD wG need n U).word,
+    (hostNeed' Dfun Gfun wD wG need n U).cells + n * n,
+    (hostNeed' Dfun Gfun wD wG need n U).depth + 1⟩
+  poly_need [h'.word, h'.cells, h'.depth]
 
 /-! ## Over parameter routines -/
 
@@ -238,7 +224,6 @@ theorem hostAE_of_paramProcs {procs : ℕ → Program} {i j : ℕ}
         (hostNeedAE Dfun Gfun wD wG r) ∧ PolyNeed (hostNeedAE Dfun Gfun wD wG r) := by
   intro Q pS Tn r hr hs
   have h := ae17_solves (P₀ := Q ++ procs Q.length) (hs.append _) (hD Q) (hG Q) hpos
-  rw [List.append_assoc] at h
-  exact ⟨_, _, h, hpoly r hr⟩
+  grind
 
 end ImprovedExponents.AllEdges

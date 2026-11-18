@@ -29,7 +29,7 @@ open ThreeSumApsp ThreeSumApsp.WordRam ThreeSumApsp.Spec
 /-- The numbers of a list made from a function are the values of the function. -/
 theorem vecOf_ofFn {n : ℕ} (x : Fin n → ℤ) : vecOf n (List.ofFn x) = x := by
   funext i
-  simp [vecOf, List.getD_eq_getElem?_getD]
+  simp [vecOf]
 
 /-- The instance of the task: the numbers stand from cell 1 on. -/
 def threeSumInst (x : Bounded EndStatement.ThreeSum) : s3Task.Inst := ⟨x.n, x.U, 1, List.ofFn x.x⟩

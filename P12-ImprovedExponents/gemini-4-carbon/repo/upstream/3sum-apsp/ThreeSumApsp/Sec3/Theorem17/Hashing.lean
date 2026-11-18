@@ -51,7 +51,7 @@ theorem mem_primesInRange {D p : ℕ} :
   refine ⟨fun h => h.2, fun h => ⟨?_, h⟩⟩
   -- From `p < √D` we get `p ≤ p² < D`.
   have hsq : p ^ 2 < D := by exact_mod_cast (Real.lt_sqrt (Nat.cast_nonneg p)).1 h.2.2
-  exact (Nat.le_self_pow two_ne_zero p).trans_lt hsq
+  nlinarith
 
 /-! ### The ring `ℤ[x]/(x^p − 1)` -/
 
@@ -105,7 +105,7 @@ end CyclicRing
 `p`, exactly if `u + v ≡ r`. -/
 private theorem eq_add_toNat_emod_iff {p r : ℕ} (hp : p ≠ 0) (hr : r < p) (u v : ℤ) :
     r = ((u % (p : ℤ)).toNat + (v % (p : ℤ)).toNat) % p ↔ u + v ≡ (r : ℤ) [ZMOD (p : ℤ)] := by
-  rw [← Int.natCast_inj, Int.ModEq, Int.emod_eq_of_lt (Int.natCast_nonneg r) (by exact_mod_cast hr),
+  rw [← Int.natCast_inj, Int.ModEq, Int.emod_eq_of_lt (Int.natCast_nonneg r) (by omega),
     eq_comm]
   push_cast
   rw [Int.natCast_toNat_emod (Nat.pos_of_ne_zero hp),
@@ -168,7 +168,7 @@ theorem coeff_matP_mul_matQ {p : ℕ} (hp : p ≠ 0) (a b : Fin n) (r : ℕ) (hr
   rw [Finset.card_filter]
   push_cast
   refine Finset.sum_congr rfl fun c _ => ?_
-  simp only [eq_add_toNat_emod_iff hp hr]
+  simp  [eq_add_toNat_emod_iff hp hr]
 
 /-- Proof of Theorem 17: "then F(p) + Z₀ is the sum over the pairs (a,b) ∈ A × B of the coefficient
 of x^{−w(a,b) mod p} in (PQ)[a,b]". -/
@@ -199,8 +199,8 @@ theorem F_add_Z₀_eq_sum_coeff {p : ℕ} (hp : p ≠ 0) :
       ⟨fun h => h.trans hres, fun h => h.trans hres.symm⟩,
       Int.modEq_iff_dvd, Int.modEq_iff_dvd,
       show 0 - T.S a b c = -T.wAB a b - (T.wAC a c + T.wBC b c) by
-        simp only [S]; ring]
-  simp only [hiff]
+        simp  [S]; ring]
+  simp  [hiff]
 
 end TriangleInstance
 
@@ -235,7 +235,7 @@ theorem abs_S_le (hT : T.WeightsPolyBounded κ) (a b c : Fin n) :
   have hcast : ((|T.S a b c| : ℤ) : ℝ)
       ≤ ((|T.wAB a b| : ℤ) : ℝ) + ((|T.wBC b c| : ℤ) : ℝ) + ((|T.wAC a c| : ℤ) : ℝ) := by
     exact_mod_cast habs
-  linarith [hAB a b, hBC b c, hAC a c]
+  grind
 
 open Classical in
 /-- Proof of Theorem 17: "a triple with S(a,b,c) ≠ 0 is a false positive exactly of the primes in
@@ -331,14 +331,14 @@ theorem TriangleInstance.IsSelectedPrime.F_mul_card_le_sum {n D p : ℕ} {T : Tr
 theorem log_le_four_mul_log_sqrt_div_two (D : ℕ) (hD : 16 ≤ D) :
     Real.log D ≤ 4 * Real.log (Real.sqrt D / 2) := by
   have hD16 : (16 : ℝ) ≤ D := by exact_mod_cast hD
-  have hsqrt : 0 < Real.sqrt D := by linarith [Real.four_le_sqrt_natCast_of_sixteen_le hD]
+  have hsqrt : 0 < Real.sqrt D := by simp; omega
   -- `log(√D/2) = (log D)/2 - log 2`, and `4 log 2 = log 16 ≤ log D`.
   have hlog16 : 4 * Real.log 2 ≤ Real.log D := by
     have h := Real.log_le_log (by norm_num) (show (2 : ℝ) ^ 4 ≤ D by linarith)
     rw [Real.log_pow] at h
     exact_mod_cast h
   rw [Real.log_div hsqrt.ne' (by norm_num), Real.log_sqrt (by linarith)]
-  linarith [hlog16]
+  grind
 
 /-- Proof of Theorem 17: "F(p) is at most the average over them, so [...] F(p) = O(n³
 log(3n^ν)/√D)": if there are at least `c √D/log D` primes in the range, then `F(p) ≤ (4/c) n³
@@ -391,7 +391,7 @@ theorem TriangleInstance.exists_F_le :
     have hlog3 : Real.log 3 ≤ κ * Real.log n :=
       (Real.log_le_log (by norm_num) (by linarith)).trans (le_mul_of_one_le_left hlogn hκ)
     rw [Real.log_mul (by norm_num) (by positivity), Real.log_rpow (by linarith)]
-    linarith [hlog3]
+    linarith 
   calc (T.F p : ℝ) ≤ 4 / c * ((n : ℝ) ^ 3 * Real.log (3 * (n : ℝ) ^ κ) / Real.sqrt D) :=
         T.F_le_of_le_card_primesInRange hc (hcard D hD) hD hDn hκ hT hp
     _ ≤ 4 / c * ((n : ℝ) ^ 3 * (2 * κ * Real.log n) / Real.sqrt D) := by gcongr

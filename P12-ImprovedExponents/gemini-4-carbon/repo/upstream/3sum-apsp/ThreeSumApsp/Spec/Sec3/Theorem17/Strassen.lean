@@ -100,7 +100,7 @@ private theorem sum_range_two_pow_succ {R : Type} [AddCommMonoid R] (K : ℕ) (f
     ∑ c ∈ range (2 ^ (K + 1)), f c =
       ∑ c ∈ range (2 ^ K), f c + ∑ c ∈ range (2 ^ K), f (c + 2 ^ K) := by
   rw [pow_succ, Nat.mul_two, Finset.sum_range_add]
-  simp only [Nat.add_comm]
+  grind
 
 /-- **Strassen's algorithm computes the product**, for matrices over the ring. -/
 theorem strassenList_zRing {p : ℕ} (hp : p ≠ 0) (K : ℕ) (α β : ℕ → ℕ → CyclicRing p) :
@@ -114,7 +114,7 @@ theorem strassenList_zRing {p : ℕ} (hp : p ≠ 0) (K : ℕ) (α β : ℕ → �
     have hq1 := fun γ => quarter_zRing hp K γ (show 1 < 4 by norm_num)
     have hq2 := fun γ => quarter_zRing hp K γ (show 2 < 4 by norm_num)
     have hq3 := fun γ => quarter_zRing hp K γ (show 3 < 4 by norm_num)
-    simp only [Nat.reduceDiv, Nat.reduceMod, Nat.zero_mul, Nat.one_mul, Nat.add_zero]
+    simp 
       at hq0 hq1 hq2 hq3
     simp only [strassenList, hq0, hq1, hq2, hq3, zRing_add, zRing_sub, ih]
     -- Strassen's identities, one for each quadrant of the product, summand by summand.

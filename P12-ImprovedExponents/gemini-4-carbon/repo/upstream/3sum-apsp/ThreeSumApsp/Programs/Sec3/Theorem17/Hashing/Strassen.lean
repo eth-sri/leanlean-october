@@ -466,16 +466,7 @@ theorem quarter_apart {t t' : ℕ} (q : ℕ) (h : t ≠ t') :
 /-- A property of the four lists after two of them have been replaced. -/
 theorem forall_update_update {Φ : ℕ → List ℤ → Prop} {L : ℕ → List ℤ} {t₁ t₂ : ℕ}
     {X₁ X₂ : List ℤ} (h : ∀ t < 4, t ≠ t₁ → t ≠ t₂ → Φ t (L t)) (h₁ : Φ t₁ X₁) (h₂ : Φ t₂ X₂) :
-    ∀ t < 4, Φ t (Function.update (Function.update L t₁ X₁) t₂ X₂ t) := by
-  intro t ht
-  by_cases e₂ : t = t₂
-  · rw [e₂, Function.update_self]
-    exact h₂
-  by_cases e₁ : t = t₁
-  · rw [Function.update_of_ne e₂, e₁, Function.update_self]
-    exact h₁
-  · rw [Function.update_of_ne e₂, Function.update_of_ne e₁]
-    exact h t ht e₁ e₂
+    ∀ t < 4, Φ t (Function.update (Function.update L t₁ X₁) t₂ X₂ t) := by grind
 
 section step
 
@@ -498,7 +489,7 @@ theorem phasePre (inv : StrInv lim μ j q x L κ) (hκ : κ ≤ 7) (hr : row.Ok)
     rw [strassenBound_succ]
     calc (κ : ℤ) * strassenBound x.p j (2 * x.α) (2 * x.β)
         ≤ 8 * strassenBound x.p j (2 * x.α) (2 * x.β) :=
-          mul_le_mul_of_nonneg_right (by exact_mod_cast hκ.trans (by norm_num)) hB0
+          mul_le_mul_of_nonneg_right (by omega) hB0
       _ = 2 * (4 * strassenBound x.p j (2 * x.α) (2 * x.β)) := by ring
   have hq := inv.size_eq
   have opA := (hq ▸ inv.opA).mono le_rfl (Nat.le_of_add_right_le inv.dstBelow)
@@ -523,7 +514,6 @@ theorem step (inv : StrInv lim μ j q x L κ) (hκ : κ ≤ 7) (hr : row.Ok)
       κ * strassenBound x.p j (2 * x.α) (2 * x.β) + strassenBound x.p j (2 * x.α) (2 * x.β) := by
     push_cast
     ring
-  have hq := inv.size_eq
   have dstBelow := inv.dstBelow
   have same : SameOutside3 μ μ' (x.dst + row.c1 * q) q (x.dst + row.c2 * q) q x.scr
       (strScr x.p (j + 1)) := post.same
@@ -539,7 +529,6 @@ theorem step (inv : StrInv lim μ j q x L κ) (hκ : κ ≤ 7) (hr : row.Ok)
           pre.out2.below) }
   · have hapart₁ := quarter_apart q e₁
     have hapart₂ := quarter_apart q e₂
-    have hin : t * q + q ≤ 4 * q := Nat.mul_add_le_mul ht le_rfl
     exact (inv.out t ht).keep.mono
 
 end StrInv
@@ -567,24 +556,21 @@ theorem seg_of_quarters {μ : ℕ → ℤ} {dst q : ℕ} {L : ℕ → List ℤ}
     (seg : ∀ t < 4, Seg μ (dst + t * q) (L t)) (len : ∀ t < 4, (L t).length = q) :
     Seg μ dst (L 0 ++ L 1 ++ L 2 ++ L 3) := by
   rw [seg_append, seg_append, seg_append]
-  simp only [List.length_append, len 0 (by omega), len 1 (by omega), len 2 (by omega)]
+  simp  [len 0 (by omega), len 1 (by omega)]
   refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
   · simpa using seg 0 (by omega)
   · simpa using seg 1 (by omega)
   · rw [show dst + (q + q) = dst + 2 * q by ring]
     exact seg 2 (by omega)
-  · rw [show dst + (q + q + q) = dst + 3 * q by ring]
-    exact seg 3 (by omega)
+  grind
 
 /-- A quarter of a cleared segment is cleared. -/
 theorem seg_zeros_quarter {μ : ℕ → ℤ} {dst q t : ℕ} (h : Seg μ dst (List.replicate (4 * q) 0))
     (ht : t < 4) : Seg μ (dst + t * q) (zeros q) := by
   intro i hi
-  have hi' : i < q := by simpa [zeros] using hi
   have hin : t * q + q ≤ 4 * q := Nat.mul_add_le_mul ht le_rfl
-  have hcell := h (t * q + i) (by simp; omega)
-  rw [List.getElem_replicate, ← Nat.add_assoc] at hcell
-  simpa [zeros] using hcell
+  have hcell := h (t * q + i) (by grind)
+  grind
 
 /-! ## The seven phases -/
 
@@ -652,7 +638,6 @@ theorem strassen_zero : StrSpec lim P ν 0 := by
   have hq : x.len = x.p := by simpa using pre.size
   have hword : (x.p : ℤ) * (x.α * x.β) ≤ lim.word := by
     have h := pre.word
-    have h0 : (0 : ℤ) ≤ x.p * (x.α * x.β) := by have := pre.oneA; have := pre.oneB; positivity
     rw [strassenBound, pow_zero, one_mul, mul_assoc] at h
     omega
   light_facts pre pre.opA pre.opB
@@ -690,7 +675,7 @@ theorem strassen_succ (H : StrSpec lim P ν j) : StrSpec lim P ν (j + 1) := by
     { toStrPre := pre.keep
       quarterLen := hq
       out := fun t ht =>
-        { len := by simp [zeros], seg := seg_zeros_quarter segF ht
+        { len := by simp , seg := seg_zeros_quarter segF ht
           bound := by simpa using absLe_zeros q
           below := by have := Nat.mul_add_le_mul ht (le_refl q); omega } }
   -- the seven phases

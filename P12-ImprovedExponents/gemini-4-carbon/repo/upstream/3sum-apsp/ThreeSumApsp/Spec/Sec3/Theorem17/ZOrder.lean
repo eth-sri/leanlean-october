@@ -54,7 +54,7 @@ theorem spread_eq (i : ℕ) : spread i = i % 2 + 4 * spread (i / 2) := by
     rw [Nat.digits_eq_cons_digits_div (by norm_num) hi.ne', Nat.ofDigits_cons]
 
 /-- The number 0 has no digits to move. -/
-theorem spread_zero : spread 0 = 0 := by simp [spread]
+theorem spread_zero : spread 0 = 0 := rfl
 
 /-- The row, one digit in base 4 at a time. -/
 theorem zRow_eq (z : ℕ) : zRow z = z % 4 / 2 + 2 * zRow (z / 4) := by
@@ -71,10 +71,10 @@ theorem zCol_eq (z : ℕ) : zCol z = z % 4 % 2 + 2 * zCol (z / 4) := by
     rw [Nat.digits_eq_cons_digits_div (by norm_num) hz.ne', List.map_cons, Nat.ofDigits_cons]
 
 /-- The place 0 is in row 0. -/
-theorem zRow_zero : zRow 0 = 0 := by simp [zRow]
+theorem zRow_zero : zRow 0 = 0 := rfl
 
 /-- The place 0 is in column 0. -/
-theorem zCol_zero : zCol 0 = 0 := by simp [zCol]
+theorem zCol_zero : zCol 0 = 0 := rfl
 
 /-- The place, one digit in base 4 at a time. -/
 theorem zIdx_eq (a c : ℕ) : zIdx a c = (2 * (a % 2) + c % 2) + 4 * zIdx (a / 2) (c / 2) := by
@@ -86,8 +86,8 @@ theorem zIdx_eq (a c : ℕ) : zIdx a c = (2 * (a % 2) + c % 2) + 4 * zIdx (a / 2
 theorem zIdx_lt {K a c : ℕ} (ha : a < 2 ^ K) (hc : c < 2 ^ K) : zIdx a c < 4 ^ K := by
   induction K generalizing a c with
   | zero =>
-    obtain rfl : a = 0 := by simpa using ha
-    obtain rfl : c = 0 := by simpa using hc
+    obtain rfl : a = 0 := by omega
+    obtain rfl : c = 0 := by omega
     simp [zIdx, spread_zero]
   | succ K ih =>
     rw [pow_succ] at ha hc
@@ -134,13 +134,13 @@ theorem zRow_zCol_quadrant {K t z : ℕ} (ht : t < 4) (hz : z < 4 ^ K) :
       zCol (t * 4 ^ K + z) = zCol z + t % 2 * 2 ^ K := by
   induction K generalizing z with
   | zero =>
-    obtain rfl : z = 0 := by simpa using hz
+    obtain rfl : z = 0 := by omega
     rw [zRow_eq, zCol_eq, pow_zero, pow_zero, Nat.mul_one, Nat.add_zero, Nat.mod_eq_of_lt ht,
       Nat.div_eq_of_lt ht, zRow_zero, zCol_zero]
     omega
   | succ K ih =>
-    obtain ⟨hrow, hcol⟩ := ih (z := z / 4) (by rw [pow_succ] at hz; omega)
-    have hpow : t * 4 ^ (K + 1) = 4 * (t * 4 ^ K) := by rw [pow_succ]; ring
+    obtain ⟨hrow, hcol⟩ := ih (z := z / 4) (by omega)
+    have hpow : t * 4 ^ (K + 1) = 4 * (t * 4 ^ K) := by grind
     rw [zRow_eq, zCol_eq, zRow_eq z, zCol_eq z, hpow,
       show (4 * (t * 4 ^ K) + z) % 4 = z % 4 by omega,
       show (4 * (t * 4 ^ K) + z) / 4 = t * 4 ^ K + z / 4 by omega, hrow, hcol, pow_succ 2]
@@ -172,8 +172,7 @@ theorem quarter_zList {p K t : ℕ} (M : ℕ → ℕ → List ℤ) (hM : ∀ a c
     quarter (4 ^ K * p) t (zList (K + 1) M) =
       zList K fun a c => M (a + t / 2 * 2 ^ K) (c + t % 2 * 2 ^ K) := by
   have hsplit : 4 ^ (K + 1) = t * 4 ^ K + 4 ^ K + (3 - t) * 4 ^ K := by
-    calc 4 ^ (K + 1) = (t + 1 + (3 - t)) * 4 ^ K := by
-          rw [show t + 1 + (3 - t) = 4 by omega, pow_succ, Nat.mul_comm]
+    calc 4 ^ (K + 1) = (t + 1 + (3 - t)) * 4 ^ K := by grind
       _ = _ := by ring
   rw [quarter, zList, hsplit, ← Nat.mul_assoc,
     List.take_drop_flatMap_range _ _ _ _ fun _ _ => hM _ _,
@@ -201,6 +200,6 @@ theorem zList_succ {p K : ℕ} (M : ℕ → ℕ → List ℤ) (hM : ∀ a c, (M 
   conv_lhs => rw [eq_append_quarters hlen]
   rw [quarter_zList M hM (by norm_num), quarter_zList M hM (by norm_num),
     quarter_zList M hM (by norm_num), quarter_zList M hM (by norm_num)]
-  simp only [Nat.reduceDiv, Nat.reduceMod, Nat.zero_mul, Nat.one_mul, Nat.add_zero]
+  simp
 
 end ThreeSumApsp.Spec

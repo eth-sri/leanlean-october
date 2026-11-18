@@ -40,8 +40,7 @@ theorem choose_mul_pow_mul_pow_le (a b n k : ℕ) :
     calc n.choose k * a ^ k * b ^ (n - k) = a ^ k * b ^ (n - k) * n.choose k := by ring
       _ ≤ _ := Finset.single_le_sum (f := fun k => a ^ k * b ^ (n - k) * n.choose k)
           (fun _ _ => Nat.zero_le _) (Finset.mem_range.2 (Nat.lt_succ_of_le hk))
-  · rw [Nat.choose_eq_zero_of_lt hk, zero_mul, zero_mul]
-    exact Nat.zero_le _
+  grind
 
 /-! ## The largest term of a binomial expansion -/
 
@@ -89,7 +88,7 @@ without fractions.  Of the `n + 1` terms of the expansion of `n^n = (k + (n-k))^
 `binom(n, k)` is the largest. -/
 theorem pow_self_le_mul_choose_mul_pow_mul_pow {n k : ℕ} (hkn : k ≤ n) :
     n ^ n ≤ (n + 1) * (n.choose k * k ^ k * (n - k) ^ (n - k)) :=
-  calc n ^ n = (k + (n - k)) ^ n := by rw [Nat.add_sub_cancel' hkn]
+  calc n ^ n = (k + (n - k)) ^ n := by grind
     _ = ∑ j ∈ Finset.range (n + 1), modeTerm n k j := by
         rw [add_pow]
         refine Finset.sum_congr rfl fun j _ => ?_

@@ -155,8 +155,7 @@ theorem size_mainStmt (p0 F : ℕ) : (mainStmt p0).size F = 2 * F + 11 := by
 theorem width_mainStmt (p0 : ℕ) : (mainStmt p0).width = 3 := rfl
 
 private theorem length_tailCode (dec : Bool) (pos : ℕ) :
-    (tailCode dec pos).length = if dec then 5 else 2 := by
-  cases dec <;> rfl
+    (tailCode dec pos).length = if dec then 5 else 2 := by aesop
 
 /-- The dispatcher comes after four instructions, the 2 F + 11 instructions of the outermost
 statement and at least two for the verdict.  So the pool also holds the distance 2 (F + 1) between
@@ -165,8 +164,8 @@ pointer, and it reaches further down than the 2 F + 1 temporaries. -/
 theorem two_mul_frameSize_add_le_dispPos (P : Program) (dec : Bool) :
     2 * frameSize P + 17 ≤ dispPos P dec := by
   have : firstBody (frameSize P) dec ≤ dispPos P dec := le_endPos _ _ _
-  have htail : 2 ≤ if dec then 5 else 2 := by split_ifs <;> omega
-  simp only [firstBody, tailPos, mainPos, size_mainStmt, length_tailCode] at this
+  have htail : 2 ≤ if dec then 5 else 2 := by grind
+  simp  [firstBody, tailPos, mainPos, size_mainStmt, length_tailCode] at this
   omega
 
 private theorem length_bodiesCode (G : CodeLayout) :
@@ -174,7 +173,7 @@ private theorem length_bodiesCode (G : CodeLayout) :
   | [], _ => rfl
   | b :: bs, pos => by
     have ih := length_bodiesCode G bs (pos + b.size G.F + epilogueSize)
-    simp only [bodiesCode, endPos, List.length_append, length_compileStmt, length_epilogue]
+    simp  [bodiesCode, endPos, length_compileStmt, length_epilogue]
     omega
 
 section parts
@@ -183,9 +182,8 @@ variable (P : Program) (p0 : ℕ) (dec : Bool)
 
 private theorem length_through_mainCode :
     (headCode P dec ++ mainCode P p0 dec).length = firstBody (frameSize P) dec := by
-  simp only [headCode, headStraight, mainCode, List.length_append, length_compileStmt,
-    size_mainStmt, length_tailCode, firstBody, tailPos, mainPos, codeLayout, List.length_cons,
-    List.length_nil]
+  simp  [headCode, headStraight, mainCode, length_compileStmt,
+    size_mainStmt, length_tailCode, firstBody, tailPos, mainPos, codeLayout]
   omega
 
 private theorem length_through_bodiesCode :
@@ -219,7 +217,7 @@ theorem codeAt_tailCode :
     CodeAt (compileProgram P p0 dec) (tailPos (frameSize P))
       (tailCode dec (tailPos (frameSize P))) :=
   (codeAt_mainCode P p0 dec).right.cast_pos (by
-    simp only [length_compileStmt, size_mainStmt, tailPos, codeLayout])
+    simp  [length_compileStmt, size_mainStmt, tailPos, codeLayout])
 
 /-- The bodies begin at `firstBody`. -/
 theorem codeAt_bodiesCode :
@@ -246,14 +244,14 @@ theorem codeAt_bodies {code : List Instr} (G : CodeLayout) :
       ∀ (p : ℕ) (b : Stmt), bs[p]? = some b → ∃ e, (entries G.F bs pos)[p]? = some e ∧
         CodeAt code e (compileStmt G b e ++ epilogue G) ∧
         e + b.size G.F + epilogueSize ≤ endPos G.F bs pos
-  | [], _, _, p, b, h => by simp at h
+  | [], _, _, p, b, h => by grind
   | b₀ :: bs, pos, hc, 0, b, h => by
-    obtain rfl : b₀ = b := by simpa using h
+    obtain rfl : b₀ = b := by grind
     exact ⟨pos, rfl, hc.left, le_endPos _ _ _⟩
   | b₀ :: bs, pos, hc, p + 1, b, h =>
     codeAt_bodies G bs _
       (hc.right.cast_pos (by
         rw [List.length_append, length_compileStmt, length_epilogue, Nat.add_assoc])) p b
-      (by simpa using h)
+      (by grind)
 
 end Light.Compiler

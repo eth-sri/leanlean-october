@@ -115,7 +115,7 @@ theorem outArgsP_pre (hlim : Lim30 lim p t b0 U) (hds : DSReadyP p t hmL aX aY b
       spaceDest := ?_ }
   -- the six fields that are left: the tables lie apart from WD, and all within the memory
   all_goals
-    simp only [outArgs, OutDigitsArgs.base]
+    simp  [outArgs, OutDigitsArgs.base]
     omega
 
 /-- The third part writes the digits of the output string of (I, J) at WD. -/
@@ -142,8 +142,6 @@ theorem queryAtOutP_spec (hOut : OutDigitsSpec lim P) (hlim : Lim30 lim p t b0 U
     exact_mod_cast (by omega : p.aDIG3 b0 + I * p.Lo ≤ lim.space)
   have hprodJ : ((p.aDIG3 b0 + J * p.Lo : ℕ) : ℤ) ≤ lim.space := by
     exact_mod_cast (by omega : p.aDIG3 b0 + J * p.Lo ≤ lim.space)
-  have hI0 : (0 : ℤ) ≤ (I : ℤ) * p.Lo := by positivity
-  have hJ0 : (0 : ℤ) ≤ (J : ℤ) * p.Lo := by positivity
   push_cast at hprodI hprodJ
   -- outDigits(blockTab[I], blockTab[J], digitTab + I (L - m), digitTab + J (L - m), dir[21], …)
   light_call (hOut _ μ hpre) using queryAtLocals, queryAtRead, outArgs, blockI, blockJ,
@@ -200,7 +198,7 @@ theorem coreArgsP_pre (ht : t ≤ p.m) (hlim : Lim30 lim p t b0 U) (hX : ∀ i j
       box_lt := ?_ }
   -- the fifteen fields that are left: the areas lie apart from each other and within the memory
   all_goals
-    simp only [coreArgs]
+    simp  [coreArgs]
     omega
 
 /-- The fourth part returns (XY)[I, J] and changes the scratch strings BOX and SS only. -/
@@ -234,17 +232,8 @@ theorem queryAtCoreP_spec (hCore : QueryCoreSpecP lim P) (ht : t ≤ p.m)
   generalize (I : ℕ) / (p.K0 * p.N0) = β at *
   generalize (J : ℕ) / (p.K0 * p.N0) = β' at *
   generalize (dsTries p t hmL X Y).root (β * p.nB + β') = root at *
-  have hencA' : ((p.aENCA b0 + β * p.T : ℕ) : ℤ) ≤ lim.space := by exact_mod_cast (by omega)
-  have hencB' : ((p.aENCB b0 + β' * p.T : ℕ) : ℤ) ≤ lim.space := by exact_mod_cast (by omega)
-  have hroot' : ((aROOTS p b0 + (β * p.nB + β') : ℕ) : ℤ) < lim.space := by
-    exact_mod_cast (by omega)
-  have hrow0 : (0 : ℤ) ≤ (β : ℤ) * p.T := by positivity
-  have hcol0 : (0 : ℤ) ≤ (β' : ℤ) * p.T := by positivity
-  have hband0 : (0 : ℤ) ≤ (β : ℤ) * p.nB := by positivity
   have haddr : ((aROOTS p b0 : ℤ) + ((β : ℤ) * p.nB + β')).toNat
       = aROOTS p b0 + (β * p.nB + β') := by exact_mod_cast Int.toNat_natCast _
-  push_cast at hencA' hencB' hroot'
-  -- queryCore(dir[26] + bandI 10^L, dir[27] + bandJ 10^L, tries, roots[bandI nB + bandJ], …)
   light_call hmeets using dir.encA, dir.encB, haddr, cellRoot with r' μ' h
   refine ⟨?_, h.2⟩
   simp only [setLocal, List.cons_append, frame, List.getD_cons_zero]

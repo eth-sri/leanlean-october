@@ -35,10 +35,7 @@ theorem succ_sq_le_ten_pow (L : ℕ) : (L + 1) ^ 2 ≤ 10 ^ L := by
     induction L with
     | zero => simp
     | succ L ih =>
-      calc (L + 1 + 1) ^ 2 ≤ 4 * (L + 1) ^ 2 := by
-            rw [show (L + 1 + 1) ^ 2 = L * L + 4 * L + 4 by ring,
-              show 4 * (L + 1) ^ 2 = 4 * (L * L) + 8 * L + 4 by ring]
-            omega
+      calc (L + 1 + 1) ^ 2 ≤ 4 * (L + 1) ^ 2 := by grind
         _ ≤ 4 * 4 ^ L := Nat.mul_le_mul_left _ ih
         _ = 4 ^ (L + 1) := by ring
   exact hfour.trans (Nat.pow_le_pow_left (by norm_num) L)
@@ -100,7 +97,7 @@ theorem top_sub_eq (p : Sec2.Par) (t b0 : ℕ) :
     top p t b0 - b0 = (p.sharedEnd b0 - b0) + (3 * p.L + p.m + 2)
       + (1 + p.nB * p.nB * (11 * (1 + p.L * (boxes p.L p.m t).card)) + p.nB * p.nB) := by
   have := base_le_sharedEnd p b0
-  simp only [top, aTR, aROOTS, aFP, aSS, aBOX, aCUR, aWD, trieCap]
+  simp  [top, aTR, aROOTS, aFP, aSS, aBOX, aCUR, aWD, trieCap]
   omega
 
 /-- **A query** takes `O(L ∑_{d ≤ t} α_d)` steps. -/

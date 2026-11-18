@@ -73,7 +73,7 @@ theorem sum_length_classIdx (n : ℕ) (RAB : List ℕ) (r : ℕ) :
 theorem getD_classStarts (n p : ℕ) (RAB : List ℕ) {r : ℕ} (hr : r ≤ p) :
     (classStarts n p RAB).getD r 0 = cntLt (clsKey RAB) r (n * n) := by
   have h : r < p + 1 := by omega
-  simp [classStarts, classStart, List.getD_eq_getElem?_getD, h, sum_length_classIdx]
+  simp [classStarts, classStart, h, sum_length_classIdx]
 
 /-- The pair number i stands at its place in the list of all the pairs, class after class. -/
 theorem getD_sortedIdx (n p : ℕ) (RAB : List ℕ) {i : ℕ} (hi : i < n * n) (hk : clsKey RAB i < p) :
@@ -96,12 +96,10 @@ theorem segN_map_sortedIdx {μ' : ℕ → ℤ} {n p : ℕ} {RAB : List ℕ}
     SegN μ' base ((sortedIdx n p RAB).map f) := by
   have hlen := length_sortedIdx n p RAB hkeys
   intro q hq
-  have hq' : q < n * n := by simpa [hlen] using hq
+  have hq' : q < n * n := by grind
   obtain ⟨j, hj, rfl⟩ := exists_sortPos_eq (clsKey RAB) hq'
   have hg := getD_sortedIdx n p RAB hj (hkeys j hj)
-  rw [List.getD_eq_getElem _ 0 (by rw [hlen]; exact hq')] at hg
-  simp only [List.getElem_map, hg]
-  exact h j hj
+  grind
 
 end pure
 
@@ -227,7 +225,7 @@ theorem ClassesPre.read (pre : ClassesPre lim μ x) (h : x.Same μ μ') {i : ℕ
     (hi : i < x.n * x.n) : μ' (x.rab + i) = (clsKey x.RAB i : ℕ) := by
   have hl : i < x.RAB.length := pre.len ▸ hi
   have := pre.rab_le
-  rw [h _ (by omega), pre.seg _ (by simpa using hl), List.getElem_map, clsKey,
+  rw [h _ (by omega), pre.seg _ (by grind), List.getElem_map, clsKey,
     List.getD_eq_getElem _ 0 hl]
 
 /-- A state of classes between two phases: the locals hold the arguments and n², only the four areas
@@ -302,7 +300,7 @@ theorem clsCount_ends (pre : ClassesPre lim μ x) (h : ClsState μ x (ClsZeroed 
       (cntEq (clsKey x.RAB) (clsKey x.RAB j) j + 1 : ℕ)
       ⟨by simp, _, _, by rw [update_frame_setLocal]; rfl, hr.update ⟨by omega, by omega⟩ _,
         (Function.update_of_ne (by omega) _ _).trans hfirst, fun t ht => ?_⟩
-      (by light_side [haddr, hcell])
+      (by light_side [haddr])
     rw [cntEq_succ]
     by_cases e : clsKey x.RAB j = t
     · subst e
@@ -326,7 +324,7 @@ theorem clsPrefix_ends (pre : ClassesPre lim μ x) (h : ClsState μ x (ClsCounte
   case start =>
     refine ⟨μ', rfl, hrest, fun t ht => ?_, fun t ht _ => hc t ht⟩
     obtain rfl : t = 0 := by omega
-    simpa [cntLt] using hfirst
+    simpa  using hfirst
   case done =>
     rintro _ ⟨μ'', rfl, hr, hs, -⟩
     exact ⟨by light_side, by light_side, _, ad, row, col, pl, μ'', rfl, hr, hs⟩
@@ -365,7 +363,7 @@ theorem clsCopy_ends (pre : ClassesPre lim μ x) (h : ClsState μ x (ClsStarts x
   · have hcell := (wrote_rest (μ := μ') (dst := x.cur) (j := j)
       (f := fun t => (cntLt (clsKey x.RAB) t (x.n * x.n) : ℕ)) (a := x.cls + j) (by omega)).trans
       (hs j (by omega))
-    simp [Limits.Addr, abs_le, hcell]
+    simp [Limits.Addr, abs_le]
     omega
   · rw [update_frame_setLocal]
     exact ⟨_, ad, row, col, pl, _, rfl,
@@ -430,8 +428,6 @@ theorem clsPlaceOne_ends (pre : ClassesPre lim μ x) {i : ℕ} (hi : i < x.n * x
   have hpos : sortPos (clsKey x.RAB) (x.n * x.n) i < x.n * x.n := sortPos_lt (clsKey x.RAB) hi
   have hcell : μ' (x.cur + clsKey x.RAB i) = (sortPos (clsKey x.RAB) (x.n * x.n) i : ℕ) :=
     h.next _ hk
-  have hrow := Nat.div_le_self i x.n
-  have hcol := Nat.mod_le i x.n
   have hstep := h.step pre hi
   have hrest' := ((hrest.update (b := x.qi + sortPos (clsKey x.RAB) (x.n * x.n) i)
     ⟨by omega, by omega⟩ (i / x.n : ℕ)).update (b := x.qj + sortPos (clsKey x.RAB) (x.n * x.n) i)

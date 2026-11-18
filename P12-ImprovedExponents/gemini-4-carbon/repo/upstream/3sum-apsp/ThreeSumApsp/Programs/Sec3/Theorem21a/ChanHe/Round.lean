@@ -99,7 +99,7 @@ theorem FrontMem.keptBut (h : FrontMem μ a)
     segVal := h.segVal.congr fun i hi => keep a.val a.nd h.belowVal h.apartVal i (h.lenD ▸ hi)
     segBt := h.segBt.congr fun i hi => keep a.bt (a.nd * a.Λ) h.belowBt h.apartBt i
       (by rw [← h.lenD, ← length_bitTable a.V]; exact hi)
-    ctx := Seg.congr h.ctx fun i hi => keep a.cx 6 h.belowCx h.apartCx i (by simpa using hi)
+    ctx := Seg.congr h.ctx fun i hi => keep a.cx 6 h.belowCx h.apartCx i (by omega)
     primes := ⟨h.primes.1, h.primes.2.congr fun i hi =>
       keep a.pr a.np h.belowPr h.apartPr i (by rw [h.primes.1]; simpa using hi)⟩
     zero := fun i hi => (keep a.cnt (a.m * a.m) h.belowCnt h.apartCnt i hi).trans (h.zero i hi) }
@@ -147,8 +147,8 @@ theorem FrontMem.nodeMem (h : FrontMem μ a)
   light_facts h
   exact
     { envOk := ⟨h.primes, h.zero, h.belowPr, h.belowCnt, h.cntPr⟩
-      set₁ := ⟨h₁, hk₁, h.bdd.mono hS₁, by dsimp only; omega, by dsimp only; omega⟩
-      set₂ := ⟨h₂, hk₂, h.bdd.mono hS₂, by dsimp only; omega, by dsimp only; omega⟩
+      set₁ := ⟨h₁, hk₁, h.bdd.mono hS₁, by grind, by grind⟩
+      set₂ := ⟨h₂, hk₂, h.bdd.mono hS₂, by grind, by grind⟩
       set₃ := ⟨h₃, hk₃, h.bdd.mono hS₃, by dsimp only; omega, by dsimp only; omega⟩ }
 
 /-- **The three sets of the splitting** are written, and with the rest of the memory they are the
@@ -211,7 +211,7 @@ theorem le_tRound (T : ℕ → ℕ → ℕ) {n nd : ℕ} (hnd : nd ≤ n) (V m n
     (S₁ S₂ S₃ : Finset ℤ) :
     59 + 3 * tPick nd + tNodes T n V m np (treeCalls (Nat.primesLE m) Λ f S₁ S₂ S₃)
       ≤ tRound T n V m np f := by
-  have hpick : tPick nd ≤ tPick n := by simp only [tPick]; omega
+  have hpick : tPick nd ≤ tPick n := by simp  [tPick]; omega
   have htree := Nat.mul_le_mul_right (tNode T n V m np + 60)
     (ChRound.treeCalls_le_pow (Nat.primesLE m) Λ f S₁ S₂ S₃)
   simp only [tRound, tTree, tNodes] at htree ⊢
@@ -228,8 +228,7 @@ theorem round_spec {p pPick pNodes : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ →
   have hcells := H.ok.cells
   have hword := H.ok.word
   have hdepth := H.ok.depth
-  simp only [gridNeed] at hcells hword hdepth
-  push_cast at hword
+  simp  [gridNeed] at hcells hword hdepth
   have htime := le_tRound T hF.nd_le a.V a.m a.np a.Λ f (splitA a.V β v a.D.toFinset)
     (splitB a.V β β' v false a.D.toFinset) (splitB a.V β β' v true a.D.toFinset)
   -- the three sets
@@ -245,9 +244,9 @@ theorem round_spec {p pPick pNodes : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ →
       m_pos := H.m_pos
       lam := H.lam
       primes := H.primes
-      ok := { word := by dsimp only; omega, cells := hcells, space := hw,
+      ok := { word := by grind, cells := hcells, space := hw,
               depth := by dsimp only; omega } })
     using NodeArgs.calls with _ μ₂ ⟨rfl, kept⟩
-  exact ⟨by simp [SplitYes, TreeYes], out.then kept fun b hb => ⟨hb.2, hb.1⟩⟩
+  exact ⟨by simp [SplitYes], out.then kept fun b hb => ⟨hb.2, hb.1⟩⟩
 
 end Light.Sec3.ChanHe

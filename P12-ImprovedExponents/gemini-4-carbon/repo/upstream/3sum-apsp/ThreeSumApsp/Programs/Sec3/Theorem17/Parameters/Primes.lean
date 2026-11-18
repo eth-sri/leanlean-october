@@ -65,13 +65,13 @@ theorem inWindow_take_succ_of_mem {D j : ℕ} {L : List ℕ} (hj : j < L.length)
     inWindow D (L.take (j + 1)) = inWindow D (L.take j) ++ [L[j]] := by
   unfold inWindow
   rw [List.take_succ_eq_append_getElem hj, List.filter_append,
-    List.filter_cons_of_pos (by simpa using h), List.filter_nil]
+    List.filter_cons_of_pos (by grind), List.filter_nil]
 
 theorem inWindow_take_succ_of_not_mem {D j : ℕ} {L : List ℕ} (hj : j < L.length)
     (h : ¬ InWindow D L[j]) : inWindow D (L.take (j + 1)) = inWindow D (L.take j) := by
   unfold inWindow
   rw [List.take_succ_eq_append_getElem hj, List.filter_append,
-    List.filter_cons_of_neg (by simpa using h), List.filter_nil, List.append_nil]
+    List.filter_cons_of_neg (by grind), List.filter_nil, List.append_nil]
 
 /-! ## The program -/
 
@@ -146,22 +146,20 @@ theorem keep_spec {j : ℕ} {σ : State} (hw : (lim.space : ℤ) ≤ lim.word)
     (List.length_filter_le _ _).trans (List.length_take_le _ _)
   have hsq : ((L[j] : ℕ) : ℤ) * (L[j] : ℕ) ≤ D := by exact_mod_cast hL _ (List.getElem_mem hj)
   have hsq0 : (0 : ℤ) ≤ ((L[j] : ℕ) : ℤ) * (L[j] : ℕ) := by positivity
-  have hle : L[j] ≤ D := (Nat.le_mul_self _).trans (hL _ (List.getElem_mem hj))
   have htake := inWindow_take_succ_of_mem (D := D) hj
   have hpass := inWindow_take_succ_of_not_mem (D := D) hj
   unfold Sifted
   generalize L[j] = p at *
   generalize inWindow D (L.take j) = F at *
-  push_cast at hD
   unfold primesKeep
   -- p := dst[j]; q := p * p; j := j + 1
   refine Ends.setToThen (p : ℕ) ?_ (by simp [Limits.Addr, abs_le, hread]; omega)
-  refine Ends.setToThen (p * p : ℕ) ?_ (by simp [abs_le, -abs_mul]; omega)
+  refine Ends.setToThen (p * p : ℕ) ?_ (by simp ; omega)
   refine Ends.setToThen (j + 1 : ℕ) ?_
   -- if D ≤ 4 q and q < D
   refine Ends.iteLast (fun hlow => Ends.iteLast (fun hhigh => ?_) fun hnhigh => ?_) fun hnlow => ?_
   · have hin : InWindow D p :=
-      ⟨by exact_mod_cast (by simpa [Cond.holds_le] using hlow : (D : ℤ) ≤ 4 * ((p : ℤ) * p)),
+      ⟨by exact_mod_cast (by simpa  using hlow : (D : ℤ) ≤ 4 * ((p : ℤ) * p)),
         by exact_mod_cast (by simpa using hhigh : (p : ℤ) * p < D)⟩
     rw [htake hin]
     -- dst[cnt] := p; cnt := cnt + 1
@@ -172,7 +170,7 @@ theorem keep_spec {j : ℕ} {σ : State} (hw : (lim.space : ℤ) ≤ lim.word)
   · rw [hpass fun hin => hnhigh (by simpa using (by exact_mod_cast hin.2 : (p : ℤ) * p < D))]
     exact Ends.skip ⟨μ', p, (p * p : ℕ), rfl, front, hrest, same⟩
   · rw [hpass fun hin => hnlow (by
-      simpa [Cond.holds_le] using (by exact_mod_cast hin.1 : (D : ℤ) ≤ 4 * ((p : ℤ) * p)))]
+      simpa [Cond.le, Int.lt_add_one_iff] using (by exact_mod_cast hin.1 : (D : ℤ) ≤ 4 * ((p : ℤ) * p)))]
     exact Ends.skip ⟨μ', p, (p * p : ℕ), rfl, front, hrest, same⟩
 
 /-- The pass keeps the numbers of the list that lie in the window, and returns how many they are. -/
@@ -238,9 +236,9 @@ theorem primes_spec {μ : ℕ → ℤ} {dst D pSqrt pSieve : ℕ} (C : Primes.Ct
   have htime := time_le hlen
   have hsqrt : Meets lim P pSqrt (d + 1) [D] μ (18 * Nat.sqrt D + 12) fun r μ' =>
       r = Nat.sqrt D ∧ μ' = μ :=
-    sqrt_meets C.hSqrt μ (by push_cast at hD ⊢; omega)
+    sqrt_meets C.hSqrt μ (by omega)
   have hsieve := sieve_meets (μ := μ) (d := d + 1) (out := dst) (fr := dst + Nat.sqrt D) C.hSieve
-    ⟨hw, by push_cast at hD ⊢; omega, le_rfl, by omega⟩
+    ⟨hw, by omega, le_rfl, by omega⟩
   rw [Sieve.sort_primesLE, ← Sieve.length_primesBelow] at hsieve
   rw [← filter_primesBelow D, tPrimes]
   generalize Sieve.primesBelow (Nat.sqrt D + 1) = L at *

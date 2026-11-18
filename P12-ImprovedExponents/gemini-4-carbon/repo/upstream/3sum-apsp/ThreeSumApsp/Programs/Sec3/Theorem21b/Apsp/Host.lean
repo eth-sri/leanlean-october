@@ -174,16 +174,14 @@ private theorem round_spec (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x �
   have hlenP : (minPlusList x.n L L).length = x.n * x.n := length_minPlusList _ _ _
   have hle : AbsLe L ((3 * (x.n * x.U) : ℕ) : ℤ) :=
     abs_squareList_le C.pre.n_pos C.pre.U_pos C.pre.leW C.pre.noNegativeCycle t
-  unfold apRound
-  -- Res := pMP(Verts, Big, Free, Free, ProdAt, SolverFree)
   refine Ends.callToThen (C.solver.meets R₀
     (⟨x.n, 3 * (x.n * x.U), fr, fr, fr + x.n * x.n, L, L⟩ : MatInst) (fr + 2 * (x.n * x.n))
     ⟨C.pre.n_pos, by simp only; omega, hlen, hlen, hseg, hseg, hle, hle, by simp only; omega,
       by simp only; omega, by simp only; omega, Or.inl le_rfl, Or.inl le_rfl⟩
-    { word := by simp only [mpTask]; omega
-      cells := by simp only [mpTask]; omega
+    { word := by simp  [mpTask]; omega
+      cells := by simp  [mpTask]; omega
       space := hw
-      depth := by simp only [mpTask]; omega }) ?_ (by simp [mpTask]) (by omega)
+      depth := by simp  [mpTask]; omega }) ?_ (by simp [mpTask]) (by omega)
         (by simp [mpTask]; omega)
   rintro r₁ μ₁ ⟨hprod, hkept₁⟩
   simp only at hprod hkept₁
@@ -214,7 +212,7 @@ private theorem out_spec (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x μ 
     length_squareList _ _ _ _ _
   -- Res := pOut(Cells, Big, Free, Out)
   refine Ends.callTo (apOut_meets C.out (INF := 3 * (x.n * x.U : ℕ)) (out := x.out) hseg hw
-    (by omega) (by omega) (Or.inr (by omega))) ?_ (by simp [hlen]) (hT := by rw [hlen]; light_time)
+    (by omega) (by omega) (Or.inr (by omega))) ?_ (by simp_all) (hT := by light_side)
   rintro r₂ μ₂ ⟨hans, hsame₂⟩
   rw [hlen] at hsame₂
   exact ⟨answer_correct C.pre hans, fun a ⟨ha, hout⟩ => (hsame₂ a hout).trans (hkept a ha)⟩
@@ -232,8 +230,6 @@ theorem ap_spec {P₀ R₀ : Program} {pMP pInit pClip pOut : ℕ} {T : ℕ → 
   have hplaces := C.places
   have hw := C.ok.space
   have hpre := C.pre
-  have hsquare : (0 : ℤ) ≤ (x.n : ℤ) * x.n := by positivity
-  have hthresh : (0 : ℤ) ≤ (x.n : ℤ) * x.U := by positivity
   unfold apBody apTime
   change Ends _ _ _ _ ⟨frame [(x.n : ℤ), x.U, x.adj, x.w, x.out, fr], μ⟩ _ _
   -- Cells := Verts * Verts ; Thresh := Verts * Bound ; Big := 3 * Thresh

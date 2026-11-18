@@ -39,12 +39,12 @@ theorem triOf_rowMajor {n : ℕ} (T : TriangleInstance ℤ n) :
 theorem input_exactTriangle (x : Bounded EndStatement.ExactTriangle) :
     (ofEnd EndStatement.ExactTriangle).input x =
       (x.n : ℤ) :: (rowMajor x.x.1 ++ rowMajor x.x.2.1 ++ rowMajor x.x.2.2) := by
-  simp only [EndStatement.ExactTriangle, rowByRow_eq]
+  simp  [EndStatement.ExactTriangle, rowByRow_eq]
 
 /-- The entries of the three matrices are within the bound. -/
 theorem abs_le_of_mem_exactTriangle (x : Bounded EndStatement.ExactTriangle) {a : ℤ}
     (ha : a ∈ rowMajor x.x.1 ++ rowMajor x.x.2.1 ++ rowMajor x.x.2.2) : |a| ≤ (x.U : ℤ) :=
-  Bounded.abs_le (by simpa only [EndStatement.ExactTriangle, rowByRow_eq] using ha)
+  Bounded.abs_le (by simpa  [EndStatement.ExactTriangle, rowByRow_eq] using ha)
 
 /-- The instance of the task: where the three matrices stand. -/
 def triangleInst (x : Bounded EndStatement.ExactTriangle) : etTask.Inst :=
@@ -63,12 +63,12 @@ theorem pre_exactTriangle (x : Bounded EndStatement.ExactTriangle) (hn : 1 ≤ x
       seg := by
         have := seg_first (x.n : ℤ) (rowMajor x.x.1) (rowMajor x.x.2.1 ++ rowMajor x.x.2.2)
         rwa [← List.append_assoc] at this
-      bound := fun a (ha : a ∈ rowMajor x.x.1) => abs_le_of_mem_exactTriangle x (by simp [ha]) }
+      bound := fun a (ha : a ∈ rowMajor x.x.1) => abs_le_of_mem_exactTriangle x (by grind) }
     { len := hBC
       seg := by
         have := seg_memOf ((x.n : ℤ) :: rowMajor x.x.1) (rowMajor x.x.2.1) (rowMajor x.x.2.2)
         rwa [List.length_cons, hAB, Nat.add_comm] at this
-      bound := fun a (ha : a ∈ rowMajor x.x.2.1) => abs_le_of_mem_exactTriangle x (by simp [ha]) }
+      bound := fun a (ha : a ∈ rowMajor x.x.2.1) => abs_le_of_mem_exactTriangle x (by grind) }
     { len := length_rowMajor _
       seg := by
         have := seg_second (x.n : ℤ) (rowMajor x.x.1 ++ rowMajor x.x.2.1) (rowMajor x.x.2.2)

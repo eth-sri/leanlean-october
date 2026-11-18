@@ -154,7 +154,7 @@ theorem NodeMem.child₃ (h : NodeMem μ a) {M : ℕ} (hk : KeptBut μ μ' (a.fr
 pointer has changed. -/
 theorem CtxAt.kept {cx Λ : ℕ} (h : CtxAt μ cx V m Λ np pr cnt) (hb : cx + 6 ≤ fr)
     (hk : Kept μ μ' fr) : CtxAt μ' cx V m Λ np pr cnt :=
-  Seg.congr h fun i hi => hk _ (by simp only [List.length_cons, List.length_nil] at hi; omega)
+  Seg.congr h fun i hi => hk _ (by grind)
 
 end memory
 

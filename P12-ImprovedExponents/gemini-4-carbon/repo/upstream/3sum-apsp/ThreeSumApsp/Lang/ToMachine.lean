@@ -96,7 +96,7 @@ of cells of the stack, with the factors of `Fits`, are below a number B ≤ 2^W.
 private theorem fits_of_lt {W : ℕ} {lim : Limits} {N Q B : ℕ} (hB : B ≤ 2 ^ W)
     (hword : 2 * (2 * lim.word + 2) < (B : ℤ)) (hspace : 2 * lim.space < B) (hstack : 4 * Q < B)
     (hpool : 2 * N < B) : Fits W lim N Q := by
-  have hB' : (B : ℤ) ≤ (2 : ℤ) ^ W := by exact_mod_cast hB
+  have hB' : (B : ℤ) ≤ (2 : ℤ) ^ W := by grind
   constructor <;> omega
 
 /-- Limits that are polynomial in the parameters fit every admissible word size. -/
@@ -123,8 +123,6 @@ theorem fits_of_small {W s k r b : ℕ} {params : List ℕ} {lim : Limits} (P : 
   have hpool : dispPos P dec ≤ dispPos P dec * pb := Nat.le_mul_of_pos_right _ hpb_pos
   refine fits_of_lt hB ?_ ?_ ?_ ?_
   · -- 2 (2 word + 2) ≤ 4 pb + 4 ≤ 8 pb
-    have : ((8 * pb : ℕ) : ℤ) < ((2 ^ textBoundBits P dec * pb : ℕ) : ℤ) := by
-      exact_mod_cast (by omega : 8 * pb < 2 ^ textBoundBits P dec * pb)
     omega
   · -- 2 space ≤ 2 pb
     omega
@@ -139,7 +137,7 @@ theorem fits_of_small {W s k r b : ℕ} {params : List ℕ} {lim : Limits} (P : 
 /-- The constant of the time and space bounds of a compiled program: the two constants of the time,
 and the extent of the negative cells that are in use before any call. -/
 def timeConst (P : Program) (dec : Bool) : ℕ :=
-  startCost P dec + stepsPerStep (dispPos P dec) + lowCell P dec ⟨0, 0, 0⟩
+  startCost P dec + stepsPerStep (dispPos P dec)
 
 /-- The time of a compiled program. -/
 theorem ramSteps_le (P : Program) (dec : Bool) (c : ℕ) :
@@ -167,8 +165,8 @@ theorem input_loadWords (W : ℕ) {ws : List ℤ} (h0 : 0 ≤ lim.word) (h : ∀
   bounded := AbsLe.abs_getD_le h0 h
   arg1 := loadWords_mem_neg W ws (by decide)
   arg2 := loadWords_mem_neg W ws (by decide)
-  arg1_le := by simpa using h0
-  arg2_le := by simpa using h0
+  arg1_le := by trivial
+  arg2_le := by trivial
 
 /-- Reading the output: a cell of a memory that holds μ, as a signed word. -/
 theorem Compiler.Holds.output {c : ℤ → BitVec W} (h : Holds W lim μ c) {N Q : ℕ}
@@ -194,40 +192,12 @@ theorem solves_of_programSolves {prob : Problem} {P : Program} {p0 : ℕ} {dec :
     compileProgram_correct h.run hfit (input_loadWords W h.small.nonneg h.input_fits)
   refine ⟨_, _, cfg, ramSteps_le_of_le P dec h.time, hrun, ?_⟩
   rw [show output cfg (prob.input x).length = fun i => σ'.mem ((prob.input x).length + i) from
-    funext (out.holds.output hfit _)]
+    funext (out.output hfit _)]
   exact h.answer
 
 /-! ## The two-stage data structure -/
 
-/-- From every memory with the property DS, procedure pQ, called on I and J, returns the entry
-(I, J) of the product within T steps and leaves a memory with the property DS. -/
-def AnswersQueries (lim : Limits) (P : Program) (pQ : ℕ) (x : ThinPair) (T : ℝ)
-    (DS : (ℕ → ℤ) → Prop) : Prop :=
-  ∀ μ, DS μ → ∀ I J : Fin x.N, ∃ (σ' : State) (c : ℕ),
-    Exec lim P 0 (mainStmt pQ) ⟨frame [0, (I : ℕ), (J : ℕ)], μ⟩ σ' c ∧ (c : ℝ) ≤ T ∧
-    σ'.loc 0 = (x.X * x.Y) I J ∧ DS σ'.mem
 
-/-- What is asked of the two procedures on the instance x, with the limits lim and the property DS
-of memories, "holds the data structure for X and Y". -/
-structure ProgramIsDataStructureAt (P : Program) (pPre pQ : ℕ) (s k : ℕ) (extra : List ℤ)
-    (x : ThinPair) (Tp Sp Tq : ℝ) (lim : Limits) (DS : (ℕ → ℤ) → Prop) : Prop where
-  /-- The limits are polynomial in N and D. -/
-  small : Small s k [x.N, x.D] lim
-  /-- The indices of rows and columns fit in a word. -/
-  index_fits : (x.N : ℤ) ≤ lim.word
-  /-- The numbers of the input fit in a word. -/
-  input_fits : ∀ v ∈ x.input extra, |v| ≤ lim.word
-  time_nonneg : 0 ≤ Tq
-  /-- The space bounds the addresses after the input. -/
-  space : (lim.space : ℝ) ≤ (x.input extra).length + Sp
-  /-- The space bounds the nesting of calls. -/
-  depth : (lim.depth : ℝ) ≤ Sp
-  /-- The preprocessing, on the memory that holds the input, establishes DS. -/
-  pre : ∃ (σ' : State) (c : ℕ),
-    Exec lim P 0 (mainStmt pPre) ⟨frame [0, 0, 0], memOf (x.input extra)⟩ σ' c ∧
-    (c : ℝ) ≤ Tp ∧ DS σ'.mem
-  /-- Every query needs and keeps DS. -/
-  query : AnswersQueries lim P pQ x Tq DS
 
 /-! ## Absorbing the additive constant -/
 

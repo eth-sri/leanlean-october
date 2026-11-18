@@ -56,10 +56,6 @@ def digitList (b n c : ℕ) : List ℕ := (List.range n).map (digit b n c)
 /-- Horner's rule: the number with the given list of digits, most significant first. -/
 def ofDigitList (b : ℕ) (l : List ℕ) : ℕ := l.foldl (fun acc x => acc * b + x) 0
 
-/-- The code of the digit `s` followed by the string `d`. -/
-theorem code_cons (b : ℕ) {n : ℕ} (s : ℕ) (d : Fin n → ℕ) :
-    code b (Fin.cons s d : Fin (n + 1) → ℕ) = s * b ^ n + code b d := by
-  rw [code, Fin.cons_zero, Fin.tail_cons]
 
 /-- Horner's rule, started with `acc`, shifts `acc` by `n` digits and adds the code. -/
 private theorem foldl_ofFn (b : ℕ) {n : ℕ} (d : Fin n → ℕ) (acc : ℕ) :
@@ -142,8 +138,7 @@ theorem code_digit {b n c : ℕ} (hc : c < b ^ n) : code b (fun ℓ : Fin n => d
 /-- If some number is below `b^n` and `n` is not 0, the base is not 0. -/
 theorem pos_of_lt_pow {b n c : ℕ} (hc : c < b ^ n) (hn : n ≠ 0) : 0 < b := by
   refine Nat.pos_of_ne_zero fun hb => ?_
-  rw [hb, zero_pow hn] at hc
-  exact Nat.not_lt_zero _ hc
+  simp_all
 
 /-- The strings of `n` digits in base `b` correspond to the numbers below `b^n`. -/
 def codeEquiv (b n : ℕ) : (Fin n → Fin b) ≃ Fin (b ^ n) where
@@ -176,12 +171,8 @@ theorem lt_of_mem_digitList {b : ℕ} (hb : 0 < b) {n c x : ℕ} (hx : x ∈ dig
 theorem digitList_code {b n : ℕ} {d : Fin n → ℕ} (hd : ∀ ℓ, d ℓ < b) :
     digitList b n (code b d) = List.ofFn d := by
   refine List.ext_getElem (by simp) fun i hi _ => ?_
-  simpa using digit_code hd ⟨i, by simpa using hi⟩
+  simpa using digit_code hd ⟨i, by grind⟩
 
-/-- The empty list of digits has the value `0`. -/
-@[simp]
-theorem ofDigitList_nil (b : ℕ) : ofDigitList b [] = 0 :=
-  rfl
 
 /-- One more digit at the end multiplies the value by `b` and adds the digit. -/
 theorem ofDigitList_append_singleton (b : ℕ) (l : List ℕ) (x : ℕ) :
@@ -224,11 +215,7 @@ def decodeStr [NeZero b] (n c : ℕ) : Fin n → α :=
 
 /-- The code of the letter `s` followed by the string `u'`. -/
 theorem codeStr_cons {n : ℕ} (s : α) (u' : Fin n → α) :
-    codeStr e (Fin.cons s u' : Fin (n + 1) → α) = e s * b ^ n + codeStr e u' := by
-  rw [codeStr, codeStr, ← code_cons]
-  congr 1
-  funext ℓ
-  refine Fin.cases ?_ (fun k => ?_) ℓ <;> simp
+    codeStr e (Fin.cons s u' : Fin (n + 1) → α) = e s * b ^ n + codeStr e u' := rfl
 
 /-- The code of a string of length `n` is less than `b^n`. -/
 theorem codeStr_lt {n : ℕ} (u : Fin n → α) : codeStr e u < b ^ n :=
@@ -240,12 +227,12 @@ theorem decodeStr_codeStr [NeZero b] {n : ℕ} (u : Fin n → α) :
     decodeStr e n (codeStr e u) = u := by
   funext ℓ
   have hdigit := digit_code (d := fun ℓ => (e (u ℓ) : ℕ)) (fun ℓ => (e (u ℓ)).isLt) ℓ
-  simp only [decodeStr, codeStr, hdigit, Fin.eta, Equiv.symm_apply_apply]
+  simp  [decodeStr, codeStr, hdigit]
 
 /-- Coding undoes decoding, for a number below `b^n`. -/
 theorem codeStr_decodeStr [NeZero b] {n c : ℕ} (hc : c < b ^ n) :
     codeStr e (decodeStr e n c) = c := by
-  simp only [codeStr, decodeStr, Equiv.apply_symm_apply]
+  simp  [codeStr, decodeStr]
   exact code_digit hc
 
 /-- The list of digits of the code of a string. -/
@@ -280,7 +267,7 @@ theorem length_digitsStr (u : Fin n → α) : (digitsStr e u).length = n := List
 theorem digitsStr_lt (u : Fin n → α) : ∀ d ∈ digitsStr e u, d < b := by
   intro d hd
   obtain ⟨ℓ, rfl⟩ := List.mem_ofFn.mp hd
-  exact (e _).isLt
+  omega
 
 theorem digitsStr_injective : Function.Injective (digitsStr e : (Fin n → α) → List ℕ) :=
   fun _ _ h => funext fun ℓ => e.injective (Fin.ext (congrFun (List.ofFn_injective h) ℓ))
@@ -295,7 +282,7 @@ theorem exists_digitsStr (l : List ℕ) (hl : l.length = n) (hd : ∀ d ∈ l, d
 
 /-- The digit at a level. -/
 theorem getD_digitsStr (u : Fin n → α) (ℓ : Fin n) : (digitsStr e u).getD ℓ 0 = e (u ℓ) := by
-  simp [digitsStr, List.getD_eq_getElem?_getD]
+  simp [digitsStr]
 
 /-- A list with n members and the right digit at every level is the list of digits of the
 string. -/
@@ -304,7 +291,7 @@ theorem digitsStr_eq_of_getD (u : Fin n → α) {l : List ℕ} (hl : l.length = 
   refine List.ext_getElem (by rw [length_digitsStr, hl]) fun i hi _ => ?_
   rw [length_digitsStr] at hi
   rw [← List.getD_eq_getElem l 0, h ⟨i, hi⟩]
-  simp only [digitsStr, List.getElem_ofFn]
+  simp  [digitsStr]
 
 /-- A statement on all positions of a digit a ≠ 0 is a statement on levels (beyond the end of the
 list `getD` gives 0, so a position of the digit a is a level). -/

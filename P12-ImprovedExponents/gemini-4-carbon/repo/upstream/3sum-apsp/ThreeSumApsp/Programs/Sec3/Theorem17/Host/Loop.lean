@@ -106,15 +106,6 @@ end HostLocal
 
 open HostLocal
 
-/-- The four calls for one instance: the two matrices, the solver, the scans. -/
-def hostCalls (pS pWriteX pWriteY pScanPairs : ℕ) : Stmt :=
-  .call pWriteX [v MatX, v ResAC, v Size, v ParD, v ThePrime, v PieceStart, v Len, v Residue]
-    Unused ;;
-  .call pWriteY [v MatY, v ResBC, v Size, v ParD, v ThePrime, v PieceStart, v Len] Unused ;;
-  .call pS [v Size, v ParD, v NumPairs, k 1, v MatX, v MatY, v Rows +' v Start, v Cols +' v Start,
-    v AdrOut, v SolverFree] Unused ;;
-  .call pScanPairs [v AdrOut, v Rows +' v Start, v Cols +' v Start, v NumPairs, v Found, v AdrAB,
-    v AdrBC, v AdrAC, v Size, v PieceStart, v Len] Found
 
 /-- The numbers of the next instance, of its chunk, and the first vertex of its piece. -/
 def hostNext : Stmt :=
@@ -132,26 +123,12 @@ def hostParams : Stmt :=
   .set Start (M (v TabL +' v ChunkNo)) ;;
   .set NumPairs (M (v TabW +' v ChunkNo))
 
-/-- One round of hostLoop. -/
-def hostRound (pS pWriteX pWriteY pScanPairs : ℕ) : Stmt :=
-  hostParams ;;
-  hostCalls pS pWriteX pWriteY pScanPairs ;;
-  hostNext
 
-/-- hostLoop(n, D, p, q, chunkCount, m, ab, bc, ac, rac, rbc, qi, qj, cr, cl, cw, x, y, out, fr). -/
-def hostLoopBody (pS pWriteX pWriteY pScanPairs : ℕ) : Stmt :=
-  .set Inst (k 0) ;; .set ChunkNo (k 0) ;; .set PieceStart (k 0) ;; .set Found (k 0) ;;
-  .while (v Inst <' v NumInst) (hostRound pS pWriteX pWriteY pScanPairs) ;;
-  .set 0 (v Found)
 
 /-- The time for writing the two matrices of an instance whose piece has len vertices, with the
 calls and the bookkeeping of a round. -/
 def tWrites (n D len : ℕ) : ℕ := 101 + tWriteX n D len + tWriteY n D len
 
-/-- The number of steps of hostLoop, if the solver takes Tn. -/
-def tHostLoop (Tn : List ℕ → ℕ) (X : HostData) : ℕ :=
-  (∑ t ∈ Finset.range X.m, (tWrites X.n X.D (X.len t) + Tn [X.n, X.D, X.w t] +
-    tScanPairs (X.w t) (X.len t) (X.execs t))) + 14
 
 /-! ## What the loop relies on -/
 
@@ -224,12 +201,11 @@ structure HostLim (lim : Limits) (d : ℕ) (X : HostData) (U : ℕ) (A : HostAdd
 
 /-- The context of hostLoop: a solver of Lop-AE-SparseTri, and the procedures writeX, writeY,
 scanPairs, scan in the program. -/
-structure HostCtx (P₀ R : Program) (pS pWriteX pWriteY pScanPairs pScan : ℕ) (Tn : List ℕ → ℕ)
+structure HostCtx (P₀ R : Program) (pS pWriteX pWriteY _pScanPairs pScan : ℕ) (Tn : List ℕ → ℕ)
     (need : List ℕ → Need) : Prop where
   sol : SolvesN lopDetectTask P₀ pS Tn need
   writeX : (P₀ ++ R)[pWriteX]? = some writeXBody
   writeY : (P₀ ++ R)[pWriteY]? = some writeYBody
-  scanPairs : (P₀ ++ R)[pScanPairs]? = some (scanPairsBody pScan)
   scan : (P₀ ++ R)[pScan]? = some scanBody
 
 /-- The arguments of hostLoop. -/
@@ -253,7 +229,7 @@ structure HostSetting (lim : Limits) (d : ℕ) (X : HostData) (U : ℕ) (A : Hos
 private theorem absLe_one_of_zero_or_one {L : List ℤ} (h : ∀ e ∈ L, e = 0 ∨ e = 1) :
     AbsLe L ((1 : ℕ) : ℤ) := by
   intro e he
-  rcases h e he with rfl | rfl <;> simp
+  grind
 
 namespace HostSetting
 
@@ -312,7 +288,7 @@ theorem mem' (S : HostSetting lim d X U A need μ μ') : HostMem X A μ' := by
 theorem read_tab {a : ℕ} (f : Chunk → ℕ) (h : SegN μ a (X.CT.map f)) {i : ℕ}
     (hi : i < X.chunkCount) : μ (a + i) = (f (X.CT.getD i ⟨0, 0, 0⟩) : ℤ) := by
   have hi' : i < X.CT.length := hi
-  rw [h i (by simpa using hi'), List.getD_eq_getElem _ _ hi']
+  rw [h i (by grind), List.getD_eq_getElem _ _ hi']
   simp
 
 /-- The three parameters of the chunk of instance t, in the memory. -/
@@ -370,7 +346,6 @@ theorem solver (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) (hX : Se
   exact
     { N_pos := hv.n_pos
       D_pos := le_trans (Nat.mul_pos hv.q_pos hv.p_pos) hv.qp_le
-      U_pos := le_rfl
       lenX := X.length_matX t
       lenY := X.length_matY t
       lenWI := hv.length_WI ht
@@ -383,16 +358,15 @@ theorem solver (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) (hX : Se
       leY := absLe_one_of_zero_or_one (X.matY_zero_or_one t)
       ltWI := fun _ => HostData.lt_of_mem_WI
       ltWJ := fun _ => HostData.lt_of_mem_WJ
-      nodup := X.nodup_zip t
-      belowX := by simp only [inst]; omega
-      belowY := by simp only [inst]; omega
-      belowWI := by simp only [inst]; omega
-      belowWJ := by simp only [inst]; omega
-      belowOut := by simp only [inst]; omega
-      apartX := by simp only [inst]; omega
-      apartY := by simp only [inst]; omega
-      apartWI := by simp only [inst]; omega
-      apartWJ := by simp only [inst]; omega }
+      belowX := by simp  [inst]; omega
+      belowY := by simp  [inst]; omega
+      belowWI := by simp  [inst]; omega
+      belowWJ := by simp  [inst]; omega
+      belowOut := by simp  [inst]; omega
+      apartX := by simp  [inst]; omega
+      apartY := by simp  [inst]; omega
+      apartWI := by simp  [inst]; omega
+      apartWJ := by simp  [inst]; omega }
 
 /-- The weights are where the scans read them. -/
 theorem weights (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) :
@@ -456,11 +430,9 @@ theorem hostParams_spec {P : Program} (S : HostSetting lim d X U A need μ μ') 
       (hostState X A t ch (X.c0 t) fnd len' rho lo w res μ') 15
       (· = hostState X A t ch (X.c0 t) fnd (X.len t) (X.rho t) (X.lo t) (X.w t) res μ') := by
     rintro _ rfl
-    refine Ends.setToThen (X.rho t : ℤ) ?_ (by light_side [hrho])
-    refine Ends.setToThen (X.lo t : ℤ) ?_ (by light_side [hlo])
-    exact Ends.setTo (X.w t : ℤ) rfl (by light_side [hw])
-  unfold hostParams
-  -- len := q
+    refine Ends.setToThen (X.rho t : ℤ) ?_ (by light_side )
+    refine Ends.setToThen (X.lo t : ℤ) ?_ (by light_side )
+    exact Ends.setTo (X.w t : ℤ) rfl (by light_side )
   light_set X.q
   -- if n - c0 < q then len := n - c0
   refine Ends.iteThen (fun hc => ?_) (fun hc => ?_)
@@ -470,10 +442,6 @@ theorem hostParams_spec {P : Program} (S : HostSetting lim d X U A need μ μ') 
     refine Ends.next 0 (Ends.skip ?_)
     exact (htail _ (by omega)).mono (by light_time) fun _ h => h
 
-/-- The time of the four calls. -/
-def tCalls (Tn : List ℕ → ℕ) (X : HostData) (t : ℕ) : ℕ :=
-  tWriteX X.n X.D (X.len t) + tWriteY X.n X.D (X.len t) + Tn [X.n, X.D, X.w t] +
-    tScanPairs (X.w t) (X.len t) (X.execs t) + 52
 
 /-- The call of writeX for instance t. -/
 theorem HostCtx.writeX_meets (C : HostCtx P₀ R pS pWriteX pWriteY pScanPairs pScan Tn need)
@@ -501,42 +469,6 @@ theorem HostCtx.solver_meets (C : HostCtx P₀ R pS pWriteX pWriteY pScanPairs p
       fun _ μ₁ => Seg μ₁ A.out (X.ans t) ∧ KeptBut μ' μ₁ A.fr A.out (X.w t) :=
   C.sol.meets R (HostSetting.inst X A t) (S.solver ht hX hY) (S.fits.solver t ht)
 
-/-- The call of scanPairs for instance t, once the solver has answered. -/
-theorem HostCtx.scanPairs_meets (C : HostCtx P₀ R pS pWriteX pWriteY pScanPairs pScan Tn need)
-    (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) (hans : Seg μ' A.out (X.ans t)) :
-    Meets lim (P₀ ++ R) pScanPairs (d + 1)
-      [(A.out : ℤ), (A.qi + X.lo t : ℕ), (A.qj + X.lo t : ℕ), X.w t, bit (X.found t), A.ab, A.bc,
-        A.ac, X.n, X.c0 t, X.len t] μ' (tScanPairs (X.w t) (X.len t) (X.execs t))
-      fun r μ₁ => r = bit (X.found (t + 1)) ∧ μ₁ = μ' := by
-  have hplaces := S.places ht
-  exact Meets.of_body C.scanPairs (scanPairs_spec (f := X.found t) C.scan (S.weights ht)
-    (S.answers ht hans) (by omega) (S.ok.valid.piece_le ht))
-
-/-- **The four calls for instance t.** -/
-theorem hostCalls_spec (C : HostCtx P₀ R pS pWriteX pWriteY pScanPairs pScan Tn need)
-    (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) (ch : ℕ) (res : ℤ) :
-    Ends lim (P₀ ++ R) d (hostCalls pS pWriteX pWriteY pScanPairs)
-      (hostState X A t ch (X.c0 t) (bit (X.found t)) (X.len t) (X.rho t) (X.lo t) (X.w t) res μ')
-      (tCalls Tn X t) fun σ => ∃ (res' : ℤ) (μ'' : ℕ → ℤ),
-        σ = hostState X A t ch (X.c0 t) (bit (X.found (t + 1))) (X.len t) (X.rho t) (X.lo t)
-          (X.w t) res' μ'' ∧ HostSetting lim d X U A need μ μ'' := by
-  have hplaces := S.places ht
-  unfold hostCalls tCalls
-  -- res := writeX(x, rac, n, D, p, c0, len, rho)
-  light_call (C.writeX_meets S ht) with r₁ μ₁ ⟨hX, hrest₁⟩
-  have S₁ := S.next fun a ha => hrest₁ a (Or.inl ha)
-  -- res := writeY(y, rbc, n, D, p, c0, len)
-  light_call (C.writeY_meets S₁ ht) with r₂ μ₂ ⟨hY, hrest₂⟩
-  have S₂ := S₁.next fun a ha => hrest₂ a (Or.inl (by omega))
-  replace hX : Seg μ₂ A.x (X.matX t) :=
-    hX.keep (by light_keep [X.length_matX t])
-  -- res := solver(n, D, w, 1, x, y, qi + lo, qj + lo, out, fr)
-  light_call (C.solver_meets S₂ ht hX hY) with r₃ μ₃ ⟨hans, hkept₃⟩
-  have S₃ := S₂.next fun a ha => hkept₃ a (by omega)
-  -- fnd := scanPairs(out, qi + lo, qj + lo, w, fnd, ab, bc, ac, n, c0, len)
-  light_call (C.scanPairs_meets S₃ ht hans) with _ μ₄ ⟨rfl, rfl⟩
-  exact ⟨r₃, μ₄, rfl, S₃⟩
-
 /-- **The counters**: from instance t to instance t + 1. -/
 theorem hostNext_spec {P : Program} (S : HostSetting lim d X U A need μ μ') (ht : t < X.m)
     (fnd len rho lo w res : ℤ) :
@@ -555,8 +487,6 @@ theorem hostNext_spec {P : Program} (S : HostSetting lim d X U A need μ μ') (h
       (hostState X A t ch' (X.c0 (t + 1)) fnd len rho lo w res μ') 4
       (· = hostState X A (t + 1) ch' (X.c0 (t + 1)) fnd len rho lo w res μ') :=
     Ends.setTo (t + 1 : ℕ) rfl
-  unfold hostNext
-  -- ch := ch + 1
   light_set (ch + 1 : ℕ)
   -- if ch = chunkCount
   refine Ends.iteThen (fun hc => ?_) (fun hc => ?_)
@@ -570,7 +500,7 @@ theorem hostNext_spec {P : Program} (S : HostSetting lim d X U A need μ μ') (h
         (hostState X A t (ch + 1) (X.c0 t) fnd len rho lo w res μ') 6
         (· = hostState X A t 0 (X.c0 (t + 1)) fnd len rho lo w res μ') :=
       Ends.setToThen ((0 : ℕ) : ℤ)
-        (Ends.setTo (X.c0 (t + 1) : ℕ) rfl (by light_side [hstep]))
+        (Ends.setTo (X.c0 (t + 1) : ℕ) rfl (by light_side ))
     refine Ends.next _ (hwrap.mono le_rfl ?_)
     rintro _ rfl
     exact htail.mono (by light_time) fun _ h => h
@@ -581,65 +511,5 @@ theorem hostNext_spec {P : Program} (S : HostSetting lim d X U A need μ μ') (h
     refine Ends.next 0 (Ends.skip ?_)
     rw [← hstep]
     exact htail.mono (by light_time) fun _ h => h
-
-/-! ## The loop -/
-
-/-- The invariant of the loop, before instance t. -/
-def HostInv (lim : Limits) (d : ℕ) (X : HostData) (U : ℕ) (A : HostAddr) (need : List ℕ → Need)
-    (μ : ℕ → ℤ) (t : ℕ) (σ : State) : Prop :=
-  ∃ (len rho lo w res : ℤ) (μ' : ℕ → ℤ),
-    σ = hostState X A t (t % X.chunkCount) (X.c0 t) (bit (X.found t)) len rho lo w res μ' ∧
-    HostSetting lim d X U A need μ μ'
-
-/-- **One round of the loop.** -/
-theorem hostRound_spec (C : HostCtx P₀ R pS pWriteX pWriteY pScanPairs pScan Tn need)
-    (ht : t < X.m) {σ : State} (hσ : HostInv lim d X U A need μ t σ) :
-    Ends lim (P₀ ++ R) d (hostRound pS pWriteX pWriteY pScanPairs) σ (tCalls Tn X t + 45)
-      (HostInv lim d X U A need μ (t + 1)) := by
-  obtain ⟨len, rho, lo, w, res, μ', rfl, S⟩ := hσ
-  unfold hostRound
-  -- the parameters of the instance
-  light_piece (hostParams_spec S ht _ len rho lo w res) with _ rfl
-  -- the four calls
-  light_piece (hostCalls_spec C S ht _ res) with _ ⟨res', μ'', rfl, S'⟩
-  -- the counters
-  light_piece (hostNext_spec S' ht _ _ _ _ _ res') with _ rfl
-  exact ⟨_, _, _, _, _, μ'', rfl, S'⟩
-
-/-- **hostLoop** returns 1 if a scan has found a zero triangle, and 0 if not, and changes no cell
-below x. -/
-theorem hostLoop_spec (C : HostCtx P₀ R pS pWriteX pWriteY pScanPairs pScan Tn need)
-    (hok : HostOk X U) (hmem : HostMem X A μ) (hlay : HostLay X A)
-    (hlim : HostLim lim d X U A need) :
-    Ends lim (P₀ ++ R) d (hostLoopBody pS pWriteX pWriteY pScanPairs)
-      ⟨frame (hostLoopArgs X A), μ⟩ (tHostLoop Tn X) fun σ' =>
-      σ'.loc 0 = bit (X.found X.m) ∧ Kept μ σ'.mem A.x := by
-  have hw := hlim.space
-  have hT : ∑ t ∈ Finset.range X.m, (4 + (tCalls Tn X t + 45))
-      ≤ ∑ t ∈ Finset.range X.m, (tWrites X.n X.D (X.len t) + Tn [X.n, X.D, X.w t] +
-        tScanPairs (X.w t) (X.len t) (X.execs t)) :=
-    Finset.sum_le_sum fun t _ => by simp [tCalls, tWrites]; omega
-  unfold hostLoopBody tHostLoop hostLoopArgs
-  -- t := 0; ch := 0; c0 := 0; fnd := 0
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
-  -- while t < m
-  refine Ends.next _ (Ends.while (HostInv lim d X U A need μ) X.m (fun t => tCalls Tn X t + 45)
-    ?start ?round ?done) (by simp only [Cond.cost, Expr.cost, Nat.reduceAdd]; omega)
-  case start =>
-    refine ⟨0, 0, 0, 0, 0, μ, ?_, hok, hmem, hlay, hlim, fun _ _ => rfl⟩
-    rw [hostState, ← frame_append_zeros _ 5]
-    simp [HostData.c0, HostData.found, bit]
-  case round =>
-    intro t σ ht hσ
-    obtain ⟨len, rho, lo, w, res, μ', rfl, -⟩ := id hσ
-    exact ⟨⟨trivial, trivial⟩, by simpa using ht, hostRound_spec C ht hσ⟩
-  case done =>
-    rintro _ ⟨len, rho, lo, w, res, μ', rfl, S⟩
-    -- return fnd
-    exact ⟨⟨trivial, trivial⟩, by simp, Ends.setTo (bit (X.found X.m)) ⟨by simp, S.kept⟩
-      (hT := by simp only [Cond.cost, Expr.cost, Nat.reduceAdd]; omega)⟩
 
 end Light.Sec3

@@ -57,7 +57,6 @@ def ones (F : List ℤ) : ℕ := F.countP fun x => decide (x ≠ 0)
 
 variable {acc hit idx}
 
-@[simp] theorem aeStep_zero (F : List ℤ) : aeStep acc hit idx F 0 = F := rfl
 
 @[simp] theorem aeStep_succ (F : List ℤ) (i : ℕ) :
     aeStep acc hit idx F (i + 1) = aePair acc hit idx (aeStep acc hit idx F i) i := rfl
@@ -75,14 +74,11 @@ variable {acc hit idx}
 
 /-- A cell of a list other than the one that is set. -/
 theorem getD_set_ne (F : List ℤ) {j q : ℕ} (hne : j ≠ q) (x : ℤ) :
-    (F.set j x).getD q 0 = F.getD q 0 := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_set, ite_eq_right hne]
+    (F.set j x).getD q 0 = F.getD q 0 := by grind
 
 /-- The cell of a list that is set. -/
 theorem getD_set_self (F : List ℤ) {j : ℕ} (hj : j < F.length) (x : ℤ) :
-    (F.set j x).getD j 0 = x := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_set, ite_eq_left rfl, ite_eq_left hj,
-    Option.getD_some]
+    (F.set j x).getD j 0 = x := by grind
 
 /-- The bit of a proposition is 0 if and only if the proposition fails. -/
 theorem bit_decide_eq_zero (P : Prop) [Decidable P] : bit (decide P) = 0 ↔ ¬P := by
@@ -91,8 +87,7 @@ theorem bit_decide_eq_zero (P : Prop) [Decidable P] : bit (decide P) = 0 ↔ ¬P
 theorem aeExecs_succ (F : List ℤ) (w : ℕ) :
     aeExecs acc hit idx F (w + 1) =
       aeExecs acc hit idx F w + if aeExec acc hit idx F w then 1 else 0 := by
-  simp only [aeExecs, List.range_succ, List.filter_append, List.length_append, List.filter_cons,
-    List.filter_nil]
+  simp  [aeExecs, List.range_succ, List.filter_cons]
   split_ifs <;> rfl
 
 /-- The flag of the cell `q` after `i` query pairs: 1 if one of them is accepted, lies in the cell
@@ -107,20 +102,12 @@ theorem aeStep_getD {F : List ℤ} {q : ℕ} (hq : q < F.length) (i : ℕ) :
   | succ i ih =>
     have hex : (∃ j < i + 1, idx j = q ∧ acc j = true ∧ hit j = true) ↔
         (∃ j < i, idx j = q ∧ acc j = true ∧ hit j = true) ∨
-          (idx i = q ∧ acc i = true ∧ hit i = true) := by
-      constructor
-      · rintro ⟨j, hj, h⟩
-        rcases Nat.lt_succ_iff_lt_or_eq.1 hj with hlt | rfl
-        · exact Or.inl ⟨j, hlt, h⟩
-        · exact Or.inr h
-      · rintro (⟨j, hj, h⟩ | h)
-        · exact ⟨j, by omega, h⟩
-        · exact ⟨i, by omega, h⟩
+          (idx i = q ∧ acc i = true ∧ hit i = true) := by grind
     rw [aeStep_succ, aePair]
     by_cases hpq : idx i = q
     · -- the pair `i` lies in the cell `q`
       rw [hpq]
-      have hlen : q < (aeStep acc hit idx F i).length := by rwa [length_aeStep]
+      have hlen : q < (aeStep acc hit idx F i).length := by light_side
       split_ifs with h0 hF hF
       · -- it is scanned: its flag was 0, so no earlier pair in the cell hit
         rw [ih, ite_eq_left hF, bit_decide_eq_zero] at h0
@@ -144,9 +131,7 @@ theorem aeStep_getD {F : List ℤ} {q : ℕ} (hq : q < F.length) (i : ℕ) :
       · rw [ih, ite_eq_right hF]
     · -- the pair `i` lies in another cell
       have hex' : (∃ j < i + 1, idx j = q ∧ acc j = true ∧ hit j = true) ↔
-          (∃ j < i, idx j = q ∧ acc j = true ∧ hit j = true) := by
-        rw [hex]
-        simp [hpq]
+          (∃ j < i, idx j = q ∧ acc j = true ∧ hit j = true) := by grind
       have key : (aeStep acc hit idx F i).getD q 0 = if F.getD q 0 = 0 then
           bit (decide (∃ j < i + 1, idx j = q ∧ acc j = true ∧ hit j = true))
           else F.getD q 0 := by
@@ -165,7 +150,7 @@ theorem ones_le_length (F : List ℤ) : ones F ≤ F.length := List.countP_le_le
 theorem aeExec_add_ones_le (F : List ℤ) {i : ℕ} (hidx : idx i < F.length) :
     (if aeExec acc hit idx F i then 1 else 0) + ones (aeStep acc hit idx F i) ≤
       (if acc i && !hit i then 1 else 0) + ones (aeStep acc hit idx F (i + 1)) := by
-  have hidx' : idx i < (aeStep acc hit idx F i).length := by rwa [length_aeStep]
+  have hidx' : idx i < (aeStep acc hit idx F i).length := by light_side
   rw [aeStep_succ, aePair]
   by_cases h0 : acc i = true ∧ (aeStep acc hit idx F i).getD (idx i) 0 = 0
   · -- a scan is made
@@ -176,12 +161,10 @@ theorem aeExec_add_ones_le (F : List ℤ) {i : ℕ} (hidx : idx i < F.length) :
       ← List.getD_eq_getElem _ 0 hidx', h0.2]
     rcases hhit : hit i
     · -- it fails
-      simp [h0.1, bit]
+      simp [h0.1]
     · -- it hits: one more flag is 1
       rw [h0.1, bit, ite_eq_left rfl]
-      simp only [Bool.not_true, Bool.and_false, Bool.false_eq_true, ite_false, zero_add, ne_eq,
-        one_ne_zero, not_false_eq_true, not_true_eq_false, decide_true, decide_false, ite_true,
-        Nat.sub_zero]
+      simp 
       omega
   · -- no scan: the pair is not accepted or its flag is not 0
     have hex : aeExec acc hit idx F i = false := by
@@ -199,7 +182,7 @@ theorem aeExecs_add_ones_le (F : List ℤ) {w : ℕ} (hidx : ∀ i < w, idx i < 
     aeExecs acc hit idx F w + ones F ≤
       failsUpto acc hit w + ones (aeStep acc hit idx F w) := by
   induction w with
-  | zero => simp [aeExecs, failsUpto]
+  | zero => simp [aeExecs, aeStep]
   | succ w ih =>
     have := aeExec_add_ones_le (acc := acc) (hit := hit) F (hidx w (Nat.lt_succ_self w))
     rw [aeExecs_succ, failsUpto_succ]
@@ -272,22 +255,14 @@ theorem flagsAt_getD {T q : ℕ} (hq : q < X.n * X.n) :
       bit (decide (∃ t < T, ∃ i < X.w t, X.pairIdx t i = q ∧ X.acc t i = true ∧
         X.hit t i = true)) := by
   induction T with
-  | zero => simp [flagsAt, List.getD_eq_getElem?_getD, hq, bit]
+  | zero => simp [flagsAt, bit]
   | succ T ih =>
     have hex : (∃ t < T + 1, ∃ i < X.w t, X.pairIdx t i = q ∧ X.acc t i = true ∧
         X.hit t i = true) ↔
         (∃ t < T, ∃ i < X.w t, X.pairIdx t i = q ∧ X.acc t i = true ∧ X.hit t i = true) ∨
-          (∃ i < X.w T, X.pairIdx T i = q ∧ X.acc T i = true ∧ X.hit T i = true) := by
-      constructor
-      · rintro ⟨t, ht, h⟩
-        rcases Nat.lt_succ_iff_lt_or_eq.1 ht with hlt | rfl
-        · exact Or.inl ⟨t, hlt, h⟩
-        · exact Or.inr h
-      · rintro (⟨t, ht, h⟩ | h)
-        · exact ⟨t, by omega, h⟩
-        · exact ⟨T, by omega, h⟩
-    rw [flagsAt, flagsStep_def, aeStep_getD (by rw [length_flagsAt]; exact hq), ih]
-    simp only [bit, hex, decide_eq_true_eq]
+          (∃ i < X.w T, X.pairIdx T i = q ∧ X.acc T i = true ∧ X.hit T i = true) := by grind
+    rw [flagsAt, flagsStep_def, aeStep_getD (by light_side), ih]
+    simp only [bit, hex]
     by_cases hprev : ∃ t < T, ∃ i < X.w t, X.pairIdx t i = q ∧ X.acc t i = true ∧ X.hit t i = true
     · simp [hprev]
     · simp [hprev]
@@ -364,12 +339,10 @@ theorem sum_execsAE_le (hv : X.Valid) :
           rw [length_flagsAt]
           exact hv.pairIdx_lt (by omega) hi
       rw [Finset.sum_range_succ, Finset.sum_range_succ]
-      have := ih (by omega)
       omega
   have hle := ones_le_length (X.flagsAt X.m)
   rw [length_flagsAt] at hle
-  have := key X.m le_rfl
-  omega
+  grind
 
 end HostData
 

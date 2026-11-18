@@ -73,11 +73,9 @@ theorem hostPow_ends {n B : ℕ} {U a fr : ℤ} {μ : ℕ → ℤ} (hB : (B : �
     have hfits : (n : ℤ) ^ j * n ≤ lim.word :=
       le_trans (by exact_mod_cast hb (j + 1) (by omega)) hB
     have hpos : 0 ≤ (n : ℤ) ^ j * n := by positivity
-    unfold hostPow
-    -- Power := Power * Num
     light_set (n ^ (j + 1) : ℕ) using pow_succ
     rw [show j + (κ + 1) = j + 1 + κ by omega]
-    exact (ih (j + 1) fun i hi => hb i (by omega)).mono (by simp; omega) fun _ h => h
+    exact (ih (j + 1) fun i hi => hb i (by omega)).mono (by light_side) fun _ h => h
 
 /-- **The call of core**, with max U (n^κ) in Power. -/
 theorem hostCall_ends {κ pCore : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ → Need}
@@ -97,7 +95,7 @@ theorem hostCall_ends {κ pCore : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → �
   generalize max x.U (x.N ^ κ) = U' at *
   have hentries : AbsLe x.X U' := fun y hy => (hpre.le y hy).trans (by exact_mod_cast hUle)
   have hneed : (coreNeed r x.N (2 * U')).Ok lim fr (d + 1) :=
-    { word := le_trans (by exact_mod_cast (by omega)) hword
+    { word := le_trans (by omega) hword
       cells := hcells
       space := hok.space
       depth := by omega }
@@ -114,7 +112,7 @@ theorem host_spec {κ pCore : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ �
   have hword := hok.word
   simp only [chNeed] at hword
   have hpow : 1 ≤ x.N ^ κ := Nat.one_le_pow _ _ hpre.N_pos
-  have hB : ((x.N ^ κ : ℕ) : ℤ) ≤ lim.word := le_trans (by exact_mod_cast (by omega)) hword
+  have hB : ((x.N ^ κ : ℕ) : ℤ) ≤ lim.word := le_trans (by omega) hword
   have hcall := hostCall_ends hC hpre hok
   unfold hostBody chTime
   -- Power := 1

@@ -77,7 +77,7 @@ structure Progress (star : Bool) (wl sl : List ℕ) (i run o : ℕ) (done : List
 
 theorem Progress.zero (star : Bool) (wl sl : List ℕ) :
     Progress star wl sl 0 (if star then 1 else 0) 0 [] :=
-  ⟨rfl, rfl, by cases star <;> rfl⟩
+  ⟨rfl, rfl, by simp⟩
 
 section
 
@@ -144,7 +144,6 @@ def scatterBody : Stmt := .while (v Pos <' v Len) scatterRound
 
 namespace Scatter
 
-private theorem round_cost : scatterRound.blockCost = 37 := rfl
 
 /-- What a round does, for the digit x of the first string and the digit y of the second string at
 the pointer. -/
@@ -159,7 +158,7 @@ private theorem round_runs {lim : Limits} (hs : Std lim) {μ : ℕ → ℤ}
   have hcasty : ((y : ℤ) = 9) = (y = 9) := by norm_cast
   have hcastr : ((run : ℤ) = 1) = (run = 1) := by norm_cast
   have haddr : ((out : ℤ) + i).toNat = out + i := by omega
-  simp only [scatterRound, outDigit, nextRun, nextPtr]
+  simp  [scatterRound, outDigit, nextRun, nextPtr]
   -- The tests of the program: a nine of the first string, a nine of the second, the flag.  In each
   -- case the block is run: the first goal says that every address is in range and every value fits
   -- in a word, the second that the last state is the one stated.
@@ -187,7 +186,7 @@ theorem scatter_spec {lim : Limits} {P : Program} (hP : P[Proc.scatter]? = some 
   unfold tScatter
   -- while pos < len
   refine Ends.whileBlock (Inv w s out star wl sl μ) wl.length ?start ?round ?done
-    (by simp [round_cost]; omega)
+    (by simp [scatterRound]; omega)
   case start =>
     refine ⟨μ, _, 0, 0, [], ?_, Progress.zero star wl sl, Seg.nil, .refl⟩
     refine congrArg (State.mk · μ) ((frame_append_zeros _ 3).symm.trans ?_)

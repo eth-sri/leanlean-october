@@ -496,7 +496,7 @@ theorem lemma_28_counts {L : ℕ} (m t : ℕ) (ht : t ≤ m) (η : OutStr L)
     · intro d _ d' _ hne
       rw [Function.onFun, disjoint_left]
       intro τ hd hd'
-      exact hne (by exact_mod_cast (mem_filter.1 hd).2.2.symm.trans (mem_filter.1 hd').2.2)
+      exact hne (by grind)
   · rw [card_biUnion (BV_pairwiseDisjoint η _), hsum]
 
 end ThreeSumApsp

@@ -97,7 +97,6 @@ theorem binomPlace_spec (std : Std lim) (hsp : pas + (L + 2) ≤ lim.space) (hi 
     (h : Inv μ L m pas i r σ) :
     Ends lim P d binomPlace σ binomPlace.blockCost (Inv μ L m pas i (r + 1)) := by
   obtain ⟨μ', rfl, hI⟩ := h
-  light_facts std
   obtain ⟨p, hp⟩ : ∃ p, L - r = p + 1 := ⟨L - r - 1, by omega⟩
   unfold Inv
   rw [hp] at hI ⊢
@@ -124,11 +123,9 @@ theorem binomInner_spec (std : Std lim) (hsp : pas + (L + 2) ≤ lim.space) (hi 
       SameOutside μ μ' pas (L + 2) → Q ⟨frame [L, m, pas, i, 0], μ'⟩)
     (hT : 23 * L + 4 ≤ T) :
     Ends lim P d binomInner ⟨frame [L, m, pas, i, L], μ⟩ T Q := by
-  have h100 := std.const_le
-  -- while 0 < Place
   refine Ends.whileConst (Inv μ L m pas i) L binomPlace.blockCost ?start ?round ?done
     (by simp [binomPlace]; omega)
-  case start => exact ⟨μ, rfl, fun j hj => by rw [if_neg (by omega), hrow j hj], .refl⟩
+  case start => exact ⟨μ, rfl, fun j hj => by grind, .refl⟩
   case round =>
     intro r σ hr h
     have hplace := binomPlace_spec (P := P) (d := d) std hsp hi hw hr h
@@ -160,7 +157,6 @@ theorem binomRow_spec (std : Std lim) (hsp : pas + (L + 2) ≤ lim.space) (hi : 
     (hw : ((2 ^ L : ℕ) : ℤ) ≤ lim.word) {σ : State} (h : RowAt μ L m pas i σ) :
     Ends lim P d binomRow σ (tRow L) (RowAt μ L m pas (i + 1)) := by
   obtain ⟨p, μ', rfl, hrow, same⟩ := h
-  light_facts std
   unfold binomRow tRow
   -- Place := L
   light_set L
@@ -174,8 +170,6 @@ theorem binomRow_spec (std : Std lim) (hsp : pas + (L + 2) ≤ lim.space) (hi : 
 theorem binomFirst_spec (std : Std lim) (hsp : pas + (L + 2) ≤ lim.space)
     (done : ∀ σ, RowAt μ L m pas 0 σ → Q σ) (hT : 15 * L + 11 ≤ T) :
     Ends lim P d binomFirst ⟨frame [L, m, pas], μ⟩ T Q := by
-  light_facts std
-  -- mem[pas] := 1; Place := 1; while Place < L + 1
   light_store pas 1
   light_set (0 + 1 : ℕ)
   refine Ends.whileBlock
@@ -209,8 +203,6 @@ theorem binom_spec (std : Std lim) (hsp : pas + (L + 2) ≤ lim.space) (hm : m �
     (hw : ((2 ^ L : ℕ) : ℤ) ≤ lim.word) :
     Ends lim P d binomBody ⟨frame [L, m, pas], μ⟩ (30 * (L + 1) ^ 2) fun σ' =>
       σ'.loc 0 = (L.choose m : ℕ) ∧ SameOutside μ σ'.mem pas (L + 2) := by
-  light_facts std
-  -- Row 0.
   refine Ends.next _ (binomFirst_spec std hsp ?_ le_rfl) (by ring_nf; omega)
   intro σ hfirst
   -- while Row < L; the L rounds take L (23 L + 14) steps

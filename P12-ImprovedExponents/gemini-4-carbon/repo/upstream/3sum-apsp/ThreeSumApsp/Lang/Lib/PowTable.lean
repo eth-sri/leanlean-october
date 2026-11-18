@@ -89,7 +89,6 @@ theorem powTable_ends {μ : ℕ → ℤ} {dst L b : ℕ} (e p : ℤ) (t : List �
   case round =>
     rintro j _ hj - ⟨μ', rfl, powers, same⟩
     have hfits : (b : ℤ) ^ (j + 1) ≤ lim.word := by exact_mod_cast hpow (j + 1) (by omega)
-    have hnonneg : 0 ≤ (b : ℤ) ^ (j + 1) := by positivity
     unfold powTableRound
     -- dst[j] := p
     light_store (dst + j) (b ^ j : ℕ)

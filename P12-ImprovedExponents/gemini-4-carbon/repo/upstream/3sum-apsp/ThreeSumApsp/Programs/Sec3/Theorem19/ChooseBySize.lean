@@ -71,10 +71,10 @@ theorem bySize_spec {P₀ R : Program} {n₀ p₁ p₂ : ℕ} {T₁ T₂ : ℕ �
       (bySizeTime n₀ T₁ T₂ x.n x.U) fun σ' => etTask.Post x μ fr (σ'.loc 0) σ'.mem := by
   have hword : ((n₀ + (r₁ x.n x.U).word + (r₂ x.n x.U).word : ℕ) : ℤ) ≤ lim.word := hok.word
   have hdep : d + (1 + (r₁ x.n x.U).depth + (r₂ x.n x.U).depth) ≤ lim.depth := hok.depth
-  have hok₁ : (r₁ x.n x.U).Ok lim fr (d + 1) := hok.mono (by simp only [bySizeNeed]; omega)
-    (by simp only [bySizeNeed]; omega) (by simp only [bySizeNeed]; omega)
+  have hok₁ : (r₁ x.n x.U).Ok lim fr (d + 1) := hok.mono (by simp  [bySizeNeed]; omega)
+    (by simp only [bySizeNeed]; omega) (by simp  [bySizeNeed]; omega)
   have hok₂ : (r₂ x.n x.U).Ok lim fr (d + 1) := hok.mono (by simp only [bySizeNeed]; omega)
-    (by simp only [bySizeNeed]; omega) (by simp only [bySizeNeed]; omega)
+    (by simp only [bySizeNeed]; omega) (by simp  [bySizeNeed]; omega)
   have hm₁ : Meets lim (P₀ ++ R) p₁ (d + 1) [x.n, x.U, x.ab, x.bc, x.ac, fr] μ (T₁ x.n x.U)
       (etTask.Post x μ fr) := h₁.meets R x fr hpre hok₁
   have hm₂ : Meets lim (P₀ ++ R) p₂ (d + 1) [x.n, x.U, x.ab, x.bc, x.ac, fr] μ (T₂ x.n x.U)
@@ -111,7 +111,7 @@ theorem closure_chooseBySize : Closure.ChooseBySize lightModel := by
   · refine ⟨bySizeBody n₀ p₁ (p₂ + Q₁.length), by simp, fun R lim d x μ fr hpre hok => ?_⟩
     rw [List.append_assoc]
     exact bySize_spec g₁ g₂ hpre hok
-  · simp only [bySizeTime]
+  · simp  [bySizeTime]
     push_cast
     split_ifs
     · linarith [ht₁ n U u hn hU hu]

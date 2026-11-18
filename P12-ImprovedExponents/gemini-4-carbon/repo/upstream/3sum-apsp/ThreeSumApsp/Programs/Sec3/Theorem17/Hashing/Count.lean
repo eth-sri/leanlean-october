@@ -164,7 +164,6 @@ theorem countZeroAdd_spec (pre : CountZeroPre lim μ rm rab mort n K p RM RAB V)
   rintro _ rfl
   generalize (p - rho) % p = s at hidx hterm
   -- sum := sum + rm[(2 mort[a] + mort[b]) p + ex]
-  have hidxZ : (2 * (sa : ℤ) + sb) * p + s < (4 ^ K * p : ℕ) := by exact_mod_cast hidx
   have hle : 2 * (sa : ℤ) + sb ≤ (2 * (sa : ℤ) + sb) * p :=
     le_mul_of_one_le_right (by positivity) (by exact_mod_cast (by omega : 1 ≤ p))
   have haddr : ((rm : ℤ) + (2 * (sa : ℤ) + sb) * p + s).toNat = rm + ((2 * sa + sb) * p + s) := by
@@ -212,7 +211,7 @@ theorem countZero_spec (pre : CountZeroPre lim μ rm rab mort n K p RM RAB V) :
     rw [Finset.sum_range_succ] at hfits
     refine Ends.next 34 ((countZeroAdd_spec pre ht _ ex hfits).mono le_rfl ?_)
     rintro _ ⟨ex', rfl⟩
-    have hn : 0 < n := Nat.pos_of_ne_zero fun e => by simp [e] at ht
+    have hn : 0 < n := Nat.pos_of_ne_zero fun e => by grind
     refine Ends.nextPair ?_ hn (by omega) (by omega) rfl rfl rfl
     exact ⟨by simp, ex', by rw [update_frame_setLocal, Finset.sum_range_succ]; rfl, hnew⟩
   case done =>

@@ -137,8 +137,6 @@ theorem prepAddr_runs (a : Map) (V x : ℕ) (μ : ℕ → ℤ) (htop : (a.top : 
     (hword : (6 : ℤ) ≤ lim.word) :
     prepAddr.Runs lim ⟨frame [a.n, V, a.Λ, a.m, x, a.b], μ⟩ (· = ⟨frame (prepFrame a V x), μ⟩) := by
   have hmap := a.layout
-  have : (0 : ℤ) ≤ (a.m : ℤ) * a.m := by positivity
-  have : (0 : ℤ) ≤ (a.n : ℤ) * a.Λ := by positivity
   exact ⟨by light_side [prepAddr],
     by simp [prepAddr, update_frame_setLocal, prepFrame, Map.top, Map.one, Map.tw, Map.A, Map.bt,
       Map.mul, Map.val, Map.srt, Map.cnt, Map.pr]⟩
@@ -169,11 +167,8 @@ theorem prepTables_ends {pPrimes pFill : ℕ} (hPr : PrimesSpec lim P pPrimes)
   have hcells := hok.cells
   have hword := hok.word
   have hdepth := hok.depth
-  simp only [prepNeed] at hcells hword hdepth
-  push_cast at hword
+  simp  [prepNeed] at hcells hword hdepth
   have hnp := Nat.card_primesLE_le a.m
-  unfold prepTables
-  -- NumPrimes := primes(PrimeBound, Primes, Top)
   light_call (hPr (d + 1) a.top a.m a.pr μ (by omega) (ok_primes hok))
     with _ μ₁ ⟨rfl, hprimes, hkept₁⟩
   -- Unread := fill(Count, Square, 0)
@@ -200,10 +195,8 @@ theorem prepSorted_ends {pCopy pSort : ℕ} (hCo : P[pCopy]? = some copyBody)
   have hw := C.ok.space
   have hcells := C.ok.cells
   have hdepth := C.ok.depth
-  simp only [prepNeed] at hcells hdepth
-  have htime : tSort X.length = tSort a.n := by rw [hlen]
-  unfold prepSorted
-  -- Unread := copy(Src, Sorted, Len)
+  simp  [prepNeed] at hcells hdepth
+  have htime : tSort X.length = tSort a.n := by grind
   have hroom : a.srt + X.length ≤ lim.space := by omega
   light_call (copy_meets (μ := μ) (src := x) (dst := a.srt) (n := X.length) hCo hw
     (by omega) hroom (.inl (by omega))) with _ μ₁ ⟨hcells₁, hkept₁⟩
@@ -276,12 +269,9 @@ theorem prepValues_ends {pDistinct pBits : ℕ} (hDi : DistinctSpec lim P pDisti
   have hcells := C.ok.cells
   have hword := C.ok.word
   have hdepth := C.ok.depth
-  simp only [prepNeed] at hcells hword hdepth
-  push_cast at hword
+  simp  [prepNeed] at hcells hword hdepth
   have : (0 : ℤ) ≤ ((a.m : ℤ) + 1) ^ 2 := by positivity
-  have htime : tDistinct Ls.length = tDistinct a.n := by rw [hlen]
-  unfold prepValues
-  -- NumValues := distinct(Len, Sorted, Val, Mul)
+  have htime : tDistinct Ls.length = tDistinct a.n := by grind
   have hctx : Distinct.Ctx lim μ a.srt a.val a.mul Ls :=
     .of_consecutive hsorted hLs (by omega) (by omega) (show a.mul + Ls.length ≤ _ by omega) hw
       (by omega)
@@ -352,7 +342,7 @@ theorem FrontMem.of_map (a : Map) {μ : ℕ → ℤ} {V : ℕ} {D : List ℤ} (h
     ctx := hctx
     primes := hprimes
     zero := hzero
-    belowVal := by dsimp only [Map.front]; omega
+    belowVal := by light_side
     belowBt := by dsimp only [Map.front]; omega
     belowCx := by dsimp only [Map.front]; omega
     belowPr := by dsimp only [Map.front]; omega
@@ -406,9 +396,7 @@ theorem prepBody_ends {pPrimes pFill pCopy pSort pDistinct pBits : ℕ}
   have hcells := C.ok.cells
   have hword := C.ok.word
   light_facts C
-  simp only [prepNeed] at hcells hword
-  push_cast at hword
-  have : (0 : ℤ) ≤ ((a.m : ℤ) + 1) ^ 2 := by positivity
+  simp  [prepNeed] at hcells hword
   unfold tPrep prepBody
   -- prepAddr
   refine Ends.next _ (Ends.block ((prepAddr_runs a V x μ (by omega) (by omega)).mono ?_) le_rfl)

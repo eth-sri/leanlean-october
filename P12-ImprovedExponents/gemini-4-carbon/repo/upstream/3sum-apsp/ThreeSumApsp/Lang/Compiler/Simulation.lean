@@ -222,7 +222,7 @@ private theorem sim_set {x : ℕ} {e : Expr} (hs : e.Safe S.lim σ) :
   -- x := T₀
   obtain ⟨m₂, run₂, R₂, A₂⟩ := steps_setVar (B.toFramed.same A₁) hx setCode val (by cells)
   exact ⟨m₂, _, {
-    run := (run₁.trans run₂).cast_pos (by rw [Stmt.size, Nat.add_assoc])
+    run := (run₁.trans run₂).cast_pos rfl
     le := le_stepsPerStep_mul (by omega) (by omega)
     rel := R₂
     agree := (A₁.mono scratch_subset_writable).trans A₂ }⟩
@@ -242,7 +242,7 @@ private theorem sim_store {a e : Expr} (hsa : a.Safe S.lim σ) (hse : e.Safe S.l
   have run₂ := run₁.trans (steps_store (codeAt_after_pair B.codeAt) va (S.inRange_addr haddr))
   rw [ve] at run₂
   exact ⟨_, _, {
-    run := run₂.cast_pos (by rw [Stmt.size, Nat.add_assoc])
+    run := run₂.cast_pos rfl
     le := le_stepsPerStep_mul (by omega) (by omega)
     rel := (B.rel.same A₁).setMem B.low haddr _
     agree := (A₁.mono scratch_subset_writable).update (mem_writable_of_addr haddr) _ }⟩
@@ -453,7 +453,7 @@ private theorem sim_call {body : Stmt} {k : ℕ} (hsa : ∀ e ∈ args, e.Safe S
   -- store the result
   obtain ⟨m₄, run₄, R₄, A₄⟩ := steps_setVar I₃ hx resultCode hres (by cells)
   exact ⟨m₄, _, {
-    run := (((run₁.trans run₂).trans run₃).trans run₄).cast_pos (by rw [Stmt.size, Nat.add_assoc])
+    run := (((run₁.trans run₂).trans run₃).trans run₄).cast_pos rfl
     le := call_le_stepsPerStep_mul hpos (by omega) le₂
     rel := R₄
     agree := (A.mono (writable_subset_writable (by omega))).trans A₄ }⟩

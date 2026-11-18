@@ -54,7 +54,7 @@ theorem pref_step {L ℓ : ℕ} (h : ℓ + 1 ≤ L) (z : ℤ) :
       prefR L ℓ z = shiftR (2 ^ L) (prefR L (ℓ + 1) z) := by
   -- In terms of `m = 2^ℓ` and `s = 2^(L - ℓ - 1)`.
   obtain ⟨j, rfl⟩ := Nat.exists_eq_add_of_le h
-  simp only [prefQ, prefR, shiftQ, shiftR, Nat.add_sub_cancel_left,
+  simp  [prefQ, prefR, shiftQ, shiftR,
     show ℓ + 1 + j - ℓ = j + 1 by omega]
   rw [show (2 : ℤ) ^ (ℓ + 1 + j) = 2 * 2 ^ ℓ * 2 ^ j by ring,
     show (2 : ℤ) ^ (ℓ + 1) = 2 * 2 ^ ℓ by ring, show (2 : ℤ) ^ (j + 1) = 2 * 2 ^ j by ring]
@@ -96,11 +96,10 @@ theorem prefR_nonneg (L ℓ : ℕ) (z : ℤ) : 0 ≤ prefR L ℓ z :=
 theorem prefR_lt {L ℓ : ℕ} (h : ℓ ≤ L) (z : ℤ) : prefR L ℓ z < 2 ^ L := by
   have hmod : z % 2 ^ ℓ < 2 ^ ℓ := Int.emod_lt_of_pos _ (by positivity)
   rw [prefR, ← Nat.add_sub_cancel' h, pow_add, Nat.add_sub_cancel' h]
-  exact mul_lt_mul_of_pos_right hmod (by positivity)
+  simp_all
 
 /-- The prefix of a natural number is the quotient of natural numbers. -/
-theorem prefQ_natCast (ℓ z : ℕ) : prefQ ℓ (z : ℤ) = ((z / 2 ^ ℓ : ℕ) : ℤ) := by
-  simp [prefQ]
+theorem prefQ_natCast (ℓ z : ℕ) : prefQ ℓ (z : ℤ) = ((z / 2 ^ ℓ : ℕ) : ℤ) := rfl
 
 /-- The bit that a step moves from the rest to the prefix is the binary digit number `ℓ`. -/
 theorem testBit_iff_shift {L ℓ : ℕ} (h : ℓ + 1 ≤ L) (z : ℕ) :
@@ -108,9 +107,7 @@ theorem testBit_iff_shift {L ℓ : ℕ} (h : ℓ + 1 ≤ L) (z : ℕ) :
   have hstep := (pref_step h (z : ℤ)).1
   rw [prefQ_natCast, prefQ_natCast, shiftQ] at hstep
   rw [Nat.testBit_eq_decide_div_mod_eq, decide_eq_true_eq]
-  split_ifs at hstep with hc
-  · exact iff_of_false (by omega) (not_not.2 hc)
-  · exact iff_of_true (by omega) hc
+  omega
 
 /-! ## The lists of the prefixes and of the rests -/
 

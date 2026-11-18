@@ -103,9 +103,7 @@ theorem markVal_end {U : ℕ} (q : Prop) [Decidable q] (h : q ↔ ∃ u' < U, �
       exact ⟨u', by omega, w', h2, h3⟩
     · rintro ⟨u', h1, w', h2, h3⟩
       exact ⟨u', w', Or.inl h1, h2, h3⟩
-  by_cases hq : q
-  · rw [if_pos hq, if_pos (this.2 hq)]
-  · rw [if_neg hq, if_neg fun h' => hq (this.1 h')]
+  grind
 
 end marks
 
@@ -124,7 +122,7 @@ variable {μ μ' : ℕ → ℤ} {base m : ℕ} {pos : ℕ → ℕ → ℕ} {U W 
 /-- After the clearing no pair has been handled. -/
 theorem start (hzero : ∀ i < m, μ' (base + i) = 0) (hrest : SameOutside μ μ' base m) :
     Marked μ μ' base m pos W 0 0 :=
-  ⟨fun i hi => by rw [markVal_zero]; exact hzero i hi, hrest⟩
+  ⟨fun i hi => by rw [markVal_zero]; grind, hrest⟩
 
 /-- The pair (u, w) marks its cell. -/
 theorem step (h : Marked μ μ' base m pos W u w) (hlt : w < W) (hpos : pos u w < m) :
@@ -181,7 +179,7 @@ theorem markRow (C : MarkCtx lim P d μ base m U W b pos cu cw hiU hiW cell L) {
   refine Ends.for
     (fun w σ => ∃ t μ'', σ = ⟨frame (L u w t), μ''⟩ ∧ Marked μ μ'' base m pos W u w) W b
     ?start ?round ?done ?bound C.wordW le_rfl
-  case start => exact ⟨t₀, μ', by simp only [update_frame_setLocal, C.setW, Nat.cast_zero], h⟩
+  case start => exact ⟨t₀, μ', by simp  [update_frame_setLocal, C.setW], h⟩
   case bound =>
     rintro w _ - - ⟨t, μ'', rfl, -⟩
     exact C.boundW _ _ _ _
@@ -190,7 +188,7 @@ theorem markRow (C : MarkCtx lim P d μ base m U W b pos cu cw hiU hiW cell L) {
     refine (C.cell_spec u w t μ'' hu hlt hm.rest).mono le_rfl ?_
     rintro _ ⟨t', rfl⟩
     exact ⟨C.atW _ _ _, t', _,
-      by simp only [update_frame_setLocal, C.setW, Nat.cast_add, Nat.cast_one],
+      by simp  [update_frame_setLocal, C.setW],
       hm.step hlt (C.pos_lt u w hu hlt)⟩
   case done =>
     rintro _ - ⟨t, μ'', rfl, hm⟩
@@ -205,7 +203,7 @@ theorem markPairs (C : MarkCtx lim P d μ base m U W b pos cu cw hiU hiW cell L)
   refine Ends.for
     (fun u σ => ∃ w t μ'', σ = ⟨frame (L u w t), μ''⟩ ∧ Marked μ μ'' base m pos W u 0) U _
     ?start ?round ?done ?bound C.wordU le_rfl
-  case start => exact ⟨w₀, t₀, μ', by simp only [update_frame_setLocal, C.setU, Nat.cast_zero], h⟩
+  case start => exact ⟨w₀, t₀, μ', by simp  [update_frame_setLocal, C.setU], h⟩
   case bound =>
     rintro u _ - - ⟨w, t, μ'', rfl, -⟩
     exact C.boundU _ _ _ _
@@ -214,7 +212,7 @@ theorem markPairs (C : MarkCtx lim P d μ base m U W b pos cu cw hiU hiW cell L)
     refine (markRow C hu w t hm).mono le_rfl ?_
     rintro _ ⟨w', t', μ₃, rfl, hm'⟩
     exact ⟨C.atU _ _ _, w', t', μ₃,
-      by simp only [update_frame_setLocal, C.setU, Nat.cast_add, Nat.cast_one], hm'⟩
+      by simp  [update_frame_setLocal, C.setU], hm'⟩
   case done =>
     rintro _ - ⟨w, t, μ'', rfl, hm⟩
     exact hm
@@ -265,8 +263,7 @@ variable {μ μ' : ℕ → ℤ} {base m res n D p c0 len : ℕ} {R : List ℕ}
 theorem n_le_word (pre : WritePre lim μ base m res n D p c0 len R) : (n : ℤ) ≤ lim.word := by
   have := pre.hw
   have := pre.spaceR
-  have := Nat.le_mul_self n
-  omega
+  nlinarith
 
 /-- The length of the piece fits in a word. -/
 theorem len_le_word (pre : WritePre lim μ base m res n D p c0 len R) : (len : ℤ) ≤ lim.word := by
@@ -278,15 +275,14 @@ theorem len_le_word (pre : WritePre lim μ base m res n D p c0 len R) : (len : �
 theorem index_lt (pre : WritePre lim μ base m res n D p c0 len R) {u c : ℕ} (hu : u < n)
     (hc : c < len) : u * n + c0 + c < n * n := by
   have := pre.piece
-  have := Nat.mul_add_lt_mul hu (show c0 + c < n by omega)
-  omega
+  nlinarith
 
 /-- The residues can be read at any time. -/
 theorem read (pre : WritePre lim μ base m res n D p c0 len R) (h : SameOutside μ μ' base m) {i : ℕ}
     (hi : i < n * n) : μ' (res + i) = (R.getD i 0 : ℕ) := by
   have hap := pre.apart
   have hil : i < R.length := pre.length ▸ hi
-  rw [h _ (by omega), pre.seg _ (by simpa using hil), List.getElem_map,
+  rw [h _ (by omega), pre.seg _ (by grind), List.getElem_map,
     List.getD_eq_getElem _ 0 hil]
 
 /-- The residues are below p. -/
@@ -354,7 +350,7 @@ theorem getElem_yList {n D p c0 len : ℕ} {RBC : List ℕ} (hp : 0 < p) {i : �
     (hi : i < (yList n D p c0 len RBC).length) :
     (yList n D p c0 len RBC)[i] = markVal (posY n p c0 RBC) n len 0 i := by
   have hi' : i < D * n := by simpa [yList] using hi
-  have hn : 0 < n := Nat.pos_of_ne_zero fun h => by simp [h] at hi'
+  have hn : 0 < n := Nat.pos_of_ne_zero fun h => by grind
   rw [markVal_end
     (i / n / p < len ∧ i / n % p = (p - RBC.getD (i % n * n + c0 + i / n / p) 0) % p)]
   · simp [yList]

@@ -45,7 +45,7 @@ theorem getD_weaveList (mask : List Bool) (outer inner : List ℕ) (ℓ : ℕ) :
         else outer.getD ((mask.take ℓ).count false) 0
       else 0 := by
   induction mask generalizing outer inner ℓ with
-  | nil => simp [weaveList]
+  | nil => simp 
   | cons x mask ih =>
     cases ℓ with
     | zero =>

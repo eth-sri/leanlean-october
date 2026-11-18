@@ -39,10 +39,7 @@ abbrev fill : ℕ := 59
 abbrev log4 : ℕ := 60
 abbrev padX : ℕ := 62
 abbrev ipAt : ℕ := 63
-abbrev pre31 : ℕ := 64
 abbrev query31 : ℕ := 65
-abbrev offline32 : ℕ := 68
-abbrev regimeTest26 : ℕ := 71
 abbrev levels31 : ℕ := 72
 abbrev switch31 : ℕ := 73
 end Proc
@@ -108,7 +105,7 @@ theorem fill_ok {lim : Limits} {P : Program} (hP : P[Proc.fill]? = some fillBody
     (hstd : Std lim) : FillSpec lim P := by
   intro dst n x μ h1 _ d _
   refine (fill_meets hP hstd.space_le h1).mono le_rfl fun _ μ' h => ⟨fun i hi => ?_, h.2⟩
-  have := h.1 i (by simpa using hi)
+  have := h.1 i (by grind)
   simpa using this
 
 /-! ### ⌈log₄ D⌉ -/
@@ -135,7 +132,6 @@ theorem log4_meets {lim : Limits} {P : Program} (hP : P[Proc.log4]? = some log4B
     (hstd : Std lim) : Log4Spec lim P := by
   intro D₀ a μ ha hw hmw
   refine fun d _ => ⟨log4Body, hP, ?_⟩
-  have h100 := hstd.const_le
   obtain ⟨F, hF⟩ : ∃ F, F = 4 ^ Nat.clog 4 D₀ := ⟨_, rfl⟩
   have hge : D₀ ≤ F := hF ▸ Nat.le_pow_clog (by norm_num) D₀
   rw [← hF] at hw ⊢

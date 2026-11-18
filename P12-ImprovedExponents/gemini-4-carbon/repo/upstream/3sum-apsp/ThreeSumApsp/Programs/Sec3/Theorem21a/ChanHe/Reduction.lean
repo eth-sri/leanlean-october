@@ -47,15 +47,14 @@ theorem threeSum_iff_trees {n U : ℕ} (hn : 1 ≤ n) (x : Fin n → ℤ) (hx : 
       TreeYes (mPar n (2 * U)) (Lam (2 * U)) (fuel n) (2 * U) (zeroSet x) {0} {0} := by
   rw [instances_correct n U hn x hx]
   unfold instances allNodes SplitYes TreeYes reduction
-  simp only [List.mem_map, List.mem_append, List.mem_flatMap, List.mem_range, List.mem_cons,
-    List.not_mem_nil, or_false]
+  simp only [List.mem_map, List.mem_append, List.mem_flatMap, List.mem_range]
   constructor
   · rintro ⟨y, ⟨ν, (⟨β, hβ, β', hβ', v, -, hν⟩ | hν | hν), rfl⟩, hc⟩
     · exact Or.inl ⟨β, hβ, β', hβ', v, ν, hν, hc⟩
     · exact Or.inr (Or.inl ⟨ν, hν, hc⟩)
     · exact Or.inr (Or.inr ⟨ν, hν, hc⟩)
   · rintro (⟨β, hβ, β', hβ', v, ν, hν, hc⟩ | ⟨ν, hν, hc⟩ | ⟨ν, hν, hc⟩)
-    · exact ⟨_, ⟨ν, Or.inl ⟨β, hβ, β', hβ', v, by cases v <;> simp, hν⟩, rfl⟩, hc⟩
+    · exact ⟨_, ⟨ν, Or.inl ⟨β, hβ, β', hβ', v, by simp, hν⟩, rfl⟩, hc⟩
     · exact ⟨_, ⟨ν, Or.inr (Or.inl hν), rfl⟩, hc⟩
     · exact ⟨_, ⟨ν, Or.inr (Or.inr hν), rfl⟩, hc⟩
 
@@ -79,7 +78,7 @@ theorem ChCore.time_le (T : ℕ → ℕ → ℕ) (n V : ℕ) :
     ring
   have hgrid : tGrid T n V m np (fuel n) Λ
       = Λ ^ 2 * (6 * tPick n + 2 * tt + 320) + 80 * Λ + 40 := by
-    simp only [tGrid, tRow, tRound, ← htt]
+    simp  [tGrid, tRow, tRound]
     ring
   have hcore : coreTime T n V = tParams n V + tPrep n Λ m
       + (Λ ^ 2 * (6 * tPick n + 2 * tt + 320) + 280 * Λ ^ 2 + 2 * tt + 6 * tPick n + 600)
@@ -213,11 +212,9 @@ theorem coreAddr_runs (a : Map) (V f nd : ℕ) (x b unread : ℤ) (μ : ℕ → 
     coreAddr.Runs lim ⟨frame (setupFrame a V f nd x b unread), μ⟩
       (· = ⟨frame (addrFrame a V f nd x b unread), μ⟩) := by
   have hmap := a.layout
-  have : (0 : ℤ) ≤ (a.m : ℤ) * a.m := by positivity
-  have : (0 : ℤ) ≤ (a.n : ℤ) * a.Λ := by positivity
   exact ⟨by light_side [coreAddr],
     by simp [coreAddr, update_frame_setLocal, Map.top, Map.one, Map.tw, Map.A, Map.bt, Map.mul,
-      Map.val, Map.srt, Map.cnt, Map.pr, add_assoc]⟩
+      Map.val, Map.srt, Map.cnt, Map.pr]⟩
 
 /-! ## The arrays, and a three-set input in the memory -/
 
@@ -273,7 +270,7 @@ theorem Arrays.of_sameOn (h : Arrays a V D C μ) (hs : SameOn (Fixed a) μ ν) :
   exact
     { val := h.val.of_sameOn hs fun i hi => Or.inl (by omega)
       mul := h.mul.of_sameOn hs fun i hi => Or.inl (by omega)
-      ctx := Seg.of_sameOn h.ctx hs fun i hi => Or.inl (by simp at hi; omega)
+      ctx := Seg.of_sameOn h.ctx hs fun i hi => Or.inl (by grind)
       primes := ⟨rfl, h.primes.2.of_sameOn hs fun i hi => Or.inl (by
         rw [List.length_map, Finset.length_sort] at hi
         omega)⟩
@@ -315,7 +312,7 @@ theorem Arrays.nodesPre {r : ℕ → ℕ → Need} {f s₁ l₁ s₂ l₂ s₃ l
   light_facts p₁ p₂ p₃
   exact
     { mem :=
-        { envOk := ⟨h.primes, h.zero, by dsimp only; omega, by dsimp only; omega,
+        { envOk := ⟨h.primes, h.zero, by grind, by grind,
             by dsimp only; omega⟩
           set₁ := ⟨p₁.set, p₁.le, p₁.bdd, p₁.below, by dsimp only; omega⟩
           set₂ := ⟨p₂.set, p₂.le, p₂.bdd, p₂.below, by dsimp only; omega⟩
@@ -368,7 +365,7 @@ theorem Ctx.okNodes (K : Ctx lim r d a V f X D C μ) :
 /-- The limits allow for a call of grid. -/
 theorem Ctx.okGrid (K : Ctx lim r d a V f X D C μ) :
     (gridNeed r a.n V a.m f 2).Ok lim a.top (d + 1) :=
-  ⟨by have := K.word; simp only [gridNeed]; push_cast; omega, K.cells, K.space,
+  ⟨by have := K.word; simp  [gridNeed]; omega, K.cells, K.space,
     by have := K.depth; simp only [gridNeed]; omega⟩
 
 /-- The recursive procedure stays within the time for a tree with f levels. -/
@@ -438,12 +435,11 @@ theorem coreDoubles_ends {pTwice pNodes : ℕ} (hTwice : TwiceSpec lim P pTwice)
           SameOn (Fixed a) μ μ' := by
   have hmap := a.layout
   have hspace := K.space
-  have hcells := K.cells
   have hval := K.arrays.val_le
   light_facts K
   have hlenC : C.length = D.length := by rw [K.values.counts, List.length_map]
   have harr := K.arrays.of_sameOn hν
-  have htime : tTwice D.length ≤ tTwice a.n := by simp only [tTwice]; omega
+  have htime : tTwice D.length ≤ tTwice a.n := by simp  [tTwice]; omega
   have htree := tNodes_le_tTree T a.n V a.m #(Nat.primesLE a.m) a.Λ f
     (twiceSet (vecOf a.n X)) {0} D.toFinset
   -- numDoubles := twice(numValues, val, mul, doubles)
@@ -475,11 +471,10 @@ theorem coreZero_ends {pZero pNodes : ℕ} (hZero : ZeroThreeSpec lim P pZero)
           SameOn (Fixed a) μ μ' := by
   have hmap := a.layout
   have hspace := K.space
-  have hcells := K.cells
   light_facts K K.arrays
   have hlenC : C.length = D.length := by rw [K.values.counts, List.length_map]
   have harr := K.arrays.of_sameOn hν
-  have htime : tZeroThree D.length ≤ tZeroThree a.n := by simp only [tZeroThree]; omega
+  have htime : tZeroThree D.length ≤ tZeroThree a.n := by simp  [tZeroThree]; omega
   have htree := tNodes_le_tTree T a.n V a.m #(Nat.primesLE a.m) a.Λ f
     (zeroSet (vecOf a.n X)) {0} {0}
   obtain ⟨l, hflag, hplaced⟩ := K.placed_zeroSet harr
@@ -579,8 +574,7 @@ theorem Core.Setup.ctx {r : ℕ → ℕ → Need} {a : Map} {U b : ℕ} {X D C :
   have hcells := hok.cells
   have hword := hok.word
   have hdepth := hok.depth
-  simp only [coreNeed, coreCells, ← hpar.primeBound, ← hpar.digits] at hcells hword hdepth
-  push_cast at hword
+  simp  [coreNeed, coreCells, ← hpar.primeBound, ← hpar.digits] at hcells hword hdepth
   have hsq : (0 : ℤ) ≤ 8 * ((a.m : ℤ) + 1) ^ 2 := by positivity
   exact
     { par := hpar, values := S.values
@@ -589,7 +583,7 @@ theorem Core.Setup.ctx {r : ℕ → ℕ → Need} {a : Map} {U b : ℕ} {X D C :
           zero := S.front.zero, one := S.one, val_le := S.values.length_le
           mul_le := by rw [S.values.counts, List.length_map]; exact S.values.length_le }
       bddVal := S.front.bdd, bddDoubles := bdd_twiceSet hx, space := hok.space
-      cells := by omega, word := by push_cast; omega, depth := by omega }
+      cells := by omega, word := by omega, depth := by omega }
 
 /-! ## The routine -/
 
@@ -616,7 +610,6 @@ theorem coreBody_ends {pParams pPrep pGrid pTwice pZero pNodes : ℕ} {T : ℕ �
     with _ ⟨unread, D, C, μ₁, rfl, S⟩
   rw [← S.values.values] at hfinal
   have K := S.ctx hpar hb hx hok
-  have hcells := K.cells
   light_facts K
   -- coreAddr
   refine Ends.next _ (Ends.block ((coreAddr_runs a (2 * U) (fuel a.n) D.length x b unread μ₁
@@ -631,7 +624,7 @@ theorem coreBody_ends {pParams pPrep pGrid pTwice pZero pNodes : ℕ} {T : ℕ �
   -- coreAnswer
   refine Ends.block ((coreAnswer_runs _ _ _ _ _ _ (by omega)).mono ?_)
   rintro σ' ⟨hres, hmem⟩
-  exact ⟨by rw [hres, propext hfinal], fun q hq => by
+  exact ⟨by grind, fun q hq => by
     rw [hmem, hμ₄ q (Or.inl (by omega)), S.kept q hq]⟩
 
 /-- **core meets its specification**, in every program that holds its body and meets the
@@ -644,11 +637,11 @@ theorem core_spec {p pParams pPrep pGrid pTwice pZero pNodes : ℕ} {T : ℕ →
     CoreSpec lim P p T r := by
   intro d n U x b X μ hlen hXU hseg hxb hn hU hok
   have hx : ∀ i, |vecOf n X i| ≤ (U : ℤ) := fun i => by
-    have hi : i.val < X.length := by rw [hlen]; exact i.isLt
+    have hi : i.val < X.length := by omega
     simp only [vecOf, List.getD_eq_getElem _ _ hi]
     exact hXU.getElem hi
   exact ⟨_, hP, coreBody_ends hParams hPrep hGrid hTwice hZero hNodes
     (a := ⟨b + 3, n, Lam (2 * U), mPar n (2 * U)⟩) ⟨hn, by omega, rfl, rfl, rfl⟩ rfl hlen hx
-    (fun y hy => (hXU y hy).trans (by push_cast; omega)) hseg hxb hok⟩
+    (fun y hy => (hXU y hy).trans (by omega)) hseg hxb hok⟩
 
 end Light.Sec3.ChanHe

@@ -51,24 +51,23 @@ theorem Ends.clearLoop (hs : Std lim) {x y a n T : ℕ} {loc μ : ℕ → ℤ} {
     (hxy : y ≠ x) (hx : loc x = a) (hy : loc y = (a + n : ℕ)) (ha : a + n < lim.space)
     (done : Q ⟨Function.update loc x ((a + n : ℕ) : ℤ), wrote μ a (fun _ => 0) n⟩)
     (hT : n * 11 + 4 ≤ T := by light_time) : Ends lim P d (clearLoop x y) ⟨loc, μ⟩ T Q := by
-  light_facts hs
   refine Ends.whileBlock (fun j σ => σ = ⟨Function.update loc x ((a + j : ℕ) : ℤ),
     wrote μ a (fun _ => 0) j⟩) n ?start ?round ?done hT
   case start => rw [wrote_zero, Nat.add_zero, ← hx, Function.update_eq_self]
   case round =>
     rintro j _ hj rfl
     have haddr : ((a : ℤ) + j).toNat = a + j := by omega
-    refine ⟨by simp, by simp [hxy, hy]; omega, by light_side, ?_⟩
+    refine ⟨by simp, by simp_all, by light_side, ?_⟩
     rw [← wrote_succ]
-    simp [haddr, add_assoc]
+    simp [add_assoc]
   case done =>
     rintro _ rfl
-    exact ⟨by simp, by simp [hxy, hy], done⟩
+    exact ⟨by simp, by simp_all, done⟩
 
 /-- The cells that have been cleared. -/
 private theorem seg_wrote_zero (μ : ℕ → ℤ) (a n : ℕ) :
     Seg (wrote μ a (fun _ => 0) n) a (List.replicate n 0) := fun i hi => by
-  rw [wrote_done (by simpa using hi), List.getElem_replicate]
+  rw [wrote_done (by grind), List.getElem_replicate]
 
 /-! ## The trie area -/
 
@@ -85,8 +84,6 @@ theorem TrieMem.new (h : TrieMem μ tr cap fp T) (hcap : T.length + 11 ≤ cap) 
         (Function.update (wrote μ (tr + T.length) (fun _ => 0) 11) fp ((T.length + 11 : ℕ) : ℤ))
         tr cap fp := by
   have hfp := h.fp_out
-  have hsame : SameOutside μ (wrote μ (tr + T.length) (fun _ => 0) 11) (tr + T.length) 11 :=
-    sameOutside_wrote le_rfl
   refine ⟨⟨?_, ?_, ?_, hfp⟩, fun b ⟨hb, hbfp⟩ => ?_⟩
   · refine Seg.update_out (seg_append.2
       ⟨h.seg.keep, seg_wrote_zero _ _ _⟩) ?_ _
@@ -95,8 +92,7 @@ theorem TrieMem.new (h : TrieMem μ tr cap fp T) (hcap : T.length + 11 ≤ cap) 
   · rw [Function.update_self, length_trieNew]
   · rw [length_trieNew]
     exact hcap
-  · rw [Function.update_of_ne hbfp]
-    exact hsame b (by omega)
+  light_keep
 
 /-- Writing into a cell of the part of the trie area that is in use. -/
 theorem TrieMem.set (h : TrieMem μ tr cap fp T) {q : ℕ} (hq : q < T.length) (x : ℤ) :
@@ -104,7 +100,7 @@ theorem TrieMem.set (h : TrieMem μ tr cap fp T) {q : ℕ} (hq : q < T.length) (
       SameOutsideTrie μ (Function.update μ (tr + q) x) tr cap fp := by
   have hfp := h.fp_out
   have hcap := h.le_cap
-  refine ⟨⟨h.seg.update_in hq x, ?_, by simpa using hcap, hfp⟩,
+  refine ⟨⟨h.seg.update_in hq x, ?_, by grind, hfp⟩,
     fun b hb => Function.update_of_ne (by omega) _ _⟩
   rw [Function.update_of_ne (by omega), h.free, List.length_set]
 
@@ -143,7 +139,6 @@ theorem newRoot_spec (hP : P[Proc.newRoot]? = some newRootBody) (hs : Std lim) :
   intro tr cap fp T μ hT hcap htr hfp
   refine fun d _ => ⟨newRootBody, hP, ?_⟩
   have hfree := hT.free
-  light_facts hs
   unfold tNewRoot
   -- new := mem[free]; from := area + new; upto := from + 11
   light_set T.length using hfree
@@ -206,9 +201,8 @@ private theorem alloc_spec (hs : Std lim) {tr cap fp q p key L i : ℕ} {val x�
         σ' = ⟨frame [tr, p, key, L, val, fp, i, (tr + q : ℕ), y₈, y₉, y₁₀], μ'⟩ ∧
           TrieMem μ' tr cap fp (trieNew (T.set q T.length)) ∧ SameOutsideTrie μ μ' tr cap fp := by
   have hfree := hT.free
-  light_facts hs
   obtain ⟨hset, hsame⟩ := hT.set hq (T.length : ℤ)
-  have hnew := hset.new (by rw [List.length_set]; exact hcap)
+  have hnew := hset.new (by grind)
   rw [List.length_set] at hnew
   unfold tAlloc
   -- new := mem[free]
@@ -246,7 +240,7 @@ namespace Insertion
 /-- The pointer to a new child, read back from the array. -/
 private theorem getD_trieNew_set {T : List ℤ} {q : ℕ} (hq : q < T.length) (x : ℤ) :
     (trieNew (T.set q x)).getD q 0 = x := by
-  rw [trieNew, List.getD_eq_getElem?_getD, List.getElem?_append_left (by simpa using hq),
+  rw [trieNew, List.getD_eq_getElem?_getD, List.getElem?_append_left (by grind),
     List.getElem?_set_self hq]
   rfl
 
@@ -330,12 +324,7 @@ private theorem down_spec (C : InsertPre lim μ x) {t : ℕ} (ht : 3 ≤ t)
       fun σ' => σ'.loc Level = i ∧ Inv x μ (i + 1)
         { σ' with loc := Function.update σ'.loc Level ((i : ℤ) + 1) } := by
   light_facts C hmem
-  have hq' : q < (child Ti q).length := by
-    unfold child
-    split_ifs
-    · rw [length_trieNew, List.length_set]
-      omega
-    · exact hq
+  have hq' : q < (child Ti q).length := by grind
   have hread := hmem.seg.getD hq' 0
   generalize (child Ti q).getD q 0 = c at hchild hnext hread
   light_set (c.toNat : ℕ) using hread
@@ -349,7 +338,6 @@ private theorem round_spec (hs : Std lim) (C : InsertPre lim μ x) (hi : i < x.k
       ⟨frame [x.tr, p, x.key, x.kl.length, x.val, x.fp, i, x₇, x₈, x₉, x₁₀], μ'⟩ tRound
       fun σ' => σ'.loc Level = i ∧ Inv x μ (i + 1)
         { σ' with loc := Function.update σ'.loc Level ((i : ℤ) + 1) } := by
-  have hroom := C.room
   have harea := C.area_in
   have hin := hprog.inside
   light_facts C hmem hprog hs
@@ -412,7 +400,7 @@ theorem insert_spec (hP : P[Proc.insert]? = some insertBody) (hs : Std lim) :
     obtain ⟨hset, hsame'⟩ := hmem.set (q := p) (by omega) x.val
     have heq := hprog.eq
     rw [List.drop_length, trieInsert] at heq
-    simp only [tRound, tAlloc]
+    simp  [tRound, tAlloc]
     -- mem[area + vertex] := value
     light_store (x.tr + p) x.val
     exact ⟨heq ▸ hset, hsame.trans hsame'⟩

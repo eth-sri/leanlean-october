@@ -103,7 +103,7 @@ private theorem decides_lt (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
   have run₄ := run₃.trans (steps_bltz restCode.tail.tail (Function.update_self _ _ _)
     (inRange_sub Z (Expr.abs_val_le hσ b hsb) (Expr.abs_val_le hσ a hsa)).2)
   exact ⟨_, _, by rw [Cond.size], (A₁.update (by cells) _).update (by cells) _,
-    run₄.branch (by omega) (by rw [Cond.size]; omega)⟩
+    run₄.branch (by omega) rfl⟩
 
 /-- The test a = b. -/
 private theorem decides_eq (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
@@ -135,7 +135,7 @@ private theorem decides_eq (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
   have run₅ := run₄.trans (steps_bltz restCode.tail.tail.tail (Function.update_self _ _ _)
     (inRange_sub Z hb ha).1)
   exact ⟨_, _, by rw [Cond.size], A₂.update (by cells) _,
-    run₅.branch (by omega) (by rw [Cond.size]; omega)⟩
+    run₅.branch (by omega) rfl⟩
 
 /-- The code of a test decides the test. -/
 theorem decides_compileCond (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim) (c : Cond)

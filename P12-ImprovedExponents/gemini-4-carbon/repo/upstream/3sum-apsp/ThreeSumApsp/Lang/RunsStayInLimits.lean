@@ -34,10 +34,7 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 
 /-- Writing a bounded number into a bounded function. -/
 private theorem abs_update_le {f : ℕ → ℤ} {B v : ℤ} (hf : ∀ y, |f y| ≤ B) (hv : |v| ≤ B)
-    (x y : ℕ) : |Function.update f x v y| ≤ B := by
-  rw [Function.update_apply]
-  split_ifs
-  exacts [hv, hf y]
+    (x y : ℕ) : |Function.update f x v y| ≤ B := by grind
 
 /-- The value of a safe expression in a bounded state fits in a word. -/
 theorem Expr.abs_val_le {σ : State} (hσ : σ.Bounded lim) :

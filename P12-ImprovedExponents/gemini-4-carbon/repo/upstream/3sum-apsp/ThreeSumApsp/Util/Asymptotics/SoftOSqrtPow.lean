@@ -31,20 +31,17 @@ theorem natLog_succ_le {n : ℕ} (hn : 2 ≤ n) : ((Nat.log 2 n + 1 : ℕ) : ℝ
   have hhalf : 1 / 2 ≤ Real.log 2 := Real.one_half_lt_log_two.le
   have hlog2 : Real.log 2 ≤ Real.log n := Real.log_le_log (by norm_num) (by exact_mod_cast hn)
   have hfloor : Nat.log 2 n * Real.log 2 ≤ Real.log n :=
-    calc Nat.log 2 n * Real.log 2 = Real.log ((2 ^ Nat.log 2 n : ℕ) : ℝ) := by
-          rw [Nat.cast_pow, Real.log_pow, Nat.cast_two]
+    calc Nat.log 2 n * Real.log 2 = Real.log ((2 ^ Nat.log 2 n : ℕ) : ℝ) := by simp
       _ ≤ Real.log n := Real.log_le_log (by positivity)
           (by exact_mod_cast Nat.pow_log_le_self 2 (by omega))
   have hmul := mul_le_mul_of_nonneg_left hhalf (Nat.cast_nonneg (α := ℝ) (Nat.log 2 n))
-  push_cast
-  -- `⌊log₂ n⌋ ≤ 2 ⌊log₂ n⌋ ln 2 ≤ 2 ln n` and `1 ≤ 2 ln 2 ≤ 2 ln n`
-  linarith [hmul, hfloor, hhalf, hlog2]
+  grind
 
 /-- `⌊√n⌋ + 1 ≤ 2 √n` for `n ≥ 1`. -/
 theorem natSqrt_succ_le {n : ℕ} (hn : 1 ≤ n) : ((Nat.sqrt n + 1 : ℕ) : ℝ) ≤ 2 * √(n : ℝ) := by
-  have hone : 1 ≤ √(n : ℝ) := Real.one_le_sqrt.mpr (by exact_mod_cast hn)
+  have hone : 1 ≤ √(n : ℝ) := Real.one_le_sqrt.mpr (by simp_all)
   push_cast
-  linarith [Real.nat_sqrt_le_real_sqrt (a := n), hone]
+  linarith [Real.nat_sqrt_le_real_sqrt (a := n)]
 
 /-- The scale of the bounds `Õ(n^{i/2})`, for `n ≥ 2`: powers of `⌊√n⌋ + 1` are counted, powers of
 `⌊log₂ n⌋ + 1` are not. -/
@@ -83,7 +80,7 @@ theorem natLog_comp {e : Fin 1 → ℕ} (hF : sqrtScale.SoftO F e) :
     have := Nat.lt_pow_succ_log_self (by norm_num : 1 < 2) n
     have := Nat.sqrt_le_self n
     omega
-  simp only [sqrtScale, Real.rpow_natCast]
+  simp  [sqrtScale]
   exact_mod_cast hsqrt
 
 /-- In the notation of the paper: `F(n) = Õ(n^{i/2})`. -/

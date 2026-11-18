@@ -95,8 +95,7 @@ theorem not_path_of_dist_eq_top (hdist : IsDistanceMatrix (fun i j => toTop (w i
     {i j : Fin n} (htop : dist i j = ⊤) (d : ℤ) : ¬ Path w i j d := by
   intro hp
   have hle := dist_le_of_path hdist hp
-  rw [htop] at hle
-  exact absurd hle (by simp)
+  simp_all
 
 /-- A finite distance is the weight of a path, and no path is lighter. -/
 theorem isLeast_path_of_dist_eq_coe (hdist : IsDistanceMatrix (fun i j => toTop (w i j)) dist)
@@ -108,8 +107,7 @@ theorem isLeast_path_of_dist_eq_coe (hdist : IsDistanceMatrix (fun i j => toTop 
   rw [hend] at hp
   refine ⟨hp, fun e he => ?_⟩
   have hle := dist_le_of_path hdist he
-  rw [hz] at hle
-  exact_mod_cast hle
+  simp_all
 
 /-- Two numbers written down for the pair `(i, j)` as APSP asks: 0 if the distance is `⊤`, and 1 and
 the distance otherwise.  Then either the first is 1 and the second is the least weight of a path, or

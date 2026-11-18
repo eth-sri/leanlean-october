@@ -141,13 +141,10 @@ private theorem Ready.one_le (H : Ready lim r d x μ fr t) : 1 ≤ t :=
 
 /-- The numbers of the input are bounded by 2U + 1. -/
 private theorem Ready.input_le (H : Ready lim r d x μ fr t) : AbsLe x.X ((2 * x.U + 1 : ℕ) : ℤ) :=
-  fun e he => (H.pre.le e he).trans (by push_cast; omega)
+  fun e he => (H.pre.le e he).trans (by omega)
 
 /-- The filler is bounded by 2U + 1. -/
-private theorem abs_filler_le (x : VecInst) : |2 * (x.U : ℤ) + 1| ≤ ((2 * x.U + 1 : ℕ) : ℤ) := by
-  rw [abs_of_nonneg (by positivity)]
-  push_cast
-  exact le_rfl
+private theorem abs_filler_le (x : VecInst) : |2 * (x.U : ℤ) + 1| ≤ ((2 * x.U + 1 : ℕ) : ℤ) := by rfl
 
 /-- convFill can be called in every round. -/
 private theorem fill_ctx (H : Ready lim r d x μ fr t) (hk : Kept μ μ' fr) (hs : s < 2 * t) :
@@ -187,7 +184,7 @@ private theorem inst_pre {μ₁ : ℕ → ℤ} (H : Ready lim r d x μ fr t)
 /-- The limits allow for the solver, after the three matrices and one level of calls down. -/
 private theorem solver_ok (H : Ready lim r d x μ fr t) :
     (r t (2 * x.U + 1)).Ok lim (fr + 3 * (t * t)) (d + 1) where
-  word := by have := H.word; have := mul_self_nonneg (t : ℤ); omega
+  word := by have := H.word; grind
   cells := by have := H.cells; omega
   space := H.addr
   depth := by have := H.depth; omega
@@ -203,7 +200,6 @@ private theorem round_spec (C : Ctx P R pET pSqrt pFill T r) (H : Ready lim r d 
           Kept μ μ'' fr := by
   obtain ⟨hword, hcells, haddr, hdepth⟩ := And.intro H.word (And.intro H.cells
     (And.intro H.addr H.depth))
-  have harea := mul_self_nonneg (t : ℤ)
   unfold c3Round c3RoundTime
   -- Answer := convFill(t, N, s, 2U + 1, x, fr, fr + t², fr + 2t²)
   refine Ends.callToThen (T' := convFillTime t) (convFill_meets C.fill (fill_ctx H hk hs)) ?_
@@ -240,7 +236,7 @@ private theorem ready (hpre : x.Pre μ fr) (hok : (c3Need r x.N x.U).Ok lim fr d
     Ready lim r d x μ fr (Nat.sqrt x.N + 1) where
   pre := hpre
   lenLt := Nat.lt_succ_sqrt x.N
-  word := by have := hok.word; simp only [c3Need] at this; push_cast at this ⊢; omega
+  word := by have := hok.word; aesop
   cells := hok.cells
   addr := hok.space
   depth := hok.depth
@@ -258,14 +254,11 @@ private theorem c3_spec {P R : Program} {pET pSqrt pFill : ℕ} {T : ℕ → ℕ
         σ'.loc 0 = flag (Convolution3SUM (vecOf x.N x.X)) ∧ Kept μ σ'.mem fr := by
   have H := ready hpre hok
   unfold c3Time
-  have hroot : Nat.sqrt x.N ≤ x.N := Nat.sqrt_le_self _
   obtain ⟨t, ht⟩ : ∃ t, t = Nat.sqrt x.N + 1 := ⟨_, rfl⟩
   rw [← ht] at H ⊢
   obtain ⟨hword, hdepth⟩ := And.intro H.word H.depth
   have harea := mul_self_nonneg (t : ℤ)
-  unfold c3Body
-  -- Side := sqrt(N)
-  light_call (sqrt_meets (K := x.N) C.sqrt μ (by push_cast; omega)) with _ μ₀ ⟨rfl, hμ⟩
+  light_call (sqrt_meets (K := x.N) C.sqrt μ (by omega)) with _ μ₀ ⟨rfl, hμ⟩
   obtain rfl := hμ.symm
   -- Side := Side + 1; Area := Side * Side; Filler := 2 * Bound + 1; Found := 0
   light_set t

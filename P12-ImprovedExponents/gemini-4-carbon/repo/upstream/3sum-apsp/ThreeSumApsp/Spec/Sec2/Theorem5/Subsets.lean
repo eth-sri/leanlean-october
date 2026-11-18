@@ -80,8 +80,7 @@ private theorem rank_unrank {L m r : ℕ} (hr : r < L.choose m) : rank (unrank L
     -- Level 1 does not belong to the set: the `(L choose m)` masks with level 1 come before.
     rw [Nat.choose_succ_succ'] at hr
     have hrest : r - L.choose m < L.choose (m + 1) := by omega
-    simp only [rank, count_unrank hrest, length_unrank, ih hrest, Nat.succ_ne_zero, if_false,
-      Nat.add_sub_cancel]
+    simp  [rank, count_unrank hrest]
     omega
 
 /-- Different numbers give different masks. -/
@@ -165,12 +164,8 @@ private theorem unrank_last {L m : ℕ} (hm : m ≤ L) :
     | succ m =>
       rcases Nat.lt_or_ge m L with hlt | hge
       · have hpos : 0 < L.choose (m + 1) := Nat.choose_pos hlt
-        have hnot : ¬ (L + 1).choose (m + 1) - 1 < L.choose m := by
-          rw [Nat.choose_succ_succ']
-          omega
-        have hrank : (L + 1).choose (m + 1) - 1 - L.choose m = L.choose (m + 1) - 1 := by
-          rw [Nat.choose_succ_succ']
-          omega
+        have hnot : ¬ (L + 1).choose (m + 1) - 1 < L.choose m := by grind
+        have hrank : (L + 1).choose (m + 1) - 1 - L.choose m = L.choose (m + 1) - 1 := by grind
         rw [unrank, if_neg hnot, hrank, ih hlt, show L + 1 - (m + 1) = L - (m + 1) + 1 by omega]
         -- `replicate (a + 1) false` is `false :: replicate a false`.
         rfl
@@ -195,15 +190,12 @@ theorem unrank_succ_shape {L m r : ℕ} (hr : r + 1 < L.choose m) :
       rcases Nat.lt_trichotomy (r + 1) (L.choose m) with hboth | hlast | hneither
       · -- Both masks contain the first level.
         obtain ⟨pre, a, b, hlen, hthis, hnext⟩ := ih hboth
-        refine ⟨true :: pre, a, b, by rw [List.length_cons]; omega, ?_, ?_⟩
+        refine ⟨true :: pre, a, b, by grind, ?_, ?_⟩
         · rw [unrank, if_pos (by omega), hthis, List.cons_append]
         · rw [unrank, if_pos hboth, hnext, List.cons_append]
       · -- The last mask with the first level, and the first one without it.
-        have hmL : m + 1 ≤ L := by
-          by_contra hcon
-          rw [Nat.choose_eq_zero_of_lt (by omega : L < m + 1)] at hr
-          omega
-        refine ⟨[], L - m - 1, m, by rw [List.length_nil]; omega, ?_, ?_⟩
+        have hmL : m + 1 ≤ L := by grind
+        refine ⟨[], L - m - 1, m, by grind, ?_, ?_⟩
         · rw [unrank, if_pos (by omega), show r = L.choose m - 1 by omega, unrank_last (by omega),
             show L - m = L - m - 1 + 1 by omega]
           rfl
@@ -211,7 +203,7 @@ theorem unrank_succ_shape {L m r : ℕ} (hr : r + 1 < L.choose m) :
           rfl
       · -- Neither mask contains the first level.
         obtain ⟨pre, a, b, hlen, hthis, hnext⟩ := ih (m := m + 1) (r := r - L.choose m) (by omega)
-        refine ⟨false :: pre, a, b, by rw [List.length_cons]; omega, ?_, ?_⟩
+        refine ⟨false :: pre, a, b, by grind, ?_, ?_⟩
         · rw [unrank, if_neg (by omega), hthis, List.cons_append]
         · rw [unrank, if_neg (by omega), show r + 1 - L.choose m = r - L.choose m + 1 by omega,
             hnext, List.cons_append]

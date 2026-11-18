@@ -2,7 +2,8 @@ module
 
 public import ImprovedExponents.AllEdges.Host.ProgramAE
 public import ImprovedExponents.AllEdges.Model
-public import ImprovedExponents.Pipeline.Claims
+public import ImprovedExponents.Pipeline.ExactTriangle
+public import ImprovedExponents.ParamRoutines
 
 @[expose] public section
 
@@ -107,7 +108,7 @@ theorem hostTimeAE_eq {Dfun Gfun : ℕ → ℕ} (tD tG : ℕ → ℕ) (Tn : List
         + hostTimeAE Dfun Gfun tD tG (fun _ => 0) n U := by
   unfold hostTimeAE hostCoreTime
   rw [hD, hG]
-  simp only [ite_eq_right hs]
+  simp  [ite_eq_right hs]
   unfold hostMainAE hostLoopBoundAE
   rw [supTime_zero]
   ring
@@ -174,7 +175,7 @@ theorem cast_supTime_le {Tn : List ℕ → ℕ} {T : ℕ → ℕ → ℕ → ℝ
       (Finset.range (cap + 1)).sup (fun w => Tn [n, D, w]) = Tn [n, D, w] :=
     Finset.exists_mem_eq_sup _ ⟨0, Finset.mem_range.2 (Nat.succ_pos _)⟩ _
   rw [supTime, hsup]
-  exact hT n D w cap hn hD (Nat.lt_succ_iff.1 (Finset.mem_range.1 hw))
+  grind
 
 /-- **The bound of `Claim17Mid` for the all-edges host.**  The hypotheses are those of
 `ImprovedExponents.HostMid.obeysBound17Mid_hostTime`: the parameter routines compute `Dfun n` from
@@ -210,44 +211,22 @@ theorem obeysBound17Mid_hostTimeAE (D g : ℕ → ℕ) {Dfun Gfun tD tG : ℕ �
   have hle' : ((hostTimeAE Dfun Gfun tD tG (fun _ => 0) n U : ℕ) : ℝ)
       ≤ 2 * (hostTime' Dfun Gfun tD tG (fun _ => 0) n U : ℕ) + (extraAE n (D n) (g n) : ℕ) := by
     exact_mod_cast hle
-  simp only [bound17Mid, restBoundAE, budget] at hzero hex ⊢
+  simp  [bound17Mid, restBoundAE, budget] at hzero hex ⊢
   push_cast
-  linarith [hcalls, hle', hzero, hex, hquery]
+  linarith 
 
 /-! ## The claim -/
 
 -- adapted from ImprovedExponents/HostMid/AtParameters.lean
-/-- **`Claim17Mid` for all-edges Exact Triangle from parameter routines**, as
-`ImprovedExponents.HostMid.claim17Mid_of_paramProcs`: `procs o` is a list of routines to be placed
-behind a program of length `o`; its routines number `i` and `j` compute `Dfun n` from `n` and
-`Gfun D` from `D` in the times `tD`, `tG`, forming numbers up to `wD`, `wG` (`ParamProc`).  If the
-results and the words are polynomially bounded, the routines agree with the parameters `D` and `g`
-of the claim, and their times are within the budget of Theorem 17, then the all-edges host proves
-`Claim17Mid` for `D` and `g` in the model `lightModelAE`. -/
-theorem claim17MidAE_of_paramProcs (D g : ℕ → ℕ) {procs : ℕ → Program}
-    {Dfun Gfun tD tG wD wG : ℕ → ℕ} {i j : ℕ}
-    (hD : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + i) Dfun tD wD)
-    (hG : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + j) Gfun tG wG)
-    (hpos : ∀ n, 1 ≤ n → 1 ≤ Dfun n)
-    (hpolyD : PolyBounded fun n _ => Dfun n) (hpolyG : PolyBounded fun n _ => Gfun (Dfun n))
-    (hpolyWD : PolyBounded fun n _ => wD n) (hpolyWG : PolyBounded fun n _ => wG (Dfun n))
-    (hDf : ∀ n, Dfun n = D n) (hGf : ∀ n, 1 ≤ n → Gfun (D n) = g n)
-    (hstepsD : Steps (fun θ => tD θ.n) budget) (hstepsG : Steps (fun θ => tG θ.D) budget) :
-    Claim17Mid lightModelAE strassen D g :=
-  claim17MidAE_of_host strassen D g _ _
-    (hostAE_of_paramProcs hD hG hpos fun _ => hostNeedAE_poly hpolyD hpolyG hpolyWD hpolyWG)
-    (obeysBound17Mid_hostTimeAE D g hDf hGf hstepsD hstepsG)
-
-/-- The all-edges host, for any parameter routines, as `ImprovedExponents.claim17Mid_of_pack`. -/
-theorem claim17MidAE_of_pack {D g : ℕ → ℕ} (pk : ParamPack D g) :
-    Claim17Mid lightModelAE strassen D g :=
-  claim17MidAE_of_paramProcs D g pk.procD pk.procG pk.D_pos pk.polyD pk.polyG pk.polyWD pk.polyWG
-    pk.D_eq pk.G_eq pk.stepsD_budget pk.stepsG_budget
-
-/-- **`lightModelAE` has the host of Theorem 17 at the true size of the middle part**, at all
-rational exponents `D(n) = ⌊n^{a/b}⌋`, `g = ⌈D^{c/d}⌉`, as `lightModel` does
-(`ImprovedExponents.midHostRat_light`). -/
 theorem midHostRat_ae : MidHostRat lightModelAE := fun a b c d hb hd hab hcd =>
-  (hostBound_iff_claim17Mid _ _ _ _).2 (claim17MidAE_of_pack (paramPackRat a b c d hb hd hab hcd))
+  claim17MidAE_of_host strassen (paramDRat a b) (paramGRatOf a b c d) _ _
+    (hostAE_of_paramProcs (paramProc_dRat (by omega) a c d) (paramProc_gRat (by omega) a b c)
+      (fun _ hn => one_le_paramDRatNat (by omega) a hn)
+      fun _ => hostNeedAE_poly (polyBounded_paramDRatNat a b)
+        (polyBounded_paramGRatNat c d (polyBounded_paramDRatNat a b)) (polyBounded_wDRat a b)
+        (polyBounded_wGRat c d (polyBounded_paramDRatNat a b)))
+    (obeysBound17Mid_hostTimeAE _ _ (paramDRatNat_eq (by omega) a)
+      (fun _ hn => paramGRatNat_paramDRat (by omega) a b c (one_le_paramDRat (by omega) a hn))
+      (steps_tDRat (by omega) hab).withinBuild (steps_tGRat (by omega) hcd).withinBuild)
 
 end ImprovedExponents.AllEdges

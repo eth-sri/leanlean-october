@@ -65,7 +65,7 @@ structure Fits (W : ℕ) (lim : Limits) (N Q : ℕ) : Prop where
 /-- A number within the limit on words is in the range of words. -/
 theorem Fits.inRange {W : ℕ} {lim : Limits} {N Q : ℕ} (hfit : Fits W lim N Q) {v : ℤ}
     (h : |v| ≤ lim.word) : InRange W v :=
-  inRange_of_abs_le (by have := hfit.word; have := (abs_nonneg v).trans h; omega) h
+  inRange_of_abs_le (by have := hfit.word; grind) h
 
 /-- The numbers on which the proofs about compiled code depend: the layout of the code, the limits
 on the runs of the light program, and the number of stack cells.  The pool holds the numbers from 0
@@ -112,7 +112,7 @@ def Writable {W : ℕ} (Z : Sizes W) (q : ℕ) : Set ℤ :=
 
 theorem mem_temps_iff {k F : ℕ} {a : ℤ} :
     a ∈ Temps k F ↔ a = cADDR ∨ cT (2 * F) ≤ a ∧ a ≤ cT k ∧ 4 ∣ cT 0 - a := by
-  simp only [Temps, cT, Set.mem_ofPred_eq]
+  simp  [Temps, cT]
   refine or_congr_right ⟨?_, fun h => ⟨((-23 - a) / 4).toNat, ?_⟩⟩
   · rintro ⟨j, hk, hj, rfl⟩
     omega
@@ -120,7 +120,7 @@ theorem mem_temps_iff {k F : ℕ} {a : ℤ} :
 
 theorem mem_stack_iff {q Q : ℕ} {a : ℤ} :
     a ∈ Stack q Q ↔ cStack Q < a ∧ a ≤ cStack q ∧ 2 ∣ a := by
-  simp only [Stack, cStack, Set.mem_ofPred_eq]
+  simp  [Stack, cStack]
   refine ⟨?_, fun h => ⟨(-a / 2).toNat, ?_⟩⟩
   · rintro ⟨j, hq, hj, rfl⟩
     omega
@@ -128,7 +128,7 @@ theorem mem_stack_iff {q Q : ℕ} {a : ℤ} :
 
 theorem mem_pool_iff {N : ℕ} {a : ℤ} :
     a ∈ Pool N ↔ cPool N ≤ a ∧ a ≤ cPool 0 ∧ 4 ∣ cPool 0 - a := by
-  simp only [Pool, cPool, Set.mem_ofPred_eq]
+  simp  [Pool, cPool]
   refine ⟨?_, fun h => ⟨((-25 - a) / 4).toNat, ?_⟩⟩
   · rintro ⟨n, hn, rfl⟩
     omega
@@ -181,13 +181,13 @@ theorem mem_writable_of_addr {q : ℕ} {a : ℤ} (h : Z.lim.Addr a) : a ∈ Writ
 
 /-- The cell of the local variable x of the frame q, computed from FP and the pool. -/
 theorem cStack_sub (q x : ℕ) : cStack q - ((2 * x : ℕ) : ℤ) = cStack (q + x) := by
-  simp only [cStack]
+  simp  [cStack]
   push_cast
   ring
 
 /-- Back from the frame q + x to the frame q. -/
 theorem cStack_add (q x : ℕ) : cStack (q + x) + ((2 * x : ℕ) : ℤ) = cStack q := by
-  simp only [cStack]
+  simp  [cStack]
   push_cast
   ring
 
@@ -196,7 +196,6 @@ theorem cStack_succ_add (q : ℕ) : cStack (q + 1) + ((2 : ℕ) : ℤ) = cStack 
 
 /-- The addresses of the stack fit in a word. -/
 theorem Sizes.inRange_stack (Z : Sizes W) {j : ℕ} (hj : j ≤ Z.Q) : InRange W (cStack j) := by
-  have hjQ : (j : ℤ) ≤ Z.Q := by exact_mod_cast hj
   constructor <;> simp only [cStack] <;> linarith [Z.fits.stack]
 
 /-- The addresses of the memory fit in a word. -/

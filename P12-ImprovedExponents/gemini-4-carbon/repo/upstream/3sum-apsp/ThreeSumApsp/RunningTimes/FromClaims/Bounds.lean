@@ -33,10 +33,7 @@ open EndStatement (Instr)
 /-! ## Bounds on a domain -/
 
 /-- The bound `U = N^c` on the numbers, as a real number. -/
-theorem cast_pow_eq (N c : ℕ) : ((N ^ c : ℕ) : ℝ) = (N : ℝ) ^ ((c : ℕ) : ℝ) := by
-  rw [Real.rpow_natCast]
-  push_cast
-  rfl
+theorem cast_pow_eq (N c : ℕ) : ((N ^ c : ℕ) : ℝ) = (N : ℝ) ^ ((c : ℕ) : ℝ) := by simp
 
 /-! ## Bounds in one size, for all large sizes -/
 
@@ -55,7 +52,6 @@ theorem solvedAt_of_realized {Q : EndStatement.Problem} (T : ℕ → ℝ → ℝ
   have hU : ((x.U : ℕ) : ℝ) = (x.n : ℝ) ^ ((κ : ℕ) : ℝ) := by
     rw [hx]
     exact cast_pow_eq _ _
-  change c * max (T x.n ((x.U : ℕ) : ℝ)) 0 + c ≤ _
   rw [hU]
   -- `c max(T, 0) + c ≤ c C' (X + 1) + c ≤ (c C' + c) (X + 1)`, where `X = n^a (log n)^e ≥ 0`
   have hcT : c * max (T x.n ((x.n : ℝ) ^ ((κ : ℕ) : ℝ))) 0 ≤
@@ -71,7 +67,7 @@ theorem solvedInTime_of_claim {S : (ℕ → ℝ → ℝ) → Prop} {Q : EndState
   intro κ
   obtain ⟨T, hT, C, hb⟩ := h κ (Nat.cast_nonneg κ)
   exact solvedAt_of_realized T κ (hR T hT) (C := C)
-    (by simpa only [pow_zero, mul_one] using hb)
+    (by grind)
 
 /-- A claim "solved in `O(n^a (log n)^{O(1)})` time on numbers of absolute value at most `n^κ`, for
 every `κ`", in a reading `S` of "is solved in time T" that is realized, gives programs. -/

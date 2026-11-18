@@ -38,9 +38,8 @@ namespace HostPoly
 
 /-- `⌊n²/√D⌋ ≤ n²`. -/
 private theorem queryCapNat_le_sq (n D : ℕ) : queryCapNat n D ≤ n ^ 2 := by
-  unfold queryCapNat
   calc Nat.sqrt (n ^ 4 / D) ≤ Nat.sqrt (n ^ 4) := Nat.sqrt_le_sqrt (Nat.div_le_self _ _)
-    _ = Nat.sqrt (n ^ 2 * n ^ 2) := by rw [← pow_add]
+    _ = Nat.sqrt (n ^ 2 * n ^ 2) := by grind
     _ = n ^ 2 := Nat.sqrt_eq _
 
 /-- `2^{len + 1} ≤ 4(U + 1)` for the number `len` of binary digits of `U`. -/
@@ -79,8 +78,7 @@ private theorem polyBounded_clog : PolyBounded fun n _ => Nat.clog 2 n :=
 /-- `(2^c)^⌈log₂ n⌉ = (2^⌈log₂ n⌉)^c`. -/
 private theorem polyBounded_pow_clog (c : ℕ) : PolyBounded fun n _ => (2 ^ c) ^ Nat.clog 2 n :=
   (by growth_poly [polyBounded_two_pow_clog] :
-    PolyBounded fun n _ => (2 ^ Nat.clog 2 n) ^ c).of_le fun n _ => by
-      rw [← pow_mul, ← pow_mul, mul_comm]
+    PolyBounded fun n _ => (2 ^ Nat.clog 2 n) ^ c).of_le fun n _ => by ring_nf; omega
 
 variable {D g : ℕ → ℕ}
 
@@ -125,7 +123,7 @@ private theorem polyBounded_sup {f : List ℕ → ℕ} {s k : ℕ} (hf : ∀ ps,
     growth_poly [hD, polyBounded_queryCapNat]
   refine hbound.of_le fun n _ => Finset.sup_le fun w hw => (hf _).trans ?_
   have hw' : w ≤ queryCapNat n (D n) := Nat.lt_succ_iff.1 (Finset.mem_range.1 hw)
-  simp only [polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
+  simp  [polyBound]
   gcongr
 
 end parts

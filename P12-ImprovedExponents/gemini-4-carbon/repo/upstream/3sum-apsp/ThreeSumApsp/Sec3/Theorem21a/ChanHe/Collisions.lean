@@ -55,13 +55,13 @@ theorem natCast_dvd_sub_iff_emod_eq (M : ℕ) (x y : ℤ) :
 theorem card_heavy_le_coll (S : Finset ℤ) (M : ℕ) : #(heavy S M) ≤ coll S M := by
   refine (card_le_card fun x hx => ?_).trans (card_image_le (f := Prod.fst))
   obtain ⟨hxS, y, hyS, hne, hd⟩ := mem_filter.mp hx
-  exact mem_image.mpr ⟨(x, y), mem_filter.mpr ⟨mem_offDiag.mpr ⟨hxS, hyS, hne.symm⟩, hd⟩, rfl⟩
+  aesop
 
 /-- There are at most `|S|²` colliding ordered pairs. -/
 theorem coll_le_sq (S : Finset ℤ) (M : ℕ) : coll S M ≤ #S ^ 2 :=
   calc coll S M ≤ #S.offDiag := card_filter_le _ _
     _ = #S * #S - #S := offDiag_card S
-    _ ≤ #S ^ 2 := by rw [sq]; omega
+    _ ≤ #S ^ 2 := by grind
 
 /-- The collision count is determined by the sizes of the buckets: an element collides with the
 other members of its bucket. -/
@@ -73,15 +73,12 @@ theorem coll_eq_sum (S : Finset ℤ) (M : ℕ) :
     rw [← card_erase_of_mem (show x ∈ bucket S M (x % (M : ℤ)) from mem_filter.mpr ⟨hx, rfl⟩)]
     congr 1
     ext y
-    simp only [bucket, mem_filter, mem_erase, natCast_dvd_sub_iff_emod_eq, ne_comm (a := x),
-      eq_comm (a := x % _)]
+    simp  [bucket, natCast_dvd_sub_iff_emod_eq]
     tauto
   have hpairs : {p ∈ S.offDiag | (M : ℤ) ∣ p.1 - p.2} =
-      {p ∈ S ×ˢ S | p.1 ≠ p.2 ∧ (M : ℤ) ∣ p.1 - p.2} := by
-    ext p
-    simp only [mem_filter, mem_offDiag, mem_product, and_assoc]
+      {p ∈ S ×ˢ S | p.1 ≠ p.2 ∧ (M : ℤ) ∣ p.1 - p.2} := by grind
   rw [sum_congr rfl hfiber, coll, hpairs, card_filter, sum_product]
-  simp only [card_filter]
+  simp 
 
 /-- `Lam U` is at least 1. -/
 private theorem Lam_pos (U : ℕ) : 1 ≤ Lam U := Nat.succ_pos _
@@ -98,7 +95,7 @@ private theorem card_prime_divisors_le {Q : Finset ℕ} (hP : ∀ p ∈ Q, p.Pri
     calc 2 ^ #T ≤ ∏ p ∈ T, p := pow_card_le_prod _ _ _ fun p hp => (hprime p hp).two_le
       _ ≤ d.natAbs := Nat.le_of_dvd (Int.natAbs_pos.mpr hd)
           ((prod_dvd_prod_of_subset _ _ _ hsub).trans (Nat.prod_primeFactors_dvd _))
-      _ ≤ 2 * U := by have := abs_le.mp hb; omega
+      _ ≤ 2 * U := by grind
   exact (Nat.le_log_of_pow_le (by norm_num) hpow).trans (Nat.le_succ _)
 
 /-- Double counting.  Summed over the candidates `q ∈ Q`, the pairs that collide modulo `M₀ q`
@@ -189,7 +186,7 @@ theorem modulus_spec (hQ : Q.Nonempty) (hP : ∀ p ∈ Q, p.Prime) (h₁ : Bdd U
       _ ≤ 3 * Lam U * (3 * Lam U * s ^ 2) := Nat.mul_le_mul_left _ hfirst
       _ = 9 * Lam U ^ 2 * s ^ 2 := by ring
   refine ⟨hp, hq, fun S hS => ?_⟩
-  simp only [List.mem_cons, List.not_mem_nil, or_false] at hS
+  simp  at hS
   rcases hS with rfl | rfl | rfl
   · exact hmul p₁ q₁
   · exact hmul p₂ q₂

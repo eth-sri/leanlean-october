@@ -137,7 +137,7 @@ theorem hostCallsAE_spec
   light_call (C.writeX_meets S ht) with r₁ μ₁ ⟨hX, hrest₁⟩
   have S₁ := S.next fun a ha => hrest₁ a (Or.inl ha)
   replace hflags : Seg μ₁ flg (X.flagsAt t) :=
-    hflags.keep fun b hb => hrest₁ b (Or.inr (by rw [hlen] at hb; omega))
+    hflags.keep fun b hb => hrest₁ b (Or.inr (by omega))
   -- res := writeY(y, rbc, n, D, p, c0, len)
   light_call (C.writeY_meets S₁ ht) with r₂ μ₂ ⟨hY, hrest₂⟩
   have S₂ := S₁.next fun a ha => hrest₂ a (Or.inl (by omega))
@@ -172,8 +172,6 @@ theorem hostRoundAE_spec
     Ends lim (P₀ ++ R) d (hostRoundAE pS pWriteX pWriteY pScanPairsAE) σ (tCallsAE Tn X t + 45)
       (HostInvAE lim d X U A flg need μ (t + 1)) := by
   obtain ⟨len, rho, lo, w, res, μ', rfl, S, hflags⟩ := hσ
-  unfold hostRoundAE
-  -- the parameters of the instance
   light_piece (hostParams_spec S ht _ len rho lo w res) with _ rfl
   -- the four calls
   light_piece (hostCallsAE_spec C S hF ht hflags _ res) with _ ⟨res', μ'', rfl, S', hflags'⟩
@@ -198,10 +196,7 @@ theorem hostLoopAE_spec
       ≤ ∑ t ∈ Finset.range X.m, (tWrites X.n X.D (X.len t) + Tn [X.n, X.D, X.w t] +
         tScanPairsAE (X.w t) (X.len t) (X.execsAE t)) :=
     Finset.sum_le_sum fun t _ => by simp [tCallsAE, tWrites]; omega
-  have hflgZ : ((A.fr : ℕ) : ℤ) - (X.n : ℤ) * (X.n : ℤ) = (flg : ℕ) := by
-    rw [← hflg]
-    push_cast
-    ring
+  have hflgZ : ((A.fr : ℕ) : ℤ) - (X.n : ℤ) * (X.n : ℤ) = (flg : ℕ) := by omega
   have hx := hF.x
   have hdepth := hlim.depth
   unfold hostLoopAEBody tHostLoopAE hostLoopArgs
@@ -216,13 +211,13 @@ theorem hostLoopAE_spec
   -- while t < m
   refine Ends.next _ (Ends.while (HostInvAE lim d X U A flg need μ) X.m
     (fun t => tCallsAE Tn X t + 45) ?start ?round ?done)
-    (by simp only [Cond.cost, Expr.cost, List.map, List.sum_cons, List.sum_nil, Nat.reduceAdd]
+    (by simp 
         omega)
   case start =>
     refine ⟨0, 0, 0, 0, r₀, μ₁, ?_,
       ⟨hok, hmem, hlay, hlim, fun a ha => hsame a (Or.inl (by omega))⟩, hzero⟩
     rw [hostState]
-    simp only [HostData.c0, Nat.zero_div, Nat.zero_mul, Nat.cast_zero, Nat.zero_mod, setLocal]
+    simp  [HostData.c0, Nat.zero_div, Nat.zero_mul, Nat.cast_zero, Nat.zero_mod, setLocal]
   case round =>
     intro t σ ht hσ
     obtain ⟨len, rho, lo, w, res, μ', rfl, -, -⟩ := id hσ

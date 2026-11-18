@@ -123,7 +123,5 @@ def outStrOfPos {L m : ℕ} (lay : Layout L m) (I J : ℕ) : OutStr L :=
   outStrOf (lay.table (blockOf lay I, blockOf lay J)) (lay.table_card _)
     (lay.rowIdx (offsetOf L m I)) (lay.colIdx (offsetOf L m J))
 
-/-- All the tiles: pairs of a row band and a column band. -/
-def tiles (L m N : ℕ) : Finset (ℕ × ℕ) := range (numBands L m N) ×ˢ range (numBands L m N)
 
 end ThreeSumApsp

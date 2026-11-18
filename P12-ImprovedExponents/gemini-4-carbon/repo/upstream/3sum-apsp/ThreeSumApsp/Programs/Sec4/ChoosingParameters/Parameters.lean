@@ -69,11 +69,7 @@ theorem RatParams.t_le (G : RatParams) (m : ℕ) : G.t m ≤ m := by
   have hq := G.hq
   rw [Nat.div_le_iff_le_mul_add_pred (by omega)]
   have h1 : 10 * G.p * m ≤ 9 * G.q * m := Nat.mul_le_mul_right _ G.hθ.le
-  have h2 : G.p * m ≤ G.q * m := by
-    have e1 : 10 * G.p * m = 10 * (G.p * m) := by ring
-    have e2 : 9 * G.q * m = 9 * (G.q * m) := by ring
-    omega
-  omega
+  grind
 
 /-- a m ≤ b L. -/
 theorem RatParams.am_le (G : RatParams) (m : ℕ) : G.a * m ≤ G.b * G.L m := by
@@ -93,9 +89,6 @@ def parOf (G : RatParams) (N D₀ : ℕ) : Sec2.Par := ⟨G.L (logFour D₀), lo
 def switchOf31 (G : RatParams) (D₀ : ℕ) : ℕ := G.t (logFour D₀)
 /-- The hypotheses of Theorem 30 at these parameters. -/
 abbrev RatParams.Hyp (G : RatParams) (N D₀ : ℕ) : Prop := Hyp30 (parOf G N D₀) (switchOf31 G D₀)
-/-- The cost (8) of the preprocessing of Theorem 30 at these parameters. -/
-noncomputable abbrev RatParams.preCost (G : RatParams) (N D₀ : ℕ) : ℝ :=
-  cost8 (G.L (logFour D₀)) (logFour D₀) (switchOf31 G D₀) N
 /-- The cost L ∑ α_d of a query of Theorem 30 at these parameters. -/
 noncomputable abbrev RatParams.queryCost (G : RatParams) (D₀ : ℕ) : ℝ :=
   costQuery (G.L (logFour D₀)) (logFour D₀) (switchOf31 G D₀)
@@ -160,13 +153,11 @@ structure Lim31 (lim : Limits) (G : RatParams) (N D₀ fr : ℕ) (U : ℤ) : Pro
 
 /-- The numbers formed on the way to L fit in a word. -/
 theorem Lim31.wordL (h : Lim31 lim G N D₀ fr U) : ((G.a * logFour D₀ + G.b : ℕ) : ℤ) ≤ lim.word :=
-  le_trans (by exact_mod_cast (by omega :
-    G.a * logFour D₀ + G.b ≤ G.a * logFour D₀ + G.b + G.p * logFour D₀ + G.q)) h.mword
+  le_trans (by omega) h.mword
 
 /-- The numbers formed on the way to t fit in a word. -/
 theorem Lim31.wordT (h : Lim31 lim G N D₀ fr U) : ((G.p * logFour D₀ + G.q : ℕ) : ℤ) ≤ lim.word :=
-  le_trans (by exact_mod_cast (by omega :
-    G.p * logFour D₀ + G.q ≤ G.a * logFour D₀ + G.b + G.p * logFour D₀ + G.q)) h.mword
+  le_trans (by omega) h.mword
 
 /-- **What both routines are given**: matrices X and Y with entries bounded by U, the addresses aX
 and aY of their cells, which lie below the free pointer fr, and limits that suffice. -/
@@ -236,21 +227,8 @@ def prePad31 : Stmt :=
   .call Proc.copy [v MatY, v PadY, v Dim *' v Size] Res ;;
   .call Proc.fill [v PadY +' v Dim *' v Size, (v Padded -' v Dim) *' v Size, k 0] Res
 
-open Pre31 in
-/-- The second part: the preprocessing of Theorem 30, the base address and the flag 1. -/
-def preBuild31 : Stmt :=
-  .call Proc.preCore [v Levels, v Log, v Switch, v Size, v Padded, v PadX, v PadY, v Block] Res ;;
-  .store (v Free +' k 1) (v Block) ;;
-  .store (v Free) (k 1)
 
-/-- The part of pre31 for m ≥ m₀. -/
-def preLarge31 : Stmt := prePad31 ;; preBuild31
 
-open Pre31 in
-/-- pre31(N, D, aX, aY, fr): m and 4^m; for m < m₀ the flag 0, for m ≥ m₀ preLarge31. -/
-def pre31Body (G : RatParams) : Stmt :=
-  .call Proc.log4 [v Dim, v Free +' k 2] Log ;;
-  .ite (v Log <' k G.m₀) (.store (v Free) (k 0)) preLarge31
 
 /-- The time of the preprocessing; c is the constant of the shared stage. -/
 def tPre31 (c : ℕ) (G : RatParams) (N D₀ : ℕ) : ℕ :=

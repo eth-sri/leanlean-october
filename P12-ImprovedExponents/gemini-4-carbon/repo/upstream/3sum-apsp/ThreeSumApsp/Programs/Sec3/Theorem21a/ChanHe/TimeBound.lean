@@ -53,7 +53,7 @@ def magAt (k n : ℕ) : ℕ := 60 * boundAt k n + 40
 and with one bound. -/
 theorem chTime_eq {k n U : ℕ} (hU : U ≤ n ^ k) (Tn : ℕ → ℕ → ℕ) :
     chTime k Tn n U = ownAt k n + callsAt k n * Tn (lenOf k n) (magAt k n) := by
-  simp only [chTime, coreTime, lenOf, ownAt, callsAt, magAt, boundAt, max_eq_right hU]
+  simp  [chTime, coreTime, lenOf, ownAt, callsAt, magAt, boundAt, max_eq_right hU]
   omega
 
 namespace ClaimF

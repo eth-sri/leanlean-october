@@ -50,11 +50,11 @@ theorem copy_meets {p : ℕ} (hp : P[p]? = some copyBody) {μ : ℕ → ℤ} {sr
       (∀ i < n, μ' (dst + i) = μ (src + i)) ∧ SameOutside μ μ' dst n := by
   refine .of_body hp (Ends.pass (fun i => μ (src + i)) (fun i hi => ?_)
     ⟨fun i hi => wrote_done (f := fun i => μ (src + i)) hi, by light_keep⟩ hw hdst rfl rfl
-    (hT := by light_time [copyTime]))
+    (hT := by light_side))
   -- Round i reads src[i], which no earlier round has written.
   have hread : wrote μ dst (fun i => μ (src + i)) i (src + i) = μ (src + i) :=
     wrote_rest (by omega)
-  light_side [hread]
+  light_side
 
 /-! ## fill -/
 
@@ -82,6 +82,6 @@ theorem fill_meets {p : ℕ} (hp : P[p]? = some fillBody) {μ : ℕ → ℤ} {ds
       Seg μ' dst (List.replicate n x) ∧ SameOutside μ μ' dst n :=
   .of_body hp (Ends.pass (fun _ => x) (fun i hi => by light_side)
     ⟨seg_wrote List.length_replicate fun i hi => List.getElem_replicate .., by light_keep⟩
-    hw hdst rfl rfl (hT := by light_time [fillTime]))
+    hw hdst rfl rfl (hT := by light_side))
 
 end Light

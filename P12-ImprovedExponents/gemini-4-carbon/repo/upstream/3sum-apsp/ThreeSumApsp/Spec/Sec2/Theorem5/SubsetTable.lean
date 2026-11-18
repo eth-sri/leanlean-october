@@ -34,7 +34,7 @@ def bit (b : Bool) : ℤ := if b then 1 else 0
 theorem bit_unrank_zero {L m q : ℕ} (hm : m ≤ L) (hq : q < L) :
     bit ((Spec.unrank L m 0).getD q false) = if q < m then 1 else 0 := by
   rw [Spec.unrank_zero hm]
-  grind [bit]
+  aesop
 
 /-- The entries of a list of the form `pre ++ x :: y :: (u^a ++ v^b)`. -/
 private theorem getD_shape (pre : List Bool) (x y u v : Bool) (a b q : ℕ) :
@@ -90,7 +90,6 @@ theorem scanAt_ones_le (row : ℕ → ℤ) (L j : ℕ) :
   | succ j ih =>
     have hstep := scanStep_ones (row (L - 1 - j)) ((L : ℤ) - 1 - (j : ℤ)) (scanAt row L j)
     rw [scanAt]
-    push_cast
     omega
 
 section shape

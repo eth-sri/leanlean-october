@@ -40,7 +40,7 @@ private theorem effects_headStraight (m : ℤ → BitVec W) :
     effects headStraight m =
       Function.update (Function.update (Function.update m cONE (wd W 1)) cZERO (wd W 0)) cNEG
         (wd W (-1)) := by
-  simp only [headStraight, effects_cons, effects_nil]
+  simp  [headStraight]
   rw [effect_one, effect_sub cZERO (by cell_read) (by cell_read),
     effect_sub cNEG (by cell_read) (by cell_read)]
   rfl
@@ -50,7 +50,7 @@ private theorem effects_headStraight_consts (m : ℤ → BitVec W) :
     effects headStraight m cONE = wd W 1 ∧ effects headStraight m cZERO = wd W 0 ∧
       effects headStraight m cNEG = wd W (-1) := by
   rw [effects_headStraight]
-  refine ⟨?_, ?_, ?_⟩ <;> cell_read
+  aesop
 
 /-! ## The pool -/
 
@@ -75,7 +75,7 @@ private theorem effects_poolCode (hone : m cONE = wd W 1) (N : ℕ) :
   | zero =>
     intro n hn
     obtain rfl : n = 0 := by omega
-    simp only [poolCode, List.range_zero, List.map_nil, effects_cons, effects_nil]
+    simp  [poolCode]
     rw [effect_sub _ hone hone, Function.update_self]
     rfl
   | succ N ih =>
@@ -84,7 +84,6 @@ private theorem effects_poolCode (hone : m cONE = wd W 1) (N : ℕ) :
       effect_add _ (ih N le_rfl) ((agreeOutside_poolCode N m).read (by cells) hone)]
     obtain rfl | hlt := hn.eq_or_lt
     · rw [Function.update_self]
-      push_cast
       rfl
     · rw [Function.update_of_ne (by cells), ih n (by omega)]
 
@@ -167,7 +166,7 @@ private theorem effects_frameCode {i j : ℤ} (hzero : m cZERO = wd W 0)
   have zero := (read cZERO (by cells) (by cells)).trans hzero
   have arg1 := (read cARG1 (by cells) (by cells)).trans hi
   have arg2 := (read cARG2 (by cells) (by cells)).trans hj
-  simp only [frameCode, effects_cons, effects_append, effects_nil]
+  simp  [frameCode, effects_append]
   -- FP := 0 - 2 mainFrame
   rw [effect_sub cFP hzero hpool, show (0 : ℤ) - (2 * mainFrame : ℕ) = cStack mainFrame from rfl]
   -- after the zeros: local variable 1 := the first argument + 0

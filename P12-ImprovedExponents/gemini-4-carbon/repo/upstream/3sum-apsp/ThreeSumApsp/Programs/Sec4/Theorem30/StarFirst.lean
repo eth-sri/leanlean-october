@@ -41,7 +41,7 @@ private theorem lastStar_concat (l : List ℕ) (x : ℕ) :
     rw [List.cons_append, lastStar, ih, lastStar]
     by_cases hx : x = 10
     · simp [hx]
-    · simp only [hx, if_false]
+    · simp  [hx]
 
 namespace StarFirst
 
@@ -113,7 +113,6 @@ def starFirstBody : Stmt :=
 
 namespace StarFirst
 
-private theorem round_cost : starFirstRound.blockCost = 34 := rfl
 
 /-- What a round does, for the digit x that is read, with c nines turned and the last star at p. -/
 private theorem round_runs {lim : Limits} (hs : Std lim) {μ : ℕ → ℤ} {cur box L e i p x dg c : ℕ}
@@ -129,7 +128,7 @@ private theorem round_runs {lim : Limits} (hs : Std lim) {μ : ℕ → ℤ} {cur
   have hcast9 : ((x : ℤ) = 9) = (x = 9) := by norm_cast
   have hcast10 : ((x : ℤ) = 10) = (x = 10) := by norm_cast
   have haddr : ((box : ℤ) + i).toNat = box + i := by omega
-  simp only [starFirstRound]
+  simp  [starFirstRound]
   -- The tests of the program: a nine, fewer than e turned, a star.  In each case the block is run:
   -- the first goal says that every address is in range and every value fits in a word, the second
   -- that the last state is the one stated.
@@ -156,7 +155,7 @@ theorem starFirst_spec {lim : Limits} {P : Program} (hP : P[Proc.starFirst]? = s
   unfold tStarFirst
   -- while pos < len
   refine Ends.next _ (Ends.whileBlock (Inv cur box e l μ) l.length ?start ?round ?done
-    (hT := le_rfl)) (by simp [round_cost]; omega)
+    (hT := le_rfl)) (by rw [show starFirstRound.blockCost = 34 from rfl]; simp; omega)
   case start =>
     refine ⟨μ, 0, ?_, Seg.nil, .refl⟩
     rw [turned_zero]
@@ -178,7 +177,7 @@ theorem starFirst_spec {lim : Limits} {P : Program} (hP : P[Proc.starFirst]? = s
     rintro _ ⟨μ', dg, rfl, hcopy, hsame⟩
     rw [← hlen, List.take_length] at hcopy
     refine ⟨by simp, by simp, ?_⟩
-    simp only [round_cost]
+    rw [show starFirstRound.blockCost = 34 from rfl]
     -- return last
     light_set (lastPos e l l.length)
     refine ⟨hcopy, ?_, hsame⟩

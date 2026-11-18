@@ -52,7 +52,7 @@ theorem matAt_padInnerRows {F a : ℕ} (mY : MatAt μ aY Y)
     exact mY ⟨i, hi⟩ j
   · have hrow : (i : ℕ) * N = D₀ * N + ((i : ℕ) - D₀) * N := by
       rw [← Nat.add_mul, Nat.add_sub_cancel' (not_lt.mp hi)]
-    have hidx := Nat.mul_add_lt_mul (by have := i.isLt; omega : (i : ℕ) - D₀ < F - D₀) j.isLt
+    have hidx := Nat.mul_add_lt_mul (by omega : (i : ℕ) - D₀ < F - D₀) j.isLt
     rw [dif_neg hi, hrow, ← Nat.add_assoc, Nat.add_assoc (a + D₀ * N), hzero _ hidx]
 
 /-! ## From the threshold on -/

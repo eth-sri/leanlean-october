@@ -60,15 +60,13 @@ theorem addc_meets {p : ℕ} (hp : P[p]? = some addcBody) {μ : ℕ → ℤ} {sr
   subst hlen
   obtain ⟨hw, hsrc, hdst⟩ := hlim
   set f : ℕ → ℤ := fun i => L.getD i 0 + x with hf
-  have hfi : ∀ i (hi : i < L.length), f i = L[i] + x := fun i hi => by
-    rw [hf]
-    simp only [List.getD_eq_getElem _ _ hi]
+  have hfi : ∀ i (hi : i < L.length), f i = L[i] + x := fun i hi => by grind
   refine .of_body hp (Ends.pass f (fun j hj => ?_) ?_ hw hdst rfl rfl)
   · -- round j reads src[j], which lies outside the cells that are written
     have hread : wrote μ dst f j (src + j) = L[j] := (wrote_rest (by omega)).trans (hL j hj)
     have hfitsj := abs_le.1 (hfits _ (List.getElem_mem hj))
     rw [update_frame_setLocal]
-    simp [Limits.Addr, abs_le, hread, hfi j hj]; omega
+    simp [Limits.Addr, abs_le, hfi j hj]; omega
   · dsimp only
     refine ⟨fun i hi => ?_, sameOutside_wrote le_rfl⟩
     have hi' : i < L.length := by simpa using hi
@@ -83,13 +81,10 @@ theorem bump_meets {p : ℕ} (hp : P[p]? = some bumpBody) {μ : ℕ → ℤ} {fl
     (hflag : ∀ f ∈ F, f = 0 ∨ f = 1) (hle : AbsLe L V) (hfits : |x| + V ≤ lim.word ∧ 1 ≤ lim.word) :
     Meets lim P p d [(len : ℤ), x, fl, lo] μ (30 * len + 6) fun _ μ' =>
       Seg μ' lo (List.zipWith (fun l f => l + x * (1 - f)) L F) ∧ SameOutside μ μ' lo len := by
-  obtain ⟨lF, lL⟩ := hlen
   obtain ⟨hw, hfl, hlo⟩ := hlim
   set f : ℕ → ℤ := fun i => L.getD i 0 + x * (1 - F.getD i 0) with hf
   have hfi : ∀ i (hF : i < F.length) (hL : i < L.length), f i = L[i] + x * (1 - F[i]) :=
-    fun i hF hL => by
-      rw [hf]
-      simp only [List.getD_eq_getElem _ _ hF, List.getD_eq_getElem _ _ hL]
+    fun i hF hL => by grind
   refine .of_body hp (Ends.pass f (fun j hj => ?_) ?_ hw hlo rfl rfl)
   · -- round j reads the flag fl[j], which is never written, and lo[j], which it then overwrites
     have hreadF : wrote μ lo f j (fl + j) = F[j] := (wrote_rest (by omega)).trans (hF j (by omega))
@@ -99,9 +94,7 @@ theorem bump_meets {p : ℕ} (hp : P[p]? = some bumpBody) {μ : ℕ → ℤ} {fl
     rw [update_frame_setLocal]
     rcases hflag _ (List.getElem_mem (show j < F.length by omega)) with h | h
     all_goals
-      simp [Limits.Addr, abs_le, -abs_mul, hreadF, hreadL, hfi j (by omega) (by omega), h]; omega
-  · dsimp only
-    exact ⟨seg_wrote (by simp [lF, lL]) fun i hi => by
-      rw [List.getElem_zipWith, hfi], sameOutside_wrote le_rfl⟩
+      simp [Limits.Addr, abs_le, hreadF, hfi j (by omega) (by omega), h]; omega
+  · exact ⟨seg_wrote (by grind) fun i hi => by grind, sameOutside_wrote le_rfl⟩
 
 end Light.Sec3

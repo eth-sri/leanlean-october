@@ -2,30 +2,70 @@ module
 
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.FillList
-public import ImprovedExponents.PrunedProgram.Tiles.Contracts
+public import ImprovedExponents.PrunedProgram.SegOn
 import all ThreeSumApsp.Programs.Sec4.Theorem30.FillList
 
 @[expose] public section
 
-/-!
-# The boxes with e stars go into the trie of their tile, on pruned encodings
-
-Upstream's `fillList_spec` proves `fillListBody` (procedure 49) under `FillListPre`, with the two
-encodings of the tile as full arrays.  The routine reads an encoding cell in one place only: the
-value of a box without stars is the product of the two encoded numbers at its code
-(`fillValueZero`), and the code is that of a string of `nineStrs L 0 (m - t)`, whose leaf has
-at most `m - t ≤ m` symbols `P₀` (`mem_nineStrs`, `card_P0Levels`).  So the same body meets the
-same specification when the encodings are right at these leaves only (`FillListPreP`,
-`fillListP_meets`).  The proof is upstream's with `SegOn` in place of `Seg` in the invariant of
-the loop (`MemInvP`, `RoundFactsP`) and the bridge `SegOn.get_ofDigitList` in
-`value_zero_spec`; the lemmas about lists (`fillAt`, `StarBox`) are reused.
-
-Adapted from upstream `ThreeSumApsp/Programs/Sec4/Theorem30/FillList.lean` (Apache-2.0).
--/
-
 namespace Light.Sec4
 
 open ThreeSumApsp ThreeSumApsp.Spec
+
+structure FillListPreP (lim : Limits) (μ : ℕ → ℤ) (x : FillListArgs) : Prop where
+  ctx : TileCtx lim x.L x.m x.t x.encA x.encB x.aA x.aB x.tr x.cap x.fp x.cur x.box
+  stars_le : x.e ≤ x.m - x.t
+  root_ne : x.root ≠ 0
+  rep : TrieRep x.L x.lo x.T x.roots (x.stored [])
+  trie : TrieMem μ x.tr x.cap x.fp x.T
+  segA : SegOn x.m μ x.aA x.encA
+  segB : SegOn x.m μ x.aB x.encB
+  room : x.T.length + 11 * x.L * x.boxes.length ≤ x.cap
+
+def FillListSpecP (lim : Limits) (P : Program) : Prop :=
+  ∀ (x : FillListArgs) (μ : ℕ → ℤ), FillListPreP lim μ x →
+    ∀ d, d + 2 ≤ lim.depth →
+    Meets lim P Proc.fillList d x.vals μ (tFillList x.L x.boxes.length) fun _ μ' =>
+      TrieMem μ' x.tr x.cap x.fp (fillTrie (arrT x.encA) (arrT x.encB) x.root x.e x.boxes x.T) ∧
+        SameOutsideTile μ μ' x.L x.tr x.cap x.fp x.cur x.box
+
+structure TilePreP (lim : Limits) (μ : ℕ → ℤ) (x : TileArgs) : Prop where
+  ctx : TileCtx lim x.L x.m x.t x.encA x.encB x.aA x.aB x.tr x.cap x.fp x.cur x.box
+  rep : x.s.Holds x.L x.lo x.old
+  trie : TrieMem μ x.tr x.cap x.fp x.s.cells
+  roots : SegN μ x.aR x.s.roots
+  segA : SegOn x.m μ x.aA x.encA
+  segB : SegOn x.m μ x.aB x.encB
+  room : x.s.cells.length + 11 * (1 + x.L * (boxes x.L x.m x.t).card) ≤ x.cap
+  rootsPlace : x.fp < x.aR ∧ x.aR + x.cells ≤ x.tr
+
+def TileSpecP (lim : Limits) (P : Program) : Prop :=
+  ∀ (x : TileArgs) (μ : ℕ → ℤ), TilePreP lim μ x →
+    ∀ d, d + 3 ≤ lim.depth → Meets lim P Proc.tile d
+      [x.aA, x.aB, (x.aR + x.s.roots.length : ℕ), x.tr, x.fp, x.cur, x.box, x.L, (x.m - x.t : ℕ)] μ
+      (tTile x.L x.m x.t) fun _ μ' =>
+        TrieMem μ' x.tr x.cap x.fp x.tries.cells ∧ SegN μ' x.aR x.tries.roots ∧ SameOn x.Kept μ μ'
+
+structure AllTilesPreP (lim : Limits) (μ : ℕ → ℤ) (x : AllTilesArgs) : Prop where
+  std : Std lim
+  t_le : x.t ≤ x.m
+  m_le : x.m ≤ x.L
+  value_le : ∃ A B : ℤ, (∀ β τ, |x.encA β τ| ≤ A) ∧ (∀ β τ, |x.encB β τ| ≤ B) ∧
+    10 ^ x.m * (A * B) ≤ lim.word
+  pow_le : (10 : ℤ) ^ x.L ≤ lim.word
+  cap_ge : 1 + x.nB * x.nB * (11 * (1 + x.L * (boxes x.L x.m x.t).card)) ≤ x.cap
+  order : x.aENCA + x.nB * 10 ^ x.L ≤ x.aENCB ∧ x.aENCB + x.nB * 10 ^ x.L ≤ x.cur ∧
+    x.cur + x.L ≤ x.box ∧ x.box + x.L ≤ x.fp ∧ x.fp < x.aR ∧
+    x.aR + x.nB * x.nB ≤ x.tr ∧ x.tr + x.cap < lim.space
+  segA : ∀ β < x.nB, SegOn x.m μ (x.aENCA + β * 10 ^ x.L) (x.encA β)
+  segB : ∀ β < x.nB, SegOn x.m μ (x.aENCB + β * 10 ^ x.L) (x.encB β)
+  trie : TrieMem μ x.tr x.cap x.fp [0]
+
+def AllTilesSpecP (lim : Limits) (P : Program) : Prop :=
+  ∀ (x : AllTilesArgs) (μ : ℕ → ℤ), AllTilesPreP lim μ x →
+    ∀ d, d + 4 ≤ lim.depth →
+    Meets lim P Proc.allTiles d [x.aENCA, x.aENCB, x.nB, (10 ^ x.L : ℕ), x.aR, x.tr, x.fp,
+      x.cur, x.box, x.L, (x.m - x.t : ℕ)] μ (tAllTiles x.L x.m x.t x.nB) fun _ μ' =>
+        TrieMem μ' x.tr x.cap x.fp x.tries.cells ∧ SegN μ' x.aR x.tries.roots ∧ SameOn x.Kept μ μ'
 
 open private fillAt_zero fillAt_length fillAt_succ fillAt_rep length_fillAt_le abs_getD_arrT_le
   exists_starBox from ThreeSumApsp.Programs.Sec4.Theorem30.FillList
@@ -281,7 +321,7 @@ private theorem body_spec (K : Callees lim P) (H : FillListPreP lim μ x)
           SameOutsideTile μ σ'.mem x.L x.tr x.cap x.fp x.cur x.box := by
   have C := H.ctx
   have hword := C.std.const_le
-  have heL : x.e ≤ x.L := by have := C.ht; have := C.hmL; have := H.stars_le; omega
+  have heL : x.e ≤ x.L := by have := C.hmL; have := H.stars_le; omega
   have hpos := length_nineStrs_pos heL H.stars_le
   have hfirst : (nineStrs x.L x.e (x.m - x.t))[0] = nineFirst x.L x.e := getElem_nineStrs hpos
   have hlayout := C.layout

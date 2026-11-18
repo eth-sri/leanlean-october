@@ -55,7 +55,7 @@ def raiseAt (lo p c : ℕ) (l : List ℕ) : List ℕ :=
 
 /-- A digit that can be raised is at most 8. -/
 theorem le_of_canRaise {hi c d : ℕ} (h : canRaise hi c d = true) : d ≤ 8 := by
-  simp only [canRaise, Bool.or_eq_true, decide_eq_true_eq, Bool.and_eq_true] at h
+  simp  [canRaise] at h
   omega
 
 /-- What `nineNext` does to the first digit when the rest of the string cannot be raised. -/
@@ -65,12 +65,12 @@ private theorem raise_head (lo hi c d : ℕ) (l : List ℕ) :
           fun q : ℕ × ℕ => raiseAt lo q.1 q.2 (d :: l) := by
   rw [nineRaise]
   by_cases h8 : d < 8
-  · simp [canRaise, h8, raiseAt, Nat.ne_of_lt h8]
+  · simp [canRaise, raiseAt, Nat.ne_of_lt h8]
   · by_cases h : d = 8 ∧ c < hi
-    · simp [canRaise, h.1, h.2, raiseAt]
+    · simp [canRaise, h.1, raiseAt]
     · have hcan : canRaise hi c d = false := by
-        simp only [canRaise, Bool.or_eq_false_iff, decide_eq_false_iff_not, Bool.and_eq_false_iff]
-        exact ⟨h8, by tauto⟩
+        simp  [canRaise]
+        omega
       rw [if_neg h8, if_neg fun h' => h ⟨h'.1, by omega⟩, hcan]
       rfl
 
@@ -80,10 +80,8 @@ private theorem nineNext_eq_raise (lo hi c : ℕ) (l : List ℕ) :
   induction l generalizing c with
   | nil => rfl
   | cons d l ih =>
-    have hlo : (if d = 9 then lo - c - 1 else lo - c) = lo - (if d = 9 then c + 1 else c) := by
-      split_ifs <;> omega
-    have hhi : (if d = 9 then hi - c - 1 else hi - c) = hi - (if d = 9 then c + 1 else c) := by
-      split_ifs <;> omega
+    have hlo : (if d = 9 then lo - c - 1 else lo - c) = lo - (if d = 9 then c + 1 else c) := by grind
+    have hhi : (if d = 9 then hi - c - 1 else hi - c) = hi - (if d = 9 then c + 1 else c) := by grind
     rw [nineNext, raisePos, hlo, hhi, ih]
     rcases raisePos hi (if d = 9 then c + 1 else c) l with _ | ⟨p, c'⟩
     · exact raise_head lo hi c d l
@@ -143,15 +141,11 @@ private theorem nineScanFrom_eq (hi i : ℕ) (l : List ℕ) (s : NineScan) :
   | cons d l ih =>
     have hn : (nineScanStep hi i d s).nines = if d = 9 then s.nines + 1 else s.nines := rfl
     have hcount : (if d = 9 then s.nines + 1 else s.nines) + l.count 9
-        = s.nines + (d :: l).count 9 := by
-      by_cases h : d = 9
-      · rw [h, if_pos rfl, List.count_cons_self]
-        omega
-      · rw [if_neg h, List.count_cons_of_ne h]
+        = s.nines + (d :: l).count 9 := by grind
     rw [nineScanFrom, ih, raisePos, hn, hcount]
     rcases raisePos hi (if d = 9 then s.nines + 1 else s.nines) l with _ | ⟨p, c⟩
     · by_cases hc : canRaise hi s.nines d <;> simp [nineScanStep, hc]
-    · simp only [NineScan.mk.injEq, true_and, and_true]
+    · simp 
       omega
 
 /-- **The successor by two passes.**  After the scan of the whole string, either no position can be
@@ -165,7 +159,7 @@ theorem nineNext_eq_scan (lo hi : ℕ) (l : List ℕ) :
   have h := nineNext_eq_raise lo hi 0 l
   rw [Nat.sub_zero, Nat.sub_zero] at h
   rw [h, nineScan, List.take_length, nineScanFrom_eq]
-  rcases raisePos hi 0 l with _ | ⟨p, c⟩ <;> simp
+  grind
 
 /-! ## What the scan has found -/
 
@@ -211,10 +205,8 @@ theorem raise_fits {lo p : ℕ} {l : List ℕ} (hp : p < l.length) (h8 : l.getD 
     rw [← List.count_append, List.take_append_drop]
   have hdrop : (l.drop p).count 9 = (l.drop (p + 1)).count 9 := by
     rw [List.drop_eq_getElem_cons hp, List.count_cons_of_ne]
-    rw [List.getD_eq_getElem _ _ hp] at h8
-    omega
+    grind
   have hle := List.count_le_length (a := 9) (l := l.drop (p + 1))
-  rw [List.length_drop] at hle
-  omega
+  grind
 
 end ThreeSumApsp.Spec

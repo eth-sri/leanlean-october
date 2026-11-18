@@ -91,7 +91,7 @@ theorem szTable_spec {μ : ℕ → ℤ} {dst p J : ℕ} (hw : (lim.space : ℤ) 
     -- entry := 4 entry; exp := exp + 1; dst[exp] := entry
     refine ⟨by light_side, by light_side, ?_, Function.update μ' (dst + (szList p j).length)
       ((4 ^ (j + 1) * p : ℕ) : ℤ), ?_, szList_succ p j ▸ seg.snoc _,
-      rest.update ⟨by omega, by rw [length_szList]; omega⟩ _⟩
+      rest.update ⟨by omega, by omega⟩ _⟩
     · rw [hfour] at hnext
       generalize 4 ^ j * p = q at hnext
       light_side

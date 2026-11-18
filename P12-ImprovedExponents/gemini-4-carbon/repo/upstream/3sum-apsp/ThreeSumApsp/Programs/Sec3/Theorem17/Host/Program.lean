@@ -5,7 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Correct
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Arrays
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Need
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.PrimeStage
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Time
 
 /-!
 # The host of Theorem 17: the program, assembled

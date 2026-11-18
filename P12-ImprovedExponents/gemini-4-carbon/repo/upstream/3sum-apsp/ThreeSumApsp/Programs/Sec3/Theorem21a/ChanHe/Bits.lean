@@ -68,7 +68,7 @@ theorem pickPart_length (Λ β β' : ℕ) (x x' two : ℤ) (L BT : List ℤ) :
   have h := passList_length
     (fun i => decide (BT.getD (i * Λ + β) 0 = x ∧ (two = 0 ∨ BT.getD (i * Λ + β') 0 = x')))
     (fun i => L.getD i 0) (List.range L.length)
-  rwa [List.length_range] at h
+  aesop
 
 namespace Pick
 
@@ -134,7 +134,7 @@ theorem Pick.Ctx.step {μ μ' : ℕ → ℤ} {s bt out Λ β β' i : ℕ} {L BT 
   have hrows : i * Λ + Λ ≤ L.length * Λ := Nat.mul_add_le_mul hi le_rfl
   have hread : ∀ γ < Λ, μ' (bt + i * Λ + γ) = BT.getD (i * Λ + γ) 0 := fun γ hγ => by
     rw [hsame _ (by omega), Nat.add_assoc]
-    exact C.segTable.getD (by have := C.lenTable; omega) 0
+    exact C.segTable.getD (by omega) 0
   rw [hread β C.posA, hread β' C.posB, hsame (s + i) (by omega), C.segSrc.getD hi 0]
   exact pickPart_succ Λ β β' x x' two BT hi
 
@@ -156,7 +156,7 @@ theorem pickRound_runs {μ : ℕ → ℤ} {s bt out Λ β β' i : ℕ} {x x' two
   obtain ⟨μ', row, hrow, rfl, hseg, hsame⟩ := hI
   have hstep := C.step hsame hi x x' two
   rw [← hrow] at hstep
-  have hnext : row + Λ = bt + (i + 1) * Λ := by rw [hrow, Nat.add_mul, Nat.one_mul, Nat.add_assoc]
+  have hnext : row + Λ = bt + (i + 1) * Λ := by grind
   -- what the addresses are compared with
   light_facts C
   have hle : (pickPart Λ β β' x x' two L BT i).length ≤ i := length_passList_le _ _ _ _
@@ -240,8 +240,8 @@ theorem DigitsFrom.write {μ μ' : ℕ → ℤ} {row Λ z ℓ : ℕ} (h : Digits
 /-- When all digits are written, the row holds them. -/
 theorem DigitsFrom.seg {μ μ' : ℕ → ℤ} {row Λ z : ℕ} (h : DigitsFrom μ μ' row Λ z 0) :
     Seg μ' row (bitRow Λ z) := fun β hβ => by
-  simp only [bitRow, List.getElem_map, List.getElem_range]
-  exact h.digits β (Nat.zero_le β) (by simpa [bitRow] using hβ)
+  simp  [bitRow]
+  exact h.digits β (Nat.zero_le β) (by simp_all)
 
 namespace Bits
 
@@ -253,7 +253,6 @@ abbrev Len : ℕ := 0
 @[inherit_doc Len] abbrev Bound : ℕ := 2
 @[inherit_doc Len] abbrev Width : ℕ := 3
 @[inherit_doc Len] abbrev Table : ℕ := 4
-@[inherit_doc Len] abbrev Free : ℕ := 5
 @[inherit_doc Len] abbrev Idx : ℕ := 6
 @[inherit_doc Len] abbrev Pow : ℕ := 7
 @[inherit_doc Len] abbrev Row : ℕ := 8
@@ -308,8 +307,6 @@ theorem bitsPow_ends {μ : ℕ → ℤ} {len s V bt fr : ℤ} {Λ B : ℕ} (hB :
     Ends lim P d bitsPow ⟨frame [len, s, V, Λ, bt, fr], μ⟩ (12 * Λ + 8)
       (· = ⟨frame [len, s, V, Λ, bt, fr, 0, 2 ^ Λ, 0, 0, 0, Λ], μ⟩) := by
   have hB1 : (1 : ℤ) ≤ B := by exact_mod_cast Nat.one_le_two_pow.trans hB
-  unfold bitsPow
-  -- Pow := 1 ; Cnt := 0
   light_set 1
   light_set (0 : ℕ)
   -- while Cnt < Width
@@ -322,7 +319,6 @@ theorem bitsPow_ends {μ : ℕ → ℤ} {len s V bt fr : ℤ} {Λ B : ℕ} (hB :
     have hpow' : (2 : ℤ) ^ j * 2 ≤ B := by exact_mod_cast hpow
     have hj' : ((j + 1 : ℕ) : ℤ) ≤ B := by exact_mod_cast Nat.lt_two_pow_self.le.trans hpow
     have : (0 : ℤ) < 2 ^ j := by positivity
-    push_cast at hj'
     exact ⟨by light_side, by light_side, by light_side,
       by simp [BitsPowInv, update_frame_setLocal, pow_succ, mul_comm]⟩
   case done =>
@@ -347,9 +343,6 @@ theorem bitsRow_ends {μ : ℕ → ℤ} {len s V bt fr idx : ℤ} {row Λ z B : 
         σ' = ⟨frame [len, s, V, Λ, bt, fr, idx, 2 ^ Λ, row, row, prefR Λ 0 z, Λ], μ'⟩ ∧
         Seg μ' row (bitRow Λ z) ∧ SameOutside μ μ' row Λ := by
   have hB' : (2 : ℤ) ^ Λ ≤ B := by exact_mod_cast hB
-  push_cast at hword
-  unfold bitsRow
-  -- while Row < Cur
   refine Ends.whileBlock (BitsRowInv μ len s V bt fr idx row Λ z) Λ ?start ?round ?done
     (by simp; omega)
   case start =>
@@ -369,11 +362,11 @@ theorem bitsRow_ends {μ : ℕ → ℤ} {len s V bt fr idx : ℤ} {row Λ z B : 
     refine ⟨by light_side, by light_side, ?_⟩
     by_cases hc : 2 * r < 2 ^ Λ
     · -- the digit is 0: mem[Cur] := 0
-      exact ⟨by light_side [hc], _, ℓ, cur - 1, by omega, by omega,
+      exact ⟨by light_side , _, ℓ, cur - 1, by omega, by omega,
         by simp [update_frame_setLocal, hc, hpred, haddr, hstep, shiftR],
         hdig.write (b := 0) (by omega) (by rw [if_neg fun h => hbit.1 h hc])⟩
     · -- the digit is 1: mem[Cur] := 1 ; Rest := Rest - Pow
-      exact ⟨by light_side [hc], _, ℓ, cur - 1, by omega, by omega,
+      exact ⟨by light_side , _, ℓ, cur - 1, by omega, by omega,
         by simp [update_frame_setLocal, hc, hpred, haddr, hstep, shiftR],
         hdig.write (b := 1) (by omega) (by rw [if_pos (hbit.2 hc)])⟩
   case done =>
@@ -402,7 +395,7 @@ theorem bitsElem_ends {μ : ℕ → ℤ} {s V Λ bt fr i : ℕ} {L : List ℤ}
   have hw := C.space_le
   light_facts C
   have hrows : i * Λ + Λ ≤ L.length * Λ := Nat.mul_add_le_mul hi le_rfl
-  have hnext : row + Λ = bt + (i + 1) * Λ := by rw [hrow, Nat.add_mul, Nat.one_mul, Nat.add_assoc]
+  have hnext : row + Λ = bt + (i + 1) * Λ := by grind
   have hread : μ' (s + i) = L.getD i 0 := (hsame _ (by omega)).trans (C.seg.getD hi 0)
   have hfits := abs_le.1 (C.bounded.getElem hi)
   rw [← List.getD_eq_getElem _ 0 hi, ← hread] at hfits
@@ -410,14 +403,12 @@ theorem bitsElem_ends {μ : ℕ → ℤ} {s V Λ bt fr i : ℕ} {L : List ℤ}
   have hlab : (z : ℤ) = μ' (s + i) + V := by
     rw [hz, ← hread]
     exact Int.toNat_of_nonneg (by omega)
-  unfold bitsElem
-  -- Rest := mem[Src + Idx] + Bound
   light_set z
   -- Cur := Row + Width
   light_set (row + Λ : ℕ)
   -- the digits of the label
   light_piece (bitsRow_ends (lim := lim) (z := z) (B := 4 * V + 4) (by omega) C.pow_le
-    (by push_cast; omega) hw (by omega)) with _ ⟨μ'', rfl, hrowSeg, hrowSame⟩
+    (by omega) hw (by omega)) with _ ⟨μ'', rfl, hrowSeg, hrowSame⟩
   -- Row := Row + Width
   light_set (row + Λ : ℕ)
   refine ⟨by simp, μ'', row + Λ, row, prefR Λ 0 z, hnext,
@@ -435,15 +426,15 @@ theorem bits_spec {p : ℕ} (hP : P[p]? = some bitsBody) : BitsSpec lim P p := b
   unfold tBits bitsBody
   -- Pow := 2 ^ Width
   light_piece (bitsPow_ends (lim := lim) (B := 4 * V + 4) C.pow_le
-    (by push_cast; omega)) with _ rfl
+    (by omega)) with _ rfl
   -- Row := Table
   light_set bt
   -- for Idx < Len
   have htime := Nat.mul_le_mul_left L.length (show 1 + (23 * Λ + 19) + 7 ≤ 60 * Λ + 40 by omega)
   refine Ends.for (BitsInv μ s V Λ bt fr L) L.length (23 * Λ + 19) ?start ?round ?done ?bound
-    (hT := by simp only [Expr.cost]; omega)
+    (hT := by light_side)
   case start =>
-    exact ⟨μ, bt, 0, 0, by simp, by simp [update_frame_setLocal], by simp [bitTable], .refl⟩
+    exact ⟨μ, bt, 0, 0, by simp, by simp, by simp [bitTable], .refl⟩
   case round => exact fun i σ hi _ hI => bitsElem_ends C hi hI
   case bound =>
     rintro i _ - - ⟨μ', row, cur, rest, -, rfl, -⟩

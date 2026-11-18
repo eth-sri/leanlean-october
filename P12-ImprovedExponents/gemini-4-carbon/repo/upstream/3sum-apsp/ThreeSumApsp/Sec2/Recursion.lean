@@ -25,13 +25,7 @@ open Finset
 
 namespace ThreeSumApsp
 
-/-- Section 2.3.1: an array on the left strings of length `L` "has 7^L entries in total". -/
-theorem card_leftStr (L : ℕ) : Fintype.card (LeftStr L) = 7 ^ L := by
-  rw [Fintype.card_fun, card_leftVar, Fintype.card_fin]
 
-/-- Section 2.3.1: an array on the right strings of length `L` has `7^L` entries. -/
-theorem card_rightStr (L : ℕ) : Fintype.card (RightStr L) = 7 ^ L := by
-  rw [Fintype.card_fun, card_rightVar, Fintype.card_fin]
 
 /-- Section 2.3.1: "φ_λ(s) ∈ {0, ±1}". -/
 theorem abs_phi_le_one (lam : Term) (s : LeftVar) : |phi lam s| ≤ 1 := by

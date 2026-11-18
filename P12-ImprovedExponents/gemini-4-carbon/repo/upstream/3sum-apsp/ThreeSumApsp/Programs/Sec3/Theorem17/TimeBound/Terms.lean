@@ -151,17 +151,17 @@ theorem mono_right (h : Steps t B₁) (hle : ∀ θ, θ.Hyp → B₁ θ ≤ B₂
 
 /-- `O(B) + O(B) = O(B)`. -/
 protected theorem add (h₁ : Steps t₁ B) (h₂ : Steps t₂ B) : Steps (fun θ => t₁ θ + t₂ θ) B := by
-  simpa only [Steps, Nat.cast_add] using Dominated.add h₁ h₂
+  simpa  [Steps] using Dominated.add h₁ h₂
 
 /-- `O(B₁) · O(B₂) = O(B₁ B₂)`. -/
 protected theorem mul (h₁ : Steps t₁ B₁) (h₂ : Steps t₂ B₂) :
     Steps (fun θ => t₁ θ * t₂ θ) fun θ => B₁ θ * B₂ θ := by
-  simpa only [Steps, Nat.cast_mul] using
+  simpa  [Steps] using
     Dominated.mul h₁ h₂ (fun _ _ => Nat.cast_nonneg _) fun _ _ => Nat.cast_nonneg _
 
 /-- A constant factor is absorbed. -/
 theorem const_mul {c : ℕ} (h : Steps t B) : Steps (fun θ => c * t θ) B := by
-  simpa only [Steps, Nat.cast_mul] using Dominated.const_mul h c.cast_nonneg
+  simpa  [Steps] using Dominated.const_mul h c.cast_nonneg
 
 /-- A constant number of steps is `O(B)` if `B ≥ 1`. -/
 protected theorem const {c : ℕ} (hB : ∀ θ, θ.Hyp → 1 ≤ B θ) : Steps (fun _ => c) B :=
@@ -207,7 +207,7 @@ theorem steps_sqrt : StepsMon (fun θ => Nat.sqrt θ.D) 0 1 0 :=
 /-- `D = (√D)²`. -/
 theorem steps_D : StepsMon (fun θ => θ.D) 0 2 0 :=
   .of_dominated <| .of_le fun θ _ => by
-    simp only [mon_eq, pow_zero, mul_one, one_mul, Real.sq_sqrt θ.D.cast_nonneg, le_refl]
+    simp  [mon_eq]
 
 /-- `g ≤ √D`. -/
 private theorem steps_g : StepsMon (fun θ => θ.g) 0 1 0 :=
@@ -226,11 +226,11 @@ private theorem steps_clog : StepsMon (fun θ => Nat.clog 2 θ.n) 1 0 0 :=
 `(len - 1) log 2 ≤ κ log n`. -/
 private theorem steps_bitLen : StepsMon (fun θ => bitLen θ.U) 0 0 1 := by
   refine .of_dominated (Dominated.of_le_const_mul (C := 3) (by norm_num) fun θ hθ => ?_)
-  simp only [mon_eq, pow_zero, one_mul, pow_one]
+  simp  [mon_eq]
   have hΛ : 1 ≤ θ.κ * Real.log θ.n := hθ.one_le_κ_mul_log
   rcases Nat.eq_zero_or_pos θ.U with hU | hU
   · rw [hU, bitLen, Nat.size_zero, Nat.cast_zero]
-    linarith [hΛ]
+    linarith 
   · have hlen : 1 ≤ bitLen θ.U := Nat.size_pos.2 hU
     have hpow : 2 ^ (bitLen θ.U - 1) ≤ θ.U := Nat.lt_size.1 (Nat.sub_lt hlen one_pos)
     have hlog := Real.log_le_log (by positivity)
@@ -240,7 +240,7 @@ private theorem steps_bitLen : StepsMon (fun θ => bitLen θ.U) 0 0 1 := by
     have hhalf := mul_le_mul_of_nonneg_left Real.one_half_lt_log_two.le
       (sub_nonneg.2 (Nat.one_le_cast.2 hlen : (1 : ℝ) ≤ bitLen θ.U))
     -- `(len - 1)/2 ≤ (len - 1) log 2 ≤ κ log n` and `1 ≤ κ log n`.
-    linarith [hlog, hhalf, hΛ]
+    linarith 
 
 /-- A piece has `⌈s/g⌉ ≤ s` vertices. -/
 private theorem steps_pieceSizeNat : StepsMon (fun θ => pieceSizeNat θ.D θ.g) 0 1 0 :=
@@ -255,7 +255,7 @@ theorem cast_queryCapNat_le {θ : CostParams} (hθ : θ.Hyp) :
 /-- `⌊n²/√D⌋ ≤ n²`. -/
 private theorem steps_queryCapNat : StepsMon (fun θ => queryCapNat θ.n θ.D) 2 0 0 :=
   .of_dominated <| .of_le fun θ hθ => (cast_queryCapNat_le hθ).trans (by
-    simpa only [mon_eq, pow_zero, mul_one] using div_le_self (by positivity) hθ.one_le_sqrt)
+    simpa  [mon_eq] using div_le_self (by positivity) hθ.one_le_sqrt)
 
 /-! ## The routines -/
 
@@ -331,7 +331,7 @@ theorem steps_tCeilDiv_num : StepsMon (fun θ => tCeilDiv θ.n (pieceSizeNat θ.
   have hnum : StepsMon (fun θ => θ.n ⌈/⌉ pieceSizeNat θ.D θ.g) 1 0 0 :=
     steps_n.of_le fun θ hθ => by
       have hsqrt : 0 < Nat.sqrt θ.D := Nat.sqrt_pos.2 ((by norm_num : 0 < 16).trans_le hθ.hD16)
-      have hpiece : 0 < pieceSizeNat θ.D θ.g := (Nat.lt_ceilDiv_iff hθ.hg).2 (by rwa [zero_mul])
+      have hpiece : 0 < pieceSizeNat θ.D θ.g := (Nat.lt_ceilDiv_iff hθ.hg).2 (by omega)
       exact (Nat.ceilDiv_le_iff hpiece).2 (Nat.le_mul_of_pos_right _ hpiece)
   unfold tCeilDiv
   growth [hnum]
@@ -462,7 +462,7 @@ private theorem le_mul_seven_pow {a : ℕ → ℕ} {b c x : ℕ}
   | succ j ih =>
     rw [h j, pow_succ 4, pow_succ 7]
     -- `7 a(j) + 5 b 4^j x + 2c ≤ 7 (a(j) + b 4^j x + c)`.
-    linarith [ih, Nat.zero_le (b * (4 ^ j * x)), Nat.zero_le c]
+    linarith [Nat.zero_le (b * (4 ^ j * x))]
 
 /-- `7^⌈log₂ n⌉ = O(n^{log₂ 7})`. -/
 private theorem steps_seven_pow_clog :
@@ -478,7 +478,7 @@ private theorem steps_sqrt_mul_strSteps :
   -- `strSteps p 0` is a quadratic polynomial in `p`, and
   -- `strSteps p (j + 1) = 7 strSteps p j + b 4^j p + c` with two numerals `b`, `c`.
   have hbase : StepsMon (fun θ => strSteps (Nat.sqrt θ.D) 0 + strSteps (Nat.sqrt θ.D) 1) 0 2 0 := by
-    simp only [strSteps]
+    simp  [strSteps]
     growth [steps_sqrt]
   refine (((steps_of_softO steps_sqrt).mul ((steps_of_softO hbase).mul
     steps_seven_pow_clog)).mono_left fun θ _ => ?_).mono_right fun θ hθ => ?_

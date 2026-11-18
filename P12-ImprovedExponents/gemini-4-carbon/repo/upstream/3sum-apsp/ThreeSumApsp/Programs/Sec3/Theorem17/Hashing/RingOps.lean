@@ -61,9 +61,7 @@ theorem vlinList_one (A B : List ℤ) : vlinList 1 A B = vadd A B := by
 /-- With s = -1 it is the difference. -/
 theorem vlinList_neg_one (A B : List ℤ) : vlinList (-1) A B = vsub A B := by
   unfold vlinList vsub
-  congr 1
-  funext x y
-  ring
+  grind
 
 /-- Entry j of that list. -/
 def vlinAt (s : ℤ) (A B : List ℤ) (j : ℕ) : ℤ := A.getD j 0 + s * B.getD j 0
@@ -104,15 +102,14 @@ theorem vlin_spec {μ : ℕ → ℤ} {dst a b n : ℕ} {s V : ℤ} {A B : List �
     rw [vlinAt]
     generalize A.getD j 0 = x at hreadA hx
     generalize B.getD j 0 = y at hreadB hsy
-    simp [Limits.Addr, abs_le, hreadA, hreadB, -abs_mul]
+    simp [Limits.Addr, abs_le, hreadB, -abs_mul]
     omega
   case done =>
     refine ⟨fun i hi => ?_, sameOutside_wrote (j := n) le_rfl⟩
     have hi' : i < n := by
-      simp only [vlinList, List.length_zipWith] at hi
+      simp  [vlinList] at hi
       omega
-    change wrote μ dst (vlinAt s A B) n (dst + i) = _
-    simp only [vlinList, List.getElem_zipWith]
+    simp  [vlinList]
     rw [wrote_done hi', vlinAt, List.getD_eq_getElem _ _ (by omega),
       List.getD_eq_getElem _ _ (by omega)]
 
@@ -222,7 +219,7 @@ theorem cconvTerm_spec (hw : (lim.space : ℤ) ≤ lim.word) (pre : CconvPre lim
   have hfits : ((i + 1 : ℕ) : ℤ) * (α * β) ≤ lim.word :=
     (mul_le_mul_of_nonneg_right (by exact_mod_cast hi) (mul_nonneg hα hβ)).trans hword
   have hone : α * β ≤ ((i + 1 : ℕ) : ℤ) * (α * β) :=
-    le_mul_of_one_le_left (mul_nonneg hα hβ) (by push_cast; omega)
+    le_mul_of_one_le_left (mul_nonneg hα hβ) (by omega)
   rw [convPartialSum_succ] at hsum ⊢
   -- sum := sum + a[i] b[j], once j is the index of the term
   have add : ∀ j : ℕ, j < p → convTerm p A B r i = A.getD i 0 * B.getD j 0 →
@@ -281,8 +278,6 @@ theorem cconv_spec (hw : (lim.space : ℤ) ≤ lim.word) (pre : CconvPre lim μ 
     (apartB : dst + p ≤ b ∨ b + p ≤ dst) :
     Ends lim P d cconvBody ⟨frame [dst, a, b, p], μ⟩ (32 * p * p + 21 * p + 6) fun σ' =>
       Seg σ'.mem dst (cconv p A B) ∧ SameOutside μ σ'.mem dst p := by
-  have room := pre.room
-  -- for r < p
   refine Ends.for (CconvInv μ dst a b p A B) p (32 * p + 13) ?start ?round ?done ?bound
   case start =>
     exact ⟨0, 0, 0, μ, congrArg (fun loc => (⟨loc, μ⟩ : State))

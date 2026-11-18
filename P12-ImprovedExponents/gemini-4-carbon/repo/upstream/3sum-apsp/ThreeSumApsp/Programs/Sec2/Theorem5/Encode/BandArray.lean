@@ -240,7 +240,7 @@ theorem bandLevel_spec (ctx : CodeCtx lim μ A.p.L mrow d3 d4 bs o i) {l : ℕ} 
     have hroom := List.count_take_lt hlen false hb
     have hcell := ctx.segO.read (ctx.outer ▸ hroom)
     rw [hb] at hbit hcode hfalse htrue
-    simp only [Bool.false_eq_true, if_false, if_true] at hbit hcode hfalse htrue
+    simp only [Bool.false_eq_true, if_false] at hbit hcode hfalse htrue
     rw [hcode] at hlt
     generalize o.getD ((bs.take l).count false) 0 = digit at hcell hcode hlt
     refine Ends.iteLast (fun _ => ?_) (fun hc => absurd (by simp [hbit]) hc)
@@ -342,7 +342,6 @@ private theorem codeCtx (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ μ
   have hmask := Nat.mul_add_le_mul hKK (le_refl A.p.L)
   have hdig3 := Nat.mul_add_le_mul hrow (le_refl A.p.Lo)
   have hdig4 := Nat.mul_add_le_mul hk (le_refl A.p.m)
-  have hLo : A.p.Lo = A.p.L - A.p.m := rfl
   have hS7 : A.p.S7 = 7 ^ A.p.L := rfl
   have hmaskRow : A.maskRow g h = A.mask + (g * A.p.K0 + h) * A.p.L := rfl
   -- The table of digits in base 3 is indexed by the row of the matrix and holds the digits of the
@@ -390,9 +389,9 @@ theorem coverLoop {X : Type} {arr n rounds b cnt T' : ℕ} {hi : Expr} {body : S
   refine Ends.forShape (fun j x μ' => ⟨frame (shape j x), μ'⟩)
     (fun j μ' => OverwrittenWith T arr n μ μ' ∧ ∀ j' < j, fact j' μ') rounds b x₀
     ⟨.refl, fun j' hj' => absurd hj' (by omega)⟩ ?round (fun x μ' h => ⟨x, μ', rfl, h⟩)
-    (by simp only [update_frame_setLocal, hset, Nat.cast_zero]) (fun _ _ _ _ _ => hbound _ _ _)
+    (by simp  [update_frame_setLocal, hset]) (fun _ _ _ _ _ => hbound _ _ _)
     (fun _ _ _ => hat _ _)
-    (fun _ _ _ => by simp only [update_frame_setLocal, hset, Nat.cast_add, Nat.cast_one]) hrounds hT
+    (fun _ _ _ => by simp  [update_frame_setLocal, hset]) hrounds hT
   rintro j x μ' hj ⟨hext, hcov⟩
   refine (round j hj x μ' hext).mono le_rfl ?_
   rintro _ ⟨x', μ'', rfl, hext', hnew⟩
@@ -562,7 +561,6 @@ theorem bandRows_spec (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ μ A
   obtain ⟨hKK, hchoose⟩ := subsetIndex_lt A.p hg hh
   have hmask := Nat.mul_add_le_mul hKK (le_refl A.p.L)
   have hprod : (((g * A.p.K0 + h) * A.p.L : ℕ) : ℤ) = ((g : ℤ) * A.p.K0 + h) * A.p.L := by
-    push_cast
     rfl
   -- MaskRow := mask + (g K0 + h) L
   light_set (A.maskRow g h : ℕ) using BandArgs.maskRow
@@ -730,7 +728,7 @@ theorem bandArrayR_entry (std : Std lim) (hP : P[pBandArray]? = some bandArrayBo
     BandArrayRSpec lim P cBandArray := by
   intro p hmL β aY mask dig3 dig4 arr μ Y hsp hY hYle htab hβ d _
   refine ⟨bandArrayBody, hP, bandArray_spec (A := .ofY p β aY mask dig3 dig4 arr)
-    { std := std, hmL := hmL, space := hsp, aA_le := by rwa [Nat.mul_comm], tabs := htab
+    { std := std, hmL := hmL, space := hsp, aA_le := by grind, tabs := htab
       β_lt := hβ, T_len := Spec.length_arrR _
       idx := fun row hrow k hk => ?_
       entry := fun g hg h hh r hr k hk => ?_

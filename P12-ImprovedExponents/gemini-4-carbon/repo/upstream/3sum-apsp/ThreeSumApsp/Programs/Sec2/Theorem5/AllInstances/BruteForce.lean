@@ -93,7 +93,6 @@ theorem brutePartial_succ (N D : ℕ) (X Y : List ℤ) (I J n : ℕ) :
 theorem abs_bruteTerm_le {X Y : List ℤ} {U : ℕ} (hX : AbsLe X U) (hY : AbsLe Y U) (a b : ℕ) :
     |X.getD a 0 * Y.getD b 0| ≤ (U * U : ℕ) := by
   rw [abs_mul]
-  push_cast
   exact mul_le_mul (hX.abs_getD_le (by positivity) a) (hY.abs_getD_le (by positivity) b)
     (abs_nonneg _) (by positivity)
 
@@ -108,7 +107,7 @@ theorem abs_brutePartial_le {N D : ℕ} {X Y : List ℤ} {U : ℕ} (hX : AbsLe X
         ≤ |brutePartial N D X Y I J n| + |X.getD (I * D + n) 0 * Y.getD (n * N + J) 0| :=
           abs_add_le _ _
       _ ≤ n * (U * U : ℕ) + (U * U : ℕ) := add_le_add ih (abs_bruteTerm_le hX hY _ _)
-      _ = ((n + 1 : ℕ) : ℤ) * (U * U : ℕ) := by push_cast; ring
+      _ = ((n + 1 : ℕ) : ℤ) * (U * U : ℕ) := by grind
 
 /-! ## The program -/
 
@@ -121,10 +120,7 @@ theorem bruteInner_spec (std : Std lim) (x : ThinInst) {μ : ℕ → ℤ} {fr i 
     Ends lim P d bruteInner ⟨frame (bruteLocs x u fr i 0 (x.x + I * x.D) (x.y + J) 0), μ⟩
       (24 * x.D + 4) fun σ' => σ' = ⟨frame (bruteLocs x u fr i x.D (x.x + I * x.D + x.D)
         (x.y + x.D * x.N + J) (brutePartial x.N x.D x.X x.Y I J x.D)), μ⟩ := by
-  have hw := std.space_le
-  have h100 := std.const_le
   have hID := Nat.mul_add_le_mul hI (le_refl x.D)
-  unfold bruteInner
   refine Ends.whileBlock (fun t σ => σ = ⟨frame (bruteLocs x u fr i t (x.x + I * x.D + t)
     (x.y + t * x.N + J) (brutePartial x.N x.D x.X x.Y I J t)), μ⟩) x.D
     (by simp [brutePartial]) ?round ?done
@@ -171,8 +167,6 @@ theorem bruteRound_spec (std : Std lim) {x : ThinInst} {μ : ℕ → ℤ} {fr : 
     (h : BruteInv x μ u fr i σ) :
     Ends lim P d bruteRound σ (24 * x.D + 33) (BruteInv x μ u fr (i + 1)) := by
   obtain ⟨t, px, py, s, μ', rfl, hdone, hfr⟩ := h
-  have hw := std.space_le
-  have h100 := std.const_le
   have hbelow := And.intro hpre.belowX (And.intro hpre.belowY (And.intro hpre.belowWI
     (And.intro hpre.belowWJ hpre.belowOut)))
   have hI := thinI_lt hpre hi
@@ -188,7 +182,6 @@ theorem bruteRound_spec (std : Std lim) {x : ThinInst} {μ : ℕ → ℤ} {fr : 
     rw [hfr _ (by rcases hpre.apartWJ with h | h <;> omega)]
     exact mem_thinJ hpre hi
   have hID := Nat.mul_add_le_mul hI (le_refl x.D)
-  have hND : x.N ≤ x.D * x.N := Nat.le_mul_of_pos_left _ hpre.D_pos
   unfold bruteRound bruteLocs
   -- t := 0; px := x + mem[wi + i] * D; py := y + mem[wj + i]; s := 0
   light_set 0
@@ -220,7 +213,6 @@ theorem thinBrute_spec (std : Std lim) (x : ThinInst) (μ : ℕ → ℤ) (fr : �
       ⟨frame [(x.N : ℤ), (x.D : ℤ), (x.w : ℤ), u, (x.x : ℤ), (x.y : ℤ), (x.wi : ℤ), (x.wj : ℤ),
         (x.out : ℤ), (fr : ℤ)], μ⟩
       (40 * ((x.w + 1) * (x.D + 1))) fun σ' => thinTask.Post x μ fr (σ'.loc 0) σ'.mem := by
-  unfold thinBruteBody
   refine Ends.whileConst (BruteInv x μ u fr) x.w (24 * x.D + 33) ?start ?round ?done ?time
   case start =>
     exact ⟨0, 0, 0, 0, μ, by rw [← frame_append_zeros _ 5]; rfl, fun j hj => absurd hj (by omega),

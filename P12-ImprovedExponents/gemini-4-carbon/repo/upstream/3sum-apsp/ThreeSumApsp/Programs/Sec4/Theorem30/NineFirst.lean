@@ -56,7 +56,7 @@ def fillRun (test : Cond) (c : ℕ) : Stmt :=
 /-- The cells that have been written hold the digit. -/
 private theorem segN_wrote_const (μ : ℕ → ℤ) (dst c n : ℕ) :
     SegN (wrote μ dst (fun _ => (c : ℤ)) n) dst (List.replicate n c) := fun i hi => by
-  rw [wrote_done (by simpa using hi)]
+  rw [wrote_done (by grind)]
   simp
 
 /-- **The rule for fillRun.**  The test is safe and holds in the first cnt rounds and no longer; it
@@ -71,7 +71,6 @@ theorem Ends.fillRun (hs : Std lim) {test : Cond} {c a i₀ cnt T : ℕ} {loc μ
       wrote μ (a + i₀) (fun _ => (c : ℤ)) cnt⟩)
     (hT : cnt * (test.cost + 1 + 9) + (test.cost + 1) ≤ T := by light_time) :
     Ends lim P d (fillRun test c) ⟨loc, μ⟩ T Q := by
-  light_facts hs
   refine Ends.whileBlock (fun j σ => σ = ⟨Function.update loc Pos ((i₀ + j : ℕ) : ℤ),
     wrote μ (a + i₀) (fun _ => (c : ℤ)) j⟩) cnt ?start ?round ?done hT
   case start => rw [wrote_zero, Nat.add_zero, ← hpos, Function.update_eq_self]
@@ -79,7 +78,7 @@ theorem Ends.fillRun (hs : Std lim) {test : Cond} {c a i₀ cnt T : ℕ} {loc μ
     rintro j _ hj rfl
     have haddr : ((a : ℤ) + ((i₀ : ℤ) + j)).toNat = a + i₀ + j := by omega
     refine ⟨(htest j hj.le _).1, (htest j hj.le _).2.mpr hj,
-      by light_side [hstr], ?_⟩
+      by light_side, ?_⟩
     rw [← wrote_succ]
     simp [hstr, haddr, add_assoc]
   case done =>
@@ -102,15 +101,14 @@ theorem fillTail_spec (hs : Std lim) {μ : ℕ → ℤ} {a n i₀ need : ℕ} (h
     Ends lim P d fillTail ⟨loc, μ⟩ (15 * (n - i₀) + 10) fun σ' =>
       σ'.loc = Function.update loc Pos n ∧ SegN σ'.mem (a + i₀) (nineFirst (n - i₀) need) ∧
         SameOutside μ σ'.mem (a + i₀) (n - i₀) := by
-  have hw := hs.space_le
   have hmid : i₀ + (n - i₀ - need) = n - need := by omega
   -- zeros while pos + need < len
   refine Ends.next _ (Ends.fillRun hs (a := a) (i₀ := i₀) (cnt := n - i₀ - need) (by norm_num)
     (by omega) hstr hpos
-    (fun j hj μ' => by light_side [hlen, hneed]) ?_ (hT := le_rfl)) (by simp; omega)
+    (fun j hj μ' => by light_side) ?_ (hT := le_rfl)) (by simp; omega)
   -- nines while pos < len
   refine Ends.fillRun hs (a := a) (i₀ := n - need) (cnt := need) (by norm_num) (by omega)
-    (by simpa using hstr) (by simp [hmid]) (fun j hj μ' => by simp [hlen]; omega) ?_
+    (by simpa using hstr) (by grind) (fun j hj μ' => by simp ; omega) ?_
     (by simp; omega)
   -- the zeros are kept by the second loop, and both loops stay within the n - i₀ cells
   have hzeros := segN_wrote_const μ (a + i₀) 0 (n - i₀ - need)
@@ -139,15 +137,13 @@ theorem nineFirst_spec (hP : P[Proc.nineFirst]? = some nineFirstBody) (hs : Std 
     NineFirstSpec lim P := by
   intro a n lo μ hlo ha
   refine fun d _ => ⟨nineFirstBody, hP, ?_⟩
-  have hword := hs.const_le
   unfold tNineFirst
   -- pos := 0; need := minNines
   light_set (0 : ℕ)
   light_set lo
   -- fillTail
   refine (fillTail_spec hs (i₀ := 0) (need := lo) ha (by omega) _ rfl rfl rfl rfl).mono
-    (by simp; omega) ?_
-  rintro σ' ⟨-, hseg, hsame⟩
-  exact ⟨hseg, hsame⟩
+    (by light_side) ?_
+  simp
 
 end Light.Sec4

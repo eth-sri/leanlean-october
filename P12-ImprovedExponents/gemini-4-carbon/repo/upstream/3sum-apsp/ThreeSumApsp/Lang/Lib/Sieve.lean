@@ -47,11 +47,11 @@ theorem primesBelow_one : primesBelow 1 = [] := by decide
 
 theorem primesBelow_succ_of_prime {c : ℕ} (h : c.Prime) :
     primesBelow (c + 1) = primesBelow c ++ [c] := by
-  simp [primesBelow, List.range_succ, List.filter_append, h]
+  simp [primesBelow, List.range_succ, h]
 
 theorem primesBelow_succ_of_not_prime {c : ℕ} (h : ¬ c.Prime) :
     primesBelow (c + 1) = primesBelow c := by
-  simp [primesBelow, List.range_succ, List.filter_append, h]
+  simp [primesBelow, List.range_succ, h]
 
 /-- There are at most i - 2 primes below i. -/
 theorem length_primesBelow_add_two_le {i : ℕ} (hi : 2 ≤ i) : (primesBelow i).length + 2 ≤ i := by
@@ -72,8 +72,7 @@ theorem sort_primesLE (m : ℕ) : (Nat.primesLE m).sort (· ≤ ·) = primesBelo
       fun q => ?_
     simp [Nat.mem_primesLE]
 
-theorem length_primesBelow (m : ℕ) : (primesBelow (m + 1)).length = (Nat.primesLE m).card := by
-  rw [← sort_primesLE, Finset.length_sort]
+theorem length_primesBelow (m : ℕ) : (primesBelow (m + 1)).length = (Nat.primesLE m).card := rfl
 
 /-- The number j is a proper multiple of a prime below c. -/
 def Marked (c j : ℕ) : Prop := ∃ p, p.Prime ∧ p < c ∧ p ∣ j ∧ p < j
@@ -96,9 +95,7 @@ theorem marked_succ_of_not_prime {i : ℕ} (h : ¬ i.Prime) (j : ℕ) :
     Marked (i + 1) j ↔ Marked i j := by
   constructor
   · rintro ⟨p, hp, hlt, h1, h2⟩
-    have : p ≠ i := by
-      rintro rfl
-      exact h hp
+    have : p ≠ i := by grind
     exact ⟨p, hp, by omega, h1, h2⟩
   · rintro ⟨p, hp, hlt, h1, h2⟩
     exact ⟨p, hp, by omega, h1, h2⟩
@@ -120,16 +117,12 @@ theorem sum_div_pow_le (m k : ℕ) : ∑ r ∈ Finset.range (2 ^ k - 1), m / (r 
   induction k with
   | zero => simp
   | succ k ih =>
-    have h2 : 2 ^ (k + 1) - 1 = (2 ^ k - 1) + 2 ^ k := by
-      have := Nat.one_le_two_pow (n := k)
-      rw [pow_succ]
-      omega
+    have h2 : 2 ^ (k + 1) - 1 = (2 ^ k - 1) + 2 ^ k := by grind
     rw [h2, Finset.sum_range_add]
     have hblock : ∑ x ∈ Finset.range (2 ^ k), m / (2 ^ k - 1 + x + 1) ≤ m := by
       calc ∑ x ∈ Finset.range (2 ^ k), m / (2 ^ k - 1 + x + 1)
           ≤ ∑ _x ∈ Finset.range (2 ^ k), m / 2 ^ k := by
             refine Finset.sum_le_sum fun x _ => Nat.div_le_div_left ?_ (by positivity)
-            have := Nat.one_le_two_pow (n := k)
             omega
         _ = 2 ^ k * (m / 2 ^ k) := by simp
         _ ≤ m := Nat.mul_div_le m _
@@ -141,15 +134,11 @@ theorem sum_div_le (m : ℕ) : ∑ r ∈ Finset.range (m - 1), m / (r + 2) ≤ (
   have h1 : ∑ r ∈ Finset.range (m - 1), m / (r + 2)
       ≤ ∑ r ∈ Finset.range (m - 1 + 1), m / (r + 1) := by
     rw [Finset.sum_range_succ']
-    exact Nat.le_add_right _ _
+    simp
   have h2 : ∑ r ∈ Finset.range (m - 1 + 1), m / (r + 1)
       ≤ ∑ r ∈ Finset.range (2 ^ (Nat.log 2 m + 1) - 1), m / (r + 1) := by
     refine Finset.sum_le_sum_of_subset (Finset.range_subset_range.2 ?_)
     have := Nat.lt_pow_succ_log_self (b := 2) (by norm_num) m
-    have h3 : 2 ≤ 2 ^ (Nat.log 2 m + 1) := by
-      calc 2 = 2 ^ 1 := by norm_num
-        _ ≤ 2 ^ (Nat.log 2 m + 1) := Nat.pow_le_pow_right (by norm_num) (by omega)
-    simp only [Nat.succ_eq_add_one] at this
     omega
   exact h1.trans (h2.trans (sum_div_pow_le m _))
 
@@ -218,8 +207,7 @@ def loopTime (m : ℕ) : ℕ :=
 theorem time_le (m : ℕ) : 15 * m + 23 + 4 + loopTime m + 2 ≤ sieveTime m := by
   have hsum := sum_div_le m
   have hmul : 15 * m * (Nat.log 2 m + 5) = 15 * ((Nat.log 2 m + 1) * m) + 60 * m := by ring
-  simp only [loopTime, sieveTime, Finset.sum_add_distrib, Finset.sum_const, Finset.card_range,
-    smul_eq_mul, ← Finset.mul_sum]
+  simp  [loopTime, sieveTime, Finset.sum_add_distrib, ← Finset.mul_sum]
   omega
 
 /-- The first j cells of the table have been cleared, and no cell outside the table has changed. -/
@@ -277,8 +265,8 @@ theorem mark_round {i cnt J : ℕ} {σ : State} (pre : Pre lim m out fr) (hi : 1
     rw [Function.update_self, if_pos ⟨hJ, hiJ, by omega⟩]
   · rw [Function.update_of_ne (by omega), htab j hj]
     by_cases hdvd : i ∣ j
-    · simp only [hdvd, true_and, lt_add_iff_of_dvd hJ hdvd hjJ]
-    · simp only [hdvd, false_and]
+    · simp  [lt_add_iff_of_dvd hJ hdvd hjJ]
+    · simp  [hdvd]
 
 /-- The proper multiples of i are marked, in m / i - 1 rounds. -/
 theorem mark_ends {i cnt : ℕ} (pre : Pre lim m out fr) (hi : 1 ≤ i) (him : i ≤ m) :
@@ -391,7 +379,7 @@ theorem _root_.Light.sieve_meets {p : ℕ} (hp : P[p]? = some sieveBody) (pre : 
   light_set (0 : ℕ)
   -- while i ≤ m
   refine Ends.next (loopTime m) ((Ends.while (fun r => Sieved μ m out fr (r + 2) (r + 2)) (m - 1)
-    (fun r => 15 * (m / (r + 2)) + 30) ?start ?round ?done).mono (le_of_eq (by simp [loopTime]))
+    (fun r => 15 * (m / (r + 2)) + 30) ?start ?round ?done).mono (le_of_eq (rfl))
     fun _ h => h)
   case start =>
     rw [Sieved, primesBelow_two]

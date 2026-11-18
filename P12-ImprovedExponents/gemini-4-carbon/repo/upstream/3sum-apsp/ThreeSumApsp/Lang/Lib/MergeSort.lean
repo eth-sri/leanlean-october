@@ -124,7 +124,6 @@ theorem sorted_merge {μ μ₁ μ₂ μ₃ μ₄ : ℕ → ℤ} {a fr h m : ℕ}
       _ = L := List.take_append_drop h L
   · have hl₁ : (L.take h).length = h := by simp; omega
     have hl₂ : (L.drop h).length = L.length - h := by simp
-    have := hc.2
     rw [hk₄ c hc.2, hk₃ c (Or.inl hc.1), hk₂ c ⟨hc.1, by omega⟩, hk₁ c ⟨hc.1, by omega⟩]
 
 variable {pSort pHalf pMerge pCopy : ℕ}
@@ -138,7 +137,7 @@ theorem join_ends (C : Procs P pSort pHalf pMerge pCopy)
     Ends lim P d (sortJoin pMerge pCopy) ⟨frame [n, a, fr, h, r], μ⟩ (56 * n + 34) fun σ' =>
       ∃ μ' : ℕ → ℤ, SameOutside μ μ' fr n ∧ Seg σ'.mem a (S₁.merge S₂) ∧
         SameOutside μ' σ'.mem a n := by
-  have hlm : (S₁.merge S₂).length = n := by rw [List.length_merge]; omega
+  have hlm : (S₁.merge S₂).length = n := by light_side
   -- merge(a, h, a + h, n - h, fr)
   have hmerge := merge_meets (d := d + 1) C.merge (a := a) (b := a + h) (dst := fr) (l := S₁)
     (r := S₂) ⟨hw, hS₁, hS₂, by omega, by omega, by omega, Or.inl (by omega), Or.inl (by omega)⟩
@@ -167,9 +166,8 @@ theorem body_ends (C : Procs P pSort pHalf pMerge pCopy)
   have hn : 1 < L.length := by simpa using hc
   have htime := time_split hn
   have hhalf := half_meets (d := d + 1) C.half μ (h := L.length)
-    (le_trans (by exact_mod_cast (by omega : L.length + 1 ≤ lim.space)) hw)
+    (le_trans (by omega) hw)
   have hlt : (L.length + 1) / 2 < L.length := by omega
-  have hpos : 1 ≤ (L.length + 1) / 2 := by omega
   have htwice : 2 * ((L.length + 1) / 2) ≤ L.length + 1 := by omega
   have htwice' : L.length ≤ 2 * ((L.length + 1) / 2) := by omega
   generalize (L.length + 1) / 2 = h at *

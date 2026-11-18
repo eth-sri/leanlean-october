@@ -121,8 +121,7 @@ theorem Full_bandArray_eq_mul {L m N : ℕ} (lay : Layout L m)
   -- Both sides are sums over the `D` inner indices; the summands agree because row `I` is recovered
   -- from its band, block and place in the block, and likewise column `J`.
   refine sum_congr rfl fun k _ => ?_
-  simp only [rowBlock, colBlock, Equiv.symm_apply_apply, position_decomp, padRows, padCols,
-    I.isLt, J.isLt, dif_pos, Fin.eta]
+  simp  [rowBlock, colBlock, position_decomp, padRows, padCols]
 
 /-- The entry `(XY)[I, J]` as a value of `Mult`, that is, as a sum over leaves (equation (2)). This
 is the form in which Section 4 uses the tiling ("by (2) and Lemma 9, (X_Q Y_Q)[w] is the sum of the

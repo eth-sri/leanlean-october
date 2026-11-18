@@ -102,8 +102,7 @@ theorem scatter_cons_of_ne {x : ℕ} (hx : x ≠ 9) (w s : List ℕ) :
 
 /-- A digit 9 is replaced by the next digit of the string. -/
 theorem scatter_nine_cons (w : List ℕ) (d : ℕ) (s : List ℕ) :
-    scatter (9 :: w) (d :: s) = d :: scatter w s := by
-  simp [scatter]
+    scatter (9 :: w) (d :: s) = d :: scatter w s := rfl
 
 /-- The string has the length of w. -/
 theorem length_scatter (w s : List ℕ) : (scatter w s).length = w.length := by
@@ -152,8 +151,7 @@ theorem starRunIf_cons_of_ne {d : ℕ} (hd : d ≠ 9) (flag : Bool) (s : List �
 
 /-- A digit 9 becomes a star while the run goes on, and the run goes on. -/
 theorem starRunIf_nine_cons (flag : Bool) (s : List ℕ) :
-    starRunIf flag (9 :: s) = (if flag then 10 else 9) :: starRunIf flag s := by
-  cases flag <;> simp [starRunIf, starRun]
+    starRunIf flag (9 :: s) = (if flag then 10 else 9) :: starRunIf flag s := by aesop
 
 /-- Position i is one of "the levels that we have not reached" (F_V, Section 4.2).  Here w is the
 list of digits of the output string, so its nines are the levels of Q, and u is the list of digits
@@ -166,16 +164,14 @@ private def Unreached (w u : List ℕ) (i : ℕ) : Prop :=
 private theorem unreached_cons_zero (x y : ℕ) (w u : List ℕ) :
     Unreached (x :: w) (y :: u) 0 ↔ x = 9 ∧ y = 9 := by
   rw [Unreached, ← Nat.and_forall_add_one]
-  simp only [List.getD_cons_zero, lt_irrefl, Nat.zero_lt_succ, implies_true, and_true]
-  tauto
+  grind
 
 /-- A later position is not reached if the first position is no level of Q ∖ V and the position is
 not reached in the rest. -/
 private theorem unreached_cons_succ (x y : ℕ) (w u : List ℕ) (i : ℕ) :
     Unreached (x :: w) (y :: u) (i + 1) ↔ (x = 9 → y = 9) ∧ Unreached w u i := by
   rw [Unreached, Unreached, ← Nat.and_forall_add_one]
-  simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.not_lt_zero, Nat.add_lt_add_iff_right]
-  tauto
+  grind
 
 /-- Turning the leading nines of s into stars puts stars at the positions given by the formula for
 F_V, and changes nothing else. -/
@@ -195,14 +191,14 @@ private theorem getD_scatter_starRun (w s : List ℕ) (hs : s.length = w.count 9
         rw [starRun, if_pos rfl, scatter_nine_cons, scatter_nine_cons]
         cases i with
         | zero => simp [unreached_cons_zero]
-        | succ i => simpa [unreached_cons_succ] using ih s (by simpa using hs) i
+        | succ i => simpa [unreached_cons_succ] using ih s (by grind) i
       · rw [starRun, if_neg hd, scatter_nine_cons]
         exact ⟨fun h => absurd (h.2 0 rfl hd) (Nat.not_lt_zero i), fun _ => rfl⟩
     · rw [List.count_cons_of_ne hx] at hs
       rw [scatter_cons_of_ne hx, scatter_cons_of_ne hx]
       cases i with
       | zero => simp [unreached_cons_zero, hx]
-      | succ i => simpa [unreached_cons_succ, hx] using ih s hs i
+      | succ i => simpa [unreached_cons_succ] using ih s hs i
 
 /-! ## The leaves of order below t -/
 
@@ -256,7 +252,7 @@ theorem length_lowList (ht : t ≤ m) (w : List ℕ) :
   refine Finset.sum_nbij' (fun f => m - f) (fun d => m - d) ?_ ?_ ?_ ?_
     fun f hf => by rw [alpha, Nat.choose_symm (Finset.mem_Icc.mp hf).2]
   all_goals
-    simp only [Finset.mem_Icc, Finset.mem_range]
+    simp 
     intro a ha
     omega
 

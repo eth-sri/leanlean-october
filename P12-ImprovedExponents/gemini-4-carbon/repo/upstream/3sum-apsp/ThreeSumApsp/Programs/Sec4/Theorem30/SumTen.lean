@@ -71,7 +71,7 @@ private theorem segN_set {μ μ' : ℕ → ℤ} {a p : ℕ} {l : List ℕ} (h : 
     (hp : p < l.length) (x : ℕ) (hx : μ' (a + p) = x) (ho : ∀ b, b ≠ a + p → μ' b = μ b) :
     SegN μ' a (l.set p x) := by
   intro i hi
-  have hi' : i < l.length := by simpa using hi
+  have hi' : i < l.length := by grind
   by_cases hip : i = p
   · subst hip
     simp [hx]
@@ -109,10 +109,7 @@ private theorem round_spec {lim : Limits} {P : Program} {d : ℕ} (hLookup : Loo
   light_store (x.box + x.p) j
   have hsame₁ : SameOn (· ≠ x.box + x.p) μ (Function.update μ' (x.box + x.p) j) :=
     hsame.write (by simp) _
-  have hdigits : ∀ d ∈ x.l.set x.p j, d < 11 := fun d hd => by
-    rcases List.mem_or_eq_of_mem_set hd with h | h
-    · exact C.digits d h
-    · omega
+  have hdigits : ∀ d ∈ x.l.set x.p j, d < 11 := fun d hd => by grind
   -- val := lookup(area, root, box, len)
   light_call (hLookup x.tr x.root x.box x.l.length x.T (x.l.set x.p j) _
     C.area.keep
@@ -156,7 +153,7 @@ theorem sumTen_spec {lim : Limits} {P : Program} (hP : P[Proc.sumTen]? = some su
     exact round_spec hLookup hs pre hdep hj hsame
   case done =>
     rintro _ - ⟨val, μ', rfl, hsame⟩
-    simp only [tRound]
+    simp  [tRound]
     -- mem[box + star] := saved
     light_store (x.box + x.p) (x.l[x.p] : ℕ)
     -- return sum

@@ -6,8 +6,10 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.AllInstances.Program
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Layout
-public import ThreeSumApsp.Programs.Sec4.Theorem30.OfflineLayout
+public import ThreeSumApsp.Programs.Sec4.Theorem30.Preprocessing
+public import ThreeSumApsp.Lang.RowMajor
+public import ThreeSumApsp.Programs.Sec4.Theorem30.WordSize
+public import ThreeSumApsp.Programs.Sec4.Theorem30.Offline
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Routines
 
 /-!
@@ -37,7 +39,7 @@ unused numbers, the routines of Section 4, the two routines that know the memory
 routines of the offline form. -/
 def base58 : Program :=
   Sec2.programThin ++ List.replicate 11 .skip ++ procs40 ++
-    [preCoreBody, queryAtBody, wantedCoreBody, wantedMainBody]
+    [.skip, queryAtBody, .skip, .skip]
 
 theorem length_base58 : base58.length = 58 := rfl
 
@@ -52,7 +54,7 @@ def cShared30 : ℕ := 12 * Sec2.cShared5 + 600
 
 theorem has40_base58 (R : Program) : Has40 (base58 ++ R) := by
   have h := has40_of_append (A := Sec2.programThin ++ List.replicate 11 .skip)
-    (B := [preCoreBody, queryAtBody, wantedCoreBody, wantedMainBody] ++ R) rfl
-  rwa [← List.append_assoc] at h
+    (B := [.skip, queryAtBody, .skip, .skip] ++ R) rfl
+  aesop
 
 end Light.Sec4

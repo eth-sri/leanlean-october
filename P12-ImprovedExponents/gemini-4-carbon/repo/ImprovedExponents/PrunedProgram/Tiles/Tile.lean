@@ -2,7 +2,7 @@ module
 
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Tile
-public import ImprovedExponents.PrunedProgram.Tiles.Contracts
+public import ImprovedExponents.PrunedProgram.Tiles.FillList
 
 @[expose] public section
 
@@ -83,7 +83,6 @@ theorem round (hFill : FillListSpecP lim P) (C : TilePreP lim μ x) (hd : d + 3 
     Ends lim P d tileRound σ (tFillList x.L (starBoxes x.L x.m x.t e).length + 30)
       (Inv μ x (e + 1)) := by
   obtain ⟨void, μ₁, rfl, hM⟩ := h
-  have hlayout := C.ctx.layout
   light_facts C.ctx C.ctx.std
   -- the trie of the tile has the number s.roots.length, and its root is the last one
   have hroot := x.s.root_new
@@ -93,7 +92,7 @@ theorem round (hFill : FillListSpecP lim P) (C : TilePreP lim μ x) (hd : d + 3 
       trie := hM.trie, segA := hM.segA, segB := hM.segB
       room := (Tile.room (arrT x.encA) (arrT x.encB) x.L x.m x.t x.s.cells.length x.s.cells
         he).trans C.room }
-  simp only [Tile.fillArgs, FillListArgs.vals, FillListArgs.root, FillListArgs.boxes, hroot]
+  simp  [Tile.fillArgs, FillListArgs.vals, FillListArgs.root, hroot]
     at hfill
   -- fillList(e, root, …)
   light_call (hfill _ (by omega)) with void' μ₂ ⟨htrie, same⟩
@@ -110,10 +109,8 @@ theorem tileP_spec {lim : Limits} {P : Program} (hP : P[Proc.tile]? = some tileB
     (hNew : NewRootSpec lim P) (hFill : FillListSpecP lim P) : TileSpecP lim P := by
   intro x μ C
   refine fun d hd => ⟨tileBody, hP, ?_⟩
-  have hlayout := C.ctx.layout
   light_facts C C.ctx C.ctx.std
   have hcells : x.cells = x.s.roots.length + 1 := rfl
-  have hroom := C.room
   unfold tTile
   -- root := newRoot(tr, fp)
   light_call (hNew x.tr x.cap x.fp x.s.cells μ C.trie (by omega) (by omega) (by omega) _

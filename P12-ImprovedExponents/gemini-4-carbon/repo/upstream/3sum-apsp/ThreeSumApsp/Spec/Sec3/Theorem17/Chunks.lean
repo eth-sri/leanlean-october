@@ -106,7 +106,7 @@ theorem classStart_eq_length_filter (n : ℕ) (RAB : List ℕ) (p : ℕ) :
 /-- All the pairs are listed if all the residues are below `p`. -/
 theorem classStart_eq_sq (hlt : ∀ i < n * n, RAB.getD i 0 < p) : classStart n RAB p = n * n := by
   rw [classStart_eq_length_filter, List.filter_eq_self.2, List.length_range]
-  exact fun i hi => decide_eq_true (hlt i (List.mem_range.1 hi))
+  grind
 
 /-- A place below the start of the class `p` lies in one of the classes before. -/
 theorem exists_class {j : ℕ} (hj : j < classStart n RAB p) :
@@ -172,7 +172,6 @@ def chunkAt (n cap : ℕ) (RAB : List ℕ) (rho i : ℕ) : Chunk :=
 theorem chunkTab_eq (n p cap : ℕ) (RAB : List ℕ) :
     chunkTab n p cap RAB = (List.range p).flatMap fun rho =>
       (List.range ((classIdx n RAB rho).length ⌈/⌉ cap)).map (chunkAt n cap RAB rho) := by
-  unfold chunkTab chunkTabOf
   refine List.flatMap_congr fun rho hrho => ?_
   have h := List.mem_range.1 hrho
   rw [getD_classStarts_eq n p RAB (by omega), getD_classStarts_eq n p RAB (by omega), chunksOf,
@@ -183,7 +182,7 @@ theorem chunkTab_eq (n p cap : ℕ) (RAB : List ℕ) :
 theorem mem_chunkTab (x : Chunk) :
     x ∈ chunkTab n p cap RAB ↔
       ∃ rho < p, ∃ i < (classIdx n RAB rho).length ⌈/⌉ cap, x = chunkAt n cap RAB rho i := by
-  simp only [chunkTab_eq, List.mem_flatMap, List.mem_range, List.mem_map, eq_comm (a := x)]
+  simp  [chunkTab_eq, eq_comm (a := x)]
 
 /-- An entry of the table has a residue below `p`, and it is a nonempty segment of at most `cap`
 places of the list. -/
@@ -199,8 +198,7 @@ theorem chunkTab_entry (hcap : 1 ≤ cap) (hlt : ∀ i < n * n, RAB.getD i 0 < p
 theorem chunkTab_class (hcap : 1 ≤ cap) {x : Chunk} (hx : x ∈ chunkTab n p cap RAB) {i : ℕ}
     (hi : i < x.len) : RAB.getD ((sortedIdx n p RAB).getD (x.start + i) 0) 0 = x.residue := by
   obtain ⟨rho, hrho, i', hi', rfl⟩ := (mem_chunkTab x).1 hx
-  have hleft := (Nat.lt_ceilDiv_iff hcap).1 hi'
-  simp only [chunkAt] at hi ⊢
+  simp  [chunkAt] at hi ⊢
   exact getD_sortedIdx_class hrho (by omega) (by rw [classStart_succ]; omega)
 
 /-- The chunks follow each other: a chunk ends where a later one starts, or before. -/
@@ -214,7 +212,7 @@ theorem chunkTab_pairwise (hcap : 1 ≤ cap) :
     refine List.pairwise_lt_range.imp fun {i i'} hii => ?_
     have hmul : (i + 1) * cap ≤ i' * cap := Nat.mul_le_mul_right cap hii
     rw [Nat.add_mul, Nat.one_mul] at hmul
-    simp only [chunkAt]
+    simp  [chunkAt]
     omega
   · -- two chunks of different classes
     refine List.pairwise_lt_range.imp fun {rho rho'} hrr x hx y hy => ?_
@@ -223,7 +221,7 @@ theorem chunkTab_pairwise (hcap : 1 ≤ cap) :
     have hleft := (Nat.lt_ceilDiv_iff hcap).1 (List.mem_range.1 hi)
     have hnext := classStart_mono n RAB (show rho + 1 ≤ rho' by omega)
     rw [classStart_succ] at hnext
-    simp only [chunkAt]
+    simp  [chunkAt]
     omega
 
 /-- Every place lies in a chunk. -/
@@ -239,7 +237,7 @@ theorem chunkTab_cover (hcap : 1 ≤ cap) (hlt : ∀ i < n * n, RAB.getD i 0 < p
   have hi : i < (classIdx n RAB rho).length ⌈/⌉ cap := (Nat.lt_ceilDiv_iff hcap).2 (by omega)
   refine ⟨_, (mem_chunkTab _).2 ⟨rho, hrho, i, hi, rfl⟩, ?_⟩
   -- `start + i cap ≤ j < start + i cap + min cap (len - i cap)`, from `hdiv`, `hmod` and `hhi`.
-  simp only [Chunk.Contains, chunkAt]
+  simp  [Chunk.Contains, chunkAt]
   omega
 
 /-- A place lies in one chunk only. -/
@@ -249,12 +247,7 @@ theorem chunkTab_unique (hcap : 1 ≤ cap) {j k k' : ℕ} (h : k < (chunkTab n p
   have hpair := List.pairwise_iff_getElem.1 (chunkTab_pairwise (n := n) (p := p) (RAB := RAB) hcap)
   obtain ⟨hlo, hhi⟩ := hj
   obtain ⟨hlo', hhi'⟩ := hj'
-  rcases Nat.lt_trichotomy k k' with hlt | heq | hgt
-  · have := hpair k k' h h' hlt
-    omega
-  · exact heq
-  · have := hpair k' k h' h hgt
-    omega
+  grind
 
 /-- The number of chunks, class by class. -/
 theorem length_chunkTab (n p cap : ℕ) (RAB : List ℕ) :

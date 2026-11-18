@@ -49,9 +49,9 @@ theorem vlinList_zero_self (A : List ℤ) : vlinList 0 A A = A := vlinList_zero 
 theorem vlinList_zeros_left {q : ℕ} {B : List ℤ} (h : B.length = q) :
     vlinList 1 (zeros q) B = B := by
   apply List.ext_getElem
-  · simp [vlinList, zeros, h]
+  · simp [vlinList, h]
   · intro i h1 h2
-    simp [vlinList, zeros]
+    simp [vlinList]
 
 /-- The bounds of the two operands add up. -/
 theorem _root_.ThreeSumApsp.AbsLe.vlinList {s a b : ℤ} {A B : List ℤ} (hA : AbsLe A a)
@@ -59,9 +59,9 @@ theorem _root_.ThreeSumApsp.AbsLe.vlinList {s a b : ℤ} {A B : List ℤ} (hA : 
     (hs : |s| ≤ 1) : AbsLe (vlinList s A B) (a + b) := by
   intro x hx
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hx
-  have hiA : i < A.length := by simp only [Sec3.vlinList, List.length_zipWith] at hi; omega
-  have hiB : i < B.length := by simp only [Sec3.vlinList, List.length_zipWith] at hi; omega
-  simp only [Sec3.vlinList, List.getElem_zipWith]
+  have hiA : i < A.length := by simp  [Sec3.vlinList] at hi; omega
+  have hiB : i < B.length := by simp  [Sec3.vlinList] at hi; omega
+  simp  [Sec3.vlinList]
   have hsy : |s * B[i]| ≤ b := by
     rw [abs_mul]
     exact (mul_le_of_le_one_left (abs_nonneg _) hs).trans (hB.getElem hiB)
@@ -74,8 +74,7 @@ theorem _root_.ThreeSumApsp.AbsLe.trans_le {l : List ℤ} {a b : ℤ} (h : AbsLe
 /-- Zeros are bounded by 0. -/
 theorem absLe_zeros (q : ℕ) : AbsLe (zeros q) 0 := by
   intro x hx
-  simp only [zeros, List.mem_replicate] at hx
-  simp [hx.2]
+  grind
 
 /-- A quarter of a list of 4 q numbers has q numbers. -/
 theorem length_quarter {q t : ℕ} {l : List ℤ} (h : l.length = 4 * q) (ht : t < 4) :
@@ -113,8 +112,8 @@ theorem length_strassenList (p : ℕ) :
       (strassenList p j A B).length = 4 ^ j * p
   | 0, A, B, _, _ => by simp [strassenList, length_cconv]
   | j + 1, A, B, hA, hB => by
-    have hA' : A.length = 4 * (4 ^ j * p) := by rw [hA]; ring
-    have hB' : B.length = 4 * (4 ^ j * p) := by rw [hB]; ring
+    have hA' : A.length = 4 * (4 ^ j * p) := by grind
+    have hB' : B.length = 4 * (4 ^ j * p) := by omega
     have qa : ∀ t < 4, (quarter (4 ^ j * p) t A).length = 4 ^ j * p :=
       fun t ht => length_quarter hA' ht
     have qb : ∀ t < 4, (quarter (4 ^ j * p) t B).length = 4 ^ j * p :=
@@ -164,8 +163,7 @@ theorem strassenBound_one_one (p K : ℕ) : strassenBound p K 1 1 = ((16 ^ K * p
 theorem le_strassenBound_left {p j : ℕ} {α β : ℤ} (hp : 1 ≤ p) (hα : 1 ≤ α) (hβ : 1 ≤ β) :
     α ≤ strassenBound p j α β := by
   have hpow : (1 : ℤ) ≤ 16 ^ j := one_le_pow₀ (by norm_num)
-  have hpZ : (1 : ℤ) ≤ p := by exact_mod_cast hp
-  have hα0 : 0 ≤ α := by omega
+  have hpZ : (1 : ℤ) ≤ p := by omega
   calc α = 1 * (1 * α * 1) := by ring
     _ ≤ 16 ^ j * (p * α * β) := by gcongr
 
@@ -173,8 +171,7 @@ theorem le_strassenBound_left {p j : ℕ} {α β : ℤ} (hp : 1 ≤ p) (hα : 1 
 theorem le_strassenBound_right {p j : ℕ} {α β : ℤ} (hp : 1 ≤ p) (hα : 1 ≤ α) (hβ : 1 ≤ β) :
     β ≤ strassenBound p j α β := by
   have hpow : (1 : ℤ) ≤ 16 ^ j := one_le_pow₀ (by norm_num)
-  have hpZ : (1 : ℤ) ≤ p := by exact_mod_cast hp
-  have hβ0 : 0 ≤ β := by omega
+  have hpZ : (1 : ℤ) ≤ p := by omega
   calc β = 1 * (1 * 1 * β) := by ring
     _ ≤ 16 ^ j * (p * α * β) := by gcongr
 
@@ -185,7 +182,7 @@ theorem absLe_cconv {p : ℕ} {A B : List ℤ} {α β : ℤ} (leA : AbsLe A α) 
   rw [cconv_eq_map_convPartialSum] at hx
   obtain ⟨r, -, rfl⟩ := List.mem_map.mp hx
   have := abs_convPartialSum_le (p := p) leA leB hα hβ r p
-  rwa [← mul_assoc] at this
+  grind
 
 /-- The entries of a sum. -/
 theorem _root_.ThreeSumApsp.AbsLe.vadd {X Y : List ℤ} {x y : ℤ} (hX : AbsLe X x) (hY : AbsLe Y y) :
@@ -277,8 +274,8 @@ theorem strassenList_succ_eq_phases (p j : ℕ) (A B : List ℤ) (hA : A.length 
         ++ vlinList 0 (vlinList 1 (vlinList 1 (vlinList (-1) (vlinList 1 (zeros q) m1) m2) m3) m6)
           m7 := by
   intro q a b m1 m2 m3 m4 m5 m6 m7
-  have hA' : A.length = 4 * q := by rw [hA]; ring
-  have hB' : B.length = 4 * q := by rw [hB]; ring
+  have hA' : A.length = 4 * q := by grind
+  have hB' : B.length = 4 * q := by omega
   have len1 : m1.length = q := length_phaseM_quarter hA' hB' _ _
   have len2 : m2.length = q := length_phaseM_quarter hA' hB' _ _
   have len3 : m3.length = q := length_phaseM_quarter hA' hB' _ _

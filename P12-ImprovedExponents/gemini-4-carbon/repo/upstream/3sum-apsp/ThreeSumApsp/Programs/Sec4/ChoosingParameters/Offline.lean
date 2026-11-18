@@ -72,12 +72,6 @@ def offlineAsk32 : Stmt :=
     v Free] Res ;;
   .store (v Out +' v Pos) (v Res)
 
-open Offline32 in
-/-- offline32(N, D, w, U, x, y, wi, wj, out, fr): preprocess, then ask one query for each wanted
-position and store its answer. -/
-def offline32Body : Stmt :=
-  .call Proc.pre31 [v Size, v Dim, v MatX, v MatY, v Free] Res ;;
-  .for Pos (v Count) offlineAsk32
 
 /-! ## What it does -/
 

@@ -127,13 +127,13 @@ theorem Stmt.Runs.seq {s t : Stmt} {σ : State} {R : State → Prop}
 theorem Stmt.Runs.ite_pos {c : Cond} {s t : Stmt} {σ : State} {R : State → Prop}
     (h : s.Runs lim σ R) (hc : c.Holds σ := by light_side) (hs : c.Safe lim σ := by light_side) :
     (Stmt.ite c s t).Runs lim σ R :=
-  ⟨⟨hs, fun _ => h.1, fun hn => absurd hc hn⟩, by simpa only [Stmt.after, if_pos hc] using h.2⟩
+  ⟨⟨hs, fun _ => h.1, fun hn => absurd hc hn⟩, by simp_all⟩
 
 /-- A branch whose test fails. -/
 theorem Stmt.Runs.ite_neg {c : Cond} {s t : Stmt} {σ : State} {R : State → Prop}
     (h : t.Runs lim σ R) (hc : ¬ c.Holds σ := by light_side) (hs : c.Safe lim σ := by light_side) :
     (Stmt.ite c s t).Runs lim σ R :=
-  ⟨⟨hs, fun hp => absurd hp hc, fun _ => h.1⟩, by simpa only [Stmt.after, if_neg hc] using h.2⟩
+  ⟨⟨hs, fun hp => absurd hp hc, fun _ => h.1⟩, by simp_all⟩
 
 theorem Ends.of_blockSafe : ∀ {s : Stmt} {σ : State} {T : ℕ} {Q : State → Prop}, s.BlockSafe lim σ →
     s.blockCost ≤ T → Q (s.after σ) → Ends lim P d s σ T Q
@@ -216,12 +216,6 @@ theorem Ends.setLast {loc μ : ℕ → ℤ} {T x : ℕ} {e : Expr} {Q : State �
     Ends lim P d (.set x e) ⟨loc, μ⟩ T Q :=
   Ends.set hs hT h
 
-/-- An assignment, followed by the rest of the program. -/
-theorem Ends.setThen {loc μ : ℕ → ℤ} {T x : ℕ} {e : Expr} {s : Stmt} {Q : State → Prop}
-    (h : Ends lim P d s ⟨Function.update loc x (e.val ⟨loc, μ⟩), μ⟩ (T - (e.cost + 1)) Q)
-    (hs : e.Safe lim ⟨loc, μ⟩ := by light_side) (hT : e.cost + 1 ≤ T := by light_time) :
-    Ends lim P d (.set x e ;; s) ⟨loc, μ⟩ T Q :=
-  Ends.next _ (Ends.set hs le_rfl h) hT
 
 /-- A store at the end of the program. -/
 theorem Ends.storeLast {loc μ : ℕ → ℤ} {T : ℕ} {a e : Expr} {Q : State → Prop}
@@ -310,7 +304,7 @@ theorem Ends.for {σ : State} {i : ℕ} {hi : Expr} {body : Stmt} {T : ℕ} {Q :
   refine Ends.seq 2 (n * (hi.cost + b + 7) + hi.cost + 3)
     (Ends.set (by simpa using h0) (by simp) ?_) (by omega)
   refine Ends.whileConst (fun j σ => σ.loc i = j ∧ I j σ) n (b + 4) ⟨by simp, by simpa using start⟩
-    ?_ ?_ (le_of_eq (by simp only [Cond.cost, Expr.cost]; ring))
+    ?_ ?_ (le_of_eq (by simp ; ring))
   · rintro j σ hj ⟨hc, hI⟩
     obtain ⟨hs, hv⟩ := bound j σ hj.le hc hI
     refine ⟨⟨trivial, hs⟩, ?_, Ends.seq b 4 ((round j σ hj hc hI).mono le_rfl ?_) le_rfl⟩
@@ -318,11 +312,9 @@ theorem Ends.for {σ : State} {i : ℕ} {hi : Expr} {body : Stmt} {T : ℕ} {Q :
       rw [hc, hv]
       exact_mod_cast hj
     · rintro σ' ⟨hc', hI'⟩
-      have hval : (v i +' k 1).val σ' = (j : ℤ) + 1 := by simp [hc']
-      have hj' : (j : ℤ) + 1 ≤ n := by exact_mod_cast hj
+      have hval : (v i +' k 1).val σ' = (j : ℤ) + 1 := by light_side
       refine Ends.set ⟨trivial, ?_, ?_⟩ (by simp) ⟨?_, ?_⟩
       · change ((1 : ℕ) : ℤ) ≤ lim.word
-        push_cast
         omega
       · change |(v i +' k 1).val σ'| ≤ lim.word
         rw [hval, abs_of_nonneg (by omega)]

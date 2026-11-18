@@ -40,7 +40,7 @@ def apspWeights (x : Bounded EndStatement.APSP) : List ℤ := rowMajor fun i j =
 /-- The input: the size and the two matrices, row by row. -/
 theorem input_apsp (x : Bounded EndStatement.APSP) :
     (ofEnd EndStatement.APSP).input x = (x.n : ℤ) :: (apspAdj x ++ apspWeights x) := by
-  simp only [EndStatement.APSP, rowByRow_eq, apspAdj, apspWeights]
+  simp  [EndStatement.APSP, rowByRow_eq, apspAdj, apspWeights]
 
 /-- The graph that is read from the two lists is the graph of the instance. -/
 theorem graphOf_apsp (x : Bounded EndStatement.APSP) :
@@ -54,7 +54,7 @@ theorem graphOf_apsp (x : Bounded EndStatement.APSP) :
 theorem abs_le_of_mem_apspWeights (x : Bounded EndStatement.APSP) {a : ℤ} (ha : a ∈ apspWeights x) :
     |a| ≤ (x.U : ℤ) :=
   Bounded.abs_le (by
-    simpa only [EndStatement.APSP, rowByRow_eq, apspAdj, apspWeights] using
+    simpa  [EndStatement.APSP, rowByRow_eq, apspAdj, apspWeights] using
       List.mem_append_right (apspAdj x) ha)
 
 /-- The instance of the task: where the two matrices and the answer stand. -/
@@ -74,19 +74,11 @@ theorem pre_apsp (x : Bounded EndStatement.APSP) (hn : 1 ≤ x.n) (hU : 1 ≤ x.
     segADJ := seg_first _ _ _
     segW := by
       have := seg_second (x.n : ℤ) (apspAdj x) (apspWeights x)
-      rwa [hA] at this
-    zeroOne := by
-      intro a ha
-      obtain ⟨i, j, rfl⟩ := mem_rowMajor ha
-      split_ifs
-      · exact Or.inr rfl
-      · exact Or.inl rfl
+      aesop
     leW := fun a ha => abs_le_of_mem_apspWeights x ha
-    belowADJ := by simp only [apspInst]; omega
-    belowW := by simp only [apspInst]; omega
-    belowOut := by simp only [apspInst]; omega
-    apartADJ := Or.inl (by simp only [apspInst]; omega)
-    apartW := Or.inl (by simp only [apspInst]; omega)
+    belowADJ := by simp  [apspInst]; omega
+    belowW := by simp  [apspInst]; omega
+    belowOut := by simp  [apspInst]; omega
     noNegativeCycle :=
       (congrArg NoNegativeCycle (graphOf_apsp x)).mpr (noNegativeCycle_toTop x.x.2) }
 

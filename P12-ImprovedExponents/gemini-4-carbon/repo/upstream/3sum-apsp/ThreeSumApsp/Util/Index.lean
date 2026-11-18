@@ -93,10 +93,8 @@ theorem succ_div_mod_of_eq {n i : ℕ} (h : i % n + 1 = n) :
   have hn : 0 < n := h ▸ Nat.succ_pos _
   have hsucc : i + 1 = (i / n + 1) * n + 0 := by
     have hdivmod := Nat.div_add_mod' i n
-    rw [Nat.succ_mul]
-    -- `i = i / n * n + i % n` and `i % n + 1 = n`
-    omega
-  exact ⟨by rw [hsucc, mul_add_div_of_lt hn], by rw [hsucc, Nat.mul_add_mod_of_lt hn]⟩
+    grind
+  simp_all
 
 end Nat
 

@@ -103,14 +103,14 @@ theorem exists_short_walk {R : Type} [AddCommGroup R] [LinearOrder R] [IsOrdered
     · -- The walk is `p`, then the closed walk `c`, then `q`; go on with `p`, then `q`.
       obtain ⟨p, c, q, rfl, hc, hclosed⟩ := exists_closed_piece i rest hlong
       have hend : walkEnd i (p ++ q) = walkEnd i (p ++ c ++ q) := by
-        simp only [walkEnd_append, hclosed]
+        simp  [walkEnd_append, hclosed]
       have hweight : walkWeight w i (p ++ q) ≤ walkWeight w i (p ++ c ++ q) := by
         simp only [walkWeight_append, walkEnd_append, hclosed]
         gcongr
         exact le_add_of_nonneg_right (hw _ _ hclosed)
       have hless : (p ++ q).length < len := by
         have := List.length_pos_iff.mpr hc
-        simp only [List.length_append] at hlen ⊢
+        simp  at hlen ⊢
         omega
       obtain ⟨rest', hend', hlt, hle, hweight'⟩ := ih _ hless (p ++ q) rfl
       exact ⟨rest', hend'.trans hend, hlt, by omega, hweight'.trans hweight⟩

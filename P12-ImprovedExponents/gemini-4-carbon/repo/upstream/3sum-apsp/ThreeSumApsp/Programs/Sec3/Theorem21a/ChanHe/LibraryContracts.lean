@@ -36,8 +36,7 @@ theorem emodSpec_of (hP : P[p]? = some emodBody) : EmodSpec lim P p := by
   intro d fr V M x μ hM hx hok
   have hword := hok.word
   have hcells := hok.cells
-  simp only [emodNeed] at hword hcells
-  push_cast at hword
+  simp  [emodNeed] at hword hcells
   have hrounds := emodRounds_le (M := M) (show x.natAbs ≤ V by have := abs_le.mp hx; omega)
   refine (emod_meets hP ⟨hM, hok.space, hword, hcells⟩ hx).mono_time ?_
   unfold tEmod emodTime
@@ -46,7 +45,7 @@ theorem emodSpec_of (hP : P[p]? = some emodBody) : EmodSpec lim P p := by
 /-- The logarithm, rounded down. -/
 theorem log2Spec_of (hP : P[p]? = some log2Body) : Log2Spec lim P p := by
   intro d x μ hword
-  refine (log2_meets hP μ (by push_cast; omega)).mono_time ?_
+  refine (log2_meets hP μ (by omega)).mono_time ?_
   unfold tLog2 log2Time
   omega
 
@@ -54,7 +53,7 @@ theorem log2Spec_of (hP : P[p]? = some log2Body) : Log2Spec lim P p := by
 theorem clog2Spec_of (hP : P[p]? = some clog2Body) : Clog2Spec lim P p := by
   intro d x μ hword
   have := clog_le_log_succ x
-  refine (clog2_meets hP μ (by push_cast; omega)).mono_time ?_
+  refine (clog2_meets hP μ (by omega)).mono_time ?_
   unfold tLog2 clog2Time
   omega
 
@@ -63,14 +62,12 @@ theorem primesSpec_of (hP : P[p]? = some sieveBody) : PrimesSpec lim P p := by
   intro d fr m out μ hout hok
   have hword := hok.word
   have hcells := hok.cells
-  simp only [primesNeed] at hword hcells
-  push_cast at hword
-  refine (sieve_meets hP ⟨hok.space, by push_cast; omega, hout, hcells⟩).mono ?_
+  simp  [primesNeed] at hword hcells
+  refine (sieve_meets hP ⟨hok.space, by omega, hout, hcells⟩).mono ?_
     fun _ _ ⟨hcount, hseg, hkept⟩ => ⟨hcount, hseg, hkept.mono fun _ ha => ⟨ha.2, Or.inl ha.1⟩⟩
   -- `15 m (⌊log₂ m⌋ + 5) + …` against `60 m (⌊log₂ m⌋ + 2) + 60`
   unfold tPrimes sieveTime
-  rw [mul_assoc 15, mul_assoc 60, mul_add m, mul_add m]
-  omega
+  grind
 
 /-- Sorting.  The program holds sort at the number p, and half, merge and copy, which sort
 calls. -/
@@ -80,14 +77,12 @@ theorem sortSpec_of {pHalf pMerge pCopy : ℕ} (C : MergeSort.Procs P p pHalf pM
   have hword := hok.word
   have hcells := hok.cells
   have hdepth := hok.depth
-  simp only [sortNeed] at hword hcells hdepth
-  push_cast at hword
+  simp  [sortNeed] at hword hcells hdepth
   have hclog := clog_le_log_succ L.length
   refine (sort_meets C hok.space (by omega) hseg hbelow hcells d (by omega)).mono ?_ fun _ _ h => h
   -- `n ⌈log₂ n⌉ ≤ n (⌊log₂ n⌋ + 1)`
   have hmul := Nat.mul_le_mul_left L.length hclog
   unfold tSort sortTime
-  rw [mul_assoc 80, mul_add L.length] at *
-  omega
+  grind
 
 end Light.Sec3.ChanHe

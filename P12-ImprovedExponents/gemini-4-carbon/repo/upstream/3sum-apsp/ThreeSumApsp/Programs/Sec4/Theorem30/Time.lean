@@ -61,9 +61,7 @@ theorem one_le_length_starBoxes {L m t e : ℕ} (he : e ≤ m - t) (hL : e ≤ L
     1 ≤ (starBoxes L m t e).length := by
   have hhead := head?_nineStrs (n := L) (lo := e) (hi := m - t) hL he
   rw [starBoxes, List.length_map]
-  cases hl : nineStrs L e (m - t) with
-  | nil => rw [hl] at hhead; simp at hhead
-  | cons a l => simp
+  grind
 
 /-- There are at least m - t + 1 boxes: one for each number of stars. -/
 theorem succ_le_card_boxes {L m t : ℕ} (hL : m ≤ L) : m - t + 1 ≤ (boxes L m t).card := by
@@ -85,7 +83,7 @@ theorem tTile_eq (L m t : ℕ) : tTile L m t
     | zero => simp
     | succ k ih =>
       rw [List.range_succ, List.map_append, List.sum_append, ih, List.map_append, List.sum_append]
-      simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, tFillList]
+      simp  [tFillList]
       ring
   rw [tTile, hrounds, sum_length_starBoxes]
   ring
@@ -127,7 +125,7 @@ theorem exists_tQueryCore_le : ∃ C : ℝ, 0 ≤ C ∧ ∀ L m t : ℕ, 1 ≤ L
   have hnat : tQueryCore L m t ≤ 900 * (L * ∑ d ∈ range (t + 1), alpha m d) := by
     have hpos : 1 ≤ alpha m t := Nat.mul_pos (Nat.choose_pos ht) (by positivity)
     rw [tQueryCore, length_lowList ht [], length_boxesOf ht [], sum_range_succ]
-    simp only [tScatter, tHorner, tLookup, tNineNext, tNineFirst]
+    simp  [tScatter, tHorner, tLookup, tNineNext, tNineFirst]
     generalize ∑ d ∈ range t, alpha m d = low
     generalize alpha m t = a at *
     have hlow : low * (60 * L + 30 + (20 * L + 10) + (90 * m + 60) + 90) ≤ low * (360 * L) :=

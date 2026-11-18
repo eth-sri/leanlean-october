@@ -60,7 +60,7 @@ def ipPart (s : ℕ) : ℤ := ∑ i ∈ range s, if h : i < D₀ then X I ⟨i, 
 
 theorem ipPart_full : ipPart X Y I J D₀ = (X * Y) I J := by
   rw [Matrix.mul_apply, ipPart, Finset.sum_range]
-  exact Finset.sum_congr rfl fun i _ => by simp
+  simp
 
 theorem ipPart_succ {s : ℕ} (hs : s < D₀) :
     ipPart X Y I J (s + 1) = ipPart X Y I J s + X I ⟨s, hs⟩ * Y ⟨s, hs⟩ J := by
@@ -76,7 +76,7 @@ theorem abs_mul_entry_le {U : ℤ} (hX : ∀ i j, |X i j| ≤ U) (hY : ∀ i j, 
 
 theorem abs_ipPart_le {U : ℤ} (hX : ∀ i j, |X i j| ≤ U) (hY : ∀ i j, |Y i j| ≤ U) :
     ∀ s ≤ D₀, |ipPart X Y I J s| ≤ s * (U * U)
-  | 0, _ => by simp [ipPart]
+  | 0, _ => by aesop
   | s + 1, hs => by
     rw [ipPart_succ X Y I J hs]
     refine (abs_add_le _ _).trans ?_
@@ -91,10 +91,7 @@ theorem ipAt_meets {lim : Limits} {P : Program} (hP : P[Proc.ipAt]? = some ipAtB
     (hstd : Std lim) : IpAtSpec lim P := by
   intro N D₀ aX aY X Y U μ I J hD hmX hmY hX hY sX sY hU
   refine fun d _ => ⟨ipAtBody, hP, ?_⟩
-  have hw := hstd.space_le
-  have h100 := hstd.const_le
   have hrow : (I : ℕ) * D₀ + D₀ ≤ N * D₀ := Nat.mul_add_le_mul I.isLt le_rfl
-  have hcol : (J : ℕ) < N := J.isLt
   have hN : N ≤ D₀ * N := Nat.le_mul_of_pos_left _ hD
   -- every partial sum and every product fits in a word
   have hfits : ∀ s ≤ D₀, |ipPart X Y I J s| ≤ lim.word := fun s hs =>
@@ -113,7 +110,7 @@ theorem ipAt_meets {lim : Limits} {P : Program} (hP : P[Proc.ipAt]? = some ipAtB
   -- while s < D: sum := sum + mem[row + s] * mem[col + s * N] ; s := s + 1
   refine Ends.next _ (Ends.whileBlock (fun s σ => σ = ⟨frame [(I : ℕ), (J : ℕ), N, D₀, aX, aY, s,
       ipPart X Y I J s, ((aX + (I : ℕ) * D₀ : ℕ) : ℤ), ((aY + (J : ℕ) : ℕ) : ℤ)], μ⟩) D₀
-    (by simp [ipPart]) ?round ?done (hT := le_rfl))
+    (rfl) ?round ?done (hT := le_rfl))
   case round =>
     rintro s _ hs rfl
     have hcell : s * N + N ≤ D₀ * N := Nat.mul_add_le_mul hs le_rfl
@@ -124,9 +121,9 @@ theorem ipAt_meets {lim : Limits} {P : Program} (hP : P[Proc.ipAt]? = some ipAtB
       change aY + (J : ℕ) + s * N = aY + s * N + (J : ℕ)
       omega
     have haddrX : ((aX : ℤ) + (I : ℕ) * D₀ + s).toNat = aX + (I : ℕ) * D₀ + s := by
-      rw [← Int.toNat_natCast (aX + (I : ℕ) * D₀ + s)]; push_cast; rfl
+      rw [← Int.toNat_natCast (aX + (I : ℕ) * D₀ + s)]; rfl
     have haddrY : ((aY : ℤ) + (J : ℕ) + s * N).toNat = aY + (J : ℕ) + s * N := by
-      rw [← Int.toNat_natCast (aY + (J : ℕ) + s * N)]; push_cast; rfl
+      rw [← Int.toNat_natCast (aY + (J : ℕ) + s * N)]; rfl
     have hsum := abs_le.1 (hfits (s + 1) hs)
     have hxy := abs_le.1 (hprod ⟨s, hs⟩)
     rw [ipPart_succ X Y I J hs] at hsum ⊢

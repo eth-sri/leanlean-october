@@ -124,8 +124,8 @@ theorem read_mask (C : OutDigitsPre lim μ x) {μ' : ℕ → ℤ} (same : SameOu
     (hl : l < x.L) : μ' (x.base + l) = if x.mask.getD l false then 1 else 0 := by
   have hlen := length_mask (x := x)
   have hap := C.apartMask
-  rw [same (x.base + l) (by omega), C.segMask.read (by simp [hlen, hl]),
-    List.getD_eq_getElem _ _ (by simp [hlen, hl]), List.getElem_map,
+  rw [same (x.base + l) (by omega), C.segMask.read (by grind),
+    List.getD_eq_getElem _ _ (by grind), List.getElem_map,
     List.getD_eq_getElem _ _ (by omega)]
   split_ifs <;> rfl
 
@@ -154,12 +154,11 @@ theorem outer (C : OutDigitsPre lim μ x) (h : Inv μ x l σ) (hl : l < x.L)
       = ((x.rI.getD ((x.mask.take l).count false) 0 : ℕ) : ℤ) := by
     have hap := C.apartI
     rw [same _ (by omega)]
-    exact C.segI.read (by have := C.lenI; omega)
+    exact C.segI.read (by omega)
   have hreadJ : μ' (x.dJ + (x.mask.take l).count false)
       = ((x.rJ.getD ((x.mask.take l).count false) 0 : ℕ) : ℤ) := by
-    have hap := C.apartJ
     rw [same _ (by omega)]
-    exact C.segJ.read (by have := C.lenJ; omega)
+    exact C.segJ.read (by omega)
   have hI3 : x.rI.getD ((x.mask.take l).count false) 0 < 3 :=
     List.getD_of_forall_mem (by norm_num) C.ltI _
   have hJ3 : x.rJ.getD ((x.mask.take l).count false) 0 < 3 :=
@@ -183,7 +182,7 @@ theorem walk {P : Program} {d : ℕ} (C : OutDigitsPre lim μ x) :
   have hspace := base_add_le C
   refine Ends.whileBlock (Inv μ x) x.L ?start ?round ?done
     (by simp [levelInner, levelOuter]; omega)
-  case start => exact ⟨μ, rfl, by simp [SegN, Seg], .refl⟩
+  case start => exact ⟨μ, rfl, by simp [SegN], .refl⟩
   case round =>
     rintro l σ hl hI
     have hinner := inner C hI hl
@@ -209,10 +208,10 @@ theorem index_le (C : OutDigitsPre lim μ x) : x.gI * x.k0 + x.gJ ≤ lim.space 
   have hbase := base_add_le C
   unfold OutDigitsArgs.base at hbase
   rcases Nat.eq_zero_or_pos x.L with h0 | hL
-  · have hm : x.m = 0 := by have := C.m_le; omega
+  · have hm : x.m = 0 := by grind
     rw [h0, hm, Nat.choose_self] at hidx
     omega
-  · exact (Nat.le_mul_of_pos_right _ hL).trans (by omega)
+  nlinarith
 
 end OutDigits
 
@@ -225,10 +224,8 @@ theorem outDigits_spec {lim : Limits} {P : Program}
   have hw := C.std.space_le
   have hidx := index_le C
   have hbase := base_add_le C
-  have hprod : ((x.gI * x.k0 : ℕ) : ℤ) ≤ lim.space := by
-    exact_mod_cast (by omega : x.gI * x.k0 ≤ lim.space)
-  have haddr : ((x.base : ℕ) : ℤ) ≤ lim.space := by exact_mod_cast (by omega : x.base ≤ lim.space)
-  have hprod0 : (0 : ℤ) ≤ (x.gI : ℤ) * x.k0 := by positivity
+  have hprod : ((x.gI * x.k0 : ℕ) : ℤ) ≤ lim.space := by omega
+  have haddr : ((x.base : ℕ) : ℤ) ≤ lim.space := by omega
   have hoff0 : (0 : ℤ) ≤ ((x.gI : ℤ) * x.k0 + x.gJ) * x.L := by positivity
   unfold OutDigitsArgs.base at haddr
   push_cast at hprod haddr

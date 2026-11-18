@@ -199,13 +199,10 @@ structure GraphInst.Pre (x : GraphInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop whe
   lenW : x.W.length = x.n * x.n
   segADJ : Seg μ x.adj x.ADJ
   segW : Seg μ x.w x.W
-  zeroOne : ∀ e ∈ x.ADJ, e = 0 ∨ e = 1
   leW : AbsLe x.W x.U
   belowADJ : x.adj + x.n * x.n ≤ fr
   belowW : x.w + x.n * x.n ≤ fr
   belowOut : x.out + 2 * (x.n * x.n) ≤ fr
-  apartADJ : Apart x.adj (x.n * x.n) x.out (2 * (x.n * x.n))
-  apartW : Apart x.w (x.n * x.n) x.out (2 * (x.n * x.n))
   noNegativeCycle : NoNegativeCycle (graphOf x.n x.ADJ x.W)
 
 /-- **APSP**: ap(n, U, adj, w, out, fr) writes two cells for each pair `(i, j)`, at
@@ -263,7 +260,6 @@ distinct positions of an `N × N` matrix, and the place for the answers meets no
 structure ThinInst.Pre (x : ThinInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop where
   N_pos : 1 ≤ x.N
   D_pos : 1 ≤ x.D
-  U_pos : 1 ≤ x.U
   lenX : x.X.length = x.N * x.D
   lenY : x.Y.length = x.D * x.N
   lenWI : x.WI.length = x.w
@@ -276,7 +272,6 @@ structure ThinInst.Pre (x : ThinInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop where
   leY : AbsLe x.Y x.U
   ltWI : ∀ i ∈ x.WI, i < x.N
   ltWJ : ∀ j ∈ x.WJ, j < x.N
-  nodup : (x.WI.zip x.WJ).Nodup
   belowX : x.x + x.N * x.D ≤ fr
   belowY : x.y + x.D * x.N ≤ fr
   belowWI : x.wi + x.w ≤ fr
@@ -297,8 +292,6 @@ abbrev Rows : ℕ := 0
 abbrev Cols : ℕ := 1
 /-- The number w of wanted positions. -/
 abbrev Wanted : ℕ := 2
-/-- The bound U on the entries. -/
-abbrev Bound : ℕ := 3
 /-- The address of X. -/
 abbrev AdrX : ℕ := 4
 /-- The address of Y. -/
@@ -309,8 +302,6 @@ abbrev AdrWI : ℕ := 6
 abbrev AdrWJ : ℕ := 7
 /-- The address of the output. -/
 abbrev AdrOut : ℕ := 8
-/-- The free pointer. -/
-abbrev Free : ℕ := 9
 
 end ThinArg
 

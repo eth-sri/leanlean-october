@@ -39,7 +39,7 @@ theorem mem_boxes {L m t : ℕ} {π : Cube L} : π ∈ boxes L m t ↔ IsBox m t
 @[simp]
 theorem mem_boxesWithStars {L m t e : ℕ} {π : Cube L} :
     π ∈ boxesWithStars L m t e ↔ IsBox m t π ∧ (Cube.starLevels π).card = e := by
-  simp [boxesWithStars, boxes]
+  simp [boxesWithStars]
 
 /-! ### The count -/
 
@@ -74,8 +74,7 @@ theorem Lemma29.card_filter (L m t f : ℕ) (hmL : m ≤ L) (hf : f ≤ m - t) :
     fun p hp => ?_
   · -- the pair of such a box is such a pair
     have hf := (mem_filter.1 hπ).2
-    simp only [mem_product, mem_filter, mem_univ, true_and, mem_range,
-      card_P0Levels_starsToP0]
+    simp  [card_P0Levels_starsToP0]
     omega
   · -- the cube of such a pair is such a box: its leaf is the leaf of the pair
     obtain ⟨hτ, -⟩ := hpair p hp
@@ -97,14 +96,13 @@ theorem lemma_29_count (L m t : ℕ) (hL : 10 * m ≤ L) (ht : t ≤ m) :
         fun π => (Cube.starLevels π).card + (Cube.P0Levels π).card = f).card := by
     refine card_eq_sum_card_fiberwise fun π hπ => ?_
     have hi := (mem_boxes.1 (mem_coe.1 hπ)).1
-    simp only [coe_range, Set.mem_Iio]
-    omega
+    grind
   -- The order `d = m - f` runs from `t` to `m`.
   have hreflect : ∑ f ∈ range (m - t + 1), beta L m (m - f) = ∑ d ∈ Finset.Icc t m, beta L m d := by
     rw [range_eq_Ico, sum_Ico_reflect _ _ (by omega)]
     congr 1
     ext d
-    simp only [mem_Ico, mem_Icc]
+    simp 
     omega
   -- "summing over f ≤ m - t gives the upper bound on the number of boxes", since `f + 1 ≤ m + 1`
   rw [hsort, ← hreflect, mul_sum]

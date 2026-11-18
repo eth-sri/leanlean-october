@@ -168,7 +168,7 @@ theorem BestSoFar.step {c : ℕ → ℤ} {L : List ℕ} {i : ℕ} {best cnt : �
   · have hcmp : (c L[i]).toNat < (c (bestOf (fun q => (c q).toNat) L i)).toNat ↔
         c L[i] < c (bestOf (fun q => (c q).toNat) L i) := by omega
     rw [bestOf_succ _ L hi1 hi]
-    simp only [hcmp, show i ≠ 0 by omega, false_or]
+    simp  [hcmp, show i ≠ 0 by omega]
     split_ifs <;> simp [hc, hcnt]
 
 /-! ## The parts of the program -/
@@ -189,8 +189,6 @@ theorem chLevel_spec (hword : ((2 * n + 1 : ℕ) : ℤ) ≤ lim.word) :
   have test : ∀ j, 2 ^ j < n ↔ j < Nat.clog 2 n := fun j =>
     (Nat.lt_clog_iff_pow_lt (by norm_num)).symm
   generalize Nat.clog 2 n = L at test
-  push_cast at hword
-  -- level := 0; rows := 1
   light_set (0 : ℕ)
   light_set (1 : ℕ)
   -- while rows < n: rows := rows + rows; level := level + 1.  Before round j, rows = 2^j.
@@ -241,9 +239,9 @@ theorem ChoosePrimePre.countPre (pre : ChoosePrimePre lim d μ x D w)
     { space_le := pre.space_le, inst := pre.inst.keep.mono (Nat.le_add_right _ _)
       p_pos := (mem_primesList.1 hq).1.one_le, hK := rfl, hU := Nat.lt_size_self x.U
       cells := by omega
-      wordDbl := le_trans (by exact_mod_cast Nat.mul_le_mul_right _ hqS) pre.wordDbl
+      wordDbl := le_trans (by simp_all) pre.wordDbl
       wordStr := le_trans
-        (by exact_mod_cast Nat.mul_le_mul_left 4 (Nat.mul_le_mul_left _ hqS)) pre.wordStr
+        (by simp_all) pre.wordStr
       wordSum := le_trans
         (by exact_mod_cast Nat.mul_le_mul_left (x.n * x.n) (Nat.mul_le_mul_left _ hqS)) pre.wordSum
       depth := by omega }
@@ -349,7 +347,7 @@ theorem choosePrime_spec (ctx : ChCtx P ν) (pre : ChoosePrimePre lim d μ x D w
     (fun i σ hi _ h => chRound_spec ctx pre hi h) ?done ?bound (hT := le_rfl))
     (by simp; ring_nf at hloop ⊢; omega)
   case start =>
-    exact ⟨0, 0, 0, 0, μ₁, by simp [update_frame_setLocal], Or.inl ⟨rfl, rfl⟩, seg,
+    exact ⟨0, 0, 0, 0, μ₁, by simp , Or.inl ⟨rfl, rfl⟩, seg,
       rest.mono le_rfl (by unfold chooseCells; omega)⟩
   case bound =>
     rintro i _ - - ⟨q, c, best, cnt, μ', rfl, -⟩

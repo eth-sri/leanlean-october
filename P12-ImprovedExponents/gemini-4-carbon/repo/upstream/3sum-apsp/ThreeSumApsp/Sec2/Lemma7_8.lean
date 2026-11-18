@@ -41,7 +41,7 @@ contributing to z and τ' contributing to w'".  Here `λ = τ 0`, `τ' = Fin.tai
 theorem Leaf.contributes_succ {L : ℕ} {τ : Leaf (L + 1)} {w : OutStr (L + 1)} :
     Leaf.Contributes τ w
       ↔ (τ 0).Contributes (w 0) ∧ Leaf.Contributes (Fin.tail τ) (Fin.tail w) := by
-  simp only [Leaf.Contributes, Fin.forall_fin_succ, Fin.tail]
+  simp  [Leaf.Contributes, Fin.forall_fin_succ, Fin.tail]
 
 /-- A sum over the strings of length `L + 1` is a sum over the first variable `s` and the rest `u'`
 of the string `s u'`. -/
@@ -55,25 +55,16 @@ theorem Leaf.sum_contributes_succ {L : ℕ} (w : OutStr (L + 1)) (f : Leaf (L + 
     ∑ τ : Leaf (L + 1) with Leaf.Contributes τ w, f τ
       = ∑ lam : Term with lam.Contributes (w 0),
           ∑ τ' : Leaf L with Leaf.Contributes τ' (Fin.tail w), f (Fin.cons lam τ') := by
-  simp only [sum_filter, sum_strings_succ, Leaf.contributes_succ, Fin.cons_zero,
-    Fin.tail_cons]
+  simp  [sum_filter, sum_strings_succ, Leaf.contributes_succ]
   refine sum_congr rfl fun lam _ => ?_
-  by_cases h : lam.Contributes (w 0) <;> simp [h]
+  aesop
 
 /-- In the proof of Lemma 8: the leaves contributing to `w` "are the leaves whose term at
 level ℓ contributes to w_ℓ, independently for each ℓ". -/
 theorem Leaf.filter_contributes_eq_piFinset {L : ℕ} (w : OutStr L) :
     (univ.filter fun τ : Leaf L => Leaf.Contributes τ w)
-      = Fintype.piFinset fun ℓ => univ.filter fun lam : Term => lam.Contributes (w ℓ) := by
-  ext τ
-  simp only [mem_filter, mem_univ, true_and, Fintype.mem_piFinset]
-  rfl
+      = Fintype.piFinset fun ℓ => univ.filter fun lam : Term => lam.Contributes (w ℓ) := by aesop
 
-/-- Membership in `Leaves(U)`. -/
-@[simp]
-theorem mem_Leaves {L : ℕ} {U : Finset (OutStr L)} {τ : Leaf L} :
-    τ ∈ Leaves U ↔ ∃ w ∈ U, Leaf.Contributes τ w := by
-  simp [Leaves]
 
 /-! ### The two encodings at once -/
 
@@ -94,10 +85,10 @@ theorem encodeWith_zero (τ : Leaf 0) (a : (Fin 0 → α) → ℤ) : encodeWith 
 theorem encodeWith_cons (lam : Term) (τ' : Leaf L) (a : (Fin (L + 1) → α) → ℤ) :
     encodeWith c (Fin.cons lam τ' : Leaf (L + 1)) a
       = encodeWith c τ' fun u' => ∑ s, c lam s * sliceAt a s u' := by
-  simp only [encodeWith, sum_strings_succ, Fin.prod_univ_succ, Fin.cons_zero, Fin.cons_succ,
+  simp  [encodeWith, sum_strings_succ, Fin.prod_univ_succ,
     sliceAt, sum_mul]
   rw [sum_comm]
-  exact sum_congr rfl fun u' _ => sum_congr rfl fun s _ => by ring
+  grind
 
 end encodeWith
 
@@ -138,7 +129,7 @@ theorem Mult_succ {L : ℕ} (a : LeftStr (L + 1) → ℤ) (b : RightStr (L + 1) 
     (w : OutStr (L + 1)) :
     Mult a b w = ∑ lam : Term with lam.Contributes (w 0),
       Mult (encodeStepL lam a) (encodeStepR lam b) (Fin.tail w) := by
-  simp only [Mult, Leaf.sum_contributes_succ, Phi_cons, Psi_cons]
+  simp  [Mult, Leaf.sum_contributes_succ, Phi_cons, Psi_cons]
 
 /-- **Lemma 7**, second half.  "and it returns Mult(a, b)." -/
 theorem Lemma7.returns_Mult {L : ℕ} (a : LeftStr L → ℤ) (b : RightStr L → ℤ) :
@@ -149,7 +140,7 @@ theorem Lemma7.returns_Mult {L : ℕ} (a : LeftStr L → ℤ) (b : RightStr L �
     simp [Full, Full.run, Mult, Leaf.Contributes, Phi_zero, Psi_zero]
   | succ L ih =>
     funext w
-    simp only [Full_succ, Mult_succ, ih]
+    simp  [Full_succ, Mult_succ, ih]
 
 /-! ### Lemma 8 -/
 
@@ -159,7 +150,7 @@ to `w`, of `∏_ℓ φ_{τ_ℓ}(u_ℓ) ψ_{τ_ℓ}(v_ℓ)` "is the product of su
 theorem prod_gamma_eq_sum_contributes {L : ℕ} (u : LeftStr L) (v : RightStr L) (w : OutStr L) :
     ∏ ℓ, gamma (u ℓ) (v ℓ) (w ℓ)
       = ∑ τ : Leaf L with Leaf.Contributes τ w, (∏ ℓ, phi (τ ℓ) (u ℓ)) * ∏ ℓ, psi (τ ℓ) (v ℓ) := by
-  simp only [gamma]
+  simp  [gamma]
   rw [prod_univ_sum, Leaf.filter_contributes_eq_piFinset]
   exact sum_congr rfl fun τ _ => prod_mul_distrib
 
@@ -170,7 +161,7 @@ theorem lemma_8 {L : ℕ} (a : LeftStr L → ℤ) (b : RightStr L → ℤ) (w : 
     Mult a b w = ∑ u, ∑ v, (∏ ℓ, gamma (u ℓ) (v ℓ) (w ℓ)) * a u * b v := by
   -- "the coefficient of a[u] b[v] in (2) is ∑_τ ∏_ℓ φ_{τ_ℓ}(u_ℓ) ψ_{τ_ℓ}(v_ℓ), summed over the
   -- leaves τ contributing to w": expand `Φ_τ(a) Ψ_τ(b)` and sum over `τ` last.
-  simp only [Mult, Phi, Psi, sum_mul_sum]
+  simp  [Mult, Phi, Psi, sum_mul_sum]
   rw [sum_comm]
   refine sum_congr rfl fun u _ => ?_
   rw [sum_comm]

@@ -65,11 +65,9 @@ theorem preCoreAddrP_spec (ht : t ≤ p.m) (hlim : Lim30 lim p t b0 U)
   obtain ⟨⟩ := areas p t b0
   unfold preLocals preShared
   -- the product nB², in the integers
-  have hsq : ((p.nB * p.nB : ℕ) : ℤ) ≤ lim.space := by
-    exact_mod_cast (by omega : p.nB * p.nB ≤ lim.space)
+  have hsq : ((p.nB * p.nB : ℕ) : ℤ) ≤ lim.space := by omega
   have htr : ((aROOTS p b0 + p.nB * p.nB : ℕ) : ℤ) = aTR p b0 := by
     exact_mod_cast (by omega : aROOTS p b0 + p.nB * p.nB = aTR p b0)
-  have hsq0 : (0 : ℤ) ≤ (p.nB : ℤ) * p.nB := by positivity
   push_cast at hsq htr
   -- digits := dir[30]; bands := dir[9]
   light_set (aWD p b0 : ℕ) using dir.sharedEnd
@@ -113,7 +111,7 @@ theorem allArgsP_pre (h : Lim30 lim p t b0 U) (ht : t ≤ p.m) (hX : ∀ i j, |X
         fun β τ => (abs_enc_le hmL X Y U' hU0 hX' hY' β β).2 τ, hvalue⟩
       pow_le := h.pow_le
       cap_ge := le_rfl
-      order := by simp only [allArgs]; rw [hT]; omega
+      order := by simp  [allArgs]; rw [hT]; omega
       segA := fun β hβ => hSR.encA β hβ
       segB := fun β hβ => hSR.encB β hβ
       trie := hTM }

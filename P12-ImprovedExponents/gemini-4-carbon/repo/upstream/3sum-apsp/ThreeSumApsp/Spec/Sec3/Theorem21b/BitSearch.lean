@@ -48,9 +48,7 @@ theorem bitLo_zero {U c : ℤ} (h : -(2 * U) ≤ c) : bitLo U 0 c = c := by
 
 /-- With all bits cleared the number is `-2U`: the start of the search. -/
 theorem bitLo_top {U c : ℤ} {R : ℕ} (h : c + 2 * U < 2 ^ R) : bitLo U R c = -(2 * U) := by
-  have hlt : (c + 2 * U).toNat < 2 ^ R := by
-    rw [Int.toNat_lt' (by positivity)]
-    exact_mod_cast h
+  have hlt : (c + 2 * U).toNat < 2 ^ R := by simp_all
   simp [bitLo, Nat.div_eq_of_lt hlt]
 
 /-- The search never goes below `-2U`. -/
@@ -60,9 +58,8 @@ theorem le_bitLo (U : ℤ) (t : ℕ) (c : ℤ) : -(2 * U) ≤ bitLo U t c :=
 /-- The search never goes above `c`. -/
 theorem bitLo_le {U c : ℤ} (h : -(2 * U) ≤ c) (t : ℕ) : bitLo U t c ≤ c := by
   have hle : (c + 2 * U).toNat / 2 ^ t * 2 ^ t ≤ (c + 2 * U).toNat := Nat.div_mul_le_self _ _
-  have hcast : ((c + 2 * U).toNat : ℤ) = c + 2 * U := Int.toNat_of_nonneg (by linarith)
   rw [bitLo]
-  linarith [Int.ofNat_le.2 hle]
+  omega
 
 /-- Clearing one bit less: the bit number `t` of `y` is 0 exactly if `y` is less than `2^t` above
 `y` with its lowest `t + 1` bits cleared. -/
@@ -88,8 +85,8 @@ theorem bitLo_step {U c : ℤ} (h : -(2 * U) ≤ c) (t : ℕ) :
     bitLo U t c = bitLo U (t + 1) c + 2 ^ t * (1 - flag (c < bitLo U (t + 1) c + 2 ^ t)) := by
   have hy : ((c + 2 * U).toNat : ℤ) = c + 2 * U := Int.toNat_of_nonneg (by linarith)
   have hstep := div_mul_pow_step (c + 2 * U).toNat t
-  have hpow : ((2 ^ t : ℕ) : ℤ) = 2 ^ t := by push_cast; rfl
-  simp only [bitLo, hstep]
+  have hpow : ((2 ^ t : ℕ) : ℤ) = 2 ^ t := rfl
+  simp  [bitLo, hstep]
   generalize (c + 2 * U).toNat = y at hy
   generalize y / 2 ^ (t + 1) * 2 ^ (t + 1) = z
   rw [← hpow]
@@ -97,7 +94,6 @@ theorem bitLo_step {U c : ℤ} (h : -(2 * U) ≤ c) (t : ℕ) :
   -- With `y = c + 2U` the question is whether `y < z + 2^t`.
   split_ifs with hlt
   · rw [flag_of (by omega)]
-    push_cast
     ring
   · rw [flag_of_not (by omega)]
     push_cast

@@ -30,7 +30,7 @@ variable {W : ℕ} {Z : Sizes W} {σ : State} {q : ℕ} {m : ℤ → BitVec W}
 
 /-- The code of the arguments only changes the memory. -/
 theorem straight_argsCode : ∀ (es : List Expr) (k : ℕ), ∀ i ∈ argsCode es k, Straight i
-  | [], _ => by simp [argsCode]
+  | [], _ => by tauto
   | e :: es, k => List.forall_mem_append.2 ⟨straight_compileExpr e k, straight_argsCode es (k + 1)⟩
 
 /-- The code of the arguments leaves their values in T_k, T_{k+1}, … and changes nothing but ADDR
@@ -62,10 +62,10 @@ theorem effects_argsCode (I : Framed Z σ q m) (es : List Expr) (k : ℕ)
 /-- The code for one more local variable. -/
 private theorem frameInit_succ (F' n : ℕ) : frameInit (F' + 1) n = frameInit F' n ++
     [.sub cADDR cNFP (cPool (2 * F')), .store cADDR (if F' < n then cT F' else cZERO)] := by
-  simp [frameInit, List.range_succ, List.flatMap_append]
+  simp [frameInit, List.range_succ]
 
 private theorem straight_frameInit (n : ℕ) : ∀ F' : ℕ, ∀ i ∈ frameInit F' n, Straight i
-  | 0 => by simp [frameInit]
+  | 0 => by tauto
   | F' + 1 => by
     rw [frameInit_succ]
     exact List.forall_mem_append.2 ⟨straight_frameInit n F', by simp [Straight]⟩

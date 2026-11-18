@@ -74,9 +74,8 @@ theorem Rows.succ (h : Rows μ aX' D' X i μ') (hX : MatAt μ aX X) (hsep : aX +
           dif_pos hj, ← heq]
         exact hX r ⟨j, hj⟩
       · -- a zero
-        have hcell : aX' + (r : ℕ) * D' + (j : ℕ) = aX' + i * D' + D₀ + ((j : ℕ) - D₀) := by
-          rw [heq]; omega
-        rw [hcell, hfill _ (by have := j.isLt; omega), padInnerCols, dif_neg hj]
+        have hcell : aX' + (r : ℕ) * D' + (j : ℕ) = aX' + i * D' + D₀ + ((j : ℕ) - D₀) := by grind
+        rw [hcell, hfill _ (by omega), padInnerCols, dif_neg hj]
   · rw [Nat.succ_mul] at hb
     rw [hout₂ b (by omega), hout₁ b (by omega), h.2 b (by omega)]
 
@@ -88,7 +87,6 @@ theorem padX_meets {lim : Limits} {P : Program} (hP : P[Proc.padX]? = some padXB
   intro N D₀ D' aX aX' X μ hDD hD1 hX hsep hsp
   refine fun d hd => ⟨padXBody, hP, ?_⟩
   have hw := hstd.space_le
-  have h100 := hstd.const_le
   have hN : N ≤ N * D' := Nat.le_mul_of_pos_right _ hD1
   have hsub : (D' : ℤ) - D₀ = ((D' - D₀ : ℕ) : ℤ) := (Nat.cast_sub hDD).symm
   unfold padXBody tPadX
@@ -116,7 +114,7 @@ theorem padX_meets {lim : Limits} {P : Program} (hP : P[Proc.padX]? = some padXB
     rintro - μ₁ ⟨hc, hout₁⟩
     -- fill(aX' + i D' + D, D' - D, 0)
     refine Ends.callTo (hfill (aX' + i * D' + D₀) (D' - D₀) 0 μ₁ (by omega) (by omega) _
-      (by omega)) ?_ (by light_side [hsub]) (hT := by simp [tCopy, tFill]; omega)
+      (by omega)) ?_ (by light_side ) (hT := by simp [tCopy, tFill]; omega)
     rintro r' μ₂ ⟨hf, hout₂⟩
     exact ⟨by simp, r', μ₂, by rw [update_frame_setLocal]; rfl,
       hrows.succ hX hsep hi hc hout₁ hf hout₂ hDD⟩

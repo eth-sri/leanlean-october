@@ -32,7 +32,7 @@ theorem natSqrt_succ_le {N : ℕ} (hN : 1 ≤ N) :
     ((Nat.sqrt N + 1 : ℕ) : ℝ) ≤ 2 * (N : ℝ) ^ (1 / 2 : ℝ) := by
   rw [← Real.sqrt_eq_rpow]
   have hfloor : ((Nat.sqrt N : ℕ) : ℝ) ≤ Real.sqrt N := Real.nat_sqrt_le_real_sqrt
-  have hone : (1 : ℝ) ≤ Real.sqrt N := Real.one_le_sqrt.2 (by exact_mod_cast hN)
+  have hone : (1 : ℝ) ≤ Real.sqrt N := Real.one_le_sqrt.2 (by simp_all)
   push_cast
   linarith
 
@@ -58,11 +58,11 @@ theorem exists_c3Own_le :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ N : ℕ, 1 ≤ N → (c3Own N : ℝ) ≤ C * (N : ℝ) ^ (3 / 2 : ℝ) := by
   -- powers of 2 √N
   let s : Scale ℕ (Fin 1) := .ofBases (1 ≤ ·) (fun _ N => 2 * (N : ℝ) ^ (1 / 2 : ℝ)) fun _ N hN =>
-    le_trans (by exact_mod_cast Nat.le_add_left 1 (Nat.sqrt N)) (natSqrt_succ_le hN)
+    le_trans (by simp) (natSqrt_succ_le hN)
   have hside : s.SoftO (fun N => Nat.sqrt N + 1) _ := .of_le_base 0 fun _ hN => natSqrt_succ_le hN
   have hown : s.SoftO c3Own ![3] := by
     unfold c3Own c3Time c3RoundTime convFillTime
-    growth [hside, hside.of_le fun N _ => Nat.le_succ (Nat.sqrt N)]
+    growth [hside.of_le fun N _ => Nat.le_succ (Nat.sqrt N)]
   obtain ⟨C, hC, hle⟩ := hown.dominated fun _ _ => rfl
   refine ⟨C * 8, by positivity, fun N hN => (hle N hN).trans_eq ?_⟩
   have hpow : ((N : ℝ) ^ (1 / 2 : ℝ)) ^ 3 = (N : ℝ) ^ (3 / 2 : ℝ) := by
@@ -82,7 +82,7 @@ theorem c3_solvedIn_explicit {C : ℝ} (hC : 0 ≤ C)
   refine isHost_c3.solvedIn hT fun Tn hTn N U u hN hU hu => ?_
   have hU' : (1 : ℝ) ≤ U := by exact_mod_cast hU
   have hsolver : (Tn (Nat.sqrt N + 1) (2 * U + 1) : ℝ) ≤ T (Nat.sqrt N + 1) (3 * u) :=
-    hTn _ _ _ (by omega) (by omega) (by push_cast; linarith)
+    hTn _ _ _ (by omega) (by omega) (by grind)
   have hlog : 0 ≤ logU u := Real.log_nonneg (le_trans (by norm_num) (le_max_right u 2))
   rw [c3Time_eq]
   push_cast

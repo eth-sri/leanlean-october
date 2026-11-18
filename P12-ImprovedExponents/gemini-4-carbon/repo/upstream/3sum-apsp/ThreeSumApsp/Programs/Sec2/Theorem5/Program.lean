@@ -7,17 +7,31 @@ module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.BandArray
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Contract
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Pruned.Contract
+public import ThreeSumApsp.Programs.Sec2.Theorem5.LibraryContracts
+public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+public import ThreeSumApsp.Sec2.Theorem5.WordSize
 public import ThreeSumApsp.Programs.Sec2.Theorem5.SharedStage
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Solver
+public import ThreeSumApsp.Programs.Sec2.Theorem5.Instance
+public import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
+public import ThreeSumApsp.Sec2.Lemma10
+public import ThreeSumApsp.Sec2.Orders
+public import ThreeSumApsp.Util.Sum
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import ThreeSumApsp.Sec2.Tiling
+public import ThreeSumApsp.Util.Choose
+public import Mathlib.Analysis.Complex.ExponentialBounds
+public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.BandCounters
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Binomials
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Coefficients
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Digits
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Subsets
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Codes
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Gather
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Sort
+public import ThreeSumApsp.Lang.Lib.Copy
+public import ThreeSumApsp.Lang.Lib.Seg
+public import ThreeSumApsp.Lang.Tactics
+public import ThreeSumApsp.Util.CountingSort
+public import Mathlib.Data.List.GetD
+public import Mathlib.Tactic.Linarith
 
 /-!
 # Theorem 5: the program
@@ -37,10 +51,8 @@ open ThreeSumApsp ThreeSumApsp.WordRam
 
 /-- The program of Theorem 5.  The numbers of the procedures begin with 1; number 0 is empty. -/
 def program5 : Program :=
-  [.skip, sharedBody, powBody, binomBody, sqrtBody, Subsets.subsetTableBody, countersBody,
-   digitsBody, coefBody, bandArrayBody, encStepBody, encodeBody pEncStep pEncode, encodeBandsBody,
-   Wanted.wantedBody, countSortBody, sortWantedBody, segBoundsBody, unionBody, pickBody, prunedBody,
-   runTilesBody, reportBody, fillBody, copyBody, gatherBody, thm5Body]
+  [.skip, .skip, powBody, binomBody, sqrtBody, Subsets.subsetTableBody, countersBody,
+   digitsBody, coefBody, bandArrayBody, encStepBody] ++ List.replicate 15 .skip
 
 /-- A procedure of program5 is a procedure, with the same number, of every program that begins with
 program5. -/
@@ -63,9 +75,5 @@ theorem sharedCallees_of_prefix (R : Program) (lim : Limits) (std : Std lim) :
   subsets := subsets_entry std (at_prefix rfl R) (by decide)
   counters := counters_entry std (at_prefix rfl R) (by decide)
   digits := digits_entry std (at_prefix rfl R) (by decide)
-  bandsL := encodeBandsL_entry std (at_prefix rfl R) (bandArrayL_entry std (at_prefix rfl R))
-    (encodeL_entry std (at_prefix rfl R) (at_prefix rfl R)) (by decide)
-  bandsR := encodeBandsR_entry std (at_prefix rfl R) (bandArrayR_entry std (at_prefix rfl R))
-    (encodeR_entry std (at_prefix rfl R) (at_prefix rfl R)) (by decide)
 
 end Light.Sec2

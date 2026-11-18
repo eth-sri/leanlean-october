@@ -104,10 +104,7 @@ theorem neg_emod_nat (a M : ℕ) (hM : 1 ≤ M) :
   · rw [h0] at h
     rw [h, Nat.cast_zero, add_zero, ← mul_neg]
     exact Int.mul_emod_right _ _
-  · have e : -(a : ℤ) = ((M : ℤ) - ((a % M : ℕ) : ℤ)) + (M : ℤ) * (-((a / M : ℕ) : ℤ) - 1) := by
-      rw [h]
-      push_cast
-      ring
+  · have e : -(a : ℤ) = ((M : ℤ) - ((a % M : ℕ) : ℤ)) + (M : ℤ) * (-((a / M : ℕ) : ℤ) - 1) := by grind
     rw [e, Int.add_mul_emod_self_left]
     exact Int.emod_eq_of_lt (by omega) (by omega)
 namespace Emod
@@ -201,12 +198,12 @@ theorem reduce_ends (F : Pre lim Mo V fr) (haV : a ≤ V) {μ' : ℕ → ℤ} {t
     light_set (c : ℕ)
     refine Ends.iteLast (fun h => ?_) (fun h => ?_)
     · have hmr : m ≤ r := by
-        simp [hcell] at h
+        simp  at h
         omega
       exact Ends.setTo (r - m : ℕ) ⟨r - m, rfl, by omega, by rw [hsub r hmr, hmod]⟩
-        (by light_side [hcell])
+        (by light_side )
     · have hrm : r < m := by
-        simp [hcell] at h
+        simp  at h
         omega
       exact Ends.skip ⟨r, rfl, hrm, hmod⟩
 
@@ -223,9 +220,9 @@ theorem sign_ends (F : Pre lim Mo V fr) (hax : (a : ℤ) = |x|) {μ' : ℕ → �
     rw [hrem, show -(a : ℤ) = x by rw [hax, abs_of_neg hneg]; ring] at hmod
     refine Ends.iteLast (fun hz => ?_) (fun hz => ?_)
     · have hz : r = 0 := by simpa using hz
-      exact Ends.setTo 0 ⟨by rw [hmod, if_pos hz]; rfl, rfl⟩
+      exact Ends.setTo 0 ⟨by light_side, rfl⟩
     · have hz : ¬ r = 0 := by simpa using hz
-      exact Ends.setTo ((Mo : ℤ) - r) ⟨by rw [hmod, if_neg hz]; rfl, rfl⟩
+      exact Ends.setTo ((Mo : ℤ) - r) ⟨by light_side, rfl⟩
   · have hpos : 0 ≤ x := by simpa using hpos
     refine Ends.setTo (r : ℤ) ⟨?_, rfl⟩
     rw [← abs_of_nonneg hpos, ← hax, ← hrem]
@@ -241,7 +238,6 @@ theorem _root_.Light.emod_meets {p : ℕ} (hp : P[p]? = some emodBody) (F : Pre 
   have hax : ((x.natAbs : ℕ) : ℤ) = |x| := Int.natCast_natAbs x
   have haV : x.natAbs ≤ V := by omega
   refine .of_body hp ?_
-  unfold emodTime
   generalize x.natAbs = a at hax haV ⊢
   -- count := 0; mult := M; the table; the subtractions; the sign
   have tail : Ends lim P d (.set Count (k 0) ;; .set Mult (v Modulus) ;; emodTable ;;

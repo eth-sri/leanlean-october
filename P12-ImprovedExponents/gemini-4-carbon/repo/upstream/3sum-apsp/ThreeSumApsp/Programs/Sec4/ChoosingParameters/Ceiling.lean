@@ -54,7 +54,7 @@ theorem ceilMul_meets {lim : Limits} {P : Program} {pn a b : ℕ} (hb : 1 ≤ b)
     exact Ends.skip ⟨by simp [Nat.div_eq_of_lt (by omega : b - 1 < b)], rfl⟩
   · have hm : m ≠ 0 := by simpa using h0
     have hax : a ≤ a * m := Nat.le_mul_of_pos_right a (by omega)
-    have hxZ : (a : ℤ) * m = (a * m : ℕ) := by push_cast; rfl
+    have hxZ : (a : ℤ) * m = (a * m : ℕ) := by rfl
     generalize a * m = x at hw hax hxZ ⊢
     have hlt : ∀ i, i < (x + b - 1) / b ↔ i * b < x := fun i => Nat.lt_ceilDiv_iff hb
     have hnx : (x + b - 1) / b ≤ x := by

@@ -131,7 +131,6 @@ theorem scanRound_runs (std : Std lim) (hLa : L ≤ a) (ha : a ≤ lim.space) {j
     (hones : 0 ≤ S.ones ∧ S.ones ≤ j) :
     scanRound.Runs lim ⟨frame (locals L m KK mask s a S j), μ⟩ fun σ' => σ' =
       ⟨frame (locals L m KK mask s a (scanStep (μ (a - 1 - j)) ((L : ℤ) - 1 - j) S) j), μ⟩ := by
-  light_facts std
   have haddr : ((a : ℤ) - 1 - j).toNat = a - 1 - j := by omega
   unfold scanRound scanStep
   by_cases hcount : S.phase < 1
@@ -140,9 +139,9 @@ theorem scanRound_runs (std : Std lim) (hLa : L ≤ a) (ha : a ≤ lim.space) {j
     refine .ite_pos ?_
     by_cases hx : μ (a - 1 - j) < 1
     · rw [if_pos hx]
-      exact .ite_pos ⟨by light_side, by simp [update_frame_setLocal]⟩ (by simpa [haddr] using hx)
+      exact .ite_pos ⟨by light_side, by simp [update_frame_setLocal]⟩ (by light_side)
     · rw [if_neg hx]
-      exact .ite_neg ⟨by light_side, by simp [update_frame_setLocal]⟩ (by simpa [haddr] using hx)
+      exact .ite_neg ⟨by light_side, by simp [update_frame_setLocal]⟩ (by simpa  using hx)
   · rw [if_neg hcount]
     refine .ite_neg ?_
     by_cases hpass : S.phase < 2
@@ -151,9 +150,9 @@ theorem scanRound_runs (std : Std lim) (hLa : L ≤ a) (ha : a ≤ lim.space) {j
       refine .ite_pos ?_
       by_cases hx : μ (a - 1 - j) < 1
       · rw [if_pos hx]
-        exact .ite_pos ⟨trivial, rfl⟩ (by simpa [haddr] using hx)
+        exact .ite_pos ⟨trivial, rfl⟩ (by simpa  using hx)
       · rw [if_neg hx]
-        exact .ite_neg ⟨by light_side, by simp [update_frame_setLocal]⟩ (by simpa [haddr] using hx)
+        exact .ite_neg ⟨by light_side, by simp [update_frame_setLocal]⟩ (by simpa  using hx)
     · -- Phase 2: nothing is left to do.
       rw [if_neg hpass]
       exact .ite_neg ⟨trivial, rfl⟩
@@ -249,7 +248,6 @@ private theorem rowDone_spec (std : Std lim) (hmask : mask + KK * L ≤ lim.spac
     Ends lim P d (.set Row (v Row +' k 1) ;; .set Addr (v Addr +' v Levels))
       ⟨frame (locals L m KK mask s (mask + s * L) S j), wrote μ' (mask + s * L) f L⟩ T
       (RowsDone μ L m KK mask (s + 1)) := by
-  light_facts std
   have hroom : s * L + L ≤ KK * L := Nat.mul_add_le_mul hs le_rfl
   -- Row := Row + 1; Addr := Addr + L
   light_set (s + 1 : ℕ)
@@ -266,7 +264,7 @@ private theorem rowDone_spec (std : Std lim) (hmask : mask + KK * L ≤ lim.spac
     intro r hr
     rw [List.length_map, Spec.length_unrank] at hr
     rw [wrote_done hr, hf r hr, List.getElem_map,
-      List.getD_eq_getElem _ _ (by rwa [Spec.length_unrank])]
+      List.getD_eq_getElem _ _ (by grind)]
     rfl
 
 /-- **One round of the loop over the rows** writes row number `s`, the mask number `s`. -/
@@ -275,8 +273,6 @@ theorem tableRow_spec (std : Std lim) (hmask : mask + KK * L ≤ lim.space) (hm 
     (h : RowsDone μ L m KK mask s σ) :
     Ends lim P d tableRow σ (tRow L) (RowsDone μ L m KK mask (s + 1)) := by
   obtain ⟨S, j, μ', rfl, hrows, same⟩ := h
-  light_facts std
-  push_cast at hKL
   have hroom : s * L + L ≤ KK * L := Nat.mul_add_le_mul hs le_rfl
   unfold tableRow tRow
   -- if Row < 1
@@ -303,8 +299,6 @@ theorem subsetTable_spec (std : Std lim) (hmask : mask + KK * L ≤ lim.space) (
     Ends lim P d subsetTableBody ⟨frame [L, m, KK, mask], μ⟩ (64 * ((KK + 1) * (L + 1))) fun σ' =>
       (∀ s < KK, SegB σ'.mem (mask + s * L) (Spec.unrank L m s)) ∧
         SameOutside μ σ'.mem mask (KK * L) := by
-  light_facts std
-  -- Row := 0; Addr := mask
   light_set 0
   light_set mask
   -- while Row < KK; the KK rounds take KK (64 L + 34) steps
@@ -313,18 +307,16 @@ theorem subsetTable_spec (std : Std lim) (hmask : mask + KK * L ≤ lim.space) (
   case start =>
     refine ⟨⟨0, 0, 0⟩, 0, μ, ?_, fun t ht => absurd ht (by omega), .refl⟩
     -- The state of the scan and the counter of the inner loops start at 0.
-    simp only [setLocal, Nat.zero_mul, Nat.add_zero]
+    simp 
     rw [← frame_append_zeros _ 4]
     rfl
   case round =>
     intro s σ hs h
     have hrow := tableRow_spec (P := P) (d := d) std hmask hm hKK hKL hs h
     obtain ⟨S, j, μ', rfl, -⟩ := h
-    push_cast at hKL
     exact ⟨by light_side, by light_side, hrow⟩
   case done =>
     rintro _ ⟨S, j, μ', rfl, hrows, same⟩
-    push_cast at hKL
     exact ⟨by light_side, by light_side, hrows, same⟩
 
 end Light.Sec2.Subsets

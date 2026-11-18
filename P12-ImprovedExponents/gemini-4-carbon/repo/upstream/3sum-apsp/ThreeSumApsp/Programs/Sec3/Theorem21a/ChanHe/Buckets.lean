@@ -71,7 +71,7 @@ theorem emodNeed_ok {len V Mo fr d : ℕ} (h : (residNeed len V Mo).Ok lim fr d)
   refine h.mono ?_ le_rfl le_rfl
   have hlen : 1 ≤ (len + 1) ^ 2 := Nat.one_le_pow _ _ (by omega)
   -- 4 V + 4 M + 16 ≤ 64 (M + 1) (V + 1) ≤ 64 (len + 1)² (M + 1) (V + 1)
-  calc 4 * V + 4 * Mo + 16 ≤ 64 * 1 * (Mo + 1) * (V + 1) := by nlinarith [Nat.zero_le (V * Mo)]
+  calc 4 * V + 4 * Mo + 16 ≤ 64 * 1 * (Mo + 1) * (V + 1) := by grind
     _ ≤ 64 * (len + 1) ^ 2 * (Mo + 1) * (V + 1) := by gcongr
 
 /-- The memory before round i of resid: the first i remainders are written, and below the free
@@ -90,7 +90,7 @@ theorem ResidInv.succ {μ μ' μ'' : ℕ → ℤ} {fr key Mo i : ℕ} {sg : ℤ}
   refine ⟨fun j hj hji => ?_, (h.2.then hkept fun b hb => ⟨hb, hb.1⟩).write (by omega) _⟩
   rcases Nat.lt_succ_iff_lt_or_eq.1 hji with hji | rfl
   · rw [Function.update_of_ne (by omega), hkept _ (by omega), h.1 j hj hji]
-  · exact Function.update_self ..
+  simp
 
 /-- **resid** meets its specification. -/
 theorem resid_spec {p pEmod : ℕ} (hP : P[p]? = some (residBody pEmod))
@@ -101,7 +101,7 @@ theorem resid_spec {p pEmod : ℕ} (hP : P[p]? = some (residBody pEmod))
   have hcells := hok.cells
   have hdepth := hok.depth
   have hword := (emodNeed_ok hok).word
-  simp only [residNeed, emodNeed] at hword hdepth
+  simp  [residNeed, emodNeed] at hword hdepth
   -- for i < len; the local Rem holds anything
   refine Ends.forShape (fun i (r : ℤ) μ' => ⟨frame [L.length, s, sg, Mo, key, fr, i, r], μ'⟩)
     (ResidInv μ fr key Mo sg L) L.length (tEmod V + 15) 0
@@ -201,8 +201,7 @@ theorem coll_eq_list {L : List ℤ} (hL : L.Nodup) {Mo : ℕ} (hM : 1 ≤ Mo) :
     rw [← Int.natCast_toNat_emod hM x, card_bucket hM hL]
     have : 1 ≤ (keys Mo L).count (x % (Mo : ℤ)).toNat :=
       List.count_pos_iff.2 (List.mem_map.2 ⟨x, hx, rfl⟩)
-    rw [Int.natCast_toNat_emod hM x]
-    omega
+    grind
   rw [Nat.cast_list_sum, List.map_map]
   conv_rhs => rw [keys, List.map_map]
   exact congrArg List.sum (List.map_congr_left fun x hx => h x hx)
@@ -215,7 +214,7 @@ theorem mem_heavy_iff {S : Finset ℤ} {Mo : ℕ} {x : ℤ} (hx : x ∈ S) :
   · intro h
     obtain ⟨-, y, hy, hne, hdvd⟩ := Finset.mem_filter.1 h
     have hyb : y ∈ bucket S Mo (x % (Mo : ℤ)) := by
-      simp only [bucket, Finset.mem_filter]
+      simp  [bucket]
       exact ⟨hy, ((natCast_dvd_sub_iff_emod_eq Mo x y).1 hdvd).symm⟩
     exact Finset.one_lt_card.2 ⟨y, hyb, x, hxb, hne⟩
   · intro h
@@ -231,7 +230,7 @@ def heavyList (Mo : ℕ) (L : List ℤ) : List ℤ :=
 theorem heavyList_toFinset {L : List ℤ} (hL : L.Nodup) {Mo : ℕ} (hM : 1 ≤ Mo) :
     (heavyList Mo L).toFinset = heavy L.toFinset Mo := by
   ext x
-  simp only [heavyList, List.mem_toFinset, List.mem_filter, decide_eq_true_eq]
+  simp  [heavyList]
   constructor
   · rintro ⟨hx, h⟩
     rw [mem_heavy_iff (List.mem_toFinset.2 hx), ← Int.natCast_toNat_emod hM x, card_bucket hM hL]
@@ -273,7 +272,7 @@ theorem sq_add_le_word {n V Mo : ℕ} (h : ((wordNeed n V Mo : ℕ) : ℤ) ≤ l
     calc n * n + 4 * n + 17 ≤ 64 * (n + 1) ^ 2 * 1 := by nlinarith
       _ ≤ 64 * (n + 1) ^ 2 * ((Mo + 1) * (V + 1)) := Nat.mul_le_mul_left _ hMV
       _ = wordNeed n V Mo := by unfold wordNeed; ring
-  exact le_trans (by exact_mod_cast hle) h
+  omega
 
 /-- A table that held zeros and holds zeros again has not changed. -/
 theorem sameOn_of_zeroAt {R : ℕ → Prop} {μ μ' : ℕ → ℤ} {cnt cap : ℕ}
@@ -316,7 +315,7 @@ theorem resid_meets (C : BucketPre lim μ d fr V Mo s cnt cap L) (hResid : Resid
   have hlist := C.belowList
   refine (hResid (d + 1) (fr + L.length) V Mo s fr sg L μ C.modulus_pos hsg C.bounded C.list
     (by omega) le_rfl (Or.inl hlist) (C.ok.mono le_rfl ?_ ?_)).mono le_rfl ?_
-  · simp only [residNeed, collNeed]
+  · simp  [residNeed, collNeed]
     omega
   · simp only [residNeed, collNeed]
     omega
@@ -344,7 +343,7 @@ theorem tally_meets (C : BucketPre lim μ d fr V Mo s cnt cap L) (hTally : Tally
   have htable := C.belowTable
   have hword := sq_add_le_word C.ok.word
   have hsq : (0 : ℤ) ≤ (L.length : ℤ) * L.length := by positivity
-  simp only [collNeed] at hcells
+  simp  [collNeed] at hcells
   have h := hTally (d + 1) fr cnt cap δ K μ₁ (fun q hq => (hlt q hq).trans_le C.modulus_le) hδ hkeys
     (Or.inr htable)
   rw [hlen] at h
@@ -419,8 +418,7 @@ i. -/
 theorem collPart_succ (K : List ℕ) {i : ℕ} (hi : i < K.length) :
     collPart K (i + 1) = collPart K i + ((K.count K[i] : ℤ) - 1) := by
   unfold collPart
-  rw [List.take_add_one, List.getElem?_eq_getElem hi, List.map_append, List.sum_append]
-  simp
+  simp_all
 
 /-- The sum over the first `i` remainders lies between 0 and `i` times the number of remainders. -/
 theorem collPart_bounds (K : List ℕ) :
@@ -447,20 +445,17 @@ theorem collSum_ends {d V s Mo cnt cap fr : ℕ} {r : ℤ} {μ₀ μ : ℕ → �
   have hword := sq_add_le_word C.ok.word
   have hcells := C.ok.cells
   have htable := C.belowTable
-  simp only [collNeed] at hcells
+  simp  [collNeed] at hcells
   have hn := length_keys Mo L
   have hK : ∀ q ∈ keys Mo L, q < cap := fun q hq =>
     (keys_lt C.modulus_pos _ q hq).trans_le C.modulus_le
-  clear C
   generalize keys Mo L = K at *
   generalize L.length = n at *
-  have hsq : (0 : ℤ) ≤ (n : ℤ) * n := by positivity
-  -- sum := 0
   light_set 0
   -- for i < len
   refine Ends.for (fun i σ => σ = ⟨frame [n, s, Mo, cnt, fr, r, i, collPart K i], μ⟩) n 12
     ?start ?round ?done ?bound
-  case start => simp [update_frame_setLocal, collPart]
+  case start => simp [collPart]
   case done => exact fun _ _ hσ => hσ
   case bound =>
     rintro i _ - - rfl
@@ -472,7 +467,6 @@ theorem collSum_ends {d V s Mo cnt cap fr : ℕ} {r : ℤ} {μ₀ μ : ℕ → �
     -- The two cells that the round reads, and the bounds on the old and the new sum.
     have hkey : μ (fr + i) = (K[i] : ℕ) := counted.keys.getElem hiK
     have hcount := counted.counts _ hq
-    have hone : 1 ≤ K.count K[i] := List.count_pos_iff.2 (List.getElem_mem _)
     have hlen : K.count K[i] ≤ n := hn ▸ List.count_le_length
     obtain ⟨hlow, hhigh⟩ := collPart_bounds K i hiK.le
     have hhigh' : collPart K i ≤ (n : ℤ) * n :=
@@ -480,7 +474,7 @@ theorem collSum_ends {d V s Mo cnt cap fr : ℕ} {r : ℤ} {μ₀ μ : ℕ → �
     -- sum += mem[cnt + mem[fr + i]] - 1
     refine Ends.setTo (collPart K (i + 1)) ⟨by simp, by rw [update_frame_setLocal]; rfl⟩ ?_
     rw [collPart_succ K hiK]
-    simp [Limits.Addr, abs_le, hkey, hcount]
+    simp [Limits.Addr, abs_le, hkey]
     omega
 
 /-- **coll** meets its specification. -/
@@ -491,11 +485,9 @@ theorem coll_spec {p pResid pTally : ℕ} (hP : P[p]? = some (collBody pResid pT
   refine ⟨_, hP, ?_⟩
   have hM := C.modulus_pos
   have hw := hok.space
-  have hword := sq_add_le_word hok.word
   have hcells := hok.cells
   have hdepth := hok.depth
-  have hsq : (0 : ℤ) ≤ (L.length : ℤ) * L.length := by positivity
-  simp only [collNeed] at hcells hdepth
+  simp  [collNeed] at hcells hdepth
   -- resid(len, s, 1, M, fr, fr + len)
   light_call (C.keys_meets hResid) using tColl with _ μ₁ ⟨hkeys, kept₁⟩
   -- tally(len, fr, cnt, 1)
@@ -588,7 +580,7 @@ theorem heavyRound_ends {d V s Mo out cnt cap fr i : ℕ} {r : ℤ} {μ₀ μ : 
   obtain ⟨μ', rfl, written, same⟩ := hσ
   have hcells := C.ok.cells
   light_facts C O C.ok
-  simp only [collNeed] at hcells
+  simp  [collNeed] at hcells
   have hiK : i < (keys Mo L).length := by rwa [length_keys]
   have hq : (keys Mo L)[i] < Mo := keys_lt C.modulus_pos _ _ (List.getElem_mem hiK)
   have hqi : (keys Mo L)[i] = (L[i] % (Mo : ℤ)).toNat := by simp [keys]
@@ -601,7 +593,7 @@ theorem heavyRound_ends {d V s Mo out cnt cap fr i : ℕ} {r : ℤ} {μ₀ μ : 
   have hj : (heavyPart Mo L i).length ≤ i := Spec.length_passList_le _ _ _ _
   -- if 1 < mem[cnt + mem[fr + i]]
   refine Ends.iteLast (fun hheavy => ?_) (fun hlight => ?_)
-    (by light_side [hkey])
+    (by light_side )
   · have htwo : 2 ≤ (keys Mo L).count (keys Mo L)[i] :=
       Nat.succ_le_of_lt (by simpa [hkey, hcount] using hheavy)
     have hsucc : heavyPart Mo L (i + 1) = heavyPart Mo L i ++ [L[i]] :=
@@ -632,7 +624,7 @@ theorem heavyCopy_ends {d V s Mo out cnt cap fr : ℕ} {r : ℤ} {μ₀ μ : ℕ
   light_set 0
   -- for i < len
   refine Ends.for (HeavyInv μ s Mo out cnt fr r L) L.length 22 ?start ?round ?done ?bound
-  case start => exact ⟨μ, by simp [update_frame_setLocal], by simp, .refl⟩
+  case start => exact ⟨μ, by simp, by simp, .refl⟩
   case round => exact fun i σ hi _ hσ => heavyRound_ends C counted hL O hi hσ
   case done => exact fun _ _ hσ => hσ
   case bound =>
@@ -649,11 +641,9 @@ theorem heavy_spec {p pResid pTally : ℕ} (hP : P[p]? = some (heavyBody pResid 
   have hapc := O.apartTable
   have hM := C.modulus_pos
   light_facts C hok
-  have hword := sq_add_le_word hok.word
   have hcells := hok.cells
   have hdepth := hok.depth
-  have hsq : (0 : ℤ) ≤ (L.length : ℤ) * L.length := by positivity
-  simp only [collNeed] at hcells hdepth
+  simp  [collNeed] at hcells hdepth
   -- resid(len, s, 1, M, fr, fr + len)
   light_call (C.keys_meets hResid) using tHeavy with _ μ₁ ⟨hkeys, kept₁⟩
   -- tally(len, fr, cnt, 1)

@@ -2,7 +2,7 @@ module
 
 public import ImprovedExponents.AllEdges.Host.LoopAE
 public import ImprovedExponents.AllEdges.Host.BruteAE
-public import ImprovedExponents.HostMid.Correct
+public import ImprovedExponents.HostMid
 
 @[expose] public section
 
@@ -102,7 +102,7 @@ def hostNeedAE (Dfun Gfun wD wG : ℕ → ℕ) (need : List ℕ → Need) (n U :
 theorem hostNeedAt'_ok {lim : Limits} {d a b n U D g : ℕ} {need : List ℕ → Need} {fr : ℕ}
     (hok : (hostNeedCoreAt a b need n U D g).Ok lim fr d) :
     (hostNeedAt' a b need n U D g).Ok lim fr d :=
-  hok.mono le_rfl (by simp only [hostNeedCoreAt]; omega) (by simp only [hostNeedCoreAt]; omega)
+  hok.mono le_rfl (by simp only [hostNeedCoreAt]; omega) (by rfl)
 
 /-- The time of the third part in a run of the all-edges host. -/
 def hostRunTimeAE (Tn : List ℕ → ℕ) (X : HostData) (U : ℕ) : ℕ :=
@@ -143,7 +143,7 @@ theorem hostLimAE_of_ok {a b : ℕ} {x : TriInst} {fr D g : ℕ} (hbig : BigCase
   have h := hostLim_of_ok' hbig (hostNeedAt'_ok hok)
   have hcells := hok.cells
   have hfr := aFr_le' (x := x) (g := g) hbig.sixteen_le fr
-  simp only [hostNeedCoreAt, hostNeedAt'] at hcells
+  simp  [hostNeedCoreAt, hostNeedAt'] at hcells
   exact
     { space := h.space
       fr := by change aFr (hostData' x D g) x.U fr + x.n * x.n < lim.space; omega
@@ -151,7 +151,7 @@ theorem hostLimAE_of_ok {a b : ℕ} {x : TriInst} {fr D g : ℕ} (hbig : BigCase
       count := h.count
       step := h.step
       weights := h.weights
-      depth := by have := hok.depth; simp only [hostNeedCoreAt, hostNeedAt'] at this; omega
+      depth := by have := hok.depth; simp  [hostNeedCoreAt, hostNeedAt'] at this; omega
       solver := fun t ht => by
         have hs := h.solver t ht
         have hwc : (hostData' x D g).w t ≤ queryCapNat x.n D := (hostData' x D g).w_le_cap ht
@@ -272,7 +272,6 @@ theorem sum_execsAE_le_falsePositiveBound (hpre : x.Pre μ fr) (hbig : BigCase x
 /-- The time of the all-edges loop is within its bound. -/
 theorem tHostLoopAE_le (hpre : x.Pre μ fr) (hbig : BigCase x.n D g) (Tn : List ℕ → ℕ) :
     tHostLoopAE Tn (hostData' x D g) ≤ hostLoopBoundAE Tn x.n x.U D g := by
-  unfold tHostLoopAE hostLoopBoundAE
   exact Nat.add_le_add_right (Nat.add_le_add_right (sum_le_mul_add
     (fun _ ht => instanceAE_le Tn x.n D g _ (Nat.min_le_left _ _) ((hostData' x D g).w_le_cap ht))
     (hostData'_m_le hbig) (sum_execsAE_le_falsePositiveBound hpre hbig)) _) _

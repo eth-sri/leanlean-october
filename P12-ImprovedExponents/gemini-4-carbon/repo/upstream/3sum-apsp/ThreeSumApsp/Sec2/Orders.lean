@@ -120,7 +120,7 @@ theorem order_eq_iff {L : ℕ} (m d : ℕ) (τ : Leaf L) :
 theorem card_filter_contributes {L m : ℕ} (w : OutStr L) (hw : (innerSetO w).card = m) :
     (univ.filter fun τ : Leaf L => Leaf.Contributes τ w).card = 10 ^ m := by
   -- Ten terms contribute to `z₀` and one to `z_ij`.
-  simp only [Leaf.filter_contributes_eq_piFinset, Fintype.card_piFinset,
+  simp  [Leaf.filter_contributes_eq_piFinset,
     card_contributing_term]
   rw [prod_ite, prod_const, prod_const_one, mul_one, ← hw]
   rfl
@@ -137,7 +137,7 @@ theorem sec2_card_contributing_of_order {L m : ℕ} (w : OutStr L) (hw : (innerS
     have hcount := Finset.card_pi_places_card
       (fun ℓ => univ.filter fun lam : Term => lam.Contributes (w ℓ)) (fun lam => lam = Term.P0)
       (m - d)
-    simp only [card_contributing_P0, card_contributing_ne_P0] at hcount
+    simp  [card_contributing_P0, card_contributing_ne_P0] at hcount
     -- Given `S`, there is no such string unless `S ⊆ Q`.  Then there are nine choices at each of
     -- the `|Q| - |S| = d` levels of `Q` outside `S`, and one choice at every other level.
     have hgiven : ∀ S ∈ powersetCard (m - d) (univ : Finset (Fin L)),
@@ -153,7 +153,7 @@ theorem sec2_card_contributing_of_order {L m : ℕ} (w : OutStr L) (hw : (innerS
     -- These strings are the leaves of order `d` that contribute to `w`.
     rw [alpha, ← hcount]
     refine congrArg card (Finset.ext fun τ => ?_)
-    simp only [mem_filter, mem_univ, true_and, order_eq_iff]
+    simp  [order_eq_iff]
     exact and_congr Iff.rfl (by unfold P0Levels; omega)
   · -- No leaf has order more than `m`.
     rw [alpha, Nat.choose_eq_zero_of_lt (by omega), zero_mul, card_eq_zero]
@@ -171,7 +171,7 @@ theorem card_filter_order_eq {L m : ℕ} (hmL : m ≤ L) (d : ℕ) (hd : d ≤ m
   have hsort : (univ.filter fun τ : Leaf L => order m τ = d)
       = univ.filter fun τ : Leaf L => (univ.filter fun ℓ => τ ℓ = Term.P0).card = m - d := by
     ext τ
-    simp only [mem_filter, mem_univ, true_and, order_eq_iff]
+    simp  [order_eq_iff]
     unfold P0Levels
     omega
   rw [hsort, Finset.card_places_card (fun lam : Term => lam = Term.P0) (m - d), card_term_P0,
@@ -179,8 +179,7 @@ theorem card_filter_order_eq {L m : ℕ} (hmL : m ≤ L) (d : ℕ) (hd : d ≤ m
     show L - (m - d) = L - m + d by omega]
 
 /-- Section 2.4.3: "In particular, β₀ = binom(L, m) 9^{L-m}". -/
-theorem beta_zero (L m : ℕ) : beta L m 0 = L.choose m * 9 ^ (L - m) := by
-  simp [beta]
+theorem beta_zero (L m : ℕ) : beta L m 0 = L.choose m * 9 ^ (L - m) := rfl
 
 /-- Section 2.4.3: "β₀ = binom(L, m) 9^{L-m} = M". -/
 theorem beta_zero_eq_M (L m : ℕ) : beta L m 0 = M L m := by

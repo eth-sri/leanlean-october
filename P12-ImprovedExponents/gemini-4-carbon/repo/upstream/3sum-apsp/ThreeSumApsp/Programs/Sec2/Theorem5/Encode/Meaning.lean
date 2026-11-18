@@ -85,41 +85,10 @@ private theorem EncodePre.of_seg {l T : List ℤ} (lay : EncodeLayout lim src ou
     EncodePre lim μ src out scr tab p7 p10 V L (fun j => l.getD j 0) (fun i => T.getD i 0) :=
   { lay := lay
     srcV := fun j hj => hsrc.getD (by omega) 0
-    src_bound := fun j hj => by
-      rw [List.getD_eq_getElem _ _ (by omega)]
-      exact hV _ (List.getElem_mem _)
+    src_bound := fun j hj => by simp_all
     tabV := fun i hi => htab.getD (by omega) 0
-    coef_bound := fun i hi => by
-      rw [List.getD_eq_getElem _ _ (by omega)]
-      exact hc _ (List.getElem_mem _)
+    coef_bound := fun i hi => by simp_all
     p7V := h7, p10V := h10, word_bound := hVB }
 
-/-- **The encoding of an array on strings** (Section 2.4.1), for both alphabets at once.  If the
-source holds the array A on the strings of length L, the table holds the coefficients, the tables of
-powers are in their places and the numbers obey the bounds, then encode ends within `cEncode · 10^L`
-steps, the output holds what the procedure of Section 2.4.1 computes, and only the output and the
-scratch area have changed. -/
-theorem encode_str {α : Type} [Fintype α] (e : α ≃ Fin 7) (coef : Term → α → ℤ) {T : List ℤ}
-    (hT : T.length = 70) (hc : ∀ x ∈ T, -1 ≤ x ∧ x ≤ 1)
-    (hcoef : ∀ lam s, T.getD (7 * (termIdx lam : ℕ) + (e s : ℕ)) 0 = coef lam s) {pS pE : ℕ}
-    (hS : P[pS]? = some encStepBody) (hE : P[pE]? = some (encodeBody pS pE))
-    (lay : EncodeLayout lim src out scr tab p7 p10 L) (A : (Fin L → α) → ℤ)
-    (hsrc : Seg μ src (arrStr e A)) (hV : ∀ u, |A u| ≤ V) (htab : Seg μ tab T)
-    (h7 : ∀ i < L, μ (p7 + i) = ((7 ^ i : ℕ) : ℤ)) (h10 : ∀ i < L, μ (p10 + i) = ((10 ^ i : ℕ) : ℤ))
-    (hVB : ((7 ^ L : ℕ) : ℤ) * V ≤ lim.word) (hd : d + L ≤ lim.depth) :
-    Ends lim P d (encodeBody pS pE) ⟨frame [L, src, out, scr, tab, p7, p10], μ⟩ (cEncode * 10 ^ L)
-      fun σ' => Seg σ'.mem out (arrT (computeEncoding coef L A)) ∧
-        SameOutside2 μ σ'.mem out (10 ^ L) scr (scrSize L) := by
-  have hbound : ∀ x ∈ arrStr e A, -V ≤ x ∧ x ≤ V := fun x hx => by
-    obtain ⟨c, -, rfl⟩ := List.mem_map.1 hx
-    exact abs_le.1 (hV _)
-  have pre := EncodePre.of_seg lay (length_arrStr e A) hsrc hbound hT htab hc h7 h10 hVB
-  refine (encode_spec hS hE hd pre).mono (by have := encTime_le L; omega) fun σ' h => ⟨?_, h.2⟩
-  intro i hi
-  rw [length_arrT] at hi
-  rw [h.1 i hi,
-    encIdx_eq_computeEncoding e coef hcoef L A (fun j hj => getD_arrStr_of_lt e A hj) hi,
-    ← List.getD_eq_getElem _ 0, arrT, getD_arrStr_of_lt termEquiv _ hi]
-  rfl
 
 end Light.Sec2

@@ -232,7 +232,6 @@ theorem scanPairsAE_spec (hp : P[pScan]? = some scanBody)
         SameOutside μ σ'.mem flg (n * n) := by
   light_facts C C.arrAB C.arrBC C.arrAC
   light_facts A A.arrOUT A.arrQA A.arrQB
-  light_facts G
   have hsum := sum_scanPairsAE_rounds (accOf OUT) (hitOf n AB BC AC QA QB c0 len) (idxOf n QA QB)
     F len w
   unfold tScanPairsAE tAnswersAE
@@ -243,16 +242,16 @@ theorem scanPairsAE_spec (hp : P[pScan]? = some scanBody)
     len OUT AB BC AC F QA QB i i idx res) w
     (fun i => 64 + if aeExec (accOf OUT) (hitOf n AB BC AC QA QB c0 len) (idxOf n QA QB) F i then
       tScanCallAE len else 0) ?start ?round ?done).mono
-    (by simp only [Cond.cost, Expr.cost, Nat.reduceAdd]; omega) fun _ h => h
+    (by light_side) fun _ h => h
   case start =>
     have hmem : μ = wrote μ flg (fun q => F.getD q 0) (n * n) := by
       funext y
       by_cases hin : Inside flg (n * n) y
       · obtain ⟨q, rfl⟩ : ∃ q, y = flg + q := ⟨y - flg, by omega⟩
         rw [wrote_done (by omega), G.seg.getD (by rw [G.len]; omega)]
-      · rw [wrote_rest (by simp only [Inside, Outside] at hin ⊢; omega)]
+      · rw [wrote_rest (by simp  at hin ⊢; omega)]
     refine ⟨0, 0, ?_⟩
-    simp only [scanPairsAEState, aeStep_zero, ← hmem]
+    simp only [scanPairsAEState, aeStep, ← hmem]
     simpa using (frame_append_zeros [(out : ℤ), qa, qb, w, flg, ab, bc, ac, n, c0, len, 0] 2).symm
   case round =>
     rintro i _ hi ⟨idx, res, rfl⟩
@@ -261,7 +260,6 @@ theorem scanPairsAE_spec (hp : P[pScan]? = some scanBody)
     refine Ends.next _ ((scanPairsAEStep_spec hp C A hA hQA hQB G hd hc hi idx res).mono le_rfl
       ?_) (by omega)
     rintro _ ⟨idx', res', rfl⟩
-    unfold scanPairsAEState
     light_set (i + 1 : ℕ)
     exact ⟨idx', res', rfl⟩
   case done =>

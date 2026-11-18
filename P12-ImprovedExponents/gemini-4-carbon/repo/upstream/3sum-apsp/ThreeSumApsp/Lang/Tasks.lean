@@ -60,7 +60,7 @@ larger depth if the sums are not larger. -/
 theorem Need.Ok.mono {r r' : Need} {lim : Limits} {fr fr' d d' : ℕ} (h : r.Ok lim fr d)
     (hw : r'.word ≤ r.word) (hc : fr' + r'.cells ≤ fr + r.cells)
     (hd : d' + r'.depth ≤ d + r.depth) : r'.Ok lim fr' d' :=
-  ⟨le_trans (by exact_mod_cast hw) h.word, hc.trans h.cells, h.space, hd.trans h.depth⟩
+  ⟨le_trans (by omega) h.word, hc.trans h.cells, h.space, hd.trans h.depth⟩
 
 /-- A need that depends on a size and a bound is polynomially bounded in the two: by
 `2^s ((n + 1) (U + 1))^k`. -/
@@ -104,8 +104,7 @@ theorem Solves.append {task : Task} {P : Program} {p : ℕ} {T : ℕ → ℕ →
     (h : Solves task P p T need) (R : Program) : Solves task (P ++ R) p T need := by
   obtain ⟨body, hp, hb⟩ := h
   refine ⟨body, getElem?_append_of_eq_some hp R, fun R' lim d x μ fr hpre hok => ?_⟩
-  rw [List.append_assoc]
-  exact hb (R ++ R') lim d x μ fr hpre hok
+  grind
 
 /-- **A solver meets the specification that its task prescribes**, in every program that begins with
 its program. -/
@@ -130,7 +129,7 @@ theorem SolvedIn.mono {task : Task} {T T' : ℕ → ℝ → ℝ} (h : SolvedIn t
     (hT : ∀ (n : ℕ) (u : ℝ), 1 ≤ n → 1 ≤ u → T n u ≤ T' n u) : SolvedIn task T' := by
   obtain ⟨P, p, Tn, need, h1, h2, h3⟩ := h
   refine ⟨P, p, Tn, need, h1, h2, fun n U u hn hU hu => (h3 n U u hn hU hu).trans (hT n u hn ?_)⟩
-  exact le_trans (by exact_mod_cast hU) hu
+  exact le_trans (by simp_all) hu
 
 /-- The largest time `Tn n U` for a bound `U ≤ u`.  A program has a natural number as the bound on
 its numbers, and a claim on running times a real number. -/
@@ -152,8 +151,7 @@ theorem timeUpTo_le {Tn : ℕ → ℕ → ℕ} {n : ℕ} {u B : ℝ}
   refine h U ((Nat.cast_le.2 (Nat.lt_succ_iff.1 (Finset.mem_range.1 hU))).trans ?_)
   rcases le_total 0 u with hu | hu
   · exact (Nat.floor_le hu).trans (le_max_left u 0)
-  · rw [Nat.floor_of_nonpos hu, Nat.cast_zero]
-    exact le_max_right u 0
+  simp; grind
 
 /-- A solver with a polynomially bounded need solves its task in its own time. -/
 theorem Solves.solvedIn {task : Task} {P : Program} {p : ℕ} {Tn : ℕ → ℕ → ℕ} {need : ℕ → ℕ → Need}
@@ -212,8 +210,7 @@ theorem SolvesN.append {task : TaskN} {P : Program} {p : ℕ} {T : List ℕ → 
     (h : SolvesN task P p T need) (R : Program) : SolvesN task (P ++ R) p T need := by
   obtain ⟨body, hp, hb⟩ := h
   refine ⟨body, getElem?_append_of_eq_some hp R, fun R' lim d x μ fr hpre hok => ?_⟩
-  rw [List.append_assoc]
-  exact hb (R ++ R') lim d x μ fr hpre hok
+  grind
 
 /-- A solver meets the specification of its task, at the depth d at which it runs. -/
 theorem SolvesN.meets {task : TaskN} {P₀ : Program} {p : ℕ} {T₀ : List ℕ → ℕ}

@@ -62,8 +62,6 @@ theorem horner_spec {lim : Limits} {P : Program} (hP : P[Proc.horner]? = some ho
     (hs : Std lim) : HornerSpec lim P := by
   rintro a _ l μ hseg rfl hd ha hpow
   refine fun d _ => ⟨hornerBody, hP, ?_⟩
-  light_facts hs
-  -- every number formed on the way is below 10^L, so it fits in a word
   have hfits : ∀ i ≤ l.length, ((ofDigitList 10 (l.take i) : ℕ) : ℤ) < lim.word := fun i hi => by
     have hlt := ofDigitList_lt (b := 10) (l.take i) fun x hx => hd x (List.mem_of_mem_take hx)
     have hpow' : 10 ^ (l.take i).length ≤ 10 ^ l.length :=
@@ -85,7 +83,7 @@ theorem horner_spec {lim : Limits} {P : Program} (hP : P[Proc.horner]? = some ho
     have hfit := hfits (i + 1) hi
     generalize l.getD i 0 = digit at hcell hnext
     -- acc := acc * 10 + mem[str + level]; level := level + 1
-    refine ⟨by light_side, by light_side, by light_side [hcell], ?_⟩
+    refine ⟨by light_side, by light_side, by light_side , ?_⟩
     simp [Horner.Inv, update_frame_setLocal, hcell, hnext]
   case done =>
     rintro _ rfl

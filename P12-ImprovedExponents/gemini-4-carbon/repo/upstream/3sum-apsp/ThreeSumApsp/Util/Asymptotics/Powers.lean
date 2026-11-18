@@ -5,7 +5,16 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Util.Basic
+public import Mathlib.Algebra.Order.Field.Basic
+public import Mathlib.Algebra.Order.Ring.Abs
+public import Mathlib.Algebra.Order.Ring.Int
+public import Mathlib.Data.Int.Cast.Lemmas
+public import Mathlib.Data.Nat.Cast.Order.Ring
+public import Mathlib.Tactic.GCongr
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 /-!
@@ -33,7 +42,7 @@ theorem isBigO_of_abs_le {f g : ℕ → ℝ} (C : ℝ) (n₀ : ℕ) (h : ∀ n, 
     f =O[atTop] g := by
   refine IsBigO.of_bound |C| (eventually_atTop.2 ⟨n₀, fun n hn => ?_⟩)
   rw [Real.norm_eq_abs, Real.norm_eq_abs, ← abs_mul]
-  exact (h n hn).trans (le_abs_self _)
+  grind
 
 /-- `n ^ a = O(n ^ b)` for `a ≤ b`. -/
 theorem isBigO_rpow_rpow_of_le {a b : ℝ} (hab : a ≤ b) :
@@ -52,7 +61,7 @@ theorem rpow_mul_rpow_eventuallyEq (a b : ℝ) :
 theorem isLittleO_log_pow_rpow {η : ℝ} (hη : 0 < η) (e : ℕ) :
     (fun n : ℕ => Real.log n ^ e) =o[atTop] fun n : ℕ => (n : ℝ) ^ η := by
   have h := (isLittleO_log_rpow_rpow_atTop (e : ℝ) hη).comp_tendsto tendsto_natCast_atTop_atTop
-  simpa only [Function.comp_def, Real.rpow_natCast] using h
+  aesop
 
 /-- `(log n) ^ e = O((log n) ^ e')` for `e ≤ e'`. -/
 theorem isBigO_log_pow_log_pow_of_le {e e' : ℕ} (he : e ≤ e') :
@@ -76,7 +85,7 @@ theorem isLittleO_rpow_mul_log_pow_rpow {a b : ℝ} (hab : a < b) (e : ℕ) :
   have h := (isBigO_refl (fun n : ℕ => (n : ℝ) ^ a) atTop).mul_isLittleO
     (isLittleO_log_pow_rpow (sub_pos.2 hab) e)
   refine h.congr' EventuallyEq.rfl ?_
-  simpa only [add_sub_cancel] using rpow_mul_rpow_eventuallyEq a (b - a)
+  simpa  using rpow_mul_rpow_eventuallyEq a (b - a)
 
 /-- Logarithms are absorbed: `n ^ a * (log n) ^ e = O(n ^ b)` for `a < b`. -/
 theorem isBigO_rpow_mul_log_pow_rpow {a b : ℝ} (hab : a < b) (e : ℕ) :
@@ -91,11 +100,11 @@ theorem eventually_mul_rpow_mul_log_pow_le (C : ℝ) {a b : ℝ} (hab : a < b) (
   filter_upwards [h] with n hn
   rw [one_mul, Real.norm_eq_abs, Real.norm_eq_abs,
     abs_of_nonneg (Real.rpow_nonneg n.cast_nonneg b)] at hn
-  exact (le_abs_self _).trans hn
+  grind
 
 /-- `C * n ^ a ≤ n ^ b` for all large `n`, if `a < b`. -/
 theorem eventually_mul_rpow_le (C : ℝ) {a b : ℝ} (hab : a < b) :
     ∀ᶠ n : ℕ in atTop, C * (n : ℝ) ^ a ≤ (n : ℝ) ^ b := by
-  simpa only [pow_zero, mul_one] using eventually_mul_rpow_mul_log_pow_le C hab 0
+  simpa  using eventually_mul_rpow_mul_log_pow_le C hab 0
 
 end ThreeSumApsp

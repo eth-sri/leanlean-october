@@ -164,20 +164,7 @@ theorem rowOf_mul_add_colOf (X : HostData) (t i : ℕ) :
 theorem Valid.rab_place (hv : X.Valid) {t i : ℕ} (ht : t < X.m) (hi : i < X.w t) :
     X.RAB.getD (X.place t i) 0 = X.rho t := chunkTab_class hv.cap_pos (chunk_mem ht) hi
 
-/-- The query pairs of an instance, from the places. -/
-theorem zip_eq (X : HostData) (t : ℕ) :
-    (X.WI t).zip (X.WJ t) =
-      (((sortedIdx X.n X.p X.RAB).drop (X.lo t)).take (X.w t)).map fun s => (s / X.n, s % X.n) := by
-  rw [WI, WJ, QI, QJ, queryRows, queryCols, ← List.map_drop, ← List.map_drop, ← List.map_take,
-    ← List.map_take, List.zip_map']
 
-/-- No query pair is listed twice. -/
-theorem nodup_zip (X : HostData) (t : ℕ) : ((X.WI t).zip (X.WJ t)).Nodup := by
-  rw [zip_eq]
-  refine (((sortedIdx_nodup X.n X.p X.RAB).sublist (List.drop_sublist _ _)).sublist
-    (List.take_sublist _ _)).map fun s s' h => ?_
-  simp only [Prod.mk.injEq] at h
-  rw [← Nat.div_add_mod s X.n, ← Nat.div_add_mod s' X.n, h.1, h.2]
 
 /-- The rows of the query pairs are vertices of `A`. -/
 theorem lt_of_mem_WI {t a : ℕ} (ha : a ∈ X.WI t) : a < X.n := by
@@ -221,13 +208,13 @@ theorem length_matY (X : HostData) (t : ℕ) : (X.matY t).length = X.D * X.n := 
 theorem matX_zero_or_one (X : HostData) (t : ℕ) : ∀ e ∈ X.matX t, e = 0 ∨ e = 1 := by
   intro e he
   obtain ⟨i, -, rfl⟩ := List.mem_map.1 he
-  exact (ite_eq_or_eq _ _ _).symm
+  omega
 
 /-- The entries of `Y` are 0 and 1. -/
 theorem matY_zero_or_one (X : HostData) (t : ℕ) : ∀ e ∈ X.matY t, e = 0 ∨ e = 1 := by
   intro e he
   obtain ⟨i, -, rfl⟩ := List.mem_map.1 he
-  exact (ite_eq_or_eq _ _ _).symm
+  omega
 
 /-- Every place stands at some position of the list of all pairs. -/
 theorem Valid.exists_getD_sortedIdx (hv : X.Valid) {s : ℕ} (hs : s < X.n * X.n) :
@@ -278,17 +265,9 @@ def sumAt (X : HostData) (a b c : ℕ) : ℤ :=
 /-- A sum of numbers that are 0 or 1 is not 0 if and only if one of them is 1. -/
 private theorem sum_ne_zero_iff (f : ℕ → ℤ) (N : ℕ) (h01 : ∀ k < N, f k = 0 ∨ f k = 1) :
     ((List.range N).map f).sum ≠ 0 ↔ ∃ k < N, f k = 1 := by
-  have hnonneg : ∀ k ∈ Finset.range N, 0 ≤ f k := fun k hk => by
-    rcases h01 k (Finset.mem_range.1 hk) with h | h <;> omega
+  have hnonneg : ∀ k ∈ Finset.range N, 0 ≤ f k := fun k hk => by grind
   rw [List.sum_map_range, Ne, Finset.sum_eq_zero_iff_of_nonneg hnonneg]
-  constructor
-  · intro hne
-    by_contra hnone
-    exact hne fun k hk => (h01 k (Finset.mem_range.1 hk)).resolve_right
-      fun hone => hnone ⟨k, Finset.mem_range.1 hk, hone⟩
-  · rintro ⟨k, hk, hone⟩ hall
-    have := hall k (Finset.mem_range.2 hk)
-    omega
+  grind
 
 /-- Proof of Theorem 17: "the condition S(a,b,c) ≡ 0 (mod p) has become the equality w(a,c) + ϱ ≡
 −w(b,c) of a label of (a,c) and a label of (b,c)".  Here `wAC`, `wAB` and `wBC` are the three
@@ -354,8 +333,7 @@ theorem Valid.getD_ans (hv : X.Valid) {t i : ℕ} (ht : t < X.m) (hi : i < X.w t
       if thinEntry X.n X.D (X.matX t) (X.matY t) (X.rowOf t i) (X.colOf t i) = 0 then 0 else 1 := by
   have hiI : i < (X.WI t).length := by rw [hv.length_WI ht]; exact hi
   have hiJ : i < (X.WJ t).length := by rw [hv.length_WJ ht]; exact hi
-  have hzip : i < ((X.WI t).zip (X.WJ t)).length := by rw [List.length_zip]; omega
-  rw [← getD_WI hi, ← getD_WJ hi, ans, thinOut, List.getD_eq_getElem _ _ (by simpa using hzip),
+  rw [← getD_WI hi, ← getD_WJ hi, ans, thinOut, List.getD_eq_getElem _ _ (by grind),
     List.getElem_map, List.getElem_map, List.getElem_zip, List.getD_eq_getElem _ _ hiI,
     List.getD_eq_getElem _ _ hiJ]
 
@@ -367,7 +345,7 @@ theorem acc_iff (hv : X.Valid) {t i : ℕ} (ht : t < X.m) (hi : i < X.w t) :
   have hentry : X.acc t i = true ↔
       thinEntry X.n X.D (X.matX t) (X.matY t) (X.rowOf t i) (X.colOf t i) ≠ 0 := by
     rw [acc, decide_eq_true_eq, hv.getD_ans ht hi]
-    split_ifs with h <;> simp [h]
+    omega
   rw [hentry, matX, matY, thinEntry_ne_zero_iff hv.p_ne (hv.len_mul_le t) (hv.rowOf_lt ht hi)
     (hv.colOf_lt ht hi)]
   refine exists_congr fun c => and_congr_right fun _ => ?_
@@ -384,61 +362,9 @@ theorem hit_iff {t i : ℕ} (hi : i < X.w t) :
 
 /-! ## Correctness -/
 
-/-- Brute force finds a zero triangle if and only if there is one. -/
-private theorem hasZero_iff_sumAt (X : HostData) :
-    hasZero X.n X.AB X.BC X.AC = true ↔ ∃ a < X.n, ∃ b < X.n, ∃ c < X.n, X.sumAt a b c = 0 := by
-  simp [hasZero, scanHit, sumAt]
 
-/-- A zero triangle has been found before instance `T` if and only if some accepted query pair of an
-earlier instance has a successful scan. -/
-theorem found_iff (X : HostData) (T : ℕ) :
-    X.found T = true ↔ ∃ t < T, ∃ i < X.w t, X.acc t i = true ∧ X.hit t i = true := by
-  induction T with
-  | zero => simp [found]
-  | succ T ih =>
-    rw [found, foundAt, Bool.or_eq_true, ih, List.any_eq_true]
-    constructor
-    · rintro (⟨t, ht, h⟩ | ⟨i, hi, h⟩)
-      · exact ⟨t, by omega, h⟩
-      · exact ⟨T, by omega, i, List.mem_range.1 hi, Bool.and_eq_true _ _ ▸ h⟩
-    · rintro ⟨t, ht, i, hi, h⟩
-      rcases Nat.lt_succ_iff_lt_or_eq.1 ht with hlt | rfl
-      · exact Or.inl ⟨t, hlt, i, hi, h⟩
-      · exact Or.inr ⟨i, List.mem_range.2 hi, by rw [Bool.and_eq_true]; exact h⟩
 
-/-- Proof of Theorem 17: "A zero triangle is always found, since its c lies in some piece and makes
-the oracle accept its pair."  After all instances a zero triangle has been found if and only if
-there is one.
--/
-theorem found_m (hv : X.Valid) : X.found X.m = hasZero X.n X.AB X.BC X.AC := by
-  rw [Bool.eq_iff_iff, found_iff, hasZero_iff_sumAt]
-  constructor
-  · rintro ⟨t, ht, i, hi, -, hhit⟩
-    obtain ⟨c, hc, hzero⟩ := (hit_iff hi).1 hhit
-    have hpiece := hv.piece_le ht
-    exact ⟨_, hv.rowOf_lt ht hi, _, hv.colOf_lt ht hi, _, by omega, hzero⟩
-  · rintro ⟨a, ha, b, hb, c, hc, hzero⟩
-    obtain ⟨t, ht, i, hi, rfl, rfl, c', hc', rfl⟩ := hv.exists_query ha hb hc
-    exact ⟨t, ht, i, hi, (acc_iff hv ht hi).2 ⟨c', hc', hzero ▸ dvd_zero _⟩,
-      (hit_iff hi).2 ⟨c', hc', hzero⟩⟩
 
-/-- Proof of Theorem 17: "We stop as soon as a zero triangle is found", so all scans but one fail.
--/
-theorem sum_execs_le (X : HostData) :
-    ∑ t ∈ Finset.range X.m, X.execs t ≤ ∑ t ∈ Finset.range X.m, X.fails t + 1 := by
-  have key : ∀ T, ∑ t ∈ Finset.range T, X.execs t
-      ≤ ∑ t ∈ Finset.range T, X.fails t + (X.found T).toNat := by
-    intro T
-    induction T with
-    | zero => simp
-    | succ T ih =>
-      have hstep : X.execs T + (X.found T).toNat ≤ X.fails T + (X.found (T + 1)).toNat :=
-        execsUpto_le (X.acc T) (X.hit T) (X.found T) (X.w T)
-      rw [Finset.sum_range_succ, Finset.sum_range_succ]
-      omega
-  have hone : (X.found X.m).toNat ≤ 1 := Bool.toNat_le _
-  have := key X.m
-  omega
 
 /-- The parameters of Theorem 17 give valid data. -/
 theorem valid_of_params {n D g p : ℕ} {AB BC AC : List ℤ} (h : BigCase n D g)

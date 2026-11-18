@@ -119,20 +119,18 @@ private theorem pick_runs {loc : ℕ → ℤ} {f : ℕ} (z : ℤ)
     (hz : loc Index = z) (hN : loc Len = N) (hx : loc Input = x) (hf : loc f = F) :
     (pickStmt f).Runs lim ⟨loc, μ⟩ R := by
   obtain ⟨hseg, hlen, hspace, haddr⟩ := hX
-  unfold pickStmt
-  -- Value := f
   refine .seq ⟨trivial, ?_⟩
   by_cases hneg : z < 0
   · -- if Index < 0
     rw [cellOr_of_not (by omega)] at h
-    exact .ite_pos ⟨trivial, by simpa [hf] using h⟩ (by simpa [hz] using hneg) (by simp; omega)
-  refine .ite_neg ?_ (by simpa [hz] using hneg) (by simp; omega)
+    exact .ite_pos ⟨trivial, by simpa [hf] using h⟩ (by light_side) (by simp; omega)
+  refine .ite_neg ?_ (by light_side) (by simp; omega)
   by_cases hlt : z < N
   · -- if Index < N: Value := x[Index]
     obtain ⟨i, rfl⟩ := Int.eq_ofNat_of_zero_le (not_lt.1 hneg)
     rw [cellOr_of_lt rfl (by omega), ← hseg.getD (by omega)] at h
     refine .ite_pos ⟨?_, by simpa [hz, hx] using h⟩ (by simpa [hz, hN] using hlt) (by simp)
-    simp [hz, hx, Limits.Addr, abs_le]
+    simp [Limits.Addr, abs_le]
     omega
   · rw [cellOr_of_not (by omega)] at h
     exact .ite_neg ⟨trivial, by simpa [hf] using h⟩ (by simpa [hz, hN] using hlt) (by simp)
@@ -154,20 +152,18 @@ private theorem put_runs {l : List ℤ} {ze : Expr} {f dst : ℕ} {neg : Bool} (
   obtain ⟨hfI, hdI, hdV⟩ := hne
   obtain ⟨hsafe, hval⟩ := hze
   have haddr := hX.addr
-  unfold putStmt
-  -- Index := ze
   refine .seq ⟨hsafe, ?_⟩
   -- Value := x[Index] or the filler
-  refine .seq (pick_runs z ?_ hX (by simp [hval]) (by simpa using hN) (by simpa using hx)
+  refine .seq (pick_runs z ?_ hX (by grind) (by simpa using hN) (by simpa using hx)
     (by simpa [hfI] using hf))
   -- dst[Cell] := Value or -Value
   cases neg
   · refine ⟨?_, by simpa [hval, hdI, hdV, hdst, hq] using h⟩
-    simp [hdI, hdV, hdst, hq, Limits.Addr, abs_le]
+    simp [hdI, hdV, Limits.Addr, abs_le]
     omega
   · refine ⟨?_, by simpa [hval, hdI, hdV, hdst, hq] using h⟩
     rw [abs_le] at hV
-    simp [hdI, hdV, hdst, hq, Limits.Addr, abs_le]
+    simp [hdI, hdV, Limits.Addr, abs_le]
     omega
 
 end parts
@@ -249,9 +245,7 @@ private theorem filled_succ (C : Ctx lim μ A V) (hq : q < A.t * A.t) :
 private theorem sameOutside_filled (C : Ctx lim μ A V) (hq : q ≤ A.t * A.t) :
     SameOutside μ (A.filled μ q) A.ab (A.ac + A.t * A.t - A.ab) := fun b hb => by
   obtain ⟨hBC, hAC⟩ := And.intro C.belowBC C.belowAC
-  have off (dst : ℕ) (h₁ : A.ab ≤ dst) (h₂ : dst ≤ A.ac) : b < dst ∨ dst + q ≤ b := by
-    unfold Outside at hb
-    omega
+  have off (dst : ℕ) (h₁ : A.ab ≤ dst) (h₂ : dst ≤ A.ac) : b < dst ∨ dst + q ≤ b := by omega
   rw [Args.filled, wrote_rest (off _ (by omega) le_rfl), wrote_rest (off _ (by omega) (by omega)),
     wrote_rest (off _ le_rfl (by omega))]
 
@@ -316,9 +310,9 @@ private structure IndexBounds (t q : ℕ) : Prop where
 
 private theorem indexBounds {t : ℕ} (hq : q < t * t) : IndexBounds t q := by
   have hrow : q / t < t := Nat.div_lt_of_lt_mul hq
-  have hcol : q % t < t := Nat.mod_lt _ (Nat.pos_of_ne_zero fun h => by simp [h] at hq)
-  exact ⟨by exact_mod_cast And.intro (Nat.zero_le _) hrow,
-    by exact_mod_cast And.intro (Nat.zero_le _) hcol,
+  have hcol : q % t < t := Nat.mod_lt _ (Nat.pos_of_ne_zero fun h => by grind)
+  exact ⟨by grind,
+    by omega,
     by exact_mod_cast And.intro (Nat.zero_le _) (Nat.mul_le_mul_right t hcol.le),
     by exact_mod_cast And.intro (Nat.zero_le _) ((Nat.mul_le_mul_right t
       (show q / t + q % t ≤ 2 * t by omega)).trans_eq (Nat.mul_assoc ..)),
@@ -334,8 +328,6 @@ private theorem cells_runs {R : State → Prop} (C : Ctx lim μ A V) (hq : q < A
   have hidx := C.indexLe
   have hX := inputAt_filled C hq.le
   rw [← filled_succ C hq] at h
-  unfold fillCells
-  -- ab[q] := x[q] or F
   refine .seq (put_runs (q : ℤ) A.ab q ?_ hX (by omega) (abs_cellOr_le_word C _).1)
   -- bc[q] := x[c t + s - b] or F, for row b and column c
   refine .seq (put_runs (A.idxBC q) A.bc q ?_ (hX.write C (by omega) _) (by omega)
@@ -359,7 +351,7 @@ private theorem round_spec (C : Ctx lim μ A V) (hq : q < A.t * A.t) (z w : ℤ)
   -- the three cells
   refine Ends.next _ (Ends.block (cells_runs C hq z w ?_) le_rfl)
   -- Cell := Cell + 1
-  refine Ends.setToThen ((q + 1 : ℕ) : ℤ) ?_ (by light_side) (by simp [nextPair])
+  refine Ends.setToThen ((q + 1 : ℕ) : ℤ) ?_ (by light_side) (by simp )
   -- on to the next row and column
   exact Ends.nextPair ⟨_, _, rfl⟩ C.side (by omega) (by omega) rfl rfl rfl
     (hT := by simp [nextPair])

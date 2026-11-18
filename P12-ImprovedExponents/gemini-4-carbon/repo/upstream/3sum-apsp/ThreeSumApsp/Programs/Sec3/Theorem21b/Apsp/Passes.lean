@@ -148,16 +148,14 @@ def apInitCell (INF : ℤ) (ADJ W : List ℤ) (q : ℕ) : ℤ :=
 def zeroedDiag (μ : ℕ → ℤ) (A n j : ℕ) : ℕ → ℤ :=
   fun a => if ∃ i < j, a = A + i * (n + 1) then 0 else μ a
 
-private theorem zeroedDiag_zero {μ : ℕ → ℤ} {A n : ℕ} : zeroedDiag μ A n 0 = μ := by
-  funext a
-  simp [zeroedDiag]
+private theorem zeroedDiag_zero {μ : ℕ → ℤ} {A n : ℕ} : zeroedDiag μ A n 0 = μ := rfl
 
 /-- What round j of the second pass writes. -/
 private theorem zeroedDiag_succ {μ : ℕ → ℤ} {A n : ℕ} (j : ℕ) :
     Function.update (zeroedDiag μ A n j) (A + j * (n + 1)) 0 = zeroedDiag μ A n (j + 1) := by
   funext a
   simp only [zeroedDiag, Nat.exists_lt_succ_right, Function.update_apply]
-  by_cases h : a = A + j * (n + 1) <;> simp [h]
+  grind
 
 /-- After both passes the weight matrix stands at A. -/
 private theorem seg_zeroedDiag_wrote {μ : ℕ → ℤ} {A n : ℕ} {INF : ℤ} {ADJ W : List ℤ} :
@@ -168,7 +166,7 @@ private theorem seg_zeroedDiag_wrote {μ : ℕ → ℤ} {A n : ℕ} {INF : ℤ} 
   have hdiag : (∃ i < n, A + q = A + i * (n + 1)) ↔ q / n = q % n :=
     ⟨fun ⟨i, hi, h⟩ => by
       obtain ⟨h1, h2⟩ := (Nat.eq_mul_succ_iff hi).1 (Nat.add_left_cancel h)
-      rw [h1, h2],
+      omega,
     fun h => ⟨q % n, Nat.mod_lt_of_lt_mul hq', congrArg (A + ·)
       ((Nat.eq_mul_succ_iff (Nat.mod_lt_of_lt_mul hq')).2 ⟨h, rfl⟩)⟩⟩
   simp only [zeroedDiag, hdiag, wrote_done hq', weightList, List.getElem_map, List.getElem_range,
@@ -182,10 +180,10 @@ private theorem sameOutside_zeroedDiag {μ μ' : ℕ → ℤ} {A n j : ℕ} (h :
     rintro ⟨i, hi, rfl⟩
     have := Nat.mul_add_lt_mul (show i < n by omega) (show i < n by omega)
     rw [Nat.mul_succ] at ha
-    simp only [Outside] at ha
+    simp  [Outside] at ha
     omega
   rw [zeroedDiag, if_neg hno]
-  exact h a ha
+  aesop
 
 /-- The invariant of the second pass of apInit before round j; μ is the memory after the first
 pass. -/
@@ -239,10 +237,6 @@ theorem apInit_meets {p : ℕ} (hp : P[p]? = some apInitBody) {μ : ℕ → ℤ}
       Seg μ' A (weightList n INF ADJ W) ∧ SameOutside μ μ' A (n * n) := by
   refine .of_body hp ?_
   have hnn : n ≤ n * n := Nat.le_mul_of_pos_left n hn
-  have hword : (n : ℤ) * n ≤ lim.word := by exact_mod_cast (show ((n * n : ℕ) : ℤ) ≤ _ by omega)
-  have hpos : 0 ≤ (n : ℤ) * n := by positivity
-  unfold apInitBody
-  -- Cells := Verts * Verts
   light_set (n * n : ℕ)
   -- for Idx < Cells: the first pass
   refine Ends.next _ (Ends.forFrame (fun j μ' => μ' = wrote μ A (apInitCell INF ADJ W) j)
@@ -330,10 +324,9 @@ private theorem wrote_apOutCell_succ {μ : ℕ → ℤ} {out : ℕ} {INF : ℤ} 
       (if L.getD q 0 = INF then 0 else L.getD q 0) =
         wrote μ out (apOutCell INF L) (2 * (q + 1)) := by
   have heven : apOutCell INF L (2 * q) = if L.getD q 0 = INF then 0 else 1 := by
-    simp only [apOutCell, Nat.mul_div_cancel_left q Nat.two_pos, Nat.mul_mod_right, if_true]
+    simp  [apOutCell]
   have hodd : apOutCell INF L (2 * q + 1) = if L.getD q 0 = INF then 0 else L.getD q 0 := by
-    simp only [apOutCell, show (2 * q + 1) / 2 = q by omega, show (2 * q + 1) % 2 = 1 by omega,
-      one_ne_zero, if_false]
+    simp  [apOutCell, show (2 * q + 1) / 2 = q by omega]
   rw [← heven, wrote_succ, Nat.add_assoc, ← hodd, wrote_succ]
   rfl
 
@@ -398,8 +391,6 @@ theorem apOut_meets {p : ℕ} (hp : P[p]? = some apOutBody) {μ : ℕ → ℤ} {
     Meets lim P p d [L.length, INF, A, out] μ (30 * L.length + 8) fun _ μ' =>
       PairsAt μ' out INF L ∧ SameOutside μ μ' out (2 * L.length) := by
   refine .of_body hp ?_
-  unfold apOutBody
-  -- Pos := Out
   light_set out
   refine Ends.for (ApOutInv μ A out INF L) L.length apOutRound.blockCost ?start ?round ?done ?bound
     (by omega) (by simp [apOutRound, apOutWrite]; omega)

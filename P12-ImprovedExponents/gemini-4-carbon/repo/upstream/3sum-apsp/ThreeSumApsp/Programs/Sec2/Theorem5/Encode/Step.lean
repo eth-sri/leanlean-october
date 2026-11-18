@@ -92,7 +92,7 @@ variable {lim : Limits} {P : Program} {d : ℕ} {μ μ' : ℕ → ℤ} {src dst 
 theorem enc_coef_mul_bound {x y V : ℤ} (hx : -1 ≤ x ∧ x ≤ 1) (hy : -V ≤ y ∧ y ≤ V) :
     -V ≤ x * y ∧ x * y ≤ V := by
   have h : x = -1 ∨ x = 0 ∨ x = 1 := by omega
-  rcases h with rfl | rfl | rfl <;> constructor <;> omega
+  grind
 
 /-- A sum of `s` numbers of absolute value at most `V` is at most `s V` in absolute value. -/
 theorem enc_sum_bound {f : ℕ → ℤ} {V : ℤ} (s : ℕ) (h : ∀ i < s, -V ≤ f i ∧ f i ≤ V) :
@@ -126,8 +126,8 @@ theorem keep (pre : EncStepPre lim μ src dst n lam tab V) (same : SameOutside �
     EncStepPre lim μ' src dst n lam tab V := by
   light_facts pre
   exact { pre with
-    coef := fun i hi => by rw [same _ (by omega)]; exact pre.coef i hi
-    vals := fun i hi => by rw [same _ (by omega)]; exact pre.vals i hi }
+    coef := fun i hi => by rw [same _ (by omega)]; grind
+    vals := fun i hi => by rw [same _ (by omega)]; grind }
 
 /-- The sums do not change when cells of `dst` are written. -/
 private theorem val_congr (pre : EncStepPre lim μ src dst n lam tab V)
@@ -162,17 +162,14 @@ theorem encStepSum_spec (pre : EncStepPre lim μ src dst n lam tab V) (hj : j < 
     rintro s _ hs - rfl
     -- The two cells that are read, and the sizes of the numbers.
     have hlt : s * n + j < 7 * n := Nat.mul_add_lt_mul hs hj
-    have hsum := pre.val_bounds hj (show s ≤ 7 by omega)
     have hnew := pre.summand_bounds hj hs
     have hnext := pre.val_bounds hj (show s + 1 ≤ 7 by omega)
     have hsV : ((s + 1 : ℕ) : ℤ) * V ≤ 7 * V := by
-      have hV : 0 ≤ V := by have := pre.vals 0 (by omega); omega
+      have hV : 0 ≤ V := by omega
       exact mul_le_mul_of_nonneg_right (by exact_mod_cast hs) hV
     have hcoef : ((tab : ℤ) + 7 * lam + s).toNat = tab + 7 * lam + s := by omega
     have hcell : ((src : ℤ) + s * n + j).toNat = src + s * n + j := by
       rw [← Nat.cast_mul, ← Nat.cast_add, ← Nat.cast_add, Int.toNat_natCast]
-    have hprod : ((s * n : ℕ) : ℤ) = s * n := Nat.cast_mul s n
-    -- Acc := Acc + tab[7 lam + Var] * src[Var n + Cell]
     unfold encStepAdd
     refine Ends.setTo (encStepVal μ src lam tab n j (s + 1)) ⟨by simp, ?_⟩ ?_
     · simp [update_frame_setLocal]
@@ -205,8 +202,6 @@ theorem encStep_meets {p : ℕ} (hp : P[p]? = some encStepBody)
     rintro j s _ hj rfl
     have same : SameOutside μ (wrote μ dst (encStepOut μ src lam tab n) j) dst n :=
       sameOutside_wrote hj.le
-    unfold encStepCell
-    -- Acc := 0; the sum; mem[dst + Cell] := Acc
     light_set 0
     refine Ends.next _ (encStepSum_spec (pre.keep same) hj ?_ le_rfl)
     rw [pre.val_congr same hj]

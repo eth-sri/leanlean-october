@@ -33,7 +33,7 @@ open ThreeSumApsp ThreeSumApsp.WordRam ThreeSumApsp.Spec
 theorem input_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) :
     (ofEnd EndStatement.MinPlusProduct).input x =
       (x.n : ℤ) :: (rowMajor x.x.1 ++ rowMajor x.x.2) := by
-  simp only [EndStatement.MinPlusProduct, rowByRow_eq]
+  simp  [EndStatement.MinPlusProduct, rowByRow_eq]
 
 /-- The input takes 1 + 2n² cells. -/
 theorem length_input_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) :
@@ -45,7 +45,7 @@ theorem length_input_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) :
 /-- The entries of the two matrices are within the bound. -/
 theorem abs_le_of_mem_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) {a : ℤ}
     (ha : a ∈ rowMajor x.x.1 ++ rowMajor x.x.2) : |a| ≤ (x.U : ℤ) :=
-  Bounded.abs_le (by simpa only [EndStatement.MinPlusProduct, rowByRow_eq] using ha)
+  Bounded.abs_le (by simpa  [EndStatement.MinPlusProduct, rowByRow_eq] using ha)
 
 /-- The instance of the task: where the two matrices and the product stand. -/
 def minPlusInst (x : Bounded EndStatement.MinPlusProduct) : mpTask.Inst :=
@@ -66,14 +66,14 @@ theorem pre_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) (hn : 1 ≤
     segA := seg_first _ _ _
     segB := by
       have := seg_second (x.n : ℤ) (rowMajor x.x.1) (rowMajor x.x.2)
-      rwa [hA] at this
-    leA := fun a (ha : a ∈ rowMajor x.x.1) => abs_le_of_mem_minPlusProduct x (by simp [ha])
-    leB := fun a (ha : a ∈ rowMajor x.x.2) => abs_le_of_mem_minPlusProduct x (by simp [ha])
-    belowA := by simp only [minPlusInst]; omega
-    belowB := by simp only [minPlusInst]; omega
-    belowC := by simp only [minPlusInst]; omega
-    apartA := Or.inl (by simp only [minPlusInst]; omega)
-    apartB := Or.inl (by simp only [minPlusInst]; omega) }
+      aesop
+    leA := fun a (ha : a ∈ rowMajor x.x.1) => abs_le_of_mem_minPlusProduct x (by grind)
+    leB := fun a (ha : a ∈ rowMajor x.x.2) => abs_le_of_mem_minPlusProduct x (by grind)
+    belowA := by simp  [minPlusInst]; omega
+    belowB := by simp  [minPlusInst]; omega
+    belowC := by simp  [minPlusInst]; omega
+    apartA := Or.inl (by simp  [minPlusInst]; omega)
+    apartB := Or.inl (by simp  [minPlusInst]; omega) }
 
 /-- What the task leaves in the output cells is the (min,+)-product as the end statement asks for
 it. -/

@@ -98,23 +98,21 @@ theorem getD_cycVec (z : CyclicRing p) {r : ℕ} (hr : r < p) :
 /-- The vector of 0. -/
 theorem cycVec_zero : cycVec hp 0 = List.replicate p 0 := by
   rw [cycVec, List.eq_replicate_iff]
-  refine ⟨by simp, fun b hb => ?_⟩
-  obtain ⟨r, -, rfl⟩ := List.mem_map.mp hb
-  exact map_zero (CyclicRing.coeff hp r)
+  simp
 
 /-- The vector of a sum. -/
 theorem cycVec_add (z w : CyclicRing p) :
     cycVec hp (z + w) = vadd (cycVec hp z) (cycVec hp w) := by
   refine List.ext_getElem (by simp [vadd, length_cycVec]) fun r _ _ => ?_
-  simp only [vadd, cycVec, List.getElem_zipWith, List.getElem_map, List.getElem_range]
-  exact map_add (CyclicRing.coeff hp r) z w
+  simp only [vadd, cycVec]
+  simp
 
 /-- The vector of a difference. -/
 theorem cycVec_sub (z w : CyclicRing p) :
     cycVec hp (z - w) = vsub (cycVec hp z) (cycVec hp w) := by
   refine List.ext_getElem (by simp [vsub, length_cycVec]) fun r _ _ => ?_
-  simp only [vsub, cycVec, List.getElem_zipWith, List.getElem_map, List.getElem_range]
-  exact map_sub (CyclicRing.coeff hp r) z w
+  simp only [vsub, cycVec]
+  simp
 
 /-- The vector of a power of `x`. -/
 theorem cycVec_x_pow (k : ℕ) : cycVec hp (CyclicRing.x p ^ k) = vunit p (k % p) :=
@@ -131,7 +129,7 @@ theorem cycVec_mul (z w : CyclicRing p) :
   refine Finset.sum_congr rfl fun i hi => ?_
   have hi' := Finset.mem_range.mp hi
   -- For each i, only one j contributes to the coefficient of x^r.
-  have hj : (if i ≤ r then r - i else r + p - i) < p := by split_ifs <;> omega
+  have hj : (if i ≤ r then r - i else r + p - i) < p := by grind
   rw [getD_cycVec hp z hi', getD_cycVec hp w hj, map_sum]
   simp only [smul_mul_smul_comm, ← pow_add, map_zsmul, CyclicRing.coeff_x_pow, smul_eq_mul]
   rw [Finset.sum_eq_single (if i ≤ r then r - i else r + p - i)]

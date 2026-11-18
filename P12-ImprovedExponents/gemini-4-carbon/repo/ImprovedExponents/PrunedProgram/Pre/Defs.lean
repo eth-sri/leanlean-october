@@ -1,7 +1,8 @@
 module
 
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Directory
-public import ImprovedExponents.PrunedProgram.Shared.Contracts
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Offline
+public import ImprovedExponents.PrunedProgram.Shared
 
 @[expose] public section
 
@@ -72,6 +73,16 @@ end
 def tPreCoreP (c : ℕ) (p : Sec2.Par) (t : ℕ) : ℕ :=
   c * Sec2.sharedShapeP p + tAllTiles p.L p.m t p.nB + 300
 
+def tPre31P (c : ℕ) (G : RatParams) (N D₀ : ℕ) : ℕ :=
+  tLog4 (logFour D₀) + 30 +
+    if logFour D₀ < G.m₀ then 0 else
+      tCeilMul G.a (logFour D₀) + tCeilMul G.p (logFour D₀) + tPadX N (D (logFour D₀))
+        + tCopy (D₀ * N) + tFill ((D (logFour D₀) - D₀) * N)
+        + tPreCoreP c (parOf G N D₀) (switchOf31 G D₀) + 120
+
+def tOffline32P (c : ℕ) (G : RatParams) (N D₀ w : ℕ) : ℕ :=
+  tPre31P c G N D₀ + w * (tQuery31 G D₀ + 30) + 20
+
 /-- queryAt(I, J, b0) returns (XY)[I, J] from the block at b0, of which it changes only cells of the
 scratch strings WD to SS: upstream's routine, with the encodings right at the leaves with at most
 `m` symbols `P₀` only. -/
@@ -111,7 +122,7 @@ variable {p : Sec2.Par} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Areas.lean (dir_cell)
 theorem dir_cellP (h : Sec2.SharedReadyP p hmL aX aY b0 X Y μ) {j : ℕ} (hj : j < 31) :
     μ (b0 + j) = (((Sec2.dirList p aX aY b0).getD j 0 : ℕ) : ℤ) :=
-  h.dir.read (by simpa [Sec2.dirList] using hj)
+  h.dir.read (by trivial)
 
 /-- Cell j of the directory, with the address in the form in which the evaluation of mem[b0 + j]
 meets it. -/

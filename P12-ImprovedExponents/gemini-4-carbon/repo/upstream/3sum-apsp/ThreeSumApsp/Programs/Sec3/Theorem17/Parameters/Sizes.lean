@@ -66,7 +66,7 @@ theorem capPow_spec {g : ℕ} (hg : 1 ≤ g) (t i : ℕ) :
 /-- The value is below t exactly if the power is. -/
 theorem capPow_lt_iff {g : ℕ} (hg : 1 ≤ g) (t i : ℕ) : capPow g t i < t ↔ g ^ i < t := by
   obtain ⟨hlow, hhigh⟩ := capPow_spec hg t i
-  exact ⟨fun h => hlow h ▸ h, fun h => not_le.1 fun hc => absurd (hhigh hc) (not_le.2 h)⟩
+  omega
 
 namespace PowLt
 
@@ -97,14 +97,13 @@ theorem powLt_meets {μ : ℕ → ℤ} {pPow g e t : ℕ} (hP : P[pPow]? = some 
     Meets lim P pPow d [g, e, t] μ (16 * e + 14) fun r μ' =>
       r = (if g ^ e < t then 1 else 0) ∧ μ' = μ := by
   refine .of_body hP ?_
-  push_cast at hword
   have htg : (0 : ℤ) ≤ (t : ℤ) * g := by positivity
   -- cnt := 0; prod := 1
   light_set (0 : ℕ)
   light_set (1 : ℕ)
   -- while cnt < e.  Before round i, cnt = i and prod = capPow g t i.
   refine Ends.next _ (Ends.whileBlock
-    (fun i σ => σ = ⟨frame [g, e, t, i, (capPow g t i : ℕ)], μ⟩) e (by simp [capPow]) ?round ?done
+    (fun i σ => σ = ⟨frame [g, e, t, i, (capPow g t i : ℕ)], μ⟩) e (rfl) ?round ?done
     le_rfl) (by simp; omega)
   case round =>
     rintro i _ hi rfl
@@ -174,7 +173,7 @@ theorem rootCeil_meets {μ : ℕ → ℤ} {pRoot pPow e t : ℕ} (hR : P[pRoot]?
     have hle : t * g + e + 1 ≤ t * (y + 1) + e + 1 := by
       have := Nat.mul_le_mul_left t hgy
       omega
-    simpa only [key] using powLt_meets hP hg ((Int.ofNat_le.2 hle).trans hword)
+    simpa  [key] using powLt_meets hP hg ((Int.ofNat_le.2 hle).trans hword)
   -- cand := 1; more := powLt(cand, e, t)
   light_set (1 : ℕ)
   light_call (test 1 le_rfl hpos) with _ μ' ⟨rfl, hμ⟩
@@ -225,9 +224,7 @@ private theorem queryCapNat_test_bounds {n D C c : ℕ} (hD : 1 ≤ D)
       ((c : ℤ) + 1) * ((c : ℤ) + 1) * D ≤ 4 * ((n ^ 4 : ℕ) : ℤ) + D := by
   have hmono : (c + 1) * (c + 1) * D ≤ (C + 1) * (C + 1) * D :=
     Nat.mul_le_mul_right _ (Nat.mul_le_mul (by omega) (by omega))
-  exact ⟨by exact_mod_cast Nat.le_mul_of_pos_right (c + 1) (Nat.succ_pos c),
-    by exact_mod_cast Nat.le_mul_of_pos_right ((c + 1) * (c + 1)) hD,
-    by exact_mod_cast hmono.trans hmax⟩
+  simp; grind
 
 /-- **queryCapNat** returns ⌊n²/√D⌋, for D ≥ 1. -/
 theorem queryCapNat_meets {μ : ℕ → ℤ} {q n D : ℕ} (hP : P[q]? = some queryCapNatBody) (hD : 1 ≤ D)

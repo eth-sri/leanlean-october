@@ -2,7 +2,7 @@ module
 
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.AllTiles
-public import ImprovedExponents.PrunedProgram.Tiles.Contracts
+public import ImprovedExponents.PrunedProgram.Tiles.FillList
 import all ThreeSumApsp.Programs.Sec4.Theorem30.AllTiles
 
 @[expose] public section
@@ -79,8 +79,8 @@ private theorem tileArgs_pre (C : AllTilesPreP lim μ x) (hβ : β < x.nB) (hβ'
       roots := M.roots
       segA := hA
       segB := hB
-      room := by simp only [tileArgs]; omega
-      rootsPlace := by simp only [tileArgs, TileArgs.cells]; omega }
+      room := by simp  [tileArgs]; omega
+      rootsPlace := by simp  [tileArgs, TileArgs.cells]; omega }
 
 /-- The call of `tile` for the tile (β, β') leads from the memory before this tile to the memory
 before the next one. -/
@@ -99,8 +99,7 @@ private theorem tile_meets (hTile : TileSpecP lim P) (C : AllTilesPreP lim μ x)
     ⟨tries_tileArgs x β β' ▸ htrie, tries_tileArgs x β β' ▸ hroots,
       M.same.then same fun c hc => ⟨hc, ?_⟩⟩
   -- a cell below cur or behind the trie area is none of those that tile may change
-  have hc' : c < x.cur ∨ x.tr + x.cap ≤ c := hc
-  simp only [TileArgs.Kept, tileArgs, Outside]
+  simp  [TileArgs.Kept, tileArgs]
   omega
 
 /-- One tile: the call, and the pointers move on. -/
@@ -117,7 +116,6 @@ private theorem step_spec (hTile : TileSpecP lim P) (C : AllTilesPreP lim μ x) 
   have hcol : x.aENCB + (β' + 1) * 10 ^ x.L = x.aENCB + β' * 10 ^ x.L + 10 ^ x.L := by ring
   have hi := Nat.mul_add_lt_mul hβ hβ'
   have hcolS := Nat.mul_add_le_mul hβ' (le_refl (10 ^ x.L))
-  have hbands : x.nB ≤ x.nB * 10 ^ x.L := Nat.le_mul_of_pos_right _ (by positivity)
   unfold AllTiles.Inv
   rw [hptr, hcol]
   -- names for the products
@@ -197,7 +195,7 @@ theorem allTilesP_spec {lim : Limits} {P : Program} (hP : P[Proc.allTiles]? = so
     · rw [triesBefore, tilesBefore_zero]
       exact C.trie
     · rw [triesBefore, tilesBefore_zero]
-      simp [allTries, SegN, Seg]
+      simp [allTries, SegN]
   case round =>
     rintro β σ hβ hI
     have hrow := row_spec hTile C hβ hd hI

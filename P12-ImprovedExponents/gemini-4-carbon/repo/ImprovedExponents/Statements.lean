@@ -1,151 +1,118 @@
 module
 
 public import ThreeSumApsp.Statements.Exponents
-public import ImprovedExponents.Pipeline.General
-public import ImprovedExponents.Pipeline.PrunedClaim
-public import ImprovedExponents.Optimum.NumValues
-public import ImprovedExponents.Optimum.NumWitness
-public import ImprovedExponents.Optimum.Global
-public import ImprovedExponents.Optimum.GlobalFull
+public import ImprovedExponents.PrunedProgram.Wrapper
 public import ImprovedExponents.AllEdges.Pairs.TimeBound
 public import ImprovedExponents.AllEdges.Host.ClaimAE
 
 @[expose] public section
 
-/-!
-# The improved bounds for 3SUM, Exact Triangle, the (min,+)-product and APSP
-
-The statements of this file are about programs of the word RAM of upstream's `EndStatement.lean`:
-`Q.SolvedInTime r` says that for every exponent `κ` there are a program, a slope `b` and a time
-bound `T(n) = O(n^r)` such that the program solves every instance of `Q` whose numbers have
-absolute value at most `n^κ`, at every word size of at least `b (⌊log₂ n⌋ + 1)` bits, within `T(n)`
-steps. Upstream proves the paper's Theorem 22 in this form: 3SUM with `r = 1.9992`, the
-(min,+)-product and APSP with `r = 2.99942`, Exact Triangle with `r = 3 - 0.0017`.
-
-Four sets of bounds follow, in the order of the ingredients they use. `δ` is the saving for Exact
-Triangle; 3SUM keeps half of it and the (min,+)-product and APSP a third, or all of it through
-all-edges Exact Triangle (`…_allEdges`). None of them has a hypothesis.
-
-| | ingredients | `δ >` | 3SUM | Exact Triangle | (min,+), APSP | all-edges route |
-|---|---|---|---|---|---|---|
-| `…_paper` | the paper's algorithm and analysis, better parameters | 0.00184 | 1.99908 | 2.99816 |
-2.99939 | |
-| `…_exact` | + exact count of the leaves | 0.00196 | 1.99902 | 2.99804 | 2.99935 | |
-| `…_full` | + reduction charged at the true middle size | 0.002059 | 1.99898 | 2.99795 | 2.99932 |
-2.99795 |
-| `…_pruned` | + pruned encodings | 0.002095 | 1.99896 | 2.99791 | 2.99931 | 2.99791 |
-
-The numerals of the first two rows are taken at the ratio `c = 108/5`, which the regime test
-`D^18 ≤ N` of the existing program admits; those of the third at `c = 107/5`, near the optimum of
-the method, with the solver whose test is `D^r ≤ N^s` (`ImprovedExponents.Pipeline.RegimeRS`); those
-of the last at `c = 22`, with the solver whose encoder is pruned
-(`ImprovedExponents.PrunedProgram`, `ImprovedExponents.Pipeline.PrunedClaim`). The general theorems
-behind them are `allSolved_paper`, `allSolved_exact`, `allSolved_full`
-(`ImprovedExponents.Pipeline.General`) and `allSolved_pruned`
-(`ImprovedExponents.Pipeline.PrunedClaim`), and the optima over the ratio are
-`optimum_global_full` (paper's encodings) and `optimum_global` (pruned encodings);
-`allSolved_full_sup` and `allSolved_pruned_sup` give every saving below them.
--/
-
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.WordRam Light Real
+open ThreeSumApsp ThreeSumApsp.WordRam Light Light.Sec4 Real
 
-/-! ## From a saving to the end statements -/
+theorem thinClaimP_gammaX {a b p q : ℕ} (hb : 1 ≤ b) (hq : 1 ≤ q) (hc : 10 * b < a) (hp : 1 ≤ p)
+    (hθ : 10 * p < 9 * q) (hrs : basePruned ((a : ℝ) / b) < 18 * log 4) {γ ε : ℝ}
+    (hγ0 : 0 < γ) (hε0 : 0 < ε) (hγ : γ < gammaX ((a : ℝ) / b) ((p : ℝ) / q))
+    (hε : ε < RcP ((a : ℝ) / b) γ) (hεrs : ε ≤ 1 / 18) :
+    ThinClaim lightModel ε γ (qOf ((p : ℝ) / q)) := by
+  obtain ⟨m₁, h₁⟩ := offlineWithinP cShared30 hb hq hc hp hθ hγ0 hε0 hγ hε
+  obtain ⟨m₂, h₂⟩ := exists_fits18 hb hq hc hp hθ hrs
+  have hm₀ : 1 ≤ max (max m₁ m₂) 1 := le_max_right _ _
+  exact thinClaim_programP (h₂ _ hm₀ ((le_max_right _ _).trans (le_max_left _ _))) hεrs
+    (h₁ _ hm₀ ((le_max_left _ _).trans (le_max_left _ _)))
 
-/-- The four end statements at rational exponents above the bounds of a saving `δ`. -/
-theorem AllSolved.endStatements {δ : ℝ} (h : AllSolved δ) {r₃ rE rM : ℚ}
-    (h₃ : 2 - δ / 2 < (r₃ : ℝ)) (hE : 3 - δ < (rE : ℝ)) (hM : 3 - δ / 3 < (rM : ℝ))
-    (h₃0 : 0 ≤ r₃) (hE0 : 0 ≤ rE) (hM0 : 0 ≤ rM) :
-    EndStatement.ThreeSum.SolvedInTime r₃ ∧ EndStatement.ExactTriangle.SolvedInTime rE ∧
-      EndStatement.MinPlusProduct.SolvedInTime rM ∧ EndStatement.APSP.SolvedInTime rM :=
-  ⟨SolvedInTime.endStatement (h.threeSum _ h₃) rfl h₃0,
-    SolvedInTime.endStatement (h.exactTriangle _ hE) rfl hE0,
-    SolvedInTime.endStatement (h.minPlus _ hM) rfl hM0,
-    SolvedInTime.endStatement (h.apsp _ hM) rfl hM0⟩
+section
+set_option exponentiation.threshold 2000
 
-/-! ## The savings -/
+private lemma log_four_eq : log (4 : ℝ) = 2 * log 2 := by
+  rw [show (4 : ℝ) = 2 ^ 2 by norm_num, log_pow]; push_cast; ring
 
-/-- **With pruned encodings** (`c = 22`): a saving of more than `0.002095` for Exact Triangle;
-every saving below `R'_c(Γ) Γ/2 = 0.0020952…`. -/
-theorem allSolved_pruned_num :
-    ∃ δ : ℝ, (0.002095 : ℝ) < δ ∧ AllSolved δ :=
-  ⟨(0.002095 + savingF (basePruned 22) (Gam 22)) / 2, by linarith [savingF_pruned_gt],
-    allSolved_pruned (c := 22) (by norm_num) (by linarith [savingF_pruned_gt])
-      (by linarith [savingF_pruned_gt])⟩
+private lemma log_nine_eq : log (9 : ℝ) = 2 * log 3 := by
+  rw [show (9 : ℝ) = 3 ^ 2 by norm_num, log_pow]; push_cast; ring
 
-/-! ## The paper's algorithm and analysis at better parameters -/
+private lemma basePruned_109_5_lt : basePruned ((109 : ℝ) / 5) < 359 / 10 * log 2 := by
+  have hlog := log_lt_log (by positivity)
+    (by norm_num : (109 : ℝ) ^ 109 * 3 ^ 208 < 104 ^ 104 * 5 ^ 5 * 2 ^ 359)
+  repeat rw [log_mul (by positivity) (by positivity)] at hlog
+  simp only [log_pow] at hlog
+  unfold basePruned entropy
+  rw [show (1 : ℝ) / ((109 : ℝ) / 5) = 5 / 109 by norm_num,
+    show (1 : ℝ) - 5 / 109 = 104 / 109 by norm_num,
+    log_div (by norm_num) (by norm_num), log_div (by norm_num) (by norm_num)]
+  push_cast at hlog ⊢; linarith
 
-/-! ## With the exact count of the leaves -/
+private lemma gammaX_109_5_gt : (0.07545 : ℝ) < gammaX ((109 : ℝ) / 5) ((23 : ℝ) / 198) := by
+  have hl1 := log_lt_log (by positivity) (by norm_num : (2 : ℝ) ^ 2 * 20592 ^ 249 < 20707 ^ 249)
+  have hl2 := log_lt_log (by positivity)
+    (by norm_num : (990 : ℝ) ^ 115 * 198 ^ 875 * 3 ^ 230 < 20707 ^ 115 * 175 ^ 875 * 2 ^ 16)
+  rw [log_mul (by positivity) (by positivity)] at hl1
+  repeat rw [log_mul (by positivity) (by positivity)] at hl2
+  simp only [log_pow] at hl1 hl2
+  rw [show (20592 : ℝ) = 104 * 198 by norm_num, log_mul (by norm_num) (by norm_num)] at hl1
+  have h990 : log (990 : ℝ) = log 5 + log 198 := by
+    rw [← log_mul (by norm_num) (by norm_num)]; norm_num
+  unfold gammaX g2 negMulLog
+  rw [show (109 : ℝ) / 5 - 1 + (23 : ℝ) / 198 = 20707 / 990 by norm_num,
+    show (109 : ℝ) / 5 - 1 = 104 / 5 by norm_num,
+    show (1 : ℝ) - (23 : ℝ) / 198 = 175 / 198 by norm_num, log_four_eq, log_nine_eq,
+    log_div (by norm_num) (by norm_num), log_div (by norm_num) (by norm_num),
+    log_div (by norm_num) (by norm_num)]
+  rw [h990] at hl2 ⊢
+  have : 0 < log (2 : ℝ) := log_pos (by norm_num)
+  rw [lt_div_iff₀ (by positivity)]
+  push_cast at hl1 hl2 ⊢; linarith
 
-/-! ## With the reduction charged at the true size of the middle part -/
+private lemma qOf_23_198_lt : qOf ((23 : ℝ) / 198) < 1229 / 2772 := by
+  have hl := log_lt_log (by positivity)
+    (by norm_num : (198 : ℝ) ^ 1386 * 3 ^ 322 < 23 ^ 161 * 175 ^ 1225 * 2 ^ 1229)
+  repeat rw [log_mul (by positivity) (by positivity)] at hl
+  simp only [log_pow] at hl
+  unfold qOf entropy
+  rw [show (1 : ℝ) - (23 : ℝ) / 198 = 175 / 198 by norm_num, log_four_eq, log_nine_eq,
+    log_div (by norm_num) (by norm_num), log_div (by norm_num) (by norm_num)]
+  have : 0 < log (2 : ℝ) := log_pos (by norm_num)
+  rw [div_lt_iff₀ (by positivity)]
+  push_cast at hl ⊢; linarith
 
-/-! ## With pruned encodings -/
+private theorem explicit_ae_main : ExplicitFrom AllEdges.lightModelAE 0.002091 1 := by
+  have h4 := log_four_eq
+  have hb := basePruned_109_5_lt
+  have hb0 : 0 < basePruned ((109 : ℝ) / 5) := basePruned_pos (by norm_num)
+  have hR : (0.055477 : ℝ) < RcP ((109 : ℝ) / 5) 0.07545 := by
+    unfold RcP thinR; rw [h4, lt_div_iff₀ (by positivity)]; linarith
+  have hthin := thinClaimP_gammaX (a := 109) (b := 5) (p := 23) (q := 198)
+    (γ := 0.07545) (ε := 0.055477) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+    (by norm_num) (by grind) (by norm_num) (by norm_num) gammaX_109_5_gt hR (by norm_num)
+  have hql := qOf_23_198_lt
+  exact explicitFrom_mid AllEdges.lightModelAE (d := (1439 : ℝ) / 25000) (η := (2 : ℝ) / 55)
+    (s := 0.0020915) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+    (qOf_nonneg _ (by norm_num) (by norm_num)) (by norm_num) (fun _ => rfl) (fun _ => rfl)
+    (AllEdges.midHostRat_ae 1439 25000 2 55 (by norm_num) (by norm_num) (by norm_num) (by norm_num))
+    (lopClaim_of_thinClaim_light hthin (by norm_num) (qOf_nonneg _ (by norm_num) (by norm_num))
+      (by norm_num) rfl)
+    (by norm_num) (by norm_num) (by norm_num) (by linarith) (by norm_num)
 
-/-- With pruned encodings: 3SUM in `O(n^1.99896)`, Exact Triangle in `O(n^2.99791)`, the
-(min,+)-product and APSP in `O(n^2.99931)`. -/
-theorem endStatements_pruned :
-    EndStatement.ThreeSum.SolvedInTime 1.99896 ∧
-      EndStatement.ExactTriangle.SolvedInTime 2.99791 ∧
-      EndStatement.MinPlusProduct.SolvedInTime 2.99931 ∧
-      EndStatement.APSP.SolvedInTime 2.99931 := by
-  obtain ⟨δ, hδ, h⟩ := allSolved_pruned_num
-  exact h.endStatements (by norm_num; linarith) (by norm_num; linarith) (by norm_num; linarith)
-    (by norm_num) (by norm_num) (by norm_num)
+end
 
-/-- **3SUM in `O(n^1.99896)` steps on the word RAM**: the exact count, the true middle size and
-pruned encodings. No hypothesis. -/
+private theorem allSolved_main : AllSolved 0.002091 :=
+  allSolved_of_explicitFrom AllEdges.claim_bruteForce_ae (by norm_num) (by norm_num)
+    (AllEdges.explicitFrom_light_of_ae (by norm_num) explicit_ae_main)
+
 theorem threeSum_pruned : EndStatement.ThreeSum.SolvedInTime 1.99896 :=
-  endStatements_pruned.1
+  SolvedInTime.endStatement (allSolved_main.threeSum _ (by norm_num)) rfl (by norm_num)
 
-/-- **Exact Triangle in `O(n^2.99791)` steps on the word RAM**, with pruned encodings. No
-hypothesis. -/
 theorem exactTriangle_pruned : EndStatement.ExactTriangle.SolvedInTime 2.99791 :=
-  endStatements_pruned.2.1
+  SolvedInTime.endStatement (allSolved_main.exactTriangle _ (by norm_num)) rfl (by norm_num)
 
-/-! ## The optimum of the method -/
+private theorem minPlusSolved_main : AllEdges.MinPlusSolved 0.002091 :=
+  AllEdges.minPlusSolved_of_explicitFrom AllEdges.CA_nonneg AllEdges.pairsFromAllEdges
+    (by norm_num) explicit_ae_main
 
-/-! ## APSP through all-edges Exact Triangle
+theorem minPlus_allEdges_pruned : EndStatement.MinPlusProduct.SolvedInTime 2.99791 :=
+  SolvedInTime.endStatement (minPlusSolved_main.minPlus _ (by norm_num)) rfl (by norm_num)
 
-Footnote 10 of the paper: the all-edges version of Exact Triangle is solved by the host of
-Theorem 17 within the same bound (`ImprovedExponents.AllEdges.Host`), and the (min,+)-product
-reduces to it on the same `n` vertices (`ImprovedExponents.AllEdges.Pairs`, upstream's bit search
-and repeated squaring). So the (min,+)-product and APSP keep all of the saving `δ` of Exact
-Triangle:
-the exponent is `3 - δ` instead of `3 - δ/3`. -/
-
-/-- The two end statements at a rational exponent above `3 - δ`. -/
-theorem AllEdges.MinPlusSolved.endStatements {δ : ℝ} (h : AllEdges.MinPlusSolved δ) {rM : ℚ}
-    (hM : 3 - δ < (rM : ℝ)) (hM0 : 0 ≤ rM) :
-    EndStatement.MinPlusProduct.SolvedInTime rM ∧ EndStatement.APSP.SolvedInTime rM :=
-  ⟨SolvedInTime.endStatement (h.minPlus _ hM) rfl hM0,
-    SolvedInTime.endStatement (h.apsp _ hM) rfl hM0⟩
-
-/-- **The (min,+)-product and APSP with pruned encodings**: every saving below
-`R'_c(Γ(c)) Γ(c)/2`, for every `c ≥ 21`, with the whole saving. No hypothesis. -/
-theorem minPlusSolved_pruned {c δ : ℝ} (hc : 21 ≤ c) (hδ0 : 0 ≤ δ)
-    (hδ : δ < savingF (basePruned c) (Gam c)) : AllEdges.MinPlusSolved δ := by
-  have hhalf : savingF (basePruned c) (Gam c) ≤ 1 / 2 :=
-    savingF_le_half (basePruned_pos (by linarith)).le (Gam_pos (by linarith)).le
-  exact AllEdges.minPlusSolved_of_explicitFrom AllEdges.CA_nonneg AllEdges.pairsFromAllEdges
-    (by linarith)
-    (explicitFrom_pruned hc hδ0 hδ AllEdges.lightModelAE rfl AllEdges.midHostRat_ae)
-
-/-- The (min,+)-product and APSP in `O(n^2.99791)`, with pruned encodings and the all-edges host,
-at `c = 22`. -/
-theorem endStatements_allEdges_pruned :
-    EndStatement.MinPlusProduct.SolvedInTime 2.99791 ∧ EndStatement.APSP.SolvedInTime 2.99791 :=
-  (minPlusSolved_pruned (c := 22) (by norm_num) (by norm_num)
-    savingF_pruned_gt).endStatements (by norm_num) (by norm_num)
-
-/-- **The (min,+)-product in `O(n^2.99791)` steps on the word RAM.** No hypothesis. -/
-theorem minPlus_allEdges_pruned :
-    EndStatement.MinPlusProduct.SolvedInTime 2.99791 :=
-  endStatements_allEdges_pruned.1
-
-/-- **APSP in `O(n^2.99791)` steps on the word RAM.** No hypothesis. -/
-theorem apsp_allEdges_pruned :
-    EndStatement.APSP.SolvedInTime 2.99791 :=
-  endStatements_allEdges_pruned.2
+theorem apsp_allEdges_pruned : EndStatement.APSP.SolvedInTime 2.99791 :=
+  SolvedInTime.endStatement (minPlusSolved_main.apsp _ (by norm_num)) rfl (by norm_num)
 
 end ImprovedExponents

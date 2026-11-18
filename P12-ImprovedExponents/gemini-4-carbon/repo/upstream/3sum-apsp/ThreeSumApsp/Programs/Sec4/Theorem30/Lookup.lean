@@ -80,7 +80,6 @@ theorem lookup_spec {lim : Limits} {P : Program} (hP : P[Proc.lookup]? = some lo
     (hs : Std lim) : LookupSpec lim P := by
   rintro tr root key _ T kl μ hT hkey rfl hd hwalk htr hkeyB
   refine fun d _ => ⟨lookupBody, hP, ?_⟩
-  light_facts hs
   unfold tLookup
   -- level := 0
   light_set (0 : ℕ)
@@ -96,7 +95,7 @@ theorem lookup_spec {lim : Limits} {P : Program} (hP : P[Proc.lookup]? = some lo
     have hnext : μ (tr + (p + kl[i])) = T.getD (p + kl[i]) 0 := hT.getD (by omega) 0
     have haddr : ((tr : ℤ) + p + (kl[i] : ℕ)).toNat = tr + (p + kl[i]) := by omega
     -- vertex := mem[area + vertex + mem[key + level]]; level := level + 1
-    refine ⟨by light_side, by light_side, by light_side [hcell],
+    refine ⟨by light_side, by light_side, by light_side,
       (T.getD (p + kl[i]) 0).toNat, ?_, hok', hwk.trans hstep⟩
     rw [Int.toNat_of_nonneg hpos.le]
     simp [update_frame_setLocal, hcell, haddr, hnext]

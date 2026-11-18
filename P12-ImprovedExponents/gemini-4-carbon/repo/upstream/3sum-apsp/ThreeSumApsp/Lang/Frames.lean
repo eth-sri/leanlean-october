@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Lang.Assigns
+public import ThreeSumApsp.Lang.Logic
 public import ThreeSumApsp.Lang.Rules
 
 /-!
@@ -75,12 +75,7 @@ theorem update_frame_setLocal (l : List ℤ) (x : ℕ) (z : ℤ) :
 /-- Zeros at the end of the list do not matter. -/
 theorem frame_append_zeros (l : List ℤ) (n : ℕ) : frame (l ++ List.replicate n 0) = frame l := by
   funext y
-  simp only [frame, List.getD_eq_getElem?_getD, List.getElem?_append, List.getElem?_replicate]
-  split_ifs with h1 h2
-  · rfl
-  · rw [List.getElem?_eq_none (by omega)]
-    rfl
-  · rw [List.getElem?_eq_none (by omega)]
+  simp; grind
 
 /-! ## The value of an expression -/
 
@@ -101,7 +96,7 @@ theorem Ends.setTo {x : ℕ} {e : Expr} (z : ℤ) (h : Q ⟨frame (setLocal l x 
     Ends lim P d (.set x e) ⟨frame l, μ⟩ T Q := by
   refine Ends.set he.1 hT ?_
   rw [he.2]
-  simp only [update_frame_setLocal]
+  simp  [update_frame_setLocal]
   exact h
 
 /-- `x := e ; s`, where e gives z.  The rest s of the text gets the steps that are left. -/
@@ -121,9 +116,8 @@ theorem Ends.storeTo {a e : Expr} (b : ℕ) (z : ℤ) (h : Q ⟨frame l, Functio
   obtain ⟨⟨ha, hav⟩, ⟨he, hev⟩, hb⟩ := he
   refine Ends.store ha he ?_ hT ?_
   · rw [hav]
-    exact ⟨Int.natCast_nonneg b, by exact_mod_cast hb⟩
-  · rw [hav, hev, Int.toNat_natCast]
-    exact h
+    exact ⟨Int.natCast_nonneg b, by omega⟩
+  grind
 
 /-- `mem[a] := e ; s`, where a gives the address b, which lies in the memory, and e gives z. -/
 theorem Ends.storeToThen {a e : Expr} {s : Stmt} (b : ℕ) (z : ℤ)
@@ -198,63 +192,22 @@ end rules
 
 /-! ## Locals by name, and locals whose values do not matter -/
 
-/-- The list of the locals after several assignments, each given as a local and its value. -/
-@[simp] def setLocals (l : List ℤ) : List (ℕ × ℤ) → List ℤ
-  | [] => l
-  | p :: ps => setLocals (setLocal l p.1 p.2) ps
 
 /-- The local variables after several assignments, each given as a local and its value. -/
 @[simp] def updateLocals (loc : ℕ → ℤ) : List (ℕ × ℤ) → ℕ → ℤ
   | [] => loc
   | p :: ps => updateLocals (Function.update loc p.1 p.2) ps
 
-/-- The list `l` of the locals, with the entries `xs` read from `loc`. -/
-@[simp] def refreshLocals (l : List ℤ) (loc : ℕ → ℤ) : List ℕ → List ℤ
-  | [] => l
-  | x :: xs => refreshLocals (setLocal l x (loc x)) loc xs
 
-/-- Two lists give the same local variables: they are equal up to zeros at the end. -/
-def SameFrame (l m : List ℤ) : Prop := frame l = frame m
 
-/-- The empty list gives the same locals as itself. -/
-@[simp] theorem sameFrame_nil : SameFrame [] [] := rfl
 
-/-- Two lists give the same locals if their heads are equal and their tails give the same locals. -/
-@[simp] theorem sameFrame_cons_cons {a b : ℤ} {l m : List ℤ} :
-    SameFrame (a :: l) (b :: m) ↔ a = b ∧ SameFrame l m :=
-  ⟨fun h => ⟨congrFun h 0, funext fun i => congrFun h (i + 1)⟩, fun h => funext fun i => by
-    cases i with
-    | zero => exact h.1
-    | succ i => exact congrFun h.2 i⟩
 
-/-- A list gives the same locals as the empty list if all its entries are 0. -/
-@[simp] theorem sameFrame_cons_nil {a : ℤ} {l : List ℤ} :
-    SameFrame (a :: l) [] ↔ a = 0 ∧ SameFrame l [] :=
-  ⟨fun h => ⟨congrFun h 0, funext fun i => congrFun h (i + 1)⟩, fun h => funext fun i => by
-    cases i with
-    | zero => exact h.1
-    | succ i => exact congrFun h.2 i⟩
 
-/-- The empty list gives the same locals as a list all of whose entries are 0. -/
-@[simp] theorem sameFrame_nil_cons {b : ℤ} {m : List ℤ} :
-    SameFrame [] (b :: m) ↔ b = 0 ∧ SameFrame [] m :=
-  ⟨fun h => ⟨(congrFun h 0).symm, funext fun i => congrFun h (i + 1)⟩, fun h => funext fun i => by
-    cases i with
-    | zero => exact h.1.symm
-    | succ i => exact congrFun h.2 i⟩
 
-/-- The local variables `loc` are those of the list `l`, except perhaps the locals `xs`. -/
-def LocalsBut (xs : List ℕ) (l : List ℤ) (loc : ℕ → ℤ) : Prop :=
-  ∀ y ∉ xs, loc y = frame l y
 
 section
 variable {xs : List ℕ} {l l' : List ℤ} {loc μ : ℕ → ℤ}
 
-/-- An assignment, on both sides. -/
-theorem LocalsBut.update (h : LocalsBut xs l loc) (x : ℕ) (z : ℤ) :
-    LocalsBut xs (setLocal l x z) (Function.update loc x z) := by
-  intro y hy
-  rw [frame_setLocal, Function.update_apply, h y hy]
 
 /-! ## A piece of program text with a lemma of its own -/
 

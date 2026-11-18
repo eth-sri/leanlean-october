@@ -1,35 +1,56 @@
 module
 
 public import ThreeSumApsp.Programs.Sec4.Theorem30.QuerySum
-public import ImprovedExponents.PrunedProgram.Query.Contracts
+public import ImprovedExponents.PrunedProgram.SegOn
 
 @[expose] public section
-
-/-!
-# A query, once the digits of its output string are known, on pruned encodings
-
-Upstream's `queryCore_spec` proves the routine `queryCoreBody` (procedure 53: the leaves of order
-below `t`, then the boxes) under `QueryCorePre`, which holds the two encodings of the tile as full
-segments.  The routine reads an encoding in one place only: a round of the first loop reads the
-cell of the leaf τ that it treats (`Query.lowRound`, "sum := sum + aA[code] * aB[code]").  This
-leaf contributes to the output string η and has order below `t` (`exists_of_mem_lowList`), so it
-has the term `P₀` only at the inner levels of η (`card_P0Levels_le_of_contributes`), of which there
-are `m` (`QueryCorePreP.card`): the pruned encodings hold its cell (`SegOn.get`).
-
-`queryCoreP_spec` is `queryCore_spec` under `QueryCorePreP`, with `SegOn` in place of `Seg` for
-the two encodings; the program, the time and all the other steps are upstream's.  The parts of the
-proof that do not mention the precondition (`Query.lowCount`, `Query.Inv`, `Query.box_term`, …)
-are reused; those that do are copied with `QueryCorePreP` in place of `QueryCorePre`, under the
-same names with a `P` (`lowRoundP`, `low_specP`, …).
-
-Adapted from upstream `ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean` (Apache-2.0).
--/
 
 open ThreeSumApsp
 
 namespace Light.Sec4
 
 open ThreeSumApsp.Spec
+
+structure QueryCorePreP (lim : Limits) (μ : ℕ → ℤ) (x : QueryCoreArgs) : Prop where
+  std : Std lim
+  t_le : x.t ≤ x.m
+  card : (innerSetO x.η).card = x.m
+  segA : SegOn x.m μ x.aA x.encA
+  segB : SegOn x.m μ x.aB x.encB
+  segT : Seg μ x.tr x.T
+  segDigits : SegN μ x.wd (digitsO x.η)
+  walk : ∀ l ∈ boxesOf x.m x.t (digitsO x.η), WalkOK x.T x.root l
+  sums : ∀ j, |(x.terms.take j).sum| ≤ lim.word
+  prod : ∀ τ, |x.encA τ * x.encB τ| ≤ lim.word
+  pow : (10 : ℤ) ^ x.L ≤ lim.word
+  ss_wd : Apart x.ss x.m x.wd x.L
+  box_wd : Apart x.box x.L x.wd x.L
+  ss_box : Apart x.ss x.m x.box x.L
+  ss_aA : Apart x.ss x.m x.aA (10 ^ x.L)
+  ss_aB : Apart x.ss x.m x.aB (10 ^ x.L)
+  box_aA : Apart x.box x.L x.aA (10 ^ x.L)
+  box_aB : Apart x.box x.L x.aB (10 ^ x.L)
+  ss_tr : Apart x.ss x.m x.tr x.T.length
+  box_tr : Apart x.box x.L x.tr x.T.length
+  aA_lt : x.aA + 10 ^ x.L < lim.space
+  aB_lt : x.aB + 10 ^ x.L < lim.space
+  tr_lt : x.tr + x.T.length < lim.space
+  wd_lt : x.wd + x.L < lim.space
+  ss_lt : x.ss + x.m < lim.space
+  box_lt : x.box + x.L < lim.space
+
+def QueryCoreSpecP (lim : Limits) (P : Program) : Prop :=
+  ∀ (x : QueryCoreArgs) (μ : ℕ → ℤ), QueryCorePreP lim μ x →
+    ∀ d, d + 1 ≤ lim.depth →
+    Meets lim P Proc.queryCore d [x.aA, x.aB, x.tr, x.root, x.wd, x.ss, x.box, x.L, x.m, x.t] μ
+      (tQueryCore x.L x.m x.t) fun r μ' =>
+        r = trieQuery x.m x.t (arrT x.encA) (arrT x.encB) x.T x.root (digitsO x.η) ∧
+          SameOutside2 μ μ' x.ss x.m x.box x.L
+
+theorem segOn_of_same {μ μ₁ : ℕ → ℤ} {ss m box L a k L' : ℕ} {enc : Leaf L' → ℤ}
+    (h : SameOutside2 μ μ₁ ss m box L) (hl : SegOn k μ a enc)
+    (h1 : Apart ss m a (10 ^ L')) (h2 : Apart box L a (10 ^ L')) : SegOn k μ₁ a enc :=
+  hl.congr fun _ _ => h _ ⟨by omega, by omega⟩
 
 namespace QueryP
 
@@ -56,7 +77,7 @@ theorem low_termP (C : QueryCorePreP lim μ x) (hi : i < lowCount x) :
   obtain ⟨τ, hlow, hτ⟩ := exists_of_mem_lowList C.card _ hleaf
   refine ⟨τ, hτ.symm, ?_, ?_⟩
   · -- the leaf contributes to η, which has m inner levels
-    simp only [lowLeaves, Finset.mem_filter, Finset.mem_univ, true_and] at hlow
+    simp  [lowLeaves] at hlow
     rw [← C.card]
     exact card_P0Levels_le_of_contributes hlow.1
   have hlen : i < (lowList x.m x.t (digitsO x.η)).length := by simpa [lowList] using hi
@@ -66,7 +87,7 @@ theorem low_termP (C : QueryCorePreP lim μ x) (hi : i < lowCount x) :
     rw [lowList, List.getElem?_map, List.getElem?_eq_getElem hi, getElem_nineStrs hi]
     rfl
   rw [List.sum_take_succ_getD, QueryCoreArgs.terms, queryTerms,
-    List.getD_append _ _ _ _ (by rwa [List.length_map]),
+    List.getD_append _ _ _ _ (by grind),
     List.getD_eq_getElem _ _ (by rwa [List.length_map]), List.getElem_map, hmember,
     leafProduct_digitsT]
 
@@ -143,7 +164,6 @@ theorem lowRoundP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 �
   rw [ofDigitList_digitsT]
   -- sum := sum + aA[code] * aB[code]: the leaf has few symbols P₀, so its cells are right
   have hcode : codeT τ < 10 ^ x.L := codeT_lt τ
-  light_facts C
   have hreadA : μ₁ (x.aA + codeT τ) = x.encA τ :=
     (segOn_of_same same₁ C.segA C.ss_aA C.box_aA).get hfew
   have hreadB : μ₁ (x.aB + codeT τ) = x.encB τ :=
@@ -198,12 +218,12 @@ theorem loopP (C : QueryCorePreP lim μ x) {round : Stmt} {lo hi base b : ℕ}
   have htime := Nat.mul_le_mul_left (nineStrs x.m lo hi).length
     (show 1 + 1 + 1 + 1 + (b + 31) ≤ b + 90 by omega)
   refine Ends.whileConst (Inv μ x lo hi base) (nineStrs x.m lo hi).length (b + 31) h ?round ?done
-    (by simp only [Cond.cost, Expr.cost]; omega)
+    (by light_side)
   case round =>
     rintro i σ hi hI
     have hends := hround i σ hi hI
     obtain ⟨code, value, μ', rfl, -⟩ := hI
-    exact ⟨by simp; omega, by simp [hi], hends⟩
+    exact ⟨by simp; omega, by light_side, hends⟩
   case done =>
     rintro σ hI
     have hI' := hI
@@ -218,7 +238,6 @@ theorem low_specP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 �
       (tNineFirst x.m + lowCount x * (tScatter x.L + tHorner x.L + tNineNext x.m + 90) + 16)
       (Mid μ x (lowCount x)) := by
   obtain ⟨more, code, value, μ₀, rfl, same⟩ := h
-  have htm := C.t_le
   light_facts C C.std
   have hpos : 0 < lowCount x := length_nineStrs_pos (by omega) (by omega)
   -- nineFirst(ss, m, m - t + 1); more := 1
@@ -249,7 +268,7 @@ theorem boxes_specP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1
   -- the loop
   exact (loopP C (b := tScatter x.L + tLookup x.L + tNineNext x.m)
     (fun i σ hi hI => boxRoundP K C hd hi hI)
-    ⟨code, value, μ₁, by simp [hpos], hss, same_of_ss same same₁⟩).mono (by simp [boxCount]; omega)
+    ⟨code, value, μ₁, by simp [hpos], hss, same_of_ss same same₁⟩).mono (by light_time)
     fun σ' hI => hI.mid
 
 /-- The boxes, and the result. -/
@@ -284,7 +303,6 @@ theorem queryCoreP_spec {lim : Limits} {P : Program}
     (hP : P[Proc.queryCore]? = some queryCoreBody) (K : Callees lim P) : QueryCoreSpecP lim P := by
   intro x μ C
   refine fun d hd => ⟨queryCoreBody, hP, ?_⟩
-  have htm := C.t_le
   light_facts C C.std
   have hlows : (lowList x.m x.t ([] : List ℕ)).length = lowCount x := by simp [lowList]
   have hboxes : (boxesOf x.m x.t ([] : List ℕ)).length = boxCount x := by simp [boxesOf]

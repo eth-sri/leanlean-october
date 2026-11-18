@@ -68,8 +68,7 @@ theorem prefCount_succ_succ (k j : ℕ) :
   unfold prefCount
   rw [sum_range_succ' (fun i => (k + 1).choose i * 9 ^ (k + 1 - i)),
     sum_range_succ' (fun i => k.choose i * 9 ^ (k - i)) (j + 1)]
-  simp only [Nat.choose_zero_right, Nat.sub_zero, one_mul, Nat.choose_succ_succ, add_mul,
-    Nat.succ_sub_succ_eq_sub, sum_add_distrib, mul_add, mul_sum]
+  simp  [Nat.choose_succ_succ, add_mul, sum_add_distrib, mul_add, mul_sum]
   have h : ∀ i ∈ range (j + 1), k.choose (i + 1) * 9 ^ (k - i)
       = 9 * (k.choose (i + 1) * 9 ^ (k - (i + 1))) := fun i _ => choose_succ_mul_pow k i
   rw [sum_congr rfl h, pow_succ]
@@ -83,7 +82,7 @@ theorem prefCount_succ_left (k : ℕ) {j : ℕ} (hj : 1 ≤ j) :
 
 /-- The number of prefixes of length `0`: the empty one. -/
 theorem prefCount_zero_left (j : ℕ) : prefCount 0 j = 1 := by
-  simp [prefCount, sum_range_succ', Nat.choose_zero_succ]
+  simp [prefCount, sum_range_succ']
 
 /-- `encWorkP 0 j = 1`: the leaf alone. -/
 theorem encWorkP_zero_left (j : ℕ) : encWorkP 0 j = 1 := by
@@ -121,7 +120,7 @@ end Counts
 theorem termIdx_eq_nine_iff (lam : Term) : ((termIdx lam : Fin 10) : ℕ) = 9 ↔ lam = .P0 := by
   cases lam with
   | P i j => simp only [termIdx]; constructor <;> intro h <;> [omega; cases h]
-  | P0 => simp [termIdx_P0]
+  | P0 => simp [termIdx]
 
 /-- The number of symbols `P₀` of a leaf, by its first symbol. -/
 theorem card_P0Levels_cons {n : ℕ} (lam : Term) (τ' : Leaf n) :
@@ -206,14 +205,14 @@ theorem tEncP_le_aux (L : ℕ) : ∀ j, tEncP L j + 724 * 7 ^ L + 46 ≤ cEncP *
     | zero =>
       have h0 := ih 0
       have h7 : 1 ≤ 7 ^ L := Nat.one_le_pow _ _ (by norm_num)
-      simp only [tEncP, tEncStep, encWorkP_succ_zero, pow_succ]
+      simp  [tEncP, tEncStep, encWorkP_succ_zero]
       omega
     | succ j =>
       have h1 := ih (j + 1)
       have h0 := ih j
       have h7 : 1 ≤ 7 ^ L := Nat.one_le_pow _ _ (by norm_num)
       rw [encWorkP_succ_left L (by omega), Nat.add_sub_cancel]
-      simp only [tEncP, tEncStep, pow_succ]
+      simp  [tEncP, tEncStep]
       omega
 
 /-- The time of the pruned encoder is at most `cEncP` times its work. -/
@@ -248,7 +247,7 @@ private theorem encIdx_succ' (c a : ℕ → ℤ) (L lam : ℕ) {i : ℕ} (hi : i
 private theorem sameOutside2_succ'
     (h : SameOutside2 μ μ' out (10 ^ (L + 1)) scr (scrSize (L + 1))) :
     SameOutside2 μ μ' out (10 * 10 ^ L) scr (7 ^ L + scrSize L) := by
-  simpa only [pow_succ', scrSize] using h
+  simpa  [pow_succ', scrSize] using h
 
 /-! ## One term -/
 
@@ -274,10 +273,8 @@ theorem TermsDoneP.step (lay : EncodeLayout lim src out scr tab p7 p10 (L + 1)) 
   obtain ⟨hnew, same₂⟩ := hpost
   have hkept := sameOutside2_succ' same
   refine ⟨fun τ hτ hlt => ?_, ?_⟩
-  · have hcode := codeT_lt τ
-    have hcons : (Fin.cons (τ 0) (Fin.tail τ) : Leaf (L + 1)) = τ := Fin.cons_self_tail τ
-    have hcodeT : codeT τ = ((termIdx (τ 0) : Fin 10) : ℕ) * 10 ^ L + codeT (Fin.tail τ) := by
-      rw [← hcons, codeT_cons, Fin.cons_zero, Fin.tail_cons]
+  · have hcons : (Fin.cons (τ 0) (Fin.tail τ) : Leaf (L + 1)) = τ := Fin.cons_self_tail τ
+    have hcodeT : codeT τ = ((termIdx (τ 0) : Fin 10) : ℕ) * 10 ^ L + codeT (Fin.tail τ) := rfl
     have htail := codeT_lt (Fin.tail τ)
     by_cases hold : ((termIdx (τ 0) : Fin 10) : ℕ) < lam
     · -- The leaves below the earlier terms are not touched.
@@ -292,14 +289,13 @@ theorem TermsDoneP.step (lay : EncodeLayout lim src out scr tab p7 p10 (L + 1)) 
       have hbud : (P0Levels (Fin.tail τ)).card ≤ j' := by
         by_cases h9 : lam = 9
         · have : τ 0 = .P0 := (termIdx_eq_nine_iff _).1 (heq.trans h9)
-          simp only [this, ite_true, h9] at hcard hj'
+          simp  [this, h9] at hcard hj'
           omega
         · have : τ 0 ≠ .P0 := fun h => h9 (heq.symm.trans ((termIdx_eq_nine_iff _).2 h))
-          simp only [this, ite_false, h9] at hcard hj'
+          simp  [this, h9] at hcard hj'
           omega
       rw [hcodeT, heq, ← Nat.add_assoc, hnew _ hbud, encIdx_succ' c a L lam htail]
   · simp only [pow_succ', scrSize]
-    clear same
     light_keep
 
 /-- With the budget `0`, the term `P₀` is skipped: no leaf with no symbol `P₀` lies below it. -/
@@ -350,13 +346,9 @@ theorem encodeTermP_spec (hS : P[pS]? = some encStepBody)
   have hplaces := pre.lay.places_succ
   -- The arguments of the two calls fit in a word, by the layout and the next facts.
   have hpart : lam * 10 ^ L + 10 ^ L ≤ 10 * 10 ^ L := Nat.mul_add_le_mul hlam le_rfl
-  have hprod : ((lam * 10 ^ L : ℕ) : ℤ) = lam * 10 ^ L := by push_cast; rfl
-  have hpow : ((7 ^ L : ℕ) : ℤ) = 7 ^ L := by push_cast; rfl
-  have hsub : ((j - dec : ℕ) : ℤ) = j - dec := by omega
-  have hj' : j ≤ (j - dec) + if lam = 9 then 1 else 0 := by
-    split_ifs with h9
-    · omega
-    · rw [hdec' h9]; omega
+  have hprod : ((lam * 10 ^ L : ℕ) : ℤ) = lam * 10 ^ L := by rfl
+  have hpow : ((7 ^ L : ℕ) : ℤ) = 7 ^ L := by rfl
+  have hj' : j ≤ (j - dec) + if lam = 9 then 1 else 0 := by grind
   unfold encodeTermP tTermP
   -- Res := encStep(src, scr, 7^L, lam, tab)
   light_call (encStep_meets hS (EncodePre.toStep pre hlam h.2)) with r₁ μ₁ ⟨hstep, same₁⟩
@@ -377,8 +369,8 @@ theorem encodeP_leaf (pre : EncodePre lim μ src out scr tab p7 p10 V 0 a c) :
   -- if Level = 0 then mem[Out] := mem[Src]
   refine Ends.iteLast (fun _ => ?_) (fun h => absurd (by simp) h) (hT := by simp [tEncP])
   refine Ends.storeTo out (a 0) ⟨fun τ _ => ?_, by light_keep⟩
-    (by light_side [hread]) (by simp [tEncP])
-  have h0 : codeT τ = 0 := by have := codeT_lt τ; simpa using this
+    (by light_side ) (by simp [tEncP])
+  have h0 : codeT τ = 0 := rfl
   rw [h0, Nat.add_zero]
   exact Function.update_self ..
 

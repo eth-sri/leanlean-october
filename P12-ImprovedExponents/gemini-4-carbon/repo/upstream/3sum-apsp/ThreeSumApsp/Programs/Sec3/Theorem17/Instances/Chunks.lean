@@ -139,7 +139,7 @@ def tabAt (cap : ℕ) (C : List ℕ) (rho i : ℕ) : List Chunk :=
   (List.range rho).flatMap (chunkRow cap C) ++ (chunkRow cap C rho).take i
 
 /-- At the start the table is empty. -/
-theorem tabAt_zero_zero (cap : ℕ) (C : List ℕ) : tabAt cap C 0 0 = [] := by simp [tabAt]
+theorem tabAt_zero_zero (cap : ℕ) (C : List ℕ) : tabAt cap C 0 0 = [] := rfl
 
 /-- After all classes the table is complete. -/
 theorem tabAt_end (p cap : ℕ) (C : List ℕ) : tabAt cap C p 0 = chunkTabOf p cap C := by
@@ -170,7 +170,7 @@ theorem length_tabAt_lt {p cap : ℕ} (C : List ℕ) {rho i : ℕ} (hrho : rho <
   have hrows :=
     List.sum_map_range_mono (fun r => (chunkRow cap C r).length) (show rho + 1 ≤ p by omega)
   rw [List.range_succ, List.map_append, List.sum_append] at hrows
-  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, Nat.add_zero] at hrows
+  simp  at hrows
   have hall : (chunkTabOf p cap C).length
       = ((List.range p).map fun r => (chunkRow cap C r).length).sum := by
     rw [chunkTabOf, List.length_flatMap]
@@ -218,7 +218,7 @@ theorem TabInv.push {T : List Chunk} (h : TabInv μ μ' x T) (pre : ChunksPre li
   have hw := SegN.snoc
     ((h.sw.update_out (b := x.cr + T.length) (by simp; omega) (c.residue : ℤ)).update_out
       (b := x.cl + T.length) (by simp; omega) (c.start : ℤ)) c.len
-  simp only [List.length_map] at hr hl hw
+  simp  at hr hl hw
   refine ⟨?_, ?_, ?_, fun b hb => ?_⟩
   · rw [List.map_append]
     exact (hr.update_out (by simp; omega) _).update_out (by simp; omega) _
@@ -255,7 +255,7 @@ theorem chunksRound_runs {rho pos hi cnt : ℕ} {len : ℤ} (hpos : pos < hi) (h
   by_cases hcap : x.cap < hi - pos
   · have htest : (x.cap : ℤ) < (hi : ℤ) - pos := by omega
     rw [show min x.cap (hi - pos) = x.cap by omega]
-    exact ⟨by light_side [chunksRound, update_frame_setLocal, htest],
+    exact ⟨by light_side [chunksRound, htest],
       by simp [chunksRound, update_frame_setLocal, htest]⟩
   · have htest : ¬ (x.cap : ℤ) < (hi : ℤ) - pos := by omega
     rw [show min x.cap (hi - pos) = hi - pos by omega]

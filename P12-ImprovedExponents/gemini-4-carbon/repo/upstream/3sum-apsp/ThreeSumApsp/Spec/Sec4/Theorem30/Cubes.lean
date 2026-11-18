@@ -117,8 +117,7 @@ theorem cubeIdx_term (lam : Term) : (cubeIdx (.term lam) : ℕ) = termIdx lam :=
 private theorem cubeIdx_eq_ten (s : CubeSymbol) : (cubeIdx s : ℕ) = 10 ↔ s = .star := by
   cases s with
   | term lam =>
-    have := (termIdx lam).isLt
-    simp only [cubeIdx, reduceCtorEq, iff_false]
+    simp  [cubeIdx]
     omega
   | star => simp [cubeIdx]
 
@@ -126,7 +125,7 @@ private theorem cubeIdx_eq_ten (s : CubeSymbol) : (cubeIdx s : ℕ) = 10 ↔ s =
 theorem termIdx_eq_nine (lam : Term) : (termIdx lam : ℕ) = 9 ↔ lam = .P0 := by
   cases lam with
   | P i j =>
-    simp only [termIdx, reduceCtorEq, iff_false]
+    simp  [termIdx]
     omega
   | P0 => simp [termIdx]
 
@@ -236,7 +235,7 @@ private theorem digitsT_starsToP0 {L : ℕ} (π : Cube L) :
     digitsT (Cube.starsToP0 π) = starsToNines (digitsC π) := by
   rw [digitsT, starsToNines, digitsC, digitsStr, digitsStr, List.map_ofFn]
   refine congrArg List.ofFn (funext fun ℓ => ?_)
-  simp only [Cube.starsToP0, Function.comp]
+  simp  [Cube.starsToP0]
   cases π ℓ with
   | term lam => exact (if_neg (Nat.ne_of_lt (termIdx lam).isLt)).symm
   | star => rfl
@@ -269,7 +268,7 @@ private theorem lastStar_eq_none_iff (l : List ℕ) : lastStar l = none ↔ ∀ 
   | nil => simp [lastStar]
   | cons d l ih =>
     rw [← Nat.and_forall_add_one, lastStar]
-    simp only [List.getD_cons_zero, List.getD_cons_succ, ← ih]
+    simp only [List.getD_cons_succ, ← ih]
     cases lastStar l <;> simp
 
 /-- `lastStar` finds the last position of the digit 10. -/
@@ -281,11 +280,11 @@ theorem lastStar_eq_some_iff (l : List ℕ) (p : ℕ) :
     rw [← Nat.and_forall_add_one, lastStar]
     cases p with
     | zero =>
-      simp only [List.getD_cons_zero, List.getD_cons_succ, lt_irrefl, false_imp_iff, true_and,
+      simp only [List.getD_cons_succ,
         Nat.zero_lt_succ, forall_true_left, ← lastStar_eq_none_iff]
       cases lastStar l <;> simp
     | succ p =>
-      simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.not_lt_zero, false_imp_iff,
+      simp only [List.getD_cons_succ, Nat.not_lt_zero, false_imp_iff,
         true_and, Nat.add_lt_add_iff_right, ← ih]
       cases lastStar l <;> simp
 
@@ -297,7 +296,7 @@ theorem lastStar_digitsC {L : ℕ} (π : Cube L) (h : (Cube.starLevels π).Nonem
     fun ℓ hℓ => not_lt.mpr (Fin.le_def.mp (Finset.le_max' _ _ hℓ))
   refine (lastStar_eq_some_iff _ _).mpr ⟨?_, fun j hj h10 => hmax j h10 hj⟩
   rw [getD_digitsC, cubeIdx_eq_ten]
-  simpa [Cube.starLevels] using Finset.max'_mem _ h
+  simpa  using Finset.max'_mem _ h
 
 /-- `lastStar` finds nothing exactly if the cube has no star. -/
 private theorem lastStar_digitsC_eq_none_iff {L : ℕ} (π : Cube L) :
@@ -357,7 +356,7 @@ theorem dpValueD_digitsC {L : ℕ} (encA encB : Leaf L → ℤ) (e : ℕ) (π : 
     by_cases h : (Cube.starLevels π).Nonempty
     · rw [dif_pos h, lastStar_digitsC π h]
       -- a star is found: the sum of ten values
-      simp only [tenValues]
+      simp  [tenValues]
       rw [List.sum_map_range, ← Fin.sum_univ_eq_sum_range, ← termEquiv.sum_comp]
       refine Finset.sum_congr rfl fun lam _ => ?_
       rw [← ih, digitsC_replace]

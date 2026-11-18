@@ -47,7 +47,7 @@ part `π` is `X_Q[r, π]`. -/
 theorem arrayL_leftStrOf {L m : ℕ} (X : Finset (Fin L) → LeftMat L m) (Q : Finset (Fin L))
     (hQ : Q.card = m) (r : OuterStr L m) (π : InnerStr m) :
     arrayL m X (leftStrOf Q hQ r π) = X Q r π := by
-  have h : (innerSetL (leftStrOf Q hQ r π)).card = m := by rw [innerSetL_leftStrOf, hQ]
+  have h : (innerSetL (leftStrOf Q hQ r π)).card = m := by simp_all
   rw [arrayL, dif_pos h, outerPartL_leftStrOf, innerPartL_leftStrOf, innerSetL_leftStrOf]
 
 /-- The entry of the right input array at the string with inner set `Q`, inner part `π` and outer
@@ -56,7 +56,7 @@ part `c` is `Y_Q[π, c]`. -/
 theorem arrayR_rightStrOf {L m : ℕ} (Y : Finset (Fin L) → RightMat L m) (Q : Finset (Fin L))
     (hQ : Q.card = m) (π : InnerStr m) (c : OuterStr L m) :
     arrayR m Y (rightStrOf Q hQ π c) = Y Q π c := by
-  have h : (innerSetR (rightStrOf Q hQ π c)).card = m := by rw [innerSetR_rightStrOf, hQ]
+  have h : (innerSetR (rightStrOf Q hQ π c)).card = m := by simp_all
   rw [arrayR, dif_pos h, innerPartR_rightStrOf, outerPartR_rightStrOf, innerSetR_rightStrOf]
 
 /-! ### The proof of Lemma 9 -/
@@ -95,7 +95,7 @@ private theorem exists_of_summand_ne_zero {L m : ℕ} (Q : Finset (Fin L)) (hQ :
     (r c : OuterStr L m) {u : LeftStr L} {v : RightStr L}
     (hγ : ∀ ℓ, gamma (u ℓ) (v ℓ) (outStrOf Q hQ r c ℓ) ≠ 0) (hu : (innerSetL u).card = m)
     (hv : (innerSetR v).card = m) : ∃ π, u = leftStrOf Q hQ r π ∧ v = rightStrOf Q hQ π c := by
-  simp only [outStrOf, forall_level_iff Q hQ, glue_innerLevel, glue_outerLevel] at hγ
+  simp  [outStrOf, forall_level_iff Q hQ] at hγ
   obtain ⟨hγin, hγout⟩ := hγ
   -- "at a level ℓ ∈ Q we have w_ℓ = z₀ […] So (u_ℓ, v_ℓ) = (p_ij, q_ij) for some i, j."
   have hin : ∀ k, ∃ ij : Fin 2 × Fin 2,
@@ -123,11 +123,10 @@ private theorem prod_gamma_eq_one {L m : ℕ} (Q : Finset (Fin L)) (hQ : Q.card 
     ∏ ℓ, gamma (leftStrOf Q hQ r π ℓ) (rightStrOf Q hQ π c ℓ) (outStrOf Q hQ r c ℓ) = 1 := by
   have hone : ∀ ℓ,
       gamma (leftStrOf Q hQ r π ℓ) (rightStrOf Q hQ π c ℓ) (outStrOf Q hQ r c ℓ) = 1 := by
-    simp only [forall_level_iff Q hQ, leftStrOf, rightStrOf, outStrOf, glue_innerLevel,
-      glue_outerLevel]
+    simp  [forall_level_iff Q hQ, leftStrOf, rightStrOf, outStrOf]
     exact ⟨fun _ => (gamma_z0 _ _).trans (if_pos ⟨_, _, rfl, rfl⟩),
       fun _ => (gamma_x_y_z _ _ _ _).trans (if_pos ⟨rfl, rfl⟩)⟩
-  exact prod_eq_one fun ℓ _ => hone ℓ
+  simp_all
 
 /-- Lemma 9 for the output string with inner set `Q`, row `r` and column `c`: by Lemma 8 the entry
 is a sum over all pairs `(u, v)`, and the summands that remain are those of the matrix product. -/
@@ -147,8 +146,7 @@ theorem Mult_arrays_eq_mul {L m : ℕ} (X : Finset (Fin L) → LeftMat L m)
     rintro ⟨u, v⟩ hnot
     by_contra hne
     obtain ⟨⟨hγ, ha⟩, hb⟩ : ((∏ ℓ, gamma (u ℓ) (v ℓ) (outStrOf Q hQ r c ℓ)) ≠ 0
-        ∧ arrayL m X u ≠ 0) ∧ arrayR m Y v ≠ 0 := by
-      simpa only [mul_ne_zero_iff] using hne
+        ∧ arrayL m X u ≠ 0) ∧ arrayR m Y v ≠ 0 := by grind
     obtain ⟨π, rfl, rfl⟩ := exists_of_summand_ne_zero Q hQ r c
       (fun ℓ => prod_ne_zero_iff.mp hγ ℓ (mem_univ ℓ))
       (by_contra fun h => ha (dif_neg h)) (by_contra fun h => hb (dif_neg h))

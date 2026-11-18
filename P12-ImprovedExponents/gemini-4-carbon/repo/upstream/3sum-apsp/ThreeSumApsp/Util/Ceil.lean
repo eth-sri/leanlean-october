@@ -37,9 +37,6 @@ theorem ceilDiv_le_iff {a b k : ℕ} (hb : 0 < b) : a ⌈/⌉ b ≤ k ↔ a ≤ 
 theorem lt_ceilDiv_iff {a b i : ℕ} (hb : 0 < b) : i < a ⌈/⌉ b ↔ i * b < a := by
   rw [← Nat.not_le, ceilDiv_le_iff hb, Nat.not_le]
 
-/-- `a ⌈/⌉ b` pieces of size `b` cover `a`. -/
-theorem le_ceilDiv_mul {a b : ℕ} (hb : 0 < b) : a ≤ a ⌈/⌉ b * b :=
-  (ceilDiv_le_iff hb).1 le_rfl
 
 /-- `a ⌈/⌉ b` pieces of size `b` overshoot `a` by less than one piece. -/
 theorem ceilDiv_mul_lt {a b : ℕ} (hb : 0 < b) : a ⌈/⌉ b * b < a + b := by
@@ -61,7 +58,7 @@ and `Nat.le_pow_clog : 1 < b → x ≤ b ^ Nat.clog b x` is the lower bound. -/
 /-- Rounding `n ≥ 1` up to a power of `b` costs at most a factor `b`. -/
 theorem pow_clog_le_mul {b n : ℕ} (hb : 1 < b) (hn : 1 ≤ n) : b ^ Nat.clog b n ≤ b * n := by
   rcases Nat.eq_or_lt_of_le hn with rfl | hn
-  · simp [Nat.clog_one_right, hb.le]
+  · simp [hb.le]
   · have hpos : 0 < Nat.clog b n := Nat.clog_pos hb hn
     have hlt := Nat.pow_pred_clog_lt_self hb hn
     calc b ^ Nat.clog b n = b * b ^ (Nat.clog b n).pred := by
@@ -94,9 +91,3 @@ theorem rpow_inv_le_natCast_iff {e : ℕ} (he : e ≠ 0) (x t : ℕ) :
 
 end Real
 
-namespace ThreeSumApsp
-
-/-- The cube root of `n`, rounded up: `⌈n^{1/3}⌉`. -/
-@[expose] noncomputable def cbrtCeil (n : ℕ) : ℕ := ⌈(n : ℝ) ^ (1 / 3 : ℝ)⌉₊
-
-end ThreeSumApsp

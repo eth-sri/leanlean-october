@@ -7,7 +7,12 @@ module
 
 public import ThreeSumApsp.Sec2.Lemma10
 public import ThreeSumApsp.Sec2.Recursion
-public import ThreeSumApsp.Sec2.Theorem5.Equation6
+public import ThreeSumApsp.Sec2.Orders
+public import ThreeSumApsp.Util.Sum
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import ThreeSumApsp.Sec2.Tiling
+public import ThreeSumApsp.Util.Choose
+public import Mathlib.Analysis.Complex.ExponentialBounds
 
 /-!
 # Section 2.4.4: the remaining minutiae and the word size
@@ -41,7 +46,7 @@ private theorem sum_table_eq_zero_or {L m : ℕ} {A : Type*} [AddCommMonoid A] (
   by_cases hQ : ∃ gh, lay.table gh = Q
   · obtain ⟨gh, rfl⟩ := hQ
     exact .inr ⟨gh, by simp [lay.table_injective.eq_iff]⟩
-  · exact .inl (sum_eq_zero fun gh _ => if_neg (not_exists.mp hQ gh))
+  simp_all
 
 /-- Section 2.4.4, word size: "The input entries are of this size, by assumption." Every entry of
 the input array of a row band is an entry of `X` or 0.
@@ -90,7 +95,7 @@ theorem abs_encodeWith_le {α : Type} [Fintype α] {c : Term → α → ℤ} (hc
     |encodeWith c τ a| ≤ Fintype.card (Fin L → α) * A := by
   have h := abs_sum_mul_le univ (c := fun u => ∏ ℓ, c (τ ℓ) (u ℓ))
     (fun u _ => abs_prod_le_one _ fun ℓ _ => hc _ _) fun u _ => ha u
-  simpa only [encodeWith, mul_comm, card_univ] using h
+  simpa  [encodeWith, mul_comm] using h
 
 /-- Section 2.4.4, word size: "Every number in an encoding […] is a ±1 combination of at most 7^L
 input entries", so its absolute value is at most `7^L` times the largest absolute value of an input
@@ -98,15 +103,13 @@ entry.  For the encoding of `a`. -/
 theorem abs_encodingL_le {L : ℕ} {a : LeftStr L → ℤ} {A : ℤ} (ha : ∀ u, |a u| ≤ A) (τ : Leaf L) :
     |encodingL a τ| ≤ 7 ^ L * A := by
   have h := abs_encodeWith_le abs_phi_le_one ha τ
-  rw [card_leftStr] at h
-  exact_mod_cast h
+  aesop
 
 /-- Section 2.4.4, word size: "Every number in an encoding […] is a ±1 combination of at most 7^L
 input entries".  For the encoding of `b`. -/
 theorem abs_encodingR_le {L : ℕ} {b : RightStr L → ℤ} {B : ℤ} (hb : ∀ v, |b v| ≤ B) (τ : Leaf L) :
     |encodingR b τ| ≤ 7 ^ L * B := by
   have h := abs_encodeWith_le abs_psi_le_one hb τ
-  rw [card_rightStr] at h
-  exact_mod_cast h
+  aesop
 
 end ThreeSumApsp

@@ -54,8 +54,8 @@ def light (S : Finset ℤ) (M : ℕ) : Finset ℤ := S \ heavy S M
 
 /-- An element is light iff it collides with no other element. -/
 private theorem mem_light {x : ℤ} : x ∈ light S M ↔ x ∈ S ∧ ∀ y ∈ S, y ≠ x → ¬ (M : ℤ) ∣ x - y := by
-  simp only [light, heavy, mem_sdiff, mem_filter, not_and, not_exists]
-  exact and_congr_right fun h => ⟨fun g => g h, fun g _ => g⟩
+  simp  [light, heavy]
+  grind
 
 /-- Light elements are elements. -/
 theorem light_subset (S : Finset ℤ) (M : ℕ) : light S M ⊆ S := sdiff_subset
@@ -86,13 +86,13 @@ private theorem arr_mem_light_or_eq (S : Finset ℤ) (M : ℕ) (pd : ℤ) (i : �
   split_ifs with h
   · left
     obtain ⟨x, hx⟩ := card_eq_one.mp h
-    have hmem : ∀ y, y ∈ bucket S M i ↔ y = x := fun y => by rw [hx, mem_singleton]
+    have hmem : ∀ y, y ∈ bucket S M i ↔ y = x := fun y => by grind
     obtain ⟨hxS, hxi⟩ := mem_filter.mp ((hmem x).mpr rfl)
     rw [hx, sum_singleton]
     refine mem_light.mpr ⟨hxS, fun y hy hne hd => hne ((hmem y).mp (mem_filter.mpr ⟨hy, ?_⟩))⟩
     rw [← hxi]
     exact ((natCast_dvd_sub_iff_emod_eq M x y).mp hd).symm
-  · exact .inr rfl
+  omega
 
 /-- Negation preserves lightness. -/
 private theorem neg_mem_light_neg (S : Finset ℤ) (M : ℕ) (c : ℤ) :
@@ -113,7 +113,7 @@ private theorem arrZ_cases (M : ℕ) (h : Bdd U S) (k : ℕ) :
   · refine (arr_mem_light_or_eq (S.image fun c => -c) M (-pad U) (k % M)).imp_left fun hx => ?_
     rw [← neg_neg (arr _ _ _ _), neg_mem_light_neg] at hx
     exact ⟨_, hx, h _ (light_subset S M hx), (neg_neg _).symm⟩
-  · exact .inr rfl
+  omega
 
 /-- For a light element `c`, the third array holds `-c` in the two cells below `2M` whose index is
 congruent to `-c`. -/
@@ -124,7 +124,7 @@ private theorem arrZ_of_light {c : ℤ} (hc : c ∈ light S M) (U : ℕ) {k : �
 
 /-- The padding value has absolute value `2U + 1`. -/
 private theorem abs_pad (U : ℕ) : |pad U| = 2 * (U : ℤ) + 1 :=
-  abs_of_nonneg (by unfold pad; positivity)
+  abs_of_nonneg (by tauto)
 
 /-- The entries of the array made from the first or the second set of a node have absolute value at
 most `2U + 1`. -/
@@ -138,7 +138,7 @@ theorem abs_arrZ_le (M : ℕ) (h : Bdd U S) (k : ℕ) : |arrZ S M U k| ≤ 2 * (
   rcases arrZ_cases M h k with ⟨c, -, hb, he⟩ | he
   · rw [he, abs_neg]
     exact hb.trans (by omega)
-  · rw [he, abs_neg, abs_pad]
+  aesop
 
 end cells
 
@@ -155,10 +155,10 @@ theorem node_correct {U M N : ℕ} (hM : 1 ≤ M) (hN : 2 * M ≤ N) {S₁ S₂ 
     rcases arrXY_cases M h₁ i with ⟨ha, ha'⟩ | ha <;>
       rcases arrXY_cases M h₂ j with ⟨hb, hb'⟩ | hb <;>
       rcases arrZ_cases M h₃ (i + j) with ⟨c, hc, hc', hz⟩ | hz
-    · exact ⟨_, ha, _, hb, c, hc, by rw [heq, hz]; ring⟩
+    · exact ⟨_, ha, _, hb, c, hc, by omega⟩
     -- in all other cases a cell holds `±(2U + 1)`, which the other two cells cannot balance
     all_goals
-      simp only [pad, abs_le] at *
+      simp  [pad, abs_le] at *
       omega
   · rintro ⟨a, ha, b, hb, c, hc, hsum⟩
     have hM0 : (M : ℤ) ≠ 0 := by omega
@@ -183,10 +183,7 @@ def dSeq (j : ℕ) : ℕ := 2 ^ (2 ^ j - 1)
 
 /-- The recurrence `d_{j+1} = 2 d_j²`. -/
 private theorem dSeq_succ (j : ℕ) : dSeq (j + 1) = 2 * dSeq j ^ 2 := by
-  have hexp : 2 ^ (j + 1) - 1 = 1 + (2 ^ j - 1) * 2 := by
-    have := Nat.one_le_two_pow (n := j)
-    rw [pow_succ]
-    omega
+  have hexp : 2 ^ (j + 1) - 1 = 1 + (2 ^ j - 1) * 2 := by grind
   rw [dSeq, dSeq, hexp, pow_add, pow_mul, pow_one]
 
 /-- The sequence `dSeq` is nondecreasing. -/
@@ -254,7 +251,6 @@ end Replaced
 private theorem exists_eq_empty {n U j₁ j₂ j₃ : ℕ} {T₁ T₂ T₃ : Finset ℤ} (r₁ : Replaced n U j₁ T₁)
     (r₂ : Replaced n U j₂ T₂) (r₃ : Replaced n U j₃ T₃) (hj : 3 * height n - 2 ≤ j₁ + j₂ + j₃) :
     T₁ = ∅ ∨ T₂ = ∅ ∨ T₃ = ∅ := by
-  have := height_pos n
   rcases (by omega : height n ≤ j₁ ∨ height n ≤ j₂ ∨ height n ≤ j₃) with h | h | h
   · exact .inl (r₁.eq_empty h)
   · exact .inr (.inl (r₂.eq_empty h))
@@ -272,7 +268,7 @@ theorem HasSol.mono {S₁ S₂ S₃ T₁ T₂ T₃ : Finset ℤ} (h : HasSol S�
 private theorem not_hasSol_of_empty {S₁ S₂ S₃ : Finset ℤ} (h : S₁ = ∅ ∨ S₂ = ∅ ∨ S₃ = ∅) :
     ¬ HasSol S₁ S₂ S₃ := by
   rintro ⟨a, ha, b, hb, c, hc, -⟩
-  rcases h with rfl | rfl | rfl <;> simp_all
+  grind
 
 /-- A solution consists of three light elements, or it contains a heavy one.  The brackets are those
 of the list of the children in `nodes`. -/
@@ -282,7 +278,7 @@ theorem hasSol_split (S₁ S₂ S₃ : Finset ℤ) (M : ℕ) :
   constructor
   · rintro ⟨a, ha, b, hb, c, hc, hs⟩
     by_contra hno
-    simp only [not_or] at hno
+    simp  at hno
     obtain ⟨hlight, ⟨hheavy₁, hheavy₂⟩, hheavy₃⟩ := hno
     exact hlight ⟨a, mem_sdiff.mpr ⟨ha, fun h => hheavy₁ ⟨a, h, b, hb, c, hc, hs⟩⟩,
       b, mem_sdiff.mpr ⟨hb, fun h => hheavy₂ ⟨a, ha, b, h, c, hc, hs⟩⟩,
@@ -302,7 +298,7 @@ theorem length_nodes_le (Q : Finset ℕ) (Λ f : ℕ) (S₁ S₂ S₃ : Finset �
     unfold nodes
     split_ifs with h
     · exact Nat.one_le_pow _ _ (by norm_num)
-    · simp only [List.length_cons, List.length_append]
+    · simp 
       have := ih (heavy S₁ (modulus Q Λ S₁ S₂ S₃)) S₂ S₃
       have := ih S₁ (heavy S₂ (modulus Q Λ S₁ S₂ S₃)) S₃
       have := ih S₁ S₂ (heavy S₃ (modulus Q Λ S₁ S₂ S₃))

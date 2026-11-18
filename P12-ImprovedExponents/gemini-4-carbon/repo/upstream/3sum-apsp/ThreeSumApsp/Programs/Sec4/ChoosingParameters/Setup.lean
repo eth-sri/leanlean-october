@@ -61,24 +61,20 @@ theorem abs_padInnerCols_le {N D₀ D' : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ
     (h : ∀ i j, |X i j| ≤ U) (hU : 0 ≤ U) (i : Fin N) (j : Fin D') :
     |padInnerCols D' X i j| ≤ U := by
   unfold padInnerCols
-  split_ifs
-  · exact h _ _
-  · simpa using hU
+  grind
 
 theorem abs_padInnerRows_le {N D₀ D' : ℕ} {Y : Matrix (Fin D₀) (Fin N) ℤ} {U : ℤ}
     (h : ∀ i j, |Y i j| ≤ U) (hU : 0 ≤ U) (i : Fin D') (j : Fin N) :
     |padInnerRows D' Y i j| ≤ U := by
   unfold padInnerRows
-  split_ifs
-  · exact h _ _
-  · simpa using hU
+  grind
 
 theorem le_D_logFour (D₀ : ℕ) : D₀ ≤ D (logFour D₀) := Nat.le_pow_clog (by norm_num) D₀
 
 /-- The ceiling ⌈log₄ D⌉ in natural numbers. -/
 theorem ceil_logb_four (D₀ : ℕ) : ⌈Real.logb 4 (D₀ : ℝ)⌉₊ = logFour D₀ := by
   have := Real.natCeil_logb_natCast 4 D₀
-  simpa [logFour] using this
+  aesop
 
 /-- m ≤ 4 D, because m ≤ 4^m ≤ 4 D. -/
 theorem logFour_le_four_mul {D₀ : ℕ} (hD : 1 ≤ D₀) : logFour D₀ ≤ 4 * D₀ :=

@@ -40,7 +40,7 @@ theorem SharedTables.congr {p : Par} {b0 : ℕ} {μ μ' : ℕ → ℤ} (h : Shar
   have lphi := Spec.length_phiFlat
   have lpsi := Spec.length_psiFlat
   refine
-    { p3 := h.p3.congr fun i hi => he _ (by omega) (by rw [lp] at hi; omega)
+    { p3 := h.p3.congr fun i hi => he _ (by omega) (by grind)
       p4 := h.p4.congr fun i hi => he _ (by omega) (by rw [lp] at hi; omega)
       p7 := h.p7.congr fun i hi => he _ (by omega) (by rw [lp] at hi; omega)
       p10 := h.p10.congr fun i hi => he _ (by omega) (by rw [lp] at hi; omega)
@@ -54,9 +54,9 @@ theorem SharedTables.congr {p : Par} {b0 : ℕ} {μ μ' : ℕ → ℤ} (h : Shar
   · rw [List.length_map, Spec.length_unrank] at hi
     have := Nat.mul_add_lt_mul hs hi
     omega
-  · have := Nat.mul_add_lt_mul hI (show i < p.Lo by simpa [ThreeSumApsp.digitList] using hi)
+  · have := Nat.mul_add_lt_mul hI (show i < p.Lo by simpa  using hi)
     omega
-  · have := Nat.mul_add_lt_mul hx (show i < p.m by simpa [ThreeSumApsp.digitList] using hi)
+  · have := Nat.mul_add_lt_mul hx (show i < p.m by simpa  using hi)
     omega
 
 end Light.Sec2

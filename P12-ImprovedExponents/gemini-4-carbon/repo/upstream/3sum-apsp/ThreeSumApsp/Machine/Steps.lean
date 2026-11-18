@@ -6,10 +6,17 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import EndStatement
-public import ThreeSumApsp.Util.Basic
-public import Mathlib.Data.Set.Function
+public import Mathlib.Algebra.Order.Field.Basic
+public import Mathlib.Algebra.Order.Ring.Abs
+public import Mathlib.Algebra.Order.Ring.Int
+public import Mathlib.Data.Int.Cast.Lemmas
+public import Mathlib.Data.Nat.Cast.Order.Ring
+public import Mathlib.Tactic.GCongr
 public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+public import Mathlib.Data.Set.Function
 
 /-!
 # Running the word RAM: words, steps, pieces of code, straight-line code, branches
@@ -80,8 +87,7 @@ theorem inRange_of_abs_le {v B : ℤ} (hB : 2 * B < (2 : ℤ) ^ W) (h : |v| ≤ 
 
 /-- The initial memory holds the input in the cells 0, 1, 2, …, followed by zeros. -/
 theorem loadWords_mem_nat (W : ℕ) (ws : List ℤ) (a : ℕ) :
-    loadWords W ws (a : ℤ) = wd W (ws.getD a 0) := by
-  simp [loadWords, show ¬ ((a : ℤ) < 0) by omega]
+    loadWords W ws (a : ℤ) = wd W (ws.getD a 0) := rfl
 
 /-- The negative cells of the initial memory hold zeros. -/
 theorem loadWords_mem_neg (W : ℕ) (ws : List ℤ) {a : ℤ} (ha : a < 0) :
@@ -141,14 +147,14 @@ theorem Steps.cast_count {n n' : ℕ} {c c' : Cfg W} (h : Steps P n c c') (hn : 
     Steps P n' c c' := hn ▸ h
 
 /-- Within no steps there is no verdict. -/
-theorem exec_zero (c : Cfg W) : exec P 0 c.pc c.mem = none := by rw [exec]
+theorem exec_zero (c : Cfg W) : exec P 0 c.pc c.mem = none := rfl
 
 private theorem exec_succ (t : ℕ) (c : Cfg W) : exec P (t + 1) c.pc c.mem =
     match step P c with
     | .inr verdict => some (verdict, c.mem)
     | .inl next => exec P t next.pc next.mem := by
   rw [exec, step]
-  cases P.getD c.pc .reject <;> rfl
+  grind
 
 /-- A step that gives a verdict ends the run. -/
 theorem exec_succ_of_verdict {c : Cfg W} {v : Bool} (h : step P c = .inr v) (t : ℕ) :
@@ -207,10 +213,8 @@ theorem CodeAt.right {pos : ℕ} {l₁ l₂ : List Instr} (h : CodeAt P pos (l�
 theorem CodeAt.head {pos : ℕ} {i : Instr} {l : List Instr} (h : CodeAt P pos (i :: l)) :
     P.getD pos .reject = i := by
   obtain ⟨r, hr⟩ := h
-  have : (P.drop pos)[0]? = some i := by rw [← hr]; rfl
-  rw [List.getElem?_drop, Nat.add_zero] at this
-  rw [List.getD_eq_getElem?_getD, this]
-  rfl
+  have : (P.drop pos)[0]? = some i := by grind
+  grind
 
 /-- A piece of code without its first instruction. -/
 theorem CodeAt.tail {pos : ℕ} {i : Instr} {l : List Instr} (h : CodeAt P pos (i :: l)) :
@@ -249,14 +253,12 @@ def effects (l : List Instr) (m : ℤ → BitVec W) : ℤ → BitVec W := l.fold
 
 theorem effects_append (l₁ l₂ : List Instr) (m : ℤ → BitVec W) :
     effects (l₁ ++ l₂) m = effects l₂ (effects l₁ m) := by
-  simp [effects, List.foldl_append]
+  simp [effects]
 
 private theorem step_straight {c : Cfg W} {i : Instr} (h : P.getD c.pc .reject = i)
     (hi : Straight i) : step P c = .inl ⟨c.pc + 1, effect i c.mem⟩ := by
   have write (a : ℤ) (v : BitVec W) :
-      (fun x => if x = a then v else c.mem x) = Function.update c.mem a v := by
-    funext x
-    simp [Function.update_apply]
+      (fun x => if x = a then v else c.mem x) = Function.update c.mem a v := by grind
   cases i <;> simp only [Straight] at hi <;> simp only [step, h, effect, write, wd_one]
 
 /-- One instruction that only changes the memory. -/
@@ -273,7 +275,7 @@ theorem steps_straight (l : List Instr) (pc : ℕ) (m : ℤ → BitVec W) (hcode
   | cons i l ih =>
     obtain ⟨hi, hl⟩ := List.forall_mem_cons.1 hl
     exact ⟨_, step_straight hcode.head hi,
-      (ih (pc + 1) (effect i m) hcode.tail hl).cast_pos (by rw [List.length_cons]; omega)⟩
+      (ih (pc + 1) (effect i m) hcode.tail hl).cast_pos (by grind)⟩
 
 /-! ## Single instructions on cells that hold known numbers -/
 
@@ -343,11 +345,7 @@ theorem steps_bltz {rest : List Instr} {pos l : ℕ} {c v : ℤ} {m : ℤ → Bi
 /-- A run that ends with a branch on the sign of v, where v is negative if and only if p fails. -/
 theorem Steps.branch {n l pos pos' : ℕ} {c : Cfg W} {m : ℤ → BitVec W} {v : ℤ} {p : Prop}
     (h : Steps P n c ⟨if v < 0 then l else pos, m⟩) (hv : p ↔ ¬ v < 0) (hpos : pos = pos') :
-    (p → Steps P n c ⟨pos', m⟩) ∧ (¬ p → Steps P n c ⟨l, m⟩) := by
-  subst hpos
-  by_cases hp : p
-  · exact ⟨fun _ => by rwa [if_neg (hv.1 hp)] at h, fun h' => absurd hp h'⟩
-  · exact ⟨fun h' => absurd h' hp, fun _ => by rwa [if_pos (not_not.1 (mt hv.2 hp))] at h⟩
+    (p → Steps P n c ⟨pos', m⟩) ∧ (¬ p → Steps P n c ⟨l, m⟩) := by grind
 
 theorem step_accept {c : Cfg W} (h : P.getD c.pc .reject = .accept) : step P c = .inr true := by
   simp only [step, h]

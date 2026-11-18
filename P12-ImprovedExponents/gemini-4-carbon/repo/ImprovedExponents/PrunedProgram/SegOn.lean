@@ -19,6 +19,19 @@ are right and nothing about the others.
   the inner levels of the string (the queries read such leaves).
 -/
 
+namespace ImprovedExponents.Proc
+
+abbrev powRS : ℕ := 74
+abbrev encodeP : ℕ := 75
+abbrev encodeBandsP : ℕ := 76
+abbrev sharedP : ℕ := 77
+abbrev preCoreP : ℕ := 78
+abbrev pre31P : ℕ := 79
+abbrev offline32P : ℕ := 80
+abbrev allP : ℕ := 81
+
+end ImprovedExponents.Proc
+
 namespace Light
 
 open ThreeSumApsp ThreeSumApsp.Spec Finset
@@ -58,7 +71,7 @@ theorem P0Levels_subset_innerSetO {η : OutStr L} {τ : Leaf L} (h : τ.Contribu
   · exact hin
   · rw [hℓ.2] at hpriv
     cases hz : η ℓ with
-    | z i j => rw [hz] at hpriv; exact absurd hpriv (by simp [OutVar.privateTerm])
+    | z i j => rw [hz] at hpriv; exact absurd hpriv (by trivial)
     | z0 => trivial
 
 /-- A leaf that contributes to an output string with `m` inner levels has at most `m` symbols

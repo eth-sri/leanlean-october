@@ -39,8 +39,6 @@ theorem switchOf_div (p m : ℕ) {q : ℕ} (hq : 1 ≤ q) :
     switchOf ((p : ℝ) / q) m = (p * m + q - 1) / q := by
   unfold switchOf
   rw [← Nat.ceilDiv_eq_add_pred_div, ← Nat.ceil_div_eq_ceilDiv (p * m) hq]
-  congr 1
-  push_cast
-  ring
+  grind
 
 end ThreeSumApsp

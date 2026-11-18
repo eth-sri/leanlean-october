@@ -133,11 +133,7 @@ theorem queryAtAreas_spec (hlim : Lim30 lim p t b0 U) (I J : ℕ) :
   obtain ⟨⟩ := areas p t b0
   unfold queryAtLocals queryAtRead
   -- the product nB², in the integers
-  have htr : ((aROOTS p b0 + p.nB * p.nB : ℕ) : ℤ) = aTR p b0 := by
-    exact_mod_cast (by omega : aROOTS p b0 + p.nB * p.nB = aTR p b0)
-  have hsq0 : (0 : ℤ) ≤ (p.nB : ℤ) * p.nB := by positivity
-  push_cast at htr
-  -- box := digits + L + L; str := box + L; roots := str + m + 1
+  have htr : ((aROOTS p b0 + p.nB * p.nB : ℕ) : ℤ) = aTR p b0 := by omega
   light_set (aBOX p b0 : ℕ)
   light_set (aSS p b0 : ℕ)
   light_set (aROOTS p b0 : ℕ)
@@ -154,8 +150,7 @@ theorem segN_of_segB {μ : ℕ → ℤ} {a : ℕ} {l : List Bool} (h : Sec2.SegB
   unfold SegN
   rw [List.map_map]
   convert h using 2
-  funext b
-  cases b <;> simp
+  grind
 
 /-- The arguments of the call of outDigits, and the data behind them. -/
 def outArgs (p : Sec2.Par) (b0 I J : ℕ) : OutDigitsArgs :=

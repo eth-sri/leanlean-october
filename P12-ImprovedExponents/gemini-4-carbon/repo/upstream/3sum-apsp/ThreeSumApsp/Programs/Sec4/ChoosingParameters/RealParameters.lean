@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Costs
-public import ThreeSumApsp.Sec4.Corollary31.Limit
+public import ThreeSumApsp.Sec4.Corollary31
 public import ThreeSumApsp.Sec4.Corollary31.RationalParameters
 
 /-!

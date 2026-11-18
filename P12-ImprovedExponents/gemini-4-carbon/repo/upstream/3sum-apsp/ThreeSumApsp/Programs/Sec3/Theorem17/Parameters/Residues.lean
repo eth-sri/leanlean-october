@@ -64,7 +64,6 @@ theorem bitLen_spec {μ : ℕ → ℤ} {U : ℕ} (hU : ((2 * U + 2 : ℕ) : ℤ)
       σ'.loc 0 = (bitLen U : ℕ) ∧ σ'.mem = μ := by
   have hlow : ∀ j, j < bitLen U → 2 ^ j ≤ U := fun j hj => Nat.lt_size.1 hj
   have hup : U < 2 ^ bitLen U := Nat.lt_size_self U
-  push_cast at hU
   unfold tBitLen
   generalize bitLen U = n at hlow hup
   -- len := 0; pow := 1
@@ -100,7 +99,7 @@ theorem dblList_succ (p len : ℕ) :
 /-- Entry j of the table is 2^j p. -/
 theorem read_dblList {μ : ℕ → ℤ} {dbl p len j : ℕ} (h : Seg μ dbl (dblList p len)) (hj : j ≤ len) :
     μ (dbl + j) = ((p * 2 ^ j : ℕ) : ℤ) := by
-  rw [h j (by simp; omega)]
+  rw [h j (by simp_all)]
   simp [dblList]
 
 namespace DblTable
@@ -162,7 +161,7 @@ theorem dblTable_spec {μ : ℕ → ℤ} {dst p len : ℕ} (hw : (lim.space : �
     -- entry := entry + entry; exp := exp + 1; dst[exp] := entry
     refine ⟨by light_side, by light_side, ?_, Function.update μ' (dst + (dblList p j).length)
       ((p * 2 ^ (j + 1) : ℕ) : ℤ), ?_, dblList_succ p j ▸ seg.snoc _,
-      rest.update ⟨by omega, by rw [length_dblList]; omega⟩ _⟩
+      rest.update ⟨by omega, by omega⟩ _⟩
     · rw [hdouble] at hnext
       generalize p * 2 ^ j = q at hnext
       light_side
@@ -183,17 +182,10 @@ def greedyAt (p len : ℕ) (w : ℤ) : ℕ → ℤ
       greedyAt p len w i - ((p * 2 ^ (len - i) : ℕ) : ℤ)
     else greedyAt p len w i
 
-/-- A multiple of p is congruent to 0. -/
-private theorem mul_pow_modEq_zero (p j : ℕ) : ((p * 2 ^ j : ℕ) : ℤ) ≡ 0 [ZMOD (p : ℤ)] := by
-  rw [Int.modEq_zero_iff_dvd, Nat.cast_mul]
-  exact Dvd.intro _ rfl
 
 /-- 2^(j+1) p is twice 2^j p. -/
 private theorem cast_mul_pow_succ (p j : ℕ) :
-    ((p * 2 ^ (j + 1) : ℕ) : ℤ) = 2 * ((p * 2 ^ j : ℕ) : ℤ) := by
-  rw [pow_succ]
-  push_cast
-  ring
+    ((p * 2 ^ (j + 1) : ℕ) : ℤ) = 2 * ((p * 2 ^ j : ℕ) : ℤ) := by grind
 
 /-- After i rounds the number is not negative, below 2^(len+1-i) p, and congruent to w. -/
 theorem greedyAt_inv {p len : ℕ} {w : ℤ} (hp : 1 ≤ p) (hw : |w| < 2 ^ len) : ∀ i, i ≤ len + 1 →
@@ -204,11 +196,10 @@ theorem greedyAt_inv {p len : ℕ} {w : ℤ} (hp : 1 ≤ p) (hw : |w| < 2 ^ len)
   | zero =>
     intro _
     obtain ⟨hlow, hhigh⟩ := abs_lt.1 hw
-    have hle : (2 : ℤ) ^ len ≤ ((p * 2 ^ len : ℕ) : ℤ) := by
-      exact_mod_cast Nat.le_mul_of_pos_left (2 ^ len) hp
+    have hle : (2 : ℤ) ^ len ≤ ((p * 2 ^ len : ℕ) : ℤ) := by light_side
     rw [greedyAt, Nat.sub_zero, cast_mul_pow_succ]
     exact ⟨by linarith, by linarith,
-      by simpa only [add_zero] using (Int.ModEq.refl w).add (mul_pow_modEq_zero p len)⟩
+      by simp⟩
   | succ i ih =>
     intro hi
     obtain ⟨hlow, hhigh, hmod⟩ := ih (by omega)
@@ -216,7 +207,7 @@ theorem greedyAt_inv {p len : ℕ} {w : ℤ} (hp : 1 ≤ p) (hw : |w| < 2 ^ len)
     rw [show len + 1 - (i + 1) = len - i by omega, greedyAt]
     split_ifs with h
     · exact ⟨by linarith, by linarith,
-        by simpa only [sub_zero] using hmod.sub (mul_pow_modEq_zero p (len - i))⟩
+        by light_side⟩
     · exact ⟨hlow, by linarith, hmod⟩
 
 /-- Greedy subtraction gives the remainder. -/
@@ -292,7 +283,7 @@ theorem resid_meets {μ : ℕ → ℤ} {pResid dbl p len : ℕ} {w : ℤ} (hP : 
     generalize ((p * 2 ^ (len - i) : ℕ) : ℤ) = q at hread hpos
     -- exp := exp - 1; if dbl[exp] ≤ num then num := num - dbl[exp]
     refine ⟨by light_side, by light_side, ?_, ?_⟩
-    · simp [Limits.Addr, abs_le, hexp, hread]
+    · simp [Limits.Addr, abs_le, hexp]
       omega
     · by_cases hle : q ≤ g <;> simp [update_frame_setLocal, hexp, hread, hle]
   case done =>
@@ -387,7 +378,7 @@ theorem residues_spec {μ : ℕ → ℤ} {pResid src dst m dbl p len U : ℕ} {l
     have hlen : (residList p (l.take i)).length = i := by simp [residList]; omega
     -- res := resid(src[i], dbl, len)
     light_call (resid_meets (w := l[i]) hP hw hp
-      (segDbl.keep (by light_keep [length_dblList]))
+      (segDbl.keep (by light_keep ))
       ((hle.getElem hi).trans_lt hltZ) spaceDbl hword) using hread with _ μ₁ ⟨rfl, rfl⟩
     -- dst[i] := res
     light_store (dst + i) (resid p l[i] : ℕ)

@@ -66,7 +66,7 @@ private theorem effects_digitsCode {c : ℤ} (hc : cONE ≠ c) (L : List ℕ) (h
       effect_sub c (wd_toInt (m c)).symm (wd_toInt (m c)).symm, sub_self]
     exact ⟨by simp, (AgreeOutside.refl _ m).update (Set.mem_singleton c) _⟩
   | cons d L ih =>
-    obtain ⟨val, A⟩ := ih fun x hx => hL x (by simp [hx])
+    obtain ⟨val, A⟩ := ih fun x hx => hL x (by grind)
     -- c := c + c
     rw [digitsCode, effects_append, effects_append, effects_cons, effects_nil, effect_add c val val]
     have hd : d = 0 ∨ d = 1 := by have := hL d (by simp); omega
